@@ -159,6 +159,10 @@ function getStaffCardColor(largeTurns: number, smallTurns: number, selected: boo
   return "border-red-400 bg-red-700 text-white";
 }
 
+function hasPositiveAmount(line: PosDeskSessionLine) {
+  return line.amount > 0;
+}
+
 function ReceiptClock() {
   const [currentTime, setCurrentTime] = useState("");
 
@@ -525,16 +529,21 @@ export function PosDeskClient({
     };
   }, [liveDraftToken]);
 
-  function createStaffLine(staffId: string, sortOrder: number): PosDeskSessionLine {
+  function createStaffLine(
+    staffId: string,
+    sortOrder: number,
+    serviceId: string | null = null,
+  ): PosDeskSessionLine {
     const staffMember = staff.find((member) => member.id === staffId);
+    const service = services.find((item) => item.id === serviceId);
 
     return {
       amount: 0,
       amount_input: "",
       amount_parts: [],
       id: `local-${crypto.randomUUID()}`,
-      service_id: draft.selectedServiceId,
-      service_label: selectedService?.name ?? `Service ${sortOrder}`,
+      service_id: serviceId,
+      service_label: service?.name ?? `Service ${sortOrder}`,
       sort_order: sortOrder,
       staff_id: staffId,
       staff_name: staffMember?.display_name ?? null,
@@ -543,55 +552,74 @@ export function PosDeskClient({
     };
   }
 
-  function isSameReceiptLine(
-    line: PosDeskSessionLine,
-    serviceId: string | null,
-    staffId: string | null,
-  ) {
-    return line.service_id === serviceId && line.staff_id === staffId;
+  function getActiveLine(lines = staffLines) {
+    return lines.find((line) => line.id === draft.editingLineId) ?? null;
   }
 
-  function getOrCreateStaffLine(
-    currentLines: PosDeskSessionLine[],
-    serviceId: string | null,
-    staffId: string,
-  ) {
-    const existingLine = currentLines.find((line) =>
-      isSameReceiptLine(line, serviceId, staffId),
-    );
-
-    if (existingLine) {
-      return { created: false, line: existingLine, lines: currentLines };
-    }
-
-    const nextLine = createStaffLine(staffId, currentLines.length + 1);
-    return {
-      created: true,
-      line: nextLine,
-      lines: [...currentLines, nextLine],
-    };
+  function getStaffLine(staffId: string, lines = staffLines) {
+    return lines.find((line) => line.staff_id === staffId) ?? null;
   }
 
-  function selectStaff(staffId: string) {
-    const next = getOrCreateStaffLine(
-      staffLines,
-      draft.selectedServiceId,
-      staffId,
-    );
-
-    if (next.created) {
-      setDraftStaffLines(next.lines);
-    }
-
+  function focusLine(line: PosDeskSessionLine) {
     setDraft((current) => ({
       ...current,
-      amountInput: next.line.amount_input,
-      editingLineId: next.line.id,
-      selectedServiceId: next.line.service_id,
-      selectedStaffId: staffId,
+      amountInput: line.amount_input,
+      editingLineId: line.id,
+      selectedServiceId: line.service_id,
+      selectedStaffId: line.staff_id,
     }));
     setKeypadMode("amount");
     setError(null);
+  }
+
+  function selectStaff(staffId: string) {
+    const existingStaffLine = getStaffLine(staffId);
+    const activeLine = getActiveLine();
+
+    if (activeLine && !hasPositiveAmount(activeLine)) {
+      if (existingStaffLine && existingStaffLine.id !== activeLine.id) {
+        setDraftStaffLines((current) =>
+          current.filter((line) => line.id !== activeLine.id),
+        );
+        focusLine(existingStaffLine);
+        setLastAction("Empty staff line removed");
+        return;
+      }
+
+      if (existingStaffLine) {
+        focusLine(existingStaffLine);
+        setLastAction("Existing staff line selected");
+        return;
+      }
+
+      const staffMember = staff.find((member) => member.id === staffId);
+      const replacementLine = {
+        ...activeLine,
+        staff_id: staffId,
+        staff_name: staffMember?.display_name ?? null,
+      };
+
+      setDraftStaffLines((current) =>
+        current.map((line) => (line.id === activeLine.id ? replacementLine : line)),
+      );
+      focusLine(replacementLine);
+      setLastAction("Empty staff line replaced");
+      return;
+    }
+
+    if (existingStaffLine) {
+      focusLine(existingStaffLine);
+      setLastAction("Existing staff line selected");
+      return;
+    }
+
+    const nextLine = createStaffLine(
+      staffId,
+      staffLines.length + 1,
+      activeLine ? null : draft.selectedServiceId,
+    );
+    setDraftStaffLines((current) => [...current, nextLine]);
+    focusLine(nextLine);
     setLastAction("Staff line selected");
   }
 
@@ -627,7 +655,7 @@ export function PosDeskClient({
   }
 
   function updateSelectedStaffAmount(amountInput: string) {
-    if (!draft.selectedStaffId) {
+    if (!draft.editingLineId) {
       setError("Select staff before entering an amount.");
       setLastAction("Amount blocked");
       return;
@@ -641,13 +669,7 @@ export function PosDeskClient({
 
     setDraftStaffLines((current) =>
       current.map((line) => {
-        if (
-          !isSameReceiptLine(
-            line,
-            draft.selectedServiceId,
-            draft.selectedStaffId,
-          )
-        ) {
+        if (line.id !== draft.editingLineId) {
           return line;
         }
 
@@ -691,41 +713,46 @@ export function PosDeskClient({
   function selectService(serviceId: string | null) {
     const service = services.find((item) => item.id === serviceId);
 
-    if (draft.selectedStaffId) {
-      const existingLine = staffLines.find((line) =>
-        isSameReceiptLine(line, serviceId, draft.selectedStaffId),
-      );
-      const nextLine =
-        existingLine ??
-        ({
-          ...createStaffLine(draft.selectedStaffId, staffLines.length + 1),
-          service_id: serviceId,
-          service_label: service?.name ?? `Service ${staffLines.length + 1}`,
-        } satisfies PosDeskSessionLine);
-
-      if (!existingLine) {
-        setDraftStaffLines((current) => {
-          if (
-            current.some((line) =>
-              isSameReceiptLine(line, serviceId, draft.selectedStaffId),
-            )
-          ) {
-            return current;
-          }
-
-          return [...current, nextLine];
-        });
-      }
-
-      updateDraft({
-        amountInput: nextLine.amount_input,
-        editingLineId: nextLine.id,
-        selectedServiceId: serviceId,
-      });
-    } else {
+    if (!draft.editingLineId && !draft.selectedStaffId) {
       updateDraft({ selectedServiceId: serviceId });
+      setShowServicePicker(false);
+      setServiceSearch("");
+      setKeypadMode("amount");
+      return;
     }
 
+    const activeLine = getActiveLine();
+    const lineToUpdate =
+      activeLine ??
+      (draft.selectedStaffId
+        ? createStaffLine(draft.selectedStaffId, staffLines.length + 1, serviceId)
+        : null);
+
+    if (!lineToUpdate) {
+      return;
+    }
+
+    const updatedLine = {
+      ...lineToUpdate,
+      service_id: serviceId,
+      service_label: service?.name ?? `Service ${lineToUpdate.sort_order}`,
+    };
+
+    setDraftStaffLines((current) => {
+      if (current.some((line) => line.id === updatedLine.id)) {
+        return current.map((line) =>
+          line.id === updatedLine.id ? updatedLine : line,
+        );
+      }
+
+      return [...current, updatedLine];
+    });
+    updateDraft({
+      amountInput: updatedLine.amount_input,
+      editingLineId: updatedLine.id,
+      selectedServiceId: serviceId,
+      selectedStaffId: updatedLine.staff_id,
+    });
     setShowServicePicker(false);
     setServiceSearch("");
     setKeypadMode("amount");
@@ -850,13 +877,34 @@ export function PosDeskClient({
   }
 
   function submitReceipt() {
-    if (staffLines.length === 0) {
-      setError("Add at least one receipt line before submit.");
+    const positiveLines = staffLines.filter(hasPositiveAmount);
+
+    if (positiveLines.length === 0) {
+      setDraftStaffLines([]);
+      updateDraft({
+        amountInput: "",
+        editingLineId: null,
+        selectedStaffId: null,
+      });
+      setError("Add at least one service amount before submit.");
       setLastAction("Submit blocked");
       return;
     }
 
-    const submitLines = staffLines.map((line, index) => ({
+    if (positiveLines.length !== staffLines.length) {
+      setDraftStaffLines(positiveLines);
+      if (!positiveLines.some((line) => line.id === draft.editingLineId)) {
+        const firstLine = positiveLines[0];
+        updateDraft({
+          amountInput: firstLine.amount_input,
+          editingLineId: firstLine.id,
+          selectedServiceId: firstLine.service_id,
+          selectedStaffId: firstLine.staff_id,
+        });
+      }
+    }
+
+    const submitLines = positiveLines.map((line, index) => ({
       amountInput: line.amount_input,
       amountParts: line.amount_parts,
       serviceId: line.service_id,
