@@ -2232,26 +2232,10 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       }
     }
 
-    const manualTipCents = manualOverrides.reduce(
-      (total, override) => total + toCents(override.tip_amount),
-      0,
-    );
     const tipTotalCents = toCents(tipTotal);
 
     if (!Number.isFinite(tipTotalCents)) {
       throw new Error("Total tip must be zero or greater.");
-    }
-
-    if (manualTipCents > tipTotalCents) {
-      throw new Error("Manual staff tips cannot exceed total tip.");
-    }
-
-    if (
-      finalStaffIds.length > 0 &&
-      manualOverrides.length === finalStaffIds.length &&
-      manualTipCents !== tipTotalCents
-    ) {
-      throw new Error("Manual staff tips must equal total tip when all staff tips are manual.");
     }
 
     const currentTotals = calculateTicketTotals({
@@ -2271,6 +2255,66 @@ export async function correctClosedPosTicketInline(formData: FormData) {
     });
     const hasTipChange = toCents(currentTotals.tip_amount) !== tipTotalCents;
     const hasManualTipChange = staffTipOverrides.length > 0;
+    const shouldUpdateTicketTip =
+      ticket.tip_type !== "fixed_amount" || toCents(ticket.tip_value) !== tipTotalCents;
+
+    const { data: currentStaffEarnings, error: currentStaffEarningsError } =
+      await supabase
+        .from("pos_ticket_staff_earnings")
+        .select("staff_id, tip_amount, tip_is_manual, manual_tip_amount")
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id)
+        .eq("ticket_id", ticketId)
+        .returns<
+          Array<{
+            manual_tip_amount: number | null;
+            staff_id: string;
+            tip_amount: number;
+            tip_is_manual: boolean;
+          }>
+        >();
+
+    if (currentStaffEarningsError) {
+      throw currentStaffEarningsError;
+    }
+
+    const effectiveManualTipCentsByStaffId = new Map<string, number>();
+
+    if (!hasTipChange) {
+      for (const earning of currentStaffEarnings ?? []) {
+        if (!earning.tip_is_manual || !finalStaffIdSet.has(earning.staff_id)) {
+          continue;
+        }
+
+        effectiveManualTipCentsByStaffId.set(
+          earning.staff_id,
+          Math.max(0, toCents(earning.manual_tip_amount ?? earning.tip_amount ?? 0)),
+        );
+      }
+    }
+
+    for (const override of manualOverrides) {
+      effectiveManualTipCentsByStaffId.set(
+        override.staff_id,
+        Math.max(0, toCents(override.tip_amount)),
+      );
+    }
+
+    const effectiveManualTipCents = Array.from(
+      effectiveManualTipCentsByStaffId.values(),
+    ).reduce((total, tipCentsForStaff) => total + tipCentsForStaff, 0);
+
+    if (effectiveManualTipCents > tipTotalCents) {
+      throw new Error("Manual staff tips cannot exceed total tip.");
+    }
+
+    if (
+      finalStaffIds.length > 0 &&
+      effectiveManualTipCentsByStaffId.size === finalStaffIds.length &&
+      effectiveManualTipCents !== tipTotalCents
+    ) {
+      throw new Error("Manual staff tips must equal total tip when all staff tips are manual.");
+    }
 
     if (itemUpdates.length === 0 && addedItems.length === 0 && !hasTipChange && !hasManualTipChange) {
       throw new Error("Make at least one correction before saving.");
@@ -2488,18 +2532,19 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       });
     }
 
-    const { error: tipError } = await supabase
-      .from("pos_tickets")
-      .update({
-        tip_type: "fixed_amount",
-        tip_value: tipTotal,
-      })
-      .eq("id", ticketId)
-      .eq("organization_id", organization.id)
-      .eq("salon_id", salon.id);
+    if (shouldUpdateTicketTip) {
+      const { error: tipError } = await supabase.rpc(
+        "update_closed_pos_ticket_tip_for_correction",
+        {
+          p_ticket_id: ticketId,
+          p_tip_type: "fixed_amount",
+          p_tip_value: tipTotal,
+        },
+      );
 
-    if (tipError) {
-      throw tipError;
+      if (tipError) {
+        throw new Error(tipError.message);
+      }
     }
 
     if (hasTipChange) {

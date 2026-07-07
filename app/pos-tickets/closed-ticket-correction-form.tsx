@@ -239,6 +239,23 @@ function getInitialStaffTips(ticket: PosTicketWithRelations, totalTipAmount: num
   return tipsByStaffId;
 }
 
+function getInitialManualStaffTips(ticket: PosTicketWithRelations) {
+  const tipsByStaffId = new Map<string, number>();
+
+  for (const earning of ticket.staff_earnings ?? []) {
+    if (!earning.tip_is_manual) {
+      continue;
+    }
+
+    tipsByStaffId.set(
+      earning.staff_id,
+      earning.manual_tip_amount ?? earning.tip_amount,
+    );
+  }
+
+  return tipsByStaffId;
+}
+
 function SaveButton({ canSave }: { canSave: boolean }) {
   const { pending } = useFormStatus();
 
@@ -246,6 +263,7 @@ function SaveButton({ canSave }: { canSave: boolean }) {
     <button
       className="rounded bg-zinc-950 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
       disabled={!canSave || pending}
+      formAction={correctClosedPosTicketInline}
       type="submit"
     >
       {pending ? "Saving..." : "Save Correction"}
@@ -357,8 +375,10 @@ type SnapshotTicket = {
 };
 
 type SnapshotEarning = {
+  manual_tip_amount?: number | null;
   staff_id?: string;
   tip_amount?: number;
+  tip_is_manual?: boolean;
 };
 
 function asRecord(value: unknown): SnapshotRecord | null {
@@ -420,6 +440,68 @@ function sameParts(left: SnapshotItem, right: SnapshotItem) {
   );
 }
 
+function findSingleAddedPart(beforeParts: number[], afterParts: number[]) {
+  if (afterParts.length !== beforeParts.length + 1) {
+    return null;
+  }
+
+  const remainingCents = afterParts.map(safeCents);
+
+  for (const beforePart of beforeParts) {
+    const index = remainingCents.indexOf(safeCents(beforePart));
+
+    if (index === -1) {
+      return null;
+    }
+
+    remainingCents.splice(index, 1);
+  }
+
+  return remainingCents.length === 1 ? fromCents(remainingCents[0]) : null;
+}
+
+function findSingleRemovedPart(beforeParts: number[], afterParts: number[]) {
+  if (beforeParts.length !== afterParts.length + 1) {
+    return null;
+  }
+
+  return findSingleAddedPart(afterParts, beforeParts);
+}
+
+function partChangeSummary(staffName: string, beforeItem: SnapshotItem, afterItem: SnapshotItem) {
+  const beforeParts = snapshotParts(beforeItem);
+  const afterParts = snapshotParts(afterItem);
+  const addedPart = findSingleAddedPart(beforeParts, afterParts);
+
+  if (addedPart !== null) {
+    return `${staffName} part +${formatMoney(addedPart)}`;
+  }
+
+  const removedPart = findSingleRemovedPart(beforeParts, afterParts);
+
+  if (removedPart !== null) {
+    return `${staffName} part -${formatMoney(removedPart)}`;
+  }
+
+  if (beforeParts.length === afterParts.length) {
+    const changedIndexes = beforeParts
+      .map((amount, index) =>
+        safeCents(amount) === safeCents(afterParts[index] ?? 0) ? -1 : index,
+      )
+      .filter((index) => index >= 0);
+
+    if (changedIndexes.length === 1) {
+      const index = changedIndexes[0];
+
+      return `${staffName} part ${formatMoney(beforeParts[index])} -> ${formatMoney(
+        afterParts[index] ?? 0,
+      )}`;
+    }
+  }
+
+  return `${staffName} parts updated ${formatParts(beforeParts)} -> ${formatParts(afterParts)}`;
+}
+
 function snapshotTipAmount(ticket: SnapshotTicket | null) {
   if (!ticket) {
     return 0;
@@ -451,6 +533,27 @@ function staffNamesById(...tickets: Array<SnapshotTicket | null>) {
   return names;
 }
 
+function isManualTipEarning(earning: SnapshotEarning | undefined) {
+  return Boolean(
+    earning?.tip_is_manual ||
+      (earning?.manual_tip_amount !== null && earning?.manual_tip_amount !== undefined),
+  );
+}
+
+function formatCorrectionSummaryLine(summary: string[]) {
+  const fallback = "Changed: Details captured in audit snapshot.";
+
+  if (summary.length === 0) {
+    return fallback;
+  }
+
+  const onlyLifecycleChanges = summary.every(
+    (line) => line.startsWith("Added:") || line.startsWith("Removed:"),
+  );
+
+  return onlyLifecycleChanges ? summary.join("; ") : `Changed: ${summary.join("; ")}`;
+}
+
 function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: unknown) {
   const before = readSnapshot(beforeSnapshot);
   const after = readSnapshot(afterSnapshot);
@@ -458,10 +561,11 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
   const afterTicket = after.ticket;
 
   if (!beforeTicket || !afterTicket) {
-    return ["Changed: Details captured in audit snapshot."];
+    return ["Details captured in audit snapshot."];
   }
 
   const lines: string[] = [];
+  const partsChangedItemIds = new Set<string | undefined>();
   const beforeItems = activeSnapshotItems(beforeTicket);
   const afterItems = activeSnapshotItems(afterTicket);
   const beforeById = new Map(beforeItems.map((item) => [item.id, item]));
@@ -487,18 +591,16 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
 
     if (removed.service_id !== added.service_id) {
       lines.push(
-        `Changed: ${snapshotStaffName(added)} service ${snapshotServiceName(
+        `${snapshotStaffName(added)} service ${snapshotServiceName(
           removed,
         )} -> ${snapshotServiceName(added)}`,
       );
     }
 
     if (!sameParts(removed, added)) {
-      lines.push(
-        `Changed: ${snapshotStaffName(added)} / ${snapshotServiceName(added)} parts ${formatParts(
-          snapshotParts(removed),
-        )} -> ${formatParts(snapshotParts(added))}`,
-      );
+      partsChangedItemIds.add(removed.id);
+      partsChangedItemIds.add(added.id);
+      lines.push(partChangeSummary(snapshotStaffName(added), removed, added));
     }
   }
 
@@ -531,31 +633,29 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
 
     if (beforeItem.assigned_staff_id !== afterItem.assigned_staff_id) {
       lines.push(
-        `Changed: Staff ${snapshotStaffName(beforeItem)} -> ${snapshotStaffName(afterItem)}`,
+        `Staff ${snapshotStaffName(beforeItem)} -> ${snapshotStaffName(afterItem)}`,
       );
     }
 
     if (beforeItem.service_id !== afterItem.service_id) {
       lines.push(
-        `Changed: ${snapshotStaffName(afterItem)} service ${snapshotServiceName(
+        `${snapshotStaffName(afterItem)} service ${snapshotServiceName(
           beforeItem,
         )} -> ${snapshotServiceName(afterItem)}`,
       );
     }
 
     if (!sameParts(beforeItem, afterItem)) {
-      lines.push(
-        `Changed: ${snapshotStaffName(afterItem)} / ${snapshotServiceName(
-          afterItem,
-        )} parts ${formatParts(snapshotParts(beforeItem))} -> ${formatParts(
-          snapshotParts(afterItem),
-        )}`,
-      );
+      partsChangedItemIds.add(beforeItem.id);
+      lines.push(partChangeSummary(snapshotStaffName(afterItem), beforeItem, afterItem));
     }
 
-    if (safeCents(snapshotLineTotal(beforeItem)) !== safeCents(snapshotLineTotal(afterItem))) {
+    if (
+      !partsChangedItemIds.has(beforeItem.id) &&
+      safeCents(snapshotLineTotal(beforeItem)) !== safeCents(snapshotLineTotal(afterItem))
+    ) {
       lines.push(
-        `Changed: ${snapshotStaffName(afterItem)} / ${snapshotServiceName(
+        `${snapshotStaffName(afterItem)} / ${snapshotServiceName(
           afterItem,
         )} total ${formatMoney(snapshotLineTotal(beforeItem))} -> ${formatMoney(
           snapshotLineTotal(afterItem),
@@ -568,14 +668,14 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
   const afterTip = snapshotTipAmount(afterTicket);
 
   if (safeCents(beforeTip) !== safeCents(afterTip)) {
-    lines.push(`Changed: Ticket tip ${formatMoney(beforeTip)} -> ${formatMoney(afterTip)}`);
+    lines.push(`Ticket tip ${formatMoney(beforeTip)} -> ${formatMoney(afterTip)}`);
   }
 
   const namesByStaffId = staffNamesById(beforeTicket, afterTicket);
-  const beforeTipsByStaffId = new Map(
+  const beforeEarningsByStaffId = new Map(
     before.earnings
       .filter((earning) => earning.staff_id)
-      .map((earning) => [earning.staff_id as string, earning.tip_amount ?? 0]),
+      .map((earning) => [earning.staff_id as string, earning]),
   );
 
   for (const earning of after.earnings) {
@@ -583,12 +683,16 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
       continue;
     }
 
-    const previousTip = beforeTipsByStaffId.get(earning.staff_id) ?? 0;
+    const previousEarning = beforeEarningsByStaffId.get(earning.staff_id);
+    const previousTip = previousEarning?.tip_amount ?? 0;
     const nextTip = earning.tip_amount ?? 0;
 
-    if (safeCents(previousTip) !== safeCents(nextTip)) {
+    if (
+      (isManualTipEarning(previousEarning) || isManualTipEarning(earning)) &&
+      safeCents(previousTip) !== safeCents(nextTip)
+    ) {
       lines.push(
-        `Changed: ${namesByStaffId.get(earning.staff_id) ?? earning.staff_id} tip ${formatMoney(
+        `${namesByStaffId.get(earning.staff_id) ?? earning.staff_id} tip ${formatMoney(
           previousTip,
         )} -> ${formatMoney(nextTip)}`,
       );
@@ -596,8 +700,8 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
   }
 
   return lines.length > 0
-    ? lines.slice(0, 4)
-    : ["Changed: Details captured in audit snapshot."];
+    ? lines
+    : ["Details captured in audit snapshot."];
 }
 
 export function DailyPosTicketCard({
@@ -637,6 +741,10 @@ export function DailyPosTicketCard({
     () => getInitialStaffTips(ticket, initialTotals.tip_amount),
     [initialTotals.tip_amount, ticket],
   );
+  const initialManualStaffTipById = useMemo(
+    () => getInitialManualStaffTips(ticket),
+    [ticket],
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [selectorTarget, setSelectorTarget] = useState<SelectorTarget>(null);
   const [moneyTarget, setMoneyTarget] = useState<MoneyTarget>(null);
@@ -672,20 +780,36 @@ export function DailyPosTicketCard({
     (staffId, index) => staffIdsInActiveLines.indexOf(staffId) !== index,
   );
   const staffIdSet = new Set(staffIdsInActiveLines);
-  const manualStaffTipCentsById = new Map(
+  const submittedManualStaffTipCentsById = new Map(
     Object.entries(staffTipDrafts)
       .filter(([staffId]) => staffIdSet.has(staffId))
       .map(([staffId, value]) => [staffId, Math.max(0, safeCents(value))]),
   );
-  const manualStaffIds = new Set(manualStaffTipCentsById.keys());
-  const manualStaffTipCents = Array.from(manualStaffTipCentsById.values()).reduce(
+  const existingManualStaffTipCentsById = new Map(
+    Array.from(initialManualStaffTipById.entries())
+      .filter(([staffId]) => staffIdSet.has(staffId))
+      .map(([staffId, value]) => [staffId, Math.max(0, safeCents(value))]),
+  );
+  const effectiveManualStaffTipCentsById = new Map(
+    hasTipChange ? [] : existingManualStaffTipCentsById,
+  );
+
+  for (const [staffId, tipCents] of submittedManualStaffTipCentsById) {
+    effectiveManualStaffTipCentsById.set(staffId, tipCents);
+  }
+
+  const submittedManualStaffIds = new Set(submittedManualStaffTipCentsById.keys());
+  const effectiveManualStaffIds = new Set(effectiveManualStaffTipCentsById.keys());
+  const effectiveManualStaffTipCents = Array.from(
+    effectiveManualStaffTipCentsById.values(),
+  ).reduce(
     (total, tipCents) => total + tipCents,
     0,
   );
   const staffTipCentsById = allocateTipCentsByStaff(
     staffServiceTotalCents,
     safeTotalTipCents,
-    manualStaffTipCentsById,
+    effectiveManualStaffTipCentsById,
   );
   const staffSummaries = Array.from(staffServiceTotalCents.keys());
   const finalItemsForTotals = activeLines.map((line) => ({
@@ -739,17 +863,17 @@ export function DailyPosTicketCard({
     }));
   const staffTipOverrides = staffSummaries
     .map((staffId) => {
-      const isManual = manualStaffIds.has(staffId);
+      const isSubmittedManual = submittedManualStaffIds.has(staffId);
 
-      if (isManual) {
+      if (isSubmittedManual) {
         return {
           is_manual: true,
           staff_id: staffId,
-          tip_amount: fromCents(staffTipCentsById.get(staffId) ?? 0),
+          tip_amount: fromCents(submittedManualStaffTipCentsById.get(staffId) ?? 0),
         };
       }
 
-      if (hasTipChange || manualStaffIds.size > 0) {
+      if (hasTipChange) {
         return {
           is_manual: false,
           staff_id: staffId,
@@ -786,10 +910,10 @@ export function DailyPosTicketCard({
       lineTotalCents(line) <= 0,
   );
   const allStaffTipsManual =
-    staffSummaries.length > 0 && manualStaffIds.size === staffSummaries.length;
-  const manualTipsTooHigh = manualStaffTipCents > safeTotalTipCents;
+    staffSummaries.length > 0 && effectiveManualStaffIds.size === staffSummaries.length;
+  const manualTipsTooHigh = effectiveManualStaffTipCents > safeTotalTipCents;
   const manualTipsMismatch =
-    allStaffTipsManual && manualStaffTipCents !== safeTotalTipCents;
+    allStaffTipsManual && effectiveManualStaffTipCents !== safeTotalTipCents;
   const hasChange =
     editedItems.length > 0 ||
     addedItems.length > 0 ||
@@ -1221,8 +1345,10 @@ export function DailyPosTicketCard({
                     Reason:{" "}
                     <span className="text-zinc-800">{adjustment.reason}</span>
                   </span>
-                  <span className="mx-1 text-zinc-400">-</span>
-                  <span className="text-zinc-700">{summary.join("; ")}</span>
+                  <span className="mx-1 text-zinc-400">&mdash;</span>
+                  <span className="text-zinc-700">
+                    {formatCorrectionSummaryLine(summary)}
+                  </span>
                 </div>
               </li>
             );
