@@ -36,6 +36,7 @@ type MoneyTarget =
   | null;
 
 type DailyPosTicketCardProps = {
+  businessDateCompactLabel: string;
   canApplyFinancialCorrection: boolean;
   canEdit: boolean;
   dailyNumber: number;
@@ -45,6 +46,10 @@ type DailyPosTicketCardProps = {
   staff: Staff[];
   ticket: PosTicketWithRelations;
 };
+
+type TicketHistoryAdjustment = NonNullable<
+  PosTicketWithRelations["adjustments"]
+>[number];
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -62,6 +67,18 @@ function formatTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatDateTime(value: string) {
+  return `${formatTime(value)} | ${formatDate(value)}`;
 }
 
 function toMoneyNumber(value: string) {
@@ -511,6 +528,32 @@ function correctionValueSummary(
     }
   }
 
+  if (correctionType === "ticket_staff_assignment") {
+    const requestedAssignments = requestedValue?.assignments;
+    const assignments = Array.isArray(requestedAssignments)
+      ? requestedAssignments
+      : [];
+
+    if (assignments.length > 0) {
+      return `${assignments.length} staff assignment${
+        assignments.length === 1 ? "" : "s"
+      } recorded`;
+    }
+  }
+
+  if (correctionType === "ticket_service") {
+    const requestedServiceChanges = requestedValue?.serviceChanges;
+    const serviceChanges = Array.isArray(requestedServiceChanges)
+      ? requestedServiceChanges
+      : [];
+
+    if (serviceChanges.length > 0) {
+      return `${serviceChanges.length} service change${
+        serviceChanges.length === 1 ? "" : "s"
+      } recorded`;
+    }
+  }
+
   return "recorded in financial audit log";
 }
 
@@ -525,18 +568,13 @@ function buildFinancialCorrectionSummary(snapshot: unknown) {
     return [];
   }
 
-  const prefix =
-    financialCorrection?.intent === "apply"
-      ? "Applied correction"
-      : "Submitted correction request";
-
   return corrections.map((correction) => {
     const row = asRecord(correction);
     const oldValue = asRecord(row?.oldValue);
     const requestedValue = asRecord(row?.requestedValue);
     const correctionType = row?.correctionType;
 
-    return `${prefix}: ${correctionTypeLabel(correctionType)} ${correctionValueSummary(
+    return `${correctionTypeLabel(correctionType)} ${correctionValueSummary(
       correctionType,
       oldValue,
       requestedValue,
@@ -687,18 +725,35 @@ function isManualTipEarning(earning: SnapshotEarning | undefined) {
   );
 }
 
-function formatCorrectionSummaryLine(summary: string[]) {
-  const fallback = "Changed: Details captured in audit snapshot.";
+function getFinancialCorrectionRecord(snapshot: unknown) {
+  const root = asRecord(snapshot);
+  return asRecord(root?.financial_correction);
+}
 
-  if (summary.length === 0) {
-    return fallback;
+function historyKind(adjustment: TicketHistoryAdjustment) {
+  const financialCorrection = getFinancialCorrectionRecord(adjustment.after_snapshot);
+
+  if (!financialCorrection) {
+    return "direct" as const;
   }
 
-  const onlyLifecycleChanges = summary.every(
-    (line) => line.startsWith("Added:") || line.startsWith("Removed:"),
-  );
+  return financialCorrection.intent === "apply" ? ("applied" as const) : ("pending" as const);
+}
 
-  return onlyLifecycleChanges ? summary.join("; ") : `Changed: ${summary.join("; ")}`;
+function historyBadgeLabel(kind: ReturnType<typeof historyKind>) {
+  if (kind === "applied") {
+    return "Applied Correction";
+  }
+
+  if (kind === "pending") {
+    return "Pending Correction";
+  }
+
+  return "Direct Edit";
+}
+
+function historySummaryLabel(kind: ReturnType<typeof historyKind>) {
+  return kind === "pending" ? "Requested" : "Changed";
 }
 
 function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: unknown) {
@@ -858,6 +913,7 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
 }
 
 export function DailyPosTicketCard({
+  businessDateCompactLabel,
   canApplyFinancialCorrection,
   canEdit,
   dailyNumber,
@@ -1507,32 +1563,62 @@ export function DailyPosTicketCard({
         <div className="font-semibold text-zinc-800">Correction History</div>
         <ul className="mt-1 space-y-1">
           {adjustments.map((adjustment) => {
+            const kind = historyKind(adjustment);
+            const isCorrection = kind !== "direct";
             const summary = buildCorrectionChangeSummary(
               adjustment.before_snapshot,
               adjustment.after_snapshot,
             );
+            const summaryText =
+              summary.length > 0
+                ? summary.join("; ")
+                : "Details captured in audit snapshot.";
+            const actor =
+              adjustment.created_by_user?.display_name ??
+              adjustment.created_by_user?.email ??
+              "Unknown";
 
             return (
-              <li className="leading-5" key={adjustment.id}>
-                <div className="inline">
-                  <span className="font-medium text-zinc-700">
-                    {formatTime(adjustment.created_at)}
-                  </span>
-                  {adjustment.created_by_user ? (
-                    <span className="ml-2 text-zinc-500">
-                      {adjustment.created_by_user.display_name ??
-                        adjustment.created_by_user.email}
+              <li
+                className={`leading-5 ${
+                  isCorrection
+                    ? "rounded bg-amber-50 px-2 py-1 text-amber-950"
+                    : "text-zinc-600"
+                }`}
+                key={adjustment.id}
+              >
+                <span className="font-medium text-zinc-800">
+                  {formatDateTime(adjustment.created_at)}
+                </span>
+                <span className="px-1 text-zinc-400">|</span>
+                {isCorrection ? (
+                  <>
+                    <span className="font-semibold text-amber-900">
+                      {historyBadgeLabel(kind)}
                     </span>
-                  ) : null}
-                  <span className="ml-2">
-                    Reason:{" "}
-                    <span className="text-zinc-800">{adjustment.reason}</span>
-                  </span>
-                  <span className="mx-1 text-zinc-400">&mdash;</span>
-                  <span className="text-zinc-700">
-                    {formatCorrectionSummaryLine(summary)}
-                  </span>
-                </div>
+                    <span className="text-amber-900">
+                      {" "}
+                      for {businessDateCompactLabel}
+                    </span>
+                    <span className="px-1 text-amber-300">|</span>
+                  </>
+                ) : null}
+                <span>{actor}</span>
+                {adjustment.reason ? (
+                  <>
+                    <span className="px-1 text-zinc-400">|</span>
+                    <span>
+                      Reason:{" "}
+                      <span className={isCorrection ? "text-amber-950" : "text-zinc-800"}>
+                        {adjustment.reason}
+                      </span>
+                    </span>
+                  </>
+                ) : null}
+                <span className="px-1 text-zinc-400">-</span>
+                <span className={isCorrection ? "text-amber-950" : "text-zinc-700"}>
+                  {historySummaryLabel(kind)}: {summaryText}
+                </span>
               </li>
             );
           })}
@@ -1572,11 +1658,6 @@ export function DailyPosTicketCard({
               />
             ) : null}
           </>
-        ) : null}
-        {isCorrectionMode ? (
-          <div className="border-b border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold uppercase tracking-normal text-amber-900">
-            Correction Mode
-          </div>
         ) : null}
         <div className="grid items-center gap-2 bg-zinc-50 px-3 py-2 text-sm sm:grid-cols-[48px_80px_minmax(150px,1fr)_110px_150px_130px_56px]">
           <span className="font-semibold text-zinc-950">#{dailyNumber}</span>
@@ -1630,6 +1711,13 @@ export function DailyPosTicketCard({
         {renderCorrectionHistory()}
         {isEditing ? (
           <div className="border-t border-zinc-200 px-3 py-3">
+            {isCorrectionMode ? (
+              <div className="mb-3">
+                <span className="inline-flex rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800">
+                  Correction Mode
+                </span>
+              </div>
+            ) : null}
             <button
               className="rounded border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-950 hover:bg-zinc-50"
               onClick={addLine}
@@ -1702,9 +1790,9 @@ export function DailyPosTicketCard({
               Locked Business Date
             </h3>
             <p className="mt-3 text-sm leading-6 text-zinc-700">
-              This business date is locked. Changes will not directly modify the
-              original record. A correction request will be created and recorded
-              in the financial audit log.
+              This business date is locked. Your changes will be recorded as a
+              financial correction request instead of directly changing the
+              original ticket.
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button

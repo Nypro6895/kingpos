@@ -152,6 +152,21 @@ function formatLocalDateHeader(dateString: string, timeZone: string) {
   }).format(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)));
 }
 
+function formatLocalDateCompact(dateString: string, timeZone: string) {
+  const parts = parseLocalDateParts(dateString);
+
+  if (!parts) {
+    return dateString;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone,
+    year: "numeric",
+  }).format(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)));
+}
+
 function formatTime(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
@@ -354,6 +369,7 @@ function DailyWorkLog({
   groups,
   isBusinessDateLocked,
   returnTo,
+  selectedDateCompactLabel,
   selectedDateLabel,
   services,
   staff,
@@ -364,6 +380,7 @@ function DailyWorkLog({
   groups: DateGroup[];
   isBusinessDateLocked: boolean;
   returnTo: string;
+  selectedDateCompactLabel: string;
   selectedDateLabel: string;
   services: Service[];
   staff: Staff[];
@@ -397,6 +414,7 @@ function DailyWorkLog({
           <div className="overflow-hidden rounded border border-zinc-200 bg-white">
             {dateGroup.tickets.map((ticket) => (
               <DailyPosTicketCard
+                businessDateCompactLabel={selectedDateCompactLabel}
                 canApplyFinancialCorrection={canApplyFinancialCorrection}
                 canEdit={canEdit}
                 dailyNumber={dailyNumbers.get(ticket.id) ?? 0}
@@ -453,6 +471,7 @@ export default async function PosTicketsPage({
   const today = getLocalDateString(timeZone);
   const searchQuery = q?.trim() ?? "";
   const selectedDateLabel = formatLocalDateHeader(selectedDate, timeZone);
+  const selectedDateCompactLabel = formatLocalDateCompact(selectedDate, timeZone);
   const todayHref = getTicketFilterHref({ date: today });
   const returnTo = getTicketFilterHref({ date: selectedDate, q: searchQuery });
   const [
@@ -504,13 +523,6 @@ export default async function PosTicketsPage({
         </p>
       ) : null}
 
-      {isSelectedDateLocked ? (
-        <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-          This business date is locked. Edits create financial correction
-          requests instead of changing tickets directly.
-        </p>
-      ) : null}
-
       <DailyWorkLog
         canApplyFinancialCorrection={canApplyFinancialCorrection}
         canEdit={canEditDailyTickets}
@@ -518,6 +530,7 @@ export default async function PosTicketsPage({
         groups={groups}
         isBusinessDateLocked={isSelectedDateLocked}
         returnTo={returnTo}
+        selectedDateCompactLabel={selectedDateCompactLabel}
         selectedDateLabel={selectedDateLabel}
         services={ticketOptions.services}
         staff={ticketOptions.staff}
