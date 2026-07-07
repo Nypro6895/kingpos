@@ -64,7 +64,7 @@ function formatDateKey(value: string) {
   return `${year}-${month}-${day}`;
 }
 
-function parseDateInputValue(value: string) {
+function parseLocalDateParts(value: string) {
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 
   if (!match) {
@@ -73,18 +73,99 @@ function parseDateInputValue(value: string) {
 
   const [, year, month, day] = match;
 
-  return new Date(Number(year), Number(month) - 1, Number(day));
+  return {
+    day: Number(day),
+    month: Number(month),
+    year: Number(year),
+  };
 }
 
-function formatDateLabel(value: string) {
-  const localDate = parseDateInputValue(value);
+function getLocalDateString(timeZone: string) {
+  return getTodayDate(timeZone);
+}
+
+function getTimeZoneOffsetMs(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23",
+    minute: "2-digit",
+    month: "2-digit",
+    second: "2-digit",
+    timeZone,
+    year: "numeric",
+  }).formatToParts(date);
+  const getPart = (type: string) =>
+    Number(parts.find((part) => part.type === type)?.value ?? 0);
+  const zonedTimeAsUtc = Date.UTC(
+    getPart("year"),
+    getPart("month") - 1,
+    getPart("day"),
+    getPart("hour"),
+    getPart("minute"),
+    getPart("second"),
+    date.getUTCMilliseconds(),
+  );
+
+  return zonedTimeAsUtc - date.getTime();
+}
+
+function getUtcInstantForLocalDateTime(
+  dateString: string,
+  timeZone: string,
+  hour: number,
+) {
+  const parts = parseLocalDateParts(dateString);
+
+  if (!parts) {
+    throw new Error("Invalid POS work log date.");
+  }
+
+  const localTimeAsUtc = Date.UTC(parts.year, parts.month - 1, parts.day, hour);
+  const offset = getTimeZoneOffsetMs(new Date(localTimeAsUtc), timeZone);
+  const firstPass = localTimeAsUtc - offset;
+  const verifiedOffset = getTimeZoneOffsetMs(new Date(firstPass), timeZone);
+
+  return new Date(localTimeAsUtc - verifiedOffset);
+}
+
+function getNextLocalDateString(dateString: string) {
+  const parts = parseLocalDateParts(dateString);
+
+  if (!parts) {
+    throw new Error("Invalid POS work log date.");
+  }
+
+  return new Date(Date.UTC(parts.year, parts.month - 1, parts.day + 1))
+    .toISOString()
+    .slice(0, 10);
+}
+
+function getUtcBoundsForLocalDate(dateString: string, timeZone: string) {
+  const start = getUtcInstantForLocalDateTime(dateString, timeZone, 0);
+  const nextDate = getNextLocalDateString(dateString);
+  const nextStart = getUtcInstantForLocalDateTime(nextDate, timeZone, 0);
+
+  return {
+    openedFrom: start.toISOString(),
+    openedTo: new Date(nextStart.getTime() - 1).toISOString(),
+  };
+}
+
+function formatLocalDateHeader(dateString: string, timeZone: string) {
+  const parts = parseLocalDateParts(dateString);
+
+  if (!parts) {
+    return dateString;
+  }
 
   return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
+    timeZone,
     year: "numeric",
-  }).format(localDate ?? new Date(value));
+  }).format(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)));
 }
 
 function formatTime(value: string) {
@@ -113,13 +194,6 @@ function MissingSalonState() {
 
 function isDateInputValue(value: string | undefined) {
   return Boolean(value?.match(/^\d{4}-\d{2}-\d{2}$/));
-}
-
-function getDayBounds(date: string) {
-  return {
-    openedFrom: `${date}T00:00:00`,
-    openedTo: `${date}T23:59:59.999`,
-  };
 }
 
 function getTicketFilterHref({
@@ -310,8 +384,42 @@ function groupTicketsByDate(tickets: PosTicketWithRelations[]) {
     }));
 }
 
-function getServiceRowTipDisplay(totalTip: number) {
-  return totalTip === 0 ? formatMoney(0) : "";
+function roundMoney(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function getServiceRowTipDisplay(
+  item: PosTicketItemWithRelations,
+  ticket: PosTicketWithRelations,
+  totalTip: number,
+) {
+  if (totalTip === 0) {
+    return formatMoney(0);
+  }
+
+  const staffId = item.assigned_staff_id;
+
+  if (!staffId) {
+    return "";
+  }
+
+  const earning = ticket.staff_earnings?.find(
+    (staffEarning) => staffEarning.staff_id === staffId,
+  );
+
+  if (!earning) {
+    return "";
+  }
+
+  if (earning.tip_amount === 0) {
+    return formatMoney(0);
+  }
+
+  if (earning.service_total <= 0) {
+    return "";
+  }
+
+  return formatMoney(roundMoney((earning.tip_amount * item.line_total) / earning.service_total));
 }
 
 function TicketWorkLogCard({
@@ -336,7 +444,6 @@ function TicketWorkLogCard({
     tipType: ticket.tip_type,
     tipValue: ticket.tip_value,
   });
-  const rowTip = getServiceRowTipDisplay(totals.tip_amount);
 
   return (
     <article className="border-b border-zinc-200 last:border-b-0">
@@ -365,28 +472,32 @@ function TicketWorkLogCard({
         {items.length === 0 ? (
           <div className="px-3 py-2 text-sm text-zinc-500">No services recorded.</div>
         ) : (
-          items.map((item) => (
-            <div
-              className="grid gap-2 px-3 py-1.5 text-sm sm:grid-cols-[116px_minmax(140px,180px)_minmax(180px,1fr)_100px_100px]"
-              key={item.id}
-            >
-              <span className="font-medium text-zinc-700">
-                {getTurnLabel(turnSequences.get(item.id))}
-              </span>
-              <span className="min-w-0 truncate font-medium text-zinc-800">
-                {item.assigned_staff?.display_name ?? "Unassigned"}
-              </span>
-              <span className="min-w-0 truncate text-zinc-700">
-                {item.service?.name ?? "Service"}
-              </span>
-              <span className="font-medium text-zinc-950">
-                {formatMoney(item.line_total)}
-              </span>
-              <span className="text-zinc-700">
-                {rowTip ? `Tip: ${rowTip}` : ""}
-              </span>
-            </div>
-          ))
+          items.map((item) => {
+            const rowTip = getServiceRowTipDisplay(item, ticket, totals.tip_amount);
+
+            return (
+              <div
+                className="grid gap-2 px-3 py-1.5 text-sm sm:grid-cols-[116px_minmax(140px,180px)_minmax(180px,1fr)_100px_100px]"
+                key={item.id}
+              >
+                <span className="font-medium text-zinc-700">
+                  {getTurnLabel(turnSequences.get(item.id))}
+                </span>
+                <span className="min-w-0 truncate font-medium text-zinc-800">
+                  {item.assigned_staff?.display_name ?? "Unassigned"}
+                </span>
+                <span className="min-w-0 truncate text-zinc-700">
+                  {item.service?.name ?? "Service"}
+                </span>
+                <span className="font-medium text-zinc-950">
+                  {formatMoney(item.line_total)}
+                </span>
+                <span className="text-zinc-700">
+                  {rowTip ? `Tip: ${rowTip}` : ""}
+                </span>
+              </div>
+            );
+          })
         )}
       </div>
     </article>
@@ -683,12 +794,13 @@ export default async function PosTicketsPage({
     );
   }
 
+  const timeZone = context.user.timezone;
   const selectedDate = isDateInputValue(date)
     ? date!
-    : getTodayDate(context.user.timezone);
-  const today = getTodayDate(context.user.timezone);
+    : getLocalDateString(timeZone);
+  const today = getLocalDateString(timeZone);
   const searchQuery = q?.trim() ?? "";
-  const selectedDateLabel = formatDateLabel(selectedDate);
+  const selectedDateLabel = formatLocalDateHeader(selectedDate, timeZone);
   const todayHref = getTicketFilterHref({ date: today });
   const filterHref = (editTicketId?: string) =>
     getTicketFilterHref({
@@ -698,7 +810,7 @@ export default async function PosTicketsPage({
     });
   const [canManageTickets, { tickets }] = await Promise.all([
     hasPermission(POS_TICKET_PERMISSIONS.manage, context),
-    getCurrentSalonPosTickets(getDayBounds(selectedDate)),
+    getCurrentSalonPosTickets(getUtcBoundsForLocalDate(selectedDate, timeZone)),
   ]);
   const dailyNumbers = buildDailyTicketNumbers(tickets);
   const turnSequences = buildStaffTurnSequences(tickets);

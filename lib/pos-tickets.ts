@@ -8,6 +8,7 @@ import { getTodayDate } from "@/lib/staff-workdays";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Customer } from "@/types/customer";
 import type { PosTicketWithRelations } from "@/types/pos-ticket";
+import type { PosTicketStaffEarningWithStaff } from "@/types/pos-ticket-staff-earning";
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
 import type {
@@ -25,6 +26,9 @@ export const POS_TICKET_AUDIT_LOG_SELECT =
   "id, organization_id, salon_id, ticket_id, action, note, created_by, created_at, created_by_user:users(id, display_name, email)";
 
 export const POS_TICKET_WITH_RELATIONS_SELECT = `${POS_TICKET_SELECT}, audit_logs:pos_ticket_audit_logs(${POS_TICKET_AUDIT_LOG_SELECT}), customer:customers(id, name, phone, email), payments:pos_payments(${POS_PAYMENT_SELECT}), ticket_items:pos_ticket_items(${POS_TICKET_ITEM_SELECT}, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, amount, turn_type, turn_index))`;
+
+const POS_TICKET_STAFF_EARNING_SELECT =
+  "id, organization_id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at";
 
 export const POS_TICKET_PERMISSIONS = {
   void: "tickets.void",
@@ -65,6 +69,112 @@ export type PosTicketListFilters = {
   openedTo?: string;
 };
 
+async function loadStaffEarningsForTickets(input: {
+  organizationId: string;
+  salonId: string;
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+  ticketIds: string[];
+}) {
+  if (input.ticketIds.length === 0) {
+    return new Map<string, PosTicketStaffEarningWithStaff[]>();
+  }
+
+  const { data: earnings, error: earningsError } = await input.supabase
+    .from("pos_ticket_staff_earnings")
+    .select(POS_TICKET_STAFF_EARNING_SELECT)
+    .eq("organization_id", input.organizationId)
+    .eq("salon_id", input.salonId)
+    .in("ticket_id", input.ticketIds)
+    .returns<Array<Omit<PosTicketStaffEarningWithStaff, "staff">>>();
+
+  if (earningsError) {
+    console.error("Supabase load POS ticket staff earnings failed", {
+      code: earningsError.code,
+      message: earningsError.message,
+      details: earningsError.details,
+      hint: earningsError.hint,
+      salonId: input.salonId,
+      organizationId: input.organizationId,
+      ticketIds: input.ticketIds,
+    });
+    throw new Error(earningsError.message);
+  }
+
+  const staffIds = Array.from(
+    new Set((earnings ?? []).map((earning) => earning.staff_id)),
+  );
+  const staffById = new Map<
+    string,
+    Pick<Staff, "id" | "display_name" | "job_title">
+  >();
+
+  if (staffIds.length > 0) {
+    const { data: staffRows, error: staffError } = await input.supabase
+      .from("staff")
+      .select("id, display_name, job_title")
+      .eq("organization_id", input.organizationId)
+      .eq("salon_id", input.salonId)
+      .in("id", staffIds)
+      .returns<Array<Pick<Staff, "id" | "display_name" | "job_title">>>();
+
+    if (staffError) {
+      console.error("Supabase load POS ticket staff earning staff failed", {
+        code: staffError.code,
+        message: staffError.message,
+        details: staffError.details,
+        hint: staffError.hint,
+        salonId: input.salonId,
+        organizationId: input.organizationId,
+        staffIds,
+      });
+      throw new Error(staffError.message);
+    }
+
+    for (const staff of staffRows ?? []) {
+      staffById.set(staff.id, staff);
+    }
+  }
+
+  const earningsByTicketId = new Map<string, PosTicketStaffEarningWithStaff[]>();
+
+  for (const earning of earnings ?? []) {
+    const row: PosTicketStaffEarningWithStaff = {
+      ...earning,
+      staff: staffById.get(earning.staff_id) ?? null,
+    };
+
+    earningsByTicketId.set(row.ticket_id, [
+      ...(earningsByTicketId.get(row.ticket_id) ?? []),
+      row,
+    ]);
+  }
+
+  return earningsByTicketId;
+}
+
+async function attachStaffEarningsToTickets(input: {
+  organizationId: string;
+  salonId: string;
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+  tickets: PosTicketWithRelations[];
+}) {
+  const earningsByTicketId = await loadStaffEarningsForTickets({
+    organizationId: input.organizationId,
+    salonId: input.salonId,
+    supabase: input.supabase,
+    ticketIds: input.tickets.map((ticket) => ticket.id),
+  });
+
+  return input.tickets.map((ticket) => ({
+    ...ticket,
+    staff_earnings: earningsByTicketId.get(ticket.id) ?? [],
+  }));
+}
+
 export async function getCurrentSalonPosTickets(filters: PosTicketListFilters = {}) {
   const context = await getCurrentBusinessContext();
 
@@ -74,7 +184,7 @@ export async function getCurrentSalonPosTickets(filters: PosTicketListFilters = 
 
   await requirePermission(POS_TICKET_PERMISSIONS.view, context);
 
-  const { salon } = requireCurrentOrganizationAndSalon(context);
+  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -123,7 +233,14 @@ export async function getCurrentSalonPosTickets(filters: PosTicketListFilters = 
     throw new Error(error.message);
   }
 
-  return { context, tickets: data ?? [] };
+  const tickets = await attachStaffEarningsToTickets({
+    organizationId: organization.id,
+    salonId: salon.id,
+    supabase,
+    tickets: data ?? [],
+  });
+
+  return { context, tickets };
 }
 
 export async function getCurrentSalonPosTicket(ticketId: string) {
@@ -135,7 +252,7 @@ export async function getCurrentSalonPosTicket(ticketId: string) {
 
   await requirePermission(POS_TICKET_PERMISSIONS.view, context);
 
-  const { salon } = requireCurrentOrganizationAndSalon(context);
+  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -167,7 +284,18 @@ export async function getCurrentSalonPosTicket(ticketId: string) {
     throw new Error(error.message);
   }
 
-  return { context, ticket: data };
+  if (!data) {
+    return { context, ticket: null };
+  }
+
+  const [ticket] = await attachStaffEarningsToTickets({
+    organizationId: organization.id,
+    salonId: salon.id,
+    supabase,
+    tickets: [data],
+  });
+
+  return { context, ticket };
 }
 
 export async function getCurrentSalonPosTicketOptions(

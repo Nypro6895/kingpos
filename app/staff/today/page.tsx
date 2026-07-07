@@ -140,9 +140,12 @@ export default async function StaffTodayPage() {
                   {formatDateTime(member.today_workday?.check_out_at ?? null)}
                 </div>
                 <div className="col-span-12 text-sm text-zinc-700 sm:col-span-2">
-                  <p>{summary?.assignedServices ?? 0} assigned</p>
-                  <p>{summary?.completedServices ?? 0} completed</p>
-                  <p>{formatMoney(summary?.assignedServiceAmount ?? 0)} assigned</p>
+                  <p>
+                    Turn {summary?.bigTurns ?? 0}|{summary?.smallTurns ?? 0}
+                  </p>
+                  <p>{formatMoney(summary?.assignedServiceAmount ?? 0)} services</p>
+                  <p>{formatMoney(summary?.tipAmount ?? 0)} tip</p>
+                  <p>{formatMoney(summary?.totalEarning ?? 0)} earning</p>
                 </div>
               </li>
             );

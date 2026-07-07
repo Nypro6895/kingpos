@@ -9,6 +9,7 @@ import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import { getTurnType, parsePosAmountInput } from "@/lib/pos-desk-amounts";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { buildTicketReceipt } from "@/lib/pos-ticket-receipt";
+import { recalculateStaffEarningsForDate } from "@/lib/pos-ticket-staff-earnings";
 import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
 import {
   createAuthenticatedSupabaseServerClient,
@@ -610,6 +611,7 @@ async function createTicketFromSubmitInput(
 
     const tipAmount = roundMoney(input.tipAmount ?? 0);
     const now = new Date().toISOString();
+    const workDate = getTodayDate(context.user?.timezone);
     const { data: ticket, error: ticketError } = await supabase
       .from("pos_tickets")
       .insert({
@@ -663,7 +665,7 @@ async function createTicketFromSubmitInput(
         ticket_item_id: item.id,
         turn_index: partIndex + 1,
         turn_type: getTurnType(amount, POS_DESK_DEFAULTS.largeTurnThreshold),
-        work_date: getTodayDate(context.user?.timezone),
+        work_date: workDate,
       }));
 
       const { error: turnError } = await supabase
@@ -792,6 +794,8 @@ async function createTicketFromSubmitInput(
         throw new Error(sessionError.message);
       }
     }
+
+    await recalculateStaffEarningsForDate(salon.id, workDate);
 
     revalidatePath("/pos");
     revalidatePath("/pos-tickets");
@@ -1605,6 +1609,7 @@ export async function submitSessionToTicket(
     });
 
     const now = new Date().toISOString();
+    const workDate = getTodayDate(context.user?.timezone);
     const { data: ticket, error: ticketError } = await supabase
       .from("pos_tickets")
       .insert({
@@ -1658,7 +1663,7 @@ export async function submitSessionToTicket(
         ticket_item_id: item.id,
         turn_index: partIndex + 1,
         turn_type: getTurnType(amount, POS_DESK_DEFAULTS.largeTurnThreshold),
-        work_date: getTodayDate(context.user?.timezone),
+        work_date: workDate,
       }));
 
       const { error: turnError } = await supabase
@@ -1760,6 +1765,8 @@ export async function submitSessionToTicket(
       .update({ status: "finalized" })
       .eq("token", session.customer_display_token)
       .eq("salon_id", salon.id);
+
+    await recalculateStaffEarningsForDate(salon.id, workDate);
 
     revalidatePath("/pos");
     revalidatePath("/pos-tickets");

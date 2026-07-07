@@ -64,7 +64,11 @@ export default async function StaffMyWorkPage() {
   const activity = activityByStaffId.get(staff.id) ?? {
     assignedServiceAmount: 0,
     assignedServices: 0,
+    bigTurns: 0,
     completedServices: 0,
+    smallTurns: 0,
+    tipAmount: 0,
+    totalEarning: 0,
   };
   const openItems = workItems.filter((item) => item.ticket?.status === "open");
 
@@ -79,7 +83,7 @@ export default async function StaffMyWorkPage() {
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-zinc-950">My Activity Today</h2>
-        <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-5">
+        <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-7">
           <p>
             <span className="block text-zinc-500">Check In</span>
             <span className="font-semibold text-zinc-950">
@@ -99,15 +103,27 @@ export default async function StaffMyWorkPage() {
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Assigned</span>
+            <span className="block text-zinc-500">Turns</span>
             <span className="font-semibold text-zinc-950">
-              {activity.assignedServices}
+              {activity.bigTurns}|{activity.smallTurns}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Assigned Service Amount</span>
+            <span className="block text-zinc-500">Services</span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(activity.assignedServiceAmount)}
+            </span>
+          </p>
+          <p>
+            <span className="block text-zinc-500">Tip</span>
+            <span className="font-semibold text-zinc-950">
+              {formatMoney(activity.tipAmount)}
+            </span>
+          </p>
+          <p>
+            <span className="block text-zinc-500">Total Earning</span>
+            <span className="font-semibold text-zinc-950">
+              {formatMoney(activity.totalEarning)}
             </span>
           </p>
         </div>

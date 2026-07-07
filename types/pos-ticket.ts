@@ -2,6 +2,7 @@ import type { Customer } from "@/types/customer";
 import type { PosPayment } from "@/types/pos-payment";
 import type { PosTicketAuditLogWithUser } from "@/types/pos-ticket-audit-log";
 import type { PosTicketItemWithRelations } from "@/types/pos-ticket-item";
+import type { PosTicketStaffEarningWithStaff } from "@/types/pos-ticket-staff-earning";
 
 export const POS_TICKET_STATUSES = ["open", "closed", "cancelled", "voided"] as const;
 export const POS_TICKET_DISCOUNT_TYPES = ["fixed_amount", "percentage"] as const;
@@ -35,5 +36,6 @@ export type PosTicketWithRelations = PosTicket & {
   audit_logs: PosTicketAuditLogWithUser[];
   customer: Pick<Customer, "id" | "name" | "phone" | "email"> | null;
   payments: PosPayment[];
+  staff_earnings?: PosTicketStaffEarningWithStaff[];
   ticket_items: PosTicketItemWithRelations[];
 };

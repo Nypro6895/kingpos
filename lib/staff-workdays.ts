@@ -29,7 +29,11 @@ export type StaffWithTodayWorkday = Staff & {
 export type StaffDailyActivitySummary = {
   assignedServiceAmount: number;
   assignedServices: number;
+  bigTurns: number;
   completedServices: number;
+  smallTurns: number;
+  tipAmount: number;
+  totalEarning: number;
 };
 
 export function getTodayDate(timeZone = "America/Chicago") {
@@ -291,7 +295,11 @@ export async function getCurrentSalonStaffActivitySummaries(
     summaryByStaffId.set(staffId, {
       assignedServiceAmount: 0,
       assignedServices: 0,
+      bigTurns: 0,
       completedServices: 0,
+      smallTurns: 0,
+      tipAmount: 0,
+      totalEarning: 0,
     });
   }
 
@@ -306,22 +314,22 @@ export async function getCurrentSalonStaffActivitySummaries(
     throw new Error("Supabase environment variables are missing.");
   }
 
-  const dayStart = `${getTodayDate(resolvedContext.user.timezone)}T00:00:00`;
-  const dayEnd = `${getTodayDate(resolvedContext.user.timezone)}T23:59:59.999`;
+  const today = getTodayDate(resolvedContext.user.timezone);
   const { data, error } = await supabase
-    .from("pos_ticket_items")
-    .select("id, assigned_staff_id, line_total, ticket:pos_tickets(id, status, opened_at, closed_at)")
+    .from("pos_ticket_staff_earnings")
+    .select("staff_id, service_total, tip_amount, total_earning, big_turn_count, small_turn_count")
     .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
-    .in("assigned_staff_id", staffIds)
-    .gte("created_at", dayStart)
-    .lte("created_at", dayEnd)
+    .eq("work_date", today)
+    .in("staff_id", staffIds)
     .returns<
       Array<{
-        id: string;
-        assigned_staff_id: string | null;
-        line_total: number;
-        ticket: { id: string; status: string; opened_at: string; closed_at: string | null } | null;
+        big_turn_count: number;
+        service_total: number;
+        small_turn_count: number;
+        staff_id: string;
+        tip_amount: number;
+        total_earning: number;
       }>
     >();
 
@@ -338,23 +346,21 @@ export async function getCurrentSalonStaffActivitySummaries(
     throw new Error(error.message);
   }
 
-  for (const item of data ?? []) {
-    if (!item.assigned_staff_id) {
-      continue;
-    }
-
-    const summary = summaryByStaffId.get(item.assigned_staff_id);
+  for (const earning of data ?? []) {
+    const summary = summaryByStaffId.get(earning.staff_id);
 
     if (!summary) {
       continue;
     }
 
-    summary.assignedServices += 1;
-    summary.assignedServiceAmount += item.line_total;
-
-    if (item.ticket?.status === "closed") {
-      summary.completedServices += 1;
-    }
+    const turnCount = earning.big_turn_count + earning.small_turn_count;
+    summary.assignedServices += turnCount;
+    summary.completedServices += turnCount;
+    summary.assignedServiceAmount += earning.service_total;
+    summary.bigTurns += earning.big_turn_count;
+    summary.smallTurns += earning.small_turn_count;
+    summary.tipAmount += earning.tip_amount;
+    summary.totalEarning += earning.total_earning;
   }
 
   return summaryByStaffId;
