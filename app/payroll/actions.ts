@@ -1,11 +1,9 @@
 "use server";
 
 import {
-  generatePayrollRun,
-  lockPayrollRun,
-  markPayrollRunPaid,
-  recalculatePayrollRun,
-  updatePayrollStaffLine,
+  markPayrollStatementPaid as markPayrollStatementPaidInService,
+  savePayrollStatementFromLivePayroll,
+  updatePayrollPeriodStaffInput,
   updateSalonPayrollSetting,
   updateStaffPayrollSetting,
 } from "@/lib/payroll";
@@ -15,38 +13,51 @@ import { redirect } from "next/navigation";
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
-
-  if (typeof value !== "string") {
-    return "";
-  }
-
-  return value.trim();
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function readOptionalString(formData: FormData, key: string) {
   const value = readString(formData, key);
-  return value || null;
+  return value ? value : null;
 }
 
 function readNumber(formData: FormData, key: string, fallback = 0) {
-  const value = readString(formData, key);
-  const numeric = Number(value);
-
-  return Number.isFinite(numeric) ? numeric : fallback;
+  const rawValue = readString(formData, key);
+  const parsed = Number(rawValue);
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 function readBoolean(formData: FormData, key: string) {
-  return formData.get(key) === "on";
+  return formData.get(key) === "on" || formData.get(key) === "true";
 }
 
 function readCycleType(formData: FormData) {
   const value = readString(formData, "cycle_type");
 
-  if (value === "monthly" || value === "biweekly" || value === "custom") {
+  if (
+    value === "monthly" ||
+    value === "semi_monthly" ||
+    value === "biweekly" ||
+    value === "custom"
+  ) {
     return value satisfies PayrollCycleType;
   }
 
-  return "monthly" satisfies PayrollCycleType;
+  return "custom" satisfies PayrollCycleType;
+}
+
+function readScheduleCycleType(formData: FormData) {
+  const value = readString(formData, "cycle_type");
+
+  if (value === "biweekly") {
+    return "biweekly" as const;
+  }
+
+  if (value === "semi_monthly") {
+    return "semi_monthly" as const;
+  }
+
+  return "monthly" as const;
 }
 
 function readPayType(formData: FormData) {
@@ -71,7 +82,7 @@ function readReturnPath(formData: FormData) {
 
 function redirectWithError(message: string, returnPath: string): never {
   const separator = returnPath.includes("?") ? "&" : "?";
-  redirect(`${returnPath}${separator}error=${encodeURIComponent(message)}`);
+  redirect(`${returnPath}${separator}payroll_error=${encodeURIComponent(message)}`);
 }
 
 function redirectAfterPayrollMutation(returnPath: string): never {
@@ -80,119 +91,87 @@ function redirectAfterPayrollMutation(returnPath: string): never {
   redirect(returnPath);
 }
 
-export async function generatePayroll(formData: FormData) {
+export async function savePayrollStatementAction(formData: FormData) {
   const returnPath = readReturnPath(formData);
 
   try {
-    await generatePayrollRun({
+    await savePayrollStatementFromLivePayroll({
       cycleType: readCycleType(formData),
       endDate: readString(formData, "period_end"),
       startDate: readString(formData, "period_start"),
     });
   } catch (error) {
-    redirectWithError(
-      error instanceof Error ? error.message : "Unable to generate payroll.",
-      returnPath,
-    );
+    const message =
+      error instanceof Error ? error.message : "Payroll statement could not be saved.";
+    redirectWithError(message, returnPath);
   }
 
   redirectAfterPayrollMutation(returnPath);
 }
 
-export async function recalculatePayroll(formData: FormData) {
+export async function markLatestPayrollStatementPaidAction(formData: FormData) {
   const returnPath = readReturnPath(formData);
 
   try {
-    await recalculatePayrollRun(readString(formData, "payroll_run_id"));
+    await markPayrollStatementPaidInService(readString(formData, "payroll_run_id"));
   } catch (error) {
-    redirectWithError(
-      error instanceof Error ? error.message : "Unable to recalculate payroll.",
-      returnPath,
-    );
+    const message =
+      error instanceof Error ? error.message : "Payroll statement could not be marked paid.";
+    redirectWithError(message, returnPath);
   }
 
   redirectAfterPayrollMutation(returnPath);
 }
 
-export async function lockPayroll(formData: FormData) {
+export async function savePayrollPeriodStaffInputAction(formData: FormData) {
   const returnPath = readReturnPath(formData);
 
   try {
-    await lockPayrollRun(readString(formData, "payroll_run_id"));
-  } catch (error) {
-    redirectWithError(
-      error instanceof Error ? error.message : "Unable to lock payroll.",
-      returnPath,
-    );
-  }
-
-  redirectAfterPayrollMutation(returnPath);
-}
-
-export async function markPayrollPaid(formData: FormData) {
-  const returnPath = readReturnPath(formData);
-
-  try {
-    await markPayrollRunPaid(readString(formData, "payroll_run_id"));
-  } catch (error) {
-    redirectWithError(
-      error instanceof Error ? error.message : "Unable to mark payroll paid.",
-      returnPath,
-    );
-  }
-
-  redirectAfterPayrollMutation(returnPath);
-}
-
-export async function savePayrollStaffLine(formData: FormData) {
-  const returnPath = readReturnPath(formData);
-
-  try {
-    await updatePayrollStaffLine({
+    await updatePayrollPeriodStaffInput({
       bonusAmount: readNumber(formData, "bonus_amount"),
       checkNumber: readOptionalString(formData, "check_number"),
-      lineId: readString(formData, "line_id"),
+      cycleType: readCycleType(formData),
+      endDate: readString(formData, "period_end"),
       note: readOptionalString(formData, "note"),
+      staffId: readString(formData, "staff_id"),
+      startDate: readString(formData, "period_start"),
     });
   } catch (error) {
-    redirectWithError(
-      error instanceof Error ? error.message : "Unable to save staff payroll line.",
-      returnPath,
-    );
+    const message =
+      error instanceof Error ? error.message : "Payroll staff input could not be saved.";
+    redirectWithError(message, returnPath);
   }
 
   redirectAfterPayrollMutation(returnPath);
 }
 
-export async function saveSalonPayrollSetting(formData: FormData) {
+export async function saveSalonPayrollScheduleAction(formData: FormData) {
   const returnPath = readReturnPath(formData);
-  const cycleType = readString(formData, "cycle_type") === "biweekly"
-    ? "biweekly"
-    : "monthly";
 
   try {
     await updateSalonPayrollSetting({
       biweeklyAnchorDate: readOptionalString(formData, "biweekly_anchor_date"),
-      cycleType,
+      cycleType: readScheduleCycleType(formData),
     });
   } catch (error) {
-    redirectWithError(
-      error instanceof Error ? error.message : "Unable to save payroll settings.",
-      returnPath,
-    );
+    const message =
+      error instanceof Error ? error.message : "Payroll schedule could not be saved.";
+    redirectWithError(message, returnPath);
   }
 
   redirectAfterPayrollMutation(returnPath);
 }
 
-export async function saveStaffPayrollSetting(formData: FormData) {
+export async function saveStaffPayrollSettingWithEffectiveDateAction(
+  formData: FormData,
+) {
   const returnPath = readReturnPath(formData);
 
   try {
     await updateStaffPayrollSetting({
       applyTaxToFixedPay: readBoolean(formData, "apply_tax_to_fixed_pay"),
-      checkRate: readNumber(formData, "check_rate"),
-      commissionRate: readNumber(formData, "commission_rate"),
+      checkRate: readNumber(formData, "check_rate", 60),
+      commissionRate: readNumber(formData, "commission_rate", 60),
       effectiveFrom: readString(formData, "effective_from"),
       fixedPayAmount: readNumber(formData, "fixed_pay_amount"),
       legalName: readOptionalString(formData, "legal_name"),
@@ -202,10 +181,9 @@ export async function saveStaffPayrollSetting(formData: FormData) {
       taxRate: readNumber(formData, "tax_rate"),
     });
   } catch (error) {
-    redirectWithError(
-      error instanceof Error ? error.message : "Unable to save staff payroll setting.",
-      returnPath,
-    );
+    const message =
+      error instanceof Error ? error.message : "Payroll staff setting could not be saved.";
+    redirectWithError(message, returnPath);
   }
 
   redirectAfterPayrollMutation(returnPath);

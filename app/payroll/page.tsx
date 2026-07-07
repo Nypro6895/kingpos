@@ -1,33 +1,35 @@
 import {
-  generatePayroll,
-  lockPayroll,
-  markPayrollPaid,
-  recalculatePayroll,
-  savePayrollStaffLine,
-  saveSalonPayrollSetting,
-  saveStaffPayrollSetting,
+  markLatestPayrollStatementPaidAction,
+  savePayrollPeriodStaffInputAction,
+  savePayrollStatementAction,
+  saveSalonPayrollScheduleAction,
+  saveStaffPayrollSettingWithEffectiveDateAction,
 } from "@/app/payroll/actions";
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import { PayrollScheduleForm } from "@/app/payroll/payroll-schedule-form";
 import { getPayrollPageData } from "@/lib/payroll";
 import type {
   PayrollCorrectionListItem,
   PayrollPeriod,
-  PayrollRun,
-  PayrollRunStatus,
+  PayrollStaffDailyTotal,
   PayrollStaffLineWithDailyTotals,
+  PayrollShopDailyRow,
+  PayrollShopSummary,
   PayrollSummary,
   SalonPayrollSetting,
   StaffPayrollSettingWithStaff,
 } from "@/types/payroll";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Fragment } from "react";
 
 type PayrollPageProps = {
   searchParams: Promise<{
-    cycleType?: string;
     end?: string;
-    error?: string;
+    month?: string;
+    payPeriodStart?: string;
+    payroll_error?: string;
+    editStaff?: string;
     preset?: string;
+    segment?: string;
     start?: string;
     tab?: string;
   }>;
@@ -43,6 +45,61 @@ const TABS: Array<{ id: PayrollTab; label: string }> = [
   { id: "settings", label: "Settings" },
 ];
 
+const SUMMARY_LABELS: Record<string, string> = {
+  cashAmount: "Cash",
+  correctionAfterLockdayCount: "Corrections",
+  correctionCount: "Corrections",
+  creditCardAmount: "Credit card",
+  manualInputIncome: "Manual input income",
+  missingPaystubCount: "Missing paystubs",
+  otherAmount: "Other",
+  overShortTotal: "Over / Short",
+  posIncome: "POS income",
+  shopShare: "Shop share",
+  staffCommissionPay: "Staff Commission Pay",
+  staffProduction: "Staff production",
+  tips: "Tips",
+  totalActualIncome: "Actual income",
+  totalBonus: "Bonus",
+  totalCashPayout: "Cash payout",
+  totalCheckGross: "Check gross",
+  totalCheckNet: "Check net",
+  totalFinalStaffIncome: "Final staff income",
+  totalPosIncome: "POS income",
+  totalShopShare: "Shop share",
+  totalStaffCommissionPayout: "Staff Commission Pay",
+  totalStaffGrossProduction: "Gross production",
+  totalTaxWithheld: "Tax withheld",
+  totalTip: "Tips",
+};
+
+const LINE_DIFF_LABELS: Record<string, string> = {
+  bonus_amount: "Bonus",
+  cash_amount: "Cash",
+  check_gross: "Check gross",
+  check_net: "Check net",
+  check_number: "Check number",
+  check_rate_used: "Check rate",
+  commission_rate_used: "Commission rate",
+  final_staff_income: "Final income",
+  fixed_pay_amount_used: "Fixed pay",
+  gross_sales: "Gross",
+  is_mixed_rate: "Mixed rate",
+  note: "Note",
+  shop_share: "Shop share",
+  staff_commission_gross: "Staff Commission Pay",
+  tax_company_enabled: "Tax company",
+  tax_rate_used: "Tax rate",
+  tax_withheld: "Tax",
+  tip_amount: "Tips",
+};
+
+const COUNT_DIFF_FIELDS = new Set([
+  "correctionAfterLockdayCount",
+  "correctionCount",
+  "missingPaystubCount",
+]);
+
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
@@ -50,8 +107,16 @@ function formatMoney(value: number) {
   }).format(value);
 }
 
+function formatOptionalMoney(value: number | null, emptyLabel = "-") {
+  return value === null ? emptyLabel : formatMoney(value);
+}
+
 function formatPercent(value: number) {
   return `${Number(value).toFixed(2).replace(/\.00$/, "")}%`;
+}
+
+function formatDifferenceValue(field: string, value: number) {
+  return COUNT_DIFF_FIELDS.has(field) ? `${value}` : formatMoney(value);
 }
 
 function formatDate(value: string) {
@@ -82,21 +147,47 @@ function getPayrollHref(input: {
   tab: PayrollTab;
 }) {
   const params = new URLSearchParams({
-    end: input.period.endDate,
     preset: input.period.preset,
-    start: input.period.startDate,
     tab: input.tab,
   });
+
+  if (input.period.preset === "custom") {
+    params.set("start", input.period.startDate);
+    params.set("end", input.period.endDate);
+  } else if (input.period.cycleType === "biweekly") {
+    params.set("payPeriodStart", input.period.startDate);
+  } else {
+    params.set("month", input.period.startDate.slice(0, 7));
+    if (input.period.cycleType === "semi_monthly") {
+      params.set(
+        "segment",
+        input.period.preset === "semi_monthly_second" ? "second" : "first",
+      );
+    }
+  }
 
   return `/payroll?${params.toString()}`;
 }
 
 function getTaxCompanyHref(period: PayrollPeriod) {
   const params = new URLSearchParams({
-    end: period.endDate,
     preset: period.preset,
-    start: period.startDate,
   });
+
+  if (period.preset === "custom") {
+    params.set("start", period.startDate);
+    params.set("end", period.endDate);
+  } else if (period.cycleType === "biweekly") {
+    params.set("payPeriodStart", period.startDate);
+  } else {
+    params.set("month", period.startDate.slice(0, 7));
+    if (period.cycleType === "semi_monthly") {
+      params.set(
+        "segment",
+        period.preset === "semi_monthly_second" ? "second" : "first",
+      );
+    }
+  }
 
   return `/payroll/tax-company?${params.toString()}`;
 }
@@ -105,50 +196,50 @@ function getReturnPath(period: PayrollPeriod, tab: PayrollTab) {
   return getPayrollHref({ period, tab });
 }
 
-function getStatusLabel(status: PayrollRunStatus | "not_generated") {
-  const labels = {
-    draft: "Draft",
-    locked: "Locked",
-    needs_review: "Needs Review",
-    not_generated: "Not Generated",
-    paid: "Paid",
-  };
-
-  return labels[status];
+function getSettingsEditHref(period: PayrollPeriod, staffId: string) {
+  const href = new URLSearchParams(getPayrollHref({ period, tab: "settings" }).split("?")[1]);
+  href.set("editStaff", staffId);
+  return `/payroll?${href.toString()}`;
 }
 
-function getDisplayStatus(
-  run: PayrollRun | null,
-  corrections: PayrollCorrectionListItem[],
-) {
-  if (!run) {
-    return "not_generated" as const;
+function statusBadgeClass(kind: string) {
+  if (kind === "paid") {
+    return "border-sky-200 bg-sky-50 text-sky-700";
   }
 
-  if (
-    run.status === "locked" &&
-    corrections.some((correction) => correction.correctionDate > run.generated_at)
-  ) {
-    return "needs_review" as const;
+  if (kind === "changed_since_print") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
   }
 
-  return run.status;
+  if (kind === "printed") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  return "border-zinc-200 bg-zinc-50 text-zinc-700";
 }
 
-function statusBadgeClass(status: PayrollRunStatus | "not_generated") {
-  if (status === "paid") {
-    return "bg-emerald-50 text-emerald-700 border-emerald-200";
+function rateLabel(line: PayrollStaffLineWithDailyTotals) {
+  if (line.is_mixed_rate) {
+    return "Mixed";
   }
 
-  if (status === "locked") {
-    return "bg-zinc-950 text-white border-zinc-950";
+  if (line.pay_type_used === "fixed") {
+    return `Fixed ${formatMoney(line.fixed_pay_amount_used)}`;
   }
 
-  if (status === "needs_review") {
-    return "bg-amber-50 text-amber-800 border-amber-200";
+  return formatPercent(line.commission_rate_used);
+}
+
+function dailyRateLabel(dailyTotal: PayrollStaffDailyTotal) {
+  if (dailyTotal.pay_type_used === "fixed") {
+    return `Fixed ${formatMoney(dailyTotal.fixed_pay_amount_used ?? 0)}`;
   }
 
-  return "bg-white text-zinc-700 border-zinc-300";
+  if (dailyTotal.pay_type_used === "commission") {
+    return formatPercent(dailyTotal.commission_rate_used ?? 0);
+  }
+
+  return "-";
 }
 
 function HiddenPeriodFields({
@@ -160,9 +251,9 @@ function HiddenPeriodFields({
 }) {
   return (
     <>
+      <input name="cycle_type" type="hidden" value={period.cycleType} />
       <input name="period_start" type="hidden" value={period.startDate} />
       <input name="period_end" type="hidden" value={period.endDate} />
-      <input name="cycle_type" type="hidden" value={period.cycleType} />
       <input name="return_to" type="hidden" value={returnPath} />
     </>
   );
@@ -170,31 +261,28 @@ function HiddenPeriodFields({
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4">
-      <p className="text-xs font-medium uppercase text-zinc-500">{label}</p>
+    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
-    </section>
+    </div>
   );
 }
 
-function MissingSalonState() {
-  return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">Payroll</h1>
-      <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        Please select a salon first.
-      </p>
-    </main>
-  );
+function monthInputFromPeriod(period: PayrollPeriod) {
+  return period.startDate.slice(0, 7);
 }
 
 function NoPermissionState({ message }: { message: string }) {
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">Payroll</h1>
-      <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-10">
+      <p className="text-sm font-medium text-zinc-500">Payroll</p>
+      <h1 className="text-3xl font-semibold text-zinc-950">Payroll could not load</h1>
+      <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
         {message}
       </p>
+      <Link className="text-sm font-medium text-zinc-700 underline" href="/">
+        Back to dashboard
+      </Link>
     </main>
   );
 }
@@ -202,126 +290,173 @@ function NoPermissionState({ message }: { message: string }) {
 function PeriodSelector({
   activeTab,
   period,
+  periodOptions,
+  salonPayrollSetting,
+  scheduleSetup,
 }: {
   activeTab: PayrollTab;
   period: PayrollPeriod;
+  periodOptions: Awaited<ReturnType<typeof getPayrollPageData>>["periodOptions"];
+  salonPayrollSetting: SalonPayrollSetting;
+  scheduleSetup: Awaited<ReturnType<typeof getPayrollPageData>>["scheduleSetup"];
 }) {
+  const scheduleCycle = salonPayrollSetting.cycle_type;
+  const missingBiweeklyAnchor = scheduleSetup.needsBiweeklyAnchor;
+
   return (
-    <form
-      action="/payroll"
-      className="grid gap-3 border-b border-zinc-200 py-5 sm:grid-cols-[220px_180px_180px_auto]"
-      method="get"
-    >
-      <input name="tab" type="hidden" value={activeTab} />
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Period</span>
-        <select
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={period.preset}
-          name="preset"
-        >
-          <option value="previous_month">Previous month</option>
-          <option value="previous_biweekly">Previous biweekly period</option>
-          <option value="custom">Custom date range</option>
-        </select>
-      </label>
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Start</span>
-        <input
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={period.startDate}
-          name="start"
-          type="date"
-        />
-      </label>
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">End</span>
-        <input
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={period.endDate}
-          name="end"
-          type="date"
-        />
-      </label>
-      <div className="flex items-end">
-        <button
-          className="h-10 rounded bg-zinc-950 px-4 text-sm font-medium text-white"
-          type="submit"
-        >
-          Load
+    <section className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+      <form
+        action="/payroll"
+        className="flex flex-wrap items-end gap-3"
+      >
+        <input name="tab" type="hidden" value={activeTab} />
+        {scheduleCycle === "monthly" ? (
+          <label className="flex min-w-48 flex-col gap-1 text-sm font-medium text-zinc-700">
+            Month
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              defaultValue={monthInputFromPeriod(period)}
+              name="month"
+              type="month"
+            />
+          </label>
+        ) : null}
+        {scheduleCycle === "semi_monthly" ? (
+          <>
+            <label className="flex min-w-48 flex-col gap-1 text-sm font-medium text-zinc-700">
+              Month
+              <input
+                className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                defaultValue={monthInputFromPeriod(period)}
+                name="month"
+                type="month"
+              />
+            </label>
+            <label className="flex min-w-64 flex-col gap-1 text-sm font-medium text-zinc-700">
+              Period
+              <select
+                className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                defaultValue={
+                  period.preset === "semi_monthly_second" ? "second" : "first"
+                }
+                name="segment"
+              >
+                <option value="first">First: 1 - 15</option>
+                <option value="second">Second: 16 - end of month</option>
+              </select>
+            </label>
+          </>
+        ) : null}
+        {scheduleCycle === "biweekly" ? (
+          <label className="flex min-w-72 flex-col gap-1 text-sm font-medium text-zinc-700">
+            Pay period
+            <select
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              disabled={missingBiweeklyAnchor}
+              name="payPeriodStart"
+              defaultValue={period.startDate}
+            >
+              {missingBiweeklyAnchor ? (
+                <option value="">Set anchor in Settings</option>
+              ) : (
+                periodOptions.map((option) => (
+                  <option key={option.value} value={option.startDate}>
+                    {option.label}
+                  </option>
+                ))
+              )}
+            </select>
+          </label>
+        ) : null}
+        <button className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
+          Apply
         </button>
-      </div>
-    </form>
+      </form>
+      {missingBiweeklyAnchor ? (
+        <p className="text-sm text-amber-700">
+          Every-2-weeks payroll needs an anchor date. Update it in Settings.
+        </p>
+      ) : null}
+      <details>
+        <summary className="cursor-pointer text-sm font-medium text-zinc-600">
+          Advanced custom range
+        </summary>
+        <form action="/payroll" className="mt-3 flex flex-wrap items-end gap-3">
+          <input name="tab" type="hidden" value={activeTab} />
+          <input name="preset" type="hidden" value="custom" />
+          <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
+            Start
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              defaultValue={period.startDate}
+              name="start"
+              type="date"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
+            End
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              defaultValue={period.endDate}
+              name="end"
+              type="date"
+            />
+          </label>
+          <button className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">
+            Apply Custom
+          </button>
+        </form>
+      </details>
+    </section>
   );
 }
 
 function TopActions({
   canManage,
+  latestStatement,
   period,
-  run,
+  returnPath,
 }: {
   canManage: boolean;
+  latestStatement: Awaited<ReturnType<typeof getPayrollPageData>>["latestStatement"];
   period: PayrollPeriod;
-  run: PayrollRun | null;
+  returnPath: string;
 }) {
-  const returnPath = getReturnPath(period, "overview");
-  const canRecalculate = canManage && run?.status === "draft";
-  const canLock = canManage && run?.status === "draft";
-  const canMarkPaid =
-    canManage && (run?.status === "locked" || run?.status === "needs_review");
+  const canMarkPaid = Boolean(latestStatement && latestStatement.run.status !== "paid");
 
   return (
-    <div className="mt-4 flex flex-wrap gap-2">
-      <form action={generatePayroll}>
+    <div className="flex flex-wrap gap-2">
+      <form action={savePayrollStatementAction}>
         <HiddenPeriodFields period={period} returnPath={returnPath} />
         <button
-          className="rounded bg-zinc-950 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-          disabled={!canManage || Boolean(run)}
-          type="submit"
+          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
+          disabled={!canManage}
         >
-          Generate Payroll
-        </button>
-      </form>
-      <form action={recalculatePayroll}>
-        <input name="payroll_run_id" type="hidden" value={run?.id ?? ""} />
-        <input name="return_to" type="hidden" value={returnPath} />
-        <button
-          className="rounded border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:text-zinc-400"
-          disabled={!canRecalculate}
-          type="submit"
-        >
-          Recalculate Draft
-        </button>
-      </form>
-      <form action={lockPayroll}>
-        <input name="payroll_run_id" type="hidden" value={run?.id ?? ""} />
-        <input name="return_to" type="hidden" value={returnPath} />
-        <button
-          className="rounded border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:text-zinc-400"
-          disabled={!canLock}
-          type="submit"
-        >
-          Lock Payroll
-        </button>
-      </form>
-      <form action={markPayrollPaid}>
-        <input name="payroll_run_id" type="hidden" value={run?.id ?? ""} />
-        <input name="return_to" type="hidden" value={returnPath} />
-        <button
-          className="rounded border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:text-zinc-400"
-          disabled={!canMarkPaid}
-          type="submit"
-        >
-          Mark Paid
+          Print / Save Statement
         </button>
       </form>
       <button
-        className="rounded border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-medium text-zinc-400"
+        className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-500 disabled:cursor-not-allowed disabled:bg-zinc-50"
         disabled
+        title="Export is not implemented yet."
         type="button"
       >
         Export
       </button>
+      <form action={markLatestPayrollStatementPaidAction}>
+        <HiddenPeriodFields period={period} returnPath={returnPath} />
+        <input
+          name="payroll_run_id"
+          type="hidden"
+          value={latestStatement?.run.id ?? ""}
+        />
+        <button
+          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400"
+          disabled={!canManage || !canMarkPaid}
+        >
+          Mark Paid
+        </button>
+      </form>
     </div>
   );
 }
@@ -340,21 +475,18 @@ function Tabs({
     : TABS.filter((tab) => tab.id === "overview" || tab.id === "staff");
 
   return (
-    <nav className="mt-6 flex flex-wrap gap-2 border-b border-zinc-200">
+    <nav className="flex flex-wrap gap-2 border-b border-zinc-200">
       {visibleTabs.map((tab) => {
-        const href =
-          tab.id === "tax"
-            ? getTaxCompanyHref(period)
-            : getPayrollHref({ period, tab: tab.id });
+        const active = tab.id === activeTab;
 
         return (
           <Link
-            className={
-              tab.id === activeTab
-                ? "border-b-2 border-zinc-950 px-3 py-2 text-sm font-medium text-zinc-950"
-                : "px-3 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-950"
-            }
-            href={href}
+            className={`border-b-2 px-3 py-2 text-sm font-medium ${
+              active
+                ? "border-zinc-950 text-zinc-950"
+                : "border-transparent text-zinc-500 hover:text-zinc-950"
+            }`}
+            href={getPayrollHref({ period, tab: tab.id })}
             key={tab.id}
           >
             {tab.label}
@@ -365,30 +497,152 @@ function Tabs({
   );
 }
 
-function OverviewTab({ summary }: { summary: PayrollSummary }) {
+function DifferenceBanner({
+  canManage,
+  difference,
+  period,
+  returnPath,
+}: {
+  canManage: boolean;
+  difference: Awaited<ReturnType<typeof getPayrollPageData>>["difference"];
+  period: PayrollPeriod;
+  returnPath: string;
+}) {
+  if (!difference.changed) {
+    return null;
+  }
+
+  const summaryEntries = Object.entries(difference.summaryDifferences).slice(0, 6);
+  const staffEntries = difference.staffDifferences.slice(0, 4);
+
   return (
-    <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <SummaryCard label="Total POS Income" value={formatMoney(summary.totalPosIncome)} />
+    <section
+      className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+      id="payroll-differences"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold">Live payroll has changed since last print.</p>
+          <p>Live payroll differs from the latest saved statement for this period.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <a
+            className="rounded-md border border-amber-300 px-3 py-2 font-medium text-amber-900"
+            href="#payroll-differences"
+          >
+            View Difference
+          </a>
+          <form action={savePayrollStatementAction}>
+            <HiddenPeriodFields period={period} returnPath={returnPath} />
+            <button
+              className="rounded-md bg-zinc-950 px-3 py-2 font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
+              disabled={!canManage}
+            >
+              Print New Statement
+            </button>
+          </form>
+        </div>
+      </div>
+      {summaryEntries.length > 0 ? (
+        <div className="mt-3 grid gap-2 md:grid-cols-3">
+          {summaryEntries.map(([field, value]) => (
+            <div className="rounded-md bg-white/70 p-2" key={field}>
+              <p className="text-xs font-medium uppercase text-amber-700">
+                {SUMMARY_LABELS[field] ?? field}
+              </p>
+              <p className="font-semibold">
+                {formatDifferenceValue(field, value.previous)}
+                {" -> "}
+                {formatDifferenceValue(field, value.current)}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {staffEntries.length > 0 ? (
+        <ul className="mt-3 space-y-1">
+          {staffEntries.map((staff) => {
+            const firstDifference = Object.entries(staff.differences)[0];
+
+            return (
+              <li key={staff.staffId}>
+                {staff.staffName}:{" "}
+                {firstDifference
+                  ? firstDifference[0] === "check_number" ||
+                    firstDifference[0] === "note" ||
+                    firstDifference[0] === "tax_company_enabled" ||
+                    firstDifference[0] === "is_mixed_rate"
+                    ? `${LINE_DIFF_LABELS[firstDifference[0]] ?? firstDifference[0]} changed`
+                    : `${LINE_DIFF_LABELS[firstDifference[0]] ?? firstDifference[0]} ${formatMoney(
+                        firstDifference[1].previous,
+                      )} -> ${formatMoney(firstDifference[1].current)}`
+                  : "changed"}
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </section>
+  );
+}
+
+function getStatusSubtitle(data: Awaited<ReturnType<typeof getPayrollPageData>>) {
+  if (!data.latestStatement) {
+    return "Live payroll - not printed yet";
+  }
+
+  if (data.latestStatement.run.status === "paid") {
+    return `Statement v${data.latestStatement.run.version} marked paid`;
+  }
+
+  if (data.difference.changed) {
+    return `Live payroll differs from statement v${data.latestStatement.run.version}`;
+  }
+
+  return `Latest statement v${data.latestStatement.run.version} - live matches statement`;
+}
+
+function OverviewTab({
+  shopSummary,
+  summary,
+}: {
+  shopSummary: PayrollShopSummary;
+  summary: PayrollSummary;
+}) {
+  return (
+    <section className="grid gap-4 md:grid-cols-3">
+      <SummaryCard label="POS Income" value={formatMoney(summary.totalPosIncome)} />
       <SummaryCard
-        label="Staff Gross Production"
+        label="Actual Income"
+        value={formatOptionalMoney(
+          shopSummary.totalActualIncome,
+          "No manual input data",
+        )}
+      />
+      <SummaryCard
+        label="Over / Short"
+        value={formatOptionalMoney(shopSummary.overShortTotal, "No manual input data")}
+      />
+      <SummaryCard
+        label="Staff Production"
         value={formatMoney(summary.totalStaffGrossProduction)}
       />
       <SummaryCard
-        label="Staff Commission Payout"
+        label="Staff Commission Pay"
         value={formatMoney(summary.totalStaffCommissionPayout)}
       />
-      <SummaryCard label="Shop Share" value={formatMoney(summary.totalShopShare)} />
       <SummaryCard label="Cash Payout" value={formatMoney(summary.totalCashPayout)} />
       <SummaryCard label="Check Gross" value={formatMoney(summary.totalCheckGross)} />
       <SummaryCard label="Tax Withheld" value={formatMoney(summary.totalTaxWithheld)} />
       <SummaryCard label="Check Net" value={formatMoney(summary.totalCheckNet)} />
-      <SummaryCard label="Tip" value={formatMoney(summary.totalTip)} />
+      <SummaryCard label="Tips" value={formatMoney(summary.totalTip)} />
       <SummaryCard label="Bonus" value={formatMoney(summary.totalBonus)} />
       <SummaryCard
-        label="Corrections"
-        value={String(summary.correctionAfterLockdayCount)}
+        label="Final Staff Income"
+        value={formatMoney(summary.totalFinalStaffIncome)}
       />
-      <SummaryCard label="Missing Paystub" value={String(summary.missingPaystubCount)} />
+      <SummaryCard label="Shop Share" value={formatMoney(summary.totalShopShare)} />
+      <SummaryCard label="Corrections" value={`${summary.correctionAfterLockdayCount}`} />
     </section>
   );
 }
@@ -397,446 +651,681 @@ function StaffIncomeTab({
   canManage,
   lines,
   period,
-  run,
+  returnPath,
 }: {
   canManage: boolean;
   lines: PayrollStaffLineWithDailyTotals[];
   period: PayrollPeriod;
-  run: PayrollRun | null;
+  returnPath: string;
 }) {
-  if (!run) {
-    return (
-      <div className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        No payroll snapshot exists for this period.
-      </div>
-    );
-  }
-
   if (lines.length === 0) {
     return (
-      <div className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
+      <p className="rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
         No staff income lines for this period.
-      </div>
+      </p>
     );
   }
 
-  const returnPath = getReturnPath(period, "staff");
-  const canEditLines = canManage && run.status !== "paid";
+  return (
+    <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-zinc-200 text-sm">
+          <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+            <tr>
+              <th className="px-4 py-3">Staff</th>
+              <th className="px-4 py-3">Rate</th>
+              <th className="px-4 py-3 text-right">Gross</th>
+              <th className="px-4 py-3 text-right">Tips</th>
+              <th className="px-4 py-3 text-right">Staff Commission Pay</th>
+              <th className="px-4 py-3 text-right">Cash</th>
+              <th className="px-4 py-3 text-right">Check Gross</th>
+              <th className="px-4 py-3 text-right">Tax</th>
+              <th className="px-4 py-3 text-right">Check Net</th>
+              <th className="px-4 py-3 text-right">Final</th>
+              <th className="px-4 py-3">Check #</th>
+              <th className="px-4 py-3 text-right">Bonus</th>
+              <th className="px-4 py-3">Note</th>
+              <th className="px-4 py-3">Save</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-100">
+            {lines.map((line) => {
+              const formId = `payroll-input-${line.staff_id}`;
+
+              return (
+                <Fragment key={line.staff_id}>
+                  <tr className="align-middle">
+                  <td className="px-4 py-3">
+                    <form action={savePayrollPeriodStaffInputAction} id={formId}>
+                      <HiddenPeriodFields period={period} returnPath={returnPath} />
+                      <input name="staff_id" type="hidden" value={line.staff_id} />
+                    </form>
+                    <p className="font-medium text-zinc-950">
+                      {line.staff_display_name_snapshot}
+                    </p>
+                    {line.tax_company_enabled_snapshot && !line.staff_legal_name_snapshot ? (
+                      <p className="text-xs font-medium text-amber-700">
+                        Missing legal name
+                      </p>
+                    ) : null}
+                  </td>
+                  <td className="px-4 py-3">{rateLabel(line)}</td>
+                  <td className="px-4 py-3 text-right">{formatMoney(line.gross_sales)}</td>
+                  <td className="px-4 py-3 text-right">{formatMoney(line.tip_amount)}</td>
+                  <td className="px-4 py-3 text-right">
+                    {formatMoney(line.staff_commission_gross)}
+                  </td>
+                  <td className="px-4 py-3 text-right">{formatMoney(line.cash_amount)}</td>
+                  <td className="px-4 py-3 text-right">{formatMoney(line.check_gross)}</td>
+                  <td className="px-4 py-3 text-right">
+                    {formatMoney(line.tax_withheld)}
+                  </td>
+                  <td className="px-4 py-3 text-right">{formatMoney(line.check_net)}</td>
+                  <td className="px-4 py-3 text-right font-semibold">
+                    {formatMoney(line.final_staff_income)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      className="w-28 rounded-md border border-zinc-300 px-2 py-1"
+                      defaultValue={line.check_number ?? ""}
+                      disabled={!canManage}
+                      form={formId}
+                      name="check_number"
+                    />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <input
+                      className="w-24 rounded-md border border-zinc-300 px-2 py-1 text-right"
+                      defaultValue={line.bonus_amount}
+                      disabled={!canManage}
+                      form={formId}
+                      min="0"
+                      name="bonus_amount"
+                      step="0.01"
+                      type="number"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      className="w-48 rounded-md border border-zinc-300 px-2 py-1"
+                      defaultValue={line.note ?? ""}
+                      disabled={!canManage}
+                      form={formId}
+                      name="note"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      className="rounded-md border border-zinc-300 px-3 py-1 font-medium disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400"
+                      disabled={!canManage}
+                      form={formId}
+                    >
+                      Save
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="bg-zinc-50 px-4 py-3" colSpan={14}>
+                    <details>
+                      <summary className="cursor-pointer text-sm font-medium text-zinc-700">
+                        Daily breakdown
+                      </summary>
+                      {line.dailyTotals.length > 0 ? (
+                        <div className="mt-3 overflow-x-auto">
+                          <table className="min-w-full text-xs">
+                            <thead className="text-left uppercase text-zinc-500">
+                              <tr>
+                                <th className="py-2 pr-4">Date</th>
+                                <th className="py-2 pr-4 text-right">Gross</th>
+                                <th className="py-2 pr-4 text-right">Tips</th>
+                                <th className="py-2 pr-4">Rate used</th>
+                                <th className="py-2 pr-4 text-right">Correction</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {line.dailyTotals.map((dailyTotal) => (
+                                <tr key={dailyTotal.id}>
+                                  <td className="py-1 pr-4">
+                                    {formatDate(dailyTotal.business_date)}
+                                  </td>
+                                  <td className="py-1 pr-4 text-right">
+                                    {formatMoney(dailyTotal.gross_sales)}
+                                  </td>
+                                  <td className="py-1 pr-4 text-right">
+                                    {formatMoney(dailyTotal.tip_amount)}
+                                  </td>
+                                  <td className="py-1 pr-4">
+                                    {dailyRateLabel(dailyTotal)}
+                                  </td>
+                                  <td className="py-1 pr-4 text-right">
+                                    {formatMoney(dailyTotal.correction_delta)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-xs text-zinc-500">
+                          No daily rows for this staff member.
+                        </p>
+                      )}
+                    </details>
+                  </td>
+                </tr>
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function correctionTypeLabel(value: string) {
+  const labels: Record<string, string> = {
+    credit_card_amount: "Credit card correction",
+    daily_closing: "Daily closing adjustment",
+    staff_earning: "Staff earning correction",
+    ticket_correction: "Ticket correction",
+  };
+
+  return labels[value] ?? value.replaceAll("_", " ");
+}
+
+function shopStatusLabel(status: PayrollShopDailyRow["overShortStatus"]) {
+  if (status === "balanced") {
+    return "Balanced";
+  }
+
+  if (status === "over") {
+    return "Over";
+  }
+
+  if (status === "short") {
+    return "Short";
+  }
+
+  return "No closing input";
+}
+
+function shopStatusBadgeClass(status: PayrollShopDailyRow["overShortStatus"]) {
+  if (status === "balanced") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (status === "over") {
+    return "border-sky-200 bg-sky-50 text-sky-700";
+  }
+
+  if (status === "short") {
+    return "border-rose-200 bg-rose-50 text-rose-700";
+  }
+
+  return "border-zinc-200 bg-zinc-50 text-zinc-600";
+}
+
+function ShopCorrections({ corrections }: { corrections: PayrollCorrectionListItem[] }) {
+  if (corrections.length === 0) {
+    return <span className="text-zinc-400">-</span>;
+  }
 
   return (
-    <section className="mt-6 overflow-x-auto rounded-lg border border-zinc-200 bg-white">
-      <div className="min-w-[1900px]">
-        <div className="grid grid-cols-[180px_repeat(9,110px)_130px_100px_110px_120px_180px_90px] bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-          <div>Staff</div>
-          <div className="text-right">Gross</div>
-          <div>Pay Type</div>
-          <div className="text-right">Rate/Fixed</div>
-          <div className="text-right">Commission</div>
-          <div className="text-right">Shop</div>
-          <div className="text-right">Cash</div>
-          <div className="text-right">Check Gross</div>
-          <div className="text-right">Tax</div>
-          <div className="text-right">Check Net</div>
-          <div>Check #</div>
-          <div className="text-right">Tip</div>
-          <div>Bonus</div>
-          <div className="text-right">Final</div>
-          <div>Note</div>
-          <div></div>
-        </div>
-        <div className="divide-y divide-zinc-200">
-          {lines.map((line) => (
-            <div key={line.id}>
-              <form
-                action={savePayrollStaffLine}
-                className="grid grid-cols-[180px_repeat(9,110px)_130px_100px_110px_120px_180px_90px] items-center gap-0 px-4 py-3 text-sm"
-              >
-                <input name="line_id" type="hidden" value={line.id} />
-                <input name="return_to" type="hidden" value={returnPath} />
-                <div>
-                  <p className="font-medium text-zinc-950">
-                    {line.staff_display_name_snapshot}
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    {line.staff_legal_name_snapshot || "-"}
-                  </p>
-                </div>
-                <div className="text-right">{formatMoney(line.gross_sales)}</div>
-                <div className="capitalize">{line.pay_type_used}</div>
-                <div className="text-right">
-                  {line.pay_type_used === "fixed"
-                    ? formatMoney(line.fixed_pay_amount_used)
-                    : formatPercent(line.commission_rate_used)}
-                </div>
-                <div className="text-right">
-                  {formatMoney(line.staff_commission_gross)}
-                </div>
-                <div className="text-right">{formatMoney(line.shop_share)}</div>
-                <div className="text-right">{formatMoney(line.cash_amount)}</div>
-                <div className="text-right">{formatMoney(line.check_gross)}</div>
-                <div className="text-right">{formatMoney(line.tax_withheld)}</div>
-                <div className="text-right">{formatMoney(line.check_net)}</div>
-                <div className="px-2">
-                  <input
-                    className="h-9 w-full rounded border border-zinc-300 bg-white px-2 text-sm disabled:bg-zinc-50"
-                    defaultValue={line.check_number ?? ""}
-                    disabled={!canEditLines}
-                    name="check_number"
-                  />
-                </div>
-                <div className="text-right">{formatMoney(line.tip_amount)}</div>
-                <div className="px-2">
-                  <input
-                    className="h-9 w-full rounded border border-zinc-300 bg-white px-2 text-sm disabled:bg-zinc-50"
-                    defaultValue={line.bonus_amount.toFixed(2)}
-                    disabled={!canEditLines}
-                    min="0"
-                    name="bonus_amount"
-                    step="0.01"
-                    type="number"
-                  />
-                </div>
-                <div className="text-right font-medium text-zinc-950">
-                  {formatMoney(line.final_staff_income)}
-                </div>
-                <div className="px-2">
-                  <input
-                    className="h-9 w-full rounded border border-zinc-300 bg-white px-2 text-sm disabled:bg-zinc-50"
-                    defaultValue={line.note ?? ""}
-                    disabled={!canEditLines}
-                    name="note"
-                  />
-                </div>
-                <div className="text-right">
-                  <button
-                    className="rounded bg-zinc-950 px-3 py-2 text-xs font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-                    disabled={!canEditLines}
-                    type="submit"
-                  >
-                    Save
-                  </button>
-                </div>
-              </form>
-              <details className="px-4 pb-3">
-                <summary className="cursor-pointer text-xs font-medium text-zinc-600">
-                  Daily breakdown
-                </summary>
-                <div className="mt-2 overflow-hidden rounded border border-zinc-200">
-                  <div className="grid grid-cols-5 bg-zinc-50 px-3 py-2 text-xs font-medium uppercase text-zinc-500">
-                    <div>Date</div>
-                    <div className="text-right">Gross</div>
-                    <div className="text-right">Tip</div>
-                    <div className="text-right">Correction</div>
-                    <div>Final/Note</div>
-                  </div>
-                  {line.dailyTotals.map((daily) => (
-                    <div
-                      className="grid grid-cols-5 px-3 py-2 text-sm"
-                      key={daily.id}
+    <details>
+      <summary className="cursor-pointer font-medium text-zinc-700">
+        {corrections.length} correction{corrections.length === 1 ? "" : "s"}
+      </summary>
+      <ul className="mt-2 space-y-2 text-xs text-zinc-600">
+        {corrections.map((correction) => (
+          <li key={`${correction.source}-${correction.id}`}>
+            <span className="font-medium text-zinc-800">
+              {correctionTypeLabel(correction.type)}
+            </span>
+            {" - "}
+            {correction.delta === null
+              ? "Audit only"
+              : correction.delta === 0
+                ? "Audit only"
+                : formatMoney(correction.delta)}
+            {" - "}
+            {correction.staffName ?? "Shop"}
+            {" - "}
+            {correction.status}
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
+function ShopIncomeTab({
+  rows,
+  summary,
+}: {
+  rows: PayrollShopDailyRow[];
+  summary: PayrollShopSummary;
+}) {
+  return (
+    <section className="grid gap-6">
+      <div className="grid gap-4 md:grid-cols-4">
+        <SummaryCard
+          label="Actual income"
+          value={formatOptionalMoney(summary.totalActualIncome, "No manual input data")}
+        />
+        <SummaryCard label="POS income" value={formatMoney(summary.posIncome)} />
+        <SummaryCard
+          label="Manual input"
+          value={formatOptionalMoney(summary.manualInputIncome, "No manual input data")}
+        />
+        <SummaryCard
+          label="Over / Short"
+          value={formatOptionalMoney(summary.overShortTotal, "No manual input data")}
+        />
+        <SummaryCard
+          label="Staff Production"
+          value={formatMoney(summary.staffProduction)}
+        />
+        <SummaryCard
+          label="Staff Commission Pay"
+          value={formatMoney(summary.staffCommissionPay)}
+        />
+        <SummaryCard label="Shop share" value={formatMoney(summary.shopShare)} />
+        <SummaryCard label="Tips" value={formatMoney(summary.tips)} />
+        <SummaryCard label="Cash" value={formatOptionalMoney(summary.cashAmount)} />
+        <SummaryCard
+          label="Credit card"
+          value={formatOptionalMoney(summary.creditCardAmount)}
+        />
+        <SummaryCard label="Other" value={formatOptionalMoney(summary.otherAmount)} />
+        <SummaryCard label="Corrections" value={`${summary.correctionCount}`} />
+      </div>
+      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-zinc-200 text-sm">
+            <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+              <tr>
+                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3 text-right">POS income</th>
+                <th className="px-4 py-3 text-right">Manual input</th>
+                <th className="px-4 py-3 text-right">Over / Short</th>
+                <th className="px-4 py-3 text-right">Staff production</th>
+                <th className="px-4 py-3 text-right">Staff commission pay</th>
+                <th className="px-4 py-3 text-right">Tips</th>
+                <th className="px-4 py-3 text-right">Shop share</th>
+                <th className="px-4 py-3 text-right">Cash</th>
+                <th className="px-4 py-3 text-right">Credit card</th>
+                <th className="px-4 py-3 text-right">Other</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Corrections</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {rows.map((row) => (
+                <tr className="align-top" key={row.businessDate}>
+                  <td className="px-4 py-3 font-medium text-zinc-950">
+                    {formatDate(row.businessDate)}
+                  </td>
+                  <td className="px-4 py-3 text-right">{formatMoney(row.posIncome)}</td>
+                  <td className="px-4 py-3 text-right">
+                    {formatOptionalMoney(row.manualInputIncome, "No manual input")}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {formatOptionalMoney(row.difference, "-")}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {formatMoney(row.staffProduction)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {formatMoney(row.staffCommissionPay)}
+                  </td>
+                  <td className="px-4 py-3 text-right">{formatMoney(row.tips)}</td>
+                  <td className="px-4 py-3 text-right">{formatMoney(row.shopShare)}</td>
+                  <td className="px-4 py-3 text-right">
+                    {formatOptionalMoney(row.cashAmount)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {formatOptionalMoney(row.creditCardAmount)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {formatOptionalMoney(row.otherAmount)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full border px-2 py-1 text-xs font-semibold ${shopStatusBadgeClass(
+                        row.overShortStatus,
+                      )}`}
                     >
-                      <div>{formatDate(daily.business_date)}</div>
-                      <div className="text-right">
-                        {formatMoney(daily.gross_sales)}
-                      </div>
-                      <div className="text-right">
-                        {formatMoney(daily.tip_amount)}
-                      </div>
-                      <div className="text-right">
-                        {formatMoney(daily.correction_delta)}
-                      </div>
-                      <div>{daily.note || "-"}</div>
-                    </div>
-                  ))}
-                </div>
-              </details>
-            </div>
-          ))}
+                      {shopStatusLabel(row.overShortStatus)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <ShopCorrections corrections={row.corrections} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
   );
 }
 
-function CorrectionTable({
-  corrections,
+function TaxTab({
+  lines,
+  period,
 }: {
-  corrections: PayrollCorrectionListItem[];
+  lines: PayrollStaffLineWithDailyTotals[];
+  period: PayrollPeriod;
 }) {
-  if (corrections.length === 0) {
-    return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        No corrections linked to this payroll period.
-      </div>
-    );
-  }
+  const taxLines = lines.filter((line) => line.tax_company_enabled_snapshot);
 
   return (
-    <div className="mt-4 overflow-x-auto rounded-lg border border-zinc-200 bg-white">
-      <table className="min-w-[920px] w-full text-sm">
-        <thead className="bg-zinc-50 text-xs uppercase text-zinc-500">
-          <tr>
-            <th className="px-4 py-3 text-left font-medium">Business Date</th>
-            <th className="px-4 py-3 text-left font-medium">Correction Date</th>
-            <th className="px-4 py-3 text-left font-medium">Staff</th>
-            <th className="px-4 py-3 text-left font-medium">Ticket</th>
-            <th className="px-4 py-3 text-left font-medium">Type</th>
-            <th className="px-4 py-3 text-right font-medium">Delta</th>
-            <th className="px-4 py-3 text-left font-medium">Status</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-zinc-200">
-          {corrections.map((correction) => (
-            <tr key={`${correction.source}:${correction.id}`}>
-              <td className="px-4 py-3">{formatDate(correction.businessDate)}</td>
-              <td className="px-4 py-3">
-                {new Intl.DateTimeFormat("en-US", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                }).format(new Date(correction.correctionDate))}
-              </td>
-              <td className="px-4 py-3">{correction.staffName || "-"}</td>
-              <td className="px-4 py-3">{correction.ticketNumber || "-"}</td>
-              <td className="px-4 py-3">{correction.type}</td>
-              <td className="px-4 py-3 text-right">
-                {correction.delta === null ? "-" : formatMoney(correction.delta)}
-              </td>
-              <td className="px-4 py-3 capitalize">{correction.status}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function ShopIncomeTab({
-  corrections,
-  summary,
-}: {
-  corrections: PayrollCorrectionListItem[];
-  summary: PayrollSummary;
-}) {
-  return (
-    <section className="mt-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <SummaryCard label="Total POS Income" value={formatMoney(summary.totalPosIncome)} />
-        <SummaryCard
-          label="Staff Commission Payout"
-          value={formatMoney(summary.totalStaffCommissionPayout)}
-        />
-        <SummaryCard label="Shop Commission Share" value={formatMoney(summary.totalShopShare)} />
-        <SummaryCard label="Cash Payout" value={formatMoney(summary.totalCashPayout)} />
-        <SummaryCard label="Check Gross" value={formatMoney(summary.totalCheckGross)} />
-        <SummaryCard label="Tax Withheld" value={formatMoney(summary.totalTaxWithheld)} />
-        <SummaryCard label="Tip Total" value={formatMoney(summary.totalTip)} />
-        <SummaryCard label="Bonus Total" value={formatMoney(summary.totalBonus)} />
+    <section className="grid gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-4">
+        <div>
+          <p className="text-sm font-semibold text-zinc-950">Tax company preview</p>
+          <p className="text-sm text-zinc-500">
+            {taxLines.length} enabled staff line{taxLines.length === 1 ? "" : "s"}
+          </p>
+        </div>
+        <Link
+          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+          href={getTaxCompanyHref(period)}
+        >
+          Open Tax Company
+        </Link>
       </div>
-
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Corrections</h2>
-        <CorrectionTable corrections={corrections} />
-      </section>
+      {taxLines.some((line) => !line.staff_legal_name_snapshot) ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          Some enabled staff are missing legal names.
+        </p>
+      ) : null}
+      <StaffIncomeTab canManage={false} lines={taxLines} period={period} returnPath="" />
     </section>
   );
 }
 
 function SettingsTab({
-  canManage,
+  editStaffId,
   period,
+  returnPath,
   salonPayrollSetting,
   settings,
 }: {
-  canManage: boolean;
+  editStaffId: string | undefined;
   period: PayrollPeriod;
-  salonPayrollSetting: SalonPayrollSetting | null;
+  returnPath: string;
+  salonPayrollSetting: SalonPayrollSetting;
   settings: StaffPayrollSettingWithStaff[];
 }) {
-  const returnPath = getReturnPath(period, "settings");
-
   return (
-    <section className="mt-6 space-y-8">
-      <form
-        action={saveSalonPayrollSetting}
-        className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-[220px_220px_auto]"
-      >
-        <input name="return_to" type="hidden" value={returnPath} />
-        <label>
-          <span className="text-sm font-medium text-zinc-700">Cycle Type</span>
-          <select
-            className="mt-2 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm"
-            defaultValue={salonPayrollSetting?.cycle_type ?? "monthly"}
-            disabled={!canManage}
-            name="cycle_type"
-          >
-            <option value="monthly">Monthly</option>
-            <option value="biweekly">Biweekly</option>
-          </select>
-        </label>
-        <label>
-          <span className="text-sm font-medium text-zinc-700">Biweekly Anchor</span>
-          <input
-            className="mt-2 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm disabled:bg-zinc-50"
-            defaultValue={salonPayrollSetting?.biweekly_anchor_date ?? ""}
-            disabled={!canManage}
-            name="biweekly_anchor_date"
-            type="date"
-          />
-        </label>
-        <div className="flex items-end">
-          <button
-            className="h-10 rounded bg-zinc-950 px-4 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-            disabled={!canManage}
-            type="submit"
-          >
-            Save
-          </button>
+    <section className="grid gap-6" id="payroll-settings">
+      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+        <h2 className="text-base font-semibold text-zinc-950">Shop Payroll Schedule</h2>
+        <PayrollScheduleForm
+          action={saveSalonPayrollScheduleAction}
+          anchorDate={salonPayrollSetting.biweekly_anchor_date}
+          cycleType={salonPayrollSetting.cycle_type}
+          returnPath={returnPath}
+        />
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+        <div className="border-b border-zinc-200 p-4">
+          <h2 className="text-base font-semibold text-zinc-950">
+            Staff Payroll Settings
+          </h2>
         </div>
-      </form>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-zinc-200 text-sm">
+            <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+              <tr>
+                <th className="px-4 py-3">Staff</th>
+                <th className="px-4 py-3">Pay type</th>
+                <th className="px-4 py-3">Rate</th>
+                <th className="px-4 py-3">Check split</th>
+                <th className="px-4 py-3">Tax</th>
+                <th className="px-4 py-3">Tax company</th>
+                <th className="px-4 py-3">Effective</th>
+                <th className="px-4 py-3">Edit</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {settings.map(({ history, setting, staff }) => {
+                const isEditing = editStaffId === staff.id;
+                const formId = `staff-setting-${staff.id}`;
 
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
-        <div className="min-w-[1480px]">
-          <div className="grid grid-cols-[170px_190px_130px_110px_120px_120px_100px_120px_120px_120px_130px_100px] bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-            <div>Staff</div>
-            <div>Legal Name</div>
-            <div>Pay Type</div>
-            <div>Commission</div>
-            <div>Fixed Pay</div>
-            <div>Check Split</div>
-            <div>Cash Split</div>
-            <div>Tax Rate</div>
-            <div>Apply Tax</div>
-            <div>Tax Company</div>
-            <div>Effective From</div>
-            <div>Save</div>
-          </div>
-          <div className="divide-y divide-zinc-200">
-            {settings.map(({ setting, staff }) => {
-              const checkRate = setting?.check_rate ?? 60;
-              const effectiveFrom = setting?.effective_from ?? period.startDate;
-
-              return (
-                <form
-                  action={saveStaffPayrollSetting}
-                  className="grid grid-cols-[170px_190px_130px_110px_120px_120px_100px_120px_120px_120px_130px_100px] items-center px-4 py-3 text-sm"
-                  key={staff.id}
-                >
-                  <input name="return_to" type="hidden" value={returnPath} />
-                  <input name="staff_id" type="hidden" value={staff.id} />
-                  <div>
-                    <p className="font-medium text-zinc-950">{staff.display_name}</p>
-                    <p className="text-xs text-zinc-500">
-                      {staff.is_active ? "Active" : "Inactive"}
-                    </p>
-                  </div>
-                  <div className="px-2">
-                    <input
-                      className="h-9 w-full rounded border border-zinc-300 px-2 disabled:bg-zinc-50"
-                      defaultValue={setting?.legal_name ?? ""}
-                      disabled={!canManage}
-                      name="legal_name"
-                    />
-                  </div>
-                  <div className="px-2">
-                    <select
-                      className="h-9 w-full rounded border border-zinc-300 bg-white px-2 disabled:bg-zinc-50"
-                      defaultValue={setting?.pay_type ?? "commission"}
-                      disabled={!canManage}
-                      name="pay_type"
-                    >
-                      <option value="commission">Commission</option>
-                      <option value="fixed">Fixed</option>
-                    </select>
-                  </div>
-                  <div className="px-2">
-                    <input
-                      className="h-9 w-full rounded border border-zinc-300 px-2 disabled:bg-zinc-50"
-                      defaultValue={(setting?.commission_rate ?? 60).toString()}
-                      disabled={!canManage}
-                      max="100"
-                      min="0"
-                      name="commission_rate"
-                      step="0.01"
-                      type="number"
-                    />
-                  </div>
-                  <div className="px-2">
-                    <input
-                      className="h-9 w-full rounded border border-zinc-300 px-2 disabled:bg-zinc-50"
-                      defaultValue={(setting?.fixed_pay_amount ?? 0).toString()}
-                      disabled={!canManage}
-                      min="0"
-                      name="fixed_pay_amount"
-                      step="0.01"
-                      type="number"
-                    />
-                  </div>
-                  <div className="px-2">
-                    <input
-                      className="h-9 w-full rounded border border-zinc-300 px-2 disabled:bg-zinc-50"
-                      defaultValue={checkRate.toString()}
-                      disabled={!canManage}
-                      max="100"
-                      min="0"
-                      name="check_rate"
-                      step="0.01"
-                      type="number"
-                    />
-                  </div>
-                  <div className="text-right text-zinc-700">
-                    {formatPercent(100 - checkRate)}
-                  </div>
-                  <div className="px-2">
-                    <input
-                      className="h-9 w-full rounded border border-zinc-300 px-2 disabled:bg-zinc-50"
-                      defaultValue={(setting?.tax_rate ?? 0).toString()}
-                      disabled={!canManage}
-                      max="100"
-                      min="0"
-                      name="tax_rate"
-                      step="0.01"
-                      type="number"
-                    />
-                  </div>
-                  <label className="flex items-center justify-center">
-                    <input
-                      className="size-4"
-                      defaultChecked={setting?.apply_tax_to_fixed_pay ?? true}
-                      disabled={!canManage}
-                      name="apply_tax_to_fixed_pay"
-                      type="checkbox"
-                    />
-                  </label>
-                  <label className="flex items-center justify-center">
-                    <input
-                      className="size-4"
-                      defaultChecked={setting?.tax_company_enabled ?? false}
-                      disabled={!canManage}
-                      name="tax_company_enabled"
-                      type="checkbox"
-                    />
-                  </label>
-                  <div className="px-2">
-                    <input
-                      className="h-9 w-full rounded border border-zinc-300 px-2 disabled:bg-zinc-50"
-                      defaultValue={effectiveFrom}
-                      disabled={!canManage}
-                      name="effective_from"
-                      type="date"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="rounded bg-zinc-950 px-3 py-2 text-xs font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-                      disabled={!canManage}
-                      type="submit"
-                    >
-                      Save
-                    </button>
-                  </div>
-                </form>
-              );
-            })}
-          </div>
+                return (
+                  <Fragment key={staff.id}>
+                    <tr className="align-top">
+                      <td className="px-4 py-3 font-medium text-zinc-950">
+                        {isEditing ? (
+                          <>
+                            <form action={saveStaffPayrollSettingWithEffectiveDateAction} id={formId}>
+                              <input name="return_to" type="hidden" value={returnPath} />
+                              <input name="staff_id" type="hidden" value={staff.id} />
+                            </form>
+                            <p>{staff.display_name}</p>
+                            <input
+                              className="mt-2 w-40 rounded-md border border-zinc-300 px-2 py-1 text-sm"
+                              defaultValue={setting?.legal_name ?? ""}
+                              form={formId}
+                              name="legal_name"
+                              placeholder="Legal name"
+                            />
+                          </>
+                        ) : (
+                          staff.display_name
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <select
+                            className="w-32 rounded-md border border-zinc-300 px-2 py-1"
+                            defaultValue={setting?.pay_type ?? "commission"}
+                            form={formId}
+                            name="pay_type"
+                          >
+                            <option value="commission">Commission</option>
+                            <option value="fixed">Fixed</option>
+                          </select>
+                        ) : (
+                          setting?.pay_type ?? "commission"
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <div className="flex flex-col gap-2">
+                            <input
+                              className="w-24 rounded-md border border-zinc-300 px-2 py-1"
+                              defaultValue={setting?.commission_rate ?? 60}
+                              form={formId}
+                              max="100"
+                              min="0"
+                              name="commission_rate"
+                              step="0.01"
+                              type="number"
+                            />
+                            <input
+                              className="w-28 rounded-md border border-zinc-300 px-2 py-1"
+                              defaultValue={setting?.fixed_pay_amount ?? 0}
+                              form={formId}
+                              min="0"
+                              name="fixed_pay_amount"
+                              step="0.01"
+                              type="number"
+                            />
+                          </div>
+                        ) : setting?.pay_type === "fixed" ? (
+                          formatMoney(setting.fixed_pay_amount)
+                        ) : (
+                          formatPercent(setting?.commission_rate ?? 60)
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <input
+                            className="w-24 rounded-md border border-zinc-300 px-2 py-1"
+                            defaultValue={setting?.check_rate ?? 60}
+                            form={formId}
+                            max="100"
+                            min="0"
+                            name="check_rate"
+                            step="0.01"
+                            type="number"
+                          />
+                        ) : (
+                          formatPercent(setting?.check_rate ?? 60)
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <div className="flex flex-col gap-2">
+                            <input
+                              className="w-24 rounded-md border border-zinc-300 px-2 py-1"
+                              defaultValue={setting?.tax_rate ?? 0}
+                              form={formId}
+                              max="100"
+                              min="0"
+                              name="tax_rate"
+                              step="0.01"
+                              type="number"
+                            />
+                            <label className="flex items-center gap-2 text-xs text-zinc-700">
+                              <input
+                                defaultChecked={setting?.apply_tax_to_fixed_pay ?? true}
+                                form={formId}
+                                name="apply_tax_to_fixed_pay"
+                                type="checkbox"
+                              />
+                              Tax fixed
+                            </label>
+                          </div>
+                        ) : (
+                          formatPercent(setting?.tax_rate ?? 0)
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <input
+                            defaultChecked={setting?.tax_company_enabled ?? false}
+                            form={formId}
+                            name="tax_company_enabled"
+                            type="checkbox"
+                          />
+                        ) : setting?.tax_company_enabled ? (
+                          "Enabled"
+                        ) : (
+                          "Off"
+                        )}
+                      </td>
+                      <td className="px-4 py-3">{setting?.effective_from ?? "Default"}</td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              className="rounded-md bg-zinc-950 px-3 py-2 text-xs font-medium text-white"
+                              form={formId}
+                            >
+                              Save
+                            </button>
+                            <Link
+                              className="rounded-md border border-zinc-300 px-3 py-2 text-xs font-medium text-zinc-800"
+                              href={returnPath}
+                            >
+                              Cancel
+                            </Link>
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            <Link
+                              className="font-medium text-zinc-800 underline"
+                              href={getSettingsEditHref(period, staff.id)}
+                            >
+                              Edit
+                            </Link>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                    {isEditing ? (
+                      <tr>
+                        <td className="bg-zinc-50 px-4 py-3" colSpan={8}>
+                          <label className="flex max-w-sm flex-col gap-1 text-xs font-medium text-zinc-700">
+                            Effective from
+                            <input
+                              className="rounded-md border border-zinc-300 px-2 py-1"
+                              defaultValue={period.startDate}
+                              form={formId}
+                              name="effective_from"
+                              required
+                              type="date"
+                            />
+                            <span className="font-normal text-amber-700">
+                              Past effective dates may change live payroll numbers for previous periods.
+                            </span>
+                          </label>
+                        </td>
+                      </tr>
+                    ) : null}
+                    <tr>
+                      <td className="bg-zinc-50 px-4 py-2" colSpan={8}>
+                        <details>
+                          <summary className="cursor-pointer text-xs font-medium text-zinc-600">
+                            History
+                          </summary>
+                          {history.length > 0 ? (
+                            <div className="mt-2 overflow-x-auto">
+                              <table className="min-w-full text-xs">
+                                <thead className="text-left uppercase text-zinc-500">
+                                  <tr>
+                                    <th className="py-2 pr-4">Changed at</th>
+                                    <th className="py-2 pr-4">Effective from</th>
+                                    <th className="py-2 pr-4">Pay type</th>
+                                    <th className="py-2 pr-4">Rate</th>
+                                    <th className="py-2 pr-4">Check split</th>
+                                    <th className="py-2 pr-4">Tax</th>
+                                    <th className="py-2 pr-4">Tax company</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {history.map((version) => (
+                                    <tr key={version.id || version.effective_from}>
+                                      <td className="py-1 pr-4">
+                                        {version.updated_at ? formatDate(version.updated_at.slice(0, 10)) : "-"}
+                                      </td>
+                                      <td className="py-1 pr-4">{version.effective_from}</td>
+                                      <td className="py-1 pr-4">{version.pay_type}</td>
+                                      <td className="py-1 pr-4">
+                                        {version.pay_type === "fixed"
+                                          ? formatMoney(version.fixed_pay_amount)
+                                          : formatPercent(version.commission_rate)}
+                                      </td>
+                                      <td className="py-1 pr-4">{formatPercent(version.check_rate)}</td>
+                                      <td className="py-1 pr-4">{formatPercent(version.tax_rate)}</td>
+                                      <td className="py-1 pr-4">
+                                        {version.tax_company_enabled ? "Enabled" : "Off"}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <p className="mt-2 text-xs text-zinc-500">
+                              No effective setting history yet.
+                            </p>
+                          )}
+                        </details>
+                      </td>
+                    </tr>
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
@@ -844,95 +1333,114 @@ function SettingsTab({
 }
 
 export default async function PayrollPage({ searchParams }: PayrollPageProps) {
-  const [params, context] = await Promise.all([
-    searchParams,
-    getCurrentBusinessContext(),
-  ]);
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentSalon) {
-    return <MissingSalonState />;
-  }
-
+  const params = await searchParams;
   let data: Awaited<ReturnType<typeof getPayrollPageData>>;
 
   try {
     data = await getPayrollPageData({
-      cycleType: params.cycleType,
       endDate: params.end,
+      month: params.month,
+      payPeriodStart: params.payPeriodStart,
       preset: params.preset,
+      segment: params.segment,
       startDate: params.start,
     });
   } catch (error) {
-    return (
-      <NoPermissionState
-        message={error instanceof Error ? error.message : "Unable to load payroll."}
-      />
-    );
+    const message = error instanceof Error ? error.message : "Payroll could not be loaded.";
+    return <NoPermissionState message={message} />;
   }
 
   const activeTab = getActiveTab(params.tab, data.access.canViewAllPayroll);
-  const displayStatus = getDisplayStatus(data.run, data.corrections);
+  const returnPath = getReturnPath(data.period, activeTab);
+  const visiblePayrollError =
+    params.payroll_error?.includes("Biweekly payroll requires") &&
+    data.salonPayrollSetting.cycle_type === "monthly"
+      ? null
+      : params.payroll_error;
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 text-zinc-950 sm:px-6">
-      <div className="border-b border-zinc-200 pb-4">
-        <p className="text-sm font-medium text-zinc-500">Payroll</p>
-        <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+      <header className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-normal">
-              Payroll V1
-            </h1>
-            <p className="mt-1 text-sm text-zinc-600">
-              {data.context.currentSalon?.name} | {data.period.label}
+            <p className="text-sm font-medium text-zinc-500">Payroll</p>
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-semibold text-zinc-950">Payroll V1</h1>
+              <span
+                className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusBadgeClass(
+                  data.status.kind,
+                )}`}
+              >
+                {data.status.label}
+              </span>
+            </div>
+            <p className="mt-2 text-sm text-zinc-500">
+              {data.period.label} - {getStatusSubtitle(data)}
             </p>
           </div>
-          <span
-            className={`inline-flex rounded border px-3 py-1 text-sm font-medium ${statusBadgeClass(displayStatus)}`}
-          >
-            {getStatusLabel(displayStatus)}
-          </span>
+          <TopActions
+            canManage={data.access.canManagePayroll}
+            latestStatement={data.latestStatement}
+            period={data.period}
+            returnPath={returnPath}
+          />
         </div>
-        {params.error ? (
-          <p className="mt-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {params.error}
+        {visiblePayrollError ? (
+          <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            {visiblePayrollError}
           </p>
         ) : null}
-        <TopActions
-          canManage={data.access.canManagePayroll}
+        <PeriodSelector
+          activeTab={activeTab}
           period={data.period}
-          run={data.run}
+          periodOptions={data.periodOptions}
+          scheduleSetup={data.scheduleSetup}
+          salonPayrollSetting={data.salonPayrollSetting}
         />
-      </div>
+      </header>
 
-      <PeriodSelector activeTab={activeTab} period={data.period} />
+      <DifferenceBanner
+        canManage={data.access.canManagePayroll}
+        difference={data.difference}
+        period={data.period}
+        returnPath={returnPath}
+      />
       <Tabs
         activeTab={activeTab}
         canViewAllPayroll={data.access.canViewAllPayroll}
         period={data.period}
       />
 
-      {activeTab === "overview" ? <OverviewTab summary={data.summary} /> : null}
+      {activeTab === "overview" ? (
+        <OverviewTab
+          shopSummary={data.live.shopSummary}
+          summary={data.live.summary}
+        />
+      ) : null}
       {activeTab === "staff" ? (
         <StaffIncomeTab
           canManage={data.access.canManagePayroll}
-          lines={data.staffLines}
+          lines={data.live.lines}
           period={data.period}
-          run={data.run}
+          returnPath={returnPath}
         />
       ) : null}
       {activeTab === "shop" && data.access.canViewAllPayroll ? (
-        <ShopIncomeTab corrections={data.corrections} summary={data.summary} />
+        <ShopIncomeTab
+          rows={data.live.shopDailyRows}
+          summary={data.live.shopSummary}
+        />
+      ) : null}
+      {activeTab === "tax" && data.access.canViewAllPayroll ? (
+        <TaxTab lines={data.live.lines} period={data.period} />
       ) : null}
       {activeTab === "settings" && data.access.canViewAllPayroll ? (
         <SettingsTab
-          canManage={data.access.canManagePayroll}
+          editStaffId={params.editStaff}
           period={data.period}
+          returnPath={returnPath}
           salonPayrollSetting={data.salonPayrollSetting}
-          settings={data.settings}
+          settings={data.staffPayrollSettings}
         />
       ) : null}
     </main>

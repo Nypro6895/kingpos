@@ -1,19 +1,14 @@
-import { savePayrollStaffLine } from "@/app/payroll/actions";
-import { getCurrentBusinessContext } from "@/lib/current-context";
 import { getPayrollTaxCompanyData } from "@/lib/payroll";
-import type {
-  PayrollPeriod,
-  PayrollRun,
-  PayrollStaffLineWithDailyTotals,
-} from "@/types/payroll";
+import type { PayrollPeriod, PayrollStaffLineWithDailyTotals } from "@/types/payroll";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
-type TaxCompanyPageProps = {
+type PayrollTaxCompanyPageProps = {
   searchParams: Promise<{
     end?: string;
-    error?: string;
+    month?: string;
+    payPeriodStart?: string;
     preset?: string;
+    segment?: string;
     start?: string;
   }>;
 };
@@ -29,207 +24,242 @@ function formatPercent(value: number) {
   return `${Number(value).toFixed(2).replace(/\.00$/, "")}%`;
 }
 
-function getTaxCompanyHref(period: PayrollPeriod) {
+function getPayrollHref(period: PayrollPeriod) {
   const params = new URLSearchParams({
-    end: period.endDate,
     preset: period.preset,
-    start: period.startDate,
+    tab: "tax",
   });
 
-  return `/payroll/tax-company?${params.toString()}`;
-}
+  if (period.preset === "custom") {
+    params.set("start", period.startDate);
+    params.set("end", period.endDate);
+  } else if (period.cycleType === "biweekly") {
+    params.set("payPeriodStart", period.startDate);
+  } else {
+    params.set("month", period.startDate.slice(0, 7));
+    if (period.cycleType === "semi_monthly") {
+      params.set(
+        "segment",
+        period.preset === "semi_monthly_second" ? "second" : "first",
+      );
+    }
+  }
 
-function PeriodSelector({ period }: { period: PayrollPeriod }) {
-  return (
-    <form
-      action="/payroll/tax-company"
-      className="grid gap-3 border-b border-zinc-200 py-5 sm:grid-cols-[220px_180px_180px_auto]"
-      method="get"
-    >
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Period</span>
-        <select
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={period.preset}
-          name="preset"
-        >
-          <option value="previous_month">Previous month</option>
-          <option value="previous_biweekly">Previous biweekly period</option>
-          <option value="custom">Custom date range</option>
-        </select>
-      </label>
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Start</span>
-        <input
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={period.startDate}
-          name="start"
-          type="date"
-        />
-      </label>
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">End</span>
-        <input
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={period.endDate}
-          name="end"
-          type="date"
-        />
-      </label>
-      <div className="flex items-end">
-        <button
-          className="h-10 rounded bg-zinc-950 px-4 text-sm font-medium text-white"
-          type="submit"
-        >
-          Load
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function MissingSalonState() {
-  return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">Payroll Tax Company</h1>
-      <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        Please select a salon first.
-      </p>
-    </main>
-  );
+  return `/payroll?${params.toString()}`;
 }
 
 function NoPermissionState({ message }: { message: string }) {
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">Payroll Tax Company</h1>
-      <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-10">
+      <p className="text-sm font-medium text-zinc-500">Payroll</p>
+      <h1 className="text-3xl font-semibold text-zinc-950">Tax company could not load</h1>
+      <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
         {message}
       </p>
+      <Link className="text-sm font-medium text-zinc-700 underline" href="/payroll">
+        Back to payroll
+      </Link>
     </main>
   );
 }
 
-function TaxTable({
-  canManage,
-  lines,
+function monthInputFromPeriod(period: PayrollPeriod) {
+  return period.startDate.slice(0, 7);
+}
+
+function PeriodSelector({
   period,
-  run,
+  periodOptions,
+  scheduleSetup,
+  salonPayrollSetting,
 }: {
-  canManage: boolean;
-  lines: PayrollStaffLineWithDailyTotals[];
   period: PayrollPeriod;
-  run: PayrollRun | null;
+  periodOptions: Awaited<ReturnType<typeof getPayrollTaxCompanyData>>["periodOptions"];
+  scheduleSetup: Awaited<ReturnType<typeof getPayrollTaxCompanyData>>["scheduleSetup"];
+  salonPayrollSetting: Awaited<ReturnType<typeof getPayrollTaxCompanyData>>["salonPayrollSetting"];
 }) {
-  if (!run) {
-    return (
-      <div className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        No payroll snapshot exists for this period.
-      </div>
-    );
-  }
-
-  if (lines.length === 0) {
-    return (
-      <div className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        No tax-company staff lines for this period.
-      </div>
-    );
-  }
-
-  const returnPath = getTaxCompanyHref(period);
-  const canEditLines = canManage && run.status !== "paid";
+  const scheduleCycle = salonPayrollSetting.cycle_type;
+  const missingBiweeklyAnchor = scheduleSetup.needsBiweeklyAnchor;
 
   return (
-    <section className="mt-6 overflow-x-auto rounded-lg border border-zinc-200 bg-white">
-      <div className="min-w-[1560px]">
-        <div className="grid grid-cols-[190px_190px_130px_120px_100px_120px_120px_100px_110px_120px_170px_90px] bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-          <div>Legal Name</div>
-          <div>Period</div>
-          <div>Check Number</div>
-          <div className="text-right">Check Gross</div>
-          <div className="text-right">Tax Rate</div>
-          <div className="text-right">Tax Withheld</div>
-          <div className="text-right">Check Net</div>
-          <div className="text-right">Tip</div>
-          <div>Bonus</div>
-          <div>Paystub</div>
-          <div>Note</div>
-          <div></div>
-        </div>
-        <div className="divide-y divide-zinc-200">
-          {lines.map((line) => (
-            <form
-              action={savePayrollStaffLine}
-              className="grid grid-cols-[190px_190px_130px_120px_100px_120px_120px_100px_110px_120px_170px_90px] items-center px-4 py-3 text-sm"
-              key={line.id}
+    <section className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+      <form
+        action="/payroll/tax-company"
+        className="flex flex-wrap items-end gap-3"
+      >
+        {scheduleCycle === "monthly" ? (
+          <label className="flex min-w-48 flex-col gap-1 text-sm font-medium text-zinc-700">
+            Month
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              defaultValue={monthInputFromPeriod(period)}
+              name="month"
+              type="month"
+            />
+          </label>
+        ) : null}
+        {scheduleCycle === "semi_monthly" ? (
+          <>
+            <label className="flex min-w-48 flex-col gap-1 text-sm font-medium text-zinc-700">
+              Month
+              <input
+                className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                defaultValue={monthInputFromPeriod(period)}
+                name="month"
+                type="month"
+              />
+            </label>
+            <label className="flex min-w-64 flex-col gap-1 text-sm font-medium text-zinc-700">
+              Period
+              <select
+                className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                defaultValue={
+                  period.preset === "semi_monthly_second" ? "second" : "first"
+                }
+                name="segment"
+              >
+                <option value="first">First: 1 - 15</option>
+                <option value="second">Second: 16 - end of month</option>
+              </select>
+            </label>
+          </>
+        ) : null}
+        {scheduleCycle === "biweekly" ? (
+          <label className="flex min-w-72 flex-col gap-1 text-sm font-medium text-zinc-700">
+            Pay period
+            <select
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              defaultValue={period.startDate}
+              disabled={missingBiweeklyAnchor}
+              name="payPeriodStart"
             >
-              <input name="line_id" type="hidden" value={line.id} />
-              <input name="return_to" type="hidden" value={returnPath} />
-              <div>
-                <p className="font-medium text-zinc-950">
-                  {line.staff_legal_name_snapshot || line.staff_display_name_snapshot}
-                </p>
-                <p className="text-xs text-zinc-500">
-                  {line.staff_display_name_snapshot}
-                </p>
-              </div>
-              <div>{period.label}</div>
-              <div className="px-2">
-                <input
-                  className="h-9 w-full rounded border border-zinc-300 bg-white px-2 text-sm disabled:bg-zinc-50"
-                  defaultValue={line.check_number ?? ""}
-                  disabled={!canEditLines}
-                  name="check_number"
-                />
-              </div>
-              <div className="text-right">{formatMoney(line.check_gross)}</div>
-              <div className="text-right">{formatPercent(line.tax_rate_used)}</div>
-              <div className="text-right">{formatMoney(line.tax_withheld)}</div>
-              <div className="text-right">{formatMoney(line.check_net)}</div>
-              <div className="text-right">{formatMoney(line.tip_amount)}</div>
-              <div className="px-2">
-                <input
-                  className="h-9 w-full rounded border border-zinc-300 bg-white px-2 text-sm disabled:bg-zinc-50"
-                  defaultValue={line.bonus_amount.toFixed(2)}
-                  disabled={!canEditLines}
-                  min="0"
-                  name="bonus_amount"
-                  step="0.01"
-                  type="number"
-                />
-              </div>
-              <div>
-                <span
-                  className={
-                    line.paystub
-                      ? "inline-flex rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700"
-                      : "inline-flex rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800"
-                  }
-                >
-                  {line.paystub ? "Attached" : "Missing"}
-                </span>
-              </div>
-              <div className="px-2">
-                <input
-                  className="h-9 w-full rounded border border-zinc-300 bg-white px-2 text-sm disabled:bg-zinc-50"
-                  defaultValue={line.note ?? ""}
-                  disabled={!canEditLines}
-                  name="note"
-                />
-              </div>
-              <div className="text-right">
-                <button
-                  className="rounded bg-zinc-950 px-3 py-2 text-xs font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-                  disabled={!canEditLines}
-                  type="submit"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
-          ))}
-        </div>
+              {missingBiweeklyAnchor ? (
+                <option value="">Set anchor in Payroll Settings</option>
+              ) : (
+                periodOptions.map((option) => (
+                  <option key={option.value} value={option.startDate}>
+                    {option.label}
+                  </option>
+                ))
+              )}
+            </select>
+          </label>
+        ) : null}
+        <button className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
+          Apply
+        </button>
+      </form>
+      {missingBiweeklyAnchor ? (
+        <p className="text-sm text-amber-700">
+          Every-2-weeks payroll needs an anchor date. Update it in Payroll Settings.
+        </p>
+      ) : null}
+      <details>
+        <summary className="cursor-pointer text-sm font-medium text-zinc-600">
+          Advanced custom range
+        </summary>
+        <form
+          action="/payroll/tax-company"
+          className="mt-3 flex flex-wrap items-end gap-3"
+        >
+          <input name="preset" type="hidden" value="custom" />
+          <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
+            Start
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              defaultValue={period.startDate}
+              name="start"
+              type="date"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
+            End
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              defaultValue={period.endDate}
+              name="end"
+              type="date"
+            />
+          </label>
+          <button className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">
+            Apply Custom
+          </button>
+        </form>
+      </details>
+    </section>
+  );
+}
+
+function SummaryCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
+    </div>
+  );
+}
+
+function TaxTable({
+  lines,
+  period,
+}: {
+  lines: PayrollStaffLineWithDailyTotals[];
+  period: PayrollPeriod;
+}) {
+  if (lines.length === 0) {
+    return (
+      <p className="rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
+        No tax-company enabled staff lines for this period.
+      </p>
+    );
+  }
+
+  return (
+    <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-zinc-200 text-sm">
+          <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+            <tr>
+              <th className="px-4 py-3">Legal Name</th>
+              <th className="px-4 py-3">Period</th>
+              <th className="px-4 py-3">Check Number</th>
+              <th className="px-4 py-3 text-right">Check Gross</th>
+              <th className="px-4 py-3 text-right">Tax Rate</th>
+              <th className="px-4 py-3 text-right">Tax Withheld</th>
+              <th className="px-4 py-3 text-right">Check Net</th>
+              <th className="px-4 py-3 text-right">Tip</th>
+              <th className="px-4 py-3 text-right">Bonus</th>
+              <th className="px-4 py-3">Paystub</th>
+              <th className="px-4 py-3">Note</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-100">
+            {lines.map((line) => (
+              <tr key={line.staff_id}>
+                <td className="px-4 py-3 font-medium text-zinc-950">
+                  {line.staff_legal_name_snapshot ?? line.staff_display_name_snapshot}
+                  {!line.staff_legal_name_snapshot ? (
+                    <p className="text-xs font-medium text-amber-700">
+                      Missing legal name
+                    </p>
+                  ) : null}
+                </td>
+                <td className="px-4 py-3">{period.label}</td>
+                <td className="px-4 py-3">{line.check_number ?? "-"}</td>
+                <td className="px-4 py-3 text-right">{formatMoney(line.check_gross)}</td>
+                <td className="px-4 py-3 text-right">
+                  {line.is_mixed_rate ? "Mixed" : formatPercent(line.tax_rate_used)}
+                </td>
+                <td className="px-4 py-3 text-right">{formatMoney(line.tax_withheld)}</td>
+                <td className="px-4 py-3 text-right">{formatMoney(line.check_net)}</td>
+                <td className="px-4 py-3 text-right">{formatMoney(line.tip_amount)}</td>
+                <td className="px-4 py-3 text-right">{formatMoney(line.bonus_amount)}</td>
+                <td className="px-4 py-3">{line.paystub ? "Attached" : "Missing"}</td>
+                <td className="px-4 py-3">{line.note ?? "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );
@@ -237,111 +267,76 @@ function TaxTable({
 
 export default async function PayrollTaxCompanyPage({
   searchParams,
-}: TaxCompanyPageProps) {
-  const [params, context] = await Promise.all([
-    searchParams,
-    getCurrentBusinessContext(),
-  ]);
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentSalon) {
-    return <MissingSalonState />;
-  }
-
+}: PayrollTaxCompanyPageProps) {
+  const params = await searchParams;
   let data: Awaited<ReturnType<typeof getPayrollTaxCompanyData>>;
 
   try {
     data = await getPayrollTaxCompanyData({
       endDate: params.end,
+      month: params.month,
+      payPeriodStart: params.payPeriodStart,
       preset: params.preset,
+      segment: params.segment,
       startDate: params.start,
     });
   } catch (error) {
-    return (
-      <NoPermissionState
-        message={error instanceof Error ? error.message : "Unable to load payroll."}
-      />
-    );
+    const message =
+      error instanceof Error ? error.message : "Tax company payroll could not be loaded.";
+    return <NoPermissionState message={message} />;
   }
 
+  const statementLabel = data.latestStatement
+    ? `Printed Statement v${data.latestStatement.run.version}${
+        data.latestStatement.run.status === "paid" ? " - paid" : ""
+      }`
+    : "Live Preview - not printed yet";
+  const hasMissingLegalNames = data.lines.some(
+    (line) => !line.staff_legal_name_snapshot,
+  );
+
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 text-zinc-950 sm:px-6">
-      <div className="border-b border-zinc-200 pb-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+      <header className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-zinc-500">Payroll</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-normal">
-              Tax Company
+            <h1 className="mt-1 text-3xl font-semibold text-zinc-950">
+              Payroll Tax Company
             </h1>
-            <p className="mt-1 text-sm text-zinc-600">
-              {data.context.currentSalon?.name} | {data.period.label}
+            <p className="mt-2 text-sm text-zinc-500">
+              {data.period.label} - {statementLabel}
             </p>
           </div>
           <Link
-            className="rounded border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-950"
-            href={`/payroll?${new URLSearchParams({
-              end: data.period.endDate,
-              preset: data.period.preset,
-              start: data.period.startDate,
-              tab: "staff",
-            }).toString()}`}
+            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800"
+            href={getPayrollHref(data.period)}
           >
             Payroll
           </Link>
         </div>
-        {params.error ? (
-          <p className="mt-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {params.error}
-          </p>
-        ) : null}
-      </div>
+        <PeriodSelector
+          period={data.period}
+          periodOptions={data.periodOptions}
+          scheduleSetup={data.scheduleSetup}
+          salonPayrollSetting={data.salonPayrollSetting}
+        />
+      </header>
 
-      <PeriodSelector period={data.period} />
+      {hasMissingLegalNames ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          Missing legal name for one or more tax-company enabled staff.
+        </p>
+      ) : null}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <section className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase text-zinc-500">Check Gross</p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-950">
-            {formatMoney(data.summary.totalCheckGross)}
-          </p>
-        </section>
-        <section className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase text-zinc-500">Tax Withheld</p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-950">
-            {formatMoney(data.summary.totalTaxWithheld)}
-          </p>
-        </section>
-        <section className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase text-zinc-500">Check Net</p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-950">
-            {formatMoney(data.summary.totalCheckNet)}
-          </p>
-        </section>
-        <section className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase text-zinc-500">Tip</p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-950">
-            {formatMoney(data.summary.totalTip)}
-          </p>
-        </section>
-        <section className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium uppercase text-zinc-500">
-            Missing Paystub
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-zinc-950">
-            {data.summary.missingPaystubCount}
-          </p>
-        </section>
-      </div>
+      <section className="grid gap-4 md:grid-cols-4">
+        <SummaryCard label="Enabled lines" value={`${data.lines.length}`} />
+        <SummaryCard label="Check gross" value={formatMoney(data.summary.totalCheckGross)} />
+        <SummaryCard label="Tax withheld" value={formatMoney(data.summary.totalTaxWithheld)} />
+        <SummaryCard label="Check net" value={formatMoney(data.summary.totalCheckNet)} />
+      </section>
 
-      <TaxTable
-        canManage={data.access.canManagePayroll}
-        lines={data.staffLines}
-        period={data.period}
-        run={data.run}
-      />
+      <TaxTable lines={data.lines} period={data.period} />
     </main>
   );
 }
