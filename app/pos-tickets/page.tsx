@@ -26,13 +26,18 @@ type PosTicketsPageProps = {
 
 type StaffWorkLogGroup = {
   items: PosTicketItemWithRelations[];
+  staffKey: string;
   staffName: string;
 };
 
 type DateGroup = {
   dateKey: string;
-  dateLabel: string;
   tickets: PosTicketWithRelations[];
+};
+
+type StaffTurnSequence = {
+  sequence: number;
+  type: "big" | "small";
 };
 
 const STATUS_LABELS: Record<PosTicketStatus, string> = {
@@ -41,7 +46,7 @@ const STATUS_LABELS: Record<PosTicketStatus, string> = {
   cancelled: "Cancelled",
   voided: "Voided",
 };
-const DAILY_WORK_LOG_BIG_TURN_THRESHOLD = 25;
+const DAILY_WORK_LOG_SMALL_TURN_THRESHOLD = 25;
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -59,13 +64,27 @@ function formatDateKey(value: string) {
   return `${year}-${month}-${day}`;
 }
 
+function parseDateInputValue(value: string) {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const [, year, month, day] = match;
+
+  return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
 function formatDateLabel(value: string) {
+  const localDate = parseDateInputValue(value);
+
   return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(localDate ?? new Date(value));
 }
 
 function formatTime(value: string) {
@@ -125,18 +144,22 @@ function getTicketFilterHref({
   return `/pos-tickets?${params.toString()}`;
 }
 
-function getLedgerTurnDisplay(item: PosTicketItemWithRelations) {
+function getItemTurnType(item: PosTicketItemWithRelations): StaffTurnSequence["type"] {
   const quantity = item.quantity > 0 ? item.quantity : 1;
   const perServiceAmount =
     item.unit_price > 0 ? item.unit_price : item.line_total / quantity;
-  const bigTurns = perServiceAmount >= DAILY_WORK_LOG_BIG_TURN_THRESHOLD
-    ? quantity
-    : 0;
-  const smallTurns = perServiceAmount < DAILY_WORK_LOG_BIG_TURN_THRESHOLD
-    ? quantity
-    : 0;
 
-  return `Turn ${formatNumber(bigTurns)}|${formatNumber(smallTurns)}`;
+  return perServiceAmount >= DAILY_WORK_LOG_SMALL_TURN_THRESHOLD ? "big" : "small";
+}
+
+function getTurnLabel(turn: StaffTurnSequence | undefined) {
+  if (!turn) {
+    return "";
+  }
+
+  return turn.type === "big"
+    ? `Big Turn ${turn.sequence}`
+    : `Small Turn ${turn.sequence}`;
 }
 
 function groupItemsByStaff(items: PosTicketItemWithRelations[]) {
@@ -154,6 +177,7 @@ function groupItemsByStaff(items: PosTicketItemWithRelations[]) {
 
     groups.set(key, {
       items: [item],
+      staffKey: key,
       staffName,
     });
   }
@@ -183,6 +207,39 @@ function buildDailyTicketNumbers(tickets: PosTicketWithRelations[]) {
   return numbers;
 }
 
+function sortTicketsForDailySequence(tickets: PosTicketWithRelations[]) {
+  return [...tickets].sort(
+    (left, right) =>
+      new Date(left.opened_at).getTime() - new Date(right.opened_at).getTime() ||
+      left.ticket_sequence - right.ticket_sequence,
+  );
+}
+
+function buildStaffTurnSequences(tickets: PosTicketWithRelations[]) {
+  const counters = new Map<string, { big: number; small: number }>();
+  const sequences = new Map<string, StaffTurnSequence>();
+
+  for (const ticket of sortTicketsForDailySequence(tickets)) {
+    for (const item of ticket.ticket_items ?? []) {
+      const staffKey = item.assigned_staff_id ?? "unassigned";
+      const turnType = getItemTurnType(item);
+      const current = counters.get(staffKey) ?? { big: 0, small: 0 };
+      const sequence = current[turnType] + 1;
+
+      counters.set(staffKey, {
+        ...current,
+        [turnType]: sequence,
+      });
+      sequences.set(item.id, {
+        sequence,
+        type: turnType,
+      });
+    }
+  }
+
+  return sequences;
+}
+
 function ticketMatchesSearch(
   ticket: PosTicketWithRelations,
   query: string,
@@ -198,11 +255,24 @@ function ticketMatchesSearch(
     String(dailyNumber),
     `#${dailyNumber}`,
     ticket.customer?.name ?? "",
+    formatTime(ticket.opened_at),
     ...(ticket.ticket_items ?? []).flatMap((item) => [
       item.assigned_staff?.display_name ?? "",
       item.service?.name ?? "",
+      String(item.line_total),
+      formatMoney(item.line_total),
     ]),
   ];
+  const totals = calculateTicketTotals({
+    discountType: ticket.discount_type,
+    discountValue: ticket.discount_value,
+    items: ticket.ticket_items ?? [],
+    taxRate: ticket.tax_rate,
+    tipType: ticket.tip_type,
+    tipValue: ticket.tip_value,
+  });
+
+  searchableValues.push(String(totals.subtotal), formatMoney(totals.subtotal));
 
   return searchableValues.some((value) =>
     value.toLowerCase().includes(normalizedQuery),
@@ -221,12 +291,10 @@ function filterTicketsBySearch(
 
 function groupTicketsByDate(tickets: PosTicketWithRelations[]) {
   const dateMap = new Map<string, PosTicketWithRelations[]>();
-  const dateLabels = new Map<string, string>();
 
   for (const ticket of tickets) {
     const dateKey = formatDateKey(ticket.opened_at);
 
-    dateLabels.set(dateKey, formatDateLabel(ticket.opened_at));
     dateMap.set(dateKey, [...(dateMap.get(dateKey) ?? []), ticket]);
   }
 
@@ -234,7 +302,6 @@ function groupTicketsByDate(tickets: PosTicketWithRelations[]) {
     .sort(([left], [right]) => right.localeCompare(left))
     .map<DateGroup>(([dateKey, dateTickets]) => ({
       dateKey,
-      dateLabel: dateLabels.get(dateKey) ?? dateKey,
       tickets: [...dateTickets].sort(
         (left, right) =>
           new Date(left.opened_at).getTime() - new Date(right.opened_at).getTime() ||
@@ -252,14 +319,15 @@ function TicketWorkLogCard({
   dailyNumber,
   filterHref,
   ticket,
+  turnSequences,
 }: {
   canEdit: boolean;
   dailyNumber: number;
   filterHref: (edit?: string) => string;
   ticket: PosTicketWithRelations;
+  turnSequences: Map<string, StaffTurnSequence>;
 }) {
   const items = ticket.ticket_items ?? [];
-  const staffGroups = groupItemsByStaff(items);
   const totals = calculateTicketTotals({
     discountType: ticket.discount_type,
     discountValue: ticket.discount_value,
@@ -294,35 +362,31 @@ function TicketWorkLogCard({
         ) : null}
       </div>
       <div className="divide-y divide-zinc-100">
-        {staffGroups.length === 0 ? (
+        {items.length === 0 ? (
           <div className="px-3 py-2 text-sm text-zinc-500">No services recorded.</div>
         ) : (
-          staffGroups.flatMap((group) =>
-            group.items.map((item) => {
-              const turnDisplay = getLedgerTurnDisplay(item);
-
-              return (
-                <div
-                  className="grid gap-2 px-3 py-1.5 text-sm sm:grid-cols-[96px_minmax(140px,180px)_minmax(180px,1fr)_100px_100px]"
-                  key={item.id}
-                >
-                  <span className="text-zinc-500">{turnDisplay}</span>
-                  <span className="min-w-0 truncate font-medium text-zinc-800">
-                    {group.staffName}
-                  </span>
-                  <span className="min-w-0 truncate text-zinc-700">
-                    {item.service?.name ?? "Service"}
-                  </span>
-                  <span className="font-medium text-zinc-950">
-                    {formatMoney(item.line_total)}
-                  </span>
-                  <span className="text-zinc-700">
-                    {rowTip ? `Tip: ${rowTip}` : ""}
-                  </span>
-                </div>
-              );
-            }),
-          )
+          items.map((item) => (
+            <div
+              className="grid gap-2 px-3 py-1.5 text-sm sm:grid-cols-[116px_minmax(140px,180px)_minmax(180px,1fr)_100px_100px]"
+              key={item.id}
+            >
+              <span className="font-medium text-zinc-700">
+                {getTurnLabel(turnSequences.get(item.id))}
+              </span>
+              <span className="min-w-0 truncate font-medium text-zinc-800">
+                {item.assigned_staff?.display_name ?? "Unassigned"}
+              </span>
+              <span className="min-w-0 truncate text-zinc-700">
+                {item.service?.name ?? "Service"}
+              </span>
+              <span className="font-medium text-zinc-950">
+                {formatMoney(item.line_total)}
+              </span>
+              <span className="text-zinc-700">
+                {rowTip ? `Tip: ${rowTip}` : ""}
+              </span>
+            </div>
+          ))
         )}
       </div>
     </article>
@@ -333,10 +397,12 @@ function EditTicketModal({
   error,
   filterHref,
   ticket,
+  turnSequences,
 }: {
   error?: string;
   filterHref: (edit?: string) => string;
   ticket: PosTicketWithRelations;
+  turnSequences: Map<string, StaffTurnSequence>;
 }) {
   const totals = calculateTicketTotals({
     discountType: ticket.discount_type,
@@ -397,11 +463,11 @@ function EditTicketModal({
           <h3 className="text-sm font-semibold text-zinc-950">Staff and Services</h3>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             {groupItemsByStaff(ticket.ticket_items ?? []).map((group) => (
-              <div className="rounded border border-zinc-200 p-3" key={group.staffName}>
+              <div className="rounded border border-zinc-200 p-3" key={group.staffKey}>
                 <p className="font-semibold text-zinc-950">{group.staffName}</p>
                 <ul className="mt-2 space-y-2">
                   {group.items.map((item) => {
-                    const turnDisplay = getLedgerTurnDisplay(item);
+                    const turnDisplay = getTurnLabel(turnSequences.get(item.id));
 
                     return (
                       <li className="text-sm" key={item.id}>
@@ -480,14 +546,17 @@ function EditTicketModal({
 function WorkLogFilters({
   query,
   selectedDate,
+  todayHref,
 }: {
   query: string;
   selectedDate: string;
+  todayHref: string;
 }) {
   return (
     <form
       action="/pos-tickets"
-      className="mt-4 grid gap-3 border-b border-zinc-200 pb-4 sm:grid-cols-[180px_minmax(220px,1fr)_auto]"
+      method="get"
+      className="mt-4 grid gap-3 border-b border-zinc-200 pb-4 sm:grid-cols-[180px_minmax(260px,1fr)_auto_auto]"
     >
       <label className="block">
         <span className="text-xs font-medium uppercase text-zinc-500">Date</span>
@@ -504,24 +573,22 @@ function WorkLogFilters({
           className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
           defaultValue={query}
           name="q"
-          placeholder="Customer, staff, service, or #"
+          placeholder="Customer, staff, service, ticket #, amount, or time"
           type="search"
         />
       </label>
-      <div className="flex items-end gap-2">
-        <button
-          className="h-10 rounded bg-zinc-950 px-4 text-sm font-medium text-white"
-          type="submit"
-        >
-          Filter
-        </button>
-        <Link
-          className="inline-flex h-10 items-center rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
-          href="/pos-tickets"
-        >
-          Today
-        </Link>
-      </div>
+      <button
+        className="h-10 self-end rounded bg-zinc-950 px-4 text-sm font-medium text-white"
+        type="submit"
+      >
+        Search
+      </button>
+      <Link
+        className="inline-flex h-10 items-center self-end rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
+        href={todayHref}
+      >
+        Today
+      </Link>
     </form>
   );
 }
@@ -532,12 +599,14 @@ function DailyWorkLog({
   filterHref,
   groups,
   selectedDateLabel,
+  turnSequences,
 }: {
   canEdit: boolean;
   dailyNumbers: Map<string, number>;
   filterHref: (edit?: string) => string;
   groups: DateGroup[];
   selectedDateLabel: string;
+  turnSequences: Map<string, StaffTurnSequence>;
 }) {
   if (groups.length === 0) {
     return (
@@ -562,7 +631,7 @@ function DailyWorkLog({
         <section key={dateGroup.dateKey}>
           <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
             <h2 className="text-lg font-semibold text-zinc-950">
-              {dateGroup.dateLabel}
+              {selectedDateLabel}
             </h2>
           </div>
           <div className="overflow-hidden rounded border border-zinc-200 bg-white">
@@ -573,6 +642,7 @@ function DailyWorkLog({
                 filterHref={filterHref}
                 key={ticket.id}
                 ticket={ticket}
+                turnSequences={turnSequences}
               />
             ))}
           </div>
@@ -616,8 +686,10 @@ export default async function PosTicketsPage({
   const selectedDate = isDateInputValue(date)
     ? date!
     : getTodayDate(context.user.timezone);
+  const today = getTodayDate(context.user.timezone);
   const searchQuery = q?.trim() ?? "";
-  const selectedDateLabel = formatDateLabel(`${selectedDate}T00:00:00`);
+  const selectedDateLabel = formatDateLabel(selectedDate);
+  const todayHref = getTicketFilterHref({ date: today });
   const filterHref = (editTicketId?: string) =>
     getTicketFilterHref({
       date: selectedDate,
@@ -629,6 +701,7 @@ export default async function PosTicketsPage({
     getCurrentSalonPosTickets(getDayBounds(selectedDate)),
   ]);
   const dailyNumbers = buildDailyTicketNumbers(tickets);
+  const turnSequences = buildStaffTurnSequences(tickets);
   const visibleTickets = filterTicketsBySearch(tickets, searchQuery, dailyNumbers);
   const groups = groupTicketsByDate(visibleTickets);
   const editTicket = edit ? tickets.find((ticket) => ticket.id === edit) : null;
@@ -644,7 +717,11 @@ export default async function PosTicketsPage({
         </p>
       </div>
 
-      <WorkLogFilters query={searchQuery} selectedDate={selectedDate} />
+      <WorkLogFilters
+        query={searchQuery}
+        selectedDate={selectedDate}
+        todayHref={todayHref}
+      />
 
       <DailyWorkLog
         canEdit={canManageTickets}
@@ -652,6 +729,7 @@ export default async function PosTicketsPage({
         filterHref={filterHref}
         groups={groups}
         selectedDateLabel={selectedDateLabel}
+        turnSequences={turnSequences}
       />
 
       {editTicket ? (
@@ -659,6 +737,7 @@ export default async function PosTicketsPage({
           error={error}
           filterHref={filterHref}
           ticket={editTicket}
+          turnSequences={turnSequences}
         />
       ) : null}
     </main>
