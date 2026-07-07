@@ -118,8 +118,92 @@ function readJsonArray<T>(formData: FormData, key: string): T[] {
   return parsed as T[];
 }
 
-function toCents(value: number) {
-  return Math.round((value + Number.EPSILON) * 100);
+function getSafeErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof error.message === "string" &&
+    error.message
+  ) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
+function toCents(value: number | string) {
+  const numeric = typeof value === "string" ? Number(value) : value;
+
+  if (!Number.isFinite(numeric)) {
+    return Number.NaN;
+  }
+
+  return Math.round(numeric * 100);
+}
+
+function fromCents(value: number) {
+  return value / 100;
+}
+
+function normalizePartsInput(parts: Array<{ amount: unknown }> | undefined) {
+  if (!Array.isArray(parts)) {
+    return [];
+  }
+
+  return parts.map((part) => {
+    if (!part || typeof part !== "object" || !("amount" in part)) {
+      throw new Error("Part amount is required.");
+    }
+
+    if (
+      part.amount === null ||
+      part.amount === undefined ||
+      (typeof part.amount === "string" && part.amount.trim() === "")
+    ) {
+      throw new Error("Part amount is required.");
+    }
+
+    const amount = Number(part.amount);
+
+    if (!Number.isFinite(amount)) {
+      throw new Error("Part amount is required.");
+    }
+
+    if (amount <= 0) {
+      throw new Error("Part amount must be greater than 0.");
+    }
+
+    return Math.round(amount * 100) / 100;
+  });
+}
+
+function sumParts(parts: number[]) {
+  return Math.round(
+    parts.reduce((total, amount) => total + amount, 0) * 100,
+  ) / 100;
+}
+
+function validatePositiveParts(parts: number[], label: string) {
+  if (parts.length === 0) {
+    throw new Error(`${label} must include at least one part.`);
+  }
+
+  if (parts.some((amount) => !Number.isFinite(amount))) {
+    throw new Error("Part amount is required.");
+  }
+
+  if (parts.some((amount) => amount <= 0)) {
+    throw new Error("Part amount must be greater than 0.");
+  }
+
+  if (sumParts(parts) <= 0) {
+    throw new Error(`${label} total must be greater than 0.`);
+  }
 }
 
 function formatDateInTimeZone(value: string, timeZone: string) {
@@ -164,24 +248,44 @@ const TIP_TYPE_VALUES = ["fixed_amount", "percentage"] as const;
 
 type ClosedTicketItemUpdateInput = {
   item_id: string;
-  quantity: number;
+  parts: Array<{ amount: unknown }>;
   remove: boolean;
   service_id: string | null;
   staff_id: string | null;
-  unit_price: number;
+};
+
+type ClosedTicketItemPartsInput = {
+  item_id: string;
+  parts: Array<{ amount: unknown }>;
 };
 
 type ClosedTicketAddedItemInput = {
-  quantity: number;
+  parts: Array<{ amount: unknown }>;
   service_id: string;
   staff_id: string;
-  unit_price: number;
 };
 
 type ClosedTicketStaffTipOverrideInput = {
   is_manual: boolean;
   staff_id: string;
   tip_amount: number;
+};
+
+type TurnPartInsertRow = {
+  amount: number;
+  organization_id: string;
+  salon_id: string;
+  staff_id: string;
+  ticket_id: string;
+  ticket_item_id: string;
+  turn_index: number;
+  turn_type: "large" | "small";
+  work_date: string;
+};
+
+type ExistingTurnPartRow = TurnPartInsertRow & {
+  created_at?: string;
+  id?: string;
 };
 
 async function requirePosTicketMutationContext(editId?: string) {
@@ -309,7 +413,7 @@ async function loadClosedCorrectionSnapshot({
       supabase
         .from("pos_tickets")
         .select(
-          "id, organization_id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at, ticket_items:pos_ticket_items(id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, amount, turn_type, turn_index))",
+          "id, organization_id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at, ticket_items:pos_ticket_items(id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date, created_at))",
         )
         .eq("id", ticketId)
         .eq("organization_id", organizationId)
@@ -368,31 +472,27 @@ async function assertWorkDateIsUnlocked({
 }
 
 function buildTurnPartRows({
-  amount,
   itemId,
   organizationId,
-  quantity,
+  parts,
   salonId,
   staffId,
   ticketId,
   workDate,
 }: {
-  amount: number;
   itemId: string;
   organizationId: string;
-  quantity: number;
+  parts: number[];
   salonId: string;
   staffId: string | null;
   ticketId: string;
   workDate: string;
-}) {
-  if (!staffId || amount <= 0) {
+}): TurnPartInsertRow[] {
+  if (!staffId) {
     return [];
   }
 
-  const turnCount = Math.max(1, Math.round(quantity || 1));
-
-  return Array.from({ length: turnCount }, (_, index) => ({
+  return parts.filter((amount) => amount > 0).map((amount, index) => ({
     amount,
     organization_id: organizationId,
     salon_id: salonId,
@@ -405,27 +505,102 @@ function buildTurnPartRows({
   }));
 }
 
+function assertTurnPartRows(rows: TurnPartInsertRow[], allowEmpty = false) {
+  if (!allowEmpty && rows.length === 0) {
+    throw new Error("Part amount is required.");
+  }
+
+  for (const row of rows) {
+    if (
+      !row.organization_id ||
+      !row.salon_id ||
+      !row.ticket_id ||
+      !row.ticket_item_id ||
+      !row.staff_id
+    ) {
+      throw new Error("Unable to rebuild turn parts: missing required row scope.");
+    }
+
+    if (!Number.isFinite(row.amount)) {
+      throw new Error("Part amount is required.");
+    }
+
+    if (row.amount <= 0) {
+      throw new Error("Part amount must be greater than 0.");
+    }
+
+    if (!Number.isInteger(row.turn_index) || row.turn_index <= 0) {
+      throw new Error("Unable to rebuild turn parts: invalid part order.");
+    }
+
+    if (row.turn_type !== "large" && row.turn_type !== "small") {
+      throw new Error("Unable to rebuild turn parts: invalid turn type.");
+    }
+  }
+}
+
+function restoreTurnPartRows(rows: ExistingTurnPartRow[]) {
+  return rows
+    .filter((row) => row.staff_id && row.amount > 0)
+    .map<TurnPartInsertRow>((row) => ({
+      amount: row.amount,
+      organization_id: row.organization_id,
+      salon_id: row.salon_id,
+      staff_id: row.staff_id,
+      ticket_id: row.ticket_id,
+      ticket_item_id: row.ticket_item_id,
+      turn_index: row.turn_index,
+      turn_type: row.turn_type,
+      work_date: row.work_date,
+    }));
+}
+
 async function rebuildCorrectionTurnParts({
   itemId,
   organizationId,
-  quantity,
+  parts,
   salonId,
   staffId,
   supabase,
   ticketId,
-  unitPrice,
   workDate,
 }: {
   itemId: string;
   organizationId: string;
-  quantity: number;
+  parts: number[];
   salonId: string;
   staffId: string | null;
   supabase: NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>>;
   ticketId: string;
-  unitPrice: number;
   workDate: string;
 }) {
+  const turnRows = buildTurnPartRows({
+    itemId,
+    organizationId,
+    parts,
+    salonId,
+    staffId,
+    ticketId,
+    workDate,
+  });
+  assertTurnPartRows(turnRows, !staffId && parts.length === 0);
+
+  const { data: existingRows, error: existingError } = await supabase
+    .from("pos_ticket_item_turn_parts")
+    .select(
+      "organization_id, salon_id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date",
+    )
+    .eq("ticket_item_id", itemId)
+    .eq("organization_id", organizationId)
+    .eq("salon_id", salonId)
+    .returns<ExistingTurnPartRow[]>();
+
+  if (existingError) {
+    throw new Error(
+      `Unable to rebuild turn parts: ${getSafeErrorMessage(existingError, "load failed")}`,
+    );
+  }
+
   const { error: deleteError } = await supabase
     .from("pos_ticket_item_turn_parts")
     .delete()
@@ -434,19 +609,10 @@ async function rebuildCorrectionTurnParts({
     .eq("salon_id", salonId);
 
   if (deleteError) {
-    throw deleteError;
+    throw new Error(
+      `Unable to rebuild turn parts: ${getSafeErrorMessage(deleteError, "delete failed")}`,
+    );
   }
-
-  const turnRows = buildTurnPartRows({
-    amount: unitPrice,
-    itemId,
-    organizationId,
-    quantity,
-    salonId,
-    staffId,
-    ticketId,
-    workDate,
-  });
 
   if (turnRows.length === 0) {
     return;
@@ -457,7 +623,26 @@ async function rebuildCorrectionTurnParts({
     .insert(turnRows);
 
   if (insertError) {
-    throw insertError;
+    const restoreRows = restoreTurnPartRows(existingRows ?? []);
+
+    if (restoreRows.length > 0) {
+      const { error: restoreError } = await supabase
+        .from("pos_ticket_item_turn_parts")
+        .insert(restoreRows);
+
+      if (restoreError) {
+        throw new Error(
+          `Unable to rebuild turn parts: ${getSafeErrorMessage(
+            insertError,
+            "insert failed",
+          )}; restore failed: ${getSafeErrorMessage(restoreError, "restore failed")}`,
+        );
+      }
+    }
+
+    throw new Error(
+      `Unable to rebuild turn parts: ${getSafeErrorMessage(insertError, "insert failed")}`,
+    );
   }
 }
 
@@ -1603,12 +1788,11 @@ export async function correctClosedPosTicket(formData: FormData) {
       await rebuildCorrectionTurnParts({
         itemId: item.id,
         organizationId: organization.id,
-        quantity: 0,
+        parts: [],
         salonId: salon.id,
         staffId: null,
         supabase,
         ticketId,
-        unitPrice: 0,
         workDate,
       });
 
@@ -1636,12 +1820,11 @@ export async function correctClosedPosTicket(formData: FormData) {
         await rebuildCorrectionTurnParts({
           itemId: replacement.id,
           organizationId: organization.id,
-          quantity,
+          parts: Array.from({ length: Math.max(1, Math.round(quantity)) }, () => unitPrice),
           salonId: salon.id,
           staffId: assignedStaffId,
           supabase,
           ticketId,
-          unitPrice,
           workDate,
         });
       }
@@ -1664,12 +1847,11 @@ export async function correctClosedPosTicket(formData: FormData) {
       await rebuildCorrectionTurnParts({
         itemId: item.id,
         organizationId: organization.id,
-        quantity,
+        parts: Array.from({ length: Math.max(1, Math.round(quantity)) }, () => unitPrice),
         salonId: salon.id,
         staffId: assignedStaffId,
         supabase,
         ticketId,
-        unitPrice,
         workDate,
       });
     }
@@ -1702,8 +1884,10 @@ export async function correctClosedPosTicket(formData: FormData) {
       throw adjustmentError;
     }
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unable to correct closed ticket.";
+    const message = getSafeErrorMessage(
+      error,
+      "Unable to correct closed ticket.",
+    );
     console.error("Supabase correct closed POS ticket failed", {
       message,
       itemId,
@@ -1741,6 +1925,10 @@ export async function correctClosedPosTicketInline(formData: FormData) {
     const itemUpdates = readJsonArray<ClosedTicketItemUpdateInput>(
       formData,
       "item_updates",
+    );
+    const itemParts = readJsonArray<ClosedTicketItemPartsInput>(
+      formData,
+      "item_parts",
     );
     const addedItems = readJsonArray<ClosedTicketAddedItemInput>(
       formData,
@@ -1823,8 +2011,64 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       throw itemsError;
     }
 
+    const currentItemIds = (currentItems ?? []).map((item) => item.id);
+    const currentPartsByItemId = new Map<string, number[]>();
+
+    if (currentItemIds.length > 0) {
+      const { data: currentParts, error: currentPartsError } = await supabase
+        .from("pos_ticket_item_turn_parts")
+        .select("ticket_item_id, amount, turn_index, created_at, id")
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id)
+        .in("ticket_item_id", currentItemIds)
+        .returns<
+          Array<{
+            amount: number;
+            created_at: string;
+            id: string;
+            ticket_item_id: string;
+            turn_index: number;
+          }>
+        >();
+
+      if (currentPartsError) {
+        throw currentPartsError;
+      }
+
+      for (const part of [...(currentParts ?? [])].sort(
+        (left, right) =>
+          left.turn_index - right.turn_index ||
+          new Date(left.created_at).getTime() - new Date(right.created_at).getTime() ||
+          left.id.localeCompare(right.id),
+      )) {
+        currentPartsByItemId.set(part.ticket_item_id, [
+          ...(currentPartsByItemId.get(part.ticket_item_id) ?? []),
+          part.amount,
+        ]);
+      }
+    }
+
     const currentItemById = new Map((currentItems ?? []).map((item) => [item.id, item]));
     const updateIds = new Set<string>();
+    const submittedItemPartsById = new Map<string, number[]>();
+    const submittedItemPartIds = new Set<string>();
+    const normalizedUpdateParts = new Map<string, number[]>();
+    const normalizedAddedParts = new Map<number, number[]>();
+
+    for (const itemPart of itemParts) {
+      if (!itemPart.item_id || submittedItemPartIds.has(itemPart.item_id)) {
+        throw new Error("Each active line must include one unique parts payload.");
+      }
+
+      if (!currentItemById.has(itemPart.item_id)) {
+        throw new Error("Submitted line parts must belong to the selected ticket.");
+      }
+
+      const parts = normalizePartsInput(itemPart.parts);
+      validatePositiveParts(parts, "Active line");
+      submittedItemPartsById.set(itemPart.item_id, parts);
+      submittedItemPartIds.add(itemPart.item_id);
+    }
 
     for (const update of itemUpdates) {
       if (!update.item_id || updateIds.has(update.item_id)) {
@@ -1838,36 +2082,29 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       updateIds.add(update.item_id);
 
       if (!update.remove) {
-        if (!update.service_id) {
-          throw new Error("Service is required for corrected lines.");
+        const parts =
+          normalizePartsInput(update.parts).length > 0
+            ? normalizePartsInput(update.parts)
+            : submittedItemPartsById.get(update.item_id) ?? [];
+        normalizedUpdateParts.set(update.item_id, parts);
+
+        if (!update.service_id || !update.staff_id) {
+          throw new Error("Active lines require staff and service.");
         }
 
-        if (!update.staff_id) {
-          throw new Error("Staff is required for corrected lines.");
-        }
-
-        if (!Number.isFinite(update.quantity) || update.quantity <= 0) {
-          throw new Error("Quantity must be greater than 0.");
-        }
-
-        if (!Number.isFinite(update.unit_price) || update.unit_price < 0) {
-          throw new Error("Amount must be greater than or equal to 0.");
-        }
+        validatePositiveParts(parts, "Corrected line");
       }
     }
 
-    for (const addedItem of addedItems) {
+    for (const [index, addedItem] of addedItems.entries()) {
+      const parts = normalizePartsInput(addedItem.parts);
+      normalizedAddedParts.set(index, parts);
+
       if (!addedItem.service_id || !addedItem.staff_id) {
-        throw new Error("Added lines require staff and service.");
+        throw new Error("Active lines require staff and service.");
       }
 
-      if (!Number.isFinite(addedItem.quantity) || addedItem.quantity <= 0) {
-        throw new Error("Added line quantity must be greater than 0.");
-      }
-
-      if (!Number.isFinite(addedItem.unit_price) || addedItem.unit_price <= 0) {
-        throw new Error("Added line amount must be greater than 0.");
-      }
+      validatePositiveParts(parts, "Added line");
     }
 
     const serviceIds = Array.from(
@@ -1926,14 +2163,15 @@ export async function correctClosedPosTicketInline(formData: FormData) {
 
     const finalItems = new Map<
       string,
-      { line_total: number; staff_id: string; unit_price: number }
+      { line_total: number; staff_id: string }
     >();
 
     for (const item of currentItems ?? []) {
+      const existingParts =
+        submittedItemPartsById.get(item.id) ?? currentPartsByItemId.get(item.id);
       finalItems.set(item.id, {
-        line_total: item.quantity * item.unit_price,
+        line_total: existingParts?.length ? sumParts(existingParts) : item.line_total,
         staff_id: item.assigned_staff_id ?? "",
-        unit_price: item.unit_price,
       });
     }
 
@@ -1941,33 +2179,50 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       if (update.remove) {
         finalItems.delete(update.item_id);
       } else {
+        const parts = normalizedUpdateParts.get(update.item_id) ?? [];
         finalItems.set(update.item_id, {
-          line_total: update.quantity * update.unit_price,
+          line_total: sumParts(parts),
           staff_id: update.staff_id ?? "",
-          unit_price: update.unit_price,
         });
       }
     }
 
     for (const [index, item] of addedItems.entries()) {
+      const parts = normalizedAddedParts.get(index) ?? [];
       finalItems.set(`added-${index}`, {
-        line_total: item.quantity * item.unit_price,
+        line_total: sumParts(parts),
         staff_id: item.staff_id,
-        unit_price: item.unit_price,
       });
     }
 
+    const finalStaffIdsWithRepeats = Array.from(finalItems.values())
+      .map((item) => item.staff_id)
+      .filter(Boolean);
+    const duplicateStaffId = finalStaffIdsWithRepeats.find(
+      (staffId, index) => finalStaffIdsWithRepeats.indexOf(staffId) !== index,
+    );
+
+    if (duplicateStaffId) {
+      throw new Error("Each staff member can appear only once on a ticket.");
+    }
+
     const finalStaffIds = Array.from(
-      new Set(
-        Array.from(finalItems.values())
-          .map((item) => item.staff_id)
-          .filter(Boolean),
-      ),
+      new Set(finalStaffIdsWithRepeats),
     );
     const finalStaffIdSet = new Set(finalStaffIds);
     const manualOverrides = staffTipOverrides.filter((override) => override.is_manual);
+    const manualOverrideStaffIds = new Set(
+      manualOverrides.map((override) => override.staff_id),
+    );
+    const overrideStaffIds = new Set<string>();
 
     for (const override of staffTipOverrides) {
+      if (!override.staff_id || overrideStaffIds.has(override.staff_id)) {
+        throw new Error("Each staff tip override must reference one unique staff member.");
+      }
+
+      overrideStaffIds.add(override.staff_id);
+
       if (!finalStaffIdSet.has(override.staff_id)) {
         throw new Error("Staff tip overrides must belong to staff with active ticket services.");
       }
@@ -1982,6 +2237,10 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       0,
     );
     const tipTotalCents = toCents(tipTotal);
+
+    if (!Number.isFinite(tipTotalCents)) {
+      throw new Error("Total tip must be zero or greater.");
+    }
 
     if (manualTipCents > tipTotalCents) {
       throw new Error("Manual staff tips cannot exceed total tip.");
@@ -1998,7 +2257,14 @@ export async function correctClosedPosTicketInline(formData: FormData) {
     const currentTotals = calculateTicketTotals({
       discountType: ticket.discount_type,
       discountValue: ticket.discount_value,
-      items: currentItems ?? [],
+      items: (currentItems ?? []).map((item) => {
+        const existingParts =
+          submittedItemPartsById.get(item.id) ?? currentPartsByItemId.get(item.id);
+
+        return {
+          line_total: existingParts?.length ? sumParts(existingParts) : item.line_total,
+        };
+      }),
       taxRate: ticket.tax_rate,
       tipType: ticket.tip_type,
       tipValue: ticket.tip_value,
@@ -2018,6 +2284,7 @@ export async function correctClosedPosTicketInline(formData: FormData) {
     });
     const now = new Date().toISOString();
     const replacementItemIds: string[] = [];
+    const shouldRefreshUnchangedParts = hasTipChange || hasManualTipChange;
 
     for (const update of itemUpdates) {
       const currentItem = currentItemById.get(update.item_id);
@@ -2028,7 +2295,39 @@ export async function correctClosedPosTicketInline(formData: FormData) {
 
       const serviceChanged = update.service_id !== currentItem.service_id;
 
-      if (update.remove || serviceChanged) {
+      if (serviceChanged && !update.remove) {
+        const parts = normalizedUpdateParts.get(update.item_id) ?? [];
+        const lineTotal = sumParts(parts);
+        const { data: replacement, error: replacementError } = await supabase
+          .from("pos_ticket_items")
+          .insert({
+            assigned_staff_id: update.staff_id,
+            notes: currentItem.notes,
+            organization_id: organization.id,
+            pos_ticket_id: ticketId,
+            quantity: 1,
+            salon_id: salon.id,
+            service_id: update.service_id,
+            unit_price: lineTotal,
+          })
+          .select("id")
+          .single<{ id: string }>();
+
+        if (replacementError) {
+          throw replacementError;
+        }
+
+        await rebuildCorrectionTurnParts({
+          itemId: replacement.id,
+          organizationId: organization.id,
+          parts,
+          salonId: salon.id,
+          staffId: update.staff_id,
+          supabase,
+          ticketId,
+          workDate,
+        });
+
         const { error: removeError } = await supabase
           .from("pos_ticket_items")
           .update({
@@ -2048,55 +2347,51 @@ export async function correctClosedPosTicketInline(formData: FormData) {
         await rebuildCorrectionTurnParts({
           itemId: currentItem.id,
           organizationId: organization.id,
-          quantity: 0,
+          parts: [],
           salonId: salon.id,
           staffId: null,
           supabase,
           ticketId,
-          unitPrice: 0,
           workDate,
         });
 
-        if (!update.remove) {
-          const { data: replacement, error: replacementError } = await supabase
-            .from("pos_ticket_items")
-            .insert({
-              assigned_staff_id: update.staff_id,
-              notes: currentItem.notes,
-              organization_id: organization.id,
-              pos_ticket_id: ticketId,
-              quantity: update.quantity,
-              salon_id: salon.id,
-              service_id: update.service_id,
-              unit_price: update.unit_price,
-            })
-            .select("id")
-            .single<{ id: string }>();
+        replacementItemIds.push(replacement.id);
+      } else if (update.remove) {
+        const { error: removeError } = await supabase
+          .from("pos_ticket_items")
+          .update({
+            is_removed: true,
+            removal_reason: reason,
+            removed_at: now,
+            removed_by: user.id,
+          })
+          .eq("id", currentItem.id)
+          .eq("organization_id", organization.id)
+          .eq("salon_id", salon.id);
 
-          if (replacementError) {
-            throw replacementError;
-          }
-
-          replacementItemIds.push(replacement.id);
-          await rebuildCorrectionTurnParts({
-            itemId: replacement.id,
-            organizationId: organization.id,
-            quantity: update.quantity,
-            salonId: salon.id,
-            staffId: update.staff_id,
-            supabase,
-            ticketId,
-            unitPrice: update.unit_price,
-            workDate,
-          });
+        if (removeError) {
+          throw removeError;
         }
+
+        await rebuildCorrectionTurnParts({
+          itemId: currentItem.id,
+          organizationId: organization.id,
+          parts: [],
+          salonId: salon.id,
+          staffId: null,
+          supabase,
+          ticketId,
+          workDate,
+        });
       } else {
+        const parts = normalizedUpdateParts.get(update.item_id) ?? [];
+        const lineTotal = sumParts(parts);
         const { error: updateError } = await supabase
           .from("pos_ticket_items")
           .update({
             assigned_staff_id: update.staff_id,
-            quantity: update.quantity,
-            unit_price: update.unit_price,
+            quantity: 1,
+            unit_price: lineTotal,
           })
           .eq("id", currentItem.id)
           .eq("organization_id", organization.id)
@@ -2109,28 +2404,69 @@ export async function correctClosedPosTicketInline(formData: FormData) {
         await rebuildCorrectionTurnParts({
           itemId: currentItem.id,
           organizationId: organization.id,
-          quantity: update.quantity,
+          parts,
           salonId: salon.id,
           staffId: update.staff_id,
           supabase,
           ticketId,
-          unitPrice: update.unit_price,
           workDate,
         });
       }
     }
 
-    for (const addedItem of addedItems) {
+    if (shouldRefreshUnchangedParts) {
+      for (const currentItem of currentItems ?? []) {
+        if (updateIds.has(currentItem.id)) {
+          continue;
+        }
+
+        const parts = submittedItemPartsById.get(currentItem.id);
+
+        if (!parts) {
+          continue;
+        }
+
+        const lineTotal = sumParts(parts);
+        const { error: unchangedUpdateError } = await supabase
+          .from("pos_ticket_items")
+          .update({
+            quantity: 1,
+            unit_price: lineTotal,
+          })
+          .eq("id", currentItem.id)
+          .eq("organization_id", organization.id)
+          .eq("salon_id", salon.id);
+
+        if (unchangedUpdateError) {
+          throw unchangedUpdateError;
+        }
+
+        await rebuildCorrectionTurnParts({
+          itemId: currentItem.id,
+          organizationId: organization.id,
+          parts,
+          salonId: salon.id,
+          staffId: currentItem.assigned_staff_id,
+          supabase,
+          ticketId,
+          workDate,
+        });
+      }
+    }
+
+    for (const [index, addedItem] of addedItems.entries()) {
+      const parts = normalizedAddedParts.get(index) ?? [];
+      const lineTotal = sumParts(parts);
       const { data: insertedItem, error: insertError } = await supabase
         .from("pos_ticket_items")
         .insert({
           assigned_staff_id: addedItem.staff_id,
           organization_id: organization.id,
           pos_ticket_id: ticketId,
-          quantity: addedItem.quantity,
+          quantity: 1,
           salon_id: salon.id,
           service_id: addedItem.service_id,
-          unit_price: addedItem.unit_price,
+          unit_price: lineTotal,
         })
         .select("id")
         .single<{ id: string }>();
@@ -2143,12 +2479,11 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       await rebuildCorrectionTurnParts({
         itemId: insertedItem.id,
         organizationId: organization.id,
-        quantity: addedItem.quantity,
+        parts,
         salonId: salon.id,
         staffId: addedItem.staff_id,
         supabase,
         ticketId,
-        unitPrice: addedItem.unit_price,
         workDate,
       });
     }
@@ -2167,9 +2502,32 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       throw tipError;
     }
 
+    if (hasTipChange) {
+      const autoStaffIds = finalStaffIds.filter(
+        (staffId) => !manualOverrideStaffIds.has(staffId),
+      );
+
+      if (autoStaffIds.length > 0) {
+        const { error: clearAutoTipsError } = await supabase
+          .from("pos_ticket_staff_earnings")
+          .update({
+            manual_tip_amount: null,
+            tip_is_manual: false,
+          })
+          .eq("organization_id", organization.id)
+          .eq("salon_id", salon.id)
+          .eq("ticket_id", ticketId)
+          .in("staff_id", autoStaffIds);
+
+        if (clearAutoTipsError) {
+          throw clearAutoTipsError;
+        }
+      }
+    }
+
     for (const override of staffTipOverrides) {
       if (override.is_manual) {
-        const manualTipAmount = Math.round((override.tip_amount + Number.EPSILON) * 100) / 100;
+        const manualTipAmount = fromCents(toCents(override.tip_amount));
         const { error: manualTipError } = await supabase
           .from("pos_ticket_staff_earnings")
           .upsert(
@@ -2247,8 +2605,10 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       throw adjustmentError;
     }
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unable to correct closed ticket.";
+    const message = getSafeErrorMessage(
+      error,
+      "Unable to correct closed ticket.",
+    );
     console.error("Supabase inline correct closed POS ticket failed", {
       message,
       salonId: salon.id,

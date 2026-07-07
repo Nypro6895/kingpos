@@ -22,14 +22,23 @@ export type PosTicketItem = {
 
 export type PosTicketItemWithRelations = PosTicketItem & {
   assigned_staff: Pick<Staff, "id" | "display_name" | "job_title"> | null;
+  running_turns?: {
+    big: number | null;
+    small: number | null;
+  };
   service: Pick<
     Service,
     "id" | "name" | "category" | "base_price" | "duration_minutes"
   > | null;
   turn_parts?: Array<{
     amount: number;
+    created_at?: string;
     id: string;
+    staff_id?: string;
+    ticket_id?: string;
+    ticket_item_id?: string;
     turn_index: number;
     turn_type: "large" | "small";
+    work_date?: string;
   }>;
 };

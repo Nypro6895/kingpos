@@ -11,6 +11,7 @@ import type { PosTicketWithRelations } from "@/types/pos-ticket";
 import type { PosTicketStaffEarningWithStaff } from "@/types/pos-ticket-staff-earning";
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
+import type { KingUser } from "@/types/user";
 import type {
   StaffWorkdayStatus,
   StaffWorkdayWithStaff,
@@ -25,10 +26,40 @@ export const POS_TICKET_ITEM_SELECT =
 export const POS_TICKET_AUDIT_LOG_SELECT =
   "id, organization_id, salon_id, ticket_id, action, note, created_by, created_at, created_by_user:users(id, display_name, email)";
 
-export const POS_TICKET_WITH_RELATIONS_SELECT = `${POS_TICKET_SELECT}, audit_logs:pos_ticket_audit_logs(${POS_TICKET_AUDIT_LOG_SELECT}), customer:customers(id, name, phone, email), payments:pos_payments(${POS_PAYMENT_SELECT}), ticket_items:pos_ticket_items(${POS_TICKET_ITEM_SELECT}, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, amount, turn_type, turn_index))`;
+export const POS_TICKET_WITH_RELATIONS_SELECT = `${POS_TICKET_SELECT}, audit_logs:pos_ticket_audit_logs(${POS_TICKET_AUDIT_LOG_SELECT}), customer:customers(id, name, phone, email), payments:pos_payments(${POS_PAYMENT_SELECT}), ticket_items:pos_ticket_items(${POS_TICKET_ITEM_SELECT}, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date, created_at))`;
 
 const POS_TICKET_STAFF_EARNING_SELECT =
   "id, organization_id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at";
+
+const POS_TICKET_TURN_PART_SELECT =
+  "id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date, created_at";
+
+type PosTicketTurnPartRow = {
+  amount: number;
+  created_at: string;
+  id: string;
+  staff_id: string;
+  ticket_id: string;
+  ticket_item_id: string;
+  turn_index: number;
+  turn_type: "large" | "small";
+  work_date: string;
+};
+
+type PosTicketItemTurnPart = PosTicketTurnPartRow;
+
+type PosTicketAdjustmentRow = {
+  action: "item_corrected" | "item_removed" | "item_replaced";
+  after_snapshot: unknown;
+  before_snapshot: unknown;
+  created_at: string;
+  created_by: string;
+  id: string;
+  reason: string;
+  ticket_id: string;
+};
+
+const DAILY_WORK_LOG_BIG_TURN_THRESHOLD = 25;
 
 export const POS_TICKET_PERMISSIONS = {
   void: "tickets.void",
@@ -176,6 +207,292 @@ async function attachStaffEarningsToTickets(input: {
   }));
 }
 
+async function loadAdjustmentsForTickets(input: {
+  organizationId: string;
+  salonId: string;
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+  ticketIds: string[];
+}) {
+  if (input.ticketIds.length === 0) {
+    return new Map<string, NonNullable<PosTicketWithRelations["adjustments"]>>();
+  }
+
+  const { data: adjustments, error } = await input.supabase
+    .from("pos_ticket_adjustments")
+    .select("id, ticket_id, action, reason, before_snapshot, after_snapshot, created_by, created_at")
+    .eq("organization_id", input.organizationId)
+    .eq("salon_id", input.salonId)
+    .in("ticket_id", input.ticketIds)
+    .order("created_at", { ascending: false })
+    .returns<PosTicketAdjustmentRow[]>();
+
+  if (error) {
+    console.error("Supabase load POS ticket adjustments failed", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      salonId: input.salonId,
+      organizationId: input.organizationId,
+      ticketIds: input.ticketIds,
+    });
+    throw new Error(error.message);
+  }
+
+  const userIds = Array.from(
+    new Set((adjustments ?? []).map((adjustment) => adjustment.created_by)),
+  );
+  const usersById = new Map<string, Pick<KingUser, "id" | "display_name" | "email">>();
+
+  if (userIds.length > 0) {
+    const { data: users, error: usersError } = await input.supabase
+      .from("users")
+      .select("id, display_name, email")
+      .in("id", userIds)
+      .returns<Array<Pick<KingUser, "id" | "display_name" | "email">>>();
+
+    if (usersError) {
+      console.error("Supabase load POS ticket adjustment users failed", {
+        code: usersError.code,
+        message: usersError.message,
+        details: usersError.details,
+        hint: usersError.hint,
+        salonId: input.salonId,
+        organizationId: input.organizationId,
+        userIds,
+      });
+      throw new Error(usersError.message);
+    }
+
+    for (const user of users ?? []) {
+      usersById.set(user.id, user);
+    }
+  }
+
+  const adjustmentsByTicketId = new Map<
+    string,
+    NonNullable<PosTicketWithRelations["adjustments"]>
+  >();
+
+  for (const adjustment of adjustments ?? []) {
+    adjustmentsByTicketId.set(adjustment.ticket_id, [
+      ...(adjustmentsByTicketId.get(adjustment.ticket_id) ?? []),
+      {
+        ...adjustment,
+        created_by_user: usersById.get(adjustment.created_by) ?? null,
+      },
+    ]);
+  }
+
+  return adjustmentsByTicketId;
+}
+
+async function attachAdjustmentsToTickets(input: {
+  organizationId: string;
+  salonId: string;
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+  tickets: PosTicketWithRelations[];
+}) {
+  const adjustmentsByTicketId = await loadAdjustmentsForTickets({
+    organizationId: input.organizationId,
+    salonId: input.salonId,
+    supabase: input.supabase,
+    ticketIds: input.tickets.map((ticket) => ticket.id),
+  });
+
+  return input.tickets.map((ticket) => ({
+    ...ticket,
+    adjustments: adjustmentsByTicketId.get(ticket.id) ?? [],
+  }));
+}
+
+async function attachTurnPartsToTickets(input: {
+  organizationId: string;
+  salonId: string;
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+  tickets: PosTicketWithRelations[];
+}) {
+  const itemIds = input.tickets.flatMap((ticket) =>
+    (ticket.ticket_items ?? [])
+      .filter((item) => !item.is_removed)
+      .map((item) => item.id),
+  );
+
+  if (itemIds.length === 0) {
+    return input.tickets.map((ticket) => ({
+      ...ticket,
+      ticket_items: (ticket.ticket_items ?? []).filter((item) => !item.is_removed),
+    }));
+  }
+
+  const { data: parts, error } = await input.supabase
+    .from("pos_ticket_item_turn_parts")
+    .select(POS_TICKET_TURN_PART_SELECT)
+    .eq("organization_id", input.organizationId)
+    .eq("salon_id", input.salonId)
+    .in("ticket_item_id", itemIds)
+    .returns<PosTicketTurnPartRow[]>();
+
+  if (error) {
+    console.error("Supabase load POS ticket turn parts failed", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      salonId: input.salonId,
+      organizationId: input.organizationId,
+      itemIds,
+    });
+    throw new Error(error.message);
+  }
+
+  const partsByItemId = new Map<string, PosTicketTurnPartRow[]>();
+
+  for (const part of parts ?? []) {
+    partsByItemId.set(part.ticket_item_id, [
+      ...(partsByItemId.get(part.ticket_item_id) ?? []),
+      part,
+    ]);
+  }
+
+  return input.tickets.map((ticket) => ({
+    ...ticket,
+    ticket_items: (ticket.ticket_items ?? [])
+      .filter((item) => !item.is_removed)
+      .map((item) => {
+        const loadedParts = partsByItemId.get(item.id);
+        const nestedParts = item.turn_parts ?? [];
+        const sourceParts = [...(loadedParts ?? nestedParts)];
+        const turnParts = sourceParts.sort(
+          (left, right) =>
+            left.turn_index - right.turn_index ||
+            new Date(left.created_at ?? item.created_at).getTime() -
+              new Date(right.created_at ?? item.created_at).getTime() ||
+            left.id.localeCompare(right.id),
+        ).map<PosTicketItemTurnPart>((part) => ({
+          amount: part.amount,
+          created_at: part.created_at ?? item.created_at,
+          id: part.id,
+          staff_id: part.staff_id ?? item.assigned_staff_id ?? "",
+          ticket_id: part.ticket_id ?? item.pos_ticket_id,
+          ticket_item_id: part.ticket_item_id ?? item.id,
+          turn_index: part.turn_index,
+          turn_type: part.turn_type,
+          work_date: part.work_date ?? ticket.opened_at.slice(0, 10),
+        }));
+
+        if (turnParts.length === 0 && item.line_total > 0) {
+          console.warn("POS ticket item is missing turn parts; using line_total fallback.", {
+            itemId: item.id,
+            lineTotal: item.line_total,
+            ticketId: ticket.id,
+          });
+        }
+
+        return {
+          ...item,
+          turn_parts: (turnParts.length > 0
+            ? turnParts
+            : [
+                {
+                  amount: item.line_total,
+                  created_at: item.created_at,
+                  id: `${item.id}:fallback`,
+                  staff_id: item.assigned_staff_id ?? "",
+                  ticket_id: item.pos_ticket_id,
+                  ticket_item_id: item.id,
+                  turn_index: 1,
+                  turn_type: item.line_total >= 25 ? "large" : "small",
+                  work_date: ticket.opened_at.slice(0, 10),
+                },
+              ]) satisfies PosTicketItemTurnPart[],
+        };
+      }),
+  }));
+}
+
+function getTurnPartType(part: { amount: number; turn_type: "large" | "small" }) {
+  return part.turn_type === "large" ||
+    part.amount >= DAILY_WORK_LOG_BIG_TURN_THRESHOLD
+    ? "big"
+    : "small";
+}
+
+function getTicketWorkDate(ticket: PosTicketWithRelations) {
+  const firstPart = ticket.ticket_items
+    ?.flatMap((item) => item.turn_parts ?? [])
+    .find((part) => part.work_date);
+
+  return firstPart?.work_date ?? ticket.opened_at.slice(0, 10);
+}
+
+function attachRunningTurnsToTickets(tickets: PosTicketWithRelations[]) {
+  const counters = new Map<string, { big: number; small: number }>();
+  const runningTurnsByItemId = new Map<string, { big: number | null; small: number | null }>();
+
+  const chronologicalTickets = [...tickets].sort(
+    (left, right) =>
+      getTicketWorkDate(left).localeCompare(getTicketWorkDate(right)) ||
+      new Date(left.opened_at).getTime() - new Date(right.opened_at).getTime() ||
+      new Date(left.created_at).getTime() - new Date(right.created_at).getTime() ||
+      left.ticket_sequence - right.ticket_sequence ||
+      left.id.localeCompare(right.id),
+  );
+
+  for (const ticket of chronologicalTickets) {
+    const workDate = getTicketWorkDate(ticket);
+    const items = [...(ticket.ticket_items ?? [])].sort(
+      (left, right) =>
+        new Date(left.created_at).getTime() - new Date(right.created_at).getTime() ||
+        left.id.localeCompare(right.id),
+    );
+
+    for (const item of items) {
+      if (!item.assigned_staff_id) {
+        runningTurnsByItemId.set(item.id, { big: null, small: null });
+        continue;
+      }
+
+      const staffCounterKey = `${workDate}:${item.assigned_staff_id}`;
+      const current = counters.get(staffCounterKey) ?? { big: 0, small: 0 };
+      const parts = [...(item.turn_parts ?? [])].sort(
+        (left, right) =>
+          left.turn_index - right.turn_index ||
+          (left.created_at ?? "").localeCompare(right.created_at ?? "") ||
+          left.id.localeCompare(right.id),
+      );
+
+      for (const part of parts) {
+        const turnType = getTurnPartType(part);
+        current[turnType] += 1;
+      }
+
+      counters.set(staffCounterKey, current);
+      runningTurnsByItemId.set(item.id, {
+        big: current.big > 0 ? current.big : null,
+        small: current.small > 0 ? current.small : null,
+      });
+    }
+  }
+
+  return tickets.map((ticket) => ({
+    ...ticket,
+    ticket_items: (ticket.ticket_items ?? []).map((item) => ({
+      ...item,
+      running_turns: runningTurnsByItemId.get(item.id) ?? {
+        big: null,
+        small: null,
+      },
+    })),
+  }));
+}
+
 export async function getCurrentSalonPosTickets(filters: PosTicketListFilters = {}) {
   const context = await getCurrentBusinessContext();
 
@@ -234,11 +551,24 @@ export async function getCurrentSalonPosTickets(filters: PosTicketListFilters = 
     throw new Error(error.message);
   }
 
-  const tickets = await attachStaffEarningsToTickets({
+  const ticketsWithParts = await attachTurnPartsToTickets({
     organizationId: organization.id,
     salonId: salon.id,
     supabase,
     tickets: data ?? [],
+  });
+  const ticketsWithRunningTurns = attachRunningTurnsToTickets(ticketsWithParts);
+  const ticketsWithEarnings = await attachStaffEarningsToTickets({
+    organizationId: organization.id,
+    salonId: salon.id,
+    supabase,
+    tickets: ticketsWithRunningTurns,
+  });
+  const tickets = await attachAdjustmentsToTickets({
+    organizationId: organization.id,
+    salonId: salon.id,
+    supabase,
+    tickets: ticketsWithEarnings,
   });
 
   return { context, tickets };
@@ -289,11 +619,24 @@ export async function getCurrentSalonPosTicket(ticketId: string) {
     return { context, ticket: null };
   }
 
-  const [ticket] = await attachStaffEarningsToTickets({
+  const [ticketWithParts] = await attachTurnPartsToTickets({
     organizationId: organization.id,
     salonId: salon.id,
     supabase,
     tickets: [data],
+  });
+  const [ticketWithRunningTurns] = attachRunningTurnsToTickets([ticketWithParts]);
+  const [ticketWithEarnings] = await attachStaffEarningsToTickets({
+    organizationId: organization.id,
+    salonId: salon.id,
+    supabase,
+    tickets: [ticketWithRunningTurns],
+  });
+  const [ticket] = await attachAdjustmentsToTickets({
+    organizationId: organization.id,
+    salonId: salon.id,
+    supabase,
+    tickets: [ticketWithEarnings],
   });
 
   return { context, ticket };

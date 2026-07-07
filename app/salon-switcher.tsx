@@ -56,6 +56,12 @@ export function SalonSwitcher({
           </Link>
           <Link
             className="font-medium text-zinc-700 hover:text-zinc-950"
+            href="/pos"
+          >
+            POS
+          </Link>
+          <Link
+            className="font-medium text-zinc-700 hover:text-zinc-950"
             href="/pos-tickets"
           >
             POS Tickets

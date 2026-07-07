@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { correctClosedPosTicketInline } from "@/app/pos-tickets/actions";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
@@ -8,24 +8,27 @@ import type { PosTicketWithRelations } from "@/types/pos-ticket";
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
 
+type EditablePart = {
+  amount: string;
+  key: string;
+};
+
 type EditableLine = {
   itemId: string | null;
   key: string;
-  quantity: string;
+  parts: EditablePart[];
   remove: boolean;
   serviceId: string;
   staffId: string;
-  unitPrice: string;
 };
 
-type SelectorTarget = {
-  field: "service" | "staff";
-  lineKey: string;
-} | null;
+type SelectorTarget =
+  | { field: "service" | "staff"; lineKey: string }
+  | null;
 
 type MoneyTarget =
-  | { kind: "amount"; lineKey: string }
-  | { kind: "lineTip"; lineKey: string }
+  | { kind: "part"; lineKey: string; partKey: string }
+  | { kind: "staffTip"; staffId: string }
   | { kind: "totalTip" }
   | null;
 
@@ -36,7 +39,6 @@ type DailyPosTicketCardProps = {
   services: Service[];
   staff: Staff[];
   ticket: PosTicketWithRelations;
-  turnLabels: Record<string, string>;
 };
 
 function formatMoney(value: number) {
@@ -59,7 +61,6 @@ function formatTime(value: string) {
 
 function toMoneyNumber(value: string) {
   const parsed = Number(value);
-
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
@@ -67,52 +68,175 @@ function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-function toCents(value: number) {
-  return Math.round((value + Number.EPSILON) * 100);
+function toCents(value: number | string) {
+  const numeric = typeof value === "string" ? Number(value) : value;
+
+  if (!Number.isFinite(numeric)) {
+    return Number.NaN;
+  }
+
+  return Math.round(numeric * 100);
+}
+
+function fromCents(value: number) {
+  return roundMoney(value / 100);
+}
+
+function safeCents(value: number | string) {
+  const cents = toCents(value);
+  return Number.isFinite(cents) ? cents : 0;
 }
 
 function normalizeMoneyInput(value: string) {
-  return formatNumber(Math.max(0, roundMoney(toMoneyNumber(value))));
+  return formatNumber(Math.max(0, fromCents(safeCents(value))));
 }
 
-function numericEqual(left: string, right: number) {
-  return Math.abs(toMoneyNumber(left) - right) < 0.005;
+function centsEqual(left: number | string, right: number | string) {
+  return safeCents(left) === safeCents(right);
+}
+
+function lineTotalCents(line: EditableLine) {
+  return line.parts.reduce((total, part) => total + safeCents(part.amount), 0);
 }
 
 function lineTotal(line: EditableLine) {
-  return roundMoney(toMoneyNumber(line.quantity) * toMoneyNumber(line.unitPrice));
+  return fromCents(lineTotalCents(line));
+}
+
+function allocateTipCentsByStaff(
+  staffServiceTotalCents: Map<string, number>,
+  totalTipCents: number,
+  manualTipCentsByStaffId = new Map<string, number>(),
+) {
+  const tipCentsByStaffId = new Map<string, number>();
+  const staffIds = Array.from(staffServiceTotalCents.keys()).sort();
+  const validTotalTipCents = Math.max(0, totalTipCents);
+  const manualTipCents = staffIds.reduce(
+    (total, staffId) => total + (manualTipCentsByStaffId.get(staffId) ?? 0),
+    0,
+  );
+  const remainingTipCents = Math.max(0, validTotalTipCents - manualTipCents);
+  const nonManualStaffIds = staffIds.filter(
+    (staffId) => !manualTipCentsByStaffId.has(staffId),
+  );
+  const nonManualServiceTotalCents = nonManualStaffIds.reduce(
+    (total, staffId) => total + (staffServiceTotalCents.get(staffId) ?? 0),
+    0,
+  );
+
+  for (const staffId of staffIds) {
+    if (manualTipCentsByStaffId.has(staffId)) {
+      tipCentsByStaffId.set(staffId, manualTipCentsByStaffId.get(staffId) ?? 0);
+    }
+  }
+
+  if (remainingTipCents > 0 && nonManualServiceTotalCents > 0) {
+    for (const staffId of nonManualStaffIds) {
+      const serviceTotalCents = staffServiceTotalCents.get(staffId) ?? 0;
+      tipCentsByStaffId.set(
+        staffId,
+        Math.round((remainingTipCents * serviceTotalCents) / nonManualServiceTotalCents),
+      );
+    }
+
+    const allocated = nonManualStaffIds.reduce(
+      (total, staffId) => total + (tipCentsByStaffId.get(staffId) ?? 0),
+      0,
+    );
+    const remainderCents = remainingTipCents - allocated;
+
+    if (remainderCents !== 0) {
+      const remainderStaffId = [...nonManualStaffIds].sort(
+        (left, right) =>
+          (staffServiceTotalCents.get(right) ?? 0) -
+            (staffServiceTotalCents.get(left) ?? 0) ||
+          left.localeCompare(right),
+      )[0];
+
+      if (remainderStaffId) {
+        tipCentsByStaffId.set(
+          remainderStaffId,
+          (tipCentsByStaffId.get(remainderStaffId) ?? 0) + remainderCents,
+        );
+      }
+    }
+  }
+
+  for (const staffId of nonManualStaffIds) {
+    tipCentsByStaffId.set(staffId, tipCentsByStaffId.get(staffId) ?? 0);
+  }
+
+  return tipCentsByStaffId;
 }
 
 function getInitialLines(ticket: PosTicketWithRelations): EditableLine[] {
-  return (ticket.ticket_items ?? []).map((item) => ({
-    itemId: item.id,
-    key: item.id,
-    quantity: "1",
-    remove: false,
-    serviceId: item.service_id ?? "",
-    staffId: item.assigned_staff_id ?? "",
-    unitPrice: formatNumber(item.line_total),
-  }));
+  return (ticket.ticket_items ?? []).map((item) => {
+    const parts =
+      item.turn_parts && item.turn_parts.length > 0
+        ? [...item.turn_parts].sort(
+            (left, right) =>
+              left.turn_index - right.turn_index || left.id.localeCompare(right.id),
+          )
+        : [
+            {
+              amount: item.line_total,
+              id: `${item.id}:fallback`,
+              turn_index: 1,
+              turn_type: item.line_total >= 25 ? "large" : "small",
+            },
+          ];
+
+    return {
+      itemId: item.id,
+      key: item.id,
+      parts: parts.map((part) => ({
+        amount: formatNumber(part.amount),
+        key: part.id,
+      })),
+      remove: false,
+      serviceId: item.service_id ?? "",
+      staffId: item.assigned_staff_id ?? "",
+    };
+  });
 }
 
-function getTicketItemTip(
-  ticket: PosTicketWithRelations,
-  item: PosTicketWithRelations["ticket_items"][number],
-  totalTipAmount: number,
-) {
-  if (totalTipAmount <= 0) {
-    return 0;
+function getInitialStaffTips(ticket: PosTicketWithRelations, totalTipAmount: number) {
+  const tipsByStaffId = new Map<string, number>();
+
+  for (const earning of ticket.staff_earnings ?? []) {
+    tipsByStaffId.set(earning.staff_id, earning.tip_amount);
   }
 
-  const earning = ticket.staff_earnings?.find(
-    (staffEarning) => staffEarning.staff_id === item.assigned_staff_id,
-  );
-
-  if (!earning || earning.service_total <= 0) {
-    return 0;
+  if (tipsByStaffId.size > 0 || totalTipAmount <= 0) {
+    return tipsByStaffId;
   }
 
-  return roundMoney((earning.tip_amount * item.line_total) / earning.service_total);
+  const serviceTotalsByStaffId = new Map<string, number>();
+
+  for (const item of ticket.ticket_items ?? []) {
+    if (!item.assigned_staff_id) {
+      continue;
+    }
+
+    const itemTotalCents =
+      item.turn_parts && item.turn_parts.length > 0
+        ? item.turn_parts.reduce((total, part) => total + safeCents(part.amount), 0)
+        : safeCents(item.line_total);
+
+    serviceTotalsByStaffId.set(
+      item.assigned_staff_id,
+      (serviceTotalsByStaffId.get(item.assigned_staff_id) ?? 0) + itemTotalCents,
+    );
+  }
+
+  for (const [staffId, tipCents] of allocateTipCentsByStaff(
+    serviceTotalsByStaffId,
+    safeCents(totalTipAmount),
+  )) {
+    tipsByStaffId.set(staffId, fromCents(tipCents));
+  }
+
+  return tipsByStaffId;
 }
 
 function SaveButton({ canSave }: { canSave: boolean }) {
@@ -133,14 +257,15 @@ function PickerPopover({
   items,
   onSelect,
 }: {
-  items: Array<{ id: string; label: string }>;
+  items: Array<{ disabled?: boolean; id: string; label: string }>;
   onSelect: (id: string) => void;
 }) {
   return (
     <div className="absolute left-0 top-full z-20 mt-1 max-h-56 min-w-52 overflow-auto rounded border border-zinc-200 bg-white py-1 shadow-lg">
       {items.map((item) => (
         <button
-          className="block w-full px-3 py-2 text-left text-sm text-zinc-800 hover:bg-zinc-100"
+          className="block w-full px-3 py-2 text-left text-sm text-zinc-800 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-400 disabled:hover:bg-white"
+          disabled={item.disabled}
           key={item.id}
           onClick={() => onSelect(item.id)}
           type="button"
@@ -205,6 +330,276 @@ function InlineMoney({
   );
 }
 
+type SnapshotRecord = Record<string, unknown>;
+
+type SnapshotItem = {
+  assigned_staff?: { display_name?: string | null } | null;
+  assigned_staff_id?: string | null;
+  id?: string;
+  is_removed?: boolean;
+  line_total?: number;
+  service?: { name?: string | null } | null;
+  service_id?: string | null;
+  turn_parts?: Array<{
+    amount?: number;
+    id?: string;
+    turn_index?: number;
+  }> | null;
+};
+
+type SnapshotTicket = {
+  discount_type?: "fixed_amount" | "percentage";
+  discount_value?: number;
+  tax_rate?: number;
+  ticket_items?: SnapshotItem[] | null;
+  tip_type?: "fixed_amount" | "percentage";
+  tip_value?: number;
+};
+
+type SnapshotEarning = {
+  staff_id?: string;
+  tip_amount?: number;
+};
+
+function asRecord(value: unknown): SnapshotRecord | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as SnapshotRecord)
+    : null;
+}
+
+function readSnapshot(snapshot: unknown) {
+  const root = asRecord(snapshot);
+  const ticket = asRecord(root?.ticket) as SnapshotTicket | null;
+  const earnings = Array.isArray(root?.earnings)
+    ? (root.earnings as SnapshotEarning[])
+    : [];
+
+  return { earnings, ticket };
+}
+
+function activeSnapshotItems(ticket: SnapshotTicket | null) {
+  return (ticket?.ticket_items ?? []).filter((item) => !item.is_removed);
+}
+
+function snapshotParts(item: SnapshotItem) {
+  const parts = [...(item.turn_parts ?? [])]
+    .sort(
+      (left, right) =>
+        (left.turn_index ?? 0) - (right.turn_index ?? 0) ||
+        (left.id ?? "").localeCompare(right.id ?? ""),
+    )
+    .map((part) => Number(part.amount))
+    .filter((amount) => Number.isFinite(amount) && amount > 0);
+
+  return parts.length > 0 ? parts : [Number(item.line_total ?? 0)];
+}
+
+function snapshotLineTotal(item: SnapshotItem) {
+  return snapshotParts(item).reduce((total, amount) => total + amount, 0);
+}
+
+function snapshotStaffName(item: SnapshotItem) {
+  return item.assigned_staff?.display_name ?? item.assigned_staff_id ?? "Unassigned";
+}
+
+function snapshotServiceName(item: SnapshotItem) {
+  return item.service?.name ?? item.service_id ?? "No service";
+}
+
+function formatParts(parts: number[]) {
+  return parts.map((amount) => formatMoney(amount)).join(" / ");
+}
+
+function sameParts(left: SnapshotItem, right: SnapshotItem) {
+  const leftParts = snapshotParts(left);
+  const rightParts = snapshotParts(right);
+
+  return (
+    leftParts.length === rightParts.length &&
+    leftParts.every((amount, index) => safeCents(amount) === safeCents(rightParts[index] ?? 0))
+  );
+}
+
+function snapshotTipAmount(ticket: SnapshotTicket | null) {
+  if (!ticket) {
+    return 0;
+  }
+
+  return calculateTicketTotals({
+    discountType: ticket.discount_type ?? "fixed_amount",
+    discountValue: ticket.discount_value ?? 0,
+    items: activeSnapshotItems(ticket).map((item) => ({
+      line_total: snapshotLineTotal(item),
+    })),
+    taxRate: ticket.tax_rate ?? 0,
+    tipType: ticket.tip_type ?? "fixed_amount",
+    tipValue: ticket.tip_value ?? 0,
+  }).tip_amount;
+}
+
+function staffNamesById(...tickets: Array<SnapshotTicket | null>) {
+  const names = new Map<string, string>();
+
+  for (const ticket of tickets) {
+    for (const item of ticket?.ticket_items ?? []) {
+      if (item.assigned_staff_id) {
+        names.set(item.assigned_staff_id, snapshotStaffName(item));
+      }
+    }
+  }
+
+  return names;
+}
+
+function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: unknown) {
+  const before = readSnapshot(beforeSnapshot);
+  const after = readSnapshot(afterSnapshot);
+  const beforeTicket = before.ticket;
+  const afterTicket = after.ticket;
+
+  if (!beforeTicket || !afterTicket) {
+    return ["Changed: Details captured in audit snapshot."];
+  }
+
+  const lines: string[] = [];
+  const beforeItems = activeSnapshotItems(beforeTicket);
+  const afterItems = activeSnapshotItems(afterTicket);
+  const beforeById = new Map(beforeItems.map((item) => [item.id, item]));
+  const afterById = new Map(afterItems.map((item) => [item.id, item]));
+  const removedItems = beforeItems.filter((item) => item.id && !afterById.has(item.id));
+  const addedItems = afterItems.filter((item) => item.id && !beforeById.has(item.id));
+  const pairedAddedIds = new Set<string | undefined>();
+  const pairedRemovedIds = new Set<string | undefined>();
+
+  for (const removed of removedItems) {
+    const added = addedItems.find(
+      (candidate) =>
+        !pairedAddedIds.has(candidate.id) &&
+        candidate.assigned_staff_id === removed.assigned_staff_id,
+    );
+
+    if (!added) {
+      continue;
+    }
+
+    pairedAddedIds.add(added.id);
+    pairedRemovedIds.add(removed.id);
+
+    if (removed.service_id !== added.service_id) {
+      lines.push(
+        `Changed: ${snapshotStaffName(added)} service ${snapshotServiceName(
+          removed,
+        )} -> ${snapshotServiceName(added)}`,
+      );
+    }
+
+    if (!sameParts(removed, added)) {
+      lines.push(
+        `Changed: ${snapshotStaffName(added)} / ${snapshotServiceName(added)} parts ${formatParts(
+          snapshotParts(removed),
+        )} -> ${formatParts(snapshotParts(added))}`,
+      );
+    }
+  }
+
+  for (const item of addedItems.filter((item) => !pairedAddedIds.has(item.id))) {
+    lines.push(
+      `Added: ${snapshotStaffName(item)} / ${snapshotServiceName(item)} / ${formatParts(
+        snapshotParts(item),
+      )}`,
+    );
+  }
+
+  for (const item of removedItems.filter((item) => !pairedRemovedIds.has(item.id))) {
+    lines.push(
+      `Removed: ${snapshotStaffName(item)} / ${snapshotServiceName(item)} / ${formatParts(
+        snapshotParts(item),
+      )}`,
+    );
+  }
+
+  for (const beforeItem of beforeItems) {
+    if (!beforeItem.id) {
+      continue;
+    }
+
+    const afterItem = afterById.get(beforeItem.id);
+
+    if (!afterItem) {
+      continue;
+    }
+
+    if (beforeItem.assigned_staff_id !== afterItem.assigned_staff_id) {
+      lines.push(
+        `Changed: Staff ${snapshotStaffName(beforeItem)} -> ${snapshotStaffName(afterItem)}`,
+      );
+    }
+
+    if (beforeItem.service_id !== afterItem.service_id) {
+      lines.push(
+        `Changed: ${snapshotStaffName(afterItem)} service ${snapshotServiceName(
+          beforeItem,
+        )} -> ${snapshotServiceName(afterItem)}`,
+      );
+    }
+
+    if (!sameParts(beforeItem, afterItem)) {
+      lines.push(
+        `Changed: ${snapshotStaffName(afterItem)} / ${snapshotServiceName(
+          afterItem,
+        )} parts ${formatParts(snapshotParts(beforeItem))} -> ${formatParts(
+          snapshotParts(afterItem),
+        )}`,
+      );
+    }
+
+    if (safeCents(snapshotLineTotal(beforeItem)) !== safeCents(snapshotLineTotal(afterItem))) {
+      lines.push(
+        `Changed: ${snapshotStaffName(afterItem)} / ${snapshotServiceName(
+          afterItem,
+        )} total ${formatMoney(snapshotLineTotal(beforeItem))} -> ${formatMoney(
+          snapshotLineTotal(afterItem),
+        )}`,
+      );
+    }
+  }
+
+  const beforeTip = snapshotTipAmount(beforeTicket);
+  const afterTip = snapshotTipAmount(afterTicket);
+
+  if (safeCents(beforeTip) !== safeCents(afterTip)) {
+    lines.push(`Changed: Ticket tip ${formatMoney(beforeTip)} -> ${formatMoney(afterTip)}`);
+  }
+
+  const namesByStaffId = staffNamesById(beforeTicket, afterTicket);
+  const beforeTipsByStaffId = new Map(
+    before.earnings
+      .filter((earning) => earning.staff_id)
+      .map((earning) => [earning.staff_id as string, earning.tip_amount ?? 0]),
+  );
+
+  for (const earning of after.earnings) {
+    if (!earning.staff_id) {
+      continue;
+    }
+
+    const previousTip = beforeTipsByStaffId.get(earning.staff_id) ?? 0;
+    const nextTip = earning.tip_amount ?? 0;
+
+    if (safeCents(previousTip) !== safeCents(nextTip)) {
+      lines.push(
+        `Changed: ${namesByStaffId.get(earning.staff_id) ?? earning.staff_id} tip ${formatMoney(
+          previousTip,
+        )} -> ${formatMoney(nextTip)}`,
+      );
+    }
+  }
+
+  return lines.length > 0
+    ? lines.slice(0, 4)
+    : ["Changed: Details captured in audit snapshot."];
+}
+
 export function DailyPosTicketCard({
   canEdit,
   dailyNumber,
@@ -212,37 +607,11 @@ export function DailyPosTicketCard({
   services,
   staff,
   ticket,
-  turnLabels,
 }: DailyPosTicketCardProps) {
-  const initialTotals = calculateTicketTotals({
-    discountType: ticket.discount_type,
-    discountValue: ticket.discount_value,
-    items: ticket.ticket_items ?? [],
-    taxRate: ticket.tax_rate,
-    tipType: ticket.tip_type,
-    tipValue: ticket.tip_value,
-  });
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectorTarget, setSelectorTarget] = useState<SelectorTarget>(null);
-  const [moneyTarget, setMoneyTarget] = useState<MoneyTarget>(null);
   const initialLines = useMemo(() => getInitialLines(ticket), [ticket]);
   const initialLineByKey = useMemo(
     () => new Map(initialLines.map((line) => [line.key, line])),
     [initialLines],
-  );
-  const originalItemByKey = useMemo(
-    () => new Map((ticket.ticket_items ?? []).map((item) => [item.id, item])),
-    [ticket.ticket_items],
-  );
-  const initialLineTipByKey = useMemo(
-    () =>
-      new Map(
-        (ticket.ticket_items ?? []).map((item) => [
-          item.id,
-          getTicketItemTip(ticket, item, initialTotals.tip_amount),
-        ]),
-      ),
-    [initialTotals.tip_amount, ticket],
   );
   const servicesById = useMemo(
     () => new Map(services.map((service) => [service.id, service])),
@@ -252,81 +621,73 @@ export function DailyPosTicketCard({
     () => new Map(staff.map((member) => [member.id, member])),
     [staff],
   );
-  const serviceOptions = useMemo(
-    () => services.map((service) => ({ id: service.id, label: service.name })),
-    [services],
+  const originalItemByKey = useMemo(
+    () => new Map((ticket.ticket_items ?? []).map((item) => [item.id, item])),
+    [ticket.ticket_items],
   );
-  const staffOptions = useMemo(
-    () => staff.map((member) => ({ id: member.id, label: member.display_name })),
-    [staff],
+  const initialTotals = calculateTicketTotals({
+    discountType: ticket.discount_type,
+    discountValue: ticket.discount_value,
+    items: initialLines.map((line) => ({ line_total: lineTotal(line) })),
+    taxRate: ticket.tax_rate,
+    tipType: ticket.tip_type,
+    tipValue: ticket.tip_value,
+  });
+  const initialStaffTipById = useMemo(
+    () => getInitialStaffTips(ticket, initialTotals.tip_amount),
+    [initialTotals.tip_amount, ticket],
   );
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectorTarget, setSelectorTarget] = useState<SelectorTarget>(null);
+  const [moneyTarget, setMoneyTarget] = useState<MoneyTarget>(null);
   const [lines, setLines] = useState<EditableLine[]>(initialLines);
   const [tipTotal, setTipTotal] = useState(formatNumber(initialTotals.tip_amount));
-  const [lineTipDrafts, setLineTipDrafts] = useState<Record<string, string>>({});
+  const [staffTipDrafts, setStaffTipDrafts] = useState<Record<string, string>>({});
   const [reason, setReason] = useState("");
+  const nextKeyRef = useRef(0);
+  const canCorrectClosedTicket = canEdit && ticket.status === "closed";
+  const displayedLines = isEditing ? lines : initialLines;
   const activeLines = lines.filter((line) => !line.remove);
-  const activeLineByKey = new Map(activeLines.map((line) => [line.key, line]));
   const totalTipAmount = toMoneyNumber(tipTotal);
-  const manualLineTipTotal = activeLines.reduce((total, line) => {
-    const draft = lineTipDrafts[line.key];
-
-    return draft === undefined ? total : total + toMoneyNumber(draft);
-  }, 0);
-  const nonManualLineTotal = activeLines.reduce((total, line) => {
-    if (lineTipDrafts[line.key] !== undefined || !line.staffId) {
-      return total;
-    }
-
-    return total + lineTotal(line);
-  }, 0);
-  const remainingTip = Math.max(0, totalTipAmount - manualLineTipTotal);
-  const lineTipValue = (line: EditableLine) => {
-    const draft = lineTipDrafts[line.key];
-
-    if (draft !== undefined) {
-      return Math.max(0, toMoneyNumber(draft));
-    }
-
-    if (!line.staffId || remainingTip <= 0 || nonManualLineTotal <= 0) {
-      return 0;
-    }
-
-    return roundMoney((remainingTip * lineTotal(line)) / nonManualLineTotal);
-  };
-  const staffSummaryMap = new Map<string, { serviceTotal: number }>();
+  const safeTotalTipCents = safeCents(tipTotal);
+  const initialTotalTipCents = safeCents(initialTotals.tip_amount);
+  const hasTipChange = safeTotalTipCents !== initialTotalTipCents;
+  const staffServiceTotalCents = new Map<string, number>();
 
   for (const line of activeLines) {
     if (!line.staffId) {
       continue;
     }
 
-    const existing = staffSummaryMap.get(line.staffId) ?? { serviceTotal: 0 };
-    existing.serviceTotal = roundMoney(existing.serviceTotal + lineTotal(line));
-    staffSummaryMap.set(line.staffId, existing);
+    staffServiceTotalCents.set(
+      line.staffId,
+      (staffServiceTotalCents.get(line.staffId) ?? 0) + lineTotalCents(line),
+    );
   }
 
-  const staffSummaries = Array.from(staffSummaryMap.entries()).map(
-    ([staffId, summary]) => ({
-      staffId,
-      ...summary,
-    }),
+  const staffIdsInActiveLines = activeLines
+    .map((line) => line.staffId)
+    .filter(Boolean);
+  const duplicateStaff = staffIdsInActiveLines.some(
+    (staffId, index) => staffIdsInActiveLines.indexOf(staffId) !== index,
   );
-  const manualStaffIds = new Set(
-    activeLines
-      .filter((line) => line.staffId && lineTipDrafts[line.key] !== undefined)
-      .map((line) => line.staffId),
+  const staffIdSet = new Set(staffIdsInActiveLines);
+  const manualStaffTipCentsById = new Map(
+    Object.entries(staffTipDrafts)
+      .filter(([staffId]) => staffIdSet.has(staffId))
+      .map(([staffId, value]) => [staffId, Math.max(0, safeCents(value))]),
   );
-  const staffTipOverrides = staffSummaries
-    .filter((summary) => manualStaffIds.has(summary.staffId))
-    .map((summary) => ({
-      is_manual: true,
-      staff_id: summary.staffId,
-      tip_amount: roundMoney(
-        activeLines
-          .filter((line) => line.staffId === summary.staffId)
-          .reduce((total, line) => total + lineTipValue(line), 0),
-      ),
-    }));
+  const manualStaffIds = new Set(manualStaffTipCentsById.keys());
+  const manualStaffTipCents = Array.from(manualStaffTipCentsById.values()).reduce(
+    (total, tipCents) => total + tipCents,
+    0,
+  );
+  const staffTipCentsById = allocateTipCentsByStaff(
+    staffServiceTotalCents,
+    safeTotalTipCents,
+    manualStaffTipCentsById,
+  );
+  const staffSummaries = Array.from(staffServiceTotalCents.keys());
   const finalItemsForTotals = activeLines.map((line) => ({
     line_total: lineTotal(line),
   }));
@@ -350,51 +711,85 @@ export function DailyPosTicketCard({
         line.remove ||
         line.serviceId !== initial.serviceId ||
         line.staffId !== initial.staffId ||
-        !numericEqual(line.unitPrice, toMoneyNumber(initial.unitPrice))
+        line.parts.length !== initial.parts.length ||
+        line.parts.some(
+          (part, index) => !centsEqual(part.amount, initial.parts[index]?.amount ?? 0),
+        )
       );
     })
     .map((line) => ({
       item_id: line.itemId,
-      quantity: 1,
+      parts: line.parts.map((part) => ({ amount: part.amount })),
       remove: line.remove,
       service_id: line.serviceId || null,
       staff_id: line.staffId || null,
-      unit_price: toMoneyNumber(line.unitPrice),
     }));
   const addedItems = lines
     .filter((line) => !line.itemId && !line.remove)
     .map((line) => ({
-      quantity: 1,
+      parts: line.parts.map((part) => ({ amount: part.amount })),
       service_id: line.serviceId,
       staff_id: line.staffId,
-      unit_price: toMoneyNumber(line.unitPrice),
     }));
-  const hasTipChange = !numericEqual(tipTotal, initialTotals.tip_amount);
-  const hasManualTipChange = Object.entries(lineTipDrafts).some(([lineKey, value]) => {
-    const line = activeLineByKey.get(lineKey);
+  const itemPartsPayload = activeLines
+    .filter((line) => line.itemId)
+    .map((line) => ({
+      item_id: line.itemId,
+      parts: line.parts.map((part) => ({ amount: part.amount })),
+    }));
+  const staffTipOverrides = staffSummaries
+    .map((staffId) => {
+      const isManual = manualStaffIds.has(staffId);
 
-    if (!line) {
+      if (isManual) {
+        return {
+          is_manual: true,
+          staff_id: staffId,
+          tip_amount: fromCents(staffTipCentsById.get(staffId) ?? 0),
+        };
+      }
+
+      if (hasTipChange || manualStaffIds.size > 0) {
+        return {
+          is_manual: false,
+          staff_id: staffId,
+          tip_amount: 0,
+        };
+      }
+
+      return null;
+    })
+    .filter((override): override is NonNullable<typeof override> => Boolean(override));
+  const hasManualTipChange = Object.entries(staffTipDrafts).some(([staffId, value]) => {
+    if (!staffIdSet.has(staffId)) {
       return false;
     }
 
-    return !numericEqual(value, initialLineTipByKey.get(lineKey) ?? 0);
+    return safeCents(value) !== safeCents(initialStaffTipById.get(staffId) ?? 0);
   });
-  const invalidTipTotal = !Number.isFinite(totalTipAmount) || totalTipAmount < 0;
+  const invalidTipTotal = !Number.isFinite(totalTipAmount) || safeTotalTipCents < 0;
   const invalidAddedLine = addedItems.some(
-    (line) => !line.service_id || !line.staff_id || line.unit_price <= 0,
+    (line) =>
+      !line.service_id ||
+      !line.staff_id ||
+      line.parts.length === 0 ||
+      line.parts.some(
+        (part) => !Number.isFinite(Number(part.amount)) || Number(part.amount) <= 0,
+      ),
   );
   const invalidExistingLine = activeLines.some(
-    (line) => line.itemId && (!line.serviceId || !line.staffId || lineTotal(line) < 0),
+    (line) =>
+      !line.serviceId ||
+      !line.staffId ||
+      line.parts.length === 0 ||
+      line.parts.some((part) => safeCents(part.amount) <= 0) ||
+      lineTotalCents(line) <= 0,
   );
   const allStaffTipsManual =
-    staffSummaries.length > 0 && staffTipOverrides.length === staffSummaries.length;
-  const manualStaffTipTotal = staffTipOverrides.reduce(
-    (total, override) => total + override.tip_amount,
-    0,
-  );
-  const manualTipsTooHigh = toCents(manualLineTipTotal) > toCents(totalTipAmount);
+    staffSummaries.length > 0 && manualStaffIds.size === staffSummaries.length;
+  const manualTipsTooHigh = manualStaffTipCents > safeTotalTipCents;
   const manualTipsMismatch =
-    allStaffTipsManual && toCents(manualStaffTipTotal) !== toCents(totalTipAmount);
+    allStaffTipsManual && manualStaffTipCents !== safeTotalTipCents;
   const hasChange =
     editedItems.length > 0 ||
     addedItems.length > 0 ||
@@ -406,6 +801,7 @@ export function DailyPosTicketCard({
     !invalidTipTotal &&
     !invalidAddedLine &&
     !invalidExistingLine &&
+    !duplicateStaff &&
     !manualTipsTooHigh &&
     !manualTipsMismatch;
 
@@ -413,6 +809,44 @@ export function DailyPosTicketCard({
     setLines((current) =>
       current.map((line) => (line.key === key ? { ...line, ...patch } : line)),
     );
+  }
+
+  function updatePart(lineKey: string, partKey: string, amount: string) {
+    setLines((current) =>
+      current.map((line) =>
+        line.key === lineKey
+          ? {
+              ...line,
+              parts: line.parts.map((part) =>
+                part.key === partKey ? { ...part, amount } : part,
+              ),
+            }
+          : line,
+      ),
+    );
+  }
+
+  function addPart(line: EditableLine) {
+    nextKeyRef.current += 1;
+    updateLine(line.key, {
+      parts: [
+        ...line.parts,
+        {
+          amount: "0",
+          key: `part-${nextKeyRef.current}`,
+        },
+      ],
+    });
+  }
+
+  function removePart(line: EditableLine, partKey: string) {
+    if (line.parts.length <= 1) {
+      return;
+    }
+
+    updateLine(line.key, {
+      parts: line.parts.filter((part) => part.key !== partKey),
+    });
   }
 
   function removeLine(line: EditableLine) {
@@ -428,16 +862,19 @@ export function DailyPosTicketCard({
   }
 
   function addLine() {
+    nextKeyRef.current += 1;
+    const lineKey = `new-${nextKeyRef.current}`;
+    nextKeyRef.current += 1;
+
     setLines((current) => [
       ...current,
       {
         itemId: null,
-        key: `new-${Date.now()}-${current.length}`,
-        quantity: "1",
+        key: lineKey,
+        parts: [{ amount: "0", key: `new-part-${nextKeyRef.current}` }],
         remove: false,
         serviceId: "",
         staffId: "",
-        unitPrice: "0",
       },
     ]);
   }
@@ -445,7 +882,7 @@ export function DailyPosTicketCard({
   function resetEdit() {
     setLines(initialLines);
     setTipTotal(formatNumber(initialTotals.tip_amount));
-    setLineTipDrafts({});
+    setStaffTipDrafts({});
     setReason("");
     setSelectorTarget(null);
     setMoneyTarget(null);
@@ -453,23 +890,25 @@ export function DailyPosTicketCard({
   }
 
   function finishMoneyEdit() {
-    if (moneyTarget?.kind === "amount") {
+    if (moneyTarget?.kind === "part") {
       const line = lines.find((currentLine) => currentLine.key === moneyTarget.lineKey);
+      const part = line?.parts.find((currentPart) => currentPart.key === moneyTarget.partKey);
 
-      if (line) {
-        updateLine(line.key, { unitPrice: normalizeMoneyInput(line.unitPrice) });
+      if (line && part) {
+        updatePart(line.key, part.key, normalizeMoneyInput(part.amount));
       }
     }
 
-    if (moneyTarget?.kind === "lineTip") {
-      const line = lines.find((currentLine) => currentLine.key === moneyTarget.lineKey);
+    if (moneyTarget?.kind === "staffTip") {
+      const staffId = moneyTarget.staffId;
 
-      if (line) {
-        setLineTipDrafts((current) => ({
-          ...current,
-          [line.key]: normalizeMoneyInput(current[line.key] ?? "0"),
-        }));
-      }
+      setStaffTipDrafts((current) => ({
+        ...current,
+        [staffId]: normalizeMoneyInput(
+          current[staffId] ??
+            formatNumber(fromCents(staffTipCentsById.get(staffId) ?? 0)),
+        ),
+      }));
     }
 
     if (moneyTarget?.kind === "totalTip") {
@@ -487,7 +926,7 @@ export function DailyPosTicketCard({
     );
   }
 
-  function staffName(line: EditableLine) {
+  function staffDisplayName(line: EditableLine) {
     return (
       staffById.get(line.staffId)?.display_name ??
       originalItemByKey.get(line.key)?.assigned_staff?.display_name ??
@@ -495,51 +934,106 @@ export function DailyPosTicketCard({
     );
   }
 
-  function setLineTip(line: EditableLine, value: string) {
-    setLineTipDrafts((current) => ({
+  function renderTurnDisplay(line: EditableLine) {
+    const display = line.itemId
+      ? originalItemByKey.get(line.itemId)?.running_turns
+      : null;
+
+    if (!display) {
+      return (
+        <span className="ml-2 shrink-0 text-xs font-medium text-zinc-400">
+          - | -
+        </span>
+      );
+    }
+
+    return (
+      <span className="ml-2 shrink-0 text-xs text-zinc-400">
+        <span className="font-bold text-zinc-950">{display.big ?? "-"}</span>
+        <span className="px-1 text-zinc-300">|</span>
+        <span className="font-medium text-zinc-500">{display.small ?? "-"}</span>
+      </span>
+    );
+  }
+
+  function setStaffTip(staffId: string, value: string) {
+    setStaffTipDrafts((current) => ({
       ...current,
-      [line.key]: value,
+      [staffId]: value,
     }));
   }
 
-  function renderSelector({
-    disabled,
-    field,
-    line,
-  }: {
-    disabled?: boolean;
-    field: "service" | "staff";
-    line: EditableLine;
-  }) {
+  function updateTotalTip(value: string) {
+    setTipTotal(value);
+    setStaffTipDrafts({});
+  }
+
+  function startTotalTipEdit() {
+    if (!canCorrectClosedTicket || !isEditing) {
+      return;
+    }
+
+    setSelectorTarget(null);
+    setMoneyTarget({ kind: "totalTip" });
+  }
+
+  function startStaffTipEdit(staffId: string) {
+    if (!canCorrectClosedTicket || !isEditing) {
+      return;
+    }
+
+    setSelectorTarget(null);
+    setMoneyTarget({ kind: "staffTip", staffId });
+  }
+
+  function staffOptionsForLine(line: EditableLine) {
+    const usedByOtherLines = new Set(
+      activeLines
+        .filter((currentLine) => currentLine.key !== line.key)
+        .map((currentLine) => currentLine.staffId)
+        .filter(Boolean),
+    );
+
+    return staff.map((member) => ({
+      disabled: usedByOtherLines.has(member.id),
+      id: member.id,
+      label: member.display_name,
+    }));
+  }
+
+  function renderStaffSelector(line: EditableLine) {
     const isOpen =
-      selectorTarget?.field === field && selectorTarget.lineKey === line.key;
-    const options = field === "service" ? serviceOptions : staffOptions;
-    const label = field === "service" ? serviceName(line) : staffName(line);
-    const isPlaceholder =
-      (field === "service" && !line.serviceId) || (field === "staff" && !line.staffId);
+      selectorTarget?.field === "staff" && selectorTarget.lineKey === line.key;
+    const isPlaceholder = !line.staffId;
 
     return (
       <span className="relative min-w-0">
-        <button
-          className={`max-w-full truncate rounded px-1 py-0.5 text-left hover:bg-zinc-100 disabled:hover:bg-transparent ${
-            isPlaceholder ? "text-zinc-500" : "text-zinc-800"
-          }`}
-          disabled={disabled}
-          onClick={() =>
-            setSelectorTarget(isOpen ? null : { field, lineKey: line.key })
-          }
-          type="button"
-        >
-          {label}
-        </button>
+        <span className="inline-flex max-w-full items-center">
+          <button
+            className={`min-w-0 max-w-full truncate rounded px-1 py-0.5 text-left font-semibold hover:bg-zinc-100 disabled:hover:bg-transparent ${
+              isPlaceholder ? "text-zinc-500" : "text-zinc-950"
+            }`}
+            disabled={!isEditing || line.remove}
+            onClick={() =>
+              setSelectorTarget(isOpen ? null : { field: "staff", lineKey: line.key })
+            }
+            type="button"
+          >
+            {staffDisplayName(line)}
+          </button>
+          {renderTurnDisplay(line)}
+        </span>
         {isOpen ? (
           <PickerPopover
-            items={options}
+            items={staffOptionsForLine(line)}
             onSelect={(id) => {
-              updateLine(
-                line.key,
-                field === "service" ? { serviceId: id } : { staffId: id },
-              );
+              updateLine(line.key, { staffId: id });
+              setStaffTipDrafts((current) => {
+                const next = { ...current };
+                delete next[line.staffId];
+                delete next[id];
+                return next;
+              });
               setSelectorTarget(null);
             }}
           />
@@ -548,68 +1042,196 @@ export function DailyPosTicketCard({
     );
   }
 
+  function renderServiceSelector(line: EditableLine) {
+    const isOpen =
+      selectorTarget?.field === "service" && selectorTarget.lineKey === line.key;
+    const isPlaceholder = !line.serviceId;
+
+    return (
+      <span className="relative min-w-0">
+        <button
+          className={`max-w-full truncate rounded px-1 py-0.5 text-left hover:bg-zinc-100 disabled:hover:bg-transparent ${
+            isPlaceholder ? "text-zinc-500" : "text-zinc-800"
+          }`}
+          disabled={!isEditing || line.remove}
+          onClick={() =>
+            setSelectorTarget(isOpen ? null : { field: "service", lineKey: line.key })
+          }
+          type="button"
+        >
+          {serviceName(line)}
+        </button>
+        {isOpen ? (
+          <PickerPopover
+            items={services.map((service) => ({ id: service.id, label: service.name }))}
+            onSelect={(id) => {
+              updateLine(line.key, { serviceId: id });
+              setSelectorTarget(null);
+            }}
+          />
+        ) : null}
+      </span>
+    );
+  }
+
+  function renderParts(line: EditableLine) {
+    return (
+      <span className="flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1">
+        {line.parts.map((part, index) => {
+          const isPartEditing =
+            moneyTarget?.kind === "part" &&
+            moneyTarget.lineKey === line.key &&
+            moneyTarget.partKey === part.key;
+
+          return (
+            <span className="inline-flex items-center gap-1" key={part.key}>
+              {index > 0 ? <span className="text-zinc-400">/</span> : null}
+              <InlineMoney
+                disabled={!isEditing || line.remove}
+                isEditing={isPartEditing}
+                onChange={(value) => updatePart(line.key, part.key, value)}
+                onDone={finishMoneyEdit}
+                onStart={() => {
+                  setSelectorTarget(null);
+                  setMoneyTarget({
+                    kind: "part",
+                    lineKey: line.key,
+                    partKey: part.key,
+                  });
+                }}
+                value={part.amount}
+              />
+              {isEditing && !line.remove && line.parts.length > 1 ? (
+                <button
+                  className="rounded px-1 text-xs font-semibold text-zinc-500 hover:bg-zinc-100 hover:text-red-700"
+                  onClick={() => removePart(line, part.key)}
+                  type="button"
+                >
+                  x
+                </button>
+              ) : null}
+            </span>
+          );
+        })}
+        {isEditing && !line.remove ? (
+          <button
+            className="rounded border border-zinc-300 px-2 py-0.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
+            onClick={() => addPart(line)}
+            type="button"
+          >
+            + Part
+          </button>
+        ) : null}
+      </span>
+    );
+  }
+
   function renderLine(line: EditableLine) {
-    const isRemoved = line.remove;
-    const lineTip = lineTipValue(line);
-    const lineTipInput = lineTipDrafts[line.key] ?? formatNumber(lineTip);
-    const isAmountEditing =
-      moneyTarget?.kind === "amount" && moneyTarget.lineKey === line.key;
-    const isLineTipEditing =
-      moneyTarget?.kind === "lineTip" && moneyTarget.lineKey === line.key;
+    const staffTipCents = line.staffId ? staffTipCentsById.get(line.staffId) ?? 0 : 0;
+    const staffTipInput = line.staffId
+      ? staffTipDrafts[line.staffId] ?? formatNumber(fromCents(staffTipCents))
+      : "0";
+    const isStaffTipEditing =
+      line.staffId &&
+      moneyTarget?.kind === "staffTip" &&
+      moneyTarget.staffId === line.staffId;
 
     return (
       <div
-        className={`grid gap-2 px-3 py-1.5 text-sm sm:grid-cols-[116px_minmax(140px,180px)_minmax(180px,1fr)_100px_108px_64px] ${
-          isRemoved ? "bg-red-50/40 text-zinc-400" : ""
+        className={`grid items-center gap-2 px-3 py-2 text-sm sm:grid-cols-[minmax(120px,0.9fr)_minmax(160px,1fr)_minmax(180px,1.4fr)_110px_110px_64px] ${
+          line.remove ? "bg-red-50/50 text-zinc-400" : "bg-white"
         }`}
         key={line.key}
       >
-        <span className="font-medium text-zinc-700">
-          {line.itemId ? (turnLabels[line.itemId] ?? "") : ""}
-        </span>
         {isEditing ? (
-          renderSelector({ disabled: isRemoved, field: "staff", line })
+          renderStaffSelector(line)
         ) : (
-          <span className="min-w-0 truncate font-medium text-zinc-800">
-            {staffName(line)}
+          <span className="flex min-w-0 items-center">
+            <span className="min-w-0 truncate font-semibold text-zinc-950">
+              {staffDisplayName(line)}
+            </span>
+            {renderTurnDisplay(line)}
           </span>
         )}
         {isEditing ? (
-          renderSelector({ disabled: isRemoved, field: "service", line })
+          renderServiceSelector(line)
         ) : (
           <span className="min-w-0 truncate text-zinc-700">{serviceName(line)}</span>
         )}
-        <InlineMoney
-          disabled={!isEditing || isRemoved}
-          isEditing={isAmountEditing}
-          onChange={(value) => updateLine(line.key, { unitPrice: value })}
-          onDone={finishMoneyEdit}
-          onStart={() => setMoneyTarget({ kind: "amount", lineKey: line.key })}
-          value={line.unitPrice}
-        />
-        <InlineMoney
-          disabled={!isEditing || isRemoved}
-          isEditing={isLineTipEditing}
-          onChange={(value) => setLineTip(line, value)}
-          onDone={finishMoneyEdit}
-          onStart={() => setMoneyTarget({ kind: "lineTip", lineKey: line.key })}
-          prefix="Tip: "
-          value={lineTipInput}
-        />
+        {renderParts(line)}
+        <span className="font-medium text-zinc-950">
+          Total {formatMoney(lineTotal(line))}
+        </span>
+        {line.staffId ? (
+          <InlineMoney
+            disabled={!isEditing || line.remove}
+            isEditing={Boolean(isStaffTipEditing)}
+            onChange={(value) => setStaffTip(line.staffId, value)}
+            onDone={finishMoneyEdit}
+            onStart={() => startStaffTipEdit(line.staffId)}
+            prefix="Tip "
+            value={staffTipInput}
+          />
+        ) : (
+          <span className="text-zinc-500">Tip $0.00</span>
+        )}
         {isEditing ? (
           <button
             className="justify-self-start rounded border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
             onClick={() => removeLine(line)}
             type="button"
           >
-            {isRemoved ? "Undo" : "Remove"}
+            {line.remove ? "Undo" : "Remove"}
           </button>
         ) : null}
       </div>
     );
   }
 
-  const cardRows = isEditing ? lines : initialLines;
+  function renderCorrectionHistory() {
+    const adjustments = ticket.adjustments ?? [];
+
+    if (adjustments.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="border-t border-zinc-100 bg-zinc-50/60 px-3 py-2 text-xs text-zinc-600">
+        <div className="font-semibold text-zinc-800">Correction History</div>
+        <ul className="mt-1 space-y-1">
+          {adjustments.map((adjustment) => {
+            const summary = buildCorrectionChangeSummary(
+              adjustment.before_snapshot,
+              adjustment.after_snapshot,
+            );
+
+            return (
+              <li className="leading-5" key={adjustment.id}>
+                <div className="inline">
+                  <span className="font-medium text-zinc-700">
+                    {formatTime(adjustment.created_at)}
+                  </span>
+                  {adjustment.created_by_user ? (
+                    <span className="ml-2 text-zinc-500">
+                      {adjustment.created_by_user.display_name ??
+                        adjustment.created_by_user.email}
+                    </span>
+                  ) : null}
+                  <span className="ml-2">
+                    Reason:{" "}
+                    <span className="text-zinc-800">{adjustment.reason}</span>
+                  </span>
+                  <span className="mx-1 text-zinc-400">-</span>
+                  <span className="text-zinc-700">{summary.join("; ")}</span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
+  }
+
   const headerTotals = isEditing ? editedTotals : initialTotals;
   const tipDisplay = isEditing ? tipTotal : formatNumber(initialTotals.tip_amount);
   const isTotalTipEditing = moneyTarget?.kind === "totalTip";
@@ -623,6 +1245,7 @@ export function DailyPosTicketCard({
             <input name="return_to" type="hidden" value={returnTo} />
             <input name="tip_total" type="hidden" value={normalizeMoneyInput(tipTotal)} />
             <input name="item_updates" type="hidden" value={JSON.stringify(editedItems)} />
+            <input name="item_parts" type="hidden" value={JSON.stringify(itemPartsPayload)} />
             <input name="added_items" type="hidden" value={JSON.stringify(addedItems)} />
             <input
               name="staff_tip_overrides"
@@ -651,22 +1274,17 @@ export function DailyPosTicketCard({
           </span>
           <span className="text-zinc-700">
             Tip:{" "}
-            {isEditing ? (
-              <InlineMoney
-                className="inline-block"
-                isEditing={isTotalTipEditing}
-                onChange={setTipTotal}
-                onDone={finishMoneyEdit}
-                onStart={() => setMoneyTarget({ kind: "totalTip" })}
-                value={tipDisplay}
-              />
-            ) : (
-              <span className="font-semibold text-zinc-950">
-                {formatMoney(initialTotals.tip_amount)}
-              </span>
-            )}
+            <InlineMoney
+              className="inline-block hover:underline hover:decoration-dotted"
+              disabled={!isEditing}
+              isEditing={isTotalTipEditing}
+              onChange={updateTotalTip}
+              onDone={finishMoneyEdit}
+              onStart={startTotalTipEdit}
+              value={tipDisplay}
+            />
           </span>
-          {!isEditing && canEdit && ticket.status === "closed" ? (
+          {!isEditing && canCorrectClosedTicket ? (
             <button
               className="justify-self-start rounded border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-950 sm:justify-self-end"
               onClick={() => setIsEditing(true)}
@@ -677,14 +1295,15 @@ export function DailyPosTicketCard({
           ) : null}
         </div>
         <div className="divide-y divide-zinc-100">
-          {cardRows.length === 0 ? (
+          {displayedLines.length === 0 ? (
             <div className="px-3 py-2 text-sm text-zinc-500">
               No services recorded.
             </div>
           ) : (
-            cardRows.map((line) => renderLine(line))
+            displayedLines.map((line) => renderLine(line))
           )}
         </div>
+        {renderCorrectionHistory()}
         {isEditing ? (
           <div className="border-t border-zinc-200 px-3 py-3">
             <button
@@ -692,7 +1311,7 @@ export function DailyPosTicketCard({
               onClick={addLine}
               type="button"
             >
-              + Add Staff/Service Line
+              + Add Staff Line
             </button>
             <div className="mt-3 grid gap-2 text-sm text-zinc-700 md:grid-cols-5">
               <span>Subtotal: {formatMoney(editedTotals.subtotal)}</span>
@@ -713,19 +1332,21 @@ export function DailyPosTicketCard({
             </label>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs text-zinc-500">
-                {manualTipsTooHigh
-                  ? "Manual staff tips cannot exceed total tip."
-                  : manualTipsMismatch
-                    ? "Manual staff tips must equal total tip when every staff tip is manual."
-                    : invalidTipTotal
-                      ? "Total tip must be zero or greater."
-                      : invalidAddedLine
-                        ? "Added lines require staff, service, and amount greater than 0."
-                        : invalidExistingLine
-                          ? "Active lines require staff and service."
-                          : hasChange
-                            ? "Ready to save correction."
-                            : "Make a change to enable save."}
+                {duplicateStaff
+                  ? "Each staff member can appear only once on a ticket."
+                  : manualTipsTooHigh
+                    ? "Manual staff tips cannot exceed total tip."
+                    : manualTipsMismatch
+                      ? "Manual staff tips must equal total tip when every staff tip is manual."
+                      : invalidTipTotal
+                        ? "Total tip must be zero or greater."
+                        : invalidAddedLine
+                          ? "Added lines require staff, service, and parts greater than 0."
+                          : invalidExistingLine
+                            ? "Active lines require staff, service, and positive parts."
+                            : hasChange
+                              ? "Ready to save correction."
+                              : "Make a change to enable save."}
               </p>
               <div className="flex gap-2">
                 <button

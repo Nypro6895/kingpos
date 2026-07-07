@@ -66,8 +66,14 @@ function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-function toCents(value: number) {
-  return Math.round((value + Number.EPSILON) * 100);
+function toCents(value: number | string) {
+  const numeric = typeof value === "string" ? Number(value) : value;
+
+  if (!Number.isFinite(numeric)) {
+    return Number.NaN;
+  }
+
+  return Math.round(numeric * 100);
 }
 
 function fromCents(value: number) {
@@ -199,6 +205,18 @@ function getItemTurnTypes(item: RawTicketItem) {
   return Array.from({ length: quantity }, () => turnType);
 }
 
+function getItemServiceTotal(item: RawTicketItem) {
+  const turnParts = item.turn_parts ?? [];
+
+  if (turnParts.length > 0) {
+    return fromCents(
+      turnParts.reduce((total, part) => total + toCents(part.amount), 0),
+    );
+  }
+
+  return item.line_total;
+}
+
 function getOrCreateAccumulator(
   accumulators: Map<string, StaffAccumulator>,
   staffId: string,
@@ -230,28 +248,33 @@ function allocateTips(
   existingEarnings: PosTicketStaffEarning[],
 ) {
   const tipsByStaffId = new Map<string, number>();
-  const manualTipsByStaffId = new Map<string, number>();
-  const serviceTotal = roundMoney(
-    accumulators.reduce((total, staff) => total + staff.serviceTotal, 0),
+  const manualTipCentsByStaffId = new Map<string, number>();
+  const serviceTotalCents = accumulators.reduce(
+    (total, staff) => total + toCents(staff.serviceTotal),
+    0,
   );
   const tipCents = toCents(ticketTipAmount);
   const accumulatorByStaffId = new Map(
     accumulators.map((staff) => [staff.staffId, staff]),
   );
 
+  if (!Number.isFinite(tipCents)) {
+    throw new Error("Ticket tip must be a valid money amount.");
+  }
+
   for (const earning of existingEarnings) {
     if (!earning.tip_is_manual || !accumulatorByStaffId.has(earning.staff_id)) {
       continue;
     }
 
-    manualTipsByStaffId.set(
+    manualTipCentsByStaffId.set(
       earning.staff_id,
-      roundMoney(earning.manual_tip_amount ?? earning.tip_amount ?? 0),
+      Math.max(0, toCents(earning.manual_tip_amount ?? earning.tip_amount ?? 0)),
     );
   }
 
-  const manualTipCents = Array.from(manualTipsByStaffId.values()).reduce(
-    (total, tip) => total + toCents(tip),
+  const manualTipCents = Array.from(manualTipCentsByStaffId.values()).reduce(
+    (total, tipCentsForStaff) => total + tipCentsForStaff,
     0,
   );
 
@@ -260,12 +283,15 @@ function allocateTips(
   }
 
   for (const staff of accumulators) {
-    if (manualTipsByStaffId.has(staff.staffId)) {
-      tipsByStaffId.set(staff.staffId, manualTipsByStaffId.get(staff.staffId) ?? 0);
+    if (manualTipCentsByStaffId.has(staff.staffId)) {
+      tipsByStaffId.set(
+        staff.staffId,
+        fromCents(manualTipCentsByStaffId.get(staff.staffId) ?? 0),
+      );
     }
   }
 
-  if (serviceTotal <= 0 || tipCents <= 0) {
+  if (serviceTotalCents <= 0 || tipCents <= 0) {
     for (const staff of accumulators) {
       tipsByStaffId.set(staff.staffId, tipsByStaffId.get(staff.staffId) ?? 0);
     }
@@ -274,11 +300,12 @@ function allocateTips(
   }
 
   const nonManualAccumulators = accumulators.filter(
-    (staff) => !manualTipsByStaffId.has(staff.staffId),
+    (staff) => !manualTipCentsByStaffId.has(staff.staffId),
   );
   const remainingTipCents = tipCents - manualTipCents;
-  const nonManualServiceTotal = roundMoney(
-    nonManualAccumulators.reduce((total, staff) => total + staff.serviceTotal, 0),
+  const nonManualServiceTotalCents = nonManualAccumulators.reduce(
+    (total, staff) => total + toCents(staff.serviceTotal),
+    0,
   );
 
   if (nonManualAccumulators.length === 0) {
@@ -289,7 +316,7 @@ function allocateTips(
     return tipsByStaffId;
   }
 
-  if (remainingTipCents <= 0 || nonManualServiceTotal <= 0) {
+  if (remainingTipCents <= 0 || nonManualServiceTotalCents <= 0) {
     for (const staff of nonManualAccumulators) {
       tipsByStaffId.set(staff.staffId, 0);
     }
@@ -297,12 +324,15 @@ function allocateTips(
     return tipsByStaffId;
   }
 
-  const remainingTipAmount = fromCents(remainingTipCents);
-
   for (const staff of nonManualAccumulators) {
     tipsByStaffId.set(
       staff.staffId,
-      fromCents(toCents((remainingTipAmount * staff.serviceTotal) / nonManualServiceTotal)),
+      fromCents(
+        Math.round(
+          (remainingTipCents * toCents(staff.serviceTotal)) /
+            nonManualServiceTotalCents,
+        ),
+      ),
     );
   }
 
@@ -315,7 +345,7 @@ function allocateTips(
   if (remainderCents !== 0) {
     const remainderStaff = [...nonManualAccumulators].sort(
       (left, right) =>
-        right.serviceTotal - left.serviceTotal ||
+        toCents(right.serviceTotal) - toCents(left.serviceTotal) ||
         left.staffId.localeCompare(right.staffId),
     )[0];
 
@@ -361,7 +391,9 @@ function calculateRowsForTickets(tickets: RawTicket[], workDate: string) {
         accumulators,
         item.assigned_staff_id,
       );
-      accumulator.serviceTotal = roundMoney(accumulator.serviceTotal + item.line_total);
+      accumulator.serviceTotal = roundMoney(
+        accumulator.serviceTotal + getItemServiceTotal(item),
+      );
 
       for (const turnType of getItemTurnTypes(item)) {
         const sequence = sequenceByStaffId.get(item.assigned_staff_id) ?? {
@@ -391,7 +423,9 @@ function calculateRowsForTickets(tickets: RawTicket[], workDate: string) {
     const ticketTotals = calculateTicketTotals({
       discountType: ticket.discount_type,
       discountValue: ticket.discount_value,
-      items: ticket.ticket_items ?? [],
+      items: (ticket.ticket_items ?? []).map((item) => ({
+        line_total: getItemServiceTotal(item),
+      })),
       taxRate: ticket.tax_rate,
       tipType: ticket.tip_type,
       tipValue: ticket.tip_value,

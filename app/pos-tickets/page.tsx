@@ -27,13 +27,6 @@ type DateGroup = {
   tickets: PosTicketWithRelations[];
 };
 
-type StaffTurnSequence = {
-  sequence: number;
-  type: "big" | "small";
-};
-
-const DAILY_WORK_LOG_SMALL_TURN_THRESHOLD = 25;
-
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
@@ -194,24 +187,14 @@ function getTicketFilterHref({
   return `/pos-tickets?${params.toString()}`;
 }
 
-function getItemTurnType(
-  item: PosTicketWithRelations["ticket_items"][number],
-): StaffTurnSequence["type"] {
-  const quantity = item.quantity > 0 ? item.quantity : 1;
-  const perServiceAmount =
-    item.unit_price > 0 ? item.unit_price : item.line_total / quantity;
+function getItemDisplayTotal(item: PosTicketWithRelations["ticket_items"][number]) {
+  const parts = item.turn_parts ?? [];
 
-  return perServiceAmount >= DAILY_WORK_LOG_SMALL_TURN_THRESHOLD ? "big" : "small";
-}
-
-function getTurnLabel(turn: StaffTurnSequence | undefined) {
-  if (!turn) {
-    return "";
+  if (parts.length === 0) {
+    return item.line_total;
   }
 
-  return turn.type === "big"
-    ? `Big Turn ${turn.sequence}`
-    : `Small Turn ${turn.sequence}`;
+  return parts.reduce((total, part) => total + part.amount, 0);
 }
 
 function buildDailyTicketNumbers(tickets: PosTicketWithRelations[]) {
@@ -236,39 +219,6 @@ function buildDailyTicketNumbers(tickets: PosTicketWithRelations[]) {
   return numbers;
 }
 
-function sortTicketsForDailySequence(tickets: PosTicketWithRelations[]) {
-  return [...tickets].sort(
-    (left, right) =>
-      new Date(left.opened_at).getTime() - new Date(right.opened_at).getTime() ||
-      left.ticket_sequence - right.ticket_sequence,
-  );
-}
-
-function buildStaffTurnSequences(tickets: PosTicketWithRelations[]) {
-  const counters = new Map<string, { big: number; small: number }>();
-  const sequences = new Map<string, StaffTurnSequence>();
-
-  for (const ticket of sortTicketsForDailySequence(tickets)) {
-    for (const item of ticket.ticket_items ?? []) {
-      const staffKey = item.assigned_staff_id ?? "unassigned";
-      const turnType = getItemTurnType(item);
-      const current = counters.get(staffKey) ?? { big: 0, small: 0 };
-      const sequence = current[turnType] + 1;
-
-      counters.set(staffKey, {
-        ...current,
-        [turnType]: sequence,
-      });
-      sequences.set(item.id, {
-        sequence,
-        type: turnType,
-      });
-    }
-  }
-
-  return sequences;
-}
-
 function ticketMatchesSearch(
   ticket: PosTicketWithRelations,
   query: string,
@@ -288,14 +238,17 @@ function ticketMatchesSearch(
     ...(ticket.ticket_items ?? []).flatMap((item) => [
       item.assigned_staff?.display_name ?? "",
       item.service?.name ?? "",
-      String(item.line_total),
-      formatMoney(item.line_total),
+      String(getItemDisplayTotal(item)),
+      formatMoney(getItemDisplayTotal(item)),
+      ...(item.turn_parts ?? []).map((part) => formatMoney(part.amount)),
     ]),
   ];
   const totals = calculateTicketTotals({
     discountType: ticket.discount_type,
     discountValue: ticket.discount_value,
-    items: ticket.ticket_items ?? [],
+    items: (ticket.ticket_items ?? []).map((item) => ({
+      line_total: getItemDisplayTotal(item),
+    })),
     taxRate: ticket.tax_rate,
     tipType: ticket.tip_type,
     tipValue: ticket.tip_value,
@@ -397,7 +350,6 @@ function DailyWorkLog({
   selectedDateLabel,
   services,
   staff,
-  turnSequences,
 }: {
   canEdit: boolean;
   dailyNumbers: Map<string, number>;
@@ -406,7 +358,6 @@ function DailyWorkLog({
   selectedDateLabel: string;
   services: Service[];
   staff: Staff[];
-  turnSequences: Map<string, StaffTurnSequence>;
 }) {
   if (groups.length === 0) {
     return (
@@ -444,12 +395,6 @@ function DailyWorkLog({
                 services={services}
                 staff={staff}
                 ticket={ticket}
-                turnLabels={Object.fromEntries(
-                  (ticket.ticket_items ?? []).map((item) => [
-                    item.id,
-                    getTurnLabel(turnSequences.get(item.id)),
-                  ]),
-                )}
               />
             ))}
           </div>
@@ -509,7 +454,6 @@ export default async function PosTicketsPage({
     ? await getCurrentSalonPosTicketOptions(context)
     : { services: [], staff: [] };
   const dailyNumbers = buildDailyTicketNumbers(tickets);
-  const turnSequences = buildStaffTurnSequences(tickets);
   const visibleTickets = filterTicketsBySearch(tickets, searchQuery, dailyNumbers);
   const groups = groupTicketsByDate(visibleTickets);
 
@@ -544,7 +488,6 @@ export default async function PosTicketsPage({
         selectedDateLabel={selectedDateLabel}
         services={ticketOptions.services}
         staff={ticketOptions.staff}
-        turnSequences={turnSequences}
       />
     </main>
   );
