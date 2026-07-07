@@ -1,5 +1,10 @@
 import { DailyPosTicketCard } from "@/app/pos-tickets/closed-ticket-correction-form";
 import {
+  canApplyFinancialCorrections,
+  FINANCIAL_CORRECTION_PERMISSIONS,
+  isDailyClosingLocked,
+} from "@/lib/daily-pos-report";
+import {
   getCurrentSalonPosTickets,
   getCurrentSalonPosTicketOptions,
   POS_TICKET_PERMISSIONS,
@@ -343,17 +348,21 @@ function WorkLogFilters({
 }
 
 function DailyWorkLog({
+  canApplyFinancialCorrection,
   canEdit,
   dailyNumbers,
   groups,
+  isBusinessDateLocked,
   returnTo,
   selectedDateLabel,
   services,
   staff,
 }: {
+  canApplyFinancialCorrection: boolean;
   canEdit: boolean;
   dailyNumbers: Map<string, number>;
   groups: DateGroup[];
+  isBusinessDateLocked: boolean;
   returnTo: string;
   selectedDateLabel: string;
   services: Service[];
@@ -388,8 +397,10 @@ function DailyWorkLog({
           <div className="overflow-hidden rounded border border-zinc-200 bg-white">
             {dateGroup.tickets.map((ticket) => (
               <DailyPosTicketCard
+                canApplyFinancialCorrection={canApplyFinancialCorrection}
                 canEdit={canEdit}
                 dailyNumber={dailyNumbers.get(ticket.id) ?? 0}
+                isBusinessDateLocked={isBusinessDateLocked}
                 key={ticket.id}
                 returnTo={returnTo}
                 services={services}
@@ -444,13 +455,26 @@ export default async function PosTicketsPage({
   const selectedDateLabel = formatLocalDateHeader(selectedDate, timeZone);
   const todayHref = getTicketFilterHref({ date: today });
   const returnTo = getTicketFilterHref({ date: selectedDate, q: searchQuery });
-  const [canManageTickets, canVoidTickets, { tickets }] = await Promise.all([
+  const [
+    canManageTickets,
+    canVoidTickets,
+    canRequestStaffCorrection,
+    canApplyFinancialCorrection,
+    isSelectedDateLocked,
+    { tickets },
+  ] = await Promise.all([
     hasPermission(POS_TICKET_PERMISSIONS.manage, context),
     hasPermission(POS_TICKET_PERMISSIONS.void, context),
+    hasPermission(FINANCIAL_CORRECTION_PERMISSIONS.request, context),
+    canApplyFinancialCorrections(context),
+    isDailyClosingLocked(selectedDate, context),
     getCurrentSalonPosTickets(getUtcBoundsForLocalDate(selectedDate, timeZone)),
   ]);
   const canCorrectTickets = canManageTickets || canVoidTickets;
-  const ticketOptions = canCorrectTickets
+  const canEditDailyTickets = isSelectedDateLocked
+    ? canCorrectTickets || canRequestStaffCorrection || canApplyFinancialCorrection
+    : canCorrectTickets;
+  const ticketOptions = canEditDailyTickets
     ? await getCurrentSalonPosTicketOptions(context)
     : { services: [], staff: [] };
   const dailyNumbers = buildDailyTicketNumbers(tickets);
@@ -480,10 +504,19 @@ export default async function PosTicketsPage({
         </p>
       ) : null}
 
+      {isSelectedDateLocked ? (
+        <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          This business date is locked. Edits create financial correction
+          requests instead of changing tickets directly.
+        </p>
+      ) : null}
+
       <DailyWorkLog
-        canEdit={canCorrectTickets}
+        canApplyFinancialCorrection={canApplyFinancialCorrection}
+        canEdit={canEditDailyTickets}
         dailyNumbers={dailyNumbers}
         groups={groups}
+        isBusinessDateLocked={isSelectedDateLocked}
         returnTo={returnTo}
         selectedDateLabel={selectedDateLabel}
         services={ticketOptions.services}

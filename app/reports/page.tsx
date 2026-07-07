@@ -1,5 +1,6 @@
 import { DailyClosingForm } from "@/app/reports/daily-closing-form";
 import {
+  canApplyFinancialCorrections,
   canEditDailyPosClosing,
   DAILY_POS_REPORT_PERMISSIONS,
   getDailyPosReport,
@@ -208,10 +209,14 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
     context,
   );
   const today = getDefaultReportDate(context);
-  const [report, canEdit] = await Promise.all([
+  const [report, canEditPermission, canRequestCorrection, canApplyCorrection] =
+    await Promise.all([
     getDailyPosReport(selectedDate, context),
     canEditDailyPosClosing(context),
+    hasPermission(DAILY_POS_REPORT_PERMISSIONS.requestCorrection, context),
+    canApplyFinancialCorrections(context),
   ]);
+  const canEdit = canEditPermission && !report.lock.isLocked;
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-6 text-zinc-950 sm:px-6">
@@ -251,12 +256,25 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
         />
       </div>
 
+      {report.lock.liveTotalsDifferFromSnapshot ? (
+        <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Current POS data differs from the locked snapshot. Corrections are
+          recorded through adjustment records.
+        </p>
+      ) : null}
+
       <DailyClosingForm
+        adjustmentTotals={report.adjustmentTotals}
+        canApplyCorrection={canApplyCorrection}
         canEdit={canEdit}
+        canRequestCorrection={canRequestCorrection}
         closingInputs={report.closingInputs}
+        corrections={report.corrections}
         expectedTotal={report.totals.expectedTotal}
         key={report.reportDate}
+        lock={report.lock}
         reportDate={report.reportDate}
+        snapshotTotals={report.snapshotTotals}
       />
 
       <section className="mt-8">

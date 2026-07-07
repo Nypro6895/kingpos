@@ -2,7 +2,10 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { correctClosedPosTicketInline } from "@/app/pos-tickets/actions";
+import {
+  correctClosedPosTicketInline,
+  submitLockedStaffFinancialCorrection,
+} from "@/app/pos-tickets/actions";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import type { PosTicketWithRelations } from "@/types/pos-ticket";
 import type { Service } from "@/types/service";
@@ -33,8 +36,10 @@ type MoneyTarget =
   | null;
 
 type DailyPosTicketCardProps = {
+  canApplyFinancialCorrection: boolean;
   canEdit: boolean;
   dailyNumber: number;
+  isBusinessDateLocked: boolean;
   returnTo: string;
   services: Service[];
   staff: Staff[];
@@ -256,8 +261,55 @@ function getInitialManualStaffTips(ticket: PosTicketWithRelations) {
   return tipsByStaffId;
 }
 
-function SaveButton({ canSave }: { canSave: boolean }) {
+function SaveButton({
+  canApplyFinancialCorrection,
+  canSave,
+  isCorrectionMode,
+  onCorrectionIntentChange,
+}: {
+  canApplyFinancialCorrection: boolean;
+  canSave: boolean;
+  isCorrectionMode: boolean;
+  onCorrectionIntentChange: (intent: "apply" | "request") => void;
+}) {
   const { pending } = useFormStatus();
+
+  if (isCorrectionMode) {
+    return (
+      <>
+        {canApplyFinancialCorrection ? (
+          <button
+            className="rounded border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+            disabled={!canSave || pending}
+            formAction={submitLockedStaffFinancialCorrection}
+            onClick={() => onCorrectionIntentChange("request")}
+            type="submit"
+          >
+            {pending ? "Submitting..." : "Submit Correction Request"}
+          </button>
+        ) : null}
+        <button
+          className="rounded bg-zinc-950 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
+          disabled={!canSave || pending}
+          formAction={submitLockedStaffFinancialCorrection}
+          onClick={() =>
+            onCorrectionIntentChange(
+              canApplyFinancialCorrection ? "apply" : "request",
+            )
+          }
+          type="submit"
+        >
+          {pending
+            ? canApplyFinancialCorrection
+              ? "Applying..."
+              : "Submitting..."
+            : canApplyFinancialCorrection
+              ? "Apply Correction"
+              : "Submit Correction Request"}
+        </button>
+      </>
+    );
+  }
 
   return (
     <button
@@ -395,6 +447,101 @@ function readSnapshot(snapshot: unknown) {
     : [];
 
   return { earnings, ticket };
+}
+
+function readRecordNumber(record: SnapshotRecord | null, key: string) {
+  const value = record?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function correctionTypeLabel(value: unknown) {
+  switch (value) {
+    case "staff_service_amount":
+      return "Staff service amount";
+    case "staff_tip":
+      return "Staff tip";
+    case "staff_turn_count":
+      return "Staff turn count";
+    case "ticket_staff_assignment":
+      return "Ticket staff assignment";
+    case "ticket_service":
+      return "Ticket service";
+    case "ticket_amount":
+      return "Ticket amount";
+    case "ticket_tip":
+      return "Ticket tip";
+    case "ticket_discount":
+      return "Ticket discount";
+    case "void_ticket":
+      return "Void ticket";
+    default:
+      return "Correction";
+  }
+}
+
+function correctionValueSummary(
+  correctionType: unknown,
+  oldValue: SnapshotRecord | null,
+  requestedValue: SnapshotRecord | null,
+) {
+  if (correctionType === "staff_service_amount") {
+    const oldAmount = readRecordNumber(oldValue, "serviceAmount");
+    const requestedAmount = readRecordNumber(requestedValue, "serviceAmount");
+
+    if (oldAmount !== null && requestedAmount !== null) {
+      return `${formatMoney(oldAmount)} -> ${formatMoney(requestedAmount)}`;
+    }
+  }
+
+  if (correctionType === "staff_tip") {
+    const oldAmount = readRecordNumber(oldValue, "tipAmount");
+    const requestedAmount = readRecordNumber(requestedValue, "tipAmount");
+
+    if (oldAmount !== null && requestedAmount !== null) {
+      return `${formatMoney(oldAmount)} -> ${formatMoney(requestedAmount)}`;
+    }
+  }
+
+  if (correctionType === "staff_turn_count") {
+    const oldTurns = readRecordNumber(oldValue, "turnCount");
+    const requestedTurns = readRecordNumber(requestedValue, "turnCount");
+
+    if (oldTurns !== null && requestedTurns !== null) {
+      return `${oldTurns} -> ${requestedTurns}`;
+    }
+  }
+
+  return "recorded in financial audit log";
+}
+
+function buildFinancialCorrectionSummary(snapshot: unknown) {
+  const root = asRecord(snapshot);
+  const financialCorrection = asRecord(root?.financial_correction);
+  const corrections = Array.isArray(financialCorrection?.corrections)
+    ? financialCorrection.corrections
+    : [];
+
+  if (corrections.length === 0) {
+    return [];
+  }
+
+  const prefix =
+    financialCorrection?.intent === "apply"
+      ? "Applied correction"
+      : "Submitted correction request";
+
+  return corrections.map((correction) => {
+    const row = asRecord(correction);
+    const oldValue = asRecord(row?.oldValue);
+    const requestedValue = asRecord(row?.requestedValue);
+    const correctionType = row?.correctionType;
+
+    return `${prefix}: ${correctionTypeLabel(correctionType)} ${correctionValueSummary(
+      correctionType,
+      oldValue,
+      requestedValue,
+    )}`;
+  });
 }
 
 function activeSnapshotItems(ticket: SnapshotTicket | null) {
@@ -555,6 +702,12 @@ function formatCorrectionSummaryLine(summary: string[]) {
 }
 
 function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: unknown) {
+  const financialSummary = buildFinancialCorrectionSummary(afterSnapshot);
+
+  if (financialSummary.length > 0) {
+    return financialSummary;
+  }
+
   const before = readSnapshot(beforeSnapshot);
   const after = readSnapshot(afterSnapshot);
   const beforeTicket = before.ticket;
@@ -705,8 +858,10 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
 }
 
 export function DailyPosTicketCard({
+  canApplyFinancialCorrection,
   canEdit,
   dailyNumber,
+  isBusinessDateLocked,
   returnTo,
   services,
   staff,
@@ -746,6 +901,8 @@ export function DailyPosTicketCard({
     [ticket],
   );
   const [isEditing, setIsEditing] = useState(false);
+  const [isCorrectionMode, setIsCorrectionMode] = useState(false);
+  const [showLockedConfirmation, setShowLockedConfirmation] = useState(false);
   const [selectorTarget, setSelectorTarget] = useState<SelectorTarget>(null);
   const [moneyTarget, setMoneyTarget] = useState<MoneyTarget>(null);
   const [lines, setLines] = useState<EditableLine[]>(initialLines);
@@ -753,6 +910,7 @@ export function DailyPosTicketCard({
   const [staffTipDrafts, setStaffTipDrafts] = useState<Record<string, string>>({});
   const [reason, setReason] = useState("");
   const nextKeyRef = useRef(0);
+  const correctionIntentRef = useRef<HTMLInputElement>(null);
   const canCorrectClosedTicket = canEdit && ticket.status === "closed";
   const displayedLines = isEditing ? lines : initialLines;
   const activeLines = lines.filter((line) => !line.remove);
@@ -1011,6 +1169,31 @@ export function DailyPosTicketCard({
     setSelectorTarget(null);
     setMoneyTarget(null);
     setIsEditing(false);
+    setIsCorrectionMode(false);
+    setShowLockedConfirmation(false);
+  }
+
+  function startEdit() {
+    if (!isBusinessDateLocked) {
+      setIsCorrectionMode(false);
+      setIsEditing(true);
+      return;
+    }
+
+    setShowLockedConfirmation(true);
+  }
+
+  function continueLockedCorrection() {
+    setShowLockedConfirmation(false);
+    setIsCorrectionMode(true);
+    setIsEditing(true);
+    setCorrectionIntent(canApplyFinancialCorrection ? "apply" : "request");
+  }
+
+  function setCorrectionIntent(intent: "apply" | "request") {
+    if (correctionIntentRef.current) {
+      correctionIntentRef.current.value = intent;
+    }
   }
 
   function finishMoneyEdit() {
@@ -1378,7 +1561,22 @@ export function DailyPosTicketCard({
               type="hidden"
               value={JSON.stringify(staffTipOverrides)}
             />
+            {isCorrectionMode ? (
+              <input
+                defaultValue={
+                  canApplyFinancialCorrection ? "apply" : "request"
+                }
+                name="correction_intent"
+                ref={correctionIntentRef}
+                type="hidden"
+              />
+            ) : null}
           </>
+        ) : null}
+        {isCorrectionMode ? (
+          <div className="border-b border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold uppercase tracking-normal text-amber-900">
+            Correction Mode
+          </div>
         ) : null}
         <div className="grid items-center gap-2 bg-zinc-50 px-3 py-2 text-sm sm:grid-cols-[48px_80px_minmax(150px,1fr)_110px_150px_130px_56px]">
           <span className="font-semibold text-zinc-950">#{dailyNumber}</span>
@@ -1413,7 +1611,7 @@ export function DailyPosTicketCard({
           {!isEditing && canCorrectClosedTicket ? (
             <button
               className="justify-self-start rounded border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-950 sm:justify-self-end"
-              onClick={() => setIsEditing(true)}
+              onClick={startEdit}
               type="button"
             >
               Edit
@@ -1482,12 +1680,51 @@ export function DailyPosTicketCard({
                 >
                   Cancel
                 </button>
-                <SaveButton canSave={canSave} />
+                <SaveButton
+                  canApplyFinancialCorrection={canApplyFinancialCorrection}
+                  canSave={canSave}
+                  isCorrectionMode={isCorrectionMode}
+                  onCorrectionIntentChange={setCorrectionIntent}
+                />
               </div>
             </div>
           </div>
         ) : null}
       </form>
+      {showLockedConfirmation ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4">
+          <div
+            aria-modal="true"
+            className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl"
+            role="dialog"
+          >
+            <h3 className="text-base font-semibold text-zinc-950">
+              Locked Business Date
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-zinc-700">
+              This business date is locked. Changes will not directly modify the
+              original record. A correction request will be created and recorded
+              in the financial audit log.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                className="rounded border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950"
+                onClick={() => setShowLockedConfirmation(false)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
+                onClick={continueLockedCorrection}
+                type="button"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </article>
   );
 }

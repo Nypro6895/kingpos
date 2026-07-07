@@ -647,10 +647,15 @@ export async function getCurrentSalonPosTicketOptions(
 ) {
   const canUseOptions =
     (await hasPermission(POS_TICKET_PERMISSIONS.manage, context)) ||
-    (await hasPermission(POS_TICKET_PERMISSIONS.void, context));
+    (await hasPermission(POS_TICKET_PERMISSIONS.void, context)) ||
+    (await hasPermission("payroll.manage", context)) ||
+    (await hasPermission("financial_corrections.request", context)) ||
+    (await hasPermission("financial_corrections.apply", context));
 
   if (!canUseOptions) {
-    throw new Error("Missing required permission: tickets.manage or tickets.void");
+    throw new Error(
+      "Missing required permission: tickets.manage, tickets.void, payroll.manage, financial_corrections.request, or financial_corrections.apply",
+    );
   }
 
   const { salon } = requireCurrentOrganizationAndSalon(context);
