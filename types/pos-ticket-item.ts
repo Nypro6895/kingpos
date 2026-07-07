@@ -22,4 +22,10 @@ export type PosTicketItemWithRelations = PosTicketItem & {
     Service,
     "id" | "name" | "category" | "base_price" | "duration_minutes"
   > | null;
+  turn_parts?: Array<{
+    amount: number;
+    id: string;
+    turn_index: number;
+    turn_type: "large" | "small";
+  }>;
 };

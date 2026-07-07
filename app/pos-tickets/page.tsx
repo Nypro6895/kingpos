@@ -1,48 +1,38 @@
+import { updatePosTicketNotes } from "@/app/pos-tickets/actions";
 import {
-  addPosPayment,
-  addPosTicketItem,
-  cancelPosTicket,
-  closePosTicket,
-  createPosTicket,
-  deletePosPayment,
-  deletePosTicketItem,
-  updatePosTicketItem,
-  updatePosTicketItemStaff,
-  updatePosTicketNotes,
-} from "@/app/pos-tickets/actions";
-import {
-  getCurrentSalonPosTicketOptions,
   getCurrentSalonPosTickets,
-  type PosTicketStaffOption,
   POS_TICKET_PERMISSIONS,
 } from "@/lib/pos-tickets";
 import { getCurrentBusinessContext } from "@/lib/current-context";
-import {
-  POS_PAYMENT_METHOD_LABELS,
-  POS_PAYMENT_METHOD_OPTIONS,
-} from "@/lib/pos-payments";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { hasPermission } from "@/lib/permissions";
-import type { Customer } from "@/types/customer";
-import type { PosPayment } from "@/types/pos-payment";
+import { getTodayDate } from "@/lib/staff-workdays";
 import type { PosTicketItemWithRelations } from "@/types/pos-ticket-item";
 import type {
   PosTicketStatus,
   PosTicketWithRelations,
 } from "@/types/pos-ticket";
-import type { Service } from "@/types/service";
-import { STAFF_WORKDAY_STATUS_LABELS } from "@/lib/staff-workdays";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 type PosTicketsPageProps = {
   searchParams: Promise<{
-    checkout?: string;
+    date?: string;
     edit?: string;
     error?: string;
-    itemEdit?: string;
-    payments?: string;
+    q?: string;
   }>;
+};
+
+type StaffWorkLogGroup = {
+  items: PosTicketItemWithRelations[];
+  staffName: string;
+};
+
+type DateGroup = {
+  dateKey: string;
+  dateLabel: string;
+  tickets: PosTicketWithRelations[];
 };
 
 const STATUS_LABELS: Record<PosTicketStatus, string> = {
@@ -51,67 +41,50 @@ const STATUS_LABELS: Record<PosTicketStatus, string> = {
   cancelled: "Cancelled",
   voided: "Voided",
 };
+const DAILY_WORK_LOG_BIG_TURN_THRESHOLD = 25;
 
-function formatTicketDateTime(value: string | null) {
-  if (!value) {
-    return "-";
-  }
+function formatMoney(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format(value);
+}
 
+function formatDateKey(value: string) {
+  const date = new Date(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateLabel(value: string) {
   return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
     month: "short",
     day: "numeric",
     year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
 }
 
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
-}
-
-function toCents(value: number) {
-  return Math.round((value + Number.EPSILON) * 100);
-}
-
-function formatQuantity(value: number) {
-  return Number.isInteger(value) ? value.toString() : value.toFixed(2);
-}
-
-function toDateTimeLocalValue(value: Date) {
-  const pad = (part: number) => part.toString().padStart(2, "0");
-
-  return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(
-    value.getDate(),
-  )}T${pad(value.getHours())}:${pad(value.getMinutes())}`;
-}
-
-function StatusBadge({ status }: { status: PosTicketStatus }) {
-  const isOpen = status === "open";
-
-  return (
-    <span
-      className={
-        isOpen
-          ? "inline-flex rounded-md bg-zinc-950 px-2 py-1 text-xs font-medium text-white"
-          : "inline-flex rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700"
-      }
-    >
-      {STATUS_LABELS[status]}
-    </span>
-  );
+function formatNumber(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
 
 function MissingSalonState() {
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">POS Tickets</h1>
-      <p className="mt-2 text-sm text-zinc-600">
-        Manage customer service sessions for this salon.
-      </p>
+      <h1 className="text-3xl font-semibold text-zinc-950">
+        Daily POS Work Log
+      </h1>
       <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
         Please select a salon first.
       </p>
@@ -119,816 +92,492 @@ function MissingSalonState() {
   );
 }
 
-function PosTicketForm({
-  customers,
-  error,
+function isDateInputValue(value: string | undefined) {
+  return Boolean(value?.match(/^\d{4}-\d{2}-\d{2}$/));
+}
+
+function getDayBounds(date: string) {
+  return {
+    openedFrom: `${date}T00:00:00`,
+    openedTo: `${date}T23:59:59.999`,
+  };
+}
+
+function getTicketFilterHref({
+  date,
+  edit,
+  q,
 }: {
-  customers: Customer[];
-  error?: string;
+  date: string;
+  edit?: string;
+  q?: string;
 }) {
-  return (
-    <form
-      action={createPosTicket}
-      className="mt-4 grid gap-5 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-2"
-    >
-      {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 sm:col-span-2">
-          {error}
-        </p>
-      ) : null}
+  const params = new URLSearchParams({ date });
 
-      <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Customer</span>
-        <select
-          className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          defaultValue=""
-          name="customer_id"
-          required
-        >
-          <option value="">Select customer</option>
-          {customers.map((customer) => (
-            <option key={customer.id} value={customer.id}>
-              {customer.name}
-            </option>
-          ))}
-        </select>
-      </label>
+  if (q) {
+    params.set("q", q);
+  }
 
-      <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Opened At</span>
-        <input
-          className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          defaultValue={toDateTimeLocalValue(new Date())}
-          name="opened_at"
-          required
-          type="datetime-local"
-        />
-      </label>
+  if (edit) {
+    params.set("edit", edit);
+  }
 
-      <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Closed At</span>
-        <input
-          className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          name="closed_at"
-          type="datetime-local"
-        />
-      </label>
+  return `/pos-tickets?${params.toString()}`;
+}
 
-      <label className="block sm:col-span-2">
-        <span className="text-sm font-medium text-zinc-700">Notes</span>
-        <textarea
-          className="mt-2 min-h-24 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          name="notes"
-        />
-      </label>
+function getLedgerTurnDisplay(item: PosTicketItemWithRelations) {
+  const quantity = item.quantity > 0 ? item.quantity : 1;
+  const perServiceAmount =
+    item.unit_price > 0 ? item.unit_price : item.line_total / quantity;
+  const bigTurns = perServiceAmount >= DAILY_WORK_LOG_BIG_TURN_THRESHOLD
+    ? quantity
+    : 0;
+  const smallTurns = perServiceAmount < DAILY_WORK_LOG_BIG_TURN_THRESHOLD
+    ? quantity
+    : 0;
 
-      <div className="sm:col-span-2">
-        <button
-          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-          type="submit"
-        >
-          Create Ticket
-        </button>
-      </div>
-    </form>
+  return `Turn ${formatNumber(bigTurns)}|${formatNumber(smallTurns)}`;
+}
+
+function groupItemsByStaff(items: PosTicketItemWithRelations[]) {
+  const groups = new Map<string, StaffWorkLogGroup>();
+
+  for (const item of items) {
+    const staffName = item.assigned_staff?.display_name ?? "Unassigned";
+    const key = item.assigned_staff_id ?? "unassigned";
+    const group = groups.get(key);
+
+    if (group) {
+      group.items.push(item);
+      continue;
+    }
+
+    groups.set(key, {
+      items: [item],
+      staffName,
+    });
+  }
+
+  return Array.from(groups.values());
+}
+
+function buildDailyTicketNumbers(tickets: PosTicketWithRelations[]) {
+  const byDate = new Map<string, PosTicketWithRelations[]>();
+  const numbers = new Map<string, number>();
+
+  for (const ticket of tickets) {
+    const dateKey = formatDateKey(ticket.opened_at);
+    byDate.set(dateKey, [...(byDate.get(dateKey) ?? []), ticket]);
+  }
+
+  for (const ticketsForDate of byDate.values()) {
+    ticketsForDate
+      .sort(
+        (left, right) =>
+          new Date(left.opened_at).getTime() - new Date(right.opened_at).getTime() ||
+          left.ticket_sequence - right.ticket_sequence,
+      )
+      .forEach((ticket, index) => numbers.set(ticket.id, index + 1));
+  }
+
+  return numbers;
+}
+
+function ticketMatchesSearch(
+  ticket: PosTicketWithRelations,
+  query: string,
+  dailyNumber: number,
+) {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  const searchableValues = [
+    String(dailyNumber),
+    `#${dailyNumber}`,
+    ticket.customer?.name ?? "",
+    ...(ticket.ticket_items ?? []).flatMap((item) => [
+      item.assigned_staff?.display_name ?? "",
+      item.service?.name ?? "",
+    ]),
+  ];
+
+  return searchableValues.some((value) =>
+    value.toLowerCase().includes(normalizedQuery),
   );
 }
 
-function EditNotesForm({
-  error,
+function filterTicketsBySearch(
+  tickets: PosTicketWithRelations[],
+  query: string,
+  dailyNumbers: Map<string, number>,
+) {
+  return tickets.filter((ticket) =>
+    ticketMatchesSearch(ticket, query, dailyNumbers.get(ticket.id) ?? 0),
+  );
+}
+
+function groupTicketsByDate(tickets: PosTicketWithRelations[]) {
+  const dateMap = new Map<string, PosTicketWithRelations[]>();
+  const dateLabels = new Map<string, string>();
+
+  for (const ticket of tickets) {
+    const dateKey = formatDateKey(ticket.opened_at);
+
+    dateLabels.set(dateKey, formatDateLabel(ticket.opened_at));
+    dateMap.set(dateKey, [...(dateMap.get(dateKey) ?? []), ticket]);
+  }
+
+  return Array.from(dateMap.entries())
+    .sort(([left], [right]) => right.localeCompare(left))
+    .map<DateGroup>(([dateKey, dateTickets]) => ({
+      dateKey,
+      dateLabel: dateLabels.get(dateKey) ?? dateKey,
+      tickets: [...dateTickets].sort(
+        (left, right) =>
+          new Date(left.opened_at).getTime() - new Date(right.opened_at).getTime() ||
+          left.ticket_sequence - right.ticket_sequence,
+      ),
+    }));
+}
+
+function getServiceRowTipDisplay(totalTip: number) {
+  return totalTip === 0 ? formatMoney(0) : "";
+}
+
+function TicketWorkLogCard({
+  canEdit,
+  dailyNumber,
+  filterHref,
   ticket,
 }: {
-  error?: string;
+  canEdit: boolean;
+  dailyNumber: number;
+  filterHref: (edit?: string) => string;
   ticket: PosTicketWithRelations;
 }) {
-  return (
-    <form action={updatePosTicketNotes} className="grid gap-4">
-      <input name="ticket_id" type="hidden" value={ticket.id} />
-
-      {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
-
-      <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Notes</span>
-        <textarea
-          className="mt-2 min-h-24 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          defaultValue={ticket.notes ?? ""}
-          name="notes"
-        />
-      </label>
-
-      <div className="flex flex-wrap gap-3">
-        <button
-          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-          type="submit"
-        >
-          Save Notes
-        </button>
-        <Link
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-          href="/pos-tickets"
-        >
-          Cancel
-        </Link>
-      </div>
-    </form>
-  );
-}
-
-function AddTicketItemForm({
-  services,
-  ticket,
-}: {
-  services: Service[];
-  ticket: PosTicketWithRelations;
-}) {
-  return (
-    <form action={addPosTicketItem} className="mt-4 flex flex-col gap-3 sm:flex-row">
-      <input name="ticket_id" type="hidden" value={ticket.id} />
-      <select
-        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950 sm:max-w-xs"
-        defaultValue=""
-        name="service_id"
-        required
-      >
-        <option value="">Add service to ticket</option>
-        {services.map((service) => (
-          <option key={service.id} value={service.id}>
-            {service.name} - {formatMoney(service.base_price)}
-          </option>
-        ))}
-      </select>
-      <button
-        className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-        type="submit"
-      >
-        Add Service
-      </button>
-    </form>
-  );
-}
-
-function EditTicketItemForm({
-  error,
-  item,
-}: {
-  error?: string;
-  item: PosTicketItemWithRelations;
-}) {
-  return (
-    <form
-      action={updatePosTicketItem}
-      className="mt-3 grid gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 sm:grid-cols-4"
-    >
-      <input name="item_id" type="hidden" value={item.id} />
-
-      {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 sm:col-span-4">
-          {error}
-        </p>
-      ) : null}
-
-      <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Quantity</span>
-        <input
-          className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          defaultValue={formatQuantity(item.quantity)}
-          min="0.01"
-          name="quantity"
-          required
-          step="0.01"
-          type="number"
-        />
-      </label>
-
-      <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Unit Price</span>
-        <input
-          className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          defaultValue={item.unit_price}
-          min="0"
-          name="unit_price"
-          required
-          step="0.01"
-          type="number"
-        />
-      </label>
-
-      <label className="block sm:col-span-2">
-        <span className="text-sm font-medium text-zinc-700">Notes</span>
-        <input
-          className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          defaultValue={item.notes ?? ""}
-          name="notes"
-          type="text"
-        />
-      </label>
-
-      <div className="flex flex-wrap gap-3 sm:col-span-4">
-        <button
-          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-          type="submit"
-        >
-          Save Item
-        </button>
-        <Link
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-          href="/pos-tickets"
-        >
-          Cancel
-        </Link>
-      </div>
-    </form>
-  );
-}
-
-function AssignStaffForm({
-  item,
-  staff,
-}: {
-  item: PosTicketItemWithRelations;
-  staff: PosTicketStaffOption[];
-}) {
-  return (
-    <form action={updatePosTicketItemStaff} className="flex flex-wrap gap-2">
-      <input name="item_id" type="hidden" value={item.id} />
-      <select
-        className="min-w-36 rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-        defaultValue={item.assigned_staff_id ?? ""}
-        name="assigned_staff_id"
-      >
-        <option value="">No staff</option>
-        {staff.map((member) => (
-          <option key={member.id} value={member.id}>
-            {member.display_name} - {STAFF_WORKDAY_STATUS_LABELS[member.today_status]}
-          </option>
-        ))}
-      </select>
-      <button
-        className="rounded-md border border-zinc-300 px-3 py-1 text-sm font-medium text-zinc-950"
-        type="submit"
-      >
-        Save
-      </button>
-    </form>
-  );
-}
-
-function CheckoutSection({
-  error,
-  paid,
-  remaining,
-  subtotal,
-  total,
-  ticket,
-}: {
-  error?: string;
-  paid: number;
-  remaining: number;
-  subtotal: number;
-  total: number;
-  ticket: PosTicketWithRelations;
-}) {
-  const hasItems = (ticket.ticket_items ?? []).length > 0;
-  const totalCents = toCents(total);
-  const paidCents = toCents(paid);
-  const remainingCents = toCents(remaining);
-  const checkoutAvailable =
-    hasItems &&
-    totalCents > 0 &&
-    paidCents === totalCents &&
-    remainingCents === 0;
-  const checkoutUnavailableReason = !hasItems
-    ? "Add at least one ticket item before checkout."
-    : totalCents <= 0
-      ? "Ticket Total must be greater than 0 before checkout."
-      : paidCents > totalCents || remainingCents < 0
-        ? "Paid Total cannot exceed Total."
-        : paidCents < totalCents || remainingCents > 0
-          ? "Collect full payment before checkout."
-          : "";
+  const items = ticket.ticket_items ?? [];
+  const staffGroups = groupItemsByStaff(items);
+  const totals = calculateTicketTotals({
+    discountType: ticket.discount_type,
+    discountValue: ticket.discount_value,
+    items,
+    taxRate: ticket.tax_rate,
+    tipType: ticket.tip_type,
+    tipValue: ticket.tip_value,
+  });
+  const rowTip = getServiceRowTipDisplay(totals.tip_amount);
 
   return (
-    <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-      {error ? (
-        <p className="mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="text-sm text-zinc-700">
-          <p>Subtotal: {formatMoney(subtotal)}</p>
-          <p className="mt-1 font-semibold text-zinc-950">
-            Total: {formatMoney(total)}
-          </p>
-          <p className="mt-1 text-zinc-700">Paid: {formatMoney(paid)}</p>
-          <p className="mt-1 text-zinc-700">
-            Remaining: {formatMoney(remaining)}
-          </p>
-        </div>
-        {checkoutAvailable ? (
-          <form action={closePosTicket}>
-            <input name="ticket_id" type="hidden" value={ticket.id} />
-            <button
-              className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-              type="submit"
-            >
-              Checkout / Close Ticket
-            </button>
-          </form>
+    <article className="border-b border-zinc-200 last:border-b-0">
+      <div className="grid items-center gap-2 bg-zinc-50 px-3 py-2 text-sm sm:grid-cols-[48px_80px_minmax(160px,1fr)_110px_130px_56px]">
+        <span className="font-semibold text-zinc-950">#{dailyNumber}</span>
+        <span className="text-zinc-700">{formatTime(ticket.opened_at)}</span>
+        <span className="min-w-0 truncate font-medium text-zinc-950">
+          {ticket.customer?.name ?? "Walk-in Customer"}
+        </span>
+        <span className="text-zinc-700">
+          Total: <span className="font-semibold text-zinc-950">{formatMoney(totals.subtotal)}</span>
+        </span>
+        <span className="text-zinc-700">
+          Tip: <span className="font-semibold text-zinc-950">{formatMoney(totals.tip_amount)}</span>
+        </span>
+        {canEdit ? (
+          <Link
+            className="justify-self-start rounded border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-950 sm:justify-self-end"
+            href={filterHref(ticket.id)}
+          >
+            Edit
+          </Link>
         ) : null}
       </div>
-      {checkoutAvailable ? null : (
-        <p className="mt-3 text-sm text-zinc-600">{checkoutUnavailableReason}</p>
-      )}
+      <div className="divide-y divide-zinc-100">
+        {staffGroups.length === 0 ? (
+          <div className="px-3 py-2 text-sm text-zinc-500">No services recorded.</div>
+        ) : (
+          staffGroups.flatMap((group) =>
+            group.items.map((item) => {
+              const turnDisplay = getLedgerTurnDisplay(item);
+
+              return (
+                <div
+                  className="grid gap-2 px-3 py-1.5 text-sm sm:grid-cols-[96px_minmax(140px,180px)_minmax(180px,1fr)_100px_100px]"
+                  key={item.id}
+                >
+                  <span className="text-zinc-500">{turnDisplay}</span>
+                  <span className="min-w-0 truncate font-medium text-zinc-800">
+                    {group.staffName}
+                  </span>
+                  <span className="min-w-0 truncate text-zinc-700">
+                    {item.service?.name ?? "Service"}
+                  </span>
+                  <span className="font-medium text-zinc-950">
+                    {formatMoney(item.line_total)}
+                  </span>
+                  <span className="text-zinc-700">
+                    {rowTip ? `Tip: ${rowTip}` : ""}
+                  </span>
+                </div>
+              );
+            }),
+          )
+        )}
+      </div>
+    </article>
+  );
+}
+
+function EditTicketModal({
+  error,
+  filterHref,
+  ticket,
+}: {
+  error?: string;
+  filterHref: (edit?: string) => string;
+  ticket: PosTicketWithRelations;
+}) {
+  const totals = calculateTicketTotals({
+    discountType: ticket.discount_type,
+    discountValue: ticket.discount_value,
+    items: ticket.ticket_items ?? [],
+    taxRate: ticket.tax_rate,
+    tipType: ticket.tip_type,
+    tipValue: ticket.tip_value,
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4">
+      <div className="max-h-[88vh] w-full max-w-3xl overflow-auto rounded-lg border border-zinc-200 bg-white p-5 shadow-xl">
+        <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-3">
+          <div>
+            <h2 className="text-lg font-semibold text-zinc-950">Edit Work Log</h2>
+            <p className="mt-1 text-sm text-zinc-600">
+              {ticket.customer?.name ?? "Walk-in Customer"} ·{" "}
+              {formatTime(ticket.opened_at)}
+            </p>
+          </div>
+          <Link
+            className="rounded border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-950"
+            href={filterHref()}
+          >
+            Close
+          </Link>
+        </div>
+
+        {error ? (
+          <p className="mt-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            {error}
+          </p>
+        ) : null}
+
+        <div className="mt-4 grid gap-4 text-sm md:grid-cols-3">
+          <p>
+            <span className="block text-zinc-500">Customer</span>
+            <span className="font-medium text-zinc-950">
+              {ticket.customer?.name ?? "Walk-in Customer"}
+            </span>
+          </p>
+          <p>
+            <span className="block text-zinc-500">Opened</span>
+            <span className="font-medium text-zinc-950">
+              {formatTime(ticket.opened_at)}
+            </span>
+          </p>
+          <p>
+            <span className="block text-zinc-500">Status</span>
+            <span className="font-medium text-zinc-950">
+              {STATUS_LABELS[ticket.status]}
+            </span>
+          </p>
+        </div>
+
+        <div className="mt-5 border-t border-zinc-200 pt-4">
+          <h3 className="text-sm font-semibold text-zinc-950">Staff and Services</h3>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {groupItemsByStaff(ticket.ticket_items ?? []).map((group) => (
+              <div className="rounded border border-zinc-200 p-3" key={group.staffName}>
+                <p className="font-semibold text-zinc-950">{group.staffName}</p>
+                <ul className="mt-2 space-y-2">
+                  {group.items.map((item) => {
+                    const turnDisplay = getLedgerTurnDisplay(item);
+
+                    return (
+                      <li className="text-sm" key={item.id}>
+                        <div className="flex justify-between gap-3">
+                          <span>{item.service?.name ?? "Service"}</span>
+                          <span className="font-medium">
+                            {formatMoney(item.line_total)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-zinc-500">{turnDisplay}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 border-t border-zinc-200 pt-4 text-sm md:grid-cols-3">
+          <p>
+            <span className="block text-zinc-500">Tip Setting</span>
+            <span className="font-medium text-zinc-950">
+              {ticket.tip_type === "percentage"
+                ? `${formatNumber(ticket.tip_value)}%`
+                : formatMoney(ticket.tip_value)}
+            </span>
+          </p>
+          <p>
+            <span className="block text-zinc-500">Calculated Tip</span>
+            <span className="font-medium text-zinc-950">
+              {formatMoney(totals.tip_amount)}
+            </span>
+          </p>
+          <p>
+            <span className="block text-zinc-500">Total Services</span>
+            <span className="font-medium text-zinc-950">
+              {formatMoney(totals.subtotal)}
+            </span>
+          </p>
+        </div>
+
+        <form action={updatePosTicketNotes} className="mt-5 border-t border-zinc-200 pt-4">
+          <input name="ticket_id" type="hidden" value={ticket.id} />
+          <label className="block text-sm font-medium text-zinc-700">
+            Notes
+            <textarea
+              className="mt-2 min-h-24 w-full rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-950"
+              defaultValue={ticket.notes ?? ""}
+              name="notes"
+            />
+          </label>
+          <div className="mt-4 flex flex-wrap justify-between gap-3">
+            <p className="text-xs text-zinc-500">Future audit section</p>
+            <div className="flex gap-2">
+              <Link
+                className="rounded border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950"
+                href={filterHref()}
+              >
+                Cancel
+              </Link>
+              <button
+                className="rounded bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
+                type="submit"
+              >
+                Save Notes
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
 
-function AddPaymentForm({
-  error,
-  ticket,
+function WorkLogFilters({
+  query,
+  selectedDate,
 }: {
-  error?: string;
-  ticket: PosTicketWithRelations;
+  query: string;
+  selectedDate: string;
 }) {
   return (
     <form
-      action={addPosPayment}
-      className="mt-4 grid gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 sm:grid-cols-4"
+      action="/pos-tickets"
+      className="mt-4 grid gap-3 border-b border-zinc-200 pb-4 sm:grid-cols-[180px_minmax(220px,1fr)_auto]"
     >
-      <input name="ticket_id" type="hidden" value={ticket.id} />
-
-      {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 sm:col-span-4">
-          {error}
-        </p>
-      ) : null}
-
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Amount</span>
+        <span className="text-xs font-medium uppercase text-zinc-500">Date</span>
         <input
-          className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          min="0.01"
-          name="amount"
-          required
-          step="0.01"
-          type="number"
+          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
+          defaultValue={selectedDate}
+          name="date"
+          type="date"
         />
       </label>
-
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Payment Method</span>
-        <select
-          className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          defaultValue="cash"
-          name="payment_method"
-          required
-        >
-          {POS_PAYMENT_METHOD_OPTIONS.map((method) => (
-            <option key={method.value} value={method.value}>
-              {method.label}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Note</span>
+        <span className="text-xs font-medium uppercase text-zinc-500">Search</span>
         <input
-          className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          name="note"
-          type="text"
+          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
+          defaultValue={query}
+          name="q"
+          placeholder="Customer, staff, service, or #"
+          type="search"
         />
       </label>
-
-      <div className="sm:col-span-4">
+      <div className="flex items-end gap-2">
         <button
-          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+          className="h-10 rounded bg-zinc-950 px-4 text-sm font-medium text-white"
           type="submit"
         >
-          Add Payment
+          Filter
         </button>
+        <Link
+          className="inline-flex h-10 items-center rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
+          href="/pos-tickets"
+        >
+          Today
+        </Link>
       </div>
     </form>
   );
 }
 
-function PaymentsSection({
-  balanceDue,
-  canManageTickets,
-  error,
-  paidTotal,
-  payments,
-  ticket,
-  total,
+function DailyWorkLog({
+  canEdit,
+  dailyNumbers,
+  filterHref,
+  groups,
+  selectedDateLabel,
 }: {
-  balanceDue: number;
-  canManageTickets: boolean;
-  error?: string;
-  paidTotal: number;
-  payments: PosPayment[];
-  ticket: PosTicketWithRelations;
-  total: number;
+  canEdit: boolean;
+  dailyNumbers: Map<string, number>;
+  filterHref: (edit?: string) => string;
+  groups: DateGroup[];
+  selectedDateLabel: string;
 }) {
-  return (
-    <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-zinc-950">Payments</h3>
-        <div className="flex flex-wrap gap-4 text-sm">
-          <span className="text-zinc-700">Total: {formatMoney(total)}</span>
-          <span className="text-zinc-700">Paid: {formatMoney(paidTotal)}</span>
-          <span className="font-semibold text-zinc-950">
-            Remaining: {formatMoney(balanceDue)}
-          </span>
+  if (groups.length === 0) {
+    return (
+      <section className="mt-6">
+        <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
+          <h2 className="text-lg font-semibold text-zinc-950">
+            {selectedDateLabel}
+          </h2>
         </div>
-      </div>
+        <div className="rounded border border-dashed border-zinc-300 bg-zinc-50 p-6">
+          <h2 className="text-lg font-semibold text-zinc-950">
+            No POS work log for this date.
+          </h2>
+        </div>
+      </section>
+    );
+  }
 
-      {payments.length === 0 ? (
-        <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
-          No payments recorded yet.
-        </p>
-      ) : (
-        <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200">
-          <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-            <div className="col-span-12 sm:col-span-2">Amount</div>
-            <div className="hidden sm:col-span-2 sm:block">Method</div>
-            <div className="hidden sm:col-span-3 sm:block">Created Time</div>
-            <div className="hidden sm:col-span-3 sm:block">Note</div>
-            <div className="hidden sm:col-span-2 sm:block">Actions</div>
+  return (
+    <div className="mt-6 space-y-8">
+      {groups.map((dateGroup) => (
+        <section key={dateGroup.dateKey}>
+          <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
+            <h2 className="text-lg font-semibold text-zinc-950">
+              {dateGroup.dateLabel}
+            </h2>
           </div>
-          <ul className="divide-y divide-zinc-200">
-            {payments.map((payment) => (
-              <li className="grid grid-cols-12 gap-3 px-4 py-3" key={payment.id}>
-                <div className="col-span-12 text-sm font-medium text-zinc-950 sm:col-span-2">
-                  {formatMoney(payment.amount)}
-                </div>
-                <div className="col-span-12 text-sm text-zinc-700 sm:col-span-2">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    Method:{" "}
-                  </span>
-                  {POS_PAYMENT_METHOD_LABELS[payment.payment_method]}
-                </div>
-                <div className="col-span-12 text-sm text-zinc-700 sm:col-span-3">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    Created Time:{" "}
-                  </span>
-                  {formatTicketDateTime(payment.created_at)}
-                </div>
-                <div className="col-span-12 text-sm text-zinc-700 sm:col-span-3">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    Note:{" "}
-                  </span>
-                  {payment.note ?? "-"}
-                </div>
-                <div className="col-span-12 text-sm sm:col-span-2">
-                  {canManageTickets ? (
-                    <form action={deletePosPayment}>
-                      <input name="payment_id" type="hidden" value={payment.id} />
-                      <button
-                        className="font-medium text-zinc-950 underline"
-                        type="submit"
-                      >
-                        Delete
-                      </button>
-                    </form>
-                  ) : null}
-                </div>
-              </li>
+          <div className="overflow-hidden rounded border border-zinc-200 bg-white">
+            {dateGroup.tickets.map((ticket) => (
+              <TicketWorkLogCard
+                canEdit={canEdit}
+                dailyNumber={dailyNumbers.get(ticket.id) ?? 0}
+                filterHref={filterHref}
+                key={ticket.id}
+                ticket={ticket}
+              />
             ))}
-          </ul>
-        </div>
-      )}
-
-      {canManageTickets && ticket.status === "open" ? (
-        <AddPaymentForm error={error} ticket={ticket} />
-      ) : null}
-    </div>
-  );
-}
-
-function TicketItems({
-  canManageTickets,
-  error,
-  itemEditId,
-  items,
-  staff,
-}: {
-  canManageTickets: boolean;
-  error?: string;
-  itemEditId?: string;
-  items: PosTicketItemWithRelations[];
-  staff: PosTicketStaffOption[];
-}) {
-  const staffStatusById = new Map(
-    staff.map((member) => [member.id, member.today_status]),
-  );
-
-  if (items.length === 0) {
-    return (
-      <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
-        No services added yet.
-      </p>
-    );
-  }
-
-  return (
-    <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200">
-      <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-        <div className="col-span-12 sm:col-span-3">Service</div>
-        <div className="hidden sm:col-span-2 sm:block">Staff</div>
-        <div className="hidden sm:col-span-2 sm:block">Quantity</div>
-        <div className="hidden sm:col-span-1 sm:block">Unit Price</div>
-        <div className="hidden sm:col-span-2 sm:block">Line Total</div>
-        <div className="hidden sm:col-span-2 sm:block">Actions</div>
-      </div>
-      <ul className="divide-y divide-zinc-200">
-        {items.map((item) => (
-          <li className="px-4 py-3" key={item.id}>
-            {canManageTickets && itemEditId === item.id ? (
-              <EditTicketItemForm error={error} item={item} />
-            ) : (
-              <div className="grid grid-cols-12 gap-3">
-                <div className="col-span-12 sm:col-span-3">
-                  <p className="font-medium text-zinc-950">
-                    {item.service?.name ?? "Unknown service"}
-                  </p>
-                  {item.notes ? (
-                    <p className="mt-1 text-sm text-zinc-600">{item.notes}</p>
-                  ) : null}
-                </div>
-                <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    Staff:{" "}
-                  </span>
-                  {item.assigned_staff?.display_name ?? "-"}
-                  {item.assigned_staff_id &&
-                  staffStatusById.has(item.assigned_staff_id) ? (
-                    <span className="mt-1 block text-xs text-zinc-500">
-                      {
-                        STAFF_WORKDAY_STATUS_LABELS[
-                          staffStatusById.get(item.assigned_staff_id)!
-                        ]
-                      }
-                    </span>
-                  ) : null}
-                </div>
-                <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    Quantity:{" "}
-                  </span>
-                  {formatQuantity(item.quantity)}
-                </div>
-                <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-1">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    Unit Price:{" "}
-                  </span>
-                  {formatMoney(item.unit_price)}
-                </div>
-                <div className="col-span-12 self-center text-sm font-medium text-zinc-950 sm:col-span-2">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    Line Total:{" "}
-                  </span>
-                  {formatMoney(item.line_total)}
-                </div>
-                <div className="col-span-12 flex flex-wrap gap-3 self-center text-sm sm:col-span-2">
-                  {canManageTickets ? (
-                    <>
-                      <AssignStaffForm item={item} staff={staff} />
-                      <Link
-                        className="font-medium text-zinc-950 underline"
-                        href={`/pos-tickets?itemEdit=${item.id}`}
-                      >
-                        Edit Item
-                      </Link>
-                      <form action={deletePosTicketItem}>
-                        <input name="item_id" type="hidden" value={item.id} />
-                        <button
-                          className="font-medium text-zinc-950 underline"
-                          type="submit"
-                        >
-                          Delete
-                        </button>
-                      </form>
-                    </>
-                  ) : null}
-                </div>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function PosTicketList({
-  canManageTickets,
-  checkoutTicketId,
-  editTicketId,
-  error,
-  itemEditId,
-  itemError,
-  paymentError,
-  paymentsTicketId,
-  services,
-  staff,
-  tickets,
-}: {
-  canManageTickets: boolean;
-  checkoutTicketId?: string;
-  editTicketId?: string;
-  error?: string;
-  itemEditId?: string;
-  itemError?: string;
-  paymentError?: string;
-  paymentsTicketId?: string;
-  services: Service[];
-  staff: PosTicketStaffOption[];
-  tickets: PosTicketWithRelations[];
-}) {
-  if (tickets.length === 0) {
-    return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
-        <h2 className="text-lg font-semibold text-zinc-950">No tickets yet</h2>
-        <p className="mt-2 text-sm text-zinc-600">
-          Create your first POS ticket for this salon.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
-      <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-medium uppercase text-zinc-500">
-        <div className="col-span-12 sm:col-span-2">Ticket</div>
-        <div className="hidden sm:col-span-3 sm:block">Customer</div>
-        <div className="hidden sm:col-span-2 sm:block">Opened</div>
-        <div className="hidden sm:col-span-2 sm:block">Closed</div>
-        <div className="hidden sm:col-span-1 sm:block">Status</div>
-        <div className="hidden sm:col-span-2 sm:block">Actions</div>
-      </div>
-      <ul className="divide-y divide-zinc-200">
-        {tickets.map((ticket) => {
-          const isOpen = ticket.status === "open";
-          const canEditTicket = canManageTickets && isOpen;
-          const totals = calculateTicketTotals({
-            discountType: ticket.discount_type,
-            discountValue: ticket.discount_value,
-            items: ticket.ticket_items ?? [],
-            payments: ticket.payments ?? [],
-            taxRate: ticket.tax_rate,
-            tipType: ticket.tip_type,
-            tipValue: ticket.tip_value,
-          });
-          const balanceDue = totals.remaining;
-          const showPayments = paymentsTicketId === ticket.id;
-
-          return (
-          <li className="px-5 py-4" key={ticket.id}>
-            {canEditTicket && editTicketId === ticket.id ? (
-              <EditNotesForm error={error} ticket={ticket} />
-            ) : (
-              <div className="grid grid-cols-12 gap-3">
-                <div className="col-span-12 sm:col-span-2">
-                  <p className="font-medium text-zinc-950">
-                    {ticket.ticket_number}
-                  </p>
-                  {ticket.notes ? (
-                    <p className="mt-1 text-sm text-zinc-600">{ticket.notes}</p>
-                  ) : null}
-                </div>
-                <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-3">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    Customer:{" "}
-                  </span>
-                  {ticket.customer?.name ?? "Unknown customer"}
-                </div>
-                <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    Opened:{" "}
-                  </span>
-                  {formatTicketDateTime(ticket.opened_at)}
-                </div>
-                <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    Closed:{" "}
-                  </span>
-                  {formatTicketDateTime(ticket.closed_at)}
-                </div>
-                <div className="col-span-6 self-center sm:col-span-1">
-                  <StatusBadge status={ticket.status} />
-                </div>
-                <div className="col-span-12 flex flex-wrap gap-3 self-center text-sm sm:col-span-2">
-                  <Link
-                    className="font-medium text-zinc-950 underline"
-                    href={`/pos-tickets/${ticket.id}`}
-                  >
-                    View Detail
-                  </Link>
-                  <Link
-                    className="font-medium text-zinc-950 underline"
-                    href={
-                      showPayments
-                        ? "/pos-tickets"
-                        : `/pos-tickets?payments=${ticket.id}`
-                    }
-                  >
-                    {showPayments ? "Hide Payments" : "View Payments"}
-                  </Link>
-                  {canEditTicket ? (
-                    <>
-                      <Link
-                        className="font-medium text-zinc-950 underline"
-                        href={`/pos-tickets?edit=${ticket.id}`}
-                      >
-                        Edit Notes
-                      </Link>
-                      <form action={cancelPosTicket}>
-                        <input
-                          name="ticket_id"
-                          type="hidden"
-                          value={ticket.id}
-                        />
-                        <input name="return_to" type="hidden" value="/pos-tickets" />
-                        <input
-                          aria-label="Cancel note"
-                          className="mr-2 max-w-32 rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-950 outline-none focus:border-zinc-950"
-                          name="note"
-                          placeholder="Note"
-                          required
-                          type="text"
-                        />
-                        <button
-                          className="font-medium text-zinc-950 underline"
-                          type="submit"
-                        >
-                          Cancel
-                        </button>
-                      </form>
-                    </>
-                  ) : null}
-                </div>
-              </div>
-            )}
-            {editTicketId === ticket.id ? null : (
-              <div className="mt-4 border-t border-zinc-100 pt-4">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-sm font-semibold text-zinc-950">
-                    Ticket Items
-                  </h3>
-                  <div className="flex flex-wrap justify-end gap-4 text-sm">
-                    <span className="font-semibold text-zinc-950">
-                      Total: {formatMoney(totals.total)}
-                    </span>
-                    <span className="text-zinc-700">
-                      Paid: {formatMoney(totals.paid)}
-                    </span>
-                    <span className="font-semibold text-zinc-950">
-                      Remaining: {formatMoney(balanceDue)}
-                    </span>
-                  </div>
-                </div>
-                <TicketItems
-                  canManageTickets={canEditTicket}
-                  error={itemError}
-                  itemEditId={itemEditId}
-                  items={ticket.ticket_items ?? []}
-                  staff={staff}
-                />
-                {canEditTicket ? (
-                  <AddTicketItemForm services={services} ticket={ticket} />
-                ) : null}
-                {canEditTicket ? (
-                  <CheckoutSection
-                    error={checkoutTicketId === ticket.id ? error : undefined}
-                    paid={totals.paid}
-                    remaining={totals.remaining}
-                    subtotal={totals.subtotal}
-                    total={totals.total}
-                    ticket={ticket}
-                  />
-                ) : null}
-                {showPayments ? (
-                  <PaymentsSection
-                    balanceDue={balanceDue}
-                    canManageTickets={canEditTicket}
-                    error={paymentError}
-                    paidTotal={totals.paid}
-                    payments={ticket.payments ?? []}
-                    ticket={ticket}
-                    total={totals.total}
-                  />
-                ) : null}
-              </div>
-            )}
-          </li>
-          );
-        })}
-      </ul>
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
@@ -936,7 +585,7 @@ function PosTicketList({
 export default async function PosTicketsPage({
   searchParams,
 }: PosTicketsPageProps) {
-  const [{ checkout, edit, error, itemEdit, payments }, context] = await Promise.all([
+  const [{ date, edit, error, q }, context] = await Promise.all([
     searchParams,
     getCurrentBusinessContext(),
   ]);
@@ -954,10 +603,9 @@ export default async function PosTicketsPage({
   if (!canViewTickets) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">POS Tickets</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Manage customer service sessions for this salon.
-        </p>
+        <h1 className="text-3xl font-semibold text-zinc-950">
+          Daily POS Work Log
+        </h1>
         <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           You do not have permission to view POS tickets.
         </p>
@@ -965,53 +613,54 @@ export default async function PosTicketsPage({
     );
   }
 
-  const canManageTickets = await hasPermission(
-    POS_TICKET_PERMISSIONS.manage,
-    context,
-  );
-  const [{ tickets }, options] = await Promise.all([
-    getCurrentSalonPosTickets(),
-    canManageTickets
-      ? getCurrentSalonPosTicketOptions(context)
-      : Promise.resolve({ customers: [], services: [], staff: [] }),
+  const selectedDate = isDateInputValue(date)
+    ? date!
+    : getTodayDate(context.user.timezone);
+  const searchQuery = q?.trim() ?? "";
+  const selectedDateLabel = formatDateLabel(`${selectedDate}T00:00:00`);
+  const filterHref = (editTicketId?: string) =>
+    getTicketFilterHref({
+      date: selectedDate,
+      edit: editTicketId,
+      q: searchQuery,
+    });
+  const [canManageTickets, { tickets }] = await Promise.all([
+    hasPermission(POS_TICKET_PERMISSIONS.manage, context),
+    getCurrentSalonPosTickets(getDayBounds(selectedDate)),
   ]);
+  const dailyNumbers = buildDailyTicketNumbers(tickets);
+  const visibleTickets = filterTicketsBySearch(tickets, searchQuery, dailyNumbers);
+  const groups = groupTicketsByDate(visibleTickets);
+  const editTicket = edit ? tickets.find((ticket) => ticket.id === edit) : null;
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-10">
-      <div className="border-b border-zinc-200 pb-6">
-        <h1 className="text-3xl font-semibold text-zinc-950">POS Tickets</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Manage customer service sessions for this salon.
+    <main className="mx-auto w-full max-w-7xl px-4 py-6 text-zinc-950 sm:px-6">
+      <div className="border-b border-zinc-200 pb-4">
+        <h1 className="text-2xl font-semibold tracking-normal">
+          Daily POS Work Log
+        </h1>
+        <p className="mt-1 text-sm text-zinc-600">
+          Staff income history, customer visit history, and daily salon operations.
         </p>
       </div>
 
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Create Ticket</h2>
-        {canManageTickets ? (
-          <PosTicketForm customers={options.customers} error={edit ? undefined : error} />
-        ) : (
-          <p className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-            You do not have permission to manage POS tickets.
-          </p>
-        )}
-      </section>
+      <WorkLogFilters query={searchQuery} selectedDate={selectedDate} />
 
-      <section className="mt-10">
-        <h2 className="text-lg font-semibold text-zinc-950">POS Tickets</h2>
-        <PosTicketList
-          canManageTickets={canManageTickets}
-          checkoutTicketId={checkout}
-          editTicketId={edit}
-          error={edit || checkout ? error : undefined}
-          itemEditId={itemEdit}
-          itemError={itemEdit ? error : undefined}
-          paymentError={payments ? error : undefined}
-          paymentsTicketId={payments}
-          services={options.services}
-          staff={options.staff}
-          tickets={tickets}
+      <DailyWorkLog
+        canEdit={canManageTickets}
+        dailyNumbers={dailyNumbers}
+        filterHref={filterHref}
+        groups={groups}
+        selectedDateLabel={selectedDateLabel}
+      />
+
+      {editTicket ? (
+        <EditTicketModal
+          error={error}
+          filterHref={filterHref}
+          ticket={editTicket}
         />
-      </section>
+      ) : null}
     </main>
   );
 }
