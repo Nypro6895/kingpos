@@ -447,7 +447,7 @@ function TicketWorkLogCard({
 
   return (
     <article className="border-b border-zinc-200 last:border-b-0">
-      <div className="grid items-center gap-2 bg-zinc-50 px-3 py-2 text-sm sm:grid-cols-[48px_80px_minmax(160px,1fr)_110px_130px_56px]">
+      <div className="grid items-center gap-2 bg-zinc-50 px-3 py-2 text-sm sm:grid-cols-[48px_80px_minmax(150px,1fr)_110px_150px_130px_56px]">
         <span className="font-semibold text-zinc-950">#{dailyNumber}</span>
         <span className="text-zinc-700">{formatTime(ticket.opened_at)}</span>
         <span className="min-w-0 truncate font-medium text-zinc-950">
@@ -455,6 +455,12 @@ function TicketWorkLogCard({
         </span>
         <span className="text-zinc-700">
           Total: <span className="font-semibold text-zinc-950">{formatMoney(totals.subtotal)}</span>
+        </span>
+        <span className="text-zinc-700">
+          After Discount:{" "}
+          <span className="font-semibold text-zinc-950">
+            {formatMoney(totals.taxable_amount)}
+          </span>
         </span>
         <span className="text-zinc-700">
           Tip: <span className="font-semibold text-zinc-950">{formatMoney(totals.tip_amount)}</span>
