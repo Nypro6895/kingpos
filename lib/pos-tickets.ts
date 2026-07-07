@@ -28,7 +28,7 @@ export const POS_TICKET_AUDIT_LOG_SELECT =
 export const POS_TICKET_WITH_RELATIONS_SELECT = `${POS_TICKET_SELECT}, audit_logs:pos_ticket_audit_logs(${POS_TICKET_AUDIT_LOG_SELECT}), customer:customers(id, name, phone, email), payments:pos_payments(${POS_PAYMENT_SELECT}), ticket_items:pos_ticket_items(${POS_TICKET_ITEM_SELECT}, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, amount, turn_type, turn_index))`;
 
 const POS_TICKET_STAFF_EARNING_SELECT =
-  "id, organization_id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at";
+  "id, organization_id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at";
 
 export const POS_TICKET_PERMISSIONS = {
   void: "tickets.void",

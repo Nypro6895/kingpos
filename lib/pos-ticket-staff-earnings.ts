@@ -227,36 +227,93 @@ function getOrCreateAccumulator(
 function allocateTips(
   accumulators: StaffAccumulator[],
   ticketTipAmount: number,
+  existingEarnings: PosTicketStaffEarning[],
 ) {
   const tipsByStaffId = new Map<string, number>();
+  const manualTipsByStaffId = new Map<string, number>();
   const serviceTotal = roundMoney(
     accumulators.reduce((total, staff) => total + staff.serviceTotal, 0),
   );
   const tipCents = toCents(ticketTipAmount);
+  const accumulatorByStaffId = new Map(
+    accumulators.map((staff) => [staff.staffId, staff]),
+  );
+
+  for (const earning of existingEarnings) {
+    if (!earning.tip_is_manual || !accumulatorByStaffId.has(earning.staff_id)) {
+      continue;
+    }
+
+    manualTipsByStaffId.set(
+      earning.staff_id,
+      roundMoney(earning.manual_tip_amount ?? earning.tip_amount ?? 0),
+    );
+  }
+
+  const manualTipCents = Array.from(manualTipsByStaffId.values()).reduce(
+    (total, tip) => total + toCents(tip),
+    0,
+  );
+
+  if (manualTipCents > tipCents) {
+    throw new Error("Manual staff tips cannot exceed the ticket tip.");
+  }
+
+  for (const staff of accumulators) {
+    if (manualTipsByStaffId.has(staff.staffId)) {
+      tipsByStaffId.set(staff.staffId, manualTipsByStaffId.get(staff.staffId) ?? 0);
+    }
+  }
 
   if (serviceTotal <= 0 || tipCents <= 0) {
     for (const staff of accumulators) {
+      tipsByStaffId.set(staff.staffId, tipsByStaffId.get(staff.staffId) ?? 0);
+    }
+
+    return tipsByStaffId;
+  }
+
+  const nonManualAccumulators = accumulators.filter(
+    (staff) => !manualTipsByStaffId.has(staff.staffId),
+  );
+  const remainingTipCents = tipCents - manualTipCents;
+  const nonManualServiceTotal = roundMoney(
+    nonManualAccumulators.reduce((total, staff) => total + staff.serviceTotal, 0),
+  );
+
+  if (nonManualAccumulators.length === 0) {
+    if (remainingTipCents !== 0) {
+      throw new Error("Manual staff tips must equal the ticket tip when all staff tips are manual.");
+    }
+
+    return tipsByStaffId;
+  }
+
+  if (remainingTipCents <= 0 || nonManualServiceTotal <= 0) {
+    for (const staff of nonManualAccumulators) {
       tipsByStaffId.set(staff.staffId, 0);
     }
 
     return tipsByStaffId;
   }
 
-  for (const staff of accumulators) {
+  const remainingTipAmount = fromCents(remainingTipCents);
+
+  for (const staff of nonManualAccumulators) {
     tipsByStaffId.set(
       staff.staffId,
-      fromCents(toCents((ticketTipAmount * staff.serviceTotal) / serviceTotal)),
+      fromCents(toCents((remainingTipAmount * staff.serviceTotal) / nonManualServiceTotal)),
     );
   }
 
-  const allocatedCents = Array.from(tipsByStaffId.values()).reduce(
-    (total, tip) => total + toCents(tip),
+  const allocatedNonManualCents = nonManualAccumulators.reduce(
+    (total, staff) => total + toCents(tipsByStaffId.get(staff.staffId) ?? 0),
     0,
   );
-  const remainderCents = tipCents - allocatedCents;
+  const remainderCents = remainingTipCents - allocatedNonManualCents;
 
   if (remainderCents !== 0) {
-    const remainderStaff = [...accumulators].sort(
+    const remainderStaff = [...nonManualAccumulators].sort(
       (left, right) =>
         right.serviceTotal - left.serviceTotal ||
         left.staffId.localeCompare(right.staffId),
@@ -268,6 +325,15 @@ function allocateTips(
         fromCents(toCents(tipsByStaffId.get(remainderStaff.staffId) ?? 0) + remainderCents),
       );
     }
+  }
+
+  const allocatedCents = Array.from(tipsByStaffId.values()).reduce(
+    (total, tip) => total + toCents(tip),
+    0,
+  );
+
+  if (allocatedCents !== tipCents) {
+    throw new Error("Unable to allocate staff tips to match ticket tip.");
   }
 
   return tipsByStaffId;
@@ -330,9 +396,19 @@ function calculateRowsForTickets(tickets: RawTicket[], workDate: string) {
       tipType: ticket.tip_type,
       tipValue: ticket.tip_value,
     });
-    const tipsByStaffId = allocateTips(staffAccumulators, ticketTotals.tip_amount);
+    const existingEarnings = ticket.staff_earnings ?? [];
+    const existingEarningByStaffId = new Map(
+      existingEarnings.map((earning) => [earning.staff_id, earning]),
+    );
+    const tipsByStaffId = allocateTips(
+      staffAccumulators,
+      ticketTotals.tip_amount,
+      existingEarnings,
+    );
 
     for (const staff of staffAccumulators) {
+      const existingEarning = existingEarningByStaffId.get(staff.staffId);
+      const tipIsManual = existingEarning?.tip_is_manual ?? false;
       const tipAmount = tipsByStaffId.get(staff.staffId) ?? 0;
       const commissionAmount = 0;
       const bonusAmount = 0;
@@ -348,6 +424,9 @@ function calculateRowsForTickets(tickets: RawTicket[], workDate: string) {
         first_small_turn_sequence: staff.firstSmallTurnSequence,
         last_big_turn_sequence: staff.lastBigTurnSequence,
         last_small_turn_sequence: staff.lastSmallTurnSequence,
+        manual_tip_amount: tipIsManual
+          ? roundMoney(existingEarning?.manual_tip_amount ?? tipAmount)
+          : null,
         organization_id: ticket.organization_id,
         salon_id: ticket.salon_id,
         service_total: staff.serviceTotal,
@@ -355,6 +434,7 @@ function calculateRowsForTickets(tickets: RawTicket[], workDate: string) {
         staff_id: staff.staffId,
         ticket_id: ticket.id,
         tip_amount: tipAmount,
+        tip_is_manual: tipIsManual,
         total_earning: roundMoney(
           staff.serviceTotal +
             tipAmount +
@@ -444,7 +524,7 @@ async function loadTicketsForDate(input: {
   const { data: staffEarnings, error: staffEarningsError } = await input.supabase
     .from("pos_ticket_staff_earnings")
     .select(
-      "id, organization_id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at",
+      "id, organization_id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at",
     )
     .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
@@ -565,9 +645,11 @@ export async function recalculateStaffEarningsForDate(
         first_small_turn_sequence: null,
         last_big_turn_sequence: null,
         last_small_turn_sequence: null,
+        manual_tip_amount: null,
         service_total: 0,
         small_turn_count: 0,
         tip_amount: 0,
+        tip_is_manual: false,
         total_earning: 0,
       })
       .eq("id", row.id)

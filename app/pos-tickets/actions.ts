@@ -102,6 +102,22 @@ function readNumber(formData: FormData, key: string) {
   return Number(value);
 }
 
+function readJsonArray<T>(formData: FormData, key: string): T[] {
+  const value = readRequiredString(formData, key);
+
+  if (!value) {
+    return [];
+  }
+
+  const parsed = JSON.parse(value);
+
+  if (!Array.isArray(parsed)) {
+    throw new Error(`${key} must be an array.`);
+  }
+
+  return parsed as T[];
+}
+
 function toCents(value: number) {
   return Math.round((value + Number.EPSILON) * 100);
 }
@@ -145,6 +161,28 @@ const PAYMENT_METHOD_VALUES = POS_PAYMENT_METHOD_OPTIONS.map(
 );
 const DISCOUNT_TYPE_VALUES = ["fixed_amount", "percentage"] as const;
 const TIP_TYPE_VALUES = ["fixed_amount", "percentage"] as const;
+
+type ClosedTicketItemUpdateInput = {
+  item_id: string;
+  quantity: number;
+  remove: boolean;
+  service_id: string | null;
+  staff_id: string | null;
+  unit_price: number;
+};
+
+type ClosedTicketAddedItemInput = {
+  quantity: number;
+  service_id: string;
+  staff_id: string;
+  unit_price: number;
+};
+
+type ClosedTicketStaffTipOverrideInput = {
+  is_manual: boolean;
+  staff_id: string;
+  tip_amount: number;
+};
 
 async function requirePosTicketMutationContext(editId?: string) {
   const supabase = await createAuthenticatedSupabaseServerClient();
@@ -280,7 +318,7 @@ async function loadClosedCorrectionSnapshot({
       supabase
         .from("pos_ticket_staff_earnings")
         .select(
-          "id, ticket_id, staff_id, work_date, service_total, tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, total_earning, locked_at, payroll_batch_id",
+          "id, ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, total_earning, locked_at, payroll_batch_id",
         )
         .eq("organization_id", organizationId)
         .eq("salon_id", salonId)
@@ -1674,6 +1712,550 @@ export async function correctClosedPosTicket(formData: FormData) {
       userId: user.id,
     });
     redirectWithError(message, ticketId, itemId, undefined, returnPath);
+  }
+
+  revalidatePath("/pos-tickets");
+  revalidatePath("/staff/today");
+  revalidatePath("/staff/my-work");
+  revalidatePath(returnPath);
+  redirectAfterMutation(returnPath);
+}
+
+export async function correctClosedPosTicketInline(formData: FormData) {
+  const ticketId = readRequiredString(formData, "ticket_id");
+  const returnPath = readReturnPath(formData);
+  const reason = readRequiredString(formData, "correction_reason");
+
+  if (!ticketId) {
+    redirectWithError("Ticket id is required.", undefined, undefined, undefined, returnPath);
+  }
+
+  if (!reason) {
+    redirectWithError("Correction reason is required.", ticketId, undefined, undefined, returnPath);
+  }
+
+  const { supabase, organization, salon, user } =
+    await requireClosedTicketCorrectionContext(ticketId);
+
+  try {
+    const itemUpdates = readJsonArray<ClosedTicketItemUpdateInput>(
+      formData,
+      "item_updates",
+    );
+    const addedItems = readJsonArray<ClosedTicketAddedItemInput>(
+      formData,
+      "added_items",
+    );
+    const staffTipOverrides = readJsonArray<ClosedTicketStaffTipOverrideInput>(
+      formData,
+      "staff_tip_overrides",
+    );
+    const tipTotal = readNumber(formData, "tip_total");
+
+    if (!Number.isFinite(tipTotal) || tipTotal < 0) {
+      throw new Error("Total tip must be zero or greater.");
+    }
+
+    const { data: ticket, error: ticketError } = await supabase
+      .from("pos_tickets")
+      .select("id, organization_id, salon_id, opened_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value")
+      .eq("id", ticketId)
+      .eq("organization_id", organization.id)
+      .eq("salon_id", salon.id)
+      .maybeSingle<{
+        discount_type: "fixed_amount" | "percentage";
+        discount_value: number;
+        id: string;
+        opened_at: string;
+        organization_id: string;
+        salon_id: string;
+        status: string;
+        tax_rate: number;
+        tip_type: "fixed_amount" | "percentage";
+        tip_value: number;
+      }>();
+
+    if (ticketError) {
+      throw ticketError;
+    }
+
+    if (!ticket) {
+      throw new Error("POS Ticket is required.");
+    }
+
+    if (ticket.status !== "closed") {
+      throw new Error("Only closed tickets can be corrected with this action.");
+    }
+
+    const workDate = formatDateInTimeZone(ticket.opened_at, user.timezone);
+    await assertWorkDateIsUnlocked({
+      organizationId: organization.id,
+      salonId: salon.id,
+      supabase,
+      workDate,
+    });
+
+    const { data: currentItems, error: itemsError } = await supabase
+      .from("pos_ticket_items")
+      .select("id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, created_at")
+      .eq("organization_id", organization.id)
+      .eq("salon_id", salon.id)
+      .eq("pos_ticket_id", ticketId)
+      .eq("is_removed", false)
+      .returns<
+        Array<{
+          assigned_staff_id: string | null;
+          created_at: string;
+          id: string;
+          is_removed: boolean;
+          line_total: number;
+          notes: string | null;
+          organization_id: string;
+          pos_ticket_id: string;
+          quantity: number;
+          salon_id: string;
+          service_id: string | null;
+          unit_price: number;
+        }>
+      >();
+
+    if (itemsError) {
+      throw itemsError;
+    }
+
+    const currentItemById = new Map((currentItems ?? []).map((item) => [item.id, item]));
+    const updateIds = new Set<string>();
+
+    for (const update of itemUpdates) {
+      if (!update.item_id || updateIds.has(update.item_id)) {
+        throw new Error("Each correction line must reference a unique item.");
+      }
+
+      if (!currentItemById.has(update.item_id)) {
+        throw new Error("Corrected item must belong to the selected ticket.");
+      }
+
+      updateIds.add(update.item_id);
+
+      if (!update.remove) {
+        if (!update.service_id) {
+          throw new Error("Service is required for corrected lines.");
+        }
+
+        if (!update.staff_id) {
+          throw new Error("Staff is required for corrected lines.");
+        }
+
+        if (!Number.isFinite(update.quantity) || update.quantity <= 0) {
+          throw new Error("Quantity must be greater than 0.");
+        }
+
+        if (!Number.isFinite(update.unit_price) || update.unit_price < 0) {
+          throw new Error("Amount must be greater than or equal to 0.");
+        }
+      }
+    }
+
+    for (const addedItem of addedItems) {
+      if (!addedItem.service_id || !addedItem.staff_id) {
+        throw new Error("Added lines require staff and service.");
+      }
+
+      if (!Number.isFinite(addedItem.quantity) || addedItem.quantity <= 0) {
+        throw new Error("Added line quantity must be greater than 0.");
+      }
+
+      if (!Number.isFinite(addedItem.unit_price) || addedItem.unit_price <= 0) {
+        throw new Error("Added line amount must be greater than 0.");
+      }
+    }
+
+    const serviceIds = Array.from(
+      new Set([
+        ...itemUpdates
+          .filter((update) => !update.remove && update.service_id)
+          .map((update) => update.service_id as string),
+        ...addedItems.map((item) => item.service_id),
+      ]),
+    );
+    const staffIds = Array.from(
+      new Set([
+        ...itemUpdates
+          .filter((update) => !update.remove && update.staff_id)
+          .map((update) => update.staff_id as string),
+        ...addedItems.map((item) => item.staff_id),
+        ...staffTipOverrides.map((override) => override.staff_id),
+      ]),
+    );
+
+    if (serviceIds.length > 0) {
+      const { data: serviceRows, error: serviceError } = await supabase
+        .from("services")
+        .select("id")
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id)
+        .in("id", serviceIds)
+        .returns<Array<{ id: string }>>();
+
+      if (serviceError) {
+        throw serviceError;
+      }
+
+      if ((serviceRows ?? []).length !== serviceIds.length) {
+        throw new Error("All corrected services must belong to the current salon.");
+      }
+    }
+
+    if (staffIds.length > 0) {
+      const { data: staffRows, error: staffError } = await supabase
+        .from("staff")
+        .select("id")
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id)
+        .in("id", staffIds)
+        .returns<Array<{ id: string }>>();
+
+      if (staffError) {
+        throw staffError;
+      }
+
+      if ((staffRows ?? []).length !== staffIds.length) {
+        throw new Error("All corrected staff must belong to the current salon.");
+      }
+    }
+
+    const finalItems = new Map<
+      string,
+      { line_total: number; staff_id: string; unit_price: number }
+    >();
+
+    for (const item of currentItems ?? []) {
+      finalItems.set(item.id, {
+        line_total: item.quantity * item.unit_price,
+        staff_id: item.assigned_staff_id ?? "",
+        unit_price: item.unit_price,
+      });
+    }
+
+    for (const update of itemUpdates) {
+      if (update.remove) {
+        finalItems.delete(update.item_id);
+      } else {
+        finalItems.set(update.item_id, {
+          line_total: update.quantity * update.unit_price,
+          staff_id: update.staff_id ?? "",
+          unit_price: update.unit_price,
+        });
+      }
+    }
+
+    for (const [index, item] of addedItems.entries()) {
+      finalItems.set(`added-${index}`, {
+        line_total: item.quantity * item.unit_price,
+        staff_id: item.staff_id,
+        unit_price: item.unit_price,
+      });
+    }
+
+    const finalStaffIds = Array.from(
+      new Set(
+        Array.from(finalItems.values())
+          .map((item) => item.staff_id)
+          .filter(Boolean),
+      ),
+    );
+    const finalStaffIdSet = new Set(finalStaffIds);
+    const manualOverrides = staffTipOverrides.filter((override) => override.is_manual);
+
+    for (const override of staffTipOverrides) {
+      if (!finalStaffIdSet.has(override.staff_id)) {
+        throw new Error("Staff tip overrides must belong to staff with active ticket services.");
+      }
+
+      if (!Number.isFinite(override.tip_amount) || override.tip_amount < 0) {
+        throw new Error("Staff tip amounts must be zero or greater.");
+      }
+    }
+
+    const manualTipCents = manualOverrides.reduce(
+      (total, override) => total + toCents(override.tip_amount),
+      0,
+    );
+    const tipTotalCents = toCents(tipTotal);
+
+    if (manualTipCents > tipTotalCents) {
+      throw new Error("Manual staff tips cannot exceed total tip.");
+    }
+
+    if (
+      finalStaffIds.length > 0 &&
+      manualOverrides.length === finalStaffIds.length &&
+      manualTipCents !== tipTotalCents
+    ) {
+      throw new Error("Manual staff tips must equal total tip when all staff tips are manual.");
+    }
+
+    const currentTotals = calculateTicketTotals({
+      discountType: ticket.discount_type,
+      discountValue: ticket.discount_value,
+      items: currentItems ?? [],
+      taxRate: ticket.tax_rate,
+      tipType: ticket.tip_type,
+      tipValue: ticket.tip_value,
+    });
+    const hasTipChange = toCents(currentTotals.tip_amount) !== tipTotalCents;
+    const hasManualTipChange = staffTipOverrides.length > 0;
+
+    if (itemUpdates.length === 0 && addedItems.length === 0 && !hasTipChange && !hasManualTipChange) {
+      throw new Error("Make at least one correction before saving.");
+    }
+
+    const beforeSnapshot = await loadClosedCorrectionSnapshot({
+      organizationId: organization.id,
+      salonId: salon.id,
+      supabase,
+      ticketId,
+    });
+    const now = new Date().toISOString();
+    const replacementItemIds: string[] = [];
+
+    for (const update of itemUpdates) {
+      const currentItem = currentItemById.get(update.item_id);
+
+      if (!currentItem) {
+        continue;
+      }
+
+      const serviceChanged = update.service_id !== currentItem.service_id;
+
+      if (update.remove || serviceChanged) {
+        const { error: removeError } = await supabase
+          .from("pos_ticket_items")
+          .update({
+            is_removed: true,
+            removal_reason: reason,
+            removed_at: now,
+            removed_by: user.id,
+          })
+          .eq("id", currentItem.id)
+          .eq("organization_id", organization.id)
+          .eq("salon_id", salon.id);
+
+        if (removeError) {
+          throw removeError;
+        }
+
+        await rebuildCorrectionTurnParts({
+          itemId: currentItem.id,
+          organizationId: organization.id,
+          quantity: 0,
+          salonId: salon.id,
+          staffId: null,
+          supabase,
+          ticketId,
+          unitPrice: 0,
+          workDate,
+        });
+
+        if (!update.remove) {
+          const { data: replacement, error: replacementError } = await supabase
+            .from("pos_ticket_items")
+            .insert({
+              assigned_staff_id: update.staff_id,
+              notes: currentItem.notes,
+              organization_id: organization.id,
+              pos_ticket_id: ticketId,
+              quantity: update.quantity,
+              salon_id: salon.id,
+              service_id: update.service_id,
+              unit_price: update.unit_price,
+            })
+            .select("id")
+            .single<{ id: string }>();
+
+          if (replacementError) {
+            throw replacementError;
+          }
+
+          replacementItemIds.push(replacement.id);
+          await rebuildCorrectionTurnParts({
+            itemId: replacement.id,
+            organizationId: organization.id,
+            quantity: update.quantity,
+            salonId: salon.id,
+            staffId: update.staff_id,
+            supabase,
+            ticketId,
+            unitPrice: update.unit_price,
+            workDate,
+          });
+        }
+      } else {
+        const { error: updateError } = await supabase
+          .from("pos_ticket_items")
+          .update({
+            assigned_staff_id: update.staff_id,
+            quantity: update.quantity,
+            unit_price: update.unit_price,
+          })
+          .eq("id", currentItem.id)
+          .eq("organization_id", organization.id)
+          .eq("salon_id", salon.id);
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        await rebuildCorrectionTurnParts({
+          itemId: currentItem.id,
+          organizationId: organization.id,
+          quantity: update.quantity,
+          salonId: salon.id,
+          staffId: update.staff_id,
+          supabase,
+          ticketId,
+          unitPrice: update.unit_price,
+          workDate,
+        });
+      }
+    }
+
+    for (const addedItem of addedItems) {
+      const { data: insertedItem, error: insertError } = await supabase
+        .from("pos_ticket_items")
+        .insert({
+          assigned_staff_id: addedItem.staff_id,
+          organization_id: organization.id,
+          pos_ticket_id: ticketId,
+          quantity: addedItem.quantity,
+          salon_id: salon.id,
+          service_id: addedItem.service_id,
+          unit_price: addedItem.unit_price,
+        })
+        .select("id")
+        .single<{ id: string }>();
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      replacementItemIds.push(insertedItem.id);
+      await rebuildCorrectionTurnParts({
+        itemId: insertedItem.id,
+        organizationId: organization.id,
+        quantity: addedItem.quantity,
+        salonId: salon.id,
+        staffId: addedItem.staff_id,
+        supabase,
+        ticketId,
+        unitPrice: addedItem.unit_price,
+        workDate,
+      });
+    }
+
+    const { error: tipError } = await supabase
+      .from("pos_tickets")
+      .update({
+        tip_type: "fixed_amount",
+        tip_value: tipTotal,
+      })
+      .eq("id", ticketId)
+      .eq("organization_id", organization.id)
+      .eq("salon_id", salon.id);
+
+    if (tipError) {
+      throw tipError;
+    }
+
+    for (const override of staffTipOverrides) {
+      if (override.is_manual) {
+        const manualTipAmount = Math.round((override.tip_amount + Number.EPSILON) * 100) / 100;
+        const { error: manualTipError } = await supabase
+          .from("pos_ticket_staff_earnings")
+          .upsert(
+            {
+              big_turn_count: 0,
+              bonus_amount: 0,
+              calculation_version: 1,
+              commission_amount: 0,
+              deduction_amount: 0,
+              first_big_turn_sequence: null,
+              first_small_turn_sequence: null,
+              last_big_turn_sequence: null,
+              last_small_turn_sequence: null,
+              manual_tip_amount: manualTipAmount,
+              organization_id: organization.id,
+              salon_id: salon.id,
+              service_total: 0,
+              small_turn_count: 0,
+              staff_id: override.staff_id,
+              ticket_id: ticketId,
+              tip_amount: manualTipAmount,
+              tip_is_manual: true,
+              total_earning: manualTipAmount,
+              work_date: workDate,
+            },
+            { onConflict: "ticket_id,staff_id" },
+          );
+
+        if (manualTipError) {
+          throw manualTipError;
+        }
+      } else {
+        const { error: clearManualError } = await supabase
+          .from("pos_ticket_staff_earnings")
+          .update({
+            manual_tip_amount: null,
+            tip_is_manual: false,
+          })
+          .eq("organization_id", organization.id)
+          .eq("salon_id", salon.id)
+          .eq("ticket_id", ticketId)
+          .eq("staff_id", override.staff_id);
+
+        if (clearManualError) {
+          throw clearManualError;
+        }
+      }
+    }
+
+    await recalculateStaffEarningsForDate(salon.id, workDate);
+
+    const afterSnapshot = await loadClosedCorrectionSnapshot({
+      organizationId: organization.id,
+      salonId: salon.id,
+      supabase,
+      ticketId,
+    });
+
+    const { error: adjustmentError } = await supabase
+      .from("pos_ticket_adjustments")
+      .insert({
+        action: "item_corrected",
+        after_snapshot: afterSnapshot,
+        before_snapshot: beforeSnapshot,
+        created_by: user.id,
+        organization_id: organization.id,
+        reason,
+        replacement_ticket_item_id: replacementItemIds[0] ?? null,
+        salon_id: salon.id,
+        ticket_id: ticketId,
+        ticket_item_id: itemUpdates[0]?.item_id ?? null,
+      });
+
+    if (adjustmentError) {
+      throw adjustmentError;
+    }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to correct closed ticket.";
+    console.error("Supabase inline correct closed POS ticket failed", {
+      message,
+      salonId: salon.id,
+      ticketId,
+      userId: user.id,
+    });
+    redirectWithError(message, undefined, undefined, undefined, returnPath);
   }
 
   revalidatePath("/pos-tickets");

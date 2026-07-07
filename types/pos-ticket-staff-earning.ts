@@ -13,6 +13,7 @@ export type PosTicketStaffEarning = {
   last_big_turn_sequence: number | null;
   last_small_turn_sequence: number | null;
   locked_at: string | null;
+  manual_tip_amount: number | null;
   organization_id: string;
   payroll_batch_id: string | null;
   salon_id: string;
@@ -21,6 +22,7 @@ export type PosTicketStaffEarning = {
   staff_id: string;
   ticket_id: string;
   tip_amount: number;
+  tip_is_manual: boolean;
   total_earning: number;
   updated_at: string;
   work_date: string;
