@@ -68,6 +68,12 @@ export function SalonSwitcher({
           </Link>
           <Link
             className="font-medium text-zinc-700 hover:text-zinc-950"
+            href="/reports"
+          >
+            Reports
+          </Link>
+          <Link
+            className="font-medium text-zinc-700 hover:text-zinc-950"
             href="/salon-settings"
           >
             Salon Settings
