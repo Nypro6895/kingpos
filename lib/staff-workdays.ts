@@ -406,6 +406,7 @@ export async function getCurrentStaffAssignedWork(
     .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("assigned_staff_id", staff.id)
+    .eq("is_removed", false)
     .gte("created_at", dayStart)
     .lte("created_at", dayEnd)
     .order("created_at", { ascending: true })

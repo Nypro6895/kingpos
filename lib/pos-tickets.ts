@@ -1,7 +1,7 @@
 import "server-only";
 
 import { getCurrentBusinessContext } from "@/lib/current-context";
-import { requirePermission } from "@/lib/permissions";
+import { hasPermission, requirePermission } from "@/lib/permissions";
 import { POS_PAYMENT_SELECT } from "@/lib/pos-payments";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
@@ -20,7 +20,7 @@ export const POS_TICKET_SELECT =
   "id, organization_id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at";
 
 export const POS_TICKET_ITEM_SELECT =
-  "id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, created_at, updated_at";
+  "id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at";
 
 export const POS_TICKET_AUDIT_LOG_SELECT =
   "id, organization_id, salon_id, ticket_id, action, note, created_by, created_at, created_by_user:users(id, display_name, email)";
@@ -172,6 +172,7 @@ async function attachStaffEarningsToTickets(input: {
   return input.tickets.map((ticket) => ({
     ...ticket,
     staff_earnings: earningsByTicketId.get(ticket.id) ?? [],
+    ticket_items: (ticket.ticket_items ?? []).filter((item) => !item.is_removed),
   }));
 }
 
@@ -301,7 +302,13 @@ export async function getCurrentSalonPosTicket(ticketId: string) {
 export async function getCurrentSalonPosTicketOptions(
   context: CurrentBusinessContext,
 ) {
-  await requirePermission(POS_TICKET_PERMISSIONS.manage, context);
+  const canUseOptions =
+    (await hasPermission(POS_TICKET_PERMISSIONS.manage, context)) ||
+    (await hasPermission(POS_TICKET_PERMISSIONS.void, context));
+
+  if (!canUseOptions) {
+    throw new Error("Missing required permission: tickets.manage or tickets.void");
+  }
 
   const { salon } = requireCurrentOrganizationAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();

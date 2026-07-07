@@ -1,7 +1,7 @@
 import "server-only";
 
 import { getCurrentBusinessContext } from "@/lib/current-context";
-import { requirePermission } from "@/lib/permissions";
+import { hasPermission } from "@/lib/permissions";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import { getTurnType } from "@/lib/pos-desk-amounts";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
@@ -24,6 +24,7 @@ type RawTicketItem = {
   assigned_staff_id: string | null;
   created_at: string;
   id: string;
+  is_removed?: boolean;
   line_total: number;
   quantity: number;
   turn_parts?: RawTurnPart[] | null;
@@ -380,7 +381,13 @@ async function requireEarningContext() {
     throw new Error("Please select a salon first.");
   }
 
-  await requirePermission(POS_TICKET_PERMISSIONS.manage, context);
+  const canRecalculate =
+    (await hasPermission(POS_TICKET_PERMISSIONS.manage, context)) ||
+    (await hasPermission(POS_TICKET_PERMISSIONS.void, context));
+
+  if (!canRecalculate) {
+    throw new Error("Missing required permission: tickets.manage or tickets.void");
+  }
 
   const supabase = await createAuthenticatedSupabaseServerClient();
 
@@ -410,7 +417,7 @@ async function loadTicketsForDate(input: {
   const { data, error } = await input.supabase
     .from("pos_tickets")
     .select(
-      "id, organization_id, salon_id, ticket_sequence, opened_at, discount_type, discount_value, tax_rate, tip_type, tip_value, ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, unit_price, line_total, created_at, turn_parts:pos_ticket_item_turn_parts(id, amount, turn_type, turn_index))",
+      "id, organization_id, salon_id, ticket_sequence, opened_at, discount_type, discount_value, tax_rate, tip_type, tip_value, ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, unit_price, line_total, is_removed, created_at, turn_parts:pos_ticket_item_turn_parts(id, amount, turn_type, turn_index))",
     )
     .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
@@ -460,6 +467,7 @@ async function loadTicketsForDate(input: {
   return tickets.map((ticket) => ({
     ...ticket,
     staff_earnings: staffEarningsByTicketId.get(ticket.id) ?? [],
+    ticket_items: (ticket.ticket_items ?? []).filter((item) => !item.is_removed),
   }));
 }
 

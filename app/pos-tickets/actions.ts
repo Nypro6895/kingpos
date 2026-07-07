@@ -5,12 +5,15 @@ import {
   POS_TICKET_PERMISSIONS,
 } from "@/lib/pos-tickets";
 import { getCurrentBusinessContext } from "@/lib/current-context";
+import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
+import { getTurnType } from "@/lib/pos-desk-amounts";
 import {
   POS_PAYMENT_METHOD_OPTIONS,
   POS_PAYMENT_SELECT,
 } from "@/lib/pos-payments";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
-import { requirePermission } from "@/lib/permissions";
+import { recalculateStaffEarningsForDate } from "@/lib/pos-ticket-staff-earnings";
+import { hasPermission, requirePermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { PosTicketAuditAction } from "@/types/pos-ticket-audit-log";
 import { revalidatePath } from "next/cache";
@@ -103,6 +106,24 @@ function toCents(value: number) {
   return Math.round((value + Number.EPSILON) * 100);
 }
 
+function formatDateInTimeZone(value: string, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone,
+    year: "numeric",
+  }).formatToParts(new Date(value));
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  if (!year || !month || !day) {
+    return value.slice(0, 10);
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
 function readDateTime(formData: FormData, key: string) {
   const value = readRequiredString(formData, key);
 
@@ -156,6 +177,39 @@ async function requirePosTicketMutationContext(editId?: string) {
   };
 }
 
+async function requireClosedTicketCorrectionContext(editId?: string) {
+  const supabase = await createAuthenticatedSupabaseServerClient();
+  const context = await getCurrentBusinessContext();
+
+  if (!supabase || !context.user) {
+    redirect("/login");
+  }
+
+  if (!context.currentOrganization) {
+    redirectWithError("Create an organization before managing POS tickets.", editId);
+  }
+
+  if (!context.currentSalon) {
+    redirectWithError("Please select a salon first.", editId);
+  }
+
+  const canCorrect =
+    (await hasPermission(POS_TICKET_PERMISSIONS.manage, context)) ||
+    (await hasPermission(POS_TICKET_PERMISSIONS.void, context));
+
+  if (!canCorrect) {
+    redirectWithError("You do not have permission to correct closed POS tickets.", editId);
+  }
+
+  return {
+    supabase,
+    context,
+    organization: context.currentOrganization,
+    salon: context.currentSalon,
+    user: context.user,
+  };
+}
+
 async function requirePosTicketVoidContext(editId?: string) {
   const context = await requirePosTicketMutationContext(editId);
 
@@ -198,6 +252,174 @@ async function writePosTicketAuditLog({
 
   if (error) {
     throw error;
+  }
+}
+
+async function loadClosedCorrectionSnapshot({
+  organizationId,
+  salonId,
+  supabase,
+  ticketId,
+}: {
+  organizationId: string;
+  salonId: string;
+  supabase: NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>>;
+  ticketId: string;
+}) {
+  const [{ data: ticket, error: ticketError }, { data: earnings, error: earningsError }] =
+    await Promise.all([
+      supabase
+        .from("pos_tickets")
+        .select(
+          "id, organization_id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at, ticket_items:pos_ticket_items(id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, amount, turn_type, turn_index))",
+        )
+        .eq("id", ticketId)
+        .eq("organization_id", organizationId)
+        .eq("salon_id", salonId)
+        .maybeSingle(),
+      supabase
+        .from("pos_ticket_staff_earnings")
+        .select(
+          "id, ticket_id, staff_id, work_date, service_total, tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, total_earning, locked_at, payroll_batch_id",
+        )
+        .eq("organization_id", organizationId)
+        .eq("salon_id", salonId)
+        .eq("ticket_id", ticketId),
+    ]);
+
+  if (ticketError) {
+    throw ticketError;
+  }
+
+  if (earningsError) {
+    throw earningsError;
+  }
+
+  return {
+    earnings: earnings ?? [],
+    ticket,
+  };
+}
+
+async function assertWorkDateIsUnlocked({
+  organizationId,
+  salonId,
+  supabase,
+  workDate,
+}: {
+  organizationId: string;
+  salonId: string;
+  supabase: NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>>;
+  workDate: string;
+}) {
+  const { data, error } = await supabase
+    .from("pos_ticket_staff_earnings")
+    .select("id, locked_at, payroll_batch_id")
+    .eq("organization_id", organizationId)
+    .eq("salon_id", salonId)
+    .eq("work_date", workDate)
+    .returns<Array<{ id: string; locked_at: string | null; payroll_batch_id: string | null }>>();
+
+  if (error) {
+    throw error;
+  }
+
+  if ((data ?? []).some((row) => row.locked_at || row.payroll_batch_id)) {
+    throw new Error("This work date has locked payroll earnings and cannot be corrected.");
+  }
+}
+
+function buildTurnPartRows({
+  amount,
+  itemId,
+  organizationId,
+  quantity,
+  salonId,
+  staffId,
+  ticketId,
+  workDate,
+}: {
+  amount: number;
+  itemId: string;
+  organizationId: string;
+  quantity: number;
+  salonId: string;
+  staffId: string | null;
+  ticketId: string;
+  workDate: string;
+}) {
+  if (!staffId || amount <= 0) {
+    return [];
+  }
+
+  const turnCount = Math.max(1, Math.round(quantity || 1));
+
+  return Array.from({ length: turnCount }, (_, index) => ({
+    amount,
+    organization_id: organizationId,
+    salon_id: salonId,
+    staff_id: staffId,
+    ticket_id: ticketId,
+    ticket_item_id: itemId,
+    turn_index: index + 1,
+    turn_type: getTurnType(amount, POS_DESK_DEFAULTS.largeTurnThreshold),
+    work_date: workDate,
+  }));
+}
+
+async function rebuildCorrectionTurnParts({
+  itemId,
+  organizationId,
+  quantity,
+  salonId,
+  staffId,
+  supabase,
+  ticketId,
+  unitPrice,
+  workDate,
+}: {
+  itemId: string;
+  organizationId: string;
+  quantity: number;
+  salonId: string;
+  staffId: string | null;
+  supabase: NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>>;
+  ticketId: string;
+  unitPrice: number;
+  workDate: string;
+}) {
+  const { error: deleteError } = await supabase
+    .from("pos_ticket_item_turn_parts")
+    .delete()
+    .eq("ticket_item_id", itemId)
+    .eq("organization_id", organizationId)
+    .eq("salon_id", salonId);
+
+  if (deleteError) {
+    throw deleteError;
+  }
+
+  const turnRows = buildTurnPartRows({
+    amount: unitPrice,
+    itemId,
+    organizationId,
+    quantity,
+    salonId,
+    staffId,
+    ticketId,
+    workDate,
+  });
+
+  if (turnRows.length === 0) {
+    return;
+  }
+
+  const { error: insertError } = await supabase
+    .from("pos_ticket_item_turn_parts")
+    .insert(turnRows);
+
+  if (insertError) {
+    throw insertError;
   }
 }
 
@@ -1172,6 +1394,291 @@ export async function addPosTicketItem(formData: FormData) {
   }
 
   revalidatePath("/pos-tickets");
+  revalidatePath(returnPath);
+  redirectAfterMutation(returnPath);
+}
+
+export async function correctClosedPosTicket(formData: FormData) {
+  const ticketId = readRequiredString(formData, "ticket_id");
+  const itemId = readRequiredString(formData, "item_id");
+  const returnPath = readReturnPath(formData);
+  const reason = readRequiredString(formData, "correction_reason");
+  const serviceId = readOptionalString(formData, "service_id");
+  const assignedStaffId = readOptionalString(formData, "assigned_staff_id");
+  const quantity = readNumber(formData, "quantity");
+  const unitPrice = readNumber(formData, "unit_price");
+  const removeItem = formData.get("remove_item") === "on";
+
+  if (!ticketId) {
+    redirectWithError("Ticket id is required.", ticketId, itemId, undefined, returnPath);
+  }
+
+  if (!itemId) {
+    redirectWithError("Ticket item id is required.", ticketId, itemId, undefined, returnPath);
+  }
+
+  if (!reason) {
+    redirectWithError("Correction reason is required.", ticketId, itemId, undefined, returnPath);
+  }
+
+  if (!removeItem && (!Number.isFinite(quantity) || quantity <= 0)) {
+    redirectWithError("Quantity must be greater than 0.", ticketId, itemId, undefined, returnPath);
+  }
+
+  if (!removeItem && (!Number.isFinite(unitPrice) || unitPrice < 0)) {
+    redirectWithError("Unit Price must be greater than or equal to 0.", ticketId, itemId, undefined, returnPath);
+  }
+
+  const { supabase, organization, salon, user } =
+    await requireClosedTicketCorrectionContext(ticketId);
+
+  try {
+    const { data: item, error: itemError } = await supabase
+      .from("pos_ticket_items")
+      .select("id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, created_at")
+      .eq("id", itemId)
+      .eq("organization_id", organization.id)
+      .eq("salon_id", salon.id)
+      .eq("pos_ticket_id", ticketId)
+      .maybeSingle<{
+        assigned_staff_id: string | null;
+        created_at: string;
+        id: string;
+        is_removed: boolean;
+        line_total: number;
+        notes: string | null;
+        organization_id: string;
+        pos_ticket_id: string;
+        quantity: number;
+        salon_id: string;
+        service_id: string | null;
+        unit_price: number;
+      }>();
+
+    if (itemError) {
+      throw itemError;
+    }
+
+    if (!item || item.is_removed) {
+      throw new Error("Active ticket item is required.");
+    }
+
+    const { data: ticket, error: ticketError } = await supabase
+      .from("pos_tickets")
+      .select("id, organization_id, salon_id, opened_at, status")
+      .eq("id", ticketId)
+      .eq("organization_id", organization.id)
+      .eq("salon_id", salon.id)
+      .maybeSingle<{
+        id: string;
+        opened_at: string;
+        organization_id: string;
+        salon_id: string;
+        status: string;
+      }>();
+
+    if (ticketError) {
+      throw ticketError;
+    }
+
+    if (!ticket) {
+      throw new Error("POS Ticket is required.");
+    }
+
+    if (ticket.status !== "closed") {
+      throw new Error("Only closed tickets can be corrected with this action.");
+    }
+
+    if (serviceId) {
+      const { data: service, error: serviceError } = await supabase
+        .from("services")
+        .select("id")
+        .eq("id", serviceId)
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id)
+        .maybeSingle<{ id: string }>();
+
+      if (serviceError) {
+        throw serviceError;
+      }
+
+      if (!service) {
+        throw new Error("Service must belong to the current salon.");
+      }
+    }
+
+    if (assignedStaffId) {
+      const { data: staff, error: staffError } = await supabase
+        .from("staff")
+        .select("id")
+        .eq("id", assignedStaffId)
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id)
+        .maybeSingle<{ id: string }>();
+
+      if (staffError) {
+        throw staffError;
+      }
+
+      if (!staff) {
+        throw new Error("Assigned Staff must belong to the current salon.");
+      }
+    }
+
+    const workDate = formatDateInTimeZone(ticket.opened_at, user.timezone);
+    await assertWorkDateIsUnlocked({
+      organizationId: organization.id,
+      salonId: salon.id,
+      supabase,
+      workDate,
+    });
+
+    const beforeSnapshot = await loadClosedCorrectionSnapshot({
+      organizationId: organization.id,
+      salonId: salon.id,
+      supabase,
+      ticketId,
+    });
+
+    let action: "item_corrected" | "item_removed" | "item_replaced" = "item_corrected";
+    let replacementItemId: string | null = null;
+    const serviceChanged = serviceId !== item.service_id;
+
+    if (removeItem || serviceChanged) {
+      action = removeItem ? "item_removed" : "item_replaced";
+      const { error: removeError } = await supabase
+        .from("pos_ticket_items")
+        .update({
+          is_removed: true,
+          removal_reason: reason,
+          removed_at: new Date().toISOString(),
+          removed_by: user.id,
+        })
+        .eq("id", item.id)
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id);
+
+      if (removeError) {
+        throw removeError;
+      }
+
+      await rebuildCorrectionTurnParts({
+        itemId: item.id,
+        organizationId: organization.id,
+        quantity: 0,
+        salonId: salon.id,
+        staffId: null,
+        supabase,
+        ticketId,
+        unitPrice: 0,
+        workDate,
+      });
+
+      if (!removeItem) {
+        const { data: replacement, error: replacementError } = await supabase
+          .from("pos_ticket_items")
+          .insert({
+            assigned_staff_id: assignedStaffId,
+            notes: item.notes,
+            organization_id: organization.id,
+            pos_ticket_id: ticketId,
+            quantity,
+            salon_id: salon.id,
+            service_id: serviceId,
+            unit_price: unitPrice,
+          })
+          .select("id")
+          .single<{ id: string }>();
+
+        if (replacementError) {
+          throw replacementError;
+        }
+
+        replacementItemId = replacement.id;
+        await rebuildCorrectionTurnParts({
+          itemId: replacement.id,
+          organizationId: organization.id,
+          quantity,
+          salonId: salon.id,
+          staffId: assignedStaffId,
+          supabase,
+          ticketId,
+          unitPrice,
+          workDate,
+        });
+      }
+    } else {
+      const { error: updateError } = await supabase
+        .from("pos_ticket_items")
+        .update({
+          assigned_staff_id: assignedStaffId,
+          quantity,
+          unit_price: unitPrice,
+        })
+        .eq("id", item.id)
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      await rebuildCorrectionTurnParts({
+        itemId: item.id,
+        organizationId: organization.id,
+        quantity,
+        salonId: salon.id,
+        staffId: assignedStaffId,
+        supabase,
+        ticketId,
+        unitPrice,
+        workDate,
+      });
+    }
+
+    await recalculateStaffEarningsForDate(salon.id, workDate);
+
+    const afterSnapshot = await loadClosedCorrectionSnapshot({
+      organizationId: organization.id,
+      salonId: salon.id,
+      supabase,
+      ticketId,
+    });
+
+    const { error: adjustmentError } = await supabase
+      .from("pos_ticket_adjustments")
+      .insert({
+        action,
+        after_snapshot: afterSnapshot,
+        before_snapshot: beforeSnapshot,
+        created_by: user.id,
+        organization_id: organization.id,
+        reason,
+        replacement_ticket_item_id: replacementItemId,
+        salon_id: salon.id,
+        ticket_id: ticketId,
+        ticket_item_id: item.id,
+      });
+
+    if (adjustmentError) {
+      throw adjustmentError;
+    }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to correct closed ticket.";
+    console.error("Supabase correct closed POS ticket failed", {
+      message,
+      itemId,
+      salonId: salon.id,
+      ticketId,
+      userId: user.id,
+    });
+    redirectWithError(message, ticketId, itemId, undefined, returnPath);
+  }
+
+  revalidatePath("/pos-tickets");
+  revalidatePath("/staff/today");
+  revalidatePath("/staff/my-work");
   revalidatePath(returnPath);
   redirectAfterMutation(returnPath);
 }

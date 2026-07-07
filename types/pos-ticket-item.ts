@@ -12,6 +12,10 @@ export type PosTicketItem = {
   unit_price: number;
   line_total: number;
   notes: string | null;
+  is_removed?: boolean;
+  removed_at?: string | null;
+  removed_by?: string | null;
+  removal_reason?: string | null;
   created_at: string;
   updated_at: string;
 };

@@ -1,6 +1,8 @@
+import { ClosedTicketCorrectionEditor } from "@/app/pos-tickets/closed-ticket-correction-form";
 import { updatePosTicketNotes } from "@/app/pos-tickets/actions";
 import {
   getCurrentSalonPosTickets,
+  getCurrentSalonPosTicketOptions,
   POS_TICKET_PERMISSIONS,
 } from "@/lib/pos-tickets";
 import { getCurrentBusinessContext } from "@/lib/current-context";
@@ -8,6 +10,8 @@ import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { hasPermission } from "@/lib/permissions";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type { PosTicketItemWithRelations } from "@/types/pos-ticket-item";
+import type { Service } from "@/types/service";
+import type { Staff } from "@/types/staff";
 import type {
   PosTicketStatus,
   PosTicketWithRelations,
@@ -173,10 +177,6 @@ function formatTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
-}
-
-function formatNumber(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
 
 function MissingSalonState() {
@@ -378,8 +378,8 @@ function groupTicketsByDate(tickets: PosTicketWithRelations[]) {
       dateKey,
       tickets: [...dateTickets].sort(
         (left, right) =>
-          new Date(left.opened_at).getTime() - new Date(right.opened_at).getTime() ||
-          left.ticket_sequence - right.ticket_sequence,
+          new Date(right.opened_at).getTime() - new Date(left.opened_at).getTime() ||
+          right.ticket_sequence - left.ticket_sequence,
       ),
     }));
 }
@@ -513,11 +513,15 @@ function TicketWorkLogCard({
 function EditTicketModal({
   error,
   filterHref,
+  services,
+  staff,
   ticket,
   turnSequences,
 }: {
   error?: string;
   filterHref: (edit?: string) => string;
+  services: Service[];
+  staff: Staff[];
   ticket: PosTicketWithRelations;
   turnSequences: Map<string, StaffTurnSequence>;
 }) {
@@ -578,83 +582,111 @@ function EditTicketModal({
 
         <div className="mt-5 border-t border-zinc-200 pt-4">
           <h3 className="text-sm font-semibold text-zinc-950">Staff and Services</h3>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            {groupItemsByStaff(ticket.ticket_items ?? []).map((group) => (
-              <div className="rounded border border-zinc-200 p-3" key={group.staffKey}>
-                <p className="font-semibold text-zinc-950">{group.staffName}</p>
-                <ul className="mt-2 space-y-2">
-                  {group.items.map((item) => {
-                    const turnDisplay = getTurnLabel(turnSequences.get(item.id));
+          {ticket.status === "closed" ? (
+            <ClosedTicketCorrectionEditor
+              items={ticket.ticket_items ?? []}
+              returnTo={filterHref()}
+              services={services}
+              staff={staff}
+              ticketId={ticket.id}
+              turnLabels={Object.fromEntries(
+                (ticket.ticket_items ?? []).map((item) => [
+                  item.id,
+                  getTurnLabel(turnSequences.get(item.id)),
+                ]),
+              )}
+            />
+          ) : (
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              {groupItemsByStaff(ticket.ticket_items ?? []).map((group) => (
+                <div className="rounded border border-zinc-200 p-3" key={group.staffKey}>
+                  <p className="font-semibold text-zinc-950">{group.staffName}</p>
+                  <ul className="mt-2 space-y-2">
+                    {group.items.map((item) => {
+                      const turnDisplay = getTurnLabel(turnSequences.get(item.id));
 
-                    return (
-                      <li className="text-sm" key={item.id}>
-                        <div className="flex justify-between gap-3">
-                          <span>{item.service?.name ?? "Service"}</span>
-                          <span className="font-medium">
-                            {formatMoney(item.line_total)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-zinc-500">{turnDisplay}</p>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
-          </div>
+                      return (
+                        <li className="text-sm" key={item.id}>
+                          <div className="flex justify-between gap-3">
+                            <span>{item.service?.name ?? "Service"}</span>
+                            <span className="font-medium">
+                              {formatMoney(item.line_total)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-500">{turnDisplay}</p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="mt-5 grid gap-3 border-t border-zinc-200 pt-4 text-sm md:grid-cols-3">
+        <div className="mt-5 grid gap-3 border-t border-zinc-200 pt-4 text-sm md:grid-cols-5">
           <p>
-            <span className="block text-zinc-500">Tip Setting</span>
+            <span className="block text-zinc-500">Subtotal</span>
             <span className="font-medium text-zinc-950">
-              {ticket.tip_type === "percentage"
-                ? `${formatNumber(ticket.tip_value)}%`
-                : formatMoney(ticket.tip_value)}
+              {formatMoney(totals.subtotal)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Calculated Tip</span>
+            <span className="block text-zinc-500">Discount</span>
+            <span className="font-medium text-zinc-950">
+              {formatMoney(totals.discount_amount)}
+            </span>
+          </p>
+          <p>
+            <span className="block text-zinc-500">After Discount</span>
+            <span className="font-medium text-zinc-950">
+              {formatMoney(totals.taxable_amount)}
+            </span>
+          </p>
+          <p>
+            <span className="block text-zinc-500">Tip</span>
             <span className="font-medium text-zinc-950">
               {formatMoney(totals.tip_amount)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Total Services</span>
+            <span className="block text-zinc-500">Total</span>
             <span className="font-medium text-zinc-950">
-              {formatMoney(totals.subtotal)}
+              {formatMoney(totals.total)}
             </span>
           </p>
         </div>
 
-        <form action={updatePosTicketNotes} className="mt-5 border-t border-zinc-200 pt-4">
-          <input name="ticket_id" type="hidden" value={ticket.id} />
-          <label className="block text-sm font-medium text-zinc-700">
-            Notes
-            <textarea
-              className="mt-2 min-h-24 w-full rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-950"
-              defaultValue={ticket.notes ?? ""}
-              name="notes"
-            />
-          </label>
-          <div className="mt-4 flex flex-wrap justify-between gap-3">
-            <p className="text-xs text-zinc-500">Future audit section</p>
-            <div className="flex gap-2">
-              <Link
-                className="rounded border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950"
-                href={filterHref()}
-              >
-                Cancel
-              </Link>
-              <button
-                className="rounded bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
-                type="submit"
-              >
-                Save Notes
-              </button>
+        {ticket.status !== "closed" ? (
+          <form action={updatePosTicketNotes} className="mt-5 border-t border-zinc-200 pt-4">
+            <input name="ticket_id" type="hidden" value={ticket.id} />
+            <label className="block text-sm font-medium text-zinc-700">
+              Notes
+              <textarea
+                className="mt-2 min-h-24 w-full rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-950"
+                defaultValue={ticket.notes ?? ""}
+                name="notes"
+              />
+            </label>
+            <div className="mt-4 flex flex-wrap justify-between gap-3">
+              <p className="text-xs text-zinc-500">Future audit section</p>
+              <div className="flex gap-2">
+                <Link
+                  className="rounded border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950"
+                  href={filterHref()}
+                >
+                  Cancel
+                </Link>
+                <button
+                  className="rounded bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
+                  type="submit"
+                >
+                  Save Notes
+                </button>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        ) : null}
       </div>
     </div>
   );
@@ -814,10 +846,15 @@ export default async function PosTicketsPage({
       edit: editTicketId,
       q: searchQuery,
     });
-  const [canManageTickets, { tickets }] = await Promise.all([
+  const [canManageTickets, canVoidTickets, { tickets }] = await Promise.all([
     hasPermission(POS_TICKET_PERMISSIONS.manage, context),
+    hasPermission(POS_TICKET_PERMISSIONS.void, context),
     getCurrentSalonPosTickets(getUtcBoundsForLocalDate(selectedDate, timeZone)),
   ]);
+  const canCorrectTickets = canManageTickets || canVoidTickets;
+  const ticketOptions = canCorrectTickets
+    ? await getCurrentSalonPosTicketOptions(context)
+    : { services: [], staff: [] };
   const dailyNumbers = buildDailyTicketNumbers(tickets);
   const turnSequences = buildStaffTurnSequences(tickets);
   const visibleTickets = filterTicketsBySearch(tickets, searchQuery, dailyNumbers);
@@ -842,7 +879,7 @@ export default async function PosTicketsPage({
       />
 
       <DailyWorkLog
-        canEdit={canManageTickets}
+        canEdit={canCorrectTickets}
         dailyNumbers={dailyNumbers}
         filterHref={filterHref}
         groups={groups}
@@ -854,6 +891,8 @@ export default async function PosTicketsPage({
         <EditTicketModal
           error={error}
           filterHref={filterHref}
+          services={ticketOptions.services}
+          staff={ticketOptions.staff}
           ticket={editTicket}
           turnSequences={turnSequences}
         />
