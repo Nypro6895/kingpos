@@ -7,8 +7,14 @@ import {
 import { PayrollScheduleForm } from "@/app/payroll/payroll-schedule-form";
 import { ShopIncomeDailyTable } from "@/app/payroll/shop-income-daily-table";
 import { StaffPayrollSettingInlineEdit } from "@/app/payroll/staff-payroll-setting-inline-edit";
+import {
+  TaxCompanyCalculationGuide,
+  TaxCompanyLinesTable,
+} from "@/app/payroll/tax-company-table";
 import { getPayrollPageData } from "@/lib/payroll";
 import type {
+  PayrollActionDifference,
+  PayrollActionDifferenceChange,
   PayrollPeriod,
   PayrollStaffDailyTotal,
   PayrollStaffLineWithDailyTotals,
@@ -78,6 +84,8 @@ const SUMMARY_LABELS: Record<string, string> = {
   totalTaxCompanyAmount: "Tax company total",
   totalTaxCompanyCashAmount: "Tax company cash",
   totalTaxCompanyCheckAmount: "Tax company check",
+  totalTaxCompanyReportedWageGross: "Reported wage gross",
+  totalTaxCompanyTaxableGross: "Taxable gross",
   totalTip: "Tips",
 };
 
@@ -108,7 +116,11 @@ const LINE_DIFF_LABELS: Record<string, string> = {
   tax_company_cash_amount: "Tax company cash",
   tax_company_check_amount: "Tax company check",
   tax_company_enabled: "Tax company",
+  tax_bonus: "Tax bonus",
+  tax_company_reported_wage_gross: "Reported wage gross",
+  tax_company_taxable_gross: "Taxable gross",
   tax_rate_used: "Tax rate",
+  tax_tips: "Tax tip",
   tax_withheld: "Tax",
   tip_amount: "Tips",
   tip_cash_amount: "Tip cash",
@@ -120,6 +132,46 @@ const COUNT_DIFF_FIELDS = new Set([
   "correctionAfterLockdayCount",
   "correctionCount",
   "missingPaystubCount",
+]);
+
+const STAFF_PAYROLL_DIFF_FIELDS = new Set([
+  "bonus_amount",
+  "bonus_cash_amount",
+  "bonus_check_amount",
+  "cash_amount",
+  "check_gross",
+  "check_net",
+  "earned_amount",
+  "final_cash_amount",
+  "final_check_amount",
+  "final_staff_income",
+  "tax_company_reported_wage_gross",
+  "tax_company_taxable_gross",
+  "tax_withheld",
+  "tip_amount",
+  "tip_cash_amount",
+  "tip_check_amount",
+]);
+
+const AGGREGATE_DIFF_FIELDS = new Set([
+  "correctionAfterLockdayCount",
+  "missingPaystubCount",
+  "totalBonus",
+  "totalCashPayout",
+  "totalCheckGross",
+  "totalCheckNet",
+  "totalFinalStaffIncome",
+  "totalPosIncome",
+  "totalShopShare",
+  "totalStaffCommissionPayout",
+  "totalStaffGrossProduction",
+  "totalTaxWithheld",
+  "totalTaxCompanyAmount",
+  "totalTaxCompanyCashAmount",
+  "totalTaxCompanyCheckAmount",
+  "totalTaxCompanyReportedWageGross",
+  "totalTaxCompanyTaxableGross",
+  "totalTip",
 ]);
 
 function formatMoney(value: number) {
@@ -151,6 +203,44 @@ function formatPayoutMethod(value: string) {
 
 function formatDifferenceValue(field: string, value: number) {
   return COUNT_DIFF_FIELDS.has(field) ? `${value}` : formatMoney(value);
+}
+
+function formatActionChangeValue(
+  change: PayrollActionDifferenceChange,
+  side: "current" | "previous",
+) {
+  const text = side === "current" ? change.currentText : change.previousText;
+
+  if (text) {
+    return text;
+  }
+
+  const value = side === "current" ? change.current : change.previous;
+
+  if (value === null) {
+    return "-";
+  }
+
+  return change.valueType === "money" ? formatMoney(value) : `${value}`;
+}
+
+function formatActionChangeDelta(change: PayrollActionDifferenceChange) {
+  if (change.delta === null) {
+    return "";
+  }
+
+  if (change.valueType !== "money") {
+    return `${change.delta > 0 ? "+" : ""}${change.delta}`;
+  }
+
+  return `${change.delta > 0 ? "+" : ""}${formatMoney(change.delta)}`;
+}
+
+function formatActionChangeInline(change: PayrollActionDifferenceChange) {
+  return `${change.label}: ${formatActionChangeValue(
+    change,
+    "previous",
+  )} -> ${formatActionChangeValue(change, "current")}`;
 }
 
 function formatDate(value: string) {
@@ -338,6 +428,11 @@ function describeSettingChanges(
     "Tax tip",
     formatYesNo(previous.tax_tips),
     formatYesNo(current.tax_tips),
+  );
+  addChange(
+    "Tax bonus",
+    formatYesNo(previous.tax_bonus),
+    formatYesNo(current.tax_bonus),
   );
 
   const previousCashToTaxCompany = settingCashToTaxCompany(previous);
@@ -577,16 +672,22 @@ function PeriodSelector({
 
 function TopActions({
   canManage,
+  hasLiveDifference,
   latestStatement,
   period,
   returnPath,
 }: {
   canManage: boolean;
+  hasLiveDifference: boolean;
   latestStatement: Awaited<ReturnType<typeof getPayrollPageData>>["latestStatement"];
   period: PayrollPeriod;
   returnPath: string;
 }) {
-  const canMarkPaid = Boolean(latestStatement && latestStatement.run.status !== "paid");
+  const canMarkPaid = Boolean(
+    latestStatement &&
+      latestStatement.run.status !== "paid" &&
+      !hasLiveDifference,
+  );
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -617,10 +718,20 @@ function TopActions({
         <button
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400"
           disabled={!canManage || !canMarkPaid}
+          title={
+            hasLiveDifference
+              ? "This payroll changed since the last printed statement. Review differences or print a new statement before marking paid."
+              : undefined
+          }
         >
           Mark Paid
         </button>
       </form>
+      {latestStatement && latestStatement.run.status !== "paid" && hasLiveDifference ? (
+        <p className="basis-full text-xs font-medium text-amber-700">
+          Review differences or print a new statement before marking paid.
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -676,26 +787,31 @@ function DifferenceBanner({
     return null;
   }
 
-  const summaryEntries = Object.entries(difference.summaryDifferences).slice(0, 6);
-  const staffEntries = difference.staffDifferences.slice(0, 4);
+  const actionItems = difference.actionItems;
+  const visibleActionItems = actionItems.slice(0, 5);
+  const moreActionCount = Math.max(actionItems.length - visibleActionItems.length, 0);
+  const summaryEntries = Object.entries(difference.summaryDifferences);
+  const shopEntries = summaryEntries.filter(
+    ([field]) => !AGGREGATE_DIFF_FIELDS.has(field),
+  );
+  const aggregateEntries = summaryEntries.filter(([field]) =>
+    AGGREGATE_DIFF_FIELDS.has(field),
+  );
 
   return (
     <section
-      className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+      className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
       id="payroll-differences"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <p className="font-semibold">Live payroll has changed since last print.</p>
-          <p>Live payroll differs from the latest saved statement for this period.</p>
+          <p>
+            Review affected staff before marking payroll as paid. Print a new
+            statement when the changes are correct.
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <a
-            className="rounded-md border border-amber-300 px-3 py-2 font-medium text-amber-900"
-            href="#payroll-differences"
-          >
-            View Difference
-          </a>
           <form action={savePayrollStatementAction}>
             <HiddenPeriodFields period={period} returnPath={returnPath} />
             <button
@@ -707,48 +823,272 @@ function DifferenceBanner({
           </form>
         </div>
       </div>
-      {summaryEntries.length > 0 ? (
-        <div className="mt-3 grid gap-2 md:grid-cols-3">
-          {summaryEntries.map(([field, value]) => (
-            <div className="rounded-md bg-white/70 p-2" key={field}>
-              <p className="text-xs font-medium uppercase text-amber-700">
-                {SUMMARY_LABELS[field] ?? field}
-              </p>
-              <p className="font-semibold">
-                {formatDifferenceValue(field, value.previous)}
-                {" -> "}
-                {formatDifferenceValue(field, value.current)}
-              </p>
-            </div>
-          ))}
+      {actionItems.length > 0 ? (
+        <div className="mt-3">
+          <p className="text-xs font-semibold uppercase text-amber-800">
+            {actionItems.length} item{actionItems.length === 1 ? "" : "s"} need action
+          </p>
+          <div className="mt-2 grid gap-2 lg:grid-cols-2">
+            {visibleActionItems.map((item) => (
+              <article
+                className="rounded-md border border-amber-200 bg-white/75 p-3"
+                key={`${item.staffId}-${item.kind}`}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-zinc-950">{item.staffName}</p>
+                    <p className="text-amber-900">{item.title}</p>
+                  </div>
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900">
+                    Action
+                  </span>
+                </div>
+                <ul className="mt-2 space-y-1 text-zinc-800">
+                  {item.changes.slice(0, 3).map((change) => (
+                    <li key={change.field}>{formatActionChangeInline(change)}</li>
+                  ))}
+                  {item.changes.length > 3 ? (
+                    <li className="text-zinc-500">
+                      +{item.changes.length - 3} more staff changes
+                    </li>
+                  ) : null}
+                </ul>
+                <p className="mt-2 font-medium text-zinc-950">Action: {item.action}</p>
+              </article>
+            ))}
+          </div>
+          {moreActionCount > 0 ? (
+            <p className="mt-2 text-sm font-medium text-amber-900">
+              +{moreActionCount} more change{moreActionCount === 1 ? "" : "s"}
+            </p>
+          ) : null}
         </div>
-      ) : null}
-      {staffEntries.length > 0 ? (
-        <ul className="mt-3 space-y-1">
-          {staffEntries.map((staff) => {
-            const firstDifference = Object.entries(staff.differences)[0];
+      ) : (
+        <div className="mt-3 rounded-md border border-amber-200 bg-white/75 p-3">
+          <p className="font-semibold text-zinc-950">Shop / POS totals changed</p>
+          <p className="text-zinc-700">
+            No staff payout action was detected, but the live shop totals differ
+            from the printed statement.
+          </p>
+        </div>
+      )}
+      <details className="mt-4">
+        <summary className="inline-flex cursor-pointer list-none rounded-md border border-amber-300 px-3 py-2 font-medium text-amber-950">
+          View Difference
+        </summary>
+        <div className="mt-4 grid gap-4">
+          <DifferenceActionTable actionItems={actionItems} />
+          <StaffDifferenceTable staffDifferences={difference.staffDifferences} />
+          <SummaryDifferenceTable
+            emptyLabel="No shop or POS differences."
+            entries={shopEntries}
+            title="Shop / POS Differences"
+          />
+          <SummaryDifferenceTable
+            emptyLabel="No aggregate summary differences."
+            entries={aggregateEntries}
+            title="Aggregate Summary"
+          />
+        </div>
+      </details>
+    </section>
+  );
+}
 
-            return (
-              <li key={staff.staffId}>
-                {staff.staffName}:{" "}
-                {firstDifference
-                  ? firstDifference[0] === "check_number" ||
-                    firstDifference[0] === "note" ||
-                    firstDifference[0] === "tax_company_enabled" ||
-                    firstDifference[0] === "cash_to_tax_company" ||
-                    firstDifference[0] === "tip_payout_method" ||
-                    firstDifference[0] === "bonus_payout_method" ||
-                    firstDifference[0] === "is_mixed_rate"
-                    ? `${LINE_DIFF_LABELS[firstDifference[0]] ?? firstDifference[0]} changed`
-                    : `${LINE_DIFF_LABELS[firstDifference[0]] ?? firstDifference[0]} ${formatMoney(
-                        firstDifference[1].previous,
-                      )} -> ${formatMoney(firstDifference[1].current)}`
-                  : "changed"}
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
+function DifferenceActionTable({
+  actionItems,
+}: {
+  actionItems: PayrollActionDifference[];
+}) {
+  const rows: Array<{
+    change: PayrollActionDifferenceChange | null;
+    item: PayrollActionDifference;
+  }> = actionItems.flatMap(
+    (
+      item,
+    ): Array<{
+      change: PayrollActionDifferenceChange | null;
+      item: PayrollActionDifference;
+    }> =>
+      item.changes.length > 0
+        ? item.changes.map((change) => ({ change, item }))
+        : [{ change: null, item }],
+  );
+
+  return (
+    <section className="overflow-hidden rounded-lg border border-amber-200 bg-white">
+      <div className="border-b border-amber-100 px-4 py-3">
+        <p className="font-semibold text-zinc-950">Action Required</p>
+      </div>
+      {rows.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-zinc-200 text-sm">
+            <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+              <tr>
+                <th className="px-4 py-3">Staff</th>
+                <th className="px-4 py-3">Issue</th>
+                <th className="px-4 py-3">Printed</th>
+                <th className="px-4 py-3">Live</th>
+                <th className="px-4 py-3">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {rows.map(({ change, item }) => (
+                <tr key={`${item.staffId}-${item.kind}-${change?.field ?? "issue"}`}>
+                  <td className="px-4 py-3 font-medium text-zinc-950">
+                    {item.staffName}
+                  </td>
+                  <td className="px-4 py-3">
+                    {change ? change.label : item.title}
+                  </td>
+                  <td className="px-4 py-3">
+                    {change ? formatActionChangeValue(change, "previous") : "-"}
+                  </td>
+                  <td className="px-4 py-3">
+                    {change ? formatActionChangeValue(change, "current") : "-"}
+                  </td>
+                  <td className="px-4 py-3 font-medium text-zinc-950">
+                    {item.action}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="p-4 text-sm text-zinc-600">No staff action required.</p>
+      )}
+    </section>
+  );
+}
+
+function StaffDifferenceTable({
+  staffDifferences,
+}: {
+  staffDifferences: Awaited<
+    ReturnType<typeof getPayrollPageData>
+  >["difference"]["staffDifferences"];
+}) {
+  const rows = staffDifferences.flatMap((staff) =>
+    Object.entries(staff.differences)
+      .filter(([field]) => STAFF_PAYROLL_DIFF_FIELDS.has(field))
+      .map(([field, value]) => ({ field, staff, value })),
+  );
+
+  return (
+    <section className="overflow-hidden rounded-lg border border-amber-200 bg-white">
+      <div className="border-b border-amber-100 px-4 py-3">
+        <p className="font-semibold text-zinc-950">Staff Payroll Differences</p>
+      </div>
+      {rows.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-zinc-200 text-sm">
+            <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+              <tr>
+                <th className="px-4 py-3">Staff</th>
+                <th className="px-4 py-3">Field</th>
+                <th className="px-4 py-3 text-right">Printed</th>
+                <th className="px-4 py-3 text-right">Live</th>
+                <th className="px-4 py-3 text-right">Difference</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {rows.map(({ field, staff, value }) => (
+                <tr key={`${staff.staffId}-${field}`}>
+                  <td className="px-4 py-3 font-medium text-zinc-950">
+                    {staff.staffName}
+                  </td>
+                  <td className="px-4 py-3">{LINE_DIFF_LABELS[field] ?? field}</td>
+                  <td className="px-4 py-3 text-right">
+                    {formatDifferenceValue(field, value.previous)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {formatDifferenceValue(field, value.current)}
+                  </td>
+                  <td className="px-4 py-3 text-right font-medium">
+                    {formatActionChangeDelta({
+                      current: value.current,
+                      delta: value.delta,
+                      field,
+                      label: LINE_DIFF_LABELS[field] ?? field,
+                      previous: value.previous,
+                      valueType: "money",
+                    })}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="p-4 text-sm text-zinc-600">
+          No staff payroll amount differences.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function SummaryDifferenceTable({
+  emptyLabel,
+  entries,
+  title,
+}: {
+  emptyLabel: string;
+  entries: Array<
+    [
+      string,
+      Awaited<ReturnType<typeof getPayrollPageData>>["difference"]["summaryDifferences"][string],
+    ]
+  >;
+  title: string;
+}) {
+  return (
+    <section className="overflow-hidden rounded-lg border border-amber-200 bg-white">
+      <div className="border-b border-amber-100 px-4 py-3">
+        <p className="font-semibold text-zinc-950">{title}</p>
+      </div>
+      {entries.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-zinc-200 text-sm">
+            <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
+              <tr>
+                <th className="px-4 py-3">Metric</th>
+                <th className="px-4 py-3 text-right">Printed</th>
+                <th className="px-4 py-3 text-right">Live</th>
+                <th className="px-4 py-3 text-right">Difference</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {entries.map(([field, value]) => (
+                <tr key={field}>
+                  <td className="px-4 py-3 font-medium text-zinc-950">
+                    {SUMMARY_LABELS[field] ?? field}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {formatDifferenceValue(field, value.previous)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {formatDifferenceValue(field, value.current)}
+                  </td>
+                  <td className="px-4 py-3 text-right font-medium">
+                    {formatActionChangeDelta({
+                      current: value.current,
+                      delta: value.delta,
+                      field,
+                      label: SUMMARY_LABELS[field] ?? field,
+                      previous: value.previous,
+                      valueType: COUNT_DIFF_FIELDS.has(field) ? "text" : "money",
+                    })}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="p-4 text-sm text-zinc-600">{emptyLabel}</p>
+      )}
     </section>
   );
 }
@@ -1098,13 +1438,15 @@ function ShopIncomeTab({
 }
 
 function TaxTab({
-  lines,
   period,
+  taxCompany,
 }: {
-  lines: PayrollStaffLineWithDailyTotals[];
   period: PayrollPeriod;
+  taxCompany: Awaited<ReturnType<typeof getPayrollPageData>>["taxCompany"];
 }) {
-  const taxLines = lines.filter((line) => line.tax_company_enabled_snapshot);
+  const taxLines = taxCompany.lines;
+  const returnPath = getPayrollHref({ period, tab: "tax" });
+  const payrollRunId = taxCompany.latestStatement?.run.id ?? null;
 
   return (
     <section className="grid gap-4">
@@ -1112,7 +1454,7 @@ function TaxTab({
         <div>
           <p className="text-sm font-semibold text-zinc-950">Tax company preview</p>
           <p className="text-sm text-zinc-500">
-            {taxLines.length} enabled staff line{taxLines.length === 1 ? "" : "s"}
+            {taxLines.length} reportable staff line{taxLines.length === 1 ? "" : "s"}
           </p>
         </div>
         <Link
@@ -1124,10 +1466,17 @@ function TaxTab({
       </div>
       {taxLines.some((line) => !line.staff_legal_name_snapshot) ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          Some enabled staff are missing legal names.
+          Some reportable staff are missing legal names.
         </p>
       ) : null}
-      <StaffIncomeTab canManage={false} lines={taxLines} period={period} returnPath="" />
+      <TaxCompanyLinesTable
+        lines={taxLines}
+        payrollRunId={payrollRunId}
+        period={period}
+        returnPath={returnPath}
+        showBreakdown
+      />
+      <TaxCompanyCalculationGuide />
     </section>
   );
 }
@@ -1261,6 +1610,7 @@ function SettingsReadContent({
   const isFixed = setting?.pay_type === "fixed";
   const taxCash = Boolean(setting?.cash_to_tax_company);
   const taxTip = Boolean(setting?.tax_tips);
+  const taxBonus = Boolean(setting?.tax_bonus);
 
   return (
     <>
@@ -1317,6 +1667,9 @@ function SettingsReadContent({
           </SettingField>
           <SettingField label="Tax tip">
             <SettingStatus active={taxTip}>{formatYesNo(taxTip)}</SettingStatus>
+          </SettingField>
+          <SettingField label="Tax bonus">
+            <SettingStatus active={taxBonus}>{formatYesNo(taxBonus)}</SettingStatus>
           </SettingField>
         </SettingGroup>
 
@@ -1382,8 +1735,8 @@ function SettingsExplanationNote() {
           <p className="font-medium text-zinc-800">Tax reporting</p>
           <p className="mt-1">
             Tax rate is the withholding/reporting rate. Tax cash controls whether
-            cash payout is shown on Tax Company. Tax tip controls whether tips are
-            included in tax reporting.
+            cash wage is shown on Tax Company. Tax tip and Tax bonus control
+            whether tips and bonuses are included in tax reporting.
           </p>
         </div>
         <div>
@@ -1402,8 +1755,8 @@ function SettingsExplanationNote() {
         </div>
       </div>
       <p className="mt-3 border-t border-zinc-200 pt-3 text-xs text-zinc-500">
-        Tax cash only controls Tax Company visibility for cash payout. It does not
-        change what the staff actually receives.
+        Tax cash controls whether cash wage is reported to Tax Company. Tip and
+        bonus payout methods do not decide whether those amounts are taxed.
       </p>
     </section>
   );
@@ -1514,6 +1867,7 @@ export default async function PayrollPage({ searchParams }: PayrollPageProps) {
           </div>
           <TopActions
             canManage={data.access.canManagePayroll}
+            hasLiveDifference={data.difference.changed}
             latestStatement={data.latestStatement}
             period={data.period}
             returnPath={returnPath}
@@ -1566,7 +1920,7 @@ export default async function PayrollPage({ searchParams }: PayrollPageProps) {
         />
       ) : null}
       {activeTab === "tax" && data.access.canViewAllPayroll ? (
-        <TaxTab lines={data.live.lines} period={data.period} />
+        <TaxTab period={data.period} taxCompany={data.taxCompany} />
       ) : null}
       {activeTab === "settings" && data.access.canViewAllPayroll ? (
         <SettingsTab

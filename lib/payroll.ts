@@ -3,6 +3,7 @@ import "server-only";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import { getUtcBoundsForLocalDate, isDateInputValue } from "@/lib/daily-pos-report";
 import { hasPermission } from "@/lib/permissions";
+import { calculateTaxCompanyReporting } from "@/lib/payroll-tax-company";
 import { STAFF_SELECT } from "@/lib/staff";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
@@ -43,13 +44,13 @@ export const PAYROLL_PERMISSIONS = {
 export const SALON_PAYROLL_SETTING_SELECT =
   "id, organization_id, salon_id, cycle_type, biweekly_anchor_date, created_at, updated_at";
 export const STAFF_PAYROLL_SETTING_SELECT =
-  "id, organization_id, salon_id, staff_id, legal_name, pay_type, commission_rate, fixed_pay_amount, check_rate, tax_rate, apply_tax_to_fixed_pay, tax_tips, tax_company_enabled, cash_to_tax_company, tip_payout_method, bonus_payout_method, effective_from, effective_to, created_at, updated_at";
+  "id, organization_id, salon_id, staff_id, legal_name, pay_type, commission_rate, fixed_pay_amount, check_rate, tax_rate, apply_tax_to_fixed_pay, tax_tips, tax_bonus, tax_company_enabled, cash_to_tax_company, tip_payout_method, bonus_payout_method, effective_from, effective_to, created_at, updated_at";
 export const PAYROLL_PERIOD_STAFF_INPUT_SELECT =
   "id, organization_id, salon_id, staff_id, period_start, period_end, cycle_type, check_number, bonus_amount, note, updated_by, created_at, updated_at";
 export const PAYROLL_RUN_SELECT =
   "id, organization_id, salon_id, period_start, period_end, cycle_type, status, version, settings_snapshot, correction_snapshot, generated_at, printed_at, printed_by, locked_at, locked_by, paid_at, paid_by, created_at, updated_at";
 export const PAYROLL_STAFF_LINE_SELECT =
-  "id, payroll_run_id, organization_id, salon_id, staff_id, staff_display_name_snapshot, staff_legal_name_snapshot, gross_sales, pay_type_used, commission_rate_used, fixed_pay_amount_used, staff_commission_gross, shop_share, check_rate_used, base_check_amount, base_cash_amount, cash_amount, check_gross, tax_rate_used, tax_withheld, check_net, check_number, tip_amount, tip_check_amount, tip_cash_amount, tip_payout_method_snapshot, tip_allocation_method, bonus_amount, bonus_check_amount, bonus_cash_amount, bonus_payout_method_snapshot, earned_amount, final_check_amount, final_cash_amount, final_staff_income, tax_company_enabled_snapshot, cash_to_tax_company_snapshot, tax_company_check_amount, tax_company_cash_amount, is_mixed_rate, settings_used_snapshot, period_staff_input_snapshot, note, created_at, updated_at";
+  "id, payroll_run_id, organization_id, salon_id, staff_id, staff_display_name_snapshot, staff_legal_name_snapshot, gross_sales, pay_type_used, commission_rate_used, fixed_pay_amount_used, staff_commission_gross, shop_share, check_rate_used, base_check_amount, base_cash_amount, cash_amount, check_gross, tax_rate_used, tax_withheld, check_net, check_number, tip_amount, tip_check_amount, tip_cash_amount, tip_payout_method_snapshot, tip_allocation_method, bonus_amount, bonus_check_amount, bonus_cash_amount, bonus_payout_method_snapshot, earned_amount, final_check_amount, final_cash_amount, final_staff_income, tax_bonus_snapshot, tax_tips_snapshot, tax_company_reported_wage_gross, tax_company_taxable_gross, tax_company_enabled_snapshot, cash_to_tax_company_snapshot, tax_company_check_amount, tax_company_cash_amount, is_mixed_rate, settings_used_snapshot, period_staff_input_snapshot, note, created_at, updated_at";
 export const PAYROLL_STAFF_DAILY_TOTAL_SELECT =
   "id, payroll_run_id, organization_id, salon_id, staff_id, business_date, gross_sales, tip_amount, correction_delta, pay_type_used, commission_rate_used, fixed_pay_amount_used, check_rate_used, tax_rate_used, settings_used_snapshot, note, created_at, updated_at";
 export const PAYROLL_PAYSTUB_SELECT =
@@ -60,6 +61,7 @@ const DEFAULT_CHECK_RATE = 60;
 const DEFAULT_TAX_RATE = 0;
 const DEFAULT_TIP_PAYOUT_METHOD = "cash" satisfies PayrollPayoutMethod;
 const DEFAULT_BONUS_PAYOUT_METHOD = "check" satisfies PayrollPayoutMethod;
+const PAYROLL_PAYSTUB_BUCKET = "payroll-paystubs";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type SupabaseClient = NonNullable<
@@ -168,9 +170,11 @@ type DailyPayrollResult = {
   payTaxWithheld: number;
   setting: StaffPayrollSetting;
   staffPay: number;
+  taxCompanyCashReported: number;
+  taxCompanyReportedWageGross: number;
+  taxCompanyTaxableGross: number;
   tipCashAmount: number;
   tipCheckAmount: number;
-  tipTaxWithheld: number;
   taxWithheld: number;
 };
 
@@ -598,6 +602,7 @@ function getDefaultStaffPayrollSetting(input: {
     pay_type: "commission",
     salon_id: input.salonId,
     staff_id: input.staffId,
+    tax_bonus: false,
     tax_company_enabled: false,
     tax_rate: DEFAULT_TAX_RATE,
     tax_tips: false,
@@ -625,8 +630,10 @@ function normalizeStaffPayrollSetting(setting: StaffPayrollSetting): StaffPayrol
     check_rate: numberValue(setting.check_rate),
     commission_rate: numberValue(setting.commission_rate),
     fixed_pay_amount: numberValue(setting.fixed_pay_amount),
+    tax_bonus: Boolean(setting.tax_bonus),
     tax_company_enabled: taxCompanyEnabled,
     tax_rate: numberValue(setting.tax_rate),
+    tax_tips: Boolean(setting.tax_tips),
     tip_payout_method: tipPayoutMethod,
   };
 }
@@ -635,6 +642,7 @@ function isTaxCompanyReportableSetting(setting: StaffPayrollSetting) {
   return (
     numberValue(setting.tax_rate) > 0 ||
     Boolean(setting.tax_tips) ||
+    Boolean(setting.tax_bonus) ||
     Boolean(setting.cash_to_tax_company) ||
     (setting.pay_type === "fixed" && Boolean(setting.apply_tax_to_fixed_pay))
   );
@@ -721,6 +729,7 @@ function serializeSetting(setting: StaffPayrollSetting) {
     legalName: setting.legal_name,
     payType: setting.pay_type,
     staffId: setting.staff_id,
+    taxBonus: setting.tax_bonus,
     taxCompanyEnabled: setting.tax_company_enabled,
     taxRate: numberValue(setting.tax_rate),
     taxTips: setting.tax_tips,
@@ -754,6 +763,7 @@ function settingSignature(setting: StaffPayrollSetting) {
     effectiveFrom: setting.effective_from,
     fixedPayAmount: roundMoney(numberValue(setting.fixed_pay_amount)),
     payType: setting.pay_type,
+    taxBonus: setting.tax_bonus,
     taxCompanyEnabled: setting.tax_company_enabled,
     taxRate: numberValue(setting.tax_rate),
     taxTips: setting.tax_tips,
@@ -1388,21 +1398,35 @@ function calculateDailyPayroll(input: {
     input.setting.pay_type === "fixed" ? roundMoney(input.fixedDailyAmount) : 0;
   const staffPay = roundMoney(commissionPay + fixedPay);
   const checkGross = roundMoney((staffPay * checkRate) / 100);
-  const taxableCheckGross =
-    input.setting.pay_type === "fixed" && !input.setting.apply_tax_to_fixed_pay
-      ? 0
-      : checkGross;
-  const payTaxWithheld = roundMoney((taxableCheckGross * taxRate) / 100);
-  const tipTaxWithheld = input.setting.tax_tips
-    ? roundMoney((tipAmount * taxRate) / 100)
-    : 0;
-  const taxWithheld = roundMoney(payTaxWithheld + tipTaxWithheld);
-  const checkNet = roundMoney(checkGross - taxWithheld);
   const cashAmount = roundMoney(staffPay - checkGross);
-  const tipCheckAmount =
-    input.setting.tip_payout_method === "check" ? tipAmount : 0;
-  const tipCashAmount =
-    input.setting.tip_payout_method === "cash" ? tipAmount : 0;
+  const taxCash = Boolean(input.setting.cash_to_tax_company);
+  const reporting = calculateTaxCompanyReporting({
+    bonusAmount: 0,
+    bonusPayoutMethod: input.setting.bonus_payout_method,
+    staffCommissionGross:
+      input.setting.pay_type === "fixed" && !input.setting.apply_tax_to_fixed_pay
+        ? 0
+        : staffPay,
+    taxBonus: false,
+    taxCash,
+    taxRate,
+    taxTips: Boolean(input.setting.tax_tips),
+    tipAmount,
+    tipPayoutMethod: input.setting.tip_payout_method,
+    wageCashGross:
+      input.setting.pay_type === "fixed" && !input.setting.apply_tax_to_fixed_pay
+        ? 0
+        : cashAmount,
+    wageCheckGross:
+      input.setting.pay_type === "fixed" && !input.setting.apply_tax_to_fixed_pay
+        ? 0
+        : checkGross,
+  });
+  const payTaxWithheld = roundMoney(
+    (reporting.reportedWageGross * taxRate) / 100,
+  );
+  const taxWithheld = reporting.taxAmount;
+  const checkNet = reporting.wageCheckNet;
 
   return {
     baseCashAmount: cashAmount,
@@ -1434,9 +1458,11 @@ function calculateDailyPayroll(input: {
     payTaxWithheld,
     setting: input.setting,
     staffPay,
-    tipCashAmount,
-    tipCheckAmount,
-    tipTaxWithheld,
+    taxCompanyCashReported: reporting.cashReported,
+    taxCompanyReportedWageGross: reporting.reportedWageGross,
+    taxCompanyTaxableGross: reporting.taxableGross,
+    tipCashAmount: reporting.tipPaidByCash,
+    tipCheckAmount: reporting.tipPaidByCheck,
     taxWithheld,
   } satisfies DailyPayrollResult;
 }
@@ -1451,7 +1477,7 @@ function calculateSummary(input: {
   return {
     correctionAfterLockdayCount: input.corrections.length,
     missingPaystubCount: input.lines.filter(
-      (line) => line.tax_company_enabled_snapshot && !line.paystub,
+      (line) => isTaxCompanyReportableLine(line) && !line.paystub,
     ).length,
     totalBonus: sum((line) => numberValue(line.bonus_amount)),
     totalCashPayout: sum((line) => numberValue(line.final_cash_amount)),
@@ -1478,8 +1504,98 @@ function calculateSummary(input: {
     totalTaxCompanyCheckAmount: sum((line) =>
       numberValue(line.tax_company_check_amount),
     ),
+    totalTaxCompanyReportedWageGross: sum((line) =>
+      numberValue(line.tax_company_reported_wage_gross),
+    ),
+    totalTaxCompanyTaxableGross: sum((line) =>
+      numberValue(line.tax_company_taxable_gross),
+    ),
     totalTip: sum((line) => numberValue(line.tip_amount)),
   } satisfies PayrollSummary;
+}
+
+function settingSnapshotRecords(snapshot: unknown) {
+  const snapshots = Array.isArray(snapshot) ? snapshot : [snapshot];
+
+  return snapshots.filter(
+    (value): value is Record<string, unknown> =>
+      Boolean(value) && typeof value === "object" && !Array.isArray(value),
+  );
+}
+
+function lineHasPayrollData(line: PayrollStaffLineWithDailyTotals) {
+  return [
+    line.bonus_amount,
+    line.check_gross,
+    line.final_cash_amount,
+    line.final_check_amount,
+    line.gross_sales,
+    line.staff_commission_gross,
+    line.tax_withheld,
+    line.tip_amount,
+  ].some((value) => moneyChanged(numberValue(value), 0));
+}
+
+function lineHasTaxRate(line: PayrollStaffLineWithDailyTotals) {
+  if (numberValue(line.tax_rate_used) > 0) {
+    return true;
+  }
+
+  return settingSnapshotRecords(line.settings_used_snapshot).some(
+    (snapshot) => numberValue(snapshot.taxRate as number | string | null) > 0,
+  );
+}
+
+function lineHasTaxFixed(line: PayrollStaffLineWithDailyTotals) {
+  const records = settingSnapshotRecords(line.settings_used_snapshot);
+  const matchedSnapshot = records.some(
+    (snapshot) =>
+      snapshot.payType === "fixed" &&
+      (typeof snapshot.applyTaxToFixedPay === "boolean"
+        ? snapshot.applyTaxToFixedPay
+        : true),
+  );
+
+  if (records.length > 0) {
+    return matchedSnapshot;
+  }
+
+  return line.pay_type_used === "fixed";
+}
+
+function isTaxCompanyReportableLine(line: PayrollStaffLineWithDailyTotals) {
+  if (!lineHasPayrollData(line)) {
+    return false;
+  }
+
+  return (
+    numberValue(line.tax_company_taxable_gross) > 0 ||
+    moneyChanged(numberValue(line.final_check_amount), 0) ||
+    numberValue(line.tax_withheld) > 0 ||
+    lineHasTaxRate(line) ||
+    lineHasTaxFixed(line) ||
+    Boolean(line.tax_tips_snapshot) ||
+    Boolean(line.tax_bonus_snapshot) ||
+    Boolean(line.cash_to_tax_company_snapshot)
+  );
+}
+
+function attachStatementPaystubsToLines(input: {
+  latestStatement: PayrollStatementSnapshot | null;
+  lines: PayrollStaffLineWithDailyTotals[];
+}) {
+  if (!input.latestStatement) {
+    return input.lines;
+  }
+
+  const paystubByStaffId = new Map(
+    input.latestStatement.paystubs.map((paystub) => [paystub.staff_id, paystub]),
+  );
+
+  return input.lines.map((line) => ({
+    ...line,
+    paystub: paystubByStaffId.get(line.staff_id) ?? line.paystub,
+  }));
 }
 
 async function loadDailyClosingRows(auth: PayrollAuthContext, period: PayrollPeriod) {
@@ -1520,7 +1636,7 @@ function dailyStaffPay(dailyTotal: PayrollStaffDailyTotal) {
 
 function settingSnapshotBoolean(
   snapshot: unknown,
-  key: "applyTaxToFixedPay" | "taxTips",
+  key: "applyTaxToFixedPay" | "cashToTaxCompany" | "taxBonus" | "taxTips",
   fallback: boolean,
 ) {
   if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) {
@@ -1531,33 +1647,72 @@ function settingSnapshotBoolean(
   return typeof value === "boolean" ? value : fallback;
 }
 
+function settingSnapshotPayoutMethod(
+  snapshot: unknown,
+  key: "bonusPayoutMethod" | "tipPayoutMethod",
+  fallback: PayrollPayoutMethod,
+) {
+  if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) {
+    return fallback;
+  }
+
+  const value = (snapshot as Record<string, unknown>)[key];
+  return value === "check" || value === "cash" ? value : fallback;
+}
+
 function dailyTaxBreakdown(dailyTotal: PayrollStaffDailyTotal) {
   const staffPay = dailyStaffPay(dailyTotal);
   const checkGross = roundMoney(
     (staffPay * numberValue(dailyTotal.check_rate_used)) / 100,
   );
+  const cashGross = roundMoney(staffPay - checkGross);
   const taxRate = numberValue(dailyTotal.tax_rate_used);
   const applyTaxToFixedPay = settingSnapshotBoolean(
     dailyTotal.settings_used_snapshot,
     "applyTaxToFixedPay",
     true,
   );
+  const taxCash = settingSnapshotBoolean(
+    dailyTotal.settings_used_snapshot,
+    "cashToTaxCompany",
+    false,
+  );
   const taxTips = settingSnapshotBoolean(
     dailyTotal.settings_used_snapshot,
     "taxTips",
     false,
   );
+  const tipPayoutMethod = settingSnapshotPayoutMethod(
+    dailyTotal.settings_used_snapshot,
+    "tipPayoutMethod",
+    DEFAULT_TIP_PAYOUT_METHOD,
+  );
   const taxableStaffPay =
-    dailyTotal.pay_type_used === "fixed" && !applyTaxToFixedPay ? 0 : checkGross;
-  const payTaxWithheld = roundMoney((taxableStaffPay * taxRate) / 100);
-  const tipTaxWithheld = taxTips
-    ? roundMoney((numberValue(dailyTotal.tip_amount) * taxRate) / 100)
-    : 0;
+    dailyTotal.pay_type_used === "fixed" && !applyTaxToFixedPay ? 0 : staffPay;
+  const reporting = calculateTaxCompanyReporting({
+    bonusAmount: 0,
+    bonusPayoutMethod: DEFAULT_BONUS_PAYOUT_METHOD,
+    staffCommissionGross: taxableStaffPay,
+    taxBonus: false,
+    taxCash,
+    taxRate,
+    taxTips,
+    tipAmount: numberValue(dailyTotal.tip_amount),
+    tipPayoutMethod,
+    wageCashGross:
+      dailyTotal.pay_type_used === "fixed" && !applyTaxToFixedPay ? 0 : cashGross,
+    wageCheckGross:
+      dailyTotal.pay_type_used === "fixed" && !applyTaxToFixedPay ? 0 : checkGross,
+  });
+  const payTaxWithheld = roundMoney(
+    (reporting.reportedWageGross * taxRate) / 100,
+  );
+  const tipTaxWithheld = roundMoney((reporting.reportedTip * taxRate) / 100);
 
   return {
     payTaxWithheld,
     tipTaxWithheld,
-    totalTaxWithheld: roundMoney(payTaxWithheld + tipTaxWithheld),
+    totalTaxWithheld: reporting.taxAmount,
   };
 }
 
@@ -1818,16 +1973,19 @@ async function calculateLivePayrollForAuth(
     const taxRates = new Set<number>();
     const tipPayoutMethods = new Set<PayrollPayoutMethod>();
     const cashToTaxCompanyValues = new Set<boolean>();
+    const taxTipsValues = new Set<boolean>();
     let grossSales = 0;
     let tipAmount = 0;
     let staffPay = 0;
     let fixedPayAmount = 0;
     let checkGross = 0;
-    let baseCheckAmount = 0;
     let baseCashAmount = 0;
     let tipCheckAmount = 0;
     let tipCashAmount = 0;
     let taxWithheld = 0;
+    let taxCompanyCashReported = 0;
+    let taxCompanyReportedWageGross = 0;
+    let taxCompanyTaxableGross = 0;
 
     for (const businessDate of periodDates) {
       const setting = pickEffectiveSetting({
@@ -1872,6 +2030,7 @@ async function calculateLivePayrollForAuth(
       taxRates.add(numberValue(setting.tax_rate));
       tipPayoutMethods.add(setting.tip_payout_method);
       cashToTaxCompanyValues.add(Boolean(setting.cash_to_tax_company));
+      taxTipsValues.add(Boolean(setting.tax_tips));
 
       if (setting.pay_type === "commission") {
         commissionRates.add(numberValue(setting.commission_rate));
@@ -1882,11 +2041,13 @@ async function calculateLivePayrollForAuth(
       staffPay += dailyResult.staffPay;
       fixedPayAmount += numberValue(dailyResult.dailyTotal.fixed_pay_amount_used);
       checkGross += dailyResult.checkGross;
-      baseCheckAmount += dailyResult.baseCheckAmount;
       baseCashAmount += dailyResult.baseCashAmount;
       tipCheckAmount += dailyResult.tipCheckAmount;
       tipCashAmount += dailyResult.tipCashAmount;
       taxWithheld += dailyResult.taxWithheld;
+      taxCompanyCashReported += dailyResult.taxCompanyCashReported;
+      taxCompanyReportedWageGross += dailyResult.taxCompanyReportedWageGross;
+      taxCompanyTaxableGross += dailyResult.taxCompanyTaxableGross;
     }
 
     if (dailyResults.length === 0) {
@@ -1896,6 +2057,7 @@ async function calculateLivePayrollForAuth(
       taxRates.add(numberValue(latestSetting.tax_rate));
       tipPayoutMethods.add(latestSetting.tip_payout_method);
       cashToTaxCompanyValues.add(Boolean(latestSetting.cash_to_tax_company));
+      taxTipsValues.add(Boolean(latestSetting.tax_tips));
 
       if (latestSetting.pay_type === "commission") {
         commissionRates.add(numberValue(latestSetting.commission_rate));
@@ -1906,25 +2068,28 @@ async function calculateLivePayrollForAuth(
     const bonusPayoutMethod = latestSetting.bonus_payout_method;
     const bonusCheckAmount = bonusPayoutMethod === "check" ? bonusAmount : 0;
     const bonusCashAmount = bonusPayoutMethod === "cash" ? bonusAmount : 0;
-    const taxCompanyEnabled =
-      dailyResults.some((result) =>
-        isTaxCompanyReportableSetting(result.setting),
+    const taxBonus = Boolean(latestSetting.tax_bonus);
+    const reportedBonus = taxBonus ? bonusAmount : 0;
+    const bonusTaxWithheld = roundMoney(
+      (reportedBonus * numberValue(latestSetting.tax_rate)) / 100,
+    );
+    const taxFixedReportable =
+      dailyResults.some(
+        (result) =>
+          result.setting.pay_type === "fixed" &&
+          Boolean(result.setting.apply_tax_to_fixed_pay),
       ) ||
       (dailyResults.length === 0 &&
-        isTaxCompanyReportableSetting(latestSetting));
-    const latestCashToTaxCompany = Boolean(latestSetting.cash_to_tax_company);
-    const cashToTaxCompany =
-      taxCompanyEnabled &&
-      (cashToTaxCompanyValues.has(true) ||
-        (bonusCashAmount !== 0 && latestCashToTaxCompany));
+        latestSetting.pay_type === "fixed" &&
+        Boolean(latestSetting.apply_tax_to_fixed_pay));
+    const cashToTaxCompany = cashToTaxCompanyValues.has(true);
     const shouldIncludeLine =
       grossSales !== 0 ||
       tipAmount !== 0 ||
       staffPay !== 0 ||
       bonusAmount !== 0 ||
       Boolean(input?.check_number?.trim()) ||
-      Boolean(input?.note?.trim()) ||
-      taxCompanyEnabled;
+      Boolean(input?.note?.trim());
 
     if (!shouldIncludeLine) {
       continue;
@@ -1938,24 +2103,56 @@ async function calculateLivePayrollForAuth(
     const payTypeUsed = payTypes.size === 1 ? Array.from(payTypes)[0] : latestSetting.pay_type;
     const staffCommissionGross = roundMoney(staffPay);
     const roundedCheckGross = roundMoney(checkGross);
-    const roundedTaxWithheld = roundMoney(taxWithheld);
-    const roundedBaseCheckAmount = roundMoney(baseCheckAmount);
+    const roundedTaxWithheld = roundMoney(taxWithheld + bonusTaxWithheld);
+    const roundedBaseCheckAmount = roundMoney(roundedCheckGross - roundedTaxWithheld);
     const roundedBaseCashAmount = roundMoney(baseCashAmount);
     const roundedTip = roundMoney(tipAmount);
     const roundedTipCheckAmount = roundMoney(tipCheckAmount);
     const roundedTipCashAmount = roundMoney(tipCashAmount);
     const roundedBonusCheckAmount = roundMoney(bonusCheckAmount);
     const roundedBonusCashAmount = roundMoney(bonusCashAmount);
+    const reportedWageGross = roundMoney(taxCompanyReportedWageGross);
+    const taxableGross = roundMoney(
+      taxCompanyTaxableGross + reportedBonus,
+    );
+    const roundedCashReported = roundMoney(
+      taxCompanyCashReported +
+        (taxBonus && bonusPayoutMethod === "cash" ? bonusAmount : 0),
+    );
     const finalCheckAmount = roundMoney(
-      roundedBaseCheckAmount + roundedTipCheckAmount + roundedBonusCheckAmount,
+      roundedCheckGross +
+        roundedTipCheckAmount +
+        roundedBonusCheckAmount -
+        roundedTaxWithheld,
     );
     const finalCashAmount = roundMoney(
       roundedBaseCashAmount + roundedTipCashAmount + roundedBonusCashAmount,
     );
     const finalStaffIncome = roundMoney(finalCheckAmount + finalCashAmount);
     const earnedAmount = roundMoney(staffCommissionGross + roundedTip + bonusAmount);
-    const taxCompanyCheckAmount = taxCompanyEnabled ? finalCheckAmount : 0;
-    const taxCompanyCashAmount = cashToTaxCompany ? finalCashAmount : 0;
+    const hasPayrollData = [
+      bonusAmount,
+      finalCashAmount,
+      finalCheckAmount,
+      grossSales,
+      roundedCheckGross,
+      roundedTaxWithheld,
+      roundedTip,
+      staffCommissionGross,
+    ].some((value) => moneyChanged(value, 0));
+    const hasTaxRate = Array.from(taxRates).some((taxRate) => taxRate > 0);
+    const taxCompanyReportable =
+      hasPayrollData &&
+      (taxableGross > 0 ||
+        moneyChanged(finalCheckAmount, 0) ||
+        roundedTaxWithheld > 0 ||
+        hasTaxRate ||
+        taxFixedReportable ||
+        taxTipsValues.has(true) ||
+        taxBonus ||
+        cashToTaxCompany);
+    const taxCompanyCheckAmount = taxCompanyReportable ? finalCheckAmount : 0;
+    const taxCompanyCashAmount = taxCompanyReportable ? roundedCashReported : 0;
     const tipPayoutMethodSnapshot =
       tipPayoutMethods.size === 1
         ? Array.from(tipPayoutMethods)[0]
@@ -1975,7 +2172,7 @@ async function calculateLivePayrollForAuth(
       cash_amount: finalCashAmount,
       cash_to_tax_company_snapshot: cashToTaxCompany,
       check_gross: roundedCheckGross,
-      check_net: finalCheckAmount,
+      check_net: roundedBaseCheckAmount,
       check_number: input?.check_number?.trim() || null,
       check_rate_used: isMixedRate ? 0 : Array.from(checkRates)[0] ?? 0,
       commission_rate_used:
@@ -2008,10 +2205,14 @@ async function calculateLivePayrollForAuth(
       staff_display_name_snapshot: getStaffName(staff, staffId),
       staff_id: staffId,
       staff_legal_name_snapshot: getLegalName(latestSetting),
+      tax_bonus_snapshot: taxBonus,
       tax_company_cash_amount: taxCompanyCashAmount,
       tax_company_check_amount: taxCompanyCheckAmount,
-      tax_company_enabled_snapshot: taxCompanyEnabled,
+      tax_company_enabled_snapshot: taxCompanyReportable,
+      tax_company_reported_wage_gross: reportedWageGross,
+      tax_company_taxable_gross: taxableGross,
       tax_rate_used: isMixedRate ? 0 : Array.from(taxRates)[0] ?? 0,
+      tax_tips_snapshot: taxTipsValues.has(true),
       tax_withheld: roundedTaxWithheld,
       tip_allocation_method: getTipAllocationMethod({
         hasManualTip: Boolean(hasManualTipByStaffId.get(staffId)),
@@ -2144,6 +2345,10 @@ async function loadPayrollLines(
     staff_commission_gross: numberValue(line.staff_commission_gross),
     tax_company_cash_amount: numberValue(line.tax_company_cash_amount),
     tax_company_check_amount: numberValue(line.tax_company_check_amount),
+    tax_company_reported_wage_gross: numberValue(
+      line.tax_company_reported_wage_gross,
+    ),
+    tax_company_taxable_gross: numberValue(line.tax_company_taxable_gross),
     tax_rate_used: numberValue(line.tax_rate_used),
     tax_withheld: numberValue(line.tax_withheld),
     tip_amount: numberValue(line.tip_amount),
@@ -2219,7 +2424,35 @@ async function loadPayrollPaystubs(
     throw new Error(error.message);
   }
 
-  return data ?? [];
+  return Promise.all(
+    (data ?? []).map(async (paystub) => ({
+      ...paystub,
+      view_url: await createPaystubViewUrl(auth, paystub.file_url_or_path),
+    })),
+  );
+}
+
+async function createPaystubViewUrl(
+  auth: PayrollAuthContext,
+  fileUrlOrPath: string | null,
+) {
+  if (!fileUrlOrPath) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(fileUrlOrPath)) {
+    return fileUrlOrPath;
+  }
+
+  const { data, error } = await auth.supabase.storage
+    .from(PAYROLL_PAYSTUB_BUCKET)
+    .createSignedUrl(fileUrlOrPath, 60 * 60);
+
+  if (error) {
+    return null;
+  }
+
+  return data.signedUrl;
 }
 
 async function loadPayrollSnapshot(
@@ -2296,6 +2529,66 @@ async function loadLatestPayrollSnapshot(
   return loadPayrollSnapshot(auth, run);
 }
 
+async function buildTaxCompanyLinesForAuth(input: {
+  auth: PayrollAuthContext;
+  latestStatement?: PayrollStatementSnapshot | null;
+  live?: PayrollLiveSnapshot;
+  period: PayrollPeriod;
+}) {
+  const [live, latestStatement] = await Promise.all([
+    input.live ?? calculateLivePayrollForAuth(input.auth, input.period),
+    input.latestStatement === undefined
+      ? loadLatestPayrollSnapshot(input.auth, input.period)
+      : Promise.resolve(input.latestStatement),
+  ]);
+  const lines = attachStatementPaystubsToLines({
+    latestStatement,
+    lines: live.lines,
+  }).filter(isTaxCompanyReportableLine);
+
+  return {
+    latestStatement,
+    lines,
+    source: "live" as const,
+    summary: calculateSummary({ corrections: live.corrections, lines }),
+  };
+}
+
+export async function buildTaxCompanyLines(input: {
+  cycleType?: string | null;
+  endDate?: string | null;
+  month?: string | null;
+  payPeriodStart?: string | null;
+  preset?: string | null;
+  segment?: string | null;
+  startDate?: string | null;
+}) {
+  const auth = await requirePayrollContext({ taxCompanyOnly: true });
+  const salonPayrollSetting = await loadSalonPayrollSetting(auth);
+  const period = resolvePayrollPeriod({
+    cycleType: input.cycleType,
+    endDate: input.endDate,
+    month: input.month,
+    payPeriodStart: input.payPeriodStart,
+    preset: input.preset,
+    segment: input.segment,
+    salonSetting: salonPayrollSetting,
+    startDate: input.startDate,
+  });
+  const taxCompany = await buildTaxCompanyLinesForAuth({
+    auth,
+    period,
+  });
+
+  return {
+    ...taxCompany,
+    period,
+    periodOptions: getPayrollPeriodOptions({ salonSetting: salonPayrollSetting }),
+    scheduleSetup: getPayrollScheduleSetup(salonPayrollSetting),
+    salonPayrollSetting,
+  };
+}
+
 export async function getLatestPayrollStatement(period: PayrollPeriod) {
   const auth = await requirePayrollContext();
   return loadLatestPayrollSnapshot(auth, period);
@@ -2303,6 +2596,7 @@ export async function getLatestPayrollStatement(period: PayrollPeriod) {
 
 function emptyDifference(): PayrollStatementDifference {
   return {
+    actionItems: [],
     changed: false,
     staffDifferences: [],
     summaryDifferences: {},
@@ -2317,6 +2611,452 @@ function differenceValue(current: number, previous: number) {
   };
 }
 
+type PayrollActionItem = PayrollStatementDifference["actionItems"][number];
+type PayrollActionChange = PayrollActionItem["changes"][number];
+
+function moneyActionChange(input: {
+  current: number | null | undefined;
+  field: string;
+  label: string;
+  previous: number | null | undefined;
+}) {
+  const current = numberValue(input.current);
+  const previous = numberValue(input.previous);
+
+  if (!moneyChanged(current, previous)) {
+    return null;
+  }
+
+  return {
+    current: roundMoney(current),
+    delta: roundMoney(current - previous),
+    field: input.field,
+    label: input.label,
+    previous: roundMoney(previous),
+    valueType: "money" as const,
+  } satisfies PayrollActionChange;
+}
+
+function statusActionChange(input: {
+  current: boolean;
+  currentText: string;
+  field: string;
+  label: string;
+  previous: boolean;
+  previousText: string;
+}) {
+  if (input.current === input.previous) {
+    return null;
+  }
+
+  return {
+    current: input.current ? 1 : 0,
+    currentText: input.currentText,
+    delta: null,
+    field: input.field,
+    label: input.label,
+    previous: input.previous ? 1 : 0,
+    previousText: input.previousText,
+    valueType: "status" as const,
+  } satisfies PayrollActionChange;
+}
+
+function payrollActionStatus(input: {
+  currentText: string;
+  field: string;
+  label: string;
+  previousText: string;
+}) {
+  return {
+    current: null,
+    currentText: input.currentText,
+    delta: null,
+    field: input.field,
+    label: input.label,
+    previous: null,
+    previousText: input.previousText,
+    valueType: "status" as const,
+  } satisfies PayrollActionChange;
+}
+
+function lineRequiresPaystub(line: PayrollStaffLineWithDailyTotals | undefined) {
+  if (!line) {
+    return false;
+  }
+
+  return (
+    Boolean(line.tax_company_enabled_snapshot) ||
+    moneyChanged(numberValue(line.final_check_amount), 0) ||
+    moneyChanged(numberValue(line.tax_withheld), 0) ||
+    moneyChanged(numberValue(line.tax_company_taxable_gross), 0)
+  );
+}
+
+function paystubRelevantFieldsChanged(input: {
+  currentLine: PayrollStaffLineWithDailyTotals;
+  previousLine: PayrollStaffLineWithDailyTotals;
+}) {
+  const fields: Array<keyof PayrollStaffLineWithDailyTotals> = [
+    "check_gross",
+    "final_check_amount",
+    "tax_company_taxable_gross",
+    "tax_withheld",
+  ];
+
+  return fields.some((field) =>
+    moneyChanged(
+      numberValue(input.currentLine[field] as number | null | undefined),
+      numberValue(input.previousLine[field] as number | null | undefined),
+    ),
+  );
+}
+
+function getPayrollActionDescriptor(input: {
+  cashChanged: boolean;
+  checkChanged: boolean;
+  paystubMissing: boolean;
+  paystubOutdated: boolean;
+  staffAdded: boolean;
+  staffRemoved: boolean;
+  taxChanged: boolean;
+}) {
+  if (input.staffAdded) {
+    return {
+      action: "Create check/paystub if needed",
+      kind: "staff_added" as const,
+      priority: 5,
+      title: "New staff payout added",
+    };
+  }
+
+  if (input.staffRemoved) {
+    return {
+      action: "Void check / cancel paystub if already issued",
+      kind: "staff_removed" as const,
+      priority: 5,
+      title: "Staff payout removed",
+    };
+  }
+
+  if (input.checkChanged) {
+    return {
+      action:
+        input.paystubMissing || input.paystubOutdated || input.taxChanged
+          ? "Reprint check and regenerate paystub"
+          : "Reprint check / void old check",
+      kind: "check_changed" as const,
+      priority: 1,
+      title: "Check amount changed",
+    };
+  }
+
+  if (input.cashChanged) {
+    return {
+      action: "Adjust cash payout",
+      kind: "cash_changed" as const,
+      priority: 2,
+      title: "Cash payout changed",
+    };
+  }
+
+  if (input.paystubMissing) {
+    return {
+      action: "Generate paystub",
+      kind: "paystub_missing" as const,
+      priority: 3,
+      title: "Paystub missing",
+    };
+  }
+
+  if (input.paystubOutdated) {
+    return {
+      action: "Regenerate paystub",
+      kind: "paystub_outdated" as const,
+      priority: 3,
+      title: "Paystub outdated",
+    };
+  }
+
+  if (input.taxChanged) {
+    return {
+      action: "Regenerate paystub / review tax report",
+      kind: "tax_changed" as const,
+      priority: 4,
+      title: "Tax withheld changed",
+    };
+  }
+
+  return {
+    action: "Void check / cancel paystub if already issued",
+    kind: "staff_removed" as const,
+    priority: 5,
+    title: "Staff payout removed",
+  };
+}
+
+function buildPayrollActionItems(
+  live: PayrollLiveSnapshot,
+  statement: PayrollStatementSnapshot,
+) {
+  const liveByStaffId = new Map(live.lines.map((line) => [line.staff_id, line]));
+  const statementByStaffId = new Map(
+    statement.lines.map((line) => [line.staff_id, line]),
+  );
+  const staffIds = new Set([
+    ...Array.from(liveByStaffId.keys()),
+    ...Array.from(statementByStaffId.keys()),
+  ]);
+  const items: PayrollActionItem[] = [];
+
+  for (const staffId of staffIds) {
+    const currentLine = liveByStaffId.get(staffId);
+    const previousLine = statementByStaffId.get(staffId);
+    const staffName =
+      currentLine?.staff_display_name_snapshot ??
+      previousLine?.staff_display_name_snapshot ??
+      "Staff";
+    const staffAdded = Boolean(currentLine && !previousLine);
+    const staffRemoved = Boolean(previousLine && !currentLine);
+    const changes: PayrollActionChange[] = [];
+
+    if (staffAdded) {
+      changes.push(
+        payrollActionStatus({
+          currentText: "Added",
+          field: "staff_status",
+          label: "Staff payout",
+          previousText: "Not on statement",
+        }),
+      );
+      for (const change of [
+        moneyActionChange({
+          current: currentLine?.final_check_amount,
+          field: "final_check_amount",
+          label: "Check amount",
+          previous: 0,
+        }),
+        moneyActionChange({
+          current: currentLine?.final_cash_amount,
+          field: "final_cash_amount",
+          label: "Cash payout",
+          previous: 0,
+        }),
+        moneyActionChange({
+          current: currentLine?.tax_withheld,
+          field: "tax_withheld",
+          label: "Tax withheld",
+          previous: 0,
+        }),
+      ]) {
+        if (change) {
+          changes.push(change);
+        }
+      }
+
+      if (lineRequiresPaystub(currentLine)) {
+        changes.push(
+          payrollActionStatus({
+            currentText: "Required",
+            field: "paystub",
+            label: "Paystub",
+            previousText: "Not uploaded",
+          }),
+        );
+      }
+    } else if (staffRemoved) {
+      changes.push(
+        payrollActionStatus({
+          currentText: "Removed",
+          field: "staff_status",
+          label: "Staff payout",
+          previousText: "Printed",
+        }),
+      );
+      for (const change of [
+        moneyActionChange({
+          current: 0,
+          field: "final_check_amount",
+          label: "Check amount",
+          previous: previousLine?.final_check_amount,
+        }),
+        moneyActionChange({
+          current: 0,
+          field: "final_cash_amount",
+          label: "Cash payout",
+          previous: previousLine?.final_cash_amount,
+        }),
+        moneyActionChange({
+          current: 0,
+          field: "tax_withheld",
+          label: "Tax withheld",
+          previous: previousLine?.tax_withheld,
+        }),
+      ]) {
+        if (change) {
+          changes.push(change);
+        }
+      }
+    } else if (currentLine && previousLine) {
+      for (const change of [
+        moneyActionChange({
+          current: currentLine.final_check_amount,
+          field: "final_check_amount",
+          label: "Check amount",
+          previous: previousLine.final_check_amount,
+        }),
+        moneyActionChange({
+          current: currentLine.final_cash_amount,
+          field: "final_cash_amount",
+          label: "Cash payout",
+          previous: previousLine.final_cash_amount,
+        }),
+        moneyActionChange({
+          current: currentLine.tax_withheld,
+          field: "tax_withheld",
+          label: "Tax withheld",
+          previous: previousLine.tax_withheld,
+        }),
+        moneyActionChange({
+          current: currentLine.tax_company_taxable_gross,
+          field: "tax_company_taxable_gross",
+          label: "Taxable income",
+          previous: previousLine.tax_company_taxable_gross,
+        }),
+      ]) {
+        if (change) {
+          changes.push(change);
+        }
+      }
+
+      for (const change of [
+        statusActionChange({
+          current: currentLine.cash_to_tax_company_snapshot,
+          currentText: currentLine.cash_to_tax_company_snapshot ? "On" : "Off",
+          field: "cash_to_tax_company",
+          label: "Tax cash",
+          previous: previousLine.cash_to_tax_company_snapshot,
+          previousText: previousLine.cash_to_tax_company_snapshot ? "On" : "Off",
+        }),
+        statusActionChange({
+          current: currentLine.tax_tips_snapshot,
+          currentText: currentLine.tax_tips_snapshot ? "Taxed" : "Not taxed",
+          field: "tax_tips",
+          label: "Tip tax",
+          previous: previousLine.tax_tips_snapshot,
+          previousText: previousLine.tax_tips_snapshot ? "Taxed" : "Not taxed",
+        }),
+        statusActionChange({
+          current: currentLine.tax_bonus_snapshot,
+          currentText: currentLine.tax_bonus_snapshot ? "Taxed" : "Not taxed",
+          field: "tax_bonus",
+          label: "Bonus tax",
+          previous: previousLine.tax_bonus_snapshot,
+          previousText: previousLine.tax_bonus_snapshot ? "Taxed" : "Not taxed",
+        }),
+      ]) {
+        if (change) {
+          changes.push(change);
+        }
+      }
+
+      const payrollImpactChanged = changes.some((change) =>
+        [
+          "cash_to_tax_company",
+          "final_check_amount",
+          "tax_bonus",
+          "tax_company_taxable_gross",
+          "tax_tips",
+          "tax_withheld",
+        ].includes(change.field),
+      );
+      const paystubMissing =
+        payrollImpactChanged && lineRequiresPaystub(currentLine) && !previousLine.paystub;
+      const paystubOutdated =
+        !paystubMissing &&
+        Boolean(previousLine.paystub) &&
+        paystubRelevantFieldsChanged({ currentLine, previousLine });
+
+      if (paystubMissing) {
+        changes.push(
+          payrollActionStatus({
+            currentText: "Required",
+            field: "paystub",
+            label: "Paystub",
+            previousText: "Not uploaded",
+          }),
+        );
+      } else if (paystubOutdated) {
+        changes.push(
+          payrollActionStatus({
+            currentText: "Needs replacement",
+            field: "paystub",
+            label: "Paystub",
+            previousText: "Uploaded",
+          }),
+        );
+      }
+    }
+
+    const checkChanged = changes.some(
+      (change) => change.field === "final_check_amount",
+    );
+    const cashChanged = changes.some(
+      (change) => change.field === "final_cash_amount",
+    );
+    const paystubMissing = changes.some(
+      (change) =>
+        change.field === "paystub" && change.currentText === "Required",
+    );
+    const paystubOutdated = changes.some(
+      (change) =>
+        change.field === "paystub" && change.currentText === "Needs replacement",
+    );
+    const taxChanged = changes.some((change) =>
+      [
+        "cash_to_tax_company",
+        "tax_bonus",
+        "tax_company_taxable_gross",
+        "tax_tips",
+        "tax_withheld",
+      ].includes(change.field),
+    );
+
+    if (
+      !checkChanged &&
+      !cashChanged &&
+      !paystubMissing &&
+      !paystubOutdated &&
+      !taxChanged &&
+      !staffAdded &&
+      !staffRemoved
+    ) {
+      continue;
+    }
+
+    const descriptor = getPayrollActionDescriptor({
+      cashChanged,
+      checkChanged,
+      paystubMissing,
+      paystubOutdated,
+      staffAdded,
+      staffRemoved,
+      taxChanged,
+    });
+
+    items.push({
+      ...descriptor,
+      changes,
+      staffId,
+      staffName,
+    });
+  }
+
+  return items.sort(
+    (left, right) =>
+      left.priority - right.priority || left.staffName.localeCompare(right.staffName),
+  );
+}
+
 export function compareLivePayrollToStatement(
   live: PayrollLiveSnapshot,
   statement: PayrollStatementSnapshot | null,
@@ -2327,7 +3067,6 @@ export function compareLivePayrollToStatement(
 
   const summaryFields: Array<keyof PayrollSummary> = [
     "correctionAfterLockdayCount",
-    "missingPaystubCount",
     "totalBonus",
     "totalCashPayout",
     "totalCheckGross",
@@ -2341,6 +3080,8 @@ export function compareLivePayrollToStatement(
     "totalTaxCompanyAmount",
     "totalTaxCompanyCashAmount",
     "totalTaxCompanyCheckAmount",
+    "totalTaxCompanyReportedWageGross",
+    "totalTaxCompanyTaxableGross",
     "totalTip",
   ];
   const shopSummaryFields: Array<keyof PayrollShopSummary> = [
@@ -2383,6 +3124,8 @@ export function compareLivePayrollToStatement(
     "staff_commission_gross",
     "tax_company_cash_amount",
     "tax_company_check_amount",
+    "tax_company_reported_wage_gross",
+    "tax_company_taxable_gross",
     "tax_rate_used",
     "tax_withheld",
     "tip_amount",
@@ -2461,6 +3204,20 @@ export function compareLivePayrollToStatement(
       );
     }
 
+    const currentTaxTips = currentLine?.tax_tips_snapshot ? 1 : 0;
+    const previousTaxTips = previousLine?.tax_tips_snapshot ? 1 : 0;
+
+    if (currentTaxTips !== previousTaxTips) {
+      differences.tax_tips = differenceValue(currentTaxTips, previousTaxTips);
+    }
+
+    const currentTaxBonus = currentLine?.tax_bonus_snapshot ? 1 : 0;
+    const previousTaxBonus = previousLine?.tax_bonus_snapshot ? 1 : 0;
+
+    if (currentTaxBonus !== previousTaxBonus) {
+      differences.tax_bonus = differenceValue(currentTaxBonus, previousTaxBonus);
+    }
+
     if (
       (currentLine?.tip_payout_method_snapshot ?? "") !==
       (previousLine?.tip_payout_method_snapshot ?? "")
@@ -2502,9 +3259,14 @@ export function compareLivePayrollToStatement(
     }
   }
 
+  const actionItems = buildPayrollActionItems(live, statement);
+
   return {
+    actionItems,
     changed:
-      Object.keys(summaryDifferences).length > 0 || staffDifferences.length > 0,
+      Object.keys(summaryDifferences).length > 0 ||
+      staffDifferences.length > 0 ||
+      actionItems.length > 0,
     staffDifferences,
     summaryDifferences,
   };
@@ -2583,7 +3345,9 @@ function statementSettingsSnapshot(live: PayrollLiveSnapshot) {
       isMixedRate: line.is_mixed_rate,
       settings: line.settings_used_snapshot,
       staffId: line.staff_id,
+      taxBonus: line.tax_bonus_snapshot,
       taxCompanyEnabled: line.tax_company_enabled_snapshot,
+      taxTips: line.tax_tips_snapshot,
       tipPayoutMethod: line.tip_payout_method_snapshot,
     })),
     shopDailyRows: live.shopDailyRows,
@@ -2672,10 +3436,14 @@ export async function savePayrollStatementFromLivePayroll(input: {
     staff_display_name_snapshot: line.staff_display_name_snapshot,
     staff_id: line.staff_id,
     staff_legal_name_snapshot: line.staff_legal_name_snapshot,
+    tax_bonus_snapshot: line.tax_bonus_snapshot,
     tax_company_cash_amount: line.tax_company_cash_amount,
     tax_company_check_amount: line.tax_company_check_amount,
     tax_company_enabled_snapshot: line.tax_company_enabled_snapshot,
+    tax_company_reported_wage_gross: line.tax_company_reported_wage_gross,
+    tax_company_taxable_gross: line.tax_company_taxable_gross,
     tax_rate_used: line.tax_rate_used,
+    tax_tips_snapshot: line.tax_tips_snapshot,
     tax_withheld: line.tax_withheld,
     tip_allocation_method: line.tip_allocation_method,
     tip_amount: line.tip_amount,
@@ -2757,6 +3525,107 @@ export async function markPayrollStatementPaid(payrollRunId: string) {
   }
 
   return data;
+}
+
+function sanitizeStorageFileName(value: string) {
+  const trimmed = value.trim() || "paystub";
+  return trimmed.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+export async function uploadPayrollPaystub(input: {
+  file: File;
+  payrollRunId: string;
+  staffId: string;
+}) {
+  const auth = await requirePayrollContext({ taxCompanyOnly: true });
+
+  if (!auth.access.canManagePayroll && !auth.access.canViewTaxCompany) {
+    throw new Error("You do not have permission to upload paystubs.");
+  }
+
+  if (!input.payrollRunId || !input.staffId) {
+    throw new Error("Payroll statement and staff member are required.");
+  }
+
+  if (!input.file || input.file.size <= 0) {
+    throw new Error("Choose a paystub file to upload.");
+  }
+
+  const maxSizeBytes = 10 * 1024 * 1024;
+
+  if (input.file.size > maxSizeBytes) {
+    throw new Error("Paystub file must be 10 MB or smaller.");
+  }
+
+  const run = await loadPayrollRunById(auth, input.payrollRunId);
+
+  if (run.status !== "printed" && run.status !== "paid") {
+    throw new Error("Upload paystubs after the payroll statement is printed.");
+  }
+
+  const { data: line, error: lineError } = await auth.supabase
+    .from("payroll_staff_lines")
+    .select("id")
+    .eq("organization_id", auth.organization.id)
+    .eq("salon_id", auth.salon.id)
+    .eq("payroll_run_id", run.id)
+    .eq("staff_id", input.staffId)
+    .maybeSingle<{ id: string }>();
+
+  if (lineError) {
+    throw new Error(lineError.message);
+  }
+
+  if (!line) {
+    throw new Error("Paystub upload is only available for payroll staff lines.");
+  }
+
+  const fileName = sanitizeStorageFileName(input.file.name);
+  const storagePath = [
+    auth.organization.id,
+    auth.salon.id,
+    run.id,
+    input.staffId,
+    `${Date.now()}-${fileName}`,
+  ].join("/");
+  const { error: uploadError } = await auth.supabase.storage
+    .from(PAYROLL_PAYSTUB_BUCKET)
+    .upload(storagePath, input.file, {
+      contentType: input.file.type || undefined,
+      upsert: true,
+    });
+
+  if (uploadError) {
+    throw new Error(uploadError.message);
+  }
+
+  const { data, error } = await auth.supabase
+    .from("payroll_paystubs")
+    .upsert(
+      {
+        file_name: input.file.name || fileName,
+        file_url_or_path: storagePath,
+        mime_type: input.file.type || null,
+        organization_id: auth.organization.id,
+        payroll_run_id: run.id,
+        salon_id: auth.salon.id,
+        size_bytes: input.file.size,
+        staff_id: input.staffId,
+        uploaded_by: auth.user.id,
+      },
+      { onConflict: "payroll_run_id,staff_id" },
+    )
+    .select(PAYROLL_PAYSTUB_SELECT)
+    .single<PayrollPaystub>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    ...data,
+    view_url: await createPaystubViewUrl(auth, data.file_url_or_path),
+  };
 }
 
 export async function updatePayrollPeriodStaffInput(input: {
@@ -2872,6 +3741,7 @@ export async function updateStaffPayrollSetting(input: {
   legalName: string | null;
   payType: StaffPayType;
   staffId: string;
+  taxBonus: boolean;
   taxRate: number;
   taxTips: boolean;
   tipPayoutMethod: PayrollPayoutMethod;
@@ -2912,6 +3782,7 @@ export async function updateStaffPayrollSetting(input: {
   const taxCompanyEnabled =
     taxRate > 0 ||
     Boolean(input.taxTips) ||
+    Boolean(input.taxBonus) ||
     cashToTaxCompany ||
     (input.payType === "fixed" && Boolean(input.applyTaxToFixedPay));
   const { data: staff, error: staffError } = await auth.supabase
@@ -2952,6 +3823,7 @@ export async function updateStaffPayrollSetting(input: {
     fixed_pay_amount: fixedPayAmount,
     legal_name: input.legalName?.trim() || null,
     pay_type: input.payType,
+    tax_bonus: input.taxBonus,
     tax_company_enabled: taxCompanyEnabled,
     tax_rate: taxRate,
     tax_tips: input.taxTips,
@@ -3042,6 +3914,12 @@ export async function getPayrollPageData(input: {
       : Promise.resolve([]),
   ]);
   const difference = compareLivePayrollToStatement(live, latestStatement);
+  const taxCompany = await buildTaxCompanyLinesForAuth({
+    auth,
+    latestStatement,
+    live,
+    period,
+  });
 
   return {
     access: auth.access,
@@ -3055,6 +3933,7 @@ export async function getPayrollPageData(input: {
     salonPayrollSetting,
     staffPayrollSettings: latestSettingsWithStaff(staffRows, staffSettings),
     status: getPayrollStatusView(latestStatement, difference),
+    taxCompany,
   };
 }
 
@@ -3079,40 +3958,21 @@ export async function getPayrollTaxCompanyData(input: {
     salonSetting: salonPayrollSetting,
     startDate: input.startDate,
   });
-  const latestStatement = await loadLatestPayrollSnapshot(auth, period);
-
-  if (latestStatement) {
-    const lines = latestStatement.lines.filter(
-      (line) => line.tax_company_enabled_snapshot,
-    );
-
-    return {
-      access: auth.access,
-      context: auth.context,
-      latestStatement,
-      lines,
-      period,
-      periodOptions: getPayrollPeriodOptions({ salonSetting: salonPayrollSetting }),
-      scheduleSetup: getPayrollScheduleSetup(salonPayrollSetting),
-      salonPayrollSetting,
-      source: "statement" as const,
-      summary: calculateSummary({ corrections: [], lines }),
-    };
-  }
-
-  const live = await calculateLivePayrollForAuth(auth, period);
-  const lines = live.lines.filter((line) => line.tax_company_enabled_snapshot);
+  const taxCompany = await buildTaxCompanyLinesForAuth({
+    auth,
+    period,
+  });
 
   return {
     access: auth.access,
     context: auth.context,
-    latestStatement: null,
-    lines,
+    latestStatement: taxCompany.latestStatement,
+    lines: taxCompany.lines,
     period,
     periodOptions: getPayrollPeriodOptions({ salonSetting: salonPayrollSetting }),
     scheduleSetup: getPayrollScheduleSetup(salonPayrollSetting),
     salonPayrollSetting,
-    source: "live" as const,
-    summary: calculateSummary({ corrections: live.corrections, lines }),
+    source: taxCompany.source,
+    summary: taxCompany.summary,
   };
 }

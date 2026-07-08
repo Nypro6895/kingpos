@@ -20,6 +20,7 @@ type ActiveField =
   | "fixedPay"
   | "legalName"
   | "payType"
+  | "taxBonus"
   | "taxCash"
   | "taxFixed"
   | "taxRate"
@@ -99,6 +100,7 @@ function HiddenSettingInputs({
   staffId,
   taxCash,
   taxFixed,
+  taxBonus,
   taxRate,
   taxTip,
   tipPayout,
@@ -114,6 +116,7 @@ function HiddenSettingInputs({
   staffId: string;
   taxCash: boolean;
   taxFixed: boolean;
+  taxBonus: boolean;
   taxRate: string;
   taxTip: boolean;
   tipPayout: PayrollPayoutMethod;
@@ -134,6 +137,7 @@ function HiddenSettingInputs({
         value={taxFixed ? "true" : "false"}
       />
       <input name="tax_tips" type="hidden" value={taxTip ? "true" : "false"} />
+      <input name="tax_bonus" type="hidden" value={taxBonus ? "true" : "false"} />
       <input
         name="cash_to_tax_company"
         type="hidden"
@@ -337,6 +341,7 @@ export function StaffPayrollSettingInlineEdit({
   const [checkRate, setCheckRate] = useState(String(setting?.check_rate ?? 60));
   const [taxRate, setTaxRate] = useState(String(setting?.tax_rate ?? 0));
   const [taxTip, setTaxTip] = useState(setting?.tax_tips ?? false);
+  const [taxBonus, setTaxBonus] = useState(setting?.tax_bonus ?? false);
   const [taxFixed, setTaxFixed] = useState(
     setting?.apply_tax_to_fixed_pay ?? true,
   );
@@ -381,6 +386,7 @@ export function StaffPayrollSettingInlineEdit({
         staffId={staff.id}
         taxCash={taxCash}
         taxFixed={taxFixed}
+        taxBonus={taxBonus}
         taxRate={taxRate}
         taxTip={taxTip}
         tipPayout={tipPayout}
@@ -541,6 +547,24 @@ export function StaffPayrollSettingInlineEdit({
                 closeField();
               }}
               value={taxTip ? "true" : "false"}
+            >
+              <option value="false">No</option>
+              <option value="true">Yes</option>
+            </InlineSelect>
+          </EditableSetting>
+          <EditableSetting
+            active={activeField === "taxBonus"}
+            label="Tax bonus"
+            onClick={() => setActiveField("taxBonus")}
+            value={formatYesNo(taxBonus)}
+          >
+            <InlineSelect
+              autoFocus
+              onChange={(value) => {
+                setTaxBonus(value === "true");
+                closeField();
+              }}
+              value={taxBonus ? "true" : "false"}
             >
               <option value="false">No</option>
               <option value="true">Yes</option>

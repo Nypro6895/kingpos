@@ -6,6 +6,7 @@ import {
   updatePayrollPeriodStaffInput,
   updateSalonPayrollSetting,
   updateStaffPayrollSetting,
+  uploadPayrollPaystub,
 } from "@/lib/payroll";
 import type {
   PayrollCycleType,
@@ -33,6 +34,11 @@ function readNumber(formData: FormData, key: string, fallback = 0) {
 
 function readBoolean(formData: FormData, key: string) {
   return formData.get(key) === "on" || formData.get(key) === "true";
+}
+
+function readFile(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return value instanceof File ? value : null;
 }
 
 function readCycleType(formData: FormData) {
@@ -201,6 +207,7 @@ export async function saveStaffPayrollSettingWithEffectiveDateAction(
       legalName: readOptionalString(formData, "legal_name"),
       payType: readPayType(formData),
       staffId: readString(formData, "staff_id"),
+      taxBonus: readBoolean(formData, "tax_bonus"),
       taxRate: readNumber(formData, "tax_rate"),
       taxTips: readBoolean(formData, "tax_tips"),
       tipPayoutMethod: readPayoutMethod(formData, "tip_payout_method", "cash"),
@@ -208,6 +215,29 @@ export async function saveStaffPayrollSettingWithEffectiveDateAction(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Payroll staff setting could not be saved.";
+    redirectWithError(message, returnPath);
+  }
+
+  redirectAfterPayrollMutation(returnPath);
+}
+
+export async function uploadPayrollPaystubAction(formData: FormData) {
+  const returnPath = readReturnPath(formData);
+  const file = readFile(formData, "paystub_file");
+
+  try {
+    if (!file) {
+      throw new Error("Choose a paystub file to upload.");
+    }
+
+    await uploadPayrollPaystub({
+      file,
+      payrollRunId: readString(formData, "payroll_run_id"),
+      staffId: readString(formData, "staff_id"),
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Paystub could not be uploaded.";
     redirectWithError(message, returnPath);
   }
 

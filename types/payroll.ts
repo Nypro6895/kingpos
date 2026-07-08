@@ -71,6 +71,7 @@ export type StaffPayrollSetting = {
   pay_type: StaffPayType;
   salon_id: string;
   staff_id: string;
+  tax_bonus: boolean;
   tax_company_enabled: boolean;
   tax_rate: number;
   tax_tips: boolean;
@@ -153,10 +154,14 @@ export type PayrollStaffLine = {
   staff_display_name_snapshot: string;
   staff_id: string;
   staff_legal_name_snapshot: string | null;
+  tax_bonus_snapshot: boolean;
+  tax_company_reported_wage_gross: number;
+  tax_company_taxable_gross: number;
   tax_company_enabled_snapshot: boolean;
   tax_company_cash_amount: number;
   tax_company_check_amount: number;
   tax_rate_used: number;
+  tax_tips_snapshot: boolean;
   tax_withheld: number;
   tip_allocation_method: TipAllocationMethod;
   tip_amount: number;
@@ -201,6 +206,7 @@ export type PayrollPaystub = {
   staff_id: string;
   updated_at: string;
   uploaded_by: string | null;
+  view_url?: string | null;
 };
 
 export type PayrollCorrectionListItem = {
@@ -241,6 +247,8 @@ export type PayrollSummary = {
   totalTaxCompanyAmount: number;
   totalTaxCompanyCashAmount: number;
   totalTaxCompanyCheckAmount: number;
+  totalTaxCompanyReportedWageGross: number;
+  totalTaxCompanyTaxableGross: number;
   totalTip: number;
 };
 
@@ -280,7 +288,38 @@ export type PayrollStaffDifference = {
   differences: Record<string, PayrollDifferenceValue>;
 };
 
+export type PayrollActionDifferenceChange = {
+  field: string;
+  label: string;
+  current: number | null;
+  currentText?: string | null;
+  previous: number | null;
+  previousText?: string | null;
+  delta: number | null;
+  valueType: "money" | "status" | "text";
+};
+
+export type PayrollActionDifferenceKind =
+  | "cash_changed"
+  | "check_changed"
+  | "paystub_missing"
+  | "paystub_outdated"
+  | "staff_added"
+  | "staff_removed"
+  | "tax_changed";
+
+export type PayrollActionDifference = {
+  action: string;
+  changes: PayrollActionDifferenceChange[];
+  kind: PayrollActionDifferenceKind;
+  priority: number;
+  staffId: string;
+  staffName: string;
+  title: string;
+};
+
 export type PayrollStatementDifference = {
+  actionItems: PayrollActionDifference[];
   changed: boolean;
   staffDifferences: PayrollStaffDifference[];
   summaryDifferences: Record<string, PayrollDifferenceValue>;

@@ -1,11 +1,16 @@
+import {
+  TaxCompanyCalculationGuide,
+  TaxCompanyLinesTable,
+} from "@/app/payroll/tax-company-table";
 import { getPayrollTaxCompanyData } from "@/lib/payroll";
-import type { PayrollPeriod, PayrollStaffLineWithDailyTotals } from "@/types/payroll";
+import type { PayrollPeriod } from "@/types/payroll";
 import Link from "next/link";
 
 type PayrollTaxCompanyPageProps = {
   searchParams: Promise<{
     end?: string;
     month?: string;
+    payroll_error?: string;
     payPeriodStart?: string;
     preset?: string;
     segment?: string;
@@ -18,10 +23,6 @@ function formatMoney(value: number) {
     currency: "USD",
     style: "currency",
   }).format(value);
-}
-
-function formatPercent(value: number) {
-  return `${Number(value).toFixed(2).replace(/\.00$/, "")}%`;
 }
 
 function getPayrollHref(period: PayrollPeriod) {
@@ -46,6 +47,29 @@ function getPayrollHref(period: PayrollPeriod) {
   }
 
   return `/payroll?${params.toString()}`;
+}
+
+function getTaxCompanyHref(period: PayrollPeriod) {
+  const params = new URLSearchParams({
+    preset: period.preset,
+  });
+
+  if (period.preset === "custom") {
+    params.set("start", period.startDate);
+    params.set("end", period.endDate);
+  } else if (period.cycleType === "biweekly") {
+    params.set("payPeriodStart", period.startDate);
+  } else {
+    params.set("month", period.startDate.slice(0, 7));
+    if (period.cycleType === "semi_monthly") {
+      params.set(
+        "segment",
+        period.preset === "semi_monthly_second" ? "second" : "first",
+      );
+    }
+  }
+
+  return `/payroll/tax-company?${params.toString()}`;
 }
 
 function NoPermissionState({ message }: { message: string }) {
@@ -199,94 +223,6 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function TaxTable({
-  lines,
-  period,
-}: {
-  lines: PayrollStaffLineWithDailyTotals[];
-  period: PayrollPeriod;
-}) {
-  if (lines.length === 0) {
-    return (
-      <p className="rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-        No tax-company enabled staff lines for this period.
-      </p>
-    );
-  }
-
-  return (
-    <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-zinc-200 text-sm">
-          <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
-            <tr>
-              <th className="px-4 py-3">Legal Name</th>
-              <th className="px-4 py-3">Period</th>
-              <th className="px-4 py-3">Check Number</th>
-              <th className="px-4 py-3 text-right">Check Amount</th>
-              <th className="px-4 py-3 text-right">Cash Amount</th>
-              <th className="px-4 py-3 text-right">Report Total</th>
-              <th className="px-4 py-3 text-right">Tax Rate</th>
-              <th className="px-4 py-3 text-right">Tax Withheld</th>
-              <th className="px-4 py-3 text-right">Tip Check</th>
-              <th className="px-4 py-3 text-right">Tip Cash</th>
-              <th className="px-4 py-3 text-right">Bonus Check</th>
-              <th className="px-4 py-3 text-right">Bonus Cash</th>
-              <th className="px-4 py-3">Paystub</th>
-              <th className="px-4 py-3">Note</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100">
-            {lines.map((line) => (
-              <tr key={line.staff_id}>
-                <td className="px-4 py-3 font-medium text-zinc-950">
-                  {line.staff_legal_name_snapshot ?? line.staff_display_name_snapshot}
-                  {!line.staff_legal_name_snapshot ? (
-                    <p className="text-xs font-medium text-amber-700">
-                      Missing legal name
-                    </p>
-                  ) : null}
-                </td>
-                <td className="px-4 py-3">{period.label}</td>
-                <td className="px-4 py-3">{line.check_number ?? "-"}</td>
-                <td className="px-4 py-3 text-right">
-                  {formatMoney(line.tax_company_check_amount)}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {formatMoney(line.tax_company_cash_amount)}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {formatMoney(
-                    line.tax_company_check_amount + line.tax_company_cash_amount,
-                  )}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {line.is_mixed_rate ? "Mixed" : formatPercent(line.tax_rate_used)}
-                </td>
-                <td className="px-4 py-3 text-right">{formatMoney(line.tax_withheld)}</td>
-                <td className="px-4 py-3 text-right">
-                  {formatMoney(line.tip_check_amount)}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {formatMoney(line.tip_cash_amount)}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {formatMoney(line.bonus_check_amount)}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {formatMoney(line.bonus_cash_amount)}
-                </td>
-                <td className="px-4 py-3">{line.paystub ? "Attached" : "Missing"}</td>
-                <td className="px-4 py-3">{line.note ?? "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
 export default async function PayrollTaxCompanyPage({
   searchParams,
 }: PayrollTaxCompanyPageProps) {
@@ -313,8 +249,19 @@ export default async function PayrollTaxCompanyPage({
         data.latestStatement.run.status === "paid" ? " - paid" : ""
       }`
     : "Live Preview - not printed yet";
+  const returnPath = getTaxCompanyHref(data.period);
+  const payrollRunId = data.latestStatement?.run.id ?? null;
   const hasMissingLegalNames = data.lines.some(
     (line) => !line.staff_legal_name_snapshot,
+  );
+  const totalWageCheckNet = data.lines.reduce(
+    (total, line) => total + line.base_check_amount,
+    0,
+  );
+  const totalTax = data.lines.reduce((total, line) => total + line.tax_withheld, 0);
+  const totalActualCheckPaid = data.lines.reduce(
+    (total, line) => total + line.final_check_amount,
+    0,
   );
 
   return (
@@ -345,29 +292,44 @@ export default async function PayrollTaxCompanyPage({
         />
       </header>
 
-      {hasMissingLegalNames ? (
+      {params.payroll_error ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          Missing legal name for one or more tax-company enabled staff.
+          {params.payroll_error}
         </p>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-4">
-        <SummaryCard label="Enabled lines" value={`${data.lines.length}`} />
+      {hasMissingLegalNames ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          Missing legal name for one or more reportable staff.
+        </p>
+      ) : null}
+
+      <section className="grid gap-4 md:grid-cols-5">
+        <SummaryCard label="Reportable lines" value={`${data.lines.length}`} />
         <SummaryCard
-          label="Check amount"
-          value={formatMoney(data.summary.totalTaxCompanyCheckAmount)}
+          label="Reported Gross"
+          value={formatMoney(data.summary.totalTaxCompanyTaxableGross)}
+        />
+        <SummaryCard label="Tax" value={formatMoney(totalTax)} />
+        <SummaryCard
+          label="Wage Check Net"
+          value={formatMoney(totalWageCheckNet)}
         />
         <SummaryCard
-          label="Cash amount"
-          value={formatMoney(data.summary.totalTaxCompanyCashAmount)}
-        />
-        <SummaryCard
-          label="Report total"
-          value={formatMoney(data.summary.totalTaxCompanyAmount)}
+          label="Actual Check Paid"
+          value={formatMoney(totalActualCheckPaid)}
         />
       </section>
 
-      <TaxTable lines={data.lines} period={data.period} />
+      <TaxCompanyLinesTable
+        lines={data.lines}
+        payrollRunId={payrollRunId}
+        period={data.period}
+        returnPath={returnPath}
+        showBreakdown
+      />
+
+      <TaxCompanyCalculationGuide />
     </main>
   );
 }
