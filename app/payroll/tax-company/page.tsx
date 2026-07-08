@@ -223,12 +223,15 @@ function TaxTable({
               <th className="px-4 py-3">Legal Name</th>
               <th className="px-4 py-3">Period</th>
               <th className="px-4 py-3">Check Number</th>
-              <th className="px-4 py-3 text-right">Check Gross</th>
+              <th className="px-4 py-3 text-right">Check Amount</th>
+              <th className="px-4 py-3 text-right">Cash Amount</th>
+              <th className="px-4 py-3 text-right">Report Total</th>
               <th className="px-4 py-3 text-right">Tax Rate</th>
               <th className="px-4 py-3 text-right">Tax Withheld</th>
-              <th className="px-4 py-3 text-right">Check Net</th>
-              <th className="px-4 py-3 text-right">Tip</th>
-              <th className="px-4 py-3 text-right">Bonus</th>
+              <th className="px-4 py-3 text-right">Tip Check</th>
+              <th className="px-4 py-3 text-right">Tip Cash</th>
+              <th className="px-4 py-3 text-right">Bonus Check</th>
+              <th className="px-4 py-3 text-right">Bonus Cash</th>
               <th className="px-4 py-3">Paystub</th>
               <th className="px-4 py-3">Note</th>
             </tr>
@@ -246,14 +249,33 @@ function TaxTable({
                 </td>
                 <td className="px-4 py-3">{period.label}</td>
                 <td className="px-4 py-3">{line.check_number ?? "-"}</td>
-                <td className="px-4 py-3 text-right">{formatMoney(line.check_gross)}</td>
+                <td className="px-4 py-3 text-right">
+                  {formatMoney(line.tax_company_check_amount)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {formatMoney(line.tax_company_cash_amount)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {formatMoney(
+                    line.tax_company_check_amount + line.tax_company_cash_amount,
+                  )}
+                </td>
                 <td className="px-4 py-3 text-right">
                   {line.is_mixed_rate ? "Mixed" : formatPercent(line.tax_rate_used)}
                 </td>
                 <td className="px-4 py-3 text-right">{formatMoney(line.tax_withheld)}</td>
-                <td className="px-4 py-3 text-right">{formatMoney(line.check_net)}</td>
-                <td className="px-4 py-3 text-right">{formatMoney(line.tip_amount)}</td>
-                <td className="px-4 py-3 text-right">{formatMoney(line.bonus_amount)}</td>
+                <td className="px-4 py-3 text-right">
+                  {formatMoney(line.tip_check_amount)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {formatMoney(line.tip_cash_amount)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {formatMoney(line.bonus_check_amount)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {formatMoney(line.bonus_cash_amount)}
+                </td>
                 <td className="px-4 py-3">{line.paystub ? "Attached" : "Missing"}</td>
                 <td className="px-4 py-3">{line.note ?? "-"}</td>
               </tr>
@@ -331,9 +353,18 @@ export default async function PayrollTaxCompanyPage({
 
       <section className="grid gap-4 md:grid-cols-4">
         <SummaryCard label="Enabled lines" value={`${data.lines.length}`} />
-        <SummaryCard label="Check gross" value={formatMoney(data.summary.totalCheckGross)} />
-        <SummaryCard label="Tax withheld" value={formatMoney(data.summary.totalTaxWithheld)} />
-        <SummaryCard label="Check net" value={formatMoney(data.summary.totalCheckNet)} />
+        <SummaryCard
+          label="Check amount"
+          value={formatMoney(data.summary.totalTaxCompanyCheckAmount)}
+        />
+        <SummaryCard
+          label="Cash amount"
+          value={formatMoney(data.summary.totalTaxCompanyCashAmount)}
+        />
+        <SummaryCard
+          label="Report total"
+          value={formatMoney(data.summary.totalTaxCompanyAmount)}
+        />
       </section>
 
       <TaxTable lines={data.lines} period={data.period} />

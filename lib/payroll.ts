@@ -15,6 +15,7 @@ import type {
   PayrollPeriodOption,
   PayrollPeriodPreset,
   PayrollPeriodStaffInput,
+  PayrollPayoutMethod,
   PayrollShopDailyRow,
   PayrollShopSummary,
   PayrollRun,
@@ -42,13 +43,13 @@ export const PAYROLL_PERMISSIONS = {
 export const SALON_PAYROLL_SETTING_SELECT =
   "id, organization_id, salon_id, cycle_type, biweekly_anchor_date, created_at, updated_at";
 export const STAFF_PAYROLL_SETTING_SELECT =
-  "id, organization_id, salon_id, staff_id, legal_name, pay_type, commission_rate, fixed_pay_amount, check_rate, tax_rate, apply_tax_to_fixed_pay, tax_tips, tax_company_enabled, effective_from, effective_to, created_at, updated_at";
+  "id, organization_id, salon_id, staff_id, legal_name, pay_type, commission_rate, fixed_pay_amount, check_rate, tax_rate, apply_tax_to_fixed_pay, tax_tips, tax_company_enabled, cash_to_tax_company, tip_payout_method, bonus_payout_method, effective_from, effective_to, created_at, updated_at";
 export const PAYROLL_PERIOD_STAFF_INPUT_SELECT =
   "id, organization_id, salon_id, staff_id, period_start, period_end, cycle_type, check_number, bonus_amount, note, updated_by, created_at, updated_at";
 export const PAYROLL_RUN_SELECT =
   "id, organization_id, salon_id, period_start, period_end, cycle_type, status, version, settings_snapshot, correction_snapshot, generated_at, printed_at, printed_by, locked_at, locked_by, paid_at, paid_by, created_at, updated_at";
 export const PAYROLL_STAFF_LINE_SELECT =
-  "id, payroll_run_id, organization_id, salon_id, staff_id, staff_display_name_snapshot, staff_legal_name_snapshot, gross_sales, pay_type_used, commission_rate_used, fixed_pay_amount_used, staff_commission_gross, shop_share, check_rate_used, cash_amount, check_gross, tax_rate_used, tax_withheld, check_net, check_number, tip_amount, tip_allocation_method, bonus_amount, final_staff_income, tax_company_enabled_snapshot, is_mixed_rate, settings_used_snapshot, period_staff_input_snapshot, note, created_at, updated_at";
+  "id, payroll_run_id, organization_id, salon_id, staff_id, staff_display_name_snapshot, staff_legal_name_snapshot, gross_sales, pay_type_used, commission_rate_used, fixed_pay_amount_used, staff_commission_gross, shop_share, check_rate_used, base_check_amount, base_cash_amount, cash_amount, check_gross, tax_rate_used, tax_withheld, check_net, check_number, tip_amount, tip_check_amount, tip_cash_amount, tip_payout_method_snapshot, tip_allocation_method, bonus_amount, bonus_check_amount, bonus_cash_amount, bonus_payout_method_snapshot, earned_amount, final_check_amount, final_cash_amount, final_staff_income, tax_company_enabled_snapshot, cash_to_tax_company_snapshot, tax_company_check_amount, tax_company_cash_amount, is_mixed_rate, settings_used_snapshot, period_staff_input_snapshot, note, created_at, updated_at";
 export const PAYROLL_STAFF_DAILY_TOTAL_SELECT =
   "id, payroll_run_id, organization_id, salon_id, staff_id, business_date, gross_sales, tip_amount, correction_delta, pay_type_used, commission_rate_used, fixed_pay_amount_used, check_rate_used, tax_rate_used, settings_used_snapshot, note, created_at, updated_at";
 export const PAYROLL_PAYSTUB_SELECT =
@@ -57,6 +58,8 @@ export const PAYROLL_PAYSTUB_SELECT =
 const DEFAULT_COMMISSION_RATE = 60;
 const DEFAULT_CHECK_RATE = 60;
 const DEFAULT_TAX_RATE = 0;
+const DEFAULT_TIP_PAYOUT_METHOD = "cash" satisfies PayrollPayoutMethod;
+const DEFAULT_BONUS_PAYOUT_METHOD = "check" satisfies PayrollPayoutMethod;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type SupabaseClient = NonNullable<
@@ -156,6 +159,8 @@ type DailyEarningAccumulator = {
 };
 
 type DailyPayrollResult = {
+  baseCashAmount: number;
+  baseCheckAmount: number;
   checkGross: number;
   checkNet: number;
   cashAmount: number;
@@ -163,6 +168,8 @@ type DailyPayrollResult = {
   payTaxWithheld: number;
   setting: StaffPayrollSetting;
   staffPay: number;
+  tipCashAmount: number;
+  tipCheckAmount: number;
   tipTaxWithheld: number;
   taxWithheld: number;
 };
@@ -577,6 +584,8 @@ function getDefaultStaffPayrollSetting(input: {
 
   return {
     apply_tax_to_fixed_pay: true,
+    bonus_payout_method: DEFAULT_BONUS_PAYOUT_METHOD,
+    cash_to_tax_company: false,
     check_rate: DEFAULT_CHECK_RATE,
     commission_rate: DEFAULT_COMMISSION_RATE,
     created_at: now,
@@ -592,18 +601,43 @@ function getDefaultStaffPayrollSetting(input: {
     tax_company_enabled: false,
     tax_rate: DEFAULT_TAX_RATE,
     tax_tips: false,
+    tip_payout_method: DEFAULT_TIP_PAYOUT_METHOD,
     updated_at: now,
   };
 }
 
 function normalizeStaffPayrollSetting(setting: StaffPayrollSetting): StaffPayrollSetting {
+  const taxCompanyEnabled = Boolean(setting.tax_company_enabled);
+  const tipPayoutMethod =
+    setting.tip_payout_method === "check" || setting.tip_payout_method === "cash"
+      ? setting.tip_payout_method
+      : DEFAULT_TIP_PAYOUT_METHOD;
+  const bonusPayoutMethod =
+    setting.bonus_payout_method === "check" ||
+    setting.bonus_payout_method === "cash"
+      ? setting.bonus_payout_method
+      : DEFAULT_BONUS_PAYOUT_METHOD;
+
   return {
     ...setting,
+    bonus_payout_method: bonusPayoutMethod,
+    cash_to_tax_company: Boolean(setting.cash_to_tax_company),
     check_rate: numberValue(setting.check_rate),
     commission_rate: numberValue(setting.commission_rate),
     fixed_pay_amount: numberValue(setting.fixed_pay_amount),
+    tax_company_enabled: taxCompanyEnabled,
     tax_rate: numberValue(setting.tax_rate),
+    tip_payout_method: tipPayoutMethod,
   };
+}
+
+function isTaxCompanyReportableSetting(setting: StaffPayrollSetting) {
+  return (
+    numberValue(setting.tax_rate) > 0 ||
+    Boolean(setting.tax_tips) ||
+    Boolean(setting.cash_to_tax_company) ||
+    (setting.pay_type === "fixed" && Boolean(setting.apply_tax_to_fixed_pay))
+  );
 }
 
 function settingsByStaffId(settings: StaffPayrollSetting[]) {
@@ -676,6 +710,8 @@ function latestSettingForPeriod(input: {
 function serializeSetting(setting: StaffPayrollSetting) {
   return {
     applyTaxToFixedPay: setting.apply_tax_to_fixed_pay,
+    bonusPayoutMethod: setting.bonus_payout_method,
+    cashToTaxCompany: Boolean(setting.cash_to_tax_company),
     checkRate: numberValue(setting.check_rate),
     commissionRate: numberValue(setting.commission_rate),
     effectiveFrom: setting.effective_from,
@@ -688,6 +724,7 @@ function serializeSetting(setting: StaffPayrollSetting) {
     taxCompanyEnabled: setting.tax_company_enabled,
     taxRate: numberValue(setting.tax_rate),
     taxTips: setting.tax_tips,
+    tipPayoutMethod: setting.tip_payout_method,
   };
 }
 
@@ -710,6 +747,8 @@ function serializeInput(input: PayrollPeriodStaffInput | null) {
 function settingSignature(setting: StaffPayrollSetting) {
   return JSON.stringify({
     applyTaxToFixedPay: setting.apply_tax_to_fixed_pay,
+    bonusPayoutMethod: setting.bonus_payout_method,
+    cashToTaxCompany: Boolean(setting.cash_to_tax_company),
     checkRate: numberValue(setting.check_rate),
     commissionRate: numberValue(setting.commission_rate),
     effectiveFrom: setting.effective_from,
@@ -718,6 +757,7 @@ function settingSignature(setting: StaffPayrollSetting) {
     taxCompanyEnabled: setting.tax_company_enabled,
     taxRate: numberValue(setting.tax_rate),
     taxTips: setting.tax_tips,
+    tipPayoutMethod: setting.tip_payout_method,
   });
 }
 
@@ -1359,8 +1399,14 @@ function calculateDailyPayroll(input: {
   const taxWithheld = roundMoney(payTaxWithheld + tipTaxWithheld);
   const checkNet = roundMoney(checkGross - taxWithheld);
   const cashAmount = roundMoney(staffPay - checkGross);
+  const tipCheckAmount =
+    input.setting.tip_payout_method === "check" ? tipAmount : 0;
+  const tipCashAmount =
+    input.setting.tip_payout_method === "cash" ? tipAmount : 0;
 
   return {
+    baseCashAmount: cashAmount,
+    baseCheckAmount: checkNet,
     cashAmount,
     checkGross,
     checkNet,
@@ -1388,6 +1434,8 @@ function calculateDailyPayroll(input: {
     payTaxWithheld,
     setting: input.setting,
     staffPay,
+    tipCashAmount,
+    tipCheckAmount,
     tipTaxWithheld,
     taxWithheld,
   } satisfies DailyPayrollResult;
@@ -1406,9 +1454,9 @@ function calculateSummary(input: {
       (line) => line.tax_company_enabled_snapshot && !line.paystub,
     ).length,
     totalBonus: sum((line) => numberValue(line.bonus_amount)),
-    totalCashPayout: sum((line) => numberValue(line.cash_amount)),
+    totalCashPayout: sum((line) => numberValue(line.final_cash_amount)),
     totalCheckGross: sum((line) => numberValue(line.check_gross)),
-    totalCheckNet: sum((line) => numberValue(line.check_net)),
+    totalCheckNet: sum((line) => numberValue(line.final_check_amount)),
     totalFinalStaffIncome: sum((line) => numberValue(line.final_staff_income)),
     totalPosIncome: sum(
       (line) => numberValue(line.gross_sales) + numberValue(line.tip_amount),
@@ -1419,6 +1467,17 @@ function calculateSummary(input: {
     ),
     totalStaffGrossProduction: sum((line) => numberValue(line.gross_sales)),
     totalTaxWithheld: sum((line) => numberValue(line.tax_withheld)),
+    totalTaxCompanyAmount: sum(
+      (line) =>
+        numberValue(line.tax_company_check_amount) +
+        numberValue(line.tax_company_cash_amount),
+    ),
+    totalTaxCompanyCashAmount: sum((line) =>
+      numberValue(line.tax_company_cash_amount),
+    ),
+    totalTaxCompanyCheckAmount: sum((line) =>
+      numberValue(line.tax_company_check_amount),
+    ),
     totalTip: sum((line) => numberValue(line.tip_amount)),
   } satisfies PayrollSummary;
 }
@@ -1700,7 +1759,7 @@ async function calculateLivePayrollForAuth(
   for (const setting of staffSettings) {
     if (
       settingOverlapsPeriod(setting, period) &&
-      (setting.pay_type === "fixed" || setting.tax_company_enabled)
+      (setting.pay_type === "fixed" || isTaxCompanyReportableSetting(setting))
     ) {
       staffIds.add(setting.staff_id);
     }
@@ -1718,7 +1777,8 @@ async function calculateLivePayrollForAuth(
 
     if (
       staff.is_active &&
-      (latestSetting.pay_type === "fixed" || latestSetting.tax_company_enabled)
+      (latestSetting.pay_type === "fixed" ||
+        isTaxCompanyReportableSetting(latestSetting))
     ) {
       staffIds.add(staff.id);
     }
@@ -1756,14 +1816,18 @@ async function calculateLivePayrollForAuth(
     const commissionRates = new Set<number>();
     const checkRates = new Set<number>();
     const taxRates = new Set<number>();
+    const tipPayoutMethods = new Set<PayrollPayoutMethod>();
+    const cashToTaxCompanyValues = new Set<boolean>();
     let grossSales = 0;
     let tipAmount = 0;
     let staffPay = 0;
     let fixedPayAmount = 0;
     let checkGross = 0;
-    let cashAmount = 0;
+    let baseCheckAmount = 0;
+    let baseCashAmount = 0;
+    let tipCheckAmount = 0;
+    let tipCashAmount = 0;
     let taxWithheld = 0;
-    let checkNet = 0;
 
     for (const businessDate of periodDates) {
       const setting = pickEffectiveSetting({
@@ -1806,6 +1870,8 @@ async function calculateLivePayrollForAuth(
       payTypes.add(setting.pay_type);
       checkRates.add(numberValue(setting.check_rate));
       taxRates.add(numberValue(setting.tax_rate));
+      tipPayoutMethods.add(setting.tip_payout_method);
+      cashToTaxCompanyValues.add(Boolean(setting.cash_to_tax_company));
 
       if (setting.pay_type === "commission") {
         commissionRates.add(numberValue(setting.commission_rate));
@@ -1816,9 +1882,11 @@ async function calculateLivePayrollForAuth(
       staffPay += dailyResult.staffPay;
       fixedPayAmount += numberValue(dailyResult.dailyTotal.fixed_pay_amount_used);
       checkGross += dailyResult.checkGross;
-      cashAmount += dailyResult.cashAmount;
+      baseCheckAmount += dailyResult.baseCheckAmount;
+      baseCashAmount += dailyResult.baseCashAmount;
+      tipCheckAmount += dailyResult.tipCheckAmount;
+      tipCashAmount += dailyResult.tipCashAmount;
       taxWithheld += dailyResult.taxWithheld;
-      checkNet += dailyResult.checkNet;
     }
 
     if (dailyResults.length === 0) {
@@ -1826,6 +1894,8 @@ async function calculateLivePayrollForAuth(
       payTypes.add(latestSetting.pay_type);
       checkRates.add(numberValue(latestSetting.check_rate));
       taxRates.add(numberValue(latestSetting.tax_rate));
+      tipPayoutMethods.add(latestSetting.tip_payout_method);
+      cashToTaxCompanyValues.add(Boolean(latestSetting.cash_to_tax_company));
 
       if (latestSetting.pay_type === "commission") {
         commissionRates.add(numberValue(latestSetting.commission_rate));
@@ -1833,9 +1903,20 @@ async function calculateLivePayrollForAuth(
     }
 
     const bonusAmount = roundMoney(numberValue(input?.bonus_amount));
+    const bonusPayoutMethod = latestSetting.bonus_payout_method;
+    const bonusCheckAmount = bonusPayoutMethod === "check" ? bonusAmount : 0;
+    const bonusCashAmount = bonusPayoutMethod === "cash" ? bonusAmount : 0;
     const taxCompanyEnabled =
-      dailyResults.some((result) => result.setting.tax_company_enabled) ||
-      (dailyResults.length === 0 && latestSetting.tax_company_enabled);
+      dailyResults.some((result) =>
+        isTaxCompanyReportableSetting(result.setting),
+      ) ||
+      (dailyResults.length === 0 &&
+        isTaxCompanyReportableSetting(latestSetting));
+    const latestCashToTaxCompany = Boolean(latestSetting.cash_to_tax_company);
+    const cashToTaxCompany =
+      taxCompanyEnabled &&
+      (cashToTaxCompanyValues.has(true) ||
+        (bonusCashAmount !== 0 && latestCashToTaxCompany));
     const shouldIncludeLine =
       grossSales !== 0 ||
       tipAmount !== 0 ||
@@ -1858,18 +1939,43 @@ async function calculateLivePayrollForAuth(
     const staffCommissionGross = roundMoney(staffPay);
     const roundedCheckGross = roundMoney(checkGross);
     const roundedTaxWithheld = roundMoney(taxWithheld);
-    const roundedCheckNet = roundMoney(checkNet);
-    const roundedCashAmount = roundMoney(cashAmount);
+    const roundedBaseCheckAmount = roundMoney(baseCheckAmount);
+    const roundedBaseCashAmount = roundMoney(baseCashAmount);
     const roundedTip = roundMoney(tipAmount);
-    const finalStaffIncome = roundMoney(
-      roundedCashAmount + roundedCheckNet + roundedTip + bonusAmount,
+    const roundedTipCheckAmount = roundMoney(tipCheckAmount);
+    const roundedTipCashAmount = roundMoney(tipCashAmount);
+    const roundedBonusCheckAmount = roundMoney(bonusCheckAmount);
+    const roundedBonusCashAmount = roundMoney(bonusCashAmount);
+    const finalCheckAmount = roundMoney(
+      roundedBaseCheckAmount + roundedTipCheckAmount + roundedBonusCheckAmount,
     );
+    const finalCashAmount = roundMoney(
+      roundedBaseCashAmount + roundedTipCashAmount + roundedBonusCashAmount,
+    );
+    const finalStaffIncome = roundMoney(finalCheckAmount + finalCashAmount);
+    const earnedAmount = roundMoney(staffCommissionGross + roundedTip + bonusAmount);
+    const taxCompanyCheckAmount = taxCompanyEnabled ? finalCheckAmount : 0;
+    const taxCompanyCashAmount = cashToTaxCompany ? finalCashAmount : 0;
+    const tipPayoutMethodSnapshot =
+      tipPayoutMethods.size === 1
+        ? Array.from(tipPayoutMethods)[0]
+        : latestSetting.tip_payout_method;
+    const settingsUsedSnapshot =
+      dailyResults.length > 0
+        ? dailyResults.map((result) => serializeSetting(result.setting))
+        : [serializeSetting(latestSetting)];
 
     lines.push({
+      base_cash_amount: roundedBaseCashAmount,
+      base_check_amount: roundedBaseCheckAmount,
       bonus_amount: bonusAmount,
-      cash_amount: roundedCashAmount,
+      bonus_cash_amount: roundedBonusCashAmount,
+      bonus_check_amount: roundedBonusCheckAmount,
+      bonus_payout_method_snapshot: bonusPayoutMethod,
+      cash_amount: finalCashAmount,
+      cash_to_tax_company_snapshot: cashToTaxCompany,
       check_gross: roundedCheckGross,
-      check_net: roundedCheckNet,
+      check_net: finalCheckAmount,
       check_number: input?.check_number?.trim() || null,
       check_rate_used: isMixedRate ? 0 : Array.from(checkRates)[0] ?? 0,
       commission_rate_used:
@@ -1880,6 +1986,9 @@ async function calculateLivePayrollForAuth(
       dailyTotals: dailyResults
         .map((result) => result.dailyTotal)
         .sort((left, right) => left.business_date.localeCompare(right.business_date)),
+      earned_amount: earnedAmount,
+      final_cash_amount: finalCashAmount,
+      final_check_amount: finalCheckAmount,
       final_staff_income: finalStaffIncome,
       fixed_pay_amount_used: roundMoney(fixedPayAmount),
       gross_sales: roundMoney(grossSales),
@@ -1893,14 +2002,14 @@ async function calculateLivePayrollForAuth(
       paystub: null,
       period_staff_input_snapshot: serializeInput(input),
       salon_id: auth.salon.id,
-      settings_used_snapshot: dailyResults.map((result) =>
-        serializeSetting(result.setting),
-      ),
+      settings_used_snapshot: settingsUsedSnapshot,
       shop_share: roundMoney(grossSales - staffCommissionGross),
       staff_commission_gross: staffCommissionGross,
       staff_display_name_snapshot: getStaffName(staff, staffId),
       staff_id: staffId,
       staff_legal_name_snapshot: getLegalName(latestSetting),
+      tax_company_cash_amount: taxCompanyCashAmount,
+      tax_company_check_amount: taxCompanyCheckAmount,
       tax_company_enabled_snapshot: taxCompanyEnabled,
       tax_rate_used: isMixedRate ? 0 : Array.from(taxRates)[0] ?? 0,
       tax_withheld: roundedTaxWithheld,
@@ -1909,6 +2018,9 @@ async function calculateLivePayrollForAuth(
         tipAmount: roundedTip,
       }),
       tip_amount: roundedTip,
+      tip_cash_amount: roundedTipCashAmount,
+      tip_check_amount: roundedTipCheckAmount,
+      tip_payout_method_snapshot: tipPayoutMethodSnapshot,
       updated_at: new Date().toISOString(),
     });
   }
@@ -2012,20 +2124,31 @@ async function loadPayrollLines(
 
   return (data ?? []).map((line) => ({
     ...line,
+    base_cash_amount: numberValue(line.base_cash_amount),
+    base_check_amount: numberValue(line.base_check_amount),
     bonus_amount: numberValue(line.bonus_amount),
+    bonus_cash_amount: numberValue(line.bonus_cash_amount),
+    bonus_check_amount: numberValue(line.bonus_check_amount),
     cash_amount: numberValue(line.cash_amount),
     check_gross: numberValue(line.check_gross),
     check_net: numberValue(line.check_net),
     check_rate_used: numberValue(line.check_rate_used),
     commission_rate_used: numberValue(line.commission_rate_used),
+    earned_amount: numberValue(line.earned_amount),
+    final_cash_amount: numberValue(line.final_cash_amount),
+    final_check_amount: numberValue(line.final_check_amount),
     final_staff_income: numberValue(line.final_staff_income),
     fixed_pay_amount_used: numberValue(line.fixed_pay_amount_used),
     gross_sales: numberValue(line.gross_sales),
     shop_share: numberValue(line.shop_share),
     staff_commission_gross: numberValue(line.staff_commission_gross),
+    tax_company_cash_amount: numberValue(line.tax_company_cash_amount),
+    tax_company_check_amount: numberValue(line.tax_company_check_amount),
     tax_rate_used: numberValue(line.tax_rate_used),
     tax_withheld: numberValue(line.tax_withheld),
     tip_amount: numberValue(line.tip_amount),
+    tip_cash_amount: numberValue(line.tip_cash_amount),
+    tip_check_amount: numberValue(line.tip_check_amount),
   }));
 }
 
@@ -2215,6 +2338,9 @@ export function compareLivePayrollToStatement(
     "totalStaffCommissionPayout",
     "totalStaffGrossProduction",
     "totalTaxWithheld",
+    "totalTaxCompanyAmount",
+    "totalTaxCompanyCashAmount",
+    "totalTaxCompanyCheckAmount",
     "totalTip",
   ];
   const shopSummaryFields: Array<keyof PayrollShopSummary> = [
@@ -2237,20 +2363,31 @@ export function compareLivePayrollToStatement(
     "totalStaffObligation",
   ];
   const lineFields: Array<keyof PayrollStaffLine> = [
+    "base_cash_amount",
+    "base_check_amount",
     "bonus_amount",
+    "bonus_cash_amount",
+    "bonus_check_amount",
     "cash_amount",
     "check_gross",
     "check_net",
     "check_rate_used",
     "commission_rate_used",
+    "earned_amount",
+    "final_cash_amount",
+    "final_check_amount",
     "final_staff_income",
     "fixed_pay_amount_used",
     "gross_sales",
     "shop_share",
     "staff_commission_gross",
+    "tax_company_cash_amount",
+    "tax_company_check_amount",
     "tax_rate_used",
     "tax_withheld",
     "tip_amount",
+    "tip_cash_amount",
+    "tip_check_amount",
   ];
   const summaryDifferences: PayrollStatementDifference["summaryDifferences"] = {};
 
@@ -2312,6 +2449,30 @@ export function compareLivePayrollToStatement(
         currentTaxCompany,
         previousTaxCompany,
       );
+    }
+
+    const currentCashToTaxCompany = currentLine?.cash_to_tax_company_snapshot ? 1 : 0;
+    const previousCashToTaxCompany = previousLine?.cash_to_tax_company_snapshot ? 1 : 0;
+
+    if (currentCashToTaxCompany !== previousCashToTaxCompany) {
+      differences.cash_to_tax_company = differenceValue(
+        currentCashToTaxCompany,
+        previousCashToTaxCompany,
+      );
+    }
+
+    if (
+      (currentLine?.tip_payout_method_snapshot ?? "") !==
+      (previousLine?.tip_payout_method_snapshot ?? "")
+    ) {
+      differences.tip_payout_method = differenceValue(1, 0);
+    }
+
+    if (
+      (currentLine?.bonus_payout_method_snapshot ?? "") !==
+      (previousLine?.bonus_payout_method_snapshot ?? "")
+    ) {
+      differences.bonus_payout_method = differenceValue(1, 0);
     }
 
     const currentMixed = currentLine?.is_mixed_rate ? 1 : 0;
@@ -2416,11 +2577,14 @@ function statementSettingsSnapshot(live: PayrollLiveSnapshot) {
   return {
     inputs: live.periodInputs.map(serializeInput),
     lines: live.lines.map((line) => ({
+      bonusPayoutMethod: line.bonus_payout_method_snapshot,
+      cashToTaxCompany: line.cash_to_tax_company_snapshot,
       input: line.period_staff_input_snapshot,
       isMixedRate: line.is_mixed_rate,
       settings: line.settings_used_snapshot,
       staffId: line.staff_id,
       taxCompanyEnabled: line.tax_company_enabled_snapshot,
+      tipPayoutMethod: line.tip_payout_method_snapshot,
     })),
     shopDailyRows: live.shopDailyRows,
     shopSummary: live.shopSummary,
@@ -2476,13 +2640,22 @@ export async function savePayrollStatementFromLivePayroll(input: {
   }
 
   const lineRows = live.lines.map((line) => ({
+    base_cash_amount: line.base_cash_amount,
+    base_check_amount: line.base_check_amount,
     bonus_amount: line.bonus_amount,
+    bonus_cash_amount: line.bonus_cash_amount,
+    bonus_check_amount: line.bonus_check_amount,
+    bonus_payout_method_snapshot: line.bonus_payout_method_snapshot,
     cash_amount: line.cash_amount,
+    cash_to_tax_company_snapshot: line.cash_to_tax_company_snapshot,
     check_gross: line.check_gross,
     check_net: line.check_net,
     check_number: line.check_number,
     check_rate_used: line.check_rate_used,
     commission_rate_used: line.commission_rate_used,
+    earned_amount: line.earned_amount,
+    final_cash_amount: line.final_cash_amount,
+    final_check_amount: line.final_check_amount,
     final_staff_income: line.final_staff_income,
     fixed_pay_amount_used: line.fixed_pay_amount_used,
     gross_sales: line.gross_sales,
@@ -2499,11 +2672,16 @@ export async function savePayrollStatementFromLivePayroll(input: {
     staff_display_name_snapshot: line.staff_display_name_snapshot,
     staff_id: line.staff_id,
     staff_legal_name_snapshot: line.staff_legal_name_snapshot,
+    tax_company_cash_amount: line.tax_company_cash_amount,
+    tax_company_check_amount: line.tax_company_check_amount,
     tax_company_enabled_snapshot: line.tax_company_enabled_snapshot,
     tax_rate_used: line.tax_rate_used,
     tax_withheld: line.tax_withheld,
     tip_allocation_method: line.tip_allocation_method,
     tip_amount: line.tip_amount,
+    tip_cash_amount: line.tip_cash_amount,
+    tip_check_amount: line.tip_check_amount,
+    tip_payout_method_snapshot: line.tip_payout_method_snapshot,
   }));
   const dailyRows = live.lines.flatMap((line) =>
     line.dailyTotals.map((dailyTotal) => ({
@@ -2685,6 +2863,8 @@ export async function updateSalonPayrollSetting(input: {
 
 export async function updateStaffPayrollSetting(input: {
   applyTaxToFixedPay: boolean;
+  bonusPayoutMethod: PayrollPayoutMethod;
+  cashToTaxCompany: boolean;
   checkRate: number;
   commissionRate: number;
   effectiveFrom: string;
@@ -2692,9 +2872,9 @@ export async function updateStaffPayrollSetting(input: {
   legalName: string | null;
   payType: StaffPayType;
   staffId: string;
-  taxCompanyEnabled: boolean;
   taxRate: number;
   taxTips: boolean;
+  tipPayoutMethod: PayrollPayoutMethod;
 }) {
   const auth = await requirePayrollManageContext();
 
@@ -2710,6 +2890,17 @@ export async function updateStaffPayrollSetting(input: {
     throw new Error("Pay type is required.");
   }
 
+  if (input.tipPayoutMethod !== "check" && input.tipPayoutMethod !== "cash") {
+    throw new Error("Tip payout method is required.");
+  }
+
+  if (
+    input.bonusPayoutMethod !== "check" &&
+    input.bonusPayoutMethod !== "cash"
+  ) {
+    throw new Error("Bonus payout method is required.");
+  }
+
   const checkRate = Math.min(100, Math.max(0, numberValue(input.checkRate)));
   const commissionRate = Math.min(
     100,
@@ -2717,6 +2908,12 @@ export async function updateStaffPayrollSetting(input: {
   );
   const taxRate = Math.min(100, Math.max(0, numberValue(input.taxRate)));
   const fixedPayAmount = Math.max(0, roundMoney(numberValue(input.fixedPayAmount)));
+  const cashToTaxCompany = Boolean(input.cashToTaxCompany);
+  const taxCompanyEnabled =
+    taxRate > 0 ||
+    Boolean(input.taxTips) ||
+    cashToTaxCompany ||
+    (input.payType === "fixed" && Boolean(input.applyTaxToFixedPay));
   const { data: staff, error: staffError } = await auth.supabase
     .from("staff")
     .select("id")
@@ -2746,8 +2943,37 @@ export async function updateStaffPayrollSetting(input: {
     throw new Error(existingSettingError.message);
   }
 
+  const settingPayload = {
+    apply_tax_to_fixed_pay: input.applyTaxToFixedPay,
+    bonus_payout_method: input.bonusPayoutMethod,
+    cash_to_tax_company: cashToTaxCompany,
+    check_rate: checkRate,
+    commission_rate: commissionRate,
+    fixed_pay_amount: fixedPayAmount,
+    legal_name: input.legalName?.trim() || null,
+    pay_type: input.payType,
+    tax_company_enabled: taxCompanyEnabled,
+    tax_rate: taxRate,
+    tax_tips: input.taxTips,
+    tip_payout_method: input.tipPayoutMethod,
+  };
+
   if (existingSetting) {
-    throw new Error("A payroll setting already starts on that effective date.");
+    const { data, error } = await auth.supabase
+      .from("staff_payroll_settings")
+      .update(settingPayload)
+      .eq("id", existingSetting.id)
+      .eq("organization_id", auth.organization.id)
+      .eq("salon_id", auth.salon.id)
+      .eq("staff_id", input.staffId)
+      .select(STAFF_PAYROLL_SETTING_SELECT)
+      .single<StaffPayrollSetting>();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
   }
 
   const previousEffectiveTo = addDays(input.effectiveFrom, -1);
@@ -2767,20 +2993,12 @@ export async function updateStaffPayrollSetting(input: {
   const { data, error } = await auth.supabase
     .from("staff_payroll_settings")
     .insert({
-      apply_tax_to_fixed_pay: input.applyTaxToFixedPay,
-      check_rate: checkRate,
-      commission_rate: commissionRate,
+      ...settingPayload,
       effective_from: input.effectiveFrom,
       effective_to: null,
-      fixed_pay_amount: fixedPayAmount,
-      legal_name: input.legalName?.trim() || null,
       organization_id: auth.organization.id,
-      pay_type: input.payType,
       salon_id: auth.salon.id,
       staff_id: input.staffId,
-      tax_company_enabled: input.taxCompanyEnabled,
-      tax_rate: taxRate,
-      tax_tips: input.taxTips,
     })
     .select(STAFF_PAYROLL_SETTING_SELECT)
     .single<StaffPayrollSetting>();

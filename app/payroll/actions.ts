@@ -7,7 +7,11 @@ import {
   updateSalonPayrollSetting,
   updateStaffPayrollSetting,
 } from "@/lib/payroll";
-import type { PayrollCycleType, StaffPayType } from "@/types/payroll";
+import type {
+  PayrollCycleType,
+  PayrollPayoutMethod,
+  StaffPayType,
+} from "@/types/payroll";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -68,6 +72,20 @@ function readPayType(formData: FormData) {
   }
 
   return "commission" satisfies StaffPayType;
+}
+
+function readPayoutMethod(
+  formData: FormData,
+  key: string,
+  fallback: PayrollPayoutMethod,
+) {
+  const value = readString(formData, key);
+
+  if (value === "check" || value === "cash") {
+    return value satisfies PayrollPayoutMethod;
+  }
+
+  return fallback;
 }
 
 function readReturnPath(formData: FormData) {
@@ -170,6 +188,12 @@ export async function saveStaffPayrollSettingWithEffectiveDateAction(
   try {
     await updateStaffPayrollSetting({
       applyTaxToFixedPay: readBoolean(formData, "apply_tax_to_fixed_pay"),
+      bonusPayoutMethod: readPayoutMethod(
+        formData,
+        "bonus_payout_method",
+        "check",
+      ),
+      cashToTaxCompany: readBoolean(formData, "cash_to_tax_company"),
       checkRate: readNumber(formData, "check_rate", 60),
       commissionRate: readNumber(formData, "commission_rate", 60),
       effectiveFrom: readString(formData, "effective_from"),
@@ -177,9 +201,9 @@ export async function saveStaffPayrollSettingWithEffectiveDateAction(
       legalName: readOptionalString(formData, "legal_name"),
       payType: readPayType(formData),
       staffId: readString(formData, "staff_id"),
-      taxCompanyEnabled: readBoolean(formData, "tax_company_enabled"),
       taxRate: readNumber(formData, "tax_rate"),
       taxTips: readBoolean(formData, "tax_tips"),
+      tipPayoutMethod: readPayoutMethod(formData, "tip_payout_method", "cash"),
     });
   } catch (error) {
     const message =

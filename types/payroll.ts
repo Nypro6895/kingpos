@@ -14,6 +14,7 @@ export const PAYROLL_RUN_STATUSES = [
   "needs_review",
 ] as const;
 export const STAFF_PAY_TYPES = ["commission", "fixed"] as const;
+export const PAYROLL_PAYOUT_METHODS = ["check", "cash"] as const;
 export const TIP_ALLOCATION_METHODS = [
   "prorated",
   "manual",
@@ -24,6 +25,7 @@ export const TIP_ALLOCATION_METHODS = [
 export type PayrollCycleType = (typeof PAYROLL_CYCLE_TYPES)[number];
 export type PayrollRunStatus = (typeof PAYROLL_RUN_STATUSES)[number];
 export type StaffPayType = (typeof STAFF_PAY_TYPES)[number];
+export type PayrollPayoutMethod = (typeof PAYROLL_PAYOUT_METHODS)[number];
 export type TipAllocationMethod = (typeof TIP_ALLOCATION_METHODS)[number];
 
 export type PayrollPeriodPreset =
@@ -55,6 +57,8 @@ export type SalonPayrollSetting = {
 
 export type StaffPayrollSetting = {
   apply_tax_to_fixed_pay: boolean;
+  bonus_payout_method: PayrollPayoutMethod;
+  cash_to_tax_company: boolean;
   check_rate: number;
   commission_rate: number;
   created_at: string;
@@ -70,6 +74,7 @@ export type StaffPayrollSetting = {
   tax_company_enabled: boolean;
   tax_rate: number;
   tax_tips: boolean;
+  tip_payout_method: PayrollPayoutMethod;
   updated_at: string;
 };
 
@@ -114,15 +119,24 @@ export type PayrollRun = {
 export type PayrollStatement = PayrollRun;
 
 export type PayrollStaffLine = {
+  base_cash_amount: number;
+  base_check_amount: number;
   bonus_amount: number;
+  bonus_cash_amount: number;
+  bonus_check_amount: number;
+  bonus_payout_method_snapshot: PayrollPayoutMethod;
   cash_amount: number;
+  cash_to_tax_company_snapshot: boolean;
   check_gross: number;
   check_net: number;
   check_number: string | null;
   check_rate_used: number;
   commission_rate_used: number;
   created_at: string;
+  earned_amount: number;
   final_staff_income: number;
+  final_cash_amount: number;
+  final_check_amount: number;
   fixed_pay_amount_used: number;
   gross_sales: number;
   id: string;
@@ -140,10 +154,15 @@ export type PayrollStaffLine = {
   staff_id: string;
   staff_legal_name_snapshot: string | null;
   tax_company_enabled_snapshot: boolean;
+  tax_company_cash_amount: number;
+  tax_company_check_amount: number;
   tax_rate_used: number;
   tax_withheld: number;
   tip_allocation_method: TipAllocationMethod;
   tip_amount: number;
+  tip_cash_amount: number;
+  tip_check_amount: number;
+  tip_payout_method_snapshot: PayrollPayoutMethod;
   updated_at: string;
 };
 
@@ -219,6 +238,9 @@ export type PayrollSummary = {
   totalStaffCommissionPayout: number;
   totalStaffGrossProduction: number;
   totalTaxWithheld: number;
+  totalTaxCompanyAmount: number;
+  totalTaxCompanyCashAmount: number;
+  totalTaxCompanyCheckAmount: number;
   totalTip: number;
 };
 
