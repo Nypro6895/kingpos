@@ -115,6 +115,47 @@ function redirectAfterPayrollMutation(returnPath: string): never {
   redirect(returnPath);
 }
 
+export type PayrollStaffInputAutosaveState = {
+  message: string | null;
+  savedAt: string | null;
+  status: "idle" | "saved" | "error";
+};
+
+export async function autosavePayrollPeriodStaffInputAction(
+  _state: PayrollStaffInputAutosaveState,
+  formData: FormData,
+): Promise<PayrollStaffInputAutosaveState> {
+  try {
+    await updatePayrollPeriodStaffInput({
+      bonusAmount: readNumber(formData, "bonus_amount"),
+      checkNumber: readOptionalString(formData, "check_number"),
+      cycleType: readCycleType(formData),
+      endDate: readString(formData, "period_end"),
+      note: readOptionalString(formData, "note"),
+      staffId: readString(formData, "staff_id"),
+      startDate: readString(formData, "period_start"),
+    });
+  } catch (error) {
+    return {
+      message:
+        error instanceof Error
+          ? error.message
+          : "Payroll staff input could not be saved.",
+      savedAt: null,
+      status: "error",
+    };
+  }
+
+  revalidatePath("/payroll");
+  revalidatePath("/payroll/tax-company");
+
+  return {
+    message: null,
+    savedAt: new Date().toISOString(),
+    status: "saved",
+  };
+}
+
 export async function savePayrollStatementAction(formData: FormData) {
   const returnPath = readReturnPath(formData);
 

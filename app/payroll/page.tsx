@@ -1,10 +1,10 @@
 import {
   markLatestPayrollStatementPaidAction,
-  savePayrollPeriodStaffInputAction,
   savePayrollStatementAction,
   saveSalonPayrollScheduleAction,
 } from "@/app/payroll/actions";
 import { PayrollScheduleForm } from "@/app/payroll/payroll-schedule-form";
+import { StaffIncomeAutosaveInputs } from "@/app/payroll/staff-income-autosave-inputs";
 import { ShopIncomeDailyTable } from "@/app/payroll/shop-income-daily-table";
 import { StaffPayrollSettingInlineEdit } from "@/app/payroll/staff-payroll-setting-inline-edit";
 import {
@@ -555,51 +555,12 @@ function statusBadgeClass(kind: string) {
   return "border-zinc-200 bg-zinc-50 text-zinc-700";
 }
 
-function taxModeLabel(taxed: boolean) {
-  return taxed ? "Tax" : "No tax";
-}
-
 function taxLineRateLabel(line: PayrollStaffLineWithDailyTotals) {
   if (line.is_mixed_rate && line.tax_withheld !== 0) {
     return "Mixed rate";
   }
 
   return formatPercent(line.tax_rate_used);
-}
-
-function firstSnapshotRecord(snapshot: unknown) {
-  const value = Array.isArray(snapshot) ? snapshot[0] : snapshot;
-
-  if (value && typeof value === "object") {
-    return value as Record<string, unknown>;
-  }
-
-  return null;
-}
-
-function snapshotPayoutMethod(
-  value: unknown,
-  fallback: PayrollStaffLineWithDailyTotals["tip_payout_method_snapshot"],
-) {
-  return value === "check" || value === "cash" ? value : fallback;
-}
-
-function dailyTipPayoutMethod(
-  dailyTotal: PayrollStaffDailyTotal,
-  line: PayrollStaffLineWithDailyTotals,
-) {
-  const snapshot = firstSnapshotRecord(dailyTotal.settings_used_snapshot);
-  return snapshotPayoutMethod(snapshot?.tipPayoutMethod, line.tip_payout_method_snapshot);
-}
-
-function dailyTipTaxed(
-  dailyTotal: PayrollStaffDailyTotal,
-  line: PayrollStaffLineWithDailyTotals,
-) {
-  const snapshot = firstSnapshotRecord(dailyTotal.settings_used_snapshot);
-  return typeof snapshot?.taxTips === "boolean"
-    ? snapshot.taxTips
-    : line.tax_tips_snapshot;
 }
 
 function dailyCommissionGross(dailyTotal: PayrollStaffDailyTotal) {
@@ -618,36 +579,22 @@ function dailyCommissionGross(dailyTotal: PayrollStaffDailyTotal) {
   return 0;
 }
 
-function DailyTipAmount({
-  amount,
+function CompactPayoutLabel({
   method,
   taxed,
 }: {
-  amount: number;
   method: string;
   taxed: boolean;
 }) {
-  if (amount === 0) {
-    return <span>{formatMoney(0)}</span>;
-  }
-
-  return (
-    <span>
-      {formatMoney(amount)}
-      {" \u00b7 "}
-      {formatPayoutMethod(method)}
-      {" \u00b7 "}
-      {taxModeLabel(taxed)}
-    </span>
-  );
-}
-
-function MethodTaxLabel({ method, taxed }: { method: string; taxed: boolean }) {
   return (
     <span className="whitespace-nowrap text-[11px] font-medium text-zinc-500">
       {formatPayoutMethod(method)}
-      {" \u00b7 "}
-      {taxModeLabel(taxed)}
+      {taxed ? (
+        <>
+          {" \u00b7 "}
+          Tax
+        </>
+      ) : null}
     </span>
   );
 }
@@ -656,21 +603,27 @@ function LedgerLine({
   children,
   emphasis = "normal",
   label,
+  width = "wide",
 }: {
   children: ReactNode;
   emphasis?: "normal" | "strong" | "total";
   label: string;
+  width?: "short" | "wide";
 }) {
   const valueClass =
     emphasis === "strong"
-      ? "font-semibold text-zinc-950"
+      ? "text-sm font-semibold text-zinc-950"
       : emphasis === "total"
-        ? "font-medium text-zinc-900"
+        ? "text-[13px] font-semibold text-zinc-900"
         : "font-medium text-zinc-800";
+  const gridClass =
+    width === "short"
+      ? "grid-cols-[54px_100px]"
+      : "grid-cols-[82px_100px]";
 
   return (
-    <div className="grid grid-cols-[78px_minmax(0,1fr)] items-baseline gap-2">
-      <dt className="text-zinc-500">{label}</dt>
+    <div className={`grid ${gridClass} items-baseline gap-2`}>
+      <dt className="text-zinc-500">{label}:</dt>
       <dd className={`min-w-0 text-right tabular-nums ${valueClass}`}>
         {children}
       </dd>
@@ -2203,12 +2156,10 @@ function StaffIncomeTab({
   canManage,
   lines,
   period,
-  returnPath,
 }: {
   canManage: boolean;
   lines: PayrollStaffLineWithDailyTotals[];
   period: PayrollPeriod;
-  returnPath: string;
 }) {
   if (lines.length === 0) {
     return (
@@ -2220,21 +2171,18 @@ function StaffIncomeTab({
 
   return (
     <section className="grid gap-2">
-      {lines.map((line) => {
-        const checkInputId = `check-number-${line.staff_id}`;
-        const bonusInputId = `bonus-amount-${line.staff_id}`;
-
-        return (
-          <form
-            action={savePayrollPeriodStaffInputAction}
-            className="overflow-hidden rounded border border-zinc-200 bg-white text-xs"
-            key={line.staff_id}
-          >
-            <HiddenPeriodFields period={period} returnPath={returnPath} />
-            <input name="staff_id" type="hidden" value={line.staff_id} />
-            <input name="note" type="hidden" defaultValue={line.note ?? ""} />
-
-            <div className="grid gap-0 md:grid-cols-[minmax(150px,0.8fr)_minmax(180px,1fr)_minmax(205px,1.08fr)_minmax(230px,1.18fr)]">
+      <div className="hidden rounded border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 md:grid md:grid-cols-[minmax(145px,0.78fr)_minmax(150px,0.8fr)_minmax(195px,1fr)_minmax(230px,1.1fr)]">
+        <span>Staff</span>
+        <span>Actual Payout</span>
+        <span>Wage / Net Details</span>
+        <span>Tax / Add-ons / Inputs</span>
+      </div>
+      {lines.map((line) => (
+        <section
+          className="overflow-hidden rounded border border-zinc-200 bg-white text-xs"
+          key={line.staff_id}
+        >
+            <div className="grid gap-0 md:grid-cols-[minmax(145px,0.78fr)_minmax(150px,0.8fr)_minmax(195px,1fr)_minmax(230px,1.1fr)]">
               <section className="border-b border-zinc-100 px-3 py-2 md:border-b-0 md:border-r">
                 <p className="truncate text-sm font-semibold text-zinc-950">
                   {line.staff_display_name_snapshot}
@@ -2248,10 +2196,10 @@ function StaffIncomeTab({
 
               <section className="border-b border-zinc-100 px-3 py-2 md:border-b-0 md:border-r">
                 <dl className="grid gap-1">
-                  <LedgerLine emphasis="strong" label="Cash">
+                  <LedgerLine emphasis="strong" label="Cash" width="short">
                     {formatMoney(line.final_cash_amount)}
                   </LedgerLine>
-                  <LedgerLine emphasis="strong" label="Check">
+                  <LedgerLine emphasis="strong" label="Check" width="short">
                     <span
                       className={
                         line.final_check_amount < 0 ? "text-rose-700" : undefined
@@ -2260,7 +2208,7 @@ function StaffIncomeTab({
                       {formatMoney(line.final_check_amount)}
                     </span>
                   </LedgerLine>
-                  <LedgerLine emphasis="total" label="Total">
+                  <LedgerLine emphasis="total" label="Total" width="short">
                     {formatMoney(line.final_staff_income)}
                   </LedgerLine>
                 </dl>
@@ -2274,75 +2222,45 @@ function StaffIncomeTab({
                   <LedgerLine label="Comm Gross">
                     {formatMoney(line.staff_commission_gross)}
                   </LedgerLine>
-                  <LedgerLine label="Tax">
-                    {taxLineRateLabel(line)} {formatMoney(line.tax_withheld)}
-                  </LedgerLine>
-                </dl>
-              </section>
-
-              <section className="px-3 py-2">
-                <dl className="grid gap-1">
                   <LedgerLine label="Cash Net">
                     {formatMoney(line.base_cash_amount)}
                   </LedgerLine>
                   <LedgerLine label="Check Net">
                     {formatMoney(line.check_net)}
                   </LedgerLine>
-                  <LedgerLine label="Tip">
-                    <span>
-                      {formatMoney(line.tip_amount)}
-                      <span className="ml-1">
-                        <MethodTaxLabel
-                          method={line.tip_payout_method_snapshot}
-                          taxed={line.tax_tips_snapshot}
-                        />
-                      </span>
+                </dl>
+              </section>
+
+              <section className="px-3 py-2">
+                <dl className="grid gap-1">
+                  <LedgerLine label="Tax" width="short">
+                    {taxLineRateLabel(line)} {formatMoney(line.tax_withheld)}
+                  </LedgerLine>
+                  <LedgerLine label="Tip" width="short">
+                    <span className="flex items-baseline justify-end gap-1.5">
+                      <span>{formatMoney(line.tip_amount)}</span>
+                      <CompactPayoutLabel
+                        method={line.tip_payout_method_snapshot}
+                        taxed={line.tax_tips_snapshot}
+                      />
                     </span>
                   </LedgerLine>
                 </dl>
+                <div className="mt-1.5">
+                  <StaffIncomeAutosaveInputs
+                    bonusAmount={line.bonus_amount}
+                    bonusPayoutMethod={line.bonus_payout_method_snapshot}
+                    canManage={canManage}
+                    checkNumber={line.check_number}
+                    cycleType={period.cycleType}
+                    note={line.note}
+                    periodEnd={period.endDate}
+                    periodStart={period.startDate}
+                    staffId={line.staff_id}
+                    taxBonus={line.tax_bonus_snapshot}
+                  />
+                </div>
               </section>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-zinc-100 bg-zinc-50 px-3 py-2">
-              <label
-                className="flex items-center gap-2 text-xs text-zinc-500"
-                htmlFor={bonusInputId}
-              >
-                Bonus
-                <input
-                  className="h-8 w-24 rounded border border-zinc-300 bg-white px-2 text-right text-sm font-medium text-zinc-950 outline-none focus:border-zinc-500 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400"
-                  defaultValue={line.bonus_amount.toFixed(2)}
-                  disabled={!canManage}
-                  id={bonusInputId}
-                  min="0"
-                  name="bonus_amount"
-                  step="0.01"
-                  type="number"
-                />
-              </label>
-              <MethodTaxLabel
-                method={line.bonus_payout_method_snapshot}
-                taxed={line.tax_bonus_snapshot}
-              />
-              <label
-                className="flex items-center gap-2 text-xs text-zinc-500"
-                htmlFor={checkInputId}
-              >
-                Check #
-                <input
-                  className="h-8 w-28 rounded border border-zinc-300 bg-white px-2 text-sm font-medium text-zinc-950 outline-none focus:border-zinc-500 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400"
-                  defaultValue={line.check_number ?? ""}
-                  disabled={!canManage}
-                  id={checkInputId}
-                  name="check_number"
-                />
-              </label>
-              <button
-                className="ml-auto rounded border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400"
-                disabled={!canManage}
-              >
-                Save
-              </button>
             </div>
 
             <details className="border-t border-zinc-100 bg-white px-3 py-2">
@@ -2356,55 +2274,27 @@ function StaffIncomeTab({
                       <tr>
                         <th className="py-2 pr-4">Date</th>
                         <th className="py-2 pr-4 text-right">Shop Gross</th>
-                        <th className="py-2 pr-4 text-right">Commission Gross</th>
-                        <th className="py-2 pr-4 text-right">Tip Cash</th>
-                        <th className="py-2 pr-4 text-right">Tip Check</th>
-                        <th className="py-2 pr-4 text-right">Tip Total</th>
+                        <th className="py-2 pr-4 text-right">Comm Gross</th>
+                        <th className="py-2 pr-4 text-right">Tip</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200">
-                      {line.dailyTotals.map((dailyTotal) => {
-                        const tipAmount = Number(dailyTotal.tip_amount);
-                        const tipMethod = dailyTipPayoutMethod(dailyTotal, line);
-                        const tipTaxed = dailyTipTaxed(dailyTotal, line);
-                        const tipCash = tipMethod === "cash" ? tipAmount : 0;
-                        const tipCheck = tipMethod === "check" ? tipAmount : 0;
-
-                        return (
-                          <tr key={dailyTotal.id}>
-                            <td className="py-2 pr-4 text-zinc-700">
-                              {formatDate(dailyTotal.business_date)}
-                            </td>
-                            <td className="py-2 pr-4 text-right text-zinc-900">
-                              {formatMoney(dailyTotal.gross_sales)}
-                            </td>
-                            <td className="py-2 pr-4 text-right text-zinc-900">
-                              {formatMoney(dailyCommissionGross(dailyTotal))}
-                            </td>
-                            <td className="py-2 pr-4 text-right text-zinc-700">
-                              <DailyTipAmount
-                                amount={tipCash}
-                                method="cash"
-                                taxed={tipTaxed}
-                              />
-                            </td>
-                            <td className="py-2 pr-4 text-right text-zinc-700">
-                              <DailyTipAmount
-                                amount={tipCheck}
-                                method="check"
-                                taxed={tipTaxed}
-                              />
-                            </td>
-                            <td className="py-2 pr-4 text-right font-medium text-zinc-900">
-                              <DailyTipAmount
-                                amount={tipAmount}
-                                method={tipMethod}
-                                taxed={tipTaxed}
-                              />
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {line.dailyTotals.map((dailyTotal) => (
+                        <tr key={dailyTotal.id}>
+                          <td className="py-2 pr-4 text-zinc-700">
+                            {formatDate(dailyTotal.business_date)}
+                          </td>
+                          <td className="py-2 pr-4 text-right text-zinc-900">
+                            {formatMoney(dailyTotal.gross_sales)}
+                          </td>
+                          <td className="py-2 pr-4 text-right text-zinc-900">
+                            {formatMoney(dailyCommissionGross(dailyTotal))}
+                          </td>
+                          <td className="py-2 pr-4 text-right font-medium text-zinc-900">
+                            {formatMoney(dailyTotal.tip_amount)}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -2437,9 +2327,8 @@ function StaffIncomeTab({
                 </div>
               ) : null}
             </details>
-          </form>
-        );
-      })}
+        </section>
+      ))}
     </section>
   );
 }
@@ -3034,7 +2923,6 @@ export default async function PayrollPage({ searchParams }: PayrollPageProps) {
           canManage={data.access.canManagePayroll}
           lines={data.live.lines}
           period={data.period}
-          returnPath={returnPath}
         />
       ) : null}
       {activeTab === "shop" && data.access.canViewAllPayroll ? (
