@@ -1,6 +1,5 @@
 import { PaystubUploadControl } from "@/app/payroll/paystub-upload-control";
-import type { PayrollPeriod, PayrollStaffLineWithDailyTotals } from "@/types/payroll";
-import { Fragment } from "react";
+import type { PayrollStaffLineWithDailyTotals } from "@/types/payroll";
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -15,14 +14,6 @@ function formatPercent(value: number) {
 
 function formatPayoutMethod(value: string) {
   return value === "check" ? "Check" : "Cash";
-}
-
-function formatYesNo(value: boolean) {
-  return value ? "Yes" : "No";
-}
-
-function formatOnOff(value: boolean) {
-  return value ? "On" : "Off";
 }
 
 function formatCashReported(line: PayrollStaffLineWithDailyTotals) {
@@ -45,9 +36,9 @@ function firstSettingSnapshot(snapshot: unknown) {
   return null;
 }
 
-function taxFixedLabel(line: PayrollStaffLineWithDailyTotals) {
+function isFixedTaxLine(line: PayrollStaffLineWithDailyTotals) {
   if (line.pay_type_used !== "fixed") {
-    return null;
+    return false;
   }
 
   const snapshot = firstSettingSnapshot(line.settings_used_snapshot);
@@ -56,31 +47,7 @@ function taxFixedLabel(line: PayrollStaffLineWithDailyTotals) {
       ? (snapshot as Record<string, unknown>).applyTaxToFixedPay
       : null;
 
-  if (typeof value !== "boolean") {
-    return "-";
-  }
-
-  return formatYesNo(value);
-}
-
-function reportedTip(line: PayrollStaffLineWithDailyTotals) {
-  return line.tax_tips_snapshot ? line.tip_amount : 0;
-}
-
-function reportedBonus(line: PayrollStaffLineWithDailyTotals) {
-  return line.tax_bonus_snapshot ? line.bonus_amount : 0;
-}
-
-function cashReportedParts(line: PayrollStaffLineWithDailyTotals) {
-  return {
-    bonus: line.tax_bonus_snapshot && line.bonus_payout_method_snapshot === "cash"
-      ? line.bonus_amount
-      : 0,
-    tip: line.tax_tips_snapshot && line.tip_payout_method_snapshot === "cash"
-      ? line.tip_amount
-      : 0,
-    wage: line.cash_to_tax_company_snapshot ? line.base_cash_amount : 0,
-  };
+  return typeof value === "boolean" ? value : false;
 }
 
 function AmountTaxCell({
@@ -98,6 +65,22 @@ function AmountTaxCell({
       <p className="text-xs text-zinc-500">
         {formatPayoutMethod(payoutMethod)} · {taxed ? "Tax" : "No tax"}
       </p>
+    </div>
+  );
+}
+
+function TaxAmountCell({ line }: { line: PayrollStaffLineWithDailyTotals }) {
+  const status =
+    line.tax_withheld !== 0 && line.tax_rate_used === 0 && isFixedTaxLine(line)
+      ? "Fixed tax"
+      : line.is_mixed_rate && line.tax_withheld !== 0 && line.tax_rate_used === 0
+      ? "Mixed rate"
+      : `${formatPercent(line.tax_rate_used)} rate`;
+
+  return (
+    <div className="grid gap-1 text-right">
+      <p className="font-medium text-zinc-950">{formatMoney(line.tax_withheld)}</p>
+      <p className="text-xs text-zinc-500">{status}</p>
     </div>
   );
 }
@@ -126,158 +109,14 @@ function PaystubCell({
   );
 }
 
-function BreakdownSection({
-  rows,
-  title,
-}: {
-  rows: Array<{ label: string; value: string }>;
-  title: string;
-}) {
-  return (
-    <section className="grid gap-2">
-      <h4 className="text-xs font-semibold uppercase text-zinc-500">{title}</h4>
-      <dl className="grid gap-2">
-        {rows.map((row) => (
-          <div className="flex items-baseline justify-between gap-3" key={row.label}>
-            <dt className="text-xs text-zinc-500">{row.label}</dt>
-            <dd className="text-right text-sm font-medium text-zinc-900">
-              {row.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
-}
-
-function StaffBreakdown({
-  line,
-  period,
-}: {
-  line: PayrollStaffLineWithDailyTotals;
-  period: PayrollPeriod;
-}) {
-  const taxFixed = taxFixedLabel(line);
-  const cashParts = cashReportedParts(line);
-  const wageRows = [
-    { label: "Shop gross", value: formatMoney(line.gross_sales) },
-    {
-      label: "Commission rate",
-      value: line.is_mixed_rate ? "Mixed" : formatPercent(line.commission_rate_used),
-    },
-    {
-      label: "Staff commission gross",
-      value: formatMoney(line.staff_commission_gross),
-    },
-    {
-      label: "Check split",
-      value: line.is_mixed_rate ? "Mixed" : formatPercent(line.check_rate_used),
-    },
-    { label: "Wage check gross", value: formatMoney(line.check_gross) },
-    { label: "Wage cash gross", value: formatMoney(line.base_cash_amount) },
-    { label: "Tax cash", value: formatOnOff(line.cash_to_tax_company_snapshot) },
-    {
-      label: "Reported wage gross",
-      value: formatMoney(line.tax_company_reported_wage_gross),
-    },
-    taxFixed ? { label: "Tax fixed", value: taxFixed } : null,
-  ].filter((row): row is { label: string; value: string } => Boolean(row));
-  const tipRows = [
-    { label: "Tip amount", value: formatMoney(line.tip_amount) },
-    { label: "Tip payout", value: formatPayoutMethod(line.tip_payout_method_snapshot) },
-    { label: "Tax tip", value: formatYesNo(line.tax_tips_snapshot) },
-    { label: "Reported tip", value: formatMoney(reportedTip(line)) },
-  ];
-  const bonusRows = [
-    { label: "Bonus amount", value: formatMoney(line.bonus_amount) },
-    {
-      label: "Bonus payout",
-      value: formatPayoutMethod(line.bonus_payout_method_snapshot),
-    },
-    { label: "Tax bonus", value: formatYesNo(line.tax_bonus_snapshot) },
-    { label: "Reported bonus", value: formatMoney(reportedBonus(line)) },
-  ];
-  const taxRows = [
-    { label: "Reported Gross", value: formatMoney(line.tax_company_taxable_gross) },
-    {
-      label: "Reported Gross calculation",
-      value: `${formatMoney(line.tax_company_reported_wage_gross)} + ${formatMoney(
-        reportedTip(line),
-      )} + ${formatMoney(reportedBonus(line))}`,
-    },
-    { label: "Tax rate", value: formatPercent(line.tax_rate_used) },
-    { label: "Tax amount", value: formatMoney(line.tax_withheld) },
-    { label: "Wage Check Net", value: formatMoney(line.base_check_amount) },
-    { label: "Actual Check Paid", value: formatMoney(line.final_check_amount) },
-    { label: "Cash Reported", value: formatCashReported(line) },
-    {
-      label: "Cash reported calculation",
-      value: `${formatMoney(cashParts.wage)} + ${formatMoney(
-        cashParts.tip,
-      )} + ${formatMoney(cashParts.bonus)}`,
-    },
-  ];
-
-  return (
-    <div className="grid gap-4">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <BreakdownSection rows={wageRows} title="Wage calculation" />
-        <BreakdownSection rows={tipRows} title="Tip" />
-        <BreakdownSection rows={bonusRows} title="Bonus" />
-        <BreakdownSection rows={taxRows} title="Tax / check" />
-      </div>
-      {line.dailyTotals.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-xs">
-            <thead className="text-left uppercase text-zinc-500">
-              <tr>
-                <th className="py-2 pr-4">Date</th>
-                <th className="py-2 pr-4 text-right">Shop gross</th>
-                <th className="py-2 pr-4 text-right">Tip</th>
-                <th className="py-2 pr-4">Rate used</th>
-              </tr>
-            </thead>
-            <tbody>
-              {line.dailyTotals.map((dailyTotal) => (
-                <tr key={dailyTotal.id}>
-                  <td className="py-1 pr-4">{dailyTotal.business_date}</td>
-                  <td className="py-1 pr-4 text-right">
-                    {formatMoney(dailyTotal.gross_sales)}
-                  </td>
-                  <td className="py-1 pr-4 text-right">
-                    {formatMoney(dailyTotal.tip_amount)}
-                  </td>
-                  <td className="py-1 pr-4">
-                    {dailyTotal.pay_type_used === "fixed"
-                      ? "Fixed"
-                      : formatPercent(dailyTotal.commission_rate_used ?? 0)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p className="text-xs text-zinc-500">
-          No daily payroll rows for {period.label}.
-        </p>
-      )}
-    </div>
-  );
-}
-
 export function TaxCompanyLinesTable({
   lines,
   payrollRunId,
-  period,
   returnPath,
-  showBreakdown = false,
 }: {
   lines: PayrollStaffLineWithDailyTotals[];
   payrollRunId: string | null;
-  period: PayrollPeriod;
   returnPath: string;
-  showBreakdown?: boolean;
 }) {
   if (lines.length === 0) {
     return (
@@ -306,85 +145,67 @@ export function TaxCompanyLinesTable({
           </thead>
           <tbody className="divide-y divide-zinc-100">
             {lines.map((line) => (
-              <Fragment key={line.staff_id}>
-                <tr className="align-top">
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-zinc-950">
-                      {line.staff_display_name_snapshot}
+              <tr className="align-top" key={line.staff_id}>
+                <td className="px-4 py-3">
+                  <p className="font-medium text-zinc-950">
+                    {line.staff_display_name_snapshot}
+                  </p>
+                  {line.staff_legal_name_snapshot ? (
+                    <p className="text-xs text-zinc-500">
+                      {line.staff_legal_name_snapshot}
                     </p>
-                    {line.staff_legal_name_snapshot ? (
-                      <p className="text-xs text-zinc-500">
-                        {line.staff_legal_name_snapshot}
-                      </p>
-                    ) : (
-                      <p className="text-xs font-medium text-amber-700">
-                        Missing legal name
-                      </p>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right font-semibold text-zinc-950">
-                    {formatMoney(line.tax_company_taxable_gross)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {formatCashReported(line)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <AmountTaxCell
-                      amount={line.tip_amount}
-                      payoutMethod={line.tip_payout_method_snapshot}
-                      taxed={line.tax_tips_snapshot}
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <AmountTaxCell
-                      amount={line.bonus_amount}
-                      payoutMethod={line.bonus_payout_method_snapshot}
-                      taxed={line.tax_bonus_snapshot}
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {formatMoney(line.tax_withheld)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {formatMoney(line.base_check_amount)}
-                  </td>
-                  <td
-                    className={`px-4 py-3 text-right font-semibold ${
-                      line.final_check_amount < 0
-                        ? "text-rose-700"
-                        : "text-zinc-950"
-                    }`}
-                  >
-                    <p>{formatMoney(line.final_check_amount)}</p>
-                    {line.final_check_amount < 0 ? (
-                      <p className="mt-1 text-xs font-medium text-rose-700">
-                        Check amount negative
-                      </p>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-3">
-                    <PaystubCell
-                      line={line}
-                      payrollRunId={payrollRunId}
-                      returnPath={returnPath}
-                    />
-                  </td>
-                </tr>
-                {showBreakdown ? (
-                  <tr>
-                    <td className="bg-zinc-50 px-4 py-3" colSpan={9}>
-                      <details>
-                        <summary className="cursor-pointer text-sm font-medium text-zinc-700">
-                          Breakdown
-                        </summary>
-                        <div className="mt-3">
-                          <StaffBreakdown line={line} period={period} />
-                        </div>
-                      </details>
-                    </td>
-                  </tr>
-                ) : null}
-              </Fragment>
+                  ) : (
+                    <p className="text-xs font-medium text-amber-700">
+                      Missing legal name
+                    </p>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right font-semibold text-zinc-950">
+                  {formatMoney(line.tax_company_taxable_gross)}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {formatCashReported(line)}
+                </td>
+                <td className="px-4 py-3">
+                  <AmountTaxCell
+                    amount={line.tip_amount}
+                    payoutMethod={line.tip_payout_method_snapshot}
+                    taxed={line.tax_tips_snapshot}
+                  />
+                </td>
+                <td className="px-4 py-3">
+                  <AmountTaxCell
+                    amount={line.bonus_amount}
+                    payoutMethod={line.bonus_payout_method_snapshot}
+                    taxed={line.tax_bonus_snapshot}
+                  />
+                </td>
+                <td className="px-4 py-3">
+                  <TaxAmountCell line={line} />
+                </td>
+                <td className="px-4 py-3 text-right">
+                  {formatMoney(line.base_check_amount)}
+                </td>
+                <td
+                  className={`px-4 py-3 text-right font-semibold ${
+                    line.final_check_amount < 0 ? "text-rose-700" : "text-zinc-950"
+                  }`}
+                >
+                  <p>{formatMoney(line.final_check_amount)}</p>
+                  {line.final_check_amount < 0 ? (
+                    <p className="mt-1 text-xs font-medium text-rose-700">
+                      Check amount negative
+                    </p>
+                  ) : null}
+                </td>
+                <td className="px-4 py-3">
+                  <PaystubCell
+                    line={line}
+                    payrollRunId={payrollRunId}
+                    returnPath={returnPath}
+                  />
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>
@@ -403,30 +224,15 @@ export function TaxCompanyCalculationGuide() {
         <div>
           <dt className="font-medium text-zinc-900">Reported Gross</dt>
           <dd>
-            Reported Gross is the total gross amount reported to the tax
-            company. It includes reported wage gross, reported tips, and
-            reported bonus.
-          </dd>
-        </div>
-        <div>
-          <dt className="font-medium text-zinc-900">Reported wage gross</dt>
-          <dd>
-            If Tax cash is On, reported wage gross uses the full staff
-            commission gross. If Tax cash is Off, reported wage gross uses only
-            the check portion after check split.
-          </dd>
-        </div>
-        <div>
-          <dt className="font-medium text-zinc-900">Tax</dt>
-          <dd>
-            Tax is calculated from Reported Gross using the staff tax setting.
+            The total gross amount reported to the tax company. It includes
+            reportable wage amount plus any tip or bonus marked as taxable.
           </dd>
         </div>
         <div>
           <dt className="font-medium text-zinc-900">Cash Reported</dt>
           <dd>
-            Cash Reported shows only cash amounts reported to the tax company.
-            If cash is not reported, it shows N/A.
+            Cash amount reported to the tax company. If cash is not reported,
+            this shows N/A.
           </dd>
         </div>
         <div>
@@ -441,6 +247,13 @@ export function TaxCompanyCalculationGuide() {
           <dd>
             Bonus shows the bonus amount, how it was paid, and whether it is
             included in tax reporting.
+          </dd>
+        </div>
+        <div>
+          <dt className="font-medium text-zinc-900">Tax</dt>
+          <dd>
+            Calculated from Reported Gross using the staff tax setting. The rate
+            or fixed-tax status is shown under the tax amount.
           </dd>
         </div>
         <div>

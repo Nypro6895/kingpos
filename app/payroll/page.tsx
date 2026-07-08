@@ -1472,9 +1472,7 @@ function TaxTab({
       <TaxCompanyLinesTable
         lines={taxLines}
         payrollRunId={payrollRunId}
-        period={period}
         returnPath={returnPath}
-        showBreakdown
       />
       <TaxCompanyCalculationGuide />
     </section>

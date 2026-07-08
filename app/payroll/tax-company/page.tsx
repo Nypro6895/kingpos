@@ -300,7 +300,7 @@ export default async function PayrollTaxCompanyPage({
 
       {hasMissingLegalNames ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          Missing legal name for one or more reportable staff.
+          Some reportable staff are missing legal names.
         </p>
       ) : null}
 
@@ -324,9 +324,7 @@ export default async function PayrollTaxCompanyPage({
       <TaxCompanyLinesTable
         lines={data.lines}
         payrollRunId={payrollRunId}
-        period={data.period}
         returnPath={returnPath}
-        showBreakdown
       />
 
       <TaxCompanyCalculationGuide />
