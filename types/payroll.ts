@@ -95,6 +95,24 @@ export type PayrollPeriodStaffInput = {
   updated_by: string | null;
 };
 
+export type PayrollPeriodStaffInputHistory = {
+  change_type: "input_update" | "correction_request";
+  created_at: string;
+  created_by: string | null;
+  cycle_type: PayrollCycleType;
+  field_changes: Record<string, { current: unknown; previous: unknown }>;
+  id: string;
+  new_value_json: Record<string, unknown>;
+  organization_id: string;
+  payroll_run_id: string | null;
+  period_end: string;
+  period_staff_input_id: string | null;
+  period_start: string;
+  previous_value_json: Record<string, unknown>;
+  salon_id: string;
+  staff_id: string;
+};
+
 export type PayrollRun = {
   correction_snapshot: unknown;
   created_at: string;
@@ -255,6 +273,7 @@ export type PayrollSummary = {
 export type PayrollStaffLineWithDailyTotals = PayrollStaffLine & {
   dailyTotals: PayrollStaffDailyTotal[];
   input: PayrollPeriodStaffInput | null;
+  inputHistory?: PayrollPeriodStaffInputHistory[];
   paystub: PayrollPaystub | null;
 };
 
@@ -390,4 +409,17 @@ export type PayrollShopSummary = {
   tipsPaid: number;
   tips: number;
   totalActualIncome: number | null;
+};
+
+export type PayrollServiceAnalyticsRow = {
+  count: number;
+  revenue: number;
+  serviceId: string;
+  serviceName: string;
+  ticketCount: number;
+};
+
+export type PayrollServiceAnalytics = {
+  rows: PayrollServiceAnalyticsRow[];
+  ticketCount: number;
 };

@@ -251,9 +251,6 @@ export default async function PayrollTaxCompanyPage({
     : "Live Preview - not printed yet";
   const returnPath = getTaxCompanyHref(data.period);
   const payrollRunId = data.latestStatement?.run.id ?? null;
-  const hasMissingLegalNames = data.lines.some(
-    (line) => !line.staff_legal_name_snapshot,
-  );
   const totalWageCheckNet = data.lines.reduce(
     (total, line) => total + line.base_check_amount,
     0,
@@ -295,12 +292,6 @@ export default async function PayrollTaxCompanyPage({
       {params.payroll_error ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
           {params.payroll_error}
-        </p>
-      ) : null}
-
-      {hasMissingLegalNames ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          Some reportable staff are missing legal names.
         </p>
       ) : null}
 

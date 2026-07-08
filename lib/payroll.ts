@@ -16,7 +16,9 @@ import type {
   PayrollPeriodOption,
   PayrollPeriodPreset,
   PayrollPeriodStaffInput,
+  PayrollPeriodStaffInputHistory,
   PayrollPayoutMethod,
+  PayrollServiceAnalytics,
   PayrollShopDailyRow,
   PayrollShopSummary,
   PayrollRun,
@@ -47,6 +49,8 @@ export const STAFF_PAYROLL_SETTING_SELECT =
   "id, organization_id, salon_id, staff_id, legal_name, pay_type, commission_rate, fixed_pay_amount, check_rate, tax_rate, apply_tax_to_fixed_pay, tax_tips, tax_bonus, tax_company_enabled, cash_to_tax_company, tip_payout_method, bonus_payout_method, effective_from, effective_to, created_at, updated_at";
 export const PAYROLL_PERIOD_STAFF_INPUT_SELECT =
   "id, organization_id, salon_id, staff_id, period_start, period_end, cycle_type, check_number, bonus_amount, note, updated_by, created_at, updated_at";
+export const PAYROLL_PERIOD_STAFF_INPUT_HISTORY_SELECT =
+  "id, organization_id, salon_id, staff_id, period_staff_input_id, payroll_run_id, period_start, period_end, cycle_type, change_type, field_changes, previous_value_json, new_value_json, created_by, created_at";
 export const PAYROLL_RUN_SELECT =
   "id, organization_id, salon_id, period_start, period_end, cycle_type, status, version, settings_snapshot, correction_snapshot, generated_at, printed_at, printed_by, locked_at, locked_by, paid_at, paid_by, created_at, updated_at";
 export const PAYROLL_STAFF_LINE_SELECT =
@@ -152,6 +156,16 @@ type DailyClosingRow = {
   other_amount: number;
   report_date: string;
   status: string;
+};
+
+type ServiceAnalyticsTicketItemRow = {
+  id: string;
+  line_total: number;
+  pos_ticket_id: string;
+  quantity: number;
+  service: { id: string; name: string } | null;
+  service_id: string;
+  ticket: { id: string; opened_at: string; status: string } | null;
 };
 
 type DailyEarningAccumulator = {
@@ -967,6 +981,55 @@ async function loadPayrollPeriodStaffInputs(
   }));
 }
 
+function jsonRecord(value: unknown): Record<string, unknown> {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+
+  return {};
+}
+
+function normalizeInputHistory(
+  history: PayrollPeriodStaffInputHistory,
+): PayrollPeriodStaffInputHistory {
+  return {
+    ...history,
+    field_changes: jsonRecord(history.field_changes) as PayrollPeriodStaffInputHistory["field_changes"],
+    new_value_json: jsonRecord(history.new_value_json),
+    previous_value_json: jsonRecord(history.previous_value_json),
+  };
+}
+
+async function loadPayrollPeriodStaffInputHistory(
+  auth: PayrollAuthContext,
+  period: PayrollPeriod,
+) {
+  let query = auth.supabase
+    .from("payroll_period_staff_input_history")
+    .select(PAYROLL_PERIOD_STAFF_INPUT_HISTORY_SELECT)
+    .eq("organization_id", auth.organization.id)
+    .eq("salon_id", auth.salon.id)
+    .eq("period_start", period.startDate)
+    .eq("period_end", period.endDate)
+    .order("created_at", { ascending: false });
+
+  if (
+    !auth.access.canViewAllPayroll &&
+    !auth.access.canViewTaxCompany &&
+    auth.access.linkedStaffId
+  ) {
+    query = query.eq("staff_id", auth.access.linkedStaffId);
+  }
+
+  const { data, error } = await query.returns<PayrollPeriodStaffInputHistory[]>();
+
+  if (error) {
+    return [];
+  }
+
+  return (data ?? []).map(normalizeInputHistory);
+}
+
 function latestSettingsWithStaff(
   staffRows: Staff[],
   settings: StaffPayrollSetting[],
@@ -1622,6 +1685,86 @@ async function loadDailyClosingRows(auth: PayrollAuthContext, period: PayrollPer
   }));
 }
 
+function emptyPayrollServiceAnalytics(): PayrollServiceAnalytics {
+  return {
+    rows: [],
+    ticketCount: 0,
+  };
+}
+
+async function loadPayrollServiceAnalytics(
+  auth: PayrollAuthContext,
+  period: PayrollPeriod,
+): Promise<PayrollServiceAnalytics> {
+  const startBounds = getUtcBoundsForLocalDate(period.startDate, auth.user.timezone);
+  const endBounds = getUtcBoundsForLocalDate(period.endDate, auth.user.timezone);
+  const { data, error } = await auth.supabase
+    .from("pos_ticket_items")
+    .select(
+      "id, pos_ticket_id, service_id, quantity, line_total, service:services(id, name), ticket:pos_tickets!inner(id, opened_at, status)",
+    )
+    .eq("organization_id", auth.organization.id)
+    .eq("salon_id", auth.salon.id)
+    .eq("is_removed", false)
+    .eq("ticket.status", "closed")
+    .gte("ticket.opened_at", startBounds.openedFrom)
+    .lte("ticket.opened_at", endBounds.openedTo)
+    .returns<ServiceAnalyticsTicketItemRow[]>();
+
+  if (error) {
+    return emptyPayrollServiceAnalytics();
+  }
+
+  const ticketIds = new Set<string>();
+  const byService = new Map<
+    string,
+    {
+      count: number;
+      revenue: number;
+      serviceId: string;
+      serviceName: string;
+      ticketIds: Set<string>;
+    }
+  >();
+
+  for (const item of data ?? []) {
+    const serviceId = item.service?.id ?? item.service_id;
+    const entry =
+      byService.get(serviceId) ??
+      {
+        count: 0,
+        revenue: 0,
+        serviceId,
+        serviceName: item.service?.name ?? "Unknown service",
+        ticketIds: new Set<string>(),
+      };
+    const ticketId = item.ticket?.id ?? item.pos_ticket_id;
+
+    entry.count += numberValue(item.quantity);
+    entry.revenue += numberValue(item.line_total);
+    entry.ticketIds.add(ticketId);
+    ticketIds.add(ticketId);
+    byService.set(serviceId, entry);
+  }
+
+  return {
+    rows: Array.from(byService.values())
+      .map((row) => ({
+        count: roundMoney(row.count),
+        revenue: roundMoney(row.revenue),
+        serviceId: row.serviceId,
+        serviceName: row.serviceName,
+        ticketCount: row.ticketIds.size,
+      }))
+      .sort(
+        (left, right) =>
+          numberValue(right.revenue) - numberValue(left.revenue) ||
+          left.serviceName.localeCompare(right.serviceName),
+      ),
+    ticketCount: ticketIds.size,
+  };
+}
+
 function dailyStaffPay(dailyTotal: PayrollStaffDailyTotal) {
   if (dailyTotal.pay_type_used === "fixed") {
     return numberValue(dailyTotal.fixed_pay_amount_used);
@@ -1866,20 +2009,35 @@ async function calculateLivePayrollForAuth(
   auth: PayrollAuthContext,
   period: PayrollPeriod,
 ): Promise<PayrollLiveSnapshot> {
-  const [staffRows, staffSettings, earnings, correctionDeltas, periodInputs] =
+  const [
+    staffRows,
+    staffSettings,
+    earnings,
+    correctionDeltas,
+    periodInputs,
+    inputHistory,
+  ] =
     await Promise.all([
       loadStaffRows(auth),
       loadStaffPayrollSettings(auth),
       loadStaffEarningsForPeriod(auth, period),
       loadFinancialAdjustmentDeltasByStaffDate(auth, period),
       loadPayrollPeriodStaffInputs(auth, period),
+      loadPayrollPeriodStaffInputHistory(auth, period),
     ]);
   const staffById = new Map(staffRows.map((staff) => [staff.id, staff]));
   const settingMap = settingsByStaffId(staffSettings);
   const inputByStaffId = new Map(periodInputs.map((input) => [input.staff_id, input]));
+  const inputHistoryByStaffId = new Map<string, PayrollPeriodStaffInputHistory[]>();
   const dailyEarningsByStaffDate = new Map<string, DailyEarningAccumulator>();
   const hasManualTipByStaffId = new Map<string, boolean>();
   const staffIds = new Set<string>();
+
+  for (const history of inputHistory) {
+    const list = inputHistoryByStaffId.get(history.staff_id) ?? [];
+    list.push(history);
+    inputHistoryByStaffId.set(history.staff_id, list);
+  }
 
   for (const earning of earnings) {
     const staffId = earning.staff_id;
@@ -2191,6 +2349,7 @@ async function calculateLivePayrollForAuth(
       gross_sales: roundMoney(grossSales),
       id: `live-${staffId}`,
       input,
+      inputHistory: inputHistoryByStaffId.get(staffId) ?? [],
       is_mixed_rate: isMixedRate,
       note: input?.note?.trim() || null,
       organization_id: auth.organization.id,
@@ -3628,6 +3787,115 @@ export async function uploadPayrollPaystub(input: {
   };
 }
 
+type StaffInputHistorySnapshot = {
+  bonusAmount: number;
+  checkNumber: string | null;
+  note: string | null;
+};
+
+function staffInputHistorySnapshot(
+  input: PayrollPeriodStaffInput | null,
+): StaffInputHistorySnapshot {
+  return {
+    bonusAmount: roundMoney(numberValue(input?.bonus_amount)),
+    checkNumber: input?.check_number?.trim() || null,
+    note: input?.note?.trim() || null,
+  };
+}
+
+function staffInputFieldChanges(
+  previous: StaffInputHistorySnapshot,
+  current: StaffInputHistorySnapshot,
+) {
+  const changes: PayrollPeriodStaffInputHistory["field_changes"] = {};
+
+  if (moneyChanged(previous.bonusAmount, current.bonusAmount)) {
+    changes.bonus_amount = {
+      current: current.bonusAmount,
+      previous: previous.bonusAmount,
+    };
+  }
+
+  if (previous.checkNumber !== current.checkNumber) {
+    changes.check_number = {
+      current: current.checkNumber,
+      previous: previous.checkNumber,
+    };
+  }
+
+  if (previous.note !== current.note) {
+    changes.note = {
+      current: current.note,
+      previous: previous.note,
+    };
+  }
+
+  return changes;
+}
+
+async function loadLatestProtectedPayrollRun(
+  auth: PayrollAuthContext,
+  period: PayrollPeriod,
+) {
+  const { data, error } = await auth.supabase
+    .from("payroll_runs")
+    .select(PAYROLL_RUN_SELECT)
+    .eq("organization_id", auth.organization.id)
+    .eq("salon_id", auth.salon.id)
+    .eq("period_start", period.startDate)
+    .eq("period_end", period.endDate)
+    .in("status", ["locked", "printed", "paid"])
+    .order("version", { ascending: false })
+    .order("printed_at", { ascending: false })
+    .order("generated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<PayrollRun>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? null;
+}
+
+async function createPayrollPeriodStaffInputHistory(input: {
+  auth: PayrollAuthContext;
+  currentInput: PayrollPeriodStaffInput;
+  period: PayrollPeriod;
+  previousInput: PayrollPeriodStaffInput | null;
+  protectedRun: PayrollRun | null;
+}) {
+  const previous = staffInputHistorySnapshot(input.previousInput);
+  const current = staffInputHistorySnapshot(input.currentInput);
+  const fieldChanges = staffInputFieldChanges(previous, current);
+
+  if (Object.keys(fieldChanges).length === 0) {
+    return;
+  }
+
+  const { error } = await input.auth.supabase
+    .from("payroll_period_staff_input_history")
+    .insert({
+      change_type: input.protectedRun ? "correction_request" : "input_update",
+      created_by: input.auth.user.id,
+      cycle_type: input.period.cycleType,
+      field_changes: fieldChanges,
+      new_value_json: current,
+      organization_id: input.auth.organization.id,
+      payroll_run_id: input.protectedRun?.id ?? null,
+      period_end: input.period.endDate,
+      period_staff_input_id: input.currentInput.id,
+      period_start: input.period.startDate,
+      previous_value_json: previous,
+      salon_id: input.auth.salon.id,
+      staff_id: input.currentInput.staff_id,
+    });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export async function updatePayrollPeriodStaffInput(input: {
   bonusAmount: number;
   checkNumber: string | null;
@@ -3638,7 +3906,11 @@ export async function updatePayrollPeriodStaffInput(input: {
   startDate: string;
 }) {
   const auth = await requirePayrollManageContext();
-  assertDateRange(input.startDate, input.endDate);
+  const period = periodFromDates({
+    cycleType: input.cycleType,
+    endDate: input.endDate,
+    startDate: input.startDate,
+  });
 
   const { data: staff, error: staffError } = await auth.supabase
     .from("staff")
@@ -3656,17 +3928,41 @@ export async function updatePayrollPeriodStaffInput(input: {
     throw new Error("Staff member was not found.");
   }
 
+  const [protectedRun, previousInputResult] = await Promise.all([
+    loadLatestProtectedPayrollRun(auth, period),
+    auth.supabase
+      .from("payroll_period_staff_inputs")
+      .select(PAYROLL_PERIOD_STAFF_INPUT_SELECT)
+      .eq("organization_id", auth.organization.id)
+      .eq("salon_id", auth.salon.id)
+      .eq("staff_id", input.staffId)
+      .eq("period_start", period.startDate)
+      .eq("period_end", period.endDate)
+      .maybeSingle<PayrollPeriodStaffInput>(),
+  ]);
+
+  if (previousInputResult.error) {
+    throw new Error(previousInputResult.error.message);
+  }
+
+  const previousInput = previousInputResult.data
+    ? {
+        ...previousInputResult.data,
+        bonus_amount: numberValue(previousInputResult.data.bonus_amount),
+      }
+    : null;
+
   const { data, error } = await auth.supabase
     .from("payroll_period_staff_inputs")
     .upsert(
       {
         bonus_amount: Math.max(0, roundMoney(numberValue(input.bonusAmount))),
         check_number: input.checkNumber?.trim() || null,
-        cycle_type: input.cycleType,
+        cycle_type: period.cycleType,
         note: input.note?.trim() || null,
         organization_id: auth.organization.id,
-        period_end: input.endDate,
-        period_start: input.startDate,
+        period_end: period.endDate,
+        period_start: period.startDate,
         salon_id: auth.salon.id,
         staff_id: input.staffId,
         updated_by: auth.user.id,
@@ -3679,6 +3975,17 @@ export async function updatePayrollPeriodStaffInput(input: {
   if (error) {
     throw new Error(error.message);
   }
+
+  await createPayrollPeriodStaffInputHistory({
+    auth,
+    currentInput: {
+      ...data,
+      bonus_amount: numberValue(data.bonus_amount),
+    },
+    period,
+    previousInput,
+    protectedRun,
+  });
 
   return data;
 }
@@ -3905,14 +4212,18 @@ export async function getPayrollPageData(input: {
     salonSetting: salonPayrollSetting,
     startDate: input.startDate,
   });
-  const [live, latestStatement, staffRows, staffSettings] = await Promise.all([
-    calculateLivePayrollForAuth(auth, period),
-    loadLatestPayrollSnapshot(auth, period),
-    auth.access.canViewAllPayroll ? loadStaffRows(auth) : Promise.resolve([]),
-    auth.access.canViewAllPayroll
-      ? loadStaffPayrollSettings(auth)
-      : Promise.resolve([]),
-  ]);
+  const [live, latestStatement, staffRows, staffSettings, serviceAnalytics] =
+    await Promise.all([
+      calculateLivePayrollForAuth(auth, period),
+      loadLatestPayrollSnapshot(auth, period),
+      auth.access.canViewAllPayroll ? loadStaffRows(auth) : Promise.resolve([]),
+      auth.access.canViewAllPayroll
+        ? loadStaffPayrollSettings(auth)
+        : Promise.resolve([]),
+      auth.access.canViewAllPayroll
+        ? loadPayrollServiceAnalytics(auth, period)
+        : Promise.resolve(emptyPayrollServiceAnalytics()),
+    ]);
   const difference = compareLivePayrollToStatement(live, latestStatement);
   const taxCompany = await buildTaxCompanyLinesForAuth({
     auth,
@@ -3931,6 +4242,7 @@ export async function getPayrollPageData(input: {
     periodOptions: getPayrollPeriodOptions({ salonSetting: salonPayrollSetting }),
     scheduleSetup: getPayrollScheduleSetup(salonPayrollSetting),
     salonPayrollSetting,
+    serviceAnalytics,
     staffPayrollSettings: latestSettingsWithStaff(staffRows, staffSettings),
     status: getPayrollStatusView(latestStatement, difference),
     taxCompany,
