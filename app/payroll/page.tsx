@@ -6,9 +6,9 @@ import {
   saveStaffPayrollSettingWithEffectiveDateAction,
 } from "@/app/payroll/actions";
 import { PayrollScheduleForm } from "@/app/payroll/payroll-schedule-form";
+import { ShopIncomeDailyTable } from "@/app/payroll/shop-income-daily-table";
 import { getPayrollPageData } from "@/lib/payroll";
 import type {
-  PayrollCorrectionListItem,
   PayrollPeriod,
   PayrollStaffDailyTotal,
   PayrollStaffLineWithDailyTotals,
@@ -56,10 +56,14 @@ const SUMMARY_LABELS: Record<string, string> = {
   overShortTotal: "Over / Short",
   posIncome: "POS income",
   shopShare: "Shop share",
+  shopNetIncome: "Shop net income",
   staffCommissionPay: "Staff Commission Pay",
+  staffNetPay: "Staff pay",
   staffProduction: "Staff production",
   tips: "Tips",
+  tipsPaid: "Tips paid",
   totalActualIncome: "Actual income",
+  totalStaffObligation: "Staff obligation",
   totalBonus: "Bonus",
   totalCashPayout: "Cash payout",
   totalCheckGross: "Check gross",
@@ -264,6 +268,45 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
     <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
       <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
+    </div>
+  );
+}
+
+function ShopIncomeCard({
+  label,
+  subLines,
+  tone = "default",
+  value,
+}: {
+  label: string;
+  subLines: Array<{ label: string; value: string }>;
+  tone?: "default" | "warning";
+  value: string;
+}) {
+  return (
+    <div
+      className={`rounded-lg border bg-white p-4 shadow-sm ${
+        tone === "warning" ? "border-rose-200" : "border-zinc-200"
+      }`}
+    >
+      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+        {label}
+      </p>
+      <p
+        className={`mt-2 text-2xl font-semibold ${
+          tone === "warning" ? "text-rose-700" : "text-zinc-950"
+        }`}
+      >
+        {value}
+      </p>
+      <dl className="mt-3 grid gap-1 text-sm text-zinc-600">
+        {subLines.map((line) => (
+          <div className="flex items-center justify-between gap-3" key={line.label}>
+            <dt>{line.label}</dt>
+            <dd className="font-medium text-zinc-800">{line.value}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }
@@ -823,82 +866,6 @@ function StaffIncomeTab({
   );
 }
 
-function correctionTypeLabel(value: string) {
-  const labels: Record<string, string> = {
-    credit_card_amount: "Credit card correction",
-    daily_closing: "Daily closing adjustment",
-    staff_earning: "Staff earning correction",
-    ticket_correction: "Ticket correction",
-  };
-
-  return labels[value] ?? value.replaceAll("_", " ");
-}
-
-function shopStatusLabel(status: PayrollShopDailyRow["overShortStatus"]) {
-  if (status === "balanced") {
-    return "Balanced";
-  }
-
-  if (status === "over") {
-    return "Over";
-  }
-
-  if (status === "short") {
-    return "Short";
-  }
-
-  return "No closing input";
-}
-
-function shopStatusBadgeClass(status: PayrollShopDailyRow["overShortStatus"]) {
-  if (status === "balanced") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  if (status === "over") {
-    return "border-sky-200 bg-sky-50 text-sky-700";
-  }
-
-  if (status === "short") {
-    return "border-rose-200 bg-rose-50 text-rose-700";
-  }
-
-  return "border-zinc-200 bg-zinc-50 text-zinc-600";
-}
-
-function ShopCorrections({ corrections }: { corrections: PayrollCorrectionListItem[] }) {
-  if (corrections.length === 0) {
-    return <span className="text-zinc-400">-</span>;
-  }
-
-  return (
-    <details>
-      <summary className="cursor-pointer font-medium text-zinc-700">
-        {corrections.length} correction{corrections.length === 1 ? "" : "s"}
-      </summary>
-      <ul className="mt-2 space-y-2 text-xs text-zinc-600">
-        {corrections.map((correction) => (
-          <li key={`${correction.source}-${correction.id}`}>
-            <span className="font-medium text-zinc-800">
-              {correctionTypeLabel(correction.type)}
-            </span>
-            {" - "}
-            {correction.delta === null
-              ? "Audit only"
-              : correction.delta === 0
-                ? "Audit only"
-                : formatMoney(correction.delta)}
-            {" - "}
-            {correction.staffName ?? "Shop"}
-            {" - "}
-            {correction.status}
-          </li>
-        ))}
-      </ul>
-    </details>
-  );
-}
-
 function ShopIncomeTab({
   rows,
   summary,
@@ -906,108 +873,88 @@ function ShopIncomeTab({
   rows: PayrollShopDailyRow[];
   summary: PayrollShopSummary;
 }) {
+  const hasActual = summary.totalActualIncome !== null;
+  const shopNetIsNegative =
+    summary.shopNetIncome !== null && summary.shopNetIncome < 0;
+
   return (
     <section className="grid gap-6">
-      <div className="grid gap-4 md:grid-cols-4">
-        <SummaryCard
-          label="Actual income"
-          value={formatOptionalMoney(summary.totalActualIncome, "No manual input data")}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <ShopIncomeCard
+          label="Total Actual"
+          subLines={[
+            { label: "Cash", value: formatOptionalMoney(summary.cashAmount) },
+            { label: "Card", value: formatOptionalMoney(summary.creditCardAmount) },
+            { label: "Other", value: formatOptionalMoney(summary.otherAmount) },
+          ]}
+          value={formatOptionalMoney(
+            summary.totalActualIncome,
+            "Missing actual input",
+          )}
         />
-        <SummaryCard label="POS income" value={formatMoney(summary.posIncome)} />
-        <SummaryCard
-          label="Manual input"
-          value={formatOptionalMoney(summary.manualInputIncome, "No manual input data")}
+        <ShopIncomeCard
+          label="Total Staff Obligation"
+          subLines={[
+            { label: "Staff Pay", value: formatMoney(summary.staffNetPay) },
+            { label: "Tips Paid", value: formatMoney(summary.tipsPaid) },
+            { label: "Tax Withheld", value: formatMoney(summary.taxWithheld) },
+          ]}
+          value={formatMoney(summary.totalStaffObligation)}
         />
-        <SummaryCard
-          label="Over / Short"
-          value={formatOptionalMoney(summary.overShortTotal, "No manual input data")}
+        <ShopIncomeCard
+          label="Shop Net Income"
+          subLines={[
+            {
+              label: "Actual",
+              value: hasActual ? formatMoney(summary.totalActualIncome ?? 0) : "-",
+            },
+            {
+              label: "Staff Obligation",
+              value: formatMoney(summary.totalStaffObligation),
+            },
+          ]}
+          tone={shopNetIsNegative ? "warning" : "default"}
+          value={formatOptionalMoney(summary.shopNetIncome, "Missing actual input")}
         />
-        <SummaryCard
-          label="Staff Production"
-          value={formatMoney(summary.staffProduction)}
-        />
-        <SummaryCard
-          label="Staff Commission Pay"
-          value={formatMoney(summary.staffCommissionPay)}
-        />
-        <SummaryCard label="Shop share" value={formatMoney(summary.shopShare)} />
-        <SummaryCard label="Tips" value={formatMoney(summary.tips)} />
-        <SummaryCard label="Cash" value={formatOptionalMoney(summary.cashAmount)} />
-        <SummaryCard
-          label="Credit card"
-          value={formatOptionalMoney(summary.creditCardAmount)}
-        />
-        <SummaryCard label="Other" value={formatOptionalMoney(summary.otherAmount)} />
-        <SummaryCard label="Corrections" value={`${summary.correctionCount}`} />
       </div>
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-zinc-200 text-sm">
-            <thead className="bg-zinc-50 text-left text-xs font-semibold uppercase text-zinc-500">
-              <tr>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3 text-right">POS income</th>
-                <th className="px-4 py-3 text-right">Manual input</th>
-                <th className="px-4 py-3 text-right">Over / Short</th>
-                <th className="px-4 py-3 text-right">Staff production</th>
-                <th className="px-4 py-3 text-right">Staff commission pay</th>
-                <th className="px-4 py-3 text-right">Tips</th>
-                <th className="px-4 py-3 text-right">Shop share</th>
-                <th className="px-4 py-3 text-right">Cash</th>
-                <th className="px-4 py-3 text-right">Credit card</th>
-                <th className="px-4 py-3 text-right">Other</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Corrections</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100">
-              {rows.map((row) => (
-                <tr className="align-top" key={row.businessDate}>
-                  <td className="px-4 py-3 font-medium text-zinc-950">
-                    {formatDate(row.businessDate)}
-                  </td>
-                  <td className="px-4 py-3 text-right">{formatMoney(row.posIncome)}</td>
-                  <td className="px-4 py-3 text-right">
-                    {formatOptionalMoney(row.manualInputIncome, "No manual input")}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {formatOptionalMoney(row.difference, "-")}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {formatMoney(row.staffProduction)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {formatMoney(row.staffCommissionPay)}
-                  </td>
-                  <td className="px-4 py-3 text-right">{formatMoney(row.tips)}</td>
-                  <td className="px-4 py-3 text-right">{formatMoney(row.shopShare)}</td>
-                  <td className="px-4 py-3 text-right">
-                    {formatOptionalMoney(row.cashAmount)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {formatOptionalMoney(row.creditCardAmount)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {formatOptionalMoney(row.otherAmount)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full border px-2 py-1 text-xs font-semibold ${shopStatusBadgeClass(
-                        row.overShortStatus,
-                      )}`}
-                    >
-                      {shopStatusLabel(row.overShortStatus)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <ShopCorrections corrections={row.corrections} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <ShopIncomeDailyTable rows={rows} />
+      <section className="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-600 shadow-sm">
+        <h2 className="text-sm font-semibold text-zinc-950">Notes</h2>
+        <dl className="mt-3 grid gap-2">
+          <div>
+            <dt className="font-medium text-zinc-800">Total Actual</dt>
+            <dd>Total money actually collected from daily input: Cash + Card + Other.</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-zinc-800">POS</dt>
+            <dd>Expected collected amount recorded by POS for comparison with Actual.</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-zinc-800">Total Staff Obligation</dt>
+            <dd>Money handled for staff: Staff Pay + Tips Paid + Tax Withheld.</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-zinc-800">Staff Pay</dt>
+            <dd>Net commission or fixed pay after tax withholding.</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-zinc-800">Tips Paid</dt>
+            <dd>Tips paid to staff after optional tip tax withholding.</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-zinc-800">Tax Withheld</dt>
+            <dd>Staff income withheld for IRS. It is not shop profit.</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-zinc-800">Shop Net Income</dt>
+            <dd>Total Actual minus Total Staff Obligation, before future expenses.</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-zinc-800">Corrections</dt>
+            <dd>Only after-close changes are counted here; same-day edits before closing are not.</dd>
+          </div>
+        </dl>
+      </section>
     </section>
   );
 }
@@ -1087,6 +1034,7 @@ function SettingsTab({
                 <th className="px-4 py-3">Rate</th>
                 <th className="px-4 py-3">Check split</th>
                 <th className="px-4 py-3">Tax</th>
+                <th className="px-4 py-3">Tax tips</th>
                 <th className="px-4 py-3">Tax company</th>
                 <th className="px-4 py-3">Effective</th>
                 <th className="px-4 py-3">Edit</th>
@@ -1210,6 +1158,20 @@ function SettingsTab({
                       <td className="px-4 py-3">
                         {isEditing ? (
                           <input
+                            defaultChecked={setting?.tax_tips ?? false}
+                            form={formId}
+                            name="tax_tips"
+                            type="checkbox"
+                          />
+                        ) : setting?.tax_tips ? (
+                          "Yes"
+                        ) : (
+                          "No"
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <input
                             defaultChecked={setting?.tax_company_enabled ?? false}
                             form={formId}
                             name="tax_company_enabled"
@@ -1252,7 +1214,7 @@ function SettingsTab({
                     </tr>
                     {isEditing ? (
                       <tr>
-                        <td className="bg-zinc-50 px-4 py-3" colSpan={8}>
+                        <td className="bg-zinc-50 px-4 py-3" colSpan={9}>
                           <label className="flex max-w-sm flex-col gap-1 text-xs font-medium text-zinc-700">
                             Effective from
                             <input
@@ -1271,7 +1233,7 @@ function SettingsTab({
                       </tr>
                     ) : null}
                     <tr>
-                      <td className="bg-zinc-50 px-4 py-2" colSpan={8}>
+                      <td className="bg-zinc-50 px-4 py-2" colSpan={9}>
                         <details>
                           <summary className="cursor-pointer text-xs font-medium text-zinc-600">
                             History
@@ -1287,6 +1249,7 @@ function SettingsTab({
                                     <th className="py-2 pr-4">Rate</th>
                                     <th className="py-2 pr-4">Check split</th>
                                     <th className="py-2 pr-4">Tax</th>
+                                    <th className="py-2 pr-4">Tax tips</th>
                                     <th className="py-2 pr-4">Tax company</th>
                                   </tr>
                                 </thead>
@@ -1305,6 +1268,9 @@ function SettingsTab({
                                       </td>
                                       <td className="py-1 pr-4">{formatPercent(version.check_rate)}</td>
                                       <td className="py-1 pr-4">{formatPercent(version.tax_rate)}</td>
+                                      <td className="py-1 pr-4">
+                                        {version.tax_tips ? "Yes" : "No"}
+                                      </td>
                                       <td className="py-1 pr-4">
                                         {version.tax_company_enabled ? "Enabled" : "Off"}
                                       </td>

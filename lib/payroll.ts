@@ -42,7 +42,7 @@ export const PAYROLL_PERMISSIONS = {
 export const SALON_PAYROLL_SETTING_SELECT =
   "id, organization_id, salon_id, cycle_type, biweekly_anchor_date, created_at, updated_at";
 export const STAFF_PAYROLL_SETTING_SELECT =
-  "id, organization_id, salon_id, staff_id, legal_name, pay_type, commission_rate, fixed_pay_amount, check_rate, tax_rate, apply_tax_to_fixed_pay, tax_company_enabled, effective_from, effective_to, created_at, updated_at";
+  "id, organization_id, salon_id, staff_id, legal_name, pay_type, commission_rate, fixed_pay_amount, check_rate, tax_rate, apply_tax_to_fixed_pay, tax_tips, tax_company_enabled, effective_from, effective_to, created_at, updated_at";
 export const PAYROLL_PERIOD_STAFF_INPUT_SELECT =
   "id, organization_id, salon_id, staff_id, period_start, period_end, cycle_type, check_number, bonus_amount, note, updated_by, created_at, updated_at";
 export const PAYROLL_RUN_SELECT =
@@ -90,11 +90,15 @@ type StaffEarningRow = {
 };
 
 type FinancialCorrectionRequestRow = {
+  admin_note: string | null;
   business_date: string;
   correction_type: string;
   id: string;
   money_delta: number;
+  old_value_json: unknown;
+  reason: string;
   requested_at: string;
+  requested_by: string;
   requested_value_json: unknown;
   status: string;
   target_id: string | null;
@@ -102,11 +106,14 @@ type FinancialCorrectionRequestRow = {
 };
 
 type FinancialAdjustmentRow = {
+  actual_total_delta: number;
   business_date: string;
   correction_request_id: string | null;
   created_at: string;
+  created_by: string;
   expected_total_delta: number;
   id: string;
+  note: string | null;
   service_delta: number;
   staff_id: string | null;
   target_id: string | null;
@@ -123,14 +130,20 @@ type TicketForAdjustmentRow = {
 
 type TicketAdjustmentRow = {
   action: string;
+  after_snapshot: unknown;
+  before_snapshot: unknown;
   created_at: string;
+  created_by: string;
   id: string;
+  reason: string;
   ticket_id: string;
 };
 
 type DailyClosingRow = {
   cash_amount: number;
+  closed_at: string | null;
   credit_card_amount: number;
+  locked_at: string | null;
   other_amount: number;
   report_date: string;
   status: string;
@@ -147,8 +160,10 @@ type DailyPayrollResult = {
   checkNet: number;
   cashAmount: number;
   dailyTotal: PayrollStaffDailyTotal;
+  payTaxWithheld: number;
   setting: StaffPayrollSetting;
   staffPay: number;
+  tipTaxWithheld: number;
   taxWithheld: number;
 };
 
@@ -576,6 +591,7 @@ function getDefaultStaffPayrollSetting(input: {
     staff_id: input.staffId,
     tax_company_enabled: false,
     tax_rate: DEFAULT_TAX_RATE,
+    tax_tips: false,
     updated_at: now,
   };
 }
@@ -671,6 +687,7 @@ function serializeSetting(setting: StaffPayrollSetting) {
     staffId: setting.staff_id,
     taxCompanyEnabled: setting.tax_company_enabled,
     taxRate: numberValue(setting.tax_rate),
+    taxTips: setting.tax_tips,
   };
 }
 
@@ -700,6 +717,7 @@ function settingSignature(setting: StaffPayrollSetting) {
     payType: setting.pay_type,
     taxCompanyEnabled: setting.tax_company_enabled,
     taxRate: numberValue(setting.tax_rate),
+    taxTips: setting.tax_tips,
   });
 }
 
@@ -1004,6 +1022,45 @@ function extractStaffIdFromCorrectionJson(value: unknown) {
   }
 
   const record = value as Record<string, unknown>;
+  const correctionRows = Array.isArray(record.corrections)
+    ? record.corrections
+    : [];
+  const nestedStaffIds = new Set<string>();
+
+  for (const row of correctionRows) {
+    if (!row || typeof row !== "object") {
+      continue;
+    }
+
+    const correction = row as Record<string, unknown>;
+    const oldValue =
+      correction.oldValue && typeof correction.oldValue === "object"
+        ? (correction.oldValue as Record<string, unknown>)
+        : null;
+    const requestedValue =
+      correction.requestedValue && typeof correction.requestedValue === "object"
+        ? (correction.requestedValue as Record<string, unknown>)
+        : null;
+    const candidates = [
+      correction.staffId,
+      correction.staff_id,
+      oldValue?.staffId,
+      oldValue?.staff_id,
+      requestedValue?.staffId,
+      requestedValue?.staff_id,
+    ];
+
+    for (const candidate of candidates) {
+      if (typeof candidate === "string" && candidate) {
+        nestedStaffIds.add(candidate);
+      }
+    }
+  }
+
+  if (nestedStaffIds.size === 1) {
+    return Array.from(nestedStaffIds)[0];
+  }
+
   const candidates = [
     record.staffId,
     record.staff_id,
@@ -1019,6 +1076,68 @@ function extractStaffIdFromCorrectionJson(value: unknown) {
   }
 
   return null;
+}
+
+function summarizeCorrectionValue(value: unknown) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    return value || null;
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return `${value}`;
+  }
+
+  try {
+    const serialized = JSON.stringify(value);
+    return serialized.length > 120 ? `${serialized.slice(0, 117)}...` : serialized;
+  } catch {
+    return null;
+  }
+}
+
+function serializeCorrectionValue(value: unknown) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    return value || null;
+  }
+
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return null;
+  }
+}
+
+async function loadPayrollUserLabels(auth: PayrollAuthContext, userIds: string[]) {
+  const ids = Array.from(new Set(userIds.filter(Boolean)));
+
+  if (ids.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const { data, error } = await auth.supabase
+    .from("users")
+    .select("id, display_name, email")
+    .in("id", ids)
+    .returns<Array<{ display_name: string | null; email: string | null; id: string }>>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return new Map(
+    (data ?? []).map((user) => [
+      user.id,
+      user.display_name ?? user.email ?? user.id,
+    ]),
+  );
 }
 
 async function loadTicketAdjustmentsForPeriod(
@@ -1049,7 +1168,9 @@ async function loadTicketAdjustmentsForPeriod(
   const ticketById = new Map(ticketRows.map((ticket) => [ticket.id, ticket]));
   const { data: adjustments, error: adjustmentsError } = await auth.supabase
     .from("pos_ticket_adjustments")
-    .select("id, ticket_id, action, created_at")
+    .select(
+      "id, ticket_id, action, reason, before_snapshot, after_snapshot, created_by, created_at",
+    )
     .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .in(
@@ -1062,20 +1183,33 @@ async function loadTicketAdjustmentsForPeriod(
     throw new Error(adjustmentsError.message);
   }
 
+  const userLabels = await loadPayrollUserLabels(
+    auth,
+    (adjustments ?? []).map((adjustment) => adjustment.created_by),
+  );
+
   return (adjustments ?? []).map<PayrollCorrectionListItem>((adjustment) => {
     const ticket = ticketById.get(adjustment.ticket_id);
 
     return {
       businessDate: ticket?.opened_at.slice(0, 10) ?? period.startDate,
+      changedById: adjustment.created_by,
       correctionDate: adjustment.created_at,
+      correctionRequestId: null,
       delta: null,
       id: adjustment.id,
+      changedByName: userLabels.get(adjustment.created_by) ?? adjustment.created_by,
+      newValue: summarizeCorrectionValue(adjustment.after_snapshot),
+      oldValue: summarizeCorrectionValue(adjustment.before_snapshot),
+      rawNewValue: serializeCorrectionValue(adjustment.after_snapshot),
+      rawOldValue: serializeCorrectionValue(adjustment.before_snapshot),
       source: "ticket_adjustment",
       staffId: null,
       staffName: null,
       status: "recorded",
       ticketId: adjustment.ticket_id,
       ticketNumber: ticket?.ticket_number ?? null,
+      note: adjustment.reason,
       type: adjustment.action,
     };
   });
@@ -1090,7 +1224,7 @@ async function loadPayrollCorrections(
     auth.supabase
       .from("pos_financial_correction_requests")
       .select(
-        "id, business_date, target_type, target_id, correction_type, requested_value_json, money_delta, status, requested_at",
+        "id, business_date, target_type, target_id, correction_type, old_value_json, requested_value_json, money_delta, reason, admin_note, status, requested_by, requested_at",
       )
       .eq("organization_id", auth.organization.id)
       .eq("salon_id", auth.salon.id)
@@ -1100,7 +1234,7 @@ async function loadPayrollCorrections(
     auth.supabase
       .from("pos_financial_adjustments")
       .select(
-        "id, business_date, correction_request_id, target_type, target_id, staff_id, ticket_id, service_delta, tip_delta, expected_total_delta, created_at",
+        "id, business_date, correction_request_id, target_type, target_id, staff_id, ticket_id, service_delta, tip_delta, expected_total_delta, actual_total_delta, note, created_by, created_at",
       )
       .eq("organization_id", auth.organization.id)
       .eq("salon_id", auth.salon.id)
@@ -1118,15 +1252,27 @@ async function loadPayrollCorrections(
     throw new Error(adjustmentsResult.error.message);
   }
 
+  const userLabels = await loadPayrollUserLabels(auth, [
+    ...(requestsResult.data ?? []).map((request) => request.requested_by),
+    ...(adjustmentsResult.data ?? []).map((adjustment) => adjustment.created_by),
+  ]);
   const requests = (requestsResult.data ?? []).map<PayrollCorrectionListItem>(
     (request) => {
       const staffId = extractStaffIdFromCorrectionJson(request.requested_value_json);
 
       return {
         businessDate: request.business_date,
+        changedById: request.requested_by,
         correctionDate: request.requested_at,
+        correctionRequestId: request.id,
         delta: numberValue(request.money_delta),
         id: request.id,
+        changedByName: userLabels.get(request.requested_by) ?? request.requested_by,
+        note: request.admin_note?.trim() || request.reason?.trim() || null,
+        newValue: summarizeCorrectionValue(request.requested_value_json),
+        oldValue: summarizeCorrectionValue(request.old_value_json),
+        rawNewValue: serializeCorrectionValue(request.requested_value_json),
+        rawOldValue: serializeCorrectionValue(request.old_value_json),
         source: "financial_request",
         staffId,
         staffName: staffId ? getStaffName(staffById.get(staffId), staffId) : null,
@@ -1140,16 +1286,24 @@ async function loadPayrollCorrections(
   const adjustments = (adjustmentsResult.data ?? []).map<PayrollCorrectionListItem>(
     (adjustment) => {
       const delta = roundMoney(
-        numberValue(adjustment.service_delta) +
-          numberValue(adjustment.tip_delta) +
+        numberValue(adjustment.actual_total_delta) +
           numberValue(adjustment.expected_total_delta),
       );
 
       return {
         businessDate: adjustment.business_date,
+        changedById: adjustment.created_by,
         correctionDate: adjustment.created_at,
+        correctionRequestId: adjustment.correction_request_id,
         delta,
         id: adjustment.id,
+        changedByName:
+          userLabels.get(adjustment.created_by) ?? adjustment.created_by,
+        note: adjustment.note?.trim() || null,
+        newValue: null,
+        oldValue: null,
+        rawNewValue: null,
+        rawOldValue: null,
         source: "financial_adjustment",
         staffId: adjustment.staff_id,
         staffName: adjustment.staff_id
@@ -1198,7 +1352,11 @@ function calculateDailyPayroll(input: {
     input.setting.pay_type === "fixed" && !input.setting.apply_tax_to_fixed_pay
       ? 0
       : checkGross;
-  const taxWithheld = roundMoney((taxableCheckGross * taxRate) / 100);
+  const payTaxWithheld = roundMoney((taxableCheckGross * taxRate) / 100);
+  const tipTaxWithheld = input.setting.tax_tips
+    ? roundMoney((tipAmount * taxRate) / 100)
+    : 0;
+  const taxWithheld = roundMoney(payTaxWithheld + tipTaxWithheld);
   const checkNet = roundMoney(checkGross - taxWithheld);
   const cashAmount = roundMoney(staffPay - checkGross);
 
@@ -1227,8 +1385,10 @@ function calculateDailyPayroll(input: {
       tip_amount: tipAmount,
       updated_at: new Date().toISOString(),
     },
+    payTaxWithheld,
     setting: input.setting,
     staffPay,
+    tipTaxWithheld,
     taxWithheld,
   } satisfies DailyPayrollResult;
 }
@@ -1266,7 +1426,9 @@ function calculateSummary(input: {
 async function loadDailyClosingRows(auth: PayrollAuthContext, period: PayrollPeriod) {
   const { data, error } = await auth.supabase
     .from("pos_daily_closings")
-    .select("report_date, cash_amount, credit_card_amount, other_amount, status")
+    .select(
+      "report_date, cash_amount, credit_card_amount, other_amount, status, closed_at, locked_at",
+    )
     .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .gte("report_date", period.startDate)
@@ -1297,6 +1459,62 @@ function dailyStaffPay(dailyTotal: PayrollStaffDailyTotal) {
   );
 }
 
+function settingSnapshotBoolean(
+  snapshot: unknown,
+  key: "applyTaxToFixedPay" | "taxTips",
+  fallback: boolean,
+) {
+  if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) {
+    return fallback;
+  }
+
+  const value = (snapshot as Record<string, unknown>)[key];
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function dailyTaxBreakdown(dailyTotal: PayrollStaffDailyTotal) {
+  const staffPay = dailyStaffPay(dailyTotal);
+  const checkGross = roundMoney(
+    (staffPay * numberValue(dailyTotal.check_rate_used)) / 100,
+  );
+  const taxRate = numberValue(dailyTotal.tax_rate_used);
+  const applyTaxToFixedPay = settingSnapshotBoolean(
+    dailyTotal.settings_used_snapshot,
+    "applyTaxToFixedPay",
+    true,
+  );
+  const taxTips = settingSnapshotBoolean(
+    dailyTotal.settings_used_snapshot,
+    "taxTips",
+    false,
+  );
+  const taxableStaffPay =
+    dailyTotal.pay_type_used === "fixed" && !applyTaxToFixedPay ? 0 : checkGross;
+  const payTaxWithheld = roundMoney((taxableStaffPay * taxRate) / 100);
+  const tipTaxWithheld = taxTips
+    ? roundMoney((numberValue(dailyTotal.tip_amount) * taxRate) / 100)
+    : 0;
+
+  return {
+    payTaxWithheld,
+    tipTaxWithheld,
+    totalTaxWithheld: roundMoney(payTaxWithheld + tipTaxWithheld),
+  };
+}
+
+function correctionHappenedAfterClosing(
+  correction: PayrollCorrectionListItem,
+  closing: DailyClosingRow | undefined,
+) {
+  const cutoff = closing?.closed_at ?? closing?.locked_at;
+
+  if (!cutoff) {
+    return false;
+  }
+
+  return correction.correctionDate > cutoff;
+}
+
 function buildShopDailyRows(input: {
   closingRows: DailyClosingRow[];
   corrections: PayrollCorrectionListItem[];
@@ -1306,6 +1524,14 @@ function buildShopDailyRows(input: {
   const correctionsByDate = new Map<string, PayrollCorrectionListItem[]>();
 
   for (const correction of input.corrections) {
+    const closing = input.closingRows.find(
+      (row) => row.report_date === correction.businessDate,
+    );
+
+    if (!correctionHappenedAfterClosing(correction, closing)) {
+      continue;
+    }
+
     const list = correctionsByDate.get(correction.businessDate) ?? [];
     list.push(correction);
     correctionsByDate.set(correction.businessDate, list);
@@ -1317,6 +1543,10 @@ function buildShopDailyRows(input: {
     let tips = 0;
     let shopShare = 0;
     let staffCommissionPay = 0;
+    let staffNetPay = 0;
+    let staffObligation = 0;
+    let taxWithheld = 0;
+    let tipsPaid = 0;
 
     for (const line of input.lines) {
       for (const dailyTotal of line.dailyTotals) {
@@ -1325,9 +1555,15 @@ function buildShopDailyRows(input: {
         }
 
         const staffPay = dailyStaffPay(dailyTotal);
+        const taxBreakdown = dailyTaxBreakdown(dailyTotal);
+        const tipAmount = numberValue(dailyTotal.tip_amount);
         staffProduction += numberValue(dailyTotal.gross_sales);
-        tips += numberValue(dailyTotal.tip_amount);
+        tips += tipAmount;
         staffCommissionPay += staffPay;
+        staffNetPay += staffPay - taxBreakdown.payTaxWithheld;
+        tipsPaid += tipAmount - taxBreakdown.tipTaxWithheld;
+        taxWithheld += taxBreakdown.totalTaxWithheld;
+        staffObligation += staffPay + tipAmount;
         shopShare += numberValue(dailyTotal.gross_sales) - staffPay;
       }
     }
@@ -1364,8 +1600,16 @@ function buildShopDailyRows(input: {
       overShortStatus,
       posIncome,
       shopShare: roundMoney(shopShare),
+      shopNetIncome:
+        manualInputIncome === null
+          ? null
+          : roundMoney(manualInputIncome - staffObligation),
       staffCommissionPay: roundMoney(staffCommissionPay),
+      staffNetPay: roundMoney(staffNetPay),
+      staffObligation: roundMoney(staffObligation),
       staffProduction: roundMoney(staffProduction),
+      taxWithheld: roundMoney(taxWithheld),
+      tipsPaid: roundMoney(tipsPaid),
       tips: roundMoney(tips),
     } satisfies PayrollShopDailyRow;
   });
@@ -1392,8 +1636,13 @@ function buildShopSummary(rows: PayrollShopDailyRow[]) {
     overShortTotal: nullableSum((row) => row.difference),
     posIncome: sum((row) => row.posIncome),
     shopShare: sum((row) => row.shopShare),
+    shopNetIncome: nullableSum((row) => row.shopNetIncome),
     staffCommissionPay: sum((row) => row.staffCommissionPay),
+    staffNetPay: sum((row) => row.staffNetPay),
+    totalStaffObligation: sum((row) => row.staffObligation),
     staffProduction: sum((row) => row.staffProduction),
+    taxWithheld: sum((row) => row.taxWithheld),
+    tipsPaid: sum((row) => row.tipsPaid),
     tips: sum((row) => row.tips),
     totalActualIncome: nullableSum((row) => row.actualIncome),
   } satisfies PayrollShopSummary;
@@ -1977,10 +2226,15 @@ export function compareLivePayrollToStatement(
     "overShortTotal",
     "posIncome",
     "shopShare",
+    "shopNetIncome",
     "staffCommissionPay",
+    "staffNetPay",
     "staffProduction",
+    "taxWithheld",
     "tips",
+    "tipsPaid",
     "totalActualIncome",
+    "totalStaffObligation",
   ];
   const lineFields: Array<keyof PayrollStaffLine> = [
     "bonus_amount",
@@ -2440,6 +2694,7 @@ export async function updateStaffPayrollSetting(input: {
   staffId: string;
   taxCompanyEnabled: boolean;
   taxRate: number;
+  taxTips: boolean;
 }) {
   const auth = await requirePayrollManageContext();
 
@@ -2525,6 +2780,7 @@ export async function updateStaffPayrollSetting(input: {
       staff_id: input.staffId,
       tax_company_enabled: input.taxCompanyEnabled,
       tax_rate: taxRate,
+      tax_tips: input.taxTips,
     })
     .select(STAFF_PAYROLL_SETTING_SELECT)
     .single<StaffPayrollSetting>();

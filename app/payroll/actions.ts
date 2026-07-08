@@ -179,6 +179,7 @@ export async function saveStaffPayrollSettingWithEffectiveDateAction(
       staffId: readString(formData, "staff_id"),
       taxCompanyEnabled: readBoolean(formData, "tax_company_enabled"),
       taxRate: readNumber(formData, "tax_rate"),
+      taxTips: readBoolean(formData, "tax_tips"),
     });
   } catch (error) {
     const message =

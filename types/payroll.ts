@@ -69,6 +69,7 @@ export type StaffPayrollSetting = {
   staff_id: string;
   tax_company_enabled: boolean;
   tax_rate: number;
+  tax_tips: boolean;
   updated_at: string;
 };
 
@@ -185,9 +186,17 @@ export type PayrollPaystub = {
 
 export type PayrollCorrectionListItem = {
   businessDate: string;
+  changedById: string | null;
   correctionDate: string;
+  correctionRequestId: string | null;
   delta: number | null;
   id: string;
+  changedByName: string | null;
+  note: string | null;
+  newValue: string | null;
+  oldValue: string | null;
+  rawNewValue: string | null;
+  rawOldValue: string | null;
   source: "financial_request" | "financial_adjustment" | "ticket_adjustment";
   staffId: string | null;
   staffName: string | null;
@@ -292,8 +301,13 @@ export type PayrollShopDailyRow = {
   overShortStatus: "balanced" | "short" | "over" | "no_closing_input";
   posIncome: number;
   shopShare: number;
+  shopNetIncome: number | null;
   staffCommissionPay: number;
+  staffNetPay: number;
+  staffObligation: number;
   staffProduction: number;
+  taxWithheld: number;
+  tipsPaid: number;
   tips: number;
 };
 
@@ -306,8 +320,13 @@ export type PayrollShopSummary = {
   overShortTotal: number | null;
   posIncome: number;
   shopShare: number;
+  shopNetIncome: number | null;
   staffCommissionPay: number;
+  staffNetPay: number;
+  totalStaffObligation: number;
   staffProduction: number;
+  taxWithheld: number;
+  tipsPaid: number;
   tips: number;
   totalActualIncome: number | null;
 };
