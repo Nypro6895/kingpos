@@ -1,8 +1,9 @@
 import { getCurrentSalonCustomer } from "@/lib/customers";
 import { hasPermission } from "@/lib/permissions";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import type { Customer } from "@/types/customer";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 type CustomerDetailPageProps = {
   params: Promise<{
@@ -48,11 +49,8 @@ function StatusBadge({ customer }: { customer: Customer }) {
 
 export default async function CustomerDetailPage({ params }: CustomerDetailPageProps) {
   const { customerId } = await params;
+  await requireSalonManagePageContext(`/customers/${customerId}`);
   const { context, customer } = await getCurrentSalonCustomer(customerId);
-
-  if (!context.user) {
-    redirect("/login");
-  }
 
   if (!customer) {
     notFound();

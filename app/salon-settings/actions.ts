@@ -43,6 +43,10 @@ export async function updateSalonSettings(formData: FormData) {
       postal_code: readOptionalString(formData, "postal_code"),
       country: readOptionalString(formData, "country"),
       business_description: readOptionalString(formData, "business_description"),
+      allow_staff_applications:
+        formData.get("allow_staff_applications") === "on",
+      public_discovery_enabled:
+        formData.get("public_discovery_enabled") === "on",
     });
   } catch (error) {
     redirectWithError(
@@ -51,5 +55,6 @@ export async function updateSalonSettings(formData: FormData) {
   }
 
   revalidatePath("/salon-settings");
+  revalidatePath("/explore");
   redirect("/salon-settings");
 }

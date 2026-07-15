@@ -13,6 +13,8 @@ export type Location = {
   state: string | null;
   postal_code: string | null;
   country: string;
+  latitude: number | null;
+  longitude: number | null;
   status: LocationStatus;
   created_at: string;
   updated_at: string;

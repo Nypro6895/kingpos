@@ -3,6 +3,7 @@ import {
   TaxCompanyLinesTable,
 } from "@/app/payroll/tax-company-table";
 import { getPayrollTaxCompanyData } from "@/lib/payroll";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import type { PayrollPeriod } from "@/types/payroll";
 import Link from "next/link";
 
@@ -217,7 +218,7 @@ function PeriodSelector({
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</p>
+      <p className="text-xs font-medium uppercase text-zinc-500">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
     </div>
   );
@@ -227,6 +228,7 @@ export default async function PayrollTaxCompanyPage({
   searchParams,
 }: PayrollTaxCompanyPageProps) {
   const params = await searchParams;
+  await requireSalonManagePageContext("/payroll/tax-company");
   let data: Awaited<ReturnType<typeof getPayrollTaxCompanyData>>;
 
   try {

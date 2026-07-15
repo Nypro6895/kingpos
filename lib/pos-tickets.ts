@@ -1,6 +1,9 @@
 import "server-only";
 
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { POS_PAYMENT_SELECT } from "@/lib/pos-payments";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
@@ -81,6 +84,10 @@ export type PosTicketStaffOption = Staff & {
 };
 
 function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+  if (!isSalonManageContext(context)) {
+    throw new Error("Open POS tickets from a Manage Salon workspace.");
+  }
+
   if (!context.currentOrganization) {
     throw new Error("Create an organization before managing POS tickets.");
   }

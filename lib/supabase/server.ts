@@ -106,7 +106,7 @@ function readTokenFromCookieValue(value: string) {
   return decodedValue || null;
 }
 
-async function getAccessTokenFromRequest() {
+export async function getAccessTokenFromRequest() {
   const authorization = (await headers()).get("authorization");
   const bearerPrefix = "Bearer ";
 

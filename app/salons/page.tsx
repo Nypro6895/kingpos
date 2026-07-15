@@ -1,10 +1,11 @@
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import {
-  getCurrentBusinessContext,
   isOwnerMembership,
   LOCATION_SELECT,
-  setCurrentSalonCookie,
+  setCurrentManageSalonCookie,
+  setCurrentOrganizationCookie,
 } from "@/lib/current-context";
+import { requireOrganizationPageContext } from "@/lib/route-context-guards";
 import { setCurrentSalon } from "@/app/salons/actions";
 import type { Location } from "@/types/location";
 import { revalidatePath } from "next/cache";
@@ -40,7 +41,7 @@ async function createSalon(formData: FormData) {
   "use server";
 
   const supabase = await createAuthenticatedSupabaseServerClient();
-  const context = await getCurrentBusinessContext();
+  const context = await requireOrganizationPageContext("/salons");
 
   if (!supabase || !context.user) {
     redirect("/login");
@@ -93,7 +94,8 @@ async function createSalon(formData: FormData) {
   }
 
   if (context.salons.length === 0 && salon) {
-    await setCurrentSalonCookie(salon.id);
+    await setCurrentOrganizationCookie(organization.id);
+    await setCurrentManageSalonCookie(salon.id);
   }
 
   revalidatePath("/salons");
@@ -260,12 +262,8 @@ function SalonList({
 export default async function SalonsPage({ searchParams }: SalonsPageProps) {
   const [{ error }, context] = await Promise.all([
     searchParams,
-    getCurrentBusinessContext(),
+    requireOrganizationPageContext("/salons"),
   ]);
-
-  if (!context.user) {
-    redirect("/login");
-  }
 
   const membership = context.currentMembership;
   const organization = context.currentOrganization;
@@ -321,21 +319,9 @@ export default async function SalonsPage({ searchParams }: SalonsPageProps) {
           </Link>
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href="/customers"
+            href="/roles"
           >
-            Customers
-          </Link>
-          <Link
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href="/staff"
-          >
-            Staff
-          </Link>
-          <Link
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href="/services"
-          >
-            Services
+            Roles
           </Link>
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"

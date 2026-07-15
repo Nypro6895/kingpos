@@ -1,6 +1,9 @@
 import "server-only";
 
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { requirePermission } from "@/lib/permissions";
 import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
@@ -24,6 +27,10 @@ export const POS_DESK_DEFAULTS = {
 } as const;
 
 function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+  if (!isSalonManageContext(context)) {
+    throw new Error("Open POS Desk from a Manage Salon workspace.");
+  }
+
   if (!context.currentOrganization) {
     throw new Error("Create an organization before using POS Desk.");
   }

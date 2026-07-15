@@ -1,6 +1,9 @@
 import "server-only";
 
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
@@ -606,6 +609,10 @@ async function requireReportContext(
     throw new Error("You must be logged in to view reports.");
   }
 
+  if (!isSalonManageContext(resolvedContext)) {
+    throw new Error("Open reports from a Manage Salon workspace.");
+  }
+
   if (!resolvedContext.currentOrganization) {
     throw new Error("Create an organization before viewing reports.");
   }
@@ -636,6 +643,10 @@ async function requireFinancialContext(context?: CurrentBusinessContext) {
 
   if (!resolvedContext.user) {
     throw new Error("You must be logged in.");
+  }
+
+  if (!isSalonManageContext(resolvedContext)) {
+    throw new Error("Open financial records from a Manage Salon workspace.");
   }
 
   if (!resolvedContext.currentOrganization) {
@@ -1629,6 +1640,10 @@ export async function assertFinancialDateMutable(
 
   if (!resolvedContext.user) {
     throw new Error("You must be logged in.");
+  }
+
+  if (!isSalonManageContext(resolvedContext)) {
+    throw new Error("Open financial records from a Manage Salon workspace.");
   }
 
   if (!resolvedContext.currentOrganization) {

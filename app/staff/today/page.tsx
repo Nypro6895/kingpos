@@ -4,8 +4,8 @@ import {
   STAFF_WORKDAY_STATUS_LABELS,
 } from "@/lib/staff-workdays";
 import { hasPermission } from "@/lib/permissions";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import type { StaffWorkdayStatus } from "@/types/staff-workday";
-import { redirect } from "next/navigation";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -54,22 +54,8 @@ function StatusBadge({
 }
 
 export default async function StaffTodayPage() {
-  const { context, staff, today } = await getCurrentSalonStaffTodayBoard();
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentSalon) {
-    return (
-      <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">Staff Today</h1>
-        <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-          Please select a salon first.
-        </p>
-      </main>
-    );
-  }
+  const context = await requireSalonManagePageContext("/staff/today");
+  const { staff, today } = await getCurrentSalonStaffTodayBoard(context);
 
   const canViewStaff = await hasPermission("staff.view", context);
 

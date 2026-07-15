@@ -3,6 +3,7 @@ import {
   isMissingRoleIdColumnError,
   roleFromLegacyRole,
   ROLE_SELECT,
+  setCurrentOrganizationCookie,
 } from "@/lib/current-context";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import type { OrganizationMembershipWithOrganization } from "@/types/membership";
@@ -140,7 +141,9 @@ async function createOrganization(formData: FormData) {
     );
   }
 
+  await setCurrentOrganizationCookie(organization.id);
   revalidatePath("/organizations");
+  revalidatePath("/", "layout");
   redirect("/organizations");
 }
 

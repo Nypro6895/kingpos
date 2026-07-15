@@ -61,5 +61,6 @@ export async function createService(formData: FormData) {
   }
 
   revalidatePath("/services");
+  revalidatePath("/explore");
   redirect("/services");
 }

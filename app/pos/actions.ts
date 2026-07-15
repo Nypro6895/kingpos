@@ -3,7 +3,11 @@
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  getRouteForInvalidSalonContext,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { requirePermission } from "@/lib/permissions";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import { getTurnType, parsePosAmountInput } from "@/lib/pos-desk-amounts";
@@ -233,6 +237,10 @@ async function requirePosDeskMutationContext() {
 
   if (!supabase || !context.user) {
     redirect("/login");
+  }
+
+  if (!isSalonManageContext(context)) {
+    redirect(getRouteForInvalidSalonContext(context));
   }
 
   if (!context.currentOrganization) {

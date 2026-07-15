@@ -16,6 +16,7 @@ import {
   MarkPaidButton,
 } from "@/app/payroll/payroll-mismatch-controls";
 import { getPayrollPageData } from "@/lib/payroll";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import {
   buildPayrollOverviewAnalytics,
   type OverviewServiceRankMode,
@@ -2803,6 +2804,7 @@ function SettingsTab({
 
 export default async function PayrollPage({ searchParams }: PayrollPageProps) {
   const params = await searchParams;
+  await requireSalonManagePageContext("/payroll");
   let data: Awaited<ReturnType<typeof getPayrollPageData>>;
 
   try {

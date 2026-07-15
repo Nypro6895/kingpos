@@ -1,10 +1,18 @@
 import "server-only";
 
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  getCurrentStaffBusinessContext,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { getUtcBoundsForLocalDate, isDateInputValue } from "@/lib/daily-pos-report";
 import { hasPermission } from "@/lib/permissions";
 import { calculateTaxCompanyReporting } from "@/lib/payroll-tax-company";
 import { STAFF_SELECT } from "@/lib/staff";
+import {
+  CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE,
+  resolveStaffAccountForSalon,
+} from "@/lib/staff-account";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type {
@@ -88,6 +96,78 @@ type PayrollAuthContext = {
   user: NonNullable<CurrentBusinessContext["user"]>;
 };
 
+export type StaffPayrollPortalDailyRow = {
+  businessDate: string;
+  commissionGross: number;
+  id: string;
+  shopGross: number;
+  tipAmount: number;
+};
+
+export type StaffPayrollPortalData = {
+  context: CurrentBusinessContext;
+  dailyRows: StaffPayrollPortalDailyRow[];
+  latestStatement: PayrollStatementSnapshot | null;
+  line: PayrollStaffLineWithDailyTotals | null;
+  paystub: PayrollPaystub | null;
+  period: PayrollPeriod | null;
+  periodOptions: PayrollPeriodOption[];
+  salonPayrollSetting: SalonPayrollSetting | null;
+  staff: Staff | null;
+  status: PayrollStatusView;
+};
+
+export type StaffAnalysisPortalTrendPoint = {
+  businessDate: string;
+  bonusAmount: number;
+  cashNet: number;
+  checkNet: number;
+  income: number;
+  taxAmount: number;
+};
+
+export type StaffAnalysisPortalServiceRow = {
+  count: number;
+  revenue: number;
+  serviceId: string;
+  serviceName: string;
+  ticketCount: number;
+};
+
+export type StaffAnalysisPortalWorkPerformance = {
+  averageTicket: number;
+  bigTurns: number;
+  serviceTotal: number;
+  smallTurns: number;
+  ticketCount: number;
+  tipAmount: number;
+  topServices: StaffAnalysisPortalServiceRow[];
+  totalTurns: number;
+};
+
+export type StaffAnalysisPortalComparison = {
+  currentIncome: number;
+  currentLabel: string;
+  deltaAmount: number;
+  deltaPercent: number | null;
+  previousIncome: number;
+  previousLabel: string;
+};
+
+export type StaffAnalysisPortalData = {
+  comparison: StaffAnalysisPortalComparison | null;
+  context: CurrentBusinessContext;
+  incomeLine: PayrollStaffLineWithDailyTotals | null;
+  incomeTrend: StaffAnalysisPortalTrendPoint[];
+  period: PayrollPeriod | null;
+  periodOptions: PayrollPeriodOption[];
+  previousIncomeLine: PayrollStaffLineWithDailyTotals | null;
+  previousPeriod: PayrollPeriod | null;
+  salonPayrollSetting: SalonPayrollSetting | null;
+  staff: Staff | null;
+  workPerformance: StaffAnalysisPortalWorkPerformance;
+};
+
 type StaffEarningRow = {
   manual_tip_amount: number | null;
   service_total: number;
@@ -166,6 +246,25 @@ type ServiceAnalyticsTicketItemRow = {
   service: { id: string; name: string } | null;
   service_id: string;
   ticket: { id: string; opened_at: string; status: string } | null;
+};
+
+type StaffAnalysisEarningRow = {
+  big_turn_count: number;
+  service_total: number;
+  small_turn_count: number;
+  ticket: { id: string; status: string } | null;
+  ticket_id: string;
+  tip_amount: number;
+};
+
+type StaffAnalysisTicketItemRow = {
+  id: string;
+  line_total: number;
+  pos_ticket_id: string;
+  quantity: number;
+  service: { id: string; name: string } | null;
+  service_id: string;
+  ticket: { id: string; status: string } | null;
 };
 
 type DailyEarningAccumulator = {
@@ -800,24 +899,31 @@ async function getLinkedCurrentStaffId(
   context: CurrentBusinessContext,
   supabase: SupabaseClient,
 ) {
-  if (!context.user?.auth_user_id || !context.currentOrganization || !context.currentSalon) {
+  if (!context.user || !context.currentOrganization || !context.currentSalon) {
     return null;
   }
 
-  const { data, error } = await supabase
-    .from("staff")
-    .select("id")
-    .eq("organization_id", context.currentOrganization.id)
-    .eq("salon_id", context.currentSalon.id)
-    .eq("user_id", context.user.auth_user_id)
-    .limit(1)
-    .maybeSingle<{ id: string }>();
+  const resolution = await resolveStaffAccountForSalon({
+    context,
+    supabase,
+  });
 
-  if (error) {
-    throw new Error(error.message);
+  if (resolution.status === "found") {
+    return resolution.staff.id;
   }
 
-  return data?.id ?? null;
+  if (resolution.status === "multiple") {
+    console.error("Multiple payroll staff account matches found", {
+      source: resolution.source,
+      staffIds: resolution.matches.map((member) => member.id),
+      salonId: context.currentSalon.id,
+      organizationId: context.currentOrganization.id,
+      userId: context.user.id,
+    });
+    throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);
+  }
+
+  return null;
 }
 
 async function requirePayrollContext(
@@ -827,6 +933,10 @@ async function requirePayrollContext(
 
   if (!context.user) {
     throw new Error("You must be logged in to view payroll.");
+  }
+
+  if (!isSalonManageContext(context)) {
+    throw new Error("Open payroll from a Manage Salon workspace.");
   }
 
   if (!context.currentOrganization) {
@@ -853,7 +963,7 @@ async function requirePayrollContext(
   const canViewAllPayroll = canManagePayroll || canViewPayroll;
   const canOpen = options.taxCompanyOnly
     ? canViewAllPayroll || canViewTaxCompany
-    : canViewAllPayroll || Boolean(linkedStaffId);
+    : canViewAllPayroll;
 
   if (!canOpen) {
     throw new Error("You do not have permission to view payroll.");
@@ -871,6 +981,92 @@ async function requirePayrollContext(
     salon: context.currentSalon,
     supabase,
     user: context.user,
+  };
+}
+
+async function resolveCurrentStaffForPayrollPortal(
+  context: CurrentBusinessContext,
+  supabase: SupabaseClient,
+) {
+  if (!context.user || !context.currentOrganization || !context.currentSalon) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("staff")
+    .select(STAFF_SELECT)
+    .eq("organization_id", context.currentOrganization.id)
+    .eq("salon_id", context.currentSalon.id)
+    .eq("account_user_id", context.user.id)
+    .eq("is_active", true)
+    .limit(2)
+    .returns<Staff[]>();
+
+  if (error) {
+    console.error("Supabase resolve current staff payroll portal failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      organizationId: context.currentOrganization.id,
+      salonId: context.currentSalon.id,
+      userId: context.user.id,
+    });
+    throw new Error(error.message);
+  }
+
+  if ((data ?? []).length > 1) {
+    console.error("Multiple payroll portal staff account matches found", {
+      staffIds: (data ?? []).map((member) => member.id),
+      salonId: context.currentSalon.id,
+      organizationId: context.currentOrganization.id,
+      userId: context.user.id,
+    });
+    throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);
+  }
+
+  return data?.[0] ?? null;
+}
+
+async function getCurrentStaffPayrollPortalAuthContext() {
+  const context = await getCurrentStaffBusinessContext();
+
+  if (!context.user) {
+    return { auth: null, context, staff: null };
+  }
+
+  if (!context.currentOrganization || !context.currentSalon) {
+    return { auth: null, context, staff: null };
+  }
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  const staff = await resolveCurrentStaffForPayrollPortal(context, supabase);
+
+  if (!staff) {
+    return { auth: null, context, staff: null };
+  }
+
+  return {
+    auth: {
+      access: {
+        canManagePayroll: false,
+        canViewAllPayroll: false,
+        canViewTaxCompany: false,
+        linkedStaffId: staff.id,
+      },
+      context,
+      organization: context.currentOrganization,
+      salon: context.currentSalon,
+      supabase,
+      user: context.user,
+    } satisfies PayrollAuthContext,
+    context,
+    staff,
   };
 }
 
@@ -1461,15 +1657,16 @@ function calculateDailyPayroll(input: {
     input.setting.pay_type === "fixed" ? roundMoney(input.fixedDailyAmount) : 0;
   const staffPay = roundMoney(commissionPay + fixedPay);
   const checkGross = roundMoney((staffPay * checkRate) / 100);
-  const cashAmount = roundMoney(staffPay - checkGross);
+  const cashGross = roundMoney(staffPay - checkGross);
   const taxCash = Boolean(input.setting.cash_to_tax_company);
+  const taxableStaffPay =
+    input.setting.pay_type === "fixed" && !input.setting.apply_tax_to_fixed_pay
+      ? 0
+      : staffPay;
   const reporting = calculateTaxCompanyReporting({
     bonusAmount: 0,
     bonusPayoutMethod: input.setting.bonus_payout_method,
-    staffCommissionGross:
-      input.setting.pay_type === "fixed" && !input.setting.apply_tax_to_fixed_pay
-        ? 0
-        : staffPay,
+    staffCommissionGross: taxableStaffPay,
     taxBonus: false,
     taxCash,
     taxRate,
@@ -1479,7 +1676,7 @@ function calculateDailyPayroll(input: {
     wageCashGross:
       input.setting.pay_type === "fixed" && !input.setting.apply_tax_to_fixed_pay
         ? 0
-        : cashAmount,
+        : cashGross,
     wageCheckGross:
       input.setting.pay_type === "fixed" && !input.setting.apply_tax_to_fixed_pay
         ? 0
@@ -1489,12 +1686,22 @@ function calculateDailyPayroll(input: {
     (reporting.reportedWageGross * taxRate) / 100,
   );
   const taxWithheld = reporting.taxAmount;
-  const checkNet = reporting.wageCheckNet;
+  const tipTaxWithheld = input.setting.tax_tips
+    ? roundMoney(taxWithheld - payTaxWithheld)
+    : 0;
+  const regularNet = roundMoney(staffPay - payTaxWithheld);
+  const checkNet = roundMoney((regularNet * checkRate) / 100);
+  const cashNet = roundMoney(regularNet - checkNet);
+  const tipNet = roundMoney(tipAmount - tipTaxWithheld);
+  const tipCheckAmount =
+    input.setting.tip_payout_method === "check" ? tipNet : 0;
+  const tipCashAmount =
+    input.setting.tip_payout_method === "cash" ? tipNet : 0;
 
   return {
-    baseCashAmount: cashAmount,
+    baseCashAmount: cashNet,
     baseCheckAmount: checkNet,
-    cashAmount,
+    cashAmount: cashNet,
     checkGross,
     checkNet,
     dailyTotal: {
@@ -1524,8 +1731,8 @@ function calculateDailyPayroll(input: {
     taxCompanyCashReported: reporting.cashReported,
     taxCompanyReportedWageGross: reporting.reportedWageGross,
     taxCompanyTaxableGross: reporting.taxableGross,
-    tipCashAmount: reporting.tipPaidByCash,
-    tipCheckAmount: reporting.tipPaidByCheck,
+    tipCashAmount,
+    tipCheckAmount,
     taxWithheld,
   } satisfies DailyPayrollResult;
 }
@@ -1850,7 +2057,9 @@ function dailyTaxBreakdown(dailyTotal: PayrollStaffDailyTotal) {
   const payTaxWithheld = roundMoney(
     (reporting.reportedWageGross * taxRate) / 100,
   );
-  const tipTaxWithheld = roundMoney((reporting.reportedTip * taxRate) / 100);
+  const tipTaxWithheld = taxTips
+    ? roundMoney(reporting.taxAmount - payTaxWithheld)
+    : 0;
 
   return {
     payTaxWithheld,
@@ -2137,6 +2346,7 @@ async function calculateLivePayrollForAuth(
     let staffPay = 0;
     let fixedPayAmount = 0;
     let checkGross = 0;
+    let baseCheckAmount = 0;
     let baseCashAmount = 0;
     let tipCheckAmount = 0;
     let tipCashAmount = 0;
@@ -2199,6 +2409,7 @@ async function calculateLivePayrollForAuth(
       staffPay += dailyResult.staffPay;
       fixedPayAmount += numberValue(dailyResult.dailyTotal.fixed_pay_amount_used);
       checkGross += dailyResult.checkGross;
+      baseCheckAmount += dailyResult.baseCheckAmount;
       baseCashAmount += dailyResult.baseCashAmount;
       tipCheckAmount += dailyResult.tipCheckAmount;
       tipCashAmount += dailyResult.tipCashAmount;
@@ -2262,7 +2473,7 @@ async function calculateLivePayrollForAuth(
     const staffCommissionGross = roundMoney(staffPay);
     const roundedCheckGross = roundMoney(checkGross);
     const roundedTaxWithheld = roundMoney(taxWithheld + bonusTaxWithheld);
-    const roundedBaseCheckAmount = roundMoney(roundedCheckGross - roundedTaxWithheld);
+    const roundedBaseCheckAmount = roundMoney(baseCheckAmount);
     const roundedBaseCashAmount = roundMoney(baseCashAmount);
     const roundedTip = roundMoney(tipAmount);
     const roundedTipCheckAmount = roundMoney(tipCheckAmount);
@@ -2278,10 +2489,10 @@ async function calculateLivePayrollForAuth(
         (taxBonus && bonusPayoutMethod === "cash" ? bonusAmount : 0),
     );
     const finalCheckAmount = roundMoney(
-      roundedCheckGross +
+      roundedBaseCheckAmount +
         roundedTipCheckAmount +
         roundedBonusCheckAmount -
-        roundedTaxWithheld,
+        bonusTaxWithheld,
     );
     const finalCashAmount = roundMoney(
       roundedBaseCashAmount + roundedTipCashAmount + roundedBonusCashAmount,
@@ -4246,6 +4457,371 @@ export async function getPayrollPageData(input: {
     staffPayrollSettings: latestSettingsWithStaff(staffRows, staffSettings),
     status: getPayrollStatusView(latestStatement, difference),
     taxCompany,
+  };
+}
+
+export async function getCurrentStaffPayrollPortalData(input: {
+  cycleType?: string | null;
+  endDate?: string | null;
+  month?: string | null;
+  payPeriodStart?: string | null;
+  preset?: string | null;
+  segment?: string | null;
+  startDate?: string | null;
+}): Promise<StaffPayrollPortalData> {
+  const { auth, context, staff } = await getCurrentStaffPayrollPortalAuthContext();
+  const emptyStatus: PayrollStatusView = {
+    kind: "live",
+    label: "Live",
+    statementVersion: null,
+  };
+
+  if (!auth || !staff) {
+    return {
+      context,
+      dailyRows: [],
+      latestStatement: null,
+      line: null,
+      paystub: null,
+      period: null,
+      periodOptions: [],
+      salonPayrollSetting: null,
+      staff,
+      status: emptyStatus,
+    };
+  }
+
+  const salonPayrollSetting = await loadSalonPayrollSetting(auth);
+  const period = resolvePayrollPeriod({
+    cycleType: input.cycleType,
+    endDate: input.endDate,
+    month: input.month,
+    payPeriodStart: input.payPeriodStart,
+    preset: input.preset,
+    segment: input.segment,
+    salonSetting: salonPayrollSetting,
+    startDate: input.startDate,
+  });
+  const [live, latestStatement] = await Promise.all([
+    calculateLivePayrollForAuth(auth, period),
+    loadLatestPayrollSnapshot(auth, period),
+  ]);
+  const liveLine =
+    attachStatementPaystubsToLines({
+      latestStatement,
+      lines: live.lines,
+    }).find((line) => line.staff_id === staff.id) ?? null;
+  const statementLine =
+    latestStatement?.lines.find((line) => line.staff_id === staff.id) ?? null;
+  const line = liveLine ?? statementLine;
+  const dailyRows = (line?.dailyTotals ?? []).map<StaffPayrollPortalDailyRow>(
+    (dailyTotal) => ({
+      businessDate: dailyTotal.business_date,
+      commissionGross: dailyStaffPay(dailyTotal),
+      id: dailyTotal.id,
+      shopGross: numberValue(dailyTotal.gross_sales),
+      tipAmount: numberValue(dailyTotal.tip_amount),
+    }),
+  );
+  const status: PayrollStatusView = latestStatement
+    ? {
+        kind: latestStatement.run.status === "paid" ? "paid" : "printed",
+        label: latestStatement.run.status === "paid" ? "Paid" : "Printed",
+        statementVersion: latestStatement.run.version,
+      }
+    : emptyStatus;
+
+  return {
+    context,
+    dailyRows,
+    latestStatement,
+    line,
+    paystub: line?.paystub ?? null,
+    period,
+    periodOptions: getPayrollPeriodOptions({ salonSetting: salonPayrollSetting }),
+    salonPayrollSetting,
+    staff,
+    status,
+  };
+}
+
+function emptyStaffAnalysisWorkPerformance(): StaffAnalysisPortalWorkPerformance {
+  return {
+    averageTicket: 0,
+    bigTurns: 0,
+    serviceTotal: 0,
+    smallTurns: 0,
+    ticketCount: 0,
+    tipAmount: 0,
+    topServices: [],
+    totalTurns: 0,
+  };
+}
+
+function getPreviousComparablePeriod(period: PayrollPeriod): PayrollPeriod {
+  const durationDays =
+    Math.round(
+      (dateFromDateOnly(period.endDate).getTime() -
+        dateFromDateOnly(period.startDate).getTime()) /
+        DAY_MS,
+    ) + 1;
+  const previousEndDate = addDays(period.startDate, -1);
+  const previousStartDate = addDays(period.startDate, -Math.max(1, durationDays));
+
+  return {
+    cycleType: period.cycleType,
+    endDate: previousEndDate,
+    label: formatPeriodLabel(previousStartDate, previousEndDate),
+    preset: "custom",
+    startDate: previousStartDate,
+  };
+}
+
+function buildStaffAnalysisIncomeTrend(
+  line: PayrollStaffLineWithDailyTotals | null,
+): StaffAnalysisPortalTrendPoint[] {
+  return (line?.dailyTotals ?? [])
+    .map((dailyTotal) => {
+      const staffPay = dailyStaffPay(dailyTotal);
+      const tax = dailyTaxBreakdown(dailyTotal);
+      const checkRate = numberValue(dailyTotal.check_rate_used);
+      const regularNet = roundMoney(staffPay - tax.payTaxWithheld);
+      const checkNet = roundMoney((regularNet * checkRate) / 100);
+      const cashNet = roundMoney(regularNet - checkNet);
+
+      return {
+        bonusAmount: 0,
+        businessDate: dailyTotal.business_date,
+        cashNet,
+        checkNet,
+        income: roundMoney(
+          staffPay +
+            numberValue(dailyTotal.tip_amount) -
+            numberValue(tax.totalTaxWithheld),
+        ),
+        taxAmount: tax.totalTaxWithheld,
+      };
+    })
+    .sort((left, right) => left.businessDate.localeCompare(right.businessDate));
+}
+
+function buildStaffAnalysisComparison(input: {
+  currentLine: PayrollStaffLineWithDailyTotals | null;
+  currentPeriod: PayrollPeriod;
+  previousLine: PayrollStaffLineWithDailyTotals | null;
+  previousPeriod: PayrollPeriod;
+}): StaffAnalysisPortalComparison {
+  const currentIncome = numberValue(input.currentLine?.final_staff_income);
+  const previousIncome = numberValue(input.previousLine?.final_staff_income);
+  const deltaAmount = roundMoney(currentIncome - previousIncome);
+
+  return {
+    currentIncome,
+    currentLabel: input.currentPeriod.label,
+    deltaAmount,
+    deltaPercent:
+      previousIncome === 0
+        ? null
+        : roundMoney((deltaAmount / Math.abs(previousIncome)) * 100),
+    previousIncome,
+    previousLabel: input.previousPeriod.label,
+  };
+}
+
+async function loadStaffAnalysisWorkPerformance(input: {
+  auth: PayrollAuthContext;
+  period: PayrollPeriod;
+  staffId: string;
+}): Promise<StaffAnalysisPortalWorkPerformance> {
+  const { auth, period, staffId } = input;
+  const { data: earningRows, error: earningsError } = await auth.supabase
+    .from("pos_ticket_staff_earnings")
+    .select(
+      "ticket_id, service_total, tip_amount, big_turn_count, small_turn_count, ticket:pos_tickets!inner(id, status)",
+    )
+    .eq("organization_id", auth.organization.id)
+    .eq("salon_id", auth.salon.id)
+    .eq("staff_id", staffId)
+    .gte("work_date", period.startDate)
+    .lte("work_date", period.endDate)
+    .in("ticket.status", ["open", "closed"])
+    .returns<StaffAnalysisEarningRow[]>();
+
+  if (earningsError) {
+    throw new Error(earningsError.message);
+  }
+
+  const ticketIds = new Set<string>();
+  let serviceTotal = 0;
+  let tipAmount = 0;
+  let bigTurns = 0;
+  let smallTurns = 0;
+
+  for (const earning of earningRows ?? []) {
+    const ticketId = earning.ticket?.id ?? earning.ticket_id;
+
+    if (ticketId) {
+      ticketIds.add(ticketId);
+    }
+
+    serviceTotal = roundMoney(serviceTotal + numberValue(earning.service_total));
+    tipAmount = roundMoney(tipAmount + numberValue(earning.tip_amount));
+    bigTurns = roundMoney(bigTurns + numberValue(earning.big_turn_count));
+    smallTurns = roundMoney(smallTurns + numberValue(earning.small_turn_count));
+  }
+
+  if (ticketIds.size === 0) {
+    return {
+      ...emptyStaffAnalysisWorkPerformance(),
+      bigTurns,
+      serviceTotal,
+      smallTurns,
+      tipAmount,
+      totalTurns: roundMoney(bigTurns + smallTurns),
+    };
+  }
+
+  const { data: itemRows, error: itemsError } = await auth.supabase
+    .from("pos_ticket_items")
+    .select(
+      "id, pos_ticket_id, service_id, quantity, line_total, service:services(id, name), ticket:pos_tickets!inner(id, status)",
+    )
+    .eq("organization_id", auth.organization.id)
+    .eq("salon_id", auth.salon.id)
+    .eq("assigned_staff_id", staffId)
+    .eq("is_removed", false)
+    .in("pos_ticket_id", [...ticketIds])
+    .in("ticket.status", ["open", "closed"])
+    .returns<StaffAnalysisTicketItemRow[]>();
+
+  if (itemsError) {
+    throw new Error(itemsError.message);
+  }
+
+  const servicesById = new Map<
+    string,
+    {
+      count: number;
+      revenue: number;
+      serviceId: string;
+      serviceName: string;
+      ticketIds: Set<string>;
+    }
+  >();
+
+  for (const item of itemRows ?? []) {
+    const serviceId = item.service?.id ?? item.service_id;
+    const ticketId = item.ticket?.id ?? item.pos_ticket_id;
+    const entry =
+      servicesById.get(serviceId) ??
+      {
+        count: 0,
+        revenue: 0,
+        serviceId,
+        serviceName: item.service?.name ?? "Unknown service",
+        ticketIds: new Set<string>(),
+      };
+
+    entry.count = roundMoney(entry.count + numberValue(item.quantity));
+    entry.revenue = roundMoney(entry.revenue + numberValue(item.line_total));
+    entry.ticketIds.add(ticketId);
+    servicesById.set(serviceId, entry);
+  }
+
+  const totalTurns = roundMoney(bigTurns + smallTurns);
+
+  return {
+    averageTicket:
+      ticketIds.size === 0 ? 0 : roundMoney(serviceTotal / ticketIds.size),
+    bigTurns,
+    serviceTotal,
+    smallTurns,
+    ticketCount: ticketIds.size,
+    tipAmount,
+    topServices: [...servicesById.values()]
+      .map((service) => ({
+        count: service.count,
+        revenue: service.revenue,
+        serviceId: service.serviceId,
+        serviceName: service.serviceName,
+        ticketCount: service.ticketIds.size,
+      }))
+      .sort(
+        (left, right) =>
+          numberValue(right.revenue) - numberValue(left.revenue) ||
+          left.serviceName.localeCompare(right.serviceName),
+      )
+      .slice(0, 5),
+    totalTurns,
+  };
+}
+
+export async function getCurrentStaffAnalysisPortalData(input: {
+  cycleType?: string | null;
+  endDate?: string | null;
+  month?: string | null;
+  payPeriodStart?: string | null;
+  preset?: string | null;
+  segment?: string | null;
+  startDate?: string | null;
+}): Promise<StaffAnalysisPortalData> {
+  const { auth, context, staff } = await getCurrentStaffPayrollPortalAuthContext();
+
+  if (!auth || !staff) {
+    return {
+      comparison: null,
+      context,
+      incomeLine: null,
+      incomeTrend: [],
+      period: null,
+      periodOptions: [],
+      previousIncomeLine: null,
+      previousPeriod: null,
+      salonPayrollSetting: null,
+      staff,
+      workPerformance: emptyStaffAnalysisWorkPerformance(),
+    };
+  }
+
+  const salonPayrollSetting = await loadSalonPayrollSetting(auth);
+  const period = resolvePayrollPeriod({
+    cycleType: input.cycleType,
+    endDate: input.endDate,
+    month: input.month,
+    payPeriodStart: input.payPeriodStart,
+    preset: input.preset,
+    segment: input.segment,
+    salonSetting: salonPayrollSetting,
+    startDate: input.startDate,
+  });
+  const previousPeriod = getPreviousComparablePeriod(period);
+  const [currentLive, previousLive, workPerformance] = await Promise.all([
+    calculateLivePayrollForAuth(auth, period),
+    calculateLivePayrollForAuth(auth, previousPeriod),
+    loadStaffAnalysisWorkPerformance({ auth, period, staffId: staff.id }),
+  ]);
+  const incomeLine =
+    currentLive.lines.find((line) => line.staff_id === staff.id) ?? null;
+  const previousIncomeLine =
+    previousLive.lines.find((line) => line.staff_id === staff.id) ?? null;
+
+  return {
+    comparison: buildStaffAnalysisComparison({
+      currentLine: incomeLine,
+      currentPeriod: period,
+      previousLine: previousIncomeLine,
+      previousPeriod,
+    }),
+    context,
+    incomeLine,
+    incomeTrend: buildStaffAnalysisIncomeTrend(incomeLine),
+    period,
+    periodOptions: getPayrollPeriodOptions({ salonSetting: salonPayrollSetting }),
+    previousIncomeLine,
+    previousPeriod,
+    salonPayrollSetting,
+    staff,
+    workPerformance,
   };
 }
 

@@ -2,6 +2,7 @@ import { updateCustomer } from "@/app/customers/actions";
 import { CustomerForm } from "@/app/customers/customer-form";
 import { getCurrentSalonCustomer } from "@/lib/customers";
 import { hasPermission } from "@/lib/permissions";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -19,11 +20,8 @@ export default async function EditCustomerPage({
   searchParams,
 }: EditCustomerPageProps) {
   const [{ customerId }, { error }] = await Promise.all([params, searchParams]);
+  await requireSalonManagePageContext(`/customers/${customerId}/edit`);
   const { context, customer } = await getCurrentSalonCustomer(customerId);
-
-  if (!context.user) {
-    redirect("/login");
-  }
 
   if (!customer) {
     notFound();

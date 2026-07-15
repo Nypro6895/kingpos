@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import { getCurrentBusinessContext, isOwnerMembership } from "@/lib/current-context";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Permission, RolePermission } from "@/types/permission";
@@ -89,7 +89,13 @@ export async function hasPermission(
   permissionCode: string,
   context?: CurrentBusinessContext,
 ) {
-  const permissionCodes = await getCurrentRolePermissionCodes(context);
+  const resolvedContext = context ?? (await getCurrentBusinessContext());
+
+  if (isOwnerMembership(resolvedContext.currentMembership)) {
+    return true;
+  }
+
+  const permissionCodes = await getCurrentRolePermissionCodes(resolvedContext);
   return permissionCodes.has(permissionCode);
 }
 

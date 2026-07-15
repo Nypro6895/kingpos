@@ -1,7 +1,11 @@
 "use server";
 
 import { CUSTOMER_PERMISSIONS, CUSTOMER_SELECT } from "@/lib/customers";
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  getRouteForInvalidSalonContext,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { requirePermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { Customer, CustomerStatus } from "@/types/customer";
@@ -37,6 +41,10 @@ async function requireCustomerMutationContext(errorPath: string) {
 
   if (!supabase || !context.user) {
     redirect("/login");
+  }
+
+  if (!isSalonManageContext(context)) {
+    redirect(getRouteForInvalidSalonContext(context));
   }
 
   if (!context.currentOrganization || !context.currentMembership) {

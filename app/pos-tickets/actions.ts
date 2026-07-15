@@ -6,6 +6,8 @@ import {
 } from "@/lib/pos-tickets";
 import {
   getCurrentBusinessContext,
+  getRouteForInvalidSalonContext,
+  isSalonManageContext,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
 import {
@@ -491,6 +493,10 @@ async function requirePosTicketMutationContext(editId?: string) {
     redirect("/login");
   }
 
+  if (!isSalonManageContext(context)) {
+    redirect(getRouteForInvalidSalonContext(context));
+  }
+
   if (!context.currentOrganization) {
     redirectWithError("Create an organization before managing POS tickets.", editId);
   }
@@ -520,6 +526,10 @@ async function requireClosedTicketCorrectionContext(editId?: string) {
 
   if (!supabase || !context.user) {
     redirect("/login");
+  }
+
+  if (!isSalonManageContext(context)) {
+    redirect(getRouteForInvalidSalonContext(context));
   }
 
   if (!context.currentOrganization) {
@@ -553,6 +563,10 @@ async function requireLockedStaffCorrectionContext(editId?: string) {
 
   if (!supabase || !context.user) {
     redirect("/login");
+  }
+
+  if (!isSalonManageContext(context)) {
+    redirect(getRouteForInvalidSalonContext(context));
   }
 
   if (!context.currentOrganization) {

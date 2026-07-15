@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Thương lấy bản thân mình",
-  description: "Thương lấy bản thân mình",
+  title: "KingPOS",
+  description: "KingPOS salon workspace",
 };
 
 export default async function RootLayout({
@@ -28,12 +28,11 @@ export default async function RootLayout({
 
   return (
     <html
-      lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full bg-zinc-50 antialiased`}
+      lang="en"
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-950">
-        <SalonSwitcher context={context} />
-        {children}
+      <body className="min-h-full bg-zinc-50 text-zinc-950">
+        <SalonSwitcher context={context}>{children}</SalonSwitcher>
       </body>
     </html>
   );

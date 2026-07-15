@@ -5,11 +5,21 @@ type LoginPageProps = {
   searchParams: Promise<{
     error?: string;
     message?: string;
+    next?: string;
   }>;
 };
 
+function getNextPath(value: string | undefined) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/account";
+  }
+
+  return value;
+}
+
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const { error, message } = await searchParams;
+  const { error, message, next } = await searchParams;
+  const nextPath = getNextPath(next);
 
   return (
     <main className="relative z-10 mx-auto w-full max-w-md px-6 py-12 pointer-events-auto">
@@ -29,11 +39,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </p>
       ) : null}
 
-      <LoginForm />
+      <LoginForm nextPath={nextPath} />
 
       <p className="mt-6 text-sm text-zinc-600">
         No account yet?{" "}
-        <Link className="font-medium text-zinc-950 underline" href="/signup">
+        <Link
+          className="font-medium text-zinc-950 underline"
+          href={`/signup?next=${encodeURIComponent(nextPath)}`}
+        >
           Create one
         </Link>
       </p>

@@ -1,7 +1,11 @@
 "use server";
 
 import { BOOKING_PERMISSIONS, BOOKING_SELECT } from "@/lib/bookings";
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  getRouteForInvalidSalonContext,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { requirePermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { BookingStatus } from "@/types/booking";
@@ -66,6 +70,10 @@ async function requireBookingMutationContext(editId?: string) {
 
   if (!supabase || !context.user) {
     redirect("/login");
+  }
+
+  if (!isSalonManageContext(context)) {
+    redirect(getRouteForInvalidSalonContext(context));
   }
 
   if (!context.currentOrganization) {

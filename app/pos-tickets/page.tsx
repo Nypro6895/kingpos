@@ -9,15 +9,14 @@ import {
   getCurrentSalonPosTicketOptions,
   POS_TICKET_PERMISSIONS,
 } from "@/lib/pos-tickets";
-import { getCurrentBusinessContext } from "@/lib/current-context";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { hasPermission } from "@/lib/permissions";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type { PosTicketWithRelations } from "@/types/pos-ticket";
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 type PosTicketsPageProps = {
   searchParams: Promise<{
@@ -172,19 +171,6 @@ function formatTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
-}
-
-function MissingSalonState() {
-  return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">
-        Daily POS Work Log
-      </h1>
-      <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        Please select a salon first.
-      </p>
-    </main>
-  );
 }
 
 function isDateInputValue(value: string | undefined) {
@@ -438,16 +424,8 @@ export default async function PosTicketsPage({
 }: PosTicketsPageProps) {
   const [{ date, error, q }, context] = await Promise.all([
     searchParams,
-    getCurrentBusinessContext(),
+    requireSalonManagePageContext("/pos-tickets"),
   ]);
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentSalon) {
-    return <MissingSalonState />;
-  }
 
   const canViewTickets = await hasPermission(POS_TICKET_PERMISSIONS.view, context);
 

@@ -1,9 +1,8 @@
 import { createService } from "@/app/services/actions";
-import { getCurrentBusinessContext } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import { getCurrentSalonServices } from "@/lib/services";
 import type { Service } from "@/types/service";
-import { redirect } from "next/navigation";
 
 type ServicesPageProps = {
   searchParams: Promise<{
@@ -66,20 +65,6 @@ function formatPrice(value: number) {
     style: "currency",
     currency: "USD",
   }).format(value);
-}
-
-function MissingSalonState() {
-  return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">Services</h1>
-      <p className="mt-2 text-sm text-zinc-600">
-        Manage services for this salon.
-      </p>
-      <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        Please select a salon first.
-      </p>
-    </main>
-  );
 }
 
 function ServicesForm({
@@ -213,16 +198,8 @@ function ServicesList({ services }: { services: Service[] }) {
 export default async function ServicesPage({ searchParams }: ServicesPageProps) {
   const [{ error }, context] = await Promise.all([
     searchParams,
-    getCurrentBusinessContext(),
+    requireSalonManagePageContext("/services"),
   ]);
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentSalon) {
-    return <MissingSalonState />;
-  }
 
   const canViewServices = await hasPermission("services.view", context);
 

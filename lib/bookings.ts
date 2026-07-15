@@ -1,6 +1,9 @@
 import "server-only";
 
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { requirePermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
@@ -23,6 +26,10 @@ export const BOOKING_STAFF_OPTION_SELECT =
   "id, organization_id, salon_id, user_id, display_name, first_name, last_name, phone, email, job_title, is_active, created_at, updated_at";
 
 function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+  if (!isSalonManageContext(context)) {
+    throw new Error("Open bookings from a Manage Salon workspace.");
+  }
+
   if (!context.currentOrganization) {
     throw new Error("Create an organization before managing bookings.");
   }

@@ -1,17 +1,15 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getCurrentSalonPosDeskData } from "@/lib/pos-desk";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import { PosDeskClient } from "@/app/pos/pos-desk-client";
 import { getOrCreatePosLiveDraft } from "@/app/pos/actions";
 
 export default async function PosDeskPage() {
-  const data = await getCurrentSalonPosDeskData();
-
-  if (!data.context.user) {
-    redirect("/login");
-  }
-
-  const liveDraftResult = await getOrCreatePosLiveDraft();
+  await requireSalonManagePageContext("/pos");
+  const [data, liveDraftResult] = await Promise.all([
+    getCurrentSalonPosDeskData(),
+    getOrCreatePosLiveDraft(),
+  ]);
 
   return (
     <main className="min-h-screen bg-zinc-100 px-4 py-5 text-zinc-950">

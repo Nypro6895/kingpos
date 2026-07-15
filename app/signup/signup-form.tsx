@@ -11,7 +11,7 @@ type AuthResponse = {
 const inputClassName =
   "mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-950 pointer-events-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950";
 
-export function SignupForm() {
+export function SignupForm({ nextPath = "/account" }: { nextPath?: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,6 +47,7 @@ export function SignupForm() {
       ) : null}
 
       <form className="relative z-10 mt-6 space-y-4 pointer-events-auto" onSubmit={handleSubmit}>
+        <input name="next" type="hidden" value={nextPath} />
         <div>
           <label className="block text-sm font-medium text-zinc-700" htmlFor="display_name">
             Display name

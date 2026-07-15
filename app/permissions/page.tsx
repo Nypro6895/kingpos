@@ -1,5 +1,6 @@
-import { getCurrentBusinessContext, ROLE_SELECT } from "@/lib/current-context";
+import { ROLE_SELECT } from "@/lib/current-context";
 import { getOrganizationPermissionSet } from "@/lib/permissions";
+import { requireOrganizationPageContext } from "@/lib/route-context-guards";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { Permission } from "@/types/permission";
 import type { Role } from "@/types/role";
@@ -164,7 +165,7 @@ function RolePermissionList({
 }
 
 export default async function PermissionsPage() {
-  const context = await getCurrentBusinessContext();
+  const context = await requireOrganizationPageContext("/permissions");
 
   if (!context.user) {
     redirect("/login");
@@ -226,12 +227,6 @@ export default async function PermissionsPage() {
             href="/organizations"
           >
             Organizations
-          </Link>
-          <Link
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href="/customers"
-          >
-            Customers
           </Link>
         </div>
       </div>

@@ -1,4 +1,5 @@
-import { getCurrentBusinessContext, ROLE_SELECT } from "@/lib/current-context";
+import { ROLE_SELECT } from "@/lib/current-context";
+import { requireOrganizationPageContext } from "@/lib/route-context-guards";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { Role } from "@/types/role";
 import type { RoleWithMemberCount } from "@/types/role";
@@ -65,10 +66,10 @@ function RolesTable({ roles }: { roles: RoleWithMemberCount[] }) {
 }
 
 export default async function RolesPage() {
-  const context = await getCurrentBusinessContext();
+  const context = await requireOrganizationPageContext("/roles");
 
   if (!context.user) {
-    redirect("/login");
+    redirect("/login?next=/roles");
   }
 
   const organization = context.currentOrganization;

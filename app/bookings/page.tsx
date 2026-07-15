@@ -8,20 +8,30 @@ import {
   getCurrentSalonBookingOptions,
   getCurrentSalonBookings,
 } from "@/lib/bookings";
-import { getCurrentBusinessContext } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import type { BookingStatus, BookingWithRelations } from "@/types/booking";
 import { BOOKING_STATUSES } from "@/types/booking";
 import type { Customer } from "@/types/customer";
 import type { Staff } from "@/types/staff";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 type BookingsPageProps = {
   searchParams: Promise<{
     edit?: string;
     error?: string;
+    look?: string;
+    note?: string;
+    service?: string;
+    staff?: string;
   }>;
+};
+
+type BookingPrefill = {
+  lookId: string | null;
+  note: string | null;
+  serviceId: string | null;
+  staffId: string | null;
 };
 
 const STATUS_LABELS: Record<BookingStatus, string> = {
@@ -68,31 +78,19 @@ function StatusBadge({ status }: { status: BookingStatus }) {
   );
 }
 
-function MissingSalonState() {
-  return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">Bookings</h1>
-      <p className="mt-2 text-sm text-zinc-600">
-        Manage appointments for this salon.
-      </p>
-      <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        Please select a salon first.
-      </p>
-    </main>
-  );
-}
-
 function BookingForm({
   action,
   booking,
   customers,
   error,
+  prefill,
   staff,
 }: {
   action: (formData: FormData) => Promise<void>;
   booking?: BookingWithRelations;
   customers: Customer[];
   error?: string;
+  prefill?: BookingPrefill;
   staff: Staff[];
 }) {
   return (
@@ -129,7 +127,7 @@ function BookingForm({
         <span className="text-sm font-medium text-zinc-700">Assigned Staff</span>
         <select
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          defaultValue={booking?.staff_id ?? ""}
+          defaultValue={booking?.staff_id ?? prefill?.staffId ?? ""}
           name="staff_id"
         >
           <option value="">Unassigned</option>
@@ -184,7 +182,7 @@ function BookingForm({
         <span className="text-sm font-medium text-zinc-700">Notes</span>
         <textarea
           className="mt-2 min-h-24 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-          defaultValue={booking?.notes ?? ""}
+          defaultValue={booking?.notes ?? prefill?.note ?? ""}
           name="notes"
         />
       </label>
@@ -314,18 +312,21 @@ function BookingList({
 }
 
 export default async function BookingsPage({ searchParams }: BookingsPageProps) {
-  const [{ edit, error }, context] = await Promise.all([
+  const [{ edit, error, look, note, service, staff: staffId }, context] = await Promise.all([
     searchParams,
-    getCurrentBusinessContext(),
+    requireSalonManagePageContext("/bookings"),
   ]);
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentSalon) {
-    return <MissingSalonState />;
-  }
+  const noteParts = [
+    note?.trim() || null,
+    look?.trim() ? `Look ID: ${look.trim()}` : null,
+    service?.trim() ? `Service ID: ${service.trim()}` : null,
+  ].filter((part): part is string => Boolean(part));
+  const prefill: BookingPrefill = {
+    lookId: look?.trim() || null,
+    note: noteParts.length > 0 ? noteParts.join("\n") : null,
+    serviceId: service?.trim() || null,
+    staffId: staffId?.trim() || null,
+  };
 
   const canViewBookings = await hasPermission(BOOKING_PERMISSIONS.view, context);
 
@@ -367,6 +368,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
             action={createBooking}
             customers={options.customers}
             error={edit ? undefined : error}
+            prefill={prefill}
             staff={options.staff}
           />
         ) : (

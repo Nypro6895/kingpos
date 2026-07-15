@@ -11,12 +11,21 @@ function readString(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function sanitizeNextPath(value: string) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/account";
+  }
+
+  return value;
+}
+
 export async function POST(request: Request) {
   const supabase = createSupabaseServerClient();
   const formData = await request.formData();
   const email = readString(formData, "email").toLowerCase();
   const password = readString(formData, "password");
   const displayName = readString(formData, "display_name");
+  const nextPath = sanitizeNextPath(readString(formData, "next"));
 
   if (!supabase) {
     return NextResponse.json(
@@ -44,12 +53,17 @@ export async function POST(request: Request) {
   }
 
   if (!data.session) {
+    const loginParams = new URLSearchParams({
+      message: "Account created. Please confirm your email, then log in.",
+      next: nextPath,
+    });
+
     return NextResponse.json({
-      redirectTo: "/login?message=Account created. Please confirm your email, then log in.",
+      redirectTo: `/login?${loginParams.toString()}`,
     });
   }
 
-  const response = NextResponse.json({ redirectTo: "/account" });
+  const response = NextResponse.json({ redirectTo: nextPath });
   response.cookies.set(
     ACCESS_TOKEN_COOKIE,
     data.session.access_token,

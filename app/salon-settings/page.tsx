@@ -1,9 +1,13 @@
 import { updateSalonSettings } from "@/app/salon-settings/actions";
-import { getCurrentBusinessContext } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
-import { getCurrentSalonSetting } from "@/lib/salon-settings";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
+import {
+  getCurrentSalonDiscoveryReadiness,
+  getCurrentSalonSetting,
+  type SalonDiscoveryReadiness,
+} from "@/lib/salon-settings";
 import type { SalonSetting } from "@/types/salon-setting";
-import { redirect } from "next/navigation";
+import Link from "next/link";
 
 type SalonSettingsPageProps = {
   searchParams: Promise<{
@@ -41,33 +45,36 @@ function Field({
   );
 }
 
-function MissingSalonState() {
-  return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">Salon Settings</h1>
-      <p className="mt-2 text-sm text-zinc-600">
-        Manage business information for this salon.
-      </p>
-      <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        Please select a salon first.
-      </p>
-    </main>
-  );
-}
-
 function SalonSettingsForm({
   canManageSettings,
+  discoveryReadiness,
   error,
   setting,
 }: {
   canManageSettings: boolean;
+  discoveryReadiness: SalonDiscoveryReadiness;
   error?: string;
   setting: SalonSetting;
 }) {
+  const canToggleDiscovery =
+    canManageSettings &&
+    (discoveryReadiness.canEnable || setting.public_discovery_enabled);
+  const discoveryStatus = setting.public_discovery_enabled && discoveryReadiness.canEnable
+    ? "Published on Explore"
+    : discoveryReadiness.canEnable
+      ? "Ready to publish"
+      : "Missing required information";
+  const discoveryStatusClass = setting.public_discovery_enabled && discoveryReadiness.canEnable
+    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+    : discoveryReadiness.canEnable
+      ? "border-sky-200 bg-sky-50 text-sky-800"
+      : "border-amber-200 bg-amber-50 text-amber-800";
+
   return (
     <form
       action={canManageSettings ? updateSalonSettings : undefined}
       className="mt-4 grid gap-5 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-2"
+      id="business-information"
     >
       {error ? (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 sm:col-span-2">
@@ -158,6 +165,111 @@ function SalonSettingsForm({
         />
       </label>
 
+      <div
+        className="grid gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 sm:col-span-2"
+        id="public-profile-discovery"
+      >
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-zinc-950">
+              Public Profile & Discovery
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600">
+              Show this salon to customers on Explore. This does not affect
+              staff applications.
+            </p>
+          </div>
+          <span
+            className={[
+              "w-fit rounded-md border px-2.5 py-1 text-xs font-semibold",
+              discoveryStatusClass,
+            ].join(" ")}
+          >
+            {discoveryStatus}
+          </span>
+        </div>
+
+        <label className="flex items-start gap-3 rounded-md border border-zinc-200 bg-white p-4 text-sm">
+          <input
+            className="mt-0.5 size-4 rounded border-zinc-300 disabled:cursor-not-allowed disabled:opacity-60"
+            defaultChecked={setting.public_discovery_enabled}
+            disabled={!canToggleDiscovery}
+            name="public_discovery_enabled"
+            type="checkbox"
+          />
+          <span>
+            <span className="block font-medium text-zinc-950">
+              Show salon on Explore
+            </span>
+            <span className="mt-1 block text-zinc-600">
+              Requires active location details, a public description, and at
+              least one active service.
+            </span>
+          </span>
+        </label>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          {discoveryReadiness.items.map((item) => (
+            <div
+              className="flex min-h-14 items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-3 py-2"
+              key={item.id}
+            >
+              <div>
+                <p className="text-sm font-medium text-zinc-950">{item.label}</p>
+                <p
+                  className={[
+                    "mt-0.5 text-xs font-semibold",
+                    item.complete ? "text-emerald-700" : "text-amber-700",
+                  ].join(" ")}
+                >
+                  {item.complete ? "Complete" : "Missing"}
+                </p>
+              </div>
+              {!item.complete ? (
+                item.href.startsWith("#") ? (
+                  <a
+                    className="text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline"
+                    href={item.href}
+                  >
+                    Update
+                  </a>
+                ) : (
+                  <Link
+                    className="text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline"
+                    href={item.href}
+                  >
+                    Open
+                  </Link>
+                )
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        {!discoveryReadiness.canEnable ? (
+          <p className="text-sm leading-6 text-zinc-600">
+            Complete the missing items before enabling public discovery.
+          </p>
+        ) : null}
+      </div>
+
+      <label className="flex items-start gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm sm:col-span-2">
+        <input
+          className="mt-0.5 size-4 rounded border-zinc-300"
+          defaultChecked={setting.allow_staff_applications}
+          name="allow_staff_applications"
+          type="checkbox"
+        />
+        <span>
+          <span className="block font-medium text-zinc-950">
+            Allow staff applications
+          </span>
+          <span className="mt-1 block text-zinc-600">
+            Show this active salon in staff application search.
+          </span>
+        </span>
+      </label>
+
       <div className="sm:col-span-2">
         <button
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
@@ -176,16 +288,8 @@ export default async function SalonSettingsPage({
 }: SalonSettingsPageProps) {
   const [{ error }, context] = await Promise.all([
     searchParams,
-    getCurrentBusinessContext(),
+    requireSalonManagePageContext("/salon-settings"),
   ]);
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentSalon) {
-    return <MissingSalonState />;
-  }
 
   const canViewSettings = await hasPermission("salon_settings.view", context);
 
@@ -212,6 +316,11 @@ export default async function SalonSettingsPage({
     throw new Error("Salon settings could not be loaded.");
   }
 
+  const discoveryReadiness = await getCurrentSalonDiscoveryReadiness(
+    setting,
+    context,
+  );
+
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
       <div className="border-b border-zinc-200 pb-6">
@@ -227,6 +336,7 @@ export default async function SalonSettingsPage({
         </h2>
         <SalonSettingsForm
           canManageSettings={canManageSettings}
+          discoveryReadiness={discoveryReadiness}
           error={error}
           setting={setting}
         />

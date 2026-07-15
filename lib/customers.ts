@@ -1,6 +1,9 @@
 import "server-only";
 
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { requirePermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
@@ -15,6 +18,10 @@ export const CUSTOMER_PERMISSIONS = {
 } as const;
 
 function requireCurrentSalon(context: CurrentBusinessContext) {
+  if (!isSalonManageContext(context)) {
+    throw new Error("Open customers from a Manage Salon workspace.");
+  }
+
   if (!context.currentSalon) {
     throw new Error("Choose a current Salon before managing customers.");
   }

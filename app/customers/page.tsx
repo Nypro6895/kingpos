@@ -1,8 +1,8 @@
 import { getCurrentSalonCustomers } from "@/lib/customers";
 import { hasPermission } from "@/lib/permissions";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import type { Customer } from "@/types/customer";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 type CustomersPageProps = {
   searchParams: Promise<{
@@ -30,28 +30,6 @@ function StatusBadge({ status }: { status: Customer["status"] }) {
     >
       {status === "active" ? "Active" : "Inactive"}
     </span>
-  );
-}
-
-function EmptySetupState() {
-  return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">Customers</h1>
-      <p className="mt-2 text-sm text-zinc-600">Manage your salon customers.</p>
-      <div className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
-        <h2 className="text-lg font-semibold text-zinc-950">Choose a Salon first</h2>
-        <p className="mt-2 text-sm text-zinc-600">
-          Customers belong to the current Salon, so set up and select a Salon before
-          managing customer profiles.
-        </p>
-        <Link
-          className="mt-5 inline-flex rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-          href="/salons"
-        >
-          Go to Salons
-        </Link>
-      </div>
-    </main>
   );
 }
 
@@ -126,15 +104,8 @@ function CustomerList({
 
 export default async function CustomersPage({ searchParams }: CustomersPageProps) {
   const { error, q } = await searchParams;
+  await requireSalonManagePageContext("/customers");
   const { context, customers } = await getCurrentSalonCustomers(q);
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentOrganization || !context.currentSalon) {
-    return <EmptySetupState />;
-  }
 
   const canManageCustomers = await hasPermission("customers.manage", context);
 

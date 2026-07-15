@@ -5,7 +5,7 @@ import {
   getCurrentStaffForSalon,
   STAFF_WORKDAY_SELECT,
 } from "@/lib/staff-workdays";
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import { getCurrentStaffBusinessContext } from "@/lib/current-context";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { StaffWorkdayWithStaff } from "@/types/staff-workday";
 import type { StaffWorkdayStatus } from "@/types/staff-workday";
@@ -18,7 +18,7 @@ function redirectWithError(message: string): never {
 
 async function requireWorkdayMutationContext() {
   const supabase = await createAuthenticatedSupabaseServerClient();
-  const context = await getCurrentBusinessContext();
+  const context = await getCurrentStaffBusinessContext();
 
   if (!supabase || !context.user) {
     redirect("/login");
@@ -32,7 +32,9 @@ async function requireWorkdayMutationContext() {
     redirectWithError("Please select a salon first.");
   }
 
-  const staff = await getCurrentStaffForSalon(context);
+  const staff = await getCurrentStaffForSalon(context, {
+    allowEmailFallback: false,
+  });
 
   return {
     context,

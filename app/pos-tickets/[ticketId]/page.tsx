@@ -18,7 +18,6 @@ import {
   type PosTicketStaffOption,
   POS_TICKET_PERMISSIONS,
 } from "@/lib/pos-tickets";
-import { getCurrentBusinessContext } from "@/lib/current-context";
 import {
   POS_PAYMENT_METHOD_LABELS,
   POS_PAYMENT_METHOD_OPTIONS,
@@ -27,6 +26,7 @@ import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { buildTicketReceipt } from "@/lib/pos-ticket-receipt";
 import { getTicketTimeline } from "@/lib/pos-ticket-timeline";
 import { hasPermission } from "@/lib/permissions";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import type {
   PosTicketDiscountType,
   PosTicketStatus,
@@ -35,7 +35,6 @@ import type {
 import type { Service } from "@/types/service";
 import { STAFF_WORKDAY_STATUS_LABELS } from "@/lib/staff-workdays";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 type PosTicketDetailPageProps = {
   params: Promise<{ ticketId: string }>;
@@ -109,17 +108,6 @@ function StatusBadge({ status }: { status: PosTicketStatus }) {
     >
       {STATUS_LABELS[status]}
     </span>
-  );
-}
-
-function MissingSalonState() {
-  return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">POS Ticket</h1>
-      <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        Please select a salon first.
-      </p>
-    </main>
   );
 }
 
@@ -464,16 +452,10 @@ export default async function PosTicketDetailPage({
   const [{ ticketId }, { error }, context] = await Promise.all([
     params,
     searchParams,
-    getCurrentBusinessContext(),
+    params.then(({ ticketId: id }) =>
+      requireSalonManagePageContext(`/pos-tickets/${id}`),
+    ),
   ]);
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentSalon) {
-    return <MissingSalonState />;
-  }
 
   const canViewTickets = await hasPermission(POS_TICKET_PERMISSIONS.view, context);
 

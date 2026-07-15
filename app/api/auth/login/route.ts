@@ -11,11 +11,20 @@ function readString(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function sanitizeNextPath(value: string) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/account";
+  }
+
+  return value;
+}
+
 export async function POST(request: Request) {
   const supabase = createSupabaseServerClient();
   const formData = await request.formData();
   const email = readString(formData, "email").toLowerCase();
   const password = readString(formData, "password");
+  const nextPath = sanitizeNextPath(readString(formData, "next"));
 
   if (!supabase) {
     return NextResponse.json(
@@ -40,7 +49,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const response = NextResponse.json({ redirectTo: "/account" });
+  const response = NextResponse.json({ redirectTo: nextPath });
   response.cookies.set(
     ACCESS_TOKEN_COOKIE,
     data.session.access_token,

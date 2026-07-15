@@ -266,8 +266,9 @@ export function TaxCompanyCalculationGuide() {
         <div>
           <dt className="font-medium text-zinc-900">Actual Check Paid</dt>
           <dd>
-            Actual Check Paid is the real check amount paid to the staff. It
-            includes wage check plus any tip or bonus paid by check, minus tax.
+            Actual Check Paid is the real check amount paid to the staff after
+            applicable tax. It includes wage check plus any tip or bonus paid by
+            check.
           </dd>
         </div>
         <div>

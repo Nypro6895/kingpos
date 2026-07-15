@@ -1,7 +1,7 @@
 import { createCustomer } from "@/app/customers/actions";
 import { CustomerForm } from "@/app/customers/customer-form";
-import { getCurrentBusinessContext } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -14,16 +14,8 @@ type NewCustomerPageProps = {
 export default async function NewCustomerPage({ searchParams }: NewCustomerPageProps) {
   const [{ error }, context] = await Promise.all([
     searchParams,
-    getCurrentBusinessContext(),
+    requireSalonManagePageContext("/customers/new"),
   ]);
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentOrganization || !context.currentSalon) {
-    redirect("/customers");
-  }
 
   const canManageCustomers = await hasPermission("customers.manage", context);
 

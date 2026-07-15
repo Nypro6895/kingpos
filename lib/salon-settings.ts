@@ -1,6 +1,9 @@
 import "server-only";
 
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { requirePermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
@@ -10,14 +13,42 @@ import type {
 } from "@/types/salon-setting";
 
 export const SALON_SETTING_SELECT =
-  "id, organization_id, salon_id, business_name, phone, email, website, address_line1, address_line2, city, state, postal_code, country, business_description, created_at, updated_at";
+  "id, organization_id, salon_id, business_name, phone, email, website, address_line1, address_line2, city, state, postal_code, country, business_description, allow_staff_applications, public_discovery_enabled, public_discovery_published_at, created_at, updated_at";
 
 export const SALON_SETTING_PERMISSIONS = {
   view: "salon_settings.view",
   manage: "salon_settings.manage",
 } as const;
 
+type DiscoverySettingSnapshot = {
+  address_line1?: string | null;
+  business_description?: string | null;
+  business_name?: string | null;
+  city?: string | null;
+  phone?: string | null;
+  postal_code?: string | null;
+  state?: string | null;
+};
+
+export type SalonDiscoveryReadinessItem = {
+  complete: boolean;
+  href: string;
+  id: string;
+  label: string;
+};
+
+export type SalonDiscoveryReadiness = {
+  activeServiceCount: number;
+  canEnable: boolean;
+  items: SalonDiscoveryReadinessItem[];
+  missingLabels: string[];
+};
+
 function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+  if (!isSalonManageContext(context)) {
+    throw new Error("Open salon settings from a Manage Salon workspace.");
+  }
+
   if (!context.currentOrganization) {
     throw new Error("Create an organization before managing salon settings.");
   }
@@ -30,6 +61,133 @@ function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
     organization: context.currentOrganization,
     salon: context.currentSalon,
   };
+}
+
+function hasText(value: string | null | undefined) {
+  return Boolean(value?.trim());
+}
+
+export function getSalonDiscoveryReadiness(input: {
+  activeServiceCount: number;
+  salonStatus?: string | null;
+  setting: DiscoverySettingSnapshot;
+}): SalonDiscoveryReadiness {
+  const items: SalonDiscoveryReadinessItem[] = [
+    {
+      complete: input.salonStatus === "active",
+      href: "/salons",
+      id: "salon-status",
+      label: "Active salon location",
+    },
+    {
+      complete: hasText(input.setting.business_name),
+      href: "#business-information",
+      id: "business-name",
+      label: "Public business name",
+    },
+    {
+      complete: hasText(input.setting.phone),
+      href: "#business-information",
+      id: "phone",
+      label: "Public phone",
+    },
+    {
+      complete: hasText(input.setting.address_line1),
+      href: "#business-information",
+      id: "address",
+      label: "Street address",
+    },
+    {
+      complete: hasText(input.setting.city),
+      href: "#business-information",
+      id: "city",
+      label: "City",
+    },
+    {
+      complete: hasText(input.setting.state),
+      href: "#business-information",
+      id: "state",
+      label: "State",
+    },
+    {
+      complete: hasText(input.setting.postal_code),
+      href: "#business-information",
+      id: "postal-code",
+      label: "ZIP code",
+    },
+    {
+      complete: hasText(input.setting.business_description),
+      href: "#business-information",
+      id: "description",
+      label: "Public description",
+    },
+    {
+      complete: input.activeServiceCount > 0,
+      href: "/services",
+      id: "active-service",
+      label: "At least one active service",
+    },
+  ];
+  const missingLabels = items
+    .filter((item) => !item.complete)
+    .map((item) => item.label);
+
+  return {
+    activeServiceCount: input.activeServiceCount,
+    canEnable: missingLabels.length === 0,
+    items,
+    missingLabels,
+  };
+}
+
+async function countActiveServicesForSalon(input: {
+  organizationId: string;
+  salonId: string;
+}) {
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  const { count, error } = await supabase
+    .from("services")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", input.organizationId)
+    .eq("salon_id", input.salonId)
+    .eq("is_active", true);
+
+  if (error) {
+    console.error("Supabase count active services failed", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      salonId: input.salonId,
+      organizationId: input.organizationId,
+    });
+    throw new Error(error.message);
+  }
+
+  return count ?? 0;
+}
+
+export async function getCurrentSalonDiscoveryReadiness(
+  setting: SalonSetting,
+  context?: CurrentBusinessContext,
+) {
+  const resolvedContext = context ?? (await getCurrentBusinessContext());
+  const { organization, salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const activeServiceCount = await countActiveServicesForSalon({
+    organizationId: organization.id,
+    salonId: salon.id,
+  });
+
+  return getSalonDiscoveryReadiness({
+    activeServiceCount,
+    salonStatus: salon.status,
+    setting,
+  });
 }
 
 export async function getCurrentSalonSetting() {
@@ -85,6 +243,8 @@ export async function getCurrentSalonSetting() {
       state: salon.state,
       postal_code: salon.postal_code,
       country: salon.country,
+      allow_staff_applications: false,
+      public_discovery_enabled: false,
     })
     .select(SALON_SETTING_SELECT)
     .single<SalonSetting>();
@@ -142,6 +302,34 @@ export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput) 
 
   await getCurrentSalonSetting();
 
+  const publicDiscoveryEnabled = input.public_discovery_enabled ?? false;
+
+  if (publicDiscoveryEnabled) {
+    const activeServiceCount = await countActiveServicesForSalon({
+      organizationId: organization.id,
+      salonId: salon.id,
+    });
+    const readiness = getSalonDiscoveryReadiness({
+      activeServiceCount,
+      salonStatus: salon.status,
+      setting: {
+        address_line1: input.address_line1,
+        business_description: input.business_description,
+        business_name: businessName,
+        city: input.city,
+        phone: input.phone,
+        postal_code: input.postal_code,
+        state: input.state,
+      },
+    });
+
+    if (!readiness.canEnable) {
+      throw new Error(
+        `Complete public discovery requirements before enabling Explore: ${readiness.missingLabels.join(", ")}.`,
+      );
+    }
+  }
+
   const { data, error } = await supabase
     .from("salon_settings")
     .update({
@@ -156,6 +344,8 @@ export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput) 
       postal_code: input.postal_code,
       country: input.country,
       business_description: input.business_description,
+      allow_staff_applications: input.allow_staff_applications ?? false,
+      public_discovery_enabled: publicDiscoveryEnabled,
     })
     .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)

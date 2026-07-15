@@ -8,11 +8,10 @@ import {
   isDateInputValue,
   normalizeReportDate,
 } from "@/lib/daily-pos-report";
-import { getCurrentBusinessContext } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
+import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import type { DailyPosReportStaffRow } from "@/types/pos-daily-closing";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 type ReportsPageProps = {
   searchParams: Promise<{
@@ -75,17 +74,6 @@ function SummaryCard({
       <p className="text-xs font-medium uppercase text-zinc-500">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
     </section>
-  );
-}
-
-function MissingSalonState() {
-  return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">Reports</h1>
-      <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
-        Please select a salon first.
-      </p>
-    </main>
   );
 }
 
@@ -184,16 +172,8 @@ function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
 export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   const [{ date }, context] = await Promise.all([
     searchParams,
-    getCurrentBusinessContext(),
+    requireSalonManagePageContext("/reports"),
   ]);
-
-  if (!context.user) {
-    redirect("/login");
-  }
-
-  if (!context.currentSalon) {
-    return <MissingSalonState />;
-  }
 
   const canViewReports = await hasPermission(
     DAILY_POS_REPORT_PERMISSIONS.view,

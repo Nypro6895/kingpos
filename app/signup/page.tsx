@@ -4,11 +4,21 @@ import Link from "next/link";
 type SignupPageProps = {
   searchParams: Promise<{
     error?: string;
+    next?: string;
   }>;
 };
 
+function getNextPath(value: string | undefined) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/account";
+  }
+
+  return value;
+}
+
 export default async function SignupPage({ searchParams }: SignupPageProps) {
-  const { error } = await searchParams;
+  const { error, next } = await searchParams;
+  const nextPath = getNextPath(next);
 
   return (
     <main className="relative z-10 mx-auto w-full max-w-md px-6 py-12 pointer-events-auto">
@@ -23,11 +33,14 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
         </p>
       ) : null}
 
-      <SignupForm />
+      <SignupForm nextPath={nextPath} />
 
       <p className="mt-6 text-sm text-zinc-600">
         Already have an account?{" "}
-        <Link className="font-medium text-zinc-950 underline" href="/login">
+        <Link
+          className="font-medium text-zinc-950 underline"
+          href={`/login?next=${encodeURIComponent(nextPath)}`}
+        >
           Login
         </Link>
       </p>
