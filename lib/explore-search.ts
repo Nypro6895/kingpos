@@ -4,6 +4,11 @@ import {
   getCurrentBusinessContext,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
+import {
+  EMPTY_EXPLORE_DECISION_SIGNALS,
+  getExploreDecisionSignalsBySalonId,
+  type ExploreDecisionSignals,
+} from "@/lib/explore-decision-signals";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -143,11 +148,21 @@ function normalizeResultGroup(value: string | null | undefined): ExploreResultGr
   return "recommended";
 }
 
-function mapExploreRow(row: ExploreRpcRow): ExploreSearchResult {
+function mapExploreRow(
+  row: ExploreRpcRow,
+  signals: ExploreDecisionSignals | undefined,
+): ExploreSearchResult {
+  const decisionSignals = signals ?? EMPTY_EXPLORE_DECISION_SIGNALS;
+
   return {
     activeServiceCount: row.active_service_count ?? 0,
     addressLine1: row.address_line1,
     addressLine2: row.address_line2,
+    averageRating: decisionSignals.averageRating,
+    bookableServiceId: decisionSignals.bookableServiceId,
+    bookableServiceName: decisionSignals.bookableServiceName,
+    bookingEnabled: decisionSignals.bookingEnabled,
+    bookingHref: decisionSignals.bookingHref,
     city: row.city,
     country: row.country,
     coverImageUrl: getSalonProfileMediaUrl(row.cover_image_path),
@@ -164,11 +179,14 @@ function mapExploreRow(row: ExploreRpcRow): ExploreSearchResult {
     matchType: row.match_type ?? "recommended",
     matchTier: row.match_tier ?? 99,
     name: row.salon_name,
+    nextAvailabilityLabel: decisionSignals.nextAvailabilityLabel,
+    nextAvailableAt: decisionSignals.nextAvailableAt,
     phone: row.phone,
     postalCode: row.postal_code,
     profileCompleteness: row.profile_completeness ?? 0,
     relevanceScore: row.relevance_score ?? 0,
     resultGroup: normalizeResultGroup(row.result_group),
+    reviewCount: decisionSignals.reviewCount,
     serviceCategories: toStringArray(row.service_categories),
     serviceNames: toStringArray(row.service_names),
     startingPrice: readMoney(row.starting_price),
@@ -282,7 +300,13 @@ export async function searchExploreSalons(
     }
 
     const rows = Array.isArray(data) ? (data as ExploreRpcRow[]) : [];
-    const results = rows.map(mapExploreRow);
+    const signalMap = await getExploreDecisionSignalsBySalonId(
+      rpc,
+      rows.map((row) => row.salon_id),
+    );
+    const results = rows.map((row) =>
+      mapExploreRow(row, signalMap.get(row.salon_id)),
+    );
     const sections = groupResults(results);
     const groupCounts = readGroupCounts(rows);
     const totalCount = readCount(rows[0]?.total_count);

@@ -1,0 +1,9 @@
+{
+  "bookingId": "2e1abebb-81ee-466f-b33e-88adb7928be6",
+  "steps": [
+    "workspace switched",
+    "owner detail opened",
+    "owner cancelled"
+  ],
+  "consoleErrors": []
+}

@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "baseUrl": "http://127.0.0.1:3336",
+  "bookingId": "45f142df-2abe-46a0-bed9-a171eee847d5",
+  "visibleStatus": false,
+  "screenshot": "artifacts/booking-browser-test/phase4-owner-deeplink-smoke-after-lintfix.png",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "networkErrors": []
+}

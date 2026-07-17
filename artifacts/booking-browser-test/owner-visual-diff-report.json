@@ -1,0 +1,48 @@
+{
+  "baseUrl": "http://127.0.0.1:3381",
+  "date": "2026-07-15",
+  "diff": {
+    "changedPixels": 65938,
+    "height": 941,
+    "maskedPixelDifferencePercent": 4.35,
+    "meanChannelDelta": 3.14,
+    "maskRegions": [
+      {
+        "height": 62,
+        "left": 60,
+        "top": 240,
+        "width": 1490
+      },
+      {
+        "height": 28,
+        "left": 150,
+        "top": 500,
+        "width": 260
+      },
+      {
+        "height": 331,
+        "left": 0,
+        "top": 610,
+        "width": 1610
+      },
+      {
+        "height": 28,
+        "left": 150,
+        "top": 145,
+        "width": 150
+      }
+    ],
+    "totalPixels": 1515010,
+    "width": 1610
+  },
+  "ok": true,
+  "referencePath": "C:\\Users\\giuse\\Downloads\\1.png",
+  "screenshots": [
+    "owner-diff-current-surface.png",
+    "owner-diff-reference-resized.png",
+    "owner-diff-current-masked.png",
+    "owner-diff-reference-masked.png",
+    "owner-diff-overlay.png",
+    "owner-diff-heatmap.png"
+  ]
+}

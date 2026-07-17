@@ -10,6 +10,8 @@ import {
   getTodaysStaffWorkday,
   STAFF_WORKDAY_STATUS_LABELS,
 } from "@/lib/staff-workdays";
+import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-editor";
+import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import type { StaffAssignedWorkTicket } from "@/lib/staff-workdays";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -1570,6 +1572,36 @@ export default async function StaffMyWorkPage({
                 ))}
               </div>
             )}
+          </section>
+
+          <section className="mt-8 rounded-lg border border-zinc-200 bg-white p-4 sm:p-5">
+            <div>
+              <h2 className="text-xl font-semibold text-zinc-950">
+                Public Staff Profile
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-zinc-600">
+                This controls how you appear on {context.currentSalon.name}&apos;s
+                Salon Profile. You can opt out without changing your employment,
+                payroll, or schedule.
+              </p>
+            </div>
+            <div className="mt-4 max-w-2xl">
+              <StaffPublicProfileEditor
+                avatarUrl={getSalonProfileMediaUrl(
+                  staff.public_profile_photo_path,
+                )}
+                bio={staff.public_bio}
+                displayName={staff.display_name}
+                jobTitle={staff.job_title}
+                onlineBookingEnabled={staff.online_booking_enabled}
+                ownerPublicEnabled={staff.owner_public_enabled}
+                publicProfileVisible={staff.public_profile_visible}
+                salonName={context.currentSalon.name}
+                staffPublicConsentStatus={staff.staff_public_consent_status}
+                specialties={staff.specialties}
+                staffId={staff.id}
+              />
+            </div>
           </section>
         </>
       ) : activeTab === "payroll" ? (

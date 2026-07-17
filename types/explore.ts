@@ -38,6 +38,11 @@ export type ExploreSearchResult = {
   country: string | null;
   description: string | null;
   distanceMiles: number | null;
+  averageRating: number | null;
+  bookableServiceId: string | null;
+  bookableServiceName: string | null;
+  bookingEnabled: boolean;
+  bookingHref: string | null;
   coverImageUrl: string | null;
   featuredServiceCategory: string | null;
   featuredServiceName: string | null;
@@ -50,18 +55,21 @@ export type ExploreSearchResult = {
   matchType: string;
   matchTier: number;
   name: string;
+  nextAvailabilityLabel: string | null;
+  nextAvailableAt: string | null;
   phone: string | null;
   postalCode: string | null;
   profileCompleteness: number;
   relevanceScore: number;
   resultGroup: ExploreResultGroup;
+  reviewCount: number;
   serviceCategories: string[];
   serviceNames: string[];
   startingPrice: number | null;
   state: string | null;
 };
 
-export type ExploreHomeSalonSection = "new" | "recommended";
+export type ExploreHomeSalonSection = "near_you" | "new" | "recommended";
 
 export type ExploreHomeSalon = ExploreSearchResult & {
   createdAt: string | null;
@@ -77,11 +85,69 @@ export type ExplorePopularService = {
   salonCount: number;
 };
 
+export type ExploreInspirationCursor = {
+  mediaId: string;
+  publishedAt: string;
+};
+
+export type ExploreInspirationLayoutVariant =
+  | "landscape"
+  | "portrait"
+  | "square";
+
+export type ExploreInspirationItem = {
+  aspectRatio: number | null;
+  authorDisplayName: string | null;
+  authorIsAnonymous: boolean;
+  captionExcerpt: string | null;
+  contentId: string;
+  contentType: "look" | "update";
+  imageHeight: number | null;
+  imageUrl: string;
+  imageWidth: number | null;
+  layoutVariant: ExploreInspirationLayoutVariant;
+  mediaId: string;
+  phoneHref: string | null;
+  publishedAt: string;
+  salonCity: string | null;
+  salonHref: string | null;
+  salonId: string;
+  salonName: string;
+  salonState: string | null;
+  serviceCategory: string | null;
+  serviceName: string | null;
+};
+
+export type ExploreInspirationPage = {
+  error: string | null;
+  hasMore: boolean;
+  items: ExploreInspirationItem[];
+  nextCursor: ExploreInspirationCursor | null;
+};
+
 export type ExploreHomeContent = {
   error: string | null;
+  inspiration: ExploreInspirationPage;
   newSalons: ExploreHomeSalon[];
   popularServices: ExplorePopularService[];
   recommendedSalons: ExploreHomeSalon[];
+};
+
+export type ExploreNearYouResponse = {
+  error: string | null;
+  salons: ExploreHomeSalon[];
+};
+
+export type ExploreMapSalon = {
+  coverImageUrl: string | null;
+  distanceMiles: number | null;
+  href: string | null;
+  id: string;
+  latitude: number;
+  locationLabel: string | null;
+  longitude: number;
+  name: string;
+  serviceLabel: string | null;
 };
 
 export type ExploreSearchSections = {

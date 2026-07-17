@@ -1,0 +1,43 @@
+{
+  "baseUrl": "http://127.0.0.1:3332",
+  "marker": "[E2E] Booking 20260716002831",
+  "screenshots": [
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\bookings-day-desktop.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\bookings-after-create.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\bookings-failure.png"
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "steps": [
+    {
+      "login": "/bookings"
+    },
+    {
+      "openedBookings": "http://127.0.0.1:3332/bookings",
+      "title": "KingPOS"
+    },
+    {
+      "weekUrl": "http://127.0.0.1:3332/bookings?view=week"
+    },
+    {
+      "listUrl": "http://127.0.0.1:3332/bookings?view=list"
+    },
+    {
+      "filteredUrl": "http://127.0.0.1:3332/bookings?date=2026-07-16&view=list&tab=calendar&staff=33374325-e96a-4123-9275-465e931620c2&status=&source=&service=&q=Customer"
+    },
+    {
+      "settings": "saved conservative settings"
+    },
+    {
+      "requests": "empty state visible"
+    },
+    {
+      "slot": "09:00 real slot selected"
+    },
+    {
+      "created": "[E2E] Booking 20260716002831 Customer appointment visible"
+    }
+  ],
+  "ok": false,
+  "error": "page.waitForSelector: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=Appointment details') to be visible\u001b[22m\n\n    at [stdin]:57:76"
+}

@@ -41,3 +41,32 @@ taskkill /F /IM node.exe
 
 apply supabase migration
 npx supabase db push
+
+## Environment Contract
+
+KingPOS Explore Map V1 uses MapLibre in the browser and a MapTiler-compatible
+server geocoding adapter. Do not commit real secrets.
+
+Required Supabase variables:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
+
+Optional Map V1 variables:
+
+```bash
+# Public browser key for MapLibre tile/style requests.
+# Restrict this key to the allowed app domains in MapTiler.
+NEXT_PUBLIC_MAPTILER_KEY=
+
+# Server-only key for geocoding public salon addresses.
+MAPTILER_API_KEY=
+
+# Centralized country fallback for public salon address normalization.
+KINGPOS_DEFAULT_COUNTRY=US
+```
+
+If MapTiler keys are missing, Explore still works without map rendering,
+geocoding, fake coordinates, fake distances, or fake markers.

@@ -1,0 +1,40 @@
+{
+  "baseUrl": "http://127.0.0.1:3332",
+  "marker": "[E2E] Booking 20260716002831",
+  "screenshots": [
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\bookings-detail.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\bookings-cancelled-desktop.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\bookings-cancelled-mobile.png"
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "steps": [
+    {
+      "login": "/bookings"
+    },
+    {
+      "detail": "opened appointment detail"
+    },
+    {
+      "action": "Confirm",
+      "verification": "already confirmed from prior retry"
+    },
+    {
+      "reschedule": "already at 2026-07-16 10:30-11:30 from prior retry"
+    },
+    {
+      "reassign": "1 eligible line(s) submitted to Pro B"
+    },
+    {
+      "action": "Cancel",
+      "verification": "soft-cancel mutation submitted"
+    },
+    {
+      "finalStatus": "Cancelled visible after reopen"
+    },
+    {
+      "mobile": "cancelled appointment visible without runtime errors"
+    }
+  ],
+  "ok": true
+}

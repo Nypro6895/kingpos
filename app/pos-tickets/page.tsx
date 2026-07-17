@@ -239,6 +239,8 @@ function ticketMatchesSearch(
   const searchableValues = [
     String(dailyNumber),
     `#${dailyNumber}`,
+    ticket.source_booking_id ? "from appointment" : "",
+    ticket.source_booking_id ?? "",
     ticket.customer?.name ?? "",
     formatTime(ticket.opened_at),
     ...(ticket.ticket_items ?? []).flatMap((item) => [

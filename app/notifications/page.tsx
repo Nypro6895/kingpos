@@ -1,8 +1,16 @@
 import {
+  markAppNotificationReadAction,
+  openAppNotificationAction,
+} from "@/app/notifications/actions";
+import {
   acceptStaffInviteByRequestFormAction,
   cancelStaffSalonApplicationFormAction,
   declineStaffInviteByRequestFormAction,
 } from "@/app/staff/actions";
+import {
+  getCurrentAppNotifications,
+  type AppNotification,
+} from "@/lib/app-notifications";
 import { hasPermission } from "@/lib/permissions";
 import {
   getSalonStaffConnectionRequests,
@@ -43,6 +51,72 @@ function StatusBadge({ status }: { status: string }) {
     <span className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold ${className}`}>
       {status}
     </span>
+  );
+}
+
+function NotificationKindBadge({ kind }: { kind: AppNotification["recipient_kind"] }) {
+  const label =
+    kind === "staff" ? "Staff" : kind === "owner_manager" ? "Owner" : "Customer";
+
+  return (
+    <span className="w-fit rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-semibold text-zinc-700">
+      {label}
+    </span>
+  );
+}
+
+function AppNotificationCard({
+  notification,
+}: {
+  notification: AppNotification;
+}) {
+  return (
+    <article className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-lg font-semibold text-zinc-950">
+              {notification.title}
+            </h3>
+            {!notification.read_at ? (
+              <span className="rounded-md bg-zinc-950 px-2 py-1 text-xs font-semibold text-white">
+                New
+              </span>
+            ) : null}
+          </div>
+          {notification.body ? (
+            <p className="mt-2 text-sm text-zinc-600">{notification.body}</p>
+          ) : null}
+          <p className="mt-1 text-sm text-zinc-500">
+            {formatDate(notification.created_at)}
+          </p>
+        </div>
+        <NotificationKindBadge kind={notification.recipient_kind} />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <form action={openAppNotificationAction}>
+          <input name="notification_id" type="hidden" value={notification.id} />
+          <input name="href" type="hidden" value={notification.href} />
+          <button
+            className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white"
+            type="submit"
+          >
+            Open
+          </button>
+        </form>
+        {!notification.read_at ? (
+          <form action={markAppNotificationReadAction}>
+            <input name="notification_id" type="hidden" value={notification.id} />
+            <button
+              className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950"
+              type="submit"
+            >
+              Mark read
+            </button>
+          </form>
+        ) : null}
+      </div>
+    </article>
   );
 }
 
@@ -159,7 +233,10 @@ function ManagerNotificationCard({
 }
 
 export default async function NotificationsPage() {
-  const { context, requests } = await getStaffConnectionDashboard();
+  const [{ context, requests }, appNotifications] = await Promise.all([
+    getStaffConnectionDashboard(),
+    getCurrentAppNotifications(),
+  ]);
 
   if (!context.user) {
     redirect("/login?next=/notifications");
@@ -189,7 +266,11 @@ export default async function NotificationsPage() {
     }
   }
 
-  const pendingTotal = pendingStaffRequests.length + managerRequests.length;
+  const unreadBookingNotifications = appNotifications.filter(
+    (notification) => !notification.read_at,
+  ).length;
+  const pendingTotal =
+    pendingStaffRequests.length + managerRequests.length + unreadBookingNotifications;
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -233,6 +314,26 @@ export default async function NotificationsPage() {
             {managerRequests.length}
           </p>
         </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold text-zinc-950">
+          Booking notifications
+        </h2>
+        {appNotifications.length === 0 ? (
+          <p className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
+            No booking notifications yet.
+          </p>
+        ) : (
+          <div className="mt-4 grid gap-3 lg:grid-cols-2">
+            {appNotifications.map((notification) => (
+              <AppNotificationCard
+                key={notification.id}
+                notification={notification}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="mt-8">

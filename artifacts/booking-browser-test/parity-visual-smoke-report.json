@@ -1,0 +1,28 @@
+{
+  "baseUrl": "http://127.0.0.1:3341",
+  "consoleErrors": [],
+  "networkErrors": [
+    {
+      "errorText": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:3341/book/7f599bc8-a806-4a68-be86-c149c21709e2"
+    }
+  ],
+  "pageErrors": [],
+  "screenshots": [
+    {
+      "name": "parity-public-services-desktop.png",
+      "title": "KingPOS",
+      "url": "http://127.0.0.1:3341/book/7f599bc8-a806-4a68-be86-c149c21709e2"
+    },
+    {
+      "name": "parity-public-services-mobile.png",
+      "title": "KingPOS",
+      "url": "http://127.0.0.1:3341/book/7f599bc8-a806-4a68-be86-c149c21709e2"
+    },
+    {
+      "name": "parity-owner-unauth-check.png",
+      "title": "KingPOS",
+      "url": "http://127.0.0.1:3341/login?next=%2Fbookings"
+    }
+  ]
+}

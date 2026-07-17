@@ -8,6 +8,13 @@ export type PosTicketItem = {
   pos_ticket_id: string;
   service_id: string | null;
   assigned_staff_id: string | null;
+  performed_by_staff_id: string | null;
+  source_booking_id: string | null;
+  source_booking_line_id: string | null;
+  source_kind: "booking" | "manual";
+  service_name_snapshot: string | null;
+  service_category_snapshot: string | null;
+  booked_unit_price_snapshot: number | null;
   quantity: number;
   unit_price: number;
   line_total: number;
@@ -22,6 +29,7 @@ export type PosTicketItem = {
 
 export type PosTicketItemWithRelations = PosTicketItem & {
   assigned_staff: Pick<Staff, "id" | "display_name" | "job_title"> | null;
+  performed_staff: Pick<Staff, "id" | "display_name" | "job_title"> | null;
   running_turns?: {
     big: number | null;
     small: number | null;

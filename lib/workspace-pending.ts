@@ -4,6 +4,7 @@ import {
   isSalonManageContext,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
+import { countUnreadAppNotifications } from "@/lib/app-notifications";
 import { hasPermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { StaffConnectionDashboardRequest } from "@/types/staff-salon-connection";
@@ -17,6 +18,7 @@ export type WorkspacePendingSummaryItem = {
 export type WorkspacePendingSummary = {
   items: WorkspacePendingSummaryItem[];
   managerApplications: number;
+  bookingNotifications: number;
   reviewHref: string;
   staffApplications: number;
   staffInvites: number;
@@ -26,6 +28,7 @@ export type WorkspacePendingSummary = {
 function emptyPendingSummary(): WorkspacePendingSummary {
   return {
     items: [],
+    bookingNotifications: 0,
     managerApplications: 0,
     reviewHref: "/notifications",
     staffApplications: 0,
@@ -44,11 +47,20 @@ function pendingDashboardCount(
 }
 
 function buildItems(input: {
+  bookingNotifications: number;
   managerApplications: number;
   staffApplications: number;
   staffInvites: number;
 }) {
   const items: WorkspacePendingSummaryItem[] = [];
+
+  if (input.bookingNotifications > 0) {
+    items.push({
+      count: input.bookingNotifications,
+      id: "booking-notifications",
+      label: "Booking updates",
+    });
+  }
 
   if (input.staffInvites > 0) {
     items.push({
@@ -93,6 +105,7 @@ export async function getWorkspacePendingSummary(
   let staffInvites = 0;
   let staffApplications = 0;
   let managerApplications = 0;
+  const bookingNotifications = await countUnreadAppNotifications();
 
   const { data: dashboardRequests, error: dashboardError } = await supabase.rpc(
     "list_my_staff_salon_connection_requests",
@@ -132,17 +145,19 @@ export async function getWorkspacePendingSummary(
   }
 
   const items = buildItems({
+    bookingNotifications,
     managerApplications,
     staffApplications,
     staffInvites,
   });
 
   return {
+    bookingNotifications,
     items,
     managerApplications,
     reviewHref: "/notifications",
     staffApplications,
     staffInvites,
-    total: staffInvites + staffApplications + managerApplications,
+    total: staffInvites + staffApplications + managerApplications + bookingNotifications,
   };
 }

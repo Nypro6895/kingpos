@@ -1,0 +1,46 @@
+{
+  "activeTestBookingCount": 0,
+  "exactIds": {
+    "services": [
+      "6e78a7a8-5068-4fcc-80c3-699c4e37a65e",
+      "2566d503-e113-4ca9-b009-18d8c8d91178"
+    ],
+    "staff": "705a6df0-0b09-4c33-a4ac-bd22631332e3"
+  },
+  "finalStatuses": {
+    "cancelledBookings": [],
+    "disabledAssignments": 2,
+    "disabledLinks": 0,
+    "disabledServices": [
+      {
+        "id": "6e78a7a8-5068-4fcc-80c3-699c4e37a65e",
+        "is_active": false,
+        "name": "000 [E2E] Phase45 Browser 20260716203116 Gel Manicure"
+      },
+      {
+        "id": "2566d503-e113-4ca9-b009-18d8c8d91178",
+        "is_active": false,
+        "name": "000 [E2E] Phase45 Browser 20260716203116 Pedicure"
+      }
+    ],
+    "disabledStaff": [
+      {
+        "display_name": "000 [E2E] Phase45 Browser 20260716203116 Staff",
+        "id": "705a6df0-0b09-4c33-a4ac-bd22631332e3",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      }
+    ]
+  },
+  "marker": "[E2E] Phase45 Browser 20260716203116",
+  "ok": true,
+  "verified": {
+    "activeBookingCountBefore": 0,
+    "addOnLinkCount": 0,
+    "assignmentCount": 2,
+    "servicesVerified": true,
+    "staffVerified": true
+  }
+}

@@ -577,6 +577,36 @@ export default async function PosTicketDetailPage({
         </p>
       ) : null}
 
+      {ticket.source_booking_id ? (
+        <section className="mt-8 rounded-lg border border-sky-200 bg-sky-50 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase text-sky-800">
+                From appointment
+              </p>
+              <h2 className="mt-1 text-lg font-semibold text-zinc-950">
+                {ticket.source_booking
+                  ? formatTicketDateTime(ticket.source_booking.start_at)
+                  : "Linked appointment"}
+              </h2>
+              <p className="mt-1 text-sm text-sky-900">
+                Booking reference: {ticket.source_booking_id}
+              </p>
+            </div>
+            <Link
+              className="inline-flex w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+              href={
+                ticket.source_booking
+                  ? `/bookings?date=${ticket.source_booking.start_at.slice(0, 10)}&bookingId=${ticket.source_booking.id}`
+                  : `/bookings?bookingId=${ticket.source_booking_id}`
+              }
+            >
+              View appointment
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-zinc-950">Customer</h2>
         <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-5 text-sm text-zinc-700">
@@ -617,7 +647,19 @@ export default async function PosTicketDetailPage({
               {(ticket.ticket_items ?? []).map((item) => (
                 <li className="grid grid-cols-12 gap-3 px-4 py-3" key={item.id}>
                   <div className="col-span-12 text-sm font-medium text-zinc-950 sm:col-span-3">
-                    {item.service?.name ?? "Unknown service"}
+                    <p>
+                      {item.service_name_snapshot ??
+                        item.service?.name ??
+                        "Unknown service"}
+                    </p>
+                    {item.source_kind === "booking" ? (
+                      <p className="mt-1 text-xs font-semibold text-sky-700">
+                        Booking snapshot
+                        {item.source_booking_line_id
+                          ? ` / line ${item.source_booking_line_id.slice(0, 8)}`
+                          : ""}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="col-span-12 text-sm text-zinc-700 sm:col-span-1">
                     <span className="font-medium text-zinc-500 sm:hidden">
@@ -630,6 +672,11 @@ export default async function PosTicketDetailPage({
                       Price:{" "}
                     </span>
                     {formatMoney(item.unit_price)}
+                    {item.booked_unit_price_snapshot !== null ? (
+                      <p className="mt-1 text-xs text-zinc-500">
+                        Booked {formatMoney(item.booked_unit_price_snapshot)}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="col-span-12 text-sm text-zinc-700 sm:col-span-2">
                     {canWorkTicket ? (
@@ -645,6 +692,11 @@ export default async function PosTicketDetailPage({
                           Assigned Staff:{" "}
                         </span>
                         {item.assigned_staff?.display_name ?? "-"}
+                        {item.performed_staff ? (
+                          <p className="mt-1 text-xs text-zinc-500">
+                            Performed by {item.performed_staff.display_name}
+                          </p>
+                        ) : null}
                       </>
                     )}
                   </div>

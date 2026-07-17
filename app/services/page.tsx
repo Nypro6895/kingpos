@@ -1,14 +1,38 @@
-import { createService } from "@/app/services/actions";
+import { createService, saveServiceAddOnsAction } from "@/app/services/actions";
+import { ServiceBookableStaffEditor } from "@/app/booking-setup/booking-setup-editors";
+import { getCurrentSalonBookingSetup } from "@/lib/booking-setup";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
-import { getCurrentSalonServices } from "@/lib/services";
-import type { Service } from "@/types/service";
+import { getCurrentSalonServices, type ServiceWithAddOns } from "@/lib/services";
+import Link from "next/link";
 
 type ServicesPageProps = {
   searchParams: Promise<{
     error?: string;
+    service?: string | string[];
+    setup?: string | string[];
   }>;
 };
+
+function stringParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function servicesHref(input: { serviceId?: string | null; setup?: string }) {
+  const params = new URLSearchParams();
+
+  if (input.serviceId) {
+    params.set("service", input.serviceId);
+  }
+
+  if (input.setup) {
+    params.set("setup", input.setup);
+  }
+
+  const query = params.toString();
+
+  return query ? `/services?${query}` : "/services";
+}
 
 function Field({
   label,
@@ -146,7 +170,15 @@ function ServicesForm({
   );
 }
 
-function ServicesList({ services }: { services: Service[] }) {
+function ServicesList({
+  canManageServices,
+  selectedServiceId,
+  services,
+}: {
+  canManageServices: boolean;
+  selectedServiceId?: string | null;
+  services: ServiceWithAddOns[];
+}) {
   if (services.length === 0) {
     return (
       <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
@@ -162,10 +194,11 @@ function ServicesList({ services }: { services: Service[] }) {
     <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-medium uppercase text-zinc-500">
         <div className="col-span-12 sm:col-span-3">Name</div>
-        <div className="hidden sm:col-span-3 sm:block">Category</div>
+        <div className="hidden sm:col-span-2 sm:block">Category</div>
         <div className="hidden sm:col-span-2 sm:block">Price</div>
         <div className="hidden sm:col-span-2 sm:block">Duration</div>
-        <div className="hidden sm:col-span-2 sm:block">Status</div>
+        <div className="hidden sm:col-span-1 sm:block">Status</div>
+        <div className="hidden sm:col-span-2 sm:block">Booking</div>
       </div>
       <ul className="divide-y divide-zinc-200">
         {services.map((service) => (
@@ -173,7 +206,7 @@ function ServicesList({ services }: { services: Service[] }) {
             <div className="col-span-12 sm:col-span-3">
               <p className="font-medium text-zinc-950">{service.name}</p>
             </div>
-            <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-3">
+            <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
               <span className="font-medium text-zinc-500 sm:hidden">Category: </span>
               {service.category || "-"}
             </div>
@@ -185,8 +218,62 @@ function ServicesList({ services }: { services: Service[] }) {
               <span className="font-medium text-zinc-500 sm:hidden">Duration: </span>
               {service.duration_minutes} min
             </div>
-            <div className="col-span-6 self-center sm:col-span-2">
+            <div className="col-span-6 self-center sm:col-span-1">
               <StatusBadge isActive={service.is_active} />
+            </div>
+            <div className="col-span-12 sm:col-span-2">
+              <Link
+                className={`inline-flex min-h-9 items-center rounded-md border px-3 text-sm font-semibold ${
+                  selectedServiceId === service.id
+                    ? "border-zinc-950 bg-zinc-950 text-white"
+                    : "border-zinc-300 bg-white text-zinc-950"
+                }`}
+                href={servicesHref({
+                  serviceId: service.id,
+                  setup: "bookable_staff",
+                })}
+              >
+                Bookable staff
+              </Link>
+            </div>
+            <div className="col-span-12">
+              <form
+                action={saveServiceAddOnsAction}
+                className="mt-2 rounded-md border border-zinc-200 bg-zinc-50 p-3"
+              >
+                <input name="parent_service_id" type="hidden" value={service.id} />
+                <p className="text-xs font-semibold uppercase text-zinc-500">
+                  Add-ons for {service.name}
+                </p>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {services
+                    .filter((candidate) => candidate.id !== service.id && candidate.is_active)
+                    .map((candidate) => (
+                      <label
+                        className="flex items-center gap-2 text-sm text-zinc-700"
+                        key={candidate.id}
+                      >
+                        <input
+                          className="size-4"
+                          defaultChecked={service.addOnServiceIds.includes(candidate.id)}
+                          disabled={!canManageServices}
+                          name="add_on_service_ids"
+                          type="checkbox"
+                          value={candidate.id}
+                        />
+                        {candidate.name}
+                      </label>
+                    ))}
+                </div>
+                {canManageServices ? (
+                  <button
+                    className="mt-3 rounded-md bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
+                    type="submit"
+                  >
+                    Save add-ons
+                  </button>
+                ) : null}
+              </form>
             </div>
           </li>
         ))}
@@ -196,10 +283,13 @@ function ServicesList({ services }: { services: Service[] }) {
 }
 
 export default async function ServicesPage({ searchParams }: ServicesPageProps) {
-  const [{ error }, context] = await Promise.all([
+  const [params, context] = await Promise.all([
     searchParams,
     requireSalonManagePageContext("/services"),
   ]);
+  const error = stringParam(params.error);
+  const selectedServiceId = stringParam(params.service);
+  const setupMode = stringParam(params.setup);
 
   const canViewServices = await hasPermission("services.view", context);
 
@@ -217,10 +307,15 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
     );
   }
 
-  const [{ services }, canManageServices] = await Promise.all([
+  const [{ services }, bookingSetup, canManageServices] = await Promise.all([
     getCurrentSalonServices(),
+    getCurrentSalonBookingSetup(context),
     hasPermission("services.manage", context),
   ]);
+  const selectedService =
+    selectedServiceId && setupMode === "bookable_staff"
+      ? bookingSetup.services.find((service) => service.id === selectedServiceId)
+      : null;
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
@@ -238,8 +333,46 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
 
       <section className="mt-10">
         <h2 className="text-lg font-semibold text-zinc-950">Services</h2>
-        <ServicesList services={services} />
+        <ServicesList
+          canManageServices={canManageServices}
+          selectedServiceId={selectedService?.id ?? null}
+          services={services}
+        />
       </section>
+
+      {setupMode === "bookable_staff" ? (
+        <section className="mt-8">
+          {selectedService ? (
+            <ServiceBookableStaffEditor
+              assignments={bookingSetup.assignments}
+              canManage={bookingSetup.permissions.canManageAssignments}
+              readinessByStaffId={bookingSetup.readinessByStaffId}
+              service={selectedService}
+              staff={bookingSetup.staff}
+            />
+          ) : (
+            <div className="grid gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <h2 className="text-base font-semibold text-zinc-950">
+                Select a service
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {bookingSetup.services.map((service) => (
+                  <Link
+                    className="min-h-10 rounded-md border border-amber-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-950"
+                    href={servicesHref({
+                      serviceId: service.id,
+                      setup: "bookable_staff",
+                    })}
+                    key={service.id}
+                  >
+                    {service.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      ) : null}
     </main>
   );
 }

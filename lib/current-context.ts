@@ -374,6 +374,16 @@ function buildManageWorkspaceActions(input: {
 
 function buildStaffWorkspaceActions() {
   const myDay = workspaceAction("my-day", "My Day", "/staff/my-work");
+  const appointments = workspaceAction(
+    "appointments",
+    "Appointments",
+    "/staff/appointments",
+  );
+  const salonProfile = workspaceAction(
+    "salon-profile",
+    "Salon Profile",
+    "/salon-profile",
+  );
   const myIncome = workspaceAction(
     "my-income",
     "Income",
@@ -391,9 +401,9 @@ function buildStaffWorkspaceActions() {
   );
 
   return {
-    menuActions: [paystubs, analysis],
+    menuActions: [appointments, salonProfile, paystubs, analysis],
     primaryAction: myDay,
-    quickActions: [myDay, myIncome],
+    quickActions: [myDay, appointments, myIncome],
     secondaryAction: workspaceAction("open", "Open", "/staff/my-work"),
   };
 }

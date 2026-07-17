@@ -15,7 +15,6 @@ import { SalonProfileView } from "@/app/salon-profile/salon-profile-view";
 import {
   SALON_PROFILE_ALLOWED_IMAGE_TYPES,
   SALON_PROFILE_IMAGE_LIMITS,
-  buildSalonProfileMediaPath,
   type SalonProfileMediaKind,
 } from "@/lib/salon-profile-media";
 import {
@@ -59,6 +58,10 @@ type StudioProps = {
 type DrawerId = "look" | "opening" | "profile" | "preview" | "update";
 type LibraryTab = "all" | "archived" | "draft" | "published" | "scheduled";
 type UploadIntent = "content" | "identity";
+type SalonProfileUploadableKind = Extract<
+  SalonProfileMediaKind,
+  "cover" | "logo" | "look" | "update"
+>;
 type UploadState = "idle" | "processing" | "ready" | "uploading" | "uploaded";
 
 const acceptedMimeTypes = new Set<string>(SALON_PROFILE_ALLOWED_IMAGE_TYPES);
@@ -103,6 +106,18 @@ const mediaConfig: Record<
     maxHeight: 2000,
     maxWidth: 1600,
     targetBytes: 1.5 * 1024 * 1024,
+  },
+  review: {
+    aspectRatio: 1,
+    maxHeight: 1400,
+    maxWidth: 1400,
+    targetBytes: 900 * 1024,
+  },
+  staffAvatar: {
+    aspectRatio: 1,
+    maxHeight: 1024,
+    maxWidth: 1024,
+    targetBytes: 500 * 1024,
   },
   update: {
     aspectRatio: 1.6,
@@ -203,7 +218,7 @@ function canvasToBlob(
 
 async function processImage(
   file: File,
-  kind: SalonProfileMediaKind,
+  kind: SalonProfileUploadableKind,
   adjustment: { offsetX: number; offsetY: number; zoom: number },
 ) {
   const image = await readImage(file);
@@ -477,7 +492,7 @@ function SalonMediaUploader({
   currentUrl: string | null;
   disabled?: boolean;
   intent: UploadIntent;
-  kind: SalonProfileMediaKind;
+  kind: SalonProfileUploadableKind;
   label: string;
   onRemoveExisting?: () => void;
   onUploadStateChange?: (isBusy: boolean) => void;
@@ -574,11 +589,8 @@ function SalonMediaUploader({
     setError(null);
 
     try {
-      const session = await getSalonProfileMediaUploadSessionAction(intent);
-      const path = buildSalonProfileMediaPath({
-        kind,
-        salonId: session.salonId,
-      });
+      const session = await getSalonProfileMediaUploadSessionAction(intent, kind);
+      const path = session.path;
 
       await uploadToSupabase({
         accessToken: session.accessToken,

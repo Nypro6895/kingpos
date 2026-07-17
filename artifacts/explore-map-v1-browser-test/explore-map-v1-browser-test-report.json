@@ -1,0 +1,463 @@
+{
+  "baseUrl": "http://127.0.0.1:3331",
+  "executablePath": "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  "envPresence": {
+    "NEXT_PUBLIC_MAPTILER_KEY": false,
+    "MAPTILER_API_KEY": false
+  },
+  "rpc": {
+    "home": {
+      "status": "ok",
+      "count": 5,
+      "error": null,
+      "withCoordinates": 0,
+      "withDistance": 0
+    },
+    "gps": {
+      "status": "ok",
+      "count": 5,
+      "error": null,
+      "withCoordinates": 0,
+      "withDistance": 0
+    },
+    "inspiration": {
+      "status": "ok",
+      "count": 6,
+      "error": null,
+      "withCoordinates": 0,
+      "withDistance": 0
+    }
+  },
+  "pages": {
+    "explore-home-1440": {
+      "url": "http://127.0.0.1:3331/explore",
+      "headings": [
+        "Discover salons",
+        "Fresh inspiration",
+        "Recommended for you",
+        "King Nails",
+        "[E2E] Booking 20260716002831 Salon",
+        "Tram 3",
+        "Tram 2",
+        "Tram Nails",
+        "Popular services",
+        "Keep moving in KingPOS"
+      ],
+      "hasFresh": true,
+      "hasNearYou": false,
+      "hasViewMap": false,
+      "hasMapProviderNotConfigured": false,
+      "hasLocationStatus": false,
+      "hasFakeDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": [],
+      "inspirationCount": 6,
+      "currentLocationButton": true
+    },
+    "explore-near-you-1440": {
+      "url": "http://127.0.0.1:3331/explore",
+      "headings": [
+        "Discover salons",
+        "Fresh inspiration",
+        "Location status",
+        "Recommended for you",
+        "King Nails",
+        "[E2E] Booking 20260716002831 Salon",
+        "Tram 3",
+        "Tram 2",
+        "Tram Nails",
+        "Popular services",
+        "Keep moving in KingPOS"
+      ],
+      "hasFresh": true,
+      "hasNearYou": false,
+      "hasViewMap": false,
+      "hasMapProviderNotConfigured": false,
+      "hasLocationStatus": true,
+      "hasFakeDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": [],
+      "inspirationCount": 6,
+      "currentLocationButton": true
+    },
+    "explore-search-tram": {
+      "url": "http://127.0.0.1:3331/explore?q=tram",
+      "headings": [
+        "Discover salons",
+        "3 best matches for \"tram\"",
+        "Best matches for \"tram\"",
+        "Tram 2",
+        "Tram 3",
+        "Tram Nails",
+        "Recommended for you",
+        "King Nails",
+        "[E2E] Booking 20260716002831 Salon",
+        "Keep moving in KingPOS"
+      ],
+      "hasFresh": false,
+      "hasNearYou": false,
+      "hasViewMap": false,
+      "hasMapProviderNotConfigured": false,
+      "hasLocationStatus": false,
+      "hasFakeDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": [],
+      "inspirationCount": 0,
+      "currentLocationButton": true
+    },
+    "salon-settings-map-location": {
+      "url": "http://127.0.0.1:3331/login?next=%2Fsalon-settings",
+      "headings": [
+        "Login"
+      ],
+      "hasFresh": false,
+      "hasNearYou": false,
+      "hasViewMap": false,
+      "hasMapProviderNotConfigured": false,
+      "hasLocationStatus": false,
+      "hasFakeDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": [],
+      "inspirationCount": 0,
+      "currentLocationButton": false
+    },
+    "explore-gps-denied": {
+      "url": "http://127.0.0.1:3331/explore",
+      "headings": [
+        "Discover salons",
+        "Fresh inspiration",
+        "Location status",
+        "Recommended for you",
+        "King Nails",
+        "[E2E] Booking 20260716002831 Salon",
+        "Tram 3",
+        "Tram 2",
+        "Tram Nails",
+        "Popular services",
+        "Keep moving in KingPOS"
+      ],
+      "hasFresh": true,
+      "hasNearYou": false,
+      "hasViewMap": false,
+      "hasMapProviderNotConfigured": false,
+      "hasLocationStatus": true,
+      "hasFakeDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": [],
+      "inspirationCount": 6,
+      "currentLocationButton": true
+    },
+    "explore-home-1024": {
+      "url": "http://127.0.0.1:3331/explore",
+      "headings": [
+        "Discover salons",
+        "Fresh inspiration",
+        "Recommended for you",
+        "King Nails",
+        "[E2E] Booking 20260716002831 Salon",
+        "Tram 3",
+        "Tram 2",
+        "Tram Nails",
+        "Popular services",
+        "Keep moving in KingPOS"
+      ],
+      "hasFresh": true,
+      "hasNearYou": false,
+      "hasViewMap": false,
+      "hasMapProviderNotConfigured": false,
+      "hasLocationStatus": false,
+      "hasFakeDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": [],
+      "inspirationCount": 6,
+      "currentLocationButton": true
+    },
+    "explore-home-768": {
+      "url": "http://127.0.0.1:3331/explore",
+      "headings": [
+        "Discover salons",
+        "Fresh inspiration",
+        "Recommended for you",
+        "King Nails",
+        "[E2E] Booking 20260716002831 Salon",
+        "Tram 3",
+        "Tram 2",
+        "Tram Nails",
+        "Popular services",
+        "Keep moving in KingPOS"
+      ],
+      "hasFresh": true,
+      "hasNearYou": false,
+      "hasViewMap": false,
+      "hasMapProviderNotConfigured": false,
+      "hasLocationStatus": false,
+      "hasFakeDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": [],
+      "inspirationCount": 6,
+      "currentLocationButton": true
+    },
+    "explore-mobile-near-you": {
+      "url": "http://127.0.0.1:3331/explore",
+      "headings": [
+        "Discover salons",
+        "Fresh inspiration",
+        "Recommended for you",
+        "King Nails",
+        "[E2E] Booking 20260716002831 Salon",
+        "Tram 3",
+        "Tram 2",
+        "Tram Nails",
+        "Popular services",
+        "Keep moving in KingPOS"
+      ],
+      "hasFresh": true,
+      "hasNearYou": false,
+      "hasViewMap": false,
+      "hasMapProviderNotConfigured": false,
+      "hasLocationStatus": false,
+      "hasFakeDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": [],
+      "inspirationCount": 6,
+      "currentLocationButton": true
+    },
+    "explore-home-375": {
+      "url": "http://127.0.0.1:3331/explore",
+      "headings": [
+        "Discover salons",
+        "Fresh inspiration",
+        "Recommended for you",
+        "King Nails",
+        "[E2E] Booking 20260716002831 Salon",
+        "Tram 3",
+        "Tram 2",
+        "Tram Nails",
+        "Popular services",
+        "Keep moving in KingPOS"
+      ],
+      "hasFresh": true,
+      "hasNearYou": false,
+      "hasViewMap": false,
+      "hasMapProviderNotConfigured": false,
+      "hasLocationStatus": false,
+      "hasFakeDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": [],
+      "inspirationCount": 6,
+      "currentLocationButton": true
+    }
+  },
+  "consoleMessages": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "mapRequests": [],
+  "imageResponses": [
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2F900df2a5-168e-4cee-b9f6-b2b0e875ac2d%2F742d64b9-b27f-46cb-8f11-f142d3c5296b.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F5a971d59-79d7-4038-a98e-e6242b242546%2Flooks%2Fb56989f9-dfc5-4f97-9ea8-17035ceced61%2Fcea664ae-3370-43fc-85d9-ebb3c6fb54de.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Fupdates%2Fced12f14-08c4-4aad-9669-78bbdbcac4a9.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2Fa0617011-c457-4ce2-8540-c8b028d2e777%2Flooks%2Fa6a6142a-ed17-4a2a-90fc-9d9874d104e6%2Fc0ead9c6-165c-4b74-b081-aac0f5d179f2.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F993d3c5f-97c1-4bf5-9d3f-3f54f4b1c0cf%2Flooks%2F98f7352e-e0a5-4416-bff0-036a94a1e52e%2F88d676ed-7ec1-42f7-9f94-ad24db1c9718.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2Fe41d04b7-2ec5-40c8-9392-ef010836e91e%2Fd602c9d4-c9f5-4341-b4fb-79dbee9c781b.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2Fe41d04b7-2ec5-40c8-9392-ef010836e91e%2Fd602c9d4-c9f5-4341-b4fb-79dbee9c781b.webp&w=640&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2Fa0617011-c457-4ce2-8540-c8b028d2e777%2Flooks%2Fa6a6142a-ed17-4a2a-90fc-9d9874d104e6%2Fc0ead9c6-165c-4b74-b081-aac0f5d179f2.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F993d3c5f-97c1-4bf5-9d3f-3f54f4b1c0cf%2Flooks%2F98f7352e-e0a5-4416-bff0-036a94a1e52e%2F88d676ed-7ec1-42f7-9f94-ad24db1c9718.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2Fe41d04b7-2ec5-40c8-9392-ef010836e91e%2Fd602c9d4-c9f5-4341-b4fb-79dbee9c781b.webp&w=640&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F5a971d59-79d7-4038-a98e-e6242b242546%2Flooks%2Fb56989f9-dfc5-4f97-9ea8-17035ceced61%2Fcea664ae-3370-43fc-85d9-ebb3c6fb54de.webp&w=640&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2Fe41d04b7-2ec5-40c8-9392-ef010836e91e%2Fd602c9d4-c9f5-4341-b4fb-79dbee9c781b.webp&w=640&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2F900df2a5-168e-4cee-b9f6-b2b0e875ac2d%2F742d64b9-b27f-46cb-8f11-f142d3c5296b.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F5a971d59-79d7-4038-a98e-e6242b242546%2Flooks%2Fb56989f9-dfc5-4f97-9ea8-17035ceced61%2Fcea664ae-3370-43fc-85d9-ebb3c6fb54de.webp&w=640&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Fupdates%2Fced12f14-08c4-4aad-9669-78bbdbcac4a9.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2Fa0617011-c457-4ce2-8540-c8b028d2e777%2Flooks%2Fa6a6142a-ed17-4a2a-90fc-9d9874d104e6%2Fc0ead9c6-165c-4b74-b081-aac0f5d179f2.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F993d3c5f-97c1-4bf5-9d3f-3f54f4b1c0cf%2Flooks%2F98f7352e-e0a5-4416-bff0-036a94a1e52e%2F88d676ed-7ec1-42f7-9f94-ad24db1c9718.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2Fa0617011-c457-4ce2-8540-c8b028d2e777%2Flooks%2Fa6a6142a-ed17-4a2a-90fc-9d9874d104e6%2Fc0ead9c6-165c-4b74-b081-aac0f5d179f2.webp&w=640&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2Fe41d04b7-2ec5-40c8-9392-ef010836e91e%2Fd602c9d4-c9f5-4341-b4fb-79dbee9c781b.webp&w=750&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2Fa0617011-c457-4ce2-8540-c8b028d2e777%2Flooks%2Fa6a6142a-ed17-4a2a-90fc-9d9874d104e6%2Fc0ead9c6-165c-4b74-b081-aac0f5d179f2.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F993d3c5f-97c1-4bf5-9d3f-3f54f4b1c0cf%2Flooks%2F98f7352e-e0a5-4416-bff0-036a94a1e52e%2F88d676ed-7ec1-42f7-9f94-ad24db1c9718.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F5a971d59-79d7-4038-a98e-e6242b242546%2Flooks%2Fb56989f9-dfc5-4f97-9ea8-17035ceced61%2Fcea664ae-3370-43fc-85d9-ebb3c6fb54de.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2Fe41d04b7-2ec5-40c8-9392-ef010836e91e%2Fd602c9d4-c9f5-4341-b4fb-79dbee9c781b.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2Fe41d04b7-2ec5-40c8-9392-ef010836e91e%2Fd602c9d4-c9f5-4341-b4fb-79dbee9c781b.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2F900df2a5-168e-4cee-b9f6-b2b0e875ac2d%2F742d64b9-b27f-46cb-8f11-f142d3c5296b.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F5a971d59-79d7-4038-a98e-e6242b242546%2Flooks%2Fb56989f9-dfc5-4f97-9ea8-17035ceced61%2Fcea664ae-3370-43fc-85d9-ebb3c6fb54de.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Fupdates%2Fced12f14-08c4-4aad-9669-78bbdbcac4a9.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2Fa0617011-c457-4ce2-8540-c8b028d2e777%2Flooks%2Fa6a6142a-ed17-4a2a-90fc-9d9874d104e6%2Fc0ead9c6-165c-4b74-b081-aac0f5d179f2.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F993d3c5f-97c1-4bf5-9d3f-3f54f4b1c0cf%2Flooks%2F98f7352e-e0a5-4416-bff0-036a94a1e52e%2F88d676ed-7ec1-42f7-9f94-ad24db1c9718.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2Fe41d04b7-2ec5-40c8-9392-ef010836e91e%2Fd602c9d4-c9f5-4341-b4fb-79dbee9c781b.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2F900df2a5-168e-4cee-b9f6-b2b0e875ac2d%2F742d64b9-b27f-46cb-8f11-f142d3c5296b.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F5a971d59-79d7-4038-a98e-e6242b242546%2Flooks%2Fb56989f9-dfc5-4f97-9ea8-17035ceced61%2Fcea664ae-3370-43fc-85d9-ebb3c6fb54de.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Fupdates%2Fced12f14-08c4-4aad-9669-78bbdbcac4a9.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2Fa0617011-c457-4ce2-8540-c8b028d2e777%2Flooks%2Fa6a6142a-ed17-4a2a-90fc-9d9874d104e6%2Fc0ead9c6-165c-4b74-b081-aac0f5d179f2.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F993d3c5f-97c1-4bf5-9d3f-3f54f4b1c0cf%2Flooks%2F98f7352e-e0a5-4416-bff0-036a94a1e52e%2F88d676ed-7ec1-42f7-9f94-ad24db1c9718.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2Fe41d04b7-2ec5-40c8-9392-ef010836e91e%2Fd602c9d4-c9f5-4341-b4fb-79dbee9c781b.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Flooks%2F900df2a5-168e-4cee-b9f6-b2b0e875ac2d%2F742d64b9-b27f-46cb-8f11-f142d3c5296b.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F5a971d59-79d7-4038-a98e-e6242b242546%2Flooks%2Fb56989f9-dfc5-4f97-9ea8-17035ceced61%2Fcea664ae-3370-43fc-85d9-ebb3c6fb54de.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F7f599bc8-a806-4a68-be86-c149c21709e2%2Fupdates%2Fced12f14-08c4-4aad-9669-78bbdbcac4a9.webp&w=384&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2Fa0617011-c457-4ce2-8540-c8b028d2e777%2Flooks%2Fa6a6142a-ed17-4a2a-90fc-9d9874d104e6%2Fc0ead9c6-165c-4b74-b081-aac0f5d179f2.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "url": "http://127.0.0.1:3331/_next/image?url=https%3A%2F%2Fbowkoiprvqwjilwaxhda.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fsalon-profile-media%2F993d3c5f-97c1-4bf5-9d3f-3f54f4b1c0cf%2Flooks%2F98f7352e-e0a5-4416-bff0-036a94a1e52e%2F88d676ed-7ec1-42f7-9f94-ad24db1c9718.webp&w=828&q=75",
+      "status": 200,
+      "contentType": "image/webp"
+    }
+  ],
+  "assertions": []
+}

@@ -1,8 +1,9 @@
 "use client";
 
 import {
-  createSalonProfileBookingRequestAction,
   createSalonProfileCommentAction,
+  createSalonProfileReviewAction,
+  createSalonProfileReviewReplyAction,
   createSalonProfileSocialPostAction,
   deleteSalonProfileLookDirectAction,
   getSalonProfileMediaUploadSessionAction,
@@ -17,7 +18,6 @@ import {
 import {
   SALON_PROFILE_ALLOWED_IMAGE_TYPES,
   SALON_PROFILE_IMAGE_LIMITS,
-  buildSalonProfileMediaPath,
   type SalonProfileMediaKind,
 } from "@/lib/salon-profile-media";
 import type {
@@ -25,6 +25,7 @@ import type {
   PublicSalonProfileComment,
   PublicSalonProfileData,
   PublicSalonProfileLook,
+  PublicSalonProfileReview,
   PublicSalonProfileService,
   PublicSalonProfileStaff,
   SalonProfileReadiness,
@@ -59,6 +60,10 @@ type SalonProfileViewProps = {
 
 type TabId = "about" | "discover" | "gallery" | "reviews" | "services" | "team";
 type ComposerType = "auto" | "look" | "opening" | "update";
+type SalonProfileUploadableKind = Extract<
+  SalonProfileMediaKind,
+  "cover" | "logo" | "look" | "update"
+>;
 type BookingContext = {
   lookId?: string | null;
   note?: string | null;
@@ -124,6 +129,18 @@ const mediaConfig: Record<
     maxHeight: 2000,
     maxWidth: 1600,
     targetBytes: 1.5 * 1024 * 1024,
+  },
+  review: {
+    aspectRatio: 1,
+    maxHeight: 1400,
+    maxWidth: 1400,
+    targetBytes: 900 * 1024,
+  },
+  staffAvatar: {
+    aspectRatio: 1,
+    maxHeight: 1024,
+    maxWidth: 1024,
+    targetBytes: 500 * 1024,
   },
   update: {
     aspectRatio: 1.6,
@@ -420,7 +437,7 @@ function uploadToSupabase(input: {
 async function processAndUploadImage(input: {
   file: File;
   intent: "content" | "identity";
-  kind: SalonProfileMediaKind;
+  kind: SalonProfileUploadableKind;
   onProgress: (value: number) => void;
 }) {
   if (!acceptedMimeTypes.has(input.file.type)) {
@@ -432,11 +449,10 @@ async function processAndUploadImage(input: {
   }
 
   const processed = await processImage(input.file, input.kind);
-  const session = await getSalonProfileMediaUploadSessionAction(input.intent);
-  const path = buildSalonProfileMediaPath({
-    kind: input.kind,
-    salonId: session.salonId,
-  });
+  const session = await getSalonProfileMediaUploadSessionAction(
+    input.intent,
+    input.kind,
+  );
 
   await uploadToSupabase({
     accessToken: session.accessToken,
@@ -444,11 +460,11 @@ async function processAndUploadImage(input: {
     blob: processed,
     bucket: session.bucket,
     onProgress: input.onProgress,
-    path,
+    path: session.path,
     supabaseUrl: session.supabaseUrl,
   });
 
-  return path;
+  return session.path;
 }
 
 function EmptyState({
@@ -532,6 +548,32 @@ function LookImage({
   );
 }
 
+function CaptionWithHashtags({ text }: { text: string }) {
+  const parts = text.split(/(#[\p{L}\p{N}_-]+)/gu);
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (!part.startsWith("#") || part.length < 2) {
+          return <span key={`${part}-${index}`}>{part}</span>;
+        }
+
+        const tag = part.slice(1).toLowerCase();
+
+        return (
+          <a
+            className="font-semibold text-zinc-950 underline-offset-4 hover:underline"
+            href={`/explore?q=${encodeURIComponent(`#${tag}`)}`}
+            key={`${part}-${index}`}
+          >
+            {part}
+          </a>
+        );
+      })}
+    </>
+  );
+}
+
 function SalonCover({
   coverImageUrl,
   name,
@@ -561,11 +603,13 @@ function SalonCover({
 
 function MediaApplyButton({
   className = "",
+  iconOnly = false,
   kind,
   label,
   salonId,
 }: {
   className?: string;
+  iconOnly?: boolean;
   kind: "cover" | "logo";
   label: string;
   salonId: string;
@@ -629,12 +673,31 @@ function MediaApplyButton({
         type="file"
       />
       <Button
+        aria-label={label}
         className={className}
         disabled={busy}
         onClick={() => inputRef.current?.click()}
+        title={busy ? `Applying ${progress}%` : label}
         variant="secondary"
       >
-        {busy ? `Applying ${progress}%` : label}
+        {iconOnly ? (
+          <>
+            <span
+              aria-hidden="true"
+              className="relative block h-4 w-5 rounded-[3px] border-2 border-current"
+            >
+              <span className="absolute -top-1 left-1 h-1 w-3 rounded-t-[2px] bg-current" />
+              <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-current" />
+            </span>
+            <span className="sr-only">
+              {busy ? `Applying ${progress}%` : label}
+            </span>
+          </>
+        ) : busy ? (
+          `Applying ${progress}%`
+        ) : (
+          label
+        )}
       </Button>
       {error ? <span className="text-xs text-red-700">{error}</span> : null}
     </span>
@@ -642,35 +705,94 @@ function MediaApplyButton({
 }
 
 function Modal({
+  bodyClassName = "",
   children,
+  footer,
+  initialFocusRef,
   onClose,
+  panelClassName = "",
   title,
 }: {
+  bodyClassName?: string;
   children: ReactNode;
+  footer?: ReactNode;
+  initialFocusRef?: { current: HTMLElement | null };
   onClose: () => void;
+  panelClassName?: string;
   title: string;
 }) {
-  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const latestOnCloseRef = useRef(onClose);
+  const previousActiveElementRef = useRef<Element | null>(null);
   const titleId = useId();
 
   useEffect(() => {
-    closeRef.current?.focus();
+    latestOnCloseRef.current = onClose;
+  }, [onClose]);
 
-    function onKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
+  useEffect(() => {
+    previousActiveElementRef.current = document.activeElement;
+    const target = initialFocusRef?.current ?? dialogRef.current;
+
+    target?.focus({ preventScroll: true });
+
+    return () => {
+      const previousActiveElement = previousActiveElementRef.current;
+
+      if (previousActiveElement instanceof HTMLElement) {
+        previousActiveElement.focus({ preventScroll: true });
       }
+    };
+  }, [initialFocusRef]);
+
+  function onDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      latestOnCloseRef.current();
+      return;
     }
 
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+    if (event.key !== "Tab" || !dialogRef.current) {
+      return;
+    }
+
+    const focusableElements = Array.from(
+      dialogRef.current.querySelectorAll<HTMLElement>(
+        [
+          "a[href]",
+          "button:not([disabled])",
+          "textarea:not([disabled])",
+          "input:not([disabled])",
+          "select:not([disabled])",
+          "[tabindex]:not([tabindex='-1'])",
+        ].join(","),
+      ),
+    ).filter((element) => element.offsetParent !== null);
+
+    if (focusableElements.length === 0) {
+      event.preventDefault();
+      dialogRef.current.focus({ preventScroll: true });
+      return;
+    }
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (event.shiftKey && document.activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus({ preventScroll: true });
+    } else if (!event.shiftKey && document.activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus({ preventScroll: true });
+    }
+  }
 
   return (
     <div
       aria-labelledby={titleId}
       aria-modal="true"
       className="fixed inset-0 z-50 grid bg-zinc-950/45 p-0 backdrop-blur-sm sm:p-5"
+      onKeyDown={onDialogKeyDown}
       role="dialog"
     >
       <button
@@ -679,22 +801,35 @@ function Modal({
         onClick={onClose}
         type="button"
       />
-      <div className="relative mt-auto max-h-[92vh] w-full overflow-auto rounded-t-xl bg-white shadow-2xl sm:m-auto sm:max-w-2xl sm:rounded-xl">
-        <div className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-5">
+      <div
+        className={[
+          "relative mt-auto grid max-h-[min(92dvh,900px)] w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:m-auto sm:max-w-2xl sm:rounded-2xl",
+          panelClassName,
+        ].join(" ")}
+        ref={dialogRef}
+        tabIndex={-1}
+      >
+        <div className="z-10 flex min-h-14 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-5">
           <h2 className="text-base font-semibold text-zinc-950" id={titleId}>
             {title}
           </h2>
           <button
             aria-label="Close"
-            className="grid h-10 w-10 place-items-center rounded-md border border-zinc-200 text-zinc-700 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+            className="grid h-9 w-9 place-items-center rounded-full border border-zinc-200 text-sm text-zinc-700 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
             onClick={onClose}
-            ref={closeRef}
             type="button"
           >
             x
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div className={["overflow-y-auto p-5", bodyClassName].join(" ")}>
+          {children}
+        </div>
+        {footer ? (
+          <div className="z-10 border-t border-zinc-200 bg-white px-5 py-4">
+            {footer}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -924,22 +1059,39 @@ function ComposerModal({
   onPosted: () => void;
 }) {
   const router = useRouter();
+  const captionRef = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const formId = useId();
   const [caption, setCaption] = useState("");
   const [contentType, setContentType] = useState<ComposerType>(initialType);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [durationMinutes, setDurationMinutes] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [mood, setMood] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [serviceId, setServiceId] = useState("");
   const [staffId, setStaffId] = useState("");
   const [startsAt, setStartsAt] = useState("");
+  const [startingPrice, setStartingPrice] = useState("");
   const [title, setTitle] = useState("");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const isDirty = Boolean(
-    caption.trim() || file || title.trim() || serviceId || staffId || startsAt,
+    caption.trim() ||
+      file ||
+      title.trim() ||
+      serviceId ||
+      staffId ||
+      startsAt ||
+      mood ||
+      durationMinutes ||
+      startingPrice,
   );
+
+  useEffect(() => {
+    captionRef.current?.focus({ preventScroll: true });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -967,6 +1119,17 @@ function ComposerModal({
 
     setFile(nextFile);
     setPreviewUrl(URL.createObjectURL(nextFile));
+  }
+
+  function resizeCaptionTextarea() {
+    const textarea = captionRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 220)}px`;
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -1007,10 +1170,13 @@ function ComposerModal({
         caption,
         contentType: resolvedType,
         imagePath,
+        durationMinutes: durationMinutes ? Number(durationMinutes) : null,
+        mood: mood || null,
         salonId: data.profile.salonId,
         serviceId: serviceId || null,
         staffId: staffId || null,
         startsAt: startsAt ? new Date(startsAt).toISOString() : null,
+        startingPrice: startingPrice ? Number(startingPrice) : null,
         title,
       });
 
@@ -1048,10 +1214,25 @@ function ComposerModal({
 
   return (
     <Modal
+      bodyClassName="p-0"
+      footer={
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-zinc-500" aria-live="polite">
+            {submitting
+              ? `${pendingLabel} ${progress}%`
+              : "Photo, caption, and publish happen in one step."}
+          </p>
+          <Button disabled={submitting} form={formId} type="submit" variant="primary">
+            {submitting ? `${pendingLabel}...` : primaryLabel}
+          </Button>
+        </div>
+      }
+      initialFocusRef={captionRef}
       onClose={requestClose}
+      panelClassName="sm:max-w-[46rem]"
       title={contentType === "opening" ? "Share opening" : "Create post"}
     >
-      <form className="grid gap-4" onSubmit={submit}>
+      <form className="grid gap-4 p-5" id={formId} onSubmit={submit}>
         <div className="flex items-center gap-3">
           <Avatar
             logoUrl={data.profile.logoImageUrl}
@@ -1063,14 +1244,22 @@ function ComposerModal({
             <p className="text-sm text-zinc-500">Posting to Salon Profile</p>
           </div>
         </div>
+        <label className="sr-only" htmlFor={`${formId}-caption`}>
+          Post caption
+        </label>
         <textarea
-          className="min-h-32 resize-none rounded-md border border-zinc-300 bg-white px-3 py-3 text-base leading-7 text-zinc-950 outline-none transition focus:border-zinc-950"
-          onChange={(event) => setCaption(event.currentTarget.value)}
+          className="max-h-56 min-h-28 resize-none rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-base leading-7 text-zinc-950 outline-none transition focus:border-zinc-950"
+          id={`${formId}-caption`}
+          onChange={(event) => {
+            setCaption(event.currentTarget.value);
+            resizeCaptionTextarea();
+          }}
           placeholder="What would you like customers to see?"
+          ref={captionRef}
           value={caption}
         />
         <div
-          className="grid min-h-44 cursor-pointer place-items-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-center transition hover:border-zinc-400"
+          className="grid min-h-36 cursor-pointer place-items-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4 text-center transition hover:border-zinc-400"
           onClick={() => fileInputRef.current?.click()}
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => {
@@ -1088,14 +1277,16 @@ function ComposerModal({
             type="file"
           />
           {previewUrl ? (
-            <div className="grid w-full gap-3">
+            <div className="relative w-full">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 alt="Selected post preview"
-                className="max-h-72 w-full rounded-md object-cover"
+                className="max-h-72 w-full rounded-xl object-cover"
                 src={previewUrl}
               />
               <Button
+                aria-label="Remove selected image"
+                className="absolute right-3 top-3 min-h-8 rounded-full bg-white/95 px-3 text-xs shadow-sm"
                 onClick={(event) => {
                   event.stopPropagation();
                   setFile(null);
@@ -1103,7 +1294,7 @@ function ComposerModal({
                 }}
                 variant="secondary"
               >
-                Remove image
+                Remove
               </Button>
             </div>
           ) : (
@@ -1170,6 +1361,20 @@ function ComposerModal({
               </select>
             </label>
             <label className="grid gap-2">
+              <span className="text-sm font-semibold text-zinc-800">Mood</span>
+              <select
+                className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm"
+                onChange={(event) => setMood(event.currentTarget.value)}
+                value={mood}
+              >
+                <option value="">No mood</option>
+                <option value="Soft & clean">Soft & clean</option>
+                <option value="Summer bright">Summer bright</option>
+                <option value="Rich & modern">Rich & modern</option>
+                <option value="Special moment">Special moment</option>
+              </select>
+            </label>
+            <label className="grid gap-2">
               <span className="text-sm font-semibold text-zinc-800">
                 Recommended artist
               </span>
@@ -1186,6 +1391,35 @@ function ComposerModal({
                 ))}
               </select>
             </label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold text-zinc-800">
+                  Duration
+                </span>
+                <input
+                  className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
+                  min="0"
+                  onChange={(event) => setDurationMinutes(event.currentTarget.value)}
+                  placeholder="Minutes"
+                  type="number"
+                  value={durationMinutes}
+                />
+              </label>
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold text-zinc-800">
+                  Starting price
+                </span>
+                <input
+                  className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
+                  min="0"
+                  onChange={(event) => setStartingPrice(event.currentTarget.value)}
+                  placeholder="0.00"
+                  step="0.01"
+                  type="number"
+                  value={startingPrice}
+                />
+              </label>
+            </div>
             {contentType === "opening" ? (
               <label className="grid gap-2">
                 <span className="text-sm font-semibold text-zinc-800">
@@ -1206,16 +1440,6 @@ function ComposerModal({
             {error}
           </p>
         ) : null}
-        <div className="flex items-center justify-between gap-3 border-t border-zinc-200 pt-4">
-          <p className="text-sm text-zinc-500" aria-live="polite">
-            {submitting
-              ? `${pendingLabel} ${progress}%`
-              : "Photo, caption, and publish happen in one step."}
-          </p>
-          <Button disabled={submitting} type="submit" variant="primary">
-            {submitting ? `${pendingLabel}...` : primaryLabel}
-          </Button>
-        </div>
       </form>
     </Modal>
   );
@@ -1345,7 +1569,11 @@ function FeedCard({
     >
       <div className="flex items-start justify-between gap-3 p-4">
         <div className="flex min-w-0 items-center gap-3">
-          <Avatar logoUrl={logoUrl} name={item.authorName} size="sm" />
+          <Avatar
+            logoUrl={item.authorAvatarUrl ?? logoUrl}
+            name={item.authorName}
+            size="sm"
+          />
           <div className="min-w-0">
             <p className="truncate font-semibold text-zinc-950">
               {item.authorName}
@@ -1411,8 +1639,21 @@ function FeedCard({
       </div>
       {item.caption ? (
         <p className="px-4 pb-4 text-sm leading-6 text-zinc-800">
-          {item.caption}
+          <CaptionWithHashtags text={item.caption} />
         </p>
+      ) : null}
+      {item.hashtags.length > 0 ? (
+        <div className="flex flex-wrap gap-2 px-4 pb-4">
+          {item.hashtags.map((tag) => (
+            <a
+              className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-200"
+              href={`/explore?q=${encodeURIComponent(`#${tag}`)}`}
+              key={tag}
+            >
+              #{tag}
+            </a>
+          ))}
+        </div>
       ) : null}
       {item.imageUrl ? (
         <div className="bg-zinc-100">
@@ -1980,49 +2221,117 @@ function CommentItem({
   );
 }
 
-function BookingRequestDialog({
-  canBook,
-  context,
-  data,
-  isAuthenticated,
-  onClose,
+function ReviewRatingInput({
+  onChange,
+  value,
 }: {
-  canBook: boolean;
-  context: BookingContext;
-  data: PublicSalonProfileData;
-  isAuthenticated: boolean;
-  onClose: () => void;
+  onChange: (value: number) => void;
+  value: number;
 }) {
-  const [serviceId, setServiceId] = useState(context?.serviceId ?? "");
-  const [staffId, setStaffId] = useState(context?.staffId ?? "");
-  const [requestedStartAt, setRequestedStartAt] = useState("");
-  const [note, setNote] = useState(context?.note ?? "");
+  return (
+    <div className="flex flex-wrap gap-2" role="group" aria-label="Review rating">
+      {[1, 2, 3, 4, 5].map((rating) => (
+        <button
+          aria-pressed={value === rating}
+          className={[
+            "h-10 min-w-10 rounded-full border px-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
+            value === rating
+              ? "border-zinc-950 bg-zinc-950 text-white"
+              : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300",
+          ].join(" ")}
+          key={rating}
+          onClick={() => onChange(rating)}
+          type="button"
+        >
+          {rating}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ReviewSummaryPanel({
+  summary,
+}: {
+  summary: PublicSalonProfileData["reviewSummary"];
+}) {
+  const maxCount = Math.max(...Object.values(summary.ratingCounts), 1);
+  const average = summary.averageRating?.toFixed(1) ?? "New";
+
+  return (
+    <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+        Customer reviews
+      </p>
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-4xl font-semibold text-zinc-950">{average}</p>
+          <p className="mt-1 text-sm text-zinc-500">
+            {summary.reviewCount} review{summary.reviewCount === 1 ? "" : "s"}
+            {summary.verifiedCount > 0
+              ? ` / ${summary.verifiedCount} verified`
+              : ""}
+          </p>
+        </div>
+        <div className="grid min-w-52 flex-1 gap-2 sm:max-w-sm">
+          {[5, 4, 3, 2, 1].map((rating) => {
+            const count = summary.ratingCounts[rating as 1 | 2 | 3 | 4 | 5];
+
+            return (
+              <div className="grid grid-cols-[2rem_1fr_2rem] items-center gap-2" key={rating}>
+                <span className="text-xs font-semibold text-zinc-500">
+                  {rating}
+                </span>
+                <div className="h-2 overflow-hidden rounded-full bg-zinc-100">
+                  <div
+                    className="h-full rounded-full bg-zinc-950"
+                    style={{ width: `${(count / maxCount) * 100}%` }}
+                  />
+                </div>
+                <span className="text-right text-xs text-zinc-500">{count}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReviewComposer({
+  disabledReason,
+  onPosted,
+  salonId,
+}: {
+  disabledReason: string | null;
+  onPosted: () => void;
+  salonId: string;
+}) {
+  const [body, setBody] = useState("");
+  const [rating, setRating] = useState(5);
   const [status, setStatus] = useState("");
+  const [title, setTitle] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!canBook) {
-      setStatus("Open the public profile as a customer to request an appointment.");
+    if (disabledReason) {
+      setStatus(disabledReason);
       return;
     }
 
-    if (!isAuthenticated) {
-      setStatus("Sign in to request an appointment.");
+    if (!body.trim()) {
+      setStatus("Write your review before posting.");
       return;
     }
 
     startTransition(async () => {
-      const result = await createSalonProfileBookingRequestAction({
-        lookId: context?.lookId ?? null,
-        note,
-        requestedStartAt: requestedStartAt
-          ? new Date(requestedStartAt).toISOString()
-          : null,
-        salonId: data.profile.salonId,
-        serviceId: serviceId || null,
-        staffId: staffId || null,
+      const result = await createSalonProfileReviewAction({
+        body,
+        rating,
+        salonId,
+        title: title || null,
       });
 
       if (result.error) {
@@ -2030,84 +2339,154 @@ function BookingRequestDialog({
         return;
       }
 
-      setStatus("Request sent. The salon can approve or follow up.");
+      setBody("");
+      setTitle("");
+      setRating(5);
+      setStatus("Review posted.");
+      onPosted();
     });
   }
 
-  if (!context) {
-    return null;
+  return (
+    <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+      <h3 className="font-semibold text-zinc-950">Share your experience</h3>
+      {disabledReason ? (
+        <p className="mt-2 text-sm leading-6 text-zinc-600">{disabledReason}</p>
+      ) : (
+        <form className="mt-4 grid gap-3" onSubmit={submit}>
+          <ReviewRatingInput onChange={setRating} value={rating} />
+          <input
+            className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
+            maxLength={120}
+            onChange={(event) => setTitle(event.currentTarget.value)}
+            placeholder="Optional title"
+            value={title}
+          />
+          <textarea
+            className="min-h-28 resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-6 text-zinc-950 outline-none transition focus:border-zinc-950"
+            maxLength={2000}
+            onChange={(event) => setBody(event.currentTarget.value)}
+            placeholder="What should future customers know?"
+            value={body}
+          />
+          <div className="flex items-center justify-between gap-3">
+            <p aria-live="polite" className="text-sm text-zinc-600">
+              {status}
+            </p>
+            <Button disabled={isPending} type="submit" variant="primary">
+              {isPending ? "Posting..." : "Post review"}
+            </Button>
+          </div>
+        </form>
+      )}
+    </section>
+  );
+}
+
+function ReviewReplyForm({
+  onPosted,
+  review,
+}: {
+  onPosted: () => void;
+  review: PublicSalonProfileReview;
+}) {
+  const [body, setBody] = useState("");
+  const [status, setStatus] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!body.trim()) {
+      setStatus("Write a reply before posting.");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await createSalonProfileReviewReplyAction({
+        body,
+        reviewId: review.id,
+        salonId: review.salonId,
+      });
+
+      if (result.error) {
+        setStatus(result.error);
+        return;
+      }
+
+      setBody("");
+      setStatus("Reply posted.");
+      onPosted();
+    });
   }
 
   return (
-    <Modal onClose={onClose} title={context.title}>
-      <form className="grid gap-4" onSubmit={submit}>
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-zinc-800">Service</span>
-          <select
-            className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm"
-            onChange={(event) => setServiceId(event.currentTarget.value)}
-            value={serviceId}
-          >
-            <option value="">Choose a service</option>
-            {data.services.map((service) => (
-              <option key={service.id} value={service.id}>
-                {service.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-zinc-800">Artist</span>
-          <select
-            className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm"
-            onChange={(event) => setStaffId(event.currentTarget.value)}
-            value={staffId}
-          >
-            <option value="">Any available artist</option>
-            {data.staff.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.displayName}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-zinc-800">
-            Preferred time
-          </span>
-          <input
-            className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
-            onChange={(event) => setRequestedStartAt(event.currentTarget.value)}
-            type="datetime-local"
-            value={requestedStartAt}
-          />
-        </label>
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-zinc-800">
-            Private booking note
-          </span>
-          <textarea
-            className="min-h-24 resize-none rounded-md border border-zinc-300 px-3 py-2 text-sm leading-6"
-            onChange={(event) => setNote(event.currentTarget.value)}
-            placeholder="Shape, length, color, occasion, or timing notes."
-            value={note}
-          />
-        </label>
-        {status ? (
-          <p className="rounded-md bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
-            {status}
+    <form className="mt-4 grid gap-2 border-t border-zinc-100 pt-4" onSubmit={submit}>
+      <textarea
+        className="min-h-20 resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-6 text-zinc-950 outline-none transition focus:border-zinc-950"
+        maxLength={1000}
+        onChange={(event) => setBody(event.currentTarget.value)}
+        placeholder="Reply as the salon"
+        value={body}
+      />
+      <div className="flex items-center justify-between gap-3">
+        <p aria-live="polite" className="text-sm text-zinc-600">
+          {status}
+        </p>
+        <Button disabled={isPending} type="submit" variant="secondary">
+          {isPending ? "Replying..." : "Reply"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function ReviewCard({
+  canReplyAsSalon,
+  onPosted,
+  review,
+}: {
+  canReplyAsSalon: boolean;
+  onPosted: () => void;
+  review: PublicSalonProfileReview;
+}) {
+  return (
+    <article className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_14px_42px_rgba(24,24,27,.05)]">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="font-semibold text-zinc-950">{review.authorDisplayName}</p>
+          <p className="mt-1 text-sm text-zinc-500">
+            {review.rating}/5 / {timeAgo(review.createdAt)}
           </p>
-        ) : null}
-        <div className="flex justify-end gap-2 border-t border-zinc-200 pt-4">
-          <Button onClick={onClose} variant="secondary">
-            Close
-          </Button>
-          <Button disabled={isPending} type="submit" variant="primary">
-            {isPending ? "Sending..." : "Send request"}
-          </Button>
         </div>
-      </form>
-    </Modal>
+        <span
+          className={[
+            "rounded-full px-3 py-1 text-xs font-semibold",
+            review.verificationStatus === "verified"
+              ? "bg-emerald-50 text-emerald-800"
+              : "bg-zinc-100 text-zinc-600",
+          ].join(" ")}
+        >
+          {review.verificationStatus === "verified" ? "Verified visit" : "Customer review"}
+        </span>
+      </div>
+      {review.title ? (
+        <h3 className="mt-4 font-semibold text-zinc-950">{review.title}</h3>
+      ) : null}
+      <p className="mt-3 text-sm leading-6 text-zinc-700">{review.body}</p>
+      {review.replyBody ? (
+        <div className="mt-4 rounded-xl bg-zinc-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+            Salon reply
+          </p>
+          <p className="mt-2 text-sm leading-6 text-zinc-700">
+            {review.replyBody}
+          </p>
+        </div>
+      ) : canReplyAsSalon ? (
+        <ReviewReplyForm onPosted={onPosted} review={review} />
+      ) : null}
+    </article>
   );
 }
 
@@ -2179,8 +2558,21 @@ function LookDetailDialog({
                 </h2>
                 {look.caption ? (
                   <p className="mt-3 text-sm leading-6 text-zinc-700">
-                    {look.caption}
+                    <CaptionWithHashtags text={look.caption} />
                   </p>
+                ) : null}
+                {look.hashtags.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {look.hashtags.map((tag) => (
+                      <a
+                        className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-200"
+                        href={`/explore?q=${encodeURIComponent(`#${tag}`)}`}
+                        key={tag}
+                      >
+                        #{tag}
+                      </a>
+                    ))}
+                  </div>
                 ) : null}
               </div>
               <Button onClick={onClose} variant="secondary">
@@ -2291,24 +2683,45 @@ function TeamCard({
   canBook,
   member,
   onBook,
+  onOpen,
 }: {
   canBook: boolean;
   member: PublicSalonProfileStaff;
   onBook: (context: BookingContext) => void;
+  onOpen: (member: PublicSalonProfileStaff) => void;
 }) {
   return (
     <div className="grid gap-4 rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_14px_42px_rgba(24,24,27,.05)]">
-      <div className="grid h-14 w-14 place-items-center rounded-full bg-zinc-950 text-sm font-semibold text-white">
-        {initialsFor(member.displayName)}
-      </div>
+      <button
+        className="w-fit rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+        onClick={() => onOpen(member)}
+        type="button"
+      >
+        <Avatar logoUrl={member.avatarUrl} name={member.displayName} size="md" />
+      </button>
       <div>
         <h3 className="font-semibold text-zinc-950">{member.displayName}</h3>
         {member.jobTitle ? (
           <p className="mt-1 text-sm text-zinc-600">{member.jobTitle}</p>
         ) : null}
+        {member.specialties.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {member.specialties.slice(0, 4).map((specialty) => (
+              <span
+                className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-semibold text-zinc-600"
+                key={specialty}
+              >
+                {specialty}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
+      <Button onClick={() => onOpen(member)} variant="secondary">
+        View profile
+      </Button>
       <Button
-        disabled={!canBook}
+        disabled={!canBook || !member.onlineBookingEnabled}
         onClick={() =>
           onBook({
             staffId: member.id,
@@ -2320,6 +2733,103 @@ function TeamCard({
         Book with {member.displayName}
       </Button>
     </div>
+  );
+}
+
+function StaffDetailDialog({
+  canBook,
+  looks,
+  member,
+  onBook,
+  onClose,
+  onOpenLook,
+}: {
+  canBook: boolean;
+  looks: PublicSalonProfileLook[];
+  member: PublicSalonProfileStaff;
+  onBook: (context: BookingContext) => void;
+  onClose: () => void;
+  onOpenLook: (look: PublicSalonProfileLook) => void;
+}) {
+  const portfolio = looks
+    .filter((look) => look.authorStaffId === member.id)
+    .slice(0, 6);
+
+  return (
+    <Modal onClose={onClose} panelClassName="sm:max-w-3xl" title={member.displayName}>
+      <div className="grid gap-6">
+        <div className="flex items-start gap-4">
+          <Avatar logoUrl={member.avatarUrl} name={member.displayName} size="lg" />
+          <div className="min-w-0">
+            <h3 className="text-2xl font-semibold text-zinc-950">
+              {member.displayName}
+            </h3>
+            {member.jobTitle ? (
+              <p className="mt-1 text-sm text-zinc-600">{member.jobTitle}</p>
+            ) : null}
+            {member.bio ? (
+              <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-700">
+                {member.bio}
+              </p>
+            ) : null}
+            {member.specialties.length > 0 ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {member.specialties.map((specialty) => (
+                  <span
+                    className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700"
+                    key={specialty}
+                  >
+                    {specialty}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            disabled={!canBook || !member.onlineBookingEnabled}
+            onClick={() =>
+              onBook({
+                staffId: member.id,
+                title: `Book with ${member.displayName}`,
+              })
+            }
+            variant="primary"
+          >
+            Book with {member.displayName}
+          </Button>
+        </div>
+        <section>
+          <h4 className="font-semibold text-zinc-950">Portfolio</h4>
+          {portfolio.length > 0 ? (
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {portfolio.map((look) => (
+                <button
+                  className="overflow-hidden rounded-xl border border-zinc-200 text-left transition hover:border-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                  key={look.id}
+                  onClick={() => onOpenLook(look)}
+                  type="button"
+                >
+                  <LookImage
+                    className="aspect-[4/5] w-full"
+                    imageUrl={look.imageUrl}
+                    title={look.title}
+                  />
+                  <p className="truncate px-3 py-2 text-sm font-semibold text-zinc-950">
+                    {look.title}
+                  </p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 rounded-xl border border-dashed border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
+              Portfolio looks will appear when this artist posts published work.
+            </p>
+          )}
+        </section>
+      </div>
+    </Modal>
   );
 }
 
@@ -2436,12 +2946,16 @@ export function SalonProfileView({
   const [detailLook, setDetailLook] = useState<PublicSalonProfileLook | null>(
     null,
   );
+  const [detailStaff, setDetailStaff] =
+    useState<PublicSalonProfileStaff | null>(null);
   const [composerType, setComposerType] = useState<ComposerType | null>(null);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
   const [publicationOpen, setPublicationOpen] = useState(false);
   const [ownerMenuOpen, setOwnerMenuOpen] = useState(false);
+  const ownerMenuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const ownerMenuRef = useRef<HTMLDivElement | null>(null);
+  const [reviewFilter, setReviewFilter] = useState<"all" | "verified">("all");
   const [commentTarget, setCommentTarget] = useState<CommentTarget | null>(null);
-  const [bookingContext, setBookingContext] = useState<BookingContext>(null);
   const comments = data.comments;
   const [savedLookIds, setSavedLookIds] = useState(
     new Set(sortedLooks.filter((look) => look.isSaved).map((look) => look.id)),
@@ -2454,7 +2968,30 @@ export function SalonProfileView({
   const [statusMessage, setStatusMessage] = useState("");
   const [surpriseIndex, setSurpriseIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
+  function bookingHref(context: BookingContext) {
+    const params = new URLSearchParams({ source: "public_profile" });
+
+    if (context?.serviceId) {
+      params.set("serviceId", context.serviceId);
+    }
+
+    if (context?.staffId) {
+      params.set("staffId", context.staffId);
+    }
+
+    if (context?.lookId) {
+      params.set("lookId", context.lookId);
+    }
+
+    return `/book/${profile.salonId}?${params.toString()}`;
+  }
+
+  function openBooking(context: BookingContext = { title: "Book now" }) {
+    router.push(bookingHref(context));
+  }
+
   const isManagedViewer =
+    Boolean(manageData) ||
     capabilities.isOwnSalon ||
     capabilities.canCreateContent ||
     capabilities.canEditProfile ||
@@ -2489,7 +3026,9 @@ export function SalonProfileView({
   const feedItems = data.feed.length
     ? data.feed
     : sortedLooks.map((look): ProfileFeedItem => ({
-        authorName: profile.name,
+        authorAvatarUrl: look.authorAvatarUrl,
+        authorName: look.authorDisplayName || profile.name,
+        authorStaffId: look.authorStaffId,
         bookingLookId: look.id,
         caption: look.caption ?? look.emotionalDescription,
         commentCount: look.commentCount,
@@ -2508,6 +3047,7 @@ export function SalonProfileView({
         serviceId: look.serviceId,
         serviceName: look.serviceName,
         startingPrice: look.startingPrice,
+        hashtags: look.hashtags,
         title: look.title,
       }));
   const visibleFeed = feedItems
@@ -2517,6 +3057,46 @@ export function SalonProfileView({
     )
     .slice(0, 24);
   const address = formatAddress(profile);
+
+  useEffect(() => {
+    if (!ownerMenuOpen) {
+      return;
+    }
+
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target;
+
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (
+        ownerMenuRef.current?.contains(target) ||
+        ownerMenuButtonRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      setOwnerMenuOpen(false);
+    }
+
+    function onKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setOwnerMenuOpen(false);
+      ownerMenuButtonRef.current?.focus();
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [ownerMenuOpen]);
 
   function refresh() {
     router.refresh();
@@ -2653,13 +3233,17 @@ export function SalonProfileView({
               name={profile.name}
               onOpen={setComposerType}
             />
+          ) : manageData && !capabilities.canEditProfile ? (
+            <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+              Posting is disabled for your staff profile.
+            </section>
           ) : null}
           <CuratedLookSection
             companionLooks={companionLooks}
             featuredLook={featuredLook}
             moodOptions={moodOptions}
             canBook={capabilities.canBook}
-            onBook={setBookingContext}
+            onBook={openBooking}
             onChooseLook={(look) => {
               setSelectedMood(look.mood ?? null);
               setFeaturedLookId(look.id);
@@ -2705,7 +3289,7 @@ export function SalonProfileView({
                     key={`${item.contentType}-${item.id}`}
                     look={look}
                     logoUrl={profile.logoImageUrl}
-                    onBook={setBookingContext}
+                    onBook={openBooking}
                     onComment={setCommentTarget}
                     onRefresh={refresh}
                     onSave={toggleSave}
@@ -2733,7 +3317,7 @@ export function SalonProfileView({
             <Button
               className="mt-5 w-full"
               disabled={!capabilities.canBook}
-              onClick={() => setBookingContext({ title: "Find an appointment" })}
+              onClick={() => openBooking({ title: "Find an appointment" })}
               variant="primary"
             >
               Find an appointment
@@ -2743,7 +3327,7 @@ export function SalonProfileView({
                 className="mt-2 w-full"
                 disabled={!capabilities.canBook}
                 onClick={() =>
-                  setBookingContext({
+                  openBooking({
                     lookId: featuredLook.id,
                     note: featuredLook.bookingNote,
                     serviceId: featuredLook.serviceId,
@@ -2982,7 +3566,7 @@ export function SalonProfileView({
                 <ServiceRow
                   canBook={capabilities.canBook}
                   key={service.id}
-                  onBook={setBookingContext}
+                  onBook={openBooking}
                   service={service}
                 />
               ))}
@@ -3009,7 +3593,8 @@ export function SalonProfileView({
             canBook={capabilities.canBook}
             key={member.id}
             member={member}
-            onBook={setBookingContext}
+            onBook={openBooking}
+            onOpen={setDetailStaff}
           />
         ))}
       </div>
@@ -3017,11 +3602,65 @@ export function SalonProfileView({
   }
 
   function renderReviews() {
+    const visibleReviews =
+      reviewFilter === "verified"
+        ? data.reviews.filter(
+            (review) => review.verificationStatus === "verified",
+          )
+        : data.reviews;
+    const reviewDisabledReason = !capabilities.isAuthenticated
+      ? "Sign in to write a public review."
+      : isManagedViewer
+        ? "Open the public profile as a customer to write a review."
+        : null;
+
     return (
-      <EmptyState title="Reviews are not connected yet">
-        Verified appointment reviews will appear here when a review backend is
-        connected. No rating or review count is shown until it is real.
-      </EmptyState>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,.45fr)]">
+        <div className="grid gap-4">
+          <ReviewSummaryPanel summary={data.reviewSummary} />
+          <div className="flex flex-wrap gap-2">
+            {(["all", "verified"] as const).map((filter) => (
+              <button
+                aria-pressed={reviewFilter === filter}
+                className={[
+                  "rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
+                  reviewFilter === filter
+                    ? "border-zinc-950 bg-zinc-950 text-white"
+                    : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300",
+                ].join(" ")}
+                key={filter}
+                onClick={() => setReviewFilter(filter)}
+                type="button"
+              >
+                {filter === "all" ? "All reviews" : "Verified visits"}
+              </button>
+            ))}
+          </div>
+          {visibleReviews.length > 0 ? (
+            <div className="grid gap-3">
+              {visibleReviews.map((review) => (
+                <ReviewCard
+                  canReplyAsSalon={capabilities.canReplyAsSalon}
+                  key={review.id}
+                  onPosted={refresh}
+                  review={review}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="No reviews yet">
+              {reviewFilter === "verified"
+                ? "Verified appointment reviews will appear after customers review completed bookings."
+                : "Customer reviews will appear here when they are posted."}
+            </EmptyState>
+          )}
+        </div>
+        <ReviewComposer
+          disabledReason={reviewDisabledReason}
+          onPosted={refresh}
+          salonId={profile.salonId}
+        />
+      </div>
     );
   }
 
@@ -3123,9 +3762,11 @@ export function SalonProfileView({
               <div className="mt-4 grid gap-3">
                 {data.staff.slice(0, 3).map((member) => (
                   <div className="flex items-center gap-3" key={member.id}>
-                    <div className="grid h-10 w-10 place-items-center rounded-full bg-zinc-950 text-xs font-semibold text-white">
-                      {initialsFor(member.displayName)}
-                    </div>
+                    <Avatar
+                      logoUrl={member.avatarUrl}
+                      name={member.displayName}
+                      size="sm"
+                    />
                     <div>
                       <p className="text-sm font-semibold text-zinc-950">
                         {member.displayName}
@@ -3172,6 +3813,7 @@ export function SalonProfileView({
   const canShowBook = capabilities.canBook && !isManagedViewer;
   const canOpenPublicProfile =
     Boolean(manageData?.publicHref) && Boolean(manageData?.readiness.isExploreEligible);
+  const canShowManageMenu = isManagedViewer && capabilities.canPublish;
 
   return (
     <div className="min-w-0 overflow-x-hidden bg-[#f6f5f3] text-zinc-950">
@@ -3202,13 +3844,14 @@ export function SalonProfileView({
           </header>
         ) : null}
 
-        <section className="group overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_24px_80px_rgba(24,24,27,.08)]">
-          <div className="relative h-[13rem] overflow-hidden bg-zinc-100 sm:h-[16rem] lg:h-[17rem]">
+        <section className="group rounded-2xl border border-zinc-200/80 bg-white shadow-[0_24px_80px_rgba(24,24,27,.08)]">
+          <div className="relative h-[13rem] overflow-hidden rounded-t-2xl bg-zinc-100 sm:h-[16rem] lg:h-[17rem]">
             <SalonCover coverImageUrl={profile.coverImageUrl} name={profile.name} />
             {capabilities.canEditProfile ? (
               <div className="absolute right-4 top-4 z-10 opacity-100 transition sm:opacity-0 sm:focus-within:opacity-100 sm:group-hover:opacity-100">
                 <MediaApplyButton
-                  className="bg-white/95 shadow-sm"
+                  className="h-11 min-h-11 w-11 rounded-full bg-white/95 p-0 shadow-sm"
+                  iconOnly
                   kind="cover"
                   label="Change cover"
                   salonId={profile.salonId}
@@ -3225,7 +3868,8 @@ export function SalonProfileView({
                   {capabilities.canEditProfile ? (
                     <div className="absolute bottom-2 right-2">
                       <MediaApplyButton
-                        className="min-h-9 rounded-full bg-white/95 px-3 text-xs shadow-sm"
+                        className="h-9 min-h-9 w-9 rounded-full bg-white/95 p-0 shadow-sm"
+                        iconOnly
                         kind="logo"
                         label="Change logo"
                         salonId={profile.salonId}
@@ -3278,29 +3922,32 @@ export function SalonProfileView({
                 ) : null}
                 {canShowBook ? (
                   <Button
-                    onClick={() => setBookingContext({ title: "Book now" })}
+                    onClick={() => openBooking({ title: "Book now" })}
                     variant="primary"
                   >
                     Book now
                   </Button>
                 ) : null}
-                {!isManagedViewer ? (
+                {!canShowManageMenu ? (
                   <Button onClick={() => void shareSalon()} variant="secondary">
                     Share
                   </Button>
                 ) : (
-                  <Button
+                  <button
                     aria-expanded={ownerMenuOpen}
                     aria-haspopup="menu"
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-not-allowed disabled:text-zinc-400"
                     onClick={() => setOwnerMenuOpen((current) => !current)}
-                    variant="secondary"
+                    ref={ownerMenuButtonRef}
+                    type="button"
                   >
                     Manage
-                  </Button>
+                  </button>
                 )}
-                {ownerMenuOpen && isManagedViewer ? (
+                {ownerMenuOpen && canShowManageMenu ? (
                   <div
-                    className="absolute right-0 top-12 z-30 grid min-w-56 gap-1 rounded-xl border border-zinc-200 bg-white p-2 text-zinc-950 shadow-xl"
+                    className="absolute right-0 top-12 z-40 grid min-w-56 gap-1 rounded-xl border border-zinc-200 bg-white p-2 text-zinc-950 shadow-xl"
+                    ref={ownerMenuRef}
                     role="menu"
                   >
                     {capabilities.canPublish && manageData ? (
@@ -3434,7 +4081,7 @@ export function SalonProfileView({
           <Button
             className="min-h-11 px-3"
             onClick={() =>
-              setBookingContext({
+              openBooking({
                 lookId: primaryMobileLook.id,
                 note: primaryMobileLook.caption ?? primaryMobileLook.bookingNote,
                 serviceId: primaryMobileLook.serviceId,
@@ -3486,28 +4133,32 @@ export function SalonProfileView({
           />
         </Modal>
       ) : null}
-      {bookingContext ? (
-        <BookingRequestDialog
-          canBook={capabilities.canBook}
-          context={bookingContext}
-          data={data}
-          isAuthenticated={capabilities.isAuthenticated}
-          onClose={() => setBookingContext(null)}
-        />
-      ) : null}
       {detailLook ? (
         <LookDetailDialog
           capabilities={capabilities}
           comments={comments}
           isSaved={savedLookIds.has(detailLook.id)}
           look={detailLook}
-          onBook={setBookingContext}
+          onBook={openBooking}
           onClose={() => setDetailLook(null)}
           onCommentPosted={refresh}
           onSave={toggleSave}
           onShare={() => void shareSalon()}
           saveCount={saveCounts.get(detailLook.id) ?? 0}
           salonId={profile.salonId}
+        />
+      ) : null}
+      {detailStaff ? (
+        <StaffDetailDialog
+          canBook={capabilities.canBook}
+          looks={sortedLooks}
+          member={detailStaff}
+          onBook={openBooking}
+          onClose={() => setDetailStaff(null)}
+          onOpenLook={(look) => {
+            setDetailLook(look);
+            setDetailStaff(null);
+          }}
         />
       ) : null}
     </div>

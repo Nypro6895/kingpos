@@ -1664,6 +1664,11 @@ export function DailyPosTicketCard({
           <span className="text-zinc-700">{formatTime(ticket.opened_at)}</span>
           <span className="min-w-0 truncate font-medium text-zinc-950">
             {ticket.customer?.name ?? "Walk-in Customer"}
+            {ticket.source_booking_id ? (
+              <span className="ml-2 rounded border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-800">
+                From appointment
+              </span>
+            ) : null}
           </span>
           <span className="text-zinc-700">
             Total:{" "}

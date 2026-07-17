@@ -1,0 +1,1528 @@
+{
+  "cleaned": {
+    "bookingsCancelled": [],
+    "serviceAddOnLinksDeactivated": [
+      {
+        "id": "69f6a9d5-3b30-4329-8873-e1bf553fef33",
+        "is_active": false,
+        "parent_service_id": "ebb715d2-75d4-4a79-9123-ddb7541e1a25",
+        "add_on_service_id": "53250461-0517-46da-9205-e2ae0594b185"
+      },
+      {
+        "id": "07afce52-7a95-425a-8d81-c17ba71e3dc5",
+        "is_active": false,
+        "parent_service_id": "45bcc32d-0c38-4542-9382-04b575ccb5f1",
+        "add_on_service_id": "24d6d09c-7bbd-4471-89c7-ee06a71a7c37"
+      },
+      {
+        "id": "41d221ba-ead9-450f-b8dd-5754e6aab5ff",
+        "is_active": false,
+        "parent_service_id": "c5a49537-de76-4003-914e-449c20d36cf1",
+        "add_on_service_id": "9c03e681-070c-4c57-9f26-b104613b64e3"
+      },
+      {
+        "id": "09e5b3d8-caae-4fe4-a008-e17602ba8564",
+        "is_active": false,
+        "parent_service_id": "0bebdca4-8ec4-4051-9992-b38096393afc",
+        "add_on_service_id": "409c78f3-5d1e-46c8-9cac-51bb14e72c2b"
+      },
+      {
+        "id": "6f0d00e4-f8bb-45b9-be4f-f1dbb3e17254",
+        "is_active": false,
+        "parent_service_id": "5c775580-4d8f-436e-af01-ab78018ef095",
+        "add_on_service_id": "02ab943b-0b73-4535-a57b-0a1ae7b1557d"
+      },
+      {
+        "id": "dec9fde5-0852-4840-a451-6dacd7d4c0e0",
+        "is_active": false,
+        "parent_service_id": "9c299301-5078-4588-9b02-9bc3255af462",
+        "add_on_service_id": "069533d6-90d0-406a-8290-12227705af37"
+      },
+      {
+        "id": "c6091530-64eb-4952-9809-2823807f1199",
+        "is_active": false,
+        "parent_service_id": "125583c9-df85-4e27-892b-4227767ed836",
+        "add_on_service_id": "250a8392-ca3f-4c69-99f5-fb7328ef9110"
+      },
+      {
+        "id": "f54f710b-55fd-406b-9a45-6ca9a1252aa6",
+        "is_active": false,
+        "parent_service_id": "a47710d7-68b3-41ee-99cf-02eddbd37cca",
+        "add_on_service_id": "221c5119-7a50-4c27-b124-848db33165d4"
+      },
+      {
+        "id": "c6cebe23-b614-46a6-8541-8c8de6853287",
+        "is_active": false,
+        "parent_service_id": "350f5c09-2c0d-4bbc-b7f2-9387993ed1dd",
+        "add_on_service_id": "13ce7dc3-5063-45e4-a946-4c82ddee1bed"
+      },
+      {
+        "id": "1f4d4a92-8788-4956-9445-8c09e6c6e3a0",
+        "is_active": false,
+        "parent_service_id": "07804f5c-938b-44a9-ab89-11ff68347a65",
+        "add_on_service_id": "867cff87-4252-43b2-94b6-9a909b22763c"
+      },
+      {
+        "id": "6803f7fa-3799-4437-b855-7b92c31f85cb",
+        "is_active": false,
+        "parent_service_id": "c4a76d90-3347-458a-a651-2c0b0257e193",
+        "add_on_service_id": "78162da2-8dad-4947-b32a-0368d3e14304"
+      },
+      {
+        "id": "447f2a71-431d-4ff8-8ec0-c2fee59e3393",
+        "is_active": false,
+        "parent_service_id": "51ca4d6d-12c3-4ff2-9eb3-6125361918c3",
+        "add_on_service_id": "1bb6fc31-39c3-42e5-b1d9-8c9572ae5acb"
+      },
+      {
+        "id": "f9248512-c64c-4aaa-b252-a76f9ae94740",
+        "is_active": false,
+        "parent_service_id": "13ce7dc3-5063-45e4-a946-4c82ddee1bed",
+        "add_on_service_id": "da5f705b-56c7-4c8e-aba0-308829982dd5"
+      },
+      {
+        "id": "b5cf0912-8802-47f9-8e9c-000194e400a5",
+        "is_active": false,
+        "parent_service_id": "13ce7dc3-5063-45e4-a946-4c82ddee1bed",
+        "add_on_service_id": "363e3c7a-3a6e-4854-bcad-f8f126cdb5e6"
+      },
+      {
+        "id": "6a406d9e-a5d6-4c6f-93f6-b0565f2c03b8",
+        "is_active": false,
+        "parent_service_id": "72b37497-95b2-4ea7-b5ad-03e1b4e39610",
+        "add_on_service_id": "e09f92b7-0384-461c-ae6d-93300b67a9fb"
+      },
+      {
+        "id": "908c2cce-0a32-4d8c-aa7b-8ad36ea14f46",
+        "is_active": false,
+        "parent_service_id": "48637c19-3b28-4b9f-8484-3ef5bf6eddca",
+        "add_on_service_id": "6171014e-4086-4e47-ba38-388882b31c5f"
+      },
+      {
+        "id": "823341c8-1a1b-4f34-abaf-aeb3c134b447",
+        "is_active": false,
+        "parent_service_id": "9fa4a824-a03d-4616-8c2c-c019c08287be",
+        "add_on_service_id": "da2925ff-4699-4850-95e0-0c4cd98bc849"
+      },
+      {
+        "id": "a765cd44-8e3f-41e3-b86c-f3992974b1e4",
+        "is_active": false,
+        "parent_service_id": "22fe87b8-caa4-4fc7-be39-0c2130241aed",
+        "add_on_service_id": "efbc6617-decd-4f96-ba55-3543061c633f"
+      },
+      {
+        "id": "ebde5593-0679-49ee-9d10-7fe785404a43",
+        "is_active": false,
+        "parent_service_id": "a346c853-4c2d-4943-b096-cd32197b1261",
+        "add_on_service_id": "7346553b-3330-45cf-9ac5-655a6829aa7e"
+      },
+      {
+        "id": "baad1367-feba-4188-9af1-38fcc19a51bb",
+        "is_active": false,
+        "parent_service_id": "d899f8b2-8abc-4c0b-bf79-aacd9175542c",
+        "add_on_service_id": "533e59ef-5be8-4035-ba6b-44e00d582753"
+      },
+      {
+        "id": "76ec9b58-8b0f-4873-9810-44d3e3663a9a",
+        "is_active": false,
+        "parent_service_id": "7bd78f26-ae7c-476f-a95f-c421361b2fd8",
+        "add_on_service_id": "5df7a10e-22a2-439d-99a3-82cb08985bc6"
+      },
+      {
+        "id": "f22d7644-f1b9-4e98-871c-9996f8ee8b22",
+        "is_active": false,
+        "parent_service_id": "429358e0-4ddb-4f44-ba77-0f38b717b760",
+        "add_on_service_id": "e999abc6-90a4-4bf1-9459-c68c89eaac4c"
+      },
+      {
+        "id": "94ffa3dc-907b-4c1e-9e05-35389a75f93d",
+        "is_active": false,
+        "parent_service_id": "5059ce90-753a-42e6-8c4b-a80bb1656e06",
+        "add_on_service_id": "ecc12e0c-04c4-4936-ba32-6a71a4d6ed7c"
+      }
+    ],
+    "servicesDeactivated": [
+      {
+        "id": "07804f5c-938b-44a9-ab89-11ff68347a65",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "8413526f-8c91-4560-ba41-be7426028282",
+        "name": "Signature Manicure",
+        "is_active": false
+      },
+      {
+        "id": "08b7870a-3b11-41f9-9010-b0602eb6e3d0",
+        "name": "Builder Gel Overlay",
+        "is_active": false
+      },
+      {
+        "id": "db4dee1e-2c97-433e-86d7-ffbf0117144d",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "867cff87-4252-43b2-94b6-9a909b22763c",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "b8264fc8-aa4f-40ee-9ffa-62ec1a75b5f2",
+        "name": "Signature Manicure",
+        "is_active": false
+      },
+      {
+        "id": "9bff20e2-ae84-44b5-8bf2-a1464ee8b6a7",
+        "name": "Builder Gel Overlay",
+        "is_active": false
+      },
+      {
+        "id": "7bd78f26-ae7c-476f-a95f-c421361b2fd8",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "475285b5-e951-4bfd-8342-625236f87d96",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "5df7a10e-22a2-439d-99a3-82cb08985bc6",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "9fa4a824-a03d-4616-8c2c-c019c08287be",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "33b4199e-ba59-4cf9-8f47-79517faff17d",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "da2925ff-4699-4850-95e0-0c4cd98bc849",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "0bec0db5-cdcf-4e22-ac91-be7d187016f1",
+        "name": "GateC 20260717032813 Service",
+        "is_active": false
+      },
+      {
+        "id": "92590450-da37-43ca-8749-19c12e0e2977",
+        "name": "GateC 20260717034711 Service",
+        "is_active": false
+      },
+      {
+        "id": "efe2e074-efb9-45aa-8bc0-6610588a9b82",
+        "name": "Signature Manicure",
+        "is_active": false
+      },
+      {
+        "id": "0abf0640-3b20-468f-8e6e-30d60d64dfb7",
+        "name": "Builder Gel Overlay",
+        "is_active": false
+      },
+      {
+        "id": "429358e0-4ddb-4f44-ba77-0f38b717b760",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "2e0a03f7-5108-4c36-870d-49cb593689d5",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "e999abc6-90a4-4bf1-9459-c68c89eaac4c",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "7052b37d-0871-46ec-8724-7df4b8adc4b2",
+        "name": "GateC 20260717033139 Service",
+        "is_active": false
+      },
+      {
+        "id": "5c775580-4d8f-436e-af01-ab78018ef095",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "2c11d476-654e-464c-a0f2-392b63ac0767",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "02ab943b-0b73-4535-a57b-0a1ae7b1557d",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "78162da2-8dad-4947-b32a-0368d3e14304",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "0bebdca4-8ec4-4051-9992-b38096393afc",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "0a439468-48c3-4287-a145-cf3d0ea56903",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "409c78f3-5d1e-46c8-9cac-51bb14e72c2b",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "d03c8012-3f2f-4aa6-83af-e72cd3e07a61",
+        "name": "GateC 20260717020113 Service",
+        "is_active": false
+      },
+      {
+        "id": "c4a76d90-3347-458a-a651-2c0b0257e193",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "faaa2a31-3f80-4451-96ce-db7448ecd35a",
+        "name": "Signature Manicure",
+        "is_active": false
+      },
+      {
+        "id": "3edc57b5-5496-4034-b219-f260629702df",
+        "name": "Builder Gel Overlay",
+        "is_active": false
+      },
+      {
+        "id": "5059ce90-753a-42e6-8c4b-a80bb1656e06",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "ca1b271b-d5b0-4ac0-bddf-1f2b98caf2f2",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "ecc12e0c-04c4-4936-ba32-6a71a4d6ed7c",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "22fe87b8-caa4-4fc7-be39-0c2130241aed",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "3269db23-2cc7-462a-86cc-88d15a553451",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "069533d6-90d0-406a-8290-12227705af37",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "50ead51b-c2d8-4e6b-9bad-e734608c48e6",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "06846e89-ea1a-4d75-847a-1e75e043c79a",
+        "name": "GateC 20260717024254 Service",
+        "is_active": false
+      },
+      {
+        "id": "a346c853-4c2d-4943-b096-cd32197b1261",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "34b6b1da-80ec-444b-8015-2215381b7924",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "7346553b-3330-45cf-9ac5-655a6829aa7e",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "d899f8b2-8abc-4c0b-bf79-aacd9175542c",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "5d1dc92b-401f-44b9-b5c0-6f70de449904",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "533e59ef-5be8-4035-ba6b-44e00d582753",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "9c299301-5078-4588-9b02-9bc3255af462",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "d074628b-9de1-4d9f-b412-013ae3d90ac2",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "a47710d7-68b3-41ee-99cf-02eddbd37cca",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "47c8a4ec-cc35-4c00-aa88-9ba28b4ab0d3",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "221c5119-7a50-4c27-b124-848db33165d4",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "5b9b8713-d689-4afc-b0b6-d6bcb8b5db1f",
+        "name": "GateC 20260717010817 Service",
+        "is_active": false
+      },
+      {
+        "id": "c3e30a14-0497-4aa1-98df-61e6bc6cb545",
+        "name": "GateC 20260717011232 Service",
+        "is_active": false
+      },
+      {
+        "id": "350f5c09-2c0d-4bbc-b7f2-9387993ed1dd",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "f98e2d1c-46e5-4980-b13a-893ea0590852",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "13ce7dc3-5063-45e4-a946-4c82ddee1bed",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "51ca4d6d-12c3-4ff2-9eb3-6125361918c3",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "c50a4775-7420-477b-ac24-d033b672fb4a",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "1bb6fc31-39c3-42e5-b1d9-8c9572ae5acb",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "9cb6e99c-1b6d-4f2d-a02d-a0fc93e088a3",
+        "name": "GateC 20260717021137 Service",
+        "is_active": false
+      },
+      {
+        "id": "72b37497-95b2-4ea7-b5ad-03e1b4e39610",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "f2c78237-3103-4d84-a971-e18069f5689e",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "6171014e-4086-4e47-ba38-388882b31c5f",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "29c2cde5-a203-43fb-9760-8e9445365af4",
+        "name": "GateC 20260717023614 Service",
+        "is_active": false
+      },
+      {
+        "id": "ebb715d2-75d4-4a79-9123-ddb7541e1a25",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "d46b15dd-1228-43dd-b564-74bc3f592898",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "53250461-0517-46da-9205-e2ae0594b185",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "125583c9-df85-4e27-892b-4227767ed836",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "8003af32-72f7-466a-85f8-4267863613b2",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "250a8392-ca3f-4c69-99f5-fb7328ef9110",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "704a28ed-cec2-49df-84a0-fe6d944ade66",
+        "name": "GateC 20260717010729 Service",
+        "is_active": false
+      },
+      {
+        "id": "c5a49537-de76-4003-914e-449c20d36cf1",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "e55ddebd-856e-467c-a724-89af2dd1da25",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "9c03e681-070c-4c57-9f26-b104613b64e3",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "efbc6617-decd-4f96-ba55-3543061c633f",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "e09f92b7-0384-461c-ae6d-93300b67a9fb",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "48637c19-3b28-4b9f-8484-3ef5bf6eddca",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "91883401-2f90-455e-818d-fd7fefb4df3a",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "45bcc32d-0c38-4542-9382-04b575ccb5f1",
+        "name": "Luna Gel Manicure",
+        "is_active": false
+      },
+      {
+        "id": "08fd0674-508b-4dd9-bfc8-7d4868f29b70",
+        "name": "Luna Spa Pedicure",
+        "is_active": false
+      },
+      {
+        "id": "24d6d09c-7bbd-4471-89c7-ee06a71a7c37",
+        "name": "French finish",
+        "is_active": false
+      },
+      {
+        "id": "5147891c-108d-4d6d-91b0-c22dc6ebf7c4",
+        "name": "GateC 20260717023705 Service",
+        "is_active": false
+      },
+      {
+        "id": "dc407274-4e71-4104-a60e-6b27710d2ec0",
+        "name": "GateC 20260717024013 Service",
+        "is_active": false
+      },
+      {
+        "id": "4f902f81-2a7b-4097-8c18-6d580ba29fcb",
+        "name": "GateC 20260717024056 Service",
+        "is_active": false
+      },
+      {
+        "id": "ee4e200c-f3a4-4cbf-ba71-7094cb20330c",
+        "name": "GateC 20260717024157 Service",
+        "is_active": false
+      },
+      {
+        "id": "8b0065e7-15a8-40da-bfc4-116fb42cbc25",
+        "name": "GateC 20260717010955 Service",
+        "is_active": false
+      }
+    ],
+    "staffAvailabilityRuleCleanup": {
+      "blockedByInactiveStaff": [],
+      "deactivated": []
+    },
+    "staffDeactivated": [
+      {
+        "id": "5bbc331d-74d5-4049-aba2-46c431136ef5",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "8d34122c-1eb4-4d86-b897-27fd0f54d3bf",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "64f626ac-e7a7-492e-975c-37d178f44e0c",
+        "display_name": "GateC 20260717034711 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "6d7f643b-ecf6-4239-90c3-e858ddf4a899",
+        "display_name": "GateC 20260717024056 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "6cb5ea80-2a67-428a-9f6b-0c8eddf09951",
+        "display_name": "GateC 20260717024157 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "26f4559c-f977-47c1-bb97-69ee0c809947",
+        "display_name": "GateC 20260717024254 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "f47836e8-47e3-49ce-a543-e6d88cd48d76",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "2deed2c9-ba2d-448a-a752-6794062a7a33",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "37e1c5e2-1c09-4962-9a21-8a6172bc495f",
+        "display_name": "GateC 20260717010817 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "9c95c02f-d1c1-45b7-9194-7a3021048e86",
+        "display_name": "GateC 20260717011232 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "938717ee-7d4a-4ddd-babd-8605fcb06cc3",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "eb0ff7c8-f183-475e-afae-1f169767ce06",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "eda73c99-8dee-4645-aa26-0dd7bf2154fd",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "0ef6143b-bf42-44ce-a130-e92f0b97d890",
+        "display_name": "GateC 20260717010955 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "9ac81ce4-eebe-492e-bf48-1917bcb0b574",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "bfc224c1-5adc-4e2f-840d-a947b756b352",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "de6f48d0-9eb9-432e-8bd7-70b34af5ff38",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "aad69ef0-2a69-442e-996a-99c437263ef4",
+        "display_name": "GateC 20260717023614 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "1189cadd-05c0-4e7b-aa14-73b6f67880b8",
+        "display_name": "GateC 20260717024013 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "6e8fd1e8-a12e-4f81-a843-9add2b776b78",
+        "display_name": "GateC 20260717010729 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "080cf606-7d47-4ab8-abfc-e1f389815998",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "87e3f557-5029-4f58-a750-5aac516fbc20",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "1a8f21e1-e07e-4edc-b4bb-0b3e77eb0604",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "cbdcafc6-287f-445a-8395-f9f207466873",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "d9d235d0-b510-407a-a919-9dce248878f9",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "e23336f1-01cf-495c-9fcb-f2d513286b0e",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "e1909159-4ab3-4447-82ba-fc58246d0cc2",
+        "display_name": "GateC 20260717021137 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "4245da6e-6ffa-42bf-9714-d74cbf9f3214",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "fe73b229-b8b5-4437-a54b-f73f587a90e5",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "70129517-65be-4dcc-8034-b5174e10bfb4",
+        "display_name": "GateC 20260717032813 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "23b847bc-1e7d-497a-bccd-dd6858c5c420",
+        "display_name": "GateC 20260717033139 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "857f2c2c-40b9-4efd-a6d8-b4a483b68c10",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "b2757ee2-d3c2-434c-85e3-4e258614113c",
+        "display_name": "GateC 20260717020113 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "a6caa7df-7e1f-4e5f-98c0-cd43820ae83a",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "619912d5-9331-48bf-898b-42d1a0695f48",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "e4e93c64-7033-48de-b9de-5c38895e5a02",
+        "display_name": "Sofia Rivera",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      },
+      {
+        "id": "0b68ed85-ffb2-4a8a-8813-93f12b2eef82",
+        "display_name": "GateC 20260717023705 Artist",
+        "is_active": false,
+        "online_booking_enabled": false,
+        "owner_public_enabled": false,
+        "public_profile_visible": false
+      }
+    ],
+    "staffServiceAssignmentsDeactivated": [
+      {
+        "id": "9cfad8b9-ce71-4cdf-9e6a-bf6872da916b",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "5bbc331d-74d5-4049-aba2-46c431136ef5",
+        "service_id": "d899f8b2-8abc-4c0b-bf79-aacd9175542c"
+      },
+      {
+        "id": "a452f57e-2439-4be5-bd48-b7d214a9c80a",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "5bbc331d-74d5-4049-aba2-46c431136ef5",
+        "service_id": "5d1dc92b-401f-44b9-b5c0-6f70de449904"
+      },
+      {
+        "id": "34b591b5-8a42-44a1-bd96-7e7ea577559a",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "5bbc331d-74d5-4049-aba2-46c431136ef5",
+        "service_id": "533e59ef-5be8-4035-ba6b-44e00d582753"
+      },
+      {
+        "id": "cc817b46-e4a1-452d-aa7c-36ae5da2c2f8",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "fe73b229-b8b5-4437-a54b-f73f587a90e5",
+        "service_id": "125583c9-df85-4e27-892b-4227767ed836"
+      },
+      {
+        "id": "3f662d59-05d4-463e-8fec-36bb8fee130c",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "fe73b229-b8b5-4437-a54b-f73f587a90e5",
+        "service_id": "250a8392-ca3f-4c69-99f5-fb7328ef9110"
+      },
+      {
+        "id": "cca71f86-dbab-4566-8c2d-aeefe3958163",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "fe73b229-b8b5-4437-a54b-f73f587a90e5",
+        "service_id": "8003af32-72f7-466a-85f8-4267863613b2"
+      },
+      {
+        "id": "31b9b7f9-7047-4f09-9738-3c868dbd4fe9",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "080cf606-7d47-4ab8-abfc-e1f389815998",
+        "service_id": "13ce7dc3-5063-45e4-a946-4c82ddee1bed"
+      },
+      {
+        "id": "ba22cf7f-1646-4b51-a830-e2db984bf6e0",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "080cf606-7d47-4ab8-abfc-e1f389815998",
+        "service_id": "350f5c09-2c0d-4bbc-b7f2-9387993ed1dd"
+      },
+      {
+        "id": "5f9bb884-59cd-4b88-9517-57e6d907280c",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "080cf606-7d47-4ab8-abfc-e1f389815998",
+        "service_id": "f98e2d1c-46e5-4980-b13a-893ea0590852"
+      },
+      {
+        "id": "16301edd-94bd-4f86-b87d-874e795f6bc3",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "cbdcafc6-287f-445a-8395-f9f207466873",
+        "service_id": "50ead51b-c2d8-4e6b-9bad-e734608c48e6"
+      },
+      {
+        "id": "ef7dfdb8-a25e-4f46-afaa-9f52db0c1279",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "cbdcafc6-287f-445a-8395-f9f207466873",
+        "service_id": "78162da2-8dad-4947-b32a-0368d3e14304"
+      },
+      {
+        "id": "2e84e21f-4b8a-4cae-9d57-534f17b57049",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "cbdcafc6-287f-445a-8395-f9f207466873",
+        "service_id": "c4a76d90-3347-458a-a651-2c0b0257e193"
+      },
+      {
+        "id": "2cb8b893-a696-435c-a02b-22ea76007726",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "de6f48d0-9eb9-432e-8bd7-70b34af5ff38",
+        "service_id": "72b37497-95b2-4ea7-b5ad-03e1b4e39610"
+      },
+      {
+        "id": "cb488949-6ba6-4ef1-ba71-d1fcbb8b8bf2",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "de6f48d0-9eb9-432e-8bd7-70b34af5ff38",
+        "service_id": "e09f92b7-0384-461c-ae6d-93300b67a9fb"
+      },
+      {
+        "id": "8a0c2c0c-b349-4f01-be38-db6649317b20",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "de6f48d0-9eb9-432e-8bd7-70b34af5ff38",
+        "service_id": "f2c78237-3103-4d84-a971-e18069f5689e"
+      },
+      {
+        "id": "d9ba5a6c-4451-499f-afff-3acf7749fe77",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "64f626ac-e7a7-492e-975c-37d178f44e0c",
+        "service_id": "92590450-da37-43ca-8749-19c12e0e2977"
+      },
+      {
+        "id": "ebec6e5d-cc98-4272-bfed-f2bc4963f375",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "eda73c99-8dee-4645-aa26-0dd7bf2154fd",
+        "service_id": "5059ce90-753a-42e6-8c4b-a80bb1656e06"
+      },
+      {
+        "id": "e684ac33-4294-4e0a-ae18-be23c3b5b072",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "eda73c99-8dee-4645-aa26-0dd7bf2154fd",
+        "service_id": "ca1b271b-d5b0-4ac0-bddf-1f2b98caf2f2"
+      },
+      {
+        "id": "7fe89f2c-7fbe-4208-9a48-cd25931c24a6",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "eda73c99-8dee-4645-aa26-0dd7bf2154fd",
+        "service_id": "ecc12e0c-04c4-4936-ba32-6a71a4d6ed7c"
+      },
+      {
+        "id": "b309d37a-c18e-4d07-9d96-b65006bc32cf",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "6cb5ea80-2a67-428a-9f6b-0c8eddf09951",
+        "service_id": "ee4e200c-f3a4-4cbf-ba71-7094cb20330c"
+      },
+      {
+        "id": "4c0c11d7-7450-431e-bc1c-40c88ff4a77b",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "4245da6e-6ffa-42bf-9714-d74cbf9f3214",
+        "service_id": "069533d6-90d0-406a-8290-12227705af37"
+      },
+      {
+        "id": "b9894547-ccd7-4b7e-b0d4-8c672032f0a7",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "4245da6e-6ffa-42bf-9714-d74cbf9f3214",
+        "service_id": "9c299301-5078-4588-9b02-9bc3255af462"
+      },
+      {
+        "id": "20ff5181-e05f-4e40-8f08-1248fb254560",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "4245da6e-6ffa-42bf-9714-d74cbf9f3214",
+        "service_id": "d074628b-9de1-4d9f-b412-013ae3d90ac2"
+      },
+      {
+        "id": "9c98d9a1-6e5e-4494-ace3-6faa121f19d4",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "8d34122c-1eb4-4d86-b897-27fd0f54d3bf",
+        "service_id": "221c5119-7a50-4c27-b124-848db33165d4"
+      },
+      {
+        "id": "60f2458f-8988-49cd-a123-8e2011b13ec8",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "bfc224c1-5adc-4e2f-840d-a947b756b352",
+        "service_id": "53250461-0517-46da-9205-e2ae0594b185"
+      },
+      {
+        "id": "17e59798-8f6c-4466-a3de-bf55869042e4",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "bfc224c1-5adc-4e2f-840d-a947b756b352",
+        "service_id": "d46b15dd-1228-43dd-b564-74bc3f592898"
+      },
+      {
+        "id": "09b3e5c9-9325-49e9-bce2-915734734efd",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "bfc224c1-5adc-4e2f-840d-a947b756b352",
+        "service_id": "ebb715d2-75d4-4a79-9123-ddb7541e1a25"
+      },
+      {
+        "id": "1596afd2-065a-4441-ba47-b6b798818e35",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "8d34122c-1eb4-4d86-b897-27fd0f54d3bf",
+        "service_id": "47c8a4ec-cc35-4c00-aa88-9ba28b4ab0d3"
+      },
+      {
+        "id": "1d83dc93-2422-4f97-bfc5-d73af87c83de",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "8d34122c-1eb4-4d86-b897-27fd0f54d3bf",
+        "service_id": "a47710d7-68b3-41ee-99cf-02eddbd37cca"
+      },
+      {
+        "id": "5330cfa9-c0bf-4be0-becf-33d0bb2709ae",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "87e3f557-5029-4f58-a750-5aac516fbc20",
+        "service_id": "08fd0674-508b-4dd9-bfc8-7d4868f29b70"
+      },
+      {
+        "id": "b5a9fef8-069b-4e8f-8cf0-ed55543f7d65",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "87e3f557-5029-4f58-a750-5aac516fbc20",
+        "service_id": "24d6d09c-7bbd-4471-89c7-ee06a71a7c37"
+      },
+      {
+        "id": "2ee29e7c-6ebc-4a08-998f-948ec9b47e35",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "87e3f557-5029-4f58-a750-5aac516fbc20",
+        "service_id": "45bcc32d-0c38-4542-9382-04b575ccb5f1"
+      },
+      {
+        "id": "88576a1d-1b08-4e1a-a9ae-e64e0cf6911c",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "1a8f21e1-e07e-4edc-b4bb-0b3e77eb0604",
+        "service_id": "9c03e681-070c-4c57-9f26-b104613b64e3"
+      },
+      {
+        "id": "f3904a16-7083-4d01-8dd5-260017d6bd21",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "1a8f21e1-e07e-4edc-b4bb-0b3e77eb0604",
+        "service_id": "c5a49537-de76-4003-914e-449c20d36cf1"
+      },
+      {
+        "id": "0cca86fe-0bc1-4a3c-8de9-df45f3ddab0c",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "1a8f21e1-e07e-4edc-b4bb-0b3e77eb0604",
+        "service_id": "e55ddebd-856e-467c-a724-89af2dd1da25"
+      },
+      {
+        "id": "66fcf49f-bbc9-40cf-a921-15da3fd38f1e",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "938717ee-7d4a-4ddd-babd-8605fcb06cc3",
+        "service_id": "1bb6fc31-39c3-42e5-b1d9-8c9572ae5acb"
+      },
+      {
+        "id": "6a66fd47-c4c2-4220-b05e-5a12d8f4fee2",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "a6caa7df-7e1f-4e5f-98c0-cd43820ae83a",
+        "service_id": "7bd78f26-ae7c-476f-a95f-c421361b2fd8"
+      },
+      {
+        "id": "eb5c689a-b55c-4330-b826-de28c77796cc",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "a6caa7df-7e1f-4e5f-98c0-cd43820ae83a",
+        "service_id": "475285b5-e951-4bfd-8342-625236f87d96"
+      },
+      {
+        "id": "10a219a5-8e01-4d62-ab56-1c537b9fa066",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "a6caa7df-7e1f-4e5f-98c0-cd43820ae83a",
+        "service_id": "5df7a10e-22a2-439d-99a3-82cb08985bc6"
+      },
+      {
+        "id": "c07be08c-71c5-41bd-8dbf-38e258037d56",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "d9d235d0-b510-407a-a919-9dce248878f9",
+        "service_id": "0a439468-48c3-4287-a145-cf3d0ea56903"
+      },
+      {
+        "id": "7ab2df51-7e14-4565-8cf7-798392b91701",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "d9d235d0-b510-407a-a919-9dce248878f9",
+        "service_id": "0bebdca4-8ec4-4051-9992-b38096393afc"
+      },
+      {
+        "id": "50fc19b6-0c61-4f54-922f-b2b98940a97e",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "d9d235d0-b510-407a-a919-9dce248878f9",
+        "service_id": "409c78f3-5d1e-46c8-9cac-51bb14e72c2b"
+      },
+      {
+        "id": "ea317b68-39c5-4125-a5c7-6340f8cb417a",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "938717ee-7d4a-4ddd-babd-8605fcb06cc3",
+        "service_id": "51ca4d6d-12c3-4ff2-9eb3-6125361918c3"
+      },
+      {
+        "id": "19256cc0-f441-41aa-9f7f-e671a82ae067",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "938717ee-7d4a-4ddd-babd-8605fcb06cc3",
+        "service_id": "c50a4775-7420-477b-ac24-d033b672fb4a"
+      },
+      {
+        "id": "0f0dcba4-f070-41db-9837-85abd23dd1b4",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "e23336f1-01cf-495c-9fcb-f2d513286b0e",
+        "service_id": "02ab943b-0b73-4535-a57b-0a1ae7b1557d"
+      },
+      {
+        "id": "7842543b-0e83-49cb-8ded-8a4d28b14d13",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "e23336f1-01cf-495c-9fcb-f2d513286b0e",
+        "service_id": "2c11d476-654e-464c-a0f2-392b63ac0767"
+      },
+      {
+        "id": "51f7fb6e-83d3-4398-aec9-93d6d85c9cb5",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "e23336f1-01cf-495c-9fcb-f2d513286b0e",
+        "service_id": "5c775580-4d8f-436e-af01-ab78018ef095"
+      },
+      {
+        "id": "fa1a59ce-51d0-4dbc-b0c3-3b09a271a274",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "e4e93c64-7033-48de-b9de-5c38895e5a02",
+        "service_id": "48637c19-3b28-4b9f-8484-3ef5bf6eddca"
+      },
+      {
+        "id": "e7046a32-d0c0-461b-9f4e-150d4c1e600a",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "e4e93c64-7033-48de-b9de-5c38895e5a02",
+        "service_id": "6171014e-4086-4e47-ba38-388882b31c5f"
+      },
+      {
+        "id": "1c4a38ec-4a5f-412c-9a45-e3e7002d29ad",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "e4e93c64-7033-48de-b9de-5c38895e5a02",
+        "service_id": "91883401-2f90-455e-818d-fd7fefb4df3a"
+      },
+      {
+        "id": "0c98d03b-a99c-4d76-98f0-625acfe67551",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "eb0ff7c8-f183-475e-afae-1f169767ce06",
+        "service_id": "07804f5c-938b-44a9-ab89-11ff68347a65"
+      },
+      {
+        "id": "48832bc8-90fc-4b64-97ba-0fba7608a253",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "eb0ff7c8-f183-475e-afae-1f169767ce06",
+        "service_id": "8413526f-8c91-4560-ba41-be7426028282"
+      },
+      {
+        "id": "fe827244-3a77-4e1f-af00-95913a1bc206",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "eb0ff7c8-f183-475e-afae-1f169767ce06",
+        "service_id": "08b7870a-3b11-41f9-9010-b0602eb6e3d0"
+      },
+      {
+        "id": "1086fa85-c657-4948-9b2f-0893fbdc1bb6",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "eb0ff7c8-f183-475e-afae-1f169767ce06",
+        "service_id": "db4dee1e-2c97-433e-86d7-ffbf0117144d"
+      },
+      {
+        "id": "316e7694-6c7f-4865-850d-5a6172bff971",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "eb0ff7c8-f183-475e-afae-1f169767ce06",
+        "service_id": "867cff87-4252-43b2-94b6-9a909b22763c"
+      },
+      {
+        "id": "ae84321c-1e8f-4ec8-8669-9918ef2eb4c9",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "26f4559c-f977-47c1-bb97-69ee0c809947",
+        "service_id": "06846e89-ea1a-4d75-847a-1e75e043c79a"
+      },
+      {
+        "id": "91562998-ea21-4e03-b358-f0829c209344",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "f47836e8-47e3-49ce-a543-e6d88cd48d76",
+        "service_id": "9fa4a824-a03d-4616-8c2c-c019c08287be"
+      },
+      {
+        "id": "3daaaa12-0d82-477e-960a-6d411ce4743f",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "f47836e8-47e3-49ce-a543-e6d88cd48d76",
+        "service_id": "33b4199e-ba59-4cf9-8f47-79517faff17d"
+      },
+      {
+        "id": "41b142ef-1a08-4f9d-9e59-43ff8fedf1b5",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "f47836e8-47e3-49ce-a543-e6d88cd48d76",
+        "service_id": "da2925ff-4699-4850-95e0-0c4cd98bc849"
+      },
+      {
+        "id": "db7d8620-1213-4ca0-a49a-0bfa34770c00",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "70129517-65be-4dcc-8034-b5174e10bfb4",
+        "service_id": "0bec0db5-cdcf-4e22-ac91-be7d187016f1"
+      },
+      {
+        "id": "1a18879e-38cc-4970-b59e-146eca7ebbff",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "23b847bc-1e7d-497a-bccd-dd6858c5c420",
+        "service_id": "7052b37d-0871-46ec-8724-7df4b8adc4b2"
+      },
+      {
+        "id": "d5d1f84d-2b9c-4ab2-8e3e-9cf2fa09700c",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "857f2c2c-40b9-4efd-a6d8-b4a483b68c10",
+        "service_id": "22fe87b8-caa4-4fc7-be39-0c2130241aed"
+      },
+      {
+        "id": "72b56cc4-68d7-48e4-9f50-1b0111d9ee7a",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "857f2c2c-40b9-4efd-a6d8-b4a483b68c10",
+        "service_id": "3269db23-2cc7-462a-86cc-88d15a553451"
+      },
+      {
+        "id": "faf1fe27-62ed-4f5b-8ec7-808fc2dfefa6",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "857f2c2c-40b9-4efd-a6d8-b4a483b68c10",
+        "service_id": "efbc6617-decd-4f96-ba55-3543061c633f"
+      },
+      {
+        "id": "f96f4209-a1d3-4d70-97dd-a36caff0baa1",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "619912d5-9331-48bf-898b-42d1a0695f48",
+        "service_id": "a346c853-4c2d-4943-b096-cd32197b1261"
+      },
+      {
+        "id": "0e150f3a-4ea2-4e1c-a186-c6d65eb4530f",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "619912d5-9331-48bf-898b-42d1a0695f48",
+        "service_id": "34b6b1da-80ec-444b-8015-2215381b7924"
+      },
+      {
+        "id": "01dc387b-9563-4d09-b334-1454af729495",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "619912d5-9331-48bf-898b-42d1a0695f48",
+        "service_id": "7346553b-3330-45cf-9ac5-655a6829aa7e"
+      },
+      {
+        "id": "2bd4df90-6ae2-444d-b1c8-4078611cba0c",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "2deed2c9-ba2d-448a-a752-6794062a7a33",
+        "service_id": "429358e0-4ddb-4f44-ba77-0f38b717b760"
+      },
+      {
+        "id": "06425cb5-62ce-4080-ad0f-bbf3e08b1a28",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "2deed2c9-ba2d-448a-a752-6794062a7a33",
+        "service_id": "2e0a03f7-5108-4c36-870d-49cb593689d5"
+      },
+      {
+        "id": "9684bda4-b388-468f-bcfd-1c370c55ac94",
+        "is_active": false,
+        "online_bookable": false,
+        "staff_id": "2deed2c9-ba2d-448a-a752-6794062a7a33",
+        "service_id": "e999abc6-90a4-4bf1-9459-c68c89eaac4c"
+      }
+    ]
+  },
+  "finalCounts": {
+    "activeBookings": 0,
+    "activeServices": 0,
+    "activeStaff": 0,
+    "activeStaffAssignments": 0,
+    "activeRulesForInactiveStaff": 0
+  },
+  "initialCounts": {
+    "activeBookings": 0,
+    "activeServices": 0,
+    "activeStaff": 0,
+    "activeStaffAssignments": 0,
+    "activeRulesForInactiveStaff": 0
+  },
+  "ok": true,
+  "projectRef": "bowkoiprvqwjilwaxhda",
+  "records": {
+    "activeBookingIdsBefore": [],
+    "activeBookingIdsAfter": [],
+    "customerIds": [
+      "16e52731-eec6-4fba-a059-ee17da787f95",
+      "f8625850-b983-481f-999e-e7f2b7d5e642",
+      "a5469444-a9fd-4cef-b401-4c90a9367c2b",
+      "9b45fad3-8e15-4ca3-a0e8-36bdd99c92d9",
+      "aaa55106-5c82-4071-a6e6-d102412578c5",
+      "66a1b9d1-5047-44a7-bd89-f88a6f07cf7b",
+      "98f7aafa-4c01-49fe-9441-ca2a173101d3"
+    ],
+    "serviceIds": [
+      "07804f5c-938b-44a9-ab89-11ff68347a65",
+      "8413526f-8c91-4560-ba41-be7426028282",
+      "08b7870a-3b11-41f9-9010-b0602eb6e3d0",
+      "db4dee1e-2c97-433e-86d7-ffbf0117144d",
+      "867cff87-4252-43b2-94b6-9a909b22763c",
+      "b8264fc8-aa4f-40ee-9ffa-62ec1a75b5f2",
+      "92590450-da37-43ca-8749-19c12e0e2977",
+      "efe2e074-efb9-45aa-8bc0-6610588a9b82",
+      "0abf0640-3b20-468f-8e6e-30d60d64dfb7",
+      "429358e0-4ddb-4f44-ba77-0f38b717b760",
+      "2e0a03f7-5108-4c36-870d-49cb593689d5",
+      "e999abc6-90a4-4bf1-9459-c68c89eaac4c",
+      "7052b37d-0871-46ec-8724-7df4b8adc4b2",
+      "5c775580-4d8f-436e-af01-ab78018ef095",
+      "2c11d476-654e-464c-a0f2-392b63ac0767",
+      "02ab943b-0b73-4535-a57b-0a1ae7b1557d",
+      "78162da2-8dad-4947-b32a-0368d3e14304",
+      "0bebdca4-8ec4-4051-9992-b38096393afc",
+      "9bff20e2-ae84-44b5-8bf2-a1464ee8b6a7",
+      "7bd78f26-ae7c-476f-a95f-c421361b2fd8",
+      "475285b5-e951-4bfd-8342-625236f87d96",
+      "5df7a10e-22a2-439d-99a3-82cb08985bc6",
+      "9fa4a824-a03d-4616-8c2c-c019c08287be",
+      "33b4199e-ba59-4cf9-8f47-79517faff17d",
+      "da2925ff-4699-4850-95e0-0c4cd98bc849",
+      "0bec0db5-cdcf-4e22-ac91-be7d187016f1",
+      "0a439468-48c3-4287-a145-cf3d0ea56903",
+      "409c78f3-5d1e-46c8-9cac-51bb14e72c2b",
+      "d03c8012-3f2f-4aa6-83af-e72cd3e07a61",
+      "c4a76d90-3347-458a-a651-2c0b0257e193",
+      "faaa2a31-3f80-4451-96ce-db7448ecd35a",
+      "3edc57b5-5496-4034-b219-f260629702df",
+      "5059ce90-753a-42e6-8c4b-a80bb1656e06",
+      "ca1b271b-d5b0-4ac0-bddf-1f2b98caf2f2",
+      "ecc12e0c-04c4-4936-ba32-6a71a4d6ed7c",
+      "22fe87b8-caa4-4fc7-be39-0c2130241aed",
+      "3269db23-2cc7-462a-86cc-88d15a553451",
+      "069533d6-90d0-406a-8290-12227705af37",
+      "50ead51b-c2d8-4e6b-9bad-e734608c48e6",
+      "06846e89-ea1a-4d75-847a-1e75e043c79a",
+      "a346c853-4c2d-4943-b096-cd32197b1261",
+      "34b6b1da-80ec-444b-8015-2215381b7924",
+      "7346553b-3330-45cf-9ac5-655a6829aa7e",
+      "d899f8b2-8abc-4c0b-bf79-aacd9175542c",
+      "5d1dc92b-401f-44b9-b5c0-6f70de449904",
+      "533e59ef-5be8-4035-ba6b-44e00d582753",
+      "9c299301-5078-4588-9b02-9bc3255af462",
+      "d074628b-9de1-4d9f-b412-013ae3d90ac2",
+      "a47710d7-68b3-41ee-99cf-02eddbd37cca",
+      "47c8a4ec-cc35-4c00-aa88-9ba28b4ab0d3",
+      "221c5119-7a50-4c27-b124-848db33165d4",
+      "5b9b8713-d689-4afc-b0b6-d6bcb8b5db1f",
+      "c3e30a14-0497-4aa1-98df-61e6bc6cb545",
+      "350f5c09-2c0d-4bbc-b7f2-9387993ed1dd",
+      "f98e2d1c-46e5-4980-b13a-893ea0590852",
+      "13ce7dc3-5063-45e4-a946-4c82ddee1bed",
+      "51ca4d6d-12c3-4ff2-9eb3-6125361918c3",
+      "c50a4775-7420-477b-ac24-d033b672fb4a",
+      "1bb6fc31-39c3-42e5-b1d9-8c9572ae5acb",
+      "9cb6e99c-1b6d-4f2d-a02d-a0fc93e088a3",
+      "72b37497-95b2-4ea7-b5ad-03e1b4e39610",
+      "f2c78237-3103-4d84-a971-e18069f5689e",
+      "6171014e-4086-4e47-ba38-388882b31c5f",
+      "29c2cde5-a203-43fb-9760-8e9445365af4",
+      "ebb715d2-75d4-4a79-9123-ddb7541e1a25",
+      "d46b15dd-1228-43dd-b564-74bc3f592898",
+      "53250461-0517-46da-9205-e2ae0594b185",
+      "125583c9-df85-4e27-892b-4227767ed836",
+      "8003af32-72f7-466a-85f8-4267863613b2",
+      "250a8392-ca3f-4c69-99f5-fb7328ef9110",
+      "704a28ed-cec2-49df-84a0-fe6d944ade66",
+      "c5a49537-de76-4003-914e-449c20d36cf1",
+      "e55ddebd-856e-467c-a724-89af2dd1da25",
+      "9c03e681-070c-4c57-9f26-b104613b64e3",
+      "efbc6617-decd-4f96-ba55-3543061c633f",
+      "e09f92b7-0384-461c-ae6d-93300b67a9fb",
+      "48637c19-3b28-4b9f-8484-3ef5bf6eddca",
+      "91883401-2f90-455e-818d-fd7fefb4df3a",
+      "45bcc32d-0c38-4542-9382-04b575ccb5f1",
+      "08fd0674-508b-4dd9-bfc8-7d4868f29b70",
+      "24d6d09c-7bbd-4471-89c7-ee06a71a7c37",
+      "5147891c-108d-4d6d-91b0-c22dc6ebf7c4",
+      "dc407274-4e71-4104-a60e-6b27710d2ec0",
+      "4f902f81-2a7b-4097-8c18-6d580ba29fcb",
+      "ee4e200c-f3a4-4cbf-ba71-7094cb20330c",
+      "8b0065e7-15a8-40da-bfc4-116fb42cbc25"
+    ],
+    "staffIds": [
+      "5bbc331d-74d5-4049-aba2-46c431136ef5",
+      "37e1c5e2-1c09-4962-9a21-8a6172bc495f",
+      "9c95c02f-d1c1-45b7-9194-7a3021048e86",
+      "938717ee-7d4a-4ddd-babd-8605fcb06cc3",
+      "8d34122c-1eb4-4d86-b897-27fd0f54d3bf",
+      "64f626ac-e7a7-492e-975c-37d178f44e0c",
+      "6d7f643b-ecf6-4239-90c3-e858ddf4a899",
+      "6cb5ea80-2a67-428a-9f6b-0c8eddf09951",
+      "26f4559c-f977-47c1-bb97-69ee0c809947",
+      "f47836e8-47e3-49ce-a543-e6d88cd48d76",
+      "2deed2c9-ba2d-448a-a752-6794062a7a33",
+      "eb0ff7c8-f183-475e-afae-1f169767ce06",
+      "eda73c99-8dee-4645-aa26-0dd7bf2154fd",
+      "0ef6143b-bf42-44ce-a130-e92f0b97d890",
+      "9ac81ce4-eebe-492e-bf48-1917bcb0b574",
+      "bfc224c1-5adc-4e2f-840d-a947b756b352",
+      "1a8f21e1-e07e-4edc-b4bb-0b3e77eb0604",
+      "cbdcafc6-287f-445a-8395-f9f207466873",
+      "d9d235d0-b510-407a-a919-9dce248878f9",
+      "e23336f1-01cf-495c-9fcb-f2d513286b0e",
+      "e1909159-4ab3-4447-82ba-fc58246d0cc2",
+      "4245da6e-6ffa-42bf-9714-d74cbf9f3214",
+      "fe73b229-b8b5-4437-a54b-f73f587a90e5",
+      "de6f48d0-9eb9-432e-8bd7-70b34af5ff38",
+      "aad69ef0-2a69-442e-996a-99c437263ef4",
+      "1189cadd-05c0-4e7b-aa14-73b6f67880b8",
+      "6e8fd1e8-a12e-4f81-a843-9add2b776b78",
+      "080cf606-7d47-4ab8-abfc-e1f389815998",
+      "87e3f557-5029-4f58-a750-5aac516fbc20",
+      "619912d5-9331-48bf-898b-42d1a0695f48",
+      "e4e93c64-7033-48de-b9de-5c38895e5a02",
+      "0b68ed85-ffb2-4a8a-8813-93f12b2eef82",
+      "70129517-65be-4dcc-8034-b5174e10bfb4",
+      "23b847bc-1e7d-497a-bccd-dd6858c5c420",
+      "857f2c2c-40b9-4efd-a6d8-b4a483b68c10",
+      "b2757ee2-d3c2-434c-85e3-4e258614113c",
+      "a6caa7df-7e1f-4e5f-98c0-cd43820ae83a"
+    ]
+  },
+  "salonId": "7f599bc8-a806-4a68-be86-c149c21709e2"
+}

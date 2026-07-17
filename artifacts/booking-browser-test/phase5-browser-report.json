@@ -1,0 +1,48 @@
+{
+  "baseUrl": "http://127.0.0.1:3337",
+  "bookingId": "25dd70a3-93a5-4864-a134-73900db04083",
+  "cleanup": "soft-cancelled booking and voided E2E ticket",
+  "consoleErrors": [],
+  "customerId": "e8e3fa83-ad89-4bb9-ac27-c6d966b2f5fb",
+  "marker": "[E2E] Phase5 Browser 20260716191349",
+  "networkErrors": [],
+  "ok": true,
+  "pageErrors": [],
+  "screenshots": [
+    "phase5-owner-booking-detail-desktop.png",
+    "phase5-pos-ticket-detail-desktop.png",
+    "phase5-customers-list-desktop.png",
+    "phase5-customer-detail-desktop.png",
+    "phase5-owner-booking-mobile.png"
+  ],
+  "steps": [
+    {
+      "ownerDetail": "loaded"
+    },
+    {
+      "reschedule": "saved"
+    },
+    {
+      "reassign": "saved"
+    },
+    {
+      "statusAction": "checked_in"
+    },
+    {
+      "ticketCreate": "created"
+    },
+    {
+      "posReverseLink": "verified"
+    },
+    {
+      "customerList": "verified"
+    },
+    {
+      "customerDetail": "verified"
+    },
+    {
+      "mobile": "booking detail captured"
+    }
+  ],
+  "ticketId": "c3fcd93c-5578-4fe8-a5bc-60318c28e2b1"
+}

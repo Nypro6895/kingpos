@@ -1,0 +1,61 @@
+KP
+[B
+KP
+KingPOS
+Personal app
+v
+
+ACCOUNT
+
+Explore
+My Place
+Notifications
+[B
+[E2E] Booking 20260716002831 Owner
+booking-e2e-20260716002831@example.com
+My Place
+
+Your salons, workplaces, and organizations.
+
+Create salon
+Apply to salon
+
+Choose a valid salon workspace before opening that page.
+
+Search salons and workspaces
+Quick Access
+2
+
+Open frequently used destinations directly.
+
+[B
+[E2E] Booking 20260716002831 Org
+Overview · Organization
+[B
+[E2E] Booking 20260716002831 Salon
+POS · Manage
+Manage Salons
+1
+
+Salons you own or manage.
+
+[B
+[E2E] Booking 20260716002831 Salon
+Owner · [E2E] Booking 20260716002831 Org
+POS
+Staff Workplaces
+0
+
+Salons where you work as staff.
+
+No staff workplaces yet.
+
+Apply to salon
+Organizations
+1
+
+Organizations connected to your account.
+
+[B
+[E2E] Booking 20260716002831 Org
+Owner · 1 salon

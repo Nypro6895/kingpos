@@ -1,0 +1,181 @@
+KP
+[B
+KP
+[E2E] Booking 20260716002831 Salon
+Salon workspace / Manage
+v
+
+[E2E] Booking 20260716002831 Org
+
+OPERATIONS
+
+POS
+Today
+Bookings
+Customers
+
+TEAM & CATALOG
+
+Staff
+Services
+Salon Profile
+
+FINANCE
+
+Tickets
+Payroll
+Reports
+
+SETTINGS
+
+Salon Settings
+[B
+[E2E] Booking 20260716002831 Owner
+booking-e2e-20260716002831@example.com
+
+[E2E] Booking 20260716002831 Org / [E2E] Booking 20260716002831 Salon
+
+Booking
+
+Owner appointment workspace for canonical bookings.
+
+Day
+Week
+List
+New appointment
+Calendar
+Requests
+Settings
+Next 30 days
+
+America/Chicago
+
+Today
+<
+>
+STAFF
+All staff
+[E2E] Booking 20260716002831 Pro A
+[E2E] Booking 20260716002831 Pro B
+STATUS
+All statuses
+Pending
+Confirmed
+Checked in
+In service
+Completed
+Cancelled
+No-show
+SOURCE
+All sources
+Public profile
+Explore
+Owner manual
+Staff manual
+Phone
+Walk-in
+Legacy request
+POS
+SERVICE
+All services
+[E2E] Booking 20260716002831 Gel Manicure
+[E2E] Booking 20260716002831 Nail Art Add-on
+SEARCH
+Apply
+Clear
+TIME
+CUSTOMER
+SERVICES
+STAFF
+STATUS
+Jul 17, 10:30 AM
+[E2E] Booking 20260716002831 Customer
+[E2E] Booking 20260716002831 Gel Manicure, [E2E] Booking 20260716002831 Nail Art Add-on
+[E2E] Booking 20260716002831 Pro A
+Pending
+[E2E] Booking 20260716002831 Customer
+
+Jul 17, 10:30 AM
+
+x
+
+Booking domain operation failed.
+
+Pending
+Public profile
+requested
+
+Customer: [E2E] Booking 20260716002831 Customer
+
+Contact: 4145550199 / booking-e2e-customer@example.com
+
+Timezone: America/Chicago
+
+Total: $60.00
+
+SERVICES
+
+[E2E] Booking 20260716002831 Gel Manicure
+
+45 min / $45.00
+
+[E2E] Booking 20260716002831 Pro A
+
+9:00 AM - 9:45 AM
+
+[E2E] Booking 20260716002831 Nail Art Add-on
+
+15 min / $15.00
+
+[E2E] Booking 20260716002831 Pro A
+
+10:15 AM - 10:30 AM
+
+NOTES
+
+Public: [E2E] Phase3 1784183887329 public booking create
+
+Internal: None
+
+TIMELINE
+
+Rescheduled
+
+Jul 16, 1:52 AM
+
+Rescheduled
+
+Jul 16, 1:50 AM
+
+Rescheduled
+
+Jul 16, 1:45 AM
+
+Booking Created
+
+Jul 16, 1:38 AM
+
+Confirmation Requested
+
+Jul 16, 1:38 AM
+
+ACTIONS
+Reason or action note
+Confirm
+Cancel
+Open POS ticket
+Reschedule
+Start
+End
+Override reason
+Save time
+Assign staff
+[E2E] Booking 20260716002831 Gel Manicure
+Unassigned
+[E2E] Booking 20260716002831 Pro A
+[E2E] Booking 20260716002831 Pro B
+[E2E] Booking 20260716002831 Nail Art Add-on
+Unassigned
+[E2E] Booking 20260716002831 Pro A
+[E2E] Booking 20260716002831 Pro B
+Save assignment

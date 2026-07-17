@@ -1,0 +1,48 @@
+{
+  "baseUrl": "http://127.0.0.1:3330",
+  "executablePath": "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  "pages": {
+    "explore": {
+      "url": "http://127.0.0.1:3330/explore",
+      "headings": [
+        "Discover salons",
+        "Fresh inspiration",
+        "Recommended for you",
+        "King Nails",
+        "Tram 3",
+        "Tram 2",
+        "Tram Nails",
+        "Popular services",
+        "Keep moving in KingPOS"
+      ],
+      "hasFresh": true,
+      "hasBestMatches": false,
+      "hasDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": []
+    },
+    "explore-search-tram": {
+      "url": "http://127.0.0.1:3330/explore?q=tram",
+      "headings": [
+        "Discover salons",
+        "3 best matches for \"tram\"",
+        "Best matches for \"tram\"",
+        "Tram 2",
+        "Tram 3",
+        "Tram Nails",
+        "Recommended for you",
+        "King Nails",
+        "Keep moving in KingPOS"
+      ],
+      "hasFresh": false,
+      "hasBestMatches": true,
+      "hasDistanceLabel": false,
+      "horizontalOverflow": false,
+      "brokenImages": []
+    }
+  },
+  "consoleMessages": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "assertions": []
+}

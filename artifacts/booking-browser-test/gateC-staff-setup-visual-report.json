@@ -1,0 +1,156 @@
+{
+  "baseUrl": "http://127.0.0.1:3381",
+  "consoleErrors": [],
+  "cssResponses": [
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/f80a305462c3dc3c.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/f80a305462c3dc3c.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/f80a305462c3dc3c.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css"
+    }
+  ],
+  "date": "2026-07-15",
+  "fixtureIds": {
+    "staffId": "64f626ac-e7a7-492e-975c-37d178f44e0c",
+    "serviceId": "92590450-da37-43ca-8749-19c12e0e2977",
+    "bookingId": "ec86290e-248c-4fcc-b45c-f484c17f091f"
+  },
+  "networkErrors": [],
+  "ok": true,
+  "pageErrors": [],
+  "salonId": "7f599bc8-a806-4a68-be86-c149c21709e2",
+  "screenshots": [
+    "gateC-staff-appointments-list-empty.png",
+    "gateC-staff-appointments-list.png",
+    "gateC-staff-appointments-mobile.png",
+    "gateC-staff-services-booking-editor-panel.png",
+    "gateC-service-bookable-staff-editor-panel.png",
+    "gateC-owner-availability-editor-panel.png"
+  ],
+  "styleFacts": {
+    "staffAppointments": {
+      "bookingSetupPanel": null,
+      "staffAppointmentsRoot": {
+        "background-color": "rgb(247, 247, 248)",
+        "font-family": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif"
+      },
+      "staffAppointmentsDateDisplay": {
+        "border-radius": "10px",
+        "display": "flex",
+        "font-family": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "min-height": "40px"
+      },
+      "staffAppointmentsView": {
+        "background-color": "rgb(100, 42, 86)",
+        "color": "rgb(255, 255, 255)"
+      },
+      "toolbarText": "TodayPrevious rangeWednesday, July 15Next range",
+      "url": "http://127.0.0.1:3381/staff/appointments?date=2026-07-15&view=list",
+      "visibleDateInputs": 0
+    },
+    "staffServicesEditor": {
+      "bookingSetupPanel": {
+        "background-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(231, 223, 229)",
+        "border-radius": "14px",
+        "font-family": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif"
+      },
+      "staffAppointmentsRoot": null,
+      "staffAppointmentsDateDisplay": null,
+      "staffAppointmentsView": null,
+      "toolbarText": null,
+      "url": "http://127.0.0.1:3381/staff?staff=64f626ac-e7a7-492e-975c-37d178f44e0c&setup=booking",
+      "visibleDateInputs": 0
+    },
+    "serviceBookableStaff": {
+      "bookingSetupPanel": {
+        "background-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(231, 223, 229)",
+        "border-radius": "14px",
+        "font-family": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif"
+      },
+      "staffAppointmentsRoot": null,
+      "staffAppointmentsDateDisplay": null,
+      "staffAppointmentsView": null,
+      "toolbarText": null,
+      "url": "http://127.0.0.1:3381/services?service=92590450-da37-43ca-8749-19c12e0e2977&setup=bookable_staff",
+      "visibleDateInputs": 0
+    },
+    "availabilityEditor": {
+      "bookingSetupPanel": {
+        "background-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(231, 223, 229)",
+        "border-radius": "14px",
+        "font-family": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif"
+      },
+      "staffAppointmentsRoot": null,
+      "staffAppointmentsDateDisplay": null,
+      "staffAppointmentsView": null,
+      "toolbarText": null,
+      "url": "http://127.0.0.1:3381/bookings?tab=availability&staffId=64f626ac-e7a7-492e-975c-37d178f44e0c",
+      "visibleDateInputs": 0
+    }
+  },
+  "organizationId": "387af6da-69bb-45dc-bf25-5954a1d10ded",
+  "organizationName": "King Nails LLC",
+  "salonName": "King Nails"
+}

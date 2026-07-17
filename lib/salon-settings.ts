@@ -4,6 +4,7 @@ import {
   getCurrentBusinessContext,
   isSalonManageContext,
 } from "@/lib/current-context";
+import { syncCurrentSalonMapLocationAddressState } from "@/lib/location/salon-map-location";
 import { requirePermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
@@ -364,6 +365,11 @@ export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput) 
     });
     throw new Error(error.message);
   }
+
+  await syncCurrentSalonMapLocationAddressState({
+    context,
+    setting: data,
+  });
 
   return data;
 }

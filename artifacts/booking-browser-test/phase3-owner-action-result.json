@@ -1,0 +1,11 @@
+{
+  "bookingId": "d79894b1-8b7b-4c21-ae08-a300cb586de7",
+  "steps": [
+    "workspace switched",
+    "detail opened",
+    "reassigned",
+    "confirmed",
+    "cancelled"
+  ],
+  "consoleErrors": []
+}

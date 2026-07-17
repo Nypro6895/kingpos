@@ -16,6 +16,7 @@ const TIMELINE_LABELS: Record<PosTicketTimelineEventType, string> = {
   ticket_cancelled: "Ticket Cancelled",
   ticket_checked_out: "Checked Out",
   ticket_created: "Ticket Created",
+  ticket_created_from_booking: "Created From Appointment",
   ticket_reopened: "Ticket Reopened",
   ticket_voided: "Ticket Voided",
   tax_updated: "Tax Updated",

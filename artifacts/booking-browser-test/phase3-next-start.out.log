@@ -1,0 +1,8 @@
+
+> kingpos@0.1.0 start
+> next start -p 3333
+
+▲ Next.js 16.2.9
+- Local:         http://localhost:3333
+- Network:       http://192.168.1.95:3333
+✓ Ready in 753ms

@@ -5,13 +5,20 @@ import {
   isSalonManageContext,
 } from "@/lib/current-context";
 import { hasPermission, requirePermission } from "@/lib/permissions";
+import { resolveStaffAccountForSalon } from "@/lib/staff-account";
+import {
+  SALON_PROFILE_MEDIA_BUCKET,
+  isSalonProfileMediaPathForSalon,
+  normalizeSalonProfileMediaPath,
+  parseSalonProfileMediaPath,
+} from "@/lib/salon-profile-media";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { CreateStaffInput, Staff } from "@/types/staff";
 import type { KingUser } from "@/types/user";
 
 export const STAFF_SELECT =
-  "id, organization_id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, job_title, is_active, created_at, updated_at";
+  "id, organization_id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, job_title, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 
 const STAFF_PAYROLL_SETUP_SELECT = "id, staff_id, effective_from, effective_to";
 
@@ -321,6 +328,12 @@ export async function createStaff(input: CreateStaffInput) {
     throw new Error("Display Name is required.");
   }
 
+  const ownerPublicEnabled =
+    input.owner_public_enabled ?? input.public_profile_visible ?? true;
+  const staffPublicConsentStatus =
+    input.staff_public_consent_status ??
+    ((input.public_profile_visible ?? true) ? "granted" : "not_requested");
+
   const { data, error } = await supabase
     .from("staff")
     .insert({
@@ -332,6 +345,17 @@ export async function createStaff(input: CreateStaffInput) {
       phone: input.phone,
       email: input.email,
       job_title: input.job_title,
+      online_booking_enabled: input.online_booking_enabled ?? true,
+      owner_public_enabled: ownerPublicEnabled,
+      profile_display_order: input.profile_display_order ?? 0,
+      public_bio: input.public_bio ?? null,
+      public_profile_photo_path: input.public_profile_photo_path ?? null,
+      public_profile_visible:
+        ownerPublicEnabled && staffPublicConsentStatus === "granted",
+      salon_profile_content_posting_enabled:
+        input.salon_profile_content_posting_enabled ?? true,
+      specialties: input.specialties ?? [],
+      staff_public_consent_status: staffPublicConsentStatus,
       is_active: input.is_active ?? true,
     })
     .select(STAFF_SELECT)
@@ -351,4 +375,208 @@ export async function createStaff(input: CreateStaffInput) {
   }
 
   return data;
+}
+
+function cleanOptional(value: string | null | undefined) {
+  return value?.trim() || null;
+}
+
+function normalizeSpecialties(value: string[] | null | undefined) {
+  return Array.from(
+    new Set(
+      (value ?? [])
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+        .slice(0, 12),
+    ),
+  );
+}
+
+function getStorageParent(path: string) {
+  const parts = path.split("/");
+  const name = parts.pop() ?? "";
+
+  return {
+    folder: parts.join("/"),
+    name,
+  };
+}
+
+async function verifyStaffAvatarPath(input: {
+  path: string | null | undefined;
+  salonId: string;
+  staffId: string;
+}) {
+  const normalizedPath = normalizeSalonProfileMediaPath(input.path);
+
+  if (!normalizedPath) {
+    return null;
+  }
+
+  const parsed = parseSalonProfileMediaPath(normalizedPath);
+
+  if (
+    !parsed ||
+    parsed.kind !== "staffAvatar" ||
+    !isSalonProfileMediaPathForSalon({
+      allowedKinds: ["staffAvatar"],
+      path: normalizedPath,
+      salonId: input.salonId,
+    }) ||
+    !normalizedPath.includes(`/staff/${input.staffId}/avatar/`)
+  ) {
+    throw new Error("Uploaded avatar does not belong to this staff profile.");
+  }
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  const { folder, name } = getStorageParent(normalizedPath);
+  const { data, error } = await supabase.storage
+    .from(SALON_PROFILE_MEDIA_BUCKET)
+    .list(folder, { limit: 10, search: name });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data?.some((object) => object.name === name)) {
+    throw new Error("Uploaded avatar was not found in Storage.");
+  }
+
+  return normalizedPath;
+}
+
+export async function updateStaffPublicProfile(input: {
+  displayName?: string | null;
+  jobTitle?: string | null;
+  publicBio?: string | null;
+  publicProfilePhotoPath?: string | null;
+  removePhoto?: boolean;
+  specialties?: string[] | null;
+  staffPublicConsentStatus?: Staff["staff_public_consent_status"];
+  staffId: string;
+}) {
+  const context = await getCurrentBusinessContext();
+
+  if (!context.user) {
+    throw new Error("You must be logged in to update staff profiles.");
+  }
+
+  if (!context.currentOrganization || !context.currentSalon) {
+    throw new Error("Choose a salon workspace before updating staff.");
+  }
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  const [canManageStaff, staffResolution] = await Promise.all([
+    hasPermission(STAFF_PERMISSIONS.manage, context),
+    resolveStaffAccountForSalon({ context, supabase }),
+  ]);
+  const canEditSelf =
+    staffResolution.status === "found" && staffResolution.staff.id === input.staffId;
+
+  if (!canManageStaff && !canEditSelf) {
+    throw new Error("You can only update your own public staff profile.");
+  }
+
+  const { data: existing, error: loadError } = await supabase
+    .from("staff")
+    .select(STAFF_SELECT)
+    .eq("id", input.staffId)
+    .eq("organization_id", context.currentOrganization.id)
+    .eq("salon_id", context.currentSalon.id)
+    .maybeSingle<Staff>();
+
+  if (loadError || !existing) {
+    throw new Error(loadError?.message ?? "Staff profile was not found.");
+  }
+
+  const avatarPath = input.removePhoto
+    ? null
+    : await verifyStaffAvatarPath({
+        path: input.publicProfilePhotoPath,
+        salonId: context.currentSalon.id,
+        staffId: input.staffId,
+      });
+  const displayName = cleanOptional(input.displayName) ?? existing.display_name;
+
+  if (!displayName) {
+    throw new Error("Display name is required.");
+  }
+
+  const nextConsentStatus = canEditSelf
+    ? input.staffPublicConsentStatus ?? existing.staff_public_consent_status
+    : existing.staff_public_consent_status;
+
+  const { error } = await supabase
+    .from("staff")
+    .update({
+      display_name: displayName,
+      job_title: cleanOptional(input.jobTitle) ?? existing.job_title,
+      public_bio:
+        input.publicBio === undefined
+          ? existing.public_bio
+          : cleanOptional(input.publicBio),
+      public_profile_photo_path:
+        input.removePhoto === true
+          ? null
+          : (avatarPath ?? existing.public_profile_photo_path),
+      public_profile_visible:
+        existing.owner_public_enabled && nextConsentStatus === "granted",
+      staff_public_consent_status: nextConsentStatus,
+      specialties:
+        input.specialties === undefined
+          ? existing.specialties
+          : normalizeSpecialties(input.specialties),
+    })
+    .eq("id", input.staffId)
+    .eq("organization_id", context.currentOrganization.id)
+    .eq("salon_id", context.currentSalon.id);
+
+  if (error) {
+    console.error("Supabase update staff public profile failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      salonId: context.currentSalon.id,
+      staffId: input.staffId,
+      userId: context.user.id,
+    });
+    throw new Error(error.message);
+  }
+
+  if (avatarPath) {
+    await supabase
+      .from("salon_profile_media_assets")
+      .update({
+        attached_at: new Date().toISOString(),
+        attached_entity_id: input.staffId,
+        attached_entity_type: "staff",
+        status: "active",
+      })
+      .eq("bucket", SALON_PROFILE_MEDIA_BUCKET)
+      .eq("object_path", avatarPath);
+  }
+
+  if ((avatarPath || input.removePhoto) && existing.public_profile_photo_path) {
+    await supabase
+      .from("salon_profile_media_assets")
+      .update({
+        attached_entity_id: null,
+        attached_entity_type: null,
+        orphaned_at: new Date().toISOString(),
+        status: "orphaned",
+      })
+      .eq("bucket", SALON_PROFILE_MEDIA_BUCKET)
+      .eq("object_path", existing.public_profile_photo_path);
+  }
 }

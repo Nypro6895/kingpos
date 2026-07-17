@@ -1,6 +1,17 @@
 "use server";
 
-import { createStaff as createStaffRecord } from "@/lib/staff";
+import {
+  STAFF_PERMISSIONS,
+  createStaff as createStaffRecord,
+  updateStaffPublicProfile,
+} from "@/lib/staff";
+import { getCurrentBusinessContext } from "@/lib/current-context";
+import { hasPermission } from "@/lib/permissions";
+import {
+  SALON_PROFILE_MEDIA_BUCKET,
+  buildSalonProfileMediaPath,
+} from "@/lib/salon-profile-media";
+import { resolveStaffAccountForSalon } from "@/lib/staff-account";
 import {
   acceptStaffInvite as acceptStaffInviteInService,
   acceptStaffInviteByRequestId as acceptStaffInviteByRequestIdInService,
@@ -16,6 +27,12 @@ import {
   searchStaffAccountExact as searchStaffAccountExactInService,
   submitStaffSalonApplication as submitStaffSalonApplicationInService,
 } from "@/lib/staff-salon-connections";
+import {
+  createAuthenticatedSupabaseServerClient,
+  getAccessTokenFromRequest,
+  getSupabaseConfig,
+} from "@/lib/supabase/server";
+import { getSalonProfileHref } from "@/lib/salon-profile";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type {
@@ -38,6 +55,15 @@ type StaffConnectionActionResult<T> =
     };
 
 type ActionInput = FormData | Record<string, unknown>;
+
+export type StaffAvatarUploadSession = {
+  accessToken: string;
+  anonKey: string;
+  bucket: string;
+  path: string;
+  salonId: string;
+  supabaseUrl: string;
+};
 
 function readRequiredString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -206,6 +232,161 @@ export async function createStaff(formData: FormData) {
 
   revalidatePath("/staff");
   redirect("/staff");
+}
+
+function readActionStringList(input: ActionInput, key: string) {
+  const value = input instanceof FormData ? input.get(key) : input[key];
+
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+
+  if (typeof value !== "string") {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+async function assertCanMutateStaffPublicProfile(staffId: string) {
+  const context = await getCurrentBusinessContext();
+
+  if (!context.user || !context.currentOrganization || !context.currentSalon) {
+    throw new Error("Choose a salon workspace before updating staff.");
+  }
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  const [canManageStaff, staffResolution] = await Promise.all([
+    hasPermission(STAFF_PERMISSIONS.manage, context),
+    resolveStaffAccountForSalon({ context, supabase }),
+  ]);
+  const canEditSelf =
+    staffResolution.status === "found" && staffResolution.staff.id === staffId;
+
+  if (!canManageStaff && !canEditSelf) {
+    throw new Error("You can only update your own public staff profile.");
+  }
+
+  const { data: staff, error } = await supabase
+    .from("staff")
+    .select("id")
+    .eq("id", staffId)
+    .eq("organization_id", context.currentOrganization.id)
+    .eq("salon_id", context.currentSalon.id)
+    .maybeSingle<{ id: string }>();
+
+  if (error || !staff) {
+    throw new Error(error?.message ?? "Staff profile was not found.");
+  }
+
+  return { context, supabase };
+}
+
+export async function getStaffProfileAvatarUploadSessionAction(
+  staffId: string,
+): Promise<StaffAvatarUploadSession> {
+  const [accessToken, permissionContext] = await Promise.all([
+    getAccessTokenFromRequest(),
+    assertCanMutateStaffPublicProfile(staffId),
+  ]);
+  const config = getSupabaseConfig();
+
+  if (!config || !accessToken) {
+    throw new Error("Sign in before uploading staff media.");
+  }
+
+  const path = buildSalonProfileMediaPath({
+    kind: "staffAvatar",
+    salonId: permissionContext.context.currentSalon!.id,
+    staffId,
+  });
+  const { error } = await permissionContext.supabase
+    .from("salon_profile_media_assets")
+    .insert({
+      bucket: SALON_PROFILE_MEDIA_BUCKET,
+      object_path: path,
+      organization_id: permissionContext.context.currentOrganization!.id,
+      purpose: "staff_avatar",
+      salon_id: permissionContext.context.currentSalon!.id,
+      status: "pending",
+      upload_intent: "staff",
+      uploaded_by_user_id: permissionContext.context.user!.id,
+    });
+
+  if (error) {
+    console.error("Supabase reserve staff profile avatar failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      staffId,
+    });
+    throw new Error(error.message);
+  }
+
+  return {
+    accessToken,
+    anonKey: config.supabaseAnonKey,
+    bucket: SALON_PROFILE_MEDIA_BUCKET,
+    path,
+    salonId: permissionContext.context.currentSalon!.id,
+    supabaseUrl: config.supabaseUrl,
+  };
+}
+
+export async function updateStaffPublicProfileAction(
+  input: ActionInput,
+): Promise<{ error: string | null }> {
+  const staffId = readActionString(input, "staff_id");
+
+  if (!staffId) {
+    return { error: "Staff profile is required." };
+  }
+
+  try {
+    await updateStaffPublicProfile({
+      displayName: readActionOptionalString(input, "display_name"),
+      jobTitle: readActionOptionalString(input, "job_title"),
+      publicBio: readActionOptionalString(input, "public_bio"),
+      publicProfilePhotoPath: readActionOptionalString(
+        input,
+        "public_profile_photo_path",
+      ),
+      staffPublicConsentStatus: readActionBoolean(input, "appear_publicly")
+        ? "granted"
+        : "opted_out",
+      removePhoto: readActionBoolean(input, "remove_photo"),
+      specialties: readActionStringList(input, "specialties"),
+      staffId,
+    });
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Staff public profile could not be saved.",
+    };
+  }
+
+  const context = await getCurrentBusinessContext();
+
+  revalidatePath("/staff");
+  revalidatePath("/staff/my-work");
+  revalidatePath("/salon-profile");
+
+  if (context.currentSalon) {
+    revalidatePath(getSalonProfileHref(context.currentSalon.id));
+  }
+
+  return { error: null };
 }
 
 export async function searchStaffAccountExactAction(

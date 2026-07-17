@@ -1,0 +1,9 @@
+{
+  "bookingId": "821fdfe8-31c4-4852-84c6-27fcfef465ba",
+  "steps": [
+    "detail opened",
+    "reassigned",
+    "cancelled"
+  ],
+  "consoleErrors": []
+}

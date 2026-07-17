@@ -1,0 +1,1092 @@
+{
+  "activeTestBookingCount": 0,
+  "baseUrl": "http://127.0.0.1:3381",
+  "bookingId": "359b0ef7-9da7-4615-aa86-6e2a268b3378",
+  "consoleErrors": [],
+  "cssResponses": [
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/f0e50b714878ce04.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/f0e50b714878ce04.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/f0e50b714878ce04.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    }
+  ],
+  "customerEmail": "gatebd-20260717034536@example.test",
+  "fixtureIds": {
+    "addOnLink": "1f4d4a92-8788-4956-9445-8c09e6c6e3a0",
+    "services": [
+      "07804f5c-938b-44a9-ab89-11ff68347a65",
+      "8413526f-8c91-4560-ba41-be7426028282",
+      "08b7870a-3b11-41f9-9010-b0602eb6e3d0",
+      "db4dee1e-2c97-433e-86d7-ffbf0117144d",
+      "867cff87-4252-43b2-94b6-9a909b22763c"
+    ],
+    "staff": "eb0ff7c8-f183-475e-afae-1f169767ce06",
+    "staffAvailabilityRule": "d77d919c-5ae3-45ed-9231-0d2ec5d1012a"
+  },
+  "lineVerification": {
+    "addOnLines": 1,
+    "serviceLines": 2,
+    "snapshots": [
+      "Luna Gel Manicure",
+      "French finish",
+      "Luna Spa Pedicure"
+    ]
+  },
+  "marker": "GateBD 20260717034536",
+  "mobileOverflowChecks": [
+    {
+      "name": "gateD-public-services-mobile.png",
+      "bodyScrollWidth": 390,
+      "documentScrollWidth": 390,
+      "innerWidth": 390,
+      "outsideViewport": []
+    },
+    {
+      "name": "gateD-public-review-mobile.png",
+      "bodyScrollWidth": 390,
+      "documentScrollWidth": 390,
+      "innerWidth": 390,
+      "outsideViewport": []
+    },
+    {
+      "name": "gateD-public-confirmation-mobile.png",
+      "bodyScrollWidth": 390,
+      "documentScrollWidth": 390,
+      "innerWidth": 390,
+      "outsideViewport": []
+    }
+  ],
+  "networkErrors": [],
+  "ok": true,
+  "pageErrors": [],
+  "publicStyleAssertions": [
+    {
+      "actual": "rgb(251, 249, 247)",
+      "label": "root has warm canvas",
+      "passed": true
+    },
+    {
+      "actual": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+      "label": "root uses Manrope",
+      "passed": true
+    },
+    {
+      "actual": {
+        "bodyScrollWidth": 1652,
+        "clientWidth": 1652,
+        "documentScrollWidth": 1652
+      },
+      "label": "desktop has no horizontal overflow",
+      "passed": true
+    },
+    {
+      "actual": {
+        "className": "public-booking-progress",
+        "rect": {
+          "bottom": 83,
+          "height": 65,
+          "left": 416,
+          "right": 1236,
+          "top": 18,
+          "width": 820,
+          "x": 416,
+          "y": 18
+        },
+        "style": {
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "backgroundImage": "none",
+          "borderColor": "rgb(33, 28, 36)",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "color": "rgb(33, 28, 36)",
+          "display": "grid",
+          "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+          "gridTemplateColumns": "164px 164px 164px 164px 164px",
+          "maxWidth": "820px",
+          "minHeight": "auto",
+          "opacity": "1",
+          "position": "static",
+          "top": "auto",
+          "width": "820px"
+        },
+        "text": "1Services2Professional3Date & time4Your details5Review"
+      },
+      "label": "stepper is five-column grid near 820px",
+      "passed": true
+    },
+    {
+      "actual": {
+        "className": "public-booking-shell",
+        "rect": {
+          "bottom": 865.59375,
+          "height": 847.59375,
+          "left": 141,
+          "right": 1511,
+          "top": 18,
+          "width": 1370,
+          "x": 141,
+          "y": 18
+        },
+        "style": {
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "backgroundImage": "none",
+          "borderColor": "rgb(33, 28, 36)",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "color": "rgb(33, 28, 36)",
+          "display": "grid",
+          "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+          "gridTemplateColumns": "168px 746px 400px",
+          "maxWidth": "1370px",
+          "minHeight": "0px",
+          "opacity": "1",
+          "position": "static",
+          "top": "auto",
+          "width": "1370px"
+        },
+        "text": "1Services2Professional3Date & time4Your details5ReviewClean tools, thoughtful care, beautiful results.Build your visitCh"
+      },
+      "label": "shell is desktop three-column grid",
+      "passed": true
+    },
+    {
+      "actual": {
+        "editorial": {
+          "className": "public-booking-editorial",
+          "rect": {
+            "bottom": 865.59375,
+            "height": 742.59375,
+            "left": 141,
+            "right": 309,
+            "top": 123,
+            "width": 168,
+            "x": 141,
+            "y": 123
+          },
+          "style": {
+            "backgroundColor": "rgba(0, 0, 0, 0)",
+            "backgroundImage": "none",
+            "borderColor": "rgb(33, 28, 36)",
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "color": "rgb(33, 28, 36)",
+            "display": "block",
+            "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+            "gridTemplateColumns": "none",
+            "maxWidth": "none",
+            "minHeight": "auto",
+            "opacity": "1",
+            "position": "static",
+            "top": "auto",
+            "width": "168px"
+          },
+          "text": "Clean tools, thoughtful care, beautiful results."
+        },
+        "image": {
+          "className": "public-booking-editorial-image",
+          "rect": {
+            "bottom": 385.5,
+            "height": 262.5,
+            "left": 141,
+            "right": 309,
+            "top": 123,
+            "width": 168,
+            "x": 141,
+            "y": 123
+          },
+          "style": {
+            "backgroundColor": "rgba(0, 0, 0, 0)",
+            "backgroundImage": "radial-gradient(circle at 70% 20%, rgba(239, 232, 243, 0.9), rgba(0, 0, 0, 0) 34%), linear-gradient(155deg, rgb(245, 235, 227), rgb(232, 223, 233) 52%, rgb(216, 196, 211))",
+            "borderColor": "rgb(33, 28, 36)",
+            "borderRadius": "18px",
+            "boxShadow": "none",
+            "color": "rgb(33, 28, 36)",
+            "display": "block",
+            "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+            "gridTemplateColumns": "none",
+            "maxWidth": "none",
+            "minHeight": "0px",
+            "opacity": "1",
+            "position": "static",
+            "top": "auto",
+            "width": "168px"
+          },
+          "text": ""
+        }
+      },
+      "label": "editorial rail visible with rounded image",
+      "passed": true
+    },
+    {
+      "actual": {
+        "className": "public-booking-service-card",
+        "rect": {
+          "bottom": 457.59375,
+          "height": 108,
+          "left": 337,
+          "right": 1083,
+          "top": 349.59375,
+          "width": 746,
+          "x": 337,
+          "y": 349.59375
+        },
+        "style": {
+          "backgroundColor": "rgb(255, 255, 255)",
+          "backgroundImage": "none",
+          "borderColor": "rgb(231, 223, 229)",
+          "borderRadius": "15px",
+          "boxShadow": "none",
+          "color": "rgb(33, 28, 36)",
+          "display": "grid",
+          "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+          "gridTemplateColumns": "54px 422px 86px 88px",
+          "maxWidth": "none",
+          "minHeight": "108px",
+          "opacity": "1",
+          "position": "static",
+          "top": "auto",
+          "width": "746px"
+        },
+        "text": "Delux PedicurePedicure$6045 min+ Add"
+      },
+      "label": "service card has card treatment",
+      "passed": true
+    },
+    {
+      "actual": {
+        "className": "public-booking-service-icon",
+        "rect": {
+          "bottom": 430.59375,
+          "height": 54,
+          "left": 358,
+          "right": 412,
+          "top": 376.59375,
+          "width": 54,
+          "x": 358,
+          "y": 376.59375
+        },
+        "style": {
+          "backgroundColor": "rgb(239, 232, 243)",
+          "backgroundImage": "none",
+          "borderColor": "rgb(100, 42, 86)",
+          "borderRadius": "999px",
+          "boxShadow": "none",
+          "color": "rgb(100, 42, 86)",
+          "display": "flex",
+          "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+          "gridTemplateColumns": "none",
+          "maxWidth": "none",
+          "minHeight": "auto",
+          "opacity": "1",
+          "position": "static",
+          "top": "auto",
+          "width": "54px"
+        },
+        "text": ""
+      },
+      "label": "service icon tile is styled",
+      "passed": true
+    },
+    {
+      "actual": {
+        "card": {
+          "className": "public-booking-addon-card public-booking-addon-card-selected",
+          "rect": {
+            "bottom": 780.59375,
+            "height": 102,
+            "left": 354,
+            "right": 704,
+            "top": 678.59375,
+            "width": 350,
+            "x": 354,
+            "y": 678.59375
+          },
+          "style": {
+            "backgroundColor": "rgba(100, 42, 86, 0.035)",
+            "backgroundImage": "none",
+            "borderColor": "rgb(100, 42, 86)",
+            "borderRadius": "13px",
+            "boxShadow": "none",
+            "color": "rgb(33, 28, 36)",
+            "display": "grid",
+            "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+            "gridTemplateColumns": "274.812px 27.1875px",
+            "maxWidth": "none",
+            "minHeight": "96px",
+            "opacity": "1",
+            "position": "relative",
+            "top": "0px",
+            "width": "350px"
+          },
+          "text": "Luna Gel ManicureFrench finishA clean French finish for your manicure.$12✓"
+        },
+        "panel": {
+          "className": "public-booking-addon-panel",
+          "rect": {
+            "bottom": 797.59375,
+            "height": 196,
+            "left": 337,
+            "right": 1083,
+            "top": 601.59375,
+            "width": 746,
+            "x": 337,
+            "y": 601.59375
+          },
+          "style": {
+            "backgroundColor": "rgb(251, 250, 251)",
+            "backgroundImage": "none",
+            "borderColor": "rgb(215, 200, 211)",
+            "borderRadius": "16px",
+            "boxShadow": "none",
+            "color": "rgb(33, 28, 36)",
+            "display": "block",
+            "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+            "gridTemplateColumns": "none",
+            "maxWidth": "none",
+            "minHeight": "0px",
+            "opacity": "1",
+            "position": "static",
+            "top": "auto",
+            "width": "746px"
+          },
+          "text": "Make it yoursAdd linked extras for selected services.Luna Gel ManicureFrench finishA clean French finish for your manicu"
+        }
+      },
+      "label": "add-on panel and cards are styled",
+      "passed": true
+    },
+    {
+      "actual": {
+        "input": {
+          "checked": true,
+          "opacity": "0",
+          "type": "checkbox"
+        },
+        "visual": {
+          "className": "public-booking-checkbox-visual",
+          "rect": {
+            "bottom": 753.59375,
+            "height": 24,
+            "left": 663,
+            "right": 687,
+            "top": 729.59375,
+            "width": 24,
+            "x": 663,
+            "y": 729.59375
+          },
+          "style": {
+            "backgroundColor": "rgb(100, 42, 86)",
+            "backgroundImage": "none",
+            "borderColor": "rgb(100, 42, 86)",
+            "borderRadius": "6px",
+            "boxShadow": "none",
+            "color": "rgb(255, 255, 255)",
+            "display": "inline-flex",
+            "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+            "gridTemplateColumns": "none",
+            "maxWidth": "none",
+            "minHeight": "0px",
+            "opacity": "1",
+            "position": "static",
+            "top": "auto",
+            "width": "24px"
+          },
+          "text": "✓"
+        }
+      },
+      "label": "native checkbox is visually replaced",
+      "passed": true
+    },
+    {
+      "actual": {
+        "className": "public-booking-card public-booking-summary",
+        "rect": {
+          "bottom": 735,
+          "height": 612,
+          "left": 1111,
+          "right": 1511,
+          "top": 123,
+          "width": 400,
+          "x": 1111,
+          "y": 123
+        },
+        "style": {
+          "backgroundColor": "rgb(255, 255, 255)",
+          "backgroundImage": "none",
+          "borderColor": "rgb(231, 223, 229)",
+          "borderRadius": "17px",
+          "boxShadow": "rgba(57, 37, 52, 0.09) 0px 18px 45px 0px",
+          "color": "rgb(33, 28, 36)",
+          "display": "block",
+          "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+          "gridTemplateColumns": "none",
+          "maxWidth": "none",
+          "minHeight": "auto",
+          "opacity": "1",
+          "position": "sticky",
+          "top": "104px",
+          "width": "400px"
+        },
+        "text": "Your bookingKing NailsMilwaukee, WisconsinLuna Gel Manicure45 min$48French finish15 min$12Luna Spa Pedicure50 min$64Mon,"
+      },
+      "label": "summary is sticky 400px card",
+      "passed": true
+    },
+    {
+      "actual": {
+        "cta": {
+          "className": "public-booking-primary-button public-booking-summary-primary",
+          "rect": {
+            "bottom": 708,
+            "height": 50,
+            "left": 1136,
+            "right": 1486,
+            "top": 658,
+            "width": 350,
+            "x": 1136,
+            "y": 658
+          },
+          "style": {
+            "backgroundColor": "rgb(100, 42, 86)",
+            "backgroundImage": "linear-gradient(135deg, rgb(100, 42, 86), rgb(120, 48, 100))",
+            "borderColor": "rgb(100, 42, 86)",
+            "borderRadius": "11px",
+            "boxShadow": "rgba(100, 42, 86, 0.2) 0px 18px 34px 0px",
+            "color": "rgb(255, 255, 255)",
+            "display": "inline-flex",
+            "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+            "gridTemplateColumns": "none",
+            "maxWidth": "none",
+            "minHeight": "50px",
+            "opacity": "1",
+            "position": "static",
+            "top": "auto",
+            "width": "350px"
+          },
+          "text": "Next: Choose professional"
+        },
+        "ctaInsideSummary": true
+      },
+      "label": "primary action lives in sticky summary",
+      "passed": true
+    }
+  ],
+  "publicStyleFacts": {
+    "addonCard": {
+      "className": "public-booking-addon-card public-booking-addon-card-selected",
+      "rect": {
+        "bottom": 780.59375,
+        "height": 102,
+        "left": 354,
+        "right": 704,
+        "top": 678.59375,
+        "width": 350,
+        "x": 354,
+        "y": 678.59375
+      },
+      "style": {
+        "backgroundColor": "rgba(100, 42, 86, 0.035)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(100, 42, 86)",
+        "borderRadius": "13px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "grid",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "274.812px 27.1875px",
+        "maxWidth": "none",
+        "minHeight": "96px",
+        "opacity": "1",
+        "position": "relative",
+        "top": "0px",
+        "width": "350px"
+      },
+      "text": "Luna Gel ManicureFrench finishA clean French finish for your manicure.$12✓"
+    },
+    "addonInput": {
+      "className": "public-booking-checkbox-input",
+      "rect": {
+        "bottom": 720.59375,
+        "height": 1,
+        "left": 663,
+        "right": 664,
+        "top": 719.59375,
+        "width": 1,
+        "x": 663,
+        "y": 719.59375
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "block",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "0px",
+        "opacity": "0",
+        "position": "absolute",
+        "top": "40px",
+        "width": "1px"
+      },
+      "text": ""
+    },
+    "addonPanel": {
+      "className": "public-booking-addon-panel",
+      "rect": {
+        "bottom": 797.59375,
+        "height": 196,
+        "left": 337,
+        "right": 1083,
+        "top": 601.59375,
+        "width": 746,
+        "x": 337,
+        "y": 601.59375
+      },
+      "style": {
+        "backgroundColor": "rgb(251, 250, 251)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(215, 200, 211)",
+        "borderRadius": "16px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "block",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "0px",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "746px"
+      },
+      "text": "Make it yoursAdd linked extras for selected services.Luna Gel ManicureFrench finishA clean French finish for your manicu"
+    },
+    "addonVisual": {
+      "className": "public-booking-checkbox-visual",
+      "rect": {
+        "bottom": 753.59375,
+        "height": 24,
+        "left": 663,
+        "right": 687,
+        "top": 729.59375,
+        "width": 24,
+        "x": 663,
+        "y": 729.59375
+      },
+      "style": {
+        "backgroundColor": "rgb(100, 42, 86)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(100, 42, 86)",
+        "borderRadius": "6px",
+        "boxShadow": "none",
+        "color": "rgb(255, 255, 255)",
+        "display": "inline-flex",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "0px",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "24px"
+      },
+      "text": "✓"
+    },
+    "body": {
+      "bodyScrollWidth": 1652,
+      "clientWidth": 1652,
+      "documentScrollWidth": 1652
+    },
+    "content": {
+      "className": "public-booking-content",
+      "rect": {
+        "bottom": 865.59375,
+        "height": 742.59375,
+        "left": 337,
+        "right": 1083,
+        "top": 123,
+        "width": 746,
+        "x": 337,
+        "y": 123
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "block",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "auto",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "746px"
+      },
+      "text": "Build your visitChoose your servicesSelect one or more services and any linked add-ons. We will only show professionals "
+    },
+    "cta": {
+      "className": "public-booking-primary-button public-booking-summary-primary",
+      "rect": {
+        "bottom": 708,
+        "height": 50,
+        "left": 1136,
+        "right": 1486,
+        "top": 658,
+        "width": 350,
+        "x": 1136,
+        "y": 658
+      },
+      "style": {
+        "backgroundColor": "rgb(100, 42, 86)",
+        "backgroundImage": "linear-gradient(135deg, rgb(100, 42, 86), rgb(120, 48, 100))",
+        "borderColor": "rgb(100, 42, 86)",
+        "borderRadius": "11px",
+        "boxShadow": "rgba(100, 42, 86, 0.2) 0px 18px 34px 0px",
+        "color": "rgb(255, 255, 255)",
+        "display": "inline-flex",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "50px",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "350px"
+      },
+      "text": "Next: Choose professional"
+    },
+    "ctaInsideSummary": true,
+    "editorial": {
+      "className": "public-booking-editorial",
+      "rect": {
+        "bottom": 865.59375,
+        "height": 742.59375,
+        "left": 141,
+        "right": 309,
+        "top": 123,
+        "width": 168,
+        "x": 141,
+        "y": 123
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "block",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "auto",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "168px"
+      },
+      "text": "Clean tools, thoughtful care, beautiful results."
+    },
+    "editorialImage": {
+      "className": "public-booking-editorial-image",
+      "rect": {
+        "bottom": 385.5,
+        "height": 262.5,
+        "left": 141,
+        "right": 309,
+        "top": 123,
+        "width": 168,
+        "x": 141,
+        "y": 123
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "backgroundImage": "radial-gradient(circle at 70% 20%, rgba(239, 232, 243, 0.9), rgba(0, 0, 0, 0) 34%), linear-gradient(155deg, rgb(245, 235, 227), rgb(232, 223, 233) 52%, rgb(216, 196, 211))",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "18px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "block",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "0px",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "168px"
+      },
+      "text": ""
+    },
+    "hiddenCheckbox": {
+      "checked": true,
+      "opacity": "0",
+      "type": "checkbox"
+    },
+    "root": {
+      "className": "public-booking-surface public-booking-root",
+      "rect": {
+        "bottom": 899.59375,
+        "height": 899.59375,
+        "left": 0,
+        "right": 1652,
+        "top": 0,
+        "width": 1652,
+        "x": 0,
+        "y": 0
+      },
+      "style": {
+        "backgroundColor": "rgb(251, 249, 247)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "block",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "891px",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "1652px"
+      },
+      "text": "1Services2Professional3Date & time4Your details5ReviewClean tools, thoughtful care, beautiful results.Build your visitCh"
+    },
+    "serviceCard": {
+      "className": "public-booking-service-card",
+      "rect": {
+        "bottom": 457.59375,
+        "height": 108,
+        "left": 337,
+        "right": 1083,
+        "top": 349.59375,
+        "width": 746,
+        "x": 337,
+        "y": 349.59375
+      },
+      "style": {
+        "backgroundColor": "rgb(255, 255, 255)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(231, 223, 229)",
+        "borderRadius": "15px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "grid",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "54px 422px 86px 88px",
+        "maxWidth": "none",
+        "minHeight": "108px",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "746px"
+      },
+      "text": "Delux PedicurePedicure$6045 min+ Add"
+    },
+    "serviceIcon": {
+      "className": "public-booking-service-icon",
+      "rect": {
+        "bottom": 430.59375,
+        "height": 54,
+        "left": 358,
+        "right": 412,
+        "top": 376.59375,
+        "width": 54,
+        "x": 358,
+        "y": 376.59375
+      },
+      "style": {
+        "backgroundColor": "rgb(239, 232, 243)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(100, 42, 86)",
+        "borderRadius": "999px",
+        "boxShadow": "none",
+        "color": "rgb(100, 42, 86)",
+        "display": "flex",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "auto",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "54px"
+      },
+      "text": ""
+    },
+    "shell": {
+      "className": "public-booking-shell",
+      "rect": {
+        "bottom": 865.59375,
+        "height": 847.59375,
+        "left": 141,
+        "right": 1511,
+        "top": 18,
+        "width": 1370,
+        "x": 141,
+        "y": 18
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "grid",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "168px 746px 400px",
+        "maxWidth": "1370px",
+        "minHeight": "0px",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "1370px"
+      },
+      "text": "1Services2Professional3Date & time4Your details5ReviewClean tools, thoughtful care, beautiful results.Build your visitCh"
+    },
+    "stepper": {
+      "className": "public-booking-progress",
+      "rect": {
+        "bottom": 83,
+        "height": 65,
+        "left": 416,
+        "right": 1236,
+        "top": 18,
+        "width": 820,
+        "x": 416,
+        "y": 18
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "grid",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "164px 164px 164px 164px 164px",
+        "maxWidth": "820px",
+        "minHeight": "auto",
+        "opacity": "1",
+        "position": "static",
+        "top": "auto",
+        "width": "820px"
+      },
+      "text": "1Services2Professional3Date & time4Your details5Review"
+    },
+    "summary": {
+      "className": "public-booking-card public-booking-summary",
+      "rect": {
+        "bottom": 735,
+        "height": 612,
+        "left": 1111,
+        "right": 1511,
+        "top": 123,
+        "width": 400,
+        "x": 1111,
+        "y": 123
+      },
+      "style": {
+        "backgroundColor": "rgb(255, 255, 255)",
+        "backgroundImage": "none",
+        "borderColor": "rgb(231, 223, 229)",
+        "borderRadius": "17px",
+        "boxShadow": "rgba(57, 37, 52, 0.09) 0px 18px 45px 0px",
+        "color": "rgb(33, 28, 36)",
+        "display": "block",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "auto",
+        "opacity": "1",
+        "position": "sticky",
+        "top": "104px",
+        "width": "400px"
+      },
+      "text": "Your bookingKing NailsMilwaukee, WisconsinLuna Gel Manicure45 min$48French finish15 min$12Luna Spa Pedicure50 min$64Mon,"
+    }
+  },
+  "screenshots": [
+    "gateD-public-services-reference-desktop.png",
+    "gateD-public-services-multi-primary.png",
+    "gateD-public-services-mobile.png",
+    "gateD-public-professional.png",
+    "gateD-public-date-time.png",
+    "gateD-public-details.png",
+    "gateD-public-review.png",
+    "gateD-public-review-mobile.png",
+    "gateD-public-confirmation.png",
+    "gateD-public-confirmation-mobile.png",
+    "gateE-manage-multi-line.png",
+    "gateB-owner-list-detail.png",
+    "gateB-owner-search.png",
+    "gateB-owner-week.png",
+    "gateB-owner-booking-page.png",
+    "gateB-owner-availability.png",
+    "gateB-owner-settings.png",
+    "gateB-owner-new-appointment.png"
+  ],
+  "ownerBookingPagePreview": {
+    "backgroundColor": "rgb(251, 249, 247)",
+    "height": 1351.59375,
+    "text": "1Services2Professional3Date & time4Your details5ReviewClean tools, thoughtful care, beautiful results.Build your visitCh",
+    "width": 817
+  }
+}

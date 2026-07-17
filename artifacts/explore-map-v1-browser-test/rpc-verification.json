@@ -1,0 +1,23 @@
+{
+  "home": {
+    "status": "ok",
+    "count": 5,
+    "error": null,
+    "withCoordinates": 0,
+    "withDistance": 0
+  },
+  "gps": {
+    "status": "ok",
+    "count": 5,
+    "error": null,
+    "withCoordinates": 0,
+    "withDistance": 0
+  },
+  "inspiration": {
+    "status": "ok",
+    "count": 6,
+    "error": null,
+    "withCoordinates": 0,
+    "withDistance": 0
+  }
+}

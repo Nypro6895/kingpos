@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import { SalonSwitcher } from "@/app/salon-switcher";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import "./globals.css";
@@ -11,6 +11,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const manrope = Manrope({
+  variable: "--font-booking-sans",
   subsets: ["latin"],
 });
 
@@ -28,7 +33,7 @@ export default async function RootLayout({
 
   return (
     <html
-      className={`${geistSans.variable} ${geistMono.variable} h-full bg-zinc-50 antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} h-full bg-zinc-50 antialiased`}
       lang="en"
     >
       <body className="min-h-full bg-zinc-50 text-zinc-950">

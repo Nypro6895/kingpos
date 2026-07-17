@@ -52,6 +52,7 @@ type NotificationSummary = {
     id: string;
     label: string;
   }>;
+  bookingNotifications: number;
   managerApplications: number;
   reviewHref: string;
   staffApplications: number;
@@ -63,7 +64,12 @@ type SearchParamsReader = {
   get(name: string): string | null;
 };
 
-type RouteWorkspaceKind = "manage" | "organization" | "personal" | "staff";
+type RouteWorkspaceKind =
+  | "manage"
+  | "organization"
+  | "personal"
+  | "salon"
+  | "staff";
 
 type NavigationShellProps = {
   accountEmail: string | null;
@@ -111,6 +117,8 @@ function isShelllessPath(pathname: string) {
   return (
     pathname === "/login" ||
     pathname === "/signup" ||
+    pathname.startsWith("/book/") ||
+    pathname.startsWith("/booking/manage/") ||
     pathname.startsWith("/pos/customer-display")
   );
 }
@@ -129,10 +137,15 @@ function getRouteWorkspaceKind(pathname: string): RouteWorkspaceKind | null {
 
   if (
     matchesPath(pathname, "/staff/my-work") ||
+    matchesPath(pathname, "/staff/appointments") ||
     matchesPath(pathname, "/staff/workday") ||
     matchesPath(pathname, "/staff/connections")
   ) {
     return "staff";
+  }
+
+  if (matchesPath(pathname, "/salon-profile")) {
+    return "salon";
   }
 
   if (
@@ -146,7 +159,6 @@ function getRouteWorkspaceKind(pathname: string): RouteWorkspaceKind | null {
     matchesPath(pathname, "/tickets") ||
     matchesPath(pathname, "/payroll") ||
     matchesPath(pathname, "/reports") ||
-    matchesPath(pathname, "/salon-profile") ||
     matchesPath(pathname, "/salon-settings")
   ) {
     return "manage";
@@ -909,7 +921,8 @@ export function NavigationShell({
       routeWorkspaceKind === "manage") ||
     (workspaceType === "salon" &&
       salonMode === "staff" &&
-      routeWorkspaceKind === "staff");
+      routeWorkspaceKind === "staff") ||
+    (workspaceType === "salon" && routeWorkspaceKind === "salon");
   const showAccountSidebar = routeWorkspaceKind === "personal";
   const showWorkspaceSidebar =
     showAccountSidebar || showWorkspaceContextSidebar;

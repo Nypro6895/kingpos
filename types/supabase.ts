@@ -65,7 +65,15 @@ export type Database = {
           city: string | null
           country: string
           created_at: string
+          geocoded_at: string | null
+          geocoding_address_fingerprint: string | null
+          geocoding_error_code: string | null
+          geocoding_place_id: string | null
+          geocoding_provider: string | null
+          geocoding_status: string | null
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           organization_id: string
           phone: string | null
@@ -80,7 +88,15 @@ export type Database = {
           city?: string | null
           country?: string
           created_at?: string
+          geocoded_at?: string | null
+          geocoding_address_fingerprint?: string | null
+          geocoding_error_code?: string | null
+          geocoding_place_id?: string | null
+          geocoding_provider?: string | null
+          geocoding_status?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           organization_id: string
           phone?: string | null
@@ -95,7 +111,15 @@ export type Database = {
           city?: string | null
           country?: string
           created_at?: string
+          geocoded_at?: string | null
+          geocoding_address_fingerprint?: string | null
+          geocoding_error_code?: string | null
+          geocoding_place_id?: string | null
+          geocoding_provider?: string | null
+          geocoding_status?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           organization_id?: string
           phone?: string | null

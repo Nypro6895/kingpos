@@ -76,11 +76,29 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
       />
 
       <label className="block sm:col-span-2">
-        <span className="text-sm font-medium text-zinc-700">Notes</span>
+        <span className="text-sm font-medium text-zinc-700">Legacy notes</span>
         <textarea
           className="mt-2 min-h-32 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue={customer?.notes ?? ""}
           name="notes"
+        />
+      </label>
+
+      <label className="block sm:col-span-2">
+        <span className="text-sm font-medium text-zinc-700">Staff-safe notes</span>
+        <textarea
+          className="mt-2 min-h-24 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
+          defaultValue={customer?.staff_notes ?? ""}
+          name="staff_notes"
+        />
+      </label>
+
+      <label className="block sm:col-span-2">
+        <span className="text-sm font-medium text-zinc-700">Owner-only notes</span>
+        <textarea
+          className="mt-2 min-h-24 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
+          defaultValue={customer?.internal_notes ?? ""}
+          name="internal_notes"
         />
       </label>
 

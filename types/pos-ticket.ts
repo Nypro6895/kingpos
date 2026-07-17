@@ -1,4 +1,5 @@
 import type { Customer } from "@/types/customer";
+import type { BookingStatus } from "@/types/booking";
 import type { PosPayment } from "@/types/pos-payment";
 import type { PosTicketAuditLogWithUser } from "@/types/pos-ticket-audit-log";
 import type { PosTicketItemWithRelations } from "@/types/pos-ticket-item";
@@ -17,6 +18,7 @@ export type PosTicket = {
   id: string;
   organization_id: string;
   salon_id: string;
+  source_booking_id: string | null;
   ticket_number: string;
   ticket_sequence: number;
   customer_id: string;
@@ -49,5 +51,11 @@ export type PosTicketWithRelations = PosTicket & {
   customer: Pick<Customer, "id" | "name" | "phone" | "email"> | null;
   payments: PosPayment[];
   staff_earnings?: PosTicketStaffEarningWithStaff[];
+  source_booking?: {
+    end_at: string;
+    id: string;
+    start_at: string;
+    status: BookingStatus;
+  } | null;
   ticket_items: PosTicketItemWithRelations[];
 };

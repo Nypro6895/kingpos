@@ -29,6 +29,10 @@ export type SalonStaffPageContext = AuthenticatedBusinessContext & {
   workspaceType: "salon";
 };
 
+export type SalonWorkspacePageContext =
+  | SalonManagePageContext
+  | SalonStaffPageContext;
+
 export type OrganizationPageContext = AuthenticatedBusinessContext & {
   currentMembership: NonNullable<CurrentBusinessContext["currentMembership"]>;
   currentOrganization: NonNullable<CurrentBusinessContext["currentOrganization"]>;
@@ -78,6 +82,32 @@ export async function requireSalonStaffPageContext(
   }
 
   return context as SalonStaffPageContext;
+}
+
+export async function requireSalonWorkspacePageContext(
+  nextPath: string,
+): Promise<SalonWorkspacePageContext> {
+  const context = await getCurrentBusinessContext();
+
+  if (!context.user) {
+    redirect(loginRedirect(nextPath));
+  }
+
+  const isValidManageContext =
+    isSalonManageContext(context) &&
+    Boolean(context.currentOrganization) &&
+    Boolean(context.currentSalon);
+  const isValidStaffContext =
+    isSalonStaffContext(context) &&
+    Boolean(context.currentOrganization) &&
+    Boolean(context.currentSalon) &&
+    Boolean(context.currentStaffSalon);
+
+  if (!isValidManageContext && !isValidStaffContext) {
+    redirect(getRouteForInvalidSalonContext(context));
+  }
+
+  return context as SalonWorkspacePageContext;
 }
 
 export async function requireOrganizationPageContext(

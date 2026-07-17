@@ -5,6 +5,7 @@ export const POS_TICKET_AUDIT_ACTIONS = [
   "ticket_voided",
   "ticket_reopened",
   "ticket_checked_out",
+  "ticket_created_from_booking",
 ] as const;
 
 export type PosTicketAuditAction = (typeof POS_TICKET_AUDIT_ACTIONS)[number];

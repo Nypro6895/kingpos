@@ -1,12 +1,27 @@
-import { updateSalonSettings } from "@/app/salon-settings/actions";
+import {
+  refreshSalonMapLocation,
+  updateSalonSettings,
+} from "@/app/salon-settings/actions";
+import { MapLocationPreview } from "@/app/salon-settings/map-location-preview";
+import {
+  PublicTeamSettingsEditor,
+  type PublicTeamSettingsMember,
+} from "@/app/salon-settings/public-team-settings-editor";
 import { hasPermission } from "@/lib/permissions";
+import {
+  getCurrentSalonMapLocationState,
+  type SalonMapLocationState,
+} from "@/lib/location/salon-map-location";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import {
   getCurrentSalonDiscoveryReadiness,
   getCurrentSalonSetting,
   type SalonDiscoveryReadiness,
 } from "@/lib/salon-settings";
+import { getCurrentSalonStaffDirectory } from "@/lib/staff";
+import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import type { SalonSetting } from "@/types/salon-setting";
+import type { StaffDirectoryMember } from "@/lib/staff";
 import Link from "next/link";
 
 type SalonSettingsPageProps = {
@@ -45,15 +60,144 @@ function Field({
   );
 }
 
+function PublicTeamSettingsSection({
+  canManageSettings,
+  staff,
+}: {
+  canManageSettings: boolean;
+  staff: StaffDirectoryMember[];
+}) {
+  const members: PublicTeamSettingsMember[] = staff.map((member) => ({
+    avatarUrl: getSalonProfileMediaUrl(member.public_profile_photo_path),
+    displayName: member.display_name,
+    id: member.id,
+    isActive: member.is_active,
+    jobTitle: member.job_title,
+    onlineBookingEnabled: member.online_booking_enabled,
+    ownerPublicEnabled: member.owner_public_enabled,
+    profileDisplayOrder: member.profile_display_order,
+    salonProfileContentPostingEnabled:
+      member.salon_profile_content_posting_enabled,
+    staffPublicConsentStatus: member.staff_public_consent_status,
+  }));
+
+  return (
+    <section className="mt-8" id="public-team">
+      <div>
+        <h2 className="text-lg font-semibold text-zinc-950">
+          Public team & staff profiles
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-zinc-600">
+          Control which active staff can appear publicly, receive direct booking
+          requests, and post to Salon Profile. Staff opt-out cannot be overridden here.
+        </p>
+      </div>
+
+      <PublicTeamSettingsEditor
+        canManageSettings={canManageSettings}
+        members={members}
+      />
+    </section>
+  );
+}
+
+function MapLocationSection({
+  canManageSettings,
+  mapLocation,
+  salonName,
+}: {
+  canManageSettings: boolean;
+  mapLocation: SalonMapLocationState;
+  salonName: string;
+}) {
+  const publicMapConfigured = Boolean(
+    process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim(),
+  );
+  const missingConfiguration = [
+    ...mapLocation.providerMissingConfiguration,
+    ...(publicMapConfigured ? [] : ["NEXT_PUBLIC_MAPTILER_KEY"]),
+  ];
+  const statusClass =
+    mapLocation.status === "mapped"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+      : mapLocation.status === "provider_unavailable"
+        ? "border-zinc-200 bg-zinc-50 text-zinc-700"
+        : "border-amber-200 bg-amber-50 text-amber-800";
+
+  return (
+    <div className="grid gap-3 rounded-md border border-zinc-200 bg-white p-4">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h4 className="text-sm font-semibold text-zinc-950">Map location</h4>
+          <p className="mt-1 text-sm leading-6 text-zinc-600">
+            {mapLocation.address.formattedAddress || "No public address yet."}
+          </p>
+        </div>
+        <span
+          className={[
+            "w-fit rounded-md border px-2.5 py-1 text-xs font-semibold",
+            statusClass,
+          ].join(" ")}
+        >
+          {mapLocation.statusLabel}
+        </span>
+      </div>
+      <p className="text-sm leading-6 text-zinc-600">
+        {mapLocation.statusDescription}
+      </p>
+      {mapLocation.coordinates ? (
+        <p className="text-xs font-medium text-zinc-500">
+          Coordinates are stored for the current mapped address. Last geocoded:{" "}
+          {mapLocation.geocodedAt
+            ? new Intl.DateTimeFormat("en-US", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(new Date(mapLocation.geocodedAt))
+            : "not recorded"}
+          .
+        </p>
+      ) : null}
+      {missingConfiguration.length > 0 ? (
+        <p className="text-xs font-medium text-zinc-500">
+          Configure {missingConfiguration.join(" and ")} to enable geocoding
+          and map tiles.
+        </p>
+      ) : null}
+      {mapLocation.providerConfigured &&
+      publicMapConfigured &&
+      mapLocation.coordinates &&
+      mapLocation.status === "mapped" ? (
+        <MapLocationPreview
+          coordinates={mapLocation.coordinates}
+          locationLabel={mapLocation.address.cityStateLabel || null}
+          salonName={salonName}
+        />
+      ) : null}
+      <div>
+        <button
+          className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={!canManageSettings || !mapLocation.refreshEnabled}
+          formAction={refreshSalonMapLocation}
+          type="submit"
+        >
+          Refresh map location
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function SalonSettingsForm({
   canManageSettings,
   discoveryReadiness,
   error,
+  mapLocation,
   setting,
 }: {
   canManageSettings: boolean;
   discoveryReadiness: SalonDiscoveryReadiness;
   error?: string;
+  mapLocation: SalonMapLocationState;
   setting: SalonSetting;
 }) {
   const canToggleDiscovery =
@@ -251,6 +395,12 @@ function SalonSettingsForm({
             Complete the missing items before enabling public discovery.
           </p>
         ) : null}
+
+        <MapLocationSection
+          canManageSettings={canManageSettings}
+          mapLocation={mapLocation}
+          salonName={setting.business_name}
+        />
       </div>
 
       <label className="flex items-start gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm sm:col-span-2">
@@ -307,19 +457,23 @@ export default async function SalonSettingsPage({
     );
   }
 
-  const [{ setting }, canManageSettings] = await Promise.all([
+  const [{ setting }, canManageSettings, canViewStaff] = await Promise.all([
     getCurrentSalonSetting(),
     hasPermission("salon_settings.manage", context),
+    hasPermission("staff.view", context),
   ]);
 
   if (!setting) {
     throw new Error("Salon settings could not be loaded.");
   }
 
-  const discoveryReadiness = await getCurrentSalonDiscoveryReadiness(
-    setting,
-    context,
-  );
+  const [discoveryReadiness, mapLocation] = await Promise.all([
+    getCurrentSalonDiscoveryReadiness(setting, context),
+    getCurrentSalonMapLocationState({ context, setting }),
+  ]);
+  const staffDirectory = canViewStaff
+    ? await getCurrentSalonStaffDirectory(context)
+    : { staff: [] as StaffDirectoryMember[] };
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
@@ -338,9 +492,17 @@ export default async function SalonSettingsPage({
           canManageSettings={canManageSettings}
           discoveryReadiness={discoveryReadiness}
           error={error}
+          mapLocation={mapLocation}
           setting={setting}
         />
       </section>
+
+      {canViewStaff ? (
+        <PublicTeamSettingsSection
+          canManageSettings={canManageSettings}
+          staff={staffDirectory.staff}
+        />
+      ) : null}
     </main>
   );
 }

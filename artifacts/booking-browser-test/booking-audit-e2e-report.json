@@ -1,0 +1,46 @@
+{
+  "baseUrl": "http://127.0.0.1:3333",
+  "marker": "[E2E] Booking 20260716005217 Audit",
+  "screenshots": [
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\bookings-audit-created.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\bookings-audit-cancelled-desktop.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\bookings-audit-cancelled-mobile.png"
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "steps": [
+    {
+      "login": "/bookings"
+    },
+    {
+      "created": "pending post-patch appointment found; internal marker visible in detail"
+    },
+    {
+      "action": "Confirm"
+    },
+    {
+      "reschedule": "2026-07-16 11:45-12:45"
+    },
+    {
+      "reassign": "first Pro B eligible line reassigned"
+    },
+    {
+      "action": "Cancel"
+    },
+    {
+      "finalStatus": "Cancelled visible after reopen"
+    },
+    {
+      "mobile": "cancelled appointment visible on mobile"
+    }
+  ],
+  "resumedFromCreate": [
+    {
+      "login": "/bookings"
+    },
+    {
+      "slot": "10:30 real slot selected after prior cancelled appointment"
+    }
+  ],
+  "ok": true
+}

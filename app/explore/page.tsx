@@ -186,6 +186,9 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const requestedLocation = clean(stringParam(params.location));
   const category = clean(stringParam(params.category));
   const page = parsePage(clean(stringParam(params.page)));
+  const hasExplicitSearchParams = Boolean(
+    query || requestedLocation || category || page > 1,
+  );
   const context = await getCurrentBusinessContext();
   const [workspaceLocation, quickActions, homeContent] = await Promise.all([
     getExploreWorkspaceLocation(context),
@@ -213,7 +216,9 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         searchResponse.page,
         searchResponse.totalCount,
         locationSource,
+        hasExplicitSearchParams ? "search" : "home",
       ].join(":")}
+      initialSearchMode={hasExplicitSearchParams}
       initialLocationSource={locationSource}
       initialResponse={searchResponse}
       homeContent={homeContent}

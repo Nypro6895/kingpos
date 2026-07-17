@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "marker": "[E2E] Phase4 Owner UI Create Retest 1784218349263",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "networkErrors": [],
+  "bookingId": "ba4076f0-d25e-4e8e-9668-9ba8dda44cf4",
+  "dbConfirmed": true,
+  "cleanup": "soft-cancelled"
+}

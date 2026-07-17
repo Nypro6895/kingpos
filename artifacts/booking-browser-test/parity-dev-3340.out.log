@@ -1,0 +1,10 @@
+
+> kingpos@0.1.0 dev
+> next dev --port 3340
+
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3340
+- Network:       http://192.168.1.95:3340
+- Environments: .env.local
+✓ Ready in 1991ms
+[?25h

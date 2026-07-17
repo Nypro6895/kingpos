@@ -1,0 +1,386 @@
+{
+  "assertions": [
+    {
+      "label": "root warm canvas",
+      "passed": true,
+      "actual": "rgb(251, 249, 247)"
+    },
+    {
+      "label": "root uses Manrope",
+      "passed": true,
+      "actual": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif"
+    },
+    {
+      "label": "no body horizontal overflow",
+      "passed": true,
+      "actual": {
+        "clientWidth": 1652,
+        "scrollWidth": 1652,
+        "bodyScrollWidth": 1652
+      }
+    },
+    {
+      "label": "stepper 5-column grid",
+      "passed": true,
+      "actual": "164px 164px 164px 164px 164px"
+    },
+    {
+      "label": "shell desktop 3-column grid",
+      "passed": true,
+      "actual": "168px 746px 400px"
+    },
+    {
+      "label": "editorial rail visible near 168px",
+      "passed": true,
+      "actual": {
+        "x": 141,
+        "y": 123,
+        "width": 168,
+        "height": 614.59375
+      }
+    },
+    {
+      "label": "service card styled",
+      "passed": false,
+      "actual": {
+        "tag": "BUTTON",
+        "className": "booking-theme_serviceCard__EZ_VE booking-theme_serviceCardSelected__W9EPu",
+        "text": "Delux PedicurePedicure$6045 min✓",
+        "rect": {
+          "x": 337,
+          "y": 349.59375,
+          "width": 746,
+          "height": 108
+        },
+        "style": {
+          "backgroundColor": "rgba(100, 42, 86, 0.035)",
+          "borderColor": "rgb(100, 42, 86)",
+          "borderRadius": "15px",
+          "boxShadow": "none",
+          "color": "rgb(33, 28, 36)",
+          "display": "grid",
+          "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+          "gridTemplateColumns": "54px 422px 86px 88px",
+          "maxWidth": "none",
+          "minHeight": "108px",
+          "position": "static",
+          "top": "auto",
+          "width": "746px"
+        }
+      }
+    },
+    {
+      "label": "add-on panel styled",
+      "passed": false,
+      "actual": {
+        "tag": "SECTION",
+        "className": "booking-theme_publicShell__D44Ti",
+        "text": "1Services2Professional3Date & time4Your details5ReviewClean tools, thoughtful ca",
+        "rect": {
+          "x": 141,
+          "y": 18,
+          "width": 1370,
+          "height": 719.59375
+        },
+        "style": {
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgb(33, 28, 36)",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "color": "rgb(33, 28, 36)",
+          "display": "grid",
+          "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+          "gridTemplateColumns": "168px 746px 400px",
+          "maxWidth": "1370px",
+          "minHeight": "0px",
+          "position": "static",
+          "top": "auto",
+          "width": "1370px"
+        }
+      }
+    },
+    {
+      "label": "summary sticky around 400px",
+      "passed": true,
+      "actual": {
+        "tag": "ASIDE",
+        "className": "booking-theme_publicCard__2VUzq booking-theme_summary__4PQ_r",
+        "text": "Your bookingKing NailsMilwaukee, WisconsinDelux Pedicure45 min$60Estimated durat",
+        "rect": {
+          "x": 1111,
+          "y": 123,
+          "width": 400,
+          "height": 364
+        },
+        "style": {
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(231, 223, 229)",
+          "borderRadius": "17px",
+          "boxShadow": "rgba(57, 37, 52, 0.09) 0px 18px 45px 0px",
+          "color": "rgb(33, 28, 36)",
+          "display": "block",
+          "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+          "gridTemplateColumns": "none",
+          "maxWidth": "none",
+          "minHeight": "auto",
+          "position": "sticky",
+          "top": "104px",
+          "width": "400px"
+        }
+      }
+    },
+    {
+      "label": "primary CTA plum",
+      "passed": true,
+      "actual": {
+        "tag": "BUTTON",
+        "className": "booking-theme_primaryButton__u8Fg6 px-5",
+        "text": "Next: Choose professional",
+        "rect": {
+          "x": 858.765625,
+          "y": 697.59375,
+          "width": 224.234375,
+          "height": 40
+        },
+        "style": {
+          "backgroundColor": "rgb(100, 42, 86)",
+          "borderColor": "rgb(100, 42, 86)",
+          "borderRadius": "10px",
+          "boxShadow": "rgba(100, 42, 86, 0.18) 0px 14px 28px 0px",
+          "color": "rgb(255, 255, 255)",
+          "display": "flex",
+          "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+          "gridTemplateColumns": "none",
+          "maxWidth": "none",
+          "minHeight": "40px",
+          "position": "static",
+          "top": "auto",
+          "width": "224.234px"
+        }
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "networkErrors": [],
+  "url": "http://127.0.0.1:3365/book/7f599bc8-a806-4a68-be86-c149c21709e2",
+  "facts": {
+    "body": {
+      "clientWidth": 1652,
+      "scrollWidth": 1652,
+      "bodyScrollWidth": 1652
+    },
+    "root": {
+      "tag": "MAIN",
+      "className": "booking-theme_bookingSurface__Mty7J booking-theme_publicRoot__Hl9KE",
+      "text": "1Services2Professional3Date & time4Your details5ReviewClean tools, thoughtful ca",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1652,
+        "height": 891
+      },
+      "style": {
+        "backgroundColor": "rgb(251, 249, 247)",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "block",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "891px",
+        "position": "static",
+        "top": "auto",
+        "width": "1652px"
+      }
+    },
+    "stepper": {
+      "tag": "NAV",
+      "className": "booking-theme_progress__CNa6F",
+      "text": "1Services2Professional3Date & time4Your details5Review",
+      "rect": {
+        "x": 416,
+        "y": 18,
+        "width": 820,
+        "height": 65
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "grid",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "164px 164px 164px 164px 164px",
+        "maxWidth": "820px",
+        "minHeight": "auto",
+        "position": "static",
+        "top": "auto",
+        "width": "820px"
+      }
+    },
+    "shell": {
+      "tag": "SECTION",
+      "className": "booking-theme_publicShell__D44Ti",
+      "text": "1Services2Professional3Date & time4Your details5ReviewClean tools, thoughtful ca",
+      "rect": {
+        "x": 141,
+        "y": 18,
+        "width": 1370,
+        "height": 719.59375
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "grid",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "168px 746px 400px",
+        "maxWidth": "1370px",
+        "minHeight": "0px",
+        "position": "static",
+        "top": "auto",
+        "width": "1370px"
+      }
+    },
+    "editorial": {
+      "tag": "ASIDE",
+      "className": "booking-theme_editorialRail__Qtd2W",
+      "text": "Clean tools, thoughtful care, beautiful results.",
+      "rect": {
+        "x": 141,
+        "y": 123,
+        "width": 168,
+        "height": 614.59375
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "block",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "auto",
+        "position": "static",
+        "top": "auto",
+        "width": "168px"
+      }
+    },
+    "serviceCard": {
+      "tag": "BUTTON",
+      "className": "booking-theme_serviceCard__EZ_VE booking-theme_serviceCardSelected__W9EPu",
+      "text": "Delux PedicurePedicure$6045 min✓",
+      "rect": {
+        "x": 337,
+        "y": 349.59375,
+        "width": 746,
+        "height": 108
+      },
+      "style": {
+        "backgroundColor": "rgba(100, 42, 86, 0.035)",
+        "borderColor": "rgb(100, 42, 86)",
+        "borderRadius": "15px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "grid",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "54px 422px 86px 88px",
+        "maxWidth": "none",
+        "minHeight": "108px",
+        "position": "static",
+        "top": "auto",
+        "width": "746px"
+      }
+    },
+    "addonPanel": {
+      "tag": "SECTION",
+      "className": "booking-theme_publicShell__D44Ti",
+      "text": "1Services2Professional3Date & time4Your details5ReviewClean tools, thoughtful ca",
+      "rect": {
+        "x": 141,
+        "y": 18,
+        "width": 1370,
+        "height": 719.59375
+      },
+      "style": {
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderColor": "rgb(33, 28, 36)",
+        "borderRadius": "0px",
+        "boxShadow": "none",
+        "color": "rgb(33, 28, 36)",
+        "display": "grid",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "168px 746px 400px",
+        "maxWidth": "1370px",
+        "minHeight": "0px",
+        "position": "static",
+        "top": "auto",
+        "width": "1370px"
+      }
+    },
+    "summary": {
+      "tag": "ASIDE",
+      "className": "booking-theme_publicCard__2VUzq booking-theme_summary__4PQ_r",
+      "text": "Your bookingKing NailsMilwaukee, WisconsinDelux Pedicure45 min$60Estimated durat",
+      "rect": {
+        "x": 1111,
+        "y": 123,
+        "width": 400,
+        "height": 364
+      },
+      "style": {
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderColor": "rgb(231, 223, 229)",
+        "borderRadius": "17px",
+        "boxShadow": "rgba(57, 37, 52, 0.09) 0px 18px 45px 0px",
+        "color": "rgb(33, 28, 36)",
+        "display": "block",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "auto",
+        "position": "sticky",
+        "top": "104px",
+        "width": "400px"
+      }
+    },
+    "cta": {
+      "tag": "BUTTON",
+      "className": "booking-theme_primaryButton__u8Fg6 px-5",
+      "text": "Next: Choose professional",
+      "rect": {
+        "x": 858.765625,
+        "y": 697.59375,
+        "width": 224.234375,
+        "height": 40
+      },
+      "style": {
+        "backgroundColor": "rgb(100, 42, 86)",
+        "borderColor": "rgb(100, 42, 86)",
+        "borderRadius": "10px",
+        "boxShadow": "rgba(100, 42, 86, 0.18) 0px 14px 28px 0px",
+        "color": "rgb(255, 255, 255)",
+        "display": "flex",
+        "fontFamily": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "gridTemplateColumns": "none",
+        "maxWidth": "none",
+        "minHeight": "40px",
+        "position": "static",
+        "top": "auto",
+        "width": "224.234px"
+      }
+    },
+    "cssLinks": [
+      "http://127.0.0.1:3365/_next/static/css/3ef1961f005f8aef.css",
+      "http://127.0.0.1:3365/_next/static/css/1e419979c659fb27.css"
+    ]
+  }
+}

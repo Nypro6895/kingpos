@@ -6,7 +6,8 @@ import {
   getSalonProfileHref,
   getSalonProfileMediaUrl,
 } from "@/lib/salon-profile";
-import { requireSalonManagePageContext } from "@/lib/route-context-guards";
+import { isSalonManageContext } from "@/lib/current-context";
+import { requireSalonWorkspacePageContext } from "@/lib/route-context-guards";
 import type {
   PublicSalonProfileData,
   PublicSalonProfileLook,
@@ -46,6 +47,14 @@ function buildPreviewData(input: {
         : null;
 
       return {
+        authorAvatarUrl: getSalonProfileMediaUrl(
+          look.author_avatar_path ?? recommendedStaff?.public_profile_photo_path,
+        ),
+        authorDisplayName:
+          look.author_display_name ??
+          staffById.get(look.author_staff_id ?? "")?.display_name ??
+          input.setting.business_name,
+        authorStaffId: look.author_staff_id,
         badge: look.badge,
         bookingNote: look.booking_note,
         caption: look.caption ?? look.emotional_description,
@@ -65,6 +74,7 @@ function buildPreviewData(input: {
         serviceId: service?.id ?? null,
         serviceName: service?.name ?? null,
         startingPrice: look.starting_price,
+        hashtags: [],
         title: look.title,
         whyLoveIt: look.why_love_it,
       };
@@ -77,6 +87,15 @@ function buildPreviewData(input: {
       const member = update.staff_id ? staffById.get(update.staff_id) : null;
 
       return {
+        authorAvatarUrl: getSalonProfileMediaUrl(
+          update.author_avatar_path ??
+            staffById.get(update.author_staff_id ?? "")?.public_profile_photo_path,
+        ),
+        authorDisplayName:
+          update.author_display_name ??
+          staffById.get(update.author_staff_id ?? "")?.display_name ??
+          input.setting.business_name,
+        authorStaffId: update.author_staff_id,
         ctaLabel: update.cta_label,
         caption: update.caption ?? update.summary,
         commentCount: 0,
@@ -88,6 +107,7 @@ function buildPreviewData(input: {
         serviceName: service?.name ?? null,
         staffId: member?.id ?? null,
         staffName: member?.display_name ?? null,
+        hashtags: [],
         startsAt: update.starts_at,
         summary: update.summary,
         title: update.title,
@@ -137,9 +157,16 @@ function buildPreviewData(input: {
     name: service.name,
   }));
   const staff = activeStaff.map((member) => ({
+    avatarUrl: getSalonProfileMediaUrl(member.public_profile_photo_path),
+    bio: member.public_bio,
     displayName: member.display_name,
     id: member.id,
     jobTitle: member.job_title,
+    onlineBookingEnabled: member.online_booking_enabled,
+    portfolioCount: publishedLooks.filter(
+      (look) => look.authorStaffId === member.id,
+    ).length,
+    specialties: member.specialties,
   }));
 
   return {
@@ -152,6 +179,19 @@ function buildPreviewData(input: {
     }),
     looks: publishedLooks,
     profile,
+    reviewSummary: {
+      averageRating: null,
+      ratingCounts: {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+      },
+      reviewCount: 0,
+      verifiedCount: 0,
+    },
+    reviews: [],
     services,
     staff,
     updates: publishedUpdates,
@@ -163,7 +203,7 @@ export default async function SalonProfilePage({
 }: SalonProfilePageProps) {
   const [{ error, notice }, context] = await Promise.all([
     searchParams,
-    requireSalonManagePageContext("/salon-profile"),
+    requireSalonWorkspacePageContext("/salon-profile"),
   ]);
   const data = await getCurrentSalonProfileManageData(context);
 
@@ -172,7 +212,7 @@ export default async function SalonProfilePage({
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
         <h1 className="text-3xl font-semibold text-zinc-950">Salon Profile</h1>
         <p className="mt-2 text-sm text-zinc-600">
-          Manage the customer-facing profile for this salon.
+          View the customer-facing profile for this salon.
         </p>
         <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           You do not have permission to view Salon Profile.
@@ -186,7 +226,7 @@ export default async function SalonProfilePage({
   const viewData = publicData ?? previewData;
   const capabilities: SalonProfileViewerCapabilities = {
     canBook: false,
-    canCreateContent: data.canManageContent,
+    canCreateContent: data.canCreateContent,
     canEditProfile: data.canManageIdentity,
     canFollow: false,
     canManageContent: data.canManageContent,
@@ -195,7 +235,7 @@ export default async function SalonProfilePage({
     canReplyAsSalon: data.canManageContent,
     canViewDraftContent: data.canManageContent,
     isAuthenticated: Boolean(context.user),
-    isOwnSalon: true,
+    isOwnSalon: isSalonManageContext(context),
   };
 
   return (

@@ -1,0 +1,694 @@
+{
+  "baseUrl": "http://127.0.0.1:3381",
+  "consoleErrors": [],
+  "cssResponses": [
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css"
+    },
+    {
+      "ok": true,
+      "status": 200,
+      "url": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css"
+    }
+  ],
+  "date": "2026-07-15",
+  "networkErrors": [],
+  "ok": true,
+  "pageErrors": [],
+  "salonId": "7f599bc8-a806-4a68-be86-c149c21709e2",
+  "screenshots": [
+    "gateA-owner-appointments-1610x941.png"
+  ],
+  "styleAssertions": [
+    {
+      "details": {},
+      "label": "owner root is present",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": "rgb(247, 247, 248)"
+      },
+      "label": "owner root background is booking canvas",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif"
+      },
+      "label": "owner root font family is Manrope",
+      "passed": true
+    },
+    {
+      "details": {
+        "left": "24px",
+        "right": "24px"
+      },
+      "label": "owner content horizontal padding is designed",
+      "passed": true
+    },
+    {
+      "details": {
+        "color": "rgb(77, 29, 66)",
+        "font-size": "11px",
+        "font-weight": "800",
+        "letter-spacing": "1.32px",
+        "text-transform": "uppercase"
+      },
+      "label": "heading eyebrow is uppercase and tracked",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": "34px"
+      },
+      "label": "heading title has owner scale",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": "rgb(100, 42, 86)"
+      },
+      "label": "new appointment CTA is plum",
+      "passed": true
+    },
+    {
+      "details": {
+        "actual": "rgb(255, 255, 255)"
+      },
+      "label": "new appointment CTA text is white",
+      "passed": true
+    },
+    {
+      "details": {
+        "height": 44,
+        "radius": "10px"
+      },
+      "label": "new appointment CTA has designed radius and height",
+      "passed": true
+    },
+    {
+      "details": {
+        "readinessBannerFound": false
+      },
+      "label": "appointments tab has no large readiness banner",
+      "passed": true
+    },
+    {
+      "details": {
+        "height": "46px",
+        "border-bottom-color": "rgb(231, 223, 229)",
+        "display": "flex",
+        "gap": "26px"
+      },
+      "label": "tabs are a flex underline row",
+      "passed": true
+    },
+    {
+      "details": {
+        "border-bottom-color": "rgb(100, 42, 86)",
+        "border-bottom-width": "2px",
+        "color": "rgb(77, 29, 66)"
+      },
+      "label": "active tab has plum underline",
+      "passed": true
+    },
+    {
+      "details": {
+        "background-color": "rgb(239, 232, 243)",
+        "border-radius": "999px"
+      },
+      "label": "tab badge is a lilac pill",
+      "passed": true
+    },
+    {
+      "details": {
+        "display": "grid",
+        "gap": "12px",
+        "grid-template-columns": "305.5px 305.5px 305.5px 305.5px"
+      },
+      "label": "KPI wrapper is desktop grid with four tracks",
+      "passed": true
+    },
+    {
+      "details": {
+        "rect": {
+          "bottom": 333.375,
+          "height": 112,
+          "left": 328,
+          "right": 633.5,
+          "top": 221.375,
+          "width": 305.5
+        },
+        "style": {
+          "background-color": "rgb(255, 255, 255)",
+          "border-top-color": "rgb(231, 223, 229)",
+          "border-radius": "14px",
+          "min-height": "112px"
+        }
+      },
+      "label": "KPI card is a white rounded surface",
+      "passed": true
+    },
+    {
+      "details": {
+        "iconFacts": [
+          {
+            "tone": "plum",
+            "style": {
+              "background-color": "rgb(239, 232, 243)",
+              "border-radius": "10px",
+              "color": "rgb(100, 42, 86)",
+              "height": "40px",
+              "width": "40px"
+            }
+          },
+          {
+            "tone": "green",
+            "style": {
+              "background-color": "rgb(232, 246, 237)",
+              "border-radius": "10px",
+              "color": "rgb(47, 138, 87)",
+              "height": "40px",
+              "width": "40px"
+            }
+          },
+          {
+            "tone": "amber",
+            "style": {
+              "background-color": "rgb(255, 242, 216)",
+              "border-radius": "10px",
+              "color": "rgb(215, 149, 25)",
+              "height": "40px",
+              "width": "40px"
+            }
+          },
+          {
+            "tone": "revenue",
+            "style": {
+              "background-color": "rgb(100, 42, 86)",
+              "border-radius": "10px",
+              "color": "rgb(255, 255, 255)",
+              "height": "40px",
+              "width": "40px"
+            }
+          }
+        ],
+        "iconRects": [
+          {
+            "bottom": 297.375,
+            "height": 40,
+            "left": 349,
+            "right": 389,
+            "top": 257.375,
+            "width": 40
+          },
+          {
+            "bottom": 297.375,
+            "height": 40,
+            "left": 666.5,
+            "right": 706.5,
+            "top": 257.375,
+            "width": 40
+          },
+          {
+            "bottom": 297.375,
+            "height": 40,
+            "left": 984,
+            "right": 1024,
+            "top": 257.375,
+            "width": 40
+          },
+          {
+            "bottom": 297.375,
+            "height": 40,
+            "left": 1301.5,
+            "right": 1341.5,
+            "top": 257.375,
+            "width": 40
+          }
+        ]
+      },
+      "label": "KPI icon tiles match draft tones",
+      "passed": true
+    },
+    {
+      "details": {
+        "background-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(231, 223, 229)",
+        "border-radius": "14px",
+        "overflow": "hidden"
+      },
+      "label": "appointment board is a contained card",
+      "passed": true
+    },
+    {
+      "details": {
+        "rect": {
+          "bottom": 421.375,
+          "height": 71,
+          "left": 329,
+          "right": 1585,
+          "top": 350.375,
+          "width": 1256
+        },
+        "style": {
+          "display": "grid",
+          "gap": "12px",
+          "grid-template-columns": "758.203px 341.797px 96px"
+        }
+      },
+      "label": "toolbar is an organized layout",
+      "passed": true
+    },
+    {
+      "details": {
+        "datePickerText": "Wednesday, July 15",
+        "nativeDateInput": {
+          "opacity": "0",
+          "position": "absolute"
+        },
+        "rect": {
+          "bottom": 406.375,
+          "height": 42,
+          "left": 479.671875,
+          "right": 669.671875,
+          "top": 364.375,
+          "width": 190
+        }
+      },
+      "label": "toolbar uses human date surface instead of native date primary",
+      "passed": true
+    },
+    {
+      "details": {
+        "filterButton": {
+          "rect": {
+            "bottom": 406.375,
+            "height": 42,
+            "left": 1365.203125,
+            "right": 1459,
+            "top": 364.375,
+            "width": 93.796875
+          },
+          "style": {
+            "display": "inline-flex",
+            "gap": "8px",
+            "height": "42px"
+          }
+        },
+        "searchRect": {
+          "bottom": 405.375,
+          "height": 40,
+          "left": 1117.203125,
+          "right": 1357.203125,
+          "top": 365.375,
+          "width": 240
+        },
+        "viewSelectorText": "List",
+        "viewSelector": {
+          "rect": {
+            "bottom": 406.375,
+            "height": 42,
+            "left": 1471,
+            "right": 1567,
+            "top": 364.375,
+            "width": 96
+          },
+          "style": {
+            "display": "inline-flex",
+            "height": "42px",
+            "min-width": "96px"
+          }
+        }
+      },
+      "label": "toolbar search and view selector are compact",
+      "passed": true
+    },
+    {
+      "details": {
+        "chipRect": {
+          "bottom": 463.375,
+          "height": 32,
+          "left": 347,
+          "right": 401.40625,
+          "top": 431.375,
+          "width": 54.40625
+        },
+        "chipStyle": {
+          "background-color": "rgb(239, 232, 243)",
+          "border-radius": "999px",
+          "display": "flex"
+        },
+        "rowStyle": {
+          "display": "flex",
+          "gap": "8px"
+        }
+      },
+      "label": "status filters are separate pills",
+      "passed": true
+    },
+    {
+      "details": {
+        "background-color": "rgb(251, 250, 251)",
+        "border-top-style": "solid",
+        "border-top-color": "rgb(231, 223, 229)",
+        "border-radius": "12px"
+      },
+      "label": "empty state is not dashed",
+      "passed": true
+    }
+  ],
+  "styleFacts": {
+    "classAttributes": {
+      "cta": "booking-primary-button gap-2 px-5",
+      "emptyState": "booking-empty-state m-5",
+      "heading": "min-w-0",
+      "kpiWrapper": "booking-kpi-grid",
+      "ownerCanvas": "booking-surface booking-owner-root",
+      "ownerContent": "booking-owner-content",
+      "tabs": "booking-tabs",
+      "workspace": "booking-workspace-card"
+    },
+    "computed": {
+      "board": {
+        "background-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(231, 223, 229)",
+        "border-radius": "14px",
+        "overflow": "hidden"
+      },
+      "cta": {
+        "background-color": "rgb(100, 42, 86)",
+        "color": "rgb(255, 255, 255)",
+        "border-radius": "10px",
+        "font-family": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif",
+        "height": "44px",
+        "min-height": "44px"
+      },
+      "emptyState": {
+        "background-color": "rgb(251, 250, 251)",
+        "border-top-style": "solid",
+        "border-top-color": "rgb(231, 223, 229)",
+        "border-radius": "12px"
+      },
+      "eyebrow": {
+        "color": "rgb(77, 29, 66)",
+        "font-size": "11px",
+        "font-weight": "800",
+        "letter-spacing": "1.32px",
+        "text-transform": "uppercase"
+      },
+      "headingTitle": {
+        "color": "rgb(33, 28, 36)",
+        "font-size": "34px",
+        "font-weight": "500"
+      },
+      "kpiCard": {
+        "background-color": "rgb(255, 255, 255)",
+        "border-top-color": "rgb(231, 223, 229)",
+        "border-radius": "14px",
+        "min-height": "112px"
+      },
+      "kpiIcons": [
+        {
+          "tone": "plum",
+          "style": {
+            "background-color": "rgb(239, 232, 243)",
+            "border-radius": "10px",
+            "color": "rgb(100, 42, 86)",
+            "height": "40px",
+            "width": "40px"
+          }
+        },
+        {
+          "tone": "green",
+          "style": {
+            "background-color": "rgb(232, 246, 237)",
+            "border-radius": "10px",
+            "color": "rgb(47, 138, 87)",
+            "height": "40px",
+            "width": "40px"
+          }
+        },
+        {
+          "tone": "amber",
+          "style": {
+            "background-color": "rgb(255, 242, 216)",
+            "border-radius": "10px",
+            "color": "rgb(215, 149, 25)",
+            "height": "40px",
+            "width": "40px"
+          }
+        },
+        {
+          "tone": "revenue",
+          "style": {
+            "background-color": "rgb(100, 42, 86)",
+            "border-radius": "10px",
+            "color": "rgb(255, 255, 255)",
+            "height": "40px",
+            "width": "40px"
+          }
+        }
+      ],
+      "kpiWrapper": {
+        "display": "grid",
+        "gap": "12px",
+        "grid-template-columns": "305.5px 305.5px 305.5px 305.5px"
+      },
+      "datePicker": {
+        "display": "flex",
+        "min-height": "42px",
+        "opacity": "1",
+        "width": "190px"
+      },
+      "filterButton": {
+        "display": "inline-flex",
+        "gap": "8px",
+        "height": "42px"
+      },
+      "nativeDateInput": {
+        "opacity": "0",
+        "position": "absolute"
+      },
+      "ownerCanvas": {
+        "background-color": "rgb(247, 247, 248)",
+        "font-family": "Manrope, \"Manrope Fallback\", Arial, Helvetica, sans-serif"
+      },
+      "ownerContent": {
+        "padding-left": "24px",
+        "padding-right": "24px"
+      },
+      "searchInput": {
+        "width": "240px"
+      },
+      "statusChip": {
+        "background-color": "rgb(239, 232, 243)",
+        "border-radius": "999px",
+        "display": "flex"
+      },
+      "statusRow": {
+        "display": "flex",
+        "gap": "8px"
+      },
+      "tab": {
+        "border-bottom-color": "rgb(100, 42, 86)",
+        "border-bottom-width": "2px",
+        "color": "rgb(77, 29, 66)"
+      },
+      "tabBadge": {
+        "background-color": "rgb(239, 232, 243)",
+        "border-radius": "999px"
+      },
+      "tabs": {
+        "border-bottom-color": "rgb(231, 223, 229)",
+        "display": "flex",
+        "gap": "26px",
+        "height": "46px"
+      },
+      "toolbar": {
+        "display": "grid",
+        "gap": "12px",
+        "grid-template-columns": "758.203px 341.797px 96px"
+      },
+      "viewSelector": {
+        "display": "inline-flex",
+        "height": "42px",
+        "min-width": "96px"
+      }
+    },
+    "dom": {
+      "bodyOverflowX": "visible",
+      "currentUrl": "http://127.0.0.1:3381/bookings?date=2026-07-15&view=list",
+      "datePickerText": "Wednesday, July 15",
+      "ownerCanvasFound": true,
+      "readinessBannerFound": false,
+      "title": "KingPOS",
+      "viewSelectorText": "List"
+    },
+    "rects": {
+      "board": {
+        "bottom": 610.375,
+        "height": 261,
+        "left": 328,
+        "right": 1586,
+        "top": 349.375,
+        "width": 1258
+      },
+      "cta": {
+        "bottom": 126.375,
+        "height": 44,
+        "left": 1402.171875,
+        "right": 1586,
+        "top": 82.375,
+        "width": 183.828125
+      },
+      "datePicker": {
+        "bottom": 406.375,
+        "height": 42,
+        "left": 479.671875,
+        "right": 669.671875,
+        "top": 364.375,
+        "width": 190
+      },
+      "filterButton": {
+        "bottom": 406.375,
+        "height": 42,
+        "left": 1365.203125,
+        "right": 1459,
+        "top": 364.375,
+        "width": 93.796875
+      },
+      "kpiCard": {
+        "bottom": 333.375,
+        "height": 112,
+        "left": 328,
+        "right": 633.5,
+        "top": 221.375,
+        "width": 305.5
+      },
+      "kpiIcons": [
+        {
+          "bottom": 297.375,
+          "height": 40,
+          "left": 349,
+          "right": 389,
+          "top": 257.375,
+          "width": 40
+        },
+        {
+          "bottom": 297.375,
+          "height": 40,
+          "left": 666.5,
+          "right": 706.5,
+          "top": 257.375,
+          "width": 40
+        },
+        {
+          "bottom": 297.375,
+          "height": 40,
+          "left": 984,
+          "right": 1024,
+          "top": 257.375,
+          "width": 40
+        },
+        {
+          "bottom": 297.375,
+          "height": 40,
+          "left": 1301.5,
+          "right": 1341.5,
+          "top": 257.375,
+          "width": 40
+        }
+      ],
+      "kpiWrapper": {
+        "bottom": 333.375,
+        "height": 112,
+        "left": 328,
+        "right": 1586,
+        "top": 221.375,
+        "width": 1258
+      },
+      "ownerCanvas": {
+        "bottom": 941,
+        "height": 941,
+        "left": 304,
+        "right": 1610,
+        "top": 0,
+        "width": 1306
+      },
+      "ownerContent": {
+        "bottom": 644.375,
+        "height": 445,
+        "left": 304,
+        "right": 1610,
+        "top": 199.375,
+        "width": 1306
+      },
+      "searchInput": {
+        "bottom": 405.375,
+        "height": 40,
+        "left": 1117.203125,
+        "right": 1357.203125,
+        "top": 365.375,
+        "width": 240
+      },
+      "statusChip": {
+        "bottom": 463.375,
+        "height": 32,
+        "left": 347,
+        "right": 401.40625,
+        "top": 431.375,
+        "width": 54.40625
+      },
+      "tabs": {
+        "bottom": 198.375,
+        "height": 46,
+        "left": 328,
+        "right": 1586,
+        "top": 152.375,
+        "width": 1258
+      },
+      "toolbar": {
+        "bottom": 421.375,
+        "height": 71,
+        "left": 329,
+        "right": 1585,
+        "top": 350.375,
+        "width": 1256
+      },
+      "viewSelector": {
+        "bottom": 406.375,
+        "height": 42,
+        "left": 1471,
+        "right": 1567,
+        "top": 364.375,
+        "width": 96
+      }
+    },
+    "stylesheets": [
+      {
+        "href": "http://127.0.0.1:3381/_next/static/css/2a15c4cb4501e85d.css",
+        "rules": 88
+      },
+      {
+        "href": "http://127.0.0.1:3381/_next/static/css/6d9f9093a473a5aa.css",
+        "rules": 77
+      },
+      {
+        "href": "http://127.0.0.1:3381/_next/static/css/ec40b85e3d484e9e.css",
+        "rules": 29
+      }
+    ]
+  },
+  "organizationId": "387af6da-69bb-45dc-bf25-5954a1d10ded",
+  "organizationName": "King Nails LLC",
+  "salonName": "King Nails"
+}

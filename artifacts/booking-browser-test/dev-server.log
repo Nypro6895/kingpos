@@ -1,0 +1,18 @@
+
+> kingpos@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3321
+
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://127.0.0.1:3321
+- Network:       http://127.0.0.1:3321
+- Environments: .env.local
+✓ Ready in 1004ms
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          25148
+- Dir:          C:\Users\giuse\kingpos
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 25148 /F to stop it.
+[?25h

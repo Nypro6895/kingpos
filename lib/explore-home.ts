@@ -1,17 +1,27 @@
 import "server-only";
 
+import {
+  EMPTY_EXPLORE_DECISION_SIGNALS,
+  getExploreDecisionSignalsBySalonId,
+  type ExploreDecisionSignals,
+} from "@/lib/explore-decision-signals";
+import { getExploreInspirationPage } from "@/lib/explore-inspiration";
+import { searchExploreSalons } from "@/lib/explore-search";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   ExploreHomeContent,
   ExploreHomeSalon,
   ExploreHomeSalonSection,
+  ExploreNearYouResponse,
   ExplorePopularService,
+  ExploreSearchResult,
 } from "@/types/explore";
 
 const HOME_RECOMMENDED_LIMIT = 6;
 const HOME_NEW_LIMIT = 6;
 const HOME_POPULAR_SERVICE_LIMIT = 8;
+const HOME_NEAR_YOU_LIMIT = 8;
 
 type RpcError = {
   code?: string;
@@ -65,6 +75,12 @@ type ExplorePopularServiceRow = {
 function emptyHomeContent(error: string | null = null): ExploreHomeContent {
   return {
     error,
+    inspiration: {
+      error: null,
+      hasMore: false,
+      items: [],
+      nextCursor: null,
+    },
     newSalons: [],
     popularServices: [],
     recommendedSalons: [],
@@ -112,13 +128,22 @@ function normalizeHomeSection(
   return value === "new" ? "new" : "recommended";
 }
 
-function mapHomeSalonRow(row: ExploreHomeSalonRow): ExploreHomeSalon {
+function mapHomeSalonRow(
+  row: ExploreHomeSalonRow,
+  signals: ExploreDecisionSignals | undefined,
+): ExploreHomeSalon {
   const homeSection = normalizeHomeSection(row.section);
+  const decisionSignals = signals ?? EMPTY_EXPLORE_DECISION_SIGNALS;
 
   return {
     activeServiceCount: row.active_service_count ?? 0,
     addressLine1: row.address_line1,
     addressLine2: row.address_line2,
+    averageRating: decisionSignals.averageRating,
+    bookableServiceId: decisionSignals.bookableServiceId,
+    bookableServiceName: decisionSignals.bookableServiceName,
+    bookingEnabled: decisionSignals.bookingEnabled,
+    bookingHref: decisionSignals.bookingHref,
     city: row.city,
     country: row.country,
     coverImageUrl: getSalonProfileMediaUrl(row.cover_image_path),
@@ -138,12 +163,15 @@ function mapHomeSalonRow(row: ExploreHomeSalonRow): ExploreHomeSalon {
     matchTier: 10,
     matchType: homeSection,
     name: row.salon_name,
+    nextAvailabilityLabel: decisionSignals.nextAvailabilityLabel,
+    nextAvailableAt: decisionSignals.nextAvailableAt,
     phone: row.phone,
     postalCode: row.postal_code,
     profileCompleteness: row.profile_completeness ?? 0,
     publicDiscoveryPublishedAt: row.public_discovery_published_at,
     relevanceScore: readCount(row.home_rank),
     resultGroup: "recommended",
+    reviewCount: decisionSignals.reviewCount,
     serviceCategories: toStringArray(row.service_categories),
     serviceNames: toStringArray(row.service_names),
     startingPrice: readMoney(row.starting_price),
@@ -168,6 +196,51 @@ function mapPopularServiceRow(
   };
 }
 
+function mapSearchResultToNearYouSalon(
+  result: ExploreSearchResult,
+  index: number,
+): ExploreHomeSalon {
+  return {
+    ...result,
+    createdAt: null,
+    homeRank: index + 1,
+    homeSection: "near_you",
+    publicDiscoveryPublishedAt: null,
+    updatedAt: null,
+  };
+}
+
+export async function getExploreNearYouSalons(input: {
+  latitude: number | null | undefined;
+  longitude: number | null | undefined;
+  limit?: number;
+}): Promise<ExploreNearYouResponse> {
+  const response = await searchExploreSalons({
+    latitude: input.latitude,
+    longitude: input.longitude,
+    page: 1,
+    pageSize: Math.min(HOME_NEAR_YOU_LIMIT, Math.max(1, input.limit ?? HOME_NEAR_YOU_LIMIT)),
+  });
+
+  if (response.error) {
+    return {
+      error: response.error,
+      salons: [],
+    };
+  }
+
+  const salons = response.results
+    .filter((salon) => salon.distanceMiles !== null)
+    .sort((a, b) => (a.distanceMiles ?? Infinity) - (b.distanceMiles ?? Infinity))
+    .slice(0, input.limit ?? HOME_NEAR_YOU_LIMIT)
+    .map(mapSearchResultToNearYouSalon);
+
+  return {
+    error: null,
+    salons,
+  };
+}
+
 export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
   const supabase = createSupabaseServerClient();
 
@@ -177,7 +250,7 @@ export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
 
   try {
     const rpc = supabase.rpc.bind(supabase) as unknown as RpcRunner;
-    const [salonsResponse, servicesResponse] = await Promise.all([
+    const [salonsResponse, servicesResponse, inspiration] = await Promise.all([
       rpc("get_public_explore_home_salons", {
         p_new_limit: HOME_NEW_LIMIT,
         p_recommended_limit: HOME_RECOMMENDED_LIMIT,
@@ -185,6 +258,7 @@ export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
       rpc("get_public_explore_popular_services", {
         p_limit: HOME_POPULAR_SERVICE_LIMIT,
       }),
+      getExploreInspirationPage(),
     ]);
     let error: string | null = null;
 
@@ -214,10 +288,21 @@ export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
     const serviceRows = Array.isArray(servicesResponse.data)
       ? (servicesResponse.data as ExplorePopularServiceRow[])
       : [];
-    const salons = salonsResponse.error ? [] : salonRows.map(mapHomeSalonRow);
+    const signalMap = salonsResponse.error
+      ? new Map<string, ExploreDecisionSignals>()
+      : await getExploreDecisionSignalsBySalonId(
+          rpc,
+          salonRows.map((row) => row.salon_id),
+        );
+    const salons = salonsResponse.error
+      ? []
+      : salonRows.map((row) =>
+          mapHomeSalonRow(row, signalMap.get(row.salon_id)),
+        );
 
     return {
       error,
+      inspiration,
       newSalons: salons.filter((salon) => salon.homeSection === "new"),
       popularServices: servicesResponse.error
         ? []

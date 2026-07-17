@@ -1,0 +1,8 @@
+
+> kingpos@0.1.0 start
+> next start --hostname 127.0.0.1 --port 3330
+
+▲ Next.js 16.2.9
+- Local:         http://127.0.0.1:3330
+- Network:       http://127.0.0.1:3330
+✓ Ready in 264ms

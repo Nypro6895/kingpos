@@ -1,0 +1,58 @@
+{
+  "baseUrl": "http://127.0.0.1:3337",
+  "browser": "launched",
+  "consoleErrors": [],
+  "devConfigLeftActive": true,
+  "fixtureIds": {
+    "serviceAId": "6e78a7a8-5068-4fcc-80c3-699c4e37a65e",
+    "serviceBId": "2566d503-e113-4ca9-b009-18d8c8d91178",
+    "staffId": "705a6df0-0b09-4c33-a4ac-bd22631332e3"
+  },
+  "marker": "[E2E] Phase45 Browser 20260716203116",
+  "networkErrors": [],
+  "ok": true,
+  "pageErrors": [],
+  "screenshots": [
+    "phase45-readiness-navigation-desktop.png",
+    "phase45-staff-assignment-desktop.png",
+    "phase45-service-bookable-staff-desktop.png",
+    "phase45-availability-desktop.png",
+    "phase45-breaks-time-off-desktop.png",
+    "phase45-public-booking-slots-desktop.png",
+    "phase45-manual-booking-desktop.png",
+    "phase45-booking-setup-mobile.png"
+  ],
+  "slotVerification": {
+    "afternoon_slot_available": true,
+    "break_rejected": false,
+    "time_block_rejected": false,
+    "work_slot_available": true
+  },
+  "steps": [
+    {
+      "readinessPanel": "already complete for current dev salon"
+    },
+    {
+      "staffCentricAssignment": "saved two services online"
+    },
+    {
+      "serviceCentricAssignment": "service B unassigned"
+    },
+    {
+      "availability": "weekday preset plus Monday break saved"
+    },
+    {
+      "timeBlock": "future time-off block persisted"
+    },
+    {
+      "publicBooking": "service, staff, and slots visible"
+    },
+    {
+      "manualBooking": "eligible staff and real slots visible"
+    },
+    {
+      "mobile": "staff booking setup captured"
+    }
+  ],
+  "userEmail": "e2e-phase45-browser-20260716203116@example.com"
+}

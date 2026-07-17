@@ -80,6 +80,12 @@ function buildStaffNavigation(): NavigationSection[] {
       links: [
         { href: "/staff/my-work", icon: "home", id: "staff-day", label: "My Day" },
         {
+          href: "/staff/appointments",
+          icon: "calendar",
+          id: "staff-appointments",
+          label: "Appointments",
+        },
+        {
           href: "/staff/my-work?tab=payroll",
           icon: "cash",
           id: "staff-income",
@@ -96,6 +102,18 @@ function buildStaffNavigation(): NavigationSection[] {
           icon: "people",
           id: "staff-connections",
           label: "Connections",
+        },
+      ],
+    },
+    {
+      id: "staff-connect",
+      label: "Connect",
+      links: [
+        {
+          href: "/salon-profile",
+          icon: "compass",
+          id: "staff-salon-profile",
+          label: "Salon Profile",
         },
       ],
     },

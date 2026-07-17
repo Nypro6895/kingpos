@@ -1,5 +1,9 @@
 "use server";
 
+import {
+  normalizeBookingEmail,
+  normalizeBookingPhone,
+} from "@/lib/booking-domain/customer-identity";
 import { CUSTOMER_PERMISSIONS, CUSTOMER_SELECT } from "@/lib/customers";
 import {
   getCurrentBusinessContext,
@@ -82,10 +86,15 @@ export async function createCustomer(formData: FormData) {
     .insert({
       location_id: salon.id,
       name,
-      phone: readOptionalString(formData, "phone"),
-      email: readOptionalString(formData, "email"),
+      phone: normalizeBookingPhone(readOptionalString(formData, "phone")),
+      email: normalizeBookingEmail(readOptionalString(formData, "email")),
       notes: readOptionalString(formData, "notes"),
+      staff_notes: readOptionalString(formData, "staff_notes"),
+      internal_notes: readOptionalString(formData, "internal_notes"),
+      source: "manual",
       status: "active",
+      created_by_user_id: user.id,
+      updated_by_user_id: user.id,
     })
     .select(CUSTOMER_SELECT)
     .single<Customer>();
@@ -126,10 +135,13 @@ export async function updateCustomer(formData: FormData) {
     .from("customers")
     .update({
       name,
-      phone: readOptionalString(formData, "phone"),
-      email: readOptionalString(formData, "email"),
+      phone: normalizeBookingPhone(readOptionalString(formData, "phone")),
+      email: normalizeBookingEmail(readOptionalString(formData, "email")),
       notes: readOptionalString(formData, "notes"),
+      staff_notes: readOptionalString(formData, "staff_notes"),
+      internal_notes: readOptionalString(formData, "internal_notes"),
       status: readStatus(formData),
+      updated_by_user_id: user.id,
     })
     .eq("id", customerId)
     .eq("location_id", salon.id);

@@ -10,6 +10,8 @@ export const SALON_PROFILE_IMAGE_LIMITS = {
   cover: 15 * 1024 * 1024,
   logo: 8 * 1024 * 1024,
   look: 15 * 1024 * 1024,
+  review: 8 * 1024 * 1024,
+  staffAvatar: 8 * 1024 * 1024,
   update: 15 * 1024 * 1024,
 } as const;
 
@@ -49,6 +51,7 @@ export function normalizeSalonProfileMediaPath(value: string | null | undefined)
 export function buildSalonProfileMediaPath(input: {
   kind: SalonProfileMediaKind;
   salonId: string;
+  staffId?: string | null;
 }) {
   const id = crypto.randomUUID();
 
@@ -59,6 +62,14 @@ export function buildSalonProfileMediaPath(input: {
       return `${input.salonId}/profile/cover/${id}.webp`;
     case "look":
       return `${input.salonId}/looks/${id}/${crypto.randomUUID()}.webp`;
+    case "review":
+      return `${input.salonId}/reviews/${id}.webp`;
+    case "staffAvatar":
+      if (!input.staffId) {
+        throw new Error("Staff avatar uploads require a staff id.");
+      }
+
+      return `${input.salonId}/staff/${input.staffId}/avatar/${id}.webp`;
     case "update":
       return `${input.salonId}/updates/${id}.webp`;
   }
@@ -106,6 +117,26 @@ export function parseSalonProfileMediaPath(
   if (parts.length === 3 && parts[1] === "updates" && parts[2].endsWith(".webp")) {
     return {
       kind: "update",
+      salonId: parts[0],
+    };
+  }
+
+  if (parts.length === 3 && parts[1] === "reviews" && parts[2].endsWith(".webp")) {
+    return {
+      kind: "review",
+      salonId: parts[0],
+    };
+  }
+
+  if (
+    parts.length === 5 &&
+    parts[1] === "staff" &&
+    isUuid(parts[2]) &&
+    parts[3] === "avatar" &&
+    parts[4].endsWith(".webp")
+  ) {
+    return {
+      kind: "staffAvatar",
       salonId: parts[0],
     };
   }

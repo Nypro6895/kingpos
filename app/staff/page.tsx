@@ -5,7 +5,15 @@ import {
   reviewStaffSalonApplicationFormAction,
   revokeSalonStaffInviteFormAction,
 } from "@/app/staff/actions";
+import { StaffServicesBookingEditor } from "@/app/booking-setup/booking-setup-editors";
+import {
+  getCurrentSalonBookingSetup,
+  type BookingSetupData,
+  type StaffBookingReadiness,
+} from "@/lib/booking-setup";
 import { CopyInviteLinkButton } from "@/app/staff/copy-invite-link-button";
+import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-editor";
+import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import {
@@ -35,6 +43,7 @@ type StaffPageSearchParams = {
   invite_request?: string | string[];
   invite_token?: string | string[];
   q?: string | string[];
+  setup?: string | string[];
   staff?: string | string[];
 };
 
@@ -186,7 +195,10 @@ function needsContact(member: StaffDirectoryMember) {
   return isEmploymentActive(member) && !hasUsableContact(member);
 }
 
-function getBookingStatus(member: StaffDirectoryMember): {
+function getBookingStatus(
+  member: StaffDirectoryMember,
+  readiness?: StaffBookingReadiness | null,
+): {
   kind: BookingStatusKind;
   label: string;
   tone: BadgeTone;
@@ -195,9 +207,27 @@ function getBookingStatus(member: StaffDirectoryMember): {
     return { kind: "disabled", label: "Disabled", tone: "neutral" };
   }
 
-  // TODO: When staff booking flags, service assignments, and schedules exist,
-  // evaluate booking_enabled, assigned services, and working hours here.
-  return { kind: "ready", label: "Ready", tone: "success" };
+  if (!readiness) {
+    return { kind: "ready", label: "Ready", tone: "success" };
+  }
+
+  if (readiness.ready) {
+    return { kind: "ready", label: "Ready", tone: "success" };
+  }
+
+  if (readiness.reasons.some((reason) => reason.code === "no_assigned_services")) {
+    return { kind: "missing_services", label: "Needs Services", tone: "warning" };
+  }
+
+  if (readiness.reasons.some((reason) => reason.code === "no_working_hours")) {
+    return { kind: "missing_schedule", label: "Needs Hours", tone: "warning" };
+  }
+
+  return {
+    kind: "disabled",
+    label: readiness.reasons[0]?.label ?? "Needs Setup",
+    tone: "warning",
+  };
 }
 
 function getPosStatus(member: StaffDirectoryMember): {
@@ -224,8 +254,11 @@ function hasMissingPayrollSetup(member: StaffDirectoryMember) {
   );
 }
 
-function hasMissingSetup(member: StaffDirectoryMember) {
-  const bookingStatus = getBookingStatus(member).kind;
+function hasMissingSetup(
+  member: StaffDirectoryMember,
+  readiness?: StaffBookingReadiness | null,
+) {
+  const bookingStatus = getBookingStatus(member, readiness).kind;
   const posStatus = getPosStatus(member).kind;
 
   return (
@@ -244,6 +277,7 @@ function memberMatchesFilter(
   member: StaffDirectoryMember,
   filter: StaffFilter,
   requests: SalonStaffConnectionRequestWithDetails[] = [],
+  readiness?: StaffBookingReadiness | null,
 ) {
   if (filter === "connected") {
     return isConnected(member);
@@ -258,7 +292,7 @@ function memberMatchesFilter(
   }
 
   if (filter === "missing_setup") {
-    return hasMissingSetup(member);
+    return hasMissingSetup(member, readiness);
   }
 
   if (filter === "inactive") {
@@ -296,12 +330,18 @@ function memberMatchesSearch(member: StaffDirectoryMember, query: string) {
 function getVisibleStaff(input: {
   filter: StaffFilter;
   query: string;
+  readinessByStaffId?: Record<string, StaffBookingReadiness>;
   requests?: SalonStaffConnectionRequestWithDetails[];
   staff: StaffDirectoryMember[];
 }) {
   return input.staff.filter(
     (member) =>
-      memberMatchesFilter(member, input.filter, input.requests ?? []) &&
+      memberMatchesFilter(
+        member,
+        input.filter,
+        input.requests ?? [],
+        input.readinessByStaffId?.[member.id],
+      ) &&
       memberMatchesSearch(member, input.query),
   );
 }
@@ -716,11 +756,13 @@ function MetricCard({
 function StaffMetrics({
   activeFilter,
   query,
+  readinessByStaffId,
   requests,
   staff,
 }: {
   activeFilter: StaffFilter;
   query: string;
+  readinessByStaffId?: Record<string, StaffBookingReadiness>;
   requests: SalonStaffConnectionRequestWithDetails[];
   staff: StaffDirectoryMember[];
 }) {
@@ -748,7 +790,9 @@ function StaffMetrics({
     {
       filter: "missing_setup",
       label: "Missing Setup",
-      value: staff.filter(hasMissingSetup).length,
+      value: staff.filter((member) =>
+        hasMissingSetup(member, readinessByStaffId?.[member.id]),
+      ).length,
     },
   ];
 
@@ -1016,6 +1060,7 @@ function StaffDirectoryTable({
   hasAnyStaff,
   organizationId,
   query,
+  readinessByStaffId,
   requests,
   staff,
 }: {
@@ -1024,6 +1069,7 @@ function StaffDirectoryTable({
   hasAnyStaff: boolean;
   organizationId: string;
   query: string;
+  readinessByStaffId?: Record<string, StaffBookingReadiness>;
   requests: SalonStaffConnectionRequestWithDetails[];
   staff: StaffDirectoryMember[];
 }) {
@@ -1075,7 +1121,10 @@ function StaffDirectoryTable({
         </thead>
         <tbody className="divide-y divide-zinc-100">
           {staff.map((member) => {
-            const bookingStatus = getBookingStatus(member);
+            const bookingStatus = getBookingStatus(
+              member,
+              readinessByStaffId?.[member.id],
+            );
             const posStatus = getPosStatus(member);
             const detailHref = getStaffHref({
               filter: activeFilter,
@@ -1260,18 +1309,25 @@ function DetailActions({
 }
 
 function StaffDetailDrawer({
+  bookingSetup,
   canManagePayroll,
   closeHref,
   member,
   requests,
+  setupMode,
 }: {
+  bookingSetup: BookingSetupData;
   canManagePayroll: boolean;
   closeHref: string;
   member: StaffDirectoryMember;
   requests: SalonStaffConnectionRequestWithDetails[];
+  setupMode?: string;
 }) {
   const accountStatus = getAccountStatus(member, requests);
-  const bookingStatus = getBookingStatus(member);
+  const bookingStatus = getBookingStatus(
+    member,
+    bookingSetup.readinessByStaffId[member.id],
+  );
   const posStatus = getPosStatus(member);
   const connectedUser = member.connected_user;
 
@@ -1314,6 +1370,32 @@ function StaffDetailDrawer({
           value={cleanValue(member.email) || "No email"}
         />
       </DetailSection>
+
+      <section className="rounded-lg border border-zinc-200 bg-white p-4">
+        <div>
+          <h3 className="text-sm font-semibold text-zinc-950">
+            Public Staff Profile
+          </h3>
+          <p className="mt-1 text-sm text-zinc-600">
+            This is the staff identity customers see on Salon Profile.
+          </p>
+        </div>
+        <div className="mt-4">
+          <StaffPublicProfileEditor
+            avatarUrl={getSalonProfileMediaUrl(member.public_profile_photo_path)}
+            bio={member.public_bio}
+            canChangeConsent={false}
+            displayName={member.display_name}
+            jobTitle={member.job_title}
+            onlineBookingEnabled={member.online_booking_enabled}
+            ownerPublicEnabled={member.owner_public_enabled}
+            publicProfileVisible={member.public_profile_visible}
+            staffPublicConsentStatus={member.staff_public_consent_status}
+            specialties={member.specialties}
+            staffId={member.id}
+          />
+        </div>
+      </section>
 
       <DetailSection title="Account Connection">
         <DetailField
@@ -1364,7 +1446,9 @@ function StaffDetailDrawer({
           label="Shortcuts"
           value={
             <div className="flex flex-wrap gap-2">
-              <ActionButton disabled>Booking Setup</ActionButton>
+              <ActionButton href={`/staff?staff=${member.id}&setup=booking`}>
+                Booking Setup
+              </ActionButton>
               <ActionButton disabled>POS Setup</ActionButton>
               <ActionButton
                 disabled={!canManagePayroll}
@@ -1376,7 +1460,75 @@ function StaffDetailDrawer({
           }
         />
       </DetailSection>
+      {setupMode === "booking" ? (
+        <StaffServicesBookingEditor
+          assignments={bookingSetup.assignments}
+          canManage={bookingSetup.permissions.canManageAssignments}
+          readiness={bookingSetup.readinessByStaffId[member.id]}
+          services={bookingSetup.services}
+          staff={member}
+        />
+      ) : null}
     </SlideOver>
+  );
+}
+
+function BookingSetupStaffSelector({
+  activeFilter,
+  query,
+  readinessByStaffId,
+  staff,
+}: {
+  activeFilter: StaffFilter;
+  query: string;
+  readinessByStaffId: Record<string, StaffBookingReadiness>;
+  staff: StaffDirectoryMember[];
+}) {
+  const candidates = staff
+    .filter((member) => member.is_active)
+    .sort((left, right) => {
+      const leftReady = readinessByStaffId[left.id]?.ready ? 1 : 0;
+      const rightReady = readinessByStaffId[right.id]?.ready ? 1 : 0;
+
+      return leftReady - rightReady || left.display_name.localeCompare(right.display_name);
+    });
+
+  return (
+    <section className="grid gap-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+      <div>
+        <h2 className="text-base font-semibold text-zinc-950">
+          Select staff for booking setup
+        </h2>
+        <p className="mt-1 text-sm text-amber-900">
+          Staff service assignments are edited from each staff profile.
+        </p>
+      </div>
+      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {candidates.map((member) => {
+          const readiness = readinessByStaffId[member.id];
+
+          return (
+            <Link
+              className="rounded-md border border-amber-200 bg-white p-3 hover:border-zinc-950"
+              href={getStaffHref({
+                filter: activeFilter,
+                query,
+                staffId: member.id,
+              }).concat("&setup=booking")}
+              key={member.id}
+            >
+              <p className="font-semibold text-zinc-950">{member.display_name}</p>
+              <p className="mt-1 text-sm text-zinc-600">
+                {readiness?.ready
+                  ? "Ready"
+                  : readiness?.reasons.map((reason) => reason.label).join(", ") ||
+                    "Needs setup"}
+              </p>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -1793,6 +1945,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   const inviteRequestId = stringParam(params.invite_request);
   const inviteToken = stringParam(params.invite_token);
   const query = stringParam(params.q)?.trim() ?? "";
+  const setupMode = stringParam(params.setup);
   const activeFilter = getStaffFilter(stringParam(params.filter));
   const selectedStaffId = stringParam(params.staff);
   const showAddStaff =
@@ -1814,8 +1967,9 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     );
   }
 
-  const [directory, canManageStaff, canManagePayroll] = await Promise.all([
+  const [directory, bookingSetup, canManageStaff, canManagePayroll] = await Promise.all([
     getCurrentSalonStaffDirectory(context),
+    getCurrentSalonBookingSetup(context),
     hasPermission(STAFF_PERMISSIONS.manage, context),
     hasPermission("payroll.manage", context),
   ]);
@@ -1842,6 +1996,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   const visibleStaff = getVisibleStaff({
     filter: activeFilter,
     query,
+    readinessByStaffId: bookingSetup.readinessByStaffId,
     requests: connectionRequests,
     staff: directory.staff,
   });
@@ -1875,6 +2030,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
         <StaffMetrics
           activeFilter={activeFilter}
           query={query}
+          readinessByStaffId={bookingSetup.readinessByStaffId}
           requests={connectionRequests}
           staff={directory.staff}
         />
@@ -1891,12 +2047,23 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
             <StaffSearch activeFilter={activeFilter} query={query} />
             <StaffFilterTabs activeFilter={activeFilter} query={query} />
           </div>
+          {setupMode === "services" && !selectedStaff ? (
+            <div className="mt-4">
+              <BookingSetupStaffSelector
+                activeFilter={activeFilter}
+                query={query}
+                readinessByStaffId={bookingSetup.readinessByStaffId}
+                staff={directory.staff}
+              />
+            </div>
+          ) : null}
           <StaffDirectoryTable
             activeFilter={activeFilter}
             canManagePayroll={canManagePayroll}
             hasAnyStaff={directory.staff.length > 0}
             organizationId={organizationId}
             query={query}
+            readinessByStaffId={bookingSetup.readinessByStaffId}
             requests={connectionRequests}
             staff={visibleStaff}
           />
@@ -1927,10 +2094,12 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
       ) : null}
       {selectedStaff ? (
         <StaffDetailDrawer
+          bookingSetup={bookingSetup}
           canManagePayroll={canManagePayroll}
           closeHref={closeHref}
           member={selectedStaff}
           requests={connectionRequests}
+          setupMode={setupMode}
         />
       ) : null}
     </>

@@ -1,0 +1,53 @@
+{
+  "ok": true,
+  "baseUrl": "http://127.0.0.1:3335",
+  "marker": "[E2E] Phase4 Browser Appointment 20260716155833878",
+  "bookingId": "45f142df-2abe-46a0-bed9-a171eee847d5",
+  "screenshots": [
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-owner-day-desktop.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-owner-week-desktop.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-owner-list-desktop.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-owner-detail-before-staff.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-public-services-desktop.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-staff-day-desktop.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-staff-completed-detail.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-owner-progress-detail.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-notifications.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-owner-mobile.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-staff-mobile.png",
+    "C:\\Users\\giuse\\kingpos\\artifacts\\booking-browser-test\\phase4-public-mobile.png"
+  ],
+  "steps": [
+    {
+      "ownerDay": "captured"
+    },
+    {
+      "ownerWeek": "captured"
+    },
+    {
+      "ownerList": "captured"
+    },
+    {
+      "ownerDetailDeepLink": "45f142df-2abe-46a0-bed9-a171eee847d5"
+    },
+    {
+      "publicAddOn": "verified"
+    },
+    {
+      "staffLifecycle": "started and completed assigned line"
+    },
+    {
+      "ownerProgress": "visible"
+    },
+    {
+      "notifications": "staff service notification visible"
+    },
+    {
+      "mobile": "owner/staff/public 390x844 captured"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "networkErrors": [],
+  "creation": "sql_seeded_after_ui_create_hang"
+}

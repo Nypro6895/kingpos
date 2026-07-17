@@ -10,6 +10,7 @@ import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Customer } from "@/types/customer";
+import type { BookingStatus } from "@/types/booking";
 import type { PosTicketWithRelations } from "@/types/pos-ticket";
 import type { PosTicketStaffEarningWithStaff } from "@/types/pos-ticket-staff-earning";
 import type { Service } from "@/types/service";
@@ -21,15 +22,15 @@ import type {
 } from "@/types/staff-workday";
 
 export const POS_TICKET_SELECT =
-  "id, organization_id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at";
+  "id, organization_id, salon_id, source_booking_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at";
 
 export const POS_TICKET_ITEM_SELECT =
-  "id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at";
+  "id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, performed_by_staff_id, source_booking_id, source_booking_line_id, source_kind, service_name_snapshot, service_category_snapshot, booked_unit_price_snapshot, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at";
 
 export const POS_TICKET_AUDIT_LOG_SELECT =
   "id, organization_id, salon_id, ticket_id, action, note, created_by, created_at, created_by_user:users(id, display_name, email)";
 
-export const POS_TICKET_WITH_RELATIONS_SELECT = `${POS_TICKET_SELECT}, audit_logs:pos_ticket_audit_logs(${POS_TICKET_AUDIT_LOG_SELECT}), customer:customers(id, name, phone, email), payments:pos_payments(${POS_PAYMENT_SELECT}), ticket_items:pos_ticket_items(${POS_TICKET_ITEM_SELECT}, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date, created_at))`;
+export const POS_TICKET_WITH_RELATIONS_SELECT = `${POS_TICKET_SELECT}, audit_logs:pos_ticket_audit_logs(${POS_TICKET_AUDIT_LOG_SELECT}), customer:customers(id, name, phone, email), payments:pos_payments(${POS_PAYMENT_SELECT}), ticket_items:pos_ticket_items(${POS_TICKET_ITEM_SELECT}, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name, job_title), performed_staff:staff!pos_ticket_items_performed_by_staff_id_fkey(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date, created_at))`;
 
 const POS_TICKET_STAFF_EARNING_SELECT =
   "id, organization_id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at";
@@ -62,6 +63,13 @@ type PosTicketAdjustmentRow = {
   ticket_id: string;
 };
 
+type SourceBookingRow = {
+  end_at: string;
+  id: string;
+  start_at: string;
+  status: BookingStatus;
+};
+
 const DAILY_WORK_LOG_BIG_TURN_THRESHOLD = 25;
 
 export const POS_TICKET_PERMISSIONS = {
@@ -71,7 +79,7 @@ export const POS_TICKET_PERMISSIONS = {
 } as const;
 
 export const POS_TICKET_CUSTOMER_OPTION_SELECT =
-  "id, location_id, name, phone, email, notes, status, created_at, updated_at";
+  "id, location_id, customer_user_id, name, phone, email, notes, staff_notes, internal_notes, source, status, created_by_user_id, updated_by_user_id, created_at, updated_at";
 
 export const POS_TICKET_SERVICE_OPTION_SELECT =
   "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, created_at, updated_at";
@@ -314,6 +322,54 @@ async function attachAdjustmentsToTickets(input: {
   return input.tickets.map((ticket) => ({
     ...ticket,
     adjustments: adjustmentsByTicketId.get(ticket.id) ?? [],
+  }));
+}
+
+async function attachSourceBookingsToTickets(input: {
+  salonId: string;
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+  tickets: PosTicketWithRelations[];
+}) {
+  const bookingIds = Array.from(
+    new Set(
+      input.tickets
+        .map((ticket) => ticket.source_booking_id)
+        .filter((bookingId): bookingId is string => Boolean(bookingId)),
+    ),
+  );
+
+  if (bookingIds.length === 0) {
+    return input.tickets.map((ticket) => ({ ...ticket, source_booking: null }));
+  }
+
+  const { data, error } = await input.supabase
+    .from("bookings")
+    .select("id, start_at, end_at, status")
+    .eq("salon_id", input.salonId)
+    .in("id", bookingIds)
+    .returns<SourceBookingRow[]>();
+
+  if (error) {
+    console.error("Supabase load POS source bookings failed", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      bookingIds,
+      salonId: input.salonId,
+    });
+    throw new Error(error.message);
+  }
+
+  const bookingsById = new Map((data ?? []).map((booking) => [booking.id, booking]));
+
+  return input.tickets.map((ticket) => ({
+    ...ticket,
+    source_booking: ticket.source_booking_id
+      ? (bookingsById.get(ticket.source_booking_id) ?? null)
+      : null,
   }));
 }
 
@@ -577,8 +633,13 @@ export async function getCurrentSalonPosTickets(filters: PosTicketListFilters = 
     supabase,
     tickets: ticketsWithEarnings,
   });
+  const ticketsWithSourceBookings = await attachSourceBookingsToTickets({
+    salonId: salon.id,
+    supabase,
+    tickets,
+  });
 
-  return { context, tickets };
+  return { context, tickets: ticketsWithSourceBookings };
 }
 
 export async function getCurrentSalonPosTicket(ticketId: string) {
@@ -645,8 +706,13 @@ export async function getCurrentSalonPosTicket(ticketId: string) {
     supabase,
     tickets: [ticketWithEarnings],
   });
+  const [ticketWithSourceBooking] = await attachSourceBookingsToTickets({
+    salonId: salon.id,
+    supabase,
+    tickets: [ticket],
+  });
 
-  return { context, ticket };
+  return { context, ticket: ticketWithSourceBooking };
 }
 
 export async function getCurrentSalonPosTicketOptions(

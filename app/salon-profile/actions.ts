@@ -1,11 +1,14 @@
 "use server";
 
 import {
+  canCreateSalonProfileContent,
   createCurrentSalonProfileLook,
   createCurrentSalonProfileSocialPost,
   createCurrentSalonProfileUpdate,
   createPublicSalonProfileBookingRequest,
   createPublicSalonProfileComment,
+  createPublicSalonProfileReview,
+  createPublicSalonProfileReviewReply,
   deleteCurrentSalonProfileMedia,
   deleteCurrentSalonProfileLook,
   getSalonProfileHref,
@@ -18,12 +21,19 @@ import {
   updateCurrentSalonProfileIdentityMedia,
   SALON_PROFILE_PERMISSIONS,
 } from "@/lib/salon-profile";
-import { getCurrentBusinessContext, isSalonManageContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  isSalonManageContext,
+  isSalonStaffContext,
+} from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
 import {
   SALON_PROFILE_MEDIA_BUCKET,
+  buildSalonProfileMediaPath,
+  type SalonProfileMediaKind,
 } from "@/lib/salon-profile-media";
 import {
+  createAuthenticatedSupabaseServerClient,
   getAccessTokenFromRequest,
   getSupabaseConfig,
 } from "@/lib/supabase/server";
@@ -52,6 +62,7 @@ export type SalonProfileUploadSession = {
   accessToken: string;
   anonKey: string;
   bucket: string;
+  path: string;
   salonId: string;
   supabaseUrl: string;
 };
@@ -160,6 +171,7 @@ function revalidateSalonProfile(salonId?: string | null) {
 
 export async function getSalonProfileMediaUploadSessionAction(
   intent: MediaUploadIntent,
+  kind: Extract<SalonProfileMediaKind, "cover" | "logo" | "look" | "update">,
 ): Promise<SalonProfileUploadSession> {
   const [context, accessToken] = await Promise.all([
     getCurrentBusinessContext(),
@@ -171,24 +183,73 @@ export async function getSalonProfileMediaUploadSessionAction(
     throw new Error("Sign in before uploading salon media.");
   }
 
-  if (!isSalonManageContext(context) || !context.currentSalon) {
+  const isSalonWorkspace =
+    (isSalonManageContext(context) || isSalonStaffContext(context)) &&
+    context.currentOrganization &&
+    context.currentSalon;
+  const organization = context.currentOrganization;
+  const salon = context.currentSalon;
+
+  if (!isSalonWorkspace || !organization || !salon) {
     throw new Error("Choose a salon workspace before uploading media.");
   }
 
-  const requiredPermission =
+  const canUpload =
     intent === "identity"
-      ? SALON_PROFILE_PERMISSIONS.manage
-      : SALON_PROFILE_PERMISSIONS.contentManage;
+      ? isSalonManageContext(context) &&
+        (await hasPermission(SALON_PROFILE_PERMISSIONS.manage, context))
+      : await canCreateSalonProfileContent(context);
 
-  if (!(await hasPermission(requiredPermission, context))) {
+  if (!canUpload) {
     throw new Error("You do not have permission to upload this media.");
+  }
+
+  if (
+    (intent === "identity" && kind !== "cover" && kind !== "logo") ||
+    (intent === "content" && kind !== "look" && kind !== "update")
+  ) {
+    throw new Error("Upload kind does not match this Salon Profile intent.");
+  }
+
+  const path = buildSalonProfileMediaPath({
+    kind,
+    salonId: salon.id,
+  });
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  const { error } = await supabase.from("salon_profile_media_assets").insert({
+    bucket: SALON_PROFILE_MEDIA_BUCKET,
+    object_path: path,
+    organization_id: organization.id,
+    purpose: kind,
+    salon_id: salon.id,
+    status: "pending",
+    upload_intent: intent,
+    uploaded_by_user_id: context.user.id,
+  });
+
+  if (error) {
+    console.error("Supabase reserve salon profile media failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      salonId: salon.id,
+      userId: context.user.id,
+    });
+    throw new Error(error.message);
   }
 
   return {
     accessToken,
     anonKey: config.supabaseAnonKey,
     bucket: SALON_PROFILE_MEDIA_BUCKET,
-    salonId: context.currentSalon.id,
+    path,
+    salonId: salon.id,
     supabaseUrl: config.supabaseUrl,
   };
 }
@@ -310,11 +371,14 @@ export async function createSalonProfileUpdateAction(formData: FormData) {
 export async function createSalonProfileSocialPostAction(input: {
   caption: string | null;
   contentType?: "auto" | "look" | "opening" | "update";
+  durationMinutes?: number | null;
   imagePath: string | null;
+  mood?: string | null;
   salonId: string;
   serviceId?: string | null;
   staffId?: string | null;
   startsAt?: string | null;
+  startingPrice?: number | null;
   title?: string | null;
 }): Promise<MutationResult> {
   try {
@@ -503,6 +567,44 @@ export async function createSalonProfileCommentAction(input: {
     return {
       error:
         error instanceof Error ? error.message : "Comment could not be posted.",
+    };
+  }
+}
+
+export async function createSalonProfileReviewAction(input: {
+  body: string;
+  rating: number;
+  salonId: string;
+  title?: string | null;
+  verifiedBookingId?: string | null;
+}): Promise<MutationResult> {
+  try {
+    await createPublicSalonProfileReview(input);
+    revalidateSalonProfile(input.salonId);
+    return { error: null };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Review could not be posted.",
+    };
+  }
+}
+
+export async function createSalonProfileReviewReplyAction(input: {
+  body: string;
+  reviewId: string;
+  salonId: string;
+}): Promise<MutationResult> {
+  try {
+    await createPublicSalonProfileReviewReply(input);
+    revalidateSalonProfile(input.salonId);
+    return { error: null };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Review reply could not be posted.",
     };
   }
 }

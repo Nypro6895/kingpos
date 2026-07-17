@@ -1,6 +1,9 @@
 "use server";
 
-import { createService as createServiceRecord } from "@/lib/services";
+import {
+  createService as createServiceRecord,
+  saveServiceAddOns,
+} from "@/lib/services";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -62,5 +65,31 @@ export async function createService(formData: FormData) {
 
   revalidatePath("/services");
   revalidatePath("/explore");
+  redirect("/services");
+}
+
+export async function saveServiceAddOnsAction(formData: FormData) {
+  const parentServiceId = readRequiredString(formData, "parent_service_id");
+  const addOnServiceIds = formData
+    .getAll("add_on_service_ids")
+    .filter((value): value is string => typeof value === "string");
+
+  if (!parentServiceId) {
+    redirectWithError("Parent service is required.");
+  }
+
+  try {
+    await saveServiceAddOns({
+      addOnServiceIds,
+      parentServiceId,
+    });
+  } catch (error) {
+    redirectWithError(
+      error instanceof Error ? error.message : "Service add-ons could not be saved.",
+    );
+  }
+
+  revalidatePath("/services");
+  revalidatePath("/bookings");
   redirect("/services");
 }

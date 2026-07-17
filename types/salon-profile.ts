@@ -84,6 +84,10 @@ export type SalonProfileLook = {
   organization_id: string;
   salon_id: string;
   author_user_id: string | null;
+  author_avatar_path: string | null;
+  author_display_name: string | null;
+  author_staff_id: string | null;
+  created_by_user_id: string | null;
   service_id: string | null;
   recommended_staff_id: string | null;
   title: string;
@@ -111,6 +115,10 @@ export type SalonProfileUpdate = {
   organization_id: string;
   salon_id: string;
   author_user_id: string | null;
+  author_avatar_path: string | null;
+  author_display_name: string | null;
+  author_staff_id: string | null;
+  created_by_user_id: string | null;
   service_id: string | null;
   staff_id: string | null;
   update_type: SalonProfileUpdateType;
@@ -165,12 +173,20 @@ export type PublicSalonProfileService = {
 };
 
 export type PublicSalonProfileStaff = {
+  avatarUrl: string | null;
+  bio: string | null;
   displayName: string;
   id: string;
   jobTitle: string | null;
+  onlineBookingEnabled: boolean;
+  portfolioCount: number;
+  specialties: string[];
 };
 
 export type PublicSalonProfileLook = {
+  authorAvatarUrl: string | null;
+  authorDisplayName: string;
+  authorStaffId: string | null;
   badge: string | null;
   bookingNote: string | null;
   caption: string | null;
@@ -190,11 +206,15 @@ export type PublicSalonProfileLook = {
   serviceId: string | null;
   serviceName: string | null;
   startingPrice: number | null;
+  hashtags: string[];
   title: string;
   whyLoveIt: string | null;
 };
 
 export type PublicSalonProfileUpdate = {
+  authorAvatarUrl: string | null;
+  authorDisplayName: string;
+  authorStaffId: string | null;
   caption: string | null;
   commentCount: number;
   ctaLabel: string | null;
@@ -206,6 +226,7 @@ export type PublicSalonProfileUpdate = {
   serviceName: string | null;
   staffId: string | null;
   staffName: string | null;
+  hashtags: string[];
   startsAt: string | null;
   summary: string | null;
   title: string;
@@ -226,9 +247,36 @@ export type PublicSalonProfileComment = {
   updateId: string | null;
 };
 
+export type PublicSalonProfileReviewSummary = {
+  averageRating: number | null;
+  ratingCounts: Record<1 | 2 | 3 | 4 | 5, number>;
+  reviewCount: number;
+  verifiedCount: number;
+};
+
+export type PublicSalonProfileReview = {
+  authorDisplayName: string;
+  authorUserId: string;
+  body: string;
+  createdAt: string;
+  editedAt: string | null;
+  id: string;
+  rating: number;
+  replyBody: string | null;
+  replyCreatedAt: string | null;
+  replyId: string | null;
+  salonId: string;
+  title: string | null;
+  updatedAt: string;
+  verificationStatus: "unverified" | "verified";
+  verifiedBookingId: string | null;
+};
+
 export type ProfileFeedItem =
   | {
       authorName: string;
+      authorAvatarUrl: string | null;
+      authorStaffId: string | null;
       bookingLookId: string;
       caption: string | null;
       commentCount: number;
@@ -247,10 +295,13 @@ export type ProfileFeedItem =
       serviceId: string | null;
       serviceName: string | null;
       startingPrice: number | null;
+      hashtags: string[];
       title: string;
     }
   | {
       authorName: string;
+      authorAvatarUrl: string | null;
+      authorStaffId: string | null;
       bookingLookId: null;
       caption: string | null;
       commentCount: number;
@@ -264,6 +315,7 @@ export type ProfileFeedItem =
       serviceName: string | null;
       staffId: string | null;
       staffName: string | null;
+      hashtags: string[];
       startsAt: string | null;
       title: string;
       updateType: SalonProfileUpdateType;
@@ -300,6 +352,8 @@ export type PublicSalonProfileData = {
   feed: ProfileFeedItem[];
   looks: PublicSalonProfileLook[];
   profile: PublicSalonProfile;
+  reviewSummary: PublicSalonProfileReviewSummary;
+  reviews: PublicSalonProfileReview[];
   services: PublicSalonProfileService[];
   staff: PublicSalonProfileStaff[];
   updates: PublicSalonProfileUpdate[];

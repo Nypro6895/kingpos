@@ -1,0 +1,99 @@
+{
+  "generatedAt": "2026-07-17T03:46:46.096Z",
+  "jobs": [
+    {
+      "current": "owner-diff-current-surface.png",
+      "name": "owner",
+      "reference": "C:\\Users\\giuse\\Downloads\\1.png",
+      "regions": [
+        {
+          "changedPixels": 20293,
+          "height": 200,
+          "meanChannelDelta": 6.32,
+          "name": "header-tabs",
+          "overlay": "owner-region-header-tabs-overlay.png",
+          "percent": 6.3,
+          "heatmap": "owner-region-header-tabs-heatmap.png",
+          "width": 1610
+        },
+        {
+          "changedPixels": 18077,
+          "height": 150,
+          "meanChannelDelta": 6.72,
+          "name": "kpi-row",
+          "overlay": "owner-region-kpi-row-overlay.png",
+          "percent": 7.49,
+          "heatmap": "owner-region-kpi-row-heatmap.png",
+          "width": 1610
+        },
+        {
+          "changedPixels": 10070,
+          "height": 130,
+          "meanChannelDelta": 4.26,
+          "name": "toolbar-status",
+          "overlay": "owner-region-toolbar-status-overlay.png",
+          "percent": 4.81,
+          "heatmap": "owner-region-toolbar-status-heatmap.png",
+          "width": 1610
+        },
+        {
+          "changedPixels": 15193,
+          "height": 200,
+          "meanChannelDelta": 8.39,
+          "name": "appointment-region",
+          "overlay": "owner-region-appointment-region-overlay.png",
+          "percent": 4.72,
+          "heatmap": "owner-region-appointment-region-heatmap.png",
+          "width": 1610
+        }
+      ]
+    },
+    {
+      "current": "gateD-public-services-reference-desktop.png",
+      "name": "public",
+      "reference": "C:\\Users\\giuse\\Downloads\\ccbc95f5-cf30-4b93-92fb-fb05ca505e9e.png",
+      "regions": [
+        {
+          "changedPixels": 6497,
+          "height": 110,
+          "meanChannelDelta": 5.86,
+          "name": "stepper",
+          "overlay": "public-region-stepper-overlay.png",
+          "percent": 3.67,
+          "heatmap": "public-region-stepper-heatmap.png",
+          "width": 1610
+        },
+        {
+          "changedPixels": 231112,
+          "height": 760,
+          "meanChannelDelta": 26.84,
+          "name": "editorial-content-shell",
+          "overlay": "public-region-editorial-content-shell-overlay.png",
+          "percent": 22.2,
+          "heatmap": "public-region-editorial-content-shell-heatmap.png",
+          "width": 1370
+        },
+        {
+          "changedPixels": 41230,
+          "height": 460,
+          "meanChannelDelta": 16.31,
+          "name": "service-cards-addons",
+          "overlay": "public-region-service-cards-addons-overlay.png",
+          "percent": 11.95,
+          "heatmap": "public-region-service-cards-addons-heatmap.png",
+          "width": 750
+        },
+        {
+          "changedPixels": 37303,
+          "height": 615,
+          "meanChannelDelta": 20.63,
+          "name": "sticky-summary",
+          "overlay": "public-region-sticky-summary-overlay.png",
+          "percent": 15.16,
+          "heatmap": "public-region-sticky-summary-heatmap.png",
+          "width": 400
+        }
+      ]
+    }
+  ]
+}

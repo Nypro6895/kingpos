@@ -1,23 +1,35 @@
 "use client";
 
-import { searchExploreWithGpsAction } from "@/app/explore/actions";
+import {
+  loadExploreInspirationAction,
+  loadExploreNearYouAction,
+  searchExploreWithGpsAction,
+} from "@/app/explore/actions";
 import {
   type ExploreHomeContent,
   type ExploreHomeSalon,
+  type ExploreInspirationCursor,
+  type ExploreInspirationItem,
+  type ExploreInspirationPage,
   type ExploreInitialLocation,
   type ExploreLocationSource,
+  type ExploreMapSalon,
   type ExplorePopularService,
   type ExploreSearchResponse,
   type ExploreSearchResult,
 } from "@/types/explore";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
+  useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useTransition,
+  type KeyboardEvent,
   type ReactNode,
 } from "react";
 
@@ -33,6 +45,7 @@ type ExploreClientProps = {
   homeContent: ExploreHomeContent;
   initialLocationSource: ExploreLocationSource;
   initialResponse: ExploreSearchResponse;
+  initialSearchMode: boolean;
   quickActions: ExploreQuickAction[];
   workspaceLocation: ExploreInitialLocation;
 };
@@ -45,7 +58,18 @@ type GpsCoordinates = {
 type GpsStatus = "denied" | "error" | "idle" | "locating" | "searching" | "unsupported";
 
 const SAVED_LOCATION_KEY = "kingpos-explore-manual-location";
-const URL_DEBOUNCE_MS = 420;
+const MAPTILER_BROWSER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim() ?? "";
+const ExploreMap = dynamic(
+  () => import("@/app/explore/explore-map").then((mod) => mod.ExploreMap),
+  {
+    loading: () => (
+      <div className="grid min-h-[22rem] place-items-center rounded-lg border border-zinc-200 bg-zinc-100 text-sm font-medium text-zinc-500">
+        Loading map
+      </div>
+    ),
+    ssr: false,
+  },
+);
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const STATE_NAME_TO_ABBR: Record<string, string> = {
@@ -261,24 +285,6 @@ function gpsActionLabel(status: GpsStatus) {
   }
 }
 
-function hasSearchIntent(input: {
-  category: string;
-  gpsActive: boolean;
-  location: string;
-  locationSource: ExploreLocationSource;
-  query: string;
-}) {
-  const explicitLocation =
-    input.location.trim() && input.locationSource !== "workspace";
-
-  return Boolean(
-    input.query.trim() ||
-      explicitLocation ||
-      cleanCategory(input.category) ||
-      input.gpsActive,
-  );
-}
-
 function buildUrl(input: {
   category: string;
   location: string;
@@ -405,20 +411,74 @@ function cardServiceLabel(salon: ExploreSearchResult) {
 
 function cardDetailLine(salon: ExploreSearchResult) {
   const service = cardServiceLabel(salon);
-  const price = salon.startingPrice ? `From ${formatMoney(salon.startingPrice)}` : null;
+  const price = salon.startingPrice
+    ? `From ${formatMoney(salon.startingPrice)}`
+    : null;
 
   return [service, price].filter(Boolean).join(" / ");
 }
 
+function mapSalonToMapSalon(salon: ExploreHomeSalon): ExploreMapSalon | null {
+  if (
+    typeof salon.latitude !== "number" ||
+    typeof salon.longitude !== "number" ||
+    !Number.isFinite(salon.latitude) ||
+    !Number.isFinite(salon.longitude)
+  ) {
+    return null;
+  }
+
+  return {
+    coverImageUrl: salon.coverImageUrl,
+    distanceMiles: salon.distanceMiles,
+    href:
+      UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
+        ? salonProfileHref(salon.id)
+        : null,
+    id: salon.id,
+    latitude: salon.latitude,
+    locationLabel: formatSalonLocation(salon),
+    longitude: salon.longitude,
+    name: salon.name,
+    serviceLabel: cardDetailLine(salon) || null,
+  };
+}
+
+function reviewCountLabel(count: number) {
+  return `${count} review${count === 1 ? "" : "s"}`;
+}
+
+function formatRating(value: number) {
+  return (Math.round(value * 10) / 10).toFixed(1);
+}
+
+function cardReviewLabel(salon: ExploreSearchResult) {
+  if (salon.averageRating === null || salon.reviewCount <= 0) {
+    return null;
+  }
+
+  return `${formatRating(salon.averageRating)} / 5 (${reviewCountLabel(
+    salon.reviewCount,
+  )})`;
+}
+
+function cardReviewAriaLabel(salon: ExploreSearchResult) {
+  if (salon.averageRating === null || salon.reviewCount <= 0) {
+    return undefined;
+  }
+
+  return `Rated ${formatRating(salon.averageRating)} out of 5 from ${reviewCountLabel(
+    salon.reviewCount,
+  )}`;
+}
+
 function SalonCard({
   featured = false,
-  preload = false,
   rankAriaLabel,
   rankLabel,
   salon,
 }: {
   featured?: boolean;
-  preload?: boolean;
   rankAriaLabel: string;
   rankLabel: string;
   salon: ExploreSearchResult;
@@ -431,6 +491,11 @@ function SalonCard({
   const [imageFailed, setImageFailed] = useState(false);
   const imageUrl = imageFailed ? null : salon.coverImageUrl;
   const detailLine = cardDetailLine(salon);
+  const reviewLabel = cardReviewLabel(salon);
+  const reviewAriaLabel = cardReviewAriaLabel(salon);
+  const availabilityLabel = salon.nextAvailabilityLabel;
+  const bookingHref =
+    salon.bookingEnabled && salon.bookingHref ? salon.bookingHref : null;
   const cardSizeClass = featured
     ? "aspect-[4/5] sm:aspect-[3/2] xl:aspect-[16/10]"
     : "aspect-[4/5]";
@@ -451,9 +516,7 @@ function SalonCard({
           alt={`${salon.name} salon photo`}
           className="object-cover transition duration-300 group-hover:scale-[1.02]"
           fill
-          loading={preload ? undefined : "lazy"}
           onError={() => setImageFailed(true)}
-          preload={preload}
           sizes={imageSizes}
           src={imageUrl}
         />
@@ -507,12 +570,38 @@ function SalonCard({
               {detailLine}
             </p>
           ) : null}
+          {reviewLabel ? (
+            <p
+              aria-label={reviewAriaLabel}
+              className="mt-2 line-clamp-1 text-sm font-semibold text-white"
+            >
+              {reviewLabel}
+            </p>
+          ) : null}
+          {availabilityLabel ? (
+            <p className="mt-1 line-clamp-1 text-xs font-semibold uppercase text-emerald-100">
+              {availabilityLabel}
+            </p>
+          ) : null}
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          {canViewProfile ? (
+          {bookingHref ? (
             <Link
               className="inline-flex min-h-9 items-center rounded-md bg-white px-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              href={bookingHref}
+            >
+              Book
+            </Link>
+          ) : null}
+          {canViewProfile ? (
+            <Link
+              className={[
+                "inline-flex min-h-9 items-center rounded-md px-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                bookingHref
+                  ? "border border-white/30 bg-black/30 text-white hover:bg-black/50"
+                  : "bg-white text-zinc-950 hover:bg-zinc-100",
+              ].join(" ")}
               href={salonProfileHref(salon.id)}
             >
               View salon
@@ -521,7 +610,10 @@ function SalonCard({
           {callHref ? (
             <a
               aria-label={`Call ${salon.name}`}
-              className="inline-flex min-h-9 items-center rounded-md border border-white/30 bg-black/30 px-3 text-sm font-semibold text-white transition hover:bg-black/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className={[
+                "min-h-9 items-center rounded-md border border-white/30 bg-black/30 px-3 text-sm font-semibold text-white transition hover:bg-black/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                bookingHref ? "hidden sm:inline-flex" : "inline-flex",
+              ].join(" ")}
               href={callHref}
             >
               Call
@@ -531,6 +623,61 @@ function SalonCard({
       </div>
     </article>
   );
+}
+
+function inspirationLocation(item: ExploreInspirationItem) {
+  return formatDisplayLocation(
+    [item.salonCity, item.salonState].filter(Boolean).join(", "),
+  );
+}
+
+function inspirationServiceLabel(item: ExploreInspirationItem) {
+  return item.serviceName ?? item.serviceCategory;
+}
+
+function inspirationAspectClass(item: ExploreInspirationItem) {
+  if (item.layoutVariant === "landscape") {
+    return "aspect-[5/4] sm:aspect-[4/3]";
+  }
+
+  if (item.layoutVariant === "square") {
+    return "aspect-square";
+  }
+
+  return "aspect-[4/5]";
+}
+
+function inspirationDateLabel(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
+function getFocusableElements(root: HTMLElement | null) {
+  if (!root) {
+    return [];
+  }
+
+  return Array.from(
+    root.querySelectorAll<HTMLElement>(
+      [
+        "a[href]",
+        "button:not([disabled])",
+        "textarea:not([disabled])",
+        "input:not([disabled])",
+        "select:not([disabled])",
+        "[tabindex]:not([tabindex='-1'])",
+      ].join(","),
+    ),
+  ).filter((element) => !element.hasAttribute("disabled"));
 }
 
 function countLabel(count: number) {
@@ -639,6 +786,15 @@ function searchRankBadge(kind: SearchRankKind, index: number) {
 }
 
 function homeRankBadge(salon: ExploreHomeSalon, index: number) {
+  if (salon.homeSection === "near_you") {
+    const rank = salon.homeRank || index + 1;
+
+    return {
+      ariaLabel: `Near you salon ${rank}`,
+      label: rank === 1 ? "#1 Near you" : `#${rank} Near you`,
+    };
+  }
+
   if (salon.homeSection === "new") {
     return {
       ariaLabel: "New salon on KingPOS",
@@ -689,7 +845,6 @@ function ResultSection({
             >
               <SalonCard
                 featured={featured}
-                preload={index === 0}
                 rankAriaLabel={rank.ariaLabel}
                 rankLabel={rank.label}
                 salon={salon}
@@ -698,6 +853,330 @@ function ResultSection({
           );
         })}
       </div>
+    </section>
+  );
+}
+
+function InspirationCard({
+  item,
+  onOpen,
+}: {
+  item: ExploreInspirationItem;
+  onOpen: (item: ExploreInspirationItem) => void;
+}) {
+  const location = inspirationLocation(item);
+  const service = inspirationServiceLabel(item);
+
+  return (
+    <button
+      aria-label={`Open ${item.salonName} inspiration preview`}
+      className={[
+        "group relative block w-full overflow-hidden rounded-lg bg-zinc-200 text-left shadow-sm ring-1 ring-zinc-200 transition hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
+        inspirationAspectClass(item),
+      ].join(" ")}
+      data-inspiration-card="true"
+      onClick={() => onOpen(item)}
+      type="button"
+    >
+      <Image
+        alt={`${item.salonName} nail inspiration`}
+        className="object-cover transition duration-300 group-hover:scale-[1.02]"
+        fill
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        src={item.imageUrl}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.02),rgba(0,0,0,0.08)_45%,rgba(0,0,0,0.72))]"
+      />
+      <div className="absolute inset-x-0 bottom-0 z-10 p-3 text-white sm:p-4">
+        <p className="line-clamp-1 text-sm font-semibold sm:text-base">
+          {item.salonName}
+        </p>
+        {location ? (
+          <p className="mt-0.5 line-clamp-1 text-xs font-medium text-white/80">
+            {location}
+          </p>
+        ) : null}
+        {service ? (
+          <p className="mt-1 line-clamp-1 text-xs font-semibold text-white">
+            {service}
+          </p>
+        ) : null}
+      </div>
+    </button>
+  );
+}
+
+function InspirationPreview({
+  item,
+  onClose,
+}: {
+  item: ExploreInspirationItem;
+  onClose: () => void;
+}) {
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const location = inspirationLocation(item);
+  const service = inspirationServiceLabel(item);
+  const publishedAt = inspirationDateLabel(item.publishedAt);
+
+  useEffect(() => {
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    function closeOnEscape(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.body.style.overflow = previousOverflow;
+      previousFocusRef.current?.focus();
+    };
+  }, [onClose]);
+
+  function trapFocus(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const focusableElements = getFocusableElements(dialogRef.current);
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (!firstElement || !lastElement) {
+      return;
+    }
+
+    if (event.shiftKey && document.activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
+      return;
+    }
+
+    if (!event.shiftKey && document.activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-end bg-black/70 p-0 sm:place-items-center sm:p-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        aria-labelledby="inspiration-preview-title"
+        aria-modal="true"
+        className="grid max-h-[94dvh] w-full grid-rows-[minmax(0,1fr)_auto] overflow-hidden rounded-t-lg bg-white shadow-2xl sm:max-w-5xl sm:grid-cols-[minmax(0,1.35fr)_minmax(20rem,.65fr)] sm:grid-rows-1 sm:rounded-lg"
+        onKeyDown={trapFocus}
+        ref={dialogRef}
+        role="dialog"
+      >
+        <div className="relative min-h-[42dvh] bg-zinc-100 sm:min-h-[72dvh]">
+          <Image
+            alt={`${item.salonName} nail inspiration preview`}
+            className="object-contain"
+            fill
+            sizes="(max-width: 768px) 100vw, 68vw"
+            src={item.imageUrl}
+          />
+        </div>
+        <div className="grid max-h-[52dvh] min-h-0 content-between gap-5 overflow-y-auto p-5 sm:max-h-none sm:p-6">
+          <div>
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <h2
+                  className="line-clamp-2 text-xl font-semibold text-zinc-950"
+                  id="inspiration-preview-title"
+                >
+                  {item.salonName}
+                </h2>
+                {location ? (
+                  <p className="mt-1 text-sm font-medium text-zinc-500">
+                    {location}
+                  </p>
+                ) : null}
+              </div>
+              <button
+                aria-label="Close preview"
+                className="grid size-9 shrink-0 place-items-center rounded-md border border-zinc-200 text-lg font-semibold text-zinc-700 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                onClick={onClose}
+                ref={closeButtonRef}
+                type="button"
+              >
+                x
+              </button>
+            </div>
+
+            {service ? (
+              <p className="mt-4 text-sm font-semibold text-zinc-950">
+                {service}
+              </p>
+            ) : null}
+            {item.captionExcerpt ? (
+              <p className="mt-3 text-sm leading-6 text-zinc-700">
+                {item.captionExcerpt}
+              </p>
+            ) : null}
+            <div className="mt-4 grid gap-1 text-sm text-zinc-500">
+              {publishedAt ? <p>{publishedAt}</p> : null}
+              {item.authorDisplayName ? (
+                <p>
+                  {item.authorIsAnonymous
+                    ? item.authorDisplayName
+                    : `By ${item.authorDisplayName}`}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {item.salonHref ? (
+              <Link
+                className="inline-flex min-h-10 items-center rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                href={item.salonHref}
+              >
+                View salon
+              </Link>
+            ) : null}
+            {item.phoneHref ? (
+              <a
+                className="inline-flex min-h-10 items-center rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                href={item.phoneHref}
+              >
+                Call
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FreshInspirationSection({
+  initialPage,
+}: {
+  initialPage: ExploreInspirationPage;
+}) {
+  const [items, setItems] = useState(initialPage.items);
+  const [cursor, setCursor] = useState<ExploreInspirationCursor | null>(
+    initialPage.nextCursor,
+  );
+  const [hasMore, setHasMore] = useState(initialPage.hasMore);
+  const [error, setError] = useState(initialPage.error);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [selectedItem, setSelectedItem] =
+    useState<ExploreInspirationItem | null>(null);
+
+  async function loadMore() {
+    if (!cursor || isLoadingMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+    setError(null);
+
+    const nextPage = await loadExploreInspirationAction(cursor);
+
+    if (nextPage.error) {
+      setError(nextPage.error);
+    } else {
+      setItems((currentItems) => {
+        const seenMediaIds = new Set(
+          currentItems.map((item) => item.mediaId),
+        );
+        const newItems = nextPage.items.filter((item) => {
+          if (seenMediaIds.has(item.mediaId)) {
+            return false;
+          }
+
+          seenMediaIds.add(item.mediaId);
+          return true;
+        });
+
+        return [...currentItems, ...newItems];
+      });
+      setCursor(nextPage.nextCursor);
+      setHasMore(nextPage.hasMore);
+    }
+
+    setIsLoadingMore(false);
+  }
+
+  return (
+    <section className="grid gap-3">
+      <div>
+        <h2 className="text-xl font-semibold text-zinc-950">
+          Fresh inspiration
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-zinc-600">
+          See the latest work shared by salons on KingPOS.
+        </p>
+      </div>
+
+      {error ? (
+        <ExploreNotice
+          title="Fresh inspiration could not be loaded."
+          tone="warning"
+        >
+          Salon search and recommendations are still available.
+        </ExploreNotice>
+      ) : null}
+
+      {items.length > 0 ? (
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 xl:grid-cols-4">
+          {items.map((item) => (
+            <InspirationCard
+              item={item}
+              key={item.mediaId}
+              onOpen={setSelectedItem}
+            />
+          ))}
+        </div>
+      ) : !error ? (
+        <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-5">
+          <p className="text-sm font-medium text-zinc-600">
+            Fresh salon work will appear here as salons share public photos.
+          </p>
+        </div>
+      ) : null}
+
+      {hasMore && cursor ? (
+        <div>
+          <button
+            className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isLoadingMore}
+            onClick={loadMore}
+            type="button"
+          >
+            {isLoadingMore ? "Loading" : "Load more"}
+          </button>
+        </div>
+      ) : null}
+
+      {selectedItem ? (
+        <InspirationPreview
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      ) : null}
     </section>
   );
 }
@@ -733,7 +1212,221 @@ function HomeSalonSection({
             >
               <SalonCard
                 featured={featured}
-                preload={index === 0}
+                rankAriaLabel={rank.ariaLabel}
+                rankLabel={rank.label}
+                salon={salon}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function NearYouHomeSection({
+  results,
+  userCoordinates,
+}: {
+  results: ExploreHomeSalon[];
+  userCoordinates: GpsCoordinates | null;
+}) {
+  const [mapOpen, setMapOpen] = useState(false);
+  const [preferredSelectedSalonId, setPreferredSelectedSalonId] =
+    useState<string | null>(null);
+  const cardRefs = useRef(new Map<string, HTMLDivElement>());
+  const mapTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const mobileMapDialogRef = useRef<HTMLDivElement | null>(null);
+  const mobileMapCloseRef = useRef<HTMLButtonElement | null>(null);
+  const mapSalons = useMemo(
+    () =>
+      results
+        .map(mapSalonToMapSalon)
+        .filter((salon): salon is ExploreMapSalon => Boolean(salon)),
+    [results],
+  );
+  const mapAvailable = Boolean(MAPTILER_BROWSER_KEY && mapSalons.length > 0);
+  const selectedSalonId = results.some(
+    (salon) => salon.id === preferredSelectedSalonId,
+  )
+    ? preferredSelectedSalonId
+    : results[0]?.id ?? null;
+  const selectedSalon =
+    results.find((salon) => salon.id === selectedSalonId) ?? results[0] ?? null;
+  const selectSalon = useCallback((salonId: string) => {
+    setPreferredSelectedSalonId(salonId);
+  }, []);
+  const closeMap = useCallback(() => {
+    setMapOpen(false);
+    queueMicrotask(() => mapTriggerRef.current?.focus());
+  }, []);
+
+  useEffect(() => {
+    if (!selectedSalonId) {
+      return;
+    }
+
+    cardRefs.current.get(selectedSalonId)?.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+    });
+  }, [selectedSalonId]);
+
+  useEffect(() => {
+    if (!mapOpen || !mapAvailable) {
+      return;
+    }
+
+    if (!window.matchMedia("(min-width: 1024px)").matches) {
+      queueMicrotask(() => mobileMapCloseRef.current?.focus());
+    }
+
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMap();
+        return;
+      }
+
+      if (
+        event.key !== "Tab" ||
+        !mobileMapDialogRef.current ||
+        window.matchMedia("(min-width: 1024px)").matches
+      ) {
+        return;
+      }
+
+      const focusableElements = Array.from(
+        mobileMapDialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => !element.hasAttribute("disabled"));
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (!firstElement || !lastElement) {
+        return;
+      }
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [closeMap, mapAvailable, mapOpen]);
+
+  if (results.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="grid gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-zinc-950">Near you</h2>
+          <p className="mt-1 text-sm font-medium text-zinc-500">
+            Sorted by real distance from your current location.
+          </p>
+        </div>
+        {mapAvailable ? (
+          <button
+            className="w-fit rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+            onClick={() => setMapOpen((current) => !current)}
+            ref={mapTriggerRef}
+            type="button"
+          >
+            {mapOpen ? "Hide map" : "View map"}
+          </button>
+        ) : null}
+      </div>
+
+      {mapOpen && mapAvailable ? (
+        <>
+          <div className="hidden lg:block">
+            <ExploreMap
+              maptilerKey={MAPTILER_BROWSER_KEY}
+              onSelectSalon={selectSalon}
+              salons={mapSalons}
+              selectedSalonId={selectedSalon?.id ?? null}
+              userCoordinates={userCoordinates}
+            />
+          </div>
+          <div
+            aria-labelledby="near-you-map-title"
+            aria-modal="true"
+            className="fixed inset-0 z-50 grid grid-rows-[auto_minmax(0,1fr)] bg-white lg:hidden"
+            ref={mobileMapDialogRef}
+            role="dialog"
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3">
+              <div className="min-w-0">
+                <p
+                  className="text-sm font-semibold text-zinc-950"
+                  id="near-you-map-title"
+                >
+                  Near you map
+                </p>
+                {selectedSalon ? (
+                  <p className="truncate text-xs font-medium text-zinc-500">
+                    {selectedSalon.name}
+                  </p>
+                ) : null}
+              </div>
+              <button
+                className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950"
+                onClick={closeMap}
+                ref={mobileMapCloseRef}
+                type="button"
+              >
+                Close
+              </button>
+            </div>
+            <div className="min-h-0 p-3">
+              <ExploreMap
+                maptilerKey={MAPTILER_BROWSER_KEY}
+                onSelectSalon={selectSalon}
+                salons={mapSalons}
+                selectedSalonId={selectedSalon?.id ?? null}
+                userCoordinates={userCoordinates}
+              />
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {results.map((salon, index) => {
+          const featured = index === 0 && results.length >= 3;
+          const rank = homeRankBadge(salon, index);
+          const selected = salon.id === selectedSalonId;
+
+          return (
+            <div
+              className={[
+                featured ? "md:col-span-2 xl:col-span-2" : "",
+                "rounded-lg transition",
+                selected ? "ring-2 ring-emerald-500 ring-offset-2" : "",
+              ].join(" ")}
+              key={`${salon.homeSection}:${salon.id}`}
+              onFocusCapture={() => setPreferredSelectedSalonId(salon.id)}
+              onMouseEnter={() => setPreferredSelectedSalonId(salon.id)}
+              ref={(node) => {
+                if (node) {
+                  cardRefs.current.set(salon.id, node);
+                } else {
+                  cardRefs.current.delete(salon.id);
+                }
+              }}
+            >
+              <SalonCard
+                featured={featured}
                 rankAriaLabel={rank.ariaLabel}
                 rankLabel={rank.label}
                 salon={salon}
@@ -796,14 +1489,29 @@ function PopularServicesSection({
 
 function ExploreHomeSections({
   content,
+  gpsCoordinates,
+  gpsMessage,
+  nearYouSalons,
   onSelectCategory,
 }: {
   content: ExploreHomeContent;
+  gpsCoordinates: GpsCoordinates | null;
+  gpsMessage: string | null;
+  nearYouSalons: ExploreHomeSalon[];
   onSelectCategory: (category: string) => void;
 }) {
+  const nearYouIds = new Set(nearYouSalons.map((salon) => salon.id));
+  const recommendedSalons = content.recommendedSalons.filter(
+    (salon) => !nearYouIds.has(salon.id),
+  );
+  const newSalons = content.newSalons.filter(
+    (salon) => !nearYouIds.has(salon.id),
+  );
   const hasContent =
-    content.recommendedSalons.length > 0 ||
-    content.newSalons.length > 0 ||
+    content.inspiration.items.length > 0 ||
+    nearYouSalons.length > 0 ||
+    recommendedSalons.length > 0 ||
+    newSalons.length > 0 ||
     content.popularServices.length > 0;
 
   return (
@@ -817,14 +1525,24 @@ function ExploreHomeSections({
         </ExploreNotice>
       ) : null}
 
+      <FreshInspirationSection initialPage={content.inspiration} />
+      {gpsMessage ? (
+        <ExploreNotice title="Location status" tone="warning">
+          {gpsMessage}
+        </ExploreNotice>
+      ) : null}
+      <NearYouHomeSection
+        results={nearYouSalons}
+        userCoordinates={gpsCoordinates}
+      />
       <HomeSalonSection
         description="Based on public salon profiles and active services."
-        results={content.recommendedSalons}
+        results={recommendedSalons}
         title="Recommended for you"
       />
       <HomeSalonSection
         description="Recently published public salons."
-        results={content.newSalons}
+        results={newSalons}
         title="New on KingPOS"
       />
       <PopularServicesSection
@@ -961,6 +1679,7 @@ export function ExploreClient({
   homeContent,
   initialLocationSource,
   initialResponse,
+  initialSearchMode,
   quickActions,
   workspaceLocation,
 }: ExploreClientProps) {
@@ -973,19 +1692,21 @@ export function ExploreClient({
   const [category, setCategory] = useState(
     initialResponse.category || "All",
   );
-  const [page, setPage] = useState(initialResponse.page);
   const [locationSource, setLocationSource] =
     useState<ExploreLocationSource>(initialLocationSource);
   const [gpsCoordinates, setGpsCoordinates] =
     useState<GpsCoordinates | null>(null);
   const [gpsResponse, setGpsResponse] =
     useState<ExploreSearchResponse | null>(null);
+  const [nearYouSalons, setNearYouSalons] = useState<ExploreHomeSalon[]>([]);
   const [gpsStatus, setGpsStatus] = useState<GpsStatus>("idle");
   const [gpsMessage, setGpsMessage] = useState<string | null>(null);
-  const firstUrlSync = useRef(true);
+  const [explicitSearchMode, setExplicitSearchMode] =
+    useState(initialSearchMode);
   const appliedSavedLocation = useRef(false);
 
   const gpsActive = Boolean(gpsResponse && !location.trim());
+  const searchMode = explicitSearchMode || gpsActive;
   const activeResponse: ExploreSearchResponse =
     gpsActive && gpsResponse ? gpsResponse : initialResponse;
   const activeResults = activeResponse.results;
@@ -1000,13 +1721,6 @@ export function ExploreClient({
   const homeCategories = homeContent.popularServices.map(
     (service) => service.category,
   );
-  const searchIntent = hasSearchIntent({
-    category: selectedCategory,
-    gpsActive,
-    location,
-    locationSource,
-    query,
-  });
   const allDistancesMissing = gpsActive
     ? activeResults.length > 0 &&
       activeResults.every((salon) => salon.distanceMiles === null)
@@ -1016,7 +1730,7 @@ export function ExploreClient({
   const noDirectMatches = Boolean(
     query.trim() && activeResponse.groupCounts.bestMatches === 0,
   );
-  const homeMode = !searchIntent;
+  const homeMode = !searchMode;
   const displayLocation = formatDisplayLocation(location);
   const locationStatus = locationStatusLabel({
     displayLocation,
@@ -1033,7 +1747,7 @@ export function ExploreClient({
   });
 
   useEffect(() => {
-    if (appliedSavedLocation.current || hasUrlLocation) {
+    if (appliedSavedLocation.current || hasUrlLocation || initialSearchMode) {
       return;
     }
 
@@ -1051,61 +1765,12 @@ export function ExploreClient({
       return;
     }
 
-    const timeout = window.setTimeout(() => {
+    queueMicrotask(() => {
       setLocation(savedLocation);
       setLocationSource("saved");
-      setPage(1);
       setGpsResponse(null);
-    }, 0);
-
-    return () => window.clearTimeout(timeout);
-  }, [hasUrlLocation, location]);
-
-  useEffect(() => {
-    if (firstUrlSync.current) {
-      firstUrlSync.current = false;
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      const url = buildUrl({
-        category: selectedCategory,
-        location,
-        page,
-        pathname,
-        query,
-        searchParams: new URLSearchParams(searchParams.toString()),
-      });
-      const currentUrl = searchParams.toString()
-        ? `${pathname}?${searchParams.toString()}`
-        : pathname;
-
-      if (
-        location.trim() &&
-        (locationSource === "manual" || locationSource === "saved")
-      ) {
-        window.localStorage.setItem(SAVED_LOCATION_KEY, location.trim());
-      }
-
-      if (url !== currentUrl) {
-        startTransition(() => {
-          router.replace(url, { scroll: false });
-        });
-      }
-    }, URL_DEBOUNCE_MS);
-
-    return () => window.clearTimeout(timeout);
-  }, [
-    location,
-    locationSource,
-    page,
-    pathname,
-    query,
-    router,
-    searchParams,
-    selectedCategory,
-    startTransition,
-  ]);
+    });
+  }, [hasUrlLocation, initialSearchMode, location]);
 
   async function runGpsSearch(
     coordinates: GpsCoordinates,
@@ -1113,6 +1778,7 @@ export function ExploreClient({
   ) {
     setGpsStatus("searching");
     setGpsMessage(null);
+    setNearYouSalons([]);
 
     const response = await searchExploreWithGpsAction({
       category: normalizedCategory,
@@ -1124,12 +1790,37 @@ export function ExploreClient({
     });
 
     setGpsResponse(response);
-    setPage(response.page);
     setLocationSource("gps");
     setGpsStatus("idle");
+    setExplicitSearchMode(true);
 
     if (response.error) {
       setGpsMessage("We couldn't load salons for your current location right now.");
+    }
+  }
+
+  async function runHomeNearYou(coordinates: GpsCoordinates) {
+    setGpsStatus("searching");
+    setGpsMessage(null);
+    setGpsResponse(null);
+
+    const response = await loadExploreNearYouAction({
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
+    });
+
+    setNearYouSalons(response.salons);
+    setLocationSource("gps");
+    setGpsStatus("idle");
+    setExplicitSearchMode(false);
+
+    if (response.error) {
+      setGpsMessage("We couldn't calculate nearby salons right now.");
+      return;
+    }
+
+    if (response.salons.length === 0) {
+      setGpsMessage("Current location is on, but no salons have mapped coordinates yet.");
     }
   }
 
@@ -1142,6 +1833,9 @@ export function ExploreClient({
 
     setGpsStatus("locating");
     setGpsMessage(null);
+    const shouldRunSearch = Boolean(
+      explicitSearchMode || query.trim() || normalizedCategory,
+    );
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -1151,11 +1845,14 @@ export function ExploreClient({
         };
 
         setLocation("");
-        setPage(1);
         setGpsResponse(null);
         setLocationSource("gps");
         setGpsCoordinates(coordinates);
-        void runGpsSearch(coordinates, 1);
+        if (shouldRunSearch) {
+          void runGpsSearch(coordinates, 1);
+        } else {
+          void runHomeNearYou(coordinates);
+        }
       },
       (error) => {
         setGpsCoordinates(null);
@@ -1178,43 +1875,56 @@ export function ExploreClient({
     setQuery("");
     setLocation("");
     setCategory("All");
-    setPage(1);
     setGpsResponse(null);
     setGpsCoordinates(null);
+    setNearYouSalons([]);
     setGpsStatus("idle");
     setGpsMessage(null);
+    setExplicitSearchMode(false);
     setLocationSource(workspaceLocation.label ? "workspace" : "none");
+
+    startTransition(() => {
+      router.push(pathname, { scroll: false });
+    });
   }
 
   function updateQuery(value: string) {
     setQuery(value);
-    setPage(1);
+    setNearYouSalons([]);
   }
 
   function updateLocation(value: string) {
     setLocation(value);
-    setPage(1);
     setGpsResponse(null);
     setGpsCoordinates(null);
+    setNearYouSalons([]);
     setLocationSource(value.trim() ? "manual" : "none");
   }
 
   function selectCategory(value: string) {
-    setCategory(value);
-    setPage(1);
-    setGpsResponse(null);
+    const nextCategory = cleanCategory(value);
+    const nextSearchMode = Boolean(
+      nextCategory || query.trim() || (explicitSearchMode && location.trim()),
+    );
 
-    const url = buildUrl({
-      category: value,
-      location,
-      page: 1,
-      pathname,
-      query,
-      searchParams: new URLSearchParams(searchParams.toString()),
-    });
+    setCategory(value);
+    setGpsResponse(null);
+    setNearYouSalons([]);
+    setExplicitSearchMode(nextSearchMode);
+
+    const url = nextSearchMode
+      ? buildUrl({
+          category: value,
+          location,
+          page: 1,
+          pathname,
+          query,
+          searchParams: new URLSearchParams(searchParams.toString()),
+        })
+      : pathname;
 
     startTransition(() => {
-      router.replace(url, { scroll: false });
+      router.push(url, { scroll: false });
     });
   }
 
@@ -1224,12 +1934,38 @@ export function ExploreClient({
       return;
     }
 
-    setPage(nextPage);
+    setExplicitSearchMode(true);
+
+    const url = buildUrl({
+      category: selectedCategory,
+      location,
+      page: nextPage,
+      pathname,
+      query,
+      searchParams: new URLSearchParams(searchParams.toString()),
+    });
+
+    startTransition(() => {
+      router.push(url, { scroll: false });
+    });
   }
 
   function commitSearch() {
-    setPage(1);
+    const nextSearchMode = Boolean(
+      query.trim() || location.trim() || normalizedCategory,
+    );
+
     setGpsResponse(null);
+    setNearYouSalons([]);
+    setExplicitSearchMode(nextSearchMode);
+
+    if (
+      typeof window !== "undefined" &&
+      location.trim() &&
+      (locationSource === "manual" || locationSource === "saved")
+    ) {
+      window.localStorage.setItem(SAVED_LOCATION_KEY, location.trim());
+    }
 
     const url = buildUrl({
       category: selectedCategory,
@@ -1241,7 +1977,7 @@ export function ExploreClient({
     });
 
     startTransition(() => {
-      router.replace(url, { scroll: false });
+      router.push(url, { scroll: false });
     });
   }
 
@@ -1258,7 +1994,7 @@ export function ExploreClient({
                 Discover salons
               </h1>
             </div>
-            <p className="w-fit rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-700">
+            <p className="text-sm font-semibold text-zinc-500 sm:text-right">
               {locationStatus}
             </p>
           </div>
@@ -1322,6 +2058,9 @@ export function ExploreClient({
       {homeMode ? (
         <ExploreHomeSections
           content={homeContent}
+          gpsCoordinates={gpsCoordinates}
+          gpsMessage={gpsMessage}
+          nearYouSalons={nearYouSalons}
           onSelectCategory={selectCategory}
         />
       ) : (
@@ -1338,7 +2077,7 @@ export function ExploreClient({
                 <p className="mt-1 text-sm text-zinc-600">Updating results.</p>
               ) : null}
             </div>
-            {searchIntent ? (
+            {searchMode ? (
               <button
                 className="w-fit rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
                 onClick={clearFilters}
@@ -1362,7 +2101,7 @@ export function ExploreClient({
           </ExploreNotice>
         ) : null}
 
-        {!searchIntent && !location.trim() && !activeResponse.error ? (
+        {!searchMode && !location.trim() && !activeResponse.error ? (
           <ExploreNotice
             action={
               <button
@@ -1404,7 +2143,7 @@ export function ExploreClient({
               service, city, state, or ZIP.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
-              {searchIntent ? (
+              {searchMode ? (
                 <button
                   className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
                   onClick={clearFilters}

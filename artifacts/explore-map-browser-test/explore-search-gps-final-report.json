@@ -1,0 +1,56 @@
+{
+  "consoleMessages": [],
+  "pageErrors": [],
+  "failedRequests": [
+    {
+      "url": "http://127.0.0.1:3325/explore/salons/5a971d59-79d7-4038-a98e-e6242b242546?_rsc=TLJ23gVnbrIc7BPU",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:3325/explore/salons/a0617011-c457-4ce2-8540-c8b028d2e777?_rsc=-ZlQGheqjI7_E2Fu",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:3325/explore/salons/7f599bc8-a806-4a68-be86-c149c21709e2?_rsc=-ZlQGheqjI7_E2Fu",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:3325/explore/salons/5a971d59-79d7-4038-a98e-e6242b242546?_rsc=-ZlQGheqjI7_E2Fu",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:3325/explore?q=tram&location=Milwaukee%2C+Wisconsin&_rsc=LTWXgrCeb5H2UNkD",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:3325/explore/salons/993d3c5f-97c1-4bf5-9d3f-3f54f4b1c0cf?_rsc=TLJ23gVnbrIc7BPU",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:3325/explore/salons/993d3c5f-97c1-4bf5-9d3f-3f54f4b1c0cf?_rsc=-ZlQGheqjI7_E2Fu",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:3325/explore?q=tram&location=Milwaukee%2C+Wisconsin",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "state": {
+    "url": "http://127.0.0.1:3325/explore?q=tram&location=Milwaukee%2C+Wisconsin",
+    "hasFresh": false,
+    "hasDistanceUnavailableNotice": true,
+    "hasDistanceLabel": false,
+    "headings": [
+      "Discover salons",
+      "3 best matches for \"tram\"",
+      "Distance is not available for these salons yet",
+      "Best matches for \"tram\"",
+      "Tram 2",
+      "Tram 3",
+      "Tram Nails",
+      "Recommended for you",
+      "King Nails",
+      "Keep moving in KingPOS"
+    ]
+  }
+}
