@@ -117,7 +117,8 @@ function activeAssignmentsForStaff(input: {
       assignment.staff_id === input.staffId &&
       assignment.is_active &&
       assignment.online_bookable &&
-      service?.is_active === true
+      service?.is_active === true &&
+      service.online_booking_enabled === true
     );
   });
 }
@@ -278,7 +279,7 @@ export async function getCurrentSalonBookingSetup(
     hasPermission(BOOKING_SETUP_PERMISSIONS.servicesManage, resolvedContext),
   ]);
   const permissions = {
-    canManageAssignments: canManageBooking || canManageStaff || canManageServices,
+    canManageAssignments: canManageServices,
     canManageAvailability: canManageBooking || canManageStaff,
     canManageBooking,
     canManageServices,

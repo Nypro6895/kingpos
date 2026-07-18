@@ -573,6 +573,7 @@ async function validateSubmitLineScope(input: {
     .select("id")
     .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
+    .eq("is_active", true)
     .in("id", serviceIds)
     .returns<Array<{ id: string }>>();
 
@@ -581,7 +582,7 @@ async function validateSubmitLineScope(input: {
   }
 
   if ((serviceRows ?? []).length !== serviceIds.length) {
-    throw new Error("Selected services must belong to the current salon.");
+    throw new Error("Selected services must be active in the current salon.");
   }
 }
 

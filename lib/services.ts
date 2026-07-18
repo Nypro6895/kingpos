@@ -4,13 +4,23 @@ import {
   getCurrentBusinessContext,
   isSalonManageContext,
 } from "@/lib/current-context";
-import { requirePermission } from "@/lib/permissions";
+import { getServiceBookingReadiness } from "@/lib/service-contract";
+import { hasPermission, requirePermission } from "@/lib/permissions";
+import { STAFF_SELECT } from "@/lib/staff";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
-import type { CreateServiceInput, Service } from "@/types/service";
+import type { StaffServiceAssignment } from "@/types/booking";
+import type {
+  Service,
+  ServiceAddOnLink,
+  ServiceBookingStaff,
+  ServiceConfigInput,
+  ServicesWorkspaceData,
+} from "@/types/service";
+import type { Staff } from "@/types/staff";
 
 export const SERVICE_SELECT =
-  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, created_at, updated_at";
+  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 const SERVICE_ADD_ON_LINK_SELECT =
   "id, parent_service_id, add_on_service_id, is_active, display_order";
 
@@ -18,18 +28,6 @@ export const SERVICE_PERMISSIONS = {
   view: "services.view",
   manage: "services.manage",
 } as const;
-
-export type ServiceWithAddOns = Service & {
-  addOnServiceIds: string[];
-};
-
-type ServiceAddOnLinkRow = {
-  add_on_service_id: string;
-  display_order: number;
-  id: string;
-  is_active: boolean;
-  parent_service_id: string;
-};
 
 function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
@@ -50,81 +48,133 @@ function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
   };
 }
 
-export async function getCurrentSalonServices() {
-  const context = await getCurrentBusinessContext();
+export async function getCurrentSalonServicesWorkspace(
+  context?: CurrentBusinessContext,
+): Promise<ServicesWorkspaceData> {
+  const resolvedContext = context ?? (await getCurrentBusinessContext());
 
-  if (!context.user) {
-    return { context, services: [] };
+  if (!resolvedContext.user) {
+    throw new Error("Sign in before viewing services.");
   }
 
-  await requirePermission(SERVICE_PERMISSIONS.view, context);
+  await requirePermission(SERVICE_PERMISSIONS.view, resolvedContext);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { organization, salon } =
+    requireCurrentOrganizationAndSalon(resolvedContext);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
     throw new Error("Supabase environment variables are missing.");
   }
 
-  const { data, error } = await supabase
-    .from("services")
-    .select(SERVICE_SELECT)
-    .eq("organization_id", organization.id)
-    .eq("salon_id", salon.id)
-    .order("created_at", { ascending: false })
-    .returns<Service[]>();
+  const [servicesResult, linksResult, assignmentsResult, staffResult, canManage] =
+    await Promise.all([
+      supabase
+        .from("services")
+        .select(SERVICE_SELECT)
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id)
+        .order("category", { ascending: true })
+        .order("name", { ascending: true })
+        .returns<Service[]>(),
+      supabase
+        .from("service_add_on_links")
+        .select(SERVICE_ADD_ON_LINK_SELECT)
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id)
+        .order("display_order", { ascending: true })
+        .returns<ServiceAddOnLink[]>(),
+      supabase
+        .from("staff_service_assignments")
+        .select("*")
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id)
+        .returns<StaffServiceAssignment[]>(),
+      supabase
+        .from("staff")
+        .select(STAFF_SELECT)
+        .eq("organization_id", organization.id)
+        .eq("salon_id", salon.id)
+        .order("display_name", { ascending: true })
+        .returns<Staff[]>(),
+      hasPermission(SERVICE_PERMISSIONS.manage, resolvedContext),
+    ]);
+  const firstError =
+    servicesResult.error ??
+    linksResult.error ??
+    assignmentsResult.error ??
+    staffResult.error;
 
-  if (error) {
-    console.error("Supabase load services failed", {
-      code: error.code,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      salonId: salon.id,
+  if (firstError) {
+    console.error("Supabase load services workspace failed", {
+      code: firstError.code,
+      details: firstError.details,
+      hint: firstError.hint,
+      message: firstError.message,
       organizationId: organization.id,
-      userId: context.user.id,
+      salonId: salon.id,
+      userId: resolvedContext.user.id,
     });
-    throw new Error(error.message);
+    throw new Error(firstError.message);
   }
 
-  const { data: addOnLinks, error: addOnError } = await supabase
-    .from("service_add_on_links")
-    .select(SERVICE_ADD_ON_LINK_SELECT)
-    .eq("organization_id", organization.id)
-    .eq("salon_id", salon.id)
-    .order("display_order", { ascending: true })
-    .returns<ServiceAddOnLinkRow[]>();
-
-  if (addOnError) {
-    console.error("Supabase load service add-ons failed", {
-      code: addOnError.code,
-      message: addOnError.message,
-      details: addOnError.details,
-      hint: addOnError.hint,
-      salonId: salon.id,
-      organizationId: organization.id,
-      userId: context.user.id,
-    });
-    throw new Error(addOnError.message);
-  }
-
-  const activeLinks = (addOnLinks ?? []).filter((link) => link.is_active);
-  const services = (data ?? []).map((service) => ({
+  const rawServices = servicesResult.data ?? [];
+  const addOnLinks = linksResult.data ?? [];
+  const assignments = assignmentsResult.data ?? [];
+  const rawStaff = staffResult.data ?? [];
+  const staff = rawStaff.map(
+    (member): ServiceBookingStaff => ({
+      avatarPath: member.public_profile_photo_path,
+      displayName: member.display_name,
+      id: member.id,
+      isActive: member.is_active,
+      onlineBookingEnabled: member.online_booking_enabled,
+      ownerPublicEnabled: member.owner_public_enabled,
+      publicProfileVisible: member.public_profile_visible,
+      publicReady:
+        member.is_active &&
+        member.online_booking_enabled &&
+        member.owner_public_enabled &&
+        member.public_profile_visible &&
+        member.staff_public_consent_status === "granted",
+    }),
+  );
+  const services = rawServices.map((service) => ({
     ...service,
-    addOnServiceIds: activeLinks
-      .filter((link) => link.parent_service_id === service.id)
+    addOnServiceIds: addOnLinks
+      .filter(
+        (link) => link.parent_service_id === service.id && link.is_active,
+      )
       .sort((left, right) => left.display_order - right.display_order)
       .map((link) => link.add_on_service_id),
-  })) satisfies ServiceWithAddOns[];
+    bookingStaffIds: assignments
+      .filter(
+        (assignment) =>
+          assignment.service_id === service.id &&
+          assignment.is_active &&
+          assignment.online_bookable,
+      )
+      .map((assignment) => assignment.staff_id),
+    readiness: getServiceBookingReadiness({
+      assignments,
+      service,
+      staff: rawStaff,
+    }),
+  }));
 
-  return { context, services };
+  return {
+    addOnLinks,
+    canManage,
+    services,
+    staff,
+  };
 }
 
-export async function createService(input: CreateServiceInput) {
+export async function saveServiceConfigurations(inputs: ServiceConfigInput[]) {
   const context = await getCurrentBusinessContext();
 
   if (!context.user) {
-    throw new Error("You must be logged in to create services.");
+    throw new Error("You must be logged in to manage services.");
   }
 
   await requirePermission(SERVICE_PERMISSIONS.manage, context);
@@ -136,162 +186,65 @@ export async function createService(input: CreateServiceInput) {
     throw new Error("Supabase environment variables are missing.");
   }
 
-  const name = input.name.trim();
-
-  if (!name) {
-    throw new Error("Name is required.");
+  if (inputs.length === 0 || inputs.length > 100) {
+    throw new Error("Save between 1 and 100 service configurations at once.");
   }
 
-  if (input.base_price < 0) {
-    throw new Error("Base Price must be greater than or equal to 0.");
+  const serviceIds = inputs
+    .map((input) => input.serviceId?.trim())
+    .filter((id): id is string => Boolean(id));
+
+  if (new Set(serviceIds).size !== serviceIds.length) {
+    throw new Error("Each service can appear only once in a save batch.");
   }
 
-  if (input.duration_minutes <= 0) {
-    throw new Error("Duration must be greater than 0.");
-  }
-
-  const { data, error } = await supabase
-    .from("services")
-    .insert({
-      organization_id: organization.id,
-      salon_id: salon.id,
-      name,
-      category: input.category,
-      base_price: input.base_price,
-      duration_minutes: input.duration_minutes,
-      description: input.description,
-      is_active: input.is_active ?? true,
-    })
-    .select(SERVICE_SELECT)
-    .single<Service>();
+  const { data, error } = await supabase.rpc("save_service_config_batch", {
+    p_configs: inputs.map((input) => ({
+      add_on_service_ids: input.addOnServiceIds,
+      base_price: input.basePrice,
+      booking_staff_ids: input.bookingStaffIds,
+      category: input.category?.trim() || null,
+      description: input.description?.trim() || null,
+      duration_minutes: input.durationMinutes,
+      is_active: input.isActive,
+      name: input.name.trim(),
+      online_booking_enabled:
+        input.isActive && input.onlineBookingEnabled,
+      ...(input.serviceId ? { service_id: input.serviceId } : {}),
+    })),
+    p_salon_id: salon.id,
+  });
 
   if (error) {
-    console.error("Supabase create service failed", {
+    console.error("Supabase atomic service configuration save failed", {
       code: error.code,
-      message: error.message,
       details: error.details,
       hint: error.hint,
-      salonId: salon.id,
+      message: error.message,
       organizationId: organization.id,
+      salonId: salon.id,
+      serviceIds,
       userId: context.user.id,
     });
     throw new Error(error.message);
   }
 
-  return data;
-}
+  const result =
+    data && typeof data === "object" && !Array.isArray(data)
+      ? (data as Record<string, unknown>)
+      : {};
+  const savedServiceIds = Array.isArray(result.service_ids)
+    ? result.service_ids.filter(
+        (serviceId): serviceId is string => typeof serviceId === "string",
+      )
+    : [];
 
-export async function saveServiceAddOns(input: {
-  addOnServiceIds: string[];
-  parentServiceId: string;
-}) {
-  const context = await getCurrentBusinessContext();
-
-  if (!context.user) {
-    throw new Error("You must be logged in to manage service add-ons.");
+  if (result.ok !== true || savedServiceIds.length !== inputs.length) {
+    throw new Error("The service configuration transaction did not complete.");
   }
 
-  await requirePermission(SERVICE_PERMISSIONS.manage, context);
-
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
-  const supabase = await createAuthenticatedSupabaseServerClient();
-
-  if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
-  }
-
-  const parentServiceId = input.parentServiceId.trim();
-  const addOnServiceIds = [...new Set(input.addOnServiceIds)]
-    .map((id) => id.trim())
-    .filter((id) => id && id !== parentServiceId);
-  const candidateServiceIds = [parentServiceId, ...addOnServiceIds];
-  const { data: services, error: serviceError } = await supabase
-    .from("services")
-    .select("id")
-    .eq("organization_id", organization.id)
-    .eq("salon_id", salon.id)
-    .in("id", candidateServiceIds)
-    .returns<Array<{ id: string }>>();
-
-  if (serviceError) {
-    throw new Error(serviceError.message);
-  }
-
-  const serviceIds = new Set((services ?? []).map((service) => service.id));
-
-  if (!serviceIds.has(parentServiceId)) {
-    throw new Error("Parent service was not found.");
-  }
-
-  const validAddOnIds = addOnServiceIds.filter((id) => serviceIds.has(id));
-
-  const { data: existing, error: existingError } = await supabase
-    .from("service_add_on_links")
-    .select(SERVICE_ADD_ON_LINK_SELECT)
-    .eq("organization_id", organization.id)
-    .eq("salon_id", salon.id)
-    .eq("parent_service_id", parentServiceId)
-    .returns<ServiceAddOnLinkRow[]>();
-
-  if (existingError) {
-    throw new Error(existingError.message);
-  }
-
-  const existingLinks = existing ?? [];
-  const existingByAddOnId = new Map(
-    existingLinks.map((link) => [link.add_on_service_id, link]),
-  );
-  const selected = new Set(validAddOnIds);
-  const linksToDisable = existingLinks.filter(
-    (link) => link.is_active && !selected.has(link.add_on_service_id),
-  );
-
-  if (linksToDisable.length > 0) {
-    const { error } = await supabase
-      .from("service_add_on_links")
-      .update({ is_active: false })
-      .eq("organization_id", organization.id)
-      .eq("salon_id", salon.id)
-      .in(
-        "id",
-        linksToDisable.map((link) => link.id),
-      );
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  for (const [index, addOnServiceId] of validAddOnIds.entries()) {
-    const existingLink = existingByAddOnId.get(addOnServiceId);
-
-    if (existingLink) {
-      const { error } = await supabase
-        .from("service_add_on_links")
-        .update({
-          display_order: index,
-          is_active: true,
-        })
-        .eq("id", existingLink.id)
-        .eq("organization_id", organization.id)
-        .eq("salon_id", salon.id);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-    } else {
-      const { error } = await supabase.from("service_add_on_links").insert({
-        add_on_service_id: addOnServiceId,
-        display_order: index,
-        is_active: true,
-        organization_id: organization.id,
-        parent_service_id: parentServiceId,
-        salon_id: salon.id,
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-    }
-  }
+  return {
+    salonId: salon.id,
+    serviceIds: savedServiceIds,
+  };
 }

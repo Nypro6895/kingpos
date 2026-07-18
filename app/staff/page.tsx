@@ -5,7 +5,6 @@ import {
   reviewStaffSalonApplicationFormAction,
   revokeSalonStaffInviteFormAction,
 } from "@/app/staff/actions";
-import { StaffServicesBookingEditor } from "@/app/booking-setup/booking-setup-editors";
 import {
   getCurrentSalonBookingSetup,
   type BookingSetupData,
@@ -1314,14 +1313,12 @@ function StaffDetailDrawer({
   closeHref,
   member,
   requests,
-  setupMode,
 }: {
   bookingSetup: BookingSetupData;
   canManagePayroll: boolean;
   closeHref: string;
   member: StaffDirectoryMember;
   requests: SalonStaffConnectionRequestWithDetails[];
-  setupMode?: string;
 }) {
   const accountStatus = getAccountStatus(member, requests);
   const bookingStatus = getBookingStatus(
@@ -1446,8 +1443,8 @@ function StaffDetailDrawer({
           label="Shortcuts"
           value={
             <div className="flex flex-wrap gap-2">
-              <ActionButton href={`/staff?staff=${member.id}&setup=booking`}>
-                Booking Setup
+              <ActionButton href="/services">
+                Booking staff
               </ActionButton>
               <ActionButton disabled>POS Setup</ActionButton>
               <ActionButton
@@ -1460,75 +1457,7 @@ function StaffDetailDrawer({
           }
         />
       </DetailSection>
-      {setupMode === "booking" ? (
-        <StaffServicesBookingEditor
-          assignments={bookingSetup.assignments}
-          canManage={bookingSetup.permissions.canManageAssignments}
-          readiness={bookingSetup.readinessByStaffId[member.id]}
-          services={bookingSetup.services}
-          staff={member}
-        />
-      ) : null}
     </SlideOver>
-  );
-}
-
-function BookingSetupStaffSelector({
-  activeFilter,
-  query,
-  readinessByStaffId,
-  staff,
-}: {
-  activeFilter: StaffFilter;
-  query: string;
-  readinessByStaffId: Record<string, StaffBookingReadiness>;
-  staff: StaffDirectoryMember[];
-}) {
-  const candidates = staff
-    .filter((member) => member.is_active)
-    .sort((left, right) => {
-      const leftReady = readinessByStaffId[left.id]?.ready ? 1 : 0;
-      const rightReady = readinessByStaffId[right.id]?.ready ? 1 : 0;
-
-      return leftReady - rightReady || left.display_name.localeCompare(right.display_name);
-    });
-
-  return (
-    <section className="grid gap-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
-      <div>
-        <h2 className="text-base font-semibold text-zinc-950">
-          Select staff for booking setup
-        </h2>
-        <p className="mt-1 text-sm text-amber-900">
-          Staff service assignments are edited from each staff profile.
-        </p>
-      </div>
-      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-        {candidates.map((member) => {
-          const readiness = readinessByStaffId[member.id];
-
-          return (
-            <Link
-              className="rounded-md border border-amber-200 bg-white p-3 hover:border-zinc-950"
-              href={getStaffHref({
-                filter: activeFilter,
-                query,
-                staffId: member.id,
-              }).concat("&setup=booking")}
-              key={member.id}
-            >
-              <p className="font-semibold text-zinc-950">{member.display_name}</p>
-              <p className="mt-1 text-sm text-zinc-600">
-                {readiness?.ready
-                  ? "Ready"
-                  : readiness?.reasons.map((reason) => reason.label).join(", ") ||
-                    "Needs setup"}
-              </p>
-            </Link>
-          );
-        })}
-      </div>
-    </section>
   );
 }
 
@@ -1945,7 +1874,6 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   const inviteRequestId = stringParam(params.invite_request);
   const inviteToken = stringParam(params.invite_token);
   const query = stringParam(params.q)?.trim() ?? "";
-  const setupMode = stringParam(params.setup);
   const activeFilter = getStaffFilter(stringParam(params.filter));
   const selectedStaffId = stringParam(params.staff);
   const showAddStaff =
@@ -2047,16 +1975,6 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
             <StaffSearch activeFilter={activeFilter} query={query} />
             <StaffFilterTabs activeFilter={activeFilter} query={query} />
           </div>
-          {setupMode === "services" && !selectedStaff ? (
-            <div className="mt-4">
-              <BookingSetupStaffSelector
-                activeFilter={activeFilter}
-                query={query}
-                readinessByStaffId={bookingSetup.readinessByStaffId}
-                staff={directory.staff}
-              />
-            </div>
-          ) : null}
           <StaffDirectoryTable
             activeFilter={activeFilter}
             canManagePayroll={canManagePayroll}
@@ -2099,7 +2017,6 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
           closeHref={closeHref}
           member={selectedStaff}
           requests={connectionRequests}
-          setupMode={setupMode}
         />
       ) : null}
     </>

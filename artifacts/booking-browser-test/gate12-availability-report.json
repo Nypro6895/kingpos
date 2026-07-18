@@ -1,0 +1,62 @@
+{
+  "baseUrl": "http://127.0.0.1:3363",
+  "browser": "launched",
+  "cleanup": "fixtures deactivated and booking settings restored",
+  "consoleErrors": [],
+  "fixtureIds": {
+    "offlineStaffId": "1b9d0ad7-0dfd-46c0-ab68-87b5e7a5c6eb",
+    "onlineStaffId": "f6da28d3-b7a1-4d30-9993-cec1dfc51bc4",
+    "serviceId": "d05452cb-60c3-4fb8-961a-1e6579785e7d"
+  },
+  "leaveWarning": "Discard unsaved availability changes?",
+  "marker": "Gate12 20260717044649",
+  "networkErrors": [],
+  "ok": true,
+  "pageErrors": [],
+  "screenshots": [
+    "gate12-availability-desktop.png",
+    "gate12-availability-mobile.png",
+    "gate12-public-booking-slots.png"
+  ],
+  "slotVerification": {
+    "afternoon_slot_available": true,
+    "break_rejected": false,
+    "time_off_rejected": false,
+    "work_slot_available": true
+  },
+  "steps": [
+    {
+      "gate1ServicesTab": "http://127.0.0.1:3363/bookings?date=2026-07-20&tab=services"
+    },
+    {
+      "tabHistory": "services and availability preserve URL state"
+    },
+    {
+      "copyAndSave": "Monday copied to Tuesday and Wednesday, persisted after reload"
+    },
+    {
+      "cancelDiscard": "weekly edit discarded without save"
+    },
+    {
+      "overlapValidation": "server validation surfaced in UI"
+    },
+    {
+      "leaveWarning": "Discard unsaved availability changes?"
+    },
+    {
+      "timeOffAdd": "date range added with existing action"
+    },
+    {
+      "emptyAvailability": "offline fixture shows empty state"
+    },
+    {
+      "mobile": "availability captured at 390px"
+    },
+    {
+      "publicBooking": "service, professional, and available slot rendered"
+    },
+    {
+      "ownerAppointment": "manual appointment wizard still reaches staff selection"
+    }
+  ]
+}

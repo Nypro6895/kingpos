@@ -42,7 +42,7 @@ export const BOOKING_CUSTOMER_OPTION_SELECT =
 export const BOOKING_STAFF_OPTION_SELECT =
   "id, organization_id, salon_id, user_id, account_user_id, display_name, first_name, last_name, phone, email, job_title, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 export const BOOKING_SERVICE_OPTION_SELECT =
-  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, created_at, updated_at";
+  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 export const BOOKING_SETTINGS_SELECT =
   "id, organization_id, salon_id, booking_enabled, online_booking_visible, confirmation_mode, minimum_lead_time_minutes, maximum_advance_window_days, slot_interval_minutes, default_cleanup_buffer_minutes, same_day_booking_enabled, cancellation_window_minutes, late_cancellation_policy, no_show_policy, any_professional_enabled, split_staff_appointment_enabled, guest_booking_enabled, timezone_iana, ticket_creation_mode, payment_required_enabled, deposit_required_enabled, deposit_policy, created_at, updated_at";
 export const BOOKING_LINE_SELECT =
@@ -150,6 +150,7 @@ export type BookingWorkspaceConfigWarning = {
   code:
     | "missing_active_services"
     | "missing_availability"
+    | "missing_online_services"
     | "missing_staff_assignments";
   message: string;
 };
@@ -724,10 +725,33 @@ function buildWarnings(input: {
     });
   }
 
-  if (input.assignments.filter((assignment) => assignment.is_active).length === 0) {
+  const onlineServiceIds = new Set(
+    input.services
+      .filter(
+        (service) =>
+          service.is_active && service.online_booking_enabled,
+      )
+      .map((service) => service.id),
+  );
+
+  if (onlineServiceIds.size === 0) {
+    warnings.push({
+      code: "missing_online_services",
+      message: "No active services are enabled for online booking.",
+    });
+  }
+
+  if (
+    input.assignments.filter(
+      (assignment) =>
+        assignment.is_active &&
+        assignment.online_bookable &&
+        onlineServiceIds.has(assignment.service_id),
+    ).length === 0
+  ) {
     warnings.push({
       code: "missing_staff_assignments",
-      message: "No active staff-service assignments are configured.",
+      message: "No booking staff are selected for an online service.",
     });
   }
 
@@ -841,6 +865,16 @@ export async function getCurrentSalonBookingWorkspace(
   const timezone = settings.timezone_iana || "America/Chicago";
   const filters = buildFilters(rawSearchParams, timezone);
   const range = buildRange(filters, timezone);
+  const timeBlockWindow =
+    filters.tab === "availability"
+      ? {
+          endIso: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(),
+          startIso: new Date().toISOString(),
+        }
+      : {
+          endIso: range.endIso,
+          startIso: range.startIso,
+        };
 
   const bookingsQuery = supabase
     .from("bookings")
@@ -898,8 +932,9 @@ export async function getCurrentSalonBookingWorkspace(
     .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("is_active", true)
-    .lt("starts_at", range.endIso)
-    .gt("ends_at", range.startIso)
+    .lt("starts_at", timeBlockWindow.endIso)
+    .gt("ends_at", timeBlockWindow.startIso)
+    .order("starts_at", { ascending: true })
     .returns<StaffTimeBlock[]>();
   const requestsQuery = supabase
     .from("salon_profile_booking_requests")

@@ -191,7 +191,7 @@ function SetupSummary({ data }: { data: StaffAppointmentsData }) {
       ) : null}
       <div className="grid gap-3 text-sm">
         <div>
-          <p className="font-semibold text-zinc-950">Assigned services</p>
+          <p className="font-semibold text-zinc-950">Online booking services</p>
           <p className="mt-1 text-zinc-600">
             {data.assignedServices.length > 0
               ? data.assignedServices

@@ -14,7 +14,7 @@ import type {
 import type { Service } from "@/types/service";
 
 const SERVICE_SELECT =
-  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, created_at, updated_at";
+  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 
 function uniqueValues(values: (string | null | undefined)[]) {
   return [...new Set(values.filter((value): value is string => Boolean(value)))];

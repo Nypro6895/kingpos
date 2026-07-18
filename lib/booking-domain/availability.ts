@@ -8,11 +8,6 @@ import {
   type BookingDomainResult,
 } from "@/lib/booking-domain/errors";
 
-type StaffServiceAssignmentRow = {
-  id: string;
-  online_bookable: boolean;
-};
-
 export type StaffBookingConflict = {
   booking_id: string;
   booking_line_id: string;
@@ -20,51 +15,6 @@ export type StaffBookingConflict = {
   scheduled_start_at: string;
   status: string;
 };
-
-export async function validateStaffServiceEligibility(input: {
-  onlineOnly?: boolean;
-  organizationId: string;
-  salonId: string;
-  serviceId: string;
-  staffId: string;
-  supabase: SupabaseClient;
-}): Promise<BookingDomainResult<{ assignmentId: string }>> {
-  try {
-    const { data, error } = await input.supabase
-      .from("staff_service_assignments")
-      .select("id, online_bookable")
-      .eq("organization_id", input.organizationId)
-      .eq("salon_id", input.salonId)
-      .eq("staff_id", input.staffId)
-      .eq("service_id", input.serviceId)
-      .eq("is_active", true)
-      .maybeSingle<StaffServiceAssignmentRow>();
-
-    if (error) {
-      throw new BookingDomainError("database_error", error.message);
-    }
-
-    if (!data) {
-      throw new BookingDomainError(
-        "relationship_invalid",
-        "Staff is not assigned to perform this service.",
-        { field: "staffId" },
-      );
-    }
-
-    if (input.onlineOnly && !data.online_bookable) {
-      throw new BookingDomainError(
-        "forbidden",
-        "Staff is not online-bookable for this service.",
-        { field: "staffId" },
-      );
-    }
-
-    return bookingOk({ assignmentId: data.id });
-  } catch (error) {
-    return bookingFailureFromUnknown(error);
-  }
-}
 
 export async function listStaffBookingConflicts(input: {
   bookingIdToIgnore?: string | null;

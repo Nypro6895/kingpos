@@ -2966,7 +2966,13 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
     const serviceIds = Array.from(
       new Set([
         ...itemUpdates
-          .filter((update) => !update.remove && update.service_id)
+          .filter(
+            (update) =>
+              !update.remove &&
+              update.service_id &&
+              currentItemById.get(update.item_id)?.service_id !==
+                update.service_id,
+          )
           .map((update) => update.service_id as string),
         ...addedItems.map((item) => item.service_id),
       ]),
@@ -2987,6 +2993,7 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
         .select("id")
         .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
+        .eq("is_active", true)
         .in("id", serviceIds)
         .returns<Array<{ id: string }>>();
 
@@ -2995,7 +3002,9 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
       }
 
       if ((serviceRows ?? []).length !== serviceIds.length) {
-        throw new Error("All corrected services must belong to the current salon.");
+        throw new Error(
+          "New or changed correction services must be active in the current salon.",
+        );
       }
     }
 
@@ -3663,7 +3672,13 @@ export async function correctClosedPosTicketInline(formData: FormData) {
     const serviceIds = Array.from(
       new Set([
         ...itemUpdates
-          .filter((update) => !update.remove && update.service_id)
+          .filter(
+            (update) =>
+              !update.remove &&
+              update.service_id &&
+              currentItemById.get(update.item_id)?.service_id !==
+                update.service_id,
+          )
           .map((update) => update.service_id as string),
         ...addedItems.map((item) => item.service_id),
       ]),
@@ -3684,6 +3699,7 @@ export async function correctClosedPosTicketInline(formData: FormData) {
         .select("id")
         .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
+        .eq("is_active", true)
         .in("id", serviceIds)
         .returns<Array<{ id: string }>>();
 
@@ -3692,7 +3708,9 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       }
 
       if ((serviceRows ?? []).length !== serviceIds.length) {
-        throw new Error("All corrected services must belong to the current salon.");
+        throw new Error(
+          "New or changed correction services must be active in the current salon.",
+        );
       }
     }
 

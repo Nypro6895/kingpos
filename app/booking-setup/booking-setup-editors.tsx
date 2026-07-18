@@ -3,8 +3,6 @@
 import {
   cancelStaffTimeBlockAction,
   createStaffTimeBlockAction,
-  saveServiceStaffAssignmentsAction,
-  saveStaffServiceAssignmentsAction,
   saveStaffWeeklyAvailabilityAction,
   type BookingSetupActionResult,
 } from "@/app/booking-setup/actions";
@@ -14,6 +12,7 @@ import {
 } from "@/lib/salon-profile-media";
 import { useRouter } from "next/navigation";
 import {
+  useEffect,
   useMemo,
   useState,
   useTransition,
@@ -21,21 +20,14 @@ import {
 } from "react";
 import type {
   StaffAvailabilityRule,
-  StaffServiceAssignment,
   StaffTimeBlock,
 } from "@/types/booking";
 import type {
   BookingSetupData,
   StaffBookingReadiness,
 } from "@/lib/booking-setup";
-import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
 import "./booking-setup.css";
-
-type AssignmentDraft = {
-  assigned: boolean;
-  onlineBookable: boolean;
-};
 
 type DayDraft = {
   breaks: TimeIntervalDraft[];
@@ -61,11 +53,6 @@ const EMPTY_WEEK: Record<number, DayDraft> = Object.fromEntries(
   DAYS.map((day) => [day.id, { breaks: [], working: [] }]),
 ) as Record<number, DayDraft>;
 
-type DraftState = {
-  key: string;
-  rows: Record<string, AssignmentDraft>;
-};
-
 type WeekState = {
   key: string;
   week: Record<number, DayDraft>;
@@ -73,13 +60,6 @@ type WeekState = {
 
 function classNames(...classes: Array<false | null | string | undefined>) {
   return classes.filter(Boolean).join(" ");
-}
-
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    style: "currency",
-  }).format(value);
 }
 
 function formatDateTime(value: string, timeZone: string) {
@@ -136,22 +116,6 @@ function SetupStaffAvatar({
   );
 }
 
-function uniqueCategories(services: Service[]) {
-  return [
-    ...new Set(
-      services.map((service) => service.category?.trim() || "Uncategorized"),
-    ),
-  ].sort((left, right) => left.localeCompare(right));
-}
-
-function assignmentKey(rows: Record<string, AssignmentDraft>) {
-  return JSON.stringify(
-    Object.entries(rows)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([id, row]) => [id, row.assigned, row.onlineBookable]),
-  );
-}
-
 function Message({ result }: { result: BookingSetupActionResult | null }) {
   if (!result) {
     return null;
@@ -180,62 +144,38 @@ function Message({ result }: { result: BookingSetupActionResult | null }) {
   );
 }
 
-function ReadinessChips({
-  readiness,
-}: {
-  readiness?: StaffBookingReadiness | null;
-}) {
-  if (!readiness) {
-    return null;
-  }
-
-  return (
-    <div className="booking-setup-chip-row">
-      <span
-        className={classNames(
-          "booking-setup-chip",
-          readiness.ready
-            ? "booking-setup-chip--ready"
-            : "booking-setup-chip--warning",
-        )}
-      >
-        {readiness.ready ? "Booking ready" : "Needs setup"}
-      </span>
-      <span className="booking-setup-chip">
-        {readiness.onlineAssignedServiceCount} online services
-      </span>
-      <span className="booking-setup-chip">
-        {readiness.workingRuleCount} working rules
-      </span>
-      {readiness.reasons.map((reason) => (
-        <span
-          className="booking-setup-chip booking-setup-chip--warning"
-          key={reason.code}
-        >
-          {reason.label}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 function StickySaveBar({
   canManage,
   children,
   dirtyCount,
+  hideWhenClean = false,
   isPending,
   onReset,
   onSave,
+  resetLabel = "Cancel",
+  sticky = true,
 }: {
   canManage: boolean;
   children?: ReactNode;
   dirtyCount: number;
+  hideWhenClean?: boolean;
   isPending: boolean;
   onReset: () => void;
   onSave: () => void;
+  resetLabel?: string;
+  sticky?: boolean;
 }) {
+  if (hideWhenClean && dirtyCount === 0) {
+    return null;
+  }
+
   return (
-    <div className="booking-setup-savebar sticky bottom-0 z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div
+      className={classNames(
+        "booking-setup-savebar flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+        sticky && "sticky bottom-0 z-10",
+      )}
+    >
       <div className="text-sm font-semibold text-zinc-700">
         {dirtyCount > 0 ? `${dirtyCount} unsaved changes` : "No unsaved changes"}
       </div>
@@ -248,7 +188,7 @@ function StickySaveBar({
             onClick={onReset}
             type="button"
           >
-            Cancel
+            {resetLabel}
           </button>
           <button
             className="booking-setup-primary-button disabled:opacity-50"
@@ -263,503 +203,6 @@ function StickySaveBar({
         <p className="text-sm text-zinc-600">View-only access.</p>
       )}
     </div>
-  );
-}
-
-function buildServiceDraft(
-  services: Service[],
-  assignments: StaffServiceAssignment[],
-  staffId: string,
-) {
-  return Object.fromEntries(
-    services.map((service) => {
-      const assignment = assignments.find(
-        (item) => item.staff_id === staffId && item.service_id === service.id,
-      );
-
-      return [
-        service.id,
-        {
-          assigned: assignment?.is_active ?? false,
-          onlineBookable: assignment?.online_bookable ?? false,
-        },
-      ];
-    }),
-  ) as Record<string, AssignmentDraft>;
-}
-
-function buildStaffDraft(
-  staff: Staff[],
-  assignments: StaffServiceAssignment[],
-  serviceId: string,
-) {
-  return Object.fromEntries(
-    staff.map((member) => {
-      const assignment = assignments.find(
-        (item) => item.staff_id === member.id && item.service_id === serviceId,
-      );
-
-      return [
-        member.id,
-        {
-          assigned: assignment?.is_active ?? false,
-          onlineBookable: assignment?.online_bookable ?? false,
-        },
-      ];
-    }),
-  ) as Record<string, AssignmentDraft>;
-}
-
-export function StaffServicesBookingEditor({
-  assignments,
-  canManage,
-  readiness,
-  services,
-  staff,
-}: {
-  assignments: StaffServiceAssignment[];
-  canManage: boolean;
-  readiness?: StaffBookingReadiness | null;
-  services: Service[];
-  staff: Staff;
-}) {
-  const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("all");
-  const [result, setResult] = useState<BookingSetupActionResult | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const initialDraft = useMemo(
-    () => buildServiceDraft(services, assignments, staff.id),
-    [assignments, services, staff.id],
-  );
-  const initialKey = assignmentKey(initialDraft);
-  const [draftState, setDraftState] = useState<DraftState>(() => ({
-    key: initialKey,
-    rows: initialDraft,
-  }));
-  const draft = draftState.key === initialKey ? draftState.rows : initialDraft;
-  const dirtyCount = Object.keys(draft).filter(
-    (serviceId) =>
-      draft[serviceId]?.assigned !== initialDraft[serviceId]?.assigned ||
-      draft[serviceId]?.onlineBookable !== initialDraft[serviceId]?.onlineBookable,
-  ).length;
-  const categories = uniqueCategories(
-    services.filter(
-      (service) => service.is_active || initialDraft[service.id]?.assigned,
-    ),
-  );
-  const normalizedQuery = query.trim().toLowerCase();
-  const visibleServices = services.filter((service) => {
-    const serviceCategory = service.category?.trim() || "Uncategorized";
-    const row = initialDraft[service.id];
-    const exposeInactive =
-      service.is_active || row?.assigned || normalizedQuery.length > 0;
-    const matchesCategory = category === "all" || serviceCategory === category;
-    const matchesQuery =
-      !normalizedQuery ||
-      [service.name, service.category, service.description]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedQuery);
-
-    return exposeInactive && matchesCategory && matchesQuery;
-  });
-
-  function setDraftRows(
-    updater:
-      | Record<string, AssignmentDraft>
-      | ((current: Record<string, AssignmentDraft>) => Record<string, AssignmentDraft>),
-  ) {
-    setDraftState({
-      key: initialKey,
-      rows: typeof updater === "function" ? updater(draft) : updater,
-    });
-  }
-
-  function update(serviceId: string, next: Partial<AssignmentDraft>) {
-    setDraftRows((current) => {
-      const currentRow = current[serviceId] ?? {
-        assigned: false,
-        onlineBookable: false,
-      };
-      const nextRow = { ...currentRow, ...next };
-
-      if (!nextRow.assigned) {
-        nextRow.onlineBookable = false;
-      }
-
-      return {
-        ...current,
-        [serviceId]: nextRow,
-      };
-    });
-  }
-
-  function save() {
-    setResult(null);
-    startTransition(async () => {
-      const response = await saveStaffServiceAssignmentsAction({
-        rows: services.map((service) => ({
-          assigned: draft[service.id]?.assigned ?? false,
-          onlineBookable: draft[service.id]?.onlineBookable ?? false,
-          serviceId: service.id,
-        })),
-        staffId: staff.id,
-      });
-
-      setResult(response);
-
-      if (response.ok) {
-        router.refresh();
-      }
-    });
-  }
-
-  function bulkActive() {
-    setDraftRows((current) => ({
-      ...current,
-      ...Object.fromEntries(
-        services
-          .filter((service) => service.is_active)
-          .map((service) => [
-            service.id,
-            { assigned: true, onlineBookable: true },
-          ]),
-      ),
-    }));
-  }
-
-  return (
-    <section className="booking-setup-panel" data-booking-setup-surface="staff-services">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div className="booking-setup-profile-head">
-          <SetupStaffAvatar staff={staff} />
-          <div className="min-w-0">
-          <h3 className="text-base font-semibold text-zinc-950">
-            Services & booking
-          </h3>
-          <p className="mt-1 text-sm text-zinc-600">
-            {staff.display_name} / {staff.is_active ? "Active" : "Inactive"}
-          </p>
-          </div>
-        </div>
-        <ReadinessChips readiness={readiness} />
-      </div>
-      <Message result={result} />
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
-        <label className="grid gap-1">
-          <span className="text-xs font-semibold uppercase text-zinc-500">
-            Search services
-          </span>
-          <input
-            className="booking-setup-field"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Name, category"
-            value={query}
-          />
-        </label>
-        <label className="grid gap-1">
-          <span className="text-xs font-semibold uppercase text-zinc-500">
-            Category
-          </span>
-          <select
-            className="booking-setup-field"
-            onChange={(event) => setCategory(event.target.value)}
-            value={category}
-          >
-            <option value="all">All categories</option>
-            {categories.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="booking-setup-table max-h-[58vh] overflow-y-auto">
-        <div className="booking-setup-table-header grid grid-cols-[minmax(0,1fr)_112px_112px] gap-2">
-          <span>Service</span>
-          <span>Assigned</span>
-          <span>Online</span>
-        </div>
-        <div className="divide-y divide-zinc-100">
-          {visibleServices.map((service) => {
-            const row = draft[service.id] ?? {
-              assigned: false,
-              onlineBookable: false,
-            };
-            const disabled = !canManage || !staff.is_active;
-
-            return (
-              <div
-                className={classNames(
-                  "booking-setup-row grid grid-cols-[minmax(0,1fr)_112px_112px] gap-2",
-                  !service.is_active && "booking-setup-row--muted",
-                )}
-                key={service.id}
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-zinc-950">
-                    {service.name}
-                  </p>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    {(service.category || "Uncategorized")} /{" "}
-                    {formatMoney(Number(service.base_price))} /{" "}
-                    {service.duration_minutes} min
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    <span
-                      className={classNames(
-                        "booking-setup-chip",
-                        service.is_active
-                          ? "booking-setup-chip--ready"
-                          : "booking-setup-chip--muted",
-                      )}
-                    >
-                      {service.is_active ? "Active" : "Inactive"}
-                    </span>
-                    {!staff.public_profile_visible ||
-                    !staff.owner_public_enabled ||
-                    staff.staff_public_consent_status !== "granted" ? (
-                      <span className="booking-setup-chip booking-setup-chip--warning">
-                        Public profile needed
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-                <label className="flex items-start justify-center pt-1">
-                  <input
-                    checked={row.assigned}
-                    className="size-5"
-                    disabled={disabled || (!service.is_active && !row.assigned)}
-                    onChange={(event) =>
-                      update(service.id, { assigned: event.target.checked })
-                    }
-                    type="checkbox"
-                  />
-                  <span className="sr-only">Assign {service.name}</span>
-                </label>
-                <label className="flex items-start justify-center pt-1">
-                  <input
-                    checked={row.onlineBookable}
-                    className="size-5"
-                    disabled={disabled || !row.assigned || !service.is_active}
-                    onChange={(event) =>
-                      update(service.id, {
-                        assigned: row.assigned || event.target.checked,
-                        onlineBookable: event.target.checked,
-                      })
-                    }
-                    type="checkbox"
-                  />
-                  <span className="sr-only">
-                    Enable online booking for {service.name}
-                  </span>
-                </label>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <StickySaveBar
-        canManage={canManage}
-        dirtyCount={dirtyCount}
-        isPending={isPending}
-        onReset={() => setDraftRows(initialDraft)}
-        onSave={save}
-      >
-        {canManage ? (
-          <button
-            className="booking-setup-secondary-button w-fit"
-            onClick={bulkActive}
-            type="button"
-          >
-            Bulk select active services
-          </button>
-        ) : null}
-      </StickySaveBar>
-    </section>
-  );
-}
-
-export function ServiceBookableStaffEditor({
-  assignments,
-  canManage,
-  readinessByStaffId,
-  service,
-  staff,
-}: {
-  assignments: StaffServiceAssignment[];
-  canManage: boolean;
-  readinessByStaffId: Record<string, StaffBookingReadiness>;
-  service: Service;
-  staff: Staff[];
-}) {
-  const router = useRouter();
-  const [result, setResult] = useState<BookingSetupActionResult | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const initialDraft = useMemo(
-    () => buildStaffDraft(staff, assignments, service.id),
-    [assignments, service.id, staff],
-  );
-  const initialKey = assignmentKey(initialDraft);
-  const [draftState, setDraftState] = useState<DraftState>(() => ({
-    key: initialKey,
-    rows: initialDraft,
-  }));
-  const draft = draftState.key === initialKey ? draftState.rows : initialDraft;
-  const dirtyCount = Object.keys(draft).filter(
-    (staffId) =>
-      draft[staffId]?.assigned !== initialDraft[staffId]?.assigned ||
-      draft[staffId]?.onlineBookable !== initialDraft[staffId]?.onlineBookable,
-  ).length;
-  const visibleStaff = staff.filter(
-    (member) => member.is_active || initialDraft[member.id]?.assigned,
-  );
-
-  function setDraftRows(
-    updater:
-      | Record<string, AssignmentDraft>
-      | ((current: Record<string, AssignmentDraft>) => Record<string, AssignmentDraft>),
-  ) {
-    setDraftState({
-      key: initialKey,
-      rows: typeof updater === "function" ? updater(draft) : updater,
-    });
-  }
-
-  function update(staffId: string, next: Partial<AssignmentDraft>) {
-    setDraftRows((current) => {
-      const currentRow = current[staffId] ?? {
-        assigned: false,
-        onlineBookable: false,
-      };
-      const nextRow = { ...currentRow, ...next };
-
-      if (!nextRow.assigned) {
-        nextRow.onlineBookable = false;
-      }
-
-      return {
-        ...current,
-        [staffId]: nextRow,
-      };
-    });
-  }
-
-  function save() {
-    setResult(null);
-    startTransition(async () => {
-      const response = await saveServiceStaffAssignmentsAction({
-        rows: staff.map((member) => ({
-          assigned: draft[member.id]?.assigned ?? false,
-          onlineBookable: draft[member.id]?.onlineBookable ?? false,
-          staffId: member.id,
-        })),
-        serviceId: service.id,
-      });
-
-      setResult(response);
-
-      if (response.ok) {
-        router.refresh();
-      }
-    });
-  }
-
-  return (
-    <section className="booking-setup-panel" data-booking-setup-surface="bookable-staff">
-      <div>
-        <h3 className="text-base font-semibold text-zinc-950">Bookable staff</h3>
-        <p className="mt-1 text-sm text-zinc-600">
-          {service.name} / {service.is_active ? "Active" : "Inactive"} /{" "}
-          {formatMoney(Number(service.base_price))}
-        </p>
-      </div>
-      <Message result={result} />
-      <div className="booking-setup-table max-h-[58vh] overflow-y-auto">
-        <div className="booking-setup-table-header grid grid-cols-[minmax(0,1fr)_112px_112px] gap-2">
-          <span>Staff</span>
-          <span>Assigned</span>
-          <span>Online</span>
-        </div>
-        <div className="divide-y divide-zinc-100">
-          {visibleStaff.map((member) => {
-            const row = draft[member.id] ?? {
-              assigned: false,
-              onlineBookable: false,
-            };
-            const disabled = !canManage || !service.is_active;
-            const readiness = readinessByStaffId[member.id];
-
-            return (
-              <div
-                className={classNames(
-                  "booking-setup-row grid grid-cols-[minmax(0,1fr)_112px_112px] gap-2",
-                  (!member.is_active || !service.is_active) && "booking-setup-row--muted",
-                )}
-                key={member.id}
-              >
-                <div className="min-w-0">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <SetupStaffAvatar staff={member} />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-zinc-950">
-                        {member.display_name}
-                      </p>
-                      <p className="text-xs text-zinc-500">
-                        {member.job_title || "Staff"} /{" "}
-                        {member.is_active ? "Active" : "Inactive"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <ReadinessChips readiness={readiness} />
-                  </div>
-                </div>
-                <label className="flex items-start justify-center pt-1">
-                  <input
-                    checked={row.assigned}
-                    className="size-5"
-                    disabled={disabled || (!member.is_active && !row.assigned)}
-                    onChange={(event) =>
-                      update(member.id, { assigned: event.target.checked })
-                    }
-                    type="checkbox"
-                  />
-                  <span className="sr-only">Assign {member.display_name}</span>
-                </label>
-                <label className="flex items-start justify-center pt-1">
-                  <input
-                    checked={row.onlineBookable}
-                    className="size-5"
-                    disabled={disabled || !row.assigned || !member.is_active}
-                    onChange={(event) =>
-                      update(member.id, {
-                        assigned: row.assigned || event.target.checked,
-                        onlineBookable: event.target.checked,
-                      })
-                    }
-                    type="checkbox"
-                  />
-                  <span className="sr-only">
-                    Enable online booking for {member.display_name}
-                  </span>
-                </label>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <StickySaveBar
-        canManage={canManage}
-        dirtyCount={dirtyCount}
-        isPending={isPending}
-        onReset={() => setDraftRows(initialDraft)}
-        onSave={save}
-      />
-    </section>
   );
 }
 
@@ -838,15 +281,146 @@ function nextLocalDateTime(timeZone: string) {
   };
 }
 
+function defaultWorkingInterval() {
+  return { endsAt: "17:00", startsAt: "09:00" };
+}
+
+function defaultBreakInterval() {
+  return { endsAt: "13:00", startsAt: "12:00" };
+}
+
+function formatTimeText(value: string) {
+  const [hours = "0", minutes = "0"] = value.split(":");
+  const hourNumber = Number(hours);
+  const minuteNumber = Number(minutes);
+
+  if (!Number.isFinite(hourNumber) || !Number.isFinite(minuteNumber)) {
+    return value;
+  }
+
+  const suffix = hourNumber >= 12 ? "PM" : "AM";
+  const displayHour = hourNumber % 12 || 12;
+
+  return minuteNumber === 0
+    ? `${displayHour} ${suffix}`
+    : `${displayHour}:${String(minuteNumber).padStart(2, "0")} ${suffix}`;
+}
+
+function formatIntervalRange(interval: TimeIntervalDraft) {
+  return `${formatTimeText(interval.startsAt)} - ${formatTimeText(interval.endsAt)}`;
+}
+
+function formatIntervalList(intervals: TimeIntervalDraft[]) {
+  return intervals.map(formatIntervalRange).join(", ");
+}
+
+function summarizeWeeklyHours(week: Record<number, DayDraft>) {
+  const enabledDays = DAYS.filter((day) => week[day.id].working.length > 0);
+
+  if (enabledDays.length === 0) {
+    return "No weekly hours";
+  }
+
+  const firstWorkingKey = formatIntervalList(week[enabledDays[0].id].working);
+  const sameHours = enabledDays.every(
+    (day) => formatIntervalList(week[day.id].working) === firstWorkingKey,
+  );
+  const dayLabels = enabledDays.map((day) => day.label);
+  const visibleDays = dayLabels.slice(0, 4).join(", ");
+  const extraDays = dayLabels.length > 4 ? ` +${dayLabels.length - 4}` : "";
+
+  return sameHours
+    ? `${visibleDays}${extraDays}, ${firstWorkingKey}`
+    : `${enabledDays.length} available day${enabledDays.length === 1 ? "" : "s"}`;
+}
+
+function formatDateText(value: string, timeZone: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone,
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatDateRangeText(block: StaffTimeBlock, timeZone: string) {
+  const start = formatDateText(block.starts_at, timeZone);
+  const end = formatDateText(block.ends_at, timeZone);
+
+  return start === end ? start : `${start} - ${end}`;
+}
+
+function summarizeTimeOffBlocks(blocks: StaffTimeBlock[], timeZone: string) {
+  if (blocks.length === 0) {
+    return "No upcoming time off";
+  }
+
+  if (blocks.length === 1) {
+    return formatDateRangeText(blocks[0], timeZone);
+  }
+
+  return `${blocks.length} upcoming ranges`;
+}
+
+function upcomingTimeOffForStaff(blocks: StaffTimeBlock[], staffId: string) {
+  const nowMs = Date.now();
+
+  return blocks
+    .filter(
+      (block) =>
+        block.is_active !== false &&
+        block.block_type === "time_off" &&
+        block.staff_id === staffId &&
+        new Date(block.ends_at).getTime() >= nowMs,
+    )
+    .sort(
+      (left, right) =>
+        new Date(left.starts_at).getTime() - new Date(right.starts_at).getTime(),
+    );
+}
+
+function onlineBookingStatus(
+  staff: Staff,
+  readiness?: StaffBookingReadiness | null,
+) {
+  const onlineServiceCount = readiness?.onlineAssignedServiceCount ?? 0;
+  const profileReady =
+    staff.public_profile_visible &&
+    staff.owner_public_enabled &&
+    staff.staff_public_consent_status === "granted";
+
+  if (!staff.online_booking_enabled) {
+    return { detail: "Staff profile off", enabled: false, label: "Off" };
+  }
+
+  if (!profileReady) {
+    return { detail: "Profile not public", enabled: false, label: "Off" };
+  }
+
+  if (onlineServiceCount === 0) {
+    return { detail: "No online services", enabled: false, label: "Off" };
+  }
+
+  return {
+    detail: `${onlineServiceCount} online service${onlineServiceCount === 1 ? "" : "s"}`,
+    enabled: true,
+    label: "Enabled",
+  };
+}
+
 function IntervalEditor({
+  addLabel,
   disabled,
+  emptyText = "None",
   intervals,
   label,
   onAdd,
   onRemove,
   onUpdate,
 }: {
+  addLabel?: string;
   disabled: boolean;
+  emptyText?: string;
   intervals: TimeIntervalDraft[];
   label: string;
   onAdd: () => void;
@@ -854,56 +428,72 @@ function IntervalEditor({
   onUpdate: (index: number, next: Partial<TimeIntervalDraft>) => void;
 }) {
   return (
-    <div className="grid gap-2">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-semibold uppercase text-zinc-500">{label}</p>
-        <button
-          className="booking-setup-secondary-button min-h-8 px-2 text-xs disabled:opacity-50"
-          disabled={disabled}
-          onClick={onAdd}
-          type="button"
-        >
-          Add interval
-        </button>
-      </div>
+    <div aria-label={label} className="booking-availability-interval-editor">
       {intervals.length === 0 ? (
-        <p className="booking-setup-empty px-3 py-2 text-sm">
-          None
-        </p>
-      ) : (
-        intervals.map((interval, index) => (
-          <div
-            className="grid grid-cols-[1fr_1fr_auto] gap-2"
-            key={`${interval.startsAt}-${interval.endsAt}-${index}`}
+        <div className="booking-availability-empty-interval">
+          <span>{emptyText}</span>
+          <button
+            className="booking-availability-link-button"
+            disabled={disabled}
+            onClick={onAdd}
+            type="button"
           >
-            <input
-              aria-label={`${label} start`}
-              className="booking-setup-field"
-              disabled={disabled}
-              onChange={(event) =>
-                onUpdate(index, { startsAt: event.target.value })
-              }
-              type="time"
-              value={interval.startsAt}
-            />
-            <input
-              aria-label={`${label} end`}
-              className="booking-setup-field"
-              disabled={disabled}
-              onChange={(event) => onUpdate(index, { endsAt: event.target.value })}
-              type="time"
-              value={interval.endsAt}
-            />
-            <button
-              className="booking-setup-secondary-button px-2 disabled:opacity-50"
-              disabled={disabled}
-              onClick={() => onRemove(index)}
-              type="button"
+            + {addLabel ?? "Add interval"}
+          </button>
+        </div>
+      ) : (
+        <>
+          {intervals.map((interval, index) => (
+            <div
+              className="booking-availability-interval-row"
+              key={`${interval.startsAt}-${interval.endsAt}-${index}`}
             >
-              Remove
-            </button>
-          </div>
-        ))
+              <input
+                aria-label={`${label} start`}
+                className="booking-setup-field booking-availability-time-input"
+                disabled={disabled}
+                onChange={(event) =>
+                  onUpdate(index, { startsAt: event.target.value })
+                }
+                type="time"
+                value={interval.startsAt}
+              />
+              <span aria-hidden="true" className="booking-availability-time-dash">
+                -
+              </span>
+              <input
+                aria-label={`${label} end`}
+                className="booking-setup-field booking-availability-time-input"
+                disabled={disabled}
+                onChange={(event) =>
+                  onUpdate(index, { endsAt: event.target.value })
+                }
+                type="time"
+                value={interval.endsAt}
+              />
+              <button
+                aria-label={`Remove ${label.toLowerCase()} interval ${
+                  index + 1
+                }`}
+                className="booking-availability-icon-button"
+                disabled={disabled}
+                onClick={() => onRemove(index)}
+                title="Remove"
+                type="button"
+              >
+                <span aria-hidden="true">x</span>
+              </button>
+            </div>
+          ))}
+          <button
+            className="booking-availability-link-button"
+            disabled={disabled}
+            onClick={onAdd}
+            type="button"
+          >
+            + {addLabel ?? "Add interval"}
+          </button>
+        </>
       )}
     </div>
   );
@@ -927,62 +517,142 @@ export function StaffAvailabilityEditor({
   timezone: string;
 }) {
   const router = useRouter();
-  const firstStaffId =
+  const firstStaffId = staff[0]?.id ?? "";
+  const initialExpandedStaffId =
     (selectedStaffId && staff.some((member) => member.id === selectedStaffId)
       ? selectedStaffId
       : null) ||
-    staff[0]?.id ||
-    "";
-  const [selectedStaffState, setSelectedStaffState] = useState(() => ({
+    firstStaffId ||
+    null;
+  const [expandedStaffState, setExpandedStaffState] = useState<{
+    key: string;
+    staffId: string | null;
+  }>(() => ({
     key: firstStaffId,
-    staffId: firstStaffId,
+    staffId: initialExpandedStaffId,
   }));
-  const activeStaffId =
-    selectedStaffState.key === firstStaffId
-      ? selectedStaffState.staffId
-      : firstStaffId;
-  const activeStaff = staff.find((member) => member.id === activeStaffId) ?? null;
+  const expandedStaffId =
+    expandedStaffState.key === firstStaffId
+      ? expandedStaffState.staffId
+      : initialExpandedStaffId;
+  const weeksByStaffId = useMemo(
+    () =>
+      Object.fromEntries(
+        staff.map((member) => [
+          member.id,
+          buildWeekDraft(availabilityRules, member.id),
+        ]),
+      ) as Record<string, Record<number, DayDraft>>,
+    [availabilityRules, staff],
+  );
   const initialWeek = useMemo(
-    () => buildWeekDraft(availabilityRules, activeStaffId),
-    [activeStaffId, availabilityRules],
+    () =>
+      expandedStaffId
+        ? weeksByStaffId[expandedStaffId] ??
+          buildWeekDraft(availabilityRules, expandedStaffId)
+        : structuredClone(EMPTY_WEEK),
+    [availabilityRules, expandedStaffId, weeksByStaffId],
   );
   const initialWeekKey = weekKey(initialWeek);
-  const weekStateKey = `${activeStaffId}:${initialWeekKey}`;
+  const weekStateKey = `${expandedStaffId ?? "none"}:${initialWeekKey}`;
   const [weekState, setWeekState] = useState<WeekState>(() => ({
     key: weekStateKey,
     week: initialWeek,
   }));
   const week = weekState.key === weekStateKey ? weekState.week : initialWeek;
   const [result, setResult] = useState<BookingSetupActionResult | null>(null);
-  const [blockResult, setBlockResult] = useState<BookingSetupActionResult | null>(
-    null,
-  );
+  const [timeOffResult, setTimeOffResult] =
+    useState<BookingSetupActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [isBlockPending, startBlockTransition] = useTransition();
-  const [blockType, setBlockType] =
-    useState<"blocked" | "break" | "cleanup" | "time_off">("time_off");
+  const [isTimeOffPending, startTimeOffTransition] = useTransition();
+  const [copySourceDay, setCopySourceDay] = useState<number | null>(null);
+  const [copyTargets, setCopyTargets] = useState<number[]>([]);
   const nextBlock = useMemo(() => nextLocalDateTime(timezone), [timezone]);
-  const [blockStart, setBlockStart] = useState(nextBlock.start);
-  const [blockEnd, setBlockEnd] = useState(nextBlock.end);
-  const [blockReason, setBlockReason] = useState("");
-  const [allDayBlock, setAllDayBlock] = useState(false);
-  const weekDirty = weekKey(week) !== initialWeekKey ? 1 : 0;
-  const relevantBlocks = timeBlocks.filter(
-    (block) =>
-      block.is_active !== false &&
-      (!block.staff_id || block.staff_id === activeStaffId),
-  );
+  const nextBlockDate = nextBlock.start.slice(0, 10);
+  const [timeOffStartDate, setTimeOffStartDate] = useState(nextBlockDate);
+  const [timeOffEndDate, setTimeOffEndDate] = useState(nextBlockDate);
+  const [timeOffReason, setTimeOffReason] = useState("");
+  const weekDirty = expandedStaffId && weekKey(week) !== initialWeekKey ? 1 : 0;
+  const expandedTimeOffBlocks = expandedStaffId
+    ? upcomingTimeOffForStaff(timeBlocks, expandedStaffId)
+    : [];
 
-  function selectStaff(staffId: string) {
-    setSelectedStaffState({ key: firstStaffId, staffId });
-
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      params.set("tab", "availability");
-      params.delete("section");
-      params.set("staffId", staffId);
-      router.replace(`/bookings?${params.toString()}`, { scroll: false });
+  useEffect(() => {
+    if (weekDirty === 0) {
+      return;
     }
+
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const confirmLinkNavigation = (event: MouseEvent) => {
+      if (!(event.target instanceof Element)) {
+        return;
+      }
+
+      const anchor = event.target.closest("a[href]") as HTMLAnchorElement | null;
+
+      if (
+        !anchor ||
+        anchor.target ||
+        anchor.hasAttribute("download") ||
+        anchor.href === window.location.href
+      ) {
+        return;
+      }
+
+      if (!window.confirm("Discard unsaved availability changes?")) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", confirmLinkNavigation, true);
+
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+      document.removeEventListener("click", confirmLinkNavigation, true);
+    };
+  }, [weekDirty]);
+
+  function replaceStaffUrl(staffId: string | null) {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", "availability");
+    params.delete("section");
+
+    if (staffId) {
+      params.set("staffId", staffId);
+    } else {
+      params.delete("staffId");
+    }
+
+    const query = params.toString();
+    router.replace(query ? `/bookings?${query}` : "/bookings", { scroll: false });
+  }
+
+  function expandStaff(staffId: string) {
+    const nextStaffId = expandedStaffId === staffId ? null : staffId;
+
+    if (
+      weekDirty > 0 &&
+      expandedStaffId !== nextStaffId &&
+      typeof window !== "undefined" &&
+      !window.confirm("Discard unsaved availability changes?")
+    ) {
+      return;
+    }
+
+    setResult(null);
+    setCopySourceDay(null);
+    setCopyTargets([]);
+    setExpandedStaffState({ key: firstStaffId, staffId: nextStaffId });
+    replaceStaffUrl(nextStaffId);
   }
 
   function updateDay(
@@ -1013,30 +683,48 @@ export function StaffAvailabilityEditor({
               working:
                 week[dayId].working.length > 0
                   ? week[dayId].working
-                  : [{ endsAt: "17:00", startsAt: "09:00" }],
+                  : [defaultWorkingInterval()],
             }
           : { breaks: [], working: [] },
       },
     });
   }
 
-  function copyMonday(target: "all" | "weekdays") {
-    const monday = structuredClone(week[1]);
-    const next = structuredClone(week);
-    const days = target === "all" ? [0, 1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5];
+  function startCopyDay(dayId: number) {
+    setCopySourceDay(dayId);
+    setCopyTargets([]);
+  }
 
-    for (const day of days) {
-      next[day] = structuredClone(monday);
+  function toggleCopyTarget(dayId: number, checked: boolean) {
+    setCopyTargets((current) =>
+      checked
+        ? [...new Set([...current, dayId])].sort()
+        : current.filter((target) => target !== dayId),
+    );
+  }
+
+  function copyDayToTargets(dayId: number) {
+    if (copyTargets.length === 0) {
+      return;
+    }
+
+    const source = structuredClone(week[dayId]);
+    const next = structuredClone(week);
+
+    for (const targetDay of copyTargets) {
+      next[targetDay] = structuredClone(source);
     }
 
     setWeekState({
       key: weekStateKey,
       week: next,
     });
+    setCopySourceDay(null);
+    setCopyTargets([]);
   }
 
   function saveWeek() {
-    if (!activeStaffId) {
+    if (!expandedStaffId) {
       return;
     }
 
@@ -1060,7 +748,7 @@ export function StaffAvailabilityEditor({
       ]);
       const response = await saveStaffWeeklyAvailabilityAction({
         rules,
-        staffId: activeStaffId,
+        staffId: expandedStaffId,
       });
 
       setResult(response);
@@ -1071,26 +759,47 @@ export function StaffAvailabilityEditor({
     });
   }
 
-  function createBlock(overrideConflicts = false) {
-    if (!activeStaffId) {
+  function createTimeOff(overrideConflicts = false) {
+    if (!expandedStaffId) {
       return;
     }
 
-    setBlockResult(null);
-    startBlockTransition(async () => {
-      const startLocal = allDayBlock ? `${blockStart.slice(0, 10)}T00:00` : blockStart;
-      const endLocal = allDayBlock ? `${blockStart.slice(0, 10)}T23:59` : blockEnd;
+    if (!timeOffStartDate || !timeOffEndDate || timeOffStartDate > timeOffEndDate) {
+      setTimeOffResult({
+        error: "Time off start date must be before end date.",
+        ok: false,
+      });
+
+      return;
+    }
+
+    setTimeOffResult(null);
+    startTimeOffTransition(async () => {
       const response = await createStaffTimeBlockAction({
-        blockType,
-        endLocal,
+        blockType: "time_off",
+        endLocal: `${timeOffEndDate}T23:59`,
         overrideConflicts,
-        reason: blockReason,
-        staffId: activeStaffId,
-        startLocal,
+        reason: timeOffReason,
+        staffId: expandedStaffId,
+        startLocal: `${timeOffStartDate}T00:00`,
         timezoneIana: timezone,
       });
 
-      setBlockResult(response);
+      setTimeOffResult(response);
+
+      if (response.ok) {
+        setTimeOffReason("");
+        router.refresh();
+      }
+    });
+  }
+
+  function cancelTimeOff(blockId: string) {
+    setTimeOffResult(null);
+    startTimeOffTransition(async () => {
+      const response = await cancelStaffTimeBlockAction({ blockId });
+
+      setTimeOffResult(response);
 
       if (response.ok) {
         router.refresh();
@@ -1098,16 +807,17 @@ export function StaffAvailabilityEditor({
     });
   }
 
-  function cancelBlock(blockId: string) {
-    setBlockResult(null);
-    startBlockTransition(async () => {
-      const response = await cancelStaffTimeBlockAction({ blockId });
+  function clearWeek() {
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm("Clear this weekly schedule?")
+    ) {
+      return;
+    }
 
-      setBlockResult(response);
-
-      if (response.ok) {
-        router.refresh();
-      }
+    setWeekState({
+      key: weekStateKey,
+      week: structuredClone(EMPTY_WEEK),
     });
   }
 
@@ -1125,312 +835,515 @@ export function StaffAvailabilityEditor({
       data-booking-setup-surface="availability"
       id="staff-availability"
     >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="booking-availability-head">
         <div>
-          <h3 className="text-base font-semibold text-zinc-950">
-            Staff availability
-          </h3>
-          <p className="mt-1 text-sm text-zinc-600">{timezone}</p>
+          <h3>Staff availability</h3>
+          <p>{timezone}</p>
         </div>
-        {activeStaff ? (
-          <ReadinessChips readiness={readinessByStaffId[activeStaff.id]} />
-        ) : null}
       </div>
-      <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="booking-setup-staff-picker">
-          {staff.map((member) => {
-            const readiness = readinessByStaffId[member.id];
+      <div className="booking-availability-staff-list">
+        <div className="booking-availability-staff-columns" aria-hidden="true">
+          <span>Professional</span>
+          <span>Online booking</span>
+          <span>Weekly schedule</span>
+          <span>Time off</span>
+          <span>Expand</span>
+        </div>
+        {staff.map((member) => {
+          const readiness = readinessByStaffId[member.id];
+          const onlineStatus = onlineBookingStatus(member, readiness);
+          const memberWeek =
+            weeksByStaffId[member.id] ?? buildWeekDraft(availabilityRules, member.id);
+          const rowWeek = expandedStaffId === member.id ? week : memberWeek;
+          const weeklySummary = summarizeWeeklyHours(rowWeek);
+          const timeOffBlocks = upcomingTimeOffForStaff(timeBlocks, member.id);
+          const timeOffSummary = summarizeTimeOffBlocks(timeOffBlocks, timezone);
+          const isExpanded = expandedStaffId === member.id;
+          const setupIssueText =
+            readiness && !readiness.ready
+              ? readiness.reasons.map((reason) => reason.label).join(", ")
+              : null;
 
-            return (
-              <button
-                className={classNames(
-                  "booking-setup-staff-option",
-                  activeStaffId === member.id
-                    ? "booking-setup-staff-option--active"
-                    : "booking-setup-staff-option--idle",
-                )}
-                key={member.id}
-                onClick={() => selectStaff(member.id)}
-                type="button"
-              >
-                <SetupStaffAvatar staff={member} />
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-zinc-950">
-                    {member.display_name}
-                  </span>
-                  <span className="mt-1 block text-xs text-zinc-500">
-                    {readiness?.assignedServiceCount ?? 0} services /{" "}
-                    {readiness?.workingRuleCount ?? 0} hours
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-        </aside>
-        <div className="grid min-w-0 gap-5">
-          <Message result={result} />
-          <div className="flex flex-wrap gap-2">
-            <button
-              className="booking-setup-secondary-button min-h-9 disabled:opacity-50"
-              disabled={!canManage}
-              onClick={() =>
-                setWeekState({ key: weekStateKey, week: presetWeekdays() })
-              }
-              type="button"
+          return (
+            <article
+              className={classNames(
+                "booking-availability-staff-row",
+                isExpanded && "booking-availability-staff-row--expanded",
+              )}
+              data-testid={`availability-staff-row-${member.id}`}
+              key={member.id}
             >
-              Monday-Friday preset
-            </button>
-            <button
-              className="booking-setup-secondary-button min-h-9 disabled:opacity-50"
-              disabled={!canManage}
-              onClick={() => copyMonday("weekdays")}
-              type="button"
-            >
-              Copy Monday to weekdays
-            </button>
-            <button
-              className="booking-setup-secondary-button min-h-9 disabled:opacity-50"
-              disabled={!canManage}
-              onClick={() => copyMonday("all")}
-              type="button"
-            >
-              Copy Monday to all days
-            </button>
-            <button
-              className="booking-setup-secondary-button min-h-9 disabled:opacity-50"
-              disabled={!canManage}
-              onClick={() =>
-                setWeekState({
-                  key: weekStateKey,
-                  week: structuredClone(EMPTY_WEEK),
-                })
-              }
-              type="button"
-            >
-              Clear week
-            </button>
-          </div>
-          <div className="grid gap-3">
-            {DAYS.map((day) => {
-              const dayDraft = week[day.id];
-              const enabled = dayDraft.working.length > 0;
-
-              return (
-                <section className="booking-setup-day-card" key={day.id}>
-                  <div className="flex items-center justify-between gap-3">
-                    <h4 className="text-sm font-semibold text-zinc-950">
-                      {day.label}
-                    </h4>
-                    <label className="flex items-center gap-2 text-sm font-semibold text-zinc-700">
-                      <input
-                        checked={enabled}
-                        className="size-4"
-                        disabled={!canManage}
-                        onChange={(event) =>
-                          toggleDay(day.id, event.target.checked)
-                        }
-                        type="checkbox"
-                      />
-                      {enabled ? "Enabled" : "Off"}
-                    </label>
-                  </div>
-                  <div className="grid gap-3 xl:grid-cols-2">
-                    <IntervalEditor
-                      disabled={!canManage || !enabled}
-                      intervals={dayDraft.working}
-                      label="Working"
-                      onAdd={() =>
-                        updateDay(day.id, "working", (intervals) => [
-                          ...intervals,
-                          { endsAt: "17:00", startsAt: "09:00" },
-                        ])
-                      }
-                      onRemove={(index) =>
-                        updateDay(day.id, "working", (intervals) =>
-                          intervals.filter((_, itemIndex) => itemIndex !== index),
-                        )
-                      }
-                      onUpdate={(index, next) =>
-                        updateDay(day.id, "working", (intervals) =>
-                          intervals.map((interval, itemIndex) =>
-                            itemIndex === index
-                              ? { ...interval, ...next }
-                              : interval,
-                          ),
-                        )
-                      }
-                    />
-                    <IntervalEditor
-                      disabled={!canManage || !enabled}
-                      intervals={dayDraft.breaks}
-                      label="Breaks"
-                      onAdd={() =>
-                        updateDay(day.id, "breaks", (intervals) => [
-                          ...intervals,
-                          { endsAt: "13:00", startsAt: "12:00" },
-                        ])
-                      }
-                      onRemove={(index) =>
-                        updateDay(day.id, "breaks", (intervals) =>
-                          intervals.filter((_, itemIndex) => itemIndex !== index),
-                        )
-                      }
-                      onUpdate={(index, next) =>
-                        updateDay(day.id, "breaks", (intervals) =>
-                          intervals.map((interval, itemIndex) =>
-                            itemIndex === index
-                              ? { ...interval, ...next }
-                              : interval,
-                          ),
-                        )
-                      }
-                    />
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-          <StickySaveBar
-            canManage={canManage}
-            dirtyCount={weekDirty}
-            isPending={isPending}
-            onReset={() => setWeekState({ key: weekStateKey, week: initialWeek })}
-            onSave={saveWeek}
-          />
-          <section className="booking-setup-subpanel">
-            <div>
-              <h4 className="text-sm font-semibold text-zinc-950">
-                Breaks and time off
-              </h4>
-              <p className="mt-1 text-sm text-zinc-600">
-                Upcoming blocks for {activeStaff?.display_name ?? "staff"}.
-              </p>
-            </div>
-            <Message result={blockResult} />
-            <div className="grid gap-3 lg:grid-cols-[160px_1fr_1fr]">
-              <label className="grid gap-1">
-                <span className="text-xs font-semibold uppercase text-zinc-500">
-                  Type
-                </span>
-                <select
-                  className="booking-setup-field"
-                  disabled={!canManage}
-                  onChange={(event) =>
-                    setBlockType(
-                      event.target.value as "blocked" | "break" | "cleanup" | "time_off",
-                    )
+              <div
+                aria-controls={`availability-expanded-${member.id}`}
+                aria-expanded={isExpanded}
+                className="booking-availability-staff-summary"
+                onClick={() => expandStaff(member.id)}
+                onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) {
+                    return;
                   }
-                  value={blockType}
-                >
-                  <option value="time_off">Time off</option>
-                  <option value="blocked">Blocked</option>
-                  <option value="break">Break</option>
-                  <option value="cleanup">Cleanup</option>
-                </select>
-              </label>
-              <label className="grid gap-1">
-                <span className="text-xs font-semibold uppercase text-zinc-500">
-                  Start
-                </span>
-                <input
-                  className="booking-setup-field"
-                  disabled={!canManage}
-                  onChange={(event) => setBlockStart(event.target.value)}
-                  type="datetime-local"
-                  value={blockStart}
-                />
-              </label>
-              <label className="grid gap-1">
-                <span className="text-xs font-semibold uppercase text-zinc-500">
-                  End
-                </span>
-                <input
-                  className="booking-setup-field"
-                  disabled={!canManage || allDayBlock}
-                  onChange={(event) => setBlockEnd(event.target.value)}
-                  type="datetime-local"
-                  value={blockEnd}
-                />
-              </label>
-            </div>
-            <div className="grid gap-3 lg:grid-cols-[160px_minmax(0,1fr)_auto]">
-              <label className="flex items-center gap-2 text-sm font-semibold text-zinc-700">
-                <input
-                  checked={allDayBlock}
-                  className="size-4"
-                  disabled={!canManage}
-                  onChange={(event) => setAllDayBlock(event.target.checked)}
-                  type="checkbox"
-                />
-                All day
-              </label>
-              <input
-                className="booking-setup-field"
-                disabled={!canManage}
-                onChange={(event) => setBlockReason(event.target.value)}
-                placeholder="Reason"
-                value={blockReason}
-              />
-              <button
-                className="booking-setup-primary-button disabled:opacity-50"
-                disabled={!canManage || isBlockPending}
-                onClick={() => createBlock(false)}
-                type="button"
+
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    expandStaff(member.id);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
               >
-                Add block
-              </button>
-            </div>
-            {!blockResult?.ok && blockResult?.conflicts?.length ? (
-              <button
-                className="booking-setup-secondary-button w-fit border-amber-300 text-amber-900"
-                disabled={!canManage || isBlockPending}
-                onClick={() => createBlock(true)}
-                type="button"
-              >
-                Save block with override
-              </button>
-            ) : null}
-            <div className="grid gap-2">
-              {relevantBlocks.length === 0 ? (
-                <p className="booking-setup-empty px-3 py-4 text-sm">
-                  No upcoming blocks.
-                </p>
-              ) : (
-                relevantBlocks.map((block) => (
-                  <div
-                    className="flex flex-col gap-3 rounded-md border border-zinc-200 bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
-                    key={block.id}
+                <div className="booking-availability-staff-cell booking-availability-professional">
+                  <SetupStaffAvatar staff={member} />
+                  <div>
+                    <h4>{member.display_name}</h4>
+                    <p>
+                      {member.job_title || "Staff"} /{" "}
+                      {member.is_active ? "Active" : "Inactive"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="booking-availability-staff-cell">
+                  <span
+                    className={classNames(
+                      "booking-setup-chip",
+                      onlineStatus.enabled
+                        ? "booking-setup-chip--ready"
+                        : "booking-setup-chip--muted",
+                    )}
                   >
-                    <div>
-                      <p className="text-sm font-semibold text-zinc-950">
-                        {block.block_type.replace(/_/g, " ")}
-                      </p>
-                      <p className="mt-1 text-sm text-zinc-600">
-                        {formatDateTime(block.starts_at, timezone)} -{" "}
-                        {formatDateTime(block.ends_at, timezone)}
-                      </p>
-                      {block.reason ? (
-                        <p className="mt-1 text-xs text-zinc-500">
-                          {block.reason}
-                        </p>
-                      ) : null}
+                    {onlineStatus.label}
+                  </span>
+                  <p>{onlineStatus.detail}</p>
+                  <a
+                    className="booking-availability-link"
+                    href="/services"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    Manage Booking staff
+                  </a>
+                </div>
+
+                <div className="booking-availability-staff-cell">
+                  <strong>{weeklySummary}</strong>
+                  <p>
+                    {readiness?.workingRuleCount ?? 0} working rule
+                    {(readiness?.workingRuleCount ?? 0) === 1 ? "" : "s"}
+                  </p>
+                  {setupIssueText ? (
+                    <p className="booking-availability-issue">
+                      Needs setup: {setupIssueText}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="booking-availability-staff-cell">
+                  <strong>{timeOffSummary}</strong>
+                  {timeOffBlocks.length > 1 ? (
+                    <p>Next {formatDateRangeText(timeOffBlocks[0], timezone)}</p>
+                  ) : null}
+                  <button
+                    className="booking-availability-link-button"
+                    disabled={!canManage}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (!isExpanded) {
+                        expandStaff(member.id);
+                      }
+                    }}
+                    type="button"
+                  >
+                    + Add time off
+                  </button>
+                </div>
+
+                <button
+                  aria-label={
+                    isExpanded
+                      ? `Collapse ${member.display_name}`
+                      : `Expand ${member.display_name}`
+                  }
+                  aria-expanded={isExpanded}
+                  className="booking-availability-chevron"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    expandStaff(member.id);
+                  }}
+                  type="button"
+                />
+              </div>
+
+              {isExpanded ? (
+                <div
+                  className="booking-availability-expanded"
+                  id={`availability-expanded-${member.id}`}
+                >
+                  <section className="booking-availability-schedule-section">
+                    <Message result={result} />
+
+                    <div className="booking-availability-section-head">
+                      <div>
+                        <h4>Weekly schedule</h4>
+                        <p>{weeklySummary}</p>
+                      </div>
+                      <div className="booking-availability-toolbar">
+                        <details className="booking-availability-menu">
+                          <summary>Apply preset</summary>
+                          <button
+                            disabled={!canManage}
+                            onClick={() =>
+                              setWeekState({
+                                key: weekStateKey,
+                                week: presetWeekdays(),
+                              })
+                            }
+                            type="button"
+                          >
+                            Weekdays 9-5
+                          </button>
+                        </details>
+                        <details className="booking-availability-menu">
+                          <summary>More</summary>
+                          <button
+                            className="booking-availability-danger-action"
+                            disabled={!canManage}
+                            onClick={clearWeek}
+                            type="button"
+                          >
+                            Clear week
+                          </button>
+                        </details>
+                      </div>
                     </div>
-                    {canManage ? (
+
+                    {DAYS.every((day) => week[day.id].working.length === 0) ? (
+                      <p className="booking-availability-empty-note">
+                        No weekly availability yet.
+                      </p>
+                    ) : null}
+
+                    <div className="booking-availability-week">
+                      <div className="booking-availability-day-header">
+                        <span>Day</span>
+                        <span>Status</span>
+                        <span>Working hours</span>
+                        <span>Breaks</span>
+                        <span>Actions</span>
+                      </div>
+                      {DAYS.map((day) => {
+                        const dayDraft = week[day.id];
+                        const enabled = dayDraft.working.length > 0;
+
+                        return (
+                          <section
+                            className={classNames(
+                              "booking-availability-day-row",
+                              !enabled && "booking-availability-day-row--off",
+                            )}
+                            data-testid={`availability-day-${day.id}`}
+                            key={day.id}
+                          >
+                            <div className="booking-availability-day-cell booking-availability-day-name">
+                              <span className="booking-availability-mobile-label">
+                                Day
+                              </span>
+                              <strong>{day.label}</strong>
+                            </div>
+                            <div className="booking-availability-day-cell">
+                              <span className="booking-availability-mobile-label">
+                                Status
+                              </span>
+                              <label className="booking-availability-status-toggle">
+                                <input
+                                  checked={enabled}
+                                  disabled={!canManage}
+                                  onChange={(event) =>
+                                    toggleDay(day.id, event.target.checked)
+                                  }
+                                  type="checkbox"
+                                />
+                                <span>{enabled ? "Enabled" : "Off"}</span>
+                              </label>
+                            </div>
+                            <div className="booking-availability-day-cell">
+                              <span className="booking-availability-mobile-label">
+                                Working hours
+                              </span>
+                              {enabled ? (
+                                <IntervalEditor
+                                  addLabel="Add interval"
+                                  disabled={!canManage}
+                                  intervals={dayDraft.working}
+                                  label={`${day.label} working hours`}
+                                  onAdd={() =>
+                                    updateDay(day.id, "working", (intervals) => [
+                                      ...intervals,
+                                      defaultWorkingInterval(),
+                                    ])
+                                  }
+                                  onRemove={(index) =>
+                                    updateDay(day.id, "working", (intervals) =>
+                                      intervals.filter(
+                                        (_, itemIndex) => itemIndex !== index,
+                                      ),
+                                    )
+                                  }
+                                  onUpdate={(index, next) =>
+                                    updateDay(day.id, "working", (intervals) =>
+                                      intervals.map((interval, itemIndex) =>
+                                        itemIndex === index
+                                          ? { ...interval, ...next }
+                                          : interval,
+                                      ),
+                                    )
+                                  }
+                                />
+                              ) : (
+                                <span className="booking-availability-muted">-</span>
+                              )}
+                            </div>
+                            <div className="booking-availability-day-cell">
+                              <span className="booking-availability-mobile-label">
+                                Breaks
+                              </span>
+                              {enabled ? (
+                                <IntervalEditor
+                                  addLabel="Add break"
+                                  disabled={!canManage}
+                                  emptyText="No breaks"
+                                  intervals={dayDraft.breaks}
+                                  label={`${day.label} breaks`}
+                                  onAdd={() =>
+                                    updateDay(day.id, "breaks", (intervals) => [
+                                      ...intervals,
+                                      defaultBreakInterval(),
+                                    ])
+                                  }
+                                  onRemove={(index) =>
+                                    updateDay(day.id, "breaks", (intervals) =>
+                                      intervals.filter(
+                                        (_, itemIndex) => itemIndex !== index,
+                                      ),
+                                    )
+                                  }
+                                  onUpdate={(index, next) =>
+                                    updateDay(day.id, "breaks", (intervals) =>
+                                      intervals.map((interval, itemIndex) =>
+                                        itemIndex === index
+                                          ? { ...interval, ...next }
+                                          : interval,
+                                      ),
+                                    )
+                                  }
+                                />
+                              ) : (
+                                <span className="booking-availability-muted">-</span>
+                              )}
+                            </div>
+                            <div className="booking-availability-day-cell booking-availability-actions-cell">
+                              <span className="booking-availability-mobile-label">
+                                Actions
+                              </span>
+                              {enabled ? (
+                                <button
+                                  className="booking-availability-link-button"
+                                  disabled={!canManage}
+                                  onClick={() => startCopyDay(day.id)}
+                                  type="button"
+                                >
+                                  Copy
+                                </button>
+                              ) : (
+                                <button
+                                  className="booking-availability-link-button"
+                                  disabled={!canManage}
+                                  onClick={() => toggleDay(day.id, true)}
+                                  type="button"
+                                >
+                                  Enable
+                                </button>
+                              )}
+                              {copySourceDay === day.id ? (
+                                <div className="booking-availability-copy-panel">
+                                  <p>Copy {day.label} to</p>
+                                  <div>
+                                    {DAYS.filter(
+                                      (targetDay) => targetDay.id !== day.id,
+                                    ).map((targetDay) => (
+                                      <label key={targetDay.id}>
+                                        <input
+                                          checked={copyTargets.includes(
+                                            targetDay.id,
+                                          )}
+                                          disabled={!canManage}
+                                          onChange={(event) =>
+                                            toggleCopyTarget(
+                                              targetDay.id,
+                                              event.target.checked,
+                                            )
+                                          }
+                                          type="checkbox"
+                                        />
+                                        {targetDay.label}
+                                      </label>
+                                    ))}
+                                  </div>
+                                  <div className="booking-availability-copy-actions">
+                                    <button
+                                      className="booking-availability-link-button"
+                                      disabled={
+                                        !canManage || copyTargets.length === 0
+                                      }
+                                      onClick={() => copyDayToTargets(day.id)}
+                                      type="button"
+                                    >
+                                      Apply
+                                    </button>
+                                    <button
+                                      className="booking-availability-link-button"
+                                      onClick={() => {
+                                        setCopySourceDay(null);
+                                        setCopyTargets([]);
+                                      }}
+                                      type="button"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : null}
+                            </div>
+                          </section>
+                        );
+                      })}
+                    </div>
+
+                    <StickySaveBar
+                      canManage={canManage}
+                      dirtyCount={weekDirty}
+                      hideWhenClean
+                      isPending={isPending}
+                      onReset={() =>
+                        setWeekState({ key: weekStateKey, week: initialWeek })
+                      }
+                      onSave={saveWeek}
+                      resetLabel="Discard"
+                      sticky={false}
+                    />
+                  </section>
+
+                  <section
+                    className="booking-availability-timeoff-panel"
+                    data-testid="availability-time-off-section"
+                  >
+                    <div className="booking-availability-section-head">
+                      <div>
+                        <h4>Time off</h4>
+                        <p>{timeOffSummary}</p>
+                      </div>
+                    </div>
+                    <Message result={timeOffResult} />
+                    <div className="booking-availability-timeoff-list">
+                      {expandedTimeOffBlocks.length === 0 ? (
+                        <p className="booking-availability-empty-note">
+                          No upcoming time off.
+                        </p>
+                      ) : (
+                        expandedTimeOffBlocks.map((block) => (
+                          <div
+                            className="booking-availability-timeoff-item"
+                            key={block.id}
+                          >
+                            <div>
+                              <strong>
+                                {formatDateRangeText(block, timezone)}
+                              </strong>
+                              <p>
+                                {formatDateTime(block.starts_at, timezone)} -{" "}
+                                {formatDateTime(block.ends_at, timezone)}
+                              </p>
+                              {block.reason ? <p>{block.reason}</p> : null}
+                            </div>
+                            {canManage ? (
+                              <button
+                                aria-label={`Remove time off ${formatDateRangeText(
+                                  block,
+                                  timezone,
+                                )}`}
+                                className="booking-availability-link-button booking-availability-danger-action"
+                                disabled={isTimeOffPending}
+                                onClick={() => cancelTimeOff(block.id)}
+                                type="button"
+                              >
+                                Remove
+                              </button>
+                            ) : null}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className="booking-availability-timeoff-form">
+                      <label>
+                        <span>From date</span>
+                        <input
+                          className="booking-setup-field"
+                          disabled={!canManage}
+                          onChange={(event) =>
+                            setTimeOffStartDate(event.target.value)
+                          }
+                          type="date"
+                          value={timeOffStartDate}
+                        />
+                      </label>
+                      <label>
+                        <span>To date</span>
+                        <input
+                          className="booking-setup-field"
+                          disabled={!canManage}
+                          onChange={(event) =>
+                            setTimeOffEndDate(event.target.value)
+                          }
+                          type="date"
+                          value={timeOffEndDate}
+                        />
+                      </label>
+                      <label>
+                        <span>Reason</span>
+                        <input
+                          className="booking-setup-field"
+                          disabled={!canManage}
+                          onChange={(event) => setTimeOffReason(event.target.value)}
+                          placeholder="Optional"
+                          value={timeOffReason}
+                        />
+                      </label>
                       <button
-                        className="booking-setup-secondary-button min-h-9 disabled:opacity-50"
-                        disabled={isBlockPending}
-                        onClick={() => cancelBlock(block.id)}
+                        className="booking-setup-primary-button disabled:opacity-50"
+                        disabled={!canManage || isTimeOffPending}
+                        onClick={() => createTimeOff(false)}
                         type="button"
                       >
-                        Cancel block
+                        Add time off
+                      </button>
+                    </div>
+                    {!timeOffResult?.ok && timeOffResult?.conflicts?.length ? (
+                      <button
+                        className="booking-setup-secondary-button w-fit border-amber-300 text-amber-900"
+                        disabled={!canManage || isTimeOffPending}
+                        onClick={() => createTimeOff(true)}
+                        type="button"
+                      >
+                        Save time off with override
                       </button>
                     ) : null}
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-        </div>
+                    <p className="booking-availability-timeoff-note">
+                      Edit ranges by removing them and adding the corrected dates.
+                    </p>
+                  </section>
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
       </div>
     </section>
   );

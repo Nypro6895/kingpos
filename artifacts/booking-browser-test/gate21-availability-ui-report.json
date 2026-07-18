@@ -1,0 +1,76 @@
+{
+  "baseUrl": "http://127.0.0.1:3366",
+  "browser": "launched",
+  "cleanup": "fixtures deactivated",
+  "consoleErrors": [],
+  "fixtureIds": {
+    "linaId": "64a63b60-4fe7-46bc-a183-c39522e3a1b1",
+    "marryId": "f000cdeb-3252-4b83-9ad1-1c99580db00e",
+    "noaId": "617d67f3-cdd2-4618-82e9-5b5c2124a071",
+    "serviceColorId": "1a7ae295-b0ed-4288-b3fe-f2d7d7e7e31a",
+    "serviceCutId": "9b28c267-e5e7-43e6-891b-9b472731e0a3"
+  },
+  "interactions": {
+    "dirtySavebar": "visible only after an edit",
+    "leaveWarning": "Discard unsaved availability changes?",
+    "copySaveReload": "copy to Saturday saved",
+    "timeOffAdd": "time off added with existing action"
+  },
+  "marker": "Gate21 20260717051710",
+  "metrics": {
+    "desktopCollapsed": {
+      "collapsedStaffRowHeight": 96,
+      "dayRowBaseHeight": null,
+      "horizontalOverflow": false,
+      "interactiveOverflow": 0,
+      "largeWhiteSpaceObserved": false,
+      "visibleDayRows": 0
+    },
+    "desktopExpanded": {
+      "collapsedStaffRowHeight": 96,
+      "dayRowBaseHeight": 72,
+      "horizontalOverflow": false,
+      "interactiveOverflow": 0,
+      "largeWhiteSpaceObserved": false,
+      "visibleDayRows": 7
+    },
+    "tablet": {
+      "collapsedStaffRowHeight": 252,
+      "dayRowBaseHeight": 72,
+      "horizontalOverflow": false,
+      "interactiveOverflow": 0,
+      "largeWhiteSpaceObserved": false,
+      "visibleDayRows": 0
+    },
+    "mobileCollapsed": {
+      "collapsedStaffRowHeight": 252,
+      "dayRowBaseHeight": null,
+      "horizontalOverflow": false,
+      "interactiveOverflow": 0,
+      "largeWhiteSpaceObserved": false,
+      "visibleDayRows": 0
+    },
+    "mobileExpanded": {
+      "collapsedStaffRowHeight": 252,
+      "dayRowBaseHeight": 299,
+      "horizontalOverflow": false,
+      "interactiveOverflow": 0,
+      "largeWhiteSpaceObserved": false,
+      "visibleDayRows": 1
+    }
+  },
+  "networkErrors": [],
+  "ok": true,
+  "pageErrors": [],
+  "screenshots": [
+    "gate21-availability-desktop-collapsed.png",
+    "gate21-availability-desktop-expanded.png",
+    "gate21-availability-multiple-intervals-break.png",
+    "gate21-availability-timeoff-section.png",
+    "gate21-availability-dirty-savebar.png",
+    "gate21-availability-tablet-expanded.png",
+    "gate21-availability-mobile-collapsed.png",
+    "gate21-availability-mobile-expanded.png"
+  ],
+  "userEmail": "gate21-20260717051710@example.com"
+}

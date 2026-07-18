@@ -691,37 +691,75 @@ export async function updateBookingSettingsAction(
     }
 
     if (input.confirmationMode === "instant_booking") {
-      const [assignmentsResult, availabilityResult] = await Promise.all([
+      const [
+        assignmentsResult,
+        servicesResult,
+        staffResult,
+        availabilityResult,
+      ] = await Promise.all([
         context.data.supabase
           .from("staff_service_assignments")
+          .select("service_id, staff_id")
+          .eq("organization_id", context.data.organization.id)
+          .eq("salon_id", context.data.salon.id)
+          .eq("is_active", true)
+          .eq("online_bookable", true),
+        context.data.supabase
+          .from("services")
           .select("id")
           .eq("organization_id", context.data.organization.id)
           .eq("salon_id", context.data.salon.id)
           .eq("is_active", true)
-          .limit(1),
+          .eq("online_booking_enabled", true),
+        context.data.supabase
+          .from("staff")
+          .select("id")
+          .eq("organization_id", context.data.organization.id)
+          .eq("salon_id", context.data.salon.id)
+          .eq("is_active", true)
+          .eq("online_booking_enabled", true)
+          .eq("owner_public_enabled", true)
+          .eq("public_profile_visible", true)
+          .eq("staff_public_consent_status", "granted"),
         context.data.supabase
           .from("staff_availability_rules")
           .select("id")
           .eq("organization_id", context.data.organization.id)
           .eq("salon_id", context.data.salon.id)
           .eq("is_active", true)
+          .eq("rule_type", "working")
           .limit(1),
       ]);
 
-      if (assignmentsResult.error) {
-        throw assignmentsResult.error;
+      for (const result of [
+        assignmentsResult,
+        servicesResult,
+        staffResult,
+        availabilityResult,
+      ]) {
+        if (result.error) {
+          throw result.error;
+        }
       }
 
-      if (availabilityResult.error) {
-        throw availabilityResult.error;
-      }
+      const onlineServiceIds = new Set(
+        (servicesResult.data ?? []).map((service) => service.id),
+      );
+      const readyStaffIds = new Set(
+        (staffResult.data ?? []).map((member) => member.id),
+      );
+      const hasReadyAssignment = (assignmentsResult.data ?? []).some(
+        (assignment) =>
+          onlineServiceIds.has(assignment.service_id) &&
+          readyStaffIds.has(assignment.staff_id),
+      );
 
       if (
-        (assignmentsResult.data ?? []).length === 0 ||
+        !hasReadyAssignment ||
         (availabilityResult.data ?? []).length === 0
       ) {
         return failure(
-          "Instant booking requires active staff-service assignments and availability rules.",
+          "Instant booking requires an online service with Booking staff and working hours.",
           { field: "confirmationMode" },
         );
       }

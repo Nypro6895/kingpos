@@ -1,0 +1,50 @@
+{
+  "browser": "launched",
+  "consoleErrors": [],
+  "fixtureCleanup": {
+    "auth_users": 0,
+    "organizations": 0,
+    "services": 0,
+    "staff": 0
+  },
+  "interactions": {
+    "expandedEditor": "details, booking staff, add-ons, and inactive linked add-on visible",
+    "createDefaultOff": "passed",
+    "leaveWarning": "Discard unsaved service changes and leave this page?",
+    "atomicBatchReload": "two service drafts saved and reloaded",
+    "searchAndFilters": "passed",
+    "bookingTabs": "Appointments | Booking page | Availability | Settings"
+  },
+  "marker": "[E2E Services Gate] 20260717070127",
+  "metrics": {
+    "desktopCollapsed": {
+      "documentClientWidth": 1440,
+      "documentScrollWidth": 1440,
+      "horizontalOverflow": false,
+      "visibleElementOverflows": []
+    },
+    "tablet": {
+      "documentClientWidth": 820,
+      "documentScrollWidth": 820,
+      "horizontalOverflow": false,
+      "visibleElementOverflows": []
+    },
+    "mobile": {
+      "documentClientWidth": 390,
+      "documentScrollWidth": 390,
+      "horizontalOverflow": false,
+      "visibleElementOverflows": []
+    }
+  },
+  "networkErrors": [],
+  "pageErrors": [],
+  "screenshots": [
+    "services-desktop.png",
+    "services-desktop-expanded.png",
+    "services-create-drawer.png",
+    "services-tablet-expanded.png",
+    "services-mobile.png",
+    "services-mobile-expanded.png"
+  ],
+  "status": "passed"
+}

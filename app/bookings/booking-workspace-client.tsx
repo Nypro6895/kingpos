@@ -2078,7 +2078,7 @@ function DetailDrawer({
                     value={lineAssignments[index]?.staffId ?? ""}
                   >
                     <option value="">Unassigned</option>
-                    {staffForService(options, line.service_id).map((staff) => (
+                    {staffForService(options).map((staff) => (
                       <option key={staff.id} value={staff.id}>
                         {staff.display_name}
                       </option>
@@ -2128,19 +2128,8 @@ function actionSetForStatus(status: string) {
 
 function staffForService(
   options: BookingWorkspaceClientProps["options"],
-  serviceId: string | null,
 ) {
-  if (!serviceId) {
-    return options.staff;
-  }
-
-  const staffIds = new Set(
-    options.assignments
-      .filter((assignment) => assignment.service_id === serviceId && assignment.is_active)
-      .map((assignment) => assignment.staff_id),
-  );
-
-  return options.staff.filter((staff) => staffIds.has(staff.id));
+  return options.staff.filter((staff) => staff.is_active);
 }
 
 function selectedServices(options: BookingWorkspaceClientProps["options"], lines: DraftLine[]) {
@@ -2551,7 +2540,7 @@ function AppointmentDrawer({
               const service = options.services.find(
                 (candidate) => candidate.id === line.serviceId,
               );
-              const eligibleStaff = staffForService(options, line.serviceId);
+              const eligibleStaff = staffForService(options);
 
               return (
                 <label className="grid gap-1" key={`${line.serviceId}-${index}`}>
@@ -2574,17 +2563,6 @@ function AppointmentDrawer({
                       </option>
                     ))}
                   </select>
-                  {eligibleStaff.length === 0 ? (
-                    <span className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                      No active staff-service assignment for this service.{" "}
-                      <a
-                        className="font-semibold underline"
-                        href={`/services?service=${line.serviceId}&setup=bookable_staff`}
-                      >
-                        Assign services
-                      </a>
-                    </span>
-                  ) : null}
                 </label>
               );
             })}
@@ -2847,21 +2825,6 @@ function RequestsPanel({
   );
 }
 
-function firstStaffMissingAssignment(options: BookingWorkspaceClientProps["options"]) {
-  return (
-    options.staff.find(
-      (member) =>
-        member.is_active &&
-        !options.assignments.some(
-          (assignment) =>
-            assignment.staff_id === member.id &&
-            assignment.is_active &&
-            assignment.online_bookable,
-        ),
-    )?.id ?? null
-  );
-}
-
 function staffHasWorkingHours(
   options: BookingWorkspaceClientProps["options"],
   staffId: string,
@@ -2897,7 +2860,8 @@ function buildReadinessByStaff(input: {
           assignment.staff_id === member.id &&
           assignment.is_active &&
           assignment.online_bookable &&
-          service?.is_active === true
+          service?.is_active === true &&
+          service.online_booking_enabled === true
         );
       });
       const workingRules = input.options.availabilityRules.filter(
@@ -2992,12 +2956,13 @@ function bookingReadinessSteps(input: {
   warnings: BookingWorkspaceClientProps["warnings"];
 }) {
   const warningCodes = new Set(input.warnings.map((warning) => warning.code));
-  const missingAssignmentStaffId = firstStaffMissingAssignment(input.options);
   const missingAvailabilityStaffId = firstStaffMissingAvailability(input.options);
 
   return [
     {
-      complete: !warningCodes.has("missing_active_services"),
+      complete:
+        !warningCodes.has("missing_active_services") &&
+        !warningCodes.has("missing_online_services"),
       cta: "Manage services",
       href: "/services",
       id: "services",
@@ -3005,12 +2970,10 @@ function bookingReadinessSteps(input: {
     },
     {
       complete: !warningCodes.has("missing_staff_assignments"),
-      cta: "Assign services",
-      href: missingAssignmentStaffId
-        ? `/staff?staff=${missingAssignmentStaffId}&setup=booking`
-        : "/staff?setup=services",
+      cta: "Manage Booking staff",
+      href: "/services",
       id: "assignments",
-      label: "Staff service assignments",
+      label: "Booking staff",
     },
     {
       complete: !warningCodes.has("missing_availability"),

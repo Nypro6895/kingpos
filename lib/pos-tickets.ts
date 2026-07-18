@@ -82,7 +82,7 @@ export const POS_TICKET_CUSTOMER_OPTION_SELECT =
   "id, location_id, customer_user_id, name, phone, email, notes, staff_notes, internal_notes, source, status, created_by_user_id, updated_by_user_id, created_at, updated_at";
 
 export const POS_TICKET_SERVICE_OPTION_SELECT =
-  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, created_at, updated_at";
+  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 
 export const POS_TICKET_STAFF_OPTION_SELECT =
   "id, organization_id, salon_id, user_id, display_name, first_name, last_name, phone, email, job_title, is_active, created_at, updated_at";

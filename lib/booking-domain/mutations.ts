@@ -2,7 +2,6 @@ import "server-only";
 
 import {
   listStaffBookingConflicts,
-  validateStaffServiceEligibility,
 } from "@/lib/booking-domain/availability";
 import {
   bookingFailure,
@@ -444,20 +443,6 @@ export async function assignBookingStaff(
           "Booking line was not found for this booking.",
           "lineAssignments",
         );
-      }
-
-      if (assignment.staffId && line.service_id) {
-        const eligibility = await validateStaffServiceEligibility({
-          organizationId: context.organization.id,
-          salonId: context.salon.id,
-          serviceId: line.service_id,
-          staffId: assignment.staffId,
-          supabase: context.supabase,
-        });
-
-        if (!eligibility.ok) {
-          return eligibility;
-        }
       }
 
       const conflict = await ensureLineHasNoBlockingConflict({

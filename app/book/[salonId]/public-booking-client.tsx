@@ -340,11 +340,15 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
   const visibleServices = mainServices.filter(
     (service) => (service.category ?? "Services") === category,
   );
-  const total = summaryServices.reduce((sum, service) => sum + service.basePrice, 0);
-  const totalMinutes = summaryServices.reduce(
-    (sum, service) => sum + service.durationMinutes,
-    0,
-  );
+  const total = selectedSlot
+    ? selectedSlot.lines.reduce((sum, line) => sum + line.unitPrice, 0)
+    : summaryServices.reduce((sum, service) => sum + service.basePrice, 0);
+  const totalMinutes = selectedSlot
+    ? selectedSlot.lines.reduce((sum, line) => sum + line.durationMinutes, 0)
+    : summaryServices.reduce(
+        (sum, service) => sum + service.durationMinutes,
+        0,
+      );
 
   function chooseService(serviceId: string) {
     const service = mainServices.find((candidate) => candidate.id === serviceId);
@@ -1093,15 +1097,28 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             {summaryServices.length === 0 ? (
               <p className="text-[#786d78]">Choose a service to start.</p>
             ) : (
-              summaryServices.map((service) => (
-                <div className="flex justify-between gap-4" key={service.id}>
-                  <span>
-                    <span className="block font-extrabold text-[#211c24]">{service.name}</span>
-                    <span className="text-xs text-[#786d78]">{minutes(service.durationMinutes)}</span>
-                  </span>
-                  <span className="font-extrabold text-[#211c24]">{money(service.basePrice)}</span>
-                </div>
-              ))
+              summaryServices.map((service, index) => {
+                const slotLine = selectedSlot?.lines[index];
+
+                return (
+                  <div
+                    className="flex justify-between gap-4"
+                    key={`${service.id}-${index}`}
+                  >
+                    <span>
+                      <span className="block font-extrabold text-[#211c24]">
+                        {service.name}
+                      </span>
+                      <span className="text-xs text-[#786d78]">
+                        {minutes(slotLine?.durationMinutes ?? service.durationMinutes)}
+                      </span>
+                    </span>
+                    <span className="font-extrabold text-[#211c24]">
+                      {money(slotLine?.unitPrice ?? service.basePrice)}
+                    </span>
+                  </div>
+                );
+              })
             )}
           </div>
           {selectedSlot ? (

@@ -325,7 +325,11 @@ export async function getCurrentStaffAppointments(
     .map((assignment) => {
       const service = servicesById.get(assignment.service_id);
 
-      if (!service) {
+      if (
+        !service?.is_active ||
+        !service.online_booking_enabled ||
+        !assignment.online_bookable
+      ) {
         return null;
       }
 

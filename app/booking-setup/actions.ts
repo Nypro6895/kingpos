@@ -22,13 +22,6 @@ export type BookingSetupActionResult = {
   ok: boolean;
 };
 
-export type AssignmentDraftRow = {
-  assigned: boolean;
-  onlineBookable: boolean;
-  serviceId?: string;
-  staffId?: string;
-};
-
 export type WeeklyAvailabilityDraftRule = {
   dayOfWeek: number;
   effectiveEndDate?: string | null;
@@ -94,10 +87,6 @@ async function getActionContext() {
   };
 }
 
-function normalizeBoolean(value: boolean) {
-  return value === true;
-}
-
 function ensureUuid(value: string | undefined, label: string) {
   const clean = value?.trim();
 
@@ -112,70 +101,6 @@ function rpcPayload(value: unknown): JsonObject {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as JsonObject)
     : {};
-}
-
-export async function saveStaffServiceAssignmentsAction(input: {
-  rows: AssignmentDraftRow[];
-  staffId: string;
-}): Promise<BookingSetupActionResult> {
-  try {
-    const { salonId, supabase } = await getActionContext();
-    const payload = input.rows.map((row) => ({
-      assigned: normalizeBoolean(row.assigned),
-      online_bookable: normalizeBoolean(row.onlineBookable),
-      service_id: ensureUuid(row.serviceId, "Service"),
-    }));
-    const { error } = await supabase.rpc("save_staff_service_assignment_batch", {
-      p_assignments: payload,
-      p_salon_id: salonId,
-      p_staff_id: ensureUuid(input.staffId, "Staff"),
-    });
-
-    if (error) {
-      return failure(error.message);
-    }
-
-    revalidateBookingSetupPaths(salonId);
-    return { ok: true };
-  } catch (error) {
-    return failure(
-      error instanceof Error
-        ? error.message
-        : "Staff service assignments could not be saved.",
-    );
-  }
-}
-
-export async function saveServiceStaffAssignmentsAction(input: {
-  rows: AssignmentDraftRow[];
-  serviceId: string;
-}): Promise<BookingSetupActionResult> {
-  try {
-    const { salonId, supabase } = await getActionContext();
-    const payload = input.rows.map((row) => ({
-      assigned: normalizeBoolean(row.assigned),
-      online_bookable: normalizeBoolean(row.onlineBookable),
-      staff_id: ensureUuid(row.staffId, "Staff"),
-    }));
-    const { error } = await supabase.rpc("save_service_staff_assignment_batch", {
-      p_salon_id: salonId,
-      p_service_id: ensureUuid(input.serviceId, "Service"),
-      p_staff_assignments: payload,
-    });
-
-    if (error) {
-      return failure(error.message);
-    }
-
-    revalidateBookingSetupPaths(salonId);
-    return { ok: true };
-  } catch (error) {
-    return failure(
-      error instanceof Error
-        ? error.message
-        : "Service staff assignments could not be saved.",
-    );
-  }
 }
 
 export async function saveStaffWeeklyAvailabilityAction(input: {

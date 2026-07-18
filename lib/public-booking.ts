@@ -94,6 +94,7 @@ export type PublicBookingSlotLine = {
   staffId: string;
   staffName: string;
   startAt: string;
+  unitPrice: number;
 };
 
 export type PublicBookingSlot = {
@@ -951,6 +952,15 @@ function assignmentDuration(
   return assignment?.customDurationMinutes ?? service.durationMinutes;
 }
 
+function assignmentPrice(
+  context: RawContext,
+  service: PublicBookingService,
+  staffId: string,
+) {
+  const assignment = serviceAssignment(context, service.id, staffId);
+  return assignment?.customPrice ?? service.basePrice;
+}
+
 function buildSlotPlan(
   context: RawContext,
   request: PublicBookingSlotRequest,
@@ -1034,6 +1044,7 @@ function buildSlotPlan(
       staffId: chosen,
       staffName: staff?.displayName ?? "Professional",
       startAt: new Date(cursorMs).toISOString(),
+      unitPrice: assignmentPrice(context, line.service, chosen),
     });
 
     cursorMs = endMs;
@@ -1522,6 +1533,7 @@ function parseGuestManagePayload(payload: unknown): GuestManagePageData {
         staffId,
         staffName: nonEmptyString(line.staff_name) ?? "Professional",
         startAt: lineStart,
+        unitPrice: numberValue(line.unit_price, 0),
       } satisfies PublicBookingSlotLine;
     })
     .filter((item): item is PublicBookingSlotLine => Boolean(item));
