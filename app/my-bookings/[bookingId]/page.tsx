@@ -277,6 +277,57 @@ function SalonImage({ booking }: { booking: CustomerBookingDetail }) {
   );
 }
 
+function InspirationSection({ booking }: { booking: CustomerBookingDetail }) {
+  const inspiration = booking.inspiration;
+
+  if (!inspiration) {
+    return null;
+  }
+
+  return (
+    <section className="rounded-2xl border border-[#e7dfe5] bg-white p-4">
+      <div>
+        <h2 className="text-lg font-extrabold text-[#211c24]">Your inspiration</h2>
+        <p className="mt-1 text-sm text-[#786d78]">
+          Saved from the public look you booked.
+        </p>
+      </div>
+      <div className="mt-4 grid gap-4 sm:grid-cols-[112px_1fr]">
+        <div className="h-28 w-28 overflow-hidden rounded-xl bg-[#f7f2f7]">
+          {inspiration.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt="" className="h-full w-full object-cover" src={inspiration.imageUrl} />
+          ) : (
+            <span className="grid h-full w-full place-items-center text-sm font-extrabold text-[#642a56]">
+              Look
+            </span>
+          )}
+        </div>
+        <div className="min-w-0">
+          <h3 className="line-clamp-2 text-base font-extrabold text-[#211c24]">
+            {inspiration.source_title_snapshot ?? "Booked look"}
+          </h3>
+          <p className="mt-2 text-sm font-extrabold text-[#642a56]">
+            {[
+              inspiration.service_name_snapshot,
+              inspiration.credited_staff_name_snapshot
+                ? `By ${inspiration.credited_staff_name_snapshot}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" / ") || "Saved with this booking"}
+          </p>
+          {inspiration.source_caption_snapshot ? (
+            <p className="mt-2 line-clamp-3 text-sm leading-6 text-[#786d78]">
+              {inspiration.source_caption_snapshot}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function MyBookingDetailPage({
   params,
   searchParams,
@@ -375,6 +426,8 @@ export default async function MyBookingDetailPage({
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <div className="grid gap-5">
+            <InspirationSection booking={booking} />
+
             <section className="grid gap-3">
               <div>
                 <h2 className="text-lg font-extrabold text-[#211c24]">

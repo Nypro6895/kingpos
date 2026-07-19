@@ -531,6 +531,61 @@ function ListView({
   );
 }
 
+function AppointmentInspiration({
+  appointment,
+}: {
+  appointment: StaffAppointmentLine;
+}) {
+  const inspiration = appointment.inspiration;
+
+  if (!inspiration) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-lg bg-zinc-50 p-3">
+      <dt className="font-semibold text-zinc-950">Customer inspiration</dt>
+      <dd className="mt-2 grid gap-3 sm:grid-cols-[80px_1fr]">
+        <a
+          className="block h-20 w-20 overflow-hidden rounded-lg bg-zinc-100"
+          href={inspiration.imageUrl ?? undefined}
+          rel="noreferrer"
+          target={inspiration.imageUrl ? "_blank" : undefined}
+        >
+          {inspiration.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt="" className="h-full w-full object-cover" src={inspiration.imageUrl} />
+          ) : (
+            <span className="grid h-full w-full place-items-center text-sm font-semibold text-zinc-500">
+              Look
+            </span>
+          )}
+        </a>
+        <span className="min-w-0 text-zinc-700">
+          <span className="block font-semibold text-zinc-950">
+            {inspiration.source_title_snapshot ?? "Booked look"}
+          </span>
+          <span className="mt-1 block text-sm">
+            {[
+              inspiration.service_name_snapshot,
+              inspiration.credited_staff_name_snapshot
+                ? `By ${inspiration.credited_staff_name_snapshot}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" / ") || "Saved with this booking"}
+          </span>
+          {inspiration.source_caption_snapshot ? (
+            <span className="mt-2 line-clamp-2 block text-sm text-zinc-600">
+              {inspiration.source_caption_snapshot}
+            </span>
+          ) : null}
+        </span>
+      </dd>
+    </div>
+  );
+}
+
 function DetailPanel({
   appointment,
   canViewTickets,
@@ -590,6 +645,7 @@ function DetailPanel({
           <dt className="font-semibold text-zinc-950">Service</dt>
           <dd className="text-zinc-700">{appointment.serviceName}</dd>
         </div>
+        <AppointmentInspiration appointment={appointment} />
         <div>
           <dt className="font-semibold text-zinc-950">Contact</dt>
           <dd className="text-zinc-700">

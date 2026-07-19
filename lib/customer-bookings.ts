@@ -6,6 +6,10 @@ import {
   formatDateInTimeZone,
 } from "@/lib/bookings";
 import {
+  BOOKING_INSPIRATION_SELECT,
+  mapBookingInspirationsByBookingId,
+} from "@/lib/booking-inspirations";
+import {
   normalizeBookingEmail,
   normalizeBookingPhone,
 } from "@/lib/booking-domain/customer-identity";
@@ -21,7 +25,13 @@ import {
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
 import { getCurrentKingUser } from "@/lib/users/current-user";
-import type { Booking, BookingLine, BookingStatusEvent } from "@/types/booking";
+import type {
+  Booking,
+  BookingInspiration,
+  BookingInspirationView,
+  BookingLine,
+  BookingStatusEvent,
+} from "@/types/booking";
 import type { Customer } from "@/types/customer";
 
 const GENERIC_DISCOVERY_MESSAGE =
@@ -160,6 +170,7 @@ export type CustomerBookingSalon = CustomerBookingRawSalon & {
 
 export type CustomerBookingSummary = Booking & {
   customer: Pick<Customer, "email" | "id" | "name" | "phone"> | null;
+  inspiration: BookingInspirationView | null;
   lines?: CustomerBookingLine[];
   salon: CustomerBookingSalon | null;
 };
@@ -473,6 +484,29 @@ async function loadServiceBookableRows(
   );
 }
 
+async function loadBookingInspirations(
+  context: CustomerBookingContext,
+  bookingIds: string[],
+) {
+  const uniqueBookingIds = [...new Set(bookingIds.map(cleanUuid).filter(Boolean))] as string[];
+
+  if (uniqueBookingIds.length === 0) {
+    return new Map<string, BookingInspirationView>();
+  }
+
+  const { data, error } = await context.supabase
+    .from("booking_inspirations")
+    .select(BOOKING_INSPIRATION_SELECT)
+    .in("booking_id", uniqueBookingIds)
+    .returns<BookingInspiration[]>();
+
+  if (error) {
+    return new Map<string, BookingInspirationView>();
+  }
+
+  return mapBookingInspirationsByBookingId(data);
+}
+
 function hydrateSalon(
   salon: CustomerBookingRawSalon | null,
   setting: SalonSettingRow | undefined,
@@ -522,6 +556,7 @@ async function hydrateRows<T extends CustomerBookingRaw>(
     staffById,
     publicStaffById,
     serviceBookableById,
+    inspirationsByBookingId,
   ] =
     await Promise.all([
     loadSalonSettings(
@@ -532,6 +567,10 @@ async function hydrateRows<T extends CustomerBookingRaw>(
     loadStaffRows(context, allLines),
     loadPublicStaffRows(rows.map((row) => row.salon_id)),
     loadServiceBookableRows(context, allLines),
+    loadBookingInspirations(
+      context,
+      rows.map((row) => row.id),
+    ),
   ]);
 
   return rows.map((row) => {
@@ -549,6 +588,7 @@ async function hydrateRows<T extends CustomerBookingRaw>(
 
     return {
       ...row,
+      inspiration: inspirationsByBookingId.get(row.id) ?? null,
       lines,
       salon: hydrateSalon(
         row.salon,

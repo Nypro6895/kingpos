@@ -1047,9 +1047,22 @@ function InspirationPreview({
           </div>
 
           <div className="flex flex-wrap gap-2">
+            {item.bookingHref ? (
+              <Link
+                className="inline-flex min-h-10 items-center rounded-md bg-[#642a56] px-4 text-sm font-semibold text-white hover:bg-[#552149] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#642a56]"
+                href={item.bookingHref}
+              >
+                Book this look
+              </Link>
+            ) : null}
             {item.salonHref ? (
               <Link
-                className="inline-flex min-h-10 items-center rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                className={[
+                  "inline-flex min-h-10 items-center rounded-md px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
+                  item.bookingHref
+                    ? "border border-zinc-300 text-zinc-950 hover:bg-zinc-50 focus-visible:outline-zinc-950"
+                    : "bg-zinc-950 text-white hover:bg-zinc-800 focus-visible:outline-zinc-950",
+                ].join(" ")}
                 href={item.salonHref}
               >
                 View salon

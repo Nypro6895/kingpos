@@ -1,12 +1,17 @@
 import "server-only";
 
 import { formatDateInTimeZone, zonedDateTimeToUtcIso } from "@/lib/bookings";
+import { mapBookingInspiration } from "@/lib/booking-inspirations";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
 import { getCurrentKingUser } from "@/lib/users/current-user";
+import type {
+  BookingInspiration,
+  BookingInspirationView,
+} from "@/types/booking";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -28,6 +33,7 @@ export type PublicBookingPageState =
 
 export type PublicBookingSearchParams = {
   date?: string | string[];
+  inspiration?: string | string[];
   lookId?: string | string[];
   serviceId?: string | string[];
   source?: string | string[];
@@ -82,9 +88,34 @@ export type PublicBookingStaff = {
 };
 
 export type PublicBookingLook = {
+  bookingNote: string | null;
+  caption: string | null;
+  imageUrl: string | null;
   id: string;
   recommendedStaffId: string | null;
+  recommendedStaffName: string | null;
   serviceId: string | null;
+  serviceName: string | null;
+  title: string;
+};
+
+export type PublicBookingInspirationStatus =
+  | "ready"
+  | "service_unavailable"
+  | "staff_unavailable"
+  | "unavailable";
+
+export type PublicBookingInspiration = {
+  bookingNote: string | null;
+  caption: string | null;
+  id: string;
+  imageUrl: string | null;
+  message: string | null;
+  serviceId: string | null;
+  serviceName: string | null;
+  staffId: string | null;
+  staffName: string | null;
+  status: PublicBookingInspirationStatus;
   title: string;
 };
 
@@ -115,6 +146,8 @@ export type PublicBookingInitialSelection = {
   addOnSelections: PublicBookingAddOnSelection[];
   addOnServiceIds: string[];
   date: string;
+  initialStep: number;
+  inspiration: PublicBookingInspiration | null;
   lookId: string | null;
   serviceId: string | null;
   serviceIds: string[];
@@ -228,6 +261,7 @@ export type GuestManageBooking = {
     name: string | null;
     phone: string | null;
   };
+  inspiration: BookingInspirationView | null;
   lines: PublicBookingSlotLine[];
   salon: {
     addressLine1: string | null;
@@ -567,9 +601,14 @@ function parseContextPayload(payload: unknown): RawContext {
         }
 
         return {
+          bookingNote: nonEmptyString(look.booking_note),
+          caption: nonEmptyString(look.caption),
+          imageUrl: getSalonProfileMediaUrl(nonEmptyString(look.media_path)),
           id,
           recommendedStaffId: cleanUuid(look.recommended_staff_id),
+          recommendedStaffName: nonEmptyString(look.recommended_staff_name),
           serviceId: cleanUuid(look.service_id),
+          serviceName: nonEmptyString(look.service_name),
           title: nonEmptyString(look.title) ?? "Look",
         } satisfies PublicBookingLook;
       })
@@ -678,6 +717,8 @@ function unavailablePage(
       addOnSelections: [],
       addOnServiceIds: [],
       date: formatDateInTimeZone(new Date(), "America/Chicago"),
+      initialStep: 0,
+      inspiration: null,
       lookId: null,
       serviceId: null,
       serviceIds: [],
@@ -1237,48 +1278,167 @@ function firstBookableServiceId(context: RawContext) {
   );
 }
 
+function inspirationParam(params: PublicBookingSearchParams) {
+  return (
+    cleanUuid(singleParam(params.inspiration)) ??
+    cleanUuid(singleParam(params.lookId))
+  );
+}
+
+function lookServiceEligible(context: RawContext, look: PublicBookingLook | null) {
+  if (!look?.serviceId) {
+    return false;
+  }
+
+  const service = context.serviceMap.get(look.serviceId);
+
+  return Boolean(
+    service &&
+      !service.isAddOnOnly &&
+      eligibleStaffIds(context, service.id).length > 0,
+  );
+}
+
+function buildInspiration(input: {
+  id: string;
+  look: PublicBookingLook | null;
+  serviceEligible: boolean;
+  staffEligible: boolean;
+  staffId: string | null;
+}): PublicBookingInspiration {
+  const { id, look, serviceEligible, staffEligible, staffId } = input;
+
+  if (!look) {
+    return {
+      bookingNote: null,
+      caption: null,
+      id,
+      imageUrl: null,
+      message: "This look is no longer available for public booking.",
+      serviceId: null,
+      serviceName: null,
+      staffId: null,
+      staffName: null,
+      status: "unavailable",
+      title: "Look unavailable",
+    };
+  }
+
+  if (!serviceEligible) {
+    return {
+      bookingNote: look.bookingNote,
+      caption: look.caption,
+      id: look.id,
+      imageUrl: look.imageUrl,
+      message: "This look's original service is currently unavailable.",
+      serviceId: look.serviceId,
+      serviceName: look.serviceName,
+      staffId: null,
+      staffName: look.recommendedStaffName,
+      status: "service_unavailable",
+      title: look.title,
+    };
+  }
+
+  if (look.recommendedStaffId && !staffEligible) {
+    return {
+      bookingNote: look.bookingNote,
+      caption: look.caption,
+      id: look.id,
+      imageUrl: look.imageUrl,
+      message: "This look's credited professional is not available online for the selected service.",
+      serviceId: look.serviceId,
+      serviceName: look.serviceName,
+      staffId: null,
+      staffName: look.recommendedStaffName,
+      status: "staff_unavailable",
+      title: look.title,
+    };
+  }
+
+  return {
+    bookingNote: look.bookingNote,
+    caption: look.caption,
+    id: look.id,
+    imageUrl: look.imageUrl,
+    message: null,
+    serviceId: look.serviceId,
+    serviceName: look.serviceName,
+    staffId,
+    staffName: look.recommendedStaffName,
+    status: "ready",
+    title: look.title,
+  };
+}
+
 function normalizeInitialSelection(
   context: RawContext,
   params: PublicBookingSearchParams,
 ): PublicBookingInitialSelection {
   const settings = context.settings;
   const source = cleanSource(singleParam(params.source));
-  const lookId = cleanUuid(singleParam(params.lookId));
-  const look = lookId ? context.looks.find((item) => item.id === lookId) : null;
-  const requestedServiceId = cleanUuid(singleParam(params.serviceId));
-  const requestedStaffId = cleanUuid(singleParam(params.staffId));
-  const serviceId =
-    (requestedServiceId &&
-    context.serviceMap.has(requestedServiceId) &&
-    !context.serviceMap.get(requestedServiceId)?.isAddOnOnly
-      ? requestedServiceId
-      : null) ??
-    (look?.serviceId &&
-    context.serviceMap.has(look.serviceId) &&
-    !context.serviceMap.get(look.serviceId)?.isAddOnOnly
-      ? look.serviceId
-      : null) ??
-    firstBookableServiceId(context);
+  const inspirationId = inspirationParam(params);
+  const look = inspirationId
+    ? context.looks.find((item) => item.id === inspirationId) ?? null
+    : null;
+  const hasInspiration = Boolean(inspirationId);
+  const requestedServiceId = hasInspiration ? null : cleanUuid(singleParam(params.serviceId));
+  const requestedStaffId = hasInspiration ? null : cleanUuid(singleParam(params.staffId));
+  const inspirationServiceEligible = lookServiceEligible(context, look);
+  const serviceId = hasInspiration
+    ? inspirationServiceEligible
+      ? look?.serviceId ?? null
+      : null
+    : (requestedServiceId &&
+      context.serviceMap.has(requestedServiceId) &&
+      !context.serviceMap.get(requestedServiceId)?.isAddOnOnly
+        ? requestedServiceId
+        : null) ?? firstBookableServiceId(context);
   const serviceStaff = serviceId ? eligibleStaffIds(context, serviceId) : [];
+  const inspirationStaffEligible = Boolean(
+    look?.recommendedStaffId && serviceStaff.includes(look.recommendedStaffId),
+  );
   const staffId =
     requestedStaffId && serviceStaff.includes(requestedStaffId)
       ? requestedStaffId
-      : look?.recommendedStaffId && serviceStaff.includes(look.recommendedStaffId)
+      : look?.recommendedStaffId && inspirationStaffEligible
         ? look.recommendedStaffId
         : null;
   const timezone = settings?.timezoneIana ?? "America/Chicago";
   const date = cleanDate(singleParam(params.date)) ?? formatDateInTimeZone(new Date(), timezone);
+  const inspiration = inspirationId
+    ? buildInspiration({
+        id: inspirationId,
+        look,
+        serviceEligible: inspirationServiceEligible,
+        staffEligible: inspirationStaffEligible,
+        staffId,
+      })
+    : null;
+  const staffMode = staffId
+    ? "specific"
+    : settings?.anyProfessionalEnabled === false
+      ? "specific"
+      : "any";
+  const initialStep =
+    inspiration && serviceId
+      ? staffId || settings?.anyProfessionalEnabled !== false
+        ? 2
+        : 1
+      : 0;
 
   return {
     addOnSelections: [],
     addOnServiceIds: [],
     date,
+    initialStep,
+    inspiration,
     lookId: look?.id ?? null,
     serviceId,
     serviceIds: serviceId ? [serviceId] : [],
     source,
     staffId,
-    staffMode: staffId ? "specific" : settings?.anyProfessionalEnabled === false ? "specific" : "any",
+    staffMode,
   };
 }
 
@@ -1372,18 +1532,33 @@ export async function getPublicBookingPageData(
     },
     { limit: 24 },
   );
+  const probeServiceId =
+    initialSelection.serviceId ?? firstBookableServiceId(context);
+  const probeStaffIds = probeServiceId ? eligibleStaffIds(context, probeServiceId) : [];
+  const probeStaffMode =
+    initialSelection.serviceId
+      ? initialSelection.staffMode
+      : context.settings?.anyProfessionalEnabled === false
+        ? "specific"
+        : "any";
   const anyFutureSlots =
     slots.length > 0 ||
-    generatePublicBookingSlots(
-      context,
-      {
-        serviceId: initialSelection.serviceId,
-        serviceIds: initialSelection.serviceIds,
-        staffId: initialSelection.staffId,
-        staffMode: initialSelection.staffMode,
-      },
-      { limit: 1 },
-    ).length > 0;
+    (probeServiceId
+      ? generatePublicBookingSlots(
+          context,
+          {
+            serviceId: probeServiceId,
+            serviceIds: [probeServiceId],
+            staffId: initialSelection.serviceId
+              ? initialSelection.staffId
+              : probeStaffMode === "specific"
+                ? probeStaffIds[0] ?? null
+                : null,
+            staffMode: probeStaffMode,
+          },
+          { limit: 1 },
+        ).length > 0
+      : false);
 
   if (!anyFutureSlots) {
     return unavailablePage(
@@ -1645,6 +1820,53 @@ function cleanManageToken(value: string) {
   return /^[a-f0-9]{64}$/i.test(token) ? token : null;
 }
 
+function parseBookingInspirationPayload(value: unknown) {
+  const row = asRecord(value);
+  const id = cleanUuid(row.id);
+  const bookingId = cleanUuid(row.booking_id);
+  const sourceSalonId = cleanUuid(row.source_salon_id);
+
+  if (!id || !bookingId || !sourceSalonId) {
+    return null;
+  }
+
+  const inspiration: BookingInspiration = {
+    booking_id: bookingId,
+    booking_line_id: cleanUuid(row.booking_line_id),
+    created_at: toIso(row.created_at) ?? new Date(0).toISOString(),
+    credited_staff_id: cleanUuid(row.credited_staff_id),
+    credited_staff_name_snapshot: nonEmptyString(row.credited_staff_name_snapshot),
+    id,
+    metadata: asRecord(row.metadata),
+    organization_id: cleanUuid(row.organization_id) ?? "",
+    salon_id: cleanUuid(row.salon_id) ?? sourceSalonId,
+    salon_name_snapshot: nonEmptyString(row.salon_name_snapshot),
+    service_id: cleanUuid(row.service_id),
+    service_name_snapshot: nonEmptyString(row.service_name_snapshot),
+    source_booking_note_snapshot: nonEmptyString(row.source_booking_note_snapshot),
+    source_caption_snapshot: nonEmptyString(row.source_caption_snapshot),
+    source_content_id: cleanUuid(row.source_content_id),
+    source_media_asset_id: cleanUuid(row.source_media_asset_id),
+    source_media_bucket: nonEmptyString(row.source_media_bucket) ?? "salon-profile-media",
+    source_media_height:
+      row.source_media_height === null || row.source_media_height === undefined
+        ? null
+        : Math.round(numberValue(row.source_media_height, 0)) || null,
+    source_media_mime_type: nonEmptyString(row.source_media_mime_type),
+    source_media_path: nonEmptyString(row.source_media_path),
+    source_media_width:
+      row.source_media_width === null || row.source_media_width === undefined
+        ? null
+        : Math.round(numberValue(row.source_media_width, 0)) || null,
+    source_salon_id: sourceSalonId,
+    source_title_snapshot: nonEmptyString(row.source_title_snapshot),
+    source_type: nonEmptyString(row.source_type) ?? "salon_profile_look",
+    updated_at: toIso(row.updated_at) ?? new Date(0).toISOString(),
+  };
+
+  return mapBookingInspiration(inspiration);
+}
+
 function parseGuestManagePayload(payload: unknown): GuestManagePageData {
   const row = asRecord(payload);
 
@@ -1659,6 +1881,7 @@ function parseGuestManagePayload(payload: unknown): GuestManagePageData {
   const booking = asRecord(row.booking);
   const salon = asRecord(row.salon);
   const customer = asRecord(row.customer);
+  const inspiration = parseBookingInspirationPayload(row.inspiration);
   const salonId = cleanUuid(booking.salon_id);
   const startAt = toIso(booking.start_at);
   const endAt = toIso(booking.end_at);
@@ -1721,6 +1944,7 @@ function parseGuestManagePayload(payload: unknown): GuestManagePageData {
         name: nonEmptyString(customer.name),
         phone: nonEmptyString(customer.phone),
       },
+      inspiration,
       lines,
       salon: {
         addressLine1: nonEmptyString(salon.address_line1),

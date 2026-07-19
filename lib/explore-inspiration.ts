@@ -31,6 +31,9 @@ type ExploreInspirationRow = {
   aspect_ratio: number | string | null;
   author_display_name: string | null;
   author_is_anonymous: boolean | null;
+  bookable_service_id: string | null;
+  booking_enabled: boolean | null;
+  booking_href: string | null;
   caption_excerpt: string | null;
   content_id: string;
   content_type: string;
@@ -163,6 +166,14 @@ function mapInspirationRow(
     aspectRatio,
     authorDisplayName: cleanString(row.author_display_name),
     authorIsAnonymous: row.author_is_anonymous === true,
+    bookableServiceId: UUID_PATTERN.test(row.bookable_service_id ?? "")
+      ? row.bookable_service_id
+      : null,
+    bookingEnabled: row.booking_enabled === true,
+    bookingHref:
+      row.booking_enabled === true && row.content_type === "look"
+        ? cleanString(row.booking_href)
+        : null,
     captionExcerpt: cleanString(row.caption_excerpt),
     contentId: row.content_id,
     contentType: row.content_type,

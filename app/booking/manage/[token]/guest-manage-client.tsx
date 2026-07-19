@@ -73,6 +73,52 @@ function ErrorState({ message }: { message: string }) {
   );
 }
 
+function InspirationBand({
+  inspiration,
+}: {
+  inspiration: Extract<GuestManagePageData, { ok: true }>["booking"]["inspiration"];
+}) {
+  if (!inspiration) {
+    return null;
+  }
+
+  return (
+    <div className="mt-5 grid gap-3 rounded-lg bg-[#f7f2f7] p-3 sm:grid-cols-[80px_1fr]">
+      <div className="h-20 w-20 overflow-hidden rounded-lg bg-white">
+        {inspiration.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img alt="" className="h-full w-full object-cover" src={inspiration.imageUrl} />
+        ) : (
+          <span className="grid h-full w-full place-items-center text-sm font-extrabold text-[#642a56]">
+            Look
+          </span>
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className={styles.eyebrow}>Your inspiration</p>
+        <h3 className="mt-1 line-clamp-2 text-base font-extrabold text-[#211c24]">
+          {inspiration.source_title_snapshot ?? "Booked look"}
+        </h3>
+        <p className="mt-1 text-sm font-semibold text-[#642a56]">
+          {[
+            inspiration.service_name_snapshot,
+            inspiration.credited_staff_name_snapshot
+              ? `By ${inspiration.credited_staff_name_snapshot}`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" / ") || "Saved with this booking"}
+        </p>
+        {inspiration.source_caption_snapshot ? (
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#786d78]">
+            {inspiration.source_caption_snapshot}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function GuestManageClient({
   claimIntent,
   currentUser,
@@ -271,6 +317,7 @@ function GuestManageReady({
                 </li>
               ))}
             </ul>
+            <InspirationBand inspiration={data.booking.inspiration} />
           </section>
 
           {booking.canChange ? (

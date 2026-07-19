@@ -1,0 +1,47 @@
+{
+  "baseUrl": "http://127.0.0.1:3400",
+  "bookingHref": "/book/7f599bc8-a806-4a68-be86-c149c21709e2?source=explore&inspiration=8aaa6b9c-fef2-4c51-b8f4-5c07fc2d9539",
+  "checks": {
+    "exploreBookLink": true,
+    "bookingCardDesktop": true,
+    "initialStepDateTimeDesktop": true,
+    "mobileCardVisible": true
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    {
+      "errorText": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:3400/explore/salons/7f599bc8-a806-4a68-be86-c149c21709e2?_rsc=TLJ23gVnbrIc7BPU"
+    },
+    {
+      "errorText": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:3400/book/7f599bc8-a806-4a68-be86-c149c21709e2?source=explore&inspiration=8aaa6b9c-fef2-4c51-b8f4-5c07fc2d9539&_rsc=TLJ23gVnbrIc7BPU"
+    },
+    {
+      "errorText": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:3400/book/7f599bc8-a806-4a68-be86-c149c21709e2?source=explore&inspiration=8aaa6b9c-fef2-4c51-b8f4-5c07fc2d9539&_rsc=-ZlQGheqjI7_E2Fu"
+    },
+    {
+      "errorText": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:3400/explore/salons/7f599bc8-a806-4a68-be86-c149c21709e2?_rsc=-ZlQGheqjI7_E2Fu"
+    },
+    {
+      "errorText": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:3400/book/7f599bc8-a806-4a68-be86-c149c21709e2?source=explore&inspiration=8aaa6b9c-fef2-4c51-b8f4-5c07fc2d9539"
+    },
+    {
+      "errorText": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:3400/book/7f599bc8-a806-4a68-be86-c149c21709e2?source=explore&inspiration=8aaa6b9c-fef2-4c51-b8f4-5c07fc2d9539"
+    },
+    {
+      "errorText": "net::ERR_ABORTED",
+      "url": "http://127.0.0.1:3400/book/7f599bc8-a806-4a68-be86-c149c21709e2?source=explore&inspiration=8aaa6b9c-fef2-4c51-b8f4-5c07fc2d9539"
+    }
+  ],
+  "screenshots": {
+    "exploreDesktop": "C:\\Users\\giuse\\kingpos\\artifacts\\booking-inspiration-qa\\explore-book-this-look-desktop.png",
+    "bookingDesktop": "C:\\Users\\giuse\\kingpos\\artifacts\\booking-inspiration-qa\\public-booking-inspiration-desktop.png",
+    "bookingMobile": "C:\\Users\\giuse\\kingpos\\artifacts\\booking-inspiration-qa\\public-booking-inspiration-mobile.png"
+  }
+}

@@ -208,14 +208,20 @@ function groupBookings(bookings: CustomerBookingSummary[]) {
 
 function SalonThumb({ booking }: { booking: CustomerBookingSummary }) {
   const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "KingPOS salon";
-  const imageUrl = booking.salon?.logoUrl ?? booking.salon?.coverUrl;
+  const imageUrl =
+    booking.inspiration?.imageUrl ??
+    booking.salon?.logoUrl ??
+    booking.salon?.coverUrl;
+  const alt = booking.inspiration?.imageUrl
+    ? "Saved booking inspiration"
+    : `${salonName} salon`;
 
   return (
     <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#efe8f3] text-sm font-extrabold text-[#642a56]">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          alt={`${salonName} salon`}
+          alt={alt}
           className="h-full w-full object-cover"
           src={imageUrl}
         />

@@ -99,6 +99,9 @@ export type ExploreInspirationItem = {
   aspectRatio: number | null;
   authorDisplayName: string | null;
   authorIsAnonymous: boolean;
+  bookableServiceId: string | null;
+  bookingEnabled: boolean;
+  bookingHref: string | null;
   captionExcerpt: string | null;
   contentId: string;
   contentType: "look" | "update";

@@ -2971,16 +2971,17 @@ export function SalonProfileView({
   function bookingHref(context: BookingContext) {
     const params = new URLSearchParams({ source: "public_profile" });
 
+    if (context?.lookId) {
+      params.set("inspiration", context.lookId);
+      return `/book/${profile.salonId}?${params.toString()}`;
+    }
+
     if (context?.serviceId) {
       params.set("serviceId", context.serviceId);
     }
 
     if (context?.staffId) {
       params.set("staffId", context.staffId);
-    }
-
-    if (context?.lookId) {
-      params.set("lookId", context.lookId);
     }
 
     return `/book/${profile.salonId}?${params.toString()}`;

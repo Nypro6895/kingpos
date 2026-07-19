@@ -4,6 +4,10 @@ import {
   getCurrentBusinessContext,
   isSalonManageContext,
 } from "@/lib/current-context";
+import {
+  BOOKING_INSPIRATION_SELECT,
+  mapBookingInspirationsByBookingId,
+} from "@/lib/booking-inspirations";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { POS_TICKET_WITH_RELATIONS_SELECT } from "@/lib/pos-tickets";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
@@ -11,6 +15,8 @@ import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type {
   Booking,
+  BookingInspiration,
+  BookingInspirationView,
   BookingLine,
   BookingSettings,
   BookingSource,
@@ -112,6 +118,7 @@ export type BookingWorkspaceItem = Booking & {
   durationMinutes: number;
   events: BookingStatusEvent[];
   hasOverbookingOverride: boolean;
+  inspiration: BookingInspirationView | null;
   lines: BookingWorkspaceLine[];
   normalizedStatus: Exclude<BookingStatus, "scheduled">;
   posTicket: BookingWorkspaceTicketSummary | null;
@@ -648,6 +655,7 @@ function matchesBookingFilters(input: {
 function mapBookings(input: {
   bookings: BookingWithCustomerStaffRow[];
   events: BookingStatusEvent[];
+  inspirationsByBookingId?: Map<string, BookingInspirationView>;
   lines: BookingLine[];
   staff: Staff[];
   ticketsByBookingId?: Map<string, BookingWorkspaceTicketSummary>;
@@ -702,6 +710,7 @@ function mapBookings(input: {
       hasOverbookingOverride: lines.some((line) =>
         Boolean(line.overbooking_override_reason),
       ),
+      inspiration: input.inspirationsByBookingId?.get(booking.id) ?? null,
       lines,
       normalizedStatus: normalizeBookingStatus(booking.status),
       posTicket: input.ticketsByBookingId?.get(booking.id) ?? null,
@@ -1003,7 +1012,7 @@ export async function getCurrentSalonBookingWorkspace(
   ]
     .filter((clause): clause is string => Boolean(clause))
     .join(",");
-  const [linesResult, eventsResult, ticketsResult] =
+  const [linesResult, eventsResult, ticketsResult, inspirationsResult] =
     bookingIds.length > 0
       ? await Promise.all([
           supabase
@@ -1024,15 +1033,25 @@ export async function getCurrentSalonBookingWorkspace(
             .eq("salon_id", salon.id)
             .or(ticketLookupOr)
             .returns<PosTicketWithRelations[]>(),
+          supabase
+            .from("booking_inspirations")
+            .select(BOOKING_INSPIRATION_SELECT)
+            .in("booking_id", bookingIds)
+            .returns<BookingInspiration[]>(),
         ])
       : [
           { data: [] as BookingLine[], error: null },
           { data: [] as BookingStatusEvent[], error: null },
           { data: [] as PosTicketWithRelations[], error: null },
+          { data: [] as BookingInspiration[], error: null },
         ];
 
-  if (linesResult.error || eventsResult.error || ticketsResult.error) {
-    const error = linesResult.error ?? eventsResult.error ?? ticketsResult.error;
+  if (linesResult.error || eventsResult.error || ticketsResult.error || inspirationsResult.error) {
+    const error =
+      linesResult.error ??
+      eventsResult.error ??
+      ticketsResult.error ??
+      inspirationsResult.error;
     console.error("Supabase load booking details failed", {
       code: error?.code,
       details: error?.details,
@@ -1056,6 +1075,9 @@ export async function getCurrentSalonBookingWorkspace(
   const bookings = mapBookings({
     bookings: loadedBookingRows,
     events: eventsResult.data ?? [],
+    inspirationsByBookingId: mapBookingInspirationsByBookingId(
+      inspirationsResult.data ?? [],
+    ),
     lines: linesResult.data ?? [],
     staff: staffResult.data ?? [],
     ticketsByBookingId,

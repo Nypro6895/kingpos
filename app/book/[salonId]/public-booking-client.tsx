@@ -33,6 +33,8 @@ type StoredBookingDraft = {
   customer: CustomerDraft;
   date: string;
   identityMode?: BookingIdentityMode;
+  inspirationId?: string | null;
+  inspirationRemoved?: boolean;
   lineStaffByKey: Record<string, string>;
   selectedAddOnSelections: PublicBookingAddOnSelection[];
   selectedServiceIds: string[];
@@ -40,7 +42,7 @@ type StoredBookingDraft = {
   staffId: string;
   staffMode: PublicBookingStaffMode;
   step: number;
-  version: 1;
+  version: 2;
 };
 
 type SummaryLine = {
@@ -131,7 +133,7 @@ const STEP_TIME = 2;
 const STEP_DETAILS = 3;
 const STEP_REVIEW = 4;
 const STEP_DONE = 5;
-const PUBLIC_BOOKING_DRAFT_VERSION = 1;
+const PUBLIC_BOOKING_DRAFT_VERSION = 2;
 
 function classNames(...classes: (false | null | string | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -499,16 +501,127 @@ function slotHour(slot: PublicBookingSlot, timezone: string) {
   );
 }
 
+function BookingInspirationCard({
+  compact = false,
+  inspiration,
+  onChangeProfessional,
+  onChangeService,
+  onRemove,
+}: {
+  compact?: boolean;
+  inspiration: NonNullable<PublicBookingPageData["initialSelection"]["inspiration"]>;
+  onChangeProfessional?: () => void;
+  onChangeService?: () => void;
+  onRemove?: () => void;
+}) {
+  const serviceLabel = inspiration.serviceName ?? "Mapped service";
+  const staffLabel = inspiration.staffName ? `By ${inspiration.staffName}` : null;
+
+  return (
+    <section
+      className={classNames(
+        compact
+          ? "grid grid-cols-[64px_1fr] gap-3 rounded-lg bg-[#f7f2f7] p-3"
+          : classNames(styles.publicCard, "mb-5 grid gap-4 p-4 sm:grid-cols-[96px_1fr]"),
+      )}
+      data-testid="booking-inspiration-card"
+    >
+      <div
+        className={classNames(
+          "overflow-hidden rounded-lg bg-[#f7f2f7]",
+          compact ? "h-16 w-16" : "h-24 w-24",
+        )}
+      >
+        {inspiration.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            alt=""
+            className="h-full w-full object-cover"
+            src={inspiration.imageUrl}
+          />
+        ) : (
+          <span className="grid h-full w-full place-items-center text-sm font-extrabold text-[#642a56]">
+            Look
+          </span>
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className={styles.eyebrow}>Book this look</p>
+        <h2 className="mt-1 line-clamp-2 text-base font-extrabold text-[#211c24]">
+          {inspiration.title}
+        </h2>
+        <p className="mt-1 text-sm font-extrabold text-[#642a56]">
+          {serviceLabel}
+          {staffLabel ? ` / ${staffLabel}` : ""}
+        </p>
+        {inspiration.message ? (
+          <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+            {inspiration.message}
+          </p>
+        ) : inspiration.caption ? (
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#786d78]">
+            {inspiration.caption}
+          </p>
+        ) : null}
+        {!compact ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {inspiration.imageUrl ? (
+              <a
+                className={classNames(styles.secondaryButton, "px-3 py-2 text-sm")}
+                href={inspiration.imageUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                View image
+              </a>
+            ) : null}
+            {onChangeService ? (
+              <button
+                className={classNames(styles.secondaryButton, "px-3 py-2 text-sm")}
+                onClick={onChangeService}
+                type="button"
+              >
+                Change service
+              </button>
+            ) : null}
+            {onChangeProfessional ? (
+              <button
+                className={classNames(styles.secondaryButton, "px-3 py-2 text-sm")}
+                onClick={onChangeProfessional}
+                type="button"
+              >
+                Change professional
+              </button>
+            ) : null}
+            {onRemove ? (
+              <button
+                className="px-2 py-2 text-sm font-extrabold text-[#642a56]"
+                onClick={onRemove}
+                type="button"
+              >
+                Remove
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 export function PublicBookingClient({ data }: PublicBookingClientProps) {
   const settings = data.settings;
   const mainServices = useMemo(
     () => data.services.filter((service) => !service.isAddOnOnly),
     [data.services],
   );
+  const hasInitialInspiration = Boolean(data.initialSelection.inspiration);
   const initialServiceId =
     data.initialSelection.serviceId &&
     mainServices.some((service) => service.id === data.initialSelection.serviceId)
       ? data.initialSelection.serviceId
+      : hasInitialInspiration
+        ? ""
       : (mainServices[0]?.id ?? "");
   const initialServiceIds =
     data.initialSelection.serviceIds.length > 0
@@ -533,7 +646,9 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         .join(" "),
   );
 
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(
+    Math.min(STEP_REVIEW, Math.max(STEP_SERVICES, data.initialSelection.initialStep)),
+  );
   const [category, setCategory] = useState(initialCategory);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(
     initialServiceIds,
@@ -589,10 +704,15 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     ok: boolean;
     status?: string;
   } | null>(null);
+  const [inspirationRemoved, setInspirationRemoved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isAvailabilityPending, startAvailabilityTransition] = useTransition();
   const [isSlotPending, startSlotTransition] = useTransition();
+  const activeInspiration =
+    data.initialSelection.inspiration && !inspirationRemoved
+      ? data.initialSelection.inspiration
+      : null;
 
   const selectedServices = useMemo(
     () =>
@@ -827,6 +947,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       customer,
       date,
       identityMode,
+      inspirationId: data.initialSelection.inspiration?.id ?? null,
+      inspirationRemoved,
       lineStaffByKey,
       selectedAddOnSelections,
       selectedServiceIds,
@@ -883,6 +1005,11 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       setLineStaffByKey(draft.lineStaffByKey);
       setDate(draft.date);
       setSelectedSlotStart(draft.selectedSlotStart);
+      setInspirationRemoved(
+        (draft.inspirationId ?? null) ===
+          (data.initialSelection.inspiration?.id ?? null) &&
+          draft.inspirationRemoved === true,
+      );
       setCustomer((current) => ({
         email: data.currentUser?.email ?? draft.customer.email ?? current.email,
         firstName:
@@ -910,6 +1037,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
   }, [
     categoryNames,
     data.currentUser,
+    data.initialSelection.inspiration?.id,
     data.salon,
     data.services,
     data.state,
@@ -1064,7 +1192,15 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         ? `/booking/manage/${result.manageToken}`
         : null;
   const manageHref = accountManageHref ?? guestManageHref;
-  const authReturnPath = data.salon ? `/book/${data.salon.salonId}` : "/explore";
+  const authReturnPath =
+    data.salon && activeInspiration
+      ? `/book/${data.salon.salonId}?${new URLSearchParams({
+          inspiration: activeInspiration.id,
+          source: data.initialSelection.source,
+        }).toString()}`
+      : data.salon
+        ? `/book/${data.salon.salonId}`
+        : "/explore";
   const signInHref = `/login?next=${encodeURIComponent(authReturnPath)}`;
   const signupHref = `/signup?next=${encodeURIComponent(authReturnPath)}`;
   const salonProfileHref = data.salon
@@ -1089,7 +1225,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         honeypot,
         idempotencyKey: crypto.randomUUID(),
         lineStaffIds,
-        lookId: data.initialSelection.lookId,
+        lookId: activeInspiration?.status === "unavailable" ? null : activeInspiration?.id ?? null,
         publicNotes: customer.notes,
         salonId: data.salon?.salonId ?? "",
         serviceId: selectedServiceIds[0] ?? null,
@@ -1177,6 +1313,14 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     setStep((current) => Math.min(STEP_REVIEW, current + 1));
   }
 
+  function removeInspiration() {
+    setInspirationRemoved(true);
+
+    if (selectedServiceIds.length === 0) {
+      setStep(STEP_SERVICES);
+    }
+  }
+
   return (
     <main
       className={classNames(styles.bookingSurface, styles.publicRoot)}
@@ -1230,6 +1374,15 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             <p className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
               {error}
             </p>
+          ) : null}
+
+          {activeInspiration ? (
+            <BookingInspirationCard
+              inspiration={activeInspiration}
+              onChangeProfessional={() => setStep(STEP_PROFESSIONAL)}
+              onChangeService={() => setStep(STEP_SERVICES)}
+              onRemove={removeInspiration}
+            />
           ) : null}
 
           {step === STEP_SERVICES ? (
@@ -1918,6 +2071,12 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                 <h1 className={styles.publicTitle}>Review your visit</h1>
               </div>
               <div className={classNames(styles.publicCard, "grid gap-4 p-5")}>
+                {activeInspiration ? (
+                  <BookingInspirationCard
+                    compact
+                    inspiration={activeInspiration}
+                  />
+                ) : null}
                 <dl className="grid gap-3 text-sm">
                   <div className="flex justify-between gap-4">
                     <dt className="text-[#786d78]">When</dt>
@@ -1957,6 +2116,14 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
               <p className="mt-4 text-sm leading-6 text-[#786d78]">
                 {result?.message ?? "Your booking request has been processed."}
               </p>
+              {activeInspiration ? (
+                <div className="mt-5">
+                  <BookingInspirationCard
+                    compact
+                    inspiration={activeInspiration}
+                  />
+                </div>
+              ) : null}
               {result?.ok && result.accountLinked ? (
                 <p className="mt-4 rounded-xl bg-[#f7f2f7] px-4 py-3 text-sm font-extrabold text-[#642a56]">
                   This booking is saved to your KingPOS account.
@@ -2059,6 +2226,12 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             </div>
           </div>
           <div className={styles.summaryDivider} />
+          {activeInspiration ? (
+            <>
+              <BookingInspirationCard compact inspiration={activeInspiration} />
+              <div className={styles.summaryDivider} />
+            </>
+          ) : null}
           <div className="grid gap-4 text-sm">
             {summaryServices.length === 0 ? (
               <p className="text-[#786d78]">Choose a service to start.</p>

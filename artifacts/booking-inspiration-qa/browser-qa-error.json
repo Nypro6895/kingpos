@@ -1,0 +1,4 @@
+{
+  "message": "Browser QA recorded page, console, or network errors.",
+  "stack": "Error: Browser QA recorded page, console, or network errors.\n    at run (file:///C:/Users/giuse/kingpos/artifacts/booking-inspiration-qa/browser-qa.mjs:197:11)"
+}

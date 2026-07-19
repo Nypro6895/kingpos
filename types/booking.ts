@@ -154,6 +154,38 @@ export type Booking = {
   updated_at: string;
 };
 
+export type BookingInspiration = {
+  id: string;
+  organization_id: string;
+  salon_id: string;
+  booking_id: string;
+  booking_line_id: string | null;
+  source_type: "salon_profile_look" | string;
+  source_content_id: string | null;
+  source_salon_id: string;
+  source_media_asset_id: string | null;
+  source_media_bucket: string;
+  source_media_path: string | null;
+  source_media_width: number | null;
+  source_media_height: number | null;
+  source_media_mime_type: string | null;
+  credited_staff_id: string | null;
+  service_id: string | null;
+  source_title_snapshot: string | null;
+  source_caption_snapshot: string | null;
+  source_booking_note_snapshot: string | null;
+  service_name_snapshot: string | null;
+  credited_staff_name_snapshot: string | null;
+  salon_name_snapshot: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BookingInspirationView = BookingInspiration & {
+  imageUrl: string | null;
+};
+
 export type BookingWithRelations = Booking & {
   customer: Pick<Customer, "id" | "name" | "phone" | "email"> | null;
   staff: Pick<Staff, "id" | "display_name"> | null;

@@ -4,6 +4,10 @@ import {
   formatDateInTimeZone,
   zonedDateTimeToUtcIso,
 } from "@/lib/bookings";
+import {
+  BOOKING_INSPIRATION_SELECT,
+  mapBookingInspirationsByBookingId,
+} from "@/lib/booking-inspirations";
 import { getStaffBookingReadiness, type StaffBookingReadiness } from "@/lib/booking-setup";
 import {
   getCurrentStaffBusinessContext,
@@ -16,6 +20,8 @@ import { STAFF_SELECT } from "@/lib/staff";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   BookingConfirmationStatus,
+  BookingInspiration,
+  BookingInspirationView,
   BookingLineStatus,
   BookingStatus,
   StaffServiceAssignment,
@@ -40,6 +46,7 @@ export type StaffAppointmentLine = {
   customerPhone: string | null;
   endAt: string;
   id: string;
+  inspiration: BookingInspirationView | null;
   lineStatus: BookingLineStatus;
   publicNotes: string | null;
   serviceName: string;
@@ -318,6 +325,29 @@ export async function getCurrentStaffAppointments(
     throw new Error(servicesResult.error.message);
   }
 
+  const bookingIds = [
+    ...new Set(
+      (linesResult.data ?? [])
+        .map((line) => line.booking?.id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const inspirationsByBookingId =
+    bookingIds.length > 0
+      ? await supabase
+          .from("booking_inspirations")
+          .select(BOOKING_INSPIRATION_SELECT)
+          .in("booking_id", bookingIds)
+          .returns<BookingInspiration[]>()
+      : { data: [] as BookingInspiration[], error: null };
+
+  if (inspirationsByBookingId.error) {
+    throw new Error(inspirationsByBookingId.error.message);
+  }
+
+  const inspirationMap = mapBookingInspirationsByBookingId(
+    inspirationsByBookingId.data ?? [],
+  );
   const servicesById = new Map(
     (servicesResult.data ?? []).map((service) => [service.id, service]),
   );
@@ -351,6 +381,9 @@ export async function getCurrentStaffAppointments(
       customerPhone: line.booking?.customer?.phone ?? null,
       endAt: line.scheduled_end_at,
       id: line.id,
+      inspiration: line.booking?.id
+        ? inspirationMap.get(line.booking.id) ?? null
+        : null,
       lineStatus: line.line_status,
       publicNotes: line.booking?.public_notes ?? null,
       serviceName: line.service_name_snapshot,

@@ -1614,6 +1614,63 @@ function eventLabel(event: BookingStatusEvent) {
   return event.event_type.replace(/_/g, " ");
 }
 
+function CustomerInspirationSection({
+  booking,
+}: {
+  booking: BookingWorkspaceItem;
+}) {
+  const inspiration = booking.inspiration;
+
+  if (!inspiration) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h3 className="text-sm font-semibold uppercase text-zinc-500">
+        Customer inspiration
+      </h3>
+      <div className="mt-2 grid gap-3 rounded-lg border border-zinc-200 bg-white p-3 sm:grid-cols-[96px_1fr]">
+        <a
+          className="block h-24 w-24 overflow-hidden rounded-lg bg-zinc-100"
+          href={inspiration.imageUrl ?? undefined}
+          rel="noreferrer"
+          target={inspiration.imageUrl ? "_blank" : undefined}
+        >
+          {inspiration.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt="" className="h-full w-full object-cover" src={inspiration.imageUrl} />
+          ) : (
+            <span className="grid h-full w-full place-items-center text-sm font-semibold text-zinc-500">
+              Look
+            </span>
+          )}
+        </a>
+        <div className="min-w-0 text-sm">
+          <p className="font-semibold text-zinc-950">
+            {inspiration.source_title_snapshot ?? "Booked look"}
+          </p>
+          <p className="mt-1 font-semibold text-[#642a56]">
+            {[
+              inspiration.service_name_snapshot,
+              inspiration.credited_staff_name_snapshot
+                ? `By ${inspiration.credited_staff_name_snapshot}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" / ") || "Saved with this booking"}
+          </p>
+          {inspiration.source_caption_snapshot ? (
+            <p className="mt-2 line-clamp-3 text-zinc-600">
+              {inspiration.source_caption_snapshot}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function DetailDrawer({
   booking,
   canManage,
@@ -1826,6 +1883,8 @@ function DetailDrawer({
             ))}
           </div>
         </section>
+
+        <CustomerInspirationSection booking={booking} />
 
         <section className="grid gap-2 text-sm text-zinc-700">
           <h3 className="text-sm font-semibold uppercase text-zinc-500">Notes</h3>

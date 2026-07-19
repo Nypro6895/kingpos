@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -179,6 +179,147 @@ export type Database = {
           {
             foreignKeyName: "booking_customer_account_claims_salon_id_fkey"
             columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_inspirations: {
+        Row: {
+          booking_id: string
+          booking_line_id: string | null
+          created_at: string
+          credited_staff_id: string | null
+          credited_staff_name_snapshot: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          salon_id: string
+          salon_name_snapshot: string | null
+          service_id: string | null
+          service_name_snapshot: string | null
+          source_booking_note_snapshot: string | null
+          source_caption_snapshot: string | null
+          source_content_id: string | null
+          source_media_asset_id: string | null
+          source_media_bucket: string
+          source_media_height: number | null
+          source_media_mime_type: string | null
+          source_media_path: string | null
+          source_media_width: number | null
+          source_salon_id: string
+          source_title_snapshot: string | null
+          source_type: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          booking_line_id?: string | null
+          created_at?: string
+          credited_staff_id?: string | null
+          credited_staff_name_snapshot?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          salon_id: string
+          salon_name_snapshot?: string | null
+          service_id?: string | null
+          service_name_snapshot?: string | null
+          source_booking_note_snapshot?: string | null
+          source_caption_snapshot?: string | null
+          source_content_id?: string | null
+          source_media_asset_id?: string | null
+          source_media_bucket?: string
+          source_media_height?: number | null
+          source_media_mime_type?: string | null
+          source_media_path?: string | null
+          source_media_width?: number | null
+          source_salon_id: string
+          source_title_snapshot?: string | null
+          source_type?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          booking_line_id?: string | null
+          created_at?: string
+          credited_staff_id?: string | null
+          credited_staff_name_snapshot?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          salon_id?: string
+          salon_name_snapshot?: string | null
+          service_id?: string | null
+          service_name_snapshot?: string | null
+          source_booking_note_snapshot?: string | null
+          source_caption_snapshot?: string | null
+          source_content_id?: string | null
+          source_media_asset_id?: string | null
+          source_media_bucket?: string
+          source_media_height?: number | null
+          source_media_mime_type?: string | null
+          source_media_path?: string | null
+          source_media_width?: number | null
+          source_salon_id?: string
+          source_title_snapshot?: string | null
+          source_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_inspirations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_inspirations_booking_line_id_fkey"
+            columns: ["booking_line_id"]
+            isOneToOne: false
+            referencedRelation: "booking_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_inspirations_credited_staff_id_fkey"
+            columns: ["credited_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_inspirations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_inspirations_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_inspirations_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_inspirations_source_media_asset_id_fkey"
+            columns: ["source_media_asset_id"]
+            isOneToOne: false
+            referencedRelation: "salon_profile_media_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_inspirations_source_salon_id_fkey"
+            columns: ["source_salon_id"]
             isOneToOne: false
             referencedRelation: "locations"
             referencedColumns: ["id"]
@@ -5350,6 +5491,14 @@ export type Database = {
         Args: { p_block_id: string; p_salon_id: string }
         Returns: Json
       }
+      capture_booking_inspiration_snapshot: {
+        Args: {
+          p_booking_id: string
+          p_source_reference_id: string
+          p_source_reference_type: string
+        }
+        Returns: undefined
+      }
       claim_guest_booking_by_manage_token: {
         Args: { raw_token: string }
         Returns: Json
@@ -5628,6 +5777,9 @@ export type Database = {
           aspect_ratio: number
           author_display_name: string
           author_is_anonymous: boolean
+          bookable_service_id: string
+          booking_enabled: boolean
+          booking_href: string
           caption_excerpt: string
           content_id: string
           content_type: string
