@@ -28,7 +28,7 @@ import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
 
 export const BOOKING_SELECT =
-  "id, organization_id, salon_id, customer_id, customer_user_id, staff_id, start_at, end_at, notes, public_notes, internal_notes, status, source, confirmation_mode, confirmation_status, salon_timezone_snapshot, customer_cancellation_token_hash, pos_ticket_id, source_reference_type, source_reference_id, idempotency_key, cancellation_reason, cancelled_at, cancelled_by_user_id, no_show_at, no_show_by_user_id, no_show_reason, created_by_user_id, updated_by_user_id, payment_status, deposit_policy_snapshot, cancellation_policy_snapshot, created_at, updated_at";
+  "id, organization_id, salon_id, customer_id, customer_user_id, customer_account_linked_at, customer_account_linked_by_user_id, customer_account_link_method, customer_account_link_metadata, staff_id, start_at, end_at, notes, public_notes, internal_notes, status, source, confirmation_mode, confirmation_status, salon_timezone_snapshot, customer_cancellation_token_hash, pos_ticket_id, source_reference_type, source_reference_id, idempotency_key, cancellation_reason, cancelled_at, cancelled_by_user_id, no_show_at, no_show_by_user_id, no_show_reason, created_by_user_id, updated_by_user_id, payment_status, deposit_policy_snapshot, cancellation_policy_snapshot, created_at, updated_at";
 
 export const BOOKING_WITH_RELATIONS_SELECT = `${BOOKING_SELECT}, customer:customers(id, name, phone, email), staff:staff(id, display_name)`;
 

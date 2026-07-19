@@ -94,6 +94,7 @@ type NavigationShellProps = {
 
 const PERSONAL_LINKS: NavigationLink[] = [
   { href: "/explore", icon: "compass", id: "explore", label: "Explore" },
+  { href: "/my-bookings", icon: "book", id: "my-bookings", label: "My Bookings" },
   { href: "/my-place", icon: "home", id: "my-place", label: "My Place" },
   {
     href: "/notifications",
@@ -127,6 +128,7 @@ function getRouteWorkspaceKind(pathname: string): RouteWorkspaceKind | null {
   if (
     pathname === "/" ||
     matchesPath(pathname, "/explore") ||
+    matchesPath(pathname, "/my-bookings") ||
     matchesPath(pathname, "/my-place") ||
     matchesPath(pathname, "/notifications") ||
     matchesPath(pathname, "/account") ||

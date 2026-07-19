@@ -1,0 +1,10 @@
+
+> kingpos@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3395
+
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://127.0.0.1:3395
+- Network:       http://127.0.0.1:3395
+- Environments: .env.local
+✓ Ready in 850ms
+[?25h

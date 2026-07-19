@@ -2,12 +2,18 @@ import "server-only";
 
 import { formatDateInTimeZone, zonedDateTimeToUtcIso } from "@/lib/bookings";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createAuthenticatedSupabaseServerClient,
+  createSupabaseServerClient,
+} from "@/lib/supabase/server";
+import { getCurrentKingUser } from "@/lib/users/current-user";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_PUBLIC_SLOT_DAYS = 45;
+const AVAILABILITY_HINT_HORIZON_DAYS = 30;
+const MAX_AVAILABILITY_HINT_SCOPES = 80;
 const MAX_SELECTED_ADD_ONS = 6;
 
 export type PublicBookingSource = "explore" | "public_profile";
@@ -124,6 +130,7 @@ export type PublicBookingReadinessItem = {
 };
 
 export type PublicBookingPageData = {
+  currentUser: PublicBookingCurrentUser | null;
   initialSelection: PublicBookingInitialSelection;
   looks: PublicBookingLook[];
   message: string;
@@ -138,6 +145,16 @@ export type PublicBookingPageData = {
   title: string;
 };
 
+export type PublicBookingCurrentUser = {
+  avatarUrl: string | null;
+  displayName: string | null;
+  email: string | null;
+  firstName: string | null;
+  id: string;
+  lastName: string | null;
+  phone: string | null;
+};
+
 export type PublicBookingSlotRequest = {
   addOnSelections?: PublicBookingAddOnSelection[];
   addOnServiceIds?: string[];
@@ -147,6 +164,18 @@ export type PublicBookingSlotRequest = {
   serviceIds?: string[];
   staffId?: string | null;
   staffMode?: PublicBookingStaffMode;
+};
+
+export type PublicBookingAvailabilityScope = Omit<
+  PublicBookingSlotRequest,
+  "date"
+> & {
+  key: string;
+};
+
+export type PublicBookingAvailabilityHint = {
+  key: string;
+  startAt: string | null;
 };
 
 export type PublicBookingCreateInput = PublicBookingSlotRequest & {
@@ -164,6 +193,7 @@ export type PublicBookingCreateInput = PublicBookingSlotRequest & {
 };
 
 export type PublicBookingActionResult = {
+  accountLinked?: boolean;
   bookingId?: string;
   code?: string;
   confirmationStatus?: string;
@@ -272,6 +302,7 @@ type DraftLine = {
 };
 
 type SlotBuildOptions = {
+  horizonDays?: number;
   ignoreBookingId?: string | null;
   limit?: number;
 };
@@ -654,6 +685,7 @@ function unavailablePage(
       staffId: null,
       staffMode: "any",
     },
+    currentUser: null,
     looks: [],
     readiness: [],
     salon: null,
@@ -1148,16 +1180,23 @@ export function generatePublicBookingSlots(
 
   const limit = options.limit ?? 60;
   const now = new Date();
+  const horizonDays = Math.min(
+    settings.maximumAdvanceWindowDays,
+    MAX_PUBLIC_SLOT_DAYS,
+    Math.max(
+      1,
+      Math.round(options.horizonDays ?? settings.maximumAdvanceWindowDays),
+    ),
+  );
   const earliestMs = now.getTime() + settings.minimumLeadTimeMinutes * 60_000;
-  const latestMs =
-    now.getTime() + settings.maximumAdvanceWindowDays * 24 * 60 * 60_000;
+  const latestMs = now.getTime() + horizonDays * 24 * 60 * 60_000;
   const today = formatDateInTimeZone(now, settings.timezoneIana);
   const requestedDate = cleanDate(request.date);
   const dates = requestedDate
     ? [requestedDate]
     : Array.from(
         {
-          length: Math.min(settings.maximumAdvanceWindowDays + 1, MAX_PUBLIC_SLOT_DAYS),
+          length: horizonDays + 1,
         },
         (_, index) => formatDateInTimeZone(addDays(now, index), settings.timezoneIana),
       );
@@ -1257,11 +1296,25 @@ export async function getPublicBookingPageData(
     );
   }
 
-  const context = await loadRawContext(salonId);
+  const [context, currentUser] = await Promise.all([
+    loadRawContext(salonId),
+    getCurrentKingUser(),
+  ]);
   const initialSelection = normalizeInitialSelection(context, params);
   const readiness = readinessForContext(context);
   const byService = staffByService(context);
   const base = {
+    currentUser: currentUser
+      ? {
+          avatarUrl: currentUser.avatar_url,
+          displayName: currentUser.display_name,
+          email: currentUser.email,
+          firstName: currentUser.first_name,
+          id: currentUser.id,
+          lastName: currentUser.last_name,
+          phone: currentUser.phone,
+        }
+      : null,
     initialSelection,
     looks: context.looks,
     readiness,
@@ -1369,6 +1422,112 @@ export async function loadPublicBookingSlots(input: {
   return generatePublicBookingSlots(context, input.selection, { limit: 36 });
 }
 
+export async function loadPublicBookingRescheduleSlots(input: {
+  bookingId: string;
+  salonId: string;
+  selection: PublicBookingSlotRequest;
+}) {
+  const salonId = cleanUuid(input.salonId);
+  const bookingId = cleanUuid(input.bookingId);
+
+  if (!salonId || !bookingId) {
+    return [];
+  }
+
+  const context = await loadRawContext(salonId);
+
+  if (context.state !== "ready") {
+    return [];
+  }
+
+  return generatePublicBookingSlots(context, input.selection, {
+    ignoreBookingId: bookingId,
+    limit: 36,
+  });
+}
+
+export async function loadPublicBookingAvailabilityHints(input: {
+  salonId: string;
+  scopes: PublicBookingAvailabilityScope[];
+  selection: PublicBookingSlotRequest;
+}): Promise<PublicBookingAvailabilityHint[]> {
+  const salonId = cleanUuid(input.salonId);
+  const scopes = input.scopes.slice(0, MAX_AVAILABILITY_HINT_SCOPES);
+  const fallbackHints = scopes
+    .map((scope) => nonEmptyString(scope.key))
+    .filter((key): key is string => Boolean(key))
+    .map((key) => ({ key, startAt: null }));
+
+  if (!salonId || scopes.length === 0) {
+    return fallbackHints;
+  }
+
+  const context = await loadRawContext(salonId);
+
+  if (context.state !== "ready" || !context.settings) {
+    return fallbackHints;
+  }
+
+  const hints: PublicBookingAvailabilityHint[] = [];
+  const seenKeys = new Set<string>();
+
+  for (const scope of scopes) {
+    const key = nonEmptyString(scope.key);
+
+    if (!key || seenKeys.has(key)) {
+      continue;
+    }
+
+    seenKeys.add(key);
+
+    const scopeSelection: PublicBookingSlotRequest = {
+      ...input.selection,
+      date: null,
+    };
+
+    if (scope.addOnSelections !== undefined) {
+      scopeSelection.addOnSelections = scope.addOnSelections;
+    }
+
+    if (scope.addOnServiceIds !== undefined) {
+      scopeSelection.addOnServiceIds = scope.addOnServiceIds;
+    }
+
+    if (scope.lineStaffIds !== undefined) {
+      scopeSelection.lineStaffIds = scope.lineStaffIds;
+    }
+
+    if (scope.serviceId !== undefined) {
+      scopeSelection.serviceId = scope.serviceId;
+    }
+
+    if (scope.serviceIds !== undefined) {
+      scopeSelection.serviceIds = scope.serviceIds;
+    }
+
+    if (scope.staffId !== undefined) {
+      scopeSelection.staffId = scope.staffId;
+    }
+
+    if (scope.staffMode !== undefined) {
+      scopeSelection.staffMode = scope.staffMode;
+    }
+
+    const slots = generatePublicBookingSlots(
+      context,
+      scopeSelection,
+      { horizonDays: AVAILABILITY_HINT_HORIZON_DAYS, limit: 1 },
+    );
+
+    hints.push({
+      key,
+      startAt: slots[0]?.startAt ?? null,
+    });
+  }
+
+  return hints;
+}
+
 function publicBookingFailure(
   message: string,
   code = "invalid_input",
@@ -1416,7 +1575,9 @@ export async function createPublicBooking(
     return publicBookingFailure("That time is no longer available.", "unavailable_slot");
   }
 
-  const supabase = createSupabaseServerClient();
+  const authenticatedSupabase = await createAuthenticatedSupabaseServerClient();
+  const currentUser = authenticatedSupabase ? await getCurrentKingUser() : null;
+  const supabase = authenticatedSupabase ?? createSupabaseServerClient();
 
   if (!supabase) {
     throw new Error("Supabase environment variables are missing.");
@@ -1469,6 +1630,7 @@ export async function createPublicBooking(
     bookingId: cleanUuid(result.booking_id) ?? undefined,
     code: booleanValue(result.duplicate, false) ? "duplicate" : undefined,
     confirmationStatus: nonEmptyString(result.confirmation_status) ?? undefined,
+    accountLinked: Boolean(currentUser),
     manageToken: nonEmptyString(result.manage_token),
     message: booleanValue(result.duplicate, false)
       ? "This booking request was already submitted."
@@ -1585,7 +1747,8 @@ export async function getGuestManageBooking(tokenInput: string): Promise<GuestMa
     };
   }
 
-  const supabase = createSupabaseServerClient();
+  const supabase =
+    (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
     throw new Error("Supabase environment variables are missing.");
@@ -1726,7 +1889,8 @@ export async function rescheduleGuestBooking(input: {
     return publicBookingFailure("That time is no longer available.", "unavailable_slot");
   }
 
-  const supabase = createSupabaseServerClient();
+  const supabase =
+    (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
     throw new Error("Supabase environment variables are missing.");
@@ -1764,7 +1928,8 @@ export async function cancelGuestBooking(input: {
     return publicBookingFailure("This booking management link is not valid.", "invalid_token");
   }
 
-  const supabase = createSupabaseServerClient();
+  const supabase =
+    (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
     throw new Error("Supabase environment variables are missing.");

@@ -1,0 +1,184 @@
+{
+  "baseUrl": "http://127.0.0.1:3392",
+  "consoleErrors": [],
+  "fixtureIds": {
+    "addOnLink": "3f704cb3-f2ee-45c0-af80-ddc885ebfee2",
+    "avatarPath": "7f599bc8-a806-4a68-be86-c149c21709e2/staff/7d2dc52b-1ef4-4eff-a26e-d0639c4c2012/avatar/9c9af806-163c-42dc-8624-c757d3337d38.png",
+    "booking": "f7626acb-110a-4a06-bf3c-caf9d42399f2",
+    "services": [
+      "095795da-147f-4d0b-97d4-abb2643d5d17",
+      "de63e781-dc72-4add-b676-fafd51756298",
+      "60c2d85a-34af-425b-b212-2d75b4e7d4b3"
+    ],
+    "staff": [
+      "7d2dc52b-1ef4-4eff-a26e-d0639c4c2012",
+      "8e8a4fe3-b51d-4c8c-aaf5-26d44cfb37e8",
+      "701dbd55-b19d-44bd-97d5-4e8ab646c388"
+    ],
+    "staffByName": {},
+    "timeBlocks": [
+      "3655b9d8-0498-4b6c-80b6-21069408998d",
+      "127ae48f-8d9b-4980-8479-3894039b6f0e"
+    ],
+    "availabilityRules": [
+      "8e1aa983-cbf2-4861-8803-c1d8f1520b1a",
+      "e0b09c40-7c52-497c-90cf-ae4088dcb4f9",
+      "57f7a049-428b-4c9d-8dd9-9da82e0f9956",
+      "8e29aa86-eac1-4a57-844a-e1a8a02b66ce",
+      "ca25c49c-d798-4063-866d-6115fb2183c4",
+      "5f1b8be9-bced-4e5a-beb4-244a8db6e200"
+    ]
+  },
+  "marker": "Professional QA 20260718155651",
+  "networkErrors": [],
+  "nextAvailableCount": 3,
+  "noOpeningCount": 1,
+  "ok": true,
+  "pageErrors": [],
+  "professionalStepText": "ProfessionalChoose your professionalPick a specific professional or let the salon match you with the best available fit.Any professionalWe will show times with eligible staff.Next available: Mon, Jul 20Professional QA 20260718155651 Avery StoneLead nail artistNext available: Mon, Jul 20PQProfessional QA 20260718155651 Mina ChenPedicure specialistNext available: Mon, Jul 20PQProfessional QA 20260718155651 Noah BlockedFully booked artistNo openings in the next 30 daysBack",
+  "screenshots": [
+    "professional-debug-professional-step.png",
+    "professional-desktop-any-staff-grid.png",
+    "professional-desktop-selected-staff.png",
+    "professional-avatar-fallback-state.png",
+    "professional-desktop-split-by-service.png",
+    "professional-mobile-list.png",
+    "professional-mobile-selected-state.png"
+  ],
+  "uiFacts": {
+    "bodyScrollWidth": 390,
+    "cardCount": 16,
+    "documentScrollWidth": 390,
+    "innerWidth": 390,
+    "professionalCards": [
+      {
+        "height": 82,
+        "text": "Any professionalWe will show times with eligible staff.Next available: Mon, Jul 20",
+        "width": 362
+      },
+      {
+        "height": 82,
+        "text": "Professional QA 20260718155651 Avery StoneLead nail artistNext available: Mon, Jul 20",
+        "width": 362
+      },
+      {
+        "height": 82,
+        "text": "PQProfessional QA 20260718155651 Mina ChenPedicure specialistNext available: Mon, Jul 20",
+        "width": 362
+      },
+      {
+        "height": 82,
+        "text": "PQProfessional QA 20260718155651 Noah BlockedFully booked artistNo openings in the next 30 days",
+        "width": 362
+      },
+      {
+        "height": 82,
+        "text": "Best availableFor Professional QA 20260718155651 Gel ManicureNext available: Mon, Jul 20",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "Professional QA 20260718155651 Avery StoneLead nail artistNext available: Mon, Jul 20",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "PQProfessional QA 20260718155651 Mina ChenPedicure specialistNext available: Mon, Jul 20",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "PQProfessional QA 20260718155651 Noah BlockedFully booked artistNo openings in the next 30 days",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "Best availableFor Professional QA 20260718155651 Line Art AccentNext available: Mon, Jul 20",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "Professional QA 20260718155651 Avery StoneLead nail artistNext available: Mon, Jul 20",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "PQProfessional QA 20260718155651 Mina ChenPedicure specialistNext available: Mon, Jul 20",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "PQProfessional QA 20260718155651 Noah BlockedFully booked artistNo openings in the next 30 days",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "Best availableFor Professional QA 20260718155651 Spa PedicureNext available: Mon, Jul 20",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "Professional QA 20260718155651 Avery StoneLead nail artistNext available: Mon, Jul 20",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "PQProfessional QA 20260718155651 Mina ChenPedicure specialistNext available: Mon, Jul 20",
+        "width": 330
+      },
+      {
+        "height": 82,
+        "text": "PQProfessional QA 20260718155651 Noah BlockedFully booked artistNo openings in the next 30 days",
+        "width": 330
+      }
+    ]
+  },
+  "activeGlobalBlocks": [],
+  "directAvailability": {
+    "avery1045": true,
+    "mina0900": true
+  },
+  "contextDebug": {
+    "assignmentCount": 9,
+    "markerServices": [
+      {
+        "id": "095795da-147f-4d0b-97d4-abb2643d5d17",
+        "name": "Professional QA 20260718155651 Gel Manicure"
+      },
+      {
+        "id": "60c2d85a-34af-425b-b212-2d75b4e7d4b3",
+        "name": "Professional QA 20260718155651 Line Art Accent"
+      },
+      {
+        "id": "de63e781-dc72-4add-b676-fafd51756298",
+        "name": "Professional QA 20260718155651 Spa Pedicure"
+      }
+    ],
+    "markerStaff": [
+      {
+        "avatarPath": "7f599bc8-a806-4a68-be86-c149c21709e2/staff/7d2dc52b-1ef4-4eff-a26e-d0639c4c2012/avatar/9c9af806-163c-42dc-8624-c757d3337d38.png",
+        "id": "7d2dc52b-1ef4-4eff-a26e-d0639c4c2012",
+        "name": "Professional QA 20260718155651 Avery Stone"
+      },
+      {
+        "avatarPath": null,
+        "id": "8e8a4fe3-b51d-4c8c-aaf5-26d44cfb37e8",
+        "name": "Professional QA 20260718155651 Mina Chen"
+      },
+      {
+        "avatarPath": null,
+        "id": "701dbd55-b19d-44bd-97d5-4e8ab646c388",
+        "name": "Professional QA 20260718155651 Noah Blocked"
+      }
+    ],
+    "state": "ready",
+    "timeBlockCount": 2,
+    "workingRuleCount": 3
+  },
+  "availabilityText": [
+    "Next available: Mon, Jul 20",
+    "Next available: Mon, Jul 20",
+    "Next available: Mon, Jul 20",
+    "No openings in the next 30 days"
+  ]
+}

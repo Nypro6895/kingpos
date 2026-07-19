@@ -1,0 +1,59 @@
+{
+  "accountEnumerationCopyHidden": true,
+  "authFixture": {
+    "publicUserId": "878fc833-ecd7-4e55-9337-00765214cf04",
+    "authUserId": "539affe2-1df5-4690-8278-4eb5134bceba",
+    "email": "identity-qa-20260718210225+account@example.test"
+  },
+  "baseUrl": "http://127.0.0.1:3394",
+  "claimUiOnlyOnExplicitManage": true,
+  "clientSpoofUserIdFieldPresent": false,
+  "consoleErrors": [],
+  "continueGuestOpensForm": true,
+  "fixtureIds": {
+    "assignment": "2feac0e8-3d67-4b79-b8b7-6bf199f9c4cf",
+    "availability": "0d2163de-eefa-485d-9749-2c8c590044ad",
+    "service": "fabeb4cc-18df-45d5-8562-0923809d0716",
+    "staff": "e4ae8460-5e9a-4683-8a11-9ed1eeecb3a9"
+  },
+  "guestBookingId": "3d1fb1ab-22d0-43de-9199-ca09273314e3",
+  "guestBookingNotAttached": true,
+  "guestCanReturnToChoice": true,
+  "guestConfirmationAuthSuggestionIsGeneric": true,
+  "guestManageFlowWorks": true,
+  "manageHrefHasToken": true,
+  "manageHrefRedacted": "http://127.0.0.1:3394/booking/manage/<token>",
+  "marker": "Identity QA 20260718210225",
+  "missingProfileFieldHandling": true,
+  "mobileUiFacts": {
+    "bodyScrollWidth": 390,
+    "documentScrollWidth": 390,
+    "innerWidth": 390
+  },
+  "networkErrors": [],
+  "ok": true,
+  "pageErrors": [],
+  "screenshots": [
+    "identity-details-choice-signed-out-desktop.png",
+    "identity-details-guest-form-desktop.png",
+    "identity-confirmation-guest-generic-auth.png",
+    "identity-manage-token-explicit-claim.png",
+    "identity-signed-in-account-card.png",
+    "identity-confirmation-signed-in-saved.png",
+    "identity-signup-handoff.png",
+    "identity-details-choice-mobile.png"
+  ],
+  "signInDraftStored": true,
+  "signInReturnUrlSafe": true,
+  "signInReturnedToBookingDetails": true,
+  "signedInBookingAttachedToSessionUser": true,
+  "signedInBookingId": "658be544-8547-4662-ba0d-e6aa3ed1fa14",
+  "signedInConfirmationSaved": true,
+  "signedInNoBlankContactForm": true,
+  "signedOutInitialNoGuestForm": true,
+  "signedOutPrimaryDisabled": true,
+  "signupDraftStored": true,
+  "signupHandoffPreservesDraft": true,
+  "signupRequiresEmailConfirmation": false,
+  "signupReturnUrlSafe": true
+}

@@ -119,6 +119,10 @@ export type Booking = {
   salon_id: string;
   customer_id: string;
   customer_user_id: string | null;
+  customer_account_linked_at: string | null;
+  customer_account_linked_by_user_id: string | null;
+  customer_account_link_method: string | null;
+  customer_account_link_metadata: Record<string, unknown>;
   staff_id: string | null;
   start_at: string;
   end_at: string;

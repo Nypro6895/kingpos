@@ -1,0 +1,163 @@
+{
+  "addOnsVisible": true,
+  "baseUrl": "http://localhost:3000",
+  "breakTimeOffBusyExcluded": true,
+  "cancelModalWorked": true,
+  "cancelledVisible": true,
+  "cancelWorked": true,
+  "cleanup": {
+    "activeNotifications": 0,
+    "bookingStatuses": [
+      {
+        "id": "17db2662-5e9f-4f3f-a0c4-77ffbd3ff4c0",
+        "status": "cancelled"
+      },
+      {
+        "id": "7621510e-2fba-4b71-85ab-3a2a5b20814e",
+        "status": "cancelled"
+      },
+      {
+        "id": "1773dec4-e15f-4caa-a065-8c359996cdfb",
+        "status": "cancelled"
+      },
+      {
+        "id": "de81376a-4fb0-4697-aef4-0358d792732d",
+        "status": "cancelled"
+      },
+      {
+        "id": "134e157c-04d7-4cab-bef7-da92bb942f92",
+        "status": "cancelled"
+      },
+      {
+        "id": "66da3dc0-0c65-4508-bd7d-20977b9d1343",
+        "status": "cancelled"
+      },
+      {
+        "id": "b222ff77-089b-4208-b012-1b6b947445b4",
+        "status": "cancelled"
+      },
+      {
+        "id": "fe5931f3-8c19-4eee-893e-aa9192136557",
+        "status": "cancelled"
+      }
+    ]
+  },
+  "cleanupError": null,
+  "consoleErrors": [],
+  "contactChoicesVisible": true,
+  "contactSalonAvailable": true,
+  "crossAccountDidNotExposeMarker": true,
+  "crossAccountRejected": true,
+  "crossAccountStatus": 404,
+  "error": null,
+  "fixtures": {
+    "addOnLinkId": "b20663ce-7130-47bf-b99c-ce4848f58190",
+    "assignmentIds": [
+      "f7e273ed-9c9c-42e9-a303-a0b7282016ff",
+      "71ca9bff-5cc4-441f-9330-2f7a7d9c29ad",
+      "47c42575-943b-43c8-84cf-e6e55cf91e39"
+    ],
+    "availabilityIds": [
+      "e8f6f036-6b1b-4277-ba6f-79e1f60edb7d",
+      "97648b2f-a1e1-4a3b-89ac-629928058acb",
+      "90eda5cf-8731-4a5b-8381-d4abed9459ba"
+    ],
+    "bookingIds": [
+      "fe5931f3-8c19-4eee-893e-aa9192136557",
+      "17db2662-5e9f-4f3f-a0c4-77ffbd3ff4c0",
+      "1773dec4-e15f-4caa-a065-8c359996cdfb",
+      "134e157c-04d7-4cab-bef7-da92bb942f92",
+      "66da3dc0-0c65-4508-bd7d-20977b9d1343",
+      "b222ff77-089b-4208-b012-1b6b947445b4",
+      "de81376a-4fb0-4697-aef4-0358d792732d",
+      "7621510e-2fba-4b71-85ab-3a2a5b20814e"
+    ],
+    "customerIds": [
+      "eedf9f6e-053d-437f-8d50-6075f85c30c1",
+      "b9d2793c-7350-4076-a291-22e3d0c9840f"
+    ],
+    "mainBookingId": "fe5931f3-8c19-4eee-893e-aa9192136557",
+    "noShowBookingId": "66da3dc0-0c65-4508-bd7d-20977b9d1343",
+    "originalSalonSetting": {
+      "id": "8aee3b3a-bc27-475c-a9e9-2c972e4d212f",
+      "address_line1": "8333 w appleton ave",
+      "address_line2": null,
+      "business_name": "King Nails",
+      "city": "milwaukee",
+      "country": null,
+      "email": null,
+      "phone": "4144249024",
+      "postal_code": "53218",
+      "public_discovery_enabled": true,
+      "public_discovery_published_at": "2026-07-14T23:47:39.655845+00:00",
+      "state": "wi",
+      "website": null
+    },
+    "originalSalonLocation": {
+      "id": "7f599bc8-a806-4a68-be86-c149c21709e2",
+      "address_line1": "8333 W Appleton Ave",
+      "address_line2": null,
+      "city": "Milwaukee",
+      "country": "US",
+      "organization_id": "387af6da-69bb-45dc-bf25-5954a1d10ded",
+      "name": "King Nails",
+      "phone": "4144649024",
+      "postal_code": "53218",
+      "state": "Wisconsin"
+    },
+    "publicUserIds": [
+      "180ff827-691f-44d3-87a4-4ecfd95d349e",
+      "99fe7aa2-737b-47a1-ac16-1fce76f95f6a"
+    ],
+    "serviceIds": [
+      "86f8b3a3-63f0-4b04-aad7-a9f7015bc3ee",
+      "83675eed-0feb-4555-abb8-0320c0f7bf1a",
+      "cad8d021-64fb-49d7-8af1-8fd012fdfc4b",
+      "316c21a2-96f4-4932-acd6-418bb56cdde8"
+    ],
+    "staffIds": [
+      "b7aa398d-9d1d-44f4-a7bf-44c50828b850",
+      "ab497bf5-7068-41d1-b9d1-80bad1f90c42",
+      "158e31d0-b6c2-405c-be9a-276df5eb37dc"
+    ],
+    "timeBlockId": "0f44a6c9-8bff-4374-b4c3-2bf117332742"
+  },
+  "inactiveSnapshotVisible": true,
+  "marker": "My Bookings M7 QA 20260719032006",
+  "mobileUiFacts": {
+    "bodyScrollWidth": 390,
+    "documentScrollWidth": 390,
+    "innerWidth": 390
+  },
+  "multiServiceVisible": true,
+  "networkErrors": [],
+  "noRawDatetimeInput": true,
+  "noShowVisible": true,
+  "ok": true,
+  "pageErrors": [],
+  "pastCompletedVisible": true,
+  "pastDetailLoaded": true,
+  "pendingVisible": true,
+  "policyBlockedActions": true,
+  "rescheduleRaceRejected": true,
+  "rescheduleValidSlotWorked": true,
+  "screenshots": [
+    "m7-my-bookings-desktop-list.png",
+    "m7-upcoming-booking-detail.png",
+    "m7-reschedule-modal.png",
+    "m7-cancel-confirmation.png",
+    "m7-past-booking-detail.png",
+    "m7-my-bookings-mobile-list.png",
+    "m7-mobile-booking-detail.png",
+    "m7-my-bookings-tablet-list.png"
+  ],
+  "splitProfessionalsVisible": true,
+  "startedAt": "2026-07-19T03:20:06.115Z",
+  "tabletUiFacts": {
+    "bodyScrollWidth": 768,
+    "documentScrollWidth": 768,
+    "innerWidth": 768
+  },
+  "upcomingConfirmedVisible": true,
+  "upcomingDetailLoaded": true
+}

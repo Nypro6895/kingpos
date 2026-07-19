@@ -2,6 +2,7 @@
 
 import {
   cancelGuestBookingAction,
+  claimGuestBookingAction,
   loadGuestManageSlotsAction,
   rescheduleGuestBookingAction,
 } from "@/app/book/actions";
@@ -9,6 +10,12 @@ import type { GuestManagePageData, PublicBookingSlot } from "@/lib/public-bookin
 import { useState, useTransition } from "react";
 
 type GuestManageClientProps = {
+  claimIntent: boolean;
+  currentUser: {
+    displayName: string | null;
+    email: string | null;
+    id: string;
+  } | null;
   data: GuestManagePageData;
   token: string;
 };
@@ -66,24 +73,42 @@ function ErrorState({ message }: { message: string }) {
   );
 }
 
-export function GuestManageClient({ data, token }: GuestManageClientProps) {
+export function GuestManageClient({
+  claimIntent,
+  currentUser,
+  data,
+  token,
+}: GuestManageClientProps) {
   if (!data.ok) {
     return <ErrorState message={data.message} />;
   }
 
-  return <GuestManageReady data={data} token={token} />;
+  return (
+    <GuestManageReady
+      claimIntent={claimIntent}
+      currentUser={currentUser}
+      data={data}
+      token={token}
+    />
+  );
 }
 
 function GuestManageReady({
+  claimIntent,
+  currentUser,
   data,
   token,
 }: {
+  claimIntent: boolean;
+  currentUser: GuestManageClientProps["currentUser"];
   data: Extract<GuestManagePageData, { ok: true }>;
   token: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [isClaimPending, startClaimTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [claimSaved, setClaimSaved] = useState(false);
   const booking = data.booking.booking;
   const timezone = booking.timezone;
   const [date, setDate] = useState(dateInputValue(booking.startAt, timezone));
@@ -140,6 +165,30 @@ function GuestManageReady({
     });
   }
 
+  function claimBooking() {
+    setError(null);
+    startClaimTransition(async () => {
+      const result = await claimGuestBookingAction({ token });
+
+      if (result.ok) {
+        if (result.bookingId) {
+          const params = new URLSearchParams({ message: result.message });
+          window.location.assign(`/my-bookings/${result.bookingId}?${params.toString()}`);
+          return;
+        }
+
+        setClaimSaved(true);
+        setMessage(result.message);
+      } else {
+        setError(result.message);
+      }
+    });
+  }
+
+  const claimReturnPath = `/booking/manage/${token}?claim=1`;
+  const loginHref = `/login?next=${encodeURIComponent(claimReturnPath)}`;
+  const signupHref = `/signup?next=${encodeURIComponent(claimReturnPath)}`;
+
   return (
     <main
       className={classNames(styles.bookingSurface, styles.publicRoot, "px-5 py-8")}
@@ -166,6 +215,46 @@ function GuestManageReady({
               {error}
             </p>
           ) : null}
+
+          <section className={classNames(styles.publicCard, "p-5")}>
+            <h2 className="text-xl font-extrabold text-[#211c24]">
+              Save this booking
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#786d78]">
+              Sign in or create an account to keep this appointment with your saved
+              bookings. This link only proves access to this booking.
+            </p>
+            {currentUser ? (
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <button
+                  className={classNames(styles.primaryButton, "px-4")}
+                  disabled={isClaimPending || claimSaved}
+                  onClick={claimBooking}
+                  type="button"
+                >
+                  {claimSaved
+                    ? "Saved to account"
+                    : isClaimPending
+                      ? "Saving..."
+                      : claimIntent
+                        ? "Save booking to account"
+                        : "Save to account"}
+                </button>
+                <span className="text-sm font-medium text-[#786d78]">
+                  Signed in as {currentUser.displayName ?? currentUser.email ?? "your account"}
+                </span>
+              </div>
+            ) : (
+              <div className="mt-4 flex flex-wrap gap-3">
+                <a className={classNames(styles.primaryButton, "px-4")} href={loginHref}>
+                  Sign in
+                </a>
+                <a className="rounded-md border border-[#d7c8d3] px-4 py-2 text-sm font-extrabold text-[#642a56]" href={signupHref}>
+                  Create account
+                </a>
+              </div>
+            )}
+          </section>
 
           <section className={classNames(styles.publicCard, "p-5")}>
             <h2 className="text-xl font-extrabold text-[#211c24]">Appointment</h2>

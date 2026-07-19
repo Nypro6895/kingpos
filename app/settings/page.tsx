@@ -48,6 +48,12 @@ export default async function SettingsPage() {
       label: "My Place",
     },
     {
+      description: "Appointments saved to your KingPOS account.",
+      href: "/my-bookings",
+      id: "my-bookings",
+      label: "My Bookings",
+    },
+    {
       description: "Account notifications and pending connection activity.",
       href: "/notifications",
       id: "notifications",

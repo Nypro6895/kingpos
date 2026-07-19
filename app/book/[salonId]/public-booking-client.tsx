@@ -2,10 +2,13 @@
 
 import {
   createPublicBookingAction,
+  loadPublicBookingAvailabilityHintsAction,
   loadPublicBookingSlotsAction,
 } from "@/app/book/actions";
 import type {
   PublicBookingAddOnSelection,
+  PublicBookingAvailabilityHint,
+  PublicBookingAvailabilityScope,
   PublicBookingPageData,
   PublicBookingSlot,
   PublicBookingStaffMode,
@@ -23,6 +26,31 @@ type CustomerDraft = {
   notes: string;
   phone: string;
 };
+
+type BookingIdentityMode = "choice" | "guest";
+
+type StoredBookingDraft = {
+  customer: CustomerDraft;
+  date: string;
+  identityMode?: BookingIdentityMode;
+  lineStaffByKey: Record<string, string>;
+  selectedAddOnSelections: PublicBookingAddOnSelection[];
+  selectedServiceIds: string[];
+  selectedSlotStart: string;
+  staffId: string;
+  staffMode: PublicBookingStaffMode;
+  step: number;
+  version: 1;
+};
+
+type SummaryLine = {
+  key: string;
+  lineType: "add_on" | "service";
+  parentName: string | null;
+  service: PublicBookingPageData["services"][number];
+};
+
+type AvailabilityHintMap = Record<string, PublicBookingAvailabilityHint | undefined>;
 
 const STEPS = [
   "Services",
@@ -51,6 +79,25 @@ const styles = {
   pillActive: "public-booking-pill-active",
   pillRow: "public-booking-pill-row",
   priceColumn: "public-booking-price-column",
+  professionalAvatar: "public-booking-professional-avatar",
+  professionalGrid: "public-booking-professional-grid",
+  professionalGridScroll: "public-booking-professional-grid-scroll",
+  professionalList: "public-booking-professional-list",
+  professionalMeta: "public-booking-professional-meta",
+  professionalName: "public-booking-professional-name",
+  professionalNext: "public-booking-professional-next",
+  professionalNextLoading: "public-booking-professional-next-loading",
+  professionalOption: "public-booking-professional-option",
+  professionalOptionAuto: "public-booking-professional-option-auto",
+  professionalOptionCompact: "public-booking-professional-option-compact",
+  professionalOptionSelected: "public-booking-professional-option-selected",
+  professionalRadio: "public-booking-professional-radio",
+  professionalRadioVisual: "public-booking-professional-radio-visual",
+  professionalRole: "public-booking-professional-role",
+  professionalShowMore: "public-booking-professional-show-more",
+  professionalSplitHeader: "public-booking-professional-split-header",
+  professionalSplitPanel: "public-booking-professional-split-panel",
+  professionalSplitSection: "public-booking-professional-split-section",
   primaryButton: "public-booking-primary-button",
   progress: "public-booking-progress",
   progressActive: "public-booking-progress-active",
@@ -84,6 +131,7 @@ const STEP_TIME = 2;
 const STEP_DETAILS = 3;
 const STEP_REVIEW = 4;
 const STEP_DONE = 5;
+const PUBLIC_BOOKING_DRAFT_VERSION = 1;
 
 function classNames(...classes: (false | null | string | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -101,6 +149,90 @@ function initialsFor(value: string | null | undefined) {
         .map((part) => part[0]?.toUpperCase())
         .join("")
     : "KP";
+}
+
+function draftStorageKey(salonId: string | null | undefined) {
+  return salonId ? `kingpos.publicBookingDraft.${salonId}` : null;
+}
+
+function readStoredBookingDraft(salonId: string | null | undefined) {
+  const key = draftStorageKey(salonId);
+
+  if (!key || typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(window.sessionStorage.getItem(key) ?? "null") as
+      | Partial<StoredBookingDraft>
+      | null;
+
+    if (
+      !parsed ||
+      parsed.version !== PUBLIC_BOOKING_DRAFT_VERSION ||
+      !Array.isArray(parsed.selectedServiceIds)
+    ) {
+      return null;
+    }
+
+    return parsed as StoredBookingDraft;
+  } catch {
+    return null;
+  }
+}
+
+function clearStoredBookingDraft(salonId: string | null | undefined) {
+  const key = draftStorageKey(salonId);
+
+  if (key && typeof window !== "undefined") {
+    window.sessionStorage.removeItem(key);
+  }
+}
+
+function splitDisplayName(value: string | null | undefined) {
+  const parts = (value ?? "").trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return { firstName: "", lastName: "" };
+  }
+
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: "" };
+  }
+
+  return {
+    firstName: parts.slice(0, -1).join(" "),
+    lastName: parts.at(-1) ?? "",
+  };
+}
+
+function nonEmpty(value: string | null | undefined) {
+  const trimmed = value?.trim() ?? "";
+  return trimmed || null;
+}
+
+function maskEmail(value: string | null | undefined) {
+  const email = nonEmpty(value);
+
+  if (!email || !email.includes("@")) {
+    return null;
+  }
+
+  const [local, domain] = email.split("@");
+  const safeLocal =
+    local.length <= 2 ? `${local[0] ?? "*"}*` : `${local.slice(0, 2)}***`;
+
+  return `${safeLocal}@${domain}`;
+}
+
+function maskPhone(value: string | null | undefined) {
+  const digits = (value ?? "").replace(/\D+/g, "");
+
+  if (digits.length < 4) {
+    return null;
+  }
+
+  return `***-***-${digits.slice(-4)}`;
 }
 
 function money(value: number) {
@@ -132,6 +264,75 @@ function formatDateTime(value: string, timezone: string) {
   }).format(new Date(value));
 }
 
+function formatTime(value: string, timezone: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: timezone,
+  }).format(new Date(value));
+}
+
+function zonedDateKey(value: Date, timezone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: timezone,
+    year: "numeric",
+  }).formatToParts(value);
+  const read = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+
+  return `${read("year")}-${read("month")}-${read("day")}`;
+}
+
+function addDaysKey(dateKey: string, days: number) {
+  const date = new Date(`${dateKey}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+
+  return date.toISOString().slice(0, 10);
+}
+
+function nextAvailabilityText(input: {
+  hint: PublicBookingAvailabilityHint | undefined;
+  timezone: string;
+}) {
+  if (!input.hint) {
+    return "Check availability";
+  }
+
+  if (!input.hint.startAt) {
+    return "No openings in the next 30 days";
+  }
+
+  const start = new Date(input.hint.startAt);
+  const slotDate = zonedDateKey(start, input.timezone);
+  const today = zonedDateKey(new Date(), input.timezone);
+  const tomorrow = addDaysKey(today, 1);
+  const time = formatTime(input.hint.startAt, input.timezone);
+
+  if (slotDate === today) {
+    return `Next available: Today, ${time}`;
+  }
+
+  if (slotDate === tomorrow) {
+    return `Next available: Tomorrow, ${time}`;
+  }
+
+  return `Next available: ${new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone: input.timezone,
+    weekday: "short",
+  }).format(start)}`;
+}
+
+function splitHintKey(lineKey: string, staffId: string | null) {
+  return `split:${lineKey}:${staffId || "any"}`;
+}
+
+function staffHintKey(staffId: string) {
+  return `staff:${staffId}`;
+}
+
 function serviceStaffNames(data: PublicBookingPageData, serviceId: string | null) {
   if (!serviceId) {
     return [];
@@ -149,6 +350,85 @@ function uniqueStrings(values: string[]) {
 
 function addOnKey(selection: PublicBookingAddOnSelection) {
   return `${selection.parentServiceId}:${selection.serviceId}`;
+}
+
+function StaffAvatar({
+  className,
+  staff,
+}: {
+  className?: string;
+  staff: PublicBookingPageData["staff"][number];
+}) {
+  return (
+    <span className={classNames(styles.professionalAvatar, className)}>
+      {staff.avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img alt="" src={staff.avatarUrl} />
+      ) : (
+        initialsFor(staff.displayName)
+      )}
+    </span>
+  );
+}
+
+function ProfessionalRadioOption({
+  availabilityText,
+  checked,
+  className,
+  description,
+  isLoading,
+  name,
+  onChange,
+  staff,
+  title,
+  value,
+}: {
+  availabilityText: string;
+  checked: boolean;
+  className?: string;
+  description?: string | null;
+  isLoading: boolean;
+  name: string;
+  onChange: () => void;
+  staff?: PublicBookingPageData["staff"][number];
+  title: string;
+  value: string;
+}) {
+  return (
+    <label
+      className={classNames(
+        styles.professionalOption,
+        !staff && styles.professionalOptionAuto,
+        checked && styles.professionalOptionSelected,
+        className,
+      )}
+    >
+      <input
+        checked={checked}
+        className={styles.professionalRadio}
+        name={name}
+        onChange={onChange}
+        type="radio"
+        value={value}
+      />
+      {staff ? <StaffAvatar staff={staff} /> : null}
+      <span className={styles.professionalMeta}>
+        <span className={styles.professionalName}>{title}</span>
+        {description ? (
+          <span className={styles.professionalRole}>{description}</span>
+        ) : null}
+        <span
+          className={classNames(
+            styles.professionalNext,
+            isLoading && styles.professionalNextLoading,
+          )}
+        >
+          {availabilityText}
+        </span>
+      </span>
+      <span className={styles.professionalRadioVisual} aria-hidden="true" />
+    </label>
+  );
 }
 
 function staffEligibleForServices(data: PublicBookingPageData, serviceIds: string[]) {
@@ -221,7 +501,10 @@ function slotHour(slot: PublicBookingSlot, timezone: string) {
 
 export function PublicBookingClient({ data }: PublicBookingClientProps) {
   const settings = data.settings;
-  const mainServices = data.services.filter((service) => !service.isAddOnOnly);
+  const mainServices = useMemo(
+    () => data.services.filter((service) => !service.isAddOnOnly),
+    [data.services],
+  );
   const initialServiceId =
     data.initialSelection.serviceId &&
     mainServices.some((service) => service.id === data.initialSelection.serviceId)
@@ -235,13 +518,20 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       : initialServiceId
         ? [initialServiceId]
         : [];
-  const categoryNames = [
-    ...new Set(mainServices.map((service) => service.category ?? "Services")),
-  ];
+  const categoryNames = useMemo(
+    () => [...new Set(mainServices.map((service) => service.category ?? "Services"))],
+    [mainServices],
+  );
   const initialCategory =
     mainServices.find((service) => service.id === initialServiceId)?.category ??
     categoryNames[0] ??
     "Services";
+  const initialCustomerName = splitDisplayName(
+    data.currentUser?.displayName ??
+      [data.currentUser?.firstName, data.currentUser?.lastName]
+        .filter(Boolean)
+        .join(" "),
+  );
 
   const [step, setStep] = useState(0);
   const [category, setCategory] = useState(initialCategory);
@@ -264,19 +554,35 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     data.initialSelection.staffMode,
   );
   const [staffId, setStaffId] = useState(data.initialSelection.staffId ?? "");
-  const [lineStaffIds, setLineStaffIds] = useState<string[]>([]);
+  const [lineStaffByKey, setLineStaffByKey] = useState<Record<string, string>>({});
   const [date, setDate] = useState(data.initialSelection.date);
-  const [slots, setSlots] = useState<PublicBookingSlot[]>(data.slots);
-  const [selectedSlotStart, setSelectedSlotStart] = useState(data.slots[0]?.startAt ?? "");
-  const [customer, setCustomer] = useState<CustomerDraft>({
-    email: "",
-    firstName: "",
-    lastName: "",
-    notes: "",
-    phone: "",
+  const [slotResult, setSlotResult] = useState<{
+    signature: string;
+    slots: PublicBookingSlot[];
+  }>({
+    signature: "",
+    slots: data.slots,
   });
+  const [selectedSlotStart, setSelectedSlotStart] = useState(data.slots[0]?.startAt ?? "");
+  const [availabilityResult, setAvailabilityResult] = useState<{
+    hints: AvailabilityHintMap;
+    signature: string;
+  }>({
+    hints: {},
+    signature: "",
+  });
+  const [showAllProfessionals, setShowAllProfessionals] = useState(false);
+  const [customer, setCustomer] = useState<CustomerDraft>({
+    email: data.currentUser?.email ?? "",
+    firstName: data.currentUser?.firstName ?? initialCustomerName.firstName,
+    lastName: data.currentUser?.lastName ?? initialCustomerName.lastName,
+    notes: "",
+    phone: data.currentUser?.phone ?? "",
+  });
+  const [identityMode, setIdentityMode] = useState<BookingIdentityMode>("choice");
   const [honeypot, setHoneypot] = useState("");
   const [result, setResult] = useState<{
+    accountLinked?: boolean;
     bookingId?: string;
     manageToken?: string | null;
     message: string;
@@ -285,6 +591,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isAvailabilityPending, startAvailabilityTransition] = useTransition();
+  const [isSlotPending, startSlotTransition] = useTransition();
 
   const selectedServices = useMemo(
     () =>
@@ -322,20 +630,84 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         ),
     [selectedAddOnSelections, data.services],
   );
-  const summaryServices = useMemo(
+  const summaryLines = useMemo<SummaryLine[]>(
     () =>
       selectedServices.flatMap((service) => [
-        service,
+        {
+          key: `service:${service.id}`,
+          lineType: "service" as const,
+          parentName: null,
+          service,
+        },
         ...selectedAddOns
           .filter((selection) => selection.parent.id === service.id)
-          .map((selection) => selection.service),
+          .map((selection) => ({
+            key: `add_on:${selection.parent.id}:${selection.service.id}`,
+            lineType: "add_on" as const,
+            parentName: selection.parent.name,
+            service: selection.service,
+          })),
       ]),
     [selectedAddOns, selectedServices],
   );
+  const summaryServices = useMemo(
+    () => summaryLines.map((line) => line.service),
+    [summaryLines],
+  );
+  const lineStaffIds = useMemo(
+    () => summaryLines.map((line) => lineStaffByKey[line.key] ?? ""),
+    [lineStaffByKey, summaryLines],
+  );
+  const slotRequestSignature = useMemo(
+    () =>
+      JSON.stringify({
+        addOnSelections: selectedAddOnSelections,
+        date,
+        lineStaffIds,
+        serviceIds: selectedServiceIds,
+        staffId,
+        staffMode,
+      }),
+    [
+      date,
+      lineStaffIds,
+      selectedAddOnSelections,
+      selectedServiceIds,
+      staffId,
+      staffMode,
+    ],
+  );
+  const slots =
+    data.state === "ready" &&
+    selectedServiceIds.length > 0 &&
+    slotResult.signature === slotRequestSignature
+      ? slotResult.slots
+      : [];
+  const slotsLoading =
+    data.state === "ready" &&
+    selectedServiceIds.length > 0 &&
+    (isSlotPending || slotResult.signature !== slotRequestSignature);
   const eligibleStaff = useMemo(
     () => staffEligibleForServices(data, summaryServices.map((service) => service.id)),
     [data, summaryServices],
   );
+  const visibleEligibleStaff = useMemo(() => {
+    if (showAllProfessionals || eligibleStaff.length <= 6) {
+      return eligibleStaff;
+    }
+
+    const firstStaff = eligibleStaff.slice(0, 6);
+    const selectedStaff = eligibleStaff.find((staff) => staff.id === staffId);
+
+    if (
+      selectedStaff &&
+      !firstStaff.some((staff) => staff.id === selectedStaff.id)
+    ) {
+      return [...firstStaff.slice(0, 5), selectedStaff];
+    }
+
+    return firstStaff;
+  }, [eligibleStaff, showAllProfessionals, staffId]);
   const selectedSlot = slots.find((slot) => slot.startAt === selectedSlotStart) ?? null;
   const visibleServices = mainServices.filter(
     (service) => (service.category ?? "Services") === category,
@@ -349,7 +721,82 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         (sum, service) => sum + service.durationMinutes,
         0,
       );
+  const splitSelectionValid = Boolean(
+    settings?.splitStaffAppointmentEnabled &&
+      summaryLines.length > 1 &&
+      summaryLines.every((line, index) => {
+        const selectedLineStaffId = lineStaffIds[index];
 
+        return (
+          !selectedLineStaffId ||
+          serviceStaffNames(data, line.service.id).some(
+            (staff) => staff.id === selectedLineStaffId,
+          )
+        );
+      }),
+  );
+  const availabilityScopes = useMemo<PublicBookingAvailabilityScope[]>(() => {
+    if (!settings || summaryLines.length === 0) {
+      return [];
+    }
+
+    const scopes: PublicBookingAvailabilityScope[] = [];
+
+    if (settings.anyProfessionalEnabled) {
+      scopes.push({
+        key: "any",
+        staffMode: "any",
+      });
+    }
+
+    for (const staff of eligibleStaff) {
+      scopes.push({
+        key: staffHintKey(staff.id),
+        staffId: staff.id,
+        staffMode: "specific",
+      });
+    }
+
+    if (settings.splitStaffAppointmentEnabled && summaryLines.length > 1) {
+      for (const [index, line] of summaryLines.entries()) {
+        const autoLineStaffIds = [...lineStaffIds];
+        autoLineStaffIds[index] = "";
+        scopes.push({
+          key: splitHintKey(line.key, null),
+          lineStaffIds: autoLineStaffIds,
+          staffMode: "split",
+        });
+
+        for (const staff of serviceStaffNames(data, line.service.id)) {
+          const nextLineStaffIds = [...lineStaffIds];
+          nextLineStaffIds[index] = staff.id;
+
+          scopes.push({
+            key: splitHintKey(line.key, staff.id),
+            lineStaffIds: nextLineStaffIds,
+            staffMode: "split",
+          });
+        }
+      }
+    }
+
+    return scopes;
+  }, [data, eligibleStaff, lineStaffIds, settings, summaryLines]);
+  const availabilityScopeSignature = useMemo(
+    () => JSON.stringify(availabilityScopes),
+    [availabilityScopes],
+  );
+  const availabilityHints =
+    availabilityResult.signature === availabilityScopeSignature
+      ? availabilityResult.hints
+      : {};
+  const availabilityStatus =
+    availabilityScopes.length === 0
+      ? "idle"
+      : isAvailabilityPending ||
+          availabilityResult.signature !== availabilityScopeSignature
+        ? "loading"
+        : "ready";
   function chooseService(serviceId: string) {
     const service = mainServices.find((candidate) => candidate.id === serviceId);
 
@@ -367,8 +814,149 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         nextSelectedServiceIds.includes(selection.parentServiceId),
       ),
     );
-    setLineStaffIds([]);
   }
+
+  function storeDraftForAuth() {
+    const key = draftStorageKey(data.salon?.salonId);
+
+    if (!key || typeof window === "undefined") {
+      return;
+    }
+
+    const draft: StoredBookingDraft = {
+      customer,
+      date,
+      identityMode,
+      lineStaffByKey,
+      selectedAddOnSelections,
+      selectedServiceIds,
+      selectedSlotStart,
+      staffId,
+      staffMode,
+      step,
+      version: PUBLIC_BOOKING_DRAFT_VERSION,
+    };
+
+    window.sessionStorage.setItem(key, JSON.stringify(draft));
+  }
+
+  useEffect(() => {
+    if (data.state !== "ready" || !data.salon) {
+      return;
+    }
+
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) {
+        return;
+      }
+
+      const draft = readStoredBookingDraft(data.salon?.salonId);
+
+      if (!draft) {
+        return;
+      }
+
+      const validServiceIds = draft.selectedServiceIds.filter((serviceId) =>
+        mainServices.some((service) => service.id === serviceId),
+      );
+
+      if (validServiceIds.length === 0) {
+        clearStoredBookingDraft(data.salon?.salonId);
+        return;
+      }
+
+      const validServiceIdSet = new Set(validServiceIds);
+      const validAddOnSelections = draft.selectedAddOnSelections.filter(
+        (selection) =>
+          validServiceIdSet.has(selection.parentServiceId) &&
+          data.services.some((service) => service.id === selection.serviceId),
+      );
+      const firstService = mainServices.find(
+        (service) => service.id === validServiceIds[0],
+      );
+
+      setSelectedServiceIds(validServiceIds);
+      setSelectedAddOnSelections(validAddOnSelections);
+      setStaffMode(draft.staffMode);
+      setStaffId(draft.staffId);
+      setLineStaffByKey(draft.lineStaffByKey);
+      setDate(draft.date);
+      setSelectedSlotStart(draft.selectedSlotStart);
+      setCustomer((current) => ({
+        email: data.currentUser?.email ?? draft.customer.email ?? current.email,
+        firstName:
+          data.currentUser?.firstName ??
+          initialCustomerName.firstName ??
+          draft.customer.firstName ??
+          current.firstName,
+        lastName:
+          data.currentUser?.lastName ??
+          initialCustomerName.lastName ??
+          draft.customer.lastName ??
+          current.lastName,
+        notes: draft.customer.notes ?? current.notes,
+        phone: data.currentUser?.phone ?? draft.customer.phone ?? current.phone,
+      }));
+      setIdentityMode(data.currentUser ? "choice" : draft.identityMode ?? "choice");
+      setCategory(firstService?.category ?? categoryNames[0] ?? "Services");
+      setStep(Math.min(STEP_REVIEW, Math.max(STEP_SERVICES, draft.step)));
+      clearStoredBookingDraft(data.salon?.salonId);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [
+    categoryNames,
+    data.currentUser,
+    data.salon,
+    data.services,
+    data.state,
+    initialCustomerName.firstName,
+    initialCustomerName.lastName,
+    mainServices,
+  ]);
+
+  useEffect(() => {
+    if (data.state !== "ready" || !data.salon || availabilityScopes.length === 0) {
+      return;
+    }
+
+    let active = true;
+    const signature = availabilityScopeSignature;
+    startAvailabilityTransition(async () => {
+      const hints = await loadPublicBookingAvailabilityHintsAction({
+        salonId: data.salon?.salonId ?? "",
+        scopes: availabilityScopes,
+        selection: {
+          addOnSelections: selectedAddOnSelections,
+          serviceId: selectedServiceIds[0] ?? null,
+          serviceIds: selectedServiceIds,
+        },
+      });
+
+      if (!active) {
+        return;
+      }
+
+      setAvailabilityResult({
+        hints: Object.fromEntries(hints.map((hint) => [hint.key, hint])),
+        signature,
+      });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [
+    availabilityScopeSignature,
+    availabilityScopes,
+    data.salon,
+    data.state,
+    selectedAddOnSelections,
+    selectedServiceIds,
+  ]);
 
   useEffect(() => {
     if (data.state !== "ready" || selectedServiceIds.length === 0) {
@@ -376,7 +964,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     }
 
     let active = true;
-    startTransition(async () => {
+    const signature = slotRequestSignature;
+    startSlotTransition(async () => {
       const nextSlots = await loadPublicBookingSlotsAction({
         salonId: data.salon?.salonId ?? "",
         selection: {
@@ -394,7 +983,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         return;
       }
 
-      setSlots(nextSlots);
+      setSlotResult({ signature, slots: nextSlots });
       setSelectedSlotStart((current) =>
         nextSlots.some((slot) => slot.startAt === current)
           ? current
@@ -412,6 +1001,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     lineStaffIds,
     selectedAddOnSelections,
     selectedServiceIds,
+    slotRequestSignature,
     staffId,
     staffMode,
   ]);
@@ -420,6 +1010,36 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     return <UnavailableState data={data} />;
   }
 
+  const signedIn = Boolean(data.currentUser);
+  const accountDisplayName =
+    nonEmpty(data.currentUser?.displayName) ??
+    nonEmpty([data.currentUser?.firstName, data.currentUser?.lastName].filter(Boolean).join(" ")) ??
+    nonEmpty(data.currentUser?.email) ??
+    nonEmpty(data.currentUser?.phone) ??
+    "Your KingPOS account";
+  const accountMaskedEmail = maskEmail(data.currentUser?.email);
+  const accountMaskedPhone = maskPhone(data.currentUser?.phone);
+  const signedInNeedsName =
+    signedIn &&
+    !nonEmpty(data.currentUser?.displayName) &&
+    !nonEmpty(data.currentUser?.firstName) &&
+    !nonEmpty(data.currentUser?.lastName);
+  const signedInNeedsPhone = signedIn && !nonEmpty(data.currentUser?.phone);
+  const signedInNeedsEmail = signedIn && !nonEmpty(data.currentUser?.email);
+  const signedInDetailsComplete =
+    (!signedInNeedsName ||
+      Boolean(customer.firstName.trim() && customer.lastName.trim())) &&
+    (!signedInNeedsPhone || Boolean(customer.phone.trim())) &&
+    (!signedInNeedsEmail || Boolean(customer.email.trim()));
+  const guestDetailsComplete = Boolean(
+    customer.firstName.trim() &&
+      customer.lastName.trim() &&
+      customer.phone.trim() &&
+      customer.email.trim(),
+  );
+  const detailsCanContinue = signedIn
+    ? signedInDetailsComplete
+    : identityMode === "guest" && guestDetailsComplete;
   const canContinue =
     step === STEP_SERVICES
       ? selectedServiceIds.length > 0
@@ -427,23 +1047,29 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         ? staffMode === "any" ||
           (staffMode === "specific" &&
             eligibleStaff.some((staff) => staff.id === staffId)) ||
-          staffMode === "split"
+          (staffMode === "split" && splitSelectionValid)
         : step === STEP_TIME
           ? Boolean(selectedSlot)
           : step === STEP_DETAILS
-            ? Boolean(
-                customer.firstName.trim() &&
-                  customer.lastName.trim() &&
-                  customer.phone.trim() &&
-                  customer.email.trim(),
-              )
+            ? detailsCanContinue
             : true;
-  const manageHref =
+  const accountManageHref =
+    result?.ok && result.accountLinked && result.bookingId
+      ? `/my-bookings/${result.bookingId}`
+      : null;
+  const guestManageHref =
     result?.manageToken && typeof window !== "undefined"
       ? `${window.location.origin}/booking/manage/${result.manageToken}`
       : result?.manageToken
         ? `/booking/manage/${result.manageToken}`
         : null;
+  const manageHref = accountManageHref ?? guestManageHref;
+  const authReturnPath = data.salon ? `/book/${data.salon.salonId}` : "/explore";
+  const signInHref = `/login?next=${encodeURIComponent(authReturnPath)}`;
+  const signupHref = `/signup?next=${encodeURIComponent(authReturnPath)}`;
+  const salonProfileHref = data.salon
+    ? `/explore/salons/${data.salon.salonId}`
+    : "/explore";
 
   function submitBooking() {
     if (!selectedSlot) {
@@ -503,9 +1129,20 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       ? [...new Set(selectedSlot.lines.map((line) => line.staffName))].join(", ")
       : staffMode === "any"
         ? "Any professional"
-        : staffId
-          ? data.staff.find((staff) => staff.id === staffId)?.displayName ?? "Selected"
-          : "Choose professional";
+        : staffMode === "split"
+          ? summaryLines
+              .map((line, index) => {
+                const selectedLineStaffId = lineStaffIds[index];
+                const staff = selectedLineStaffId
+                  ? data.staff.find((member) => member.id === selectedLineStaffId)
+                  : null;
+
+                return `${line.service.name}: ${staff?.displayName ?? "Best available"}`;
+              })
+              .join(", ")
+          : staffId
+            ? data.staff.find((staff) => staff.id === staffId)?.displayName ?? "Selected"
+            : "Choose professional";
   const confirmationTitle =
     result?.ok && result.status === "confirmed"
       ? "Booking confirmed"
@@ -761,95 +1398,158 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                   Pick a specific professional or let the salon match you with the best available fit.
                 </p>
               </div>
-              <div className="grid gap-4">
-                {settings.anyProfessionalEnabled ? (
-                  <button
-                    className={classNames(
-                      styles.publicCard,
-                      "flex items-center justify-between gap-4 p-5 text-left",
-                      staffMode === "any" && "border-[#642a56] bg-[#f7f2f7]",
-                    )}
-                    onClick={() => setStaffMode("any")}
-                    type="button"
-                  >
-                    <span>
-                      <span className="block text-lg font-extrabold text-[#211c24]">
-                        Any professional
-                      </span>
-                      <span className="mt-1 block text-sm text-[#786d78]">
-                        We will show times with eligible staff.
-                      </span>
-                    </span>
-                    <span className={classNames(styles.addButton, staffMode === "any" && styles.addButtonSelected)}>
-                      {staffMode === "any" ? "✓" : "Select"}
-                    </span>
-                  </button>
-                ) : null}
-                <div className="grid gap-4 md:grid-cols-2">
-                  {eligibleStaff.map((staff) => (
-                    <button
-                      className={classNames(
-                        styles.publicCard,
-                        "flex items-center gap-4 p-5 text-left",
-                        staffMode === "specific" &&
-                          staff.id === staffId &&
-                          "border-[#642a56] bg-[#f7f2f7]",
-                      )}
-                      key={staff.id}
-                      onClick={() => {
-                        setStaffMode("specific");
-                        setStaffId(staff.id);
+              <div className={styles.professionalList}>
+                <div
+                  aria-label="Choose professional"
+                  className={styles.professionalList}
+                  role="radiogroup"
+                >
+                  {settings.anyProfessionalEnabled ? (
+                    <ProfessionalRadioOption
+                      availabilityText={nextAvailabilityText({
+                        hint: availabilityHints.any,
+                        timezone: settings.timezoneIana,
+                      })}
+                      checked={staffMode === "any"}
+                      className={styles.professionalOptionCompact}
+                      description="We will show times with eligible staff."
+                      isLoading={availabilityStatus === "loading"}
+                      name="public-booking-professional"
+                      onChange={() => {
+                        setStaffMode("any");
+                        setStaffId("");
                       }}
+                      title="Any professional"
+                      value="any"
+                    />
+                  ) : null}
+                  {eligibleStaff.length === 0 ? (
+                    <p className={classNames(styles.publicCard, "p-5 text-sm text-[#786d78]")}>
+                      No professionals can perform every selected service yet.
+                    </p>
+                  ) : null}
+                  <div className={styles.professionalGrid}>
+                    {visibleEligibleStaff.map((staff) => (
+                      <ProfessionalRadioOption
+                        availabilityText={nextAvailabilityText({
+                          hint: availabilityHints[staffHintKey(staff.id)],
+                          timezone: settings.timezoneIana,
+                        })}
+                        checked={staffMode === "specific" && staff.id === staffId}
+                        description={staff.jobTitle}
+                        isLoading={availabilityStatus === "loading"}
+                        key={staff.id}
+                        name="public-booking-professional"
+                        onChange={() => {
+                          setStaffMode("specific");
+                          setStaffId(staff.id);
+                        }}
+                        staff={staff}
+                        title={staff.displayName}
+                        value={staff.id}
+                      />
+                    ))}
+                  </div>
+                  {eligibleStaff.length > 6 ? (
+                    <button
+                      className={styles.professionalShowMore}
+                      onClick={() => setShowAllProfessionals((current) => !current)}
                       type="button"
                     >
-                      <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full bg-[#efe8f3] text-sm font-extrabold text-[#642a56]">
-                        {staff.avatarUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img alt="" className="h-full w-full object-cover" src={staff.avatarUrl} />
-                        ) : (
-                          initialsFor(staff.displayName)
-                        )}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-lg font-extrabold text-[#211c24]">
-                          {staff.displayName}
-                        </span>
-                        {staff.jobTitle ? (
-                          <span className="block text-sm text-[#786d78]">{staff.jobTitle}</span>
-                        ) : null}
-                      </span>
+                      {showAllProfessionals
+                        ? "Show fewer professionals"
+                        : `Show ${eligibleStaff.length - visibleEligibleStaff.length} more`}
                     </button>
-                  ))}
+                  ) : null}
                 </div>
-                {settings.splitStaffAppointmentEnabled && summaryServices.length > 1 ? (
-                  <section className={classNames(styles.publicCard, "grid gap-3 p-5")}>
-                    <p className="text-lg font-extrabold text-[#211c24]">Split by service</p>
-                    {summaryServices.map((service, index) => (
-                      <label className="grid gap-2" key={`${service.id}-${index}`}>
-                        <span className="text-sm font-extrabold text-[#211c24]">
-                          {service.name}
-                        </span>
-                        <select
-                          className={styles.select}
-                          onChange={(event) => {
-                            setStaffMode("split");
-                            setLineStaffIds((current) => {
-                              const next = [...current];
-                              next[index] = event.target.value;
-                              return next;
-                            });
-                          }}
-                          value={lineStaffIds[index] ?? ""}
+
+                {settings.splitStaffAppointmentEnabled && summaryLines.length > 1 ? (
+                  <section
+                    aria-labelledby="public-booking-split-heading"
+                    className={styles.professionalSplitPanel}
+                  >
+                    <div className={styles.professionalSplitHeader}>
+                      <h2 id="public-booking-split-heading">Split by service</h2>
+                      <span>Optional per service</span>
+                    </div>
+                    {summaryLines.map((line, index) => {
+                      const selectedLineStaffId = lineStaffIds[index] ?? "";
+                      const staffOptions = serviceStaffNames(data, line.service.id);
+                      const groupName = `public-booking-split-${line.key}`;
+
+                      return (
+                        <fieldset
+                          className={styles.professionalSplitSection}
+                          key={line.key}
                         >
-                          <option value="">Best available</option>
-                          {serviceStaffNames(data, service.id).map((staff) => (
-                            <option key={staff.id} value={staff.id}>
-                              {staff.displayName}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    ))}
+                          <legend>
+                            <span>{line.service.name}</span>
+                            {line.parentName ? (
+                              <small>Add-on for {line.parentName}</small>
+                            ) : null}
+                          </legend>
+                          <div
+                            className={classNames(
+                              styles.professionalGrid,
+                              styles.professionalGridScroll,
+                            )}
+                          >
+                            <ProfessionalRadioOption
+                              availabilityText={nextAvailabilityText({
+                                hint: availabilityHints[splitHintKey(line.key, null)],
+                                timezone: settings.timezoneIana,
+                              })}
+                              checked={
+                                staffMode === "split" && selectedLineStaffId === ""
+                              }
+                              className={styles.professionalOptionCompact}
+                              description={`For ${line.service.name}`}
+                              isLoading={availabilityStatus === "loading"}
+                              name={groupName}
+                              onChange={() => {
+                                setStaffMode("split");
+                                setLineStaffByKey((current) => {
+                                  const next = { ...current };
+                                  delete next[line.key];
+                                  return next;
+                                });
+                              }}
+                              title="Best available"
+                              value=""
+                            />
+                            {staffOptions.map((staff) => (
+                              <ProfessionalRadioOption
+                                availabilityText={nextAvailabilityText({
+                                  hint:
+                                    availabilityHints[
+                                      splitHintKey(line.key, staff.id)
+                                    ],
+                                  timezone: settings.timezoneIana,
+                                })}
+                                checked={
+                                  staffMode === "split" &&
+                                  selectedLineStaffId === staff.id
+                                }
+                                description={staff.jobTitle}
+                                isLoading={availabilityStatus === "loading"}
+                                key={staff.id}
+                                name={groupName}
+                                onChange={() => {
+                                  setStaffMode("split");
+                                  setLineStaffByKey((current) => ({
+                                    ...current,
+                                    [line.key]: staff.id,
+                                  }));
+                                }}
+                                staff={staff}
+                                title={staff.displayName}
+                                value={staff.id}
+                              />
+                            ))}
+                          </div>
+                        </fieldset>
+                      );
+                    })}
                   </section>
                 ) : null}
               </div>
@@ -927,7 +1627,12 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                   </section>
                 );
               })}
-              {slots.length === 0 ? (
+              {slotsLoading && slots.length === 0 ? (
+                <p className={classNames(styles.publicCard, "p-5 text-sm text-[#786d78]")}>
+                  Checking available times...
+                </p>
+              ) : null}
+              {!slotsLoading && slots.length === 0 ? (
                 <p className={classNames(styles.publicCard, "p-5 text-sm text-[#786d78]")}>
                   No public slots match this selection for the selected date.
                 </p>
@@ -944,53 +1649,265 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                   The salon will use this information for appointment updates.
                 </p>
               </div>
-              <div className={classNames(styles.publicCard, "grid gap-4 p-5 sm:grid-cols-2")}>
-                {[
-                  ["First name", "firstName"],
-                  ["Last name", "lastName"],
-                  ["Phone", "phone"],
-                  ["Email", "email"],
-                ].map(([label, key]) => (
-                  <label className="grid gap-2" key={key}>
-                    <span className="text-sm font-extrabold text-[#211c24]">{label}</span>
-                    <input
-                      className={styles.field}
-                      onChange={(event) =>
-                        setCustomer((current) => ({
-                          ...current,
-                          [key]: event.target.value,
-                        }))
-                      }
-                      type={key === "email" ? "email" : key === "phone" ? "tel" : "text"}
-                      value={customer[key as keyof CustomerDraft]}
-                    />
-                  </label>
-                ))}
-                <label className="hidden">
-                  Company
-                  <input
-                    autoComplete="off"
-                    onChange={(event) => setHoneypot(event.target.value)}
-                    tabIndex={-1}
-                    value={honeypot}
-                  />
-                </label>
-                <label className="grid gap-2 sm:col-span-2">
-                  <span className="text-sm font-extrabold text-[#211c24]">
-                    Notes for the salon
-                  </span>
-                  <textarea
-                    className="min-h-28 rounded-xl border border-[#e7dfe5] px-3 py-2 text-sm outline-none focus:border-[#8f4a7b] focus:ring-4 focus:ring-[#642a56]/10"
-                    onChange={(event) =>
-                      setCustomer((current) => ({
-                        ...current,
-                        notes: event.target.value,
-                      }))
-                    }
-                    value={customer.notes}
-                  />
-                </label>
-              </div>
+
+              {signedIn ? (
+                <div className="grid gap-5">
+                  <div className={classNames(styles.publicCard, "grid gap-4 p-5")}>
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f7f2f7] text-base font-extrabold text-[#642a56]">
+                        {data.currentUser?.avatarUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            alt=""
+                            className="h-full w-full object-cover"
+                            src={data.currentUser.avatarUrl}
+                          />
+                        ) : (
+                          initialsFor(accountDisplayName)
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <h2 className="truncate text-lg font-extrabold text-[#211c24]">
+                          {accountDisplayName}
+                        </h2>
+                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-[#786d78]">
+                          {accountMaskedEmail ? <span>{accountMaskedEmail}</span> : null}
+                          {accountMaskedPhone ? <span>{accountMaskedPhone}</span> : null}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="rounded-xl bg-[#f7f2f7] px-4 py-3 text-sm font-extrabold text-[#642a56]">
+                      This booking will be saved to your account.
+                    </p>
+                  </div>
+
+                  {signedInNeedsName || signedInNeedsPhone || signedInNeedsEmail ? (
+                    <div className={classNames(styles.publicCard, "grid gap-4 p-5 sm:grid-cols-2")}>
+                      <div className="sm:col-span-2">
+                        <h2 className="text-lg font-extrabold text-[#211c24]">
+                          Add missing booking info
+                        </h2>
+                        <p className="mt-1 text-sm leading-6 text-[#786d78]">
+                          These details are used for this appointment.
+                        </p>
+                      </div>
+                      {signedInNeedsName ? (
+                        <>
+                          <label className="grid gap-2">
+                            <span className="text-sm font-extrabold text-[#211c24]">
+                              First name
+                            </span>
+                            <input
+                              className={styles.field}
+                              id="public-booking-first-name"
+                              onChange={(event) =>
+                                setCustomer((current) => ({
+                                  ...current,
+                                  firstName: event.target.value,
+                                }))
+                              }
+                              type="text"
+                              value={customer.firstName}
+                            />
+                          </label>
+                          <label className="grid gap-2">
+                            <span className="text-sm font-extrabold text-[#211c24]">
+                              Last name
+                            </span>
+                            <input
+                              className={styles.field}
+                              id="public-booking-last-name"
+                              onChange={(event) =>
+                                setCustomer((current) => ({
+                                  ...current,
+                                  lastName: event.target.value,
+                                }))
+                              }
+                              type="text"
+                              value={customer.lastName}
+                            />
+                          </label>
+                        </>
+                      ) : null}
+                      {signedInNeedsPhone ? (
+                        <label className="grid gap-2">
+                          <span className="text-sm font-extrabold text-[#211c24]">
+                            Phone
+                          </span>
+                          <input
+                            className={styles.field}
+                            id="public-booking-phone"
+                            onChange={(event) =>
+                              setCustomer((current) => ({
+                                ...current,
+                                phone: event.target.value,
+                              }))
+                            }
+                            type="tel"
+                            value={customer.phone}
+                          />
+                        </label>
+                      ) : null}
+                      {signedInNeedsEmail ? (
+                        <label className="grid gap-2">
+                          <span className="text-sm font-extrabold text-[#211c24]">
+                            Email
+                          </span>
+                          <input
+                            className={styles.field}
+                            id="public-booking-email"
+                            onChange={(event) =>
+                              setCustomer((current) => ({
+                                ...current,
+                                email: event.target.value,
+                              }))
+                            }
+                            type="email"
+                            value={customer.email}
+                          />
+                        </label>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  <div className={classNames(styles.publicCard, "grid gap-4 p-5")}>
+                    <label className="grid gap-2">
+                      <span className="text-sm font-extrabold text-[#211c24]">
+                        Notes for the salon
+                      </span>
+                      <textarea
+                        className="min-h-20 rounded-xl border border-[#e7dfe5] px-3 py-2 text-sm outline-none focus:border-[#8f4a7b] focus:ring-4 focus:ring-[#642a56]/10"
+                        onChange={(event) =>
+                          setCustomer((current) => ({
+                            ...current,
+                            notes: event.target.value,
+                          }))
+                        }
+                        value={customer.notes}
+                      />
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid gap-5">
+                  <div className={classNames(styles.publicCard, "grid gap-4 p-5")}>
+                    <div>
+                      <h2 className="text-lg font-extrabold text-[#211c24]">
+                        How would you like to continue?
+                      </h2>
+                      <p className="mt-2 text-sm leading-6 text-[#786d78]">
+                        Already have an account? Sign in to save and manage your
+                        bookings.
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                    <a
+                      className={classNames(styles.primaryButton, "px-4")}
+                      href={signInHref}
+                      onClick={storeDraftForAuth}
+                    >
+                      Sign in
+                    </a>
+                    <a
+                      className={classNames(styles.secondaryButton, "px-4")}
+                      href={signupHref}
+                      onClick={storeDraftForAuth}
+                    >
+                      Create account
+                    </a>
+                    <button
+                      className="px-1 py-2 text-left text-sm font-extrabold text-[#642a56] sm:px-3"
+                      onClick={() => setIdentityMode("guest")}
+                      type="button"
+                    >
+                      Continue as guest
+                    </button>
+                  </div>
+                  </div>
+
+                  {identityMode === "guest" ? (
+                    <div
+                      className={classNames(
+                        styles.publicCard,
+                        "grid gap-4 p-5 sm:grid-cols-2",
+                      )}
+                    >
+                      <div className="sm:col-span-2">
+                        <h2 className="text-lg font-extrabold text-[#211c24]">
+                          Continue as guest
+                        </h2>
+                        <p className="mt-1 text-sm leading-6 text-[#786d78]">
+                          Enter contact details for this appointment only.
+                        </p>
+                      </div>
+                      {[
+                        ["First name", "firstName"],
+                        ["Last name", "lastName"],
+                        ["Phone", "phone"],
+                        ["Email", "email"],
+                      ].map(([label, key]) => (
+                        <label className="grid gap-2" key={key}>
+                          <span className="text-sm font-extrabold text-[#211c24]">
+                            {label}
+                          </span>
+                          <input
+                            className={styles.field}
+                            id={`public-booking-${key.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`}
+                            onChange={(event) =>
+                              setCustomer((current) => ({
+                                ...current,
+                                [key]: event.target.value,
+                              }))
+                            }
+                            type={
+                              key === "email"
+                                ? "email"
+                                : key === "phone"
+                                  ? "tel"
+                                  : "text"
+                            }
+                            value={customer[key as keyof CustomerDraft]}
+                          />
+                        </label>
+                      ))}
+                      <label className="grid gap-2 sm:col-span-2">
+                        <span className="text-sm font-extrabold text-[#211c24]">
+                          Notes for the salon
+                        </span>
+                        <textarea
+                          className="min-h-20 rounded-xl border border-[#e7dfe5] px-3 py-2 text-sm outline-none focus:border-[#8f4a7b] focus:ring-4 focus:ring-[#642a56]/10"
+                          onChange={(event) =>
+                            setCustomer((current) => ({
+                              ...current,
+                              notes: event.target.value,
+                            }))
+                          }
+                          value={customer.notes}
+                        />
+                      </label>
+                      <div className="sm:col-span-2">
+                        <button
+                          className="text-sm font-extrabold text-[#642a56]"
+                          onClick={() => setIdentityMode("choice")}
+                          type="button"
+                        >
+                          Back to account options
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+
+              <label className="hidden">
+                Company
+                <input
+                  autoComplete="off"
+                  onChange={(event) => setHoneypot(event.target.value)}
+                  tabIndex={-1}
+                  value={honeypot}
+                />
+              </label>
             </section>
           ) : null}
 
@@ -1015,7 +1932,9 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                   <div className="flex justify-between gap-4">
                     <dt className="text-[#786d78]">Customer</dt>
                     <dd className="font-extrabold text-[#211c24]">
-                      {customer.firstName} {customer.lastName}
+                      {signedIn
+                        ? accountDisplayName
+                        : `${customer.firstName} ${customer.lastName}`.trim()}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4">
@@ -1038,11 +1957,58 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
               <p className="mt-4 text-sm leading-6 text-[#786d78]">
                 {result?.message ?? "Your booking request has been processed."}
               </p>
-              {manageHref ? (
-                <a className={classNames(styles.primaryButton, "mt-6 px-5")} href={manageHref}>
-                  Manage booking
-                </a>
+              {result?.ok && result.accountLinked ? (
+                <p className="mt-4 rounded-xl bg-[#f7f2f7] px-4 py-3 text-sm font-extrabold text-[#642a56]">
+                  This booking is saved to your KingPOS account.
+                </p>
               ) : null}
+              <div className="mt-6 flex flex-wrap gap-3">
+                {manageHref ? (
+                  <a className={classNames(styles.primaryButton, "px-5")} href={manageHref}>
+                    {result?.accountLinked ? "Manage appointment" : "Manage this booking"}
+                  </a>
+                ) : null}
+                {result?.ok && !result.accountLinked ? (
+                  <>
+                    <p className="basis-full text-sm leading-6 text-[#786d78]">
+                      Already have an account? Sign in for faster future bookings.
+                    </p>
+                    <a
+                      className={classNames(styles.secondaryButton, "px-5")}
+                      href={signInHref}
+                    >
+                      Sign in
+                    </a>
+                    <a
+                      className={classNames(styles.secondaryButton, "px-5")}
+                      href={signupHref}
+                    >
+                      Create account
+                    </a>
+                    <a
+                      className={classNames(styles.secondaryButton, "px-5")}
+                      href={salonProfileHref}
+                    >
+                      Continue without account
+                    </a>
+                  </>
+                ) : null}
+                {data.salon.phone ? (
+                  <a
+                    className={classNames(styles.secondaryButton, "px-5")}
+                    href={`tel:${data.salon.phone}`}
+                  >
+                    Contact salon
+                  </a>
+                ) : data.salon.email ? (
+                  <a
+                    className={classNames(styles.secondaryButton, "px-5")}
+                    href={`mailto:${data.salon.email}`}
+                  >
+                    Contact salon
+                  </a>
+                ) : null}
+              </div>
               {!result?.ok ? (
                 <button
                   className={classNames(styles.secondaryButton, "mt-4 px-5")}

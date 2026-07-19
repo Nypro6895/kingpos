@@ -1,0 +1,64 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "cancelWorked": true,
+  "cancelledTabShowsBooking": true,
+  "cleanup": {
+    "activeNotifications": 0,
+    "bookingStatuses": [
+      {
+        "id": "c9447347-523e-4aea-8d0b-21cac543b63d",
+        "status": "cancelled"
+      },
+      {
+        "id": "ff8d0b22-fa63-43f9-bbb6-2e5700cce4b2",
+        "status": "cancelled"
+      }
+    ]
+  },
+  "cleanupError": null,
+  "consoleErrors": [],
+  "contactSalonAvailable": true,
+  "crossAccountDidNotExposeMarker": true,
+  "crossAccountRejected": true,
+  "crossAccountStatus": 404,
+  "detailLoaded": true,
+  "fixtures": {
+    "assignmentId": "48f12d56-7ee0-4810-9eca-bfd1930731ae",
+    "availabilityId": "09253055-27df-4d9e-8e18-0a5f9523ae6b",
+    "bookingId": "c9447347-523e-4aea-8d0b-21cac543b63d",
+    "customerIds": [
+      "fdfe642e-24e9-4caa-a9a2-cd2bbfb174a5",
+      "4393c30e-e8e8-44db-8f79-98e66f44d9fa"
+    ],
+    "guestBookingId": "ff8d0b22-fa63-43f9-bbb6-2e5700cce4b2",
+    "notificationId": "fbe0a0d8-f1ac-4b95-b359-d1d0ac2ddada",
+    "publicUserIds": [
+      "ab97c5e3-4f97-4459-a33a-adc9883ba224",
+      "587d33f7-7506-470f-a4fb-e94fc7e5e136"
+    ],
+    "salonId": "7f599bc8-a806-4a68-be86-c149c21709e2",
+    "serviceId": "c194d9d2-23a4-4e52-bc43-503b31f1d687",
+    "staffId": "0c960845-1104-4b8f-8923-139fc8e61a49"
+  },
+  "guestBookingIsolated": true,
+  "marker": "My Bookings QA 20260718220122",
+  "mobileUiFacts": {
+    "bodyScrollWidth": 390,
+    "documentScrollWidth": 390,
+    "innerWidth": 390
+  },
+  "networkErrors": [],
+  "notificationDeepLinkWorked": true,
+  "ok": true,
+  "pageErrors": [],
+  "rescheduleWorked": true,
+  "screenshots": [
+    "my-bookings-upcoming-desktop.png",
+    "my-bookings-detail-desktop.png",
+    "my-bookings-cancelled-desktop.png",
+    "my-bookings-cancelled-mobile.png",
+    "my-bookings-detail-mobile.png"
+  ],
+  "startedAt": "2026-07-18T22:01:22.886Z",
+  "upcomingBookingVisible": true
+}

@@ -65,11 +65,21 @@ function NotificationKindBadge({ kind }: { kind: AppNotification["recipient_kind
   );
 }
 
+function notificationDestination(notification: AppNotification) {
+  if (notification.recipient_kind === "customer" && notification.booking_id) {
+    return `/my-bookings/${notification.booking_id}`;
+  }
+
+  return notification.href.startsWith("/") ? notification.href : "/notifications";
+}
+
 function AppNotificationCard({
   notification,
 }: {
   notification: AppNotification;
 }) {
+  const destinationHref = notificationDestination(notification);
+
   return (
     <article className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -96,7 +106,7 @@ function AppNotificationCard({
       <div className="flex flex-wrap gap-2">
         <form action={openAppNotificationAction}>
           <input name="notification_id" type="hidden" value={notification.id} />
-          <input name="href" type="hidden" value={notification.href} />
+          <input name="href" type="hidden" value={destinationHref} />
           <button
             className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white"
             type="submit"
