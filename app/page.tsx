@@ -1,16 +1,8 @@
-export default function HomePage() {
-  return (
-    <main
-      style={{
-        padding: "40px",
-        fontFamily: "Arial",
-      }}
-    >
-      <h1>KingPOS Training</h1>
+import { getCurrentBusinessContext } from "@/lib/current-context";
+import { redirect } from "next/navigation";
 
-      <p>Welcome to the KingPOS Training!</p>
+export default async function HomePage() {
+  const context = await getCurrentBusinessContext();
 
-      <button>Start Training</button>
-    </main>
-  );
+  redirect(context.user ? "/my-place" : "/explore");
 }
