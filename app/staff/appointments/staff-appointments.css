@@ -1,0 +1,177 @@
+[data-staff-appointments-surface="staff"] {
+  --staff-booking-bg: #f7f7f8;
+  --staff-booking-surface: #ffffff;
+  --staff-booking-soft: #fbfafb;
+  --staff-booking-lilac: #efe8f3;
+  --staff-booking-plum: #642a56;
+  --staff-booking-plum-dark: #4d1d42;
+  --staff-booking-ink: #211c24;
+  --staff-booking-muted: #786d78;
+  --staff-booking-border: #e7dfe5;
+  --staff-booking-strong-border: #d7c8d3;
+  background: var(--staff-booking-bg);
+  color: var(--staff-booking-ink);
+  font-family: var(--font-booking-sans), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+[data-staff-appointments-surface="staff"],
+[data-staff-appointments-surface="staff"] * {
+  box-sizing: border-box;
+}
+
+.staff-appointments-header {
+  background: var(--staff-booking-bg);
+  border-bottom: 1px solid var(--staff-booking-border);
+}
+
+.staff-appointments-view-tabs {
+  background: var(--staff-booking-surface);
+  border: 1px solid var(--staff-booking-strong-border);
+  border-radius: 10px;
+  display: flex;
+  padding: 4px;
+  width: fit-content;
+}
+
+.staff-appointments-view-tab {
+  align-items: center;
+  border-radius: 8px;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 800;
+  min-height: 36px;
+  padding: 8px 13px;
+  text-decoration: none;
+}
+
+.staff-appointments-view-tab--active {
+  background: var(--staff-booking-plum);
+  color: #fff;
+}
+
+.staff-appointments-view-tab--idle {
+  color: var(--staff-booking-muted);
+}
+
+.staff-appointments-view-tab--idle:hover {
+  background: var(--staff-booking-lilac);
+  color: var(--staff-booking-plum-dark);
+}
+
+.staff-appointments-toolbar {
+  align-items: center;
+  background: var(--staff-booking-surface);
+  border: 1px solid var(--staff-booking-border);
+  border-radius: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+}
+
+.staff-appointments-date-display {
+  align-items: center;
+  background: var(--staff-booking-surface);
+  border: 1px solid var(--staff-booking-strong-border);
+  border-radius: 10px;
+  color: var(--staff-booking-ink);
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 800;
+  gap: 10px;
+  min-height: 40px;
+  min-width: 220px;
+  padding: 0 13px;
+}
+
+.staff-appointments-primary-button,
+.staff-appointments-secondary-button,
+.staff-appointments-icon-button {
+  align-items: center;
+  border-radius: 10px;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  text-decoration: none;
+}
+
+.staff-appointments-primary-button {
+  background: var(--staff-booking-plum);
+  border: 1px solid var(--staff-booking-plum);
+  color: #fff;
+}
+
+.staff-appointments-secondary-button,
+.staff-appointments-icon-button {
+  background: var(--staff-booking-surface);
+  border: 1px solid var(--staff-booking-strong-border);
+  color: var(--staff-booking-ink);
+}
+
+.staff-appointments-icon-button {
+  display: grid;
+  height: 40px;
+  padding: 0;
+  place-items: center;
+  width: 40px;
+}
+
+.staff-appointments-field {
+  background: var(--staff-booking-surface);
+  border: 1px solid var(--staff-booking-border);
+  border-radius: 10px;
+  color: var(--staff-booking-ink);
+  font-size: 14px;
+  min-height: 40px;
+  outline: none;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.staff-appointments-field:focus {
+  border-color: #8f4a7b;
+  box-shadow: 0 0 0 3px rgba(100, 42, 86, 0.12);
+}
+
+.staff-appointments-panel,
+.staff-appointments-card {
+  background: var(--staff-booking-surface);
+  border: 1px solid var(--staff-booking-border);
+  border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(33, 28, 36, 0.03);
+}
+
+.staff-appointments-card {
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.staff-appointments-card:hover {
+  border-color: var(--staff-booking-strong-border);
+  box-shadow: 0 12px 24px rgba(57, 37, 52, 0.08);
+}
+
+.staff-appointments-empty {
+  background: var(--staff-booking-soft);
+  border: 1px solid var(--staff-booking-border);
+  border-radius: 12px;
+  color: var(--staff-booking-muted);
+}
+
+@media (max-width: 640px) {
+  .staff-appointments-toolbar {
+    align-items: stretch;
+  }
+
+  .staff-appointments-date-display {
+    flex: 1 1 100%;
+    justify-content: space-between;
+    min-width: 0;
+  }
+}
