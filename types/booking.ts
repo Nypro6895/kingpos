@@ -160,7 +160,7 @@ export type BookingInspiration = {
   salon_id: string;
   booking_id: string;
   booking_line_id: string | null;
-  source_type: "salon_profile_look" | string;
+  source_type: "salon_profile_look" | "salon_profile_update" | string;
   source_content_id: string | null;
   source_salon_id: string;
   source_media_asset_id: string | null;

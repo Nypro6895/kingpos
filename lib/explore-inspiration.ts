@@ -1,5 +1,9 @@
 import "server-only";
 
+import {
+  contentBookingOptionKey,
+  loadPublicContentBookingOptions,
+} from "@/lib/content-booking";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -170,10 +174,9 @@ function mapInspirationRow(
       ? row.bookable_service_id
       : null,
     bookingEnabled: row.booking_enabled === true,
-    bookingHref:
-      row.booking_enabled === true && row.content_type === "look"
-        ? cleanString(row.booking_href)
-        : null,
+    bookingHref: row.booking_enabled === true ? cleanString(row.booking_href) : null,
+    bookingLabel: "Book this look",
+    bookingReadiness: null,
     captionExcerpt: cleanString(row.caption_excerpt),
     contentId: row.content_id,
     contentType: row.content_type,
@@ -280,11 +283,48 @@ export async function getExploreInspirationPage(input: {
         seenMediaIds.add(item.mediaId);
         return true;
       });
+    const contentOptions = await loadPublicContentBookingOptions(
+      items.map((item) => item.salonId),
+    );
+    const optionsByContent = new Map(
+      contentOptions.map((option) => [
+        contentBookingOptionKey({
+          contentId: option.contentId,
+          sourceType: option.sourceType,
+        }),
+        option,
+      ]),
+    );
+    const itemsWithBooking = items.map((item) => {
+      const option = optionsByContent.get(
+        contentBookingOptionKey({
+          contentId: item.contentId,
+          sourceType:
+            item.contentType === "update"
+              ? "salon_profile_update"
+              : "salon_profile_look",
+        }),
+      );
+
+      if (!option) {
+        return item;
+      }
+
+      return {
+        ...item,
+        bookableServiceId: option.primaryServiceId,
+        bookingEnabled: option.bookingEnabled,
+        bookingHref: option.bookingHref,
+        bookingLabel: option.ctaLabel,
+        bookingReadiness: option.readinessState,
+        serviceName: option.primaryServiceName ?? item.serviceName,
+      };
+    });
 
     return {
       error: null,
       hasMore,
-      items: diversifyInspirationItems(items),
+      items: diversifyInspirationItems(itemsWithBooking),
       nextCursor,
     };
   } catch (error) {

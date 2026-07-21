@@ -102,6 +102,8 @@ export type ExploreInspirationItem = {
   bookableServiceId: string | null;
   bookingEnabled: boolean;
   bookingHref: string | null;
+  bookingLabel: string;
+  bookingReadiness: string | null;
   captionExcerpt: string | null;
   contentId: string;
   contentType: "look" | "update";

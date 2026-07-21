@@ -423,6 +423,45 @@ async function attachHashtagsToPost(input: {
   }
 }
 
+async function saveContentBookingConfig(input: {
+  additionalServiceIds?: string[];
+  bookingCtaEnabled?: boolean;
+  bookingNote?: string | null;
+  contentId: string;
+  creditedStaffId?: string | null;
+  primaryServiceId?: string | null;
+  sourceType: "salon_profile_look" | "salon_profile_update";
+  supabase: NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>>;
+}) {
+  const shouldSave =
+    input.bookingCtaEnabled !== undefined ||
+    Boolean(input.primaryServiceId) ||
+    Boolean(input.creditedStaffId) ||
+    Boolean(input.bookingNote) ||
+    (input.additionalServiceIds?.length ?? 0) > 0;
+
+  if (!shouldSave) {
+    return;
+  }
+
+  const { error } = await input.supabase.rpc(
+    "save_salon_profile_content_booking_config",
+    {
+      p_additional_service_ids: input.additionalServiceIds ?? [],
+      p_booking_cta_enabled: input.bookingCtaEnabled ?? true,
+      p_booking_note: input.bookingNote ?? null,
+      p_content_id: input.contentId,
+      p_credited_staff_id: input.creditedStaffId ?? null,
+      p_primary_service_id: input.primaryServiceId ?? null,
+      p_source_type: input.sourceType,
+    },
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export function getSalonProfileMediaUrl(path: string | null | undefined) {
   const cleanedPath = normalizeSalonProfileMediaPath(path);
 
@@ -1778,7 +1817,9 @@ export async function setCurrentSalonProfilePublication(enabled: boolean) {
 }
 
 export async function createCurrentSalonProfileLook(input: {
+  additionalServiceIds?: string[];
   badge: string | null;
+  bookingCtaEnabled?: boolean;
   bookingNote: string | null;
   caption?: string | null;
   durationMinutes: number | null;
@@ -1938,25 +1979,50 @@ export async function createCurrentSalonProfileLook(input: {
     throw new Error(error.message);
   }
 
-  await Promise.all([
-    attachSalonProfileMediaAsset({
-      context,
-      entityId: data.id,
-      entityType: "look",
-      path: mediaPath,
-    }),
-    attachHashtagsToPost({
-      hashtags: extractHashtags(caption),
-      organizationId: organization.id,
-      postId: data.id,
-      postType: "look",
-      salonId: salon.id,
+  try {
+    await Promise.all([
+      attachSalonProfileMediaAsset({
+        context,
+        entityId: data.id,
+        entityType: "look",
+        path: mediaPath,
+      }),
+      attachHashtagsToPost({
+        hashtags: extractHashtags(caption),
+        organizationId: organization.id,
+        postId: data.id,
+        postType: "look",
+        salonId: salon.id,
+        supabase,
+      }),
+    ]);
+    await saveContentBookingConfig({
+      additionalServiceIds: input.additionalServiceIds,
+      bookingCtaEnabled: input.bookingCtaEnabled,
+      bookingNote: input.bookingNote,
+      contentId: data.id,
+      creditedStaffId: recommendedStaffId,
+      primaryServiceId: input.serviceId,
+      sourceType: "salon_profile_look",
       supabase,
-    }),
-  ]);
+    });
+  } catch (postError) {
+    await supabase
+      .from("salon_profile_looks")
+      .delete()
+      .eq("id", data.id)
+      .eq("organization_id", organization.id)
+      .eq("salon_id", salon.id);
+    await removeTrustedSalonProfileMediaPath({ context, path: mediaPath });
+    throw postError;
+  }
+
+  return data.id;
 }
 
 export async function createCurrentSalonProfileUpdate(input: {
+  additionalServiceIds?: string[];
+  bookingCtaEnabled?: boolean;
   caption?: string | null;
   ctaLabel: string | null;
   imagePath?: string | null;
@@ -2148,22 +2214,45 @@ export async function createCurrentSalonProfileUpdate(input: {
     throw new Error(error.message);
   }
 
-  await Promise.all([
-    attachSalonProfileMediaAsset({
-      context,
-      entityId: data.id,
-      entityType: "update",
-      path: mediaPath,
-    }),
-    attachHashtagsToPost({
-      hashtags: extractHashtags(caption),
-      organizationId: organization.id,
-      postId: data.id,
-      postType: "update",
-      salonId: salon.id,
+  try {
+    await Promise.all([
+      attachSalonProfileMediaAsset({
+        context,
+        entityId: data.id,
+        entityType: "update",
+        path: mediaPath,
+      }),
+      attachHashtagsToPost({
+        hashtags: extractHashtags(caption),
+        organizationId: organization.id,
+        postId: data.id,
+        postType: "update",
+        salonId: salon.id,
+        supabase,
+      }),
+    ]);
+    await saveContentBookingConfig({
+      additionalServiceIds: input.additionalServiceIds,
+      bookingCtaEnabled: input.bookingCtaEnabled,
+      bookingNote: null,
+      contentId: data.id,
+      creditedStaffId: selectedStaffId,
+      primaryServiceId: input.serviceId,
+      sourceType: "salon_profile_update",
       supabase,
-    }),
-  ]);
+    });
+  } catch (postError) {
+    await supabase
+      .from("salon_profile_updates")
+      .delete()
+      .eq("id", data.id)
+      .eq("organization_id", organization.id)
+      .eq("salon_id", salon.id);
+    await removeTrustedSalonProfileMediaPath({ context, path: mediaPath });
+    throw postError;
+  }
+
+  return data.id;
 }
 
 export async function setCurrentSalonProfileLookStatus(input: {
@@ -2273,6 +2362,8 @@ export async function deleteCurrentSalonProfileLook(lookId: string) {
 }
 
 export async function createCurrentSalonProfileSocialPost(input: {
+  additionalServiceIds?: string[];
+  bookingCtaEnabled?: boolean;
   caption: string | null;
   contentType?: "auto" | "look" | "opening" | "update";
   durationMinutes?: number | null;
@@ -2300,8 +2391,10 @@ export async function createCurrentSalonProfileSocialPost(input: {
   if (contentType === "look") {
     await createCurrentSalonProfileLook({
       badge: null,
+      bookingCtaEnabled: input.bookingCtaEnabled,
       bookingNote: null,
       caption,
+      additionalServiceIds: input.additionalServiceIds,
       durationMinutes: input.durationMinutes ?? null,
       emotionalDescription: caption,
       imagePath: input.imagePath,
@@ -2319,6 +2412,8 @@ export async function createCurrentSalonProfileSocialPost(input: {
   }
 
   await createCurrentSalonProfileUpdate({
+    additionalServiceIds: input.additionalServiceIds,
+    bookingCtaEnabled: input.bookingCtaEnabled,
     caption,
     ctaLabel: contentType === "opening" ? "Claim this time" : null,
     imagePath: input.imagePath,

@@ -369,6 +369,8 @@ export async function createSalonProfileUpdateAction(formData: FormData) {
 }
 
 export async function createSalonProfileSocialPostAction(input: {
+  additionalServiceIds?: string[];
+  bookingCtaEnabled?: boolean;
   caption: string | null;
   contentType?: "auto" | "look" | "opening" | "update";
   durationMinutes?: number | null;

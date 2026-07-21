@@ -1052,7 +1052,7 @@ function InspirationPreview({
                 className="inline-flex min-h-10 items-center rounded-md bg-[#642a56] px-4 text-sm font-semibold text-white hover:bg-[#552149] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#642a56]"
                 href={item.bookingHref}
               >
-                Book this look
+                {item.bookingLabel}
               </Link>
             ) : null}
             {item.salonHref ? (

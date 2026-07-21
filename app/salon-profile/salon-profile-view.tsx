@@ -70,6 +70,7 @@ type BookingContext = {
   serviceId?: string | null;
   staffId?: string | null;
   title: string;
+  updateId?: string | null;
 } | null;
 
 type CommentTarget = {
@@ -574,6 +575,41 @@ function CaptionWithHashtags({ text }: { text: string }) {
   );
 }
 
+function normalizeSuggestionToken(value: string) {
+  return value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function hashtagSuggestionsForServices(
+  caption: string,
+  services: PublicSalonProfileService[],
+) {
+  const hashtags = Array.from(caption.matchAll(/#([a-z0-9_-]{2,48})/gi)).map(
+    (match) => normalizeSuggestionToken(match[1] ?? ""),
+  );
+
+  if (hashtags.length === 0) {
+    return null;
+  }
+
+  for (const tag of hashtags) {
+    const service = services.find((candidate) => {
+      const serviceName = normalizeSuggestionToken(candidate.name);
+      const category = normalizeSuggestionToken(candidate.category ?? "");
+
+      return tag === serviceName || tag === category;
+    });
+
+    if (service) {
+      return { hashtag: tag, service };
+    }
+  }
+
+  return null;
+}
+
 function SalonCover({
   coverImageUrl,
   name,
@@ -1063,12 +1099,16 @@ function ComposerModal({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const formId = useId();
   const [caption, setCaption] = useState("");
+  const [additionalServiceIds, setAdditionalServiceIds] = useState<string[]>([]);
+  const [bookingCtaEnabled, setBookingCtaEnabled] = useState(true);
+  const [bookingSetupOpen, setBookingSetupOpen] = useState(false);
   const [contentType, setContentType] = useState<ComposerType>(initialType);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [durationMinutes, setDurationMinutes] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [mood, setMood] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [serviceSearch, setServiceSearch] = useState("");
   const [serviceId, setServiceId] = useState("");
   const [staffId, setStaffId] = useState("");
   const [startsAt, setStartsAt] = useState("");
@@ -1082,6 +1122,7 @@ function ComposerModal({
       file ||
       title.trim() ||
       serviceId ||
+      additionalServiceIds.length > 0 ||
       staffId ||
       startsAt ||
       mood ||
@@ -1092,6 +1133,16 @@ function ComposerModal({
   useEffect(() => {
     captionRef.current?.focus({ preventScroll: true });
   }, []);
+
+  useEffect(() => {
+    if (contentType === "opening") {
+      queueMicrotask(() => {
+        setDetailsOpen(true);
+        setBookingSetupOpen(true);
+        setBookingCtaEnabled(true);
+      });
+    }
+  }, [contentType]);
 
   useEffect(() => {
     return () => {
@@ -1167,6 +1218,8 @@ function ComposerModal({
           })
         : null;
       const result = await createSalonProfileSocialPostAction({
+        additionalServiceIds,
+        bookingCtaEnabled,
         caption,
         contentType: resolvedType,
         imagePath,
@@ -1211,6 +1264,24 @@ function ComposerModal({
 
   const primaryLabel = contentType === "opening" ? "Share" : "Post";
   const pendingLabel = contentType === "opening" ? "Sharing" : "Posting";
+  const suggestedService = hashtagSuggestionsForServices(caption, data.services);
+  const filteredServices = data.services.filter((service) => {
+    const query = serviceSearch.trim().toLowerCase();
+
+    if (!query) {
+      return true;
+    }
+
+    return [service.name, service.category, service.description]
+      .some(
+        (value) =>
+          typeof value === "string" && value.toLowerCase().includes(query),
+      );
+  });
+  const additionalServices = data.services.filter(
+    (service) => service.id !== serviceId,
+  );
+  const onlineStaff = data.staff.filter((member) => member.onlineBookingEnabled);
 
   return (
     <Modal
@@ -1343,23 +1414,145 @@ function ComposerModal({
                 value={title}
               />
             </label>
-            <label className="grid gap-2">
-              <span className="text-sm font-semibold text-zinc-800">
-                Related service
-              </span>
-              <select
-                className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm"
-                onChange={(event) => setServiceId(event.currentTarget.value)}
-                value={serviceId}
+            <section className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4">
+              <button
+                className="flex items-center justify-between gap-3 text-left"
+                onClick={() => setBookingSetupOpen((current) => !current)}
+                type="button"
               >
-                <option value="">No service</option>
-                {data.services.map((service) => (
-                  <option key={service.id} value={service.id}>
-                    {service.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <span>
+                  <span className="block text-sm font-semibold text-zinc-900">
+                    Booking setup
+                  </span>
+                  <span className="block text-xs text-zinc-500">Optional</span>
+                </span>
+                <span className="text-sm font-semibold text-zinc-600">
+                  {bookingSetupOpen ? "Hide" : "Edit"}
+                </span>
+              </button>
+              {bookingSetupOpen ? (
+                <div className="grid gap-3">
+                  <label className="flex items-center justify-between gap-3 rounded-md bg-zinc-50 px-3 py-2">
+                    <span className="text-sm font-semibold text-zinc-800">
+                      Allow customers to book from this post
+                    </span>
+                    <input
+                      checked={bookingCtaEnabled}
+                      onChange={(event) =>
+                        setBookingCtaEnabled(event.currentTarget.checked)
+                      }
+                      type="checkbox"
+                    />
+                  </label>
+                  {suggestedService && suggestedService.service.id !== serviceId ? (
+                    <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                      <span className="font-semibold">
+                        Suggested from #{suggestedService.hashtag}:{" "}
+                        {suggestedService.service.name}
+                      </span>
+                      <button
+                        className="ml-3 font-semibold underline underline-offset-4"
+                        onClick={() => {
+                          setBookingCtaEnabled(true);
+                          setServiceId(suggestedService.service.id);
+                          setAdditionalServiceIds((current) =>
+                            current.filter(
+                              (id) => id !== suggestedService.service.id,
+                            ),
+                          );
+                        }}
+                        type="button"
+                      >
+                        Use suggestion
+                      </button>
+                    </div>
+                  ) : null}
+                  <label className="grid gap-2">
+                    <span className="text-sm font-semibold text-zinc-800">
+                      Primary service
+                    </span>
+                    <input
+                      className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm"
+                      onChange={(event) => setServiceSearch(event.currentTarget.value)}
+                      placeholder="Search services"
+                      type="search"
+                      value={serviceSearch}
+                    />
+                    <select
+                      className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm"
+                      onChange={(event) => {
+                        const nextServiceId = event.currentTarget.value;
+                        setServiceId(nextServiceId);
+                        setAdditionalServiceIds((current) =>
+                          current.filter((id) => id !== nextServiceId),
+                        );
+                      }}
+                      value={serviceId}
+                    >
+                      <option value="">No primary service</option>
+                      {filteredServices.map((service) => (
+                        <option key={service.id} value={service.id}>
+                          {service.name} / Online
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="grid gap-2">
+                    <span className="text-sm font-semibold text-zinc-800">
+                      Additional services
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {additionalServices.slice(0, 8).map((service) => {
+                        const selected = additionalServiceIds.includes(service.id);
+
+                        return (
+                          <button
+                            className={[
+                              "rounded-full border px-3 py-2 text-xs font-semibold",
+                              selected
+                                ? "border-zinc-950 bg-zinc-950 text-white"
+                                : "border-zinc-300 bg-white text-zinc-700",
+                            ].join(" ")}
+                            key={service.id}
+                            onClick={() =>
+                              setAdditionalServiceIds((current) =>
+                                selected
+                                  ? current.filter((id) => id !== service.id)
+                                  : [...current, service.id],
+                              )
+                            }
+                            type="button"
+                          >
+                            {service.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <label className="grid gap-2">
+                    <span className="text-sm font-semibold text-zinc-800">
+                      Professional who created this look
+                    </span>
+                    <select
+                      className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm"
+                      onChange={(event) => setStaffId(event.currentTarget.value)}
+                      value={staffId}
+                    >
+                      <option value="">No professional</option>
+                      {onlineStaff.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.displayName} / Online
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <p className="text-xs leading-5 text-zinc-500">
+                    Customers can book these services and professional directly
+                    from this post.
+                  </p>
+                </div>
+              ) : null}
+            </section>
             <label className="grid gap-2">
               <span className="text-sm font-semibold text-zinc-800">Mood</span>
               <select
@@ -1372,23 +1565,6 @@ function ComposerModal({
                 <option value="Summer bright">Summer bright</option>
                 <option value="Rich & modern">Rich & modern</option>
                 <option value="Special moment">Special moment</option>
-              </select>
-            </label>
-            <label className="grid gap-2">
-              <span className="text-sm font-semibold text-zinc-800">
-                Recommended artist
-              </span>
-              <select
-                className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm"
-                onChange={(event) => setStaffId(event.currentTarget.value)}
-                value={staffId}
-              >
-                <option value="">No artist</option>
-                {data.staff.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.displayName}
-                  </option>
-                ))}
               </select>
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -1747,17 +1923,16 @@ function FeedCard({
                 onBook({
                   lookId: item.contentType === "look" ? item.id : null,
                   note: item.caption,
-                  serviceId: item.serviceId,
-                  staffId:
+                  title:
                     item.contentType === "look"
-                      ? item.recommendedStaffId
-                      : item.staffId,
-                  title: item.contentType === "look" ? "Book this look" : "Book now",
+                      ? "Book this look"
+                      : "Book with this inspiration",
+                  updateId: item.contentType === "update" ? item.id : null,
                 })
               }
               variant="primary"
             >
-              {item.contentType === "look" ? "Book look" : "Book"}
+              {item.contentType === "look" ? "Book look" : "Book inspiration"}
             </Button>
           ) : null}
         </div>
@@ -2971,8 +3146,10 @@ export function SalonProfileView({
   function bookingHref(context: BookingContext) {
     const params = new URLSearchParams({ source: "public_profile" });
 
-    if (context?.lookId) {
-      params.set("inspiration", context.lookId);
+    const inspirationId = context?.lookId ?? context?.updateId ?? null;
+
+    if (inspirationId) {
+      params.set("inspiration", inspirationId);
       return `/book/${profile.salonId}?${params.toString()}`;
     }
 

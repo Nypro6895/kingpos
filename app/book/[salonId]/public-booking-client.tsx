@@ -27,6 +27,13 @@ type CustomerDraft = {
   phone: string;
 };
 
+type CustomerFieldKey = keyof Pick<
+  CustomerDraft,
+  "email" | "firstName" | "lastName" | "phone"
+>;
+
+type CustomerFieldErrors = Partial<Record<CustomerFieldKey, string>>;
+
 type BookingIdentityMode = "choice" | "guest";
 
 type StoredBookingDraft = {
@@ -106,6 +113,7 @@ const styles = {
   progressCircle: "public-booking-progress-circle",
   progressDone: "public-booking-progress-done",
   progressStep: "public-booking-progress-step",
+  quickBookStrip: "public-booking-quick-book-strip",
   publicCard: "public-booking-card",
   publicCopy: "public-booking-copy",
   publicHeading: "public-booking-heading",
@@ -211,6 +219,18 @@ function splitDisplayName(value: string | null | undefined) {
 function nonEmpty(value: string | null | undefined) {
   const trimmed = value?.trim() ?? "";
   return trimmed || null;
+}
+
+function emailIsValid(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function phoneIsValid(value: string) {
+  return value.replace(/\D+/g, "").length >= 7;
+}
+
+function newIdempotencyKey() {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 }
 
 function maskEmail(value: string | null | undefined) {
@@ -503,19 +523,41 @@ function slotHour(slot: PublicBookingSlot, timezone: string) {
 
 function BookingInspirationCard({
   compact = false,
+  currentServiceName,
+  currentStaffName,
   inspiration,
   onChangeProfessional,
   onChangeService,
   onRemove,
 }: {
   compact?: boolean;
+  currentServiceName?: string | null;
+  currentStaffName?: string | null;
   inspiration: NonNullable<PublicBookingPageData["initialSelection"]["inspiration"]>;
   onChangeProfessional?: () => void;
   onChangeService?: () => void;
   onRemove?: () => void;
 }) {
-  const serviceLabel = inspiration.serviceName ?? "Mapped service";
-  const staffLabel = inspiration.staffName ? `By ${inspiration.staffName}` : null;
+  const contentLabel = inspiration.contentType === "update" ? "post" : "look";
+  const label =
+    currentServiceName && inspiration.contentType === "look"
+      ? "BOOK THIS LOOK"
+      : "BOOK WITH THIS INSPIRATION";
+  const serviceLabel = currentServiceName
+    ? `You're booking ${currentServiceName}${
+        currentStaffName ? ` with ${currentStaffName}` : ""
+      } for this ${contentLabel}.`
+    : inspiration.message ??
+      "Choose services and a professional. We'll keep this inspiration attached.";
+  const originalContext = inspiration.originalServiceName
+    ? `Original: ${inspiration.originalServiceName}${
+        inspiration.originalStaffName ? ` with ${inspiration.originalStaffName}` : ""
+      }`
+    : null;
+  const thumbClass = classNames(
+    "overflow-hidden rounded-lg bg-[#f7f2f7]",
+    compact ? "h-16 w-16" : "h-20 w-20 sm:h-24 sm:w-24",
+  );
 
   return (
     <section
@@ -526,35 +568,42 @@ function BookingInspirationCard({
       )}
       data-testid="booking-inspiration-card"
     >
-      <div
-        className={classNames(
-          "overflow-hidden rounded-lg bg-[#f7f2f7]",
-          compact ? "h-16 w-16" : "h-24 w-24",
-        )}
-      >
-        {inspiration.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
+      {inspiration.imageUrl ? (
+        <a
+          aria-label="Open inspiration image"
+          className={thumbClass}
+          href={inspiration.imageUrl}
+          rel="noreferrer"
+          target="_blank"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            alt=""
+            alt={`${inspiration.title} inspiration`}
             className="h-full w-full object-cover"
             src={inspiration.imageUrl}
           />
-        ) : (
-          <span className="grid h-full w-full place-items-center text-sm font-extrabold text-[#642a56]">
-            Look
+        </a>
+      ) : (
+        <div className={thumbClass}>
+          <span className="grid h-full w-full place-items-center px-2 text-center text-xs font-extrabold text-[#642a56]">
+            Inspiration
           </span>
-        )}
-      </div>
+        </div>
+      )}
       <div className="min-w-0">
-        <p className={styles.eyebrow}>Book this look</p>
+        <p className={styles.eyebrow}>{label}</p>
         <h2 className="mt-1 line-clamp-2 text-base font-extrabold text-[#211c24]">
           {inspiration.title}
         </h2>
         <p className="mt-1 text-sm font-extrabold text-[#642a56]">
           {serviceLabel}
-          {staffLabel ? ` / ${staffLabel}` : ""}
         </p>
-        {inspiration.message ? (
+        {!currentServiceName && originalContext ? (
+          <p className="mt-2 text-xs font-semibold text-[#786d78]">
+            {originalContext}
+          </p>
+        ) : null}
+        {inspiration.message && currentServiceName ? (
           <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
             {inspiration.message}
           </p>
@@ -565,23 +614,13 @@ function BookingInspirationCard({
         ) : null}
         {!compact ? (
           <div className="mt-3 flex flex-wrap gap-2">
-            {inspiration.imageUrl ? (
-              <a
-                className={classNames(styles.secondaryButton, "px-3 py-2 text-sm")}
-                href={inspiration.imageUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                View image
-              </a>
-            ) : null}
             {onChangeService ? (
               <button
                 className={classNames(styles.secondaryButton, "px-3 py-2 text-sm")}
                 onClick={onChangeService}
                 type="button"
               >
-                Change service
+                {inspiration.serviceId ? "Change service" : "Choose service"}
               </button>
             ) : null}
             {onChangeProfessional ? (
@@ -606,6 +645,49 @@ function BookingInspirationCard({
         ) : null}
       </div>
     </section>
+  );
+}
+
+function BookingInspirationSummaryRow({
+  currentServiceName,
+  inspiration,
+}: {
+  currentServiceName?: string | null;
+  inspiration: NonNullable<PublicBookingPageData["initialSelection"]["inspiration"]>;
+}) {
+  const bookedAs = currentServiceName
+    ? `Booking as ${currentServiceName}`
+    : "Choose a service to continue.";
+  const label =
+    inspiration.contentType === "update"
+      ? "Inspired by this post"
+      : "Inspired by this look";
+
+  return (
+    <div className="grid grid-cols-[52px_1fr] items-center gap-3">
+      <div className="h-[52px] w-[52px] overflow-hidden rounded-lg bg-[#f7f2f7]">
+        {inspiration.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            alt=""
+            className="h-full w-full object-cover"
+            src={inspiration.imageUrl}
+          />
+        ) : (
+          <span className="grid h-full w-full place-items-center text-[10px] font-extrabold text-[#642a56]">
+            IMG
+          </span>
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-extrabold text-[#211c24]">
+          {label}
+        </p>
+        <p className="truncate text-xs font-semibold text-[#786d78]">
+          {bookedAs}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -699,11 +781,19 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
   const [result, setResult] = useState<{
     accountLinked?: boolean;
     bookingId?: string;
+    code?: string;
+    confirmationStatus?: string;
     manageToken?: string | null;
     message: string;
     ok: boolean;
     status?: string;
   } | null>(null);
+  const [detailsSheetIntent, setDetailsSheetIntent] = useState<"review" | "submit">(
+    "review",
+  );
+  const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<CustomerFieldErrors>({});
+  const [idempotencyKey, setIdempotencyKey] = useState(newIdempotencyKey);
   const [inspirationRemoved, setInspirationRemoved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -829,9 +919,31 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     return firstStaff;
   }, [eligibleStaff, showAllProfessionals, staffId]);
   const selectedSlot = slots.find((slot) => slot.startAt === selectedSlotStart) ?? null;
-  const visibleServices = mainServices.filter(
-    (service) => (service.category ?? "Services") === category,
-  );
+  const professionalOnlyStaffId =
+    activeInspiration?.readinessState === "professional_ready" &&
+    selectedServiceIds.length === 0
+      ? staffId
+      : "";
+  const visibleServices = mainServices
+    .filter((service) => (service.category ?? "Services") === category)
+    .sort((left, right) => {
+      if (!professionalOnlyStaffId) {
+        return 0;
+      }
+
+      const leftMatches = (data.staffByService[left.id] ?? []).includes(
+        professionalOnlyStaffId,
+      );
+      const rightMatches = (data.staffByService[right.id] ?? []).includes(
+        professionalOnlyStaffId,
+      );
+
+      if (leftMatches === rightMatches) {
+        return 0;
+      }
+
+      return leftMatches ? -1 : 1;
+    });
   const total = selectedSlot
     ? selectedSlot.lines.reduce((sum, line) => sum + line.unitPrice, 0)
     : summaryServices.reduce((sum, service) => sum + service.basePrice, 0);
@@ -934,6 +1046,38 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         nextSelectedServiceIds.includes(selection.parentServiceId),
       ),
     );
+    setSelectedSlotStart("");
+    setError(null);
+
+    if (nextSelectedServiceIds.length === 0) {
+      setStaffId("");
+      setStaffMode(settings?.anyProfessionalEnabled ? "any" : "specific");
+      return;
+    }
+
+    const originalStaffId = activeInspiration?.originalStaffId ?? null;
+
+    if (
+      originalStaffId &&
+      nextSelectedServiceIds.every((id) =>
+        (data.staffByService[id] ?? []).includes(originalStaffId),
+      )
+    ) {
+      setStaffId(originalStaffId);
+      setStaffMode("specific");
+      return;
+    }
+
+    if (
+      staffMode === "specific" &&
+      staffId &&
+      !nextSelectedServiceIds.every((id) =>
+        (data.staffByService[id] ?? []).includes(staffId),
+      )
+    ) {
+      setStaffId("");
+      setStaffMode(settings?.anyProfessionalEnabled ? "any" : "specific");
+    }
   }
 
   function storeDraftForAuth() {
@@ -1087,6 +1231,22 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
   ]);
 
   useEffect(() => {
+    if (selectedServiceIds.length === 0 || staffMode !== "specific" || !staffId) {
+      return;
+    }
+
+    if (eligibleStaff.some((staff) => staff.id === staffId)) {
+      return;
+    }
+
+    queueMicrotask(() => {
+      setStaffId("");
+      setStaffMode(settings?.anyProfessionalEnabled ? "any" : "specific");
+      setSelectedSlotStart("");
+    });
+  }, [eligibleStaff, selectedServiceIds.length, settings, staffId, staffMode]);
+
+  useEffect(() => {
     if (data.state !== "ready" || selectedServiceIds.length === 0) {
       return;
     }
@@ -1207,6 +1367,75 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     ? `/explore/salons/${data.salon.salonId}`
     : "/explore";
 
+  function setCustomerField(key: keyof CustomerDraft, value: string) {
+    setCustomer((current) => ({
+      ...current,
+      [key]: value,
+    }));
+
+    if (key !== "notes") {
+      setFieldErrors((current) => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
+    }
+  }
+
+  function validateCustomerDetails() {
+    const nextErrors: CustomerFieldErrors = {};
+    const requiresName =
+      !signedIn ||
+      (!nonEmpty(data.currentUser?.displayName) &&
+        !nonEmpty(data.currentUser?.firstName) &&
+        !nonEmpty(data.currentUser?.lastName));
+    const requiresPhone = !signedIn || !nonEmpty(data.currentUser?.phone);
+    const requiresEmail = !signedIn || !nonEmpty(data.currentUser?.email);
+
+    if (requiresName && !customer.firstName.trim()) {
+      nextErrors.firstName = "Enter your first name.";
+    }
+
+    if (requiresName && !customer.lastName.trim()) {
+      nextErrors.lastName = "Enter your last name.";
+    }
+
+    if (requiresPhone && !phoneIsValid(customer.phone)) {
+      nextErrors.phone = "Enter a valid phone number.";
+    }
+
+    if (requiresEmail && !emailIsValid(customer.email)) {
+      nextErrors.email = "Enter a valid email address.";
+    }
+
+    setFieldErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }
+
+  function openDetailsSheet(intent: "review" | "submit" = "review") {
+    setDetailsSheetIntent(intent);
+    setDetailsSheetOpen(true);
+    setError(null);
+  }
+
+  function continueFromDetailsSheet() {
+    if (!validateCustomerDetails()) {
+      return;
+    }
+
+    setDetailsSheetOpen(false);
+    if (!signedIn) {
+      setIdentityMode("guest");
+    }
+
+    if (detailsSheetIntent === "submit") {
+      submitBooking();
+      return;
+    }
+
+    setStep(STEP_REVIEW);
+  }
+
   function submitBooking() {
     if (!selectedSlot) {
       setError("Choose an available time.");
@@ -1214,32 +1443,83 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       return;
     }
 
+    if (selectedServiceIds.length === 0) {
+      setError("Choose a service to continue.");
+      setStep(STEP_SERVICES);
+      return;
+    }
+
+    if (!validateCustomerDetails()) {
+      openDetailsSheet("submit");
+      return;
+    }
+
     setError(null);
     startTransition(async () => {
-      const response = await createPublicBookingAction({
-        addOnSelections: selectedAddOnSelections,
-        customerEmail: customer.email,
-        customerFirstName: customer.firstName,
-        customerLastName: customer.lastName,
-        customerPhone: customer.phone,
-        honeypot,
-        idempotencyKey: crypto.randomUUID(),
-        lineStaffIds,
-        lookId: activeInspiration?.status === "unavailable" ? null : activeInspiration?.id ?? null,
-        publicNotes: customer.notes,
-        salonId: data.salon?.salonId ?? "",
-        serviceId: selectedServiceIds[0] ?? null,
-        serviceIds: selectedServiceIds,
-        source: data.initialSelection.source,
-        staffId,
-        staffMode,
-        startAt: selectedSlot.startAt,
-      });
+      try {
+        const response = await createPublicBookingAction({
+          addOnSelections: selectedAddOnSelections,
+          customerEmail: customer.email,
+          customerFirstName: customer.firstName,
+          customerLastName: customer.lastName,
+          customerPhone: customer.phone,
+          honeypot,
+          idempotencyKey,
+          lineStaffIds,
+          inspirationId:
+            activeInspiration?.status === "unavailable"
+              ? null
+              : activeInspiration?.id ?? null,
+          lookId:
+            activeInspiration?.sourceType === "salon_profile_look" &&
+            activeInspiration.status !== "unavailable"
+              ? activeInspiration.id
+              : null,
+          publicNotes: customer.notes,
+          salonId: data.salon?.salonId ?? "",
+          serviceId: selectedServiceIds[0] ?? null,
+          serviceIds: selectedServiceIds,
+          source: data.initialSelection.source,
+          sourceReferenceType:
+            activeInspiration?.status === "unavailable"
+              ? null
+              : activeInspiration?.sourceType ?? null,
+          staffId,
+          staffMode,
+          startAt: selectedSlot.startAt,
+        });
 
-      setResult(response);
-      setStep(STEP_DONE);
-      if (!response.ok) {
-        setError(response.message);
+        if (response.ok && response.bookingId) {
+          setResult(response);
+          setStep(STEP_DONE);
+          setIdempotencyKey(newIdempotencyKey());
+          return;
+        }
+
+        setResult(null);
+
+        if (response.code === "unavailable_slot") {
+          setSelectedSlotStart("");
+          setError("That time is no longer available. Choose another time.");
+          setStep(STEP_TIME);
+          return;
+        }
+
+        if (
+          response.code === "required_customer_details" ||
+          response.code === "invalid_customer_email" ||
+          response.code === "invalid_customer_phone"
+        ) {
+          validateCustomerDetails();
+          setError(response.message);
+          openDetailsSheet("submit");
+          return;
+        }
+
+        setError(response.message || "We couldn't submit this booking. Try again.");
+      } catch {
+        setResult(null);
+        setError("We couldn't submit this booking. Try again.");
       }
     });
   }
@@ -1279,34 +1559,90 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
           : staffId
             ? data.staff.find((staff) => staff.id === staffId)?.displayName ?? "Selected"
             : "Choose professional";
+  const currentBookingServiceName =
+    summaryServices.length > 0
+      ? summaryServices.map((service) => service.name).join(", ")
+      : null;
+  const currentBookingStaffName =
+    selectedServiceIds.length === 0
+      ? null
+      : selectedSlot
+        ? [...new Set(selectedSlot.lines.map((line) => line.staffName))].join(", ")
+        : staffMode === "specific" && staffId
+          ? data.staff.find((staff) => staff.id === staffId)?.displayName ?? null
+          : null;
   const confirmationTitle =
     result?.ok && result.status === "confirmed"
       ? "Booking confirmed"
       : result?.ok
         ? "Request received"
         : "Booking not submitted";
+  const isQuickBook =
+    activeInspiration?.readinessState === "quick_ready" &&
+    activeInspiration.status === "ready";
   const nextLabel =
-    step === STEP_SERVICES
-      ? "Next: Choose professional"
+    step === STEP_SERVICES && selectedServiceIds.length === 0
+      ? "Choose a service to continue"
+      : step === STEP_SERVICES
+        ? "Next: Choose professional"
       : step === STEP_PROFESSIONAL
         ? "Next: Date & time"
         : step === STEP_TIME
-          ? "Next: Your details"
+          ? !detailsCanContinue && selectedSlot
+            ? "Enter your details"
+            : isQuickBook && signedIn && signedInDetailsComplete
+            ? "Next: Review"
+            : "Next: Your details"
+          : step === STEP_DETAILS && !detailsCanContinue
+            ? "Enter your details"
           : "Next: Review";
   const primaryActionLabel =
     step === STEP_REVIEW
       ? isPending
         ? "Submitting..."
+        : error
+          ? "Retry"
         : settings.confirmationMode === "instant_booking"
           ? "Confirm booking"
           : "Request appointment"
       : nextLabel;
   const primaryActionDisabled =
-    step === STEP_REVIEW ? isPending || !selectedSlot : !canContinue;
+    step === STEP_REVIEW
+      ? isPending || !selectedSlot || selectedServiceIds.length === 0
+      : !canContinue && !(step === STEP_TIME && selectedSlot && !detailsCanContinue);
+
+  const bookingFlowState = isPending
+    ? "submitting"
+    : result?.ok && result.bookingId
+      ? "confirmed"
+      : error
+        ? "recoverable_error"
+        : selectedServiceIds.length === 0
+          ? "selection_incomplete"
+          : !selectedSlot
+            ? "ready_for_slot"
+            : !detailsCanContinue
+              ? "identity_required"
+              : "ready_to_submit";
 
   function activatePrimaryAction() {
     if (step === STEP_REVIEW) {
+      if (!detailsCanContinue) {
+        openDetailsSheet("submit");
+        return;
+      }
+
       submitBooking();
+      return;
+    }
+
+    if (step === STEP_TIME && selectedSlot && !detailsCanContinue) {
+      openDetailsSheet("review");
+      return;
+    }
+
+    if (step === STEP_TIME && detailsCanContinue) {
+      setStep(STEP_REVIEW);
       return;
     }
 
@@ -1325,9 +1661,18 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     <main
       className={classNames(styles.bookingSurface, styles.publicRoot)}
       data-booking-surface="public"
+      data-booking-flow-state={bookingFlowState}
       data-testid="public-booking-root"
     >
       <section className={styles.publicShell} data-testid="public-booking-shell">
+        {isQuickBook ? (
+          <div
+            className={styles.quickBookStrip}
+            data-testid="public-booking-quick-book"
+          >
+            Choose a time for this look
+          </div>
+        ) : (
         <nav
           className={styles.progress}
           aria-label="Booking progress"
@@ -1350,12 +1695,13 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                 onClick={() => setStep(index)}
                 type="button"
               >
-                <span className={styles.progressCircle}>{done ? "✓" : index + 1}</span>
+                <span className={styles.progressCircle}>{done ? "OK" : index + 1}</span>
                 <span>{label}</span>
               </button>
             );
           })}
         </nav>
+        )}
 
         <aside className={styles.editorialRail} data-testid="public-booking-editorial">
           <div className={styles.editorialImage}>
@@ -1378,8 +1724,14 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
 
           {activeInspiration ? (
             <BookingInspirationCard
+              currentServiceName={currentBookingServiceName}
+              currentStaffName={currentBookingStaffName}
               inspiration={activeInspiration}
-              onChangeProfessional={() => setStep(STEP_PROFESSIONAL)}
+              onChangeProfessional={
+                step === STEP_PROFESSIONAL || selectedServiceIds.length === 0
+                  ? undefined
+                  : () => setStep(STEP_PROFESSIONAL)
+              }
               onChangeService={() => setStep(STEP_SERVICES)}
               onRemove={removeInspiration}
             />
@@ -1712,8 +2064,12 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
           {step === STEP_TIME ? (
             <section>
               <div className={styles.publicHeading}>
-                <p className={styles.eyebrow}>Date & time</p>
-                <h1 className={styles.publicTitle}>Find a time</h1>
+                <p className={styles.eyebrow}>
+                  {isQuickBook ? "Book this look" : "Date & time"}
+                </p>
+                <h1 className={styles.publicTitle}>
+                  {isQuickBook ? "Choose a time" : "Find a time"}
+                </h1>
                 <p className={styles.publicCopy}>Times are shown in {settings.timezoneIana}.</p>
               </div>
               <div className={classNames(styles.pillRow, "mb-5")}>
@@ -1769,6 +2125,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                               ? "border-[#642a56] bg-[#642a56] text-white"
                               : "border-[#e7dfe5] bg-white text-[#211c24] hover:border-[#d7c8d3]",
                           )}
+                          data-testid="public-booking-slot"
                           key={slot.startAt}
                           onClick={() => setSelectedSlotStart(slot.startAt)}
                           type="button"
@@ -2072,8 +2429,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
               </div>
               <div className={classNames(styles.publicCard, "grid gap-4 p-5")}>
                 {activeInspiration ? (
-                  <BookingInspirationCard
-                    compact
+                  <BookingInspirationSummaryRow
+                    currentServiceName={currentBookingServiceName}
                     inspiration={activeInspiration}
                   />
                 ) : null}
@@ -2109,7 +2466,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             </section>
           ) : null}
 
-          {step === STEP_DONE ? (
+          {step === STEP_DONE && result?.ok && result.bookingId ? (
             <section className={classNames(styles.publicCard, "p-6")}>
               <p className={styles.eyebrow}>Confirmation</p>
               <h1 className={classNames(styles.publicTitle, "mt-3")}>{confirmationTitle}</h1>
@@ -2118,8 +2475,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
               </p>
               {activeInspiration ? (
                 <div className="mt-5">
-                  <BookingInspirationCard
-                    compact
+                  <BookingInspirationSummaryRow
+                    currentServiceName={currentBookingServiceName}
                     inspiration={activeInspiration}
                   />
                 </div>
@@ -2176,15 +2533,6 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                   </a>
                 ) : null}
               </div>
-              {!result?.ok ? (
-                <button
-                  className={classNames(styles.secondaryButton, "mt-4 px-5")}
-                  onClick={() => setStep(STEP_TIME)}
-                  type="button"
-                >
-                  Choose another time
-                </button>
-              ) : null}
             </section>
           ) : null}
 
@@ -2226,9 +2574,12 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             </div>
           </div>
           <div className={styles.summaryDivider} />
-          {activeInspiration ? (
+          {activeInspiration && step !== STEP_DONE ? (
             <>
-              <BookingInspirationCard compact inspiration={activeInspiration} />
+              <BookingInspirationSummaryRow
+                currentServiceName={currentBookingServiceName}
+                inspiration={activeInspiration}
+              />
               <div className={styles.summaryDivider} />
             </>
           ) : null}
@@ -2291,6 +2642,187 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             </button>
           ) : null}
         </aside>
+        {detailsSheetOpen ? (
+          <div
+            className="fixed inset-0 z-50 grid place-items-end bg-black/45 p-0 sm:place-items-center sm:p-6"
+            data-testid="public-booking-details-sheet"
+            role="presentation"
+          >
+            <section
+              aria-labelledby="public-booking-details-sheet-title"
+              aria-modal="true"
+              className="max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-xl sm:rounded-2xl sm:p-6"
+              role="dialog"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className={styles.eyebrow}>
+                    {signedIn ? "Your details" : "Guest details"}
+                  </p>
+                  <h2
+                    className="mt-2 text-2xl font-extrabold text-[#211c24]"
+                    id="public-booking-details-sheet-title"
+                  >
+                    Enter your details
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-[#786d78]">
+                    We will keep your selected service, professional, time, and
+                    inspiration attached.
+                  </p>
+                </div>
+                <button
+                  aria-label="Close details"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#e7dfe5] text-lg font-extrabold text-[#642a56]"
+                  onClick={() => setDetailsSheetOpen(false)}
+                  type="button"
+                >
+                  x
+                </button>
+              </div>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {(!signedIn || signedInNeedsName) ? (
+                  <>
+                    <label className="grid gap-2">
+                      <span className="text-sm font-extrabold text-[#211c24]">
+                        First name
+                      </span>
+                      <input
+                        aria-invalid={Boolean(fieldErrors.firstName)}
+                        className={styles.field}
+                        data-testid="public-booking-guest-first-name"
+                        onChange={(event) =>
+                          setCustomerField("firstName", event.target.value)
+                        }
+                        type="text"
+                        value={customer.firstName}
+                      />
+                      {fieldErrors.firstName ? (
+                        <span
+                          className="text-xs font-semibold text-red-700"
+                          data-testid="public-booking-field-error"
+                        >
+                          {fieldErrors.firstName}
+                        </span>
+                      ) : null}
+                    </label>
+                    <label className="grid gap-2">
+                      <span className="text-sm font-extrabold text-[#211c24]">
+                        Last name
+                      </span>
+                      <input
+                        aria-invalid={Boolean(fieldErrors.lastName)}
+                        className={styles.field}
+                        data-testid="public-booking-guest-last-name"
+                        onChange={(event) =>
+                          setCustomerField("lastName", event.target.value)
+                        }
+                        type="text"
+                        value={customer.lastName}
+                      />
+                      {fieldErrors.lastName ? (
+                        <span
+                          className="text-xs font-semibold text-red-700"
+                          data-testid="public-booking-field-error"
+                        >
+                          {fieldErrors.lastName}
+                        </span>
+                      ) : null}
+                    </label>
+                  </>
+                ) : null}
+                {(!signedIn || signedInNeedsPhone) ? (
+                  <label className="grid gap-2">
+                    <span className="text-sm font-extrabold text-[#211c24]">
+                      Phone
+                    </span>
+                    <input
+                      aria-invalid={Boolean(fieldErrors.phone)}
+                      className={styles.field}
+                      data-testid="public-booking-guest-phone"
+                      onChange={(event) =>
+                        setCustomerField("phone", event.target.value)
+                      }
+                      type="tel"
+                      value={customer.phone}
+                    />
+                    {fieldErrors.phone ? (
+                      <span
+                        className="text-xs font-semibold text-red-700"
+                        data-testid="public-booking-field-error"
+                      >
+                        {fieldErrors.phone}
+                      </span>
+                    ) : null}
+                  </label>
+                ) : null}
+                {(!signedIn || signedInNeedsEmail) ? (
+                  <label className="grid gap-2">
+                    <span className="text-sm font-extrabold text-[#211c24]">
+                      Email
+                    </span>
+                    <input
+                      aria-invalid={Boolean(fieldErrors.email)}
+                      className={styles.field}
+                      data-testid="public-booking-guest-email"
+                      onChange={(event) =>
+                        setCustomerField("email", event.target.value)
+                      }
+                      type="email"
+                      value={customer.email}
+                    />
+                    {fieldErrors.email ? (
+                      <span
+                        className="text-xs font-semibold text-red-700"
+                        data-testid="public-booking-field-error"
+                      >
+                        {fieldErrors.email}
+                      </span>
+                    ) : null}
+                  </label>
+                ) : null}
+                <label className="grid gap-2 sm:col-span-2">
+                  <span className="text-sm font-extrabold text-[#211c24]">
+                    Notes for the salon
+                  </span>
+                  <textarea
+                    className="min-h-20 rounded-xl border border-[#e7dfe5] px-3 py-2 text-sm outline-none focus:border-[#8f4a7b] focus:ring-4 focus:ring-[#642a56]/10"
+                    data-testid="public-booking-guest-notes"
+                    onChange={(event) =>
+                      setCustomerField("notes", event.target.value)
+                    }
+                    value={customer.notes}
+                  />
+                </label>
+              </div>
+              {error ? (
+                <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+                  {error}
+                </p>
+              ) : null}
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+                <button
+                  className={classNames(styles.secondaryButton, "px-5")}
+                  onClick={() => setDetailsSheetOpen(false)}
+                  type="button"
+                >
+                  Back to booking
+                </button>
+                <button
+                  className={classNames(styles.primaryButton, "px-5")}
+                  disabled={isPending}
+                  onClick={continueFromDetailsSheet}
+                  type="button"
+                >
+                  {detailsSheetIntent === "submit"
+                    ? settings.confirmationMode === "instant_booking"
+                      ? "Confirm booking"
+                      : "Request appointment"
+                    : "Continue to review"}
+                </button>
+              </div>
+            </section>
+          </div>
+        ) : null}
       </section>
     </main>
   );

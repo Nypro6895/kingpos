@@ -3528,6 +3528,186 @@ export type Database = {
           },
         ]
       }
+      salon_profile_content_booking_configs: {
+        Row: {
+          booking_cta_enabled: boolean
+          booking_note: string | null
+          created_at: string
+          created_by_user_id: string | null
+          credited_staff_id: string | null
+          id: string
+          look_id: string | null
+          organization_id: string
+          primary_service_id: string | null
+          salon_id: string
+          source_type: string
+          update_id: string | null
+          updated_at: string
+          updated_by_user_id: string | null
+        }
+        Insert: {
+          booking_cta_enabled?: boolean
+          booking_note?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          credited_staff_id?: string | null
+          id?: string
+          look_id?: string | null
+          organization_id: string
+          primary_service_id?: string | null
+          salon_id: string
+          source_type: string
+          update_id?: string | null
+          updated_at?: string
+          updated_by_user_id?: string | null
+        }
+        Update: {
+          booking_cta_enabled?: boolean
+          booking_note?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          credited_staff_id?: string | null
+          id?: string
+          look_id?: string | null
+          organization_id?: string
+          primary_service_id?: string | null
+          salon_id?: string
+          source_type?: string
+          update_id?: string | null
+          updated_at?: string
+          updated_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_profile_content_booking_configs_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_configs_credited_staff_id_fkey"
+            columns: ["credited_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_configs_look_id_fkey"
+            columns: ["look_id"]
+            isOneToOne: false
+            referencedRelation: "salon_profile_looks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_configs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_configs_primary_service_id_fkey"
+            columns: ["primary_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_configs_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_configs_update_id_fkey"
+            columns: ["update_id"]
+            isOneToOne: false
+            referencedRelation: "salon_profile_updates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_configs_updated_by_user_id_fkey"
+            columns: ["updated_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_profile_content_booking_services: {
+        Row: {
+          config_id: string
+          created_at: string
+          display_order: number
+          id: string
+          organization_id: string
+          parent_service_id: string | null
+          salon_id: string
+          service_id: string
+          service_role: string
+        }
+        Insert: {
+          config_id: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          organization_id: string
+          parent_service_id?: string | null
+          salon_id: string
+          service_id: string
+          service_role?: string
+        }
+        Update: {
+          config_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          organization_id?: string
+          parent_service_id?: string | null
+          salon_id?: string
+          service_id?: string
+          service_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_profile_content_booking_services_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "salon_profile_content_booking_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_services_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_services_parent_service_id_fkey"
+            columns: ["parent_service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_services_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_content_booking_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       salon_profile_entitlement_definitions: {
         Row: {
           code: string
@@ -5693,6 +5873,63 @@ export type Database = {
         }
         Returns: Json
       }
+      get_public_content_booking_options:
+        | {
+            Args: { target_salon_id: string }
+            Returns: {
+              add_ons: Json
+              additional_services: Json
+              booking_cta_enabled: boolean
+              booking_enabled: boolean
+              booking_href: string
+              booking_note: string
+              caption: string
+              content_id: string
+              content_type: string
+              credited_staff_id: string
+              credited_staff_name: string
+              cta_label: string
+              media_path: string
+              organization_id: string
+              primary_service_base_price: number
+              primary_service_duration_minutes: number
+              primary_service_id: string
+              primary_service_name: string
+              readiness_message: string
+              readiness_state: string
+              salon_id: string
+              source_type: string
+              title: string
+            }[]
+          }
+        | {
+            Args: { target_salon_ids?: string[] }
+            Returns: {
+              add_ons: Json
+              additional_services: Json
+              booking_cta_enabled: boolean
+              booking_enabled: boolean
+              booking_href: string
+              booking_note: string
+              caption: string
+              content_id: string
+              content_type: string
+              credited_staff_id: string
+              credited_staff_name: string
+              cta_label: string
+              media_path: string
+              organization_id: string
+              primary_service_base_price: number
+              primary_service_duration_minutes: number
+              primary_service_id: string
+              primary_service_name: string
+              readiness_message: string
+              readiness_state: string
+              salon_id: string
+              source_type: string
+              title: string
+            }[]
+          }
       get_public_explore_decision_signals: {
         Args: { target_salon_ids: string[] }
         Returns: {
@@ -6175,6 +6412,18 @@ export type Database = {
       salon_profile_user_is_affiliated: {
         Args: { target_salon_id: string }
         Returns: boolean
+      }
+      save_salon_profile_content_booking_config: {
+        Args: {
+          p_additional_service_ids?: string[]
+          p_booking_cta_enabled?: boolean
+          p_booking_note?: string
+          p_content_id: string
+          p_credited_staff_id?: string
+          p_primary_service_id?: string
+          p_source_type: string
+        }
+        Returns: string
       }
       save_service_config_batch: {
         Args: { p_configs: Json; p_salon_id: string }

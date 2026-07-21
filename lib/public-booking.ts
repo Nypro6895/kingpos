@@ -2,6 +2,7 @@ import "server-only";
 
 import { formatDateInTimeZone, zonedDateTimeToUtcIso } from "@/lib/bookings";
 import { mapBookingInspiration } from "@/lib/booking-inspirations";
+import { loadPublicContentBookingOptions } from "@/lib/content-booking";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import {
   createAuthenticatedSupabaseServerClient,
@@ -12,6 +13,11 @@ import type {
   BookingInspiration,
   BookingInspirationView,
 } from "@/types/booking";
+import type {
+  ContentBookingReadinessState,
+  ContentBookingSourceType,
+  PublicContentBookingOption,
+} from "@/types/content-booking";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -100,6 +106,7 @@ export type PublicBookingLook = {
 };
 
 export type PublicBookingInspirationStatus =
+  | "inspiration_only"
   | "ready"
   | "service_unavailable"
   | "staff_unavailable"
@@ -108,9 +115,18 @@ export type PublicBookingInspirationStatus =
 export type PublicBookingInspiration = {
   bookingNote: string | null;
   caption: string | null;
+  contentType: "look" | "update";
   id: string;
   imageUrl: string | null;
   message: string | null;
+  originalServiceId: string | null;
+  originalServiceName: string | null;
+  originalStaffId: string | null;
+  originalStaffName: string | null;
+  readinessState: ContentBookingReadinessState;
+  sourceType: ContentBookingSourceType;
+  addOnSelections: PublicBookingAddOnSelection[];
+  additionalServiceIds: string[];
   serviceId: string | null;
   serviceName: string | null;
   staffId: string | null;
@@ -218,10 +234,12 @@ export type PublicBookingCreateInput = PublicBookingSlotRequest & {
   customerPhone?: string | null;
   honeypot?: string | null;
   idempotencyKey?: string | null;
+  inspirationId?: string | null;
   lookId?: string | null;
   publicNotes?: string | null;
   salonId: string;
   source?: PublicBookingSource;
+  sourceReferenceType?: ContentBookingSourceType | null;
   startAt?: string | null;
 };
 
@@ -289,6 +307,7 @@ type RawContext = {
   assignments: AssignmentRow[];
   availabilityRules: AvailabilityRuleRow[];
   busyLines: BusyLineRow[];
+  contentOptions: PublicContentBookingOption[];
   looks: PublicBookingLook[];
   profile: PublicBookingSalon | null;
   serviceMap: Map<string, PublicBookingService>;
@@ -591,6 +610,7 @@ function parseContextPayload(payload: unknown): RawContext {
         return { bookingId, endsAt, staffId, startsAt } satisfies BusyLineRow;
       })
       .filter((item): item is BusyLineRow => Boolean(item)),
+    contentOptions: [],
     looks: asArray(row.looks)
       .map((item) => {
         const look = asRecord(item);
@@ -703,7 +723,11 @@ async function loadRawContext(salonId: string) {
     throw new Error("Online booking is temporarily unavailable.");
   }
 
-  return parseContextPayload(data);
+  const context = parseContextPayload(data);
+
+  context.contentOptions = await loadPublicContentBookingOptions([salonId]);
+
+  return context;
 }
 
 function unavailablePage(
@@ -1310,13 +1334,22 @@ function buildInspiration(input: {
 
   if (!look) {
     return {
+      addOnSelections: [],
+      additionalServiceIds: [],
       bookingNote: null,
       caption: null,
+      contentType: "look",
       id,
       imageUrl: null,
       message: "This look is no longer available for public booking.",
+      originalServiceId: null,
+      originalServiceName: null,
+      originalStaffId: null,
+      originalStaffName: null,
+      readinessState: "invalid",
       serviceId: null,
       serviceName: null,
+      sourceType: "salon_profile_look",
       staffId: null,
       staffName: null,
       status: "unavailable",
@@ -1326,15 +1359,25 @@ function buildInspiration(input: {
 
   if (!serviceEligible) {
     return {
+      addOnSelections: [],
+      additionalServiceIds: [],
       bookingNote: look.bookingNote,
       caption: look.caption,
+      contentType: "look",
       id: look.id,
       imageUrl: look.imageUrl,
-      message: "This look's original service is currently unavailable.",
-      serviceId: look.serviceId,
-      serviceName: look.serviceName,
+      message:
+        "The original service for this look is no longer available. Choose another service to continue.",
+      originalServiceId: look.serviceId,
+      originalServiceName: look.serviceName,
+      originalStaffId: look.recommendedStaffId,
+      originalStaffName: look.recommendedStaffName,
+      readinessState: "invalid",
+      serviceId: null,
+      serviceName: null,
+      sourceType: "salon_profile_look",
       staffId: null,
-      staffName: look.recommendedStaffName,
+      staffName: null,
       status: "service_unavailable",
       title: look.title,
     };
@@ -1342,32 +1385,126 @@ function buildInspiration(input: {
 
   if (look.recommendedStaffId && !staffEligible) {
     return {
+      addOnSelections: [],
+      additionalServiceIds: [],
       bookingNote: look.bookingNote,
       caption: look.caption,
+      contentType: "look",
       id: look.id,
       imageUrl: look.imageUrl,
       message: "This look's credited professional is not available online for the selected service.",
+      originalServiceId: look.serviceId,
+      originalServiceName: look.serviceName,
+      originalStaffId: look.recommendedStaffId,
+      originalStaffName: look.recommendedStaffName,
+      readinessState: "service_ready",
       serviceId: look.serviceId,
       serviceName: look.serviceName,
+      sourceType: "salon_profile_look",
       staffId: null,
-      staffName: look.recommendedStaffName,
+      staffName: null,
       status: "staff_unavailable",
       title: look.title,
     };
   }
 
   return {
+    addOnSelections: [],
+    additionalServiceIds: [],
     bookingNote: look.bookingNote,
     caption: look.caption,
+    contentType: "look",
     id: look.id,
-    imageUrl: look.imageUrl,
-    message: null,
+      imageUrl: look.imageUrl,
+      message: null,
+      originalServiceId: look.serviceId,
+      originalServiceName: look.serviceName,
+      originalStaffId: look.recommendedStaffId,
+      originalStaffName: look.recommendedStaffName,
+      readinessState: "quick_ready",
     serviceId: look.serviceId,
     serviceName: look.serviceName,
+    sourceType: "salon_profile_look",
     staffId,
     staffName: look.recommendedStaffName,
     status: "ready",
     title: look.title,
+  };
+}
+
+function contentOptionForInspiration(
+  context: RawContext,
+  inspirationId: string | null,
+) {
+  if (!inspirationId) {
+    return null;
+  }
+
+  return (
+    context.contentOptions.find((option) => option.contentId === inspirationId) ??
+    null
+  );
+}
+
+function addOnSelectionsFromOption(
+  context: RawContext,
+  primaryServiceIds: string[],
+  option: PublicContentBookingOption,
+): PublicBookingAddOnSelection[] {
+  const primaryServices = primaryServiceIds
+    .map((id) => context.serviceMap.get(id))
+    .filter((service): service is PublicBookingService => Boolean(service));
+
+  return normalizedAddOnSelections(context, primaryServices, {
+    addOnSelections: option.addOns.map((addOn) => ({
+      parentServiceId: addOn.parentServiceId ?? "",
+      serviceId: addOn.serviceId,
+    })),
+  });
+}
+
+function buildContentInspiration(input: {
+  addOnSelections: PublicBookingAddOnSelection[];
+  additionalServiceIds: string[];
+  message: string | null;
+  option: PublicContentBookingOption;
+  serviceId: string | null;
+  staffId: string | null;
+  staffName: string | null;
+  status: PublicBookingInspirationStatus;
+}): PublicBookingInspiration {
+  const {
+    addOnSelections,
+    additionalServiceIds,
+    message,
+    option,
+    serviceId,
+    staffId,
+    staffName,
+    status,
+  } = input;
+
+  return {
+    addOnSelections,
+    additionalServiceIds,
+    bookingNote: option.bookingNote,
+    caption: option.caption,
+    contentType: option.contentType,
+    id: option.contentId,
+    imageUrl: option.imageUrl,
+    message,
+    originalServiceId: option.primaryServiceId,
+    originalServiceName: option.primaryServiceName,
+    originalStaffId: option.creditedStaffId,
+    originalStaffName: option.creditedStaffName,
+    readinessState: option.readinessState,
+    serviceId,
+    serviceName: serviceId ? option.primaryServiceName : null,
+    sourceType: option.sourceType,
+    staffId,
+    staffName: staffId ? staffName : null,
+    status,
+    title: option.title,
   };
 }
 
@@ -1378,6 +1515,104 @@ function normalizeInitialSelection(
   const settings = context.settings;
   const source = cleanSource(singleParam(params.source));
   const inspirationId = inspirationParam(params);
+  const option = contentOptionForInspiration(context, inspirationId);
+
+  if (inspirationId && option) {
+    const primaryService =
+      option.primaryServiceId &&
+      context.serviceMap.has(option.primaryServiceId) &&
+      !context.serviceMap.get(option.primaryServiceId)?.isAddOnOnly &&
+      eligibleStaffIds(context, option.primaryServiceId).length > 0
+        ? context.serviceMap.get(option.primaryServiceId) ?? null
+        : null;
+    const additionalServiceIds = primaryService
+      ? option.additionalServices
+          .map((service) => service.serviceId)
+          .filter(
+            (serviceId) =>
+              context.serviceMap.has(serviceId) &&
+              !context.serviceMap.get(serviceId)?.isAddOnOnly &&
+              eligibleStaffIds(context, serviceId).length > 0,
+          )
+      : [];
+    const serviceIds = primaryService
+      ? [
+          primaryService.id,
+          ...additionalServiceIds.filter((id) => id !== primaryService.id),
+        ]
+      : [];
+    const addOnSelections = primaryService
+      ? addOnSelectionsFromOption(context, serviceIds, option)
+      : [];
+    const staffCandidate = option.creditedStaffId;
+    const selectionLinesForStaff = selectionLines(context, {
+      addOnSelections,
+      serviceIds,
+    });
+    const professionalOnlyStaffValid = Boolean(
+      option.readinessState === "professional_ready" &&
+        staffCandidate &&
+        context.staff.some((staff) => staff.id === staffCandidate),
+    );
+    const staffEligible = Boolean(
+      staffCandidate &&
+        (selectionLinesForStaff.length > 0
+          ? staffCanPerformLines(context, selectionLinesForStaff, staffCandidate)
+          : professionalOnlyStaffValid),
+    );
+    const staffId = staffEligible ? staffCandidate : null;
+    const timezone = settings?.timezoneIana ?? "America/Chicago";
+    const date =
+      cleanDate(singleParam(params.date)) ??
+      formatDateInTimeZone(new Date(), timezone);
+    const originalServiceMissing =
+      option.primaryServiceId !== null && primaryService === null;
+    const status: PublicBookingInspirationStatus = originalServiceMissing
+      ? "service_unavailable"
+      : option.primaryServiceId && option.creditedStaffId && !staffEligible
+        ? "staff_unavailable"
+        : primaryService
+          ? "ready"
+          : "inspiration_only";
+    const inspiration = buildContentInspiration({
+      addOnSelections,
+      additionalServiceIds,
+      message:
+        status === "service_unavailable"
+          ? "The original service for this look is no longer available. Choose another service to continue."
+          : status === "ready" || status === "inspiration_only"
+          ? option.readinessState === "inspiration_only"
+            ? "Choose services and a professional. We'll keep this inspiration attached to your appointment."
+            : null
+          : option.readinessMessage,
+      option,
+      serviceId: primaryService?.id ?? null,
+      staffId,
+      staffName: option.creditedStaffName,
+      status,
+    });
+    const staffMode = staffId
+      ? "specific"
+      : settings?.anyProfessionalEnabled === false
+        ? "specific"
+        : "any";
+    const initialStep = serviceIds.length > 0 ? (staffId ? 2 : 1) : 0;
+
+    return {
+      addOnSelections,
+      addOnServiceIds: addOnSelections.map((selection) => selection.serviceId),
+      date,
+      initialStep,
+      inspiration,
+      lookId: option.sourceType === "salon_profile_look" ? option.contentId : null,
+      serviceId: primaryService?.id ?? null,
+      serviceIds,
+      source,
+      staffId,
+      staffMode,
+    };
+  }
+
   const look = inspirationId
     ? context.looks.find((item) => item.id === inspirationId) ?? null
     : null;
@@ -1710,6 +1945,14 @@ function publicBookingFailure(
   return { code, message, ok: false };
 }
 
+function emailLooksValid(value: string | null) {
+  return Boolean(value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
+}
+
+function phoneLooksValid(value: string | null) {
+  return (value ?? "").replace(/\D+/g, "").length >= 7;
+}
+
 export async function createPublicBooking(
   input: PublicBookingCreateInput,
 ): Promise<PublicBookingActionResult> {
@@ -1722,6 +1965,15 @@ export async function createPublicBooking(
 
   if (!salonId || !startAt) {
     return publicBookingFailure("Choose a valid appointment time.");
+  }
+
+  const requestedServiceId = cleanUuid(input.serviceId);
+  const requestedServiceIds =
+    input.serviceIds?.filter((serviceId) => Boolean(cleanUuid(serviceId))) ??
+    (requestedServiceId ? [requestedServiceId] : []);
+
+  if (requestedServiceIds.length === 0) {
+    return publicBookingFailure("Choose a service to continue.", "selection_incomplete");
   }
 
   const context = await loadRawContext(salonId);
@@ -1758,12 +2010,52 @@ export async function createPublicBooking(
     throw new Error("Supabase environment variables are missing.");
   }
 
-  const lookId = cleanUuid(input.lookId);
+  const customerFirstName = input.customerFirstName?.trim() || null;
+  const customerLastName = input.customerLastName?.trim() || null;
+  const customerPhone = input.customerPhone?.trim() || null;
+  const customerEmail = input.customerEmail?.trim().toLowerCase() || null;
+  const accountHasName = Boolean(
+    currentUser?.display_name?.trim() ||
+      currentUser?.first_name?.trim() ||
+      currentUser?.last_name?.trim(),
+  );
+  const nameComplete = Boolean(
+    accountHasName || (customerFirstName && customerLastName),
+  );
+  const phoneComplete = Boolean(
+    currentUser?.phone?.trim() || phoneLooksValid(customerPhone),
+  );
+  const emailComplete = Boolean(
+    currentUser?.email?.trim() || emailLooksValid(customerEmail),
+  );
+
+  if (!nameComplete || !phoneComplete || !emailComplete) {
+    return publicBookingFailure(
+      "Enter your details before confirming this booking.",
+      "required_customer_details",
+    );
+  }
+
+  if (customerEmail && !emailLooksValid(customerEmail)) {
+    return publicBookingFailure("Enter a valid email address.", "invalid_customer_email");
+  }
+
+  if (customerPhone && !phoneLooksValid(customerPhone)) {
+    return publicBookingFailure("Enter a valid phone number.", "invalid_customer_phone");
+  }
+
+  const inspirationId = cleanUuid(input.inspirationId) ?? cleanUuid(input.lookId);
+  const sourceReferenceType =
+    input.sourceReferenceType === "salon_profile_update"
+      ? "salon_profile_update"
+      : input.sourceReferenceType === "salon_profile_look" || inspirationId
+        ? "salon_profile_look"
+        : null;
   const { data, error } = await supabase.rpc("create_public_booking", {
-    p_customer_email: input.customerEmail?.trim() || null,
-    p_customer_first_name: input.customerFirstName?.trim() || null,
-    p_customer_last_name: input.customerLastName?.trim() || null,
-    p_customer_phone: input.customerPhone?.trim() || null,
+    p_customer_email: customerEmail,
+    p_customer_first_name: customerFirstName,
+    p_customer_last_name: customerLastName,
+    p_customer_phone: customerPhone,
     p_end_at: slot.endAt,
     p_idempotency_key: input.idempotencyKey?.trim() || crypto.randomUUID(),
     p_lines: slot.lines.map((line) => ({
@@ -1779,8 +2071,8 @@ export async function createPublicBooking(
     p_public_notes: input.publicNotes?.trim() || null,
     p_salon_id: salonId,
     p_source: input.source ?? "public_profile",
-    p_source_reference_id: lookId,
-    p_source_reference_type: lookId ? "salon_profile_look" : null,
+    p_source_reference_id: inspirationId,
+    p_source_reference_type: inspirationId ? sourceReferenceType : null,
     p_start_at: slot.startAt,
   });
 
@@ -1801,12 +2093,22 @@ export async function createPublicBooking(
     return publicBookingFailure("Booking could not be submitted.", "database_error");
   }
 
+  const bookingId = cleanUuid(result.booking_id) ?? undefined;
+  const manageToken = nonEmptyString(result.manage_token);
+
+  if (!bookingId || (!currentUser && !manageToken)) {
+    return publicBookingFailure(
+      "Booking could not be confirmed. Please try again.",
+      "invalid_confirmation_payload",
+    );
+  }
+
   return {
-    bookingId: cleanUuid(result.booking_id) ?? undefined,
+    bookingId,
     code: booleanValue(result.duplicate, false) ? "duplicate" : undefined,
     confirmationStatus: nonEmptyString(result.confirmation_status) ?? undefined,
     accountLinked: Boolean(currentUser),
-    manageToken: nonEmptyString(result.manage_token),
+    manageToken,
     message: booleanValue(result.duplicate, false)
       ? "This booking request was already submitted."
       : "Booking request submitted.",
