@@ -44,6 +44,7 @@ artifacts/**/*.json
 artifacts/**/*.txt
 artifacts/content-booking-v2-qa/q8-signed-user-seed.sql
 artifacts/content-booking-v2-qa/q8-disable-fixture-availability.sql
+artifacts/content-booking-v2-qa/q8-update-booking-verify.sql
 
 # Supabase local/link metadata
 supabase/.temp/

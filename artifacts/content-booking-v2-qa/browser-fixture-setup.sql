@@ -57,9 +57,14 @@ cleanup_rules as (
   delete from public.staff_availability_rules rules
   where rules.starts_at_local = '08:07:00'::time
     and rules.ends_at_local = '19:07:00'::time
-    and rules.effective_start_date = current_date
+    and rules.effective_start_date = current_date - 1
     and rules.effective_end_date = current_date + 45
   returning rules.id
+),
+cleanup_time_blocks as (
+  delete from public.staff_time_blocks blocks
+  where blocks.reason = 'codex-content-booking-v2-browser-qa slot race'
+  returning blocks.id
 ),
 cleanup_looks as (
   delete from public.salon_profile_looks looks
@@ -234,7 +239,7 @@ availability_rules as (
     '08:07:00'::time,
     '19:07:00'::time,
     'America/Chicago',
-    current_date,
+    current_date - 1,
     current_date + 45,
     true
   from look_source, guard, generate_series(0, 6) as days(day_of_week)

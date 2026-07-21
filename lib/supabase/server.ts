@@ -23,14 +23,8 @@ export function getSupabaseCookieOptions(maxAge?: number) {
 export function getSupabaseConfig() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-  const envStatus = {
-    hasSupabaseUrl: Boolean(supabaseUrl),
-    hasSupabaseAnonKey: Boolean(supabaseAnonKey),
-  };
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.log("NEXT_PUBLIC_SUPABASE_URL exists:", envStatus.hasSupabaseUrl);
-    console.log("NEXT_PUBLIC_SUPABASE_ANON_KEY exists:", envStatus.hasSupabaseAnonKey);
     return null;
   }
 

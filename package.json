@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:content-booking-v2": "node artifacts/content-booking-v2-qa/browser-qa.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

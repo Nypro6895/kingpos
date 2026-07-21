@@ -73,8 +73,11 @@ where users.email like 'codex-content-v2-browser-%@example.invalid'
 delete from public.staff_availability_rules rules
 where rules.starts_at_local = '08:07:00'::time
   and rules.ends_at_local = '19:07:00'::time
-  and rules.effective_start_date = current_date
+  and rules.effective_start_date = current_date - 1
   and rules.effective_end_date = current_date + 45;
+
+delete from public.staff_time_blocks blocks
+where blocks.reason = 'codex-content-booking-v2-browser-qa slot race';
 
 delete from public.salon_profile_looks looks
 where looks.booking_note = 'codex-content-booking-v2-browser-qa';
@@ -141,6 +144,79 @@ select
     from public.staff_availability_rules rules
     where rules.starts_at_local = '08:07:00'::time
       and rules.ends_at_local = '19:07:00'::time
-      and rules.effective_start_date = current_date
+      and rules.effective_start_date = current_date - 1
       and rules.effective_end_date = current_date + 45
-  ) as remaining_browser_availability_fixtures;
+  ) as remaining_browser_availability_fixtures,
+  (
+    select count(*)
+    from public.staff_time_blocks blocks
+    where blocks.reason = 'codex-content-booking-v2-browser-qa slot race'
+  ) as remaining_browser_time_block_fixtures;
+
+select 1 / case when
+  not exists (
+    select 1
+    from public.salon_profile_looks looks
+    where looks.booking_note = 'codex-content-booking-v2-browser-qa'
+  )
+  and not exists (
+    select 1
+    from public.salon_profile_updates updates
+    where updates.summary = 'codex-content-booking-v2-browser-qa'
+       or updates.caption = 'codex-content-booking-v2-browser-qa'
+  )
+  and not exists (
+    select 1
+    from public.booking_inspirations inspirations
+    where inspirations.source_title_snapshot in (
+      'Codex V2 QA Quick Ready Look',
+      'Codex V2 QA Invalid Original Look',
+      'Codex V2 QA Inspiration Update'
+    )
+  )
+  and not exists (
+    select 1
+    from public.bookings bookings
+    where (
+      bookings.idempotency_key like 'codex-content-booking-v2-browser-qa%'
+      or bookings.public_notes like 'codex-content-booking-v2-browser-qa%'
+      or bookings.notes like 'codex-content-booking-v2-browser-qa%'
+    )
+      and bookings.status <> 'cancelled'
+  )
+  and not exists (
+    select 1
+    from public.customers customers
+    where (
+      customers.email like 'codex-content-v2-browser-%@example.invalid'
+      or customers.email like 'codex-content-v2-browser-%@example.com'
+      or customers.notes like 'codex-content-booking-v2-browser-qa%'
+    )
+      and customers.status <> 'inactive'
+  )
+  and not exists (
+    select 1
+    from public.users users
+    where users.email like 'codex-content-v2-browser-%@example.invalid'
+       or users.email like 'codex-content-v2-browser-%@example.com'
+  )
+  and not exists (
+    select 1
+    from auth.users users
+    where users.email like 'codex-content-v2-browser-%@example.invalid'
+       or users.email like 'codex-content-v2-browser-%@example.com'
+  )
+  and not exists (
+    select 1
+    from public.staff_availability_rules rules
+    where rules.starts_at_local = '08:07:00'::time
+      and rules.ends_at_local = '19:07:00'::time
+      and rules.effective_start_date = current_date - 1
+      and rules.effective_end_date = current_date + 45
+  )
+  and not exists (
+    select 1
+    from public.staff_time_blocks blocks
+    where blocks.reason = 'codex-content-booking-v2-browser-qa slot race'
+  )
+then 1 else 0 end as browser_fixture_residue_zero;

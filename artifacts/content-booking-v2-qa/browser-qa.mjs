@@ -11,13 +11,15 @@ const baseUrl = process.env.CONTENT_BOOKING_V2_BASE_URL ?? "http://127.0.0.1:300
 const quickHref = process.env.CONTENT_BOOKING_V2_QUICK_HREF;
 const invalidHref = process.env.CONTENT_BOOKING_V2_INVALID_HREF;
 const updateHref = process.env.CONTENT_BOOKING_V2_UPDATE_HREF;
+const bookingDate = process.env.CONTENT_BOOKING_V2_DATE;
+const quickStaffId = process.env.CONTENT_BOOKING_V2_QUICK_STAFF_ID;
 const quickServiceName = process.env.CONTENT_BOOKING_V2_QUICK_SERVICE_NAME ?? "";
 const invalidServiceName = process.env.CONTENT_BOOKING_V2_INVALID_SERVICE_NAME ?? "";
 const marker = "codex-content-booking-v2-browser-qa";
 
-if (!quickHref || !invalidHref || !updateHref) {
+if (!quickHref || !invalidHref || !updateHref || !bookingDate || !quickStaffId) {
   throw new Error(
-    "CONTENT_BOOKING_V2_QUICK_HREF, CONTENT_BOOKING_V2_INVALID_HREF, and CONTENT_BOOKING_V2_UPDATE_HREF are required.",
+    "CONTENT_BOOKING_V2_QUICK_HREF, CONTENT_BOOKING_V2_INVALID_HREF, CONTENT_BOOKING_V2_UPDATE_HREF, CONTENT_BOOKING_V2_DATE, and CONTENT_BOOKING_V2_QUICK_STAFF_ID are required.",
   );
 }
 
@@ -44,6 +46,16 @@ function absoluteUrl(href) {
   return new URL(href, baseUrl).toString();
 }
 
+function bookingUrl(href) {
+  const parsed = new URL(href, baseUrl);
+
+  if (bookingDate && !parsed.searchParams.has("date")) {
+    parsed.searchParams.set("date", bookingDate);
+  }
+
+  return parsed.toString();
+}
+
 function normalizeHref(href) {
   if (!href) {
     return "";
@@ -55,6 +67,10 @@ function normalizeHref(href) {
 
 function sqlLiteral(value) {
   return `'${String(value).replaceAll("'", "''")}'`;
+}
+
+function inspirationIdFromHref(href) {
+  return new URL(href, baseUrl).searchParams.get("inspiration");
 }
 
 function isBookingServerAction(request) {
@@ -115,8 +131,12 @@ async function waitForServer() {
 
 async function runSql(name, sql) {
   const filePath = path.join(artifactsDir, name);
-  const cliFilePath = path.relative(process.cwd(), filePath).replaceAll("\\", "/");
   await writeFile(filePath, `${sql.trim()}\n`);
+  await runSqlFile(filePath);
+}
+
+async function runSqlFile(filePath) {
+  const cliFilePath = path.relative(process.cwd(), filePath).replaceAll("\\", "/");
   const command =
     process.platform === "win32" ? process.env.ComSpec || "cmd.exe" : "npx";
   const args =
@@ -292,7 +312,12 @@ async function findExploreFixtureLink(page, { captionText, linkName }) {
   for (let index = 0; index < Math.min(cardCount, 30); index += 1) {
     await cards.nth(index).click();
     const dialog = page.getByRole("dialog").first();
-    await dialog.waitFor({ timeout: 5000 });
+    try {
+      await dialog.waitFor({ timeout: 5000 });
+    } catch {
+      continue;
+    }
+
     const text = await dialog.innerText();
 
     if (text.includes(captionText)) {
@@ -359,10 +384,97 @@ async function clickPrimary(page) {
   await page.locator('[data-testid="public-booking-primary-action"]').click();
 }
 
+async function clickEnabledPrimary(page) {
+  await page.waitForFunction(
+    () => {
+      const button = document.querySelector(
+        '[data-testid="public-booking-primary-action"]',
+      );
+
+      return button && !button.disabled;
+    },
+    null,
+    { timeout: 30000 },
+  );
+  await clickPrimary(page);
+}
+
+async function chooseCanonicalService(page) {
+  const namedServiceCard = quickServiceName
+    ? page
+        .locator('[data-testid="public-booking-service-card"]')
+        .filter({ hasText: quickServiceName })
+    : page.locator('[data-testid="public-booking-service-card"]').filter({
+        hasText: "__never__",
+      });
+  const serviceCard =
+    (await namedServiceCard.count()) > 0
+      ? namedServiceCard.first()
+      : page.locator('[data-testid="public-booking-service-card"]').first();
+  await serviceCard.waitFor({ timeout: 30000 });
+  await serviceCard.click();
+}
+
+async function completeInspirationOnlySelectionToDetails(page) {
+  await chooseCanonicalService(page);
+  await waitForFlowState(page, ["ready_for_slot", "identity_required"]);
+  await clickEnabledPrimary(page);
+  await page.waitForFunction(
+    () => {
+      const text = document.body.innerText;
+      return (
+        text.includes("Choose your professional") ||
+        text.includes("Find a time") ||
+        text.includes("Choose a time")
+      );
+    },
+    null,
+    { timeout: 30000 },
+  );
+
+  const professionalHeading = page.getByRole("heading", {
+    name: "Choose your professional",
+  });
+
+  if (await professionalHeading.isVisible().catch(() => false)) {
+    await professionalHeading.waitFor({ timeout: 30000 });
+    const firstProfessional = page
+      .locator('input[name="public-booking-professional"]')
+      .first();
+
+    if ((await firstProfessional.count()) > 0) {
+      await firstProfessional.check({ force: true });
+    }
+
+    await clickEnabledPrimary(page);
+  }
+
+  await page
+    .getByRole("heading", { name: /Find a time|Choose a time/ })
+    .waitFor({ timeout: 30000 });
+  const slot = page.locator('[data-testid="public-booking-slot"]').first();
+  await slot.waitFor({ timeout: 30000 });
+  await slot.click();
+  await waitForFlowState(page, "identity_required");
+  await clickEnabledPrimary(page);
+  await page.locator('[data-testid="public-booking-details-sheet"]').waitFor({
+    timeout: 30000,
+  });
+}
+
+function phoneForSuffix(suffix) {
+  const hash = Array.from(suffix).reduce(
+    (current, char) => (current * 31 + char.charCodeAt(0)) % 7000000,
+    0,
+  );
+
+  return `555${String(2000000 + hash).padStart(7, "0")}`;
+}
+
 async function fillGuestDetails(page, suffix) {
   await page.locator('[data-testid="public-booking-guest-first-name"]').fill("Codex");
   await page.locator('[data-testid="public-booking-guest-last-name"]').fill("Guest");
-  await page.locator('[data-testid="public-booking-guest-phone"]').fill("5552223344");
+  await page.locator('[data-testid="public-booking-guest-phone"]').fill(phoneForSuffix(suffix));
   await page
     .locator('[data-testid="public-booking-guest-email"]')
     .fill(`codex-content-v2-browser-${suffix}@example.invalid`);
@@ -399,6 +511,54 @@ async function submitAndExpectConfirmation(page) {
   await assertNoTerminalFailure(page);
 }
 
+async function submitUpdateAndExpectConfirmation(page) {
+  try {
+    await submitAndExpectConfirmation(page);
+  } catch (error) {
+    const textContent = await bodyText(page).catch(() => "");
+
+    if (textContent.includes("Booking source context is not available")) {
+      throw new Error(
+        "Profile update Quick Book was rejected by create_public_booking source validation.",
+      );
+    }
+
+    throw error;
+  }
+}
+
+async function verifyUpdateBookingSnapshot(updateInspirationId) {
+  await runSql(
+    "q8-update-booking-verify.sql",
+    `
+    select 1 / case when exists (
+      select 1
+      from public.bookings bookings
+      join public.booking_inspirations inspirations
+        on inspirations.booking_id = bookings.id
+      where bookings.public_notes = '${marker} update-success'
+        and bookings.source = 'explore'
+        and bookings.source_reference_type = 'salon_profile_update'
+        and bookings.source_reference_id = ${sqlLiteral(updateInspirationId)}::uuid
+        and inspirations.source_type = 'salon_profile_update'
+        and inspirations.source_content_id = ${sqlLiteral(updateInspirationId)}::uuid
+        and inspirations.source_title_snapshot = 'Codex V2 QA Inspiration Update'
+        and inspirations.source_caption_snapshot = '${marker} inspiration-only'
+        and inspirations.source_media_path is not null
+        and inspirations.service_id is null
+        and inspirations.credited_staff_id is null
+        and jsonb_array_length(inspirations.metadata -> 'final_booking_lines') >= 1
+        and exists (
+          select 1
+          from jsonb_array_elements(inspirations.metadata -> 'final_booking_lines') as line(value)
+          where nullif(line.value ->> 'service_name', '') is not null
+            and nullif(line.value ->> 'assigned_staff_id', '') is not null
+        )
+    ) then 1 else 0 end as update_booking_snapshot_ok;
+    `,
+  );
+}
+
 async function run() {
   await mkdir(artifactsDir, { recursive: true });
   await waitForServer();
@@ -410,6 +570,7 @@ async function run() {
     expectedAbortUrls: [],
     expectedRequestFailures: [],
     fixture: {
+      bookingDate,
       invalidHref,
       quickHref,
       updateHref,
@@ -418,9 +579,11 @@ async function run() {
     requestFailures: [],
     screenshots: {},
   };
-  const browser = await launchBrowser();
+  let browser;
+  let pendingError = null;
 
   try {
+    browser = await launchBrowser();
     const desktop = await browser.newPage({ viewport: { height: 900, width: 1440 } });
     recordPageErrors(desktop, report);
 
@@ -444,7 +607,7 @@ async function run() {
       throw new Error("Explore links did not match hosted fixture URLs.");
     }
 
-    await desktop.goto(absoluteUrl(invalidHref), { waitUntil: "networkidle" });
+    await desktop.goto(bookingUrl(invalidHref), { waitUntil: "networkidle" });
     await waitForFlowState(desktop, "selection_incomplete");
     const invalidCard = desktop.locator('[data-testid="booking-inspiration-card"]').first();
     await invalidCard.waitFor({ timeout: 30000 });
@@ -511,7 +674,7 @@ async function run() {
     await desktop.screenshot({ fullPage: true, path: replacementScreenshot });
     report.screenshots.validReplacementDesktop = replacementScreenshot;
 
-    await desktop.goto(absoluteUrl(quickHref), { waitUntil: "networkidle" });
+    await desktop.goto(bookingUrl(quickHref), { waitUntil: "networkidle" });
     await waitForFlowState(desktop, "identity_required");
     await desktop.getByRole("heading", { name: "Choose a time" }).waitFor({
       timeout: 30000,
@@ -576,6 +739,86 @@ async function run() {
     report.screenshots.guestConfirmationDesktop = guestConfirmationScreenshot;
     report.checks.guestSuccess = true;
 
+    const updateInspirationId = inspirationIdFromHref(updateHref);
+
+    if (!updateInspirationId) {
+      throw new Error("CONTENT_BOOKING_V2_UPDATE_HREF is missing an inspiration id.");
+    }
+
+    const updateContext = await browser.newContext({
+      viewport: { height: 900, width: 1440 },
+    });
+    const updatePage = await updateContext.newPage();
+    recordPageErrors(updatePage, report);
+    await updatePage.goto(bookingUrl(updateHref), { waitUntil: "networkidle" });
+    await waitForFlowState(updatePage, "selection_incomplete");
+    const updateInspirationCard = updatePage
+      .locator('[data-testid="booking-inspiration-card"]')
+      .first();
+    await updateInspirationCard.waitFor({ timeout: 30000 });
+    const updateInitialText = await bodyText(updatePage);
+    report.checks.updateInspirationUi =
+      updateInitialText.includes("BOOK WITH THIS INSPIRATION") &&
+      updateInitialText.includes("Codex V2 QA Inspiration Update") &&
+      updateInitialText.includes(
+        "Choose services and a professional. We'll keep this inspiration attached",
+      );
+
+    if (!report.checks.updateInspirationUi) {
+      throw new Error("Update inspiration UI assertions failed.");
+    }
+
+    await completeInspirationOnlySelectionToDetails(updatePage);
+    await completeGuestDetailsToReview(updatePage, "update-success");
+    await submitUpdateAndExpectConfirmation(updatePage);
+    const updateConfirmationScreenshot = path.join(
+      artifactsDir,
+      "q8-update-success-confirmation-desktop.png",
+    );
+    await updatePage.screenshot({
+      fullPage: true,
+      path: updateConfirmationScreenshot,
+    });
+    report.screenshots.updateConfirmationDesktop = updateConfirmationScreenshot;
+
+    const updateManageHref = await updatePage
+      .locator('a[href*="/booking/manage/"]')
+      .first()
+      .getAttribute("href");
+
+    if (!updateManageHref) {
+      throw new Error("Update guest confirmation did not expose a manage link.");
+    }
+
+    await updatePage.goto(absoluteUrl(updateManageHref), { waitUntil: "networkidle" });
+    await updatePage.locator('[data-testid="manage-booking-root"]').waitFor({
+      timeout: 30000,
+    });
+    const updateManageText = await bodyText(updatePage);
+    const updateManageScreenshot = path.join(
+      artifactsDir,
+      "q8-update-guest-manage-desktop.png",
+    );
+    await updatePage.screenshot({
+      fullPage: true,
+      path: updateManageScreenshot,
+    });
+    report.screenshots.updateGuestManageDesktop = updateManageScreenshot;
+    report.updateGuestManageTextExcerpt = updateManageText.slice(0, 1200);
+    const normalizedUpdateManageText = updateManageText.toLowerCase();
+    report.checks.updateGuestManageInspiration =
+      normalizedUpdateManageText.includes("your inspiration") &&
+      updateManageText.includes("Codex V2 QA Inspiration Update");
+
+    if (!report.checks.updateGuestManageInspiration) {
+      throw new Error("Update guest manage inspiration assertions failed.");
+    }
+
+    await verifyUpdateBookingSnapshot(updateInspirationId);
+    report.checks.updateBookingSnapshot = true;
+    report.checks.updateSubmitSuccess = true;
+    await updateContext.close();
+
     const signedContext = await browser.newContext({
       viewport: { height: 900, width: 1440 },
     });
@@ -610,7 +853,7 @@ async function run() {
     }
 
     await signedPage.goto(`${baseUrl}/account`, { waitUntil: "networkidle" });
-    await signedPage.goto(absoluteUrl(quickHref), { waitUntil: "networkidle" });
+    await signedPage.goto(bookingUrl(quickHref), { waitUntil: "networkidle" });
     await waitForFlowState(signedPage, "ready_to_submit");
     await clickPrimary(signedPage);
     await signedPage.getByRole("heading", { name: "Review your visit" }).waitFor({
@@ -628,14 +871,14 @@ async function run() {
 
     const unexpected = await browser.newPage({ viewport: { height: 900, width: 1440 } });
     recordPageErrors(unexpected, report);
-    await unexpected.goto(absoluteUrl(quickHref), { waitUntil: "networkidle" });
+    await unexpected.goto(bookingUrl(quickHref), { waitUntil: "networkidle" });
     await waitForFlowState(unexpected, "identity_required");
     await clickPrimary(unexpected);
     await unexpected.locator('[data-testid="public-booking-details-sheet"]').waitFor({
       timeout: 30000,
     });
     await completeGuestDetailsToReview(unexpected, "unexpected-retry");
-    const quickAbsolute = absoluteUrl(quickHref);
+    const quickAbsolute = bookingUrl(quickHref);
     let abortedOnce = false;
     report.expectedAbortUrls.push(quickAbsolute);
     await unexpected.route("**/book/**", async (route, request) => {
@@ -658,7 +901,7 @@ async function run() {
 
     const mobile = await browser.newPage({ viewport: { height: 844, width: 390 } });
     recordPageErrors(mobile, report);
-    await mobile.goto(absoluteUrl(quickHref), { waitUntil: "networkidle" });
+    await mobile.goto(bookingUrl(quickHref), { waitUntil: "networkidle" });
     await waitForFlowState(mobile, "identity_required");
     await clickPrimary(mobile);
     await mobile.locator('[data-testid="public-booking-details-sheet"]').waitFor({
@@ -681,7 +924,7 @@ async function run() {
 
     const race = await browser.newPage({ viewport: { height: 900, width: 1440 } });
     recordPageErrors(race, report);
-    await race.goto(absoluteUrl(quickHref), { waitUntil: "networkidle" });
+    await race.goto(bookingUrl(quickHref), { waitUntil: "networkidle" });
     await waitForFlowState(race, "identity_required");
     await clickPrimary(race);
     await race.locator('[data-testid="public-booking-details-sheet"]').waitFor({
@@ -690,10 +933,34 @@ async function run() {
     await completeGuestDetailsToReview(race, "slot-race");
     await runSql(
       "q8-disable-fixture-availability.sql",
-      `delete from public.staff_availability_rules rules
+      `insert into public.staff_time_blocks (
+         organization_id,
+         salon_id,
+         staff_id,
+         block_type,
+         starts_at,
+         ends_at,
+         timezone_iana,
+         reason,
+         is_active
+       )
+       select
+         staff.organization_id,
+         staff.salon_id,
+         staff.id,
+         'blocked',
+         (${sqlLiteral(bookingDate)}::date::timestamp at time zone 'America/Chicago'),
+         ((${sqlLiteral(bookingDate)}::date + 1)::timestamp at time zone 'America/Chicago'),
+         'America/Chicago',
+         '${marker} slot race',
+         true
+       from public.staff
+       where staff.id = ${sqlLiteral(quickStaffId)}::uuid;
+
+       delete from public.staff_availability_rules rules
        where rules.starts_at_local = '08:07:00'::time
          and rules.ends_at_local = '19:07:00'::time
-         and rules.effective_start_date = current_date
+         and rules.effective_start_date = current_date - 1
          and rules.effective_end_date = current_date + 45;`,
     );
     await clickPrimary(race);
@@ -717,14 +984,34 @@ async function run() {
 
     await assertNoTerminalFailure(desktop);
     await desktop.close();
+  } catch (error) {
+    pendingError = error;
   } finally {
-    await browser.close();
+    if (browser) {
+      await browser.close();
+    }
+
+    try {
+      await runSqlFile(path.join(artifactsDir, "browser-fixture-cleanup.sql"));
+      report.checks.fixtureCleanup = true;
+    } catch (error) {
+      report.checks.fixtureCleanup = false;
+      report.cleanupError = {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : null,
+      };
+      pendingError ??= error;
+    }
   }
 
   await writeFile(
     path.join(artifactsDir, "browser-qa-report.json"),
     `${JSON.stringify(report, null, 2)}\n`,
   );
+
+  if (pendingError) {
+    throw pendingError;
+  }
 
   const relevantFailures = report.requestFailures.filter(
     (failure) =>
