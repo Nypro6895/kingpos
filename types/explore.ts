@@ -138,6 +138,40 @@ export type ExploreHomeContent = {
   recommendedSalons: ExploreHomeSalon[];
 };
 
+export type ExploreUpcomingBooking = {
+  bookingHref: string;
+  endAt: string;
+  id: string;
+  professionalCount: number;
+  salonImageUrl: string | null;
+  salonLocation: string | null;
+  salonName: string;
+  salonTimezone: string;
+  serviceSummary: string;
+  staffSummary: string;
+  startAt: string;
+  status: string;
+  totalAmount: number;
+};
+
+export type ExploreNotificationItem = {
+  body: string | null;
+  createdAt: string;
+  href: string;
+  id: string;
+  kind: "account" | "booking" | "message" | "offer" | "review";
+  read: boolean;
+  title: string;
+};
+
+export type ExploreUtilityContent = {
+  bookingLoadError: boolean;
+  notificationLoadError: boolean;
+  notifications: ExploreNotificationItem[];
+  unreadNotificationCount: number;
+  upcomingBooking: ExploreUpcomingBooking | null;
+};
+
 export type ExploreNearYouResponse = {
   error: string | null;
   salons: ExploreHomeSalon[];

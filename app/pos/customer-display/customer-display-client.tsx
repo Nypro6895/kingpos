@@ -65,7 +65,7 @@ export function CustomerDisplayClient({ token }: { token: string }) {
     <div className="mx-auto flex min-h-[calc(100vh-48px)] max-w-5xl flex-col gap-5">
       <section className="rounded-lg border border-zinc-700 bg-zinc-900 p-6 text-center">
         <p className="text-sm uppercase tracking-wide text-emerald-300">
-          KingPOS Promotion
+          KITY Promotion
         </p>
         <h1 className="mt-2 text-4xl font-semibold tracking-normal">
           Fresh sets, clean turns, happy hands.

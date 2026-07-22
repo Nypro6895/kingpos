@@ -39,7 +39,7 @@ export default async function PosDeskPage() {
         activeSession={null}
         defaults={data.defaults}
         liveDraft={liveDraftResult.ok ? liveDraftResult.data : null}
-        salonName={data.context.currentSalon?.name ?? "KingPOS"}
+        salonName={data.context.currentSalon?.name ?? "KITY"}
         services={data.services}
         staff={data.staff}
       />

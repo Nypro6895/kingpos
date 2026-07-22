@@ -396,7 +396,7 @@ export default async function OrganizationsPage({ searchParams }: OrganizationsP
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
       <div className="flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-zinc-500">KingPOS Platform</p>
+          <p className="text-sm font-medium text-zinc-500">KITY Platform</p>
           <h1 className="mt-1 text-3xl font-semibold text-zinc-950">Organizations</h1>
           <p className="mt-2 text-sm text-zinc-600">
             Manage the businesses you own before Salons and teams are added.

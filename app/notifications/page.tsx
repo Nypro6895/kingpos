@@ -81,7 +81,7 @@ function AppNotificationCard({
   const destinationHref = notificationDestination(notification);
 
   return (
-    <article className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
+    <article className="grid min-w-0 gap-4 rounded-lg border border-zinc-200 bg-white p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -108,7 +108,7 @@ function AppNotificationCard({
           <input name="notification_id" type="hidden" value={notification.id} />
           <input name="href" type="hidden" value={destinationHref} />
           <button
-            className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white"
+            className="min-h-11 rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white"
             type="submit"
           >
             Open
@@ -118,7 +118,7 @@ function AppNotificationCard({
           <form action={markAppNotificationReadAction}>
             <input name="notification_id" type="hidden" value={notification.id} />
             <button
-              className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950"
+              className="min-h-11 rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950"
               type="submit"
             >
               Mark read
@@ -144,7 +144,7 @@ function StaffNotificationCard({
     : `Requested title ${request.requested_job_title ?? "Not specified"}`;
 
   return (
-    <article className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
+    <article className="grid min-w-0 gap-4 rounded-lg border border-zinc-200 bg-white p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-zinc-950">{title}</h3>
@@ -167,7 +167,7 @@ function StaffNotificationCard({
           <form action={acceptStaffInviteByRequestFormAction}>
             <input name="request_id" type="hidden" value={request.id} />
             <button
-              className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white"
+              className="min-h-11 rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white"
               type="submit"
             >
               Accept
@@ -176,7 +176,7 @@ function StaffNotificationCard({
           <form action={declineStaffInviteByRequestFormAction}>
             <input name="request_id" type="hidden" value={request.id} />
             <button
-              className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950"
+              className="min-h-11 rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950"
               type="submit"
             >
               Decline
@@ -189,7 +189,7 @@ function StaffNotificationCard({
         <form action={cancelStaffSalonApplicationFormAction}>
           <input name="request_id" type="hidden" value={request.id} />
           <button
-            className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950"
+            className="min-h-11 rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950"
             type="submit"
           >
             Cancel application
@@ -206,7 +206,7 @@ function ManagerNotificationCard({
   request: SalonStaffConnectionRequestWithDetails;
 }) {
   return (
-    <article className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
+    <article className="grid min-w-0 gap-4 rounded-lg border border-zinc-200 bg-white p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-zinc-950">
@@ -233,7 +233,7 @@ function ManagerNotificationCard({
         </p>
       ) : null}
       <Link
-        className="w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white"
+        className="inline-flex min-h-11 w-fit items-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white"
         href="/staff"
       >
         Review in Staff
@@ -279,49 +279,54 @@ export default async function NotificationsPage() {
   const unreadBookingNotifications = appNotifications.filter(
     (notification) => !notification.read_at,
   ).length;
-  const pendingTotal =
-    pendingStaffRequests.length + managerRequests.length + unreadBookingNotifications;
+  const connectionTotal = pendingStaffRequests.length + historyRequests.length;
+  const hasConnectionActivity = connectionTotal > 0;
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-zinc-500">Notifications</p>
-          <h1 className="mt-1 text-3xl font-semibold text-zinc-950">
-            Pending actions
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-            Staff invitations, salon applications, and manager review items are
-            gathered here first.
-          </p>
+    <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-6xl">
+        <div className="flex flex-col gap-4 border-b border-zinc-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-zinc-500">Notifications</p>
+            <h1 className="mt-1 text-3xl font-semibold text-zinc-950">
+              Your updates
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-zinc-600">
+              Booking updates, account messages, and connection requests stay
+              together here.
+            </p>
+          </div>
+          {hasConnectionActivity ? (
+            <Link
+              className="inline-flex min-h-11 w-fit items-center rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950"
+              href="/staff/connections"
+            >
+              Manage connections
+            </Link>
+          ) : null}
         </div>
-        <Link
-          className="w-fit rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-950"
-          href="/staff/connections"
-        >
-          Connection dashboard
-        </Link>
-      </div>
 
       <section className="mt-6 grid gap-3 md:grid-cols-3">
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-semibold uppercase text-zinc-500">Pending</p>
-          <p className="mt-2 text-3xl font-semibold text-zinc-950">{pendingTotal}</p>
-        </div>
-        <div className="rounded-lg border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-semibold uppercase text-zinc-500">
-            Account requests
-          </p>
+          <p className="text-xs font-semibold uppercase text-zinc-500">Unread</p>
           <p className="mt-2 text-3xl font-semibold text-zinc-950">
-            {pendingStaffRequests.length}
+            {unreadBookingNotifications}
           </p>
         </div>
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
           <p className="text-xs font-semibold uppercase text-zinc-500">
-            Manager review
+            Booking
           </p>
           <p className="mt-2 text-3xl font-semibold text-zinc-950">
-            {managerRequests.length}
+            {appNotifications.length}
+          </p>
+        </div>
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase text-zinc-500">
+            Connections
+          </p>
+          <p className="mt-2 text-3xl font-semibold text-zinc-950">
+            {connectionTotal}
           </p>
         </div>
       </section>
@@ -392,6 +397,7 @@ export default async function NotificationsPage() {
           </div>
         </section>
       ) : null}
+      </div>
     </main>
   );
 }

@@ -20,8 +20,31 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "KingPOS",
-  description: "KingPOS salon workspace",
+  title: "Reylumi",
+  description: "Reylumi beauty booking and salon workspace",
+  icons: {
+    apple: [
+      {
+        sizes: "364x364",
+        type: "image/png",
+        url: "/apple-icon.png",
+      },
+    ],
+    icon: [
+      {
+        sizes: "364x364",
+        type: "image/png",
+        url: "/brand/reylumi-favicon.png",
+      },
+    ],
+    shortcut: [
+      {
+        sizes: "364x364",
+        type: "image/png",
+        url: "/brand/reylumi-favicon.png",
+      },
+    ],
+  },
 };
 
 export default async function RootLayout({

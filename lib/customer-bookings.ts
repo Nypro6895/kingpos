@@ -528,7 +528,7 @@ function hydrateSalon(
     ),
     displayName:
       firstText(setting?.business_name, profile?.salon_name, salon?.name) ??
-      "KingPOS salon",
+      "Reylumi salon",
     email: firstText(setting?.email, profile?.email),
     id: salonId,
     latitude: salon?.latitude ?? null,
@@ -536,7 +536,7 @@ function hydrateSalon(
       firstText(setting?.public_profile_logo_path, profile?.logo_path),
     ),
     longitude: salon?.longitude ?? null,
-    name: firstText(salon?.name, profile?.salon_name, setting?.business_name) ?? "KingPOS salon",
+    name: firstText(salon?.name, profile?.salon_name, setting?.business_name) ?? "Reylumi salon",
     phone: firstText(setting?.phone, profile?.phone, salon?.phone),
     postal_code: firstText(setting?.postal_code, profile?.postal_code, salon?.postal_code),
     publicDiscoveryEnabled: setting?.public_discovery_enabled === true || Boolean(profile),

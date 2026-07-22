@@ -2,13 +2,48 @@
 
 :root {
   color-scheme: light;
-  --background: #fafafa;
-  --foreground: #09090b;
+  --background: #fffdfb;
+  --foreground: #241b1f;
+  --brand-black: #1f171b;
+  --brand-orange: #f26f3d;
+  --brand-orange-hover: #e85f2b;
+  --brand-orange-soft: #fff0e8;
+  --brand-teal: #008f8a;
+  --brand-teal-soft: #e7f7f5;
+  --page-background: #fffdfb;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-muted: #fbf6f2;
+  --text-primary: #241b1f;
+  --text-secondary: #72686d;
+  --text-muted: #91878c;
+  --border-subtle: #f0e6df;
+  --divider-subtle: #f4ece6;
+  --shadow-soft: 0 14px 38px rgba(35, 25, 22, 0.055);
+  --danger: #dc2626;
+  --success: #0f8f62;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand-black: var(--brand-black);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-orange-hover: var(--brand-orange-hover);
+  --color-brand-orange-soft: var(--brand-orange-soft);
+  --color-brand-teal: var(--brand-teal);
+  --color-brand-teal-soft: var(--brand-teal-soft);
+  --color-page-background: var(--page-background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-muted: var(--surface-muted);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-border-subtle: var(--border-subtle);
+  --color-divider-subtle: var(--divider-subtle);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,8 +51,8 @@
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: light;
-    --background: #fafafa;
-    --foreground: #09090b;
+    --background: #fffdfb;
+    --foreground: #241b1f;
   }
 }
 
@@ -31,4 +66,41 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .customer-desktop-content main {
+    background: transparent !important;
+  }
+
+  .customer-desktop-content main h1 {
+    font-size: clamp(1.8rem, 1.05vw + 1.2rem, 2.25rem);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.12;
+  }
+
+  .customer-desktop-content main h2,
+  .customer-desktop-content main h3 {
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .customer-desktop-content main .font-black,
+  .customer-desktop-content main .font-extrabold {
+    font-weight: 600;
+  }
+
+  .customer-desktop-content main .font-bold {
+    font-weight: 550;
+  }
 }

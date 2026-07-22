@@ -77,7 +77,7 @@ export default async function RolesPage() {
   if (!organization) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <p className="text-sm font-medium text-zinc-500">KingPOS Platform</p>
+        <p className="text-sm font-medium text-zinc-500">KITY Platform</p>
         <h1 className="mt-1 text-3xl font-semibold text-zinc-950">Roles</h1>
         <div className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
           <h2 className="text-lg font-semibold text-zinc-950">Set up an organization first</h2>
@@ -159,7 +159,7 @@ export default async function RolesPage() {
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
       <div className="flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-zinc-500">KingPOS Platform</p>
+          <p className="text-sm font-medium text-zinc-500">KITY Platform</p>
           <h1 className="mt-1 text-3xl font-semibold text-zinc-950">Roles</h1>
           <p className="mt-2 text-sm text-zinc-600">
             View the role foundation for {organization.name}.

@@ -1105,7 +1105,7 @@ function mapPublicUpdate(row: PublicUpdateRow): PublicSalonProfileUpdate {
 
 function mapPublicComment(row: PublicCommentRow): PublicSalonProfileComment {
   return {
-    authorDisplayName: row.author_display_name ?? "KingPOS customer",
+    authorDisplayName: row.author_display_name ?? "Reylumi customer",
     authorUserId: row.author_user_id,
     body: row.body,
     createdAt: row.created_at,
@@ -1138,7 +1138,7 @@ function mapReviewSummary(
 
 function mapPublicReview(row: PublicReviewRow): PublicSalonProfileReview {
   return {
-    authorDisplayName: row.author_display_name ?? "KingPOS customer",
+    authorDisplayName: row.author_display_name ?? "Reylumi customer",
     authorUserId: row.author_user_id,
     body: row.body,
     createdAt: row.created_at,

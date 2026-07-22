@@ -128,7 +128,7 @@ export default async function AccountPage() {
     <main className="mx-auto w-full max-w-4xl px-6 py-10">
       <div className="flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-zinc-500">KingPOS Account</p>
+          <p className="text-sm font-medium text-zinc-500">Reylumi Account</p>
           <h1 className="mt-1 text-3xl font-semibold text-zinc-950">User Profile</h1>
           <p className="mt-2 text-sm text-zinc-600">
             View your account details and update your personal information.

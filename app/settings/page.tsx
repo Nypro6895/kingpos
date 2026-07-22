@@ -48,7 +48,7 @@ export default async function SettingsPage() {
       label: "My Place",
     },
     {
-      description: "Appointments saved to your KingPOS account.",
+      description: "Appointments saved to your Reylumi account.",
       href: "/my-bookings",
       id: "my-bookings",
       label: "My Bookings",
@@ -78,7 +78,7 @@ export default async function SettingsPage() {
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
           <p className="text-xs font-semibold uppercase text-zinc-500">Account</p>
           <p className="mt-2 truncate text-lg font-semibold text-zinc-950">
-            {context.user.display_name ?? context.user.email ?? "KingPOS account"}
+            {context.user.display_name ?? context.user.email ?? "Reylumi account"}
           </p>
         </div>
         <div className="rounded-lg border border-zinc-200 bg-white p-4">

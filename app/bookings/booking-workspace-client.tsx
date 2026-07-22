@@ -291,7 +291,7 @@ function initialsFor(value: string | null | undefined) {
     .filter(Boolean);
 
   if (parts.length === 0) {
-    return "KP";
+    return "K";
   }
 
   return parts

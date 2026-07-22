@@ -148,7 +148,7 @@ function statusCopy(status: SalonMapLocationStatus) {
     case "provider_unavailable":
       return {
         description:
-          "No server-side geocoding provider is configured, so KingPOS will not create coordinates or map markers.",
+          "No server-side geocoding provider is configured, so KITY will not create coordinates or map markers.",
         label: "Map provider not configured",
       };
   }

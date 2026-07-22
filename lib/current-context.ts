@@ -479,23 +479,26 @@ function membershipByOrganizationId(
 
 function buildPersonalWorkspaceOption(): CurrentWorkspaceOption {
   const explore = workspaceAction("explore", "Explore", "/explore");
+  const bookings = workspaceAction("bookings", "Bookings", "/my-bookings");
+  const beauty = workspaceAction("beauty", "Beauty", "/beauty");
   const notifications = workspaceAction(
     "notifications",
     "Notifications",
     "/notifications",
   );
+  const more = workspaceAction("more", "More", "/more");
   const settings = workspaceAction("settings", "Account Settings", "/settings");
 
   return {
     defaultHref: "/explore",
-    description: "Explore, My Place, Notifications",
+    description: "Explore, bookings, beauty timeline, and account settings.",
     id: getPersonalWorkspaceId(),
-    label: "KingPOS",
-    menuActions: [settings],
+    label: "Personal account",
+    menuActions: [more, settings],
     organizationId: null,
     organizationName: null,
     primaryAction: explore,
-    quickActions: [explore, notifications, settings],
+    quickActions: [explore, bookings, beauty, notifications],
     roleCode: null,
     roleLabel: "Personal",
     salonCount: null,

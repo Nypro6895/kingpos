@@ -158,7 +158,7 @@ function initialsFor(value: string | null | undefined) {
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
         .join("")
-    : "KP";
+    : "K";
 }
 
 function draftStorageKey(salonId: string | null | undefined) {
@@ -482,7 +482,7 @@ function UnavailableState({ data }: { data: PublicBookingPageData }) {
     >
       <div className="mx-auto flex min-h-screen w-full max-w-4xl items-center px-5 py-10">
         <section className={classNames(styles.publicCard, "w-full p-6")}>
-          <p className={styles.eyebrow}>KingPOS booking</p>
+          <p className={styles.eyebrow}>Reylumi booking</p>
           <h1 className={classNames(styles.pageTitle, "mt-3")}>{data.title}</h1>
           <p className="mt-3 text-sm leading-6 text-[#786d78]">{data.message}</p>
           {data.readiness.length > 0 ? (
@@ -1304,7 +1304,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     nonEmpty([data.currentUser?.firstName, data.currentUser?.lastName].filter(Boolean).join(" ")) ??
     nonEmpty(data.currentUser?.email) ??
     nonEmpty(data.currentUser?.phone) ??
-    "Your KingPOS account";
+    "Your Reylumi account";
   const accountMaskedEmail = maskEmail(data.currentUser?.email);
   const accountMaskedPhone = maskPhone(data.currentUser?.phone);
   const signedInNeedsName =
@@ -2483,7 +2483,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
               ) : null}
               {result?.ok && result.accountLinked ? (
                 <p className="mt-4 rounded-xl bg-[#f7f2f7] px-4 py-3 text-sm font-extrabold text-[#642a56]">
-                  This booking is saved to your KingPOS account.
+                  This booking is saved to your Reylumi account.
                 </p>
               ) : null}
               <div className="mt-6 flex flex-wrap gap-3">

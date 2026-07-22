@@ -77,7 +77,7 @@ function initialsFor(value: string | null | undefined) {
   const parts = (value ?? "").trim().split(/\s+/).filter(Boolean);
 
   if (parts.length === 0) {
-    return "KP";
+    return "K";
   }
 
   return parts
@@ -250,7 +250,7 @@ function ServiceLine({
 }
 
 function SalonImage({ booking }: { booking: CustomerBookingDetail }) {
-  const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "KingPOS salon";
+  const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "Reylumi salon";
   const imageUrl = booking.salon?.coverUrl ?? booking.salon?.logoUrl;
 
   return (
@@ -362,7 +362,7 @@ export default async function MyBookingDetailPage({
   );
   const canBookAgain = !canChange && (!isCancelledOrNoShow || hasBookableService);
   const canViewSalon = booking.salon?.publicDiscoveryEnabled === true;
-  const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "KingPOS salon";
+  const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "Reylumi salon";
   const place = locationLabel(booking);
 
   return (

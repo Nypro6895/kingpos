@@ -16,7 +16,7 @@ export function initialsFor(label: string) {
     .filter(Boolean);
 
   if (parts.length === 0) {
-    return "KP";
+    return "K";
   }
 
   return parts

@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="relative z-10 mx-auto w-full max-w-md px-6 py-12 pointer-events-auto">
       <h1 className="text-2xl font-semibold text-zinc-950">Login</h1>
       <p className="mt-2 text-sm text-zinc-600">
-        Sign in to access your KingPOS account.
+        Sign in to access your Reylumi account.
       </p>
 
       {message ? (

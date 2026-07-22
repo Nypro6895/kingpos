@@ -18,16 +18,16 @@ export async function generateMetadata({
 
   if (!data) {
     return {
-      title: "Salon not found | KingPOS",
+      title: "Salon not found | Reylumi",
     };
   }
 
   return {
-    title: `${data.profile.name} | KingPOS`,
+    title: `${data.profile.name} | Reylumi`,
     description:
       data.profile.tagline ??
       data.profile.description ??
-      "Explore this salon on KingPOS.",
+      "Explore this salon on Reylumi.",
   };
 }
 

@@ -130,7 +130,7 @@ function initialsFor(value: string | null | undefined) {
   const parts = (value ?? "").trim().split(/\s+/).filter(Boolean);
 
   if (parts.length === 0) {
-    return "KP";
+    return "K";
   }
 
   return parts
@@ -207,7 +207,7 @@ function groupBookings(bookings: CustomerBookingSummary[]) {
 }
 
 function SalonThumb({ booking }: { booking: CustomerBookingSummary }) {
-  const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "KingPOS salon";
+  const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "Reylumi salon";
   const imageUrl =
     booking.inspiration?.imageUrl ??
     booking.salon?.logoUrl ??
@@ -254,7 +254,7 @@ function BookingRow({ booking }: { booking: CustomerBookingSummary }) {
   const timezone = booking.salon_timezone_snapshot || "America/Chicago";
   const dateParts = formatDateParts(booking.start_at, timezone);
   const lines = booking.lines ?? [];
-  const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "KingPOS salon";
+  const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "Reylumi salon";
   const place = locationLabel(booking);
   const showTimezone = timezone !== "America/Chicago";
 
@@ -337,12 +337,12 @@ export default async function MyBookingsPage({
   const message = messageFromSearch(resolvedSearchParams.message);
 
   return (
-    <main className={classNames(styles.bookingSurface, "min-h-screen bg-[#fbf9f7] px-4 py-6 sm:px-6 lg:px-8")}>
+    <main className={classNames(styles.bookingSurface, "min-h-screen overflow-x-hidden bg-[#fbf9f7] px-4 py-6 sm:px-6 lg:px-8")}>
       <div className="mx-auto grid w-full max-w-6xl gap-5">
         <header className="flex flex-col gap-4 border-b border-[#e7dfe5] pb-5 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="text-3xl font-extrabold leading-tight text-[#211c24]">
-              My bookings
+              Bookings
             </h1>
             <p className="mt-2 text-sm font-semibold text-[#786d78]">
               Your appointments across all salons.
