@@ -1,5 +1,6 @@
 import { ROLE_SELECT } from "@/lib/current-context";
-import { requireOrganizationPageContext } from "@/lib/route-context-guards";
+import { requireAccountPageContext } from "@/lib/route-context-guards";
+import { routes } from "@/lib/routes";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { Role } from "@/types/role";
 import type { RoleWithMemberCount } from "@/types/role";
@@ -26,7 +27,7 @@ function RolesTable({ roles }: { roles: RoleWithMemberCount[] }) {
       <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950">No roles found</h2>
         <p className="mt-2 text-sm text-zinc-600">
-          Default system roles will appear here once this organization is seeded.
+          Default system roles will appear here once this Account is seeded.
         </p>
       </div>
     );
@@ -66,29 +67,29 @@ function RolesTable({ roles }: { roles: RoleWithMemberCount[] }) {
 }
 
 export default async function RolesPage() {
-  const context = await requireOrganizationPageContext("/roles");
+  const context = await requireAccountPageContext("/roles");
 
   if (!context.user) {
     redirect("/login?next=/roles");
   }
 
-  const organization = context.currentOrganization;
+  const account = context.currentAccount;
 
-  if (!organization) {
+  if (!account || !context.accountId) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
         <p className="text-sm font-medium text-zinc-500">KITY Platform</p>
         <h1 className="mt-1 text-3xl font-semibold text-zinc-950">Roles</h1>
         <div className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
-          <h2 className="text-lg font-semibold text-zinc-950">Set up an organization first</h2>
+          <h2 className="text-lg font-semibold text-zinc-950">Choose a salon first</h2>
           <p className="mt-2 text-sm text-zinc-600">
-            Roles belong to an organization, so create one before reviewing role records.
+            Roles belong to the Account behind the current salon.
           </p>
           <Link
             className="mt-5 inline-flex rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-            href="/organizations"
+            href={routes.salons.list()}
           >
-            Go to organization setup
+            Go to Salons
           </Link>
         </div>
       </main>
@@ -104,7 +105,7 @@ export default async function RolesPage() {
   const { data, error } = await supabase
     .from("roles")
     .select(ROLE_SELECT)
-    .eq("organization_id", organization.id)
+    .eq("account_id", context.accountId)
     .order("is_system", { ascending: false })
     .order("created_at", { ascending: true })
     .returns<Role[]>();
@@ -115,16 +116,16 @@ export default async function RolesPage() {
       message: error.message,
       details: error.details,
       hint: error.hint,
-      organizationId: organization.id,
+      accountId: context.accountId,
       userId: context.user.id,
     });
     throw new Error(error.message);
   }
 
   const { data: memberships, error: membershipsError } = await supabase
-    .from("organization_memberships")
+    .from("account_memberships")
     .select("role_id")
-    .eq("organization_id", organization.id)
+    .eq("account_id", context.accountId)
     .neq("status", "removed")
     .returns<{ role_id: string }[]>();
 
@@ -134,7 +135,7 @@ export default async function RolesPage() {
       message: membershipsError.message,
       details: membershipsError.details,
       hint: membershipsError.hint,
-      organizationId: organization.id,
+      accountId: context.accountId,
       userId: context.user.id,
     });
     throw new Error(membershipsError.message);
@@ -162,7 +163,7 @@ export default async function RolesPage() {
           <p className="text-sm font-medium text-zinc-500">KITY Platform</p>
           <h1 className="mt-1 text-3xl font-semibold text-zinc-950">Roles</h1>
           <p className="mt-2 text-sm text-zinc-600">
-            View the role foundation for {organization.name}.
+            View the role foundation for {account.name}.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -174,21 +175,21 @@ export default async function RolesPage() {
           </Link>
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href="/salons"
+            href={routes.salons.list()}
           >
             Salons
           </Link>
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href="/organizations"
+            href="/account"
           >
-            Organizations
+            Accounts
           </Link>
         </div>
       </div>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Organization Roles</h2>
+        <h2 className="text-lg font-semibold text-zinc-950">Account Roles</h2>
         <RolesTable roles={roles} />
       </section>
     </main>

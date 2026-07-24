@@ -1,12 +1,8 @@
 "use client";
 
+import { readAuthResponse } from "@/lib/auth-response";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-type AuthResponse = {
-  error?: string;
-  redirectTo?: string;
-};
 
 const inputClassName =
   "mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-950 pointer-events-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950";
@@ -21,21 +17,25 @@ export function LoginForm({ nextPath = "/account" }: { nextPath?: string }) {
     setError(null);
     setIsSubmitting(true);
 
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      body: new FormData(event.currentTarget),
-    });
-    const result = (await response.json()) as AuthResponse;
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        body: new FormData(event.currentTarget),
+      });
+      const result = await readAuthResponse(response, "Unable to log in.");
 
-    setIsSubmitting(false);
+      if (!response.ok || result.error) {
+        setError(result.error ?? "Unable to log in.");
+        return;
+      }
 
-    if (!response.ok || result.error) {
-      setError(result.error ?? "Unable to log in.");
-      return;
+      router.push(result.redirectTo ?? "/account");
+      router.refresh();
+    } catch {
+      setError("Unable to log in. Please check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push(result.redirectTo ?? "/account");
-    router.refresh();
   }
 
   return (

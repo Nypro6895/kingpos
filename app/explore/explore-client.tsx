@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   loadExploreNearYouAction,
@@ -138,6 +138,24 @@ const EXPLORE_DISCOVERY_CATEGORIES = [
   { category: "Brows", icon: "brow", label: "Brows" },
   { category: "Massage", icon: "massage", label: "Massage" },
 ] as const;
+const SERVICE_DEFAULT_IMAGE = "/explore/service-defaults.png";
+const QUICK_ACTION_VISUALS = [
+  {
+    position: "center",
+    size: "cover",
+    src: "/explore/quick-actions-dark.png",
+  },
+  {
+    position: "0% center",
+    size: "600% 100%",
+    src: "/explore/service-defaults.png",
+  },
+  {
+    position: "100% center",
+    size: "600% 100%",
+    src: "/explore/service-defaults.png",
+  },
+] as const;
 
 type ExploreCategoryIconName =
   | "brow"
@@ -248,6 +266,10 @@ function phoneHref(phone: string | null) {
 
 function salonProfileHref(salonId: string) {
   return `/explore/salons/${encodeURIComponent(salonId)}`;
+}
+
+function salonGalleryHref(salonId: string) {
+  return `${salonProfileHref(salonId)}#gallery`;
 }
 
 function buildUrl(input: {
@@ -580,8 +602,21 @@ function ExploreHero({
 }) {
   const slides = useMemo(() => heroSlidesFromContent(content), [content]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const activeIndexWithinBounds = slides.length > 0 ? activeIndex % slides.length : 0;
   const activeSlide = slides[activeIndex] ?? null;
   const hasSlides = slides.length > 0;
+
+  useEffect(() => {
+    if (slides.length <= 1) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % slides.length);
+    }, 5200);
+
+    return () => window.clearInterval(interval);
+  }, [slides.length]);
 
   function move(delta: number) {
     if (slides.length <= 1) {
@@ -593,13 +628,13 @@ function ExploreHero({
 
   return (
     <section
-      className="relative min-h-[20.5rem] overflow-hidden rounded-[1.25rem] bg-[linear-gradient(135deg,#fff0e8_0%,#fff8f2_48%,#f6fbfa_100%)] shadow-[0_18px_44px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80"
+      className="relative min-h-[17.5rem] overflow-hidden rounded-[1.25rem] bg-white shadow-[0_18px_44px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/80 sm:min-h-[18.75rem]"
       data-testid="explore-hero"
     >
       {activeSlide ? (
         <Image
           alt={activeSlide.alt}
-          className="object-cover object-[68%_center] opacity-95"
+          className="object-cover object-[72%_center] opacity-95 transition-opacity duration-500"
           fill
           priority
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 70vw, 58vw"
@@ -626,15 +661,15 @@ function ExploreHero({
             : "bg-white/18",
         ].join(" ")}
       />
-      <div className="relative z-10 grid min-h-[20.5rem] content-center gap-5 px-9 py-8 sm:px-14 lg:max-w-[58%]">
+      <div className="relative z-10 grid min-h-[17.5rem] content-center gap-4 py-7 pl-14 pr-7 sm:min-h-[18.75rem] sm:pl-20 sm:pr-12 lg:max-w-[45%]">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand-orange">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-orange">
             Look good, feel confident
           </p>
-          <h2 className="mt-3 max-w-md text-3xl font-semibold leading-tight text-text-primary sm:text-4xl">
+          <h2 className="mt-2 max-w-sm text-2xl font-semibold leading-tight text-text-primary sm:text-3xl">
             Find Your Beauty Inspiration
           </h2>
-          <p className="mt-3 max-w-sm text-sm leading-6 text-text-secondary">
+          <p className="mt-2 max-w-xs text-sm leading-6 text-text-secondary">
             Discover top salons, trending designs, and book your appointment
             instantly.
           </p>
@@ -648,7 +683,7 @@ function ExploreHero({
         </div>
         <div className="flex flex-wrap gap-2">
           <button
-            className="inline-flex min-h-11 items-center rounded-full bg-brand-orange px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+            className="inline-flex min-h-10 items-center rounded-full bg-brand-orange px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
             onClick={onExploreClick}
             type="button"
           >
@@ -656,7 +691,7 @@ function ExploreHero({
           </button>
           {activeSlide?.salonHref ? (
             <Link
-              className="inline-flex min-h-11 items-center rounded-full bg-white px-5 text-sm font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              className="inline-flex min-h-10 items-center rounded-full bg-white px-5 text-sm font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               href={activeSlide.salonHref}
             >
               View salon
@@ -688,7 +723,7 @@ function ExploreHero({
                 aria-label={`Show inspiration ${index + 1}`}
                 className={[
                   "h-2 rounded-full transition",
-                  index === activeIndex
+                  index === activeIndexWithinBounds
                     ? "w-5 bg-brand-orange"
                     : "w-2 bg-white/85",
                 ].join(" ")}
@@ -864,52 +899,57 @@ function CompactSalonCard({ salon }: { salon: ExploreHomeSalon }) {
       : null;
 
   return (
-    <article className="min-w-[16.5rem] max-w-[16.5rem] snap-start overflow-hidden rounded-[1.1rem] bg-surface-elevated shadow-[0_12px_34px_rgba(35,25,22,0.05)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(35,25,22,0.085)]">
+    <article
+      className="min-w-[11.25rem] snap-start overflow-hidden rounded-[0.95rem] bg-surface-elevated shadow-[0_9px_24px_rgba(35,25,22,0.042)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(35,25,22,0.075)] sm:min-w-0"
+      style={{ flex: "0 0 calc((100% - 2.25rem) / 4)" }}
+    >
       <Link
         className="group grid min-h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
         href={href}
       >
-        <span className="relative block aspect-[4/3] overflow-hidden bg-surface-muted">
-          {imageUrl ? (
-            <Image
-              alt={`${displayName} salon photo`}
-              className="object-cover transition duration-300 group-hover:scale-[1.02]"
-              fill
-              onError={() => setImageFailed(true)}
-              sizes="264px"
-              src={imageUrl}
-            />
-          ) : (
-            <span className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-2xl font-semibold text-brand-orange">
-              {salonInitials(displayName)}
-            </span>
-          )}
-          {ratingLabel ? (
-            <span
-              aria-label={cardReviewAriaLabel(salon)}
-              className="absolute bottom-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle/75"
-            >
-              <span className="text-brand-orange">Rating</span> {ratingLabel}
-            </span>
-          ) : null}
+        <span className="block p-2 pb-0">
+          <span className="relative block aspect-[16/9] overflow-hidden rounded-[0.75rem] bg-surface-muted">
+            {imageUrl ? (
+              <Image
+                alt={`${displayName} salon photo`}
+                className="object-cover transition duration-300 group-hover:scale-[1.025]"
+                fill
+                onError={() => setImageFailed(true)}
+                sizes="(max-width: 768px) 180px, 25vw"
+                src={imageUrl}
+              />
+            ) : (
+              <span className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-xl font-semibold text-brand-orange">
+                {salonInitials(displayName)}
+              </span>
+            )}
+            {ratingLabel ? (
+              <span
+                aria-label={cardReviewAriaLabel(salon)}
+                className="absolute bottom-2 left-2 rounded-full bg-white/95 px-2 py-0.5 text-[11px] font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle/75"
+              >
+                <span className="text-brand-orange">&#9733;</span> {ratingLabel}
+              </span>
+            ) : null}
+          </span>
         </span>
-        <span className="grid min-h-[9.5rem] content-between gap-4 p-4">
+        <span className="grid min-h-[6.9rem] content-between gap-2 p-3 pt-2.5">
           <span className="min-w-0">
-            <span className="block truncate text-base font-semibold text-text-primary">
+            <span className="block truncate text-sm font-semibold text-text-primary">
               {displayName}
             </span>
             {location ? (
-              <span className="mt-1 block truncate text-sm text-text-secondary">
+              <span className="mt-1 block truncate text-xs text-text-secondary">
                 {location}
               </span>
             ) : null}
             {service ? (
-              <span className="mt-3 block truncate text-sm font-medium text-brand-teal">
+              <span className="mt-1.5 block truncate text-xs font-medium text-brand-teal">
                 {service}
               </span>
             ) : null}
           </span>
-          <span className="flex min-h-5 items-center justify-between gap-3 text-xs">
+          <span className="flex min-h-5 items-center justify-between gap-2 text-[11px]">
             {price ? (
               <span className="truncate font-semibold text-text-primary">
                 {price}
@@ -973,7 +1013,7 @@ function TopRatedCarousel({ salons }: { salons: ExploreHomeSalon[] }) {
         className="no-scrollbar min-w-0 overflow-x-auto overscroll-x-contain scroll-smooth pb-3"
         ref={scrollerRef}
       >
-        <div className="flex w-max snap-x snap-mandatory gap-4">
+        <div className="flex snap-x snap-mandatory gap-3">
           {salons.map((salon) => (
             <CompactSalonCard key={salon.id} salon={salon} />
           ))}
@@ -1042,43 +1082,52 @@ function TrendingDesignTile({
   remainingLabel: string | null;
 }) {
   const salonName = displaySalonName(item.salonName);
-  const service = inspirationServiceLabel(item);
-  const ctaLabel = item.bookingHref ? "Book this look" : "View salon";
-
-  return (
-    <button
-      aria-label={`Open ${salonName} design`}
-      className="group relative aspect-[4/5] min-w-[12rem] max-w-[12rem] snap-start overflow-hidden rounded-[1.05rem] bg-surface-muted text-left shadow-[0_12px_34px_rgba(35,25,22,0.052)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(35,25,22,0.085)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:min-w-[13rem] sm:max-w-[13rem] lg:min-w-[14rem] lg:max-w-[14rem]"
-      onClick={() => onOpen(item)}
-      type="button"
-    >
+  const href = UUID_PATTERN.test(item.salonId)
+    ? salonGalleryHref(item.salonId)
+    : null;
+  const tileClass =
+    "group relative aspect-[1.15/1] min-w-[6.75rem] max-w-[6.75rem] snap-start overflow-hidden rounded-[0.8rem] bg-surface-muted text-left shadow-[0_8px_20px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(35,25,22,0.08)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:min-w-[7.5rem] sm:max-w-[7.5rem] lg:min-w-[8.25rem] lg:max-w-[8.25rem]";
+  const tileContent = (
+    <>
       <Image
         alt={`${salonName} design`}
-        className="object-cover transition duration-300 group-hover:scale-[1.035]"
+        className="object-cover transition duration-300 group-hover:scale-[1.045]"
         fill
-        sizes="224px"
+        sizes="132px"
         src={item.imageUrl}
       />
       <span
         aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(36,27,31,0.02),rgba(36,27,31,0.05)_45%,rgba(36,27,31,0.62))]"
+        className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(36,27,31,0),rgba(36,27,31,0.08)_62%,rgba(36,27,31,0.22))]"
       />
-      <span className="absolute inset-x-0 bottom-0 z-10 grid gap-2 p-3 text-white">
-        <span className="line-clamp-1 text-sm font-semibold">{salonName}</span>
-        {service ? (
-          <span className="w-fit max-w-full truncate rounded-full bg-white/92 px-2.5 py-1 text-[11px] font-semibold text-brand-teal">
-            {service}
-          </span>
-        ) : null}
-      </span>
-      <span className="absolute inset-x-3 top-3 z-10 translate-y-1 rounded-full bg-white/95 px-3 py-2 text-center text-xs font-semibold text-brand-orange opacity-0 shadow-sm ring-1 ring-divider-subtle/75 transition group-hover:translate-y-0 group-hover:opacity-100">
-        {ctaLabel}
-      </span>
       {remainingLabel ? (
-        <span className="absolute inset-0 z-20 grid place-items-center bg-text-primary/58 text-2xl font-semibold text-white">
+        <span className="absolute inset-0 z-20 grid place-items-center bg-text-primary/58 text-xl font-semibold text-white">
           {remainingLabel}
         </span>
       ) : null}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        aria-label={`Open ${salonName} designs`}
+        className={tileClass}
+        href={href}
+      >
+        {tileContent}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      aria-label={`Open ${salonName} design`}
+      className={tileClass}
+      onClick={() => onOpen(item)}
+      type="button"
+    >
+      {tileContent}
     </button>
   );
 }
@@ -1090,7 +1139,6 @@ function TrendingDesignsSection({
 }) {
   const [selectedItem, setSelectedItem] =
     useState<ExploreInspirationItem | null>(null);
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
   const visibleItems = initialPage.items.slice(0, 8);
   const remainingCount = Math.max(0, initialPage.items.length - visibleItems.length);
   const remainingLabel =
@@ -1109,9 +1157,8 @@ function TrendingDesignsSection({
         <div className="relative min-w-0 overflow-hidden">
           <div
             className="no-scrollbar min-w-0 overflow-x-auto overscroll-x-contain scroll-smooth pb-3"
-            ref={scrollerRef}
           >
-            <div className="flex w-max snap-x snap-mandatory gap-4">
+            <div className="flex w-max snap-x snap-mandatory gap-3">
               {visibleItems.map((item, index) => (
                 <TrendingDesignTile
                   item={item}
@@ -1124,19 +1171,9 @@ function TrendingDesignsSection({
               ))}
             </div>
           </div>
-          <CarouselArrow
-            direction="previous"
-            label="Previous trending designs"
-            onClick={() => scrollCarousel(scrollerRef.current, "previous")}
-          />
-          <CarouselArrow
-            direction="next"
-            label="Next trending designs"
-            onClick={() => scrollCarousel(scrollerRef.current, "next")}
-          />
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-12 bg-[linear-gradient(90deg,rgba(255,253,251,0),var(--page-background))] sm:block"
+            className="pointer-events-none absolute inset-y-0 right-0 hidden w-12 bg-[linear-gradient(90deg,rgba(255,255,255,0),var(--page-background))] sm:block"
           />
         </div>
       ) : !initialPage.error ? (
@@ -1787,11 +1824,26 @@ function discoveryServiceLabel(salon: ExploreHomeSalon) {
   return featuredServiceLine(salon);
 }
 
-function DiscoverySalonCard({
-  badgeFallback,
+function recommendedCardLinks(salon: ExploreHomeSalon) {
+  const profileHref =
+    UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
+      ? salonProfileHref(salon.id)
+      : null;
+  const bookingHref =
+    salon.bookingEnabled && salon.bookingHref ? salon.bookingHref : null;
+  const viewHref = profileHref ?? bookingHref ?? "/explore";
+
+  return {
+    bookingHref,
+    primaryHref: bookingHref ?? viewHref,
+    primaryLabel: bookingHref ? "Book" : "View Salon",
+    viewHref,
+  };
+}
+
+function RecommendedFeatureCard({
   salon,
 }: {
-  badgeFallback: string;
   salon: ExploreHomeSalon;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
@@ -1800,75 +1852,81 @@ function DiscoverySalonCard({
   const displayName = displaySalonName(salon.name);
   const service = discoveryServiceLabel(salon);
   const price = priceLine(salon);
-  const reason = discoveryBadgeLabel(salon, badgeFallback);
-  const profileHref =
-    UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
-      ? salonProfileHref(salon.id)
-      : null;
-  const bookingHref =
-    salon.bookingEnabled && salon.bookingHref ? salon.bookingHref : null;
-  const viewHref = profileHref ?? bookingHref ?? "/explore";
-  const primaryHref = bookingHref ?? viewHref;
-  const primaryLabel = bookingHref ? "Book" : "View Salon";
+  const reason = discoveryBadgeLabel(salon, "Recommended");
+  const { primaryHref, primaryLabel, viewHref } = recommendedCardLinks(salon);
   const reviewAriaLabel = cardReviewAriaLabel(salon);
-  const isRecommendation = badgeFallback === "Recommended";
 
   return (
-    <article className="grid min-h-full overflow-hidden rounded-[1.15rem] bg-surface-elevated shadow-[0_12px_34px_rgba(35,25,22,0.048)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(35,25,22,0.08)]">
-      <div className="relative aspect-[16/10] overflow-hidden bg-surface-muted">
-        {imageUrl ? (
-          <Image
-            alt={`${displayName} salon photo`}
-            className="object-cover transition duration-300 hover:scale-[1.02]"
-            fill
-            onError={() => setImageFailed(true)}
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-            src={imageUrl}
-          />
-        ) : (
-          <div className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-2xl font-semibold text-brand-orange">
-            {salonInitials(displayName)}
-          </div>
-        )}
-        <span className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white/94 px-2.5 py-1 text-xs font-semibold text-brand-orange shadow-sm ring-1 ring-divider-subtle/70">
-          {isRecommendation ? `Recommended because ${reason}` : reason}
-        </span>
-        {salon.averageRating !== null && salon.reviewCount > 0 ? (
-          <span
-            aria-label={reviewAriaLabel}
-            className="absolute bottom-3 left-3 rounded-full bg-white/94 px-2.5 py-1 text-xs font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle/70"
-          >
-            {formatRating(salon.averageRating)}
+    <article className="group relative min-h-[23rem] overflow-hidden rounded-[1.15rem] bg-text-primary shadow-[0_18px_46px_rgba(35,25,22,0.09)] ring-1 ring-divider-subtle/75">
+      {imageUrl ? (
+        <Image
+          alt={`${displayName} salon photo`}
+          className="object-cover transition duration-500 group-hover:scale-[1.02]"
+          fill
+          onError={() => setImageFailed(true)}
+          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 62vw, 42vw"
+          src={imageUrl}
+        />
+      ) : (
+        <div className="absolute inset-0 grid place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-4xl font-semibold text-brand-orange">
+          {salonInitials(displayName)}
+        </div>
+      )}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[linear-gradient(90deg,rgba(31,23,27,0.88),rgba(31,23,27,0.56)_42%,rgba(31,23,27,0.08)_100%)]"
+      />
+      <div className="relative z-10 grid min-h-[23rem] max-w-[72%] content-end gap-4 p-5 text-white sm:p-6">
+        <div>
+          <span className="inline-flex w-fit rounded-full bg-white/14 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20">
+            Recommended because {reason.toLowerCase()}
           </span>
-        ) : null}
-      </div>
-      <div className="grid content-between gap-4 p-4">
-        <div className="min-w-0">
-          <h3 className="truncate text-base font-semibold text-text-primary">
+          <h3 className="mt-4 line-clamp-2 text-2xl font-semibold leading-tight">
             {displayName}
           </h3>
+          <p className="mt-2 line-clamp-2 max-w-md text-sm leading-6 text-white/78">
+            {service
+              ? `A polished match for ${service.toLowerCase()} with easy booking and salon signals that fit your Explore picks.`
+              : "A polished salon pick with profile signals, nearby discovery, and easy booking when available."}
+          </p>
           {location ? (
-            <p className="mt-1 truncate text-sm text-text-secondary">
+            <p className="mt-2 truncate text-xs font-semibold text-white/70">
               {location}
             </p>
           ) : null}
-          <div className="mt-3 flex min-h-5 flex-wrap items-center gap-2 text-xs">
-            {service ? (
-              <span className="max-w-full truncate rounded-full bg-brand-teal-soft px-2.5 py-1 font-semibold text-brand-teal">
-                {service}
-              </span>
-            ) : null}
-            {price ? (
-              <span className="font-medium text-text-secondary">{price}</span>
-            ) : null}
-          </div>
         </div>
-        <div>
+        <div className="flex min-h-7 flex-wrap items-center gap-2 text-xs">
+          {service ? (
+            <span className="max-w-full truncate rounded-full bg-white/16 px-2.5 py-1 font-semibold text-white ring-1 ring-white/18">
+              {service}
+            </span>
+          ) : null}
+          {price ? (
+            <span className="rounded-full bg-white px-2.5 py-1 font-semibold text-text-primary">
+              {price}
+            </span>
+          ) : null}
+          {salon.averageRating !== null && salon.reviewCount > 0 ? (
+            <span
+              aria-label={reviewAriaLabel}
+              className="rounded-full bg-white/16 px-2.5 py-1 font-semibold text-white ring-1 ring-white/18"
+            >
+              <span aria-hidden>&#9733;</span> {formatRating(salon.averageRating)}
+            </span>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap gap-2">
           <Link
-            className="inline-flex min-h-9 w-full items-center justify-center rounded-full bg-brand-orange px-3 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+            className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             href={primaryHref}
           >
             {primaryLabel}
+          </Link>
+          <Link
+            className="inline-flex min-h-10 items-center justify-center rounded-full bg-white/14 px-4 text-sm font-semibold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            href={viewHref}
+          >
+            View salon
           </Link>
         </div>
       </div>
@@ -1876,22 +1934,87 @@ function DiscoverySalonCard({
   );
 }
 
-function DiscoverySalonSection({
-  badgeFallback,
+function RecommendedMiniTile({
+  active,
+  index,
+  onSelect,
+  salon,
+}: {
+  active: boolean;
+  index: number;
+  onSelect: (index: number) => void;
+  salon: ExploreHomeSalon;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const displayName = displaySalonName(salon.name);
+  const imageUrl = imageFailed ? null : salon.coverImageUrl;
+
+  return (
+    <button
+      aria-label={`Feature ${displayName}`}
+      aria-pressed={active}
+      className={[
+        "group relative aspect-[1.18/1] overflow-hidden rounded-[0.95rem] bg-surface-muted shadow-[0_8px_20px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+        active ? "ring-2 ring-brand-orange" : "",
+      ].join(" ")}
+      onClick={() => onSelect(index)}
+      type="button"
+    >
+      {imageUrl ? (
+        <Image
+          alt=""
+          className="object-cover transition duration-300 group-hover:scale-[1.04]"
+          fill
+          onError={() => setImageFailed(true)}
+          sizes="180px"
+          src={imageUrl}
+        />
+      ) : (
+        <span className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-xl font-semibold text-brand-orange">
+          {salonInitials(displayName)}
+        </span>
+      )}
+      <span className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(36,27,31,0),rgba(36,27,31,0.18))]" />
+    </button>
+  );
+}
+
+function RecommendedForYouSection({
   description,
   results,
   testId,
   title,
 }: {
-  badgeFallback: string;
   description: string;
   results: ExploreHomeSalon[];
   testId: string;
   title: string;
 }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeIndexWithinBounds =
+    results.length > 0 ? activeIndex % results.length : 0;
+
+  useEffect(() => {
+    if (results.length <= 1) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % results.length);
+    }, 5600);
+
+    return () => window.clearInterval(interval);
+  }, [results.length]);
+
   if (results.length === 0) {
     return null;
   }
+
+  const activeSalon = results[activeIndexWithinBounds] ?? results[0];
+  const miniSalons = results
+    .map((salon, index) => ({ index, salon }))
+    .filter((item) => item.index !== activeIndexWithinBounds)
+    .slice(0, 4);
 
   return (
     <section className="grid gap-3" data-testid={testId}>
@@ -1901,14 +2024,19 @@ function DiscoverySalonSection({
           {description}
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {results.map((salon) => (
-          <DiscoverySalonCard
-            badgeFallback={badgeFallback}
-            key={`${salon.homeSection}:${salon.id}`}
-            salon={salon}
-          />
-        ))}
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,0.72fr)]">
+        <RecommendedFeatureCard salon={activeSalon} />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 xl:grid-cols-2">
+          {miniSalons.map(({ index, salon }) => (
+            <RecommendedMiniTile
+              active={index === activeIndexWithinBounds}
+              index={index}
+              key={`${salon.homeSection}:${salon.id}`}
+              onSelect={setActiveIndex}
+              salon={salon}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -2145,37 +2273,73 @@ function salonMatchesCategory(salon: ExploreHomeSalon, category: string) {
   return haystack.includes(needle);
 }
 
-function inspirationMatchesCategory(
-  item: ExploreInspirationItem,
-  category: string,
-) {
-  const needle = category.toLowerCase();
-  const haystack = [
-    item.serviceCategory,
-    item.serviceName,
-    item.captionExcerpt,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+const SERVICE_VISUAL_RULES = [
+  {
+    index: 1,
+    keywords: ["pedicure", "pedi", "foot", "feet", "toe", "toes"],
+  },
+  {
+    index: 0,
+    keywords: [
+      "manicure",
+      "mani",
+      "nail",
+      "nails",
+      "gel",
+      "acrylic",
+      "dip",
+      "polish",
+      "add on",
+      "addon",
+      "add-on",
+    ],
+  },
+  {
+    index: 4,
+    keywords: ["brow", "brows", "eyebrow", "eyebrows", "wax", "thread"],
+  },
+  {
+    index: 3,
+    keywords: ["eye", "lash", "lashes", "eyelash", "eyelashes"],
+  },
+  {
+    index: 2,
+    keywords: ["hair", "color", "balayage", "blowout", "cut", "style"],
+  },
+  {
+    index: 5,
+    keywords: ["massage", "spa", "facial", "body", "relax"],
+  },
+] as const;
 
-  return haystack.includes(needle);
+function normalizedServiceTitle(title: string) {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function popularServiceImage(
-  category: string,
-  content: ExploreHomeContent,
-  salons: ExploreHomeSalon[],
-) {
+function serviceDefaultVisualIndex(category: string) {
+  const value = normalizedServiceTitle(category);
+
   return (
-    content.inspiration.items.find((item) =>
-      inspirationMatchesCategory(item, category),
-    )?.imageUrl ??
-    salons.find((salon) => salonMatchesCategory(salon, category))?.coverImageUrl ??
-    content.inspiration.items[0]?.imageUrl ??
-    salons.find((salon) => salon.coverImageUrl)?.coverImageUrl ??
-    null
+    SERVICE_VISUAL_RULES.find((rule) =>
+      rule.keywords.some((keyword) => value.includes(keyword)),
+    )?.index ?? 0
   );
+}
+
+function serviceDefaultVisualStyle(category: string) {
+  const index = serviceDefaultVisualIndex(category);
+  const position = `${(index / 5) * 100}% center`;
+
+  return {
+    backgroundImage: `url(${SERVICE_DEFAULT_IMAGE})`,
+    backgroundPosition: position,
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "600% 100%",
+  };
 }
 
 function popularServiceStartingPrice(
@@ -2191,47 +2355,31 @@ function popularServiceStartingPrice(
 }
 
 function PopularServiceCard({
-  content,
   onSelectCategory,
   salons,
   service,
 }: {
-  content: ExploreHomeContent;
   onSelectCategory: (category: string) => void;
   salons: ExploreHomeSalon[];
   service: ExplorePopularService;
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const imageUrl = imageFailed
-    ? null
-    : popularServiceImage(service.category, content, salons);
   const startingPrice = popularServiceStartingPrice(service.category, salons);
 
   return (
     <button
       aria-label={`Search salons offering ${service.category}`}
-      className="group grid min-h-[13rem] overflow-hidden rounded-[1.15rem] bg-surface-elevated text-left shadow-[0_12px_34px_rgba(35,25,22,0.048)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(35,25,22,0.08)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+      className="group grid min-h-[12.25rem] overflow-hidden rounded-[1.05rem] bg-surface-elevated text-left shadow-[0_10px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(35,25,22,0.075)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
       onClick={() => onSelectCategory(service.category)}
       type="button"
     >
-      <span className="relative block aspect-[16/9] overflow-hidden bg-surface-muted">
-        {imageUrl ? (
-          <Image
-            alt={`${service.category} service`}
-            className="object-cover transition duration-300 group-hover:scale-[1.03]"
-            fill
-            onError={() => setImageFailed(true)}
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-            src={imageUrl}
-          />
-        ) : (
-          <span className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-2xl font-semibold text-brand-orange">
-            {service.category.slice(0, 1).toUpperCase()}
-          </span>
-        )}
+      <span
+        aria-hidden
+        className="relative block aspect-[16/9] overflow-hidden bg-surface-muted bg-cover transition duration-300 group-hover:scale-[1.015]"
+        style={serviceDefaultVisualStyle(service.category)}
+      >
         <span className="absolute inset-x-0 bottom-0 h-16 bg-[linear-gradient(0deg,rgba(36,27,31,0.34),rgba(36,27,31,0))]" />
       </span>
-      <span className="grid gap-2 p-4">
+      <span className="grid gap-2 p-3.5">
         <span className="truncate text-base font-semibold text-text-primary">
           {service.category}
         </span>
@@ -2252,12 +2400,10 @@ function PopularServiceCard({
 }
 
 function PopularServicesSection({
-  content,
   onSelectCategory,
   salons,
   services,
 }: {
-  content: ExploreHomeContent;
   onSelectCategory: (category: string) => void;
   salons: ExploreHomeSalon[];
   services: ExplorePopularService[];
@@ -2279,7 +2425,6 @@ function PopularServicesSection({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {services.map((service) => (
           <PopularServiceCard
-            content={content}
             key={service.category}
             onSelectCategory={onSelectCategory}
             salons={salons}
@@ -2345,7 +2490,7 @@ function ExploreHomeSections({
   return (
     <section
       aria-busy={false}
-      className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-5 sm:px-6 lg:px-8"
+      className="mx-auto grid w-full max-w-none gap-8 px-4 py-5 sm:px-6 lg:pl-8 lg:pr-3"
       data-testid="explore-home-content"
     >
       {content.error ? (
@@ -2360,7 +2505,6 @@ function ExploreHomeSections({
       />
       <TrendingDesignsSection initialPage={content.inspiration} />
       <PopularServicesSection
-        content={content}
         onSelectCategory={onSelectCategory}
         salons={allDiscoverySalons}
         services={content.popularServices}
@@ -2374,8 +2518,7 @@ function ExploreHomeSections({
         results={nearYouSalons}
         userCoordinates={gpsCoordinates}
       />
-      <DiscoverySalonSection
-        badgeFallback="Recommended"
+      <RecommendedForYouSection
         description="Personalized from nearby availability, public profile signals, and service fit."
         results={recommendedSalons}
         testId="recommended-for-you"
@@ -2462,64 +2605,88 @@ function Pagination({
 }
 
 function QuickActions({ actions }: { actions: ExploreQuickAction[] }) {
+  const [visualSeed, setVisualSeed] = useState(0);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setVisualSeed(Math.floor(Math.random() * 100));
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, []);
+
   if (actions.length === 0) {
     return null;
   }
 
   return (
     <section
-      className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+      className="mx-auto w-full max-w-none px-4 py-8 sm:px-6 lg:pl-8 lg:pr-3"
       data-testid="quick-actions"
     >
-      <div className="grid gap-5 rounded-[1.25rem] bg-surface-elevated p-5 shadow-[0_14px_38px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 lg:grid-cols-[minmax(0,0.68fr)_minmax(22rem,1fr)]">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand-orange">
+      <div
+        className="relative grid overflow-hidden rounded-[1.25rem] bg-text-primary p-5 text-white shadow-[0_18px_48px_rgba(35,25,22,0.14)] ring-1 ring-black/5 lg:grid-cols-[minmax(0,0.62fr)_minmax(22rem,1fr)]"
+        style={{
+          backgroundImage: "url(/explore/quick-actions-dark.png)",
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+        }}
+      >
+        <span
+          aria-hidden
+          className="absolute inset-0 bg-[linear-gradient(90deg,rgba(31,23,27,0.90),rgba(31,23,27,0.72)_42%,rgba(31,23,27,0.46))]"
+        />
+        <div className="relative z-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-orange-200">
             Quick actions
           </p>
-          <h2 className="mt-2 text-xl font-semibold text-text-primary">
+          <h2 className="mt-2 text-xl font-semibold text-white">
             Keep moving
           </h2>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-text-secondary">
+          <p className="mt-2 max-w-xl text-sm leading-6 text-white/74">
             The next useful places for this account and workspace.
           </p>
         </div>
         <div
-          className={
+          className={[
+            "relative z-10",
             actions.length === 1 ? "grid gap-3" : "grid gap-3 sm:grid-cols-2"
-          }
+          ].join(" ")}
         >
-          {actions.map((action) => (
-            <Link
-              className={[
-                "group relative grid min-h-24 overflow-hidden rounded-[1rem] p-4 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-                action.tone === "dark"
-                  ? "bg-brand-orange text-white shadow-[0_12px_30px_rgba(242,111,61,0.16)] hover:bg-brand-orange-hover"
-                  : "bg-surface-muted text-text-primary ring-1 ring-divider-subtle/75 hover:bg-white hover:ring-brand-orange/20",
-              ].join(" ")}
-              href={action.href}
-              key={action.label}
-            >
-              <span
-                aria-hidden
-                className={[
-                  "absolute inset-x-4 top-0 h-0.5 rounded-full",
-                  action.tone === "dark"
-                    ? "bg-white/55"
-                    : "bg-brand-teal/45",
-                ].join(" ")}
-              />
-              <span className="text-sm font-semibold">{action.label}</span>
-              <span
-                className={
-                  action.tone === "dark"
-                    ? "mt-2 max-w-[85%] text-sm font-normal leading-5 text-white/78"
-                    : "mt-2 max-w-[85%] text-sm font-normal leading-5 text-text-secondary"
-                }
+          {actions.map((action, index) => {
+            const visual =
+              QUICK_ACTION_VISUALS[
+                (visualSeed + index) % QUICK_ACTION_VISUALS.length
+              ];
+
+            return (
+              <Link
+                className="group relative grid min-h-24 overflow-hidden rounded-[1rem] bg-white/8 p-4 text-white shadow-[0_12px_30px_rgba(0,0,0,0.14)] ring-1 ring-white/14 transition hover:-translate-y-0.5 hover:bg-white/12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                href={action.href}
+                key={action.label}
               >
-                {action.description}
-              </span>
-            </Link>
-          ))}
+                <span
+                  aria-hidden
+                  className="absolute inset-0 opacity-[0.38] transition group-hover:opacity-[0.48]"
+                  style={{
+                    backgroundImage: `url(${visual.src})`,
+                    backgroundPosition: visual.position,
+                    backgroundSize: visual.size,
+                  }}
+                />
+                <span
+                  aria-hidden
+                  className="absolute inset-0 bg-[linear-gradient(90deg,rgba(31,23,27,0.88),rgba(31,23,27,0.58))]"
+                />
+                <span className="relative z-10 text-sm font-semibold">
+                  {action.label}
+                </span>
+                <span className="relative z-10 mt-2 max-w-[86%] text-sm font-normal leading-5 text-white/76">
+                  {action.description}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -2816,14 +2983,14 @@ export function ExploreClient({
   }
 
   return (
-    <main className="min-w-0 overflow-x-hidden bg-transparent">
+    <main className="min-w-0 overflow-x-hidden bg-white">
       <div
         className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(18.25rem,18.25rem)] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_minmax(21rem,21rem)]"
         data-testid="explore-desktop-grid"
       >
         <div className="min-w-0 overflow-hidden" data-testid="explore-main-column">
           <section className="bg-transparent" data-testid="explore-top-section">
-            <div className="mx-auto grid w-full max-w-7xl gap-5 px-4 pb-4 pt-4 sm:px-6 lg:px-8">
+            <div className="mx-auto grid w-full max-w-none gap-5 px-4 pb-4 pt-4 sm:px-6 lg:pl-8 lg:pr-3">
               <div>
                 <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">
                   Explore
@@ -2864,7 +3031,7 @@ export function ExploreClient({
             />
           ) : (
             <>
-              <section className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:px-8">
+              <section className="mx-auto grid w-full max-w-none gap-4 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:pl-8 lg:pr-3">
                 <div>
                   <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
                     {summaryText}
@@ -2889,7 +3056,7 @@ export function ExploreClient({
                 ) : null}
               </section>
 
-              <section className="mx-auto grid w-full max-w-7xl gap-4 px-4 sm:px-6 lg:px-8">
+              <section className="mx-auto grid w-full max-w-none gap-4 px-4 sm:px-6 lg:pl-8 lg:pr-3">
                 {activeResponse.error ? (
                   <ExploreNotice
                     title="We couldn't load salons right now."

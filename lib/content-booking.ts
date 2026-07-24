@@ -26,7 +26,6 @@ type ContentBookingOptionRow = {
   credited_staff_name: string | null;
   cta_label: string | null;
   media_path: string | null;
-  organization_id: string;
   primary_service_base_price: number | string | null;
   primary_service_duration_minutes: number | null;
   primary_service_id: string | null;
@@ -134,7 +133,6 @@ export function mapContentBookingOptionRow(
   row: ContentBookingOptionRow,
 ): PublicContentBookingOption | null {
   const contentId = cleanUuid(row.content_id);
-  const organizationId = cleanUuid(row.organization_id);
   const salonId = cleanUuid(row.salon_id);
   const sourceType =
     row.source_type === "salon_profile_update"
@@ -143,7 +141,7 @@ export function mapContentBookingOptionRow(
         ? "salon_profile_look"
         : null;
 
-  if (!contentId || !organizationId || !salonId || !sourceType) {
+  if (!contentId || !salonId || !sourceType) {
     return null;
   }
 
@@ -178,7 +176,6 @@ export function mapContentBookingOptionRow(
         : "Book this look"),
     imageUrl: getSalonProfileMediaUrl(row.media_path),
     mediaPath: cleanText(row.media_path),
-    organizationId,
     primaryServiceBasePrice: moneyValue(row.primary_service_base_price),
     primaryServiceDurationMinutes:
       typeof row.primary_service_duration_minutes === "number"

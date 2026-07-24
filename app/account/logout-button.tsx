@@ -1,11 +1,8 @@
 "use client";
 
+import { readAuthResponse } from "@/lib/auth-response";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-
-type AuthResponse = {
-  redirectTo?: string;
-};
 
 type LogoutButtonProps = {
   children?: ReactNode;
@@ -21,13 +18,17 @@ export function LogoutButton({ children, className }: LogoutButtonProps = {}) {
 
   async function handleLogout() {
     setIsSubmitting(true);
-    const response = await fetch("/api/auth/logout", {
-      method: "POST",
-    });
-    const result = (await response.json()) as AuthResponse;
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+      const result = await readAuthResponse(response, "Unable to log out.");
 
-    router.push(result.redirectTo ?? "/login");
-    router.refresh();
+      router.push(response.ok && result.redirectTo ? result.redirectTo : "/login");
+      router.refresh();
+    } catch {
+      setIsSubmitting(false);
+    }
   }
 
   return (

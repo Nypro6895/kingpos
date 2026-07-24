@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Session } from "@supabase/supabase-js";
+import { isDeniedKingUserStatus } from "@/lib/users/account-status";
+import type { KingUserStatus } from "@/types/user";
 import { cookies, headers } from "next/headers";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
@@ -8,6 +10,15 @@ export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
 type SupabaseEnvStatus = {
   hasSupabaseUrl: boolean;
   hasSupabaseAnonKey: boolean;
+};
+
+type SupabaseConfig = {
+  supabaseAnonKey: string;
+  supabaseUrl: string;
+};
+
+type PublicUserStatusRow = {
+  status: KingUserStatus;
 };
 
 export function getSupabaseCookieOptions(maxAge?: number) {
@@ -20,7 +31,7 @@ export function getSupabaseCookieOptions(maxAge?: number) {
   };
 }
 
-export function getSupabaseConfig() {
+export function getSupabaseConfig(): SupabaseConfig | null {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
@@ -54,11 +65,10 @@ export function createSupabaseServerClient() {
   });
 }
 
-export async function createAuthenticatedSupabaseServerClient() {
+export function createUserScopedSupabaseServerClient(accessToken: string) {
   const config = getSupabaseConfig();
-  const accessToken = await getAccessTokenFromRequest();
 
-  if (!config || !accessToken) {
+  if (!config) {
     return null;
   }
 
@@ -74,6 +84,82 @@ export async function createAuthenticatedSupabaseServerClient() {
       },
     },
   });
+}
+
+export async function createAuthenticatedSupabaseServerClient() {
+  const config = getSupabaseConfig();
+  const accessToken = await getAccessTokenFromRequest();
+
+  if (!config || !accessToken) {
+    return null;
+  }
+
+  const accessTokenAllowed = await isAccessTokenAllowedForAppSession(
+    config,
+    accessToken,
+  );
+
+  if (!accessTokenAllowed) {
+    return null;
+  }
+
+  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  });
+}
+
+async function isAccessTokenAllowedForAppSession(
+  config: SupabaseConfig,
+  accessToken: string,
+) {
+  const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  });
+
+  const { data: authData, error: authError } = await supabase.auth.getUser(
+    accessToken,
+  );
+
+  if (authError || !authData.user) {
+    return false;
+  }
+
+  const { data: userStatus, error: userStatusError } = await supabase
+    .from("users")
+    .select("status")
+    .eq("auth_user_id", authData.user.id)
+    .maybeSingle<PublicUserStatusRow>();
+
+  if (userStatusError) {
+    console.error("Unable to verify public user status for app session", {
+      authUserId: authData.user.id,
+      code: userStatusError.code,
+      message: userStatusError.message,
+      details: userStatusError.details,
+      hint: userStatusError.hint,
+    });
+    return false;
+  }
+
+  return !isDeniedKingUserStatus(userStatus?.status);
 }
 
 function readTokenFromCookieValue(value: string) {

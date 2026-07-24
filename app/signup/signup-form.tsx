@@ -1,12 +1,8 @@
 "use client";
 
+import { readAuthResponse } from "@/lib/auth-response";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-type AuthResponse = {
-  error?: string;
-  redirectTo?: string;
-};
 
 const inputClassName =
   "mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-950 pointer-events-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950";
@@ -21,21 +17,25 @@ export function SignupForm({ nextPath = "/account" }: { nextPath?: string }) {
     setError(null);
     setIsSubmitting(true);
 
-    const response = await fetch("/api/auth/signup", {
-      method: "POST",
-      body: new FormData(event.currentTarget),
-    });
-    const result = (await response.json()) as AuthResponse;
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        body: new FormData(event.currentTarget),
+      });
+      const result = await readAuthResponse(response, "Unable to create account.");
 
-    setIsSubmitting(false);
+      if (!response.ok || result.error) {
+        setError(result.error ?? "Unable to create account.");
+        return;
+      }
 
-    if (!response.ok || result.error) {
-      setError(result.error ?? "Unable to create account.");
-      return;
+      router.push(result.redirectTo ?? "/account");
+      router.refresh();
+    } catch {
+      setError("Unable to create account. Please check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push(result.redirectTo ?? "/account");
-    router.refresh();
   }
 
   return (

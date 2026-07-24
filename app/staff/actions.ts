@@ -254,7 +254,7 @@ function readActionStringList(input: ActionInput, key: string) {
 async function assertCanMutateStaffPublicProfile(staffId: string) {
   const context = await getCurrentBusinessContext();
 
-  if (!context.user || !context.currentOrganization || !context.currentSalon) {
+  if (!context.user || !context.currentSalon) {
     throw new Error("Choose a salon workspace before updating staff.");
   }
 
@@ -279,7 +279,6 @@ async function assertCanMutateStaffPublicProfile(staffId: string) {
     .from("staff")
     .select("id")
     .eq("id", staffId)
-    .eq("organization_id", context.currentOrganization.id)
     .eq("salon_id", context.currentSalon.id)
     .maybeSingle<{ id: string }>();
 
@@ -313,7 +312,6 @@ export async function getStaffProfileAvatarUploadSessionAction(
     .insert({
       bucket: SALON_PROFILE_MEDIA_BUCKET,
       object_path: path,
-      organization_id: permissionContext.context.currentOrganization!.id,
       purpose: "staff_avatar",
       salon_id: permissionContext.context.currentSalon!.id,
       status: "pending",

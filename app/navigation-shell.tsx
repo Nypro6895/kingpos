@@ -7,6 +7,14 @@ import {
 } from "@/app/customer-shell-context";
 import { QuickWorkspacePanel } from "@/app/quick-workspace-panel";
 import {
+  ROLE_NAVIGATION,
+  type NavigationIcon,
+  type NavigationLink,
+  type NavigationSection,
+  type RoleNavigationConfig,
+  type RoleNavigationKind,
+} from "@/app/role-navigation";
+import {
   setCurrentWorkspace,
   switchWorkspaceDestination,
 } from "@/app/salons/actions";
@@ -27,45 +35,7 @@ import {
   useTransition,
   type ReactNode,
 } from "react";
-
-type NavigationIcon =
-  | "bell"
-  | "book"
-  | "briefcase"
-  | "calendar"
-  | "cash"
-  | "check"
-  | "chevron-down"
-  | "compass"
-  | "gear"
-  | "grid"
-  | "home"
-  | "list"
-  | "log-out"
-  | "message"
-  | "more"
-  | "people"
-  | "plus"
-  | "receipt"
-  | "scissors"
-  | "search"
-  | "star"
-  | "store"
-  | "user"
-  | "x";
-
-type NavigationLink = {
-  href: string;
-  icon: NavigationIcon;
-  id: string;
-  label: string;
-};
-
-type NavigationSection = {
-  id: string;
-  label: string;
-  links: NavigationLink[];
-};
+import { routes } from "@/lib/routes";
 
 type NavigationSalon = {
   id: string;
@@ -79,8 +49,8 @@ type SearchParamsReader = {
 };
 
 type RouteWorkspaceKind =
+  | "account"
   | "manage"
-  | "organization"
   | "personal"
   | "salon"
   | "staff";
@@ -93,7 +63,7 @@ type NavigationShellProps = {
   children: ReactNode;
   currentManageSalonId: string | null;
   currentManageSalonName: string | null;
-  currentOrganizationName: string | null;
+  currentAccountName: string | null;
   currentStaffSalonId: string | null;
   currentStaffSalonName: string | null;
   currentWorkspace: CurrentWorkspaceOption | null;
@@ -102,22 +72,11 @@ type NavigationShellProps = {
   salonMode: SalonMode | null;
   staffSalons: NavigationSalon[];
   workspaceOptions: CurrentWorkspaceOption[];
-  workspaceSections: NavigationSection[];
+  workspaceSections: readonly NavigationSection[];
   workspaceType: WorkspaceType;
 };
 
-const PERSONAL_LINKS: NavigationLink[] = [
-  { href: "/explore", icon: "compass", id: "explore", label: "Explore" },
-  { href: "/my-bookings", icon: "calendar", id: "bookings", label: "Bookings" },
-  { href: "/beauty", icon: "user", id: "beauty", label: "Beauty" },
-  {
-    href: "/notifications",
-    icon: "bell",
-    id: "notifications",
-    label: "Notifications",
-  },
-  { href: "/more", icon: "more", id: "more", label: "More" },
-];
+const PERSONAL_LINKS = ROLE_NAVIGATION.personal.links;
 
 const WORKSPACE_PANEL_LINK: NavigationLink = {
   href: "/my-place",
@@ -126,18 +85,8 @@ const WORKSPACE_PANEL_LINK: NavigationLink = {
   label: "My Place",
 };
 
-const CUSTOMER_MOBILE_LINKS = PERSONAL_LINKS;
-
-const CUSTOMER_ROUTE_PREFIXES = [
-  "/account",
-  "/beauty",
-  "/explore",
-  "/more",
-  "/my-bookings",
-  "/my-place",
-  "/notifications",
-  "/settings",
-];
+const STAFF_ROUTE_PREFIXES = ROLE_NAVIGATION.staff.routePrefixes;
+const OWNER_ROUTE_PREFIXES = ROLE_NAVIGATION.owner.routePrefixes;
 
 const CUSTOMER_MORE_ROUTE_PREFIXES = ["/more"];
 
@@ -182,15 +131,75 @@ function customerRouteMatches(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
-function isCustomerRoute(pathname: string) {
-  return CUSTOMER_ROUTE_PREFIXES.some((prefix) =>
+function isCustomerMoreRoute(pathname: string) {
+  return CUSTOMER_MORE_ROUTE_PREFIXES.some((prefix) =>
     customerRouteMatches(pathname, prefix),
   );
 }
 
-function isCustomerMoreRoute(pathname: string) {
-  return CUSTOMER_MORE_ROUTE_PREFIXES.some((prefix) =>
+function mobileRoleNavigation(
+  workspaceType: WorkspaceType,
+  salonMode: SalonMode | null,
+): RoleNavigationConfig {
+  if (workspaceType === "salon" && salonMode === "staff") {
+    return ROLE_NAVIGATION.staff;
+  }
+
+  if (workspaceType === "salon" && salonMode === "manage") {
+    return ROLE_NAVIGATION.owner;
+  }
+
+  return ROLE_NAVIGATION.personal;
+}
+
+function isMobileRoleRoute(navigation: RoleNavigationConfig, pathname: string) {
+  return navigation.routePrefixes.some((prefix) =>
     customerRouteMatches(pathname, prefix),
+  );
+}
+
+function roleAwareRouteWorkspaceKind(input: {
+  pathname: string;
+  routeWorkspaceKind: RouteWorkspaceKind | null;
+  salonMode: SalonMode | null;
+  workspaceType: WorkspaceType;
+}) {
+  if (
+    input.workspaceType === "salon" &&
+    input.salonMode === "staff" &&
+    STAFF_ROUTE_PREFIXES.some((prefix) => customerRouteMatches(input.pathname, prefix))
+  ) {
+    return "staff";
+  }
+
+  if (
+    input.workspaceType === "salon" &&
+    input.salonMode === "manage" &&
+    OWNER_ROUTE_PREFIXES.some((prefix) => customerRouteMatches(input.pathname, prefix))
+  ) {
+    return "manage";
+  }
+
+  return input.routeWorkspaceKind;
+}
+
+function isRoleMoreActive(
+  roleKind: RoleNavigationKind,
+  pathname: string,
+  searchParams: SearchParamsReader,
+) {
+  if (isCustomerMoreRoute(pathname)) {
+    return true;
+  }
+
+  if (roleKind === "owner") {
+    if (pathname === "/staff/today") {
+      return false;
+    }
+  }
+
+  return ROLE_NAVIGATION[roleKind].moreLinks.some((link) =>
+    isLinkActive(link, pathname, searchParams),
   );
 }
 
@@ -198,8 +207,16 @@ function customerWorkspaceLabel(
   workspace: CurrentWorkspaceOption | null,
   accountLabel: string,
 ) {
-  if (!workspace || workspace.type === "personal") {
+  if (!workspace) {
     return accountLabel;
+  }
+
+  if (workspace.type === "personal") {
+    return accountLabel;
+  }
+
+  if (workspace.type === "salon") {
+    return workspace.salonName ?? workspace.businessName ?? workspace.label;
   }
 
   return workspace.label;
@@ -210,13 +227,15 @@ function customerWorkspaceSubtitle(workspace: CurrentWorkspaceOption | null) {
     return "Personal account";
   }
 
-  if (workspace.type === "organization") {
-    return workspace.roleLabel || "Organization";
+  if (workspace.type === "account") {
+    return workspace.roleLabel || "Account";
   }
 
-  return workspace.salonMode === "staff"
-    ? "Staff"
-    : workspace.roleLabel || "Owner";
+  if (workspace.type === "salon") {
+    return workspace.roleLabel || "Salon";
+  }
+
+  return workspace.roleLabel || workspace.label;
 }
 
 function workspaceAvatarClass(isSelected = false) {
@@ -247,10 +266,10 @@ function personalOpenAction(): CurrentWorkspaceAction {
   };
 }
 
-function isOwnerOrganizationWorkspace(workspace: CurrentWorkspaceOption) {
+function isOwnerAccountWorkspace(workspace: CurrentWorkspaceOption) {
   return (
-    workspace.type === "organization" &&
-    workspace.menuActions.some((action) => action.href === "/salons")
+    workspace.type === "account" &&
+    workspace.menuActions.some((action) => action.href === routes.salons.create())
   );
 }
 
@@ -258,14 +277,16 @@ function findCreateSalonTarget(input: {
   currentWorkspace: CurrentWorkspaceOption | null;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
-  const organizations = input.workspaceOptions.filter(isOwnerOrganizationWorkspace);
+  const accounts = input.workspaceOptions.filter(isOwnerAccountWorkspace);
   const workspace =
-    organizations.find(
-      (option) => option.organizationId === input.currentWorkspace?.organizationId,
+    accounts.find(
+      (option) => option.accountId === input.currentWorkspace?.accountId,
     ) ??
-    organizations[0] ??
+    accounts[0] ??
     null;
-  const action = workspace?.menuActions.find((item) => item.href === "/salons") ?? null;
+  const action =
+    workspace?.menuActions.find((item) => item.href === routes.salons.create()) ??
+    null;
 
   return workspace && action ? { action, workspace } : null;
 }
@@ -273,20 +294,16 @@ function findCreateSalonTarget(input: {
 function customerWorkspaceGroups(
   workspaceOptions: CurrentWorkspaceOption[],
 ): WorkspaceGroup[] {
-  const salonOptions = workspaceOptions.filter(
-    (workspace) => workspace.type === "salon",
+  const staffOptions = workspaceOptions.filter(
+    (workspace) => workspace.salonMode === "staff",
   );
-  const organizationOptions = workspaceOptions.filter(
-    (workspace) => workspace.type === "organization",
+  const ownerOptions = workspaceOptions.filter(
+    (workspace) => workspace.salonMode === "manage",
   );
 
   return [
-    { id: "salons", label: "Salon workspaces", options: salonOptions },
-    {
-      id: "organizations",
-      label: "Organizations",
-      options: organizationOptions,
-    },
+    { id: "staff", label: "Staff", options: staffOptions },
+    { id: "owner", label: "Owner", options: ownerOptions },
   ].filter((group) => group.options.length > 0);
 }
 
@@ -303,9 +320,13 @@ function notificationBadgeLabel(total: number) {
     : `${total} unread notification${total === 1 ? "" : "s"}`;
 }
 
-const ACCOUNT_NAVIGATION_SECTION: NavigationSection = {
-  id: "account",
-  label: "Account",
+function isMoreLink(link: NavigationLink) {
+  return link.href === "/more";
+}
+
+const PERSONAL_NAVIGATION_SECTION: NavigationSection = {
+  id: "personal-navigation",
+  label: "Personal",
   links: PERSONAL_LINKS,
 };
 
@@ -368,33 +389,15 @@ function getRouteWorkspaceKind(pathname: string): RouteWorkspaceKind | null {
   }
 
   if (
-    matchesPath(pathname, "/organizations") ||
+    matchesPath(pathname, "/businesses") ||
     matchesPath(pathname, "/salons") ||
     matchesPath(pathname, "/roles") ||
     matchesPath(pathname, "/permissions")
   ) {
-    return "organization";
+    return "account";
   }
 
   return null;
-}
-
-function workspaceKindLabel(workspace: CurrentWorkspaceOption | null) {
-  if (!workspace) {
-    return "No workspace";
-  }
-
-  if (workspace.type === "personal") {
-    return "Personal account";
-  }
-
-  if (workspace.type === "organization") {
-    return "Organization workspace";
-  }
-
-  return workspace.salonMode === "staff"
-    ? "Salon workspace / Staff"
-    : "Salon workspace / Manage";
 }
 
 function sidebarLinkClass(isActive: boolean) {
@@ -436,7 +439,7 @@ function isLinkActive(
   }
 
   if (!linkQuery) {
-    if (link.id === "staff-day") {
+    if (link.id === "staff-day" || link.id === "staff-today") {
       return searchParams.get("tab") === null;
     }
 
@@ -946,27 +949,14 @@ function CustomerContextSheet({
                 className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
                 disabled={Boolean(pendingKey)}
                 onClick={() =>
-                  runAction(createSalonTarget.workspace, {
-                    ...createSalonTarget.action,
-                    id: "create-salon",
-                    label: "Create salon",
-                  })
+                  runAction(createSalonTarget.workspace, createSalonTarget.action)
                 }
                 type="button"
               >
                 <Icon name="plus" />
-                <span>Create salon</span>
+                <span>Create Salon</span>
               </button>
-            ) : (
-              <Link
-                className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href="/organizations"
-                onClick={closeAndFocus}
-              >
-                <Icon name="plus" />
-                <span>Create salon</span>
-              </Link>
-            )}
+            ) : null}
             <Link
               className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               href="/settings"
@@ -999,12 +989,12 @@ function customerDesktopSoftButtonClass() {
   return "grid h-11 w-11 place-items-center rounded-full bg-surface-elevated text-text-secondary shadow-[0_10px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/85 transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange";
 }
 
-function CustomerDesktopLogo() {
+function CustomerDesktopLogo({ href }: { href: string }) {
   return (
     <Link
-      aria-label="Reylumi Explore"
+      aria-label="Reylumi"
       className="inline-flex min-h-[4.75rem] w-full items-center rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-      href="/explore"
+      href={href}
     >
       <Image
         aria-hidden="true"
@@ -1042,8 +1032,11 @@ function CustomerDesktopWorkspaceSwitcher({
   const personalWorkspace =
     workspaceOptions.find((workspace) => workspace.type === "personal") ??
     currentWorkspace;
-  const otherWorkspaces = workspaceOptions.filter(
-    (workspace) => workspace.id !== personalWorkspace?.id,
+  const staffWorkspaces = workspaceOptions.filter(
+    (workspace) => workspace.salonMode === "staff",
+  );
+  const ownerWorkspaces = workspaceOptions.filter(
+    (workspace) => workspace.salonMode === "manage",
   );
   const createSalonTarget = findCreateSalonTarget({
     currentWorkspace,
@@ -1120,6 +1113,7 @@ function CustomerDesktopWorkspaceSwitcher({
         if (workspace.id === currentWorkspaceId) {
           router.push(action.href);
           router.refresh();
+          setOpen(false);
           setPendingKey(null);
           return;
         }
@@ -1148,31 +1142,11 @@ function CustomerDesktopWorkspaceSwitcher({
 
   const workspaceRows = [
     ...(personalWorkspace ? [personalWorkspace] : []),
-    ...otherWorkspaces,
+    ...staffWorkspaces,
+    ...ownerWorkspaces,
   ];
-  const desktopWorkspaceSubtitle = (
-    workspace: CurrentWorkspaceOption | null,
-  ) => {
-    if (!workspace) {
-      return "Personal Account";
-    }
-
-    if (workspace.type === "personal") {
-      return "Personal Account";
-    }
-
-    if (workspace.type === "organization") {
-      return workspace.roleLabel || "Owner";
-    }
-
-    if (workspace.salonMode === "staff") {
-      return "Staff";
-    }
-
-    return workspace.roleLabel || "Manager";
-  };
   const currentLabel = customerWorkspaceLabel(currentWorkspace, accountLabel);
-  const currentSubtitle = desktopWorkspaceSubtitle(currentWorkspace);
+  const currentSubtitle = customerWorkspaceSubtitle(currentWorkspace);
 
   return (
     <section className="relative" aria-label="Account switcher">
@@ -1193,7 +1167,7 @@ function CustomerDesktopWorkspaceSwitcher({
           {initialsFor(currentLabel)}
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-text-primary">
+          <span className="block truncate text-sm font-bold text-text-primary">
             {currentLabel}
           </span>
           {accountEmail ? (
@@ -1230,7 +1204,7 @@ function CustomerDesktopWorkspaceSwitcher({
                   : workspaceOpenAction(workspace);
               const isSelected = workspace.id === currentWorkspaceId;
               const label = customerWorkspaceLabel(workspace, accountLabel);
-              const subtitle = desktopWorkspaceSubtitle(workspace);
+              const subtitle = customerWorkspaceSubtitle(workspace);
               const isPending = pendingKey === actionKey(workspace, action);
 
               return (
@@ -1252,7 +1226,7 @@ function CustomerDesktopWorkspaceSwitcher({
                     {initialsFor(label)}
                   </span>
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium">
+                    <span className="block truncate text-sm font-bold">
                       {label}
                     </span>
                     <span className="mt-0.5 block truncate text-xs font-normal text-text-secondary">
@@ -1281,26 +1255,14 @@ function CustomerDesktopWorkspaceSwitcher({
                 className="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-left text-sm font-medium text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
                 disabled={Boolean(pendingKey)}
                 onClick={() =>
-                  runAction(createSalonTarget.workspace, {
-                    ...createSalonTarget.action,
-                    id: "create-salon",
-                    label: "Create salon",
-                  })
+                  runAction(createSalonTarget.workspace, createSalonTarget.action)
                 }
                 type="button"
               >
                 <Icon name="plus" />
-                <span>Create salon</span>
+                <span>Create Salon</span>
               </button>
-            ) : (
-              <Link
-                className="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-sm font-medium text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href="/organizations"
-              >
-                <Icon name="plus" />
-                <span>Create salon</span>
-              </Link>
-            )}
+            ) : null}
             <Link
               className="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-sm font-medium text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               href="/settings"
@@ -1320,23 +1282,25 @@ function CustomerDesktopWorkspaceSwitcher({
 }
 
 function CustomerDesktopNavigation({
+  navigation,
   notificationSummary,
   pathname,
   searchParams,
 }: {
+  navigation: RoleNavigationConfig;
   notificationSummary: NotificationSummary;
   pathname: string;
   searchParams: SearchParamsReader;
 }) {
   return (
-    <nav aria-label="Customer desktop" className="grid gap-1">
+    <nav aria-label={navigation.desktopAriaLabel} className="grid gap-1">
       <p className="px-1 pb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-text-secondary">
         Navigation
       </p>
-      {PERSONAL_LINKS.map((link) => {
+      {navigation.links.map((link) => {
         const isActive =
-          link.id === "more"
-            ? isCustomerMoreRoute(pathname)
+          isMoreLink(link)
+            ? isRoleMoreActive(navigation.kind, pathname, searchParams)
             : isLinkActive(link, pathname, searchParams);
 
         return (
@@ -1397,6 +1361,7 @@ function CustomerDesktopSidebar({
   accountEmail,
   accountLabel,
   currentWorkspace,
+  navigation,
   notificationSummary,
   pathname,
   searchParams,
@@ -1405,6 +1370,7 @@ function CustomerDesktopSidebar({
   accountEmail: string | null;
   accountLabel: string;
   currentWorkspace: CurrentWorkspaceOption | null;
+  navigation: RoleNavigationConfig;
   notificationSummary: NotificationSummary;
   pathname: string;
   searchParams: SearchParamsReader;
@@ -1412,11 +1378,11 @@ function CustomerDesktopSidebar({
 }) {
   return (
     <aside
-      aria-label="Customer account"
+      aria-label={`${navigation.ariaLabel} account`}
       className="sticky top-0 flex h-screen min-w-0 flex-col gap-3 overflow-y-auto border-r border-divider-subtle/70 bg-surface-elevated px-4 py-4 shadow-[10px_0_34px_rgba(35,25,22,0.035)]"
       data-testid="customer-desktop-sidebar"
     >
-      <CustomerDesktopLogo />
+      <CustomerDesktopLogo href={navigation.homeHref} />
       <CustomerDesktopWorkspaceSwitcher
         accountEmail={accountEmail}
         accountLabel={accountLabel}
@@ -1424,6 +1390,7 @@ function CustomerDesktopSidebar({
         workspaceOptions={workspaceOptions}
       />
       <CustomerDesktopNavigation
+        navigation={navigation}
         notificationSummary={notificationSummary}
         pathname={pathname}
         searchParams={searchParams}
@@ -1437,11 +1404,13 @@ function CustomerDesktopSidebar({
 
 function CustomerDesktopHeader({
   accountLabel,
+  currentWorkspace,
   notificationSummary,
   pathname,
   searchParams,
 }: {
   accountLabel: string;
+  currentWorkspace: CurrentWorkspaceOption | null;
   notificationSummary: NotificationSummary;
   pathname: string;
   searchParams: SearchParamsReader;
@@ -1451,6 +1420,10 @@ function CustomerDesktopHeader({
       ? searchParams.get("q") ?? searchParams.get("location") ?? ""
       : "";
   const router = useRouter();
+  const accountSubtitle =
+    currentWorkspace?.type === "personal"
+      ? "Personal Account"
+      : customerWorkspaceLabel(currentWorkspace, accountLabel);
 
   function requestExploreLocation() {
     if (pathname !== "/explore") {
@@ -1463,7 +1436,7 @@ function CustomerDesktopHeader({
 
   return (
     <header
-      className="sticky top-0 z-30 bg-page-background/92 px-7 py-4 backdrop-blur-sm"
+      className="sticky top-0 z-30 bg-white/92 px-7 py-4 backdrop-blur-sm"
       data-testid="customer-desktop-header"
     >
       <div className="grid grid-cols-[minmax(24rem,1fr)_auto] items-center gap-5">
@@ -1533,7 +1506,7 @@ function CustomerDesktopHeader({
                 {accountLabel}
               </span>
               <span className="block text-xs font-normal text-text-secondary">
-                Personal Account
+                {accountSubtitle}
               </span>
             </span>
           </Link>
@@ -1548,6 +1521,7 @@ function CustomerDesktopShell({
   accountLabel,
   children,
   currentWorkspace,
+  navigation,
   notificationSummary,
   pathname,
   searchParams,
@@ -1557,6 +1531,7 @@ function CustomerDesktopShell({
   accountLabel: string;
   children: ReactNode;
   currentWorkspace: CurrentWorkspaceOption | null;
+  navigation: RoleNavigationConfig;
   notificationSummary: NotificationSummary;
   pathname: string;
   searchParams: SearchParamsReader;
@@ -1564,13 +1539,14 @@ function CustomerDesktopShell({
 }) {
   return (
     <div
-      className="hidden min-h-screen grid-cols-[16.25rem_minmax(0,1fr)] bg-page-background text-text-primary xl:grid 2xl:grid-cols-[18rem_minmax(0,1fr)]"
+      className="hidden min-h-screen grid-cols-[16.25rem_minmax(0,1fr)] bg-white text-text-primary xl:grid 2xl:grid-cols-[18rem_minmax(0,1fr)]"
       data-testid="customer-desktop-shell"
     >
       <CustomerDesktopSidebar
         accountEmail={accountEmail}
         accountLabel={accountLabel}
         currentWorkspace={currentWorkspace}
+        navigation={navigation}
         notificationSummary={notificationSummary}
         pathname={pathname}
         searchParams={searchParams}
@@ -1579,6 +1555,7 @@ function CustomerDesktopShell({
       <div className="min-w-0">
         <CustomerDesktopHeader
           accountLabel={accountLabel}
+          currentWorkspace={currentWorkspace}
           notificationSummary={notificationSummary}
           pathname={pathname}
           searchParams={searchParams}
@@ -1663,13 +1640,17 @@ function CustomerMobileHeader({
 }
 
 function WorkspaceOptionButton({
+  accountLabel,
   currentWorkspaceId,
   workspace,
 }: {
+  accountLabel: string;
   currentWorkspaceId: string | null;
   workspace: CurrentWorkspaceOption;
 }) {
   const isCurrent = workspace.id === currentWorkspaceId;
+  const label = customerWorkspaceLabel(workspace, accountLabel);
+  const subtitle = customerWorkspaceSubtitle(workspace);
 
   return (
     <form action={setCurrentWorkspace}>
@@ -1684,14 +1665,14 @@ function WorkspaceOptionButton({
         disabled={isCurrent}
         type="submit"
       >
-        <span className="truncate font-semibold">{workspace.label}</span>
+        <span className="truncate font-semibold">{label}</span>
         <span
           className={[
             "truncate text-xs",
             isCurrent ? "text-zinc-200" : "text-zinc-500",
           ].join(" ")}
         >
-          {workspaceKindLabel(workspace)}
+          {subtitle}
         </span>
       </button>
     </form>
@@ -1706,24 +1687,17 @@ function groupWorkspaceOptions(workspaceOptions: CurrentWorkspaceOption[]) {
       options: workspaceOptions.filter((workspace) => workspace.type === "personal"),
     },
     {
-      id: "organization",
-      label: "Organization",
-      options: workspaceOptions.filter(
-        (workspace) => workspace.type === "organization",
-      ),
-    },
-    {
-      id: "manage",
-      label: "Salon Manage",
-      options: workspaceOptions.filter(
-        (workspace) => workspace.salonMode === "manage",
-      ),
-    },
-    {
       id: "staff",
-      label: "Salon Staff",
+      label: "Staff",
       options: workspaceOptions.filter(
         (workspace) => workspace.salonMode === "staff",
+      ),
+    },
+    {
+      id: "owner",
+      label: "Owner",
+      options: workspaceOptions.filter(
+        (workspace) => workspace.salonMode === "manage",
       ),
     },
   ].filter((group) => group.options.length > 0);
@@ -1761,7 +1735,7 @@ function ModeSwitch({
               className="rounded-md px-3 py-1.5 text-center text-sm font-semibold text-zinc-400"
               key={mode}
             >
-              {mode === "staff" ? "Staff" : "Manage"}
+              {mode === "staff" ? "Staff" : "Owner"}
             </span>
           );
         }
@@ -1780,7 +1754,7 @@ function ModeSwitch({
               disabled={isActive}
               type="submit"
             >
-              {mode === "staff" ? "Staff" : "Manage"}
+              {mode === "staff" ? "Staff" : "Owner"}
             </button>
           </form>
         );
@@ -1790,9 +1764,11 @@ function ModeSwitch({
 }
 
 function WorkspaceSwitcher({
+  accountLabel,
   currentWorkspace,
   workspaceOptions,
 }: {
+  accountLabel: string;
   currentWorkspace: CurrentWorkspaceOption | null;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
@@ -1804,10 +1780,10 @@ function WorkspaceSwitcher({
         <ReylumiMark className="h-8 w-8 rounded-md text-sm" />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold text-zinc-950">
-            {currentWorkspace?.label ?? "No workspace"}
+            {customerWorkspaceLabel(currentWorkspace, accountLabel)}
           </span>
           <span className="block truncate text-xs text-zinc-500">
-            {workspaceKindLabel(currentWorkspace)}
+            {customerWorkspaceSubtitle(currentWorkspace)}
           </span>
         </span>
         <span aria-hidden="true" className="ml-auto text-xs text-zinc-500">
@@ -1822,6 +1798,7 @@ function WorkspaceSwitcher({
             </p>
             {group.options.map((workspace) => (
               <WorkspaceOptionButton
+                accountLabel={accountLabel}
                 currentWorkspaceId={currentWorkspaceId}
                 key={workspace.id}
                 workspace={workspace}
@@ -1913,7 +1890,7 @@ function WorkspaceNavigation({
 }: {
   pathname: string;
   searchParams: SearchParamsReader;
-  workspaceSections: NavigationSection[];
+  workspaceSections: readonly NavigationSection[];
 }) {
   if (workspaceSections.length === 0) {
     return null;
@@ -1986,7 +1963,7 @@ function ProfileMenu({
 function WorkspaceSidebar({
   accountEmail,
   accountLabel,
-  currentOrganizationName,
+  currentAccountName,
   currentWorkspace,
   pathname,
   searchParams,
@@ -1995,17 +1972,18 @@ function WorkspaceSidebar({
 }: {
   accountEmail: string | null;
   accountLabel: string;
-  currentOrganizationName: string | null;
+  currentAccountName: string | null;
   currentWorkspace: CurrentWorkspaceOption | null;
   pathname: string;
   searchParams: SearchParamsReader;
   workspaceOptions: CurrentWorkspaceOption[];
-  workspaceSections: NavigationSection[];
+  workspaceSections: readonly NavigationSection[];
 }) {
   return (
     <aside className="fixed inset-y-0 left-16 z-40 hidden w-60 flex-col border-r border-zinc-200 bg-white lg:flex">
       <div className="grid gap-3 border-b border-zinc-200 p-3">
         <WorkspaceSwitcher
+          accountLabel={accountLabel}
           currentWorkspace={currentWorkspace}
           workspaceOptions={workspaceOptions}
         />
@@ -2013,9 +1991,9 @@ function WorkspaceSidebar({
           currentWorkspace={currentWorkspace}
           workspaceOptions={workspaceOptions}
         />
-        {currentOrganizationName ? (
+        {currentAccountName ? (
           <p className="truncate px-1 text-xs text-zinc-500">
-            {currentOrganizationName}
+            {currentAccountName}
           </p>
         ) : null}
       </div>
@@ -2050,7 +2028,7 @@ function MobileHeader({
   pathname: string;
   searchParams: SearchParamsReader;
   workspaceOptions: CurrentWorkspaceOption[];
-  workspaceSections: NavigationSection[];
+  workspaceSections: readonly NavigationSection[];
 }) {
   if (isCustomerShell) {
     return (
@@ -2067,6 +2045,7 @@ function MobileHeader({
     <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 px-3 py-3 backdrop-blur lg:hidden">
       <div className="flex items-center gap-3">
         <WorkspaceSwitcher
+          accountLabel={accountLabel}
           currentWorkspace={currentWorkspace}
           workspaceOptions={workspaceOptions}
         />
@@ -2101,23 +2080,29 @@ function MobileHeader({
 }
 
 function MobileBottomNav({
+  ariaLabel,
+  links,
   notificationSummary,
   pathname,
+  roleKind,
   searchParams,
 }: {
+  ariaLabel: string;
+  links: readonly NavigationLink[];
   notificationSummary: NotificationSummary;
   pathname: string;
+  roleKind: RoleNavigationKind;
   searchParams: SearchParamsReader;
 }) {
   return (
     <nav
-      aria-label="Customer"
+      aria-label={ariaLabel}
       className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border-subtle bg-surface/95 px-1 pb-[calc(0.35rem+env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_30px_rgba(23,19,22,0.08)] backdrop-blur lg:hidden"
     >
-      {CUSTOMER_MOBILE_LINKS.map((link) => {
+      {links.map((link) => {
         const isActive =
-          link.id === "more"
-            ? isCustomerMoreRoute(pathname)
+          isMoreLink(link)
+            ? isRoleMoreActive(roleKind, pathname, searchParams)
             : isLinkActive(link, pathname, searchParams);
 
         return (
@@ -2168,7 +2153,7 @@ export function NavigationShell({
   accountEmail,
   accountLabel,
   children,
-  currentOrganizationName,
+  currentAccountName,
   currentWorkspace,
   notificationSummary,
   salonMode,
@@ -2192,15 +2177,19 @@ export function NavigationShell({
     return <>{children}</>;
   }
 
-  const routeWorkspaceKind = getRouteWorkspaceKind(pathname);
-  const showCustomerMobileShell =
-    workspaceType === "personal" &&
-    routeWorkspaceKind === "personal" &&
-    isCustomerRoute(pathname);
-  const showCustomerDesktopShell = showCustomerMobileShell;
+  const baseRouteWorkspaceKind = getRouteWorkspaceKind(pathname);
+  const routeWorkspaceKind = roleAwareRouteWorkspaceKind({
+    pathname,
+    routeWorkspaceKind: baseRouteWorkspaceKind,
+    salonMode,
+    workspaceType,
+  });
+  const activeMobileNavigation = mobileRoleNavigation(workspaceType, salonMode);
+  const showRoleMobileShell = isMobileRoleRoute(activeMobileNavigation, pathname);
+  const showRoleDesktopShell = showRoleMobileShell;
   const showWorkspaceContextSidebar =
-    (workspaceType === "organization" &&
-      routeWorkspaceKind === "organization") ||
+    (workspaceType === "account" &&
+      routeWorkspaceKind === "account") ||
     (workspaceType === "salon" &&
       salonMode === "manage" &&
       routeWorkspaceKind === "manage") ||
@@ -2211,11 +2200,11 @@ export function NavigationShell({
   const showAccountSidebar = routeWorkspaceKind === "personal";
   const showWorkspaceSidebar =
     showAccountSidebar || showWorkspaceContextSidebar;
-  const contentPaddingClass = showCustomerMobileShell
+  const contentPaddingClass = showRoleMobileShell
     ? "pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0"
     : "pb-0";
   const sidebarSections = showAccountSidebar
-    ? [ACCOUNT_NAVIGATION_SECTION, ...workspaceSections]
+    ? [PERSONAL_NAVIGATION_SECTION, ...workspaceSections]
     : workspaceSections;
 
   return (
@@ -2226,9 +2215,9 @@ export function NavigationShell({
       >
         <div
           className={[
-            "min-h-screen bg-zinc-50",
+            "min-h-screen bg-white",
             showWorkspaceSidebar ? "lg:pl-[19rem]" : "lg:pl-16",
-            showCustomerDesktopShell ? "xl:hidden" : "",
+            showRoleDesktopShell ? "xl:hidden" : "",
           ].join(" ")}
         >
           <AppRail
@@ -2252,7 +2241,7 @@ export function NavigationShell({
             <WorkspaceSidebar
               accountEmail={accountEmail}
               accountLabel={accountLabel}
-              currentOrganizationName={currentOrganizationName}
+              currentAccountName={currentAccountName}
               currentWorkspace={currentWorkspace}
               pathname={pathname}
               searchParams={searchParams}
@@ -2264,7 +2253,7 @@ export function NavigationShell({
             accountEmail={accountEmail}
             accountLabel={accountLabel}
             currentWorkspace={currentWorkspace}
-            isCustomerShell={showCustomerMobileShell}
+            isCustomerShell={showRoleMobileShell}
             pathname={pathname}
             searchParams={searchParams}
             workspaceOptions={workspaceOptions}
@@ -2273,17 +2262,20 @@ export function NavigationShell({
           <div className={["min-h-screen", contentPaddingClass].join(" ")}>
             {children}
           </div>
-          {showCustomerMobileShell ? (
+          {showRoleMobileShell ? (
             <MobileBottomNav
+              ariaLabel={activeMobileNavigation.ariaLabel}
+              links={activeMobileNavigation.links}
               notificationSummary={notificationSummary}
               pathname={pathname}
+              roleKind={activeMobileNavigation.kind}
               searchParams={searchParams}
             />
           ) : null}
         </div>
       </CustomerShellContextProvider>
 
-      {showCustomerDesktopShell ? (
+      {showRoleDesktopShell ? (
         <CustomerShellContextProvider
           isCustomerShell
           notificationSummary={notificationSummary}
@@ -2292,6 +2284,7 @@ export function NavigationShell({
             accountEmail={accountEmail}
             accountLabel={accountLabel}
             currentWorkspace={currentWorkspace}
+            navigation={activeMobileNavigation}
             notificationSummary={notificationSummary}
             pathname={pathname}
             searchParams={searchParams}

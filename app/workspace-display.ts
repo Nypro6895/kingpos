@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   CurrentWorkspaceAction,
   CurrentWorkspaceOption,
 } from "@/lib/current-context";
@@ -27,14 +27,14 @@ export function initialsFor(label: string) {
 
 export function workspaceModeLabel(workspace: CurrentWorkspaceOption) {
   if (workspace.salonMode === "manage") {
-    return "Manage";
+    return "Owner";
   }
 
   if (workspace.salonMode === "staff") {
     return "Staff";
   }
 
-  return workspace.type === "organization" ? "Organization" : "Personal";
+  return workspace.type === "account" ? "Account" : "Personal";
 }
 
 function uniqueDisplayParts(parts: Array<string | null | undefined>) {
@@ -59,7 +59,7 @@ function uniqueDisplayParts(parts: Array<string | null | undefined>) {
 }
 
 export function workspaceSubtitleParts(workspace: CurrentWorkspaceOption) {
-  if (workspace.type === "organization") {
+  if (workspace.type === "account") {
     return uniqueDisplayParts([
       workspace.roleLabel,
       workspace.salonCount !== null
@@ -69,7 +69,7 @@ export function workspaceSubtitleParts(workspace: CurrentWorkspaceOption) {
   }
 
   if (workspace.type === "salon") {
-    return uniqueDisplayParts([workspace.roleLabel, workspace.organizationName]);
+    return uniqueDisplayParts([workspace.roleLabel, workspace.accountName]);
   }
 
   return uniqueDisplayParts([workspace.roleLabel]);
@@ -83,7 +83,8 @@ export function workspaceSearchText(workspace: CurrentWorkspaceOption) {
   return [
     workspace.label,
     workspace.description,
-    workspace.organizationName,
+    workspace.accountName,
+    workspace.businessName,
     workspace.roleLabel,
     workspace.salonName,
     workspaceModeLabel(workspace),
@@ -109,7 +110,7 @@ export function getWorkspaceOpenAction(workspace: CurrentWorkspaceOption) {
       href: workspace.defaultHref,
       id: "open",
       label:
-        workspace.type === "organization" ? "Open organization" : "Open workspace",
+        workspace.type === "account" ? "Open account" : "Open workspace",
     }
   );
 }
@@ -164,7 +165,8 @@ export function buildWorkspaceShortcuts(input: {
     const id = actionKey(workspace, action);
     const searchText = [
       workspace.label,
-      workspace.organizationName,
+      workspace.accountName,
+      workspace.businessName,
       workspace.roleLabel,
       workspaceModeLabel(workspace),
       action.label,

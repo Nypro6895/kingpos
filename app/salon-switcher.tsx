@@ -1,42 +1,19 @@
 import { NavigationShell } from "@/app/navigation-shell";
 import {
-  isOrganizationContext,
+  ROLE_NAVIGATION,
+  type NavigationLink,
+  type NavigationSection,
+} from "@/app/role-navigation";
+import {
+  isAccountContext,
   isOwnerMembership,
   isSalonManageContext,
   isSalonStaffContext,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
+import { routes } from "@/lib/routes";
 import { getWorkspacePendingSummary } from "@/lib/workspace-pending";
-
-type NavigationIcon =
-  | "bell"
-  | "book"
-  | "briefcase"
-  | "calendar"
-  | "cash"
-  | "compass"
-  | "gear"
-  | "home"
-  | "list"
-  | "people"
-  | "receipt"
-  | "scissors"
-  | "store"
-  | "user";
-
-type NavigationLink = {
-  href: string;
-  icon: NavigationIcon;
-  id: string;
-  label: string;
-};
-
-type NavigationSection = {
-  id: string;
-  label: string;
-  links: NavigationLink[];
-};
 
 const MANAGEMENT_PERMISSION_CODES = {
   bookings: "booking.view",
@@ -75,52 +52,14 @@ function salonOption(salon: { id: string; name: string }) {
 function buildStaffNavigation(): NavigationSection[] {
   return [
     {
-      id: "staff-workplace",
-      label: "Workplace",
-      links: [
-        { href: "/staff/my-work", icon: "home", id: "staff-day", label: "My Day" },
-        {
-          href: "/staff/appointments",
-          icon: "calendar",
-          id: "staff-appointments",
-          label: "Appointments",
-        },
-        {
-          href: "/staff/my-work?tab=payroll",
-          icon: "cash",
-          id: "staff-income",
-          label: "My Income",
-        },
-        {
-          href: "/staff/my-work?tab=analysis",
-          icon: "list",
-          id: "staff-analysis",
-          label: "Analysis",
-        },
-        {
-          href: "/staff/connections",
-          icon: "people",
-          id: "staff-connections",
-          label: "Connections",
-        },
-      ],
-    },
-    {
-      id: "staff-connect",
-      label: "Connect",
-      links: [
-        {
-          href: "/salon-profile",
-          icon: "compass",
-          id: "staff-salon-profile",
-          label: "Salon Profile",
-        },
-      ],
+      id: "staff-navigation",
+      label: "Navigation",
+      links: ROLE_NAVIGATION.staff.links,
     },
   ];
 }
 
-async function buildManageNavigation(input: {
+function buildManageNavigation(input: {
   canManagePayroll: boolean;
   canManagePos: boolean;
   canViewBookings: boolean;
@@ -132,137 +71,59 @@ async function buildManageNavigation(input: {
   canViewServices: boolean;
   canViewStaff: boolean;
   canViewTickets: boolean;
-}): Promise<NavigationSection[]> {
-  const operationsLinks: NavigationLink[] = [];
-  const teamLinks: NavigationLink[] = [];
-  const financeLinks: NavigationLink[] = [];
-  const settingsLinks: NavigationLink[] = [];
+}): NavigationSection[] {
+  const links = ROLE_NAVIGATION.owner.links.filter((link) => {
+    if (link.id === "owner-today") {
+      return input.canViewStaff;
+    }
 
-  if (input.canManagePos) {
-    operationsLinks.push({ href: "/pos", icon: "store", id: "pos", label: "POS" });
-  }
+    if (link.id === "owner-book") {
+      return input.canViewBookings;
+    }
 
-  if (input.canViewStaff) {
-    operationsLinks.push({
-      href: "/staff/today",
-      icon: "calendar",
-      id: "staff-today",
-      label: "Today",
-    });
-  }
+    if (link.id === "owner-profile") {
+      return input.canViewSalonProfile;
+    }
 
-  if (input.canViewBookings) {
-    operationsLinks.push({
-      href: "/bookings",
-      icon: "book",
-      id: "bookings",
-      label: "Bookings",
-    });
-  }
-
-  if (input.canViewCustomers) {
-    operationsLinks.push({
-      href: "/customers",
-      icon: "user",
-      id: "customers",
-      label: "Customers",
-    });
-  }
-
-  if (input.canViewStaff) {
-    teamLinks.push({ href: "/staff", icon: "people", id: "staff", label: "Staff" });
-  }
-
-  if (input.canViewServices) {
-    teamLinks.push({
-      href: "/services",
-      icon: "scissors",
-      id: "services",
-      label: "Services",
-    });
-  }
-
-  if (input.canViewSalonProfile) {
-    teamLinks.push({
-      href: "/salon-profile",
-      icon: "compass",
-      id: "salon-profile",
-      label: "Salon Profile",
-    });
-  }
-
-  if (input.canViewTickets) {
-    financeLinks.push({
-      href: "/pos-tickets",
-      icon: "receipt",
-      id: "pos-tickets",
-      label: "Tickets",
-    });
-  }
-
-  if (input.canViewPayroll || input.canManagePayroll) {
-    financeLinks.push({
-      href: "/payroll",
-      icon: "cash",
-      id: "payroll",
-      label: "Payroll",
-    });
-  }
-
-  if (input.canViewReports) {
-    financeLinks.push({
-      href: "/reports",
-      icon: "list",
-      id: "reports",
-      label: "Reports",
-    });
-  }
-
-  if (input.canViewSalonSettings) {
-    settingsLinks.push({
-      href: "/salon-settings",
-      icon: "gear",
-      id: "salon-settings",
-      label: "Salon Settings",
-    });
-  }
+    return true;
+  });
 
   return [
-    { id: "manage-operations", label: "Operations", links: operationsLinks },
-    { id: "manage-team", label: "Team & Catalog", links: teamLinks },
-    { id: "manage-finance", label: "Finance", links: financeLinks },
-    { id: "manage-settings", label: "Settings", links: settingsLinks },
+    {
+      id: "owner-navigation",
+      label: "Navigation",
+      links,
+    },
   ].filter((section) => section.links.length > 0);
 }
 
-function buildOrganizationNavigation(context: CurrentBusinessContext) {
+function buildAccountNavigation(context: CurrentBusinessContext) {
   const isOwner = isOwnerMembership(context.currentMembership);
   const links: NavigationLink[] = [
     {
-      href: "/organizations",
-      icon: "briefcase",
-      id: "organization-overview",
-      label: "Organizations",
+      href: routes.salons.list(),
+      icon: "store",
+      id: "salons",
+      label: "Salons",
     },
   ];
 
   if (isOwner) {
     links.push(
-      { href: "/salons", icon: "store", id: "salons", label: "Salons" },
       { href: "/roles", icon: "people", id: "roles", label: "Members & Roles" },
       {
         href: "/permissions",
         icon: "gear",
         id: "permissions",
-        label: "Organization Settings",
+        label: "Account Permissions",
       },
     );
   }
 
   return [
     {
-      id: "organization",
-      label: "Organization",
+      id: "account",
+      label: "Account",
       links,
     },
   ];
@@ -340,8 +201,8 @@ export async function SalonSwitcher({
           canViewStaff,
           canViewTickets,
         })
-      : isOrganizationContext(context)
-        ? buildOrganizationNavigation(context)
+      : isAccountContext(context)
+        ? buildAccountNavigation(context)
         : [];
   const canSwitchManageSalon =
     context.availableManageSalons.length > 1 &&
@@ -371,7 +232,7 @@ export async function SalonSwitcher({
       currentManageSalonName={
         context.salonMode === "manage" ? (context.currentSalon?.name ?? null) : null
       }
-      currentOrganizationName={context.currentOrganization?.name ?? null}
+      currentAccountName={context.accountName}
       currentStaffSalonId={
         context.salonMode === "staff" ? (context.currentSalon?.id ?? null) : null
       }

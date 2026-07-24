@@ -10,7 +10,6 @@ export type PosPaymentMethod = (typeof POS_PAYMENT_METHODS)[number];
 
 export type PosPayment = {
   id: string;
-  organization_id: string;
   salon_id: string;
   ticket_id: string;
   payment_method: PosPaymentMethod;

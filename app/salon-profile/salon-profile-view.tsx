@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   createSalonProfileCommentAction,
@@ -87,6 +87,12 @@ const TABS: Array<{ id: TabId; label: string }> = [
   { id: "reviews", label: "Reviews" },
   { id: "about", label: "About" },
 ];
+
+function tabFromHash(hash: string) {
+  const value = hash.replace(/^#/, "");
+
+  return TABS.find((tab) => tab.id === value)?.id ?? null;
+}
 
 const EMPTY_CAPABILITIES: SalonProfileViewerCapabilities = {
   canBook: true,
@@ -495,7 +501,7 @@ function Button({
 }) {
   const styles = {
     primary:
-      "bg-zinc-950 text-white hover:bg-zinc-800 disabled:bg-zinc-300 disabled:text-zinc-500",
+      "bg-zinc-950 text-white hover:bg-zinc-800 disabled:bg-zinc-400",
     secondary:
       "border border-zinc-300 bg-white text-zinc-950 hover:bg-zinc-50 disabled:text-zinc-400",
     subtle: "text-zinc-700 hover:bg-zinc-100 disabled:text-zinc-400",
@@ -3138,6 +3144,32 @@ export function SalonProfileView({
   const [saveCounts, setSaveCounts] = useState(
     new Map(sortedLooks.map((look) => [look.id, look.saveCount])),
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    function syncTabFromHash() {
+      const nextTab = tabFromHash(window.location.hash);
+
+      if (!nextTab) {
+        return;
+      }
+
+      window.setTimeout(() => {
+        if (!cancelled) {
+          setSelectedTab(nextTab);
+        }
+      }, 0);
+    }
+
+    syncTabFromHash();
+    window.addEventListener("hashchange", syncTabFromHash);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("hashchange", syncTabFromHash);
+    };
+  }, []);
   const [isFollowing, setFollowing] = useState(profile.isFollowing);
   const [followerCount, setFollowerCount] = useState(profile.followerCount);
   const [statusMessage, setStatusMessage] = useState("");

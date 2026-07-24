@@ -28,6 +28,7 @@ type SalonProfilePageProps = {
 };
 
 function buildPreviewData(input: {
+  accountId: string;
   looks: SalonProfileLook[];
   services: Service[];
   setting: SalonProfileSetting;
@@ -130,7 +131,7 @@ function buildPreviewData(input: {
     isFollowing: false,
     logoImageUrl: getSalonProfileMediaUrl(input.setting.public_profile_logo_path),
     name: input.setting.business_name,
-    organizationId: input.setting.organization_id,
+    accountId: input.accountId,
     phone: input.setting.phone,
     postalCode: input.setting.postal_code,
     publishedAt: input.setting.public_discovery_published_at,
@@ -221,7 +222,10 @@ export default async function SalonProfilePage({
     );
   }
 
-  const previewData = buildPreviewData(data);
+  const previewData = buildPreviewData({
+    ...data,
+    accountId: data.context.currentAccount?.id ?? data.context.accountId ?? "",
+  });
   const publicData = await getPublicSalonProfileData(data.setting.salon_id);
   const viewData = publicData ?? previewData;
   const capabilities: SalonProfileViewerCapabilities = {

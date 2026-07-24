@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import {
   assignBookingStaff,
@@ -107,8 +107,8 @@ export type UpdateBookingSettingsInput = {
 };
 
 type BookingActionContext = {
-  organization: NonNullable<
-    Awaited<ReturnType<typeof getCurrentBusinessContext>>["currentOrganization"]
+  Account: NonNullable<
+    Awaited<ReturnType<typeof getCurrentBusinessContext>>["currentAccount"]
   >;
   salon: NonNullable<
     Awaited<ReturnType<typeof getCurrentBusinessContext>>["currentSalon"]
@@ -180,11 +180,11 @@ async function requireBookingActionContext(): Promise<
 
   if (
     !isSalonManageContext(context) ||
-    !context.currentOrganization ||
+    !context.currentAccount ||
     !context.currentSalon
   ) {
     return {
-      error: failure("Open bookings from a Manage Salon workspace.", {
+      error: failure("Open bookings from a Business workspace.", {
         code: "invalid_context",
       }),
       ok: false,
@@ -204,7 +204,7 @@ async function requireBookingActionContext(): Promise<
 
   return {
     data: {
-      organization: context.currentOrganization,
+      Account: context.currentAccount,
       salon: context.currentSalon,
       supabase,
     },
@@ -216,7 +216,6 @@ async function loadBookingSettings(context: BookingActionContext) {
   const { data, error } = await context.supabase
     .from("booking_settings")
     .select(BOOKING_SETTINGS_SELECT)
-    .eq("organization_id", context.organization.id)
     .eq("salon_id", context.salon.id)
     .maybeSingle<{
       default_cleanup_buffer_minutes: number;
@@ -324,7 +323,7 @@ export async function createOwnerAppointmentAction(
 
     const schedule = await deriveBookingCreationSchedule({
       cleanupBufferMinutes: settings.cleanupBufferMinutes,
-      organizationId: context.data.organization.id,
+      accountId: context.data.Account.id,
       salonId: context.data.salon.id,
       serviceIds: validated.serviceLines.map((line) => line.serviceId),
       staffIds: validated.serviceLines.map((line) => line.staffId),
@@ -377,7 +376,6 @@ export async function createOwnerAppointmentAction(
         .from("salon_profile_booking_requests")
         .update({ status: "approved" })
         .eq("id", cleanId(input.sourceReferenceId))
-        .eq("organization_id", context.data.organization.id)
         .eq("salon_id", context.data.salon.id)
         .eq("status", "requested");
 
@@ -700,21 +698,18 @@ export async function updateBookingSettingsAction(
         context.data.supabase
           .from("staff_service_assignments")
           .select("service_id, staff_id")
-          .eq("organization_id", context.data.organization.id)
           .eq("salon_id", context.data.salon.id)
           .eq("is_active", true)
           .eq("online_bookable", true),
         context.data.supabase
           .from("services")
           .select("id")
-          .eq("organization_id", context.data.organization.id)
           .eq("salon_id", context.data.salon.id)
           .eq("is_active", true)
           .eq("online_booking_enabled", true),
         context.data.supabase
           .from("staff")
           .select("id")
-          .eq("organization_id", context.data.organization.id)
           .eq("salon_id", context.data.salon.id)
           .eq("is_active", true)
           .eq("online_booking_enabled", true)
@@ -724,7 +719,6 @@ export async function updateBookingSettingsAction(
         context.data.supabase
           .from("staff_availability_rules")
           .select("id")
-          .eq("organization_id", context.data.organization.id)
           .eq("salon_id", context.data.salon.id)
           .eq("is_active", true)
           .eq("rule_type", "working")
@@ -778,7 +772,6 @@ export async function updateBookingSettingsAction(
           maximum_advance_window_days: input.maximumAdvanceWindowDays,
           minimum_lead_time_minutes: input.minimumLeadTimeMinutes,
           online_booking_visible: input.onlineBookingVisible,
-          organization_id: context.data.organization.id,
           same_day_booking_enabled: input.sameDayBookingEnabled,
           salon_id: context.data.salon.id,
           slot_interval_minutes: input.slotIntervalMinutes,

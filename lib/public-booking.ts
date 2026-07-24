@@ -2140,7 +2140,6 @@ function parseBookingInspirationPayload(value: unknown) {
     credited_staff_name_snapshot: nonEmptyString(row.credited_staff_name_snapshot),
     id,
     metadata: asRecord(row.metadata),
-    organization_id: cleanUuid(row.organization_id) ?? "",
     salon_id: cleanUuid(row.salon_id) ?? sourceSalonId,
     salon_name_snapshot: nonEmptyString(row.salon_name_snapshot),
     service_id: cleanUuid(row.service_id),

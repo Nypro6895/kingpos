@@ -185,12 +185,10 @@ export async function getSalonProfileMediaUploadSessionAction(
 
   const isSalonWorkspace =
     (isSalonManageContext(context) || isSalonStaffContext(context)) &&
-    context.currentOrganization &&
     context.currentSalon;
-  const organization = context.currentOrganization;
   const salon = context.currentSalon;
 
-  if (!isSalonWorkspace || !organization || !salon) {
+  if (!isSalonWorkspace || !salon) {
     throw new Error("Choose a salon workspace before uploading media.");
   }
 
@@ -224,7 +222,6 @@ export async function getSalonProfileMediaUploadSessionAction(
   const { error } = await supabase.from("salon_profile_media_assets").insert({
     bucket: SALON_PROFILE_MEDIA_BUCKET,
     object_path: path,
-    organization_id: organization.id,
     purpose: kind,
     salon_id: salon.id,
     status: "pending",

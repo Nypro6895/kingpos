@@ -37,7 +37,6 @@ export type PublicContentBookingOption = {
   ctaLabel: string;
   imageUrl: string | null;
   mediaPath: string | null;
-  organizationId: string;
   primaryServiceBasePrice: number | null;
   primaryServiceDurationMinutes: number | null;
   primaryServiceId: string | null;

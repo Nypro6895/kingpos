@@ -18,7 +18,7 @@ import type { CreateStaffInput, Staff } from "@/types/staff";
 import type { KingUser } from "@/types/user";
 
 export const STAFF_SELECT =
-  "id, organization_id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, job_title, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
+  "id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, job_title, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 
 const STAFF_PAYROLL_SETUP_SELECT = "id, staff_id, effective_from, effective_to";
 
@@ -63,13 +63,13 @@ type StaffPayrollSetupRow = {
 const STAFF_CONNECTED_USER_SELECT =
   "id, auth_user_id, email, phone, display_name, status, last_login_at, created_at";
 
-function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
-    throw new Error("Open staff management from a Manage Salon workspace.");
+    throw new Error("Open staff management from a Business workspace.");
   }
 
-  if (!context.currentOrganization) {
-    throw new Error("Create an organization before managing staff.");
+  if (!context.currentAccount) {
+    throw new Error("Choose a salon workspace before managing staff.");
   }
 
   if (!context.currentSalon) {
@@ -77,7 +77,7 @@ function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
   }
 
   return {
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
   };
 }
@@ -91,7 +91,7 @@ export async function getCurrentSalonStaff() {
 
   await requirePermission(STAFF_PERMISSIONS.view, context);
 
-  const { salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -112,7 +112,7 @@ export async function getCurrentSalonStaff() {
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: context.user.id,
     });
     throw new Error(error.message);
@@ -136,7 +136,7 @@ export async function getCurrentSalonStaffDirectory(
 
   await requirePermission(STAFF_PERMISSIONS.view, resolvedContext);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { Account, salon } = requireCurrentAccountAndSalon(resolvedContext);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -152,7 +152,6 @@ export async function getCurrentSalonStaffDirectory(
   const staffQuery = supabase
     .from("staff")
     .select(STAFF_SELECT)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .order("display_name", { ascending: true })
     .returns<Staff[]>();
@@ -161,7 +160,6 @@ export async function getCurrentSalonStaffDirectory(
     ? supabase
         .from("staff_payroll_settings")
         .select(STAFF_PAYROLL_SETUP_SELECT)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .order("effective_from", { ascending: false })
         .returns<StaffPayrollSetupRow[]>()
@@ -176,7 +174,7 @@ export async function getCurrentSalonStaffDirectory(
       details: staffResult.error.details,
       hint: staffResult.error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(staffResult.error.message);
@@ -189,7 +187,7 @@ export async function getCurrentSalonStaffDirectory(
       details: payrollResult.error.details,
       hint: payrollResult.error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(payrollResult.error.message);
@@ -234,7 +232,7 @@ export async function getCurrentSalonStaffDirectory(
         details: connectedUsersError.details,
         hint: connectedUsersError.hint,
         salonId: salon.id,
-        organizationId: organization.id,
+        accountId: Account.id,
         userId: resolvedContext.user.id,
       });
       throw new Error(connectedUsersError.message);
@@ -263,7 +261,7 @@ export async function getCurrentSalonStaffDirectory(
         details: connectedUsersError.details,
         hint: connectedUsersError.hint,
         salonId: salon.id,
-        organizationId: organization.id,
+        accountId: Account.id,
         userId: resolvedContext.user.id,
       });
       throw new Error(connectedUsersError.message);
@@ -315,7 +313,7 @@ export async function createStaff(input: CreateStaffInput) {
 
   await requirePermission(STAFF_PERMISSIONS.manage, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -337,7 +335,6 @@ export async function createStaff(input: CreateStaffInput) {
   const { data, error } = await supabase
     .from("staff")
     .insert({
-      organization_id: organization.id,
       salon_id: salon.id,
       display_name: displayName,
       first_name: input.first_name,
@@ -368,7 +365,7 @@ export async function createStaff(input: CreateStaffInput) {
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: context.user.id,
     });
     throw new Error(error.message);
@@ -466,7 +463,7 @@ export async function updateStaffPublicProfile(input: {
     throw new Error("You must be logged in to update staff profiles.");
   }
 
-  if (!context.currentOrganization || !context.currentSalon) {
+  if (!context.currentAccount || !context.currentSalon) {
     throw new Error("Choose a salon workspace before updating staff.");
   }
 
@@ -491,7 +488,6 @@ export async function updateStaffPublicProfile(input: {
     .from("staff")
     .select(STAFF_SELECT)
     .eq("id", input.staffId)
-    .eq("organization_id", context.currentOrganization.id)
     .eq("salon_id", context.currentSalon.id)
     .maybeSingle<Staff>();
 
@@ -538,7 +534,6 @@ export async function updateStaffPublicProfile(input: {
           : normalizeSpecialties(input.specialties),
     })
     .eq("id", input.staffId)
-    .eq("organization_id", context.currentOrganization.id)
     .eq("salon_id", context.currentSalon.id);
 
   if (error) {

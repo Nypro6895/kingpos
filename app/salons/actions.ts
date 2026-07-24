@@ -1,16 +1,20 @@
 "use server";
 
 import {
+  getCreateSalonAccount,
   getCurrentBusinessContext,
   getCurrentStaffBusinessContext,
   getManageWorkspaceId,
   getStaffWorkspaceId,
   isWorkspaceDestinationAllowed,
   isOwnerMembership,
+  setCurrentManageSalonCookie,
   setNormalizedWorkspaceContext,
   type CurrentWorkspaceOption,
 } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
+import { routes, withSearchParams } from "@/lib/routes";
+import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -28,7 +32,11 @@ const MANAGE_SALON_SWITCH_PERMISSIONS = [
 ] as const;
 
 function redirectWithError(message: string): never {
-  redirect(`/salons?error=${encodeURIComponent(message)}`);
+  redirect(withSearchParams(routes.salons.list(), { error: message }));
+}
+
+function redirectCreateSalonWithError(message: string): never {
+  redirect(withSearchParams(routes.salons.create(), { error: message }));
 }
 
 function redirectStaffWithError(message: string): never {
@@ -41,12 +49,100 @@ function readFormString(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function readOptionalFormString(formData: FormData, key: string) {
+  const value = readFormString(formData, key);
+  return value || null;
+}
+
 function readInputString(input: string | null | undefined) {
   return typeof input === "string" ? input.trim() : "";
 }
 
 function redirectMyPlaceWithError(message: string): never {
   redirect(`/my-place?error=${encodeURIComponent(message)}`);
+}
+
+export async function createSalonAction(formData: FormData) {
+  const supabase = await createAuthenticatedSupabaseServerClient();
+  const context = await getCurrentBusinessContext();
+
+  if (!supabase || !context.user) {
+    redirect(withSearchParams("/login", { next: routes.salons.create() }));
+  }
+
+  const account = getCreateSalonAccount(context);
+
+  if (!account) {
+    redirectCreateSalonWithError("You do not have permission to create a salon.");
+  }
+
+  const accountId = account.id;
+
+  if (!accountId) {
+    redirectCreateSalonWithError("Choose an Account workspace before creating a salon.");
+  }
+
+  if (account.status !== "active") {
+    redirectCreateSalonWithError("Choose an active Account before creating a salon.");
+  }
+
+  const name = readFormString(formData, "name");
+  const createRequestKey = readFormString(formData, "create_request_key");
+
+  if (!name) {
+    redirectCreateSalonWithError("Salon name is required.");
+  }
+
+  if (!createRequestKey) {
+    redirectCreateSalonWithError("Create request key is required. Refresh and try again.");
+  }
+
+  const { data, error } = await supabase.rpc("create_account_salon", {
+    p_account_id: accountId,
+    p_address_line1: readOptionalFormString(formData, "address_line1"),
+    p_address_line2: readOptionalFormString(formData, "address_line2"),
+    p_city: readOptionalFormString(formData, "city"),
+    p_country: "US",
+    p_create_request_key: createRequestKey,
+    p_name: name,
+    p_phone: readOptionalFormString(formData, "phone"),
+    p_postal_code: readOptionalFormString(formData, "postal_code"),
+    p_state: readOptionalFormString(formData, "state"),
+  });
+
+  if (error) {
+    console.error("Supabase create salon failed", {
+      accountId,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      userId: context.user.id,
+    });
+    redirectCreateSalonWithError("Unable to create salon.");
+  }
+
+  const result =
+    data && typeof data === "object" && !Array.isArray(data)
+      ? (data as Record<string, unknown>)
+      : {};
+  const salonId = typeof result.salon_id === "string" ? result.salon_id : null;
+
+  if (!salonId) {
+    console.error("Supabase create salon returned no salon id", {
+      accountId,
+      result,
+      userId: context.user.id,
+    });
+    redirectCreateSalonWithError("Unable to create salon.");
+  }
+
+  await setCurrentManageSalonCookie(salonId);
+
+  revalidatePath(routes.salons.list());
+  revalidatePath(routes.salons.create());
+  revalidatePath("/", "layout");
+  redirect(withSearchParams(routes.salons.list(), { created: "1" }));
 }
 
 export type WorkspaceDestinationActionResult =
@@ -60,16 +156,19 @@ export type WorkspaceDestinationActionResult =
     };
 
 async function getManageDefaultRedirect(context: Awaited<ReturnType<typeof getCurrentBusinessContext>>) {
-  if (await hasPermission("tickets.manage", context)) {
-    return "/pos";
-  }
-
-  if (await hasPermission("staff.view", context)) {
-    return "/staff";
+  if (
+    isOwnerMembership(context.currentMembership) ||
+    (await hasPermission("staff.view", context))
+  ) {
+    return "/staff/today";
   }
 
   if (await hasPermission("booking.view", context)) {
     return "/bookings";
+  }
+
+  if (await hasPermission("tickets.manage", context)) {
+    return "/pos/portable";
   }
 
   if (await hasPermission("customers.view", context)) {
@@ -201,7 +300,7 @@ export async function setCurrentSalon(formData: FormData) {
   const salonId = formData.get("salon_id");
 
   if (typeof salonId !== "string" || !salonId.trim()) {
-    redirectWithError("Choose a Salon before setting the current Salon.");
+    redirectWithError("Choose a salon before setting the current salon.");
   }
 
   const context = await getCurrentBusinessContext();
@@ -210,33 +309,42 @@ export async function setCurrentSalon(formData: FormData) {
     redirect("/login");
   }
 
-  if (!context.currentOrganization || !context.currentMembership) {
-    redirectWithError("Create an organization before choosing a current Salon.");
-  }
+  const requestedSalon = context.availableManageSalons.find(
+    (salon) => salon.id === salonId.trim(),
+  );
+  const workspace = requestedSalon
+    ? context.workspaceOptions.find(
+        (option): option is CurrentWorkspaceOption =>
+          option.id === getManageWorkspaceId(requestedSalon.id),
+      )
+    : null;
 
   const canSwitchManagedSalon =
+    Boolean(workspace) ||
     isOwnerMembership(context.currentMembership) ||
-    (
-      await Promise.all(
-        MANAGE_SALON_SWITCH_PERMISSIONS.map((permission) =>
-          hasPermission(permission, context),
-        ),
-      )
-    ).some(Boolean);
+    (context.currentMembership
+      ? (
+          await Promise.all(
+            MANAGE_SALON_SWITCH_PERMISSIONS.map((permission) =>
+              hasPermission(permission, context),
+            ),
+          )
+        ).some(Boolean)
+      : false);
 
   if (!canSwitchManagedSalon) {
-    redirectWithError("You do not have permission to switch the current Salon.");
+    redirectWithError("You do not have permission to switch the current salon.");
   }
 
-  const allowedSalon = context.salons.find((salon) => salon.id === salonId.trim());
+  const allowedSalon = requestedSalon;
 
   if (!allowedSalon) {
-    console.error("Blocked current Salon switch outside current organization", {
+    console.error("Blocked current Salon switch outside accessible account", {
       requestedSalonId: salonId,
-      organizationId: context.currentOrganization.id,
+      accountId: context.accountId,
       userId: context.user.id,
     });
-    redirectWithError("You can only switch to a Salon in your organization.");
+    redirectWithError("You can only switch to a salon connected to your Account.");
   }
 
   const selectedContext = {
@@ -246,16 +354,11 @@ export async function setCurrentSalon(formData: FormData) {
     salonMode: "manage" as const,
     workspaceType: "salon" as const,
   };
-  const redirectTo = await getManageDefaultRedirect(selectedContext);
-
-  const workspace = context.workspaceOptions.find(
-    (option): option is CurrentWorkspaceOption =>
-      option.id === getManageWorkspaceId(allowedSalon.id),
-  );
-
   if (!workspace) {
-    redirectWithError("You can only switch to a Salon connected to your account.");
+    redirectWithError("You can only switch to a salon connected to your Account.");
   }
+
+  const redirectTo = workspace.defaultHref || (await getManageDefaultRedirect(selectedContext));
 
   await setNormalizedWorkspaceContext(workspace);
   revalidatePath("/", "layout");
@@ -266,7 +369,7 @@ export async function setCurrentStaffSalon(formData: FormData) {
   const salonId = formData.get("salon_id");
 
   if (typeof salonId !== "string" || !salonId.trim()) {
-    redirectStaffWithError("Choose a Salon before opening My Work.");
+    redirectStaffWithError("Choose a salon before opening My Work.");
   }
 
   const context = await getCurrentStaffBusinessContext();
@@ -280,11 +383,11 @@ export async function setCurrentStaffSalon(formData: FormData) {
   );
 
   if (!allowedSalon) {
-    console.error("Blocked staff Salon switch outside linked staff salons", {
+    console.error("Blocked staff Salon switch outside linked salons", {
       requestedSalonId: salonId,
       userId: context.user.id,
     });
-    redirectStaffWithError("You can only switch to a Salon linked to your staff account.");
+    redirectStaffWithError("You can only switch to a salon linked to your staff account.");
   }
 
   const workspace = context.workspaceOptions.find(
@@ -293,7 +396,7 @@ export async function setCurrentStaffSalon(formData: FormData) {
   );
 
   if (!workspace) {
-    redirectStaffWithError("You can only switch to a Salon linked to your staff account.");
+    redirectStaffWithError("You can only switch to a salon linked to your staff account.");
   }
 
   await setNormalizedWorkspaceContext(workspace);

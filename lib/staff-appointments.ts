@@ -211,7 +211,7 @@ export async function getCurrentStaffAppointments(
 
   const staff = await loadCurrentStaff(context);
 
-  if (!staff || !context.currentOrganization) {
+  if (!staff) {
     return {
       appointments: [],
       assignedServices: [],

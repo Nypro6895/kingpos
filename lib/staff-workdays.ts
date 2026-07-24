@@ -19,7 +19,7 @@ import type {
 } from "@/types/staff-workday";
 
 export const STAFF_WORKDAY_SELECT =
-  "id, organization_id, salon_id, staff_id, work_date, status, check_in_at, check_out_at, created_at, updated_at, staff:staff(id, display_name, job_title)";
+  "id, salon_id, staff_id, work_date, status, check_in_at, check_out_at, created_at, updated_at, staff:staff(id, display_name, job_title)";
 
 export const STAFF_WORKDAY_STATUS_LABELS = {
   break: "On break",
@@ -119,9 +119,9 @@ export function getTodayDate(timeZone = "America/Chicago") {
   return `${year}-${month}-${day}`;
 }
 
-function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
-  if (!context.currentOrganization) {
-    throw new Error("Create an organization before using My Work Today.");
+function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
+  if (!context.currentAccount) {
+    throw new Error("Choose a salon workspace before using My Work Today.");
   }
 
   if (!context.currentSalon) {
@@ -129,7 +129,7 @@ function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
   }
 
   return {
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
   };
 }
@@ -142,7 +142,7 @@ export async function getCurrentStaffForSalon(
     throw new Error("You must be logged in to use My Work Today.");
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -163,7 +163,7 @@ export async function getCurrentStaffForSalon(
       source: resolution.source,
       staffIds: resolution.matches.map((member) => member.id),
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: context.user.id,
     });
     throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);
@@ -175,7 +175,6 @@ export async function getCurrentStaffForSalon(
     const { data, error } = await supabase
       .from("staff")
       .select(STAFF_ACCOUNT_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
       .ilike("email", context.user.email)
@@ -189,7 +188,7 @@ export async function getCurrentStaffForSalon(
         details: error.details,
         hint: error.hint,
         salonId: salon.id,
-        organizationId: organization.id,
+        accountId: Account.id,
         userId: context.user.id,
       });
       throw new Error(error.message);
@@ -199,7 +198,7 @@ export async function getCurrentStaffForSalon(
       console.error("Multiple legacy email staff matches found", {
         staffIds: (data ?? []).map((member) => member.id),
         salonId: salon.id,
-        organizationId: organization.id,
+        accountId: Account.id,
         userId: context.user.id,
       });
       throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);
@@ -226,11 +225,11 @@ export async function getTodaysStaffWorkday(
     return { context: resolvedContext, staff: null, today, workday: null };
   }
 
-  if (!resolvedContext.currentOrganization || !resolvedContext.currentSalon) {
+  if (!resolvedContext.currentAccount || !resolvedContext.currentSalon) {
     return { context: resolvedContext, staff: null, today, workday: null };
   }
 
-  const { salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { salon } = requireCurrentAccountAndSalon(resolvedContext);
   let staff: Staff;
 
   try {
@@ -291,7 +290,7 @@ export async function getCurrentSalonStaffTodayBoard(
     return { context: resolvedContext, staff: [], today };
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { Account, salon } = requireCurrentAccountAndSalon(resolvedContext);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -302,7 +301,6 @@ export async function getCurrentSalonStaffTodayBoard(
     supabase
       .from("staff")
       .select(STAFF_ACCOUNT_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
       .order("display_name", { ascending: true })
@@ -310,7 +308,6 @@ export async function getCurrentSalonStaffTodayBoard(
     supabase
       .from("staff_workdays")
       .select(STAFF_WORKDAY_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("work_date", today)
       .returns<StaffWorkdayWithStaff[]>(),
@@ -323,7 +320,7 @@ export async function getCurrentSalonStaffTodayBoard(
       details: staffResult.error.details,
       hint: staffResult.error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(staffResult.error.message);
@@ -336,7 +333,7 @@ export async function getCurrentSalonStaffTodayBoard(
       details: workdaysResult.error.details,
       hint: workdaysResult.error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(workdaysResult.error.message);
@@ -381,7 +378,7 @@ export async function getCurrentSalonStaffActivitySummaries(
     return summaryByStaffId;
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { Account, salon } = requireCurrentAccountAndSalon(resolvedContext);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -394,7 +391,6 @@ export async function getCurrentSalonStaffActivitySummaries(
     .select(
       "staff_id, service_total, tip_amount, total_earning, big_turn_count, small_turn_count, ticket:pos_tickets!inner(status)",
     )
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("work_date", today)
     .in("staff_id", staffIds)
@@ -418,7 +414,7 @@ export async function getCurrentSalonStaffActivitySummaries(
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(error.message);
@@ -462,7 +458,7 @@ export async function getCurrentStaffAssignedWork(
     };
   }
 
-  if (!resolvedContext.currentOrganization || !resolvedContext.currentSalon) {
+  if (!resolvedContext.currentAccount || !resolvedContext.currentSalon) {
     return {
       context: resolvedContext,
       excludedTicketCount: 0,
@@ -472,7 +468,7 @@ export async function getCurrentStaffAssignedWork(
     };
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { Account, salon } = requireCurrentAccountAndSalon(resolvedContext);
   let staff: Staff;
 
   try {
@@ -509,7 +505,6 @@ export async function getCurrentStaffAssignedWork(
     .select(
       "id, ticket_id, staff_id, service_total, tip_amount, total_earning, big_turn_count, small_turn_count, ticket:pos_tickets!inner(id, ticket_number, status, opened_at, closed_at, customer:customers(id, name, phone, email))",
     )
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("staff_id", staff.id)
     .eq("work_date", today)
@@ -547,7 +542,7 @@ export async function getCurrentStaffAssignedWork(
       hint: earningsError.hint,
       staffId: staff.id,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(earningsError.message);
@@ -558,7 +553,6 @@ export async function getCurrentStaffAssignedWork(
     .select(
       "id, pos_ticket_id, assigned_staff_id, unit_price, line_total, quantity, created_at, service:services(id, name), ticket:pos_tickets!inner(id, ticket_number, status, opened_at, closed_at, customer:customers(id, name, phone, email))",
     )
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("assigned_staff_id", staff.id)
     .eq("is_removed", false)
@@ -598,7 +592,7 @@ export async function getCurrentStaffAssignedWork(
       hint: todaysItemsError.hint,
       staffId: staff.id,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(todaysItemsError.message);
@@ -625,7 +619,6 @@ export async function getCurrentStaffAssignedWork(
           .select(
             "id, pos_ticket_id, assigned_staff_id, unit_price, line_total, quantity, created_at, service:services(id, name), ticket:pos_tickets!inner(id, ticket_number, status, opened_at, closed_at, customer:customers(id, name, phone, email))",
           )
-          .eq("organization_id", organization.id)
           .eq("salon_id", salon.id)
           .eq("assigned_staff_id", staff.id)
           .eq("is_removed", false)
@@ -666,7 +659,7 @@ export async function getCurrentStaffAssignedWork(
       hint: itemsError.hint,
       staffId: staff.id,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(itemsError.message);

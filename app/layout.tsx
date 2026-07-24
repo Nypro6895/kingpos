@@ -56,10 +56,10 @@ export default async function RootLayout({
 
   return (
     <html
-      className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} h-full bg-zinc-50 antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} h-full bg-white antialiased`}
       lang="en"
     >
-      <body className="min-h-full bg-zinc-50 text-zinc-950">
+      <body className="min-h-full bg-white text-zinc-950">
         <SalonSwitcher context={context}>{children}</SalonSwitcher>
       </body>
     </html>

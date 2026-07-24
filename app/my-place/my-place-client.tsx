@@ -21,6 +21,7 @@ import type {
   CurrentWorkspaceAction,
   CurrentWorkspaceOption,
 } from "@/lib/current-context";
+import { routes } from "@/lib/routes";
 import type { WorkspacePendingSummary } from "@/lib/workspace-pending";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,22 +34,21 @@ type MyPlaceClientProps = {
   workspaceOptions: CurrentWorkspaceOption[];
 };
 
-function findOwnerOrganizationWorkspace(input: {
+function findOwnerAccountWorkspace(input: {
   currentWorkspace: CurrentWorkspaceOption | null;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
-  const organizations = input.workspaceOptions.filter(
+  const accounts = input.workspaceOptions.filter(
     (workspace) =>
-      workspace.type === "organization" &&
-      workspace.menuActions.some((action) => action.href === "/salons"),
+      workspace.type === "account" &&
+      workspace.menuActions.some((action) => action.href === routes.salons.create()),
   );
 
   return (
-    organizations.find(
-      (workspace) =>
-        workspace.organizationId === input.currentWorkspace?.organizationId,
+    accounts.find(
+      (workspace) => workspace.accountId === input.currentWorkspace?.accountId,
     ) ??
-    organizations[0] ??
+    accounts[0] ??
     null
   );
 }
@@ -83,8 +83,8 @@ export function MyPlaceClient({
       workspace.salonMode === "staff" &&
       matchesWorkspace(workspace),
   );
-  const organizationWorkspaces = workspaceOptions.filter(
-    (workspace) => workspace.type === "organization" && matchesWorkspace(workspace),
+  const accountWorkspaces = workspaceOptions.filter(
+    (workspace) => workspace.type === "account" && matchesWorkspace(workspace),
   );
   const quickAccess = buildWorkspaceShortcuts({
     currentWorkspace,
@@ -92,12 +92,12 @@ export function MyPlaceClient({
     query: normalizedQuery,
     workspaceOptions,
   });
-  const ownerOrganizationWorkspace = findOwnerOrganizationWorkspace({
+  const ownerAccountWorkspace = findOwnerAccountWorkspace({
     currentWorkspace,
     workspaceOptions,
   });
-  const createSalonAction = ownerOrganizationWorkspace?.menuActions.find(
-    (action) => action.href === "/salons",
+  const createSalonAction = ownerAccountWorkspace?.menuActions.find(
+    (action) => action.href === routes.salons.create(),
   );
   const pendingMatches =
     pendingSummary.total > 0 &&
@@ -115,12 +115,12 @@ export function MyPlaceClient({
   const showQuickAccess = quickAccess.length > 0;
   const showManageGroup = !isFiltering || manageWorkspaces.length > 0;
   const showStaffGroup = !isFiltering || staffWorkspaces.length > 0;
-  const showOrganizationGroup = !isFiltering || organizationWorkspaces.length > 0;
+  const showAccountGroup = !isFiltering || accountWorkspaces.length > 0;
   const hasResults =
     quickAccess.length > 0 ||
     manageWorkspaces.length > 0 ||
     staffWorkspaces.length > 0 ||
-    organizationWorkspaces.length > 0 ||
+    accountWorkspaces.length > 0 ||
     pendingMatches;
   const pendingSeparator = " " + String.fromCharCode(183) + " ";
 
@@ -167,32 +167,27 @@ export function MyPlaceClient({
         <div className="min-w-0">
           <h1 className="text-3xl font-semibold text-zinc-950">My Place</h1>
           <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-            Your salons, workplaces, and organizations.
+            Your salons, workplaces, and account spaces.
           </p>
         </div>
         <div className="flex min-w-0 flex-wrap gap-2">
-          {ownerOrganizationWorkspace && createSalonAction ? (
+          {ownerAccountWorkspace && createSalonAction ? (
             <WorkspaceActionButton
               action={{
                 ...createSalonAction,
                 id: "create-salon",
-                label: "Create salon",
+                label: "Create Salon",
               }}
               icon="plus"
               onRunAction={runAction}
               pendingKey={pendingKey}
               variant="primary"
-              workspace={ownerOrganizationWorkspace}
+              workspace={ownerAccountWorkspace}
             />
-          ) : (
-            <Link className={hubButtonClass("primary")} href="/organizations">
-              <HubIcon className="h-4 w-4 shrink-0" name="plus" />
-              <span className="truncate">Create organization</span>
-            </Link>
-          )}
+          ) : null}
           <Link className={hubButtonClass("secondary")} href="/staff/connections">
             <HubIcon className="h-4 w-4 shrink-0" name="user-plus" />
-            <span className="truncate">Apply to salon</span>
+            <span className="truncate">Apply to Salon</span>
           </Link>
         </div>
       </div>
@@ -249,28 +244,28 @@ export function MyPlaceClient({
               count={manageWorkspaces.length}
               description="Salons you own or manage."
               icon="store"
-              title="Manage Salons"
+              title="Owner Salons"
             >
               {manageWorkspaces.length === 0 ? (
                 <WorkspaceGroupEmpty
                   action={
-                    ownerOrganizationWorkspace && createSalonAction ? (
+                    ownerAccountWorkspace && createSalonAction ? (
                       <WorkspaceActionButton
                         action={{
                           ...createSalonAction,
                           id: "create-salon-empty",
-                          label: "Create salon",
+                          label: "Create Salon",
                         }}
                         icon="plus"
                         onRunAction={runAction}
                         pendingKey={pendingKey}
                         variant="secondary"
-                        workspace={ownerOrganizationWorkspace}
+                        workspace={ownerAccountWorkspace}
                       />
                     ) : null
                   }
                   icon="store"
-                  title="No managed salons yet."
+                  title="No owner salons yet."
                 />
               ) : (
                 <div className="divide-y divide-zinc-100">
@@ -304,7 +299,7 @@ export function MyPlaceClient({
                       href="/staff/connections"
                     >
                       <HubIcon className="h-4 w-4 shrink-0" name="user-plus" />
-                      <span className="truncate">Apply to salon</span>
+                      <span className="truncate">Apply to Salon</span>
                     </Link>
                   }
                   icon="briefcase"
@@ -325,21 +320,21 @@ export function MyPlaceClient({
             </WorkspaceGroup>
           ) : null}
 
-          {showOrganizationGroup ? (
+          {showAccountGroup ? (
             <WorkspaceGroup
-              count={organizationWorkspaces.length}
-              description="Organizations connected to your account."
+              count={accountWorkspaces.length}
+              description="Account workspaces connected to your login."
               icon="building"
-              title="Organizations"
+              title="Accounts"
             >
-              {organizationWorkspaces.length === 0 ? (
+              {accountWorkspaces.length === 0 ? (
                 <WorkspaceGroupEmpty
                   icon="building"
-                  title="No connected organizations."
+                  title="No connected Accounts."
                 />
               ) : (
                 <div className="divide-y divide-zinc-100">
-                  {organizationWorkspaces.map((workspace) => (
+                  {accountWorkspaces.map((workspace) => (
                     <WorkspaceListItem
                       key={workspace.id}
                       onRunAction={runAction}

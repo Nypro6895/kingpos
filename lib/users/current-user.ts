@@ -1,4 +1,10 @@
-import { createSupabaseServerClient, getSupabaseAuthUser } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  createUserScopedSupabaseServerClient,
+  getAccessTokenFromRequest,
+  getSupabaseAuthUser,
+} from "@/lib/supabase/server";
+import { isDeniedKingUserStatus } from "@/lib/users/account-status";
 import type { KingUser } from "@/types/user";
 import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
 
@@ -16,8 +22,13 @@ function readMetadataString(metadata: SupabaseAuthUser["user_metadata"], key: st
   return trimmedValue || null;
 }
 
-async function createMissingKingUser(authUser: SupabaseAuthUser) {
-  const supabase = createSupabaseServerClient();
+async function createMissingKingUser(
+  authUser: SupabaseAuthUser,
+  accessToken?: string | null,
+) {
+  const supabase = accessToken
+    ? createUserScopedSupabaseServerClient(accessToken)
+    : createSupabaseServerClient();
 
   if (!supabase) {
     return null;
@@ -55,13 +66,19 @@ async function createMissingKingUser(authUser: SupabaseAuthUser) {
     return data;
   }
 
-  console.error("Unable to create missing public.users record", {
-    authUserId: authUser.id,
-    code: error.code,
-    message: error.message,
-    details: error.details,
-    hint: error.hint,
-  });
+  if (error.code === "23505") {
+    console.log("Missing public.users record was created concurrently", {
+      authUserId: authUser.id,
+    });
+  } else {
+    console.error("Unable to create missing public.users record", {
+      authUserId: authUser.id,
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+  }
 
   const { data: existingUser, error: existingUserError } = await supabase
     .from("users")
@@ -83,11 +100,15 @@ async function createMissingKingUser(authUser: SupabaseAuthUser) {
   return existingUser;
 }
 
-export async function getCurrentKingUser() {
-  const supabase = createSupabaseServerClient();
-  const authUser = await getSupabaseAuthUser();
+export async function getKingUserForAuthUser(
+  authUser: SupabaseAuthUser,
+  accessToken?: string | null,
+) {
+  const supabase = accessToken
+    ? createUserScopedSupabaseServerClient(accessToken)
+    : createSupabaseServerClient();
 
-  if (!supabase || !authUser) {
+  if (!supabase) {
     return null;
   }
 
@@ -114,5 +135,24 @@ export async function getCurrentKingUser() {
     });
   }
 
-  return data ?? createMissingKingUser(authUser);
+  return data ?? createMissingKingUser(authUser, accessToken);
+}
+
+export async function getCurrentKingUser() {
+  const [authUser, accessToken] = await Promise.all([
+    getSupabaseAuthUser(),
+    getAccessTokenFromRequest(),
+  ]);
+
+  if (!authUser) {
+    return null;
+  }
+
+  const user = await getKingUserForAuthUser(authUser, accessToken);
+
+  if (!user || isDeniedKingUserStatus(user.status)) {
+    return null;
+  }
+
+  return user;
 }

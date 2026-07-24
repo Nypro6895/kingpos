@@ -13,7 +13,6 @@ export type StaffWorkdayStatus = (typeof STAFF_WORKDAY_STATUSES)[number];
 
 export type StaffWorkday = {
   id: string;
-  organization_id: string;
   salon_id: string;
   staff_id: string;
   work_date: string;

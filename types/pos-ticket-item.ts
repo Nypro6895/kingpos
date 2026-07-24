@@ -3,7 +3,6 @@ import type { Staff } from "@/types/staff";
 
 export type PosTicketItem = {
   id: string;
-  organization_id: string;
   salon_id: string;
   pos_ticket_id: string;
   service_id: string | null;

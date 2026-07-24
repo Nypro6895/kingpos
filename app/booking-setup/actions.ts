@@ -69,7 +69,7 @@ async function getActionContext() {
     throw new Error("Open a salon workspace before managing booking setup.");
   }
 
-  if (!context.currentOrganization || !context.currentSalon) {
+  if (!context.currentAccount || !context.currentSalon) {
     throw new Error("Choose a salon before managing booking setup.");
   }
 
@@ -81,7 +81,7 @@ async function getActionContext() {
 
   return {
     context,
-    organizationId: context.currentOrganization.id,
+    accountId: context.currentAccount.id,
     salonId: context.currentSalon.id,
     supabase,
   };

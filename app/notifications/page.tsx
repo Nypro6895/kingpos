@@ -16,6 +16,7 @@ import {
   getSalonStaffConnectionRequests,
   getStaffConnectionDashboard,
 } from "@/lib/staff-salon-connections";
+import { getAppNotificationScopeForContext } from "@/lib/workspace-pending";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type {
@@ -243,14 +244,15 @@ function ManagerNotificationCard({
 }
 
 export default async function NotificationsPage() {
-  const [{ context, requests }, appNotifications] = await Promise.all([
-    getStaffConnectionDashboard(),
-    getCurrentAppNotifications(),
-  ]);
+  const { context, requests } = await getStaffConnectionDashboard();
 
   if (!context.user) {
     redirect("/login?next=/notifications");
   }
+
+  const appNotifications = await getCurrentAppNotifications(
+    getAppNotificationScopeForContext(context),
+  );
 
   const pendingStaffRequests = requests.filter(
     (request) => request.status === "pending",
@@ -259,7 +261,7 @@ export default async function NotificationsPage() {
     (request) => request.status !== "pending",
   );
   const canManageStaff =
-    context.currentMembership && context.currentOrganization
+    context.currentMembership && context.currentAccount
       ? await hasPermission("staff.manage", context)
       : false;
   let managerRequests: SalonStaffConnectionRequestWithDetails[] = [];

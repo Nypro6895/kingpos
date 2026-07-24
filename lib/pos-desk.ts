@@ -26,13 +26,13 @@ export const POS_DESK_DEFAULTS = {
   taxEnabled: false,
 } as const;
 
-function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
-    throw new Error("Open POS Desk from a Manage Salon workspace.");
+    throw new Error("Open POS Desk from a Business workspace.");
   }
 
-  if (!context.currentOrganization) {
-    throw new Error("Create an organization before using POS Desk.");
+  if (!context.currentAccount) {
+    throw new Error("Choose a salon workspace before using POS Desk.");
   }
 
   if (!context.currentSalon) {
@@ -40,7 +40,7 @@ function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
   }
 
   return {
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
   };
 }
@@ -61,7 +61,7 @@ export async function getCurrentSalonPosDeskData() {
 
   await requirePermission(POS_TICKET_PERMISSIONS.manage, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -82,7 +82,6 @@ export async function getCurrentSalonPosDeskData() {
       supabase
         .from("services")
         .select("id, name, category, base_price")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("is_active", true)
         .order("name", { ascending: true })
@@ -90,21 +89,18 @@ export async function getCurrentSalonPosDeskData() {
       supabase
         .from("staff")
         .select("id, display_name, job_title, is_active")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .order("display_name", { ascending: true })
         .returns<Array<Omit<PosDeskStaff, "today_status" | "turns">>>(),
       supabase
         .from("staff_workdays")
         .select("staff_id, status")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("work_date", today)
         .returns<Array<{ staff_id: string; status: StaffWorkdayStatus }>>(),
       supabase
         .from("pos_ticket_item_turn_parts")
         .select("staff_id, turn_type")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("work_date", today)
         .returns<Array<{ staff_id: string; turn_type: "large" | "small" }>>(),

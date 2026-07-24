@@ -1,6 +1,7 @@
-import { ROLE_SELECT } from "@/lib/current-context";
-import { getOrganizationPermissionSet } from "@/lib/permissions";
-import { requireOrganizationPageContext } from "@/lib/route-context-guards";
+﻿import { ROLE_SELECT } from "@/lib/current-context";
+import { getAccountPermissionSet } from "@/lib/permissions";
+import { requireAccountPageContext } from "@/lib/route-context-guards";
+import { routes } from "@/lib/routes";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { Permission } from "@/types/permission";
 import type { Role } from "@/types/role";
@@ -8,8 +9,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 const CATEGORY_ORDER = [
-  "Organization",
-  "Salon",
+  "Account",
+  "Business",
   "Members",
   "Roles",
   "Customers",
@@ -53,21 +54,33 @@ function groupPermissionsByCategory(permissions: Permission[]) {
   );
 }
 
-function EmptyOrganizationState() {
+function displayCategory(category: string) {
+  if (category === "Account") {
+    return "Account";
+  }
+
+  if (category === "Business" || category === "Salon") {
+    return "Salon";
+  }
+
+  return category;
+}
+
+function EmptyBusinessState() {
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
       <p className="text-sm font-medium text-zinc-500">KITY Platform</p>
       <h1 className="mt-1 text-3xl font-semibold text-zinc-950">Permissions</h1>
       <div className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
-        <h2 className="text-lg font-semibold text-zinc-950">Set up an organization first</h2>
+        <h2 className="text-lg font-semibold text-zinc-950">Choose a salon first</h2>
         <p className="mt-2 text-sm text-zinc-600">
-          Permissions are assigned to roles inside an organization.
+          Permissions are assigned to roles for the current Account and salon.
         </p>
         <Link
           className="mt-5 inline-flex rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-          href="/organizations"
+          href={routes.salons.list()}
         >
-          Go to organization setup
+          Go to Salons
         </Link>
       </div>
     </main>
@@ -96,7 +109,7 @@ function PermissionCatalog({ permissions }: { permissions: Permission[] }) {
           key={category}
         >
           <h3 className="text-sm font-semibold uppercase tracking-normal text-zinc-500">
-            {category}
+            {displayCategory(category)}
           </h3>
           <ul className="mt-4 space-y-3">
             {categoryPermissions.map((permission) => (
@@ -165,16 +178,16 @@ function RolePermissionList({
 }
 
 export default async function PermissionsPage() {
-  const context = await requireOrganizationPageContext("/permissions");
+  const context = await requireAccountPageContext("/permissions");
 
   if (!context.user) {
     redirect("/login");
   }
 
-  const organization = context.currentOrganization;
+  const account = context.currentAccount;
 
-  if (!organization) {
-    return <EmptyOrganizationState />;
+  if (!account || !context.accountId) {
+    return <EmptyBusinessState />;
   }
 
   const supabase = await createAuthenticatedSupabaseServerClient();
@@ -186,7 +199,7 @@ export default async function PermissionsPage() {
   const { data: roles, error: rolesError } = await supabase
     .from("roles")
     .select(ROLE_SELECT)
-    .eq("organization_id", organization.id)
+    .eq("account_id", context.accountId)
     .order("is_system", { ascending: false })
     .order("created_at", { ascending: true })
     .returns<Role[]>();
@@ -197,13 +210,13 @@ export default async function PermissionsPage() {
       message: rolesError.message,
       details: rolesError.details,
       hint: rolesError.hint,
-      organizationId: organization.id,
+      accountId: context.accountId,
       userId: context.user.id,
     });
     throw new Error(rolesError.message);
   }
 
-  const permissionSet = await getOrganizationPermissionSet(organization.id, roles ?? []);
+  const permissionSet = await getAccountPermissionSet(account.id, roles ?? []);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -224,16 +237,16 @@ export default async function PermissionsPage() {
           </Link>
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href="/organizations"
+            href={routes.salons.list()}
           >
-            Organizations
+            Salons
           </Link>
         </div>
       </div>
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-zinc-950">
-          Role permissions for {organization.name}
+          Role permissions for {account.name}
         </h2>
         <RolePermissionList roles={permissionSet.roles} />
       </section>

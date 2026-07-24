@@ -39,7 +39,7 @@ import {
 } from "react";
 
 type BookingWorkspaceClientProps = Omit<BookingWorkspaceData, "context"> & {
-  organizationName: string;
+  accountName: string;
   publicBookingHref: string;
   salonName: string;
 };
@@ -3937,7 +3937,7 @@ export function BookingWorkspaceClient({
   canManageBookings,
   filters,
   options,
-  organizationName,
+  accountName,
   publicBookingHref,
   range,
   requests,
@@ -4012,7 +4012,7 @@ export function BookingWorkspaceClient({
 
   return (
     <main
-      aria-label={`${organizationName} ${salonName} booking workspace`}
+      aria-label={`${accountName} ${salonName} booking workspace`}
       className={classNames(styles.bookingSurface, styles.ownerRoot)}
       data-booking-surface="owner"
       data-testid="booking-owner-root"

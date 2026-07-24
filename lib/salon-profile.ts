@@ -47,13 +47,13 @@ export const SALON_PROFILE_PERMISSIONS = {
 } as const;
 
 export const SALON_PROFILE_SETTING_SELECT =
-  "id, organization_id, salon_id, business_name, phone, email, website, address_line1, address_line2, city, state, postal_code, country, business_description, allow_staff_applications, public_discovery_enabled, public_discovery_published_at, public_profile_tagline, public_profile_story, public_profile_logo_path, public_profile_cover_path, created_at, updated_at";
+  "id, salon_id, business_name, phone, email, website, address_line1, address_line2, city, state, postal_code, country, business_description, allow_staff_applications, public_discovery_enabled, public_discovery_published_at, public_profile_tagline, public_profile_story, public_profile_logo_path, public_profile_cover_path, created_at, updated_at";
 
 export const SALON_PROFILE_LOOK_SELECT =
-  "id, organization_id, salon_id, author_user_id, created_by_user_id, author_staff_id, author_display_name, author_avatar_path, service_id, recommended_staff_id, title, caption, emotional_description, why_love_it, mood, duration_minutes, starting_price, palette, badge, media_path, booking_note, is_pinned, status, published_at, created_at, updated_at";
+  "id, salon_id, author_user_id, created_by_user_id, author_staff_id, author_display_name, author_avatar_path, service_id, recommended_staff_id, title, caption, emotional_description, why_love_it, mood, duration_minutes, starting_price, palette, badge, media_path, booking_note, is_pinned, status, published_at, created_at, updated_at";
 
 export const SALON_PROFILE_UPDATE_SELECT =
-  "id, organization_id, salon_id, author_user_id, created_by_user_id, author_staff_id, author_display_name, author_avatar_path, service_id, staff_id, update_type, title, caption, summary, media_path, starts_at, ends_at, cta_label, status, published_at, created_at, updated_at";
+  "id, salon_id, author_user_id, created_by_user_id, author_staff_id, author_display_name, author_avatar_path, service_id, staff_id, update_type, title, caption, summary, media_path, starts_at, ends_at, cta_label, status, published_at, created_at, updated_at";
 
 type ProfileManageData = {
   canCreateContent: boolean;
@@ -98,6 +98,7 @@ type RpcRunner = (
 ) => Promise<{ data: unknown; error: RpcError | null }>;
 
 type PublicProfileRow = {
+  account_id: string | null;
   active_service_count: number | string | null;
   address_line1: string | null;
   address_line2: string | null;
@@ -109,7 +110,6 @@ type PublicProfileRow = {
   follower_count: number | string | null;
   is_following: boolean | null;
   logo_path: string | null;
-  organization_id: string;
   phone: string | null;
   postal_code: string | null;
   public_discovery_published_at: string | null;
@@ -364,7 +364,7 @@ async function resolveCurrentSalonProfileAuthor(input: {
 
 async function attachHashtagsToPost(input: {
   hashtags: string[];
-  organizationId: string;
+  accountId: string;
   postId: string;
   postType: "look" | "update";
   salonId: string;
@@ -374,21 +374,18 @@ async function attachHashtagsToPost(input: {
     return;
   }
 
-  const tagRows = input.hashtags.map((slug) => ({
-    display_name: slug,
-    slug,
-  }));
+  const tagRows = input.hashtags.map((tag) => ({ tag }));
   const { data: tags, error: tagError } = await input.supabase
     .from("salon_profile_hashtags")
-    .upsert(tagRows, { onConflict: "slug" })
-    .select("id, slug")
-    .returns<Array<{ id: string; slug: string }>>();
+    .upsert(tagRows, { onConflict: "tag" })
+    .select("id, tag")
+    .returns<Array<{ id: string; tag: string }>>();
 
   if (tagError) {
     throw new Error(tagError.message);
   }
 
-  const tagIds = new Map((tags ?? []).map((tag) => [tag.slug, tag.id]));
+  const tagIds = new Map((tags ?? []).map((tag) => [tag.tag, tag.id]));
   const relationRows = input.hashtags
     .map((slug) => tagIds.get(slug))
     .filter((tagId): tagId is string => Boolean(tagId))
@@ -397,12 +394,10 @@ async function attachHashtagsToPost(input: {
         ? {
             hashtag_id: tagId,
             look_id: input.postId,
-            organization_id: input.organizationId,
             salon_id: input.salonId,
           }
         : {
             hashtag_id: tagId,
-            organization_id: input.organizationId,
             salon_id: input.salonId,
             update_id: input.postId,
           },
@@ -480,13 +475,13 @@ export function getSalonProfileMediaUrl(path: string | null | undefined) {
     .getPublicUrl(cleanedPath).data.publicUrl;
 }
 
-function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context) && !isSalonStaffContext(context)) {
     throw new Error("Open Salon Profile from a salon workspace.");
   }
 
-  if (!context.currentOrganization) {
-    throw new Error("Create an organization before managing salon profile.");
+  if (!context.currentAccount) {
+    throw new Error("Choose a salon workspace before managing the salon profile.");
   }
 
   if (!context.currentSalon) {
@@ -494,7 +489,7 @@ function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
   }
 
   return {
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
   };
 }
@@ -575,7 +570,7 @@ async function requireSalonProfileContentCreatePermission(input: {
 }
 
 function fallbackSetting(context: CurrentBusinessContext): SalonProfileSetting {
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const now = new Date().toISOString();
 
   return {
@@ -589,7 +584,6 @@ function fallbackSetting(context: CurrentBusinessContext): SalonProfileSetting {
     created_at: now,
     email: null,
     id: "",
-    organization_id: organization.id,
     phone: salon.phone,
     postal_code: salon.postal_code,
     public_discovery_enabled: false,
@@ -779,7 +773,7 @@ export function getSalonProfileReadiness(input: {
 }
 
 async function getExistingSalonProfileSetting(context: CurrentBusinessContext) {
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -789,7 +783,6 @@ async function getExistingSalonProfileSetting(context: CurrentBusinessContext) {
   const { data, error } = await supabase
     .from("salon_settings")
     .select(SALON_PROFILE_SETTING_SELECT)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .maybeSingle<SalonProfileSetting>();
 
@@ -817,7 +810,7 @@ async function getOrCreateSalonProfileSetting(context: CurrentBusinessContext) {
     return existing;
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -833,7 +826,6 @@ async function getOrCreateSalonProfileSetting(context: CurrentBusinessContext) {
       business_name: salon.name,
       city: salon.city,
       country: salon.country,
-      organization_id: organization.id,
       phone: salon.phone,
       postal_code: salon.postal_code,
       public_discovery_enabled: false,
@@ -849,7 +841,7 @@ async function getOrCreateSalonProfileSetting(context: CurrentBusinessContext) {
       message: error.message,
       details: error.details,
       hint: error.hint,
-      organizationId: organization.id,
+      accountId: Account.id,
       salonId: salon.id,
     });
     throw new Error(error.message);
@@ -907,7 +899,7 @@ export async function getCurrentSalonProfileManageData(
     };
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { Account, salon } = requireCurrentAccountAndSalon(resolvedContext);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -925,21 +917,18 @@ export async function getCurrentSalonProfileManageData(
     supabase
       .from("services")
       .select(SERVICE_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .order("name", { ascending: true })
       .returns<Service[]>(),
     supabase
       .from("staff")
       .select(STAFF_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .order("display_name", { ascending: true })
       .returns<Staff[]>(),
     supabase
       .from("salon_profile_looks")
       .select(SALON_PROFILE_LOOK_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false })
@@ -947,7 +936,6 @@ export async function getCurrentSalonProfileManageData(
     supabase
       .from("salon_profile_updates")
       .select(SALON_PROFILE_UPDATE_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .order("created_at", { ascending: false })
       .returns<SalonProfileUpdate[]>(),
@@ -960,7 +948,7 @@ export async function getCurrentSalonProfileManageData(
         message: result.error.message,
         details: result.error.details,
         hint: result.error.hint,
-        organizationId: organization.id,
+        accountId: Account.id,
         salonId: salon.id,
       });
       throw new Error(result.error.message);
@@ -1011,7 +999,7 @@ function mapPublicProfile(row: PublicProfileRow): PublicSalonProfile {
     isFollowing: row.is_following ?? false,
     logoImageUrl: getSalonProfileMediaUrl(row.logo_path),
     name: row.salon_name,
-    organizationId: row.organization_id,
+    accountId: row.account_id ?? "",
     phone: row.phone,
     postalCode: row.postal_code,
     publishedAt: row.public_discovery_published_at,
@@ -1433,7 +1421,7 @@ async function assertTrustedSalonProfileMediaPath(input: {
     return null;
   }
 
-  const { salon } = requireCurrentOrganizationAndSalon(input.context);
+  const { salon } = requireCurrentAccountAndSalon(input.context);
   const parsedPath = parseSalonProfileMediaPath(normalizedPath);
 
   if (
@@ -1498,7 +1486,7 @@ async function removeTrustedSalonProfileMediaPath(input: {
     return;
   }
 
-  const { salon } = requireCurrentOrganizationAndSalon(input.context);
+  const { salon } = requireCurrentAccountAndSalon(input.context);
   const parsedPath = parseSalonProfileMediaPath(normalizedPath);
 
   if (!parsedPath || parsedPath.salonId !== salon.id) {
@@ -1565,7 +1553,7 @@ export async function updateCurrentSalonProfileIdentity(input: {
 
   await requirePermission(SALON_PROFILE_PERMISSIONS.manage, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const setting = await getOrCreateSalonProfileSetting(context);
   const [logoPath, coverPath] = await Promise.all([
     assertTrustedSalonProfileMediaPath({
@@ -1582,7 +1570,7 @@ export async function updateCurrentSalonProfileIdentity(input: {
   const businessName = clean(input.businessName);
 
   if (!businessName) {
-    throw new Error("Business name is required.");
+    throw new Error("Salon name is required.");
   }
 
   const supabase = await createAuthenticatedSupabaseServerClient();
@@ -1617,7 +1605,6 @@ export async function updateCurrentSalonProfileIdentity(input: {
       state: optionalText(input.state) ?? setting.state,
       website: optionalText(input.website),
     })
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id);
 
   if (error) {
@@ -1627,7 +1614,7 @@ export async function updateCurrentSalonProfileIdentity(input: {
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: context.user.id,
     });
     await Promise.all([
@@ -1705,7 +1692,7 @@ export async function updateCurrentSalonProfileIdentityMedia(input: {
 
   await requirePermission(SALON_PROFILE_PERMISSIONS.manage, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const setting = await getOrCreateSalonProfileSetting(context);
   const mediaPath = await assertTrustedSalonProfileMediaPath({
     allowedKinds: [input.kind],
@@ -1731,7 +1718,6 @@ export async function updateCurrentSalonProfileIdentityMedia(input: {
     .update({
       [column]: input.remove ? null : (mediaPath ?? existingPath),
     })
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id);
 
   if (error) {
@@ -1790,7 +1776,7 @@ export async function setCurrentSalonProfilePublication(enabled: boolean) {
 
   await requirePermission(SALON_PROFILE_PERMISSIONS.manage, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const data = await getCurrentSalonProfileManageData(context);
 
   if (enabled && !data.readiness.canPublish) {
@@ -1808,7 +1794,6 @@ export async function setCurrentSalonProfilePublication(enabled: boolean) {
   const { error } = await supabase
     .from("salon_settings")
     .update({ public_discovery_enabled: enabled })
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id);
 
   if (error) {
@@ -1841,7 +1826,7 @@ export async function createCurrentSalonProfileLook(input: {
     throw new Error("You must be logged in to create looks.");
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -1897,7 +1882,6 @@ export async function createCurrentSalonProfileLook(input: {
       .from("services")
       .select("id, base_price, duration_minutes")
       .eq("id", input.serviceId)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
       .maybeSingle<Pick<Service, "base_price" | "duration_minutes" | "id">>();
@@ -1915,7 +1899,6 @@ export async function createCurrentSalonProfileLook(input: {
       .from("staff")
       .select("id")
       .eq("id", recommendedStaffId)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
       .maybeSingle<{ id: string }>();
@@ -1930,7 +1913,6 @@ export async function createCurrentSalonProfileLook(input: {
     await supabase
       .from("salon_profile_looks")
       .update({ is_pinned: false })
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id);
   }
 
@@ -1951,7 +1933,6 @@ export async function createCurrentSalonProfileLook(input: {
       is_pinned: input.isPinned,
       media_path: mediaPath,
       mood: optionalText(input.mood),
-      organization_id: organization.id,
       palette: input.palette,
       published_at: input.publishNow ? new Date().toISOString() : null,
       recommended_staff_id: recommendedStaffId,
@@ -1972,7 +1953,7 @@ export async function createCurrentSalonProfileLook(input: {
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: context.user.id,
     });
     await removeTrustedSalonProfileMediaPath({ context, path: mediaPath });
@@ -1989,7 +1970,7 @@ export async function createCurrentSalonProfileLook(input: {
       }),
       attachHashtagsToPost({
         hashtags: extractHashtags(caption),
-        organizationId: organization.id,
+        accountId: Account.id,
         postId: data.id,
         postType: "look",
         salonId: salon.id,
@@ -2011,7 +1992,6 @@ export async function createCurrentSalonProfileLook(input: {
       .from("salon_profile_looks")
       .delete()
       .eq("id", data.id)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id);
     await removeTrustedSalonProfileMediaPath({ context, path: mediaPath });
     throw postError;
@@ -2040,7 +2020,7 @@ export async function createCurrentSalonProfileUpdate(input: {
     throw new Error("You must be logged in to create salon updates.");
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -2081,7 +2061,6 @@ export async function createCurrentSalonProfileUpdate(input: {
       .from("services")
       .select("id, name")
       .eq("id", input.serviceId)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
       .maybeSingle<Pick<Service, "id" | "name">>();
@@ -2099,7 +2078,6 @@ export async function createCurrentSalonProfileUpdate(input: {
       .from("staff")
       .select("id, display_name")
       .eq("id", selectedStaffId)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
       .maybeSingle<Pick<Staff, "display_name" | "id">>();
@@ -2133,7 +2111,6 @@ export async function createCurrentSalonProfileUpdate(input: {
     const { data: duplicate, error: duplicateError } = await supabase
       .from("salon_profile_updates")
       .select("id")
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("update_type", "last_minute_opening")
       .eq("staff_id", staffMember.id)
@@ -2186,8 +2163,6 @@ export async function createCurrentSalonProfileUpdate(input: {
       created_by_user_id: context.user.id,
       cta_label: ctaLabel,
       media_path: mediaPath,
-      organization_id: organization.id,
-      published_at: input.publishNow ? new Date().toISOString() : null,
       salon_id: salon.id,
       service_id: input.serviceId,
       staff_id: selectedStaffId,
@@ -2207,7 +2182,7 @@ export async function createCurrentSalonProfileUpdate(input: {
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: context.user.id,
     });
     await removeTrustedSalonProfileMediaPath({ context, path: mediaPath });
@@ -2224,7 +2199,7 @@ export async function createCurrentSalonProfileUpdate(input: {
       }),
       attachHashtagsToPost({
         hashtags: extractHashtags(caption),
-        organizationId: organization.id,
+        accountId: Account.id,
         postId: data.id,
         postType: "update",
         salonId: salon.id,
@@ -2246,7 +2221,6 @@ export async function createCurrentSalonProfileUpdate(input: {
       .from("salon_profile_updates")
       .delete()
       .eq("id", data.id)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id);
     await removeTrustedSalonProfileMediaPath({ context, path: mediaPath });
     throw postError;
@@ -2268,7 +2242,7 @@ export async function setCurrentSalonProfileLookStatus(input: {
 
   await requirePermission(SALON_PROFILE_PERMISSIONS.contentManage, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -2279,7 +2253,6 @@ export async function setCurrentSalonProfileLookStatus(input: {
     const { error: clearError } = await supabase
       .from("salon_profile_looks")
       .update({ is_pinned: false })
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id);
 
     if (clearError) {
@@ -2307,7 +2280,6 @@ export async function setCurrentSalonProfileLookStatus(input: {
     .from("salon_profile_looks")
     .update(patch)
     .eq("id", input.lookId)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id);
 
   if (error) {
@@ -2324,7 +2296,7 @@ export async function deleteCurrentSalonProfileLook(lookId: string) {
 
   await requirePermission(SALON_PROFILE_PERMISSIONS.contentManage, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -2335,7 +2307,6 @@ export async function deleteCurrentSalonProfileLook(lookId: string) {
     .from("salon_profile_looks")
     .select("media_path")
     .eq("id", lookId)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .maybeSingle<{ media_path: string | null }>();
 
@@ -2347,7 +2318,6 @@ export async function deleteCurrentSalonProfileLook(lookId: string) {
     .from("salon_profile_looks")
     .delete()
     .eq("id", lookId)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id);
 
   if (error) {
@@ -2483,7 +2453,6 @@ export async function createPublicSalonProfileComment(input: {
     body,
     is_salon_reply: input.asSalonReply === true,
     look_id: lookId,
-    organization_id: publicData.profile.organizationId,
     parent_comment_id: optionalText(input.parentCommentId),
     salon_id: publicData.profile.salonId,
     status: "visible",
@@ -2577,7 +2546,6 @@ export async function createPublicSalonProfileReview(input: {
     author_user_id: context.user.id,
     body,
     moderation_status: "visible",
-    organization_id: publicData.profile.organizationId,
     rating,
     salon_id: publicData.profile.salonId,
     title: optionalText(input.title),
@@ -2645,7 +2613,6 @@ export async function createPublicSalonProfileReviewReply(input: {
     author_user_id: context.user.id,
     body,
     moderation_status: "visible",
-    organization_id: publicData.profile.organizationId,
     review_id: input.reviewId,
     salon_id: publicData.profile.salonId,
   });
@@ -2720,7 +2687,6 @@ export async function createPublicSalonProfileBookingRequest(input: {
     .insert({
       customer_user_id: context.user.id,
       look_id: lookId,
-      organization_id: publicData.profile.organizationId,
       private_note: optionalText(input.note),
       requested_start_at: requestedStartAt,
       salon_id: publicData.profile.salonId,

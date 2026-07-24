@@ -29,7 +29,6 @@ export type StaffSalonConnectionRequest = {
   id: string;
   initiated_by_user_id: string;
   message: string | null;
-  organization_id: string;
   requested_job_title: string | null;
   reviewed_by_user_id: string | null;
   revoked_at: string | null;

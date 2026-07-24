@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 
 import {
   listStaffBookingConflicts,
@@ -127,11 +127,11 @@ async function requireManageBookingDomainContext() {
     };
   }
 
-  if (!isSalonManageContext(context) || !context.currentOrganization || !context.currentSalon) {
+  if (!isSalonManageContext(context) || !context.currentAccount || !context.currentSalon) {
     return {
       error: {
         code: "invalid_context" as const,
-        message: "Open bookings from a Manage Salon workspace.",
+        message: "Open bookings from a Business workspace.",
       },
       ok: false as const,
     };
@@ -151,7 +151,7 @@ async function requireManageBookingDomainContext() {
 
   return {
     context,
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
     supabase,
     user: context.user,
@@ -199,7 +199,6 @@ export async function createCanonicalBookingForCurrentSalon(
 
     const lineSnapshots = await deriveBookingLineSnapshots({
       lines: input.lines,
-      organizationId: context.organization.id,
       salonId: context.salon.id,
       supabase: context.supabase,
     });
@@ -523,7 +522,6 @@ export async function assignBookingStaff(
           },
           new_status: normalizeMutableStatus(booking.status),
           old_status: normalizeMutableStatus(booking.status),
-          organization_id: context.organization.id,
           salon_id: context.salon.id,
         });
 

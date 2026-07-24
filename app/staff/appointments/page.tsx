@@ -261,7 +261,7 @@ function Header({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-semibold text-zinc-500">
-              {data.context.currentOrganization?.name} /{" "}
+              {data.context.currentAccount?.name ?? data.context.accountName} /{" "}
               {data.context.currentStaffSalon?.name}
             </p>
             <h1 className="mt-1 text-3xl font-semibold text-zinc-950">

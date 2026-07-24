@@ -78,8 +78,8 @@ export function QuickWorkspacePanel({
       workspace.salonMode === "staff" &&
       matchesWorkspace(workspace),
   );
-  const organizationWorkspaces = workspaceOptions.filter(
-    (workspace) => workspace.type === "organization" && matchesWorkspace(workspace),
+  const accountWorkspaces = workspaceOptions.filter(
+    (workspace) => workspace.type === "account" && matchesWorkspace(workspace),
   );
   const quickAccess = buildWorkspaceShortcuts({
     currentWorkspace,
@@ -102,11 +102,11 @@ export function QuickWorkspacePanel({
   const showQuickAccess = quickAccess.length > 0;
   const showManageGroup = !isFiltering || manageWorkspaces.length > 0;
   const showStaffGroup = !isFiltering || staffWorkspaces.length > 0;
-  const showOrganizationGroup = !isFiltering || organizationWorkspaces.length > 0;
+  const showAccountGroup = !isFiltering || accountWorkspaces.length > 0;
   const hasDirectoryResults =
     manageWorkspaces.length > 0 ||
     staffWorkspaces.length > 0 ||
-    organizationWorkspaces.length > 0 ||
+    accountWorkspaces.length > 0 ||
     quickAccess.length > 0 ||
     pendingMatches;
   const pendingSeparator = " " + String.fromCharCode(183) + " ";
@@ -305,13 +305,13 @@ export function QuickWorkspacePanel({
             <WorkspaceGroup
               count={manageWorkspaces.length}
               icon="store"
-              title="Manage Salons"
+              title="Owner Salons"
               variant="panel"
             >
               {manageWorkspaces.length === 0 ? (
                 <WorkspaceGroupEmpty
                   icon="store"
-                  title="No managed salons found."
+                  title="No owner salons found."
                   variant="panel"
                 />
               ) : (
@@ -359,22 +359,22 @@ export function QuickWorkspacePanel({
             </WorkspaceGroup>
           ) : null}
 
-          {showOrganizationGroup ? (
+          {showAccountGroup ? (
             <WorkspaceGroup
-              count={organizationWorkspaces.length}
+              count={accountWorkspaces.length}
               icon="building"
-              title="Organizations"
+              title="Accounts"
               variant="panel"
             >
-              {organizationWorkspaces.length === 0 ? (
+              {accountWorkspaces.length === 0 ? (
                 <WorkspaceGroupEmpty
                   icon="building"
-                  title="No organizations found."
+                  title="No Accounts found."
                   variant="panel"
                 />
               ) : (
                 <div className="divide-y divide-zinc-100">
-                  {organizationWorkspaces.map((workspace) => (
+                  {accountWorkspaces.map((workspace) => (
                     <WorkspaceListItem
                       density="panel"
                       key={workspace.id}

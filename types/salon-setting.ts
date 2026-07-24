@@ -1,6 +1,5 @@
 export type SalonSetting = {
   id: string;
-  organization_id: string;
   salon_id: string;
   business_name: string;
   phone: string | null;

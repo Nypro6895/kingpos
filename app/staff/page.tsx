@@ -1,4 +1,4 @@
-import {
+﻿import {
   createSalonStaffInviteFormAction,
   createStaff,
   resendSalonStaffInviteFormAction,
@@ -482,7 +482,7 @@ function StaffForm({
       <Field autoComplete="family-name" label="Last Name" name="last_name" />
       <Field autoComplete="tel" label="Phone" name="phone" />
       <Field autoComplete="email" label="Email" name="email" type="email" />
-      <Field autoComplete="organization-title" label="Job Title" name="job_title" />
+      <Field autoComplete="Account-title" label="Job Title" name="job_title" />
 
       <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 sm:col-span-2">
         <input
@@ -988,13 +988,11 @@ function PrimaryStaffAction({
   canManagePayroll,
   detailHref,
   member,
-  organizationId,
   requests,
 }: {
   canManagePayroll: boolean;
   detailHref: string;
   member: StaffDirectoryMember;
-  organizationId: string;
   requests: SalonStaffConnectionRequestWithDetails[];
 }) {
   const accountStatus = getAccountStatus(member, requests).kind;
@@ -1038,7 +1036,7 @@ function PrimaryStaffAction({
   if (accountStatus === "connected") {
     return (
       <ActionButton
-        href={`/organizations/${organizationId}/members`}
+        href="/roles"
         tone="primary"
       >
         View Account
@@ -1057,7 +1055,6 @@ function StaffDirectoryTable({
   activeFilter,
   canManagePayroll,
   hasAnyStaff,
-  organizationId,
   query,
   readinessByStaffId,
   requests,
@@ -1066,7 +1063,6 @@ function StaffDirectoryTable({
   activeFilter: StaffFilter;
   canManagePayroll: boolean;
   hasAnyStaff: boolean;
-  organizationId: string;
   query: string;
   readinessByStaffId?: Record<string, StaffBookingReadiness>;
   requests: SalonStaffConnectionRequestWithDetails[];
@@ -1176,7 +1172,6 @@ function StaffDirectoryTable({
                       canManagePayroll={canManagePayroll}
                       detailHref={detailHref}
                       member={member}
-                      organizationId={organizationId}
                       requests={requests}
                     />
                     <ActionButton href={detailHref}>View</ActionButton>
@@ -1933,8 +1928,6 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     selectedStaffId && !showAddStaff
       ? directory.staff.find((member) => member.id === selectedStaffId)
       : null;
-  const organizationId = context.currentOrganization?.id ?? "";
-
   return (
     <>
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
@@ -1979,7 +1972,6 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
             activeFilter={activeFilter}
             canManagePayroll={canManagePayroll}
             hasAnyStaff={directory.staff.length > 0}
-            organizationId={organizationId}
             query={query}
             readinessByStaffId={bookingSetup.readinessByStaffId}
             requests={connectionRequests}

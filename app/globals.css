@@ -2,7 +2,7 @@
 
 :root {
   color-scheme: light;
-  --background: #fffdfb;
+  --background: #ffffff;
   --foreground: #241b1f;
   --brand-black: #1f171b;
   --brand-orange: #f26f3d;
@@ -10,10 +10,10 @@
   --brand-orange-soft: #fff0e8;
   --brand-teal: #008f8a;
   --brand-teal-soft: #e7f7f5;
-  --page-background: #fffdfb;
+  --page-background: #ffffff;
   --surface: #ffffff;
   --surface-elevated: #ffffff;
-  --surface-muted: #fbf6f2;
+  --surface-muted: #fbf8f5;
   --text-primary: #241b1f;
   --text-secondary: #72686d;
   --text-muted: #91878c;
@@ -51,7 +51,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: light;
-    --background: #fffdfb;
+    --background: #ffffff;
     --foreground: #241b1f;
   }
 }

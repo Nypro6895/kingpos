@@ -1,10 +1,10 @@
-export const LOCATION_STATUSES = ["active", "inactive"] as const;
+﻿export const LOCATION_STATUSES = ["active", "inactive"] as const;
 
 export type LocationStatus = (typeof LOCATION_STATUSES)[number];
 
 export type Location = {
   id: string;
-  organization_id: string;
+  account_id?: string;
   name: string;
   phone: string | null;
   address_line1: string | null;

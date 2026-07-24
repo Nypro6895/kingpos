@@ -101,7 +101,7 @@ export type CustomerDetailData = {
 
 function requireCurrentSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
-    throw new Error("Open customers from a Manage Salon workspace.");
+    throw new Error("Open customers from a Business workspace.");
   }
 
   if (!context.currentSalon) {
@@ -263,7 +263,7 @@ export async function getCurrentSalonCustomerList(input: {
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: context.user.id,
     });
     throw new Error(error.message);
@@ -629,7 +629,7 @@ export async function getCurrentSalonCustomer(customerId: string) {
       hint: error.hint,
       customerId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: context.user.id,
     });
     throw new Error(error.message);

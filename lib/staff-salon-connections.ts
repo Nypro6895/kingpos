@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 
 import { createHash, randomBytes } from "crypto";
 import {
@@ -40,7 +40,7 @@ import type { KingUser } from "@/types/user";
 export const STAFF_CONNECTION_INVITE_EXPIRY_DAYS = 7;
 
 const STAFF_CONNECTION_REQUEST_SELECT =
-  "id, organization_id, salon_id, staff_id, account_user_id, direction, initiated_by_user_id, target_email_normalized, target_phone_e164, status, expires_at, accepted_at, declined_at, cancelled_at, revoked_at, reviewed_by_user_id, message, requested_job_title, created_at, updated_at";
+  "id, salon_id, staff_id, account_user_id, direction, initiated_by_user_id, target_email_normalized, target_phone_e164, status, expires_at, accepted_at, declined_at, cancelled_at, revoked_at, reviewed_by_user_id, message, requested_job_title, created_at, updated_at";
 
 const STAFF_CONNECTION_ACCOUNT_SELECT =
   "id, auth_user_id, email, phone, display_name, avatar_url, status";
@@ -83,7 +83,7 @@ export class StaffSalonConnectionError extends Error {
 
 type StaffConnectionAuthContext = {
   context: CurrentBusinessContext;
-  organization: NonNullable<CurrentBusinessContext["currentOrganization"]>;
+  Account: NonNullable<CurrentBusinessContext["currentAccount"]>;
   salon: NonNullable<CurrentBusinessContext["currentSalon"]>;
   supabase: SupabaseServerClient;
   user: NonNullable<CurrentBusinessContext["user"]>;
@@ -241,12 +241,12 @@ async function getStaffConnectionAuthContext(): Promise<StaffConnectionAuthConte
 
   if (
     !isSalonManageContext(context) ||
-    !context.currentOrganization ||
+    !context.currentAccount ||
     !context.currentSalon
   ) {
     throw new StaffSalonConnectionError(
       "MISSING_CONTEXT",
-      "Open staff connections from a Manage Salon workspace.",
+      "Open staff connections from a Business workspace.",
     );
   }
 
@@ -270,7 +270,7 @@ async function getStaffConnectionAuthContext(): Promise<StaffConnectionAuthConte
 
   return {
     context,
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
     supabase,
     user: context.user,
@@ -314,7 +314,7 @@ export async function searchStaffAccountExact(input: {
       .rpc("search_staff_connection_account_exact", {
         p_email: email,
         p_phone: phone,
-        target_organization_id: auth.organization.id,
+        target_account_id: auth.Account.id,
         target_salon_id: auth.salon.id,
       });
 
@@ -337,7 +337,6 @@ async function loadStaffForInvite(
   const { data, error } = await auth.supabase
     .from("staff")
     .select(STAFF_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("id", staffId)
     .maybeSingle<Staff>();
@@ -390,7 +389,6 @@ async function createUnconnectedStaffForInvite(
       is_active: input.is_active ?? true,
       job_title: trimOptional(input.job_title),
       last_name: trimOptional(input.last_name),
-      organization_id: auth.organization.id,
       phone: input.phone,
       salon_id: auth.salon.id,
     })
@@ -439,7 +437,6 @@ async function assertAccountNotConnectedToSalon(
   const { data, error } = await auth.supabase
     .from("staff")
     .select("id")
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("account_user_id", accountUserId)
     .limit(1)
@@ -464,7 +461,6 @@ async function assertNoPendingInviteForStaff(
   const { data, error } = await auth.supabase
     .from("staff_salon_connection_requests")
     .select("id")
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("staff_id", staffId)
     .eq("status", "pending")
@@ -490,7 +486,6 @@ async function assertNoPendingInviteForAccount(
   const { data, error } = await auth.supabase
     .from("staff_salon_connection_requests")
     .select("id")
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("account_user_id", accountUserId)
     .eq("status", "pending")
@@ -520,7 +515,6 @@ async function assertNoPendingInviteForContact(
     const { data, error } = await auth.supabase
       .from("staff_salon_connection_requests")
       .select("id")
-      .eq("organization_id", auth.organization.id)
       .eq("salon_id", auth.salon.id)
       .eq("target_email_normalized", input.email)
       .eq("status", "pending")
@@ -543,7 +537,6 @@ async function assertNoPendingInviteForContact(
     const { data, error } = await auth.supabase
       .from("staff_salon_connection_requests")
       .select("id")
-      .eq("organization_id", auth.organization.id)
       .eq("salon_id", auth.salon.id)
       .eq("target_phone_e164", input.phone)
       .eq("status", "pending")
@@ -579,7 +572,6 @@ async function insertSalonInviteRequest(input: {
       direction: "salon_invite",
       expires_at: getInviteExpiresAt(),
       initiated_by_user_id: input.auth.user.id,
-      organization_id: input.auth.organization.id,
       salon_id: input.auth.salon.id,
       staff_id: input.staffId,
       status: "pending",
@@ -1126,12 +1118,12 @@ export async function getSalonStaffConnectionRequests() {
 
   if (
     !isSalonManageContext(context) ||
-    !context.currentOrganization ||
+    !context.currentAccount ||
     !context.currentSalon
   ) {
     throw new StaffSalonConnectionError(
       "MISSING_CONTEXT",
-      "Open staff connection requests from a Manage Salon workspace.",
+      "Open staff connection requests from a Business workspace.",
     );
   }
 
@@ -1147,7 +1139,6 @@ export async function getSalonStaffConnectionRequests() {
   const { data, error } = await supabase
     .from("staff_salon_connection_requests")
     .select(STAFF_CONNECTION_REQUEST_SELECT)
-    .eq("organization_id", context.currentOrganization.id)
     .eq("salon_id", context.currentSalon.id)
     .order("created_at", { ascending: false })
     .limit(100)

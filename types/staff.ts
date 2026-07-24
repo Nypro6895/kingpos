@@ -1,6 +1,5 @@
 export type Staff = {
   id: string;
-  organization_id: string;
   salon_id: string;
   account_user_id: string | null;
   user_id: string | null;

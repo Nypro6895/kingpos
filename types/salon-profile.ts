@@ -55,7 +55,6 @@ export type SalonProfileReadiness = {
 
 export type SalonProfileSetting = {
   id: string;
-  organization_id: string;
   salon_id: string;
   business_name: string;
   phone: string | null;
@@ -81,7 +80,6 @@ export type SalonProfileSetting = {
 
 export type SalonProfileLook = {
   id: string;
-  organization_id: string;
   salon_id: string;
   author_user_id: string | null;
   author_avatar_path: string | null;
@@ -112,7 +110,6 @@ export type SalonProfileLook = {
 
 export type SalonProfileUpdate = {
   id: string;
-  organization_id: string;
   salon_id: string;
   author_user_id: string | null;
   author_avatar_path: string | null;
@@ -149,7 +146,7 @@ export type PublicSalonProfile = {
   followerCount: number;
   isFollowing: boolean;
   logoImageUrl: string | null;
-  organizationId: string;
+  accountId: string;
   phone: string | null;
   postalCode: string | null;
   publishedAt: string | null;

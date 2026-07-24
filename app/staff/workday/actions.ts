@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import {
   getTodayDate,
@@ -24,8 +24,8 @@ async function requireWorkdayMutationContext() {
     redirect("/login");
   }
 
-  if (!context.currentOrganization) {
-    redirectWithError("Create an organization before using My Work Today.");
+  if (!context.currentAccount) {
+    redirectWithError("Choose a salon workspace before using My Work Today.");
   }
 
   if (!context.currentSalon) {
@@ -38,7 +38,7 @@ async function requireWorkdayMutationContext() {
 
   return {
     context,
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
     staff,
     supabase,
@@ -47,12 +47,11 @@ async function requireWorkdayMutationContext() {
 }
 
 async function loadMutableWorkday() {
-  const { organization, salon, staff, supabase, today } =
+  const { Account, salon, staff, supabase, today } =
     await requireWorkdayMutationContext();
   const { data: workday, error: workdayError } = await supabase
     .from("staff_workdays")
     .select(STAFF_WORKDAY_SELECT)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("staff_id", staff.id)
     .eq("work_date", today)
@@ -66,7 +65,7 @@ async function loadMutableWorkday() {
       hint: workdayError.hint,
       staffId: staff.id,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
     });
     redirectWithError(workdayError.message);
   }
@@ -79,17 +78,16 @@ async function loadMutableWorkday() {
     redirectWithError("Checked out workdays cannot be changed.");
   }
 
-  return { organization, salon, staff, supabase, workday };
+  return { Account, salon, staff, supabase, workday };
 }
 
 export async function checkInStaffWorkday() {
-  const { organization, salon, staff, supabase, today } =
+  const { Account, salon, staff, supabase, today } =
     await requireWorkdayMutationContext();
 
   const { data: workday, error: workdayError } = await supabase
     .from("staff_workdays")
     .select("id")
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("staff_id", staff.id)
     .eq("work_date", today)
@@ -103,7 +101,7 @@ export async function checkInStaffWorkday() {
       hint: workdayError.hint,
       staffId: staff.id,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
     });
     redirectWithError(workdayError.message);
   }
@@ -116,7 +114,6 @@ export async function checkInStaffWorkday() {
     .from("staff_workdays")
     .insert({
       check_in_at: new Date().toISOString(),
-      organization_id: organization.id,
       salon_id: salon.id,
       staff_id: staff.id,
       status: "checked_in",
@@ -133,7 +130,7 @@ export async function checkInStaffWorkday() {
       hint: error.hint,
       staffId: staff.id,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
     });
     redirectWithError(error.message);
   }
@@ -143,7 +140,7 @@ export async function checkInStaffWorkday() {
 }
 
 export async function checkOutStaffWorkday() {
-  const { organization, salon, staff, supabase, workday } =
+  const { Account, salon, staff, supabase, workday } =
     await loadMutableWorkday();
   if (workday.salon_id !== salon.id || workday.staff_id !== staff.id) {
     redirectWithError("Today's workday does not belong to the current salon.");
@@ -156,7 +153,6 @@ export async function checkOutStaffWorkday() {
       status: "checked_out",
     })
     .eq("id", workday.id)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("staff_id", staff.id);
 
@@ -169,7 +165,7 @@ export async function checkOutStaffWorkday() {
       workdayId: workday.id,
       staffId: staff.id,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
     });
     redirectWithError(error.message);
   }
@@ -187,14 +183,13 @@ export async function updateStaffWorkdayStatus(formData: FormData) {
     redirectWithError("Choose a valid work status.");
   }
 
-  const { organization, salon, staff, supabase, workday } =
+  const { Account, salon, staff, supabase, workday } =
     await loadMutableWorkday();
 
   const { error } = await supabase
     .from("staff_workdays")
     .update({ status })
     .eq("id", workday.id)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("staff_id", staff.id);
 
@@ -207,7 +202,7 @@ export async function updateStaffWorkdayStatus(formData: FormData) {
       workdayId: workday.id,
       staffId: staff.id,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
     });
     redirectWithError(error.message);
   }

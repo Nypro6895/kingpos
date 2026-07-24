@@ -42,7 +42,7 @@ export default async function SettingsPage() {
       label: "Connections",
     },
     {
-      description: "Switch between personal, organization, staff, and manage contexts.",
+      description: "Switch between personal, staff, Account, and Business contexts.",
       href: "/my-place",
       id: "my-place",
       label: "My Place",
@@ -69,8 +69,7 @@ export default async function SettingsPage() {
           Account Settings
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-          Personal account controls stay separate from salon and organization
-          administration.
+          Personal account controls stay separate from Business administration.
         </p>
       </div>
 

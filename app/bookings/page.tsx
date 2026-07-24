@@ -41,7 +41,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
       canViewBookings={workspace.canViewBookings}
       filters={workspace.filters}
       options={workspace.options}
-      organizationName={context.currentOrganization.name}
+      accountName={context.currentAccount.name}
       publicBookingHref={`/book/${context.currentSalon.id}`}
       range={workspace.range}
       requests={workspace.requests}

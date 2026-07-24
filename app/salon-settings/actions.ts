@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { getSalonProfileHref } from "@/lib/salon-profile";
 import {
@@ -109,16 +109,16 @@ export async function updateStaffPublicTeamBatchAction(
   if (
     !context.user ||
     !isSalonManageContext(context) ||
-    !context.currentOrganization ||
+    !context.currentAccount ||
     !context.currentSalon
   ) {
     return {
-      error: "Choose a Manage Salon workspace first.",
+      error: "Choose a salon workspace first.",
       updatedCount: 0,
     };
   }
 
-  const organization = context.currentOrganization;
+  const Account = context.currentAccount;
   const salon = context.currentSalon;
 
   if (!(await hasPermission("salon_settings.manage", context))) {
@@ -154,7 +154,7 @@ export async function updateStaffPublicTeamBatchAction(
 
   const { data, error } = await supabase.rpc("update_staff_public_team_batch", {
     changes: normalizedUpdates,
-    target_organization_id: organization.id,
+    target_account_id: Account.id,
     target_salon_id: salon.id,
   });
 
@@ -164,7 +164,7 @@ export async function updateStaffPublicTeamBatchAction(
       details: error.details,
       hint: error.hint,
       message: error.message,
-      organizationId: organization.id,
+      accountId: Account.id,
       salonId: salon.id,
     });
     return { error: error.message, updatedCount: 0 };

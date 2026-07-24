@@ -115,7 +115,6 @@ export type BookingActorSource = (typeof BOOKING_ACTOR_SOURCES)[number];
 
 export type Booking = {
   id: string;
-  organization_id: string;
   salon_id: string;
   customer_id: string;
   customer_user_id: string | null;
@@ -156,7 +155,6 @@ export type Booking = {
 
 export type BookingInspiration = {
   id: string;
-  organization_id: string;
   salon_id: string;
   booking_id: string;
   booking_line_id: string | null;
@@ -193,7 +191,6 @@ export type BookingWithRelations = Booking & {
 
 export type BookingLine = {
   id: string;
-  organization_id: string;
   salon_id: string;
   booking_id: string;
   parent_booking_line_id: string | null;
@@ -228,7 +225,6 @@ export type BookingLine = {
 
 export type BookingStatusEvent = {
   id: string;
-  organization_id: string;
   salon_id: string;
   booking_id: string;
   event_type: BookingEventType;
@@ -243,7 +239,6 @@ export type BookingStatusEvent = {
 
 export type BookingSettings = {
   id: string;
-  organization_id: string;
   salon_id: string;
   booking_enabled: boolean;
   online_booking_visible: boolean;
@@ -270,7 +265,6 @@ export type BookingSettings = {
 
 export type StaffServiceAssignment = {
   id: string;
-  organization_id: string;
   salon_id: string;
   staff_id: string;
   service_id: string;
@@ -288,7 +282,6 @@ export type StaffServiceAssignment = {
 
 export type StaffAvailabilityRule = {
   id: string;
-  organization_id: string;
   salon_id: string;
   staff_id: string | null;
   rule_type: "working" | "break";
@@ -307,7 +300,6 @@ export type StaffAvailabilityRule = {
 
 export type StaffTimeBlock = {
   id: string;
-  organization_id: string;
   salon_id: string;
   staff_id: string | null;
   block_type: "time_off" | "blocked" | "break" | "cleanup";

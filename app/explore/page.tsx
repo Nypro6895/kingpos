@@ -1,4 +1,4 @@
-import {
+﻿import {
   ExploreClient,
   type ExploreQuickAction,
 } from "@/app/explore/explore-client";
@@ -9,6 +9,7 @@ import {
   searchExploreSalons,
 } from "@/lib/explore-search";
 import { getExploreHomeContent } from "@/lib/explore-home";
+import { routes } from "@/lib/routes";
 import {
   listCustomerBookings,
   type CustomerBookingLine,
@@ -115,7 +116,7 @@ async function buildQuickActions(
     return [
       {
         description: "Start an owner or manager workspace.",
-        href: "/organizations",
+        href: routes.salons.create(),
         label: "Create a Salon",
         tone: "dark",
       },
@@ -151,8 +152,8 @@ async function buildQuickActions(
 
   if (hasManageWorkspace && canOpenPos) {
     addAction(actions, {
-      description: "Open the front desk checkout flow.",
-      href: "/pos",
+      description: "Open the portable POS entry for the current salon.",
+      href: "/pos/portable",
       label: "Open POS",
       tone: hasStaffWorkspace ? "light" : "dark",
     });
@@ -360,7 +361,7 @@ async function getExploreUtilityContent(
 
   const [bookingResult, notifications] = await Promise.all([
     listCustomerBookings({ limit: 1, scope: "upcoming" }),
-    getCurrentAppNotifications(8),
+    getCurrentAppNotifications({ limit: 8, recipientKind: "customer" }),
   ]);
   const customerNotifications = notifications.filter(
     (notification) => notification.recipient_kind === "customer",

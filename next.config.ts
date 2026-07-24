@@ -24,12 +24,27 @@ function supabaseImagePatterns(): NonNullable<
   }
 }
 
+function deploymentIdentifier(): string | undefined {
+  return [
+    process.env.NEXT_DEPLOYMENT_ID,
+    process.env.DEPLOYMENT_VERSION,
+    process.env.VERCEL_GIT_COMMIT_SHA,
+    process.env.GIT_SHA,
+    process.env.GIT_HASH,
+  ]
+    .map((value) => value?.trim())
+    .find(Boolean);
+}
+
+const deploymentId = deploymentIdentifier();
+
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
     remotePatterns: supabaseImagePatterns(),
   },
   reactCompiler: true,
+  deploymentId,
+  generateBuildId: async () => deploymentId ?? null,
 };
 
 export default nextConfig;

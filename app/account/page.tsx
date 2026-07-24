@@ -1,5 +1,9 @@
 import { LogoutButton } from "@/app/account/logout-button";
-import { createSupabaseServerClient, getSupabaseAuthUser } from "@/lib/supabase/server";
+import {
+  createAuthenticatedSupabaseServerClient,
+  getSupabaseAuthUser,
+} from "@/lib/supabase/server";
+import { routes } from "@/lib/routes";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
@@ -19,7 +23,7 @@ function readOptionalString(formData: FormData, key: string) {
 async function updateProfile(formData: FormData) {
   "use server";
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createAuthenticatedSupabaseServerClient();
   const authUser = await getSupabaseAuthUser();
 
   if (!supabase || !authUser) {
@@ -137,13 +141,7 @@ export default async function AccountPage() {
         <div className="flex flex-wrap gap-3">
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href="/organizations"
-          >
-            Organizations
-          </Link>
-          <Link
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href="/salons"
+            href={routes.salons.list()}
           >
             Salons
           </Link>

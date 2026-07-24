@@ -51,8 +51,8 @@ async function requireCustomerMutationContext(errorPath: string) {
     redirect(getRouteForInvalidSalonContext(context));
   }
 
-  if (!context.currentOrganization || !context.currentMembership) {
-    redirectWithError(errorPath, "Create an organization before managing customers.");
+  if (!context.currentAccount || !context.currentMembership) {
+    redirectWithError(errorPath, "Choose a salon workspace before managing customers.");
   }
 
   if (!context.currentSalon) {
@@ -106,7 +106,7 @@ export async function createCustomer(formData: FormData) {
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError("/customers/new", error.message);
@@ -154,7 +154,7 @@ export async function updateCustomer(formData: FormData) {
       hint: error.hint,
       customerId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(editPath, error.message);

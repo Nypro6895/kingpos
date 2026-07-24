@@ -48,7 +48,6 @@ type PosDeskActionResult =
 
 const SESSION_SELECT = `
   id,
-  organization_id,
   salon_id,
   customer_id,
   customer_display_token,
@@ -243,8 +242,8 @@ async function requirePosDeskMutationContext() {
     redirect(getRouteForInvalidSalonContext(context));
   }
 
-  if (!context.currentOrganization) {
-    throw new Error("Create an organization before using POS Desk.");
+  if (!context.currentAccount) {
+    throw new Error("Choose a salon workspace before using POS Desk.");
   }
 
   if (!context.currentSalon) {
@@ -255,7 +254,7 @@ async function requirePosDeskMutationContext() {
 
   return {
     context,
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
     supabase,
     user: context.user,
@@ -279,7 +278,7 @@ async function findOrCreateDeskCustomer(input: {
   customerLookup: string | null;
   customerName: string | null;
 }) {
-  const { organization, salon, supabase } = await requirePosDeskMutationContext();
+  const { Account, salon, supabase } = await requirePosDeskMutationContext();
 
   if (input.customerId) {
     const { data, error } = await supabase
@@ -338,7 +337,7 @@ async function findOrCreateDeskCustomer(input: {
       details: error.details,
       hint: error.hint,
       message: error.message,
-      organizationId: organization.id,
+      accountId: Account.id,
       salonId: salon.id,
     });
     throw new Error(error.message);
@@ -533,7 +532,6 @@ function validateSubmitLines(lines: PosDeskSubmitLine[]) {
 
 async function validateSubmitLineScope(input: {
   lines: PosDeskSubmitLine[];
-  organizationId: string;
   salonId: string;
   supabase: NonNullable<
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -551,7 +549,6 @@ async function validateSubmitLineScope(input: {
   const { data: staffRows, error: staffError } = await input.supabase
     .from("staff")
     .select("id")
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
     .in("id", staffIds)
     .returns<Array<{ id: string }>>();
@@ -571,7 +568,6 @@ async function validateSubmitLineScope(input: {
   const { data: serviceRows, error: serviceError } = await input.supabase
     .from("services")
     .select("id")
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
     .eq("is_active", true)
     .in("id", serviceIds)
@@ -591,12 +587,11 @@ async function createTicketFromSubmitInput(
   sessionId?: string | null,
 ): Promise<PosDeskActionResult> {
   try {
-    const { context, organization, salon, supabase, user } =
+    const { context, salon, supabase, user } =
       await requirePosDeskMutationContext();
     validateSubmitLines(input.lines);
     await validateSubmitLineScope({
       lines: input.lines,
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
     });
@@ -627,14 +622,13 @@ async function createTicketFromSubmitInput(
         customer_id: customer.id,
         notes: cleanOptional(input.note),
         opened_at: now,
-        organization_id: organization.id,
         salon_id: salon.id,
         status: "open",
         tax_rate: POS_DESK_DEFAULTS.taxEnabled ? 0 : 0,
         tip_type: "fixed_amount",
         tip_value: tipAmount,
       })
-      .select("id, organization_id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at")
+      .select("id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at")
       .single<PosTicket>();
 
     if (ticketError) {
@@ -649,14 +643,13 @@ async function createTicketFromSubmitInput(
         .insert({
           assigned_staff_id: line.staffId,
           notes: `${line.serviceLabel} | Parts: ${line.amountInput}`,
-          organization_id: organization.id,
           pos_ticket_id: ticket.id,
           quantity: 1,
           salon_id: salon.id,
           service_id: cleanOptional(line.serviceId),
           unit_price: line.total,
         })
-        .select("id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title)")
+        .select("id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title)")
         .single<PosTicketItemWithRelations>();
 
       if (itemError) {
@@ -667,7 +660,6 @@ async function createTicketFromSubmitInput(
 
       const turnRows = line.amountParts.map((amount, partIndex) => ({
         amount,
-        organization_id: organization.id,
         salon_id: salon.id,
         staff_id: line.staffId,
         ticket_id: ticket.id,
@@ -694,7 +686,6 @@ async function createTicketFromSubmitInput(
           discount_value: discountValue,
         })
         .eq("id", ticket.id)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id);
 
       if (discountError) {
@@ -726,12 +717,11 @@ async function createTicketFromSubmitInput(
         amount: totals.total,
         created_by: user.id,
         note: "Record-only POS desk payment. Payment processor connection comes later.",
-        organization_id: organization.id,
         payment_method: "other",
         salon_id: salon.id,
         ticket_id: ticket.id,
       })
-      .select("id, organization_id, salon_id, ticket_id, payment_method, amount, note, created_by, created_at")
+      .select("id, salon_id, ticket_id, payment_method, amount, note, created_by, created_at")
       .single<PosPayment>();
 
     if (paymentError) {
@@ -760,7 +750,6 @@ async function createTicketFromSubmitInput(
       .from("pos_tickets")
       .update({ closed_at: new Date().toISOString(), status: "closed" })
       .eq("id", ticket.id)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id);
 
     if (closeError) {
@@ -773,7 +762,6 @@ async function createTicketFromSubmitInput(
         action: "ticket_checked_out",
         created_by: user.id,
         note: "Ticket checked out from POS Desk.",
-        organization_id: organization.id,
         salon_id: salon.id,
         ticket_id: ticket.id,
       });
@@ -796,7 +784,6 @@ async function createTicketFromSubmitInput(
           tip_amount: tipAmount,
         })
         .eq("id", sessionId)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id);
 
       if (sessionError) {
@@ -835,7 +822,7 @@ export async function getPosDeskSession(
 
 export async function createPosDeskSession(): Promise<ActionResult<PosDeskSessionView>> {
   try {
-    const { organization, salon, supabase, user } = await requirePosDeskMutationContext();
+    const { salon, supabase, user } = await requirePosDeskMutationContext();
     const now = new Date();
     const { data, error } = await supabase
       .from("pos_desk_sessions")
@@ -843,7 +830,6 @@ export async function createPosDeskSession(): Promise<ActionResult<PosDeskSessio
         created_by: user.id,
         customer_display_token: randomUUID().replaceAll("-", ""),
         expires_at: new Date(now.getTime() + 5 * 60 * 1000).toISOString(),
-        organization_id: organization.id,
         salon_id: salon.id,
         status: "active",
       })
@@ -897,7 +883,7 @@ export async function searchPosDeskCustomers(search: string) {
 
 export async function getOrCreatePosLiveDraft(): Promise<ActionResult<PosLiveDraftView>> {
   try {
-    const { organization, salon, supabase } = await requirePosDeskMutationContext();
+    const { salon, supabase } = await requirePosDeskMutationContext();
     const select =
       "id, salon_id, token, customer, staff_lines, selected_staff_id, tip, subtotal, total, status, version, updated_at";
 
@@ -921,7 +907,6 @@ export async function getOrCreatePosLiveDraft(): Promise<ActionResult<PosLiveDra
     const inserted = await supabase
       .from("pos_live_drafts")
       .insert({
-        organization_id: organization.id,
         receipt: {},
         salon_id: salon.id,
         staff_lines: [],
@@ -1097,7 +1082,7 @@ export async function createPosDeskCustomer(input: {
         details: error.details,
         hint: error.hint,
         message: error.message,
-        organizationId: context.currentOrganization?.id,
+        accountId: context.currentAccount?.id,
         salonId: salon.id,
         userId: user.id,
       });
@@ -1348,7 +1333,7 @@ export async function addOrUpdateSessionLine(
   input: PosDeskSessionLineInput,
 ): Promise<ActionResult<PosDeskSessionView>> {
   try {
-    const { organization, salon, supabase } = await requirePosDeskMutationContext();
+    const { salon, supabase } = await requirePosDeskMutationContext();
     const session = await requireActiveSession(input.sessionId);
     const parsed = parsePosAmountInput(input.amountInput);
 
@@ -1371,7 +1356,6 @@ export async function addOrUpdateSessionLine(
       amount: parsed.total,
       amount_input: input.amountInput,
       amount_parts: parsed.parts,
-      organization_id: organization.id,
       salon_id: salon.id,
       service_id: cleanOptional(input.serviceId),
       service_label: serviceLabel,
@@ -1429,14 +1413,13 @@ export async function syncPosDeskSessionFromLocal(input: {
   tipAmount?: number;
 }): Promise<ActionResult<PosDeskSessionView>> {
   try {
-    const { organization, salon, supabase } = await requirePosDeskMutationContext();
+    const { salon, supabase } = await requirePosDeskMutationContext();
     const existingSession = await requireActiveSession(input.sessionId);
 
     if (input.lines.length > 0) {
       validateSubmitLines(input.lines);
       await validateSubmitLineScope({
         lines: input.lines,
-        organizationId: organization.id,
         salonId: salon.id,
         supabase,
       });
@@ -1492,7 +1475,6 @@ export async function syncPosDeskSessionFromLocal(input: {
       amount: line.total,
       amount_input: line.amountInput,
       amount_parts: line.amountParts,
-      organization_id: organization.id,
       salon_id: salon.id,
       service_id: cleanOptional(line.serviceId),
       service_label: cleanOptional(line.serviceLabel) ?? `Service ${index + 1}`,
@@ -1603,7 +1585,7 @@ export async function submitSessionToTicket(
   sessionId: string,
 ): Promise<PosDeskActionResult> {
   try {
-    const { context, organization, salon, supabase, user } =
+    const { context, salon, supabase, user } =
       await requirePosDeskMutationContext();
     const session = await requirePendingConfirmedSession(sessionId);
 
@@ -1625,14 +1607,13 @@ export async function submitSessionToTicket(
         customer_id: customer.id,
         notes: cleanOptional(session.note),
         opened_at: now,
-        organization_id: organization.id,
         salon_id: salon.id,
         status: "open",
         tax_rate: POS_DESK_DEFAULTS.taxEnabled ? 0 : 0,
         tip_type: "fixed_amount",
         tip_value: session.tip_amount,
       })
-      .select("id, organization_id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at")
+      .select("id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at")
       .single<PosTicket>();
 
     if (ticketError) {
@@ -1647,14 +1628,13 @@ export async function submitSessionToTicket(
         .insert({
           assigned_staff_id: line.staff_id,
           notes: `${line.service_label} | Parts: ${line.amount_input}`,
-          organization_id: organization.id,
           pos_ticket_id: ticket.id,
           quantity: 1,
           salon_id: salon.id,
           service_id: line.service_id,
           unit_price: line.amount,
         })
-        .select("id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title)")
+        .select("id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title)")
         .single<PosTicketItemWithRelations>();
 
       if (itemError) {
@@ -1665,7 +1645,6 @@ export async function submitSessionToTicket(
 
       const turnRows = line.amount_parts.map((amount, partIndex) => ({
         amount,
-        organization_id: organization.id,
         salon_id: salon.id,
         staff_id: line.staff_id,
         ticket_id: ticket.id,
@@ -1700,12 +1679,11 @@ export async function submitSessionToTicket(
         amount: totals.total,
         created_by: user.id,
         note: "Record-only POS desk payment. Payment processor connection comes later.",
-        organization_id: organization.id,
         payment_method: "other",
         salon_id: salon.id,
         ticket_id: ticket.id,
       })
-      .select("id, organization_id, salon_id, ticket_id, payment_method, amount, note, created_by, created_at")
+      .select("id, salon_id, ticket_id, payment_method, amount, note, created_by, created_at")
       .single<PosPayment>();
 
     if (paymentError) {
@@ -1732,7 +1710,6 @@ export async function submitSessionToTicket(
       .from("pos_tickets")
       .update({ closed_at: new Date().toISOString(), status: "closed" })
       .eq("id", ticket.id)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id);
 
     if (closeError) {
@@ -1745,7 +1722,6 @@ export async function submitSessionToTicket(
         action: "ticket_checked_out",
         created_by: user.id,
         note: "Ticket checked out from POS Desk session.",
-        organization_id: organization.id,
         salon_id: salon.id,
         ticket_id: ticket.id,
       });
@@ -1762,7 +1738,6 @@ export async function submitSessionToTicket(
         submitted_ticket_id: ticket.id,
       })
       .eq("id", session.id)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id);
 
     if (sessionError) {
@@ -1810,11 +1785,10 @@ export async function publishReceiptToCustomerDisplay(input: {
   token: string;
 }): Promise<ActionResult<PosDisplayChannelView>> {
   try {
-    const { organization, salon, supabase } = await requirePosDeskMutationContext();
+    const { salon, supabase } = await requirePosDeskMutationContext();
     validateSubmitLines(input.lines);
     await validateSubmitLineScope({
       lines: input.lines,
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
     });
@@ -1855,7 +1829,6 @@ export async function publishReceiptToCustomerDisplay(input: {
           tip_amount: roundMoney(input.tipAmount ?? 0),
         })
         .eq("id", input.sessionId)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id);
 
       if (updateSessionError) {
@@ -1876,7 +1849,6 @@ export async function publishReceiptToCustomerDisplay(input: {
         amount: line.total,
         amount_input: line.amountInput,
         amount_parts: line.amountParts,
-        organization_id: organization.id,
         salon_id: salon.id,
         service_id: cleanOptional(line.serviceId),
         service_label: cleanOptional(line.serviceLabel) ?? `Service ${index + 1}`,
@@ -2049,12 +2021,11 @@ export async function requestCustomerReceiptConfirmation(input: {
   tipAmount?: number;
 }): Promise<ActionResult<PosDeskSessionView>> {
   try {
-    const { organization, salon, supabase } = await requirePosDeskMutationContext();
+    const { salon, supabase } = await requirePosDeskMutationContext();
     const existingSession = await requireActiveSession(input.sessionId);
     validateSubmitLines(input.lines);
     await validateSubmitLineScope({
       lines: input.lines,
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
     });
@@ -2093,7 +2064,6 @@ export async function requestCustomerReceiptConfirmation(input: {
         tip_amount: roundMoney(input.tipAmount ?? 0),
       })
       .eq("id", input.sessionId)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id);
 
     if (updateSessionError) {
@@ -2114,7 +2084,6 @@ export async function requestCustomerReceiptConfirmation(input: {
       amount: line.total,
       amount_input: line.amountInput,
       amount_parts: line.amountParts,
-      organization_id: organization.id,
       salon_id: salon.id,
       service_id: cleanOptional(line.serviceId),
       service_label: cleanOptional(line.serviceLabel) ?? `Service ${index + 1}`,

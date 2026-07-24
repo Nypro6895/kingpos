@@ -16,7 +16,6 @@ export type PosTicketTipType = (typeof POS_TICKET_TIP_TYPES)[number];
 
 export type PosTicket = {
   id: string;
-  organization_id: string;
   salon_id: string;
   source_booking_id: string | null;
   ticket_number: string;

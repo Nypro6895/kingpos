@@ -1,10 +1,15 @@
-import "server-only";
+﻿import "server-only";
 
 import {
+  isAccountContext,
   isSalonManageContext,
+  isSalonStaffContext,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
-import { countUnreadAppNotifications } from "@/lib/app-notifications";
+import {
+  countUnreadAppNotifications,
+  type AppNotificationQueryScope,
+} from "@/lib/app-notifications";
 import { hasPermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { StaffConnectionDashboardRequest } from "@/types/staff-salon-connection";
@@ -89,6 +94,35 @@ function buildItems(input: {
   return items;
 }
 
+export function getAppNotificationScopeForContext(
+  context: CurrentBusinessContext,
+): AppNotificationQueryScope {
+  if (isSalonStaffContext(context)) {
+    return {
+      recipientKind: "staff",
+      salonId: context.currentSalon?.id,
+    };
+  }
+
+  if (isSalonManageContext(context)) {
+    return {
+      recipientKind: "owner_manager",
+      salonId: context.currentSalon?.id,
+    };
+  }
+
+  if (isAccountContext(context)) {
+    return {
+      accountId: context.accountId,
+      recipientKind: "owner_manager",
+    };
+  }
+
+  return {
+    recipientKind: "customer",
+  };
+}
+
 export async function getWorkspacePendingSummary(
   context: CurrentBusinessContext,
 ): Promise<WorkspacePendingSummary> {
@@ -105,7 +139,9 @@ export async function getWorkspacePendingSummary(
   let staffInvites = 0;
   let staffApplications = 0;
   let managerApplications = 0;
-  const bookingNotifications = await countUnreadAppNotifications();
+  const bookingNotifications = await countUnreadAppNotifications(
+    getAppNotificationScopeForContext(context),
+  );
 
   const { data: dashboardRequests, error: dashboardError } = await supabase.rpc(
     "list_my_staff_salon_connection_requests",
@@ -121,20 +157,19 @@ export async function getWorkspacePendingSummary(
   }
 
   const canManageStaff =
-    context.currentMembership && context.currentOrganization
+    context.currentMembership && context.currentAccount
       ? await hasPermission("staff.manage", context)
       : false;
 
   if (
     canManageStaff &&
     isSalonManageContext(context) &&
-    context.currentOrganization &&
+    context.currentAccount &&
     context.currentSalon
   ) {
     const { count, error } = await supabase
       .from("staff_salon_connection_requests")
       .select("id", { count: "exact", head: true })
-      .eq("organization_id", context.currentOrganization.id)
       .eq("salon_id", context.currentSalon.id)
       .eq("direction", "staff_application")
       .eq("status", "pending");

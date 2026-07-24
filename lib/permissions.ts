@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 
 import { getCurrentBusinessContext, isOwnerMembership } from "@/lib/current-context";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
@@ -15,7 +15,7 @@ export type RoleWithPermissions = Role & {
   permissions: Permission[];
 };
 
-export type OrganizationPermissionSet = {
+export type AccountPermissionSet = {
   permissions: Permission[];
   roles: RoleWithPermissions[];
 };
@@ -26,7 +26,7 @@ export async function getCurrentRolePermissionCodes(
   const resolvedContext = context ?? (await getCurrentBusinessContext());
   const roleId = resolvedContext.currentMembership?.role_id;
 
-  if (!resolvedContext.user || !resolvedContext.currentOrganization || !roleId) {
+  if (!resolvedContext.user || !resolvedContext.accountId || !roleId) {
     return new Set<string>();
   }
 
@@ -49,7 +49,7 @@ export async function getCurrentRolePermissionCodes(
       details: rolePermissionsError.details,
       hint: rolePermissionsError.hint,
       roleId,
-      organizationId: resolvedContext.currentOrganization.id,
+      accountId: resolvedContext.accountId,
       userId: resolvedContext.user.id,
     });
     throw new Error(rolePermissionsError.message);
@@ -76,7 +76,7 @@ export async function getCurrentRolePermissionCodes(
       details: permissionsError.details,
       hint: permissionsError.hint,
       roleId,
-      organizationId: resolvedContext.currentOrganization.id,
+      accountId: resolvedContext.accountId,
       userId: resolvedContext.user.id,
     });
     throw new Error(permissionsError.message);
@@ -110,10 +110,10 @@ export async function requirePermission(
   }
 }
 
-export async function getOrganizationPermissionSet(
-  organizationId: string,
+export async function getAccountPermissionSet(
+  accountId: string,
   roles: Role[],
-): Promise<OrganizationPermissionSet> {
+): Promise<AccountPermissionSet> {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -133,7 +133,7 @@ export async function getOrganizationPermissionSet(
       message: permissionsError.message,
       details: permissionsError.details,
       hint: permissionsError.hint,
-      organizationId,
+      accountId,
     });
     throw new Error(permissionsError.message);
   }
@@ -149,12 +149,12 @@ export async function getOrganizationPermissionSet(
       : { data: [], error: null };
 
   if (rolePermissionsError) {
-    console.error("Supabase load organization role permissions failed", {
+    console.error("Supabase load Account role permissions failed", {
       code: rolePermissionsError.code,
       message: rolePermissionsError.message,
       details: rolePermissionsError.details,
       hint: rolePermissionsError.hint,
-      organizationId,
+      accountId,
     });
     throw new Error(rolePermissionsError.message);
   }

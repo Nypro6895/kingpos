@@ -509,7 +509,7 @@ export function WorkspaceListItem({
   const primaryAction = workspace.primaryAction;
   const menuActions = workspaceRowMenuActions(workspace);
   const subtitle = workspaceSubtitle(workspace);
-  const isOrganization = workspace.type === "organization";
+  const isAccount = workspace.type === "account";
 
   return (
     <article
@@ -547,11 +547,11 @@ export function WorkspaceListItem({
             action={primaryAction}
             ariaLabel={`Open ${workspace.label}`}
             density={density}
-            icon={isOrganization ? "chevron-right" : undefined}
-            iconOnly={isOrganization}
+            icon={isAccount ? "chevron-right" : undefined}
+            iconOnly={isAccount}
             onRunAction={onRunAction}
             pendingKey={pendingKey}
-            variant={isOrganization ? "secondary" : "primary"}
+            variant={isAccount ? "secondary" : "primary"}
             workspace={workspace}
           />
         ) : null}
