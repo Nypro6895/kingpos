@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -11,31 +11,6 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
-  }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
   }
   public: {
     Tables: {
@@ -2361,56 +2336,77 @@ export type Database = {
       }
       pos_live_drafts: {
         Row: {
+          completed_at: string | null
           created_at: string
           customer: Json | null
           customer_version: number
+          discount: number
           id: string
+          last_customer_action_id: string | null
+          last_tip_action_id: string | null
           receipt: Json
           receipt_version: number
+          reset_at: string | null
           salon_id: string
           selected_staff_id: string | null
           staff_lines: Json
           status: string
           subtotal: number
+          tax: number
           tip: number
           token: string
           total: number
+          total_before_tip: number
           updated_at: string
           version: number
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string
           customer?: Json | null
           customer_version?: number
+          discount?: number
           id?: string
+          last_customer_action_id?: string | null
+          last_tip_action_id?: string | null
           receipt?: Json
           receipt_version?: number
+          reset_at?: string | null
           salon_id: string
           selected_staff_id?: string | null
           staff_lines?: Json
           status?: string
           subtotal?: number
+          tax?: number
           tip?: number
           token: string
           total?: number
+          total_before_tip?: number
           updated_at?: string
           version?: number
         }
         Update: {
+          completed_at?: string | null
           created_at?: string
           customer?: Json | null
           customer_version?: number
+          discount?: number
           id?: string
+          last_customer_action_id?: string | null
+          last_tip_action_id?: string | null
           receipt?: Json
           receipt_version?: number
+          reset_at?: string | null
           salon_id?: string
           selected_staff_id?: string | null
           staff_lines?: Json
           status?: string
           subtotal?: number
+          tax?: number
           tip?: number
           token?: string
           total?: number
+          total_before_tip?: number
           updated_at?: string
           version?: number
         }
@@ -2475,6 +2471,146 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "pos_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_portable_access_keys: {
+        Row: {
+          access_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          label: string | null
+          last_login_at: string | null
+          last_logout_at: string | null
+          last_used_at: string | null
+          last_user_agent: string | null
+          passcode_digest: string
+          passcode_salt: string
+          salon_id: string
+          updated_at: string
+        }
+        Insert: {
+          access_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          last_login_at?: string | null
+          last_logout_at?: string | null
+          last_used_at?: string | null
+          last_user_agent?: string | null
+          passcode_digest: string
+          passcode_salt: string
+          salon_id: string
+          updated_at?: string
+        }
+        Update: {
+          access_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          last_login_at?: string | null
+          last_logout_at?: string | null
+          last_used_at?: string | null
+          last_user_agent?: string | null
+          passcode_digest?: string
+          passcode_salt?: string
+          salon_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_portable_access_keys_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_portable_access_keys_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_settings: {
+        Row: {
+          app_download_url: string
+          created_at: string
+          customer_background_image_path: string | null
+          customer_left_ad_image_path: string | null
+          customer_left_ad_text: string
+          customer_promo_body: string
+          customer_promo_title: string
+          customer_right_ad_image_path: string | null
+          customer_right_ad_text: string
+          customer_show_barcode: boolean
+          customer_show_customer_name: boolean
+          customer_show_receipt_status: boolean
+          customer_show_salon_name: boolean
+          customer_show_service_name: boolean
+          customer_show_staff_name: boolean
+          large_turn_threshold: number
+          salon_id: string
+          tip_suggestions: number[]
+          updated_at: string
+        }
+        Insert: {
+          app_download_url?: string
+          created_at?: string
+          customer_background_image_path?: string | null
+          customer_left_ad_image_path?: string | null
+          customer_left_ad_text?: string
+          customer_promo_body?: string
+          customer_promo_title?: string
+          customer_right_ad_image_path?: string | null
+          customer_right_ad_text?: string
+          customer_show_barcode?: boolean
+          customer_show_customer_name?: boolean
+          customer_show_receipt_status?: boolean
+          customer_show_salon_name?: boolean
+          customer_show_service_name?: boolean
+          customer_show_staff_name?: boolean
+          large_turn_threshold?: number
+          salon_id: string
+          tip_suggestions?: number[]
+          updated_at?: string
+        }
+        Update: {
+          app_download_url?: string
+          created_at?: string
+          customer_background_image_path?: string | null
+          customer_left_ad_image_path?: string | null
+          customer_left_ad_text?: string
+          customer_promo_body?: string
+          customer_promo_title?: string
+          customer_right_ad_image_path?: string | null
+          customer_right_ad_text?: string
+          customer_show_barcode?: boolean
+          customer_show_customer_name?: boolean
+          customer_show_receipt_status?: boolean
+          customer_show_salon_name?: boolean
+          customer_show_service_name?: boolean
+          customer_show_staff_name?: boolean
+          large_turn_threshold?: number
+          salon_id?: string
+          tip_suggestions?: number[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_settings_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: true
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
         ]
@@ -4594,6 +4730,9 @@ export type Database = {
       staff: {
         Row: {
           account_user_id: string | null
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
           created_at: string
           display_name: string
           email: string | null
@@ -4605,6 +4744,8 @@ export type Database = {
           online_booking_enabled: boolean
           owner_public_enabled: boolean
           phone: string | null
+          pos_enabled: boolean
+          postal_code: string | null
           profile_display_order: number
           public_bio: string | null
           public_profile_photo_path: string | null
@@ -4613,11 +4754,15 @@ export type Database = {
           salon_profile_content_posting_enabled: boolean
           specialties: string[]
           staff_public_consent_status: string
+          state: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           account_user_id?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
           created_at?: string
           display_name: string
           email?: string | null
@@ -4629,6 +4774,8 @@ export type Database = {
           online_booking_enabled?: boolean
           owner_public_enabled?: boolean
           phone?: string | null
+          pos_enabled?: boolean
+          postal_code?: string | null
           profile_display_order?: number
           public_bio?: string | null
           public_profile_photo_path?: string | null
@@ -4637,11 +4784,15 @@ export type Database = {
           salon_profile_content_posting_enabled?: boolean
           specialties?: string[]
           staff_public_consent_status?: string
+          state?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           account_user_id?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
           created_at?: string
           display_name?: string
           email?: string | null
@@ -4653,6 +4804,8 @@ export type Database = {
           online_booking_enabled?: boolean
           owner_public_enabled?: boolean
           phone?: string | null
+          pos_enabled?: boolean
+          postal_code?: string | null
           profile_display_order?: number
           public_bio?: string | null
           public_profile_photo_path?: string | null
@@ -4661,6 +4814,7 @@ export type Database = {
           salon_profile_content_posting_enabled?: boolean
           specialties?: string[]
           staff_public_consent_status?: string
+          state?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -5281,6 +5435,14 @@ export type Database = {
         Args: { p_customer_message: Json; p_token: string }
         Returns: Json
       }
+      confirm_pos_live_draft_customer: {
+        Args: { p_customer_id: string; p_request_id?: string; p_token: string }
+        Returns: Json
+      }
+      confirm_pos_live_draft_tip: {
+        Args: { p_request_id?: string; p_tip_amount: number; p_token: string }
+        Returns: Json
+      }
       convert_booking_to_pos_ticket: {
         Args: { p_booking_id: string }
         Returns: string
@@ -5330,6 +5492,16 @@ export type Database = {
       }
       create_pos_live_draft_customer_by_phone: {
         Args: { p_name: string; p_phone: string; p_token: string }
+        Returns: Json
+      }
+      create_pos_portable_customer: {
+        Args: {
+          p_email?: string
+          p_key_id: string
+          p_name: string
+          p_phone?: string
+          p_session_signature: string
+        }
         Returns: Json
       }
       create_public_booking: {
@@ -5385,6 +5557,15 @@ export type Database = {
           created_membership: boolean
         }[]
       }
+      finalize_pos_portable_live_draft: {
+        Args: {
+          p_key_id: string
+          p_reset_seconds?: number
+          p_session_signature: string
+          p_token: string
+        }
+        Returns: Json
+      }
       find_pos_live_draft_customer_by_phone: {
         Args: { p_phone: string; p_token: string }
         Returns: Json
@@ -5405,6 +5586,10 @@ export type Database = {
           upcoming_start_at: string
         }[]
       }
+      get_pos_customer_display_settings_by_token: {
+        Args: { p_token: string }
+        Returns: Json
+      }
       get_pos_desk_session_by_token: {
         Args: { p_token: string }
         Returns: Json
@@ -5416,19 +5601,45 @@ export type Database = {
       get_pos_live_draft_by_token: {
         Args: { p_token: string }
         Returns: {
+          completed_at: string
           customer: Json
+          customer_version: number
+          discount: number
           id: string
+          last_customer_action_id: string
+          last_tip_action_id: string
+          receipt_version: number
+          reset_at: string
           salon_id: string
           selected_staff_id: string
+          server_now: string
           staff_lines: Json
           status: string
           subtotal: number
+          tax: number
           tip: number
           token: string
           total: number
+          total_before_tip: number
           updated_at: string
           version: number
         }[]
+      }
+      get_pos_portable_access_context: {
+        Args: { p_key_id: string; p_session_signature: string }
+        Returns: Json
+      }
+      get_pos_portable_desk_data: {
+        Args: {
+          p_key_id: string
+          p_session_signature: string
+          p_work_date?: string
+        }
+        Returns: Json
+      }
+      get_pos_setting_payload: {
+        Args: { target_salon_id: string }
+        Returns: Json
       }
       get_public_booking_by_manage_token: {
         Args: { raw_token: string }
@@ -5797,6 +6008,22 @@ export type Database = {
           updated_at: string
         }[]
       }
+      log_out_pos_portable_access: {
+        Args: { p_key_id: string; p_session_signature: string }
+        Returns: boolean
+      }
+      mask_staff_connection_email: {
+        Args: { p_email: string }
+        Returns: string
+      }
+      pos_portable_access_salon_id: {
+        Args: { p_key_id: string; p_session_signature: string }
+        Returns: string
+      }
+      pos_portable_access_signature: {
+        Args: { p_key_id: string; p_passcode_digest: string }
+        Returns: string
+      }
       reschedule_canonical_booking: {
         Args: {
           p_booking_id: string
@@ -5861,6 +6088,18 @@ export type Database = {
       save_staff_weekly_availability: {
         Args: { p_rules: Json; p_salon_id: string; p_staff_id: string }
         Returns: undefined
+      }
+      search_pos_live_draft_customers_by_phone: {
+        Args: { p_phone: string; p_token: string }
+        Returns: Json
+      }
+      search_pos_portable_customers: {
+        Args: {
+          p_key_id: string
+          p_search: string
+          p_session_signature: string
+        }
+        Returns: Json
       }
       search_public_explore_salons: {
         Args: {
@@ -5946,8 +6185,21 @@ export type Database = {
         Args: { target_account_id: string }
         Returns: undefined
       }
+      sign_in_pos_portable_access: {
+        Args: { p_access_id: string; p_passcode: string; p_user_agent?: string }
+        Returns: Json
+      }
       start_assigned_booking_line: {
         Args: { p_booking_line_id: string; p_service_note?: string }
+        Returns: Json
+      }
+      submit_pos_portable_receipt: {
+        Args: {
+          p_key_id: string
+          p_receipt: Json
+          p_session_signature: string
+          p_work_date?: string
+        }
         Returns: Json
       }
       submit_staff_salon_application: {
@@ -5956,6 +6208,10 @@ export type Database = {
           p_requested_job_title?: string
           p_salon_id: string
         }
+        Returns: Json
+      }
+      touch_pos_live_draft_activity: {
+        Args: { p_reset_seconds?: number; p_token: string }
         Returns: Json
       }
       update_closed_pos_ticket_tip_for_correction: {
@@ -5992,6 +6248,31 @@ export type Database = {
       }
       update_pos_desk_session_tip_by_token: {
         Args: { p_confirm?: boolean; p_tip_amount: number; p_token: string }
+        Returns: Json
+      }
+      update_pos_portable_live_draft: {
+        Args: {
+          p_discount?: number
+          p_key_id: string
+          p_selected_staff_id: string
+          p_session_signature: string
+          p_staff_lines: Json
+          p_subtotal: number
+          p_tax?: number
+          p_tip: number
+          p_token: string
+          p_total: number
+          p_total_before_tip?: number
+        }
+        Returns: Json
+      }
+      update_pos_portable_live_draft_customer: {
+        Args: {
+          p_customer: Json
+          p_key_id: string
+          p_session_signature: string
+          p_token: string
+        }
         Returns: Json
       }
       update_staff_public_team_batch: {
@@ -6033,6 +6314,10 @@ export type Database = {
       user_is_salon_member: {
         Args: { target_salon_id: string }
         Returns: boolean
+      }
+      verify_staff_connection_invite_email: {
+        Args: { p_email: string; p_token: string }
+        Returns: Json
       }
     }
     Enums: {
@@ -6162,9 +6447,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

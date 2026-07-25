@@ -3,6 +3,7 @@
 import {
   STAFF_PERMISSIONS,
   createStaff as createStaffRecord,
+  updateStaffDirectoryBatch as updateStaffDirectoryBatchInService,
   updateStaffPublicProfile,
 } from "@/lib/staff";
 import { getCurrentBusinessContext } from "@/lib/current-context";
@@ -38,8 +39,10 @@ import { redirect } from "next/navigation";
 import type {
   CreateSalonStaffInviteInput,
   ReviewStaffSalonApplicationInput,
+  StaffInviteEmailDelivery,
   SubmitStaffSalonApplicationInput,
 } from "@/types/staff-salon-connection";
+import type { UpdateStaffDirectoryBatchChange } from "@/types/staff";
 
 type StaffConnectionActionResult<T> =
   | {
@@ -78,6 +81,23 @@ function readRequiredString(formData: FormData, key: string) {
 function readOptionalString(formData: FormData, key: string) {
   const value = readRequiredString(formData, key);
   return value || null;
+}
+
+function splitFullName(value: string | null | undefined) {
+  const parts = (value ?? "").trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return { firstName: null, lastName: null };
+  }
+
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: null };
+  }
+
+  return {
+    firstName: parts.slice(0, -1).join(" "),
+    lastName: parts[parts.length - 1],
+  };
 }
 
 function readActionString(input: ActionInput, key: string) {
@@ -157,18 +177,43 @@ function redirectWithConnectionError(path: "/staff" | "/staff/connections", mess
 }
 
 function redirectWithInviteToken(input: {
+  emailDelivery?: StaffInviteEmailDelivery;
   message: string;
   requestId: string;
+  staffId?: string | null;
   token: string;
 }): never {
+  const message = getInviteDeliveryNotice(input.message, input.emailDelivery);
   const params = new URLSearchParams({
-    add: "1",
-    connection_notice: input.message,
+    connection_notice: message,
     invite_request: input.requestId,
     invite_token: input.token,
   });
 
+  if (input.staffId) {
+    params.set("staff", input.staffId);
+  }
+
   redirect(`/staff?${params.toString()}`);
+}
+
+function getInviteDeliveryNotice(
+  message: string,
+  delivery?: StaffInviteEmailDelivery,
+) {
+  if (!delivery) {
+    return message;
+  }
+
+  if (delivery.status === "sent") {
+    return `${message} Email sent to ${delivery.recipient}.`;
+  }
+
+  if (delivery.status === "failed") {
+    return `${message} Email delivery failed: ${delivery.reason}`;
+  }
+
+  return `${message} Email not sent: ${delivery.reason}`;
 }
 
 function parseApplicationInput(input: ActionInput): SubmitStaffSalonApplicationInput {
@@ -211,19 +256,26 @@ function parseReviewApplicationInput(
 
 export async function createStaff(formData: FormData) {
   const displayName = readRequiredString(formData, "display_name");
+  const parsedName = splitFullName(displayName);
 
   if (!displayName) {
-    redirectWithError("Display Name is required.");
+    redirectWithError("Full Name is required.");
   }
 
   try {
     await createStaffRecord({
+      address_line1: readOptionalString(formData, "address_line1"),
+      address_line2: readOptionalString(formData, "address_line2"),
+      city: readOptionalString(formData, "city"),
       display_name: displayName,
-      first_name: readOptionalString(formData, "first_name"),
-      last_name: readOptionalString(formData, "last_name"),
+      first_name: readOptionalString(formData, "first_name") ?? parsedName.firstName,
+      last_name: readOptionalString(formData, "last_name") ?? parsedName.lastName,
       phone: readOptionalString(formData, "phone"),
       email: readOptionalString(formData, "email"),
       job_title: readOptionalString(formData, "job_title"),
+      postal_code: readOptionalString(formData, "postal_code"),
+      pos_enabled: true,
+      state: readOptionalString(formData, "state"),
       is_active: formData.get("is_active") === "on",
     });
   } catch (error) {
@@ -232,6 +284,122 @@ export async function createStaff(formData: FormData) {
 
   revalidatePath("/staff");
   redirect("/staff");
+}
+
+function readBatchOptionalString(
+  formData: FormData,
+  field: string,
+  staffId: string,
+) {
+  return readOptionalString(formData, `${field}_${staffId}`);
+}
+
+function readBatchRequiredString(
+  formData: FormData,
+  field: string,
+  staffId: string,
+) {
+  return readRequiredString(formData, `${field}_${staffId}`);
+}
+
+function readBatchBoolean(formData: FormData, field: string, staffId: string) {
+  return formData.get(`${field}_${staffId}`) === "on";
+}
+
+function getStaffDirectoryRedirectHref(
+  formData: FormData,
+  noticeKey: "connection_error" | "connection_notice",
+  message: string,
+) {
+  const params = new URLSearchParams({
+    [noticeKey]: message,
+  });
+  const query = readRequiredString(formData, "q");
+
+  if (query) {
+    params.set("q", query);
+  }
+
+  return `/staff?${params.toString()}`;
+}
+
+export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
+  const staffIds = Array.from(
+    new Set(
+      formData
+        .getAll("staff_id")
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  );
+  const changes = staffIds.map<UpdateStaffDirectoryBatchChange>((staffId) => ({
+    address_line1: readBatchOptionalString(formData, "address_line1", staffId),
+    address_line2: readBatchOptionalString(formData, "address_line2", staffId),
+    city: readBatchOptionalString(formData, "city", staffId),
+    display_name: readBatchRequiredString(formData, "display_name", staffId),
+    email: readBatchOptionalString(formData, "email", staffId),
+    first_name: splitFullName(
+      readBatchOptionalString(formData, "full_name", staffId),
+    ).firstName,
+    is_active: readBatchBoolean(formData, "is_active", staffId),
+    job_title: readBatchOptionalString(formData, "job_title", staffId),
+    last_name: splitFullName(
+      readBatchOptionalString(formData, "full_name", staffId),
+    ).lastName,
+    online_booking_enabled: readBatchBoolean(
+      formData,
+      "online_booking_enabled",
+      staffId,
+    ),
+    owner_public_enabled: readBatchBoolean(
+      formData,
+      "owner_public_enabled",
+      staffId,
+    ),
+    phone: readBatchOptionalString(formData, "phone", staffId),
+    postal_code: readBatchOptionalString(formData, "postal_code", staffId),
+    pos_enabled: readBatchBoolean(formData, "pos_enabled", staffId),
+    salon_profile_content_posting_enabled: readBatchBoolean(
+      formData,
+      "owner_public_enabled",
+      staffId,
+    ),
+    staff_id: staffId,
+    state: readBatchOptionalString(formData, "state", staffId),
+  }));
+
+  try {
+    await updateStaffDirectoryBatchInService({ changes });
+  } catch (error) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        error instanceof Error ? error.message : "Staff changes could not be saved.",
+      ),
+    );
+  }
+
+  const context = await getCurrentBusinessContext();
+
+  revalidatePath("/staff");
+  revalidatePath("/staff/my-work");
+  revalidatePath("/bookings");
+  revalidatePath("/pos");
+  revalidatePath("/salon-profile");
+
+  if (context.currentSalon) {
+    revalidatePath(getSalonProfileHref(context.currentSalon.id));
+  }
+
+  redirect(
+    getStaffDirectoryRedirectHref(
+      formData,
+      "connection_notice",
+      "Staff changes saved.",
+    ),
+  );
 }
 
 function readActionStringList(input: ActionInput, key: string) {
@@ -440,6 +608,7 @@ export async function createSalonStaffInviteFormAction(formData: FormData) {
 
   revalidatePath("/staff");
   redirectWithInviteToken({
+    emailDelivery: result.email_delivery,
     message: "Invitation created.",
     requestId: result.request.id,
     token: result.invite_token,
@@ -468,6 +637,7 @@ export async function resendSalonStaffInviteAction(
 
 export async function resendSalonStaffInviteFormAction(formData: FormData) {
   let result: Awaited<ReturnType<typeof resendSalonStaffInviteInService>>;
+  const staffId = readOptionalString(formData, "staff_id");
 
   try {
     result = await resendSalonStaffInviteInService(
@@ -480,8 +650,10 @@ export async function resendSalonStaffInviteFormAction(formData: FormData) {
 
   revalidatePath("/staff");
   redirectWithInviteToken({
+    emailDelivery: result.email_delivery,
     message: "Invitation resent. Old invite links are now invalid.",
     requestId: result.result.request_id,
+    staffId,
     token: result.invite_token,
   });
 }

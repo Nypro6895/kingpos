@@ -85,7 +85,7 @@ export const POS_TICKET_SERVICE_OPTION_SELECT =
   "id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 
 export const POS_TICKET_STAFF_OPTION_SELECT =
-  "id, salon_id, user_id, display_name, first_name, last_name, phone, email, job_title, is_active, created_at, updated_at";
+  "id, salon_id, user_id, account_user_id, display_name, first_name, last_name, phone, email, address_line1, address_line2, city, state, postal_code, job_title, pos_enabled, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 
 export type PosTicketStaffOption = Staff & {
   today_status: StaffWorkdayStatus | "not_checked_in";
@@ -756,6 +756,7 @@ export async function getCurrentSalonPosTicketOptions(
       .select(POS_TICKET_STAFF_OPTION_SELECT)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
+      .eq("pos_enabled", true)
       .order("display_name", { ascending: true })
       .returns<Staff[]>(),
     supabase

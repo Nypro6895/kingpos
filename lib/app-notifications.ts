@@ -165,3 +165,47 @@ export async function markAppNotificationRead(notificationId: string) {
 
   return true;
 }
+
+export async function markAppNotificationsRead(
+  scope: AppNotificationQueryScope = {},
+) {
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    return false;
+  }
+
+  let query = supabase
+    .from("app_notifications")
+    .update({ read_at: new Date().toISOString() })
+    .is("read_at", null);
+  const kinds = recipientKinds(scope.recipientKind);
+
+  if (kinds.length === 1) {
+    query = query.eq("recipient_kind", kinds[0]);
+  } else if (kinds.length > 1) {
+    query = query.in("recipient_kind", kinds);
+  }
+
+  if (scope.accountId) {
+    query = query.eq("account_id", scope.accountId);
+  }
+
+  if (scope.salonId) {
+    query = query.eq("salon_id", scope.salonId);
+  }
+
+  const { error } = await query;
+
+  if (error) {
+    console.error("Supabase mark app notifications read failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+    });
+    return false;
+  }
+
+  return true;
+}

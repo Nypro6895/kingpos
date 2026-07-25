@@ -4,13 +4,18 @@
   resendSalonStaffInviteFormAction,
   reviewStaffSalonApplicationFormAction,
   revokeSalonStaffInviteFormAction,
+  updateStaffDirectoryBatchFormAction,
 } from "@/app/staff/actions";
+import {
+  StaffDirectoryEditor,
+  type StaffDirectoryStatus,
+} from "@/app/staff/staff-directory-editor";
 import {
   getCurrentSalonBookingSetup,
   type BookingSetupData,
   type StaffBookingReadiness,
 } from "@/lib/booking-setup";
-import { CopyInviteLinkButton } from "@/app/staff/copy-invite-link-button";
+import { InviteLinkTools } from "@/app/staff/copy-invite-link-button";
 import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-editor";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { hasPermission } from "@/lib/permissions";
@@ -50,16 +55,6 @@ type StaffPageProps = {
   searchParams: Promise<StaffPageSearchParams>;
 };
 
-const STAFF_FILTERS = [
-  { id: "active", label: "Active" },
-  { id: "need_contact", label: "Need Contact" },
-  { id: "ready_invite", label: "Ready to Invite" },
-  { id: "connected", label: "Connected" },
-  { id: "missing_setup", label: "Missing Setup" },
-  { id: "inactive", label: "Inactive" },
-] as const;
-
-type StaffFilter = (typeof STAFF_FILTERS)[number]["id"];
 type BadgeTone = "danger" | "dark" | "neutral" | "success" | "warning";
 type AccountStatusKind =
   | "connected"
@@ -76,29 +71,16 @@ type BookingStatusKind =
   | "ready";
 type PosStatusKind = "disabled" | "enabled" | "limited_access" | "pin_missing";
 
-const DEFAULT_FILTER: StaffFilter = "active";
-
 function stringParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function isStaffFilter(value: string | undefined): value is StaffFilter {
-  return STAFF_FILTERS.some((filter) => filter.id === value);
-}
-
-function getStaffFilter(value: string | undefined) {
-  return isStaffFilter(value) ? value : DEFAULT_FILTER;
-}
-
 function getStaffHref(input: {
   add?: boolean;
-  filter?: StaffFilter;
   query?: string;
   staffId?: string | null;
 }) {
-  const params = new URLSearchParams({
-    filter: input.filter ?? DEFAULT_FILTER,
-  });
+  const params = new URLSearchParams();
   const query = input.query?.trim();
 
   if (query) {
@@ -113,7 +95,8 @@ function getStaffHref(input: {
     params.set("staff", input.staffId);
   }
 
-  return `/staff?${params.toString()}`;
+  const queryString = params.toString();
+  return queryString ? `/staff?${queryString}` : "/staff";
 }
 
 function isEmploymentActive(member: StaffDirectoryMember) {
@@ -183,17 +166,6 @@ function getAccountStatus(
   return { kind: "not_connected", label: "Not Connected", tone: "neutral" };
 }
 
-function isReadyToInvite(
-  member: StaffDirectoryMember,
-  requests: SalonStaffConnectionRequestWithDetails[] = [],
-) {
-  return getAccountStatus(member, requests).kind === "ready_to_invite";
-}
-
-function needsContact(member: StaffDirectoryMember) {
-  return isEmploymentActive(member) && !hasUsableContact(member);
-}
-
 function getBookingStatus(
   member: StaffDirectoryMember,
   readiness?: StaffBookingReadiness | null,
@@ -238,67 +210,13 @@ function getPosStatus(member: StaffDirectoryMember): {
     return { kind: "disabled", label: "Disabled", tone: "neutral" };
   }
 
-  // TODO: When staff POS flags, POS PIN, and access-level fields exist,
-  // evaluate pos_enabled, pin presence, and access limits here.
+  if (!member.pos_enabled) {
+    return { kind: "disabled", label: "Disabled", tone: "neutral" };
+  }
+
+  // TODO: When POS PIN and access-level fields exist,
+  // evaluate pin presence and access limits here.
   return { kind: "enabled", label: "Enabled", tone: "success" };
-}
-
-function hasMissingRole(member: StaffDirectoryMember) {
-  return !cleanValue(member.job_title);
-}
-
-function hasMissingPayrollSetup(member: StaffDirectoryMember) {
-  return (
-    isEmploymentActive(member) && member.payroll_setup_status === "missing"
-  );
-}
-
-function hasMissingSetup(
-  member: StaffDirectoryMember,
-  readiness?: StaffBookingReadiness | null,
-) {
-  const bookingStatus = getBookingStatus(member, readiness).kind;
-  const posStatus = getPosStatus(member).kind;
-
-  return (
-    isEmploymentActive(member) &&
-    (hasMissingRole(member) ||
-      needsContact(member) ||
-      hasMissingPayrollSetup(member) ||
-      bookingStatus === "missing_services" ||
-      bookingStatus === "missing_schedule" ||
-      posStatus === "pin_missing" ||
-      posStatus === "limited_access")
-  );
-}
-
-function memberMatchesFilter(
-  member: StaffDirectoryMember,
-  filter: StaffFilter,
-  requests: SalonStaffConnectionRequestWithDetails[] = [],
-  readiness?: StaffBookingReadiness | null,
-) {
-  if (filter === "connected") {
-    return isConnected(member);
-  }
-
-  if (filter === "need_contact") {
-    return needsContact(member);
-  }
-
-  if (filter === "ready_invite") {
-    return isReadyToInvite(member, requests);
-  }
-
-  if (filter === "missing_setup") {
-    return hasMissingSetup(member, readiness);
-  }
-
-  if (filter === "inactive") {
-    return !isEmploymentActive(member);
-  }
-
-  return isEmploymentActive(member);
 }
 
 function memberMatchesSearch(member: StaffDirectoryMember, query: string) {
@@ -324,25 +242,6 @@ function memberMatchesSearch(member: StaffDirectoryMember, query: string) {
     .toLowerCase();
 
   return searchableText.includes(normalizedQuery);
-}
-
-function getVisibleStaff(input: {
-  filter: StaffFilter;
-  query: string;
-  readinessByStaffId?: Record<string, StaffBookingReadiness>;
-  requests?: SalonStaffConnectionRequestWithDetails[];
-  staff: StaffDirectoryMember[];
-}) {
-  return input.staff.filter(
-    (member) =>
-      memberMatchesFilter(
-        member,
-        input.filter,
-        input.requests ?? [],
-        input.readinessByStaffId?.[member.id],
-      ) &&
-      memberMatchesSearch(member, input.query),
-  );
 }
 
 function getInitials(value: string) {
@@ -431,7 +330,7 @@ function Badge({
 function StatusBadge({ isActive }: { isActive: boolean }) {
   return (
     <Badge tone={isActive ? "dark" : "neutral"}>
-      {isActive ? "Active" : "Inactive"}
+      {isActive ? "Visible" : "Hidden"}
     </Badge>
   );
 }
@@ -473,16 +372,31 @@ function StaffForm({
       <div className="sm:col-span-2">
         <Field
           autoComplete="name"
-          label="Display Name"
+          label="Full Name"
           name="display_name"
           required
         />
       </div>
-      <Field autoComplete="given-name" label="First Name" name="first_name" />
-      <Field autoComplete="family-name" label="Last Name" name="last_name" />
       <Field autoComplete="tel" label="Phone" name="phone" />
       <Field autoComplete="email" label="Email" name="email" type="email" />
       <Field autoComplete="Account-title" label="Job Title" name="job_title" />
+      <div className="sm:col-span-2">
+        <Field
+          autoComplete="address-line1"
+          label="Address Line 1"
+          name="address_line1"
+        />
+      </div>
+      <div className="sm:col-span-2">
+        <Field
+          autoComplete="address-line2"
+          label="Address Line 2"
+          name="address_line2"
+        />
+      </div>
+      <Field autoComplete="address-level2" label="City" name="city" />
+      <Field autoComplete="address-level1" label="State" name="state" />
+      <Field autoComplete="postal-code" label="ZIP" name="postal_code" />
 
       <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 sm:col-span-2">
         <input
@@ -529,42 +443,19 @@ function NoticeBanner({
   );
 }
 
-function InviteLinkPanel({ token }: { token: string }) {
-  const href = getInviteHref(token);
-
-  return (
-    <div className="grid gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-      <div>
-        <p className="text-sm font-semibold text-emerald-950">Invite link ready</p>
-        <p className="mt-1 text-sm text-emerald-800">
-          Share this link with the staff member. Resending rotates it.
-        </p>
-      </div>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <input
-          className="min-h-10 flex-1 rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm text-zinc-950"
-          readOnly
-          value={href}
-        />
-        <CopyInviteLinkButton value={href} />
-      </div>
-    </div>
-  );
-}
-
 function AddStaffConnectionPanel({
   inviteEmail,
   invitePhone,
-  inviteToken,
   lookupError,
   lookupResult,
+  searchAddsDrawer = true,
   staff,
 }: {
   inviteEmail: string;
   invitePhone: string;
-  inviteToken?: string;
   lookupError?: string | null;
   lookupResult: StaffAccountExactSearchResult | null;
+  searchAddsDrawer?: boolean;
   staff: StaffDirectoryMember[];
 }) {
   const searched = Boolean(inviteEmail || invitePhone);
@@ -583,11 +474,10 @@ function AddStaffConnectionPanel({
         </p>
       </div>
 
-      {inviteToken ? <InviteLinkPanel token={inviteToken} /> : null}
       {lookupError ? <NoticeBanner tone="danger">{lookupError}</NoticeBanner> : null}
 
       <form action="/staff" className="grid gap-3 sm:grid-cols-2" method="get">
-        <input name="add" type="hidden" value="1" />
+        {searchAddsDrawer ? <input name="add" type="hidden" value="1" /> : null}
         <label className="block">
           <span className="text-sm font-medium text-zinc-700">Email</span>
           <input
@@ -670,7 +560,7 @@ function AddStaffConnectionPanel({
           </label>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Display Name" name="display_name" />
+            <Field label="Full Name" name="display_name" />
             <Field label="Job Title" name="job_title" />
           </div>
           <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
@@ -726,104 +616,13 @@ function AddStaffConnectionPanel({
   );
 }
 
-function MetricCard({
-  active,
-  href,
-  label,
-  value,
-}: {
-  active?: boolean;
-  href: string;
-  label: string;
-  value: number;
-}) {
-  return (
-    <Link
-      className={`rounded-lg border bg-white p-4 text-left shadow-sm ${
-        active
-          ? "border-zinc-950 ring-1 ring-zinc-950"
-          : "border-zinc-200 hover:border-zinc-300"
-      }`}
-      href={href}
-    >
-      <p className="text-xs font-medium uppercase text-zinc-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
-    </Link>
-  );
-}
-
-function StaffMetrics({
-  activeFilter,
-  query,
-  readinessByStaffId,
-  requests,
-  staff,
-}: {
-  activeFilter: StaffFilter;
-  query: string;
-  readinessByStaffId?: Record<string, StaffBookingReadiness>;
-  requests: SalonStaffConnectionRequestWithDetails[];
-  staff: StaffDirectoryMember[];
-}) {
-  const metrics: Array<{ filter: StaffFilter; label: string; value: number }> = [
-    {
-      filter: "active",
-      label: "Active Staff",
-      value: staff.filter(isEmploymentActive).length,
-    },
-    {
-      filter: "connected",
-      label: "Connected Accounts",
-      value: staff.filter(isConnected).length,
-    },
-    {
-      filter: "need_contact",
-      label: "Need Contact",
-      value: staff.filter(needsContact).length,
-    },
-    {
-      filter: "ready_invite",
-      label: "Ready to Invite",
-      value: staff.filter((member) => isReadyToInvite(member, requests)).length,
-    },
-    {
-      filter: "missing_setup",
-      label: "Missing Setup",
-      value: staff.filter((member) =>
-        hasMissingSetup(member, readinessByStaffId?.[member.id]),
-      ).length,
-    },
-  ];
-
-  return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-      {metrics.map((metric) => (
-        <MetricCard
-          active={activeFilter === metric.filter}
-          href={getStaffHref({ filter: metric.filter, query })}
-          key={metric.filter}
-          label={metric.label}
-          value={metric.value}
-        />
-      ))}
-    </div>
-  );
-}
-
-function StaffSearch({
-  activeFilter,
-  query,
-}: {
-  activeFilter: StaffFilter;
-  query: string;
-}) {
+function StaffSearch({ query }: { query: string }) {
   return (
     <form
       action="/staff"
       className="flex w-full flex-col gap-3 sm:flex-row sm:items-center"
       method="get"
     >
-      <input name="filter" type="hidden" value={activeFilter} />
       <label className="sr-only" htmlFor="staff-search">
         Search staff
       </label>
@@ -845,7 +644,7 @@ function StaffSearch({
         {query ? (
           <Link
             className="inline-flex min-h-10 items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href={getStaffHref({ filter: activeFilter })}
+            href="/staff"
           >
             Clear
           </Link>
@@ -855,51 +654,14 @@ function StaffSearch({
   );
 }
 
-function StaffFilterTabs({
-  activeFilter,
-  query,
-}: {
-  activeFilter: StaffFilter;
-  query: string;
-}) {
-  return (
-    <nav aria-label="Staff filters" className="flex flex-wrap gap-2">
-      {STAFF_FILTERS.map((filter) => {
-        const isActive = filter.id === activeFilter;
-
-        return (
-          <Link
-            className={
-              isActive
-                ? "rounded-md bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
-                : "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:border-zinc-400"
-            }
-            href={getStaffHref({ filter: filter.id, query })}
-            key={filter.id}
-          >
-            {filter.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
+function getFullName(member: StaffDirectoryMember) {
+  return [cleanValue(member.first_name), cleanValue(member.last_name)]
+    .filter(Boolean)
+    .join(" ");
 }
 
-function AccountCell({
-  member,
-  requests,
-}: {
-  member: StaffDirectoryMember;
-  requests: SalonStaffConnectionRequestWithDetails[];
-}) {
-  const status = getAccountStatus(member, requests);
-
-  return (
-    <div className="grid gap-1">
-      <Badge tone={status.tone}>{status.label}</Badge>
-      <span className="text-xs text-zinc-500">{bestContact(member)}</span>
-    </div>
-  );
+function staffFieldName(field: string, staffId: string) {
+  return `${field}_${staffId}`;
 }
 
 function PayrollSetupCell({
@@ -934,18 +696,6 @@ function PayrollSetupCell({
         </Link>
       ) : null}
     </div>
-  );
-}
-
-function RoleCell({ member }: { member: StaffDirectoryMember }) {
-  if (cleanValue(member.job_title)) {
-    return <span className="text-zinc-700">{member.job_title}</span>;
-  }
-
-  return (
-    <Badge tone={member.is_active ? "warning" : "neutral"}>
-      {member.is_active ? "Need role" : "No role"}
-    </Badge>
   );
 }
 
@@ -984,198 +734,210 @@ function ActionButton({
   );
 }
 
-function PrimaryStaffAction({
-  canManagePayroll,
-  detailHref,
-  member,
-  requests,
+function SubmitActionButton({
+  children,
+  disabled = false,
 }: {
-  canManagePayroll: boolean;
-  detailHref: string;
-  member: StaffDirectoryMember;
-  requests: SalonStaffConnectionRequestWithDetails[];
+  children: ReactNode;
+  disabled?: boolean;
 }) {
-  const accountStatus = getAccountStatus(member, requests).kind;
-
-  if (accountStatus === "need_contact") {
-    return (
-      <ActionButton href={detailHref} tone="primary">
-        Add Contact
-      </ActionButton>
-    );
-  }
-
-  if (accountStatus === "ready_to_invite") {
-    return (
-      <ActionButton disabled tone="primary">
-        Send Invite
-      </ActionButton>
-    );
-  }
-
-  if (accountStatus === "invite_sent") {
-    return (
-      <ActionButton disabled tone="primary">
-        Resend Invite
-      </ActionButton>
-    );
-  }
-
-  if (member.payroll_setup_status === "missing") {
-    return (
-      <ActionButton
-        disabled={!canManagePayroll}
-        href={`/payroll?tab=settings&editStaff=${member.id}`}
-        tone="primary"
-      >
-        Set Payroll
-      </ActionButton>
-    );
-  }
-
-  if (accountStatus === "connected") {
-    return (
-      <ActionButton
-        href="/roles"
-        tone="primary"
-      >
-        View Account
-      </ActionButton>
-    );
-  }
-
   return (
-    <ActionButton href={detailHref} tone="primary">
-      View
-    </ActionButton>
+    <button
+      className="inline-flex min-h-9 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={disabled}
+      type="submit"
+    >
+      {children}
+    </button>
   );
 }
 
-function StaffDirectoryTable({
-  activeFilter,
-  canManagePayroll,
-  hasAnyStaff,
-  query,
-  readinessByStaffId,
-  requests,
-  staff,
+function StaffInlineInput({
+  autoComplete,
+  className,
+  disabled,
+  field,
+  member,
+  placeholder,
+  required = false,
+  value,
 }: {
-  activeFilter: StaffFilter;
-  canManagePayroll: boolean;
-  hasAnyStaff: boolean;
-  query: string;
-  readinessByStaffId?: Record<string, StaffBookingReadiness>;
-  requests: SalonStaffConnectionRequestWithDetails[];
-  staff: StaffDirectoryMember[];
+  autoComplete?: string;
+  className: string;
+  disabled: boolean;
+  field: string;
+  member: StaffDirectoryMember;
+  placeholder?: string;
+  required?: boolean;
+  value: string | null;
 }) {
-  if (staff.length === 0) {
-    return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
-        <h2 className="text-lg font-semibold text-zinc-950">
-          {hasAnyStaff ? "No matching staff" : "No staff yet"}
-        </h2>
-        <p className="mt-2 text-sm text-zinc-600">
-          {hasAnyStaff
-            ? "Try a different search or filter."
-            : "Create your first staff member for this salon."}
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="mt-4 overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <table className="w-full min-w-[1100px] divide-y divide-zinc-200 text-left text-sm">
+    <input
+      autoComplete={autoComplete}
+      className={`${className} w-full rounded-sm border border-transparent bg-transparent px-1 py-0.5 outline-none transition focus:border-zinc-300 focus:bg-white disabled:text-zinc-500`}
+      defaultValue={value ?? ""}
+      disabled={disabled}
+      name={staffFieldName(field, member.id)}
+      placeholder={placeholder}
+      required={required}
+      type="text"
+    />
+  );
+}
+
+function AccessCheckbox({
+  checked,
+  disabled,
+  field,
+  label,
+  member,
+}: {
+  checked: boolean;
+  disabled: boolean;
+  field: string;
+  label: string;
+  member: StaffDirectoryMember;
+}) {
+  return (
+    <label className="flex min-h-8 items-center gap-2 text-sm font-medium text-zinc-800">
+      <input
+        className="size-4 rounded border-zinc-300"
+        defaultChecked={checked}
+        disabled={disabled}
+        name={staffFieldName(field, member.id)}
+        type="checkbox"
+      />
+      {label}
+    </label>
+  );
+}
+
+function StaffDirectoryTableSection({
+  canManageStaff,
+  members,
+  query,
+}: {
+  canManageStaff: boolean;
+  members: StaffDirectoryMember[];
+  query: string;
+}) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm">
+      <table className="w-full min-w-[760px] divide-y divide-zinc-200 text-left text-sm">
         <thead className="bg-zinc-50 text-xs font-medium uppercase text-zinc-500">
           <tr>
-            <th className="px-4 py-3" scope="col">
-              Staff
+            <th className="w-[42%] px-4 py-3" scope="col">
+              Staff profile
             </th>
-            <th className="px-4 py-3" scope="col">
-              Role
+            <th className="w-[28%] px-4 py-3" scope="col">
+              Contact
             </th>
-            <th className="px-4 py-3" scope="col">
-              Account
+            <th className="w-[20%] px-4 py-3" scope="col">
+              Access
             </th>
-            <th className="px-4 py-3" scope="col">
-              Booking
-            </th>
-            <th className="px-4 py-3" scope="col">
-              POS
-            </th>
-            <th className="px-4 py-3" scope="col">
-              Payroll Setup
-            </th>
-            <th className="px-4 py-3" scope="col">
-              Status
-            </th>
-            <th className="px-4 py-3" scope="col">
-              Action
+            <th className="w-[10%] px-4 py-3" scope="col">
+              Edit
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100">
-          {staff.map((member) => {
-            const bookingStatus = getBookingStatus(
-              member,
-              readinessByStaffId?.[member.id],
-            );
-            const posStatus = getPosStatus(member);
-            const detailHref = getStaffHref({
-              filter: activeFilter,
-              query,
-              staffId: member.id,
-            });
+          {members.map((member) => {
+            const detailHref = getStaffHref({ query, staffId: member.id });
+            const fullName = getFullName(member);
+            const contactEmail =
+              cleanValue(member.connected_user?.email) ||
+              cleanValue(member.email) ||
+              "No email";
+            const contactPhone =
+              cleanValue(member.connected_user?.phone) ||
+              cleanValue(member.phone) ||
+              "No phone";
+            const profileEnabled =
+              member.owner_public_enabled ||
+              member.salon_profile_content_posting_enabled;
+            const rowMuted = !member.is_active;
 
             return (
-              <tr className="hover:bg-zinc-50" key={member.id}>
-                <td className="max-w-72 px-4 py-4 align-top">
+              <tr
+                className={rowMuted ? "bg-zinc-50/70" : "hover:bg-zinc-50"}
+                key={member.id}
+              >
+                <td className="px-4 py-4 align-top">
+                  <input name="staff_id" type="hidden" value={member.id} />
+                  <input
+                    name={staffFieldName("email", member.id)}
+                    type="hidden"
+                    value={member.email ?? ""}
+                  />
+                  <input
+                    name={staffFieldName("phone", member.id)}
+                    type="hidden"
+                    value={member.phone ?? ""}
+                  />
+                  <input
+                    name={staffFieldName("job_title", member.id)}
+                    type="hidden"
+                    value={member.job_title ?? ""}
+                  />
+                  {member.online_booking_enabled ? (
+                    <input
+                      name={staffFieldName("online_booking_enabled", member.id)}
+                      type="hidden"
+                      value="on"
+                    />
+                  ) : null}
                   <div className="flex min-w-0 items-center gap-3">
                     <AvatarInitials name={member.display_name} />
-                    <div className="min-w-0">
-                      <Link
-                        className="truncate font-medium text-zinc-950 hover:underline"
-                        href={detailHref}
-                      >
-                        {member.display_name}
-                      </Link>
-                      <p className="mt-1 truncate text-xs text-zinc-500">
-                        {bestContact(member)}
-                      </p>
+                    <div className="min-w-0 flex-1">
+                      <StaffInlineInput
+                        autoComplete="nickname"
+                        className="text-sm font-semibold text-zinc-950"
+                        disabled={!canManageStaff}
+                        field="display_name"
+                        member={member}
+                        required
+                        value={member.display_name}
+                      />
+                      <StaffInlineInput
+                        autoComplete="name"
+                        className="mt-0.5 text-xs text-zinc-500"
+                        disabled={!canManageStaff}
+                        field="full_name"
+                        member={member}
+                        placeholder="No full name"
+                        value={fullName}
+                      />
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-4 align-top">
-                  <RoleCell member={member} />
-                </td>
-                <td className="px-4 py-4 align-top">
-                  <AccountCell member={member} requests={requests} />
-                </td>
-                <td className="px-4 py-4 align-top">
-                  <Badge tone={bookingStatus.tone}>{bookingStatus.label}</Badge>
-                </td>
-                <td className="px-4 py-4 align-top">
-                  <Badge tone={posStatus.tone}>{posStatus.label}</Badge>
-                </td>
-                <td className="px-4 py-4 align-top">
-                  <PayrollSetupCell
-                    canManagePayroll={canManagePayroll}
-                    member={member}
-                  />
-                </td>
-                <td className="px-4 py-4 align-top">
-                  <StatusBadge isActive={isEmploymentActive(member)} />
-                </td>
-                <td className="px-4 py-4 align-top">
-                  <div className="flex flex-wrap gap-2">
-                    <PrimaryStaffAction
-                      canManagePayroll={canManagePayroll}
-                      detailHref={detailHref}
-                      member={member}
-                      requests={requests}
-                    />
-                    <ActionButton href={detailHref}>View</ActionButton>
+                  <div className="grid gap-1 text-sm text-zinc-700">
+                    <span>{contactEmail}</span>
+                    <span>{contactPhone}</span>
                   </div>
+                </td>
+                <td className="px-4 py-4 align-top">
+                  <div className="grid gap-1">
+                    <AccessCheckbox
+                      checked={member.is_active}
+                      disabled={!canManageStaff}
+                      field="is_active"
+                      label="Enable staff"
+                      member={member}
+                    />
+                    <AccessCheckbox
+                      checked={member.is_active && profileEnabled}
+                      disabled={!canManageStaff}
+                      field="owner_public_enabled"
+                      label="Enable profile"
+                      member={member}
+                    />
+                  </div>
+                </td>
+                <td className="px-4 py-4 align-top">
+                  <ActionButton href={detailHref} tone="primary">
+                    Edit
+                  </ActionButton>
                 </td>
               </tr>
             );
@@ -1183,6 +945,130 @@ function StaffDirectoryTable({
         </tbody>
       </table>
     </div>
+  );
+}
+
+function StaffDirectoryEmptyState({
+  addHref,
+  canManageStaff,
+  description,
+  hasAnyStaff,
+  title,
+}: {
+  addHref: string;
+  canManageStaff: boolean;
+  description?: string;
+  hasAnyStaff: boolean;
+  title?: string;
+}) {
+  const resolvedTitle = title ?? (hasAnyStaff ? "No matching staff" : "No staff yet");
+  const resolvedDescription =
+    description ??
+    (hasAnyStaff
+      ? "Try a different search."
+      : "Create your first staff member for this salon.");
+
+  return (
+    <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
+      <h2 className="text-lg font-semibold text-zinc-950">{resolvedTitle}</h2>
+      <p className="mt-2 text-sm text-zinc-600">{resolvedDescription}</p>
+      {!hasAnyStaff && canManageStaff ? (
+        <Link
+          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+          href={addHref}
+        >
+          + Add Staff
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
+// Legacy server-rendered directory kept temporarily while the inline editor settles.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function StaffDirectoryManager({
+  activeStaff,
+  addHref,
+  canManageStaff,
+  hasAnyStaff,
+  hiddenStaff,
+  query,
+}: {
+  activeStaff: StaffDirectoryMember[];
+  addHref: string;
+  canManageStaff: boolean;
+  hasAnyStaff: boolean;
+  hiddenStaff: StaffDirectoryMember[];
+  query: string;
+}) {
+  const hasVisibleRows = activeStaff.length > 0 || hiddenStaff.length > 0;
+
+  if (!hasVisibleRows) {
+    return (
+      <StaffDirectoryEmptyState
+        addHref={addHref}
+        canManageStaff={canManageStaff}
+        hasAnyStaff={hasAnyStaff}
+      />
+    );
+  }
+
+  return (
+    <form
+      action={updateStaffDirectoryBatchFormAction}
+      className="mt-4 grid gap-4"
+    >
+      <input name="q" type="hidden" value={query} />
+      {activeStaff.length > 0 ? (
+        <StaffDirectoryTableSection
+          canManageStaff={canManageStaff}
+          members={activeStaff}
+          query={query}
+        />
+      ) : (
+        <StaffDirectoryEmptyState
+          addHref={addHref}
+          canManageStaff={canManageStaff}
+          hasAnyStaff={hasAnyStaff}
+          description={
+            hiddenStaff.length > 0
+              ? "Open the hidden staff list below to restore staff."
+              : undefined
+          }
+          title={hiddenStaff.length > 0 ? "No visible staff" : undefined}
+        />
+      )}
+
+      <details className="rounded-lg border border-zinc-200 bg-white">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-zinc-950">
+          Hidden staff list ({hiddenStaff.length})
+        </summary>
+        <div className="border-t border-zinc-200 p-4">
+          {hiddenStaff.length > 0 ? (
+            <StaffDirectoryTableSection
+              canManageStaff={canManageStaff}
+              members={hiddenStaff}
+              query={query}
+            />
+          ) : (
+            <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
+              No hidden staff.
+            </p>
+          )}
+        </div>
+      </details>
+
+      {canManageStaff ? (
+        <div className="flex justify-end">
+          <button
+            className="inline-flex min-h-10 items-center justify-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+            type="submit"
+          >
+            Save staff changes
+          </button>
+        </div>
+      ) : null}
+    </form>
   );
 }
 
@@ -1262,14 +1148,26 @@ function DetailSection({
 
 function DetailActions({
   canManagePayroll,
+  inviteRequestId,
+  inviteToken,
   member,
   requests,
 }: {
   canManagePayroll: boolean;
+  inviteRequestId?: string;
+  inviteToken?: string;
   member: StaffDirectoryMember;
   requests: SalonStaffConnectionRequestWithDetails[];
 }) {
   const accountStatus = getAccountStatus(member, requests).kind;
+  const pendingInvite = requests.find(
+    (request) =>
+      request.direction === "salon_invite" &&
+      request.status === "pending" &&
+      request.staff_id === member.id,
+  );
+  const currentInviteToken =
+    pendingInvite && inviteRequestId === pendingInvite.id ? inviteToken : null;
 
   return (
     <div className="mt-4 flex flex-wrap gap-2">
@@ -1281,10 +1179,24 @@ function DetailActions({
       ) : null}
       {accountStatus === "invite_sent" ? (
         <>
-          <ActionButton disabled>Resend Invite</ActionButton>
-          <ActionButton disabled>Cancel</ActionButton>
-          <ActionButton disabled>Copy Invite Link</ActionButton>
-          <ActionButton disabled>Show QR Code</ActionButton>
+          <form action={resendSalonStaffInviteFormAction}>
+            <input name="request_id" type="hidden" value={pendingInvite?.id ?? ""} />
+            <input name="staff_id" type="hidden" value={member.id} />
+            <SubmitActionButton disabled={!pendingInvite}>
+              Resend Invite
+            </SubmitActionButton>
+          </form>
+          <form action={revokeSalonStaffInviteFormAction}>
+            <input name="request_id" type="hidden" value={pendingInvite?.id ?? ""} />
+            <SubmitActionButton disabled={!pendingInvite}>Cancel</SubmitActionButton>
+          </form>
+          {currentInviteToken ? (
+            <InviteLinkTools value={getInviteHref(currentInviteToken)} />
+          ) : (
+            <p className="flex min-h-9 items-center text-xs text-zinc-500">
+              Resend to generate a copyable link and QR.
+            </p>
+          )}
         </>
       ) : null}
       {accountStatus === "connected" ? (
@@ -1302,16 +1214,22 @@ function DetailActions({
   );
 }
 
+// Legacy drawer kept temporarily; staff editing now happens inline in StaffDirectoryEditor.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function StaffDetailDrawer({
   bookingSetup,
   canManagePayroll,
   closeHref,
+  inviteRequestId,
+  inviteToken,
   member,
   requests,
 }: {
   bookingSetup: BookingSetupData;
   canManagePayroll: boolean;
   closeHref: string;
+  inviteRequestId?: string;
+  inviteToken?: string;
   member: StaffDirectoryMember;
   requests: SalonStaffConnectionRequestWithDetails[];
 }) {
@@ -1410,6 +1328,8 @@ function StaffDetailDrawer({
         <div className="sm:col-span-2">
           <DetailActions
             canManagePayroll={canManagePayroll}
+            inviteRequestId={inviteRequestId}
+            inviteToken={inviteToken}
             member={member}
             requests={requests}
           />
@@ -1419,7 +1339,15 @@ function StaffDetailDrawer({
       <DetailSection title="Setup Status">
         <DetailField
           label="Booking"
-          value={<Badge tone={bookingStatus.tone}>{bookingStatus.label}</Badge>}
+          value={
+            bookingStatus.kind === "ready" ? (
+              <Badge tone={bookingStatus.tone}>{bookingStatus.label}</Badge>
+            ) : (
+              <Link className="inline-flex" href="/services">
+                <Badge tone={bookingStatus.tone}>{bookingStatus.label}</Badge>
+              </Link>
+            )
+          }
         />
         <DetailField
           label="POS"
@@ -1462,7 +1390,6 @@ function AddStaffDrawer({
   error,
   inviteEmail,
   invitePhone,
-  inviteToken,
   lookupError,
   lookupResult,
   staff,
@@ -1472,7 +1399,6 @@ function AddStaffDrawer({
   error?: string;
   inviteEmail: string;
   invitePhone: string;
-  inviteToken?: string;
   lookupError?: string | null;
   lookupResult: StaffAccountExactSearchResult | null;
   staff: StaffDirectoryMember[];
@@ -1487,7 +1413,6 @@ function AddStaffDrawer({
         <AddStaffConnectionPanel
           inviteEmail={inviteEmail}
           invitePhone={invitePhone}
-          inviteToken={inviteToken}
           lookupError={lookupError}
           lookupResult={lookupResult}
           staff={staff}
@@ -1545,15 +1470,9 @@ function EmptyConnectionState({ children }: { children: ReactNode }) {
 
 function IncomingApplicationsSection({
   requests,
-  staff,
 }: {
   requests: SalonStaffConnectionRequestWithDetails[];
-  staff: StaffDirectoryMember[];
 }) {
-  const unconnectedStaff = staff.filter(
-    (member) => member.is_active && !member.account_user_id && !member.user_id,
-  );
-
   if (requests.length === 0) {
     return <EmptyConnectionState>No incoming applications.</EmptyConnectionState>;
   }
@@ -1586,78 +1505,16 @@ function IncomingApplicationsSection({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <details className="w-full rounded-md border border-zinc-200 bg-zinc-50 p-3">
-              <summary className="cursor-pointer text-sm font-medium text-zinc-950">
-                Accept application
-              </summary>
-              <form
-                action={reviewStaffSalonApplicationFormAction}
-                className="mt-4 grid gap-3 sm:grid-cols-2"
+            <form action={reviewStaffSalonApplicationFormAction}>
+              <input name="request_id" type="hidden" value={request.id} />
+              <input name="decision" type="hidden" value="accepted" />
+              <button
+                className="rounded-md bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
+                type="submit"
               >
-                <input name="request_id" type="hidden" value={request.id} />
-                <input name="decision" type="hidden" value="accepted" />
-                <label className="block sm:col-span-2">
-                  <span className="text-sm font-medium text-zinc-700">
-                    Staff profile
-                  </span>
-                  <select
-                    className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-                    name="staff_id"
-                  >
-                    <option value="__new">Create a new staff profile</option>
-                    {unconnectedStaff.map((member) => (
-                      <option key={member.id} value={member.id}>
-                        {member.display_name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="text-sm font-medium text-zinc-700">
-                    Full Name
-                  </span>
-                  <input
-                    className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-                    defaultValue={request.account?.display_name ?? ""}
-                    name="display_name"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-medium text-zinc-700">
-                    Job Title
-                  </span>
-                  <input
-                    className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-                    defaultValue={request.requested_job_title ?? ""}
-                    name="job_title"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-medium text-zinc-700">Email</span>
-                  <input
-                    className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-                    name="email"
-                    type="email"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-sm font-medium text-zinc-700">Phone</span>
-                  <input
-                    className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-                    name="phone"
-                    type="tel"
-                  />
-                </label>
-                <div className="sm:col-span-2">
-                  <button
-                    className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-                    type="submit"
-                  >
-                    Accept
-                  </button>
-                </div>
-              </form>
-            </details>
+                Accept
+              </button>
+            </form>
 
             <form action={reviewStaffSalonApplicationFormAction}>
               <input name="request_id" type="hidden" value={request.id} />
@@ -1672,6 +1529,27 @@ function IncomingApplicationsSection({
           </div>
         </article>
       ))}
+    </div>
+  );
+}
+
+function InviteLinkToolsUnavailable() {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button
+        className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400"
+        disabled
+        type="button"
+      >
+        Copy link
+      </button>
+      <button
+        className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400"
+        disabled
+        type="button"
+      >
+        QR code
+      </button>
     </div>
   );
 }
@@ -1694,6 +1572,7 @@ function OutgoingInvitationsSection({
       {requests.map((request) => {
         const canMutate = request.status === "pending" || request.status === "expired";
         const currentToken = inviteRequestId === request.id ? inviteToken : null;
+        const currentInviteHref = currentToken ? getInviteHref(currentToken) : null;
 
         return (
           <article
@@ -1718,7 +1597,13 @@ function OutgoingInvitationsSection({
               </Badge>
             </div>
 
-            {currentToken ? <InviteLinkPanel token={currentToken} /> : null}
+            {currentInviteHref ? (
+              <input
+                className="min-h-10 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-zinc-950"
+                readOnly
+                value={currentInviteHref}
+              />
+            ) : null}
 
             <div className="flex flex-wrap gap-2">
               <form action={resendSalonStaffInviteFormAction}>
@@ -1731,6 +1616,11 @@ function OutgoingInvitationsSection({
                   Resend
                 </button>
               </form>
+              {currentInviteHref ? (
+                <InviteLinkTools value={currentInviteHref} />
+              ) : (
+                <InviteLinkToolsUnavailable />
+              )}
               <form action={revokeSalonStaffInviteFormAction}>
                 <input name="request_id" type="hidden" value={request.id} />
                 <button
@@ -1738,10 +1628,15 @@ function OutgoingInvitationsSection({
                   disabled={request.status !== "pending"}
                   type="submit"
                 >
-                  Revoke
+                  Cancel
                 </button>
               </form>
             </div>
+            {!currentToken ? (
+              <p className="text-xs text-zinc-500">
+                Resend to email the invite again and refresh the copy/QR link.
+              </p>
+            ) : null}
           </article>
         );
       })}
@@ -1791,13 +1686,21 @@ function ConnectionHistorySection({
 }
 
 function StaffConnectionRequestsSection({
+  inviteEmail,
+  invitePhone,
   inviteRequestId,
   inviteToken,
+  lookupError,
+  lookupResult,
   requests,
   staff,
 }: {
+  inviteEmail: string;
+  invitePhone: string;
   inviteRequestId?: string;
   inviteToken?: string;
+  lookupError?: string | null;
+  lookupResult: StaffAccountExactSearchResult | null;
   requests: SalonStaffConnectionRequestWithDetails[];
   staff: StaffDirectoryMember[];
 }) {
@@ -1825,6 +1728,15 @@ function StaffConnectionRequestsSection({
         </p>
       </div>
 
+      <AddStaffConnectionPanel
+        inviteEmail={inviteEmail}
+        invitePhone={invitePhone}
+        lookupError={lookupError}
+        lookupResult={lookupResult}
+        searchAddsDrawer={false}
+        staff={staff}
+      />
+
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="grid gap-3">
           <h3 className="text-base font-semibold text-zinc-950">
@@ -1832,7 +1744,6 @@ function StaffConnectionRequestsSection({
           </h3>
           <IncomingApplicationsSection
             requests={incomingApplications}
-            staff={staff}
           />
         </section>
 
@@ -1869,10 +1780,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   const inviteRequestId = stringParam(params.invite_request);
   const inviteToken = stringParam(params.invite_token);
   const query = stringParam(params.q)?.trim() ?? "";
-  const activeFilter = getStaffFilter(stringParam(params.filter));
-  const selectedStaffId = stringParam(params.staff);
-  const showAddStaff =
-    stringParam(params.add) === "1" || Boolean(error) || Boolean(inviteToken);
+  const showAddStaff = stringParam(params.add) === "1" || Boolean(error);
 
   const canViewStaff = await hasPermission(STAFF_PERMISSIONS.view, context);
 
@@ -1902,7 +1810,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   let lookupResult: StaffAccountExactSearchResult | null = null;
   let lookupError: string | null = null;
 
-  if (showAddStaff && canManageStaff && (inviteEmail || invitePhone)) {
+  if (canManageStaff && (inviteEmail || invitePhone)) {
     try {
       lookupResult = await searchStaffAccountExact({
         email: inviteEmail || null,
@@ -1916,18 +1824,49 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     }
   }
 
-  const visibleStaff = getVisibleStaff({
-    filter: activeFilter,
-    query,
-    readinessByStaffId: bookingSetup.readinessByStaffId,
-    requests: connectionRequests,
-    staff: directory.staff,
-  });
-  const closeHref = getStaffHref({ filter: activeFilter, query });
-  const selectedStaff =
-    selectedStaffId && !showAddStaff
-      ? directory.staff.find((member) => member.id === selectedStaffId)
-      : null;
+  const matchingStaff = directory.staff.filter((member) =>
+    memberMatchesSearch(member, query),
+  );
+  const activeStaff = matchingStaff.filter(isEmploymentActive);
+  const hiddenStaff = matchingStaff.filter((member) => !isEmploymentActive(member));
+  const statusByStaffId = Object.fromEntries(
+    matchingStaff.map((member) => {
+      const bookingStatus = getBookingStatus(
+        member,
+        bookingSetup.readinessByStaffId[member.id],
+      );
+      const bookingNeedsAction =
+        bookingStatus.kind === "missing_services" ||
+        bookingStatus.kind === "missing_schedule";
+      let payroll: StaffDirectoryStatus["payroll"];
+
+      if (member.payroll_setup_status === "restricted") {
+        payroll = { label: "Payroll Restricted", tone: "neutral" };
+      } else if (member.payroll_setup_status === "configured") {
+        payroll = { label: "", tone: "success" };
+      } else {
+        payroll = {
+          href: canManagePayroll ? `/payroll?tab=settings&editStaff=${member.id}` : null,
+          label: "Payroll Missing Setup",
+          tone: "warning",
+        };
+      }
+
+      return [
+        member.id,
+        {
+          booking: {
+            href: bookingNeedsAction ? "/services" : null,
+            label: bookingNeedsAction ? `Booking ${bookingStatus.label}` : "",
+            tone: bookingStatus.tone,
+          },
+          payroll,
+        } satisfies StaffDirectoryStatus,
+      ];
+    }),
+  );
+  const addStaffHref = getStaffHref({ add: true, query });
+  const closeHref = getStaffHref({ query });
   return (
     <>
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
@@ -1941,20 +1880,12 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
           {canManageStaff ? (
             <Link
               className="inline-flex min-h-10 items-center justify-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-              href={getStaffHref({ add: true, filter: activeFilter, query })}
+              href={addStaffHref}
             >
               + Add Staff
             </Link>
           ) : null}
         </header>
-
-        <StaffMetrics
-          activeFilter={activeFilter}
-          query={query}
-          readinessByStaffId={bookingSetup.readinessByStaffId}
-          requests={connectionRequests}
-          staff={directory.staff}
-        />
 
         {connectionNotice ? (
           <NoticeBanner>{connectionNotice}</NoticeBanner>
@@ -1965,24 +1896,27 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
 
         <section>
           <div className="flex flex-col gap-4">
-            <StaffSearch activeFilter={activeFilter} query={query} />
-            <StaffFilterTabs activeFilter={activeFilter} query={query} />
+            <StaffSearch query={query} />
           </div>
-          <StaffDirectoryTable
-            activeFilter={activeFilter}
-            canManagePayroll={canManagePayroll}
+          <StaffDirectoryEditor
+            activeStaff={activeStaff}
+            addHref={addStaffHref}
+            canManageStaff={canManageStaff}
             hasAnyStaff={directory.staff.length > 0}
+            hiddenStaff={hiddenStaff}
             query={query}
-            readinessByStaffId={bookingSetup.readinessByStaffId}
-            requests={connectionRequests}
-            staff={visibleStaff}
+            statusByStaffId={statusByStaffId}
           />
         </section>
 
         {canManageStaff ? (
           <StaffConnectionRequestsSection
+            inviteEmail={inviteEmail}
+            invitePhone={invitePhone}
             inviteRequestId={inviteRequestId}
             inviteToken={inviteToken}
+            lookupError={lookupError}
+            lookupResult={lookupResult}
             requests={connectionRequests}
             staff={directory.staff}
           />
@@ -1996,19 +1930,9 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
           error={error}
           inviteEmail={inviteEmail}
           invitePhone={invitePhone}
-          inviteToken={inviteToken}
           lookupError={lookupError}
           lookupResult={lookupResult}
           staff={directory.staff}
-        />
-      ) : null}
-      {selectedStaff ? (
-        <StaffDetailDrawer
-          bookingSetup={bookingSetup}
-          canManagePayroll={canManagePayroll}
-          closeHref={closeHref}
-          member={selectedStaff}
-          requests={connectionRequests}
         />
       ) : null}
     </>

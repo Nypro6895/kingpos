@@ -5,14 +5,19 @@ import {
   CustomerShellContextProvider,
   type CustomerNotificationSummary,
 } from "@/app/customer-shell-context";
+import { markAllAppNotificationsReadAction } from "@/app/notifications/actions";
+import { NotificationFeedList } from "@/app/notifications/notification-list";
 import { QuickWorkspacePanel } from "@/app/quick-workspace-panel";
+import { safeAccountAvatarUrl } from "@/lib/account-avatar";
 import {
   ROLE_NAVIGATION,
+  ROLE_MORE_ITEMS,
   type NavigationIcon,
   type NavigationLink,
   type NavigationSection,
   type RoleNavigationConfig,
   type RoleNavigationKind,
+  type RoleMoreItem,
 } from "@/app/role-navigation";
 import {
   setCurrentWorkspace,
@@ -56,6 +61,7 @@ type RouteWorkspaceKind =
   | "staff";
 
 type NavigationShellProps = {
+  accountAvatarUrl: string | null;
   accountEmail: string | null;
   accountLabel: string;
   canManageStaff: boolean;
@@ -111,6 +117,7 @@ type WorkspaceGroup = {
 };
 
 type CustomerContextSheetProps = {
+  accountAvatarUrl: string | null;
   accountEmail: string | null;
   accountLabel: string;
   currentWorkspace: CurrentWorkspaceOption | null;
@@ -120,6 +127,7 @@ type CustomerContextSheetProps = {
 };
 
 type CustomerWorkspaceRowProps = {
+  accountAvatarUrl: string | null;
   accountLabel: string;
   currentWorkspaceId: string | null;
   onRunAction: RunWorkspaceAction;
@@ -324,6 +332,27 @@ function isMoreLink(link: NavigationLink) {
   return link.href === "/more";
 }
 
+function roleKindForMoreLink(link: NavigationLink): RoleNavigationKind {
+  if (link.id.startsWith("owner-")) {
+    return "owner";
+  }
+
+  if (link.id.startsWith("staff-")) {
+    return "staff";
+  }
+
+  return "personal";
+}
+
+function moreItemAsNavigationLink(item: RoleMoreItem): NavigationLink {
+  return {
+    href: item.href,
+    icon: item.navigationIcon,
+    id: item.id,
+    label: item.label,
+  };
+}
+
 const PERSONAL_NAVIGATION_SECTION: NavigationSection = {
   id: "personal-navigation",
   label: "Personal",
@@ -340,6 +369,7 @@ function isShelllessPath(pathname: string) {
     pathname === "/signup" ||
     pathname.startsWith("/book/") ||
     pathname.startsWith("/booking/manage/") ||
+    pathname.startsWith("/pos/portable") ||
     pathname.startsWith("/pos/customer-display")
   );
 }
@@ -471,6 +501,72 @@ function initialsFor(label: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
+}
+
+function AccountAvatar({
+  avatarUrl,
+  className,
+  label,
+}: {
+  avatarUrl: string | null;
+  className: string;
+  label: string;
+}) {
+  const safeAvatarUrl = safeAccountAvatarUrl(avatarUrl);
+
+  return (
+    <span className={["overflow-hidden", className].join(" ")}>
+      {safeAvatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          alt={`${label} avatar`}
+          className="h-full w-full object-cover"
+          src={safeAvatarUrl}
+        />
+      ) : (
+        initialsFor(label)
+      )}
+    </span>
+  );
+}
+
+function WorkspaceAvatar({
+  accountAvatarUrl,
+  accountLabel,
+  className,
+  label,
+  workspace,
+}: {
+  accountAvatarUrl: string | null;
+  accountLabel: string;
+  className: string;
+  label: string;
+  workspace: CurrentWorkspaceOption | null;
+}) {
+  if (workspace?.type === "personal") {
+    return (
+      <AccountAvatar
+        avatarUrl={accountAvatarUrl}
+        className={className}
+        label={accountLabel}
+      />
+    );
+  }
+
+  return (
+    <span className={["overflow-hidden", className].join(" ")}>
+      {workspace?.avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          alt={`${label} avatar`}
+          className="h-full w-full object-cover"
+          src={workspace.avatarUrl}
+        />
+      ) : (
+        initialsFor(label)
+      )}
+    </span>
+  );
 }
 
 function Badge({ value }: { value: number }) {
@@ -666,6 +762,7 @@ function ReylumiLogo() {
 }
 
 function CustomerWorkspaceRow({
+  accountAvatarUrl,
   accountLabel,
   currentWorkspaceId,
   onRunAction,
@@ -694,9 +791,13 @@ function CustomerWorkspaceRow({
       onClick={() => onRunAction(workspace, action)}
       type="button"
     >
-      <span className={workspaceAvatarClass(isSelected)}>
-        {initialsFor(label)}
-      </span>
+      <WorkspaceAvatar
+        accountAvatarUrl={accountAvatarUrl}
+        accountLabel={accountLabel}
+        className={workspaceAvatarClass(isSelected)}
+        label={label}
+        workspace={workspace}
+      />
       <span className="min-w-0">
         <span className="block truncate text-sm font-bold">{label}</span>
         <span className="mt-0.5 block truncate text-xs font-semibold text-text-secondary">
@@ -713,6 +814,7 @@ function CustomerWorkspaceRow({
 }
 
 function CustomerContextSheet({
+  accountAvatarUrl,
   accountEmail,
   accountLabel,
   currentWorkspace,
@@ -892,6 +994,7 @@ function CustomerContextSheet({
           <section className="grid gap-2" aria-label="Personal account">
             {personalWorkspace ? (
               <CustomerWorkspaceRow
+                accountAvatarUrl={accountAvatarUrl}
                 accountLabel={accountLabel}
                 currentWorkspaceId={currentWorkspaceId}
                 onRunAction={runAction}
@@ -900,9 +1003,11 @@ function CustomerContextSheet({
               />
             ) : (
               <div className="grid min-h-[64px] grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl bg-brand-orange-soft px-3">
-                <span className={workspaceAvatarClass(true)}>
-                  {initialsFor(accountLabel)}
-                </span>
+                <AccountAvatar
+                  avatarUrl={accountAvatarUrl}
+                  className={workspaceAvatarClass(true)}
+                  label={accountLabel}
+                />
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-bold">
                     {accountLabel}
@@ -923,6 +1028,7 @@ function CustomerContextSheet({
               <div className="grid gap-1">
                 {group.options.map((workspace) => (
                   <CustomerWorkspaceRow
+                    accountAvatarUrl={accountAvatarUrl}
                     accountLabel={accountLabel}
                     currentWorkspaceId={currentWorkspaceId}
                     key={workspace.id}
@@ -989,6 +1095,264 @@ function customerDesktopSoftButtonClass() {
   return "grid h-11 w-11 place-items-center rounded-full bg-surface-elevated text-text-secondary shadow-[0_10px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/85 transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange";
 }
 
+function useDismissibleDetails() {
+  const detailsRef = useRef<HTMLDetailsElement | null>(null);
+
+  useEffect(() => {
+    function closeDetails(
+      detailsElement: HTMLDetailsElement,
+      restoreFocus = false,
+    ) {
+      if (!detailsElement.open) {
+        return;
+      }
+
+      detailsElement.open = false;
+
+      if (restoreFocus) {
+        detailsElement
+          .querySelector<HTMLElement>("summary")
+          ?.focus({ preventScroll: true });
+      }
+    }
+
+    function onPointerDown(event: PointerEvent) {
+      const detailsElement = detailsRef.current;
+      const target = event.target;
+
+      if (!detailsElement || !(target instanceof Node) || !detailsElement.open) {
+        return;
+      }
+
+      if (!detailsElement.contains(target)) {
+        closeDetails(detailsElement);
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      const detailsElement = detailsRef.current;
+
+      if (event.key !== "Escape" || !detailsElement || !detailsElement.open) {
+        return;
+      }
+
+      event.preventDefault();
+      closeDetails(detailsElement, true);
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  return detailsRef;
+}
+
+function RoleMorePanel({
+  pathname,
+  roleKind,
+  searchParams,
+  variant,
+}: {
+  pathname: string;
+  roleKind: RoleNavigationKind;
+  searchParams: SearchParamsReader;
+  variant: "desktop" | "mobile" | "rail" | "sidebar";
+}) {
+  const items = ROLE_MORE_ITEMS[roleKind];
+  const isMobile = variant === "mobile";
+  const isRail = variant === "rail";
+
+  return (
+    <div
+      className={[
+        "z-[75] overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated text-text-primary shadow-[0_22px_60px_rgba(35,25,22,0.16)]",
+        isMobile
+          ? "fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom))]"
+          : isRail
+            ? "absolute left-[calc(100%+0.75rem)] top-0 w-80"
+          : "absolute left-0 top-[calc(100%+0.5rem)] w-full",
+      ].join(" ")}
+    >
+      <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-3 py-2.5">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-text-secondary">
+          More
+        </p>
+        <Link
+          className="inline-flex min-h-8 items-center justify-center rounded-full bg-brand-orange-soft px-3 text-xs font-bold text-brand-orange transition hover:bg-brand-orange hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          href="/more"
+        >
+          All
+        </Link>
+      </div>
+      <div
+        className={[
+          "grid gap-1 overflow-y-auto p-2",
+          isMobile ? "max-h-[min(24rem,55vh)]" : "max-h-[min(28rem,64vh)]",
+        ].join(" ")}
+      >
+        {items.map((item) => {
+          const isActive = isLinkActive(
+            moreItemAsNavigationLink(item),
+            pathname,
+            searchParams,
+          );
+
+          return (
+            <Link
+              aria-current={isActive ? "page" : undefined}
+              className={[
+                "grid min-h-12 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 py-2 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+                isActive
+                  ? "bg-brand-orange-soft text-brand-orange"
+                  : "text-text-primary hover:bg-surface-muted",
+              ].join(" ")}
+              href={item.href}
+              key={item.id}
+            >
+              <span
+                className={[
+                  "grid h-9 w-9 shrink-0 place-items-center rounded-full",
+                  isActive ? "bg-white" : "bg-brand-orange-soft text-brand-orange",
+                ].join(" ")}
+              >
+                <Icon name={item.navigationIcon} />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-bold">
+                  {item.label}
+                </span>
+                <span className="mt-0.5 block truncate text-xs font-medium text-text-secondary">
+                  {item.description}
+                </span>
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CustomerDesktopMoreMenu({
+  navigation,
+  pathname,
+  searchParams,
+}: {
+  navigation: RoleNavigationConfig;
+  pathname: string;
+  searchParams: SearchParamsReader;
+}) {
+  const detailsRef = useDismissibleDetails();
+  const isActive = isRoleMoreActive(navigation.kind, pathname, searchParams);
+
+  return (
+    <details className="group/more relative z-30" ref={detailsRef}>
+      <summary
+        aria-current={isActive ? "page" : undefined}
+        className={[
+          customerDesktopNavClass(isActive),
+          "cursor-pointer list-none [&::-webkit-details-marker]:hidden",
+        ].join(" ")}
+      >
+        <span
+          className={[
+            "grid h-9 w-9 place-items-center rounded-full",
+            isActive ? "bg-white" : "bg-brand-orange-soft text-brand-orange",
+          ].join(" ")}
+        >
+          <Icon name="more" />
+        </span>
+        <span className="truncate">More</span>
+        <span className="grid h-7 w-7 place-items-center rounded-full text-text-secondary transition group-open/more:rotate-180">
+          <Icon name="chevron-down" />
+        </span>
+      </summary>
+      <RoleMorePanel
+        pathname={pathname}
+        roleKind={navigation.kind}
+        searchParams={searchParams}
+        variant="desktop"
+      />
+    </details>
+  );
+}
+
+function SidebarMoreMenu({
+  link,
+  pathname,
+  searchParams,
+}: {
+  link: NavigationLink;
+  pathname: string;
+  searchParams: SearchParamsReader;
+}) {
+  const detailsRef = useDismissibleDetails();
+  const roleKind = roleKindForMoreLink(link);
+  const isActive = isRoleMoreActive(roleKind, pathname, searchParams);
+
+  return (
+    <details className="relative z-30" ref={detailsRef}>
+      <summary
+        aria-current={isActive ? "page" : undefined}
+        className={[
+          sidebarLinkClass(isActive),
+          "cursor-pointer list-none [&::-webkit-details-marker]:hidden",
+        ].join(" ")}
+        title={link.label}
+      >
+        <Icon name={link.icon} />
+        <span className="truncate">{link.label}</span>
+      </summary>
+      <RoleMorePanel
+        pathname={pathname}
+        roleKind={roleKind}
+        searchParams={searchParams}
+        variant="sidebar"
+      />
+    </details>
+  );
+}
+
+function RailMoreMenu({
+  link,
+  pathname,
+  searchParams,
+}: {
+  link: NavigationLink;
+  pathname: string;
+  searchParams: SearchParamsReader;
+}) {
+  const detailsRef = useDismissibleDetails();
+  const isActive = isRoleMoreActive("personal", pathname, searchParams);
+
+  return (
+    <details className="relative" ref={detailsRef}>
+      <summary
+        aria-current={matchesPath(pathname, link.href) ? "page" : undefined}
+        aria-label={link.label}
+        className={[
+          railLinkClass(isActive),
+          "cursor-pointer list-none [&::-webkit-details-marker]:hidden",
+        ].join(" ")}
+        title={link.label}
+      >
+        <Icon name={link.icon} />
+      </summary>
+      <RoleMorePanel
+        pathname={pathname}
+        roleKind="personal"
+        searchParams={searchParams}
+        variant="rail"
+      />
+    </details>
+  );
+}
+
 function CustomerDesktopLogo({ href }: { href: string }) {
   return (
     <Link
@@ -1010,11 +1374,13 @@ function CustomerDesktopLogo({ href }: { href: string }) {
 }
 
 function CustomerDesktopWorkspaceSwitcher({
+  accountAvatarUrl,
   accountEmail,
   accountLabel,
   currentWorkspace,
   workspaceOptions,
 }: {
+  accountAvatarUrl: string | null;
   accountEmail: string | null;
   accountLabel: string;
   currentWorkspace: CurrentWorkspaceOption | null;
@@ -1163,9 +1529,13 @@ function CustomerDesktopWorkspaceSwitcher({
         ref={triggerRef}
         type="button"
       >
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange">
-          {initialsFor(currentLabel)}
-        </span>
+        <WorkspaceAvatar
+          accountAvatarUrl={accountAvatarUrl}
+          accountLabel={accountLabel}
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange"
+          label={currentLabel}
+          workspace={currentWorkspace}
+        />
         <span className="min-w-0">
           <span className="block truncate text-sm font-bold text-text-primary">
             {currentLabel}
@@ -1222,9 +1592,13 @@ function CustomerDesktopWorkspaceSwitcher({
                   onClick={() => runAction(workspace, action)}
                   type="button"
                 >
-                  <span className={workspaceAvatarClass(isSelected)}>
-                    {initialsFor(label)}
-                  </span>
+                  <WorkspaceAvatar
+                    accountAvatarUrl={accountAvatarUrl}
+                    accountLabel={accountLabel}
+                    className={workspaceAvatarClass(isSelected)}
+                    label={label}
+                    workspace={workspace}
+                  />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-bold">
                       {label}
@@ -1303,6 +1677,17 @@ function CustomerDesktopNavigation({
             ? isRoleMoreActive(navigation.kind, pathname, searchParams)
             : isLinkActive(link, pathname, searchParams);
 
+        if (isMoreLink(link)) {
+          return (
+            <CustomerDesktopMoreMenu
+              key={link.id}
+              navigation={navigation}
+              pathname={pathname}
+              searchParams={searchParams}
+            />
+          );
+        }
+
         return (
           <Link
             aria-current={isActive ? "page" : undefined}
@@ -1358,6 +1743,7 @@ function CustomerDesktopMembershipCard() {
 }
 
 function CustomerDesktopSidebar({
+  accountAvatarUrl,
   accountEmail,
   accountLabel,
   currentWorkspace,
@@ -1367,6 +1753,7 @@ function CustomerDesktopSidebar({
   searchParams,
   workspaceOptions,
 }: {
+  accountAvatarUrl: string | null;
   accountEmail: string | null;
   accountLabel: string;
   currentWorkspace: CurrentWorkspaceOption | null;
@@ -1384,6 +1771,7 @@ function CustomerDesktopSidebar({
     >
       <CustomerDesktopLogo href={navigation.homeHref} />
       <CustomerDesktopWorkspaceSwitcher
+        accountAvatarUrl={accountAvatarUrl}
         accountEmail={accountEmail}
         accountLabel={accountLabel}
         currentWorkspace={currentWorkspace}
@@ -1402,13 +1790,102 @@ function CustomerDesktopSidebar({
   );
 }
 
+function NotificationDropdown({
+  notificationSummary,
+  triggerClassName,
+}: {
+  notificationSummary: NotificationSummary;
+  triggerClassName: string;
+}) {
+  const detailsRef = useDismissibleDetails();
+  const previewItems = notificationSummary.previewItems;
+  const hasUnreadAppNotifications = notificationSummary.bookingNotifications > 0;
+
+  return (
+    <details className="relative" ref={detailsRef}>
+      <summary
+        aria-label="Notifications"
+        className={[triggerClassName, "cursor-pointer list-none"].join(" ")}
+      >
+        <span className="relative">
+          <Icon name="bell" />
+          {notificationSummary.total > 0 ? (
+            <span className="absolute -right-2 -top-2 grid min-h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-black leading-none text-white">
+              {notificationSummary.total > 9 ? "9+" : notificationSummary.total}
+            </span>
+          ) : null}
+        </span>
+      </summary>
+      <div className="fixed right-2 top-[calc(4.75rem+env(safe-area-inset-top))] z-[70] w-[min(24rem,calc(100vw-1rem))] overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-950 shadow-2xl sm:right-4">
+        <header className="px-4 pb-3 pt-4">
+          <div className="flex items-center gap-3">
+            <h2 className="min-w-0 flex-1 text-2xl font-bold">
+              Notifications
+            </h2>
+            {hasUnreadAppNotifications ? (
+              <form action={markAllAppNotificationsReadAction}>
+                <button
+                  className="inline-flex min-h-8 items-center justify-center rounded-full px-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  type="submit"
+                >
+                  Mark all read
+                </button>
+              </form>
+            ) : null}
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <Link
+              className="inline-flex min-h-8 items-center rounded-full bg-blue-50 px-3 text-sm font-semibold text-blue-700"
+              href="/notifications"
+            >
+              All
+            </Link>
+            <Link
+              className="inline-flex min-h-8 items-center rounded-full px-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-950"
+              href="/notifications?filter=unread"
+            >
+              Unread
+            </Link>
+          </div>
+        </header>
+        <div className="flex items-center gap-3 px-4 pb-1">
+          <p className="min-w-0 flex-1 text-base font-bold">New</p>
+          <Link
+            className="text-sm font-semibold text-blue-700 transition hover:text-blue-800"
+            href="/notifications"
+          >
+            See all
+          </Link>
+        </div>
+        <div className="max-h-[min(28rem,calc(100vh-12rem))] overflow-y-auto">
+          <NotificationFeedList
+            compact
+            emptyLabel="No notifications yet."
+            items={previewItems}
+          />
+        </div>
+        <footer className="border-t border-zinc-100 p-3">
+          <Link
+            className="inline-flex min-h-10 w-full items-center justify-center rounded-md bg-zinc-200 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+            href="/notifications"
+          >
+            See previous notifications
+          </Link>
+        </footer>
+      </div>
+    </details>
+  );
+}
+
 function CustomerDesktopHeader({
+  accountAvatarUrl,
   accountLabel,
   currentWorkspace,
   notificationSummary,
   pathname,
   searchParams,
 }: {
+  accountAvatarUrl: string | null;
   accountLabel: string;
   currentWorkspace: CurrentWorkspaceOption | null;
   notificationSummary: NotificationSummary;
@@ -1472,20 +1949,10 @@ function CustomerDesktopHeader({
           </button>
         </form>
         <div className="flex items-center gap-3">
-          <Link
-            aria-label="Notifications"
-            className={customerDesktopSoftButtonClass()}
-            href="/notifications"
-          >
-            <span className="relative">
-              <Icon name="bell" />
-              {notificationSummary.total > 0 ? (
-                <span className="absolute -right-2 -top-2 grid min-h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-black leading-none text-white">
-                  {notificationSummary.total > 9 ? "9+" : notificationSummary.total}
-                </span>
-              ) : null}
-            </span>
-          </Link>
+          <NotificationDropdown
+            notificationSummary={notificationSummary}
+            triggerClassName={customerDesktopSoftButtonClass()}
+          />
           <Link
             aria-label="Messages"
             className={customerDesktopSoftButtonClass()}
@@ -1498,9 +1965,11 @@ function CustomerDesktopHeader({
             className="grid min-h-12 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-full bg-surface-elevated py-1 pl-1.5 pr-4 text-left shadow-[0_10px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/85 transition hover:ring-brand-orange/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
             href="/account"
           >
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange">
-              {initialsFor(accountLabel)}
-            </span>
+            <AccountAvatar
+              avatarUrl={accountAvatarUrl}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange"
+              label={accountLabel}
+            />
             <span className="min-w-0">
               <span className="block max-w-32 truncate text-sm font-semibold text-text-primary">
                 {accountLabel}
@@ -1517,6 +1986,7 @@ function CustomerDesktopHeader({
 }
 
 function CustomerDesktopShell({
+  accountAvatarUrl,
   accountEmail,
   accountLabel,
   children,
@@ -1527,6 +1997,7 @@ function CustomerDesktopShell({
   searchParams,
   workspaceOptions,
 }: {
+  accountAvatarUrl: string | null;
   accountEmail: string | null;
   accountLabel: string;
   children: ReactNode;
@@ -1543,6 +2014,7 @@ function CustomerDesktopShell({
       data-testid="customer-desktop-shell"
     >
       <CustomerDesktopSidebar
+        accountAvatarUrl={accountAvatarUrl}
         accountEmail={accountEmail}
         accountLabel={accountLabel}
         currentWorkspace={currentWorkspace}
@@ -1554,6 +2026,7 @@ function CustomerDesktopShell({
       />
       <div className="min-w-0">
         <CustomerDesktopHeader
+          accountAvatarUrl={accountAvatarUrl}
           accountLabel={accountLabel}
           currentWorkspace={currentWorkspace}
           notificationSummary={notificationSummary}
@@ -1567,14 +2040,18 @@ function CustomerDesktopShell({
 }
 
 function CustomerMobileHeader({
+  accountAvatarUrl,
   accountEmail,
   accountLabel,
   currentWorkspace,
+  notificationSummary,
   workspaceOptions,
 }: {
+  accountAvatarUrl: string | null;
   accountEmail: string | null;
   accountLabel: string;
   currentWorkspace: CurrentWorkspaceOption | null;
+  notificationSummary: NotificationSummary;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
   const [isContextOpen, setContextOpen] = useState(false);
@@ -1599,7 +2076,7 @@ function CustomerMobileHeader({
   return (
     <>
       <header className="sticky top-0 z-50 bg-surface/90 px-3 pb-2 pt-[calc(0.6rem+env(safe-area-inset-top))] shadow-[0_10px_30px_rgba(80,47,36,0.055)] backdrop-blur lg:hidden">
-        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2">
           <button
             aria-controls={CUSTOMER_CONTEXT_SHEET_ID}
             aria-expanded={isContextOpen}
@@ -1609,9 +2086,13 @@ function CustomerMobileHeader({
             ref={triggerRef}
             type="button"
           >
-            <span className="grid h-8 w-8 place-items-center rounded-full text-brand-black">
-              <Icon name="list" />
-            </span>
+            <WorkspaceAvatar
+              accountAvatarUrl={accountAvatarUrl}
+              accountLabel={accountLabel}
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange"
+              label={label}
+              workspace={currentWorkspace}
+            />
             <span className="min-w-0">
               <span className="block truncate text-sm font-extrabold text-text-primary">
                 {label}
@@ -1624,10 +2105,15 @@ function CustomerMobileHeader({
               <Icon name="chevron-down" />
             </span>
           </button>
+          <NotificationDropdown
+            notificationSummary={notificationSummary}
+            triggerClassName="grid h-11 w-11 place-items-center rounded-full bg-surface-elevated text-text-secondary shadow-[var(--shadow-soft)] ring-1 ring-divider-subtle/80 transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          />
           <ReylumiLogo />
         </div>
       </header>
       <CustomerContextSheet
+        accountAvatarUrl={accountAvatarUrl}
         accountEmail={accountEmail}
         accountLabel={accountLabel}
         currentWorkspace={currentWorkspace}
@@ -1640,10 +2126,12 @@ function CustomerMobileHeader({
 }
 
 function WorkspaceOptionButton({
+  accountAvatarUrl,
   accountLabel,
   currentWorkspaceId,
   workspace,
 }: {
+  accountAvatarUrl: string | null;
   accountLabel: string;
   currentWorkspaceId: string | null;
   workspace: CurrentWorkspaceOption;
@@ -1657,7 +2145,7 @@ function WorkspaceOptionButton({
       <input name="workspace_id" type="hidden" value={workspace.id} />
       <button
         className={[
-          "grid w-full gap-0.5 rounded-md px-3 py-2 text-left text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-default",
+          "grid min-h-14 w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-default",
           isCurrent
             ? "bg-zinc-950 text-white"
             : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950",
@@ -1665,14 +2153,28 @@ function WorkspaceOptionButton({
         disabled={isCurrent}
         type="submit"
       >
-        <span className="truncate font-semibold">{label}</span>
-        <span
+        <WorkspaceAvatar
+          accountAvatarUrl={accountAvatarUrl}
+          accountLabel={accountLabel}
           className={[
-            "truncate text-xs",
-            isCurrent ? "text-zinc-200" : "text-zinc-500",
+            "grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-semibold",
+            isCurrent
+              ? "bg-white/15 text-white"
+              : "bg-brand-orange-soft text-brand-orange",
           ].join(" ")}
-        >
-          {subtitle}
+          label={label}
+          workspace={workspace}
+        />
+        <span className="min-w-0">
+          <span className="block truncate font-semibold">{label}</span>
+          <span
+            className={[
+              "block truncate text-xs",
+              isCurrent ? "text-zinc-200" : "text-zinc-500",
+            ].join(" ")}
+          >
+            {subtitle}
+          </span>
         </span>
       </button>
     </form>
@@ -1764,23 +2266,33 @@ function ModeSwitch({
 }
 
 function WorkspaceSwitcher({
+  accountAvatarUrl,
   accountLabel,
   currentWorkspace,
   workspaceOptions,
 }: {
+  accountAvatarUrl: string | null;
   accountLabel: string;
   currentWorkspace: CurrentWorkspaceOption | null;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
+  const detailsRef = useDismissibleDetails();
   const currentWorkspaceId = currentWorkspace?.id ?? null;
+  const currentLabel = customerWorkspaceLabel(currentWorkspace, accountLabel);
 
   return (
-    <details className="relative">
+    <details className="relative" ref={detailsRef}>
       <summary className="flex min-h-[3.25rem] cursor-pointer list-none items-center gap-3 rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-sm transition hover:border-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">
-        <ReylumiMark className="h-8 w-8 rounded-md text-sm" />
+        <WorkspaceAvatar
+          accountAvatarUrl={accountAvatarUrl}
+          accountLabel={accountLabel}
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange"
+          label={currentLabel}
+          workspace={currentWorkspace}
+        />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold text-zinc-950">
-            {customerWorkspaceLabel(currentWorkspace, accountLabel)}
+            {currentLabel}
           </span>
           <span className="block truncate text-xs text-zinc-500">
             {customerWorkspaceSubtitle(currentWorkspace)}
@@ -1798,6 +2310,7 @@ function WorkspaceSwitcher({
             </p>
             {group.options.map((workspace) => (
               <WorkspaceOptionButton
+                accountAvatarUrl={accountAvatarUrl}
                 accountLabel={accountLabel}
                 currentWorkspaceId={currentWorkspaceId}
                 key={workspace.id}
@@ -1812,6 +2325,7 @@ function WorkspaceSwitcher({
 }
 
 function AppRail({
+  accountAvatarUrl,
   accountLabel,
   isWorkspacePanelOpen,
   notificationSummary,
@@ -1819,6 +2333,7 @@ function AppRail({
   pathname,
   searchParams,
 }: {
+  accountAvatarUrl: string | null;
   accountLabel: string;
   isWorkspacePanelOpen: boolean;
   notificationSummary: NotificationSummary;
@@ -1839,6 +2354,17 @@ function AppRail({
       <nav aria-label="Personal app" className="mt-6 grid justify-center gap-2">
         {PERSONAL_LINKS.map((link) => {
           const isActive = isLinkActive(link, pathname, searchParams);
+
+          if (isMoreLink(link)) {
+            return (
+              <RailMoreMenu
+                key={link.id}
+                link={link}
+                pathname={pathname}
+                searchParams={searchParams}
+              />
+            );
+          }
 
           return (
             <Link
@@ -1877,7 +2403,11 @@ function AppRail({
         href="/account"
         title="Account Settings"
       >
-        {initialsFor(accountLabel)}
+        <AccountAvatar
+          avatarUrl={accountAvatarUrl}
+          className="grid h-full w-full place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange"
+          label={accountLabel}
+        />
       </Link>
     </aside>
   );
@@ -1907,6 +2437,17 @@ function WorkspaceNavigation({
             {section.links.map((link) => {
               const isActive = isLinkActive(link, pathname, searchParams);
 
+              if (isMoreLink(link)) {
+                return (
+                  <SidebarMoreMenu
+                    key={link.id}
+                    link={link}
+                    pathname={pathname}
+                    searchParams={searchParams}
+                  />
+                );
+              }
+
               return (
                 <Link
                   aria-current={isActive ? "page" : undefined}
@@ -1928,18 +2469,24 @@ function WorkspaceNavigation({
 }
 
 function ProfileMenu({
+  accountAvatarUrl,
   accountEmail,
   accountLabel,
 }: {
+  accountAvatarUrl: string | null;
   accountEmail: string | null;
   accountLabel: string;
 }) {
+  const detailsRef = useDismissibleDetails();
+
   return (
-    <details className="relative">
+    <details className="relative" ref={detailsRef}>
       <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange">
-          {initialsFor(accountLabel)}
-        </span>
+        <AccountAvatar
+          avatarUrl={accountAvatarUrl}
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange"
+          label={accountLabel}
+        />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold text-zinc-950">
             {accountLabel}
@@ -1961,6 +2508,7 @@ function ProfileMenu({
 }
 
 function WorkspaceSidebar({
+  accountAvatarUrl,
   accountEmail,
   accountLabel,
   currentAccountName,
@@ -1970,6 +2518,7 @@ function WorkspaceSidebar({
   workspaceOptions,
   workspaceSections,
 }: {
+  accountAvatarUrl: string | null;
   accountEmail: string | null;
   accountLabel: string;
   currentAccountName: string | null;
@@ -1983,6 +2532,7 @@ function WorkspaceSidebar({
     <aside className="fixed inset-y-0 left-16 z-40 hidden w-60 flex-col border-r border-zinc-200 bg-white lg:flex">
       <div className="grid gap-3 border-b border-zinc-200 p-3">
         <WorkspaceSwitcher
+          accountAvatarUrl={accountAvatarUrl}
           accountLabel={accountLabel}
           currentWorkspace={currentWorkspace}
           workspaceOptions={workspaceOptions}
@@ -2005,37 +2555,49 @@ function WorkspaceSidebar({
         />
       </div>
       <div className="border-t border-zinc-200 p-2">
-        <ProfileMenu accountEmail={accountEmail} accountLabel={accountLabel} />
+        <ProfileMenu
+          accountAvatarUrl={accountAvatarUrl}
+          accountEmail={accountEmail}
+          accountLabel={accountLabel}
+        />
       </div>
     </aside>
   );
 }
 
 function MobileHeader({
+  accountAvatarUrl,
   accountEmail,
   accountLabel,
   currentWorkspace,
   isCustomerShell,
+  notificationSummary,
   workspaceOptions,
   workspaceSections,
   pathname,
   searchParams,
 }: {
+  accountAvatarUrl: string | null;
   accountEmail: string | null;
   accountLabel: string;
   currentWorkspace: CurrentWorkspaceOption | null;
   isCustomerShell: boolean;
+  notificationSummary: NotificationSummary;
   pathname: string;
   searchParams: SearchParamsReader;
   workspaceOptions: CurrentWorkspaceOption[];
   workspaceSections: readonly NavigationSection[];
 }) {
+  const workspaceNavigationDetailsRef = useDismissibleDetails();
+
   if (isCustomerShell) {
     return (
       <CustomerMobileHeader
+        accountAvatarUrl={accountAvatarUrl}
         accountEmail={accountEmail}
         accountLabel={accountLabel}
         currentWorkspace={currentWorkspace}
+        notificationSummary={notificationSummary}
         workspaceOptions={workspaceOptions}
       />
     );
@@ -2045,11 +2607,12 @@ function MobileHeader({
     <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 px-3 py-3 backdrop-blur lg:hidden">
       <div className="flex items-center gap-3">
         <WorkspaceSwitcher
+          accountAvatarUrl={accountAvatarUrl}
           accountLabel={accountLabel}
           currentWorkspace={currentWorkspace}
           workspaceOptions={workspaceOptions}
         />
-        <details className="relative ml-auto">
+        <details className="relative ml-auto" ref={workspaceNavigationDetailsRef}>
           <summary
             aria-label="Open workspace navigation"
             className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-md border border-zinc-200 text-zinc-700"
@@ -2072,10 +2635,66 @@ function MobileHeader({
           className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange"
           href="/account"
         >
-          {initialsFor(accountLabel)}
+          <AccountAvatar
+            avatarUrl={accountAvatarUrl}
+            className="grid h-full w-full place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange"
+            label={accountLabel}
+          />
         </Link>
       </div>
     </header>
+  );
+}
+
+function MobileMoreMenu({
+  isActive,
+  link,
+  pathname,
+  roleKind,
+  searchParams,
+}: {
+  isActive: boolean;
+  link: NavigationLink;
+  pathname: string;
+  roleKind: RoleNavigationKind;
+  searchParams: SearchParamsReader;
+}) {
+  const detailsRef = useDismissibleDetails();
+
+  return (
+    <details className="relative min-w-0" ref={detailsRef}>
+      <summary
+        aria-current={isActive ? "page" : undefined}
+        className={[
+          "group relative grid min-h-[58px] min-w-0 cursor-pointer list-none place-items-center gap-0.5 rounded-xl px-1 text-center text-[9px] font-bold leading-none transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange min-[360px]:text-[10px] min-[390px]:text-[11px] [&::-webkit-details-marker]:hidden",
+          isActive
+            ? "bg-brand-orange-soft text-brand-orange"
+            : "text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+        ].join(" ")}
+      >
+        {isActive ? (
+          <span
+            aria-hidden="true"
+            className="absolute top-1 h-1 w-5 rounded-full bg-brand-orange"
+          />
+        ) : null}
+        <span
+          className={[
+            "relative grid h-7 w-7 place-items-center rounded-full",
+            isActive ? "bg-white shadow-sm" : "",
+          ].join(" ")}
+        >
+          <Icon name={link.icon} />
+        </span>
+        <span className="max-w-full truncate">{link.label}</span>
+      </summary>
+      <RoleMorePanel
+        pathname={pathname}
+        roleKind={roleKind}
+        searchParams={searchParams}
+        variant="mobile"
+      />
+    </details>
   );
 }
 
@@ -2104,6 +2723,19 @@ function MobileBottomNav({
           isMoreLink(link)
             ? isRoleMoreActive(roleKind, pathname, searchParams)
             : isLinkActive(link, pathname, searchParams);
+
+        if (isMoreLink(link)) {
+          return (
+            <MobileMoreMenu
+              isActive={isActive}
+              key={link.id}
+              link={link}
+              pathname={pathname}
+              roleKind={roleKind}
+              searchParams={searchParams}
+            />
+          );
+        }
 
         return (
           <Link
@@ -2150,6 +2782,7 @@ function MobileBottomNav({
 }
 
 export function NavigationShell({
+  accountAvatarUrl,
   accountEmail,
   accountLabel,
   children,
@@ -2221,6 +2854,7 @@ export function NavigationShell({
           ].join(" ")}
         >
           <AppRail
+            accountAvatarUrl={accountAvatarUrl}
             accountLabel={accountLabel}
             isWorkspacePanelOpen={isWorkspacePanelOpen}
             notificationSummary={notificationSummary}
@@ -2239,6 +2873,7 @@ export function NavigationShell({
           />
           {showWorkspaceSidebar ? (
             <WorkspaceSidebar
+              accountAvatarUrl={accountAvatarUrl}
               accountEmail={accountEmail}
               accountLabel={accountLabel}
               currentAccountName={currentAccountName}
@@ -2250,10 +2885,12 @@ export function NavigationShell({
             />
           ) : null}
           <MobileHeader
+            accountAvatarUrl={accountAvatarUrl}
             accountEmail={accountEmail}
             accountLabel={accountLabel}
             currentWorkspace={currentWorkspace}
             isCustomerShell={showRoleMobileShell}
+            notificationSummary={notificationSummary}
             pathname={pathname}
             searchParams={searchParams}
             workspaceOptions={workspaceOptions}
@@ -2281,6 +2918,7 @@ export function NavigationShell({
           notificationSummary={notificationSummary}
         >
           <CustomerDesktopShell
+            accountAvatarUrl={accountAvatarUrl}
             accountEmail={accountEmail}
             accountLabel={accountLabel}
             currentWorkspace={currentWorkspace}

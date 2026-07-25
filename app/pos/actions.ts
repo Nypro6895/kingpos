@@ -11,6 +11,11 @@ import {
 import { requirePermission } from "@/lib/permissions";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import { getTurnType, parsePosAmountInput } from "@/lib/pos-desk-amounts";
+import { broadcastPosLiveDraftSnapshot } from "@/lib/pos-live-draft-realtime-server";
+import {
+  getCurrentSalonPosSettings,
+  getPublicPosDisplaySettingsByToken,
+} from "@/lib/pos-settings";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { buildTicketReceipt } from "@/lib/pos-ticket-receipt";
 import { recalculateStaffEarningsForDate } from "@/lib/pos-ticket-staff-earnings";
@@ -45,6 +50,15 @@ type ActionResult<T> =
 type PosDeskActionResult =
   | { error: string; ok: false; ticketId?: never; ticketNumber?: never }
   | { error?: never; ok: true; ticketId: string; ticketNumber: string };
+
+export type CustomerDisplayTipOption = {
+  amount: number;
+  percentage: number;
+};
+
+const CUSTOMER_DISPLAY_COMPLETED_RESET_DELAY_MS = 30 * 1000;
+const LIVE_DRAFT_SELECT =
+  "id, salon_id, token, customer, staff_lines, selected_staff_id, tip, subtotal, discount, tax, total_before_tip, total, status, version, customer_version, receipt_version, completed_at, reset_at, last_customer_action_id, last_tip_action_id, updated_at";
 
 const SESSION_SELECT = `
   id,
@@ -120,16 +134,26 @@ type RawDisplayChannel = {
 };
 
 type RawLiveDraft = {
+  completed_at: string | null;
   customer: PosLiveDraftCustomer | null;
+  customer_version: number;
+  discount: number;
   id: string;
+  last_customer_action_id: string | null;
+  last_tip_action_id: string | null;
+  receipt_version: number;
+  reset_at: string | null;
   selected_staff_id: string | null;
   salon_id: string;
+  server_now?: string | null;
   staff_lines: PosLiveDraftReceiptLine[] | null;
   status: PosLiveDraftView["status"];
   subtotal: number;
+  tax: number;
   tip: number;
   token: string;
   total: number;
+  total_before_tip: number;
   updated_at: string;
   version: number;
 };
@@ -214,20 +238,110 @@ function normalizeLiveDraftStaffLines(
 }
 
 function toLiveDraftView(raw: RawLiveDraft): PosLiveDraftView {
+  const tip = Number(raw.tip ?? 0);
+  const total = Number(raw.total ?? 0);
+  const totalBeforeTip =
+    Number(raw.total_before_tip ?? Number.NaN) ||
+    roundMoney(Math.max(0, total - tip));
+
   return {
+    completed_at: raw.completed_at ?? null,
     customer: raw.customer,
+    customer_version: Number(raw.customer_version ?? 0),
+    discount: Number(raw.discount ?? 0),
     id: raw.id,
+    last_customer_action_id: raw.last_customer_action_id ?? null,
+    last_tip_action_id: raw.last_tip_action_id ?? null,
+    receipt_version: Number(raw.receipt_version ?? 0),
+    reset_at: raw.reset_at ?? null,
     selected_staff_id: raw.selected_staff_id,
     salon_id: raw.salon_id,
+    server_now: raw.server_now ?? new Date().toISOString(),
     staff_lines: normalizeLiveDraftStaffLines(raw.staff_lines),
     status: raw.status,
     subtotal: Number(raw.subtotal ?? 0),
-    tip: Number(raw.tip ?? 0),
+    tax: Number(raw.tax ?? 0),
+    tip,
     token: raw.token,
-    total: Number(raw.total ?? 0),
+    total,
+    total_before_tip: totalBeforeTip,
     updated_at: raw.updated_at,
     version: Number(raw.version),
   };
+}
+
+function getLiveDraftTipBase(liveDraft: PosLiveDraftView | null) {
+  if (!liveDraft) {
+    return 0;
+  }
+
+  if (liveDraft.total_before_tip > 0) {
+    return liveDraft.total_before_tip;
+  }
+
+  return Math.max(0, liveDraft.total - liveDraft.tip);
+}
+
+function getCustomerDisplayTipAmounts(input: {
+  liveDraft: PosLiveDraftView | null;
+  tipSuggestions: number[];
+}): CustomerDisplayTipOption[] {
+  const base = getLiveDraftTipBase(input.liveDraft);
+  const percentages = input.tipSuggestions
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value) && value > 0)
+    .slice(0, 3);
+  const source = percentages.length > 0 ? percentages : [15, 18, 20];
+
+  return source.map((percentage) => ({
+    amount: roundMoney((base * percentage) / 100),
+    percentage,
+  }));
+}
+
+async function resetExpiredLiveDraftForPos(input: {
+  raw: RawLiveDraft;
+  salonId: string;
+  supabase: PosDeskSupabaseClient;
+}) {
+  if (
+    input.raw.status !== "closed" ||
+    !input.raw.reset_at ||
+    new Date(input.raw.reset_at).getTime() > Date.now()
+  ) {
+    return input.raw;
+  }
+
+  const { data, error } = await input.supabase
+    .from("pos_live_drafts")
+    .update({
+      completed_at: null,
+      customer: null,
+      discount: 0,
+      last_customer_action_id: null,
+      last_tip_action_id: null,
+      receipt: {},
+      reset_at: null,
+      selected_staff_id: null,
+      staff_lines: [],
+      status: "draft",
+      subtotal: 0,
+      tax: 0,
+      tip: 0,
+      total: 0,
+      total_before_tip: 0,
+      version: Number(input.raw.version) + 1,
+    })
+    .eq("id", input.raw.id)
+    .eq("salon_id", input.salonId)
+    .select(LIVE_DRAFT_SELECT)
+    .single<RawLiveDraft>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 }
 
 async function requirePosDeskMutationContext() {
@@ -530,12 +644,49 @@ function validateSubmitLines(lines: PosDeskSubmitLine[]) {
   }
 }
 
+type PosDeskSupabaseClient = NonNullable<
+  Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+>;
+
+async function validatePosStaffIds(input: {
+  salonId: string;
+  staffIds: string[];
+  supabase: PosDeskSupabaseClient;
+}) {
+  const staffIds = Array.from(
+    new Set(
+      input.staffIds
+        .map(cleanOptional)
+        .filter((staffId): staffId is string => Boolean(staffId)),
+    ),
+  );
+
+  if (staffIds.length === 0) {
+    return;
+  }
+
+  const { data: staffRows, error: staffError } = await input.supabase
+    .from("staff")
+    .select("id")
+    .eq("salon_id", input.salonId)
+    .eq("is_active", true)
+    .eq("pos_enabled", true)
+    .in("id", staffIds)
+    .returns<Array<{ id: string }>>();
+
+  if (staffError) {
+    throw new Error(staffError.message);
+  }
+
+  if ((staffRows ?? []).length !== staffIds.length) {
+    throw new Error("Assigned staff must be active and enabled for POS.");
+  }
+}
+
 async function validateSubmitLineScope(input: {
   lines: PosDeskSubmitLine[];
   salonId: string;
-  supabase: NonNullable<
-    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
-  >;
+  supabase: PosDeskSupabaseClient;
 }) {
   const staffIds = Array.from(new Set(input.lines.map((line) => line.staffId)));
   const serviceIds = Array.from(
@@ -546,20 +697,11 @@ async function validateSubmitLineScope(input: {
     ),
   );
 
-  const { data: staffRows, error: staffError } = await input.supabase
-    .from("staff")
-    .select("id")
-    .eq("salon_id", input.salonId)
-    .in("id", staffIds)
-    .returns<Array<{ id: string }>>();
-
-  if (staffError) {
-    throw new Error(staffError.message);
-  }
-
-  if ((staffRows ?? []).length !== staffIds.length) {
-    throw new Error("Assigned staff must belong to the current salon.");
-  }
+  await validatePosStaffIds({
+    salonId: input.salonId,
+    staffIds,
+    supabase: input.supabase,
+  });
 
   if (serviceIds.length === 0) {
     return;
@@ -582,6 +724,56 @@ async function validateSubmitLineScope(input: {
   }
 }
 
+async function finalizeLiveDraftForPos(input: {
+  salonId: string;
+  supabase: PosDeskSupabaseClient;
+  token?: string | null;
+}): Promise<PosLiveDraftView | null> {
+  const token = cleanOptional(input.token);
+
+  if (!token) {
+    return null;
+  }
+
+  const { data: existing, error: existingError } = await input.supabase
+    .from("pos_live_drafts")
+    .select("id, version")
+    .eq("token", token)
+    .eq("salon_id", input.salonId)
+    .maybeSingle<{ id: string; version: number }>();
+
+  if (existingError) {
+    throw new Error(existingError.message);
+  }
+
+  if (!existing) {
+    return null;
+  }
+
+  const completedAt = new Date();
+  const resetAt = new Date(
+    completedAt.getTime() + CUSTOMER_DISPLAY_COMPLETED_RESET_DELAY_MS,
+  );
+  const { data, error } = await input.supabase
+    .from("pos_live_drafts")
+    .update({
+      completed_at: completedAt.toISOString(),
+      reset_at: resetAt.toISOString(),
+      status: "closed",
+      version: Number(existing.version) + 1,
+    })
+    .eq("id", existing.id)
+    .eq("salon_id", input.salonId)
+    .select(LIVE_DRAFT_SELECT)
+    .single<RawLiveDraft>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return toLiveDraftView(data);
+}
+
 async function createTicketFromSubmitInput(
   input: PosDeskSubmitInput,
   sessionId?: string | null,
@@ -589,6 +781,7 @@ async function createTicketFromSubmitInput(
   try {
     const { context, salon, supabase, user } =
       await requirePosDeskMutationContext();
+    const settings = await getCurrentSalonPosSettings(context);
     validateSubmitLines(input.lines);
     await validateSubmitLineScope({
       lines: input.lines,
@@ -624,7 +817,7 @@ async function createTicketFromSubmitInput(
         opened_at: now,
         salon_id: salon.id,
         status: "open",
-        tax_rate: POS_DESK_DEFAULTS.taxEnabled ? 0 : 0,
+        tax_rate: settings.taxEnabled ? 0 : 0,
         tip_type: "fixed_amount",
         tip_value: tipAmount,
       })
@@ -665,7 +858,7 @@ async function createTicketFromSubmitInput(
         ticket_id: ticket.id,
         ticket_item_id: item.id,
         turn_index: partIndex + 1,
-        turn_type: getTurnType(amount, POS_DESK_DEFAULTS.largeTurnThreshold),
+        turn_type: getTurnType(amount, settings.largeTurnThreshold),
         work_date: workDate,
       }));
 
@@ -791,6 +984,22 @@ async function createTicketFromSubmitInput(
       }
     }
 
+    try {
+      const finalizedDraft = await finalizeLiveDraftForPos({
+        salonId: salon.id,
+        supabase,
+        token: input.liveDraftToken,
+      });
+      if (finalizedDraft) {
+        await broadcastPosLiveDraftSnapshot(finalizedDraft, "pos");
+      }
+    } catch (draftError) {
+      console.error("Unable to finalize POS live draft after submit", {
+        error: draftError instanceof Error ? draftError.message : draftError,
+        salonId: salon.id,
+      });
+    }
+
     await recalculateStaffEarningsForDate(salon.id, workDate);
 
     revalidatePath("/pos");
@@ -884,14 +1093,11 @@ export async function searchPosDeskCustomers(search: string) {
 export async function getOrCreatePosLiveDraft(): Promise<ActionResult<PosLiveDraftView>> {
   try {
     const { salon, supabase } = await requirePosDeskMutationContext();
-    const select =
-      "id, salon_id, token, customer, staff_lines, selected_staff_id, tip, subtotal, total, status, version, updated_at";
 
     const existing = await supabase
       .from("pos_live_drafts")
-      .select(select)
+      .select(LIVE_DRAFT_SELECT)
       .eq("salon_id", salon.id)
-      .eq("status", "draft")
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle<RawLiveDraft>();
@@ -901,7 +1107,12 @@ export async function getOrCreatePosLiveDraft(): Promise<ActionResult<PosLiveDra
     }
 
     if (existing.data) {
-      return { data: toLiveDraftView(existing.data), ok: true };
+      const raw = await resetExpiredLiveDraftForPos({
+        raw: existing.data,
+        salonId: salon.id,
+        supabase,
+      });
+      return { data: toLiveDraftView(raw), ok: true };
     }
 
     const inserted = await supabase
@@ -914,8 +1125,9 @@ export async function getOrCreatePosLiveDraft(): Promise<ActionResult<PosLiveDra
         tip: 0,
         token: randomUUID().replaceAll("-", ""),
         total: 0,
+        total_before_tip: 0,
       })
-      .select(select)
+      .select(LIVE_DRAFT_SELECT)
       .single<RawLiveDraft>();
 
     if (inserted.error) {
@@ -960,47 +1172,111 @@ export async function getPosLiveDraft(
   }
 }
 
+export async function touchCustomerDisplayLiveDraftActivity(input: {
+  resetSeconds?: number;
+  token: string;
+}): Promise<ActionResult<PosLiveDraftView | null>> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    if (!supabase) {
+      throw new Error("Supabase environment variables are missing.");
+    }
+
+    const { data, error } = await supabase.rpc("touch_pos_live_draft_activity", {
+      p_reset_seconds: Math.round(input.resetSeconds ?? 180),
+      p_token: input.token,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      return { data: null, ok: true };
+    }
+
+    const snapshot = toLiveDraftView(data as RawLiveDraft);
+    await broadcastPosLiveDraftSnapshot(snapshot, "system");
+
+    return { data: snapshot, ok: true };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unable to update display activity.",
+      ok: false,
+    };
+  }
+}
+
 export async function updatePosActiveDraft(input: {
+  discount?: number;
   selectedStaffId: string | null;
   staffLines: PosLiveDraftReceiptLine[];
   subtotal: number;
+  tax?: number;
   tip: number;
   token: string;
   total: number;
+  totalBeforeTip?: number;
 }): Promise<ActionResult<PosLiveDraftView>> {
   try {
     const { salon, supabase } = await requirePosDeskMutationContext();
     const { data: existing, error: existingError } = await supabase
       .from("pos_live_drafts")
-      .select("id, version")
+      .select("id, receipt_version, status, version")
       .eq("token", input.token)
       .eq("salon_id", salon.id)
-      .single<{ id: string; version: number }>();
+      .single<{
+        id: string;
+        receipt_version: number;
+        status: PosLiveDraftView["status"];
+        version: number;
+      }>();
 
     if (existingError) {
       throw new Error(existingError.message);
     }
 
+    const wasCompleted = existing.status !== "draft";
+    const totalBeforeTip =
+      Number.isFinite(input.totalBeforeTip) && Number(input.totalBeforeTip) >= 0
+        ? roundMoney(Number(input.totalBeforeTip))
+        : roundMoney(Math.max(0, input.total - input.tip));
     const { data, error } = await supabase
       .from("pos_live_drafts")
       .update({
+        completed_at: null,
+        customer: wasCompleted ? null : undefined,
+        discount: roundMoney(input.discount ?? 0),
+        last_customer_action_id: wasCompleted ? null : undefined,
+        last_tip_action_id: wasCompleted ? null : undefined,
+        receipt_version: Number(existing.receipt_version) + 1,
+        reset_at: null,
         selected_staff_id: input.selectedStaffId,
         staff_lines: normalizeLiveDraftStaffLines(input.staffLines),
         status: "draft",
         subtotal: roundMoney(input.subtotal),
+        tax: roundMoney(input.tax ?? 0),
         tip: roundMoney(input.tip),
         total: roundMoney(input.total),
+        total_before_tip: totalBeforeTip,
         version: Number(existing.version) + 1,
       })
       .eq("id", existing.id)
-      .select("id, salon_id, token, customer, staff_lines, selected_staff_id, tip, subtotal, total, status, version, updated_at")
+      .select(LIVE_DRAFT_SELECT)
       .single<RawLiveDraft>();
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return { data: toLiveDraftView(data), ok: true };
+    const snapshot = toLiveDraftView(data);
+    await broadcastPosLiveDraftSnapshot(snapshot, "pos");
+
+    return { data: snapshot, ok: true };
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Unable to update live receipt.",
@@ -1017,30 +1293,59 @@ export async function updatePosLiveDraftCustomer(input: {
     const { salon, supabase } = await requirePosDeskMutationContext();
     const { data: existing, error: existingError } = await supabase
       .from("pos_live_drafts")
-      .select("id, version")
+      .select("customer_version, id, status, version")
       .eq("token", input.token)
       .eq("salon_id", salon.id)
-      .single<{ id: string; version: number }>();
+      .single<{
+        customer_version: number;
+        id: string;
+        status: PosLiveDraftView["status"];
+        version: number;
+      }>();
 
     if (existingError) {
       throw new Error(existingError.message);
     }
 
+    const customerId = cleanOptional(input.customer?.id);
+
+    if (customerId) {
+      const { data: customer, error: customerError } = await supabase
+        .from("customers")
+        .select("id")
+        .eq("id", customerId)
+        .eq("location_id", salon.id)
+        .eq("status", "active")
+        .maybeSingle<{ id: string }>();
+
+      if (customerError || !customer) {
+        throw new Error("Selected customer must belong to the current salon.");
+      }
+    }
+
     const { data, error } = await supabase
       .from("pos_live_drafts")
       .update({
+        completed_at: null,
         customer: input.customer,
+        customer_version: Number(existing.customer_version) + 1,
+        last_customer_action_id: null,
+        reset_at: null,
+        status: "draft",
         version: Number(existing.version) + 1,
       })
       .eq("id", existing.id)
-      .select("id, salon_id, token, customer, staff_lines, selected_staff_id, tip, subtotal, total, status, version, updated_at")
+      .select(LIVE_DRAFT_SELECT)
       .single<RawLiveDraft>();
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return { data: toLiveDraftView(data), ok: true };
+    const snapshot = toLiveDraftView(data);
+    await broadcastPosLiveDraftSnapshot(snapshot, "pos");
+
+    return { data: snapshot, ok: true };
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Unable to update live customer.",
@@ -1203,6 +1508,200 @@ export async function createLiveDraftCustomer(input: {
   }
 }
 
+export async function searchCustomerDisplayLiveDraftCustomers(input: {
+  phone: string;
+  token: string;
+}): Promise<ActionResult<PosLiveDraftCustomer[]>> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    if (!supabase) {
+      throw new Error("Supabase environment variables are missing.");
+    }
+
+    const { data, error } = await supabase.rpc(
+      "search_pos_live_draft_customers_by_phone",
+      {
+        p_phone: input.phone,
+        p_token: input.token,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return { data: (data ?? []) as PosLiveDraftCustomer[], ok: true };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Unable to search customer.",
+      ok: false,
+    };
+  }
+}
+
+export async function getCustomerDisplayLiveDraftTipOptions(input: {
+  token: string;
+}): Promise<ActionResult<CustomerDisplayTipOption[]>> {
+  try {
+    const [snapshotResult, settings] = await Promise.all([
+      getPosLiveDraft(input.token),
+      getPublicPosDisplaySettingsByToken(input.token),
+    ]);
+
+    if (!snapshotResult.ok) {
+      throw new Error(snapshotResult.error);
+    }
+
+    return {
+      data: getCustomerDisplayTipAmounts({
+        liveDraft: snapshotResult.data,
+        tipSuggestions: settings.tipSuggestions,
+      }),
+      ok: true,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Unable to load tip options.",
+      ok: false,
+    };
+  }
+}
+
+export async function confirmCustomerDisplayLiveDraftCustomer(input: {
+  customerId: string;
+  requestId: string;
+  token: string;
+}): Promise<ActionResult<PosLiveDraftView>> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    if (!supabase) {
+      throw new Error("Supabase environment variables are missing.");
+    }
+
+    const { data, error } = await supabase.rpc(
+      "confirm_pos_live_draft_customer",
+      {
+        p_customer_id: input.customerId,
+        p_request_id: input.requestId,
+        p_token: input.token,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error("This checkout session is no longer active.");
+    }
+
+    const snapshot = toLiveDraftView(data as RawLiveDraft);
+    await broadcastPosLiveDraftSnapshot(snapshot, "customer_display");
+
+    return { data: snapshot, ok: true };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Unable to confirm customer.",
+      ok: false,
+    };
+  }
+}
+
+export async function createCustomerDisplayLiveDraftCustomer(input: {
+  name: string;
+  phone: string;
+  requestId: string;
+  token: string;
+}): Promise<ActionResult<PosLiveDraftView>> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    if (!supabase) {
+      throw new Error("Supabase environment variables are missing.");
+    }
+
+    const { error } = await supabase.rpc(
+      "create_pos_live_draft_customer_by_phone",
+      {
+        p_name: input.name,
+        p_phone: input.phone,
+        p_token: input.token,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const snapshotResult = await getPosLiveDraft(input.token);
+
+    if (!snapshotResult.ok || !snapshotResult.data) {
+      throw new Error(
+        snapshotResult.ok
+          ? "This checkout session is no longer active."
+          : snapshotResult.error,
+      );
+    }
+
+    const snapshot = snapshotResult.data;
+    await broadcastPosLiveDraftSnapshot(snapshot, "customer_display");
+
+    return { data: snapshot, ok: true };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Unable to create customer.",
+      ok: false,
+    };
+  }
+}
+
+export async function confirmCustomerDisplayLiveDraftTip(input: {
+  requestId: string;
+  tipAmount: number;
+  token: string;
+}): Promise<ActionResult<PosLiveDraftView>> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    if (!supabase) {
+      throw new Error("Supabase environment variables are missing.");
+    }
+
+    if (!Number.isFinite(input.tipAmount) || input.tipAmount < 0) {
+      throw new Error("Tip must be zero or greater.");
+    }
+
+    const { data, error } = await supabase.rpc("confirm_pos_live_draft_tip", {
+      p_request_id: input.requestId,
+      p_tip_amount: roundMoney(input.tipAmount),
+      p_token: input.token,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error("This checkout session is no longer active.");
+    }
+
+    const snapshot = toLiveDraftView(data as RawLiveDraft);
+    await broadcastPosLiveDraftSnapshot(snapshot, "customer_display");
+
+    return { data: snapshot, ok: true };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Unable to confirm tip.",
+      ok: false,
+    };
+  }
+}
+
 export async function updatePosDeskSessionCustomer(input: {
   customerId?: string | null;
   customerLookup?: string | null;
@@ -1344,6 +1843,12 @@ export async function addOrUpdateSessionLine(
     if (!input.staffId) {
       throw new Error("Select assigned staff.");
     }
+
+    await validatePosStaffIds({
+      salonId: salon.id,
+      staffIds: [input.staffId],
+      supabase,
+    });
 
     const serviceLabel =
       cleanOptional(input.serviceLabel) ?? `Service ${session.lines.length + 1}`;
@@ -1592,6 +2097,12 @@ export async function submitSessionToTicket(
     if (session.lines.length === 0) {
       throw new Error("Add at least one receipt line before submit.");
     }
+
+    await validatePosStaffIds({
+      salonId: salon.id,
+      staffIds: session.lines.map((line) => line.staff_id),
+      supabase,
+    });
 
     const customer = await findOrCreateDeskCustomer({
       customerId: session.customer_id,

@@ -5,7 +5,7 @@ import type { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/ser
 import type { Staff } from "@/types/staff";
 
 export const STAFF_ACCOUNT_SELECT =
-  "id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, job_title, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
+  "id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, address_line1, address_line2, city, state, postal_code, job_title, pos_enabled, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 
 export const CURRENT_STAFF_NOT_FOUND_MESSAGE =
   "No active staff profile is linked to your account for this salon.";

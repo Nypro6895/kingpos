@@ -433,53 +433,6 @@ function SalonSettingsForm({
   );
 }
 
-function PosAccessSettingsSection({
-  canManageSettings,
-}: {
-  canManageSettings: boolean;
-}) {
-  return (
-    <section className="mt-8" id="pos-access">
-      <div>
-        <h2 className="text-lg font-semibold text-zinc-950">POS Access</h2>
-        <p className="mt-1 text-sm leading-6 text-zinc-600">
-          Staff and manager POS password management will live here.
-        </p>
-      </div>
-      <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-        <div>
-          <p className="text-sm font-semibold text-zinc-950">
-            Staff/Manager POS Passwords
-          </p>
-          <p className="mt-1 text-sm leading-6 text-zinc-600">
-            Create, rotate, use, and revoke flows are not enabled yet.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-500 disabled:cursor-not-allowed disabled:opacity-70"
-            disabled
-            type="button"
-          >
-            Manage Passwords
-          </button>
-          <Link
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50"
-            href="/pos/portable"
-          >
-            Portable POS
-          </Link>
-        </div>
-        {!canManageSettings ? (
-          <p className="text-xs font-medium text-zinc-500 sm:col-span-2">
-            Salon settings manage permission is required when this flow is enabled.
-          </p>
-        ) : null}
-      </div>
-    </section>
-  );
-}
-
 export default async function SalonSettingsPage({
   searchParams,
 }: SalonSettingsPageProps) {
@@ -543,8 +496,6 @@ export default async function SalonSettingsPage({
           setting={setting}
         />
       </section>
-
-      <PosAccessSettingsSection canManageSettings={canManageSettings} />
 
       {canViewStaff ? (
         <PublicTeamSettingsSection

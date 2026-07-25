@@ -2991,15 +2991,6 @@ export function ExploreClient({
         <div className="min-w-0 overflow-hidden" data-testid="explore-main-column">
           <section className="bg-transparent" data-testid="explore-top-section">
             <div className="mx-auto grid w-full max-w-none gap-5 px-4 pb-4 pt-4 sm:px-6 lg:pl-8 lg:pr-3">
-              <div>
-                <h1 className="text-3xl font-semibold text-text-primary sm:text-4xl">
-                  Explore
-                </h1>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">
-                  Discover top salons, trending designs, and book instantly.
-                </p>
-              </div>
-
               <CategoryChips
                 category={selectedCategory}
                 onChange={selectCategory}

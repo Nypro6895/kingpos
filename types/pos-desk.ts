@@ -46,6 +46,7 @@ export type PosDeskSubmitInput = {
   discountType?: PosTicketDiscountType;
   discountValue?: number;
   lines: PosDeskSubmitLine[];
+  liveDraftToken?: string | null;
   note?: string | null;
   tipAmount?: number;
 };
@@ -171,16 +172,26 @@ export type PosLiveDraftReceiptLine = {
 };
 
 export type PosLiveDraftView = {
+  completed_at: string | null;
   customer: PosLiveDraftCustomer | null;
+  customer_version: number;
+  discount: number;
   id: string;
+  last_customer_action_id: string | null;
+  last_tip_action_id: string | null;
+  receipt_version: number;
+  reset_at: string | null;
   selected_staff_id: string | null;
   salon_id: string;
+  server_now: string;
   staff_lines: PosLiveDraftReceiptLine[];
   status: "draft" | "closed";
   subtotal: number;
+  tax: number;
   tip: number;
   token: string;
   total: number;
+  total_before_tip: number;
   updated_at: string;
   version: number;
 };

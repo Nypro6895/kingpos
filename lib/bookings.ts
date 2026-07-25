@@ -46,7 +46,7 @@ export const BOOKING_PERMISSIONS = {
 export const BOOKING_CUSTOMER_OPTION_SELECT =
   "id, location_id, customer_user_id, name, phone, email, notes, staff_notes, internal_notes, source, status, created_by_user_id, updated_by_user_id, created_at, updated_at";
 export const BOOKING_STAFF_OPTION_SELECT =
-  "id, salon_id, user_id, account_user_id, display_name, first_name, last_name, phone, email, job_title, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
+  "id, salon_id, user_id, account_user_id, display_name, first_name, last_name, phone, email, address_line1, address_line2, city, state, postal_code, job_title, pos_enabled, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 export const BOOKING_SERVICE_OPTION_SELECT =
   "id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 export const BOOKING_SETTINGS_SELECT =

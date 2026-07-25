@@ -599,6 +599,22 @@ function fallbackSetting(context: CurrentBusinessContext): SalonProfileSetting {
   };
 }
 
+function settingWithSalonName(
+  setting: SalonProfileSetting,
+  context: CurrentBusinessContext,
+) {
+  const salonName = context.currentSalon?.name?.trim();
+
+  if (!salonName || setting.business_name === salonName) {
+    return setting;
+  }
+
+  return {
+    ...setting,
+    business_name: salonName,
+  };
+}
+
 function mapLookRelations(
   looks: SalonProfileLook[],
   services: Service[],
@@ -689,7 +705,7 @@ export function getSalonProfileReadiness(input: {
       complete: hasText(input.setting.public_profile_tagline),
       id: "tagline",
       label: "Tagline",
-      required: true,
+      required: false,
     },
     {
       complete: hasText(input.setting.public_profile_logo_path),
@@ -957,7 +973,10 @@ export async function getCurrentSalonProfileManageData(
 
   const services = servicesResult.data ?? [];
   const staff = staffResult.data ?? [];
-  const settingOrFallback = setting ?? fallbackSetting(resolvedContext);
+  const settingOrFallback = settingWithSalonName(
+    setting ?? fallbackSetting(resolvedContext),
+    resolvedContext,
+  );
   const looks = mapLookRelations(looksResult.data ?? [], services, staff);
   const updates = mapUpdateRelations(updatesResult.data ?? [], services, staff);
 
@@ -1567,7 +1586,7 @@ export async function updateCurrentSalonProfileIdentity(input: {
       path: input.coverImagePath,
     }),
   ]);
-  const businessName = clean(input.businessName);
+  const businessName = clean(salon.name) || clean(input.businessName);
 
   if (!businessName) {
     throw new Error("Salon name is required.");

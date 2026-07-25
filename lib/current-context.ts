@@ -1,7 +1,14 @@
 import "server-only";
 
 import { routes } from "@/lib/routes";
-import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createAuthenticatedSupabaseServerClient,
+  createSupabaseServerClient,
+} from "@/lib/supabase/server";
+import {
+  SALON_PROFILE_MEDIA_BUCKET,
+  normalizeSalonProfileMediaPath,
+} from "@/lib/salon-profile-media";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import type { Account, AccountMembership } from "@/types/account";
 import type { Business } from "@/types/business";
@@ -40,6 +47,7 @@ export type CurrentWorkspaceAction = {
 export type CurrentWorkspaceOption = {
   accountId: string | null;
   accountName: string | null;
+  avatarUrl: string | null;
   businessId: string | null;
   businessMode: SalonMode | null;
   businessName: string | null;
@@ -135,6 +143,15 @@ type RolePermissionRow = {
 type StaffContextSalonRow = {
   id: string;
   salon_id: string;
+};
+
+type SalonWorkspaceProfileRow = {
+  public_profile_logo_path: string | null;
+  salon_id: string;
+};
+
+type SalonWorkspaceProfile = {
+  avatarUrl: string | null;
 };
 
 function isMissingAccountSalonSchemaError(error: {
@@ -301,7 +318,7 @@ function buildManageWorkspaceActions(input: {
   }
 
   if (canUseManageAction(input.permissionCodes, input.isOwner, "tickets.manage")) {
-    actions.push(workspaceAction("pos", "POS", "/pos/portable"));
+    actions.push(workspaceAction("pos", "POS", "/pos"));
   }
 
   if (canUseManageAction(input.permissionCodes, input.isOwner, "staff.view")) {
@@ -433,6 +450,70 @@ function groupSalonsByAccount(salons: Location[]) {
   return salonsByAccount;
 }
 
+function getSalonWorkspaceAvatarUrl(path: string | null | undefined) {
+  const cleanedPath = normalizeSalonProfileMediaPath(path);
+
+  if (!cleanedPath) {
+    return null;
+  }
+
+  const supabase = createSupabaseServerClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  return supabase.storage
+    .from(SALON_PROFILE_MEDIA_BUCKET)
+    .getPublicUrl(cleanedPath).data.publicUrl;
+}
+
+async function loadSalonWorkspaceProfiles(input: {
+  salonIds: string[];
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+}) {
+  const salonIds = [...new Set(input.salonIds.filter(Boolean))];
+
+  if (salonIds.length === 0) {
+    return new Map<string, SalonWorkspaceProfile>();
+  }
+
+  const { data, error } = await input.supabase
+    .from("salon_settings")
+    .select("salon_id, public_profile_logo_path")
+    .in("salon_id", salonIds)
+    .returns<SalonWorkspaceProfileRow[]>();
+
+  if (error) {
+    console.error("Supabase load salon workspace profile avatars failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      salonIds,
+    });
+    return new Map<string, SalonWorkspaceProfile>();
+  }
+
+  return new Map(
+    (data ?? []).map((row) => [
+      row.salon_id,
+      {
+        avatarUrl: getSalonWorkspaceAvatarUrl(row.public_profile_logo_path),
+      },
+    ]),
+  );
+}
+
+function getSalonWorkspaceAvatar(input: {
+  profilesBySalonId: Map<string, SalonWorkspaceProfile>;
+  salonId: string;
+}) {
+  return input.profilesBySalonId.get(input.salonId)?.avatarUrl ?? null;
+}
+
 function buildPersonalWorkspaceOption(): CurrentWorkspaceOption {
   const explore = workspaceAction("explore", "Explore", "/explore");
   const bookings = workspaceAction("bookings", "Bookings", "/my-bookings");
@@ -448,6 +529,7 @@ function buildPersonalWorkspaceOption(): CurrentWorkspaceOption {
   return {
     accountId: null,
     accountName: null,
+    avatarUrl: null,
     businessId: null,
     businessMode: null,
     businessName: null,
@@ -486,6 +568,7 @@ function buildAccountWorkspaceOption(input: {
   return {
     accountId: account.id,
     accountName: account.name,
+    avatarUrl: null,
     businessId: null,
     businessMode: null,
     businessName: null,
@@ -517,7 +600,7 @@ function getManageDefaultRoute(permissionCodes: Set<string>, isOwner: boolean) {
   }
 
   if (permissionCodes.has("tickets.manage")) {
-    return "/pos/portable";
+    return "/pos";
   }
 
   if (permissionCodes.has("customers.view")) {
@@ -549,6 +632,7 @@ function getManageDefaultRoute(permissionCodes: Set<string>, isOwner: boolean) {
 
 function buildManageWorkspaceOption(input: {
   account: Account;
+  avatarUrl: string | null;
   membership: CurrentMembership;
   permissionCodes: Set<string>;
   salon: Location;
@@ -564,6 +648,7 @@ function buildManageWorkspaceOption(input: {
   return {
     accountId: input.account.id,
     accountName: input.account.name,
+    avatarUrl: input.avatarUrl,
     businessId: input.salon.id,
     businessMode: "manage",
     businessName: input.salon.name,
@@ -587,6 +672,7 @@ function buildManageWorkspaceOption(input: {
 
 function buildStaffWorkspaceOption(input: {
   account: Account | null;
+  avatarUrl: string | null;
   salon: Location;
 }): CurrentWorkspaceOption {
   const actionSet = buildStaffWorkspaceActions();
@@ -594,6 +680,7 @@ function buildStaffWorkspaceOption(input: {
   return {
     accountId: input.account?.id ?? input.salon.account_id ?? null,
     accountName: input.account?.name ?? null,
+    avatarUrl: input.avatarUrl,
     businessId: input.salon.id,
     businessMode: "staff",
     businessName: input.salon.name,
@@ -1051,6 +1138,10 @@ async function loadStaffSalons(input: {
       .filter((accountId): accountId is string => Boolean(accountId)),
     accountsById: input.accountsById,
   });
+  const profilesBySalonId = await loadSalonWorkspaceProfiles({
+    salonIds: salons.map((salon) => salon.id),
+    supabase,
+  });
 
   return {
     staffSalons: salons,
@@ -1059,6 +1150,10 @@ async function loadStaffSalons(input: {
         account: salon.account_id
           ? (input.accountsById.get(salon.account_id) ?? null)
           : null,
+        avatarUrl: getSalonWorkspaceAvatar({
+          profilesBySalonId,
+          salonId: salon.id,
+        }),
         salon,
       }),
     ),
@@ -1346,6 +1441,10 @@ export async function getCurrentBusinessContext(): Promise<CurrentBusinessContex
   ]);
   const allBusinesses = allSalons as Business[];
   const salonsByAccount = groupSalonsByAccount(allSalons);
+  const salonProfilesById = await loadSalonWorkspaceProfiles({
+    salonIds: allSalons.map((salon) => salon.id),
+    supabase,
+  });
   const staffLinkedContext = await loadStaffSalons({ accountsById, user });
   const personalWorkspace = buildPersonalWorkspaceOption();
   const accountOptions = accountMemberships
@@ -1397,6 +1496,10 @@ export async function getCurrentBusinessContext(): Promise<CurrentBusinessContex
       return [
         buildManageWorkspaceOption({
           account,
+          avatarUrl: getSalonWorkspaceAvatar({
+            profilesBySalonId: salonProfilesById,
+            salonId: salon.id,
+          }),
           membership,
           permissionCodes:
             permissionCodesByMembershipId.get(membership.id) ?? new Set<string>(),

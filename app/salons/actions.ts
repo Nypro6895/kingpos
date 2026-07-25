@@ -168,7 +168,7 @@ async function getManageDefaultRedirect(context: Awaited<ReturnType<typeof getCu
   }
 
   if (await hasPermission("tickets.manage", context)) {
-    return "/pos/portable";
+    return "/pos";
   }
 
   if (await hasPermission("customers.view", context)) {

@@ -220,8 +220,8 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   ],
   owner: [
     {
-      description: "Portable POS entry point for the current salon.",
-      href: "/pos/portable",
+      description: "Open the POS workspace for the current salon.",
+      href: "/pos",
       icon: "store",
       id: "owner-pos",
       label: "POS",
@@ -333,8 +333,8 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
       "/more",
       "/notifications",
       "/payroll",
+      "/pos",
       "/pos-tickets",
-      "/pos/portable",
       "/reports",
       "/salon-profile",
       "/salon-settings",

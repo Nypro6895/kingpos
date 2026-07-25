@@ -161,6 +161,7 @@ function redirectWithNotice(message: string): never {
 }
 
 function revalidateSalonProfile(salonId?: string | null) {
+  revalidatePath("/", "layout");
   revalidatePath("/salon-profile");
   revalidatePath("/explore");
 

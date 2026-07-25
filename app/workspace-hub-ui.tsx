@@ -153,9 +153,11 @@ export function hubButtonClass(
 }
 
 export function WorkspaceAvatar({
+  imageUrl,
   label,
   variant = "page",
 }: {
+  imageUrl?: string | null;
   label: string;
   variant?: WorkspaceHubVariant;
 }) {
@@ -163,11 +165,16 @@ export function WorkspaceAvatar({
     <span
       aria-hidden="true"
       className={cn(
-        "grid shrink-0 place-items-center rounded-md bg-zinc-950 font-semibold text-white",
+        "grid shrink-0 place-items-center overflow-hidden rounded-md bg-zinc-950 font-semibold text-white",
         variant === "panel" ? "h-9 w-9 text-[11px]" : "h-10 w-10 text-xs",
       )}
     >
-      {initialsFor(label)}
+      {imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img alt="" className="h-full w-full object-cover" src={imageUrl} />
+      ) : (
+        initialsFor(label)
+      )}
     </span>
   );
 }
@@ -524,7 +531,11 @@ export function WorkspaceListItem({
         onClick={() => onRunAction(workspace, openAction)}
         type="button"
       >
-        <WorkspaceAvatar label={workspace.label} variant={density} />
+        <WorkspaceAvatar
+          imageUrl={workspace.avatarUrl}
+          label={workspace.label}
+          variant={density}
+        />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold text-zinc-950">
             {workspace.label}
@@ -595,7 +606,11 @@ export function QuickAccessItem({
       onClick={() => onRunAction(shortcut.workspace, shortcut.action)}
       type="button"
     >
-      <WorkspaceAvatar label={shortcut.workspace.label} variant={density} />
+      <WorkspaceAvatar
+        imageUrl={shortcut.workspace.avatarUrl}
+        label={shortcut.workspace.label}
+        variant={density}
+      />
       <span className="min-w-0">
         <span className="block truncate text-sm font-semibold text-zinc-950">
           {shortcut.workspace.label}
@@ -648,7 +663,11 @@ export function CurrentWorkspaceCard({
         </h3>
       </div>
       <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-        <WorkspaceAvatar label={currentWorkspace.label} variant="panel" />
+        <WorkspaceAvatar
+          imageUrl={currentWorkspace.avatarUrl}
+          label={currentWorkspace.label}
+          variant="panel"
+        />
         <div className="min-w-0">
           <p className="flex min-w-0 items-center gap-2 text-sm font-semibold text-zinc-950">
             <span className="truncate">{currentWorkspace.label}</span>

@@ -152,8 +152,8 @@ async function buildQuickActions(
 
   if (hasManageWorkspace && canOpenPos) {
     addAction(actions, {
-      description: "Open the portable POS entry for the current salon.",
-      href: "/pos/portable",
+      description: "Open the POS workspace for the current salon.",
+      href: "/pos",
       label: "Open POS",
       tone: hasStaffWorkspace ? "light" : "dark",
     });

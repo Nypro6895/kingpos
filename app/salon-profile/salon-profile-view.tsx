@@ -705,6 +705,49 @@ function MediaApplyButton({
     }
   }
 
+  if (iconOnly) {
+    return (
+      <span className="inline-grid gap-1">
+        <input
+          accept={SALON_PROFILE_ALLOWED_IMAGE_TYPES.join(",")}
+          className="sr-only"
+          onChange={(event) => void onFile(event.currentTarget.files?.[0] ?? null)}
+          ref={inputRef}
+          type="file"
+        />
+        <button
+          aria-label={label}
+          className={[
+            "inline-flex min-h-10 w-10 items-center justify-center rounded-full bg-transparent p-0 text-zinc-950/55 transition hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-not-allowed disabled:opacity-50",
+            className,
+          ].join(" ")}
+          disabled={busy}
+          onClick={() => inputRef.current?.click()}
+          title={busy ? `Applying ${progress}%` : label}
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            className="h-5 w-5 sm:h-6 sm:w-6"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+            viewBox="0 0 24 24"
+          >
+            <path d="M14.5 4 16 6h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l1.5-2z" />
+            <circle cx="12" cy="13" r="3" />
+          </svg>
+          <span className="sr-only">
+            {busy ? `Applying ${progress}%` : label}
+          </span>
+        </button>
+        {error ? <span className="text-xs text-red-700">{error}</span> : null}
+      </span>
+    );
+  }
+
   return (
     <span className="inline-grid gap-1">
       <input
@@ -722,24 +765,7 @@ function MediaApplyButton({
         title={busy ? `Applying ${progress}%` : label}
         variant="secondary"
       >
-        {iconOnly ? (
-          <>
-            <span
-              aria-hidden="true"
-              className="relative block h-4 w-5 rounded-[3px] border-2 border-current"
-            >
-              <span className="absolute -top-1 left-1 h-1 w-3 rounded-t-[2px] bg-current" />
-              <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-current" />
-            </span>
-            <span className="sr-only">
-              {busy ? `Applying ${progress}%` : label}
-            </span>
-          </>
-        ) : busy ? (
-          `Applying ${progress}%`
-        ) : (
-          label
-        )}
+        {busy ? `Applying ${progress}%` : label}
       </Button>
       {error ? <span className="text-xs text-red-700">{error}</span> : null}
     </span>
@@ -901,9 +927,9 @@ function ProfileEditor({
           <h3 className="mt-3 text-2xl font-semibold text-zinc-950">
             {businessName || "Salon name"}
           </h3>
-          {tagline || description ? (
+          {description ? (
             <p className="mt-2 text-sm leading-6 text-zinc-600">
-              {tagline || description}
+              {description}
             </p>
           ) : null}
           <div className="mt-4 flex flex-wrap gap-2">
@@ -4028,39 +4054,13 @@ export function SalonProfileView({
   return (
     <div className="min-w-0 overflow-x-hidden bg-[#f6f5f3] text-zinc-950">
       <div className="mx-auto grid w-full max-w-[88rem] gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        {manageData ? (
-          <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                Connect
-              </p>
-              <h1 className="mt-2 text-4xl font-semibold tracking-normal text-zinc-950">
-                Salon Profile
-              </h1>
-              <p className="mt-2 text-sm text-zinc-600">
-                Your public home for updates, inspiration and bookings.
-              </p>
-            </div>
-            {canOpenPublicProfile ? (
-              <a
-                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-950 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-                href={manageData.publicHref}
-                rel="noreferrer"
-                target="_blank"
-              >
-                View public profile
-              </a>
-            ) : null}
-          </header>
-        ) : null}
-
         <section className="group rounded-2xl border border-zinc-200/80 bg-white shadow-[0_24px_80px_rgba(24,24,27,.08)]">
-          <div className="relative h-[13rem] overflow-hidden rounded-t-2xl bg-zinc-100 sm:h-[16rem] lg:h-[17rem]">
+          <div className="relative z-0 h-[13rem] overflow-hidden rounded-t-2xl bg-zinc-100 sm:h-[16rem] lg:h-[17rem]">
             <SalonCover coverImageUrl={profile.coverImageUrl} name={profile.name} />
             {capabilities.canEditProfile ? (
               <div className="absolute right-4 top-4 z-10 opacity-100 transition sm:opacity-0 sm:focus-within:opacity-100 sm:group-hover:opacity-100">
                 <MediaApplyButton
-                  className="h-11 min-h-11 w-11 rounded-full bg-white/95 p-0 shadow-sm"
+                  className="h-11 min-h-11 w-11"
                   iconOnly
                   kind="cover"
                   label="Change cover"
@@ -4070,15 +4070,15 @@ export function SalonProfileView({
             ) : null}
           </div>
 
-          <div className="px-4 pb-0 sm:px-6 lg:px-8">
+          <div className="relative z-10 px-4 pb-0 sm:px-6 lg:px-8">
             <div className="-mt-12 flex flex-col gap-5 pb-6 sm:-mt-16 lg:flex-row lg:items-end lg:justify-between">
               <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end">
                 <div className="relative w-max shrink-0">
                   <Avatar logoUrl={profile.logoImageUrl} name={profile.name} size="lg" />
                   {capabilities.canEditProfile ? (
-                    <div className="absolute bottom-2 right-2">
+                    <div className="absolute bottom-2 right-2 z-20 opacity-100 transition sm:opacity-0 sm:focus-within:opacity-100 sm:group-hover:opacity-100">
                       <MediaApplyButton
-                        className="h-9 min-h-9 w-9 rounded-full bg-white/95 p-0 shadow-sm"
+                        className="h-10 min-h-10 w-10"
                         iconOnly
                         kind="logo"
                         label="Change logo"
@@ -4088,15 +4088,11 @@ export function SalonProfileView({
                   ) : null}
                 </div>
 
-                <div className="min-w-0 pt-1 sm:pb-2">
+                <div className="relative z-10 min-w-0 pt-1 sm:pb-2">
                   <h2 className="text-3xl font-semibold leading-tight text-zinc-950 sm:text-4xl">
                     {profile.name}
                   </h2>
-                  {profile.tagline ? (
-                    <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-700 sm:text-base">
-                      {profile.tagline}
-                    </p>
-                  ) : profile.description ? (
+                  {profile.description ? (
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
                       {profile.description}
                     </p>
@@ -4112,6 +4108,11 @@ export function SalonProfileView({
               </div>
 
               <div className="relative flex flex-wrap gap-2 lg:justify-end">
+                {capabilities.canCreateContent ? (
+                  <Button onClick={() => setComposerType("auto")} variant="primary">
+                    Create post
+                  </Button>
+                ) : null}
                 {capabilities.canEditProfile ? (
                   <Button
                     onClick={() => setProfileEditorOpen(true)}
@@ -4120,10 +4121,15 @@ export function SalonProfileView({
                     Edit profile
                   </Button>
                 ) : null}
-                {capabilities.canCreateContent ? (
-                  <Button onClick={() => setComposerType("auto")} variant="primary">
-                    Create post
-                  </Button>
+                {canOpenPublicProfile && manageData ? (
+                  <a
+                    className="inline-flex min-h-10 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                    href={manageData.publicHref}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    View public profile
+                  </a>
                 ) : null}
                 {canShowFollow ? (
                   <Button disabled={isPending} onClick={toggleFollow} variant="secondary">
@@ -4172,17 +4178,6 @@ export function SalonProfileView({
                       >
                         Publication settings
                       </button>
-                    ) : null}
-                    {canOpenPublicProfile && manageData ? (
-                      <a
-                        className="rounded-lg px-3 py-2 text-sm font-semibold hover:bg-zinc-50"
-                        href={manageData.publicHref}
-                        rel="noreferrer"
-                        role="menuitem"
-                        target="_blank"
-                      >
-                        Open public profile
-                      </a>
                     ) : null}
                     <button
                       className="rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-zinc-50"

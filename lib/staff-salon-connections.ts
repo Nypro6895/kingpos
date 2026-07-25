@@ -5,6 +5,8 @@ import {
   getCurrentBusinessContext,
   isSalonManageContext,
 } from "@/lib/current-context";
+import { headers } from "next/headers";
+import { isEmailProviderConfigured, sendEmail } from "@/lib/email";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { STAFF_SELECT } from "@/lib/staff";
 import {
@@ -24,6 +26,7 @@ import type {
   CreateSalonStaffInviteResult,
   PublicStaffApplicationSalon,
   ReviewStaffSalonApplicationInput,
+  ResendSalonStaffInviteResult,
   SalonStaffConnectionRequestWithDetails,
   StaffAccountExactMatchType,
   StaffAccountExactSearchResult,
@@ -32,6 +35,8 @@ import type {
   StaffConnectionRequestAccountSummary,
   StaffConnectionRequestStaffSummary,
   StaffConnectionRpcResult,
+  StaffInviteEmailVerificationResult,
+  StaffInviteEmailDelivery,
   StaffSalonConnectionRequest,
   SubmitStaffSalonApplicationInput,
 } from "@/types/staff-salon-connection";
@@ -107,6 +112,17 @@ type StaffConnectionInviteRpcResult = StaffConnectionRpcResult & {
   expires_at?: string | null;
 };
 
+type InsertedSalonInviteRequest = Omit<
+  CreateSalonStaffInviteResult,
+  "email_delivery"
+>;
+
+type InviteEmailContext = {
+  staffJobTitle: string | null;
+  staffName: string;
+  targetEmail: string | null;
+};
+
 function toConnectionError(error: unknown): StaffSalonConnectionError {
   if (error instanceof StaffSalonConnectionError) {
     return error;
@@ -141,9 +157,166 @@ function getInviteExpiresAt() {
   ).toISOString();
 }
 
+function cleanOrigin(value: string | null | undefined) {
+  return value?.trim().replace(/\/+$/, "") || null;
+}
+
+async function getStaffInviteOrigin() {
+  const configuredOrigin =
+    cleanOrigin(process.env.NEXT_PUBLIC_APP_URL) ?? cleanOrigin(process.env.APP_URL);
+
+  if (configuredOrigin) {
+    return configuredOrigin;
+  }
+
+  try {
+    const headerStore = await headers();
+    const host =
+      headerStore.get("x-forwarded-host") ??
+      headerStore.get("host") ??
+      null;
+
+    if (!host) {
+      return null;
+    }
+
+    const protocol =
+      headerStore.get("x-forwarded-proto") ??
+      (host.startsWith("localhost") || host.startsWith("127.0.0.1")
+        ? "http"
+        : "https");
+
+    return `${protocol}://${host}`;
+  } catch {
+    return null;
+  }
+}
+
+async function getStaffInviteAbsoluteHref(token: string) {
+  const origin = await getStaffInviteOrigin();
+
+  if (!origin) {
+    return null;
+  }
+
+  return `${origin}/staff/invite/${encodeURIComponent(token)}`;
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+async function sendStaffInviteEmail(input: {
+  auth: StaffConnectionAuthContext;
+  staffJobTitle?: string | null;
+  staffName: string;
+  targetEmail: string | null;
+  token: string;
+}): Promise<StaffInviteEmailDelivery> {
+  if (!input.targetEmail) {
+    return {
+      reason: "No staff email was provided for this invitation.",
+      status: "skipped",
+    };
+  }
+
+  const salonName = input.auth.salon.name ?? "the salon";
+  const staffName = input.staffName || "Staff";
+
+  if (!isEmailProviderConfigured()) {
+    return {
+      reason:
+        "Custom staff invite email provider is not connected. Copy the invite link from this page.",
+      recipient: input.targetEmail,
+      status: "skipped",
+    };
+  }
+
+  const directInviteHref = await getStaffInviteAbsoluteHref(input.token);
+
+  if (!directInviteHref) {
+    return {
+      reason:
+        "App URL could not be resolved. Set NEXT_PUBLIC_APP_URL to email staff invite links.",
+      recipient: input.targetEmail,
+      status: "skipped",
+    };
+  }
+
+  const subject = `Invitation to join ${salonName} as staff`;
+  const titleLine = input.staffJobTitle
+    ? `${staffName} (${input.staffJobTitle})`
+    : staffName;
+  const text = [
+    `${salonName} invited you to join their staff team on Reylumi.`,
+    "",
+    `Staff profile: ${titleLine}`,
+    `Invited email: ${input.targetEmail}`,
+    "",
+    "Open this link to review the invitation, verify your email, and create your password:",
+    directInviteHref,
+    "",
+    `After your account is created, it will be connected to ${salonName} automatically.`,
+    "",
+    `This invitation expires in ${STAFF_CONNECTION_INVITE_EXPIRY_DAYS} days.`,
+  ].join("\n");
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #18181b;">
+      <h1 style="font-size: 20px; margin: 0 0 12px;">Invitation to join ${escapeHtml(salonName)} as staff</h1>
+      <p style="margin: 0 0 12px;">${escapeHtml(salonName)} has prepared a staff profile for you on Reylumi.</p>
+      <p style="margin: 0 0 8px;">Staff profile: <strong>${escapeHtml(titleLine)}</strong></p>
+      <p style="margin: 0 0 16px;">Invited email: <strong>${escapeHtml(input.targetEmail)}</strong></p>
+      <p style="margin: 0 0 16px;">Open this secure invitation link, verify your email, and create your password. After the account is created, it will be connected to ${escapeHtml(salonName)} automatically.</p>
+      <p style="margin: 0 0 16px;">
+        <a href="${escapeHtml(directInviteHref)}" style="display: inline-block; background: #09090b; color: #ffffff; padding: 10px 14px; border-radius: 6px; text-decoration: none;">Open staff invitation</a>
+      </p>
+      <p style="margin: 0 0 8px; font-size: 13px; color: #52525b;">Or copy this link:</p>
+      <p style="word-break: break-all; font-size: 13px; color: #27272a;">${escapeHtml(directInviteHref)}</p>
+      <p style="font-size: 12px; color: #71717a;">This invitation expires in ${STAFF_CONNECTION_INVITE_EXPIRY_DAYS} days.</p>
+    </div>
+  `;
+  const delivery = await sendEmail({
+    html,
+    subject,
+    text,
+    to: input.targetEmail,
+  });
+
+  if (delivery.status === "failed") {
+    console.error("Staff invitation email delivery failed", {
+      reason: delivery.reason,
+      recipient: delivery.recipient,
+      requestSalonId: input.auth.salon.id,
+    });
+  }
+
+  return delivery;
+}
+
 function trimOptional(value: string | null | undefined) {
   const trimmed = value?.trim() ?? "";
   return trimmed || null;
+}
+
+function splitFullName(value: string | null | undefined) {
+  const parts = (value ?? "").trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return { firstName: null, lastName: null };
+  }
+
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: null };
+  }
+
+  return {
+    firstName: parts.slice(0, -1).join(" "),
+    lastName: parts[parts.length - 1],
+  };
 }
 
 function safeNormalizeStoredEmail(value: string | null | undefined) {
@@ -375,9 +548,10 @@ async function createUnconnectedStaffForInvite(
   },
 ) {
   const displayName = input.display_name.trim();
+  const parsedName = splitFullName(displayName);
 
   if (!displayName) {
-    throw new StaffSalonConnectionError("INVALID_INPUT", "Display Name is required.");
+    throw new StaffSalonConnectionError("INVALID_INPUT", "Full Name is required.");
   }
 
   const { data, error } = await auth.supabase
@@ -385,10 +559,10 @@ async function createUnconnectedStaffForInvite(
     .insert({
       display_name: displayName,
       email: input.email,
-      first_name: trimOptional(input.first_name),
+      first_name: trimOptional(input.first_name) ?? parsedName.firstName,
       is_active: input.is_active ?? true,
       job_title: trimOptional(input.job_title),
-      last_name: trimOptional(input.last_name),
+      last_name: trimOptional(input.last_name) ?? parsedName.lastName,
       phone: input.phone,
       salon_id: auth.salon.id,
     })
@@ -562,7 +736,7 @@ async function insertSalonInviteRequest(input: {
   staffId: string;
   targetEmail: string | null;
   targetPhone: string | null;
-}): Promise<CreateSalonStaffInviteResult> {
+}): Promise<InsertedSalonInviteRequest> {
   const token = generateStaffConnectionToken();
   const tokenHash = hashStaffConnectionToken(token);
   const { data, error } = await input.auth.supabase
@@ -589,6 +763,50 @@ async function insertSalonInviteRequest(input: {
   return {
     invite_token: token,
     request: data,
+  };
+}
+
+async function loadInviteEmailContext(
+  auth: StaffConnectionAuthContext,
+  requestId: string,
+): Promise<InviteEmailContext> {
+  const { data: request, error } = await auth.supabase
+    .from("staff_salon_connection_requests")
+    .select("staff_id, target_email_normalized")
+    .eq("id", requestId)
+    .eq("salon_id", auth.salon.id)
+    .maybeSingle<{
+      staff_id: string | null;
+      target_email_normalized: string | null;
+    }>();
+
+  if (error) {
+    throw new StaffSalonConnectionError("INVALID_INPUT", error.message);
+  }
+
+  if (!request?.staff_id) {
+    return {
+      staffJobTitle: null,
+      staffName: "Staff",
+      targetEmail: request?.target_email_normalized ?? null,
+    };
+  }
+
+  const { data: staff, error: staffError } = await auth.supabase
+    .from("staff")
+    .select("display_name, job_title")
+    .eq("id", request.staff_id)
+    .eq("salon_id", auth.salon.id)
+    .maybeSingle<{ display_name: string; job_title: string | null }>();
+
+  if (staffError) {
+    throw new StaffSalonConnectionError("INVALID_INPUT", staffError.message);
+  }
+
+  return {
+    staffJobTitle: staff?.job_title ?? null,
+    staffName: staff?.display_name ?? "Staff",
+    targetEmail: request.target_email_normalized,
   };
 }
 
@@ -628,13 +846,24 @@ async function createExistingAccountInvite(
     phone: targetPhone,
   });
 
-  return insertSalonInviteRequest({
+  const invite = await insertSalonInviteRequest({
     accountUserId: account.id,
     auth,
     staffId: staff.id,
     targetEmail,
     targetPhone,
   });
+
+  return {
+    ...invite,
+    email_delivery: await sendStaffInviteEmail({
+      auth,
+      staffJobTitle: staff.job_title,
+      staffName: staff.display_name,
+      targetEmail,
+      token: invite.invite_token,
+    }),
+  };
 }
 
 async function createNewAccountInvite(
@@ -655,13 +884,24 @@ async function createNewAccountInvite(
 
   await assertNoPendingInviteForStaff(auth, staff.id);
 
-  return insertSalonInviteRequest({
+  const invite = await insertSalonInviteRequest({
     accountUserId: null,
     auth,
     staffId: staff.id,
     targetEmail: contact.email,
     targetPhone: contact.phone,
   });
+
+  return {
+    ...invite,
+    email_delivery: await sendStaffInviteEmail({
+      auth,
+      staffJobTitle: staff.job_title,
+      staffName: staff.display_name,
+      targetEmail: contact.email,
+      token: invite.invite_token,
+    }),
+  };
 }
 
 export async function createSalonStaffInvite(
@@ -704,6 +944,37 @@ export async function getStaffInviteByToken(
     }
 
     return data as StaffConnectionInviteTokenDetails;
+  } catch (error) {
+    throw toConnectionError(error);
+  }
+}
+
+export async function verifyStaffInviteEmail(input: {
+  email: string;
+  token: string;
+}): Promise<StaffInviteEmailVerificationResult> {
+  try {
+    if (!input.token.trim()) {
+      throw new StaffSalonConnectionError(
+        "INVITE_NOT_FOUND",
+        "Invitation token is required.",
+      );
+    }
+
+    const supabase = requirePublicSupabaseClient();
+    const { data, error } = await supabase.rpc(
+      "verify_staff_connection_invite_email",
+      {
+        p_email: input.email,
+        p_token: input.token,
+      },
+    );
+
+    if (error) {
+      throw new StaffSalonConnectionError("INVALID_INPUT", error.message);
+    }
+
+    return data as StaffInviteEmailVerificationResult;
   } catch (error) {
     throw toConnectionError(error);
   }
@@ -817,7 +1088,9 @@ export async function declineStaffInviteByRequestId(requestId: string) {
   }
 }
 
-export async function resendSalonStaffInvite(requestId: string) {
+export async function resendSalonStaffInvite(
+  requestId: string,
+): Promise<ResendSalonStaffInviteResult> {
   try {
     if (!requestId.trim()) {
       throw new StaffSalonConnectionError(
@@ -827,8 +1100,8 @@ export async function resendSalonStaffInvite(requestId: string) {
     }
 
     const token = generateStaffConnectionToken();
-    const supabase = await requireAuthenticatedSupabaseClient();
-    const { data, error } = await supabase.rpc(
+    const auth = await getStaffConnectionAuthContext();
+    const { data, error } = await auth.supabase.rpc(
       "resend_staff_connection_invite",
       {
         p_expires_at: getInviteExpiresAt(),
@@ -841,7 +1114,16 @@ export async function resendSalonStaffInvite(requestId: string) {
       throw new StaffSalonConnectionError("INVALID_INPUT", error.message);
     }
 
+    const emailContext = await loadInviteEmailContext(auth, requestId);
+
     return {
+      email_delivery: await sendStaffInviteEmail({
+        auth,
+        staffJobTitle: emailContext.staffJobTitle,
+        staffName: emailContext.staffName,
+        targetEmail: emailContext.targetEmail,
+        token,
+      }),
       invite_token: token,
       result: data as StaffConnectionInviteRpcResult,
     };

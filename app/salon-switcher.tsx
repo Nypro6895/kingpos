@@ -222,6 +222,7 @@ export async function SalonSwitcher({
 
   return (
     <NavigationShell
+      accountAvatarUrl={context.user.avatar_url}
       accountEmail={context.user.email}
       accountLabel={context.user.display_name ?? context.user.email ?? "Account"}
       canManageStaff={canManageStaff}

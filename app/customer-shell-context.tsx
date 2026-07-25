@@ -5,6 +5,7 @@ import {
   useContext,
   type ReactNode,
 } from "react";
+import type { NotificationFeedItem } from "@/types/notifications";
 
 export type CustomerNotificationSummary = {
   items: Array<{
@@ -14,6 +15,7 @@ export type CustomerNotificationSummary = {
   }>;
   bookingNotifications: number;
   managerApplications: number;
+  previewItems: NotificationFeedItem[];
   reviewHref: string;
   staffApplications: number;
   staffInvites: number;

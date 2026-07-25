@@ -14,11 +14,15 @@ import {
 } from "@/lib/salon-profile-media";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
-import type { CreateStaffInput, Staff } from "@/types/staff";
+import type {
+  CreateStaffInput,
+  Staff,
+  UpdateStaffDirectoryBatchInput,
+} from "@/types/staff";
 import type { KingUser } from "@/types/user";
 
 export const STAFF_SELECT =
-  "id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, job_title, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
+  "id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, address_line1, address_line2, city, state, postal_code, job_title, pos_enabled, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 
 const STAFF_PAYROLL_SETUP_SELECT = "id, staff_id, effective_from, effective_to";
 
@@ -341,7 +345,13 @@ export async function createStaff(input: CreateStaffInput) {
       last_name: input.last_name,
       phone: input.phone,
       email: input.email,
+      address_line1: input.address_line1,
+      address_line2: input.address_line2,
+      city: input.city,
       job_title: input.job_title,
+      postal_code: input.postal_code,
+      pos_enabled: input.pos_enabled ?? true,
+      state: input.state,
       online_booking_enabled: input.online_booking_enabled ?? true,
       owner_public_enabled: ownerPublicEnabled,
       profile_display_order: input.profile_display_order ?? 0,
@@ -376,6 +386,126 @@ export async function createStaff(input: CreateStaffInput) {
 
 function cleanOptional(value: string | null | undefined) {
   return value?.trim() || null;
+}
+
+export async function updateStaffDirectoryBatch(
+  input: UpdateStaffDirectoryBatchInput,
+) {
+  const context = await getCurrentBusinessContext();
+
+  if (!context.user) {
+    throw new Error("You must be logged in to update staff.");
+  }
+
+  await requirePermission(STAFF_PERMISSIONS.manage, context);
+
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  const changes = Array.from(
+    new Map(
+      input.changes
+        .filter((change) => change.staff_id)
+        .map((change) => [change.staff_id, change]),
+    ).values(),
+  );
+
+  if (changes.length === 0) {
+    return { updated: 0 };
+  }
+
+  const staffIds = changes.map((change) => change.staff_id);
+  const { data: existingStaff, error: loadError } = await supabase
+    .from("staff")
+    .select(STAFF_SELECT)
+    .eq("salon_id", salon.id)
+    .in("id", staffIds)
+    .returns<Staff[]>();
+
+  if (loadError) {
+    console.error("Supabase load staff batch update failed", {
+      accountId: Account.id,
+      code: loadError.code,
+      details: loadError.details,
+      hint: loadError.hint,
+      message: loadError.message,
+      salonId: salon.id,
+      userId: context.user.id,
+    });
+    throw new Error(loadError.message);
+  }
+
+  const existingById = new Map(
+    (existingStaff ?? []).map((member) => [member.id, member]),
+  );
+
+  if (existingById.size !== changes.length) {
+    throw new Error("One or more staff profiles could not be found.");
+  }
+
+  for (const change of changes) {
+    const existing = existingById.get(change.staff_id);
+
+    if (!existing) {
+      throw new Error("Staff profile was not found.");
+    }
+
+    const displayName = cleanOptional(change.display_name);
+
+    if (!displayName) {
+      throw new Error("Display name is required for every staff profile.");
+    }
+
+    const isActive = change.is_active;
+    const ownerPublicEnabled = isActive && change.owner_public_enabled;
+
+    const { error } = await supabase
+      .from("staff")
+      .update({
+        address_line1: cleanOptional(change.address_line1),
+        address_line2: cleanOptional(change.address_line2),
+        city: cleanOptional(change.city),
+        display_name: displayName,
+        email: cleanOptional(change.email),
+        first_name: cleanOptional(change.first_name),
+        is_active: isActive,
+        job_title: cleanOptional(change.job_title),
+        last_name: cleanOptional(change.last_name),
+        online_booking_enabled: isActive && change.online_booking_enabled,
+        owner_public_enabled: ownerPublicEnabled,
+        phone: cleanOptional(change.phone),
+        postal_code: cleanOptional(change.postal_code),
+        pos_enabled: isActive && change.pos_enabled,
+        public_profile_visible:
+          ownerPublicEnabled &&
+          existing.staff_public_consent_status === "granted",
+        salon_profile_content_posting_enabled:
+          isActive && change.salon_profile_content_posting_enabled,
+        state: cleanOptional(change.state),
+      })
+      .eq("id", change.staff_id)
+      .eq("salon_id", salon.id);
+
+    if (error) {
+      console.error("Supabase update staff directory row failed", {
+        accountId: Account.id,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        message: error.message,
+        salonId: salon.id,
+        staffId: change.staff_id,
+        userId: context.user.id,
+      });
+      throw new Error(error.message);
+    }
+  }
+
+  return { updated: changes.length };
 }
 
 function normalizeSpecialties(value: string[] | null | undefined) {

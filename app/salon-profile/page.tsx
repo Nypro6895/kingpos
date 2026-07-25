@@ -199,6 +199,29 @@ function buildPreviewData(input: {
   };
 }
 
+function withManagedSalonName(
+  data: PublicSalonProfileData,
+  name: string,
+): PublicSalonProfileData {
+  if (data.profile.name === name) {
+    return data;
+  }
+
+  return {
+    ...data,
+    feed: buildSalonProfileFeed({
+      looks: data.looks,
+      profileName: name,
+      salonId: data.profile.salonId,
+      updates: data.updates,
+    }),
+    profile: {
+      ...data.profile,
+      name,
+    },
+  };
+}
+
 export default async function SalonProfilePage({
   searchParams,
 }: SalonProfilePageProps) {
@@ -227,7 +250,11 @@ export default async function SalonProfilePage({
     accountId: data.context.currentAccount?.id ?? data.context.accountId ?? "",
   });
   const publicData = await getPublicSalonProfileData(data.setting.salon_id);
-  const viewData = publicData ?? previewData;
+  const managedSalonName =
+    data.context.currentSalon?.name ?? previewData.profile.name;
+  const viewData = publicData
+    ? withManagedSalonName(publicData, managedSalonName)
+    : previewData;
   const capabilities: SalonProfileViewerCapabilities = {
     canBook: false,
     canCreateContent: data.canCreateContent,

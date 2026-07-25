@@ -8,13 +8,21 @@ import {
   useState,
   useTransition,
 } from "react";
+import { useRouter } from "next/navigation";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { parsePosAmountInput } from "@/lib/pos-desk-amounts";
+import {
+  getPosLiveDraftRealtimeChannel,
+  POS_LIVE_DRAFT_BROADCAST_EVENT,
+  type PosLiveDraftBroadcastPayload,
+} from "@/lib/pos-live-draft-realtime";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   createPosDeskCustomer,
   getPosLiveDraft,
   searchPosDeskCustomers,
   submitPosDeskReceipt,
+  touchCustomerDisplayLiveDraftActivity,
   updatePosActiveDraft,
   updatePosLiveDraftCustomer,
 } from "@/app/pos/actions";
@@ -34,6 +42,7 @@ type PosDeskDefaults = {
   showServiceName: boolean;
   showStaffName: boolean;
   taxEnabled: boolean;
+  tipSuggestions: number[];
 };
 
 type DraftState = {
@@ -67,6 +76,16 @@ type CustomerCreateDraft = {
 
 type CustomerCreateField = "email" | "name" | "phone";
 
+type PosDeskClientActions = {
+  createPosDeskCustomer: typeof createPosDeskCustomer;
+  getPosLiveDraft: typeof getPosLiveDraft;
+  searchPosDeskCustomers: typeof searchPosDeskCustomers;
+  submitPosDeskReceipt: typeof submitPosDeskReceipt;
+  touchCustomerDisplayLiveDraftActivity: typeof touchCustomerDisplayLiveDraftActivity;
+  updatePosActiveDraft: typeof updatePosActiveDraft;
+  updatePosLiveDraftCustomer: typeof updatePosLiveDraftCustomer;
+};
+
 const emptyDraft: DraftState = {
   amountInput: "",
   customerId: null,
@@ -87,6 +106,10 @@ const emptyCustomerCreateDraft: CustomerCreateDraft = {
   name: "",
   phone: "",
 };
+
+const POS_IDLE_RESET_MS = 3 * 60 * 1000;
+const DISPLAY_IDLE_RESET_SECONDS = 180;
+const DISPLAY_ACTIVITY_THROTTLE_MS = 5000;
 
 function formatMoney(amount: number) {
   return new Intl.NumberFormat("en-US", {
@@ -109,6 +132,17 @@ function normalizeKeypadInput(current: string, key: string) {
 
 function getFirstName(name: string) {
   return name.trim().split(/\s+/)[0] || name;
+}
+
+function getSalonInitials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "S";
 }
 
 function getCustomerCreateDraftFromLookup(lookup: string): CustomerCreateDraft {
@@ -163,12 +197,26 @@ function hasPositiveAmount(line: PosDeskSessionLine) {
   return line.amount > 0;
 }
 
-function ReceiptClock() {
+function ReceiptClock({
+  className = "text-sm text-zinc-600",
+  timeOnly = false,
+}: {
+  className?: string;
+  timeOnly?: boolean;
+} = {}) {
   const [currentTime, setCurrentTime] = useState("");
 
   useEffect(() => {
     function updateClock() {
-      setCurrentTime(new Date().toLocaleString());
+      const now = new Date();
+      setCurrentTime(
+        timeOnly
+          ? now.toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            })
+          : now.toLocaleString(),
+      );
     }
 
     const timeoutId = window.setTimeout(updateClock, 0);
@@ -178,9 +226,9 @@ function ReceiptClock() {
       window.clearTimeout(timeoutId);
       window.clearInterval(intervalId);
     };
-  }, []);
+  }, [timeOnly]);
 
-  return <p className="text-sm text-zinc-600">{currentTime}</p>;
+  return <time className={className}>{currentTime}</time>;
 }
 
 function liveLineToSessionLine(
@@ -203,36 +251,69 @@ function liveLineToSessionLine(
 }
 
 export function PosDeskClient({
+  actions,
   activeSession,
   defaults,
   liveDraft,
+  salonLogoUrl,
   salonName,
   services,
+  surface = "standard",
   staff,
+  today,
 }: {
+  actions?: Partial<PosDeskClientActions>;
   activeSession: PosDeskSessionView | null;
   defaults: PosDeskDefaults;
   liveDraft: PosLiveDraftView | null;
+  salonLogoUrl?: string | null;
   salonName: string;
   services: PosDeskService[];
+  surface?: "portable" | "standard";
   staff: PosDeskStaff[];
+  today?: string;
 }) {
+  const createCustomerAction =
+    actions?.createPosDeskCustomer ?? createPosDeskCustomer;
+  const getLiveDraftAction = actions?.getPosLiveDraft ?? getPosLiveDraft;
+  const searchCustomersAction =
+    actions?.searchPosDeskCustomers ?? searchPosDeskCustomers;
+  const submitReceiptAction =
+    actions?.submitPosDeskReceipt ?? submitPosDeskReceipt;
+  const updateActiveDraftAction =
+    actions?.updatePosActiveDraft ?? updatePosActiveDraft;
+  const updateLiveDraftCustomerAction =
+    actions?.updatePosLiveDraftCustomer ?? updatePosLiveDraftCustomer;
+  const touchLiveDraftActivityAction =
+    actions?.touchCustomerDisplayLiveDraftActivity ??
+    touchCustomerDisplayLiveDraftActivity;
+  const router = useRouter();
+  const liveDraftIsOpen = liveDraft?.status === "draft";
+  const initialLiveDraftCustomer = liveDraftIsOpen ? liveDraft.customer : null;
+  const initialLiveDraftSelectedStaffId = liveDraftIsOpen
+    ? liveDraft.selected_staff_id
+    : null;
+  const initialLiveDraftTip = liveDraftIsOpen ? liveDraft.tip : 0;
   const [draftStaffLines, setDraftStaffLines] = useState<PosDeskSessionLine[]>(
-    liveDraft?.staff_lines.map(liveLineToSessionLine) ?? activeSession?.lines ?? [],
+    liveDraftIsOpen
+      ? liveDraft.staff_lines.map(liveLineToSessionLine)
+      : activeSession?.lines ?? [],
   );
   const initialSelectedLine =
-    draftStaffLines.find((line) => line.staff_id === liveDraft?.selected_staff_id) ??
+    draftStaffLines.find(
+      (line) => line.staff_id === initialLiveDraftSelectedStaffId,
+    ) ??
     null;
   const [draft, setDraft] = useState<DraftState>({
     ...emptyDraft,
     amountInput: initialSelectedLine?.amount_input ?? "",
-    customerId: liveDraft?.customer?.id ?? null,
-    customerLookup: liveDraft?.customer?.phone ?? "",
-    customerName: liveDraft?.customer?.name ?? "",
+    customerId: initialLiveDraftCustomer?.id ?? null,
+    customerLookup: initialLiveDraftCustomer?.phone ?? "",
+    customerName: initialLiveDraftCustomer?.name ?? "",
     editingLineId: initialSelectedLine?.id ?? null,
     selectedServiceId: initialSelectedLine?.service_id ?? null,
-    selectedStaffId: liveDraft?.selected_staff_id ?? null,
-    tipInput: liveDraft?.tip ? String(liveDraft.tip) : "",
+    selectedStaffId: initialLiveDraftSelectedStaffId,
+    tipInput: initialLiveDraftTip ? String(initialLiveDraftTip) : "",
   });
   const [customerCreateDraft, setCustomerCreateDraft] =
     useState<CustomerCreateDraft>(emptyCustomerCreateDraft);
@@ -245,18 +326,33 @@ export function PosDeskClient({
   const [showCustomerCreateModal, setShowCustomerCreateModal] = useState(false);
   const [showServicePicker, setShowServicePicker] = useState(false);
   const [liveCustomer, setLiveCustomer] = useState<PosLiveDraftCustomer | null>(
-    liveDraft?.customer ?? null,
+    initialLiveDraftCustomer,
   );
   const [draftRestored, setDraftRestored] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [liveDraftSyncNonce, setLiveDraftSyncNonce] = useState(0);
+  const [posActivityTick, setPosActivityTick] = useState(0);
   const [, setLastAction] = useState("Ready");
   const [isPending, startTransition] = useTransition();
+  const discountInputRef = useRef<HTMLInputElement | null>(null);
   const liveDraftVersionRef = useRef(liveDraft?.version ?? 0);
-  const receiptLocked = false;
+  const lastSyncedLiveDraftPayloadKeyRef = useRef("");
+  const lastCompletedDisplayTouchSyncRef = useRef(0);
+  const holdCompletedDisplayRef = useRef(liveDraft?.status === "closed");
+  const resetInFlightRef = useRef(false);
+  const submitLockedRef = useRef(false);
+  const tipInputRef = useRef<HTMLInputElement | null>(null);
+  const receiptLocked = isResetting || isSubmitting;
+  const receiptLockMessage = isSubmitting
+    ? "Receipt is submitting. Please wait."
+    : isResetting
+      ? "Receipt is resetting. Please wait."
+      : "Receipt is locked.";
   const liveDraftToken = liveDraft?.token;
 
-  const selectedStaff = staff.find((member) => member.id === draft.selectedStaffId);
   const selectedService = services.find(
     (service) => service.id === draft.selectedServiceId,
   );
@@ -264,6 +360,10 @@ export function PosDeskClient({
   const tipAmount = Number(draft.tipInput || 0);
   const discountAmount = Number(draft.discountInput || 0);
   const staffLines = draftStaffLines;
+  const tipSuggestions =
+    defaults.tipSuggestions.length > 0
+      ? defaults.tipSuggestions.slice(0, 4)
+      : [5, 10, 15, 20];
   const sortedStaff = useMemo(
     () =>
       [...staff].sort(
@@ -303,18 +403,6 @@ export function PosDeskClient({
       }),
     [discountAmount, draft.discountType, tipAmount, totalLines],
   );
-  const keypadDisplay =
-    keypadMode === "customer_search"
-      ? draft.customerLookup || "Phone search"
-      : keypadMode === "customer_create_phone"
-        ? customerCreateDraft.phone || "New phone"
-        : keypadMode === "tip"
-          ? draft.tipInput || "Tip"
-          : keypadMode === "discount"
-            ? draft.discountInput || "Discount"
-            : keypadMode === "gift_card"
-              ? "Gift card later"
-              : draft.amountInput || "0";
   const liveStaffLines = useMemo<PosLiveDraftView["staff_lines"]>(
     () =>
       staffLines.map((line, index) => ({
@@ -330,14 +418,179 @@ export function PosDeskClient({
       })),
     [staffLines],
   );
+  const liveTotalBeforeTip = useMemo(
+    () => Math.max(0, totals.total - totals.tip_amount),
+    [totals.tip_amount, totals.total],
+  );
+  const liveDraftPayloadKey = useMemo(
+    () =>
+      JSON.stringify({
+        discount: totals.discount_amount,
+        selectedStaffId: draft.selectedStaffId,
+        staffLines: liveStaffLines,
+        subtotal: totals.subtotal,
+        tax: totals.tax_amount,
+        tip: totals.tip_amount,
+        token: liveDraftToken,
+        total: totals.total,
+        totalBeforeTip: liveTotalBeforeTip,
+      }),
+    [
+      draft.selectedStaffId,
+      liveDraftToken,
+      liveStaffLines,
+      liveTotalBeforeTip,
+      totals.discount_amount,
+      totals.subtotal,
+      totals.tax_amount,
+      totals.tip_amount,
+      totals.total,
+    ],
+  );
+  const hasUnsavedDraftWork = useMemo(
+    () =>
+      staffLines.length > 0 ||
+      Boolean(selectedCustomer) ||
+      Boolean(draft.customerId) ||
+      Boolean(draft.customerLookup.trim()) ||
+      Boolean(draft.customerName.trim()) ||
+      Boolean(draft.discountInput.trim()) ||
+      Boolean(draft.giftCardInput.trim()) ||
+      Boolean(draft.note.trim()) ||
+      Boolean(draft.tipInput.trim()) ||
+      Boolean(draft.selectedServiceId) ||
+      Boolean(draft.selectedStaffId),
+    [
+      draft.customerId,
+      draft.customerLookup,
+      draft.customerName,
+      draft.discountInput,
+      draft.giftCardInput,
+      draft.note,
+      draft.selectedServiceId,
+      draft.selectedStaffId,
+      draft.tipInput,
+      selectedCustomer,
+      staffLines.length,
+    ],
+  );
+  const idleResetKey = useMemo(
+    () =>
+      JSON.stringify({
+        customerId: draft.customerId,
+        customerLookup: draft.customerLookup,
+        customerName: draft.customerName,
+        discountInput: draft.discountInput,
+        discountType: draft.discountType,
+        giftCardInput: draft.giftCardInput,
+        lines: staffLines.map((line) => ({
+          amountInput: line.amount_input,
+          id: line.id,
+          serviceId: line.service_id,
+          staffId: line.staff_id,
+        })),
+        note: draft.note,
+        selectedServiceId: draft.selectedServiceId,
+        selectedStaffId: draft.selectedStaffId,
+        tipInput: draft.tipInput,
+      }),
+    [
+      draft.customerId,
+      draft.customerLookup,
+      draft.customerName,
+      draft.discountInput,
+      draft.discountType,
+      draft.giftCardInput,
+      draft.note,
+      draft.selectedServiceId,
+      draft.selectedStaffId,
+      draft.tipInput,
+      staffLines,
+    ],
+  );
 
   const updateDraft = useCallback((next: Partial<DraftState>) => {
     setDraft((current) => ({ ...current, ...next }));
     setError(null);
   }, []);
 
+  const markPosActivity = useCallback(() => {
+    setPosActivityTick((current) => current + 1);
+
+    if (
+      !liveDraftToken ||
+      !holdCompletedDisplayRef.current ||
+      resetInFlightRef.current ||
+      submitLockedRef.current
+    ) {
+      return;
+    }
+
+    const now = Date.now();
+
+    if (
+      now - lastCompletedDisplayTouchSyncRef.current <
+      DISPLAY_ACTIVITY_THROTTLE_MS
+    ) {
+      return;
+    }
+
+    lastCompletedDisplayTouchSyncRef.current = now;
+
+    void touchLiveDraftActivityAction({
+      resetSeconds: DISPLAY_IDLE_RESET_SECONDS,
+      token: liveDraftToken,
+    }).then((result) => {
+      if (result.ok) {
+        if (result.data) {
+          liveDraftVersionRef.current = result.data.version;
+        }
+        return;
+      }
+
+      setError(result.error);
+      setLastAction("Display activity sync failed");
+    });
+  }, [liveDraftToken, touchLiveDraftActivityAction]);
+
+  const focusReceiptMoneyInput = useCallback((mode: "discount" | "tip") => {
+    setKeypadMode(mode);
+    window.requestAnimationFrame(() => {
+      if (mode === "discount") {
+        discountInputRef.current?.focus();
+        return;
+      }
+
+      tipInputRef.current?.focus();
+    });
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("pointerdown", markPosActivity, { passive: true });
+    window.addEventListener("keydown", markPosActivity);
+
+    return () => {
+      window.removeEventListener("pointerdown", markPosActivity);
+      window.removeEventListener("keydown", markPosActivity);
+    };
+  }, [markPosActivity]);
+
+  useEffect(() => {
+    if (keypadMode === "discount") {
+      discountInputRef.current?.focus();
+    }
+
+    if (keypadMode === "tip") {
+      tipInputRef.current?.focus();
+    }
+  }, [keypadMode]);
+
   const publishCustomerToLiveDraft = useCallback(
     (customer: PosLiveDraftCustomer | null) => {
+      if (resetInFlightRef.current || submitLockedRef.current) {
+        return;
+      }
+
       setLiveCustomer(customer);
 
       if (!liveDraftToken) {
@@ -345,10 +598,18 @@ export function PosDeskClient({
       }
 
       startTransition(async () => {
-        const result = await updatePosLiveDraftCustomer({
+        if (resetInFlightRef.current || submitLockedRef.current) {
+          return;
+        }
+
+        const result = await updateLiveDraftCustomerAction({
           customer,
           token: liveDraftToken,
         });
+
+        if (resetInFlightRef.current || submitLockedRef.current) {
+          return;
+        }
 
         if (!result.ok) {
           setError(result.error);
@@ -359,13 +620,13 @@ export function PosDeskClient({
         liveDraftVersionRef.current = result.data.version;
       });
     },
-    [liveDraftToken, startTransition],
+    [liveDraftToken, startTransition, updateLiveDraftCustomerAction],
   );
 
   const saveCustomerToSession = useCallback(
     (customer?: PosDeskCustomer) => {
       if (receiptLocked) {
-        setError("Receipt is waiting for customer confirmation.");
+        setError(receiptLockMessage);
         setLastAction("Customer save blocked");
         return;
       }
@@ -404,24 +665,45 @@ export function PosDeskClient({
       draft.customerLookup,
       draft.customerName,
       publishCustomerToLiveDraft,
+      receiptLockMessage,
       receiptLocked,
       updateDraft,
     ],
   );
 
   useEffect(() => {
-    if (!liveDraftToken) {
+    if (!liveDraftToken || isResetting || isSubmitting) {
       return;
     }
 
-    const timeoutId = window.setTimeout(() => {
-      void updatePosActiveDraft({
+    if (holdCompletedDisplayRef.current && !hasUnsavedDraftWork) {
+      return;
+    }
+
+    const shouldFlushCompletedHold =
+      holdCompletedDisplayRef.current && hasUnsavedDraftWork;
+
+    if (shouldFlushCompletedHold) {
+      holdCompletedDisplayRef.current = false;
+    }
+
+    let timeoutId: number | undefined;
+    const flushLiveDraft = () => {
+      if (resetInFlightRef.current || submitLockedRef.current) {
+        timeoutId = window.setTimeout(flushLiveDraft, 100);
+        return;
+      }
+
+      void updateActiveDraftAction({
+        discount: totals.discount_amount,
         selectedStaffId: draft.selectedStaffId,
         staffLines: liveStaffLines,
         subtotal: totals.subtotal,
+        tax: totals.tax_amount,
         tip: totals.tip_amount,
         token: liveDraftToken,
         total: totals.total,
+        totalBeforeTip: liveTotalBeforeTip,
       }).then((result) => {
         if (!result.ok) {
           setError(result.error);
@@ -430,17 +712,90 @@ export function PosDeskClient({
         }
 
         liveDraftVersionRef.current = result.data.version;
+        lastSyncedLiveDraftPayloadKeyRef.current = liveDraftPayloadKey;
       });
-    }, 350);
+    };
 
-    return () => window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(
+      flushLiveDraft,
+      shouldFlushCompletedHold ? 0 : 350,
+    );
+
+    return () => {
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+      }
+    };
   }, [
     draft.selectedStaffId,
+    hasUnsavedDraftWork,
+    isResetting,
+    isSubmitting,
+    liveDraftSyncNonce,
+    liveDraftPayloadKey,
     liveDraftToken,
     liveStaffLines,
+    liveTotalBeforeTip,
+    totals.discount_amount,
     totals.subtotal,
+    totals.tax_amount,
     totals.tip_amount,
     totals.total,
+    updateActiveDraftAction,
+  ]);
+
+  useEffect(() => {
+    if (!liveDraftToken || !hasUnsavedDraftWork || isResetting || isSubmitting) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (lastSyncedLiveDraftPayloadKeyRef.current === liveDraftPayloadKey) {
+        return;
+      }
+
+      if (resetInFlightRef.current || submitLockedRef.current) {
+        return;
+      }
+
+      void updateActiveDraftAction({
+        discount: totals.discount_amount,
+        selectedStaffId: draft.selectedStaffId,
+        staffLines: liveStaffLines,
+        subtotal: totals.subtotal,
+        tax: totals.tax_amount,
+        tip: totals.tip_amount,
+        token: liveDraftToken,
+        total: totals.total,
+        totalBeforeTip: liveTotalBeforeTip,
+      }).then((result) => {
+        if (!result.ok) {
+          setError(result.error);
+          setLastAction("Live draft sync failed");
+          return;
+        }
+
+        liveDraftVersionRef.current = result.data.version;
+        lastSyncedLiveDraftPayloadKeyRef.current = liveDraftPayloadKey;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [
+    draft.selectedStaffId,
+    hasUnsavedDraftWork,
+    isResetting,
+    isSubmitting,
+    liveDraftPayloadKey,
+    liveDraftToken,
+    liveStaffLines,
+    liveTotalBeforeTip,
+    totals.discount_amount,
+    totals.subtotal,
+    totals.tax_amount,
+    totals.tip_amount,
+    totals.total,
+    updateActiveDraftAction,
   ]);
 
   useEffect(() => {
@@ -458,7 +813,7 @@ export function PosDeskClient({
     const timeoutId = window.setTimeout(() => {
       startTransition(async () => {
         try {
-          const results = await searchPosDeskCustomers(lookup);
+          const results = await searchCustomersAction(lookup);
 
           if (cancelled) {
             return;
@@ -490,44 +845,105 @@ export function PosDeskClient({
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [draft.customerLookup, receiptLocked, selectedCustomer]);
+  }, [draft.customerLookup, receiptLocked, searchCustomersAction, selectedCustomer]);
+
+  const applyCustomerDisplaySnapshot = useCallback(
+    (snapshot: PosLiveDraftView) => {
+      if (snapshot.version <= liveDraftVersionRef.current) {
+        return;
+      }
+
+      liveDraftVersionRef.current = snapshot.version;
+
+      if (snapshot.status === "closed") {
+        setLastAction("Customer display showing final receipt");
+        return;
+      }
+
+      setLiveCustomer(snapshot.customer);
+      setDraft((current) => {
+        const next: DraftState = {
+          ...current,
+          tipInput: snapshot.tip > 0 ? String(snapshot.tip) : "",
+        };
+
+        if (snapshot.customer) {
+          next.customerId = snapshot.customer.id;
+          next.customerLookup = snapshot.customer.phone ?? current.customerLookup;
+          next.customerName = snapshot.customer.name;
+        }
+
+        if (!snapshot.customer && current.customerId) {
+          next.customerId = null;
+          next.customerLookup = "";
+          next.customerName = "";
+        }
+
+        return next;
+      });
+      setLastAction("Customer display synced");
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!liveDraftToken) {
       return;
     }
 
+    const token = liveDraftToken;
     let isMounted = true;
-    const intervalId = window.setInterval(() => {
-      void getPosLiveDraft(liveDraftToken).then((result) => {
-        if (!isMounted || !result.ok || !result.data) {
-          return;
-        }
 
-        if (result.data.version <= liveDraftVersionRef.current) {
-          return;
-        }
+    async function loadLatestSnapshot() {
+      const result = await getLiveDraftAction(token);
 
-        liveDraftVersionRef.current = result.data.version;
-        setLiveCustomer(result.data.customer);
+      if (!isMounted || !result.ok || !result.data) {
+        return;
+      }
 
-        if (result.data.customer) {
-          setDraft((current) => ({
-            ...current,
-            customerId: result.data?.customer?.id ?? current.customerId,
-            customerLookup: result.data?.customer?.phone ?? current.customerLookup,
-            customerName: result.data?.customer?.name ?? current.customerName,
-          }));
-          setLastAction("Customer synced from display");
+      applyCustomerDisplaySnapshot(result.data);
+    }
+
+    void loadLatestSnapshot();
+
+    const supabase = createSupabaseBrowserClient();
+
+    if (!supabase) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const channel = supabase
+      .channel(getPosLiveDraftRealtimeChannel(token), {
+        config: { broadcast: { ack: false, self: true } },
+      })
+      .on(
+        "broadcast",
+        { event: POS_LIVE_DRAFT_BROADCAST_EVENT },
+        (payload: { payload: PosLiveDraftBroadcastPayload }) => {
+          if (payload.payload.token !== token) {
+            return;
+          }
+
+          void loadLatestSnapshot();
+        },
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          void loadLatestSnapshot();
         }
       });
-    }, 1500);
 
     return () => {
       isMounted = false;
-      window.clearInterval(intervalId);
+      void supabase.removeChannel(channel);
     };
-  }, [liveDraftToken]);
+  }, [
+    applyCustomerDisplaySnapshot,
+    getLiveDraftAction,
+    liveDraftToken,
+  ]);
 
   function createStaffLine(
     staffId: string,
@@ -572,7 +988,25 @@ export function PosDeskClient({
     setError(null);
   }
 
+  function releaseCompletedDisplayHold() {
+    if (holdCompletedDisplayRef.current) {
+      holdCompletedDisplayRef.current = false;
+    }
+  }
+
+  function queueLiveDraftSync() {
+    setLiveDraftSyncNonce((current) => current + 1);
+  }
+
   function selectStaff(staffId: string) {
+    if (receiptLocked) {
+      setError(receiptLockMessage);
+      setLastAction("Staff select blocked");
+      return;
+    }
+
+    releaseCompletedDisplayHold();
+
     const existingStaffLine = getStaffLine(staffId);
     const activeLine = getActiveLine();
 
@@ -582,12 +1016,14 @@ export function PosDeskClient({
           current.filter((line) => line.id !== activeLine.id),
         );
         focusLine(existingStaffLine);
+        queueLiveDraftSync();
         setLastAction("Empty staff line removed");
         return;
       }
 
       if (existingStaffLine) {
         focusLine(existingStaffLine);
+        queueLiveDraftSync();
         setLastAction("Existing staff line selected");
         return;
       }
@@ -603,12 +1039,14 @@ export function PosDeskClient({
         current.map((line) => (line.id === activeLine.id ? replacementLine : line)),
       );
       focusLine(replacementLine);
+      queueLiveDraftSync();
       setLastAction("Empty staff line replaced");
       return;
     }
 
     if (existingStaffLine) {
       focusLine(existingStaffLine);
+      queueLiveDraftSync();
       setLastAction("Existing staff line selected");
       return;
     }
@@ -620,6 +1058,7 @@ export function PosDeskClient({
     );
     setDraftStaffLines((current) => [...current, nextLine]);
     focusLine(nextLine);
+    queueLiveDraftSync();
     setLastAction("Staff line selected");
   }
 
@@ -635,7 +1074,7 @@ export function PosDeskClient({
 
   function removeLine(lineId: string) {
     if (receiptLocked) {
-      setError("Receipt is waiting for customer confirmation.");
+      setError(receiptLockMessage);
       setLastAction("Edit blocked");
       return;
     }
@@ -707,10 +1146,13 @@ export function PosDeskClient({
         };
       }),
     );
+    queueLiveDraftSync();
     setLastAction("Line amount synced");
   }
 
   function selectService(serviceId: string | null) {
+    releaseCompletedDisplayHold();
+
     const service = services.find((item) => item.id === serviceId);
 
     if (!draft.editingLineId && !draft.selectedStaffId) {
@@ -767,6 +1209,8 @@ export function PosDeskClient({
   }
 
   function handleKeypadKey(key: string) {
+    releaseCompletedDisplayHold();
+
     if (keypadMode === "customer_search") {
       if (/^\d$/.test(key)) {
         setCustomerResults([]);
@@ -813,6 +1257,8 @@ export function PosDeskClient({
   }
 
   function handleKeypadBack() {
+    releaseCompletedDisplayHold();
+
     if (keypadMode === "customer_search") {
       setCustomerResults([]);
       setCustomerSearchComplete(false);
@@ -842,6 +1288,8 @@ export function PosDeskClient({
   }
 
   function handleKeypadClear() {
+    releaseCompletedDisplayHold();
+
     if (keypadMode === "customer_search") {
       setCustomerResults([]);
       setCustomerSearchComplete(false);
@@ -868,15 +1316,127 @@ export function PosDeskClient({
     updateSelectedStaffAmount("");
   }
 
-  function clearDraft() {
+  const clearDraft = useCallback(() => {
     setDraft(emptyDraft);
     setDraftStaffLines([]);
+    setLiveCustomer(null);
     setDraftRestored(false);
     setError(null);
     setMessage(null);
-  }
+    setCustomerResults([]);
+    setCustomerSearchComplete(false);
+    setCustomerCreateDraft(emptyCustomerCreateDraft);
+    setCustomerCreateField("name");
+    setKeypadMode("amount");
+    setServiceSearch("");
+    setShowCustomerCreateModal(false);
+    setShowServicePicker(false);
+  }, []);
+
+  const syncEmptyLiveDraft = useCallback(async () => {
+    if (!liveDraftToken) {
+      return;
+    }
+
+    const customerResult = await updateLiveDraftCustomerAction({
+      customer: null,
+      token: liveDraftToken,
+    });
+
+    if (!customerResult.ok) {
+      throw new Error(customerResult.error);
+    }
+
+    const draftResult = await updateActiveDraftAction({
+      discount: 0,
+      selectedStaffId: null,
+      staffLines: [],
+      subtotal: 0,
+      tax: 0,
+      tip: 0,
+      token: liveDraftToken,
+      total: 0,
+      totalBeforeTip: 0,
+    });
+
+    if (!draftResult.ok) {
+      throw new Error(draftResult.error);
+    }
+
+    liveDraftVersionRef.current = draftResult.data.version;
+  }, [liveDraftToken, updateActiveDraftAction, updateLiveDraftCustomerAction]);
+
+  const resetReceipt = useCallback(
+    async (reason: "idle" | "manual" | "submitted" = "manual") => {
+      if (resetInFlightRef.current) {
+        return;
+      }
+
+      resetInFlightRef.current = true;
+      holdCompletedDisplayRef.current = false;
+      setIsResetting(true);
+      setError(null);
+
+      try {
+        await syncEmptyLiveDraft();
+        clearDraft();
+        router.refresh();
+
+        if (reason === "idle") {
+          setMessage("POS reset after 3 minutes without activity.");
+          setLastAction("Idle reset");
+        } else if (reason === "manual") {
+          setMessage("Receipt reset.");
+          setLastAction("Receipt reset");
+        }
+
+        return true;
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : "Unable to reset POS receipt.",
+        );
+        setLastAction("Reset failed");
+        return false;
+      } finally {
+        resetInFlightRef.current = false;
+        setIsResetting(false);
+      }
+    },
+    [clearDraft, router, syncEmptyLiveDraft],
+  );
+
+  useEffect(() => {
+    if (!hasUnsavedDraftWork || isResetting || isSubmitting) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void resetReceipt("idle");
+    }, POS_IDLE_RESET_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    hasUnsavedDraftWork,
+    idleResetKey,
+    isResetting,
+    isSubmitting,
+    posActivityTick,
+    resetReceipt,
+  ]);
 
   function submitReceipt() {
+    if (submitLockedRef.current) {
+      setMessage("Receipt is already submitting. Please wait.");
+      setLastAction("Submit already running");
+      return;
+    }
+
+    if (isResetting) {
+      setError("Receipt is resetting. Please wait.");
+      setLastAction("Submit blocked");
+      return;
+    }
+
     const positiveLines = staffLines.filter(hasPositiveAmount);
 
     if (positiveLines.length === 0) {
@@ -913,35 +1473,50 @@ export function PosDeskClient({
       total: line.amount,
     }));
 
+    submitLockedRef.current = true;
+    setIsSubmitting(true);
+    setMessage("Submitting receipt...");
     startTransition(async () => {
-      setError(null);
-      const result = await submitPosDeskReceipt({
-        customerId: draft.customerId ?? selectedCustomer?.id,
-        customerLookup: draft.customerLookup || selectedCustomer?.phone,
-        customerName: draft.customerName || selectedCustomer?.name,
-        discountType: draft.discountType,
-        discountValue: totals.discount_value,
-        lines: submitLines,
-        note: draft.note,
-        tipAmount: totals.tip_value,
-      });
+      try {
+        setError(null);
+        const result = await submitReceiptAction({
+          customerId: draft.customerId ?? selectedCustomer?.id,
+          customerLookup: draft.customerLookup || selectedCustomer?.phone,
+          customerName: draft.customerName || selectedCustomer?.name,
+          discountType: draft.discountType,
+          discountValue: totals.discount_value,
+          lines: submitLines,
+          liveDraftToken,
+          note: draft.note,
+          tipAmount: totals.tip_value,
+        });
 
-      if (!result.ok) {
-        setError(result.error);
+        if (!result.ok) {
+          setMessage(null);
+          setError(result.error);
+          setLastAction("Submit failed");
+          return;
+        }
+
+        holdCompletedDisplayRef.current = true;
+        clearDraft();
+        setMessage(`Ticket ${result.ticketNumber} submitted.`);
+        setLastAction("Receipt submitted");
+      } catch (error) {
+        setMessage(null);
+        setError(
+          error instanceof Error ? error.message : "Unable to submit POS receipt.",
+        );
         setLastAction("Submit failed");
-        return;
+      } finally {
+        submitLockedRef.current = false;
+        setIsSubmitting(false);
       }
-
-      clearDraft();
-      publishCustomerToLiveDraft(null);
-      setMessage(`Ticket ${result.ticketNumber} submitted.`);
-      setLastAction("Receipt submitted");
     });
   }
 
   function cancelActiveSession() {
-    clearDraft();
-    setLastAction("Local receipt reset");
+    void resetReceipt("manual");
   }
 
   function clearSelectedCustomer() {
@@ -978,7 +1553,7 @@ export function PosDeskClient({
     }
 
     startTransition(async () => {
-      const result = await createPosDeskCustomer({
+      const result = await createCustomerAction({
         email: customerCreateDraft.email,
         name,
         phone: customerCreateDraft.phone,
@@ -1008,7 +1583,7 @@ export function PosDeskClient({
     }
 
     if (receiptLocked) {
-      setError("Customer is choosing the final tip.");
+      setError(receiptLockMessage);
       setLastAction("Tip save blocked");
       return;
     }
@@ -1118,6 +1693,26 @@ export function PosDeskClient({
     );
   }
 
+  const isPortableSurface = surface === "portable";
+  const rootClass = isPortableSurface
+    ? "portable-pos-auto-scale grid h-full min-h-0 w-full gap-2 overflow-hidden"
+    : "grid min-h-[calc(100vh-120px)] grid-cols-1 gap-4 xl:grid-cols-[380px_minmax(360px,1fr)_360px]";
+  const rootStyle = isPortableSurface
+    ? {
+        gridTemplateColumns:
+          "minmax(300px, 320px) minmax(300px, 1fr) minmax(300px, 340px)",
+      }
+    : undefined;
+  const panelClass = [
+    "flex min-h-0 flex-col overflow-hidden rounded-lg border border-zinc-300 bg-white",
+    isPortableSurface ? "p-3" : "p-4",
+  ].join(" ");
+  const showSubtotalRow =
+    isPortableSurface &&
+    (totals.discount_amount > 0 ||
+      totals.tax_amount !== 0 ||
+      totals.tip_amount > 0);
+
   return (
     <>
       {showCustomerCreateModal ? (
@@ -1193,7 +1788,7 @@ export function PosDeskClient({
               </button>
               <button
                 className="rounded bg-zinc-950 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                disabled={isPending}
+                disabled={isPending || isResetting || isSubmitting}
                 onClick={createCustomerFromModal}
                 type="button"
               >
@@ -1251,13 +1846,54 @@ export function PosDeskClient({
         </div>
       ) : null}
 
-      <div className="grid min-h-[calc(100vh-120px)] grid-cols-1 gap-4 xl:grid-cols-[380px_minmax(360px,1fr)_360px]">
-      <section className="rounded-lg border border-zinc-300 bg-white p-4">
-        <div className="border-b border-zinc-200 pb-3">
-          <div>
-            <p className="text-lg font-semibold">{salonName}</p>
-            <ReceiptClock />
-          </div>
+      <div className={rootClass} style={rootStyle}>
+      <section className={panelClass} data-pos-receipt-panel>
+        <div
+          className={
+            isPortableSurface
+              ? "shrink-0 border-b border-zinc-200 pb-2"
+              : "shrink-0 border-b border-zinc-200 pb-3"
+          }
+          data-pos-receipt-header
+        >
+          {isPortableSurface ? (
+            <div className="flex min-w-0 items-center gap-2">
+              {salonLogoUrl ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt={`${salonName} logo`}
+                    className="h-9 w-9 shrink-0 rounded-md border border-zinc-200 object-cover"
+                    src={salonLogoUrl}
+                  />
+                </>
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-zinc-950 text-xs font-semibold text-white"
+                >
+                  {getSalonInitials(salonName)}
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold leading-tight">
+                  {salonName}
+                </p>
+                <p className="text-[11px] font-medium leading-tight text-zinc-500">
+                  {today ? `${today} / ` : null}
+                  <ReceiptClock
+                    className="text-[11px] font-medium leading-tight text-zinc-500"
+                    timeOnly
+                  />
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-lg font-semibold">{salonName}</p>
+              <ReceiptClock />
+            </div>
+          )}
           {!liveDraft ? (
             <p className="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               Live draft is unavailable. Local POS still works.
@@ -1265,10 +1901,16 @@ export function PosDeskClient({
           ) : null}
         </div>
 
-        <div className="space-y-3 border-b border-zinc-200 py-3">
+        <div
+          className={
+            isPortableSurface
+              ? "shrink-0 space-y-2 border-b border-zinc-200 py-2"
+              : "shrink-0 space-y-3 border-b border-zinc-200 py-3"
+          }
+        >
           <label className="block text-sm font-medium">Customer</label>
           {selectedCustomer ? (
-            <div className="flex items-center justify-between gap-3 rounded border border-emerald-200 bg-emerald-50 px-3 py-2">
+            <div className="flex items-center justify-between gap-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5">
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-zinc-950">
                   {selectedCustomer.name}
@@ -1343,7 +1985,14 @@ export function PosDeskClient({
           )}
         </div>
 
-        <div className="space-y-2 py-3">
+        <div
+          className={
+            isPortableSurface
+              ? "min-h-0 flex-1 overflow-auto py-2 pr-1"
+              : "min-h-0 flex-1 space-y-2 overflow-auto py-3 pr-1"
+          }
+          data-pos-receipt-lines
+        >
           {staffLines.length === 0 ? (
             <p className="rounded border border-dashed border-zinc-300 p-4 text-sm text-zinc-500">
               No receipt lines yet.
@@ -1351,6 +2000,77 @@ export function PosDeskClient({
           ) : (
             staffLines.map((line, index) => {
               const member = staff.find((item) => item.id === line.staff_id);
+              const serviceLabel = defaults.showServiceName
+                ? line.service_label
+                : `Service ${index + 1}`;
+              const staffLabel = defaults.showStaffName
+                ? (member?.display_name ?? "Assigned staff")
+                : "Assigned";
+              const quantity =
+                line.amount_parts.length > 1 ? line.amount_parts.length : null;
+              const rowTitle = `${staffLabel} - ${serviceLabel}${
+                quantity ? ` x${quantity}` : ""
+              }`;
+
+              if (isPortableSurface) {
+                return (
+                  <div
+                    className="grid min-h-12 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b border-zinc-200 px-1 py-1.5 last:border-b-0"
+                    data-pos-receipt-line
+                    key={line.id}
+                    title={`${rowTitle} ${formatMoney(line.amount)}`}
+                  >
+                    <button
+                      className="min-w-0 rounded px-1 py-2 text-left transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                      data-pos-receipt-line-item
+                      onClick={() => editLine(line)}
+                      type="button"
+                    >
+                      <span className="flex min-w-0 items-center gap-1.5 text-sm leading-none">
+                        <span
+                          className="truncate font-semibold text-zinc-950"
+                          data-pos-receipt-line-staff
+                        >
+                          {staffLabel}
+                        </span>
+                        <span aria-hidden="true" className="shrink-0 text-zinc-400">
+                          &middot;
+                        </span>
+                        <span
+                          className="truncate text-zinc-600"
+                          data-pos-receipt-line-service
+                        >
+                          {serviceLabel}
+                        </span>
+                        {quantity ? (
+                          <span
+                            className="shrink-0 text-xs font-semibold text-zinc-500"
+                            data-pos-receipt-line-quantity
+                          >
+                            &times;{quantity}
+                          </span>
+                        ) : null}
+                      </span>
+                    </button>
+                    <p
+                      className="min-w-[5.25rem] text-right text-sm font-semibold tabular-nums text-zinc-950"
+                      data-pos-receipt-line-price
+                    >
+                      {formatMoney(line.amount)}
+                    </p>
+                    <button
+                      aria-label={`Remove ${rowTitle}`}
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-md text-lg font-semibold text-red-600 transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
+                      data-pos-receipt-line-remove
+                      onClick={() => removeLine(line.id)}
+                      type="button"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                );
+              }
+
               return (
                 <div
                   className="rounded border border-zinc-200 p-3"
@@ -1363,14 +2083,10 @@ export function PosDeskClient({
                       type="button"
                     >
                       <p className="font-medium">
-                        {defaults.showServiceName
-                          ? line.service_label
-                          : `Service ${index + 1}`}
+                        {serviceLabel}
                       </p>
                       <p className="text-sm text-zinc-600">
-                        {defaults.showStaffName
-                          ? (member?.display_name ?? "Assigned staff")
-                          : "Assigned"}
+                        {staffLabel}
                       </p>
                       <p className="text-xs text-zinc-500">
                         Parts: {line.amount_input}
@@ -1393,48 +2109,236 @@ export function PosDeskClient({
           )}
         </div>
 
-        <div className="space-y-2 border-t border-zinc-200 pt-3 text-sm">
-          <div className="flex justify-between">
-            <span>Discount</span>
-            <span>{formatMoney(totals.discount_amount)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Tax</span>
-            <span>{formatMoney(totals.tax_amount)}</span>
-          </div>
-          <div className="flex justify-between text-zinc-500">
-            <span>Gift card</span>
-            <span>{formatMoney(0)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Tip</span>
-            <span>{formatMoney(totals.tip_amount)}</span>
-          </div>
-          <div className="flex justify-between border-t border-zinc-200 pt-2 text-lg font-semibold">
+        <div
+          className={
+            isPortableSurface
+              ? "shrink-0 space-y-1.5 border-t border-zinc-200 pt-2 text-sm"
+              : "shrink-0 space-y-2 border-t border-zinc-200 pt-3 text-sm"
+          }
+          data-pos-receipt-totals
+        >
+          {isPortableSurface ? (
+            <>
+              {showSubtotalRow ? (
+                <div className="flex justify-between text-zinc-500">
+                  <span>Subtotal</span>
+                  <span className="tabular-nums">{formatMoney(totals.subtotal)}</span>
+                </div>
+              ) : null}
+              {totals.discount_amount > 0 ? (
+                <div
+                  className="flex items-center justify-between gap-3 rounded-md px-1 py-1 text-zinc-500"
+                  data-pos-receipt-adjustment="discount"
+                >
+                  <button
+                    className="text-left font-medium"
+                    disabled={receiptLocked}
+                    onClick={() => focusReceiptMoneyInput("discount")}
+                    type="button"
+                  >
+                    Discount
+                  </button>
+                  {keypadMode === "discount" ? (
+                    <label className="flex min-w-0 items-center justify-end gap-1 font-semibold text-zinc-950">
+                      {draft.discountType === "fixed_amount" ? <span>$</span> : null}
+                      <input
+                        className="w-20 bg-transparent text-right outline-none caret-emerald-700"
+                        disabled={receiptLocked}
+                        inputMode="decimal"
+                        onChange={(event) =>
+                          updateDraft({ discountInput: event.target.value })
+                        }
+                        ref={discountInputRef}
+                        value={draft.discountInput}
+                      />
+                      {draft.discountType === "percentage" ? <span>%</span> : null}
+                    </label>
+                  ) : (
+                    <button
+                      className="font-semibold tabular-nums"
+                      disabled={receiptLocked}
+                      onClick={() => focusReceiptMoneyInput("discount")}
+                      type="button"
+                    >
+                      {formatMoney(-totals.discount_amount)}
+                    </button>
+                  )}
+                </div>
+              ) : null}
+              {totals.tax_amount !== 0 ? (
+                <div
+                  className="flex justify-between text-zinc-500"
+                  data-pos-receipt-adjustment="tax"
+                >
+                  <span>Tax</span>
+                  <span className="tabular-nums">{formatMoney(totals.tax_amount)}</span>
+                </div>
+              ) : null}
+              {totals.tip_amount > 0 ? (
+                <div
+                  className="flex items-center justify-between gap-3 rounded-md px-1 py-1 text-zinc-500"
+                  data-pos-receipt-adjustment="tip"
+                >
+                  <button
+                    className="text-left font-medium"
+                    disabled={receiptLocked}
+                    onClick={() => focusReceiptMoneyInput("tip")}
+                    type="button"
+                  >
+                    Tip
+                  </button>
+                  {keypadMode === "tip" ? (
+                    <label className="flex min-w-0 items-center justify-end gap-1 font-semibold text-zinc-950">
+                      <span>$</span>
+                      <input
+                        className="w-20 bg-transparent text-right outline-none caret-emerald-700"
+                        disabled={receiptLocked}
+                        inputMode="decimal"
+                        onBlur={(event) => saveTipToSession(event.target.value)}
+                        onChange={(event) =>
+                          updateDraft({ tipInput: event.target.value })
+                        }
+                        ref={tipInputRef}
+                        value={draft.tipInput}
+                      />
+                    </label>
+                  ) : (
+                    <button
+                      className="font-semibold tabular-nums"
+                      disabled={receiptLocked}
+                      onClick={() => focusReceiptMoneyInput("tip")}
+                      type="button"
+                    >
+                      {formatMoney(totals.tip_amount)}
+                    </button>
+                  )}
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <div
+                className={[
+                  "flex items-center justify-between gap-3 rounded-md px-1 py-1",
+                  keypadMode === "discount" ? "bg-emerald-50" : "",
+                ].join(" ")}
+              >
+                <button
+                  className="text-left font-medium"
+                  disabled={receiptLocked}
+                  onClick={() => focusReceiptMoneyInput("discount")}
+                  type="button"
+                >
+                  Discount
+                </button>
+                {keypadMode === "discount" ? (
+                  <label className="flex min-w-0 items-center justify-end gap-1 font-semibold">
+                    {draft.discountType === "fixed_amount" ? <span>$</span> : null}
+                    <input
+                      className="w-24 bg-transparent text-right outline-none caret-emerald-700"
+                      disabled={receiptLocked}
+                      inputMode="decimal"
+                      onChange={(event) =>
+                        updateDraft({ discountInput: event.target.value })
+                      }
+                      ref={discountInputRef}
+                      value={draft.discountInput}
+                    />
+                    {draft.discountType === "percentage" ? <span>%</span> : null}
+                  </label>
+                ) : (
+                  <button
+                    className="font-semibold"
+                    disabled={receiptLocked}
+                    onClick={() => focusReceiptMoneyInput("discount")}
+                    type="button"
+                  >
+                    {draft.discountType === "percentage" && draft.discountInput
+                      ? `${draft.discountInput}%`
+                      : formatMoney(totals.discount_amount)}
+                  </button>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span>Tax</span>
+                <span>{formatMoney(totals.tax_amount)}</span>
+              </div>
+              <div className="flex justify-between text-zinc-500">
+                <span>Gift card</span>
+                <span>{formatMoney(0)}</span>
+              </div>
+              <div
+                className={[
+                  "flex items-center justify-between gap-3 rounded-md px-1 py-1",
+                  keypadMode === "tip" ? "bg-emerald-50" : "",
+                ].join(" ")}
+              >
+                <button
+                  className="text-left font-medium"
+                  disabled={receiptLocked}
+                  onClick={() => focusReceiptMoneyInput("tip")}
+                  type="button"
+                >
+                  Tip
+                </button>
+                {keypadMode === "tip" ? (
+                  <label className="flex min-w-0 items-center justify-end gap-1 font-semibold">
+                    <span>$</span>
+                    <input
+                      className="w-24 bg-transparent text-right outline-none caret-emerald-700"
+                      disabled={receiptLocked}
+                      inputMode="decimal"
+                      onBlur={(event) => saveTipToSession(event.target.value)}
+                      onChange={(event) =>
+                        updateDraft({ tipInput: event.target.value })
+                      }
+                      ref={tipInputRef}
+                      value={draft.tipInput}
+                    />
+                  </label>
+                ) : (
+                  <button
+                    className="font-semibold"
+                    disabled={receiptLocked}
+                    onClick={() => focusReceiptMoneyInput("tip")}
+                    type="button"
+                  >
+                    {formatMoney(totals.tip_amount)}
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+          <div
+            className="flex justify-between border-t border-zinc-200 pt-2 text-lg font-semibold"
+            data-pos-receipt-total
+          >
             <span>Total</span>
-            <span>{formatMoney(totals.total)}</span>
+            <span className="tabular-nums">{formatMoney(totals.total)}</span>
           </div>
-          <textarea
-            className="mt-2 w-full rounded border border-zinc-300 px-3 py-2"
-            onChange={(event) => updateDraft({ note: event.target.value })}
-            placeholder="Note"
-            rows={2}
-            value={draft.note}
-          />
+          {!isPortableSurface ? (
+            <textarea
+              className="mt-2 w-full rounded border border-zinc-300 px-3 py-2"
+              onChange={(event) => updateDraft({ note: event.target.value })}
+              placeholder="Note"
+              rows={2}
+              value={draft.note}
+            />
+          ) : null}
           {defaults.adsFooter ? (
             <p className="text-xs text-zinc-500">{defaults.adsFooter}</p>
           ) : null}
         </div>
       </section>
 
-      <section className="rounded-lg border border-zinc-300 bg-white p-4">
-        <div className="mb-3 flex items-center justify-between">
+      <section className={panelClass} data-pos-staff-turn-board>
+        <div className="mb-3 flex shrink-0 items-center justify-between">
           <h2 className="text-lg font-semibold">Staff Turn Board</h2>
           <p className="text-sm text-zinc-600">
             Large turn: {formatMoney(defaults.largeTurnThreshold)}
           </p>
         </div>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(86px,94px))] justify-start gap-2">
+        <div className="grid min-h-0 flex-1 grid-cols-[repeat(auto-fill,minmax(86px,94px))] content-start justify-start gap-2 overflow-auto pr-1">
           {sortedStaff.map((member) => {
             const selected = draft.selectedStaffId === member.id;
             const unavailable =
@@ -1452,6 +2356,7 @@ export function PosDeskClient({
                 className={`aspect-square rounded-lg border p-1.5 text-center transition ${colorClass} ${
                   unavailable ? "opacity-60" : ""
                 }`}
+                disabled={receiptLocked}
                 key={member.id}
                 onClick={() => selectStaff(member.id)}
                 type="button"
@@ -1472,7 +2377,12 @@ export function PosDeskClient({
         </div>
       </section>
 
-      <section className="rounded-lg border border-zinc-300 bg-white p-4">
+      <section
+        className={panelClass}
+        data-pos-keypad-mode={keypadMode}
+        data-pos-service-panel
+      >
+        <div className="min-h-0 flex-1 overflow-auto pr-1">
         {draftRestored ? (
           <p className="mb-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
             Unsaved POS draft saved on this device.
@@ -1488,13 +2398,6 @@ export function PosDeskClient({
             {message}
           </p>
         ) : null}
-
-        <div className="mb-3 rounded border border-zinc-200 p-3">
-          <p className="text-sm text-zinc-600">Selected staff</p>
-          <p className="font-semibold">
-            {selectedStaff?.display_name ?? "Tap a staff tile"}
-          </p>
-        </div>
 
         <div className="mb-3">
           <label className="mb-1 block text-sm font-medium">Service</label>
@@ -1514,12 +2417,6 @@ export function PosDeskClient({
           </button>
         </div>
 
-        <div className="mb-3 rounded border border-zinc-300 bg-zinc-50 px-4 py-3 text-right text-3xl font-semibold">
-          {keypadDisplay}
-          <p className="mt-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
-            {keypadMode.replaceAll("_", " ")}
-          </p>
-        </div>
         <div className="grid grid-cols-3 gap-2">
           {["7", "8", "9", "4", "5", "6", "1", "2", "3", ".", "0", "/"].map(
             (key) => (
@@ -1544,6 +2441,7 @@ export function PosDeskClient({
           </button>
           <button
             className="min-h-12 rounded border border-zinc-300 bg-white font-medium"
+            data-pos-keypad-clear
             disabled={receiptLocked}
             onClick={handleKeypadClear}
             type="button"
@@ -1552,86 +2450,75 @@ export function PosDeskClient({
           </button>
         </div>
 
-        <div className="mt-4 space-y-3">
-          <div>
-            <div className="mb-1 flex items-center justify-between gap-2">
-              <label className="text-sm font-medium" htmlFor="pos-discount">
-                Discount
-              </label>
-              <div className="grid grid-cols-2 overflow-hidden rounded border border-zinc-300 text-sm">
-                <button
-                  className={`px-3 py-1 font-medium ${
-                    draft.discountType === "fixed_amount"
-                      ? "bg-zinc-950 text-white"
-                      : "bg-white text-zinc-800"
-                  }`}
-                  onClick={() => updateDraft({ discountType: "fixed_amount" })}
-                  type="button"
-                >
-                  $
-                </button>
-                <button
-                  className={`px-3 py-1 font-medium ${
-                    draft.discountType === "percentage"
-                      ? "bg-zinc-950 text-white"
-                      : "bg-white text-zinc-800"
-                  }`}
-                  onClick={() => updateDraft({ discountType: "percentage" })}
-                  type="button"
-                >
-                  %
-                </button>
-              </div>
-            </div>
-            <input
-              className="w-full rounded border border-zinc-300 px-3 py-2"
-              disabled={receiptLocked}
-              id="pos-discount"
-              inputMode="decimal"
-              onChange={(event) =>
-                updateDraft({ discountInput: event.target.value })
-              }
-              onFocus={() => setKeypadMode("discount")}
-              placeholder="0"
-              value={draft.discountInput}
-            />
-          </div>
-
-          <label className="block text-sm font-medium">
-            Gift card
-            <input
-              className="mt-1 w-full rounded border border-zinc-200 bg-zinc-100 px-3 py-2 text-zinc-500"
-              disabled
-              onFocus={() => setKeypadMode("gift_card")}
-              placeholder="Coming later"
-              value={draft.giftCardInput}
-            />
-          </label>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button
+            className={[
+              "min-h-11 rounded border px-3 py-2 text-sm font-semibold",
+              keypadMode === "discount"
+                ? "border-zinc-950 bg-zinc-950 text-white"
+                : "border-zinc-300 bg-white text-zinc-950",
+            ].join(" ")}
+            disabled={receiptLocked}
+            onClick={() => focusReceiptMoneyInput("discount")}
+            type="button"
+          >
+            Discount
+          </button>
+          <button
+            className={[
+              "min-h-11 rounded border px-3 py-2 text-sm font-semibold",
+              keypadMode === "tip"
+                ? "border-zinc-950 bg-zinc-950 text-white"
+                : "border-zinc-300 bg-white text-zinc-950",
+            ].join(" ")}
+            disabled={receiptLocked}
+            onClick={() => focusReceiptMoneyInput("tip")}
+            type="button"
+          >
+            Tip
+          </button>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <label className="text-sm font-medium">
-            Tip
-            <input
-              className="mt-1 w-full rounded border border-zinc-300 px-3 py-2"
-              disabled={receiptLocked}
-              inputMode="decimal"
-              onBlur={(event) => saveTipToSession(event.target.value)}
-              onChange={(event) => updateDraft({ tipInput: event.target.value })}
-              onFocus={() => setKeypadMode("tip")}
-              placeholder="0.00"
-              value={draft.tipInput}
-            />
-          </label>
-          <div className="flex items-end gap-2">
-            {[5, 10, 20].map((amount) => (
+        <div className="mt-3 grid grid-cols-[auto_1fr] gap-3">
+          <div className="grid grid-cols-2 overflow-hidden rounded border border-zinc-300 text-sm">
+            <button
+              className={`px-3 py-2 font-medium ${
+                draft.discountType === "fixed_amount"
+                  ? "bg-zinc-950 text-white"
+                  : "bg-white text-zinc-800"
+              }`}
+              onClick={() => {
+                updateDraft({ discountType: "fixed_amount" });
+                focusReceiptMoneyInput("discount");
+              }}
+              type="button"
+            >
+              $
+            </button>
+            <button
+              className={`px-3 py-2 font-medium ${
+                draft.discountType === "percentage"
+                  ? "bg-zinc-950 text-white"
+                  : "bg-white text-zinc-800"
+              }`}
+              onClick={() => {
+                updateDraft({ discountType: "percentage" });
+                focusReceiptMoneyInput("discount");
+              }}
+              type="button"
+            >
+              %
+            </button>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {tipSuggestions.map((amount, index) => (
               <button
-                className="flex-1 rounded border border-zinc-300 bg-white px-2 py-2 text-sm"
+                className="rounded border border-zinc-300 bg-white px-2 py-2 text-sm font-semibold"
                 disabled={receiptLocked}
-                key={amount}
+                key={`${amount}-${index}`}
                 onClick={() => {
                   updateDraft({ tipInput: String(amount) });
-                  setKeypadMode("tip");
+                  focusReceiptMoneyInput("tip");
                   saveTipToSession(String(amount));
                 }}
                 type="button"
@@ -1642,22 +2529,33 @@ export function PosDeskClient({
           </div>
         </div>
 
+        <button
+          className="mt-3 min-h-11 w-full rounded border border-zinc-200 bg-zinc-100 px-3 py-2 text-left text-sm font-medium text-zinc-500"
+          disabled
+          onFocus={() => setKeypadMode("gift_card")}
+          type="button"
+        >
+          Gift card
+        </button>
+
         <div className="mt-4 grid grid-cols-2 gap-2">
           <button
-            className="rounded border border-zinc-300 bg-white px-3 py-3 font-medium"
+            className="rounded border border-zinc-300 bg-white px-3 py-3 font-medium disabled:opacity-50"
+            disabled={isPending || isResetting || isSubmitting}
             onClick={cancelActiveSession}
             type="button"
           >
-            Reset
+            {isResetting ? "Resetting" : "Reset"}
           </button>
           <button
             className="rounded bg-zinc-950 px-3 py-3 font-semibold text-white disabled:opacity-50"
-            disabled={isPending}
+            disabled={isPending || isResetting || isSubmitting}
             onClick={submitReceipt}
             type="button"
           >
-            {isPending ? "Submitting" : "Submit"}
+            {isSubmitting ? "Submitting" : "Submit"}
           </button>
+        </div>
         </div>
       </section>
       </div>

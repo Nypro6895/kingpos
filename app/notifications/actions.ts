@@ -1,6 +1,11 @@
 "use server";
 
-import { markAppNotificationRead } from "@/lib/app-notifications";
+import {
+  markAppNotificationRead,
+  markAppNotificationsRead,
+} from "@/lib/app-notifications";
+import { getCurrentBusinessContext } from "@/lib/current-context";
+import { getAppNotificationScopeForContext } from "@/lib/workspace-pending";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -38,5 +43,21 @@ export async function markAppNotificationReadAction(formData: FormData) {
     if (didMarkRead) {
       revalidateAppNotificationSurfaces();
     }
+  }
+}
+
+export async function markAllAppNotificationsReadAction() {
+  const context = await getCurrentBusinessContext();
+
+  if (!context.user) {
+    return;
+  }
+
+  const didMarkRead = await markAppNotificationsRead(
+    getAppNotificationScopeForContext(context),
+  );
+
+  if (didMarkRead) {
+    revalidateAppNotificationSurfaces();
   }
 }

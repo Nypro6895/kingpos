@@ -5,6 +5,11 @@ import {
   isSalonManageContext,
 } from "@/lib/current-context";
 import { requirePermission } from "@/lib/permissions";
+import {
+  getCurrentSalonPosSettings,
+  getPosDeskDefaults,
+  normalizePosSettingsPayload,
+} from "@/lib/pos-settings";
 import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
@@ -18,13 +23,9 @@ import type {
 } from "@/types/pos-desk";
 import type { StaffWorkdayStatus } from "@/types/staff-workday";
 
-export const POS_DESK_DEFAULTS = {
-  adsFooter: "",
-  largeTurnThreshold: 25,
-  showServiceName: true,
-  showStaffName: true,
-  taxEnabled: false,
-} as const;
+export const POS_DESK_DEFAULTS = getPosDeskDefaults(
+  normalizePosSettingsPayload(null),
+);
 
 function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
@@ -69,8 +70,15 @@ export async function getCurrentSalonPosDeskData() {
   }
 
   const today = getTodayDate(context.user.timezone);
-  const [customersResult, servicesResult, staffResult, workdaysResult, turnsResult] =
-    await Promise.all([
+  const [
+    settings,
+    customersResult,
+    servicesResult,
+    staffResult,
+    workdaysResult,
+    turnsResult,
+  ] = await Promise.all([
+      getCurrentSalonPosSettings(context),
       supabase
         .from("customers")
         .select("id, name, phone, email")
@@ -90,6 +98,8 @@ export async function getCurrentSalonPosDeskData() {
         .from("staff")
         .select("id, display_name, job_title, is_active")
         .eq("salon_id", salon.id)
+        .eq("is_active", true)
+        .eq("pos_enabled", true)
         .order("display_name", { ascending: true })
         .returns<Array<Omit<PosDeskStaff, "today_status" | "turns">>>(),
       supabase
@@ -177,7 +187,7 @@ export async function getCurrentSalonPosDeskData() {
   return {
     context,
     customers: customersResult.data ?? [],
-    defaults: POS_DESK_DEFAULTS,
+    defaults: getPosDeskDefaults(settings),
     services: servicesResult.data ?? [],
     staff,
     today,

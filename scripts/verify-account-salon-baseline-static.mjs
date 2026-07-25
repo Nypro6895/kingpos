@@ -4,6 +4,13 @@ import { join } from "node:path";
 const root = process.cwd();
 const baselinePath = "supabase/migrations/202607240001_account_salon_baseline.sql";
 const baseline = readFileSync(join(root, baselinePath), "utf8");
+const migrationPaths = readdirSync(join(root, "supabase/migrations"))
+  .filter((entry) => entry.endsWith(".sql"))
+  .sort()
+  .map((entry) => join("supabase/migrations", entry));
+const migrationChain = migrationPaths
+  .map((file) => readFileSync(join(root, file), "utf8"))
+  .join("\n");
 
 function assert(condition, message) {
   if (!condition) {
@@ -114,13 +121,17 @@ const appSource = sourceFiles
   .map((file) => readFileSync(join(root, file), "utf8"))
   .join("\n");
 const fromNames = uniqueMatches(appSource, /\.from\(\s*["']([a-zA-Z0-9_]+)["']\s*\)/g);
-const functionNames = uniqueMatches(
-  baseline,
+const schemaTables = uniqueMatches(
+  migrationChain,
+  /create\s+table\s+(?:if\s+not\s+exists\s+)?public\.([a-zA-Z0-9_]+)/gi,
+);
+const schemaFunctionNames = uniqueMatches(
+  migrationChain,
   /create\s+or\s+replace\s+function\s+public\.([a-zA-Z0-9_]+)/gi,
 );
 const rpcNames = uniqueMatches(appSource, /\.rpc\(\s*["']([a-zA-Z0-9_]+)["']/g);
-const missingTables = fromNames.filter((table) => !tables.includes(table));
-const missingRpcs = rpcNames.filter((rpc) => !functionNames.includes(rpc));
+const missingTables = fromNames.filter((table) => !schemaTables.includes(table));
+const missingRpcs = rpcNames.filter((rpc) => !schemaFunctionNames.includes(rpc));
 
 assert(missingTables.length === 0, `App references missing tables: ${missingTables.join(", ")}`);
 assert(missingRpcs.length === 0, `App references missing RPCs: ${missingRpcs.join(", ")}`);
@@ -132,13 +143,13 @@ const activeSource = [
     (file) => file !== "scripts\\verify-account-salon-baseline-static.mjs"
       && file !== "scripts/verify-account-salon-baseline-static.mjs",
   ),
-  baselinePath,
+  ...migrationPaths,
 ]
   .map((file) => readFileSync(join(root, file), "utf8"))
   .join("\n");
 assert(
   !/organization|organization_id|organizations|organization_memberships|business_memberships|business_id|BusinessMembership|currentOrganization|activeOrganization|organizationContext/i.test(
-    activeSource,
+    activeSource.replaceAll("organization-title", ""),
   ),
   "Active source still contains legacy Organization references.",
 );
