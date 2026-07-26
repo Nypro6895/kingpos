@@ -1,6 +1,9 @@
 "use client";
 
-import { updateStaffDirectoryBatchFormAction } from "@/app/staff/actions";
+import {
+  resetStaffPasscodeFormAction,
+  updateStaffDirectoryBatchFormAction,
+} from "@/app/staff/actions";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
@@ -42,6 +45,7 @@ type RowState = {
   jobTitle: string;
   lastName: string;
   onlineBookingEnabled: boolean;
+  passcodeIsDefault: boolean;
   phone: string;
   postalCode: string;
   posEnabled: boolean;
@@ -94,6 +98,7 @@ function rowFromMember(
     jobTitle: clean(member.job_title),
     lastName: clean(member.last_name),
     onlineBookingEnabled: member.online_booking_enabled,
+    passcodeIsDefault: member.passcode_is_default === true,
     phone: clean(member.phone) || clean(member.connected_user?.phone),
     postalCode: clean(member.postal_code),
     posEnabled: member.pos_enabled,
@@ -316,7 +321,13 @@ function StaffRow({
   const address = getAddress(row);
   const disabled = !editing;
   const alerts = row.isActive
-    ? [status.booking, status.payroll].filter((item) => item.label)
+    ? [
+        status.booking,
+        status.payroll,
+        row.passcodeIsDefault
+          ? { label: "Default PIN", tone: "warning" as const }
+          : null,
+      ].filter((item): item is StaffDirectoryStatusBadge => Boolean(item?.label))
     : [];
 
   return (
@@ -483,18 +494,42 @@ function StaffRow({
       </td>
       <td className="px-4 py-4 align-top">
         {canManageStaff ? (
-          <button
-            className={classNames(
-              "inline-flex min-h-9 items-center justify-center rounded-md px-3 py-1.5 text-xs font-medium",
-              editing
-                ? "bg-zinc-950 text-white"
-                : "border border-zinc-300 bg-white text-zinc-950",
-            )}
-            onClick={onToggleEditing}
-            type="button"
-          >
-            {editing ? "Done" : "Edit"}
-          </button>
+          <div className="grid gap-2">
+            <button
+              className={classNames(
+                "inline-flex min-h-9 items-center justify-center rounded-md px-3 py-1.5 text-xs font-medium",
+                editing
+                  ? "bg-zinc-950 text-white"
+                  : "border border-zinc-300 bg-white text-zinc-950",
+              )}
+              onClick={onToggleEditing}
+              type="button"
+            >
+              {editing ? "Done" : "Edit"}
+            </button>
+            {editing ? (
+              <div className="grid gap-1.5">
+                <input
+                  autoComplete="new-password"
+                  className="min-h-9 w-24 rounded-md border border-zinc-300 px-2 text-xs"
+                  inputMode="numeric"
+                  name={`new_passcode_${row.id}`}
+                  pattern="[0-9]{4,8}"
+                  placeholder="4-8 digits"
+                  type="password"
+                />
+                <button
+                  className="inline-flex min-h-9 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-950"
+                  formAction={resetStaffPasscodeFormAction}
+                  name="reset_staff_id"
+                  type="submit"
+                  value={row.id}
+                >
+                  Reset PIN
+                </button>
+              </div>
+            ) : null}
+          </div>
         ) : null}
       </td>
     </tr>

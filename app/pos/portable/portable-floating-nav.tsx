@@ -815,6 +815,15 @@ function Icon({ icon }: { icon: OrbitAction["icon"] | "menu" }) {
     );
   }
 
+  if (icon === "check") {
+    return (
+      <svg {...common}>
+        <path d="M20 6 9 17l-5-5" />
+        <path d="M4 20h16" />
+      </svg>
+    );
+  }
+
   if (icon === "logout") {
     return (
       <svg {...common}>

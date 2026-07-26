@@ -4,6 +4,7 @@ import {
   createSupabaseServerClient,
   getSupabaseCookieOptions,
 } from "@/lib/supabase/server";
+import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import { NextResponse } from "next/server";
 
 function readString(formData: FormData, key: string) {
@@ -43,9 +44,11 @@ export async function POST(request: Request) {
   });
 
   if (error || !data.session) {
+    const authError = getSupabaseAuthErrorResponse(error, "Unable to log in.");
+
     return NextResponse.json(
-      { error: error?.message ?? "Unable to log in." },
-      { status: 400 },
+      { error: authError.message },
+      { status: authError.status },
     );
   }
 

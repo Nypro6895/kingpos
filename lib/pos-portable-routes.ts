@@ -1,5 +1,6 @@
 export const PORTABLE_POS_ROUTES = {
   book: "/pos/portable/book",
+  checkIn: "/pos/portable/check-in",
   pos: "/pos/portable",
   report: "/pos/portable/report",
   ticket: "/pos/portable/ticket",
@@ -9,7 +10,7 @@ export type PortablePosRouteId = keyof typeof PORTABLE_POS_ROUTES;
 
 export type PortablePosRouteLink = {
   href: string;
-  icon: "book" | "calendar" | "report" | "store" | "ticket";
+  icon: "book" | "calendar" | "check" | "report" | "store" | "ticket";
   id: PortablePosRouteId;
   label: string;
 };
@@ -26,6 +27,12 @@ export const PORTABLE_POS_ROUTE_LINKS: PortablePosRouteLink[] = [
     icon: "ticket",
     id: "ticket",
     label: "Ticket",
+  },
+  {
+    href: PORTABLE_POS_ROUTES.checkIn,
+    icon: "check",
+    id: "checkIn",
+    label: "Check-in",
   },
   {
     href: PORTABLE_POS_ROUTES.book,

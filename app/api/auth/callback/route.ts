@@ -4,6 +4,7 @@ import {
   createSupabaseServerClient,
   getSupabaseCookieOptions,
 } from "@/lib/supabase/server";
+import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import { NextResponse } from "next/server";
 
 function sanitizeNextPath(value: string | null) {
@@ -32,9 +33,14 @@ export async function GET(request: Request) {
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error || !data.session) {
+    const authError = getSupabaseAuthErrorResponse(
+      error,
+      "Login link is invalid or expired.",
+    );
+
     return NextResponse.redirect(
       new URL(
-        `/login?error=${encodeURIComponent(error?.message ?? "Login link is invalid or expired.")}&next=${encodeURIComponent(nextPath)}`,
+        `/login?error=${encodeURIComponent(authError.message)}&next=${encodeURIComponent(nextPath)}`,
         url.origin,
       ),
     );

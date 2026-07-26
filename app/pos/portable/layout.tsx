@@ -56,6 +56,10 @@ export default async function PortablePosLayout({
       return session.capabilities.includes(PORTABLE_POS_CAPABILITIES.todayView);
     }
 
+    if (link.id === "checkIn") {
+      return session.capabilities.includes(PORTABLE_POS_CAPABILITIES.checkInUse);
+    }
+
     if (link.id === "book") {
       return session.capabilities.includes(PORTABLE_POS_CAPABILITIES.bookView);
     }

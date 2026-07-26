@@ -18,7 +18,7 @@ import {
 import { SERVICE_SELECT } from "@/lib/services";
 import { resolveStaffAccountForSalon } from "@/lib/staff-account";
 import { createAuthenticatedSupabaseServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
-import { STAFF_SELECT } from "@/lib/staff";
+import { STAFF_LEGACY_SELECT } from "@/lib/staff";
 import type {
   PublicSalonProfile,
   PublicSalonProfileComment,
@@ -82,6 +82,9 @@ type SupabaseErrorLike = {
   hint?: string | null;
   message?: string;
 };
+type SalonProfileSupabaseClient = NonNullable<
+  Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+>;
 
 function serializeSupabaseError(error: SupabaseErrorLike) {
   return {
@@ -90,6 +93,18 @@ function serializeSupabaseError(error: SupabaseErrorLike) {
     details: error.details ?? null,
     hint: error.hint ?? null,
   };
+}
+
+async function loadSalonProfileStaff(
+  supabase: SalonProfileSupabaseClient,
+  salonId: string,
+) {
+  return supabase
+    .from("staff")
+    .select(STAFF_LEGACY_SELECT)
+    .eq("salon_id", salonId)
+    .order("display_name", { ascending: true })
+    .returns<Staff[]>();
 }
 
 type RpcRunner = (
@@ -936,12 +951,7 @@ export async function getCurrentSalonProfileManageData(
       .eq("salon_id", salon.id)
       .order("name", { ascending: true })
       .returns<Service[]>(),
-    supabase
-      .from("staff")
-      .select(STAFF_SELECT)
-      .eq("salon_id", salon.id)
-      .order("display_name", { ascending: true })
-      .returns<Staff[]>(),
+    loadSalonProfileStaff(supabase, salon.id),
     supabase
       .from("salon_profile_looks")
       .select(SALON_PROFILE_LOOK_SELECT)

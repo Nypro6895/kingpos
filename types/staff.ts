@@ -13,6 +13,7 @@ export type Staff = {
   city: string | null;
   job_title: string | null;
   postal_code: string | null;
+  passcode_is_default?: boolean;
   pos_enabled: boolean;
   public_profile_photo_path: string | null;
   public_bio: string | null;
@@ -40,6 +41,7 @@ export type CreateStaffInput = {
   email?: string | null;
   job_title?: string | null;
   postal_code?: string | null;
+  passcode_is_default?: boolean;
   pos_enabled?: boolean;
   public_bio?: string | null;
   public_profile_photo_path?: string | null;

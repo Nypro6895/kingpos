@@ -5,6 +5,7 @@ import {
   createUserScopedSupabaseServerClient,
   getSupabaseCookieOptions,
 } from "@/lib/supabase/server";
+import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import {
   CURRENT_MANAGE_SALON_COOKIE,
   CURRENT_STAFF_SALON_COOKIE,
@@ -115,7 +116,12 @@ export async function POST(request: Request) {
   });
 
   if (signupError) {
-    return jsonError(signupError.message);
+    const authError = getSupabaseAuthErrorResponse(
+      signupError,
+      "Unable to create staff account.",
+    );
+
+    return jsonError(authError.message, authError.status);
   }
 
   if (!signupData.user || !signupData.session) {

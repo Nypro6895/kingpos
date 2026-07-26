@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash, randomBytes } from "crypto";
 import {
   STAFF_PERMISSIONS,
   createStaff as createStaffRecord,
@@ -122,6 +123,40 @@ function readActionBoolean(input: ActionInput, key: string) {
   }
 
   return value === "on" || value === "true";
+}
+
+function digestStaffPasscode(input: {
+  passcode: string;
+  salonId: string;
+  salt: string;
+  staffId: string;
+}) {
+  return createHash("sha256")
+    .update(`${input.salonId}:${input.staffId}:${input.passcode}:${input.salt}`)
+    .digest("hex");
+}
+
+function validateStaffPasscodeFormat(passcode: string) {
+  return /^\d{4,8}$/.test(passcode);
+}
+
+function getStaffPasscodeHash(input: {
+  passcode: string;
+  salonId: string;
+  staffId: string;
+}) {
+  const salt = randomBytes(16).toString("hex");
+
+  return {
+    passcode_digest: digestStaffPasscode({
+      passcode: input.passcode,
+      salonId: input.salonId,
+      salt,
+      staffId: input.staffId,
+    }),
+    passcode_is_default: input.passcode === "1234",
+    passcode_salt: salt,
+  };
 }
 
 function getConnectionActionError(error: unknown) {
@@ -402,6 +437,129 @@ export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
   );
 }
 
+export async function resetStaffPasscodeFormAction(formData: FormData) {
+  const staffId = readRequiredString(formData, "reset_staff_id");
+  const passcode = staffId
+    ? readRequiredString(formData, `new_passcode_${staffId}`)
+    : "";
+
+  if (!staffId) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        "Choose a staff profile before resetting a passcode.",
+      ),
+    );
+  }
+
+  if (!validateStaffPasscodeFormat(passcode)) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        "Staff passcode must be 4-8 digits.",
+      ),
+    );
+  }
+
+  const context = await getCurrentBusinessContext();
+
+  if (!context.user || !context.currentSalon) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        "Choose a salon workspace before resetting a staff passcode.",
+      ),
+    );
+  }
+
+  if (!(await hasPermission(STAFF_PERMISSIONS.manage, context))) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        "You do not have permission to reset staff passcodes.",
+      ),
+    );
+  }
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        "Supabase environment variables are missing.",
+      ),
+    );
+  }
+
+  const { data: staff, error: loadError } = await supabase
+    .from("staff")
+    .select("id")
+    .eq("id", staffId)
+    .eq("salon_id", context.currentSalon.id)
+    .maybeSingle<{ id: string }>();
+
+  if (loadError || !staff) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        loadError?.message ?? "Staff profile was not found.",
+      ),
+    );
+  }
+
+  const { error } = await supabase
+    .from("staff")
+    .update(
+      getStaffPasscodeHash({
+        passcode,
+        salonId: context.currentSalon.id,
+        staffId,
+      }),
+    )
+    .eq("id", staffId)
+    .eq("salon_id", context.currentSalon.id);
+
+  if (error) {
+    console.error("Supabase reset staff passcode failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      salonId: context.currentSalon.id,
+      staffId,
+      userId: context.user.id,
+    });
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        error.message,
+      ),
+    );
+  }
+
+  revalidatePath("/staff");
+  revalidatePath("/staff/my-work");
+  revalidatePath("/pos");
+  revalidatePath("/pos/portable");
+  revalidatePath("/pos/portable/check-in");
+
+  redirect(
+    getStaffDirectoryRedirectHref(
+      formData,
+      "connection_notice",
+      "Staff passcode reset.",
+    ),
+  );
+}
+
 function readActionStringList(input: ActionInput, key: string) {
   const value = input instanceof FormData ? input.get(key) : input[key];
 
@@ -551,6 +709,101 @@ export async function updateStaffPublicProfileAction(
   if (context.currentSalon) {
     revalidatePath(getSalonProfileHref(context.currentSalon.id));
   }
+
+  return { error: null };
+}
+
+export async function updateOwnStaffPasscodeAction(
+  input: ActionInput,
+): Promise<{ error: string | null }> {
+  const currentPasscode = readActionString(input, "current_passcode");
+  const newPasscode = readActionString(input, "new_passcode");
+  const confirmPasscode = readActionString(input, "confirm_passcode");
+  const requestedStaffId = readActionString(input, "staff_id");
+
+  if (!currentPasscode) {
+    return { error: "Current staff passcode is required." };
+  }
+
+  if (!validateStaffPasscodeFormat(newPasscode)) {
+    return { error: "New staff passcode must be 4-8 digits." };
+  }
+
+  if (newPasscode !== confirmPasscode) {
+    return { error: "New staff passcodes do not match." };
+  }
+
+  const context = await getCurrentBusinessContext();
+
+  if (!context.user || !context.currentSalon) {
+    return { error: "Choose a salon workspace before changing your passcode." };
+  }
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    return { error: "Supabase environment variables are missing." };
+  }
+
+  const staffResolution = await resolveStaffAccountForSalon({
+    context,
+    supabase,
+  });
+
+  if (staffResolution.status !== "found") {
+    return { error: "Your staff profile is not connected to this salon." };
+  }
+
+  const staffId = staffResolution.staff.id;
+
+  if (requestedStaffId && requestedStaffId !== staffId) {
+    return { error: "You can only change your own staff passcode." };
+  }
+
+  const { error: validationError } = await supabase.rpc(
+    "validate_staff_passcode_or_raise",
+    {
+      p_passcode: currentPasscode,
+      p_salon_id: context.currentSalon.id,
+      p_scope: "staff_self_passcode_change",
+      p_staff_id: staffId,
+    },
+  );
+
+  if (validationError) {
+    return { error: validationError.message };
+  }
+
+  const { error } = await supabase
+    .from("staff")
+    .update(
+      getStaffPasscodeHash({
+        passcode: newPasscode,
+        salonId: context.currentSalon.id,
+        staffId,
+      }),
+    )
+    .eq("id", staffId)
+    .eq("salon_id", context.currentSalon.id);
+
+  if (error) {
+    console.error("Supabase update own staff passcode failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      salonId: context.currentSalon.id,
+      staffId,
+      userId: context.user.id,
+    });
+    return { error: error.message };
+  }
+
+  revalidatePath("/staff");
+  revalidatePath("/staff/my-work");
+  revalidatePath("/pos");
+  revalidatePath("/pos/portable");
+  revalidatePath("/pos/portable/check-in");
 
   return { error: null };
 }

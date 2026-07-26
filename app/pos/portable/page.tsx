@@ -4,6 +4,7 @@ import {
   portableCreatePosDeskCustomer,
   portableGetPosLiveDraft,
   portableSearchPosDeskCustomers,
+  portableAdjustStaffTurn,
   portableSubmitPosDeskReceipt,
   portableUpdatePosActiveDraft,
   portableUpdatePosLiveDraftCustomer,
@@ -37,6 +38,7 @@ export default async function PortablePosPage() {
     >
       <PosDeskClient
         actions={{
+          adjustStaffTurn: portableAdjustStaffTurn,
           createPosDeskCustomer: portableCreatePosDeskCustomer,
           getPosLiveDraft: portableGetPosLiveDraft,
           searchPosDeskCustomers: portableSearchPosDeskCustomers,

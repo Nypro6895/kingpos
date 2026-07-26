@@ -11,6 +11,7 @@ import {
   type PortablePosCapability,
 } from "@/lib/pos-portable-capabilities";
 import { broadcastPosLiveDraftSnapshot } from "@/lib/pos-live-draft-realtime-server";
+import { broadcastPosStaffChange } from "@/lib/pos-staff-realtime-server";
 import {
   getPosDeskDefaults,
   normalizePosSettingsPayload,
@@ -73,6 +74,40 @@ export type PortableTodayStaffRow = {
   smallTurns: number;
   status: string;
   totalTurns: number;
+};
+
+export type PortableCheckInStaffRow = {
+  checkInAt: string | null;
+  checkInSequence: number | null;
+  displayName: string;
+  id: string;
+  isPasscodeDefault: boolean;
+  jobTitle: string | null;
+  queueTurnCount: number;
+  status: string;
+};
+
+export type PortableCheckInData = {
+  checkInEnabled: boolean;
+  salonId: string;
+  salonName: string;
+  staff: PortableCheckInStaffRow[];
+  today: string;
+  timezone: string;
+};
+
+export type PortableAttendanceEventInput = {
+  eventType: "CHECK_IN" | "CHECK_OUT" | "LEAVE_OUT" | "RETURN_TO_WORK";
+  passcode: string;
+  staffId: string;
+};
+
+export type PortableTurnAdjustmentInput = {
+  delta: number;
+  operatorPasscode: string;
+  operatorStaffId: string;
+  reason: string;
+  targetStaffId: string;
 };
 
 export type PortableTodayData = {
@@ -616,6 +651,28 @@ async function requirePortableCapability(capability: PortablePosCapability) {
   return context;
 }
 
+async function getPortableBusinessDate(input: {
+  fallback?: string;
+  salonId: string;
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+}) {
+  const fallback = input.fallback ?? getTodayDate();
+
+  if (!input.supabase) {
+    return fallback;
+  }
+
+  const { data, error } = await input.supabase.rpc("get_salon_business_date", {
+    p_salon_id: input.salonId,
+  });
+
+  if (error || typeof data !== "string") {
+    return fallback;
+  }
+
+  return data;
+}
+
 async function loadPortablePosDeskData(): Promise<{
   defaults: typeof POS_DESK_DEFAULTS;
   liveDraft: PosLiveDraftView | null;
@@ -625,8 +682,12 @@ async function loadPortablePosDeskData(): Promise<{
   staff: PosDeskStaff[];
   today: string;
 }> {
-  const { keyId, signature, supabase } = await requirePortablePosSession();
-  const today = getTodayDate();
+  const { keyId, portableSession, signature, supabase } =
+    await requirePortablePosSessionContext();
+  const today = await getPortableBusinessDate({
+    salonId: portableSession.salon_id,
+    supabase,
+  });
   const { data, error } = await supabase.rpc("get_pos_portable_desk_data", {
     p_key_id: keyId,
     p_session_signature: signature,
@@ -687,6 +748,136 @@ export async function getPortableTodayData(): Promise<PortableTodayData> {
     })),
     today: deskData.today,
   };
+}
+
+function normalizePortableCheckInRow(value: unknown): PortableCheckInStaffRow | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const payload = value as Record<string, unknown>;
+  const id = normalizePortableString(payload.id);
+  const displayName = normalizePortableString(payload.displayName);
+
+  if (!id || !displayName) {
+    return null;
+  }
+
+  return {
+    checkInAt: normalizePortableNullableString(payload.checkInAt),
+    checkInSequence:
+      payload.checkInSequence === null || payload.checkInSequence === undefined
+        ? null
+        : normalizePortableNumber(payload.checkInSequence),
+    displayName,
+    id,
+    isPasscodeDefault: Boolean(payload.isPasscodeDefault),
+    jobTitle: normalizePortableNullableString(payload.jobTitle),
+    queueTurnCount: normalizePortableNumber(payload.queueTurnCount),
+    status: normalizePortableString(payload.status) || "not_checked_in",
+  };
+}
+
+export async function getPortableCheckInData(): Promise<PortableCheckInData> {
+  const { keyId, portableSession, signature, supabase } =
+    await requirePortableCapability(PORTABLE_POS_CAPABILITIES.checkInUse);
+  const { data, error } = await supabase.rpc("get_pos_portable_check_in_data", {
+    p_key_id: keyId,
+    p_session_signature: signature,
+  });
+
+  if (error || !data) {
+    if (error) {
+      console.error("Supabase load Portable Check-in data failed", {
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        message: error.message,
+      });
+    }
+
+    return {
+      checkInEnabled: false,
+      salonId: portableSession.salon_id,
+      salonName: portableSession.salon_name,
+      staff: [],
+      today: getTodayDate(),
+      timezone: "America/Chicago",
+    };
+  }
+
+  const payload = data as Record<string, unknown>;
+  const staff = Array.isArray(payload.staff)
+    ? payload.staff
+        .map(normalizePortableCheckInRow)
+        .filter((row): row is PortableCheckInStaffRow => Boolean(row))
+    : [];
+
+  return {
+    checkInEnabled: Boolean(payload.checkInEnabled),
+    salonId: portableSession.salon_id,
+    salonName:
+      normalizePortableString(payload.salonName) || portableSession.salon_name,
+    staff,
+    today: normalizePortableString(payload.today) || getTodayDate(),
+    timezone: normalizePortableString(payload.timezone) || "America/Chicago",
+  };
+}
+
+export async function portableSubmitAttendanceEvent(
+  input: PortableAttendanceEventInput,
+): Promise<ActionResult<PortableCheckInData>> {
+  try {
+    const { keyId, portableSession, signature, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.checkInUse);
+    const eventType = input.eventType;
+
+    if (
+      eventType !== "CHECK_IN" &&
+      eventType !== "LEAVE_OUT" &&
+      eventType !== "RETURN_TO_WORK" &&
+      eventType !== "CHECK_OUT"
+    ) {
+      throw new Error("Choose a valid attendance action.");
+    }
+
+    const { data, error } = await supabase.rpc(
+      "submit_pos_portable_attendance_event",
+      {
+        p_event_type: eventType,
+        p_key_id: keyId,
+        p_passcode: input.passcode,
+        p_session_signature: signature,
+        p_staff_id: input.staffId,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error("Portable POS session expired. Log in again.");
+    }
+
+    revalidatePath("/pos/portable");
+    revalidatePath("/pos/portable/check-in");
+    revalidatePath("/pos/portable/ticket");
+    await broadcastPosStaffChange(portableSession.salon_id, "attendance");
+
+    return {
+      data: await getPortableCheckInData(),
+      ok: true,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unable to update staff attendance.",
+      ok: false,
+    };
+  }
 }
 
 export async function getPortableTicketData(
@@ -1082,8 +1273,12 @@ export async function portableSubmitPosDeskReceipt(
   input: PosDeskSubmitInput,
 ): Promise<PosDeskActionResult> {
   try {
-    const { keyId, signature, supabase } = await requirePortablePosSession();
-    const today = getTodayDate();
+    const { keyId, portableSession, signature, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const today = await getPortableBusinessDate({
+      salonId: portableSession.salon_id,
+      supabase,
+    });
     const { data, error } = await supabase.rpc("submit_pos_portable_receipt", {
       p_key_id: keyId,
       p_receipt: input,
@@ -1130,8 +1325,12 @@ export async function portableSubmitPosDeskReceipt(
 
     revalidatePath("/pos");
     revalidatePath("/pos-tickets");
+    revalidatePath("/pos/portable");
+    revalidatePath("/pos/portable/check-in");
+    revalidatePath("/pos/portable/ticket");
     revalidatePath("/staff/today");
     revalidatePath("/staff/my-work");
+    await broadcastPosStaffChange(portableSession.salon_id, "pos");
 
     return {
       ok: true,
@@ -1142,6 +1341,83 @@ export async function portableSubmitPosDeskReceipt(
     return {
       error:
         error instanceof Error ? error.message : "Unable to submit POS receipt.",
+      ok: false,
+    };
+  }
+}
+
+export async function portableAdjustStaffTurn(
+  input: PortableTurnAdjustmentInput,
+): Promise<
+  ActionResult<{
+    delta: number;
+    isOperatorPasscodeDefault: boolean;
+    newTurn: number;
+    oldTurn: number;
+    operatorStaffId: string;
+    targetStaffId: string;
+    today: string;
+  }>
+> {
+  try {
+    const { keyId, portableSession, signature, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.turnAdjust);
+    const delta = Math.trunc(input.delta);
+
+    if (!Number.isFinite(delta) || delta === 0) {
+      throw new Error("Choose a plus or minus turn adjustment.");
+    }
+
+    if (!input.reason.trim()) {
+      throw new Error("Reason is required.");
+    }
+
+    const { data, error } = await supabase.rpc(
+      "adjust_pos_portable_staff_turn",
+      {
+        p_delta: delta,
+        p_key_id: keyId,
+        p_operator_passcode: input.operatorPasscode,
+        p_operator_staff_id: input.operatorStaffId,
+        p_reason: input.reason.trim(),
+        p_session_signature: signature,
+        p_target_staff_id: input.targetStaffId,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error("Portable POS is not authorized for turn adjustment.");
+    }
+
+    revalidatePath("/pos/portable");
+    revalidatePath("/pos/portable/check-in");
+    revalidatePath("/pos/portable/ticket");
+    await broadcastPosStaffChange(portableSession.salon_id, "turn_adjust");
+
+    const payload = data as Record<string, unknown>;
+
+    return {
+      data: {
+        delta: normalizePortableNumber(payload.delta),
+        isOperatorPasscodeDefault: Boolean(payload.isOperatorPasscodeDefault),
+        newTurn: normalizePortableNumber(payload.newTurn),
+        oldTurn: normalizePortableNumber(payload.oldTurn),
+        operatorStaffId: normalizePortableString(payload.operatorStaffId),
+        targetStaffId: normalizePortableString(payload.targetStaffId),
+        today: normalizePortableString(payload.today),
+      },
+      ok: true,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unable to adjust staff turn.",
       ok: false,
     };
   }

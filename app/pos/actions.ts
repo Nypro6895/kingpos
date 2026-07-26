@@ -12,6 +12,7 @@ import { requirePermission } from "@/lib/permissions";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import { getTurnType, parsePosAmountInput } from "@/lib/pos-desk-amounts";
 import { broadcastPosLiveDraftSnapshot } from "@/lib/pos-live-draft-realtime-server";
+import { broadcastPosStaffChange } from "@/lib/pos-staff-realtime-server";
 import {
   getCurrentSalonPosSettings,
   getPublicPosDisplaySettingsByToken,
@@ -648,6 +649,24 @@ type PosDeskSupabaseClient = NonNullable<
   Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
 >;
 
+async function getSalonBusinessDate(input: {
+  fallbackTimezone?: string | null;
+  salonId: string;
+  supabase: PosDeskSupabaseClient;
+}) {
+  const { data, error } = await input.supabase.rpc("get_salon_business_date", {
+    p_salon_id: input.salonId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return typeof data === "string" && data
+    ? data
+    : getTodayDate(input.fallbackTimezone ?? undefined);
+}
+
 async function validatePosStaffIds(input: {
   salonId: string;
   staffIds: string[];
@@ -683,10 +702,48 @@ async function validatePosStaffIds(input: {
   }
 }
 
+async function validateWorkingStaffIds(input: {
+  salonId: string;
+  staffIds: string[];
+  supabase: PosDeskSupabaseClient;
+  workDate: string;
+}) {
+  const staffIds = Array.from(
+    new Set(
+      input.staffIds
+        .map(cleanOptional)
+        .filter((staffId): staffId is string => Boolean(staffId)),
+    ),
+  );
+
+  if (staffIds.length === 0) {
+    return;
+  }
+
+  const { data: workdayRows, error } = await input.supabase
+    .from("staff_workdays")
+    .select("staff_id")
+    .eq("salon_id", input.salonId)
+    .eq("work_date", input.workDate)
+    .eq("status", "working")
+    .in("staff_id", staffIds)
+    .returns<Array<{ staff_id: string }>>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if ((workdayRows ?? []).length !== staffIds.length) {
+    throw new Error("Assigned staff must be checked in and working.");
+  }
+}
+
 async function validateSubmitLineScope(input: {
   lines: PosDeskSubmitLine[];
+  requireWorkingStaff?: boolean;
   salonId: string;
   supabase: PosDeskSupabaseClient;
+  workDate?: string;
 }) {
   const staffIds = Array.from(new Set(input.lines.map((line) => line.staffId)));
   const serviceIds = Array.from(
@@ -702,6 +759,19 @@ async function validateSubmitLineScope(input: {
     staffIds,
     supabase: input.supabase,
   });
+
+  if (input.requireWorkingStaff) {
+    if (!input.workDate) {
+      throw new Error("Work date is required to validate checked-in staff.");
+    }
+
+    await validateWorkingStaffIds({
+      salonId: input.salonId,
+      staffIds,
+      supabase: input.supabase,
+      workDate: input.workDate,
+    });
+  }
 
   if (serviceIds.length === 0) {
     return;
@@ -783,10 +853,17 @@ async function createTicketFromSubmitInput(
       await requirePosDeskMutationContext();
     const settings = await getCurrentSalonPosSettings(context);
     validateSubmitLines(input.lines);
-    await validateSubmitLineScope({
-      lines: input.lines,
+    const workDate = await getSalonBusinessDate({
+      fallbackTimezone: context.user?.timezone,
       salonId: salon.id,
       supabase,
+    });
+    await validateSubmitLineScope({
+      lines: input.lines,
+      requireWorkingStaff: settings.staffCheckInEnabled,
+      salonId: salon.id,
+      supabase,
+      workDate,
     });
 
     const customer = await findOrCreateDeskCustomer({
@@ -808,7 +885,6 @@ async function createTicketFromSubmitInput(
 
     const tipAmount = roundMoney(input.tipAmount ?? 0);
     const now = new Date().toISOString();
-    const workDate = getTodayDate(context.user?.timezone);
     const { data: ticket, error: ticketError } = await supabase
       .from("pos_tickets")
       .insert({
@@ -868,6 +944,26 @@ async function createTicketFromSubmitInput(
 
       if (turnError) {
         throw new Error(turnError.message);
+      }
+
+      const largeTurnDelta = turnRows.filter(
+        (row) => row.turn_type === "large",
+      ).length;
+
+      if (largeTurnDelta > 0) {
+        const { error: queueError } = await supabase.rpc(
+          "increment_staff_queue_turns",
+          {
+            p_delta: largeTurnDelta,
+            p_salon_id: salon.id,
+            p_staff_id: line.staffId,
+            p_work_date: workDate,
+          },
+        );
+
+        if (queueError) {
+          throw new Error(queueError.message);
+        }
       }
     }
 
@@ -1001,6 +1097,7 @@ async function createTicketFromSubmitInput(
     }
 
     await recalculateStaffEarningsForDate(salon.id, workDate);
+    await broadcastPosStaffChange(salon.id, "pos");
 
     revalidatePath("/pos");
     revalidatePath("/pos-tickets");
@@ -2092,17 +2189,33 @@ export async function submitSessionToTicket(
   try {
     const { context, salon, supabase, user } =
       await requirePosDeskMutationContext();
+    const settings = await getCurrentSalonPosSettings(context);
     const session = await requirePendingConfirmedSession(sessionId);
 
     if (session.lines.length === 0) {
       throw new Error("Add at least one receipt line before submit.");
     }
 
+    const workDate = await getSalonBusinessDate({
+      fallbackTimezone: context.user?.timezone,
+      salonId: salon.id,
+      supabase,
+    });
+
     await validatePosStaffIds({
       salonId: salon.id,
       staffIds: session.lines.map((line) => line.staff_id),
       supabase,
     });
+
+    if (settings.staffCheckInEnabled) {
+      await validateWorkingStaffIds({
+        salonId: salon.id,
+        staffIds: session.lines.map((line) => line.staff_id),
+        supabase,
+        workDate,
+      });
+    }
 
     const customer = await findOrCreateDeskCustomer({
       customerId: session.customer_id,
@@ -2111,7 +2224,6 @@ export async function submitSessionToTicket(
     });
 
     const now = new Date().toISOString();
-    const workDate = getTodayDate(context.user?.timezone);
     const { data: ticket, error: ticketError } = await supabase
       .from("pos_tickets")
       .insert({
@@ -2161,7 +2273,7 @@ export async function submitSessionToTicket(
         ticket_id: ticket.id,
         ticket_item_id: item.id,
         turn_index: partIndex + 1,
-        turn_type: getTurnType(amount, POS_DESK_DEFAULTS.largeTurnThreshold),
+        turn_type: getTurnType(amount, settings.largeTurnThreshold),
         work_date: workDate,
       }));
 
@@ -2171,6 +2283,26 @@ export async function submitSessionToTicket(
 
       if (turnError) {
         throw new Error(turnError.message);
+      }
+
+      const largeTurnDelta = turnRows.filter(
+        (row) => row.turn_type === "large",
+      ).length;
+
+      if (largeTurnDelta > 0) {
+        const { error: queueError } = await supabase.rpc(
+          "increment_staff_queue_turns",
+          {
+            p_delta: largeTurnDelta,
+            p_salon_id: salon.id,
+            p_staff_id: line.staff_id,
+            p_work_date: workDate,
+          },
+        );
+
+        if (queueError) {
+          throw new Error(queueError.message);
+        }
       }
     }
 
@@ -2262,6 +2394,7 @@ export async function submitSessionToTicket(
       .eq("salon_id", salon.id);
 
     await recalculateStaffEarningsForDate(salon.id, workDate);
+    await broadcastPosStaffChange(salon.id, "pos");
 
     revalidatePath("/pos");
     revalidatePath("/pos-tickets");

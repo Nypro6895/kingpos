@@ -7,8 +7,10 @@ import {
   useRef,
   useState,
   useTransition,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { parsePosAmountInput } from "@/lib/pos-desk-amounts";
 import {
@@ -16,6 +18,11 @@ import {
   POS_LIVE_DRAFT_BROADCAST_EVENT,
   type PosLiveDraftBroadcastPayload,
 } from "@/lib/pos-live-draft-realtime";
+import {
+  getPosStaffRealtimeChannel,
+  POS_STAFF_BROADCAST_EVENT,
+  type PosStaffBroadcastPayload,
+} from "@/lib/pos-staff-realtime";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   createPosDeskCustomer,
@@ -41,6 +48,7 @@ type PosDeskDefaults = {
   largeTurnThreshold: number;
   showServiceName: boolean;
   showStaffName: boolean;
+  staffCheckInEnabled: boolean;
   taxEnabled: boolean;
   tipSuggestions: number[];
 };
@@ -77,6 +85,27 @@ type CustomerCreateDraft = {
 type CustomerCreateField = "email" | "name" | "phone";
 
 type PosDeskClientActions = {
+  adjustStaffTurn: (input: {
+    delta: number;
+    operatorPasscode: string;
+    operatorStaffId: string;
+    reason: string;
+    targetStaffId: string;
+  }) => Promise<
+    | {
+        data: {
+          delta: number;
+          isOperatorPasscodeDefault: boolean;
+          newTurn: number;
+          oldTurn: number;
+          operatorStaffId: string;
+          targetStaffId: string;
+          today: string;
+        };
+        ok: true;
+      }
+    | { error: string; ok: false }
+  >;
   createPosDeskCustomer: typeof createPosDeskCustomer;
   getPosLiveDraft: typeof getPosLiveDraft;
   searchPosDeskCustomers: typeof searchPosDeskCustomers;
@@ -110,6 +139,9 @@ const emptyCustomerCreateDraft: CustomerCreateDraft = {
 const POS_IDLE_RESET_MS = 3 * 60 * 1000;
 const DISPLAY_IDLE_RESET_SECONDS = 180;
 const DISPLAY_ACTIVITY_THROTTLE_MS = 5000;
+const PASSCODE_IDLE_CLEAR_MS = 2 * 60 * 1000;
+const STAFF_TURN_HOLD_MS = 3000;
+const STAFF_TURN_HOLD_MOVE_CANCEL_PX = 10;
 
 function formatMoney(amount: number) {
   return new Intl.NumberFormat("en-US", {
@@ -273,6 +305,7 @@ export function PosDeskClient({
   staff: PosDeskStaff[];
   today?: string;
 }) {
+  const adjustStaffTurnAction = actions?.adjustStaffTurn;
   const createCustomerAction =
     actions?.createPosDeskCustomer ?? createPosDeskCustomer;
   const getLiveDraftAction = actions?.getPosLiveDraft ?? getPosLiveDraft;
@@ -288,6 +321,7 @@ export function PosDeskClient({
     actions?.touchCustomerDisplayLiveDraftActivity ??
     touchCustomerDisplayLiveDraftActivity;
   const router = useRouter();
+  const pathname = usePathname();
   const liveDraftIsOpen = liveDraft?.status === "draft";
   const initialLiveDraftCustomer = liveDraftIsOpen ? liveDraft.customer : null;
   const initialLiveDraftSelectedStaffId = liveDraftIsOpen
@@ -325,6 +359,18 @@ export function PosDeskClient({
   const [serviceSearch, setServiceSearch] = useState("");
   const [showCustomerCreateModal, setShowCustomerCreateModal] = useState(false);
   const [showServicePicker, setShowServicePicker] = useState(false);
+  const [turnAdjustStaff, setTurnAdjustStaff] = useState<PosDeskStaff | null>(
+    null,
+  );
+  const [turnAdjustDelta, setTurnAdjustDelta] = useState(0);
+  const [turnAdjustReason, setTurnAdjustReason] = useState("");
+  const [turnAdjustOperatorStaffId, setTurnAdjustOperatorStaffId] =
+    useState("");
+  const [turnAdjustOperatorPasscode, setTurnAdjustOperatorPasscode] =
+    useState("");
+  const [turnAdjustError, setTurnAdjustError] = useState("");
+  const [turnHoldStaffId, setTurnHoldStaffId] = useState<string | null>(null);
+  const [turnHoldProgress, setTurnHoldProgress] = useState(0);
   const [liveCustomer, setLiveCustomer] = useState<PosLiveDraftCustomer | null>(
     initialLiveDraftCustomer,
   );
@@ -342,7 +388,19 @@ export function PosDeskClient({
   const lastSyncedLiveDraftPayloadKeyRef = useRef("");
   const lastCompletedDisplayTouchSyncRef = useRef(0);
   const holdCompletedDisplayRef = useRef(liveDraft?.status === "closed");
+  const holdStaffPointerRef = useRef<{
+    completed: boolean;
+    intervalId: number | null;
+    pointerId: number;
+    staff: PosDeskStaff;
+    startClientX: number;
+    startClientY: number;
+    startedAt: number;
+    target: HTMLButtonElement | null;
+    timeoutId: number | null;
+  } | null>(null);
   const resetInFlightRef = useRef(false);
+  const suppressNextStaffClickRef = useRef(false);
   const submitLockedRef = useRef(false);
   const tipInputRef = useRef<HTMLInputElement | null>(null);
   const receiptLocked = isResetting || isSubmitting;
@@ -352,6 +410,8 @@ export function PosDeskClient({
       ? "Receipt is resetting. Please wait."
       : "Receipt is locked.";
   const liveDraftToken = liveDraft?.token;
+  const staffRealtimeSalonId = liveDraft?.salon_id ?? activeSession?.salon_id ?? null;
+  const isPortableSurface = surface === "portable";
 
   const selectedService = services.find(
     (service) => service.id === draft.selectedServiceId,
@@ -364,16 +424,7 @@ export function PosDeskClient({
     defaults.tipSuggestions.length > 0
       ? defaults.tipSuggestions.slice(0, 4)
       : [5, 10, 15, 20];
-  const sortedStaff = useMemo(
-    () =>
-      [...staff].sort(
-        (left, right) =>
-          left.turns.largeTurns - right.turns.largeTurns ||
-          left.turns.smallTurns - right.turns.smallTurns ||
-          left.display_name.localeCompare(right.display_name),
-      ),
-    [staff],
-  );
+  const sortedStaff = staff;
   const totalLines = useMemo(
     () => staffLines.map((line) => ({ line_total: line.amount })),
     [staffLines],
@@ -514,6 +565,26 @@ export function PosDeskClient({
     setError(null);
   }, []);
 
+  const clearStaffTurnHold = useCallback(() => {
+    const hold = holdStaffPointerRef.current;
+
+    if (hold?.timeoutId !== null && hold?.timeoutId !== undefined) {
+      window.clearTimeout(hold.timeoutId);
+    }
+
+    if (hold?.intervalId !== null && hold?.intervalId !== undefined) {
+      window.clearInterval(hold.intervalId);
+    }
+
+    if (hold?.target?.hasPointerCapture(hold.pointerId)) {
+      hold.target.releasePointerCapture(hold.pointerId);
+    }
+
+    holdStaffPointerRef.current = null;
+    setTurnHoldStaffId(null);
+    setTurnHoldProgress(0);
+  }, []);
+
   const markPosActivity = useCallback(() => {
     setPosActivityTick((current) => current + 1);
 
@@ -574,6 +645,47 @@ export function PosDeskClient({
       window.removeEventListener("keydown", markPosActivity);
     };
   }, [markPosActivity]);
+
+  useEffect(() => clearStaffTurnHold, [clearStaffTurnHold, pathname]);
+
+  useEffect(() => {
+    window.addEventListener("blur", clearStaffTurnHold);
+
+    return () => {
+      window.removeEventListener("blur", clearStaffTurnHold);
+    };
+  }, [clearStaffTurnHold]);
+
+  useEffect(() => {
+    if (!showCustomerCreateModal && !showServicePicker && !turnAdjustStaff) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(clearStaffTurnHold, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    clearStaffTurnHold,
+    showCustomerCreateModal,
+    showServicePicker,
+    turnAdjustStaff,
+  ]);
+
+  useEffect(() => {
+    if (!turnAdjustStaff || !turnAdjustOperatorPasscode) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setTurnAdjustOperatorPasscode("");
+    }, PASSCODE_IDLE_CLEAR_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [turnAdjustOperatorPasscode, turnAdjustStaff]);
 
   useEffect(() => {
     if (keypadMode === "discount") {
@@ -945,6 +1057,35 @@ export function PosDeskClient({
     liveDraftToken,
   ]);
 
+  useEffect(() => {
+    if (!staffRealtimeSalonId || !isPortableSurface) {
+      return;
+    }
+
+    const supabase = createSupabaseBrowserClient();
+
+    if (!supabase) {
+      return;
+    }
+
+    const channel = supabase
+      .channel(getPosStaffRealtimeChannel(staffRealtimeSalonId))
+      .on(
+        "broadcast",
+        { event: POS_STAFF_BROADCAST_EVENT },
+        ({ payload }: { payload: PosStaffBroadcastPayload }) => {
+          if (payload.salonId === staffRealtimeSalonId) {
+            router.refresh();
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [isPortableSurface, router, staffRealtimeSalonId]);
+
   function createStaffLine(
     staffId: string,
     sortOrder: number,
@@ -996,6 +1137,130 @@ export function PosDeskClient({
 
   function queueLiveDraftSync() {
     setLiveDraftSyncNonce((current) => current + 1);
+  }
+
+  function openTurnAdjustment(member: PosDeskStaff) {
+    if (!adjustStaffTurnAction || !isPortableSurface) {
+      return;
+    }
+
+    clearStaffTurnHold();
+    setTurnAdjustStaff(member);
+    setTurnAdjustDelta(0);
+    setTurnAdjustReason("");
+    setTurnAdjustOperatorPasscode("");
+    setTurnAdjustOperatorStaffId(
+      sortedStaff.find((candidate) => candidate.id !== member.id)?.id ?? "",
+    );
+    setTurnAdjustError("");
+  }
+
+  function handleStaffPointerDown(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    member: PosDeskStaff,
+  ) {
+    if (
+      !adjustStaffTurnAction ||
+      !isPortableSurface ||
+      receiptLocked ||
+      (event.button !== 0 && event.pointerType === "mouse")
+    ) {
+      return;
+    }
+
+    clearStaffTurnHold();
+    const startedAt = event.timeStamp;
+    const hold = {
+      completed: false,
+      intervalId: null as number | null,
+      pointerId: event.pointerId,
+      staff: member,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startedAt,
+      target: event.currentTarget,
+      timeoutId: null as number | null,
+    };
+
+    hold.timeoutId = window.setTimeout(() => {
+      const current = holdStaffPointerRef.current;
+
+      if (!current || current.pointerId !== event.pointerId) {
+        return;
+      }
+
+      current.completed = true;
+      suppressNextStaffClickRef.current = true;
+      openTurnAdjustment(member);
+    }, STAFF_TURN_HOLD_MS);
+    hold.intervalId = window.setInterval(() => {
+      const current = holdStaffPointerRef.current;
+
+      if (!current || current.pointerId !== event.pointerId) {
+        return;
+      }
+
+      setTurnHoldProgress(
+        Math.min(1, (performance.now() - current.startedAt) / STAFF_TURN_HOLD_MS),
+      );
+    }, 40);
+    holdStaffPointerRef.current = hold;
+    setTurnHoldStaffId(member.id);
+    setTurnHoldProgress(0.02);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleStaffPointerMove(event: ReactPointerEvent<HTMLButtonElement>) {
+    const hold = holdStaffPointerRef.current;
+
+    if (!hold || hold.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const moved = Math.hypot(
+      event.clientX - hold.startClientX,
+      event.clientY - hold.startClientY,
+    );
+
+    if (moved > STAFF_TURN_HOLD_MOVE_CANCEL_PX) {
+      clearStaffTurnHold();
+    }
+  }
+
+  function handleStaffPointerEnd(event: ReactPointerEvent<HTMLButtonElement>) {
+    const hold = holdStaffPointerRef.current;
+
+    if (!hold || hold.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (hold.completed) {
+      suppressNextStaffClickRef.current = true;
+    }
+
+    clearStaffTurnHold();
+  }
+
+  function handleStaffCardClick(staffId: string) {
+    if (suppressNextStaffClickRef.current) {
+      suppressNextStaffClickRef.current = false;
+      return;
+    }
+
+    selectStaff(staffId);
+  }
+
+  function handleStaffCardKeyDown(
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+    member: PosDeskStaff,
+  ) {
+    if (
+      (event.key === "Enter" && event.shiftKey) ||
+      event.key === "ContextMenu"
+    ) {
+      event.preventDefault();
+      openTurnAdjustment(member);
+    }
   }
 
   function selectStaff(staffId: string) {
@@ -1519,6 +1784,68 @@ export function PosDeskClient({
     void resetReceipt("manual");
   }
 
+  function closeTurnAdjustment() {
+    setTurnAdjustStaff(null);
+    setTurnAdjustDelta(0);
+    setTurnAdjustReason("");
+    setTurnAdjustOperatorPasscode("");
+    setTurnAdjustOperatorStaffId("");
+    setTurnAdjustError("");
+  }
+
+  function submitTurnAdjustment() {
+    if (!turnAdjustStaff || !adjustStaffTurnAction || isPending) {
+      return;
+    }
+
+    if (turnAdjustDelta === 0) {
+      setTurnAdjustError("Choose plus one or minus one before confirming.");
+      return;
+    }
+
+    if (!turnAdjustOperatorStaffId) {
+      setTurnAdjustError("Choose the manager approving this adjustment.");
+      return;
+    }
+
+    if (turnAdjustOperatorPasscode.length < 4) {
+      setTurnAdjustError("Enter the manager passcode.");
+      return;
+    }
+
+    if (!turnAdjustReason.trim()) {
+      setTurnAdjustError("Reason is required.");
+      return;
+    }
+
+    const staffName = turnAdjustStaff.display_name;
+    startTransition(async () => {
+      const result = await adjustStaffTurnAction({
+        delta: turnAdjustDelta,
+        operatorPasscode: turnAdjustOperatorPasscode,
+        operatorStaffId: turnAdjustOperatorStaffId,
+        reason: turnAdjustReason.trim(),
+        targetStaffId: turnAdjustStaff.id,
+      });
+
+      setTurnAdjustOperatorPasscode("");
+
+      if (!result.ok) {
+        setTurnAdjustError(result.error);
+        return;
+      }
+
+      closeTurnAdjustment();
+      setMessage(
+        `${staffName} turn adjusted ${result.data.delta > 0 ? "+" : ""}${
+          result.data.delta
+        } to ${result.data.newTurn}.`,
+      );
+      setLastAction("Staff turn adjusted");
+      router.refresh();
+    });
+  }
+
   function clearSelectedCustomer() {
     updateDraft({
       customerId: null,
@@ -1693,7 +2020,6 @@ export function PosDeskClient({
     );
   }
 
-  const isPortableSurface = surface === "portable";
   const rootClass = isPortableSurface
     ? "portable-pos-auto-scale grid h-full min-h-0 w-full gap-2 overflow-hidden"
     : "grid min-h-[calc(100vh-120px)] grid-cols-1 gap-4 xl:grid-cols-[380px_minmax(360px,1fr)_360px]";
@@ -1841,6 +2167,149 @@ export function PosDeskClient({
                   ) : null}
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {turnAdjustStaff ? (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 grid place-items-center bg-zinc-950/40 p-4"
+          role="dialog"
+        >
+          <div className="grid max-h-[calc(100dvh-2rem)] w-full max-w-md gap-4 overflow-auto rounded-lg border border-zinc-200 bg-white p-4 shadow-2xl">
+            <div>
+              <p className="text-sm font-semibold text-zinc-500">Adjust turn</p>
+              <h2 className="text-xl font-semibold text-zinc-950">
+                {turnAdjustStaff.display_name}
+              </h2>
+              <p className="mt-1 text-sm text-zinc-600">
+                Current canonical turn{" "}
+                <span className="font-semibold text-zinc-950">
+                  {turnAdjustStaff.turns.queueTurns ??
+                    turnAdjustStaff.turns.largeTurns}
+                </span>
+              </p>
+            </div>
+
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              <button
+                className="min-h-12 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-40"
+                disabled={
+                  (turnAdjustStaff.turns.queueTurns ??
+                    turnAdjustStaff.turns.largeTurns) +
+                    turnAdjustDelta <=
+                  0
+                }
+                onClick={() =>
+                  setTurnAdjustDelta((current) =>
+                    Math.max(
+                      -(turnAdjustStaff.turns.queueTurns ??
+                        turnAdjustStaff.turns.largeTurns),
+                      current - 1,
+                    ),
+                  )
+                }
+                type="button"
+              >
+                Minus one
+              </button>
+              <div className="grid min-w-24 justify-items-center rounded-md bg-zinc-50 px-3 py-2">
+                <span className="text-xs font-semibold text-zinc-500">
+                  Projected
+                </span>
+                <span className="text-3xl font-bold tabular-nums">
+                  {Math.max(
+                    0,
+                    (turnAdjustStaff.turns.queueTurns ??
+                      turnAdjustStaff.turns.largeTurns) + turnAdjustDelta,
+                  )}
+                </span>
+              </div>
+              <button
+                className="min-h-12 rounded-md bg-zinc-950 px-3 py-2 text-sm font-semibold text-white"
+                onClick={() => setTurnAdjustDelta((current) => current + 1)}
+                type="button"
+              >
+                Plus one
+              </button>
+            </div>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-medium text-zinc-700">
+                Manager
+              </span>
+              <select
+                className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm"
+                onChange={(event) =>
+                  setTurnAdjustOperatorStaffId(event.target.value)
+                }
+                value={turnAdjustOperatorStaffId}
+              >
+                <option value="">Choose manager</option>
+                {sortedStaff
+                  .filter((member) => member.id !== turnAdjustStaff.id)
+                  .map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.display_name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-medium text-zinc-700">
+                Manager passcode
+              </span>
+              <input
+                autoComplete="off"
+                className="min-h-11 rounded-md border border-zinc-300 px-3 text-center text-lg font-semibold tracking-[0.2em]"
+                inputMode="numeric"
+                onChange={(event) =>
+                  setTurnAdjustOperatorPasscode(event.target.value)
+                }
+                type="password"
+                value={turnAdjustOperatorPasscode}
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-medium text-zinc-700">Reason</span>
+              <textarea
+                className="min-h-20 rounded-md border border-zinc-300 px-3 py-2 text-sm"
+                onChange={(event) => setTurnAdjustReason(event.target.value)}
+                value={turnAdjustReason}
+              />
+            </label>
+
+            <p className="text-xs leading-5 text-amber-800">
+              Use the approving manager&apos;s own staff passcode. Reset default
+              passcodes in Staff Settings.
+            </p>
+
+            {turnAdjustError ? (
+              <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                {turnAdjustError}
+              </p>
+            ) : null}
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 py-2 font-semibold"
+                onClick={closeTurnAdjustment}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="min-h-11 rounded-md bg-zinc-950 px-3 py-2 font-semibold text-white disabled:bg-zinc-300"
+                disabled={isPending || turnAdjustDelta === 0}
+                onClick={submitTurnAdjustment}
+                type="button"
+              >
+                {isPending ? "Confirming" : "Confirm"}
+              </button>
             </div>
           </div>
         </div>
@@ -2343,33 +2812,57 @@ export function PosDeskClient({
             const selected = draft.selectedStaffId === member.id;
             const unavailable =
               member.today_status === "checked_out" ||
+              member.today_status === "auto_checked_out" ||
               member.today_status === "unavailable" ||
               !member.is_active;
             const colorClass = getStaffCardColor(
-              member.turns.largeTurns,
+              member.turns.queueTurns ?? member.turns.largeTurns,
               member.turns.smallTurns,
               selected,
             );
+            const holdActive = turnHoldStaffId === member.id;
 
             return (
               <button
-                className={`aspect-square rounded-lg border p-1.5 text-center transition ${colorClass} ${
+                className={`relative aspect-square overflow-hidden rounded-lg border p-1.5 text-center transition ${colorClass} ${
                   unavailable ? "opacity-60" : ""
                 }`}
                 disabled={receiptLocked}
                 key={member.id}
-                onClick={() => selectStaff(member.id)}
+                onClick={() => handleStaffCardClick(member.id)}
+                onContextMenu={(event) => {
+                  if (adjustStaffTurnAction && isPortableSurface) {
+                    event.preventDefault();
+                    openTurnAdjustment(member);
+                  }
+                }}
+                onKeyDown={(event) => handleStaffCardKeyDown(event, member)}
+                onPointerCancel={handleStaffPointerEnd}
+                onPointerDown={(event) => handleStaffPointerDown(event, member)}
+                onPointerMove={handleStaffPointerMove}
+                onPointerUp={handleStaffPointerEnd}
                 type="button"
-                title={member.today_status.replaceAll("_", " ")}
+                title={`Queue ${member.turns.queueTurns ?? member.turns.largeTurns}. ${member.today_status.replaceAll("_", " ")}`}
               >
+                {holdActive ? (
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-1 rounded-md opacity-95"
+                    style={{
+                      background: `conic-gradient(rgba(20, 184, 166, 0.72) ${Math.round(
+                        turnHoldProgress * 360,
+                      )}deg, transparent 0deg)`,
+                    }}
+                  />
+                ) : null}
                 <span className="block truncate text-base font-semibold leading-tight">
                   {getFirstName(member.display_name)}
                 </span>
                 <span className="mt-0.5 block text-3xl font-bold leading-none">
-                  {member.turns.largeTurns}
+                  {member.turns.queueTurns ?? member.turns.largeTurns}
                 </span>
                 <span className="mt-0.5 block text-lg font-semibold leading-none opacity-85">
-                  {member.turns.smallTurns}
+                  S {member.turns.smallTurns}
                 </span>
               </button>
             );

@@ -4,6 +4,7 @@ import {
   createSupabaseServerClient,
   getSupabaseCookieOptions,
 } from "@/lib/supabase/server";
+import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import { NextResponse } from "next/server";
 
 function readString(formData: FormData, key: string) {
@@ -49,7 +50,15 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    const authError = getSupabaseAuthErrorResponse(
+      error,
+      "Unable to create account.",
+    );
+
+    return NextResponse.json(
+      { error: authError.message },
+      { status: authError.status },
+    );
   }
 
   if (!data.session) {

@@ -2,9 +2,11 @@ export const PORTABLE_POS_CAPABILITIES = {
   bookCancel: "portable.book.cancel",
   bookCreate: "portable.book.create",
   bookView: "portable.book.view",
+  checkInUse: "portable.checkin.use",
   posUse: "portable.pos.use",
   reportView: "portable.report.view",
   todayView: "portable.today.view",
+  turnAdjust: "portable.turn.adjust",
 } as const;
 
 export type PortablePosCapability =
@@ -13,6 +15,7 @@ export type PortablePosCapability =
 export const DEFAULT_PORTABLE_POS_CAPABILITIES: PortablePosCapability[] = [
   PORTABLE_POS_CAPABILITIES.posUse,
   PORTABLE_POS_CAPABILITIES.todayView,
+  PORTABLE_POS_CAPABILITIES.checkInUse,
   PORTABLE_POS_CAPABILITIES.bookView,
   PORTABLE_POS_CAPABILITIES.bookCreate,
   PORTABLE_POS_CAPABILITIES.bookCancel,
@@ -36,6 +39,18 @@ export const PORTABLE_POS_CAPABILITY_OPTIONS: {
     description: "View the Portable Ticket list for the current salon day.",
     label: "Ticket",
     value: PORTABLE_POS_CAPABILITIES.todayView,
+  },
+  {
+    defaultEnabled: true,
+    description: "Use the portable staff check-in board.",
+    label: "Check-in",
+    value: PORTABLE_POS_CAPABILITIES.checkInUse,
+  },
+  {
+    defaultEnabled: false,
+    description: "Allow manager-authorized manual turn adjustments from Portable POS.",
+    label: "Turn adjust",
+    value: PORTABLE_POS_CAPABILITIES.turnAdjust,
   },
   {
     defaultEnabled: true,

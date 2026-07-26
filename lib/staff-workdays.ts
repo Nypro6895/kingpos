@@ -11,6 +11,7 @@ import {
   STAFF_ACCOUNT_SELECT,
 } from "@/lib/staff-account";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Staff } from "@/types/staff";
 import type {
@@ -19,9 +20,20 @@ import type {
 } from "@/types/staff-workday";
 
 export const STAFF_WORKDAY_SELECT =
+  "id, salon_id, staff_id, work_date, status, check_in_at, check_out_at, check_in_sequence, queue_turn_count, last_leave_at, leave_baseline_turn_count, leave_cohort_staff_ids, auto_checked_out_at, created_at, updated_at, staff:staff(id, display_name, job_title)";
+export const STAFF_WORKDAY_LEGACY_SELECT =
   "id, salon_id, staff_id, work_date, status, check_in_at, check_out_at, created_at, updated_at, staff:staff(id, display_name, job_title)";
+const STAFF_WORKDAY_SCHEMA_UPGRADE_COLUMNS = [
+  "auto_checked_out_at",
+  "check_in_sequence",
+  "last_leave_at",
+  "leave_baseline_turn_count",
+  "leave_cohort_staff_ids",
+  "queue_turn_count",
+] as const;
 
 export const STAFF_WORKDAY_STATUS_LABELS = {
+  auto_checked_out: "Auto checked out",
   break: "On break",
   checked_in: "Checked in",
   checked_out: "Checked out",
@@ -48,6 +60,9 @@ export type StaffDailyActivitySummary = {
 type StaffResolutionOptions = {
   allowEmailFallback?: boolean;
 };
+type StaffWorkdaysSupabaseClient = NonNullable<
+  Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+>;
 
 export type StaffAssignedWorkServiceLine = {
   id: string;
@@ -95,6 +110,67 @@ function normalizeText(value: string | null | undefined) {
   const trimmed = value?.trim();
 
   return trimmed ? trimmed : null;
+}
+
+function isStaffWorkdaySchemaUpgradeError(error: unknown) {
+  return STAFF_WORKDAY_SCHEMA_UPGRADE_COLUMNS.some((column) =>
+    isMissingSupabaseColumnError(error, column),
+  );
+}
+
+async function loadStaffWorkdayForStaffDate(
+  supabase: StaffWorkdaysSupabaseClient,
+  input: {
+    salonId: string;
+    staffId: string;
+    workDate: string;
+  },
+) {
+  let result = await supabase
+    .from("staff_workdays")
+    .select(STAFF_WORKDAY_SELECT)
+    .eq("staff_id", input.staffId)
+    .eq("salon_id", input.salonId)
+    .eq("work_date", input.workDate)
+    .maybeSingle<StaffWorkdayWithStaff>();
+
+  if (result.error && isStaffWorkdaySchemaUpgradeError(result.error)) {
+    result = await supabase
+      .from("staff_workdays")
+      .select(STAFF_WORKDAY_LEGACY_SELECT)
+      .eq("staff_id", input.staffId)
+      .eq("salon_id", input.salonId)
+      .eq("work_date", input.workDate)
+      .maybeSingle<StaffWorkdayWithStaff>();
+  }
+
+  return result;
+}
+
+async function loadStaffWorkdaysForSalonDate(
+  supabase: StaffWorkdaysSupabaseClient,
+  input: {
+    salonId: string;
+    workDate: string;
+  },
+) {
+  let result = await supabase
+    .from("staff_workdays")
+    .select(STAFF_WORKDAY_SELECT)
+    .eq("salon_id", input.salonId)
+    .eq("work_date", input.workDate)
+    .returns<StaffWorkdayWithStaff[]>();
+
+  if (result.error && isStaffWorkdaySchemaUpgradeError(result.error)) {
+    result = await supabase
+      .from("staff_workdays")
+      .select(STAFF_WORKDAY_LEGACY_SELECT)
+      .eq("salon_id", input.salonId)
+      .eq("work_date", input.workDate)
+      .returns<StaffWorkdayWithStaff[]>();
+  }
+
+  return result;
 }
 
 function getTicketSortTime(ticket: StaffAssignedWorkTicket) {
@@ -251,13 +327,14 @@ export async function getTodaysStaffWorkday(
     throw new Error("Supabase environment variables are missing.");
   }
 
-  const { data: workday, error } = await supabase
-    .from("staff_workdays")
-    .select(STAFF_WORKDAY_SELECT)
-    .eq("staff_id", staff.id)
-    .eq("salon_id", salon.id)
-    .eq("work_date", today)
-    .maybeSingle<StaffWorkdayWithStaff>();
+  const { data: workday, error } = await loadStaffWorkdayForStaffDate(
+    supabase,
+    {
+      salonId: salon.id,
+      staffId: staff.id,
+      workDate: today,
+    },
+  );
 
   if (error) {
     console.error("Supabase load today's staff workday failed", {
@@ -305,12 +382,10 @@ export async function getCurrentSalonStaffTodayBoard(
       .eq("is_active", true)
       .order("display_name", { ascending: true })
       .returns<Staff[]>(),
-    supabase
-      .from("staff_workdays")
-      .select(STAFF_WORKDAY_SELECT)
-      .eq("salon_id", salon.id)
-      .eq("work_date", today)
-      .returns<StaffWorkdayWithStaff[]>(),
+    loadStaffWorkdaysForSalonDate(supabase, {
+      salonId: salon.id,
+      workDate: today,
+    }),
   ]);
 
   if (staffResult.error) {

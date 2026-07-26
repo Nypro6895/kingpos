@@ -22,6 +22,8 @@ import type {
 import type { KingUser } from "@/types/user";
 
 export const STAFF_SELECT =
+  "id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, address_line1, address_line2, city, state, postal_code, job_title, passcode_is_default, pos_enabled, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
+export const STAFF_LEGACY_SELECT =
   "id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, address_line1, address_line2, city, state, postal_code, job_title, pos_enabled, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 
 const STAFF_PAYROLL_SETUP_SELECT = "id, staff_id, effective_from, effective_to";

@@ -8,6 +8,8 @@ export type PosDeskTurnType = "large" | "small";
 
 export type PosDeskTurnSummary = {
   largeTurns: number;
+  queueTurns: number;
+  receiptLargeTurns: number;
   smallTurns: number;
   totalTurns: number;
 };
@@ -16,6 +18,8 @@ export type PosDeskStaff = Pick<
   Staff,
   "id" | "display_name" | "job_title" | "is_active"
 > & {
+  check_in_at?: string | null;
+  check_in_sequence?: number | null;
   today_status: StaffWorkdayStatus | "not_checked_in";
   turns: PosDeskTurnSummary;
 };

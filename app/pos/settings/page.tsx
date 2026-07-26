@@ -507,6 +507,29 @@ function CustomerDisplaySettingsSection({
           ))}
         </div>
 
+        <div className="grid gap-3 rounded-md border border-amber-200 bg-amber-50 p-4">
+          <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+            <Checkbox
+              defaultChecked={settings.staffCheckInEnabled}
+              label="Enable staff check-in"
+              name="staff_check_in_enabled"
+            />
+            <SettingsSubmitButton
+              className="min-h-11 rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
+              disabled={!canManageSettings}
+              saved={saved}
+            >
+              Save staff check-in
+            </SettingsSubmitButton>
+          </div>
+          <p className="text-sm leading-6 text-amber-900">
+            When enabled, Portable POS only shows staff who are checked in and
+            working for the current salon day. Turning this on mid-day can hide
+            staff from new assignments until they check in; existing receipt
+            lines and totals are not recalculated.
+          </p>
+        </div>
+
         <div className="grid gap-4 rounded-md border border-zinc-200 bg-zinc-50 p-4 lg:grid-cols-2">
           <ImageUploadField
             currentPath={settings.customerBackgroundImagePath}

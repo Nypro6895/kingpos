@@ -11,6 +11,7 @@
     "test:account-salon-baseline-static": "node scripts/verify-account-salon-baseline-static.mjs",
     "test:pos-customer-display-e2e": "node tests/pos-customer-display-e2e.mjs",
     "test:pos-live-draft-rpc-contract": "node --test tests/pos-live-draft-rpc-contract.test.mjs",
+    "test:staff-check-in-contract": "node --test tests/staff-check-in-contract.test.mjs",
     "test:salon-creation-routing": "node scripts/verify-salon-creation-routing.mjs"
   },
   "dependencies": {

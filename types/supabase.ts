@@ -2560,6 +2560,7 @@ export type Database = {
           customer_show_staff_name: boolean
           large_turn_threshold: number
           salon_id: string
+          staff_check_in_enabled: boolean
           tip_suggestions: number[]
           updated_at: string
         }
@@ -2581,6 +2582,7 @@ export type Database = {
           customer_show_staff_name?: boolean
           large_turn_threshold?: number
           salon_id: string
+          staff_check_in_enabled?: boolean
           tip_suggestions?: number[]
           updated_at?: string
         }
@@ -2602,6 +2604,7 @@ export type Database = {
           customer_show_staff_name?: boolean
           large_turn_threshold?: number
           salon_id?: string
+          staff_check_in_enabled?: boolean
           tip_suggestions?: number[]
           updated_at?: string
         }
@@ -4743,6 +4746,9 @@ export type Database = {
           last_name: string | null
           online_booking_enabled: boolean
           owner_public_enabled: boolean
+          passcode_digest: string
+          passcode_is_default: boolean
+          passcode_salt: string
           phone: string | null
           pos_enabled: boolean
           postal_code: string | null
@@ -4773,6 +4779,9 @@ export type Database = {
           last_name?: string | null
           online_booking_enabled?: boolean
           owner_public_enabled?: boolean
+          passcode_digest?: string
+          passcode_is_default?: boolean
+          passcode_salt?: string
           phone?: string | null
           pos_enabled?: boolean
           postal_code?: string | null
@@ -4803,6 +4812,9 @@ export type Database = {
           last_name?: string | null
           online_booking_enabled?: boolean
           owner_public_enabled?: boolean
+          passcode_digest?: string
+          passcode_is_default?: boolean
+          passcode_salt?: string
           phone?: string | null
           pos_enabled?: boolean
           postal_code?: string | null
@@ -5286,10 +5298,16 @@ export type Database = {
       }
       staff_workdays: {
         Row: {
+          auto_checked_out_at: string | null
           check_in_at: string | null
+          check_in_sequence: number | null
           check_out_at: string | null
           created_at: string
           id: string
+          last_leave_at: string | null
+          leave_baseline_turn_count: number | null
+          leave_cohort_staff_ids: string[]
+          queue_turn_count: number
           salon_id: string
           staff_id: string
           status: string
@@ -5297,10 +5315,16 @@ export type Database = {
           work_date: string
         }
         Insert: {
+          auto_checked_out_at?: string | null
           check_in_at?: string | null
+          check_in_sequence?: number | null
           check_out_at?: string | null
           created_at?: string
           id?: string
+          last_leave_at?: string | null
+          leave_baseline_turn_count?: number | null
+          leave_cohort_staff_ids?: string[]
+          queue_turn_count?: number
           salon_id: string
           staff_id: string
           status?: string
@@ -5308,10 +5332,16 @@ export type Database = {
           work_date: string
         }
         Update: {
+          auto_checked_out_at?: string | null
           check_in_at?: string | null
+          check_in_sequence?: number | null
           check_out_at?: string | null
           created_at?: string
           id?: string
+          last_leave_at?: string | null
+          leave_baseline_turn_count?: number | null
+          leave_cohort_staff_ids?: string[]
+          queue_turn_count?: number
           salon_id?: string
           staff_id?: string
           status?: string
@@ -5406,6 +5436,22 @@ export type Database = {
           p_token_hash?: string
         }
         Returns: Json
+      }
+      adjust_pos_portable_staff_turn: {
+        Args: {
+          p_delta: number
+          p_key_id: string
+          p_operator_passcode: string
+          p_operator_staff_id: string
+          p_reason: string
+          p_session_signature: string
+          p_target_staff_id: string
+        }
+        Returns: Json
+      }
+      auto_close_stale_staff_workdays: {
+        Args: { p_salon_id: string; p_today: string }
+        Returns: undefined
       }
       cancel_customer_booking: {
         Args: { p_booking_id: string; p_reason?: string }
@@ -5629,6 +5675,10 @@ export type Database = {
         Args: { p_key_id: string; p_session_signature: string }
         Returns: Json
       }
+      get_pos_portable_check_in_data: {
+        Args: { p_key_id: string; p_session_signature: string }
+        Returns: Json
+      }
       get_pos_portable_desk_data: {
         Args: {
           p_key_id: string
@@ -5640,6 +5690,14 @@ export type Database = {
       get_pos_setting_payload: {
         Args: { target_salon_id: string }
         Returns: Json
+      }
+      get_salon_business_date: {
+        Args: { p_salon_id: string }
+        Returns: string
+      }
+      get_salon_business_timezone: {
+        Args: { p_salon_id: string }
+        Returns: string
       }
       get_public_booking_by_manage_token: {
         Args: { raw_token: string }
@@ -6185,6 +6243,15 @@ export type Database = {
         Args: { target_account_id: string }
         Returns: undefined
       }
+      increment_staff_queue_turns: {
+        Args: {
+          p_delta: number
+          p_salon_id: string
+          p_staff_id: string
+          p_work_date: string
+        }
+        Returns: number
+      }
       sign_in_pos_portable_access: {
         Args: { p_access_id: string; p_passcode: string; p_user_agent?: string }
         Returns: Json
@@ -6202,6 +6269,16 @@ export type Database = {
         }
         Returns: Json
       }
+      submit_pos_portable_attendance_event: {
+        Args: {
+          p_event_type: string
+          p_key_id: string
+          p_passcode: string
+          p_session_signature: string
+          p_staff_id: string
+        }
+        Returns: Json
+      }
       submit_staff_salon_application: {
         Args: {
           p_message?: string
@@ -6213,6 +6290,15 @@ export type Database = {
       touch_pos_live_draft_activity: {
         Args: { p_reset_seconds?: number; p_token: string }
         Returns: Json
+      }
+      validate_staff_passcode_or_raise: {
+        Args: {
+          p_passcode: string
+          p_salon_id: string
+          p_scope: string
+          p_staff_id: string
+        }
+        Returns: boolean
       }
       update_closed_pos_ticket_tip_for_correction: {
         Args: { p_ticket_id: string; p_tip_type: string; p_tip_value: number }

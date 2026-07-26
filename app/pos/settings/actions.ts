@@ -17,6 +17,7 @@ import {
   type PortablePosCapability,
 } from "@/lib/pos-portable-capabilities";
 import { POS_DISPLAY_MEDIA_BUCKET, POS_SETTING_DEFAULTS } from "@/lib/pos-settings";
+import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
 import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -84,6 +85,7 @@ function redirectWithPortableAccessError(message: string): never {
 function revalidatePortablePosSurfaces() {
   revalidatePath("/pos/portable");
   revalidatePath("/pos/portable/book");
+  revalidatePath("/pos/portable/check-in");
   revalidatePath("/pos/portable/report");
   revalidatePath("/pos/portable/ticket");
 }
@@ -398,79 +400,104 @@ export async function updatePosSettingsAction(formData: FormData) {
       readOptionalString(formData, "app_download_url") ??
       POS_SETTING_DEFAULTS.appDownloadUrl;
 
-    const { error } = await supabase.from("pos_settings").upsert(
-      {
-        app_download_url: appDownloadUrl,
-        customer_background_image_path: getNextImagePath({
-          currentPath: readOptionalString(
-            formData,
-            "current_customer_background_image_path",
-          ),
-          remove: readBoolean(formData, "remove_customer_background_image"),
-          uploadedPath: backgroundPath,
-        }),
-        customer_left_ad_image_path: getNextImagePath({
-          currentPath: readOptionalString(
-            formData,
-            "current_customer_left_ad_image_path",
-          ),
-          remove: readBoolean(formData, "remove_customer_left_ad_image"),
-          uploadedPath: leftAdPath,
-        }),
-        customer_left_ad_text:
-          readOptionalString(formData, "customer_left_ad_text") ??
-          POS_SETTING_DEFAULTS.customerLeftAdText,
-        customer_promo_body:
-          readOptionalString(formData, "customer_promo_body") ??
-          POS_SETTING_DEFAULTS.customerPromoBody,
-        customer_promo_title:
-          readOptionalString(formData, "customer_promo_title") ??
-          POS_SETTING_DEFAULTS.customerPromoTitle,
-        customer_right_ad_image_path: getNextImagePath({
-          currentPath: readOptionalString(
-            formData,
-            "current_customer_right_ad_image_path",
-          ),
-          remove: readBoolean(formData, "remove_customer_right_ad_image"),
-          uploadedPath: rightAdPath,
-        }),
-        customer_right_ad_text:
-          readOptionalString(formData, "customer_right_ad_text") ??
-          POS_SETTING_DEFAULTS.customerRightAdText,
-        customer_show_barcode: readBoolean(formData, "customer_show_barcode"),
-        customer_show_customer_name: readBoolean(
+    const settingsPayload = {
+      app_download_url: appDownloadUrl,
+      customer_background_image_path: getNextImagePath({
+        currentPath: readOptionalString(
           formData,
-          "customer_show_customer_name",
+          "current_customer_background_image_path",
         ),
-        customer_show_receipt_status: readBoolean(
+        remove: readBoolean(formData, "remove_customer_background_image"),
+        uploadedPath: backgroundPath,
+      }),
+      customer_left_ad_image_path: getNextImagePath({
+        currentPath: readOptionalString(
           formData,
-          "customer_show_receipt_status",
+          "current_customer_left_ad_image_path",
         ),
-        customer_show_salon_name: readBoolean(
+        remove: readBoolean(formData, "remove_customer_left_ad_image"),
+        uploadedPath: leftAdPath,
+      }),
+      customer_left_ad_text:
+        readOptionalString(formData, "customer_left_ad_text") ??
+        POS_SETTING_DEFAULTS.customerLeftAdText,
+      customer_promo_body:
+        readOptionalString(formData, "customer_promo_body") ??
+        POS_SETTING_DEFAULTS.customerPromoBody,
+      customer_promo_title:
+        readOptionalString(formData, "customer_promo_title") ??
+        POS_SETTING_DEFAULTS.customerPromoTitle,
+      customer_right_ad_image_path: getNextImagePath({
+        currentPath: readOptionalString(
           formData,
-          "customer_show_salon_name",
+          "current_customer_right_ad_image_path",
         ),
-        customer_show_service_name: readBoolean(
+        remove: readBoolean(formData, "remove_customer_right_ad_image"),
+        uploadedPath: rightAdPath,
+      }),
+      customer_right_ad_text:
+        readOptionalString(formData, "customer_right_ad_text") ??
+        POS_SETTING_DEFAULTS.customerRightAdText,
+      customer_show_barcode: readBoolean(formData, "customer_show_barcode"),
+      customer_show_customer_name: readBoolean(
+        formData,
+        "customer_show_customer_name",
+      ),
+      customer_show_receipt_status: readBoolean(
+        formData,
+        "customer_show_receipt_status",
+      ),
+      customer_show_salon_name: readBoolean(
+        formData,
+        "customer_show_salon_name",
+      ),
+      customer_show_service_name: readBoolean(
+        formData,
+        "customer_show_service_name",
+      ),
+      customer_show_staff_name: readBoolean(
+        formData,
+        "customer_show_staff_name",
+      ),
+      large_turn_threshold: Math.max(
+        1,
+        readNumber(
           formData,
-          "customer_show_service_name",
+          "large_turn_threshold",
+          POS_SETTING_DEFAULTS.largeTurnThreshold,
         ),
-        customer_show_staff_name: readBoolean(
-          formData,
-          "customer_show_staff_name",
-        ),
-        large_turn_threshold: Math.max(
-          1,
-          readNumber(
-            formData,
-            "large_turn_threshold",
-            POS_SETTING_DEFAULTS.largeTurnThreshold,
-          ),
-        ),
-        salon_id: salon.id,
-        tip_suggestions: readTipSuggestions(formData),
-      },
-      { onConflict: "salon_id" },
-    );
+      ),
+      salon_id: salon.id,
+      staff_check_in_enabled: readBoolean(formData, "staff_check_in_enabled"),
+      tip_suggestions: readTipSuggestions(formData),
+    };
+
+    let { error } = await supabase
+      .from("pos_settings")
+      .upsert(settingsPayload, { onConflict: "salon_id" });
+
+    if (
+      error &&
+      isMissingSupabaseColumnError(error, "staff_check_in_enabled") &&
+      settingsPayload.staff_check_in_enabled
+    ) {
+      throw new Error(
+        "Staff check-in cannot be enabled until the staff check-in database migration is applied.",
+      );
+    }
+
+    if (error && isMissingSupabaseColumnError(error, "staff_check_in_enabled")) {
+      const {
+        staff_check_in_enabled: ignoredStaffCheckInEnabled,
+        ...legacySettingsPayload
+      } = settingsPayload;
+      void ignoredStaffCheckInEnabled;
+
+      const legacyResult = await supabase
+        .from("pos_settings")
+        .upsert(legacySettingsPayload, { onConflict: "salon_id" });
+      error = legacyResult.error;
+    }
 
     if (error) {
       throw new Error(error.message);

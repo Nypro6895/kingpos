@@ -16,6 +16,7 @@ import {
   createSupabaseServerClient,
   getSupabaseConfig,
 } from "@/lib/supabase/server";
+import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
 
 export const POS_DISPLAY_MEDIA_BUCKET = "pos-display-media";
 
@@ -47,6 +48,7 @@ export const POS_SETTING_DEFAULTS = {
   salonName: null,
   showServiceName: true,
   showStaffName: true,
+  staffCheckInEnabled: false,
   taxEnabled: false,
   tipSuggestions: [...POS_TIP_SUGGESTION_DEFAULTS],
 } as const;
@@ -79,6 +81,7 @@ export type PosDeskDefaults = {
   largeTurnThreshold: number;
   showServiceName: boolean;
   showStaffName: boolean;
+  staffCheckInEnabled: boolean;
   taxEnabled: boolean;
   tipSuggestions: number[];
 };
@@ -102,10 +105,13 @@ type PosSettingsRow = {
   customer_show_staff_name: boolean | null;
   large_turn_threshold: number | null;
   salon_id: string;
+  staff_check_in_enabled?: boolean | null;
   tip_suggestions: number[] | null;
 };
 
 const POS_SETTINGS_SELECT =
+  "salon_id, large_turn_threshold, staff_check_in_enabled, tip_suggestions, customer_background_image_path, customer_left_ad_image_path, customer_right_ad_image_path, customer_left_ad_text, customer_right_ad_text, customer_promo_title, customer_promo_body, customer_show_customer_name, customer_show_receipt_status, customer_show_salon_name, customer_show_service_name, customer_show_staff_name, customer_show_barcode, app_download_url";
+const POS_SETTINGS_LEGACY_SELECT =
   "salon_id, large_turn_threshold, tip_suggestions, customer_background_image_path, customer_left_ad_image_path, customer_right_ad_image_path, customer_left_ad_text, customer_right_ad_text, customer_promo_title, customer_promo_body, customer_show_customer_name, customer_show_receipt_status, customer_show_salon_name, customer_show_service_name, customer_show_staff_name, customer_show_barcode, app_download_url";
 
 function cleanText(value: unknown, fallback: string) {
@@ -236,6 +242,10 @@ export function normalizePosSettingsPayload(value: unknown): PosSettingsView {
     salonLogoPath,
     salonLogoUrl: getPosDisplaySalonLogoUrl(salonLogoPath),
     salonName: cleanOptionalText(payload.salonName),
+    staffCheckInEnabled:
+      typeof payload.staffCheckInEnabled === "boolean"
+        ? payload.staffCheckInEnabled
+        : POS_SETTING_DEFAULTS.staffCheckInEnabled,
     tipSuggestions: normalizeTipSuggestions(payload.tipSuggestions),
   };
 }
@@ -261,6 +271,7 @@ function rowToPosSettings(row: PosSettingsRow | null): PosSettingsView {
     customerShowServiceName: row.customer_show_service_name,
     customerShowStaffName: row.customer_show_staff_name,
     largeTurnThreshold: row.large_turn_threshold,
+    staffCheckInEnabled: row.staff_check_in_enabled,
     tipSuggestions: row.tip_suggestions,
   });
 }
@@ -281,6 +292,7 @@ export function getPosDeskDefaults(settings: PosSettingsView): PosDeskDefaults {
     largeTurnThreshold: settings.largeTurnThreshold,
     showServiceName: settings.showServiceName,
     showStaffName: settings.showStaffName,
+    staffCheckInEnabled: settings.staffCheckInEnabled,
     taxEnabled: settings.taxEnabled,
     tipSuggestions: settings.tipSuggestions,
   };
@@ -305,11 +317,22 @@ export async function getCurrentSalonPosSettings(
     throw new Error("Supabase environment variables are missing.");
   }
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("pos_settings")
     .select(POS_SETTINGS_SELECT)
     .eq("salon_id", salon.id)
     .maybeSingle<PosSettingsRow>();
+
+  if (error && isMissingSupabaseColumnError(error, "staff_check_in_enabled")) {
+    const legacyResult = await supabase
+      .from("pos_settings")
+      .select(POS_SETTINGS_LEGACY_SELECT)
+      .eq("salon_id", salon.id)
+      .maybeSingle<PosSettingsRow>();
+
+    data = legacyResult.data;
+    error = legacyResult.error;
+  }
 
   if (error) {
     if (error.code === "PGRST205" || error.code === "42P01") {

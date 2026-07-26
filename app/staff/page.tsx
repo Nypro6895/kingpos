@@ -1301,6 +1301,7 @@ function StaffDetailDrawer({
             ownerPublicEnabled={member.owner_public_enabled}
             publicProfileVisible={member.public_profile_visible}
             staffPublicConsentStatus={member.staff_public_consent_status}
+            showPasscodeControls={false}
             specialties={member.specialties}
             staffId={member.id}
           />

@@ -12,6 +12,7 @@ import {
 } from "@/lib/pos-settings";
 import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
+import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type { CurrentBusinessContext } from "@/lib/current-context";
@@ -26,6 +27,50 @@ import type { StaffWorkdayStatus } from "@/types/staff-workday";
 export const POS_DESK_DEFAULTS = getPosDeskDefaults(
   normalizePosSettingsPayload(null),
 );
+const POS_DESK_WORKDAYS_SELECT =
+  "staff_id, status, queue_turn_count, check_in_sequence, check_in_at";
+const POS_DESK_LEGACY_WORKDAYS_SELECT = "staff_id, status, check_in_at";
+
+type PosDeskSupabaseClient = NonNullable<
+  Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+>;
+type PosDeskWorkdayRow = {
+  check_in_at: string | null;
+  check_in_sequence?: number | null;
+  queue_turn_count?: number | null;
+  staff_id: string;
+  status: StaffWorkdayStatus;
+};
+
+async function loadPosDeskWorkdays(
+  supabase: PosDeskSupabaseClient,
+  input: {
+    salonId: string;
+    workDate: string;
+  },
+) {
+  let result = await supabase
+    .from("staff_workdays")
+    .select(POS_DESK_WORKDAYS_SELECT)
+    .eq("salon_id", input.salonId)
+    .eq("work_date", input.workDate)
+    .returns<PosDeskWorkdayRow[]>();
+
+  if (
+    result.error &&
+    (isMissingSupabaseColumnError(result.error, "queue_turn_count") ||
+      isMissingSupabaseColumnError(result.error, "check_in_sequence"))
+  ) {
+    result = await supabase
+      .from("staff_workdays")
+      .select(POS_DESK_LEGACY_WORKDAYS_SELECT)
+      .eq("salon_id", input.salonId)
+      .eq("work_date", input.workDate)
+      .returns<PosDeskWorkdayRow[]>();
+  }
+
+  return result;
+}
 
 function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
@@ -102,12 +147,10 @@ export async function getCurrentSalonPosDeskData() {
         .eq("pos_enabled", true)
         .order("display_name", { ascending: true })
         .returns<Array<Omit<PosDeskStaff, "today_status" | "turns">>>(),
-      supabase
-        .from("staff_workdays")
-        .select("staff_id, status")
-        .eq("salon_id", salon.id)
-        .eq("work_date", today)
-        .returns<Array<{ staff_id: string; status: StaffWorkdayStatus }>>(),
+      loadPosDeskWorkdays(supabase, {
+        salonId: salon.id,
+        workDate: today,
+      }),
       supabase
         .from("pos_ticket_item_turn_parts")
         .select("staff_id, turn_type")
@@ -128,14 +171,17 @@ export async function getCurrentSalonPosDeskData() {
     }
   }
 
-  const workdayStatusByStaffId = new Map(
-    (workdaysResult.data ?? []).map((workday) => [workday.staff_id, workday.status]),
+  const settingsView = settings;
+  const workdayByStaffId = new Map(
+    (workdaysResult.data ?? []).map((workday) => [workday.staff_id, workday]),
   );
   const turnsByStaffId = new Map<string, PosDeskTurnSummary>();
 
   for (const member of staffResult.data ?? []) {
     turnsByStaffId.set(member.id, {
       largeTurns: 0,
+      queueTurns: 0,
+      receiptLargeTurns: 0,
       smallTurns: 0,
       totalTurns: 0,
     });
@@ -150,6 +196,7 @@ export async function getCurrentSalonPosDeskData() {
 
     if (part.turn_type === "large") {
       summary.largeTurns += 1;
+      summary.receiptLargeTurns += 1;
     } else {
       summary.smallTurns += 1;
     }
@@ -158,28 +205,55 @@ export async function getCurrentSalonPosDeskData() {
   }
 
   const staff = (staffResult.data ?? [])
-    .map<PosDeskStaff>((member) => ({
-      ...member,
-      today_status: workdayStatusByStaffId.get(member.id) ?? "not_checked_in",
-      turns: turnsByStaffId.get(member.id) ?? {
+    .map<PosDeskStaff>((member) => {
+      const workday = workdayByStaffId.get(member.id);
+      const turns = turnsByStaffId.get(member.id) ?? {
         largeTurns: 0,
+        queueTurns: 0,
+        receiptLargeTurns: 0,
         smallTurns: 0,
         totalTurns: 0,
-      },
-    }))
+      };
+      const queueTurns =
+        typeof workday?.queue_turn_count === "number"
+          ? Math.max(0, workday.queue_turn_count)
+          : turns.receiptLargeTurns;
+
+      return {
+        ...member,
+        check_in_at: workday?.check_in_at ?? null,
+        check_in_sequence: workday?.check_in_sequence ?? null,
+        today_status: workday?.status ?? "not_checked_in",
+        turns: {
+          ...turns,
+          largeTurns: queueTurns,
+          queueTurns,
+          totalTurns: queueTurns,
+        },
+      };
+    })
+    .filter(
+      (member) =>
+        !settingsView.staffCheckInEnabled || member.today_status === "working",
+    )
     .sort((left, right) => {
       const leftUnavailable =
-        left.today_status === "checked_out" || left.today_status === "unavailable";
+        left.today_status === "checked_out" ||
+        left.today_status === "auto_checked_out" ||
+        left.today_status === "unavailable";
       const rightUnavailable =
-        right.today_status === "checked_out" || right.today_status === "unavailable";
+        right.today_status === "checked_out" ||
+        right.today_status === "auto_checked_out" ||
+        right.today_status === "unavailable";
 
       if (leftUnavailable !== rightUnavailable) {
         return leftUnavailable ? 1 : -1;
       }
 
       return (
-        left.turns.totalTurns - right.turns.totalTurns ||
-        left.turns.largeTurns - right.turns.largeTurns ||
+        left.turns.queueTurns - right.turns.queueTurns ||
+        (left.check_in_sequence ?? Number.MAX_SAFE_INTEGER) -
+          (right.check_in_sequence ?? Number.MAX_SAFE_INTEGER) ||
         left.display_name.localeCompare(right.display_name)
       );
     });
@@ -187,7 +261,7 @@ export async function getCurrentSalonPosDeskData() {
   return {
     context,
     customers: customersResult.data ?? [],
-    defaults: getPosDeskDefaults(settings),
+    defaults: getPosDeskDefaults(settingsView),
     services: servicesResult.data ?? [],
     staff,
     today,
