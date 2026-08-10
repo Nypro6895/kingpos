@@ -54,7 +54,6 @@ type SearchParamsReader = {
 };
 
 type RouteWorkspaceKind =
-  | "account"
   | "manage"
   | "personal"
   | "salon"
@@ -90,9 +89,6 @@ const WORKSPACE_PANEL_LINK: NavigationLink = {
   id: "my-place",
   label: "My Place",
 };
-
-const STAFF_ROUTE_PREFIXES = ROLE_NAVIGATION.staff.routePrefixes;
-const OWNER_ROUTE_PREFIXES = ROLE_NAVIGATION.owner.routePrefixes;
 
 const CUSTOMER_MORE_ROUTE_PREFIXES = ["/more"];
 
@@ -143,52 +139,6 @@ function isCustomerMoreRoute(pathname: string) {
   return CUSTOMER_MORE_ROUTE_PREFIXES.some((prefix) =>
     customerRouteMatches(pathname, prefix),
   );
-}
-
-function mobileRoleNavigation(
-  workspaceType: WorkspaceType,
-  salonMode: SalonMode | null,
-): RoleNavigationConfig {
-  if (workspaceType === "salon" && salonMode === "staff") {
-    return ROLE_NAVIGATION.staff;
-  }
-
-  if (workspaceType === "salon" && salonMode === "manage") {
-    return ROLE_NAVIGATION.owner;
-  }
-
-  return ROLE_NAVIGATION.personal;
-}
-
-function isMobileRoleRoute(navigation: RoleNavigationConfig, pathname: string) {
-  return navigation.routePrefixes.some((prefix) =>
-    customerRouteMatches(pathname, prefix),
-  );
-}
-
-function roleAwareRouteWorkspaceKind(input: {
-  pathname: string;
-  routeWorkspaceKind: RouteWorkspaceKind | null;
-  salonMode: SalonMode | null;
-  workspaceType: WorkspaceType;
-}) {
-  if (
-    input.workspaceType === "salon" &&
-    input.salonMode === "staff" &&
-    STAFF_ROUTE_PREFIXES.some((prefix) => customerRouteMatches(input.pathname, prefix))
-  ) {
-    return "staff";
-  }
-
-  if (
-    input.workspaceType === "salon" &&
-    input.salonMode === "manage" &&
-    OWNER_ROUTE_PREFIXES.some((prefix) => customerRouteMatches(input.pathname, prefix))
-  ) {
-    return "manage";
-  }
-
-  return input.routeWorkspaceKind;
 }
 
 function isRoleMoreActive(
@@ -353,12 +303,6 @@ function moreItemAsNavigationLink(item: RoleMoreItem): NavigationLink {
   };
 }
 
-const PERSONAL_NAVIGATION_SECTION: NavigationSection = {
-  id: "personal-navigation",
-  label: "Personal",
-  links: PERSONAL_LINKS,
-};
-
 function matchesPath(pathname: string, path: string) {
   return pathname === path || pathname.startsWith(`${path}/`);
 }
@@ -377,25 +321,11 @@ function isShelllessPath(pathname: string) {
 function getRouteWorkspaceKind(pathname: string): RouteWorkspaceKind | null {
   if (
     pathname === "/" ||
-    matchesPath(pathname, "/explore") ||
-    matchesPath(pathname, "/my-bookings") ||
-    matchesPath(pathname, "/beauty") ||
-    matchesPath(pathname, "/more") ||
-    matchesPath(pathname, "/my-place") ||
-    matchesPath(pathname, "/notifications") ||
-    matchesPath(pathname, "/account") ||
-    matchesPath(pathname, "/settings")
+    ROLE_NAVIGATION.personal.routePrefixes.some((prefix) =>
+      matchesPath(pathname, prefix),
+    )
   ) {
     return "personal";
-  }
-
-  if (
-    matchesPath(pathname, "/staff/my-work") ||
-    matchesPath(pathname, "/staff/appointments") ||
-    matchesPath(pathname, "/staff/workday") ||
-    matchesPath(pathname, "/staff/connections")
-  ) {
-    return "staff";
   }
 
   if (matchesPath(pathname, "/salon-profile")) {
@@ -403,31 +333,63 @@ function getRouteWorkspaceKind(pathname: string): RouteWorkspaceKind | null {
   }
 
   if (
-    pathname === "/staff" ||
-    matchesPath(pathname, "/staff/today") ||
-    matchesPath(pathname, "/pos") ||
-    matchesPath(pathname, "/bookings") ||
-    matchesPath(pathname, "/customers") ||
-    matchesPath(pathname, "/services") ||
-    matchesPath(pathname, "/pos-tickets") ||
-    matchesPath(pathname, "/tickets") ||
-    matchesPath(pathname, "/payroll") ||
-    matchesPath(pathname, "/reports") ||
-    matchesPath(pathname, "/salon-settings")
+    ROLE_NAVIGATION.staff.routePrefixes.some((prefix) =>
+      matchesPath(pathname, prefix),
+    )
+  ) {
+    return "staff";
+  }
+
+  if (
+    ROLE_NAVIGATION.owner.routePrefixes.some((prefix) =>
+      matchesPath(pathname, prefix),
+    )
   ) {
     return "manage";
   }
 
-  if (
-    matchesPath(pathname, "/businesses") ||
-    matchesPath(pathname, "/salons") ||
-    matchesPath(pathname, "/roles") ||
-    matchesPath(pathname, "/permissions")
-  ) {
-    return "account";
+  return null;
+}
+
+function routeNavigationForWorkspaceKind(input: {
+  routeWorkspaceKind: RouteWorkspaceKind | null;
+  salonMode: SalonMode | null;
+  workspaceType: WorkspaceType;
+}): RoleNavigationConfig | null {
+  if (input.routeWorkspaceKind === "personal") {
+    return ROLE_NAVIGATION.personal;
+  }
+
+  if (input.routeWorkspaceKind === "staff") {
+    return ROLE_NAVIGATION.staff;
+  }
+
+  if (input.routeWorkspaceKind === "manage") {
+    return ROLE_NAVIGATION.owner;
+  }
+
+  if (input.routeWorkspaceKind === "salon" && input.workspaceType === "salon") {
+    return input.salonMode === "staff"
+      ? ROLE_NAVIGATION.staff
+      : ROLE_NAVIGATION.owner;
   }
 
   return null;
+}
+
+function currentWorkspaceForRoute(input: {
+  currentWorkspace: CurrentWorkspaceOption | null;
+  routeWorkspaceKind: RouteWorkspaceKind | null;
+  workspaceOptions: CurrentWorkspaceOption[];
+}) {
+  if (input.routeWorkspaceKind !== "personal") {
+    return input.currentWorkspace;
+  }
+
+  return (
+    input.workspaceOptions.find((workspace) => workspace.type === "personal") ??
+    input.currentWorkspace
+  );
 }
 
 function sidebarLinkClass(isActive: boolean) {
@@ -1991,6 +1953,7 @@ function CustomerDesktopShell({
   accountLabel,
   children,
   currentWorkspace,
+  desktopBreakpoint,
   navigation,
   notificationSummary,
   pathname,
@@ -2002,15 +1965,21 @@ function CustomerDesktopShell({
   accountLabel: string;
   children: ReactNode;
   currentWorkspace: CurrentWorkspaceOption | null;
+  desktopBreakpoint: "lg" | "xl";
   navigation: RoleNavigationConfig;
   notificationSummary: NotificationSummary;
   pathname: string;
   searchParams: SearchParamsReader;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
+  const displayClass = desktopBreakpoint === "lg" ? "lg:grid" : "xl:grid";
+
   return (
     <div
-      className="hidden min-h-screen grid-cols-[16.25rem_minmax(0,1fr)] bg-white text-text-primary xl:grid 2xl:grid-cols-[18rem_minmax(0,1fr)]"
+      className={[
+        "hidden min-h-screen grid-cols-[16.25rem_minmax(0,1fr)] bg-white text-text-primary 2xl:grid-cols-[18rem_minmax(0,1fr)]",
+        displayClass,
+      ].join(" ")}
       data-testid="customer-desktop-shell"
     >
       <CustomerDesktopSidebar
@@ -2810,35 +2779,48 @@ export function NavigationShell({
     return <>{children}</>;
   }
 
-  const baseRouteWorkspaceKind = getRouteWorkspaceKind(pathname);
-  const routeWorkspaceKind = roleAwareRouteWorkspaceKind({
-    pathname,
-    routeWorkspaceKind: baseRouteWorkspaceKind,
+  const routeWorkspaceKind = getRouteWorkspaceKind(pathname);
+  const routeNavigation = routeNavigationForWorkspaceKind({
+    routeWorkspaceKind,
     salonMode,
     workspaceType,
   });
-  const activeMobileNavigation = mobileRoleNavigation(workspaceType, salonMode);
-  const showRoleMobileShell = isMobileRoleRoute(activeMobileNavigation, pathname);
-  const showRoleDesktopShell = showRoleMobileShell;
+  const routeCurrentWorkspace = currentWorkspaceForRoute({
+    currentWorkspace,
+    routeWorkspaceKind,
+    workspaceOptions,
+  });
+  const showRoleMobileShell = Boolean(routeNavigation);
+  const showRoleDesktopShell = Boolean(routeNavigation);
+  const routeUsesPersonalShell = routeWorkspaceKind === "personal";
+  const desktopShellBreakpoint = routeUsesPersonalShell ? "lg" : "xl";
+  const isSalonManageRoute =
+    workspaceType === "salon" &&
+    salonMode === "manage" &&
+    routeWorkspaceKind === "manage";
+  const isSalonStaffRoute =
+    workspaceType === "salon" &&
+    salonMode === "staff" &&
+    routeWorkspaceKind === "staff";
+  const isSharedSalonRoute =
+    workspaceType === "salon" && routeWorkspaceKind === "salon";
   const showWorkspaceContextSidebar =
-    (workspaceType === "account" &&
-      routeWorkspaceKind === "account") ||
-    (workspaceType === "salon" &&
-      salonMode === "manage" &&
-      routeWorkspaceKind === "manage") ||
-    (workspaceType === "salon" &&
-      salonMode === "staff" &&
-      routeWorkspaceKind === "staff") ||
-    (workspaceType === "salon" && routeWorkspaceKind === "salon");
-  const showAccountSidebar = routeWorkspaceKind === "personal";
-  const showWorkspaceSidebar =
-    showAccountSidebar || showWorkspaceContextSidebar;
+    !routeUsesPersonalShell &&
+    (isSalonManageRoute || isSalonStaffRoute || isSharedSalonRoute);
+  const showWorkspaceSidebar = showWorkspaceContextSidebar;
+  const baseShellHiddenClass = showRoleDesktopShell
+    ? desktopShellBreakpoint === "lg"
+      ? "lg:hidden"
+      : "xl:hidden"
+    : "";
+  const baseShellPaddingClass = showWorkspaceSidebar
+    ? "lg:pl-[19rem]"
+    : routeUsesPersonalShell
+      ? ""
+      : "lg:pl-16";
   const contentPaddingClass = showRoleMobileShell
     ? "pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0"
     : "pb-0";
-  const sidebarSections = showAccountSidebar
-    ? [PERSONAL_NAVIGATION_SECTION, ...workspaceSections]
-    : workspaceSections;
 
   return (
     <>
@@ -2849,8 +2831,8 @@ export function NavigationShell({
         <div
           className={[
             "min-h-screen bg-white",
-            showWorkspaceSidebar ? "lg:pl-[19rem]" : "lg:pl-16",
-            showRoleDesktopShell ? "xl:hidden" : "",
+            baseShellPaddingClass,
+            baseShellHiddenClass,
           ].join(" ")}
         >
           <AppRail
@@ -2864,7 +2846,7 @@ export function NavigationShell({
           />
           <QuickWorkspacePanel
             accountLabel={accountLabel}
-            currentWorkspace={currentWorkspace}
+            currentWorkspace={routeCurrentWorkspace}
             isOpen={isWorkspacePanelOpen}
             notificationSummary={notificationSummary}
             onClose={closeWorkspacePanel}
@@ -2877,18 +2859,18 @@ export function NavigationShell({
               accountEmail={accountEmail}
               accountLabel={accountLabel}
               currentAccountName={currentAccountName}
-              currentWorkspace={currentWorkspace}
+              currentWorkspace={routeCurrentWorkspace}
               pathname={pathname}
               searchParams={searchParams}
               workspaceOptions={workspaceOptions}
-              workspaceSections={sidebarSections}
+              workspaceSections={workspaceSections}
             />
           ) : null}
           <MobileHeader
             accountAvatarUrl={accountAvatarUrl}
             accountEmail={accountEmail}
             accountLabel={accountLabel}
-            currentWorkspace={currentWorkspace}
+            currentWorkspace={routeCurrentWorkspace}
             isCustomerShell={showRoleMobileShell}
             notificationSummary={notificationSummary}
             pathname={pathname}
@@ -2899,20 +2881,20 @@ export function NavigationShell({
           <div className={["min-h-screen", contentPaddingClass].join(" ")}>
             {children}
           </div>
-          {showRoleMobileShell ? (
+          {routeNavigation ? (
             <MobileBottomNav
-              ariaLabel={activeMobileNavigation.ariaLabel}
-              links={activeMobileNavigation.links}
+              ariaLabel={routeNavigation.ariaLabel}
+              links={routeNavigation.links}
               notificationSummary={notificationSummary}
               pathname={pathname}
-              roleKind={activeMobileNavigation.kind}
+              roleKind={routeNavigation.kind}
               searchParams={searchParams}
             />
           ) : null}
         </div>
       </CustomerShellContextProvider>
 
-      {showRoleDesktopShell ? (
+      {routeNavigation ? (
         <CustomerShellContextProvider
           isCustomerShell
           notificationSummary={notificationSummary}
@@ -2921,8 +2903,9 @@ export function NavigationShell({
             accountAvatarUrl={accountAvatarUrl}
             accountEmail={accountEmail}
             accountLabel={accountLabel}
-            currentWorkspace={currentWorkspace}
-            navigation={activeMobileNavigation}
+            currentWorkspace={routeCurrentWorkspace}
+            desktopBreakpoint={desktopShellBreakpoint}
+            navigation={routeNavigation}
             notificationSummary={notificationSummary}
             pathname={pathname}
             searchParams={searchParams}

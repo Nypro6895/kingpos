@@ -120,6 +120,14 @@ const OWNER_LINKS: NavigationLink[] = [
 export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   personal: [
     {
+      description: "Appointments, receipts, and salon visits tied to your profile.",
+      href: "/activity",
+      icon: "receipt",
+      id: "personal-activity",
+      label: "Activity",
+      navigationIcon: "receipt",
+    },
+    {
       description: "Posts saved from Explore and salon profiles.",
       href: "/more/saved-post",
       icon: "heart",
@@ -297,13 +305,19 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
     moreLinks: moreNavigationLinks("personal"),
     routePrefixes: [
       "/account",
+      "/activity",
       "/beauty",
+      "/businesses",
       "/explore",
       "/more",
       "/my-bookings",
       "/my-place",
       "/notifications",
+      "/permissions",
+      "/roles",
+      "/salons",
       "/settings",
+      "/staff/connections",
     ],
   },
   staff: {
@@ -314,11 +328,9 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
     links: STAFF_LINKS,
     moreLinks: moreNavigationLinks("staff"),
     routePrefixes: [
-      "/more",
-      "/notifications",
-      "/salon-profile",
       "/staff/appointments",
       "/staff/my-work",
+      "/staff/workday",
     ],
   },
   owner: {
@@ -330,16 +342,15 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
     moreLinks: moreNavigationLinks("owner"),
     routePrefixes: [
       "/bookings",
-      "/more",
-      "/notifications",
+      "/customers",
       "/payroll",
       "/pos",
       "/pos-tickets",
       "/reports",
-      "/salon-profile",
       "/salon-settings",
       "/services",
       "/staff",
+      "/tickets",
     ],
   },
 };

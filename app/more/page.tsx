@@ -1,8 +1,4 @@
-import {
-  getCurrentBusinessContext,
-  isSalonManageContext,
-  isSalonStaffContext,
-} from "@/lib/current-context";
+import { getCurrentBusinessContext } from "@/lib/current-context";
 import {
   ROLE_MORE_ITEMS,
   type RoleMoreIcon,
@@ -102,27 +98,7 @@ function MoreIcon({ name }: { name: MoreIconName }) {
   return <svg {...common}>{paths[name]}</svg>;
 }
 
-function moreItemsForContext(
-  context: Awaited<ReturnType<typeof getCurrentBusinessContext>>,
-) {
-  if (isSalonStaffContext(context)) {
-    return {
-      eyebrow: "Staff",
-      items: ROLE_MORE_ITEMS.staff,
-      summary: "Payroll, statistics, saved posts, and shared favorites.",
-      title: "More",
-    };
-  }
-
-  if (isSalonManageContext(context)) {
-    return {
-      eyebrow: "Owner",
-      items: ROLE_MORE_ITEMS.owner,
-      summary: "Owner tools for the current salon.",
-      title: "More",
-    };
-  }
-
+function personalMoreItems() {
   return {
     eyebrow: "Personal",
     items: ROLE_MORE_ITEMS.personal,
@@ -162,7 +138,7 @@ export default async function MorePage() {
     redirect("/login?next=/more");
   }
 
-  const more = moreItemsForContext(context);
+  const more = personalMoreItems();
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
