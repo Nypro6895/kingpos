@@ -13,7 +13,7 @@ import {
   searchCustomerDisplayLiveDraftCustomers,
   type CustomerDisplayTipOption,
 } from "@/app/pos/actions";
-import { QrCodeTile } from "@/app/pos/settings/customer-display-install-panel";
+import { QrCodeTile } from "@/components/qr-code-tile";
 import {
   getPosLiveDraftRealtimeChannel,
   POS_LIVE_DRAFT_BROADCAST_EVENT,

@@ -8,6 +8,10 @@ import {
   getRouteForInvalidSalonContext,
   isSalonManageContext,
 } from "@/lib/current-context";
+import {
+  issueCustomerClaimTokenForTicket,
+  type CustomerClaimOffer,
+} from "@/lib/customer-identity-claims";
 import { requirePermission } from "@/lib/permissions";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import { getTurnType, parsePosAmountInput } from "@/lib/pos-desk-amounts";
@@ -49,8 +53,20 @@ type ActionResult<T> =
   | { data?: never; error: string; ok: false };
 
 type PosDeskActionResult =
-  | { error: string; ok: false; ticketId?: never; ticketNumber?: never }
-  | { error?: never; ok: true; ticketId: string; ticketNumber: string };
+  | {
+      customerClaim?: never;
+      error: string;
+      ok: false;
+      ticketId?: never;
+      ticketNumber?: never;
+    }
+  | {
+      customerClaim: CustomerClaimOffer | null;
+      error?: never;
+      ok: true;
+      ticketId: string;
+      ticketNumber: string;
+    };
 
 export type CustomerDisplayTipOption = {
   amount: number;
@@ -459,6 +475,18 @@ async function findOrCreateDeskCustomer(input: {
   }
 
   return data;
+}
+
+async function maybeIssueCustomerClaimOffer(input: {
+  customerId: string;
+  supabase: PosDeskSupabaseClient;
+  ticketId: string;
+}) {
+  return issueCustomerClaimTokenForTicket({
+    customerId: input.customerId,
+    supabase: input.supabase,
+    ticketId: input.ticketId,
+  });
 }
 
 async function loadSessionLinesForPos(input: {
@@ -1099,12 +1127,23 @@ async function createTicketFromSubmitInput(
     await recalculateStaffEarningsForDate(salon.id, workDate);
     await broadcastPosStaffChange(salon.id, "pos");
 
+    const customerClaim = await maybeIssueCustomerClaimOffer({
+      customerId: customer.id,
+      supabase,
+      ticketId: ticket.id,
+    });
+
     revalidatePath("/pos");
     revalidatePath("/pos-tickets");
     revalidatePath("/staff/today");
     revalidatePath("/staff/my-work");
 
-    return { ok: true, ticketId: ticket.id, ticketNumber: ticket.ticket_number };
+    return {
+      customerClaim,
+      ok: true,
+      ticketId: ticket.id,
+      ticketNumber: ticket.ticket_number,
+    };
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Unable to submit POS receipt.",
@@ -2396,12 +2435,23 @@ export async function submitSessionToTicket(
     await recalculateStaffEarningsForDate(salon.id, workDate);
     await broadcastPosStaffChange(salon.id, "pos");
 
+    const customerClaim = await maybeIssueCustomerClaimOffer({
+      customerId: customer.id,
+      supabase,
+      ticketId: ticket.id,
+    });
+
     revalidatePath("/pos");
     revalidatePath("/pos-tickets");
     revalidatePath("/staff/today");
     revalidatePath("/staff/my-work");
 
-    return { ok: true, ticketId: ticket.id, ticketNumber: ticket.ticket_number };
+    return {
+      customerClaim,
+      ok: true,
+      ticketId: ticket.id,
+      ticketNumber: ticket.ticket_number,
+    };
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Unable to submit POS session.",

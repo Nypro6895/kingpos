@@ -307,6 +307,7 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
       "/account",
       "/activity",
       "/beauty",
+      "/claim",
       "/businesses",
       "/explore",
       "/more",

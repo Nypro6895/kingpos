@@ -10,6 +10,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { QrCodeTile } from "@/components/qr-code-tile";
 import { usePathname, useRouter } from "next/navigation";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { parsePosAmountInput } from "@/lib/pos-desk-amounts";
@@ -83,6 +84,11 @@ type CustomerCreateDraft = {
 };
 
 type CustomerCreateField = "email" | "name" | "phone";
+type SubmittedCustomerClaim = {
+  claimPath: string;
+  expiresAt: string;
+  token: string;
+};
 
 type PosDeskClientActions = {
   adjustStaffTurn: (input: {
@@ -376,6 +382,8 @@ export function PosDeskClient({
   );
   const [draftRestored, setDraftRestored] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [customerClaim, setCustomerClaim] =
+    useState<SubmittedCustomerClaim | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -425,6 +433,17 @@ export function PosDeskClient({
       ? defaults.tipSuggestions.slice(0, 4)
       : [5, 10, 15, 20];
   const sortedStaff = staff;
+  const customerClaimUrl = useMemo(() => {
+    if (!customerClaim) {
+      return null;
+    }
+
+    if (typeof window === "undefined") {
+      return customerClaim.claimPath;
+    }
+
+    return new URL(customerClaim.claimPath, window.location.origin).toString();
+  }, [customerClaim]);
   const totalLines = useMemo(
     () => staffLines.map((line) => ({ line_total: line.amount })),
     [staffLines],
@@ -1588,6 +1607,7 @@ export function PosDeskClient({
     setDraftRestored(false);
     setError(null);
     setMessage(null);
+    setCustomerClaim(null);
     setCustomerResults([]);
     setCustomerSearchComplete(false);
     setCustomerCreateDraft(emptyCustomerCreateDraft);
@@ -1740,6 +1760,7 @@ export function PosDeskClient({
 
     submitLockedRef.current = true;
     setIsSubmitting(true);
+    setCustomerClaim(null);
     setMessage("Submitting receipt...");
     startTransition(async () => {
       try {
@@ -1766,6 +1787,7 @@ export function PosDeskClient({
         holdCompletedDisplayRef.current = true;
         clearDraft();
         setMessage(`Ticket ${result.ticketNumber} submitted.`);
+        setCustomerClaim(result.customerClaim ?? null);
         setLastAction("Receipt submitted");
       } catch (error) {
         setMessage(null);
@@ -2890,6 +2912,33 @@ export function PosDeskClient({
           <p className="mb-3 rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
             {message}
           </p>
+        ) : null}
+        {customerClaim && customerClaimUrl ? (
+          <div className="mb-3 grid justify-items-center gap-3 rounded border border-emerald-300 bg-emerald-50 px-3 py-4 text-center">
+            <div>
+              <p className="text-sm font-bold text-emerald-950">
+                Save receipt & visit history to ReyLUMI
+              </p>
+              <p className="mt-1 text-xs font-medium text-emerald-800">
+                Scan with your phone to connect this visit.
+              </p>
+            </div>
+            <QrCodeTile
+              ariaLabel="Customer history claim QR code"
+              className="aspect-square w-40 rounded-md bg-white p-3 shadow-sm"
+              dataKind="claim"
+              fallbackMessage="Open the claim link on the customer's phone."
+              valueToEncode={customerClaimUrl}
+            />
+            <a
+              className="text-xs font-bold text-emerald-900 underline"
+              href={customerClaim.claimPath}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open claim link
+            </a>
+          </div>
         ) : null}
 
         <div className="mb-3">

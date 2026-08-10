@@ -7,6 +7,11 @@ import { cookies, headers } from "next/headers";
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
 export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
 
+type SupabaseSessionTokens = {
+  accessToken: string;
+  refreshToken: string;
+};
+
 type SupabaseEnvStatus = {
   hasSupabaseUrl: boolean;
   hasSupabaseAnonKey: boolean;
@@ -117,6 +122,43 @@ export async function createAuthenticatedSupabaseServerClient() {
   });
 }
 
+export async function createAuthenticatedSupabaseAuthSessionServerClient() {
+  const config = getSupabaseConfig();
+  const sessionTokens = await getSupabaseSessionTokensFromRequest();
+
+  if (!config || !sessionTokens) {
+    return null;
+  }
+
+  const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+
+  const { data, error } = await supabase.auth.setSession({
+    access_token: sessionTokens.accessToken,
+    refresh_token: sessionTokens.refreshToken,
+  });
+
+  if (error || !data.session || !data.user) {
+    return null;
+  }
+
+  const accessTokenAllowed = await isAccessTokenAllowedForAppSession(
+    config,
+    data.session.access_token,
+  );
+
+  if (!accessTokenAllowed) {
+    return null;
+  }
+
+  return supabase;
+}
+
 async function isAccessTokenAllowedForAppSession(
   config: SupabaseConfig,
   accessToken: string,
@@ -162,28 +204,42 @@ async function isAccessTokenAllowedForAppSession(
   return !isDeniedKingUserStatus(userStatus?.status);
 }
 
-function readTokenFromCookieValue(value: string) {
+function readSessionFromCookieValue(value: string): Partial<SupabaseSessionTokens> {
   const decodedValue = decodeURIComponent(value);
 
   if (decodedValue.startsWith("base64-")) {
     const rawJson = Buffer.from(decodedValue.slice("base64-".length), "base64").toString(
       "utf8",
     );
-    const parsed = JSON.parse(rawJson) as { access_token?: string };
-    return parsed.access_token ?? null;
+    return readSessionFromCookieValue(rawJson);
   }
 
   if (decodedValue.startsWith("{")) {
-    const parsed = JSON.parse(decodedValue) as { access_token?: string };
-    return parsed.access_token ?? null;
+    const parsed = JSON.parse(decodedValue) as {
+      access_token?: string;
+      refresh_token?: string;
+    };
+
+    return {
+      accessToken: parsed.access_token,
+      refreshToken: parsed.refresh_token,
+    };
   }
 
   if (decodedValue.startsWith("[")) {
     const parsed = JSON.parse(decodedValue) as string[];
-    return parsed[0] ?? null;
+
+    return {
+      accessToken: parsed[0],
+      refreshToken: parsed[1],
+    };
   }
 
-  return decodedValue || null;
+  return { accessToken: decodedValue || undefined };
+}
+
+function readTokenFromCookieValue(value: string) {
+  return readSessionFromCookieValue(value).accessToken ?? null;
 }
 
 export async function getAccessTokenFromRequest() {
@@ -214,6 +270,48 @@ export async function getAccessTokenFromRequest() {
   } catch {
     return null;
   }
+}
+
+export async function getSupabaseSessionTokensFromRequest(): Promise<SupabaseSessionTokens | null> {
+  const authorization = (await headers()).get("authorization");
+  const bearerPrefix = "Bearer ";
+  const bearerToken = authorization?.startsWith(bearerPrefix)
+    ? authorization.slice(bearerPrefix.length)
+    : null;
+  const cookieStore = await cookies();
+  const directAccessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
+  const directRefreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
+  const accessToken = bearerToken || directAccessToken;
+
+  if (accessToken && directRefreshToken) {
+    return {
+      accessToken,
+      refreshToken: directRefreshToken,
+    };
+  }
+
+  const authCookie = cookieStore
+    .getAll()
+    .find((cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token"));
+
+  if (!authCookie) {
+    return null;
+  }
+
+  try {
+    const sessionTokens = readSessionFromCookieValue(authCookie.value);
+
+    if (sessionTokens.accessToken && sessionTokens.refreshToken) {
+      return {
+        accessToken: sessionTokens.accessToken,
+        refreshToken: sessionTokens.refreshToken,
+      };
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }
 
 export async function setSupabaseSessionCookies(session: Session) {

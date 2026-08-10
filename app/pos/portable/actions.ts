@@ -39,8 +39,20 @@ type ActionResult<T> =
   | { data?: never; error: string; ok: false };
 
 type PosDeskActionResult =
-  | { error: string; ok: false; ticketId?: never; ticketNumber?: never }
-  | { error?: never; ok: true; ticketId: string; ticketNumber: string };
+  | {
+      customerClaim?: never;
+      error: string;
+      ok: false;
+      ticketId?: never;
+      ticketNumber?: never;
+    }
+  | {
+      customerClaim: null;
+      error?: never;
+      ok: true;
+      ticketId: string;
+      ticketNumber: string;
+    };
 
 export type PortablePosLoginState = {
   error: string | null;
@@ -1333,6 +1345,7 @@ export async function portableSubmitPosDeskReceipt(
     await broadcastPosStaffChange(portableSession.salon_id, "pos");
 
     return {
+      customerClaim: null,
       ok: true,
       ticketId: result.ticketId,
       ticketNumber: result.ticketNumber,
