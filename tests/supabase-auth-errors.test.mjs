@@ -21,7 +21,7 @@ test("Supabase auth connection errors return a service unavailable response", ()
   });
 });
 
-test("Supabase auth API errors keep their user-facing message", () => {
+test("Supabase invalid credential errors return a human-readable message", () => {
   const error = {
     message: "Invalid login credentials",
     name: "AuthApiError",
@@ -30,7 +30,21 @@ test("Supabase auth API errors keep their user-facing message", () => {
 
   assert.equal(isSupabaseAuthConnectionError(error), false);
   assert.deepEqual(getSupabaseAuthErrorResponse(error, "Unable to log in."), {
-    message: "Invalid login credentials",
+    message: "Email or password is incorrect.",
     status: 400,
+  });
+});
+
+test("Supabase auth API errors keep other user-facing messages", () => {
+  const error = {
+    message: "Password should be at least 6 characters.",
+    name: "AuthApiError",
+    status: 422,
+  };
+
+  assert.equal(isSupabaseAuthConnectionError(error), false);
+  assert.deepEqual(getSupabaseAuthErrorResponse(error, "Unable to create account."), {
+    message: "Password should be at least 6 characters.",
+    status: 422,
   });
 });

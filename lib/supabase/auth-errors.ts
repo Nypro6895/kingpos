@@ -2,6 +2,7 @@ export const SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE =
   "Authentication is temporarily unavailable because Supabase cannot be reached. Check the Supabase connection and try again.";
 
 type ErrorLike = {
+  code?: unknown;
   message?: unknown;
   name?: unknown;
   status?: unknown;
@@ -17,6 +18,25 @@ function readString(value: unknown) {
 
 function readStatus(value: unknown) {
   return typeof value === "number" && Number.isInteger(value) ? value : null;
+}
+
+function getUserFacingAuthMessage(errorLike: ErrorLike, fallbackMessage: string) {
+  const code = readString(errorLike.code).toLowerCase();
+  const message = readString(errorLike.message);
+  const normalizedMessage = message.toLowerCase();
+
+  if (
+    code === "invalid_credentials" ||
+    normalizedMessage === "invalid login credentials"
+  ) {
+    return "Email or password is incorrect.";
+  }
+
+  if (normalizedMessage.includes("email not confirmed")) {
+    return "Please confirm your email before logging in.";
+  }
+
+  return message || fallbackMessage;
 }
 
 export function isSupabaseAuthConnectionError(error: unknown) {
@@ -51,7 +71,7 @@ export function getSupabaseAuthErrorResponse(
   }
 
   const errorLike = readErrorLike(error);
-  const message = readString(errorLike.message) || fallbackMessage;
+  const message = getUserFacingAuthMessage(errorLike, fallbackMessage);
   const status = readStatus(errorLike.status);
 
   return {
