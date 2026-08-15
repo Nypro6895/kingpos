@@ -3,6 +3,7 @@ import {
   type CustomerListItem,
   type CustomerListPagination,
 } from "@/lib/customers";
+import { mergeDuplicateCustomers } from "@/app/customers/actions";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import Link from "next/link";
@@ -74,6 +75,94 @@ function SignalBadge({
   );
 }
 
+function DuplicateMergeMenu({
+  customer,
+}: {
+  customer: CustomerListItem;
+}) {
+  if (customer.duplicateCandidates.length === 0) {
+    return null;
+  }
+
+  return (
+    <details className="relative">
+      <summary className="inline-flex cursor-pointer list-none rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 marker:hidden">
+        Duplicate?
+      </summary>
+      <div className="absolute left-0 z-20 mt-2 w-[min(360px,calc(100vw-48px))] rounded-lg border border-zinc-200 bg-white p-3 text-left shadow-xl">
+        <p className="text-sm font-semibold text-zinc-950">
+          Matching customer records
+        </p>
+        <p className="mt-1 text-xs text-zinc-500">
+          Keep {customer.name} and move selected history into it.
+        </p>
+        <div className="mt-3 grid max-h-48 gap-2 overflow-y-auto pr-1">
+          {customer.duplicateCandidates.map((candidate) => (
+            <div
+              className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2"
+              key={candidate.id}
+            >
+              <p className="text-sm font-semibold text-zinc-950">
+                {candidate.name}
+              </p>
+              <p className="mt-0.5 text-xs text-zinc-600">
+                {[candidate.phone, candidate.email].filter(Boolean).join(" / ") ||
+                  "No contact"}{" "}
+                / {sourceLabel(candidate.source)}
+              </p>
+              <p className="mt-0.5 text-xs text-zinc-500">
+                Created {formatDateTime(candidate.created_at)}
+              </p>
+            </div>
+          ))}
+        </div>
+        <form action={mergeDuplicateCustomers} className="mt-3">
+          <input name="target_customer_id" type="hidden" value={customer.id} />
+          {customer.duplicateCandidates.map((candidate) => (
+            <input
+              key={candidate.id}
+              name="source_customer_id"
+              type="hidden"
+              value={candidate.id}
+            />
+          ))}
+          <button
+            className="w-full rounded-md bg-zinc-950 px-3 py-2 text-sm font-semibold text-white"
+            type="submit"
+          >
+            Merge all
+          </button>
+        </form>
+        <form action={mergeDuplicateCustomers} className="mt-2 grid gap-2">
+          <input name="target_customer_id" type="hidden" value={customer.id} />
+          <div className="grid gap-1">
+            {customer.duplicateCandidates.map((candidate) => (
+              <label
+                className="flex items-center gap-2 text-xs font-semibold text-zinc-700"
+                key={candidate.id}
+              >
+                <input
+                  className="h-4 w-4 accent-zinc-950"
+                  name="source_customer_id"
+                  type="checkbox"
+                  value={candidate.id}
+                />
+                <span className="truncate">{candidate.name}</span>
+              </label>
+            ))}
+          </div>
+          <button
+            className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950"
+            type="submit"
+          >
+            Merge selected
+          </button>
+        </form>
+      </div>
+    </details>
+  );
+}
+
 function CustomerList({
   customers,
   canManageCustomers,
@@ -102,7 +191,7 @@ function CustomerList({
 
   return (
     <>
-      <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+      <div className="mt-4 overflow-visible rounded-lg border border-zinc-200 bg-white">
         <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-medium uppercase text-zinc-500">
           <div className="col-span-12 sm:col-span-3">Customer</div>
           <div className="hidden sm:col-span-2 sm:block">Upcoming</div>
@@ -115,6 +204,9 @@ function CustomerList({
           {customers.map((customer) => {
             const riskCount =
               customer.metrics.cancelled_count + customer.metrics.no_show_count;
+            const detailHref = customer.isWalkingGroup
+              ? `/customers/${customer.id}?group=walking`
+              : `/customers/${customer.id}`;
 
             return (
               <li className="grid grid-cols-12 gap-3 px-5 py-4" key={customer.id}>
@@ -123,12 +215,18 @@ function CustomerList({
                     <p className="font-semibold text-zinc-950">{customer.name}</p>
                     <StatusBadge status={customer.status} />
                     {customer.duplicate_signal ? (
-                      <SignalBadge tone="amber">Duplicate?</SignalBadge>
+                      canManageCustomers ? (
+                        <DuplicateMergeMenu customer={customer} />
+                      ) : (
+                        <SignalBadge tone="amber">Duplicate?</SignalBadge>
+                      )
                     ) : null}
                   </div>
                   <p className="mt-1 text-sm text-zinc-600">
-                    {[customer.phone, customer.email].filter(Boolean).join(" / ") ||
-                      "No contact"}
+                    {customer.isWalkingGroup
+                      ? `${customer.groupedCustomerIds?.length ?? 1} walk-in records`
+                      : [customer.phone, customer.email].filter(Boolean).join(" / ") ||
+                        "No contact"}
                   </p>
                   <p className="mt-1 text-xs capitalize text-zinc-500">
                     {sourceLabel(customer.source)}
@@ -179,11 +277,11 @@ function CustomerList({
                 <div className="col-span-12 flex flex-wrap gap-2 self-center text-sm sm:col-span-1 sm:block sm:space-y-2">
                   <Link
                     className="font-medium text-zinc-950 underline"
-                    href={`/customers/${customer.id}`}
+                    href={detailHref}
                   >
                     View
                   </Link>
-                  {canManageCustomers ? (
+                  {canManageCustomers && !customer.isWalkingGroup ? (
                     <Link
                       className="font-medium text-zinc-950 underline sm:block"
                       href={`/customers/${customer.id}/edit`}
@@ -261,51 +359,46 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
-      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold text-zinc-950">Customers</h1>
-          <p className="mt-2 text-sm text-zinc-600">Manage your salon customers.</p>
-        </div>
-        {canManageCustomers ? (
-          <Link
-            className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-            href="/customers/new"
-          >
-            + Create Customer
-          </Link>
-        ) : null}
-      </div>
-
       {error ? (
-        <p className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           {error}
         </p>
       ) : null}
 
-      <section className="border-b border-zinc-200 py-6">
-        <form className="flex flex-col gap-3 sm:flex-row" action="/customers">
-          <input
-            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950 sm:max-w-sm"
-            defaultValue={q ?? ""}
-            name="q"
-            placeholder="Search name, phone, email"
-            type="search"
-          />
-          <button
-            className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-            type="submit"
-          >
-            Search
-          </button>
-          {q ? (
-            <Link
-              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-              href="/customers"
+      <section className="border-b border-zinc-200 py-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <form className="flex flex-col gap-3 sm:flex-row" action="/customers">
+            <input
+              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950 sm:w-[480px]"
+              defaultValue={q ?? ""}
+              name="q"
+              placeholder="Search name, phone, email"
+              type="search"
+            />
+            <button
+              className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+              type="submit"
             >
-              Clear
+              Search
+            </button>
+            {q ? (
+              <Link
+                className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
+                href="/customers"
+              >
+                Clear
+              </Link>
+            ) : null}
+          </form>
+          {canManageCustomers ? (
+            <Link
+              className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+              href="/customers/new"
+            >
+              + Create Customer
             </Link>
           ) : null}
-        </form>
+        </div>
       </section>
 
       <section className="pt-6">

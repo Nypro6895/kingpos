@@ -99,7 +99,7 @@ function statusClass(status: string) {
     return "border-amber-200 bg-amber-50 text-amber-800";
   }
 
-  return "border-[#d7c8d3] bg-[#f7f2f7] text-[#642a56]";
+  return "border-[#ffd6c4] bg-[#fff0e8] text-[#f26f3d]";
 }
 
 function statusText(status: string) {
@@ -171,7 +171,7 @@ function StaffAvatar({ line }: { line: CustomerBookingLine }) {
 
   return (
     <span className="flex items-center gap-2 text-sm text-[#786d78]">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f7f2f7] text-xs font-extrabold text-[#642a56]">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fff0e8] text-xs font-extrabold text-[#f26f3d]">
         {staff?.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -203,11 +203,11 @@ function ServiceLine({
   timezone: string;
 }) {
   return (
-    <article className="grid gap-3 rounded-2xl border border-[#e7dfe5] bg-white p-4 sm:grid-cols-[1fr_auto]">
+    <article className="grid gap-3 rounded-2xl border border-[#f0e6df] bg-white p-4 sm:grid-cols-[1fr_auto]">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           {line.line_type === "add_on" ? (
-            <span className="rounded-full bg-[#f7f2f7] px-2 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#8f4a7b]">
+            <span className="rounded-full bg-[#fff0e8] px-2 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#e85f2b]">
               Add-on
             </span>
           ) : null}
@@ -254,7 +254,7 @@ function SalonImage({ booking }: { booking: CustomerBookingDetail }) {
   const imageUrl = booking.salon?.coverUrl ?? booking.salon?.logoUrl;
 
   return (
-    <div className="relative h-24 overflow-hidden rounded-2xl bg-[#efe8f3] sm:h-32">
+    <div className="relative h-24 overflow-hidden rounded-2xl bg-[#fff0e8] sm:h-32">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -263,7 +263,7 @@ function SalonImage({ booking }: { booking: CustomerBookingDetail }) {
           src={imageUrl}
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center text-2xl font-extrabold text-[#642a56]">
+        <div className="flex h-full w-full items-center justify-center text-2xl font-extrabold text-[#f26f3d]">
           {initialsFor(salonName)}
         </div>
       )}
@@ -285,7 +285,7 @@ function InspirationSection({ booking }: { booking: CustomerBookingDetail }) {
   }
 
   return (
-    <section className="rounded-2xl border border-[#e7dfe5] bg-white p-4">
+    <section className="rounded-2xl border border-[#f0e6df] bg-white p-4">
       <div>
         <h2 className="text-lg font-extrabold text-[#211c24]">Your inspiration</h2>
         <p className="mt-1 text-sm text-[#786d78]">
@@ -293,12 +293,12 @@ function InspirationSection({ booking }: { booking: CustomerBookingDetail }) {
         </p>
       </div>
       <div className="mt-4 grid gap-4 sm:grid-cols-[112px_1fr]">
-        <div className="h-28 w-28 overflow-hidden rounded-xl bg-[#f7f2f7]">
+        <div className="h-28 w-28 overflow-hidden rounded-xl bg-[#fff0e8]">
           {inspiration.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img alt="" className="h-full w-full object-cover" src={inspiration.imageUrl} />
           ) : (
-            <span className="grid h-full w-full place-items-center text-sm font-extrabold text-[#642a56]">
+            <span className="grid h-full w-full place-items-center text-sm font-extrabold text-[#f26f3d]">
               Look
             </span>
           )}
@@ -307,7 +307,7 @@ function InspirationSection({ booking }: { booking: CustomerBookingDetail }) {
           <h3 className="line-clamp-2 text-base font-extrabold text-[#211c24]">
             {inspiration.source_title_snapshot ?? "Booked look"}
           </h3>
-          <p className="mt-2 text-sm font-extrabold text-[#642a56]">
+          <p className="mt-2 text-sm font-extrabold text-[#f26f3d]">
             {[
               inspiration.service_name_snapshot,
               inspiration.credited_staff_name_snapshot
@@ -363,13 +363,16 @@ export default async function MyBookingDetailPage({
   const canBookAgain = !canChange && (!isCancelledOrNoShow || hasBookableService);
   const canViewSalon = booking.salon?.publicDiscoveryEnabled === true;
   const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "Reylumi salon";
+  const salonProfileHref = canViewSalon
+    ? `/explore/salons/${booking.salon_id}`
+    : null;
   const place = locationLabel(booking);
 
   return (
     <main className={classNames(styles.bookingSurface, "min-h-screen bg-[#fbf9f7] px-4 py-6 sm:px-6 lg:px-8")}>
       <div className="mx-auto grid w-full max-w-6xl gap-5">
         <Link
-          className="w-fit rounded-full px-2 py-1 text-sm font-extrabold text-[#642a56] hover:bg-[#f7f2f7]"
+          className="w-fit rounded-full px-2 py-1 text-sm font-extrabold text-[#f26f3d] hover:bg-[#fff0e8]"
           href="/my-bookings"
         >
           Back to My bookings
@@ -386,7 +389,7 @@ export default async function MyBookingDetailPage({
           </p>
         ) : null}
 
-        <section className="rounded-2xl border border-[#e7dfe5] bg-white p-4 shadow-[0_1px_0_rgba(33,28,36,0.03)]">
+        <section className="rounded-2xl border border-[#f0e6df] bg-white p-4 shadow-[0_1px_0_rgba(33,28,36,0.03)]">
           <div className="grid gap-4 lg:grid-cols-[280px_1fr] lg:items-center">
             <SalonImage booking={booking} />
             <div className="min-w-0">
@@ -400,9 +403,18 @@ export default async function MyBookingDetailPage({
                   </span>
                 ) : null}
               </div>
-              <h1 className="mt-3 text-2xl font-extrabold leading-tight text-[#211c24] sm:text-3xl">
-                {salonName}
-              </h1>
+              {salonProfileHref ? (
+                <Link
+                  className="mt-3 block w-fit text-2xl font-extrabold leading-tight text-[#211c24] transition hover:text-[#f26f3d] sm:text-3xl"
+                  href={salonProfileHref}
+                >
+                  {salonName}
+                </Link>
+              ) : (
+                <h1 className="mt-3 text-2xl font-extrabold leading-tight text-[#211c24] sm:text-3xl">
+                  {salonName}
+                </h1>
+              )}
               {place ? (
                 <p className="mt-1 text-sm font-semibold text-[#786d78]">{place}</p>
               ) : null}
@@ -416,7 +428,7 @@ export default async function MyBookingDetailPage({
                     {timezone ? ` ${timezone}` : ""}
                   </p>
                 </div>
-                <p className="text-sm font-extrabold text-[#642a56]">
+                <p className="text-sm font-extrabold text-[#f26f3d]">
                   {duration} min / {formatMoney(amount)}
                 </p>
               </div>
@@ -451,7 +463,7 @@ export default async function MyBookingDetailPage({
               ))}
             </section>
 
-            <section className="rounded-2xl border border-[#e7dfe5] bg-white p-4">
+            <section className="rounded-2xl border border-[#f0e6df] bg-white p-4">
               <h2 className="text-base font-extrabold text-[#211c24]">Visit total</h2>
               <dl className="mt-4 grid gap-3 text-sm">
                 <div className="flex justify-between gap-4">

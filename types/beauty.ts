@@ -12,6 +12,10 @@ export type BeautyVerificationMethod =
   | "completed_booking"
   | "none"
   | "pos_ticket";
+export type BeautySalonPublicationStatus =
+  | "approved"
+  | "declined"
+  | "pending";
 
 export type BeautyTimelineCursor = {
   createdAt: string;
@@ -64,6 +68,13 @@ export type BeautyPostReward = {
   status: string;
 };
 
+export type BeautyPostSalonPublication = {
+  id: string;
+  requestedAt: string;
+  respondedAt: string | null;
+  status: BeautySalonPublicationStatus;
+};
+
 export type BeautyTimelinePost = {
   attribution: BeautyPostAttribution | null;
   author: {
@@ -78,6 +89,7 @@ export type BeautyTimelinePost = {
   media: BeautyPostMedia[];
   profileId: string;
   reward: BeautyPostReward | null;
+  salonPublication: BeautyPostSalonPublication | null;
   type: BeautyPostType;
   updatedAt: string;
   verification: BeautyPostVerification | null;

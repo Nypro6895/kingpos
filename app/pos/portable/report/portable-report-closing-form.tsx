@@ -18,7 +18,7 @@ type ClosingValues = {
 const RECONCILIATION_LABELS = {
   balanced: "Du / Balanced",
   over: "Du / Over",
-  short: "Thi\u1ebfu / Short",
+  short: "Short",
 } as const;
 
 function formatMoney(value: number) {

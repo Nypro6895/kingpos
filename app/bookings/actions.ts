@@ -1,6 +1,9 @@
 ﻿"use server";
 
 import {
+  listStaffBookingConflicts,
+} from "@/lib/booking-domain/availability";
+import {
   assignBookingStaff,
   cancelCanonicalBooking,
   createCanonicalBookingForCurrentSalon,
@@ -89,6 +92,13 @@ export type BookingReassignActionInput = {
   overbookingOverrideReason?: string | null;
 };
 
+export type BookingServicesActionInput = {
+  bookingId: string;
+  overbookingOverrideReason?: string | null;
+  serviceIds: string[];
+  staffIds?: (string | null)[];
+};
+
 export type UpdateBookingSettingsInput = {
   anyProfessionalEnabled: boolean;
   bookingEnabled: boolean;
@@ -116,6 +126,7 @@ type BookingActionContext = {
   supabase: NonNullable<
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
   >;
+  user: NonNullable<Awaited<ReturnType<typeof getCurrentBusinessContext>>["user"]>;
 };
 
 function failure(
@@ -207,6 +218,7 @@ async function requireBookingActionContext(): Promise<
       Account: context.currentAccount,
       salon: context.currentSalon,
       supabase,
+      user: context.user,
     },
     ok: true,
   };
@@ -252,12 +264,77 @@ async function convertBookingToTicketWithContext(
     });
   }
 
-  revalidatePath("/bookings");
+  revalidateBookingChange(bookingId);
   revalidatePath("/pos");
   revalidatePath("/pos-tickets");
   revalidatePath(`/pos-tickets/${data}`);
 
   return success("POS ticket is ready.", bookingId, data);
+}
+
+function uniqueIds(ids: Array<string | null | undefined>) {
+  return [
+    ...new Set(
+      ids
+        .map((id) => cleanId(id))
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+}
+
+function revalidateBookingChange(bookingId: string) {
+  revalidatePath("/bookings");
+  revalidatePath("/my-bookings");
+  revalidatePath(`/my-bookings/${bookingId}`);
+  revalidatePath("/staff/appointments");
+  revalidatePath("/notifications");
+}
+
+async function notifyBookingChange(
+  context: BookingActionContext,
+  input: {
+    bookingId: string;
+    changeType: string;
+    newStaffIds?: string[];
+    oldStaffIds?: string[];
+  },
+) {
+  const { error } = await context.supabase.rpc("notify_booking_change", {
+    p_actor_user_id: context.user.id,
+    p_change_type: input.changeType,
+    p_new_staff_ids: input.newStaffIds ?? [],
+    p_old_staff_ids: input.oldStaffIds ?? [],
+    target_booking_id: input.bookingId,
+  });
+
+  if (error) {
+    console.error("Supabase booking change notification failed", {
+      bookingId: input.bookingId,
+      changeType: input.changeType,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+    });
+  }
+}
+
+async function loadCurrentBookingStaffIds(
+  context: BookingActionContext,
+  bookingId: string,
+) {
+  const { data, error } = await context.supabase
+    .from("booking_lines")
+    .select("assigned_staff_id")
+    .eq("booking_id", bookingId)
+    .eq("salon_id", context.salon.id)
+    .returns<{ assigned_staff_id: string | null }[]>();
+
+  if (error) {
+    throw error;
+  }
+
+  return uniqueIds((data ?? []).map((line) => line.assigned_staff_id));
 }
 
 function validateAppointmentInput(input: CreateOwnerAppointmentInput) {
@@ -449,7 +526,11 @@ export async function runBookingStatusAction(
     });
   }
 
-  revalidatePath("/bookings");
+  await notifyBookingChange(context.data, {
+    bookingId,
+    changeType: `status_${statusForCommand(input.command) ?? input.command}`,
+  });
+  revalidateBookingChange(bookingId);
 
   if (input.command === "check_in" || input.command === "start_service") {
     const settings = await loadBookingSettings(context.data);
@@ -482,7 +563,7 @@ export async function runBookingStatusAction(
     }
   }
 
-  return success("Appointment updated.", bookingId);
+  return success("Appointment status changed.", bookingId);
 }
 
 export async function createBookingPosTicketAction(input: {
@@ -556,7 +637,11 @@ export async function rescheduleOwnerBookingAction(
       });
     }
 
-    revalidatePath("/bookings");
+    await notifyBookingChange(context.data, {
+      bookingId,
+      changeType: "rescheduled",
+    });
+    revalidateBookingChange(bookingId);
     return success("Appointment rescheduled.", bookingId);
   } catch (error) {
     return failure(
@@ -581,6 +666,17 @@ export async function reassignOwnerBookingAction(
     return context.error;
   }
 
+  let oldStaffIds: string[] = [];
+
+  try {
+    oldStaffIds = await loadCurrentBookingStaffIds(context.data, bookingId);
+  } catch (error) {
+    return failure(
+      error instanceof Error ? error.message : "Staff assignments could not be loaded.",
+      { code: "database_error" },
+    );
+  }
+
   const result = await assignBookingStaff({
     bookingId,
     lineAssignments: input.lineAssignments.map((assignment) => ({
@@ -600,8 +696,202 @@ export async function reassignOwnerBookingAction(
     });
   }
 
-  revalidatePath("/bookings");
-  return success("Staff assignment updated.", bookingId);
+  await notifyBookingChange(context.data, {
+    bookingId,
+    changeType: "staff_reassigned",
+    newStaffIds: uniqueIds(
+      input.lineAssignments.map((assignment) => assignment.staffId),
+    ),
+    oldStaffIds,
+  });
+  revalidateBookingChange(bookingId);
+  return success("Appointment professional adjusted.", bookingId);
+}
+
+type ServiceReplacementBookingRow = {
+  end_at: string;
+  id: string;
+  pos_ticket_id: string | null;
+  staff_id: string | null;
+  start_at: string;
+  status: CanonicalBookingStatus | "scheduled";
+};
+
+type ServiceReplacementLineRow = {
+  assigned_staff_id: string | null;
+  id: string;
+  service_id: string | null;
+};
+
+function isServiceReplacementBlocked(status: CanonicalBookingStatus | "scheduled") {
+  return status === "in_service" || status === "completed" || status === "cancelled" || status === "no_show";
+}
+
+export async function replaceOwnerBookingServicesAction(
+  input: BookingServicesActionInput,
+): Promise<BookingActionResult> {
+  const bookingId = cleanId(input.bookingId);
+  const serviceIds = (Array.isArray(input.serviceIds) ? input.serviceIds : [])
+    .map((serviceId) => cleanId(serviceId))
+    .filter((serviceId): serviceId is string => Boolean(serviceId));
+
+  if (!bookingId) {
+    return failure("Booking id is required.", { field: "bookingId" });
+  }
+
+  if (serviceIds.length === 0) {
+    return failure("Select at least one service.", { field: "serviceIds" });
+  }
+
+  try {
+    const context = await requireBookingActionContext();
+
+    if (!context.ok) {
+      return context.error;
+    }
+
+    const { data: booking, error: bookingError } = await context.data.supabase
+      .from("bookings")
+      .select("id, staff_id, start_at, end_at, status, pos_ticket_id")
+      .eq("id", bookingId)
+      .eq("salon_id", context.data.salon.id)
+      .maybeSingle<ServiceReplacementBookingRow>();
+
+    if (bookingError) {
+      throw bookingError;
+    }
+
+    if (!booking) {
+      return failure("Booking was not found.", { code: "not_found" });
+    }
+
+    if (booking.pos_ticket_id) {
+      return failure("Open the POS ticket to adjust services after ticket creation.", {
+        code: "ticket_created",
+        field: "services",
+      });
+    }
+
+    if (isServiceReplacementBlocked(booking.status)) {
+      return failure("This appointment can no longer have services adjusted.", {
+        code: "invalid_status",
+        field: "services",
+      });
+    }
+
+    const { data: existingLines, error: linesError } = await context.data.supabase
+      .from("booking_lines")
+      .select("id, service_id, assigned_staff_id")
+      .eq("booking_id", bookingId)
+      .eq("salon_id", context.data.salon.id)
+      .order("display_order", { ascending: true })
+      .returns<ServiceReplacementLineRow[]>();
+
+    if (linesError) {
+      throw linesError;
+    }
+
+    const oldStaffIds = uniqueIds(
+      (existingLines ?? []).map((line) => line.assigned_staff_id),
+    );
+    const fallbackStaffId =
+      (existingLines ?? []).find((line) => cleanId(line.assigned_staff_id))
+        ?.assigned_staff_id ??
+      booking.staff_id ??
+      null;
+    const requestedStaffIds = (Array.isArray(input.staffIds) ? input.staffIds : []).map(
+      (staffId) => cleanId(staffId),
+    );
+    const staffIds = serviceIds.map((_, index) =>
+      index < requestedStaffIds.length
+        ? requestedStaffIds[index]
+        : cleanId(existingLines?.[index]?.assigned_staff_id) ??
+          cleanId(fallbackStaffId),
+    );
+    const settings = await loadBookingSettings(context.data);
+    const schedule = await deriveBookingCreationSchedule({
+      accountId: context.data.Account.id,
+      cleanupBufferMinutes: settings.cleanupBufferMinutes,
+      salonId: context.data.salon.id,
+      serviceIds,
+      staffIds,
+      startAt: booking.start_at,
+    });
+    const overrideReason = cleanString(input.overbookingOverrideReason);
+
+    for (const line of schedule.lines) {
+      if (!line.staffId) {
+        continue;
+      }
+
+      const conflicts = await listStaffBookingConflicts({
+        bookingIdToIgnore: bookingId,
+        endAt: line.scheduledEndAt,
+        salonId: context.data.salon.id,
+        staffId: line.staffId,
+        startAt: line.scheduledStartAt,
+        supabase: context.data.supabase,
+      });
+
+      if (!conflicts.ok) {
+        return failure(conflicts.error.message, {
+          code: conflicts.error.code,
+          field: conflicts.error.field,
+        });
+      }
+
+      if (conflicts.data.length > 0 && !overrideReason) {
+        return failure(
+          "Assigned staff already has a booking in this interval.",
+          {
+            code: "availability_conflict",
+            field: "overbookingOverrideReason",
+          },
+        );
+      }
+    }
+
+    const { data, error } = await context.data.supabase.rpc(
+      "replace_booking_services",
+      {
+        p_booking_id: bookingId,
+        p_end_at: schedule.endAt,
+        p_lines: schedule.lines.map((line, index) => ({
+          assigned_staff_id: line.staffId,
+          cleanup_buffer_minutes: line.cleanupBufferMinutes,
+          display_order: index,
+          scheduled_end_at: line.scheduledEndAt,
+          scheduled_start_at: line.scheduledStartAt,
+          service_id: line.serviceId,
+        })),
+        p_overbooking_override_reason: overrideReason,
+      },
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    if (typeof data !== "string") {
+      return failure("Service adjustment returned no booking id.", {
+        code: "database_error",
+      });
+    }
+
+    await notifyBookingChange(context.data, {
+      bookingId,
+      changeType: "services_adjusted",
+      newStaffIds: uniqueIds(staffIds),
+      oldStaffIds,
+    });
+    revalidateBookingChange(bookingId);
+    return success("Appointment services adjusted.", bookingId);
+  } catch (error) {
+    return failure(
+      error instanceof Error ? error.message : "Appointment services could not be adjusted.",
+      { code: "database_error" },
+    );
+  }
 }
 
 function isValidTimeZone(value: string) {

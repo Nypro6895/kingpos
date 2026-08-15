@@ -83,13 +83,13 @@ function InspirationBand({
   }
 
   return (
-    <div className="mt-5 grid gap-3 rounded-lg bg-[#f7f2f7] p-3 sm:grid-cols-[80px_1fr]">
+    <div className="mt-5 grid gap-3 rounded-lg bg-[#fff0e8] p-3 sm:grid-cols-[80px_1fr]">
       <div className="h-20 w-20 overflow-hidden rounded-lg bg-white">
         {inspiration.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img alt="" className="h-full w-full object-cover" src={inspiration.imageUrl} />
         ) : (
-          <span className="grid h-full w-full place-items-center text-sm font-extrabold text-[#642a56]">
+          <span className="grid h-full w-full place-items-center text-sm font-extrabold text-[#f26f3d]">
             Look
           </span>
         )}
@@ -99,7 +99,7 @@ function InspirationBand({
         <h3 className="mt-1 line-clamp-2 text-base font-extrabold text-[#211c24]">
           {inspiration.source_title_snapshot ?? "Booked look"}
         </h3>
-        <p className="mt-1 text-sm font-semibold text-[#642a56]">
+        <p className="mt-1 text-sm font-semibold text-[#f26f3d]">
           {[
             inspiration.service_name_snapshot,
             inspiration.credited_staff_name_snapshot
@@ -295,7 +295,7 @@ function GuestManageReady({
                 <a className={classNames(styles.primaryButton, "px-4")} href={loginHref}>
                   Sign in
                 </a>
-                <a className="rounded-md border border-[#d7c8d3] px-4 py-2 text-sm font-extrabold text-[#642a56]" href={signupHref}>
+                <a className="rounded-md border border-[#ffd6c4] px-4 py-2 text-sm font-extrabold text-[#f26f3d]" href={signupHref}>
                   Create account
                 </a>
               </div>
@@ -337,8 +337,8 @@ function GuestManageReady({
                   <button
                     className={
                       selectedStartAt === slot.startAt
-                        ? "rounded-xl border border-[#642a56] bg-[#642a56] px-3 py-2 text-sm font-extrabold text-white"
-                        : "rounded-xl border border-[#e7dfe5] px-3 py-2 text-sm font-extrabold hover:border-[#d7c8d3]"
+                        ? "rounded-xl border border-[#f26f3d] bg-[#f26f3d] px-3 py-2 text-sm font-extrabold text-white"
+                        : "rounded-xl border border-[#f0e6df] px-3 py-2 text-sm font-extrabold hover:border-[#ffd6c4]"
                     }
                     key={slot.startAt}
                     onClick={() => setSelectedStartAt(slot.startAt)}
@@ -374,7 +374,7 @@ function GuestManageReady({
               <label className="mt-4 block">
                 <span className="text-sm font-medium text-zinc-700">Reason</span>
                 <textarea
-                  className="mt-2 min-h-20 w-full rounded-xl border border-[#e7dfe5] px-3 py-2 text-sm"
+                  className="mt-2 min-h-20 w-full rounded-xl border border-[#f0e6df] px-3 py-2 text-sm"
                   onChange={(event) => setCancelReason(event.target.value)}
                   value={cancelReason}
                 />

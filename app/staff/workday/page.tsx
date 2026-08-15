@@ -62,8 +62,7 @@ function StatusBadge({
 function MissingSalonState() {
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">My Work Today</h1>
-      <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
+      <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
         Please select a salon first.
       </p>
     </main>
@@ -87,8 +86,7 @@ export default async function StaffWorkdayPage({
   if (!staff) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">My Work Today</h1>
-        <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           No active staff profile is linked to your account for this salon.
         </p>
       </main>
@@ -108,20 +106,13 @@ export default async function StaffWorkdayPage({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
-      <div className="border-b border-zinc-200 pb-6">
-        <h1 className="text-3xl font-semibold text-zinc-950">My Work Today</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Daily staff workflow for {staff.display_name}.
-        </p>
-      </div>
-
       {error ? (
-        <p className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           {error}
         </p>
       ) : null}
 
-      <section className="mt-8">
+      <section className={error ? "mt-8" : ""}>
         <h2 className="text-lg font-semibold text-zinc-950">Today Status</h2>
         <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-5">
           <StatusBadge status={status} />

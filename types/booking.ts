@@ -74,6 +74,7 @@ export const BOOKING_EVENT_TYPES = [
   "staff_assigned",
   "staff_reassigned",
   "rescheduled",
+  "services_adjusted",
   "checked_in",
   "service_started",
   "line_started",

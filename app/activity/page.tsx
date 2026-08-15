@@ -207,41 +207,32 @@ function UpcomingCard({ booking }: { booking: CustomerBookingActivity }) {
 function ActivityHeader({ activity }: { activity?: CustomerActivityData }) {
   const hasActivity = (activity?.totalCount ?? 0) > 0;
 
+  if (!activity || !hasActivity) {
+    return null;
+  }
+
   return (
-    <header className="grid gap-4 border-b border-border-subtle pb-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-      <div>
-        <p className="text-xs font-bold uppercase text-brand-orange">
-          Personal
+    <section
+      aria-label="Activity summary"
+      className="grid grid-cols-2 gap-2 sm:ml-auto sm:min-w-64"
+    >
+      <div className="rounded-2xl border border-border-subtle bg-surface px-4 py-3 shadow-sm">
+        <p className="text-xs font-bold uppercase text-text-muted">
+          Salons
         </p>
-        <h1 className="mt-1 text-3xl font-extrabold text-text-primary">
-          Activity
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm font-semibold text-text-secondary">
-          Salon visits, purchases, and appointments connected to your ReyLUMI
-          profile.
+        <p className="mt-1 text-2xl font-extrabold text-text-primary">
+          {activity.salonCount}
         </p>
       </div>
-      {activity && hasActivity ? (
-        <div className="grid grid-cols-2 gap-2 sm:min-w-64">
-          <div className="rounded-2xl border border-border-subtle bg-surface px-4 py-3 shadow-sm">
-            <p className="text-xs font-bold uppercase text-text-muted">
-              Salons
-            </p>
-            <p className="mt-1 text-2xl font-extrabold text-text-primary">
-              {activity.salonCount}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-border-subtle bg-surface px-4 py-3 shadow-sm">
-            <p className="text-xs font-bold uppercase text-text-muted">
-              Items
-            </p>
-            <p className="mt-1 text-2xl font-extrabold text-text-primary">
-              {activity.totalCount}
-            </p>
-          </div>
+      <div className="rounded-2xl border border-border-subtle bg-surface px-4 py-3 shadow-sm">
+        <p className="text-xs font-bold uppercase text-text-muted">
+          Items
+        </p>
+        <p className="mt-1 text-2xl font-extrabold text-text-primary">
+          {activity.totalCount}
+        </p>
         </div>
-      ) : null}
-    </header>
+    </section>
   );
 }
 

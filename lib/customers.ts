@@ -57,7 +57,10 @@ export type CustomerCrmMetric = {
 };
 
 export type CustomerListItem = Customer & {
+  duplicateCandidates: Customer[];
   duplicate_signal: boolean;
+  groupedCustomerIds?: string[];
+  isWalkingGroup?: boolean;
   metrics: CustomerCrmMetric;
 };
 
@@ -94,6 +97,8 @@ export type CustomerDetailData = {
   customer: Customer;
   duplicateCandidates: Customer[];
   finalizedSpend: number;
+  groupedCustomerIds?: string[];
+  isWalkingGroup?: boolean;
   timeline: CustomerTimelineItem[];
   tickets: CustomerTicketSummary[];
   upcomingBookings: CustomerBookingSummary[];
@@ -125,6 +130,74 @@ function defaultMetric(customerId: string): CustomerCrmMetric {
     upcoming_booking_id: null,
     upcoming_start_at: null,
   };
+}
+
+function normalizeCustomerName(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isWalkingCustomer(customer: Customer) {
+  const walkInNames = new Set([
+    "anonymous",
+    "guest",
+    "guest customer",
+    "walk in",
+    "walk in customer",
+    "walking",
+    "walking customer",
+    "walkin",
+    "walkin customer",
+  ]);
+
+  return (
+    !customer.phone &&
+    !customer.email &&
+    !customer.customer_user_id &&
+    walkInNames.has(normalizeCustomerName(customer.name))
+  );
+}
+
+function aggregateCustomerMetrics(
+  customerId: string,
+  metrics: CustomerCrmMetric[],
+): CustomerCrmMetric {
+  const upcoming = metrics
+    .filter((metric) => metric.upcoming_start_at)
+    .sort(
+      (left, right) =>
+        new Date(left.upcoming_start_at ?? 0).getTime() -
+        new Date(right.upcoming_start_at ?? 0).getTime(),
+    )[0];
+  const lastVisit = metrics
+    .map((metric) => metric.last_visit_at)
+    .filter((value): value is string => Boolean(value))
+    .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0] ?? null;
+
+  return metrics.reduce(
+    (sum, metric) => ({
+      active_pos_ticket_count:
+        sum.active_pos_ticket_count + metric.active_pos_ticket_count,
+      appointment_count: sum.appointment_count + metric.appointment_count,
+      cancelled_count: sum.cancelled_count + metric.cancelled_count,
+      completed_count: sum.completed_count + metric.completed_count,
+      customer_id: sum.customer_id,
+      finalized_pos_ticket_count:
+        sum.finalized_pos_ticket_count + metric.finalized_pos_ticket_count,
+      finalized_spend: sum.finalized_spend + metric.finalized_spend,
+      last_visit_at: lastVisit,
+      no_show_count: sum.no_show_count + metric.no_show_count,
+      upcoming_booking_id:
+        upcoming?.upcoming_booking_id ?? sum.upcoming_booking_id,
+      upcoming_start_at:
+        upcoming?.upcoming_start_at ?? sum.upcoming_start_at,
+    }),
+    defaultMetric(customerId),
+  );
 }
 
 function normalizedBookingStatus(status: BookingStatus) {
@@ -183,29 +256,90 @@ async function loadCustomerMetrics(input: {
   );
 }
 
-function duplicateSignals(customers: Customer[]) {
-  const phoneCounts = new Map<string, number>();
-  const emailCounts = new Map<string, number>();
+async function loadDuplicateCandidatesForCustomers(input: {
+  customers: Customer[];
+  salonId: string;
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+}) {
+  const clauses = [
+    ...new Set(
+      input.customers
+        .flatMap((customer) => [
+          customer.phone ? `phone.eq.${customer.phone}` : null,
+          customer.email ? `email.eq.${customer.email}` : null,
+        ])
+        .filter((clause): clause is string => Boolean(clause)),
+    ),
+  ];
 
-  for (const customer of customers) {
-    if (customer.phone) {
-      phoneCounts.set(customer.phone, (phoneCounts.get(customer.phone) ?? 0) + 1);
-    }
-
-    if (customer.email) {
-      emailCounts.set(customer.email, (emailCounts.get(customer.email) ?? 0) + 1);
-    }
+  if (clauses.length === 0) {
+    return new Map<string, Customer[]>();
   }
 
+  const { data, error } = await input.supabase
+    .from("customers")
+    .select(CUSTOMER_SELECT)
+    .eq("location_id", input.salonId)
+    .or(clauses.join(","))
+    .limit(250)
+    .returns<Customer[]>();
+
+  if (error) {
+    console.error("Supabase load customer duplicate candidates failed", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      salonId: input.salonId,
+    });
+    throw new Error(error.message);
+  }
+
+  const candidatePool = data ?? [];
+
   return new Map(
-    customers.map((customer) => [
+    input.customers.map((customer) => [
       customer.id,
-      Boolean(
-        (customer.phone && (phoneCounts.get(customer.phone) ?? 0) > 1) ||
-          (customer.email && (emailCounts.get(customer.email) ?? 0) > 1),
+      candidatePool.filter(
+        (candidate) =>
+          candidate.id !== customer.id &&
+          ((customer.phone && candidate.phone === customer.phone) ||
+            (customer.email && candidate.email === customer.email)),
       ),
     ]),
   );
+}
+
+async function loadWalkingCustomers(input: {
+  salonId: string;
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+}) {
+  const { data, error } = await input.supabase
+    .from("customers")
+    .select(CUSTOMER_SELECT)
+    .eq("location_id", input.salonId)
+    .is("phone", null)
+    .is("email", null)
+    .is("customer_user_id", null)
+    .limit(500)
+    .returns<Customer[]>();
+
+  if (error) {
+    console.error("Supabase load walking customers failed", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      salonId: input.salonId,
+    });
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).filter(isWalkingCustomer);
 }
 
 export async function getCurrentSalonCustomerList(input: {
@@ -270,17 +404,58 @@ export async function getCurrentSalonCustomerList(input: {
   }
 
   const rows = data ?? [];
-  const customerIds = rows.map((customer) => customer.id);
-  const [metricsByCustomerId, duplicateByCustomerId] = await Promise.all([
+  const rowsContainWalking = rows.some(isWalkingCustomer);
+  const walkingCustomers = rowsContainWalking
+    ? await loadWalkingCustomers({ salonId: salon.id, supabase })
+    : [];
+  const displayRows = rows.filter((customer) => !isWalkingCustomer(customer));
+  const walkingPrimary = walkingCustomers[0] ?? null;
+  const customerIds = [
+    ...displayRows.map((customer) => customer.id),
+    ...walkingCustomers.map((customer) => customer.id),
+  ];
+  const [metricsByCustomerId, duplicateCandidatesByCustomerId] = await Promise.all([
     loadCustomerMetrics({ customerIds, salonId: salon.id, supabase }),
-    Promise.resolve(duplicateSignals(rows)),
+    loadDuplicateCandidatesForCustomers({
+      customers: displayRows,
+      salonId: salon.id,
+      supabase,
+    }),
   ]);
 
-  const customers = rows.map<CustomerListItem>((customer) => ({
-    ...customer,
-    duplicate_signal: duplicateByCustomerId.get(customer.id) ?? false,
-    metrics: metricsByCustomerId.get(customer.id) ?? defaultMetric(customer.id),
-  }));
+  const customers = displayRows.map<CustomerListItem>((customer) => {
+    const duplicateCandidates =
+      duplicateCandidatesByCustomerId.get(customer.id) ?? [];
+
+    return {
+      ...customer,
+      duplicateCandidates,
+      duplicate_signal: duplicateCandidates.length > 0,
+      metrics: metricsByCustomerId.get(customer.id) ?? defaultMetric(customer.id),
+    };
+  });
+
+  if (walkingPrimary) {
+    const walkingMetrics = walkingCustomers.map(
+      (customer) => metricsByCustomerId.get(customer.id) ?? defaultMetric(customer.id),
+    );
+    const walkingGroupedIds = walkingCustomers.map((customer) => customer.id);
+    const walkingItem: CustomerListItem = {
+      ...walkingPrimary,
+      duplicateCandidates: walkingCustomers.filter(
+        (customer) => customer.id !== walkingPrimary.id,
+      ),
+      duplicate_signal: walkingCustomers.length > 1,
+      groupedCustomerIds: walkingGroupedIds,
+      isWalkingGroup: true,
+      name: "Walking",
+      metrics: aggregateCustomerMetrics(walkingPrimary.id, walkingMetrics),
+    };
+
+    const firstWalkingIndex = rows.findIndex(isWalkingCustomer);
+
+    customers.splice(Math.max(0, firstWalkingIndex), 0, walkingItem);
+  }
 
   return {
     context,
@@ -337,19 +512,27 @@ function buildBookingSummaries(input: {
   });
 }
 
-async function loadBookingSummariesForCustomer(input: {
-  customerId: string;
+async function loadBookingSummariesForCustomers(input: {
+  customerIds: string[];
   salonId: string;
   supabase: NonNullable<
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
   >;
 }) {
+  if (input.customerIds.length === 0) {
+    return {
+      bookingIds: [],
+      bookingHistory: [],
+      upcomingBookings: [],
+    };
+  }
+
   const [upcomingResult, historyResult] = await Promise.all([
     input.supabase
       .from("bookings")
       .select(CUSTOMER_BOOKING_SELECT)
       .eq("salon_id", input.salonId)
-      .eq("customer_id", input.customerId)
+      .in("customer_id", input.customerIds)
       .gte("start_at", new Date().toISOString())
       .not("status", "in", '("cancelled","no_show")')
       .order("start_at", { ascending: true })
@@ -359,7 +542,7 @@ async function loadBookingSummariesForCustomer(input: {
       .from("bookings")
       .select(CUSTOMER_BOOKING_SELECT)
       .eq("salon_id", input.salonId)
-      .eq("customer_id", input.customerId)
+      .in("customer_id", input.customerIds)
       .order("start_at", { ascending: false })
       .limit(30)
       .returns<CustomerBookingRow[]>(),
@@ -372,7 +555,7 @@ async function loadBookingSummariesForCustomer(input: {
       message: error?.message,
       details: error?.details,
       hint: error?.hint,
-      customerId: input.customerId,
+      customerIds: input.customerIds,
       salonId: input.salonId,
     });
     throw new Error(error?.message ?? "Unable to load customer bookings.");
@@ -405,7 +588,7 @@ async function loadBookingSummariesForCustomer(input: {
       message: linesResult.error.message,
       details: linesResult.error.details,
       hint: linesResult.error.hint,
-      customerId: input.customerId,
+      customerIds: input.customerIds,
       salonId: input.salonId,
     });
     throw new Error(linesResult.error.message);
@@ -479,18 +662,22 @@ function ticketWithTotals(ticket: PosTicketWithRelations): CustomerTicketSummary
   };
 }
 
-async function loadCustomerTickets(input: {
-  customerId: string;
+async function loadCustomerTicketsForCustomers(input: {
+  customerIds: string[];
   salonId: string;
   supabase: NonNullable<
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
   >;
 }) {
+  if (input.customerIds.length === 0) {
+    return [];
+  }
+
   const { data, error } = await input.supabase
     .from("pos_tickets")
     .select(POS_TICKET_WITH_RELATIONS_SELECT)
     .eq("salon_id", input.salonId)
-    .eq("customer_id", input.customerId)
+    .in("customer_id", input.customerIds)
     .order("opened_at", { ascending: false })
     .limit(30)
     .returns<PosTicketWithRelations[]>();
@@ -501,7 +688,7 @@ async function loadCustomerTickets(input: {
       message: error.message,
       details: error.details,
       hint: error.hint,
-      customerId: input.customerId,
+      customerIds: input.customerIds,
       salonId: input.salonId,
     });
     throw new Error(error.message);
@@ -638,7 +825,10 @@ export async function getCurrentSalonCustomer(customerId: string) {
     return { context, customer: data ?? null };
 }
 
-export async function getCurrentSalonCustomerDetail(customerId: string) {
+export async function getCurrentSalonCustomerDetail(
+  customerId: string,
+  options: { walkingGroup?: boolean } = {},
+) {
   const base = await getCurrentSalonCustomer(customerId);
 
   if (!base.customer) {
@@ -652,22 +842,43 @@ export async function getCurrentSalonCustomerDetail(customerId: string) {
     throw new Error("Supabase environment variables are missing.");
   }
 
+  const baseCustomer = base.customer;
+  const walkingCustomers =
+    options.walkingGroup && isWalkingCustomer(baseCustomer)
+      ? await loadWalkingCustomers({ salonId: salon.id, supabase })
+      : [];
+  const groupedCustomerIds =
+    walkingCustomers.length > 0
+      ? walkingCustomers.map((customer) => customer.id)
+      : [baseCustomer.id];
+  const displayCustomer =
+    walkingCustomers.length > 0
+      ? {
+          ...baseCustomer,
+          name: "Walking",
+        }
+      : baseCustomer;
+
   const [bookings, tickets, duplicateCandidates] = await Promise.all([
-    loadBookingSummariesForCustomer({
-      customerId: base.customer.id,
+    loadBookingSummariesForCustomers({
+      customerIds: groupedCustomerIds,
       salonId: salon.id,
       supabase,
     }),
-    loadCustomerTickets({
-      customerId: base.customer.id,
+    loadCustomerTicketsForCustomers({
+      customerIds: groupedCustomerIds,
       salonId: salon.id,
       supabase,
     }),
-    loadDuplicateCandidates({
-      customer: base.customer,
-      salonId: salon.id,
-      supabase,
-    }),
+    walkingCustomers.length > 0
+      ? Promise.resolve(
+          walkingCustomers.filter((customer) => customer.id !== baseCustomer.id),
+        )
+      : loadDuplicateCandidates({
+          customer: baseCustomer,
+          salonId: salon.id,
+          supabase,
+        }),
   ]);
   const bookingEvents = await loadBookingEvents({
     bookingIds: bookings.bookingIds,
@@ -691,9 +902,12 @@ export async function getCurrentSalonCustomerDetail(customerId: string) {
     data: {
       activeTickets,
       bookingHistory: bookings.bookingHistory,
-      customer: base.customer,
+      customer: displayCustomer,
       duplicateCandidates,
       finalizedSpend,
+      groupedCustomerIds:
+        groupedCustomerIds.length > 1 ? groupedCustomerIds : undefined,
+      isWalkingGroup: walkingCustomers.length > 0,
       tickets,
       timeline,
       upcomingBookings: bookings.upcomingBookings,

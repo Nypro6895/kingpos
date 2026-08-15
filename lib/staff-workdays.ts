@@ -359,9 +359,10 @@ export async function getTodaysStaffWorkday(
 
 export async function getCurrentSalonStaffTodayBoard(
   context?: CurrentBusinessContext,
+  options: { workDate?: string } = {},
 ) {
   const resolvedContext = context ?? (await getCurrentBusinessContext());
-  const today = getTodayDate(resolvedContext.user?.timezone);
+  const today = options.workDate ?? getTodayDate(resolvedContext.user?.timezone);
 
   if (!resolvedContext.user) {
     return { context: resolvedContext, staff: [], today };
@@ -433,6 +434,7 @@ export async function getCurrentSalonStaffTodayBoard(
 export async function getCurrentSalonStaffActivitySummaries(
   staffIds: string[],
   context?: CurrentBusinessContext,
+  options: { workDate?: string } = {},
 ) {
   const resolvedContext = context ?? (await getCurrentBusinessContext());
   const summaryByStaffId = new Map<string, StaffDailyActivitySummary>();
@@ -460,7 +462,7 @@ export async function getCurrentSalonStaffActivitySummaries(
     throw new Error("Supabase environment variables are missing.");
   }
 
-  const today = getTodayDate(resolvedContext.user.timezone);
+  const today = options.workDate ?? getTodayDate(resolvedContext.user.timezone);
   const { data, error } = await supabase
     .from("pos_ticket_staff_earnings")
     .select(

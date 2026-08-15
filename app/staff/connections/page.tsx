@@ -279,15 +279,6 @@ export default async function StaffConnectionsPage({
 
   return (
     <main className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-6 sm:px-6 lg:px-8">
-      <header className="border-b border-zinc-200 pb-6">
-        <h1 className="text-3xl font-semibold text-zinc-950">
-          Staff Connections
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Manage salon invitations and applications for your staff account.
-        </p>
-      </header>
-
       {params.connection_notice ? (
         <Notice>{params.connection_notice}</Notice>
       ) : null}

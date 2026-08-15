@@ -4,8 +4,16 @@ import {
   loadExploreNearYouAction,
   searchExploreWithGpsAction,
 } from "@/app/explore/actions";
-import { CustomerExploreUtilityPanel } from "@/app/explore/customer-explore-utility-panel";
 import {
+  ExploreDiscoveryRail,
+  MobileDiscoveryShortcuts,
+} from "@/app/explore/customer-explore-utility-panel";
+import { ExploreFeed } from "@/app/explore/explore-feed";
+import {
+  type ExploreDiscoveryContent,
+  type ExploreDiscoveryResultKind,
+  type ExploreDiscoveryShortcut,
+  type ExploreFeedPage,
   type ExploreHomeContent,
   type ExploreHomeSalon,
   type ExploreInspirationItem,
@@ -16,7 +24,6 @@ import {
   type ExplorePopularService,
   type ExploreSearchResponse,
   type ExploreSearchResult,
-  type ExploreUtilityContent,
 } from "@/types/explore";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -41,13 +48,14 @@ export type ExploreQuickAction = {
 };
 
 type ExploreClientProps = {
+  discoveryContent: ExploreDiscoveryContent;
   hasUrlLocation: boolean;
   homeContent: ExploreHomeContent;
+  initialFeed: ExploreFeedPage;
   initialLocationSource: ExploreLocationSource;
   initialResponse: ExploreSearchResponse;
   initialSearchMode: boolean;
   quickActions: ExploreQuickAction[];
-  utilityContent: ExploreUtilityContent;
   workspaceLocation: ExploreInitialLocation;
 };
 
@@ -603,7 +611,7 @@ function ExploreHero({
   const slides = useMemo(() => heroSlidesFromContent(content), [content]);
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexWithinBounds = slides.length > 0 ? activeIndex % slides.length : 0;
-  const activeSlide = slides[activeIndex] ?? null;
+  const activeSlide = slides[activeIndexWithinBounds] ?? null;
   const hasSlides = slides.length > 0;
 
   useEffect(() => {
@@ -626,18 +634,32 @@ function ExploreHero({
     setActiveIndex((current) => (current + delta + slides.length) % slides.length);
   }
 
+  const heroTitle =
+    activeSlide?.serviceLabel ?? activeSlide?.salonName ?? "Discover beauty around you";
+  const heroContext = activeSlide
+    ? [activeSlide.salonName, activeSlide.serviceLabel]
+        .filter((value, index, all) => Boolean(value) && all.indexOf(value) === index)
+        .join(" · ")
+    : "Public looks and salon updates";
+  const heroHref = activeSlide?.bookingHref ?? activeSlide?.salonHref ?? null;
+  const heroActionLabel = activeSlide?.bookingHref
+    ? "Book"
+    : activeSlide?.salonHref
+      ? "View salon"
+      : "Search Explore";
+
   return (
     <section
-      className="relative min-h-[17.5rem] overflow-hidden rounded-[1.25rem] bg-white shadow-[0_18px_44px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/80 sm:min-h-[18.75rem]"
+      className="relative min-h-[8rem] overflow-hidden rounded-[1rem] bg-white shadow-[0_10px_28px_rgba(35,25,22,0.04)] ring-1 ring-divider-subtle/65"
       data-testid="explore-hero"
     >
       {activeSlide ? (
         <Image
           alt={activeSlide.alt}
-          className="object-cover object-[72%_center] opacity-95 transition-opacity duration-500"
+          className="object-cover object-[72%_center] transition-opacity duration-500"
           fill
           priority
-          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 70vw, 58vw"
+          sizes="(max-width: 768px) 100vw, 44rem"
           src={activeSlide.imageUrl}
         />
       ) : (
@@ -657,53 +679,46 @@ function ExploreHero({
         className={[
           "absolute inset-0",
           hasSlides
-            ? "bg-[linear-gradient(90deg,rgba(255,240,232,0.99)_0%,rgba(255,240,232,0.92)_36%,rgba(255,240,232,0.13)_76%)]"
+            ? "bg-[linear-gradient(90deg,rgba(255,247,241,0.96)_0%,rgba(255,247,241,0.78)_45%,rgba(255,247,241,0.12)_100%)]"
             : "bg-white/18",
         ].join(" ")}
       />
-      <div className="relative z-10 grid min-h-[17.5rem] content-center gap-4 py-7 pl-14 pr-7 sm:min-h-[18.75rem] sm:pl-20 sm:pr-12 lg:max-w-[45%]">
+      <div className="relative z-10 grid min-h-[8rem] content-center gap-2.5 px-4 py-4 sm:px-5 lg:max-w-[66%]">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-orange">
-            Look good, feel confident
+          <p className="text-[11px] font-semibold uppercase text-brand-orange">
+            Featured now
           </p>
-          <h2 className="mt-2 max-w-sm text-2xl font-semibold leading-tight text-text-primary sm:text-3xl">
-            Find Your Beauty Inspiration
+          <h2 className="mt-1 line-clamp-2 max-w-sm text-lg font-semibold leading-tight text-text-primary sm:text-xl">
+            {heroTitle}
           </h2>
-          <p className="mt-2 max-w-xs text-sm leading-6 text-text-secondary">
-            Discover top salons, trending designs, and book your appointment
-            instantly.
+          <p className="mt-1 line-clamp-1 max-w-sm text-xs font-semibold text-brand-teal">
+            {heroContext}
           </p>
-          {activeSlide ? (
-            <p className="mt-3 line-clamp-1 text-xs font-semibold text-brand-teal">
-              {[activeSlide.salonName, activeSlide.serviceLabel]
-                .filter(Boolean)
-                .join(" / ")}
-            </p>
-          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            className="inline-flex min-h-10 items-center rounded-full bg-brand-orange px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            onClick={onExploreClick}
-            type="button"
-          >
-            Search Explore
-          </button>
-          {activeSlide?.salonHref ? (
+          {heroHref ? (
             <Link
-              className="inline-flex min-h-10 items-center rounded-full bg-white px-5 text-sm font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={activeSlide.salonHref}
+              className="inline-flex min-h-9 items-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              href={heroHref}
             >
-              View salon
+              {heroActionLabel}
             </Link>
-          ) : null}
+          ) : (
+            <button
+              className="inline-flex min-h-9 items-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              onClick={onExploreClick}
+              type="button"
+            >
+              {heroActionLabel}
+            </button>
+          )}
         </div>
       </div>
       {slides.length > 1 ? (
         <>
           <button
             aria-label="Previous inspiration"
-            className="absolute left-3 top-1/2 z-20 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-text-secondary shadow-sm ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+            className="absolute left-2 top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-text-secondary shadow-sm ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
             onClick={() => move(-1)}
             type="button"
           >
@@ -711,13 +726,13 @@ function ExploreHero({
           </button>
           <button
             aria-label="Next inspiration"
-            className="absolute right-3 top-1/2 z-20 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-text-secondary shadow-sm ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+            className="absolute right-2 top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-text-secondary shadow-sm ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
             onClick={() => move(1)}
             type="button"
           >
             <span aria-hidden>&rsaquo;</span>
           </button>
-          <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+          <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-2">
             {slides.map((slide, index) => (
               <button
                 aria-label={`Show inspiration ${index + 1}`}
@@ -1151,7 +1166,7 @@ function TrendingDesignsSection({
         subtitle: initialPage.error
           ? "Inspiration could not be loaded right now."
           : undefined,
-        title: "Trending Designs",
+        title: "Fresh Looks",
       })}
       {visibleItems.length > 0 ? (
         <div className="relative min-w-0 overflow-hidden">
@@ -1178,7 +1193,7 @@ function TrendingDesignsSection({
         </div>
       ) : !initialPage.error ? (
         <div className="rounded-2xl border border-dashed border-divider-subtle bg-surface-elevated p-5 text-sm text-text-secondary">
-          Trending public designs will appear here as salons share photos.
+          Fresh public looks will appear here as salons share photos.
         </div>
       ) : null}
 
@@ -1802,7 +1817,7 @@ function discoveryBadgeLabel(salon: ExploreHomeSalon, fallback: string) {
   }
 
   if (salon.latestMediaCreatedAt) {
-    return "Trending";
+    return "Fresh";
   }
 
   if (salon.homeSection === "new" || salon.isNew) {
@@ -1854,6 +1869,7 @@ function RecommendedFeatureCard({
   const price = priceLine(salon);
   const reason = discoveryBadgeLabel(salon, "Recommended");
   const { primaryHref, primaryLabel, viewHref } = recommendedCardLinks(salon);
+  const showSecondaryViewAction = viewHref !== primaryHref;
   const reviewAriaLabel = cardReviewAriaLabel(salon);
 
   return (
@@ -1922,12 +1938,14 @@ function RecommendedFeatureCard({
           >
             {primaryLabel}
           </Link>
-          <Link
-            className="inline-flex min-h-10 items-center justify-center rounded-full bg-white/14 px-4 text-sm font-semibold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            href={viewHref}
-          >
-            View salon
-          </Link>
+          {showSecondaryViewAction ? (
+            <Link
+              className="inline-flex min-h-10 items-center justify-center rounded-full bg-white/14 px-4 text-sm font-semibold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              href={viewHref}
+            >
+              View salon
+            </Link>
+          ) : null}
         </div>
       </div>
     </article>
@@ -2436,16 +2454,119 @@ function PopularServicesSection({
   );
 }
 
-function ExploreHomeSections({
+function discoveryResultTitle(kind: ExploreDiscoveryResultKind) {
+  if (kind === "near_you") {
+    return "Near you";
+  }
+
+  if (kind === "top_rated") {
+    return "Top rated salons";
+  }
+
+  if (kind === "trending") {
+    return "Fresh looks";
+  }
+
+  return "Recommended salons";
+}
+
+function ExploreDiscoveryResults({
   content,
   gpsCoordinates,
+  kind,
+  nearYouSalons,
+  onClear,
+  onCurrentLocation,
+}: {
+  content: ExploreHomeContent;
+  gpsCoordinates: GpsCoordinates | null;
+  kind: ExploreDiscoveryResultKind;
+  nearYouSalons: ExploreHomeSalon[];
+  onClear: () => void;
+  onCurrentLocation: () => void;
+}) {
+  return (
+    <section
+      className="mx-auto grid w-full max-w-none gap-5 px-4 py-5 sm:px-6 lg:pl-8 lg:pr-3"
+      data-testid="explore-discovery-results"
+    >
+      <div className="mx-auto flex w-full max-w-[44rem] items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase text-brand-teal">
+            Discovery
+          </p>
+          <h2 className="mt-1 text-xl font-semibold text-text-primary">
+            {discoveryResultTitle(kind)}
+          </h2>
+        </div>
+        <button
+          className="shrink-0 rounded-full bg-surface-elevated px-4 py-2 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          onClick={onClear}
+          type="button"
+        >
+          Back
+        </button>
+      </div>
+
+      {kind === "near_you" ? (
+        nearYouSalons.length > 0 ? (
+          <NearYouHomeSection
+            results={nearYouSalons}
+            userCoordinates={gpsCoordinates}
+          />
+        ) : (
+          <div className="mx-auto w-full max-w-[44rem]">
+            <ExploreNotice
+              action={
+                <button
+                  className="rounded-full bg-surface-elevated px-3 py-2 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange"
+                  onClick={onCurrentLocation}
+                  type="button"
+                >
+                  Use current location
+                </button>
+              }
+              title="Use current location for nearby results"
+            >
+              Turn on location to sort active public salons by real distance.
+            </ExploreNotice>
+          </div>
+        )
+      ) : null}
+
+      {kind === "top_rated" ? (
+        <TopRatedSalonsSection
+          content={content}
+          nearYouSalons={nearYouSalons}
+        />
+      ) : null}
+
+      {kind === "trending" ? (
+        <TrendingDesignsSection initialPage={content.inspiration} />
+      ) : null}
+
+      {kind === "recommended" ? (
+        <RecommendedForYouSection
+          description="Personalized from public profile signals, service fit, and booking readiness."
+          results={content.recommendedSalons}
+          testId="recommended-discovery-results"
+          title="Recommended salons"
+        />
+      ) : null}
+    </section>
+  );
+}
+
+function ExploreHomeSections({
+  content,
   gpsMessage,
+  initialFeed,
   nearYouSalons,
   onSelectCategory,
 }: {
   content: ExploreHomeContent;
-  gpsCoordinates: GpsCoordinates | null;
   gpsMessage: string | null;
+  initialFeed: ExploreFeedPage;
   nearYouSalons: ExploreHomeSalon[];
   onSelectCategory: (category: string) => void;
 }) {
@@ -2454,43 +2575,17 @@ function ExploreHomeSections({
     content.recommendedSalons,
     content.newSalons,
   );
-  const topRatedIds = new Set(
-    topRatedSalons(content, nearYouSalons)
-      .slice(0, 4)
-      .map((salon) => salon.id),
-  );
-  const recommendationCandidates = allDiscoverySalons
-    .filter((salon) => !topRatedIds.has(salon.id))
-    .sort((left, right) => {
-      const leftDistance = left.distanceMiles ?? Number.POSITIVE_INFINITY;
-      const rightDistance = right.distanceMiles ?? Number.POSITIVE_INFINITY;
-
-      if (leftDistance !== rightDistance) {
-        return leftDistance < rightDistance ? -1 : 1;
-      }
-
-      const relevanceDelta = right.relevanceScore - left.relevanceScore;
-
-      if (relevanceDelta !== 0) {
-        return relevanceDelta;
-      }
-
-      return right.profileCompleteness - left.profileCompleteness;
-    });
-  const recommendedSalons =
-    recommendationCandidates.length >= 3
-      ? recommendationCandidates.slice(0, 6)
-      : allDiscoverySalons.slice(0, 6);
   const hasContent =
+    initialFeed.items.length > 0 ||
     content.inspiration.items.length > 0 ||
     nearYouSalons.length > 0 ||
-    recommendedSalons.length > 0 ||
+    allDiscoverySalons.length > 0 ||
     content.popularServices.length > 0;
 
   return (
     <section
       aria-busy={false}
-      className="mx-auto grid w-full max-w-none gap-8 px-4 py-5 sm:px-6 lg:pl-8 lg:pr-3"
+      className="mx-auto grid w-full max-w-[44rem] gap-3 px-4 py-3 sm:px-6 lg:px-3"
       data-testid="explore-home-content"
     >
       {content.error ? (
@@ -2499,31 +2594,20 @@ function ExploreHomeSections({
         </ExploreNotice>
       ) : null}
 
-      <TopRatedSalonsSection
-        content={content}
-        nearYouSalons={nearYouSalons}
-      />
-      <TrendingDesignsSection initialPage={content.inspiration} />
-      <PopularServicesSection
-        onSelectCategory={onSelectCategory}
-        salons={allDiscoverySalons}
-        services={content.popularServices}
-      />
       {gpsMessage ? (
         <ExploreNotice title="Location status" tone="warning">
           {gpsMessage}
         </ExploreNotice>
       ) : null}
-      <NearYouHomeSection
-        results={nearYouSalons}
-        userCoordinates={gpsCoordinates}
-      />
-      <RecommendedForYouSection
-        description="Personalized from nearby availability, public profile signals, and service fit."
-        results={recommendedSalons}
-        testId="recommended-for-you"
-        title="Recommended for you"
-      />
+      <ExploreFeed initialPage={initialFeed} />
+
+      {initialFeed.items.length === 0 ? (
+        <PopularServicesSection
+          onSelectCategory={onSelectCategory}
+          salons={allDiscoverySalons}
+          services={content.popularServices}
+        />
+      ) : null}
 
       {!hasContent && !content.error ? (
         <ExploreNotice title="Explore is getting ready">
@@ -2694,13 +2778,14 @@ function QuickActions({ actions }: { actions: ExploreQuickAction[] }) {
 }
 
 export function ExploreClient({
+  discoveryContent,
   hasUrlLocation,
   homeContent,
+  initialFeed,
   initialLocationSource,
   initialResponse,
   initialSearchMode,
   quickActions,
-  utilityContent,
   workspaceLocation,
 }: ExploreClientProps) {
   const router = useRouter();
@@ -2723,6 +2808,8 @@ export function ExploreClient({
   const [gpsMessage, setGpsMessage] = useState<string | null>(null);
   const [explicitSearchMode, setExplicitSearchMode] =
     useState(initialSearchMode);
+  const [activeDiscoveryResult, setActiveDiscoveryResult] =
+    useState<ExploreDiscoveryResultKind | null>(null);
   const appliedSavedLocation = useRef(false);
 
   const gpsActive = Boolean(gpsResponse && !location.trim());
@@ -2747,7 +2834,9 @@ export function ExploreClient({
   const noDirectMatches = Boolean(
     query.trim() && activeResponse.groupCounts.bestMatches === 0,
   );
-  const homeMode = !searchMode;
+  const discoveryResultMode = !searchMode && activeDiscoveryResult !== null;
+  const homeMode = !searchMode && !discoveryResultMode;
+  const hasDiscoveryRail = discoveryContent.shortcuts.length > 0;
   const displayLocation = formatDisplayLocation(location);
   const summaryText = resultSummary({
     bestCount: activeResponse.groupCounts.bestMatches,
@@ -2792,6 +2881,7 @@ export function ExploreClient({
     setGpsStatus("searching");
     setGpsMessage(null);
     setNearYouSalons([]);
+    setActiveDiscoveryResult(null);
 
     const response = await searchExploreWithGpsAction({
       category: normalizedCategory,
@@ -2826,6 +2916,7 @@ export function ExploreClient({
     setLocationSource("gps");
     setGpsStatus("idle");
     setExplicitSearchMode(false);
+    setActiveDiscoveryResult("near_you");
 
     if (response.error) {
       setGpsMessage("We couldn't calculate nearby salons right now.");
@@ -2912,6 +3003,7 @@ export function ExploreClient({
     setGpsStatus("idle");
     setGpsMessage(null);
     setExplicitSearchMode(false);
+    setActiveDiscoveryResult(null);
     setLocationSource(workspaceLocation.label ? "workspace" : "none");
 
     startTransition(() => {
@@ -2928,6 +3020,7 @@ export function ExploreClient({
     setCategory(value);
     setGpsResponse(null);
     setNearYouSalons([]);
+    setActiveDiscoveryResult(null);
     setExplicitSearchMode(nextSearchMode);
 
     const url = nextSearchMode
@@ -2953,6 +3046,7 @@ export function ExploreClient({
     }
 
     setExplicitSearchMode(true);
+    setActiveDiscoveryResult(null);
 
     const url = buildUrl({
       category: selectedCategory,
@@ -2982,15 +3076,38 @@ export function ExploreClient({
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function selectDiscoveryShortcut(shortcut: ExploreDiscoveryShortcut) {
+    if (shortcut.action.type === "category") {
+      selectCategory(shortcut.action.category);
+      return;
+    }
+
+    if (shortcut.action.type === "result") {
+      setGpsResponse(null);
+      setExplicitSearchMode(false);
+      setActiveDiscoveryResult(shortcut.action.resultKind);
+      window.requestAnimationFrame(() => {
+        document
+          .querySelector('[data-testid="explore-discovery-results"]')
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }
+
   return (
     <main className="min-w-0 overflow-x-hidden bg-white">
       <div
-        className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(18.25rem,18.25rem)] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_minmax(21rem,21rem)]"
+        className={[
+          hasDiscoveryRail
+            ? "xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(19.5rem,19.5rem)] 2xl:grid-cols-[minmax(0,1fr)_minmax(21rem,21rem)]"
+            : "",
+          "xl:items-start",
+        ].join(" ")}
         data-testid="explore-desktop-grid"
       >
         <div className="min-w-0 overflow-hidden" data-testid="explore-main-column">
           <section className="bg-transparent" data-testid="explore-top-section">
-            <div className="mx-auto grid w-full max-w-none gap-5 px-4 pb-4 pt-4 sm:px-6 lg:pl-8 lg:pr-3">
+            <div className="mx-auto grid w-full max-w-[44rem] gap-3 px-4 pb-2 pt-3 sm:px-6 lg:px-3">
               <CategoryChips
                 category={selectedCategory}
                 onChange={selectCategory}
@@ -3005,6 +3122,12 @@ export function ExploreClient({
                 selectedCategory={selectedCategory}
               />
 
+              <MobileDiscoveryShortcuts
+                activeResultKind={activeDiscoveryResult}
+                onSelect={selectDiscoveryShortcut}
+                shortcuts={discoveryContent.shortcuts}
+              />
+
               <ExploreHero
                 content={homeContent}
                 onExploreClick={focusHeaderSearch}
@@ -3015,10 +3138,19 @@ export function ExploreClient({
           {homeMode ? (
             <ExploreHomeSections
               content={homeContent}
-              gpsCoordinates={gpsCoordinates}
               gpsMessage={gpsMessage}
+              initialFeed={initialFeed}
               nearYouSalons={nearYouSalons}
               onSelectCategory={selectCategory}
+            />
+          ) : discoveryResultMode && activeDiscoveryResult ? (
+            <ExploreDiscoveryResults
+              content={homeContent}
+              gpsCoordinates={gpsCoordinates}
+              kind={activeDiscoveryResult}
+              nearYouSalons={nearYouSalons}
+              onClear={() => setActiveDiscoveryResult(null)}
+              onCurrentLocation={requestCurrentLocation}
             />
           ) : (
             <>
@@ -3179,7 +3311,13 @@ export function ExploreClient({
 
           <QuickActions actions={quickActions} />
         </div>
-        <CustomerExploreUtilityPanel utilityContent={utilityContent} />
+        {hasDiscoveryRail ? (
+          <ExploreDiscoveryRail
+            activeResultKind={activeDiscoveryResult}
+            onSelect={selectDiscoveryShortcut}
+            shortcuts={discoveryContent.shortcuts}
+          />
+        ) : null}
       </div>
     </main>
   );

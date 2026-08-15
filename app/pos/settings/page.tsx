@@ -646,9 +646,6 @@ export default async function PosSettingsPage({
     return (
       <main className="mx-auto w-full max-w-5xl px-6 py-10">
         <OwnerPosMenu />
-        <h1 className="mt-6 text-3xl font-semibold tracking-normal text-zinc-950">
-          POS Settings
-        </h1>
         <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           You do not have permission to manage POS settings.
         </p>
@@ -665,15 +662,6 @@ export default async function PosSettingsPage({
     <main className="mx-auto w-full max-w-6xl px-6 py-8">
       <SettingsSaveBroadcast saved={saved} />
       <OwnerPosMenu />
-
-      <div className="mt-6 border-b border-zinc-200 pb-5">
-        <h1 className="text-3xl font-semibold tracking-normal text-zinc-950">
-          POS Settings
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Manage standalone POS access and customer-facing POS display settings.
-        </p>
-      </div>
 
       {error ? (
         <p className="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">

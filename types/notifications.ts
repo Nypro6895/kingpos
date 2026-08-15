@@ -4,6 +4,7 @@ export type NotificationFeedAction =
       label: string;
       notificationId: string;
       type: "open-app";
+      workspaceId: string | null;
     }
   | {
       requestId: string;

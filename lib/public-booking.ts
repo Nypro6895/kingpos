@@ -1953,6 +1953,39 @@ function phoneLooksValid(value: string | null) {
   return (value ?? "").replace(/\D+/g, "").length >= 7;
 }
 
+async function claimCurrentUserBookingByManageToken(input: {
+  manageToken: string;
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+}) {
+  const { data, error } = await input.supabase.rpc(
+    "claim_guest_booking_by_manage_token",
+    { raw_token: input.manageToken },
+  );
+
+  if (error) {
+    console.error("Public booking account link failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+    });
+    return false;
+  }
+
+  const result = asRecord(data);
+
+  if (booleanValue(result.ok, false)) {
+    return true;
+  }
+
+  console.error("Public booking account link rejected", {
+    code: nonEmptyString(result.code),
+  });
+  return false;
+}
+
 export async function createPublicBooking(
   input: PublicBookingCreateInput,
 ): Promise<PublicBookingActionResult> {
@@ -2103,11 +2136,19 @@ export async function createPublicBooking(
     );
   }
 
+  const accountLinked =
+    Boolean(currentUser) && manageToken && authenticatedSupabase
+      ? await claimCurrentUserBookingByManageToken({
+          manageToken,
+          supabase: authenticatedSupabase,
+        })
+      : Boolean(currentUser);
+
   return {
     bookingId,
     code: booleanValue(result.duplicate, false) ? "duplicate" : undefined,
     confirmationStatus: nonEmptyString(result.confirmation_status) ?? undefined,
-    accountLinked: Boolean(currentUser),
+    accountLinked,
     manageToken,
     message: booleanValue(result.duplicate, false)
       ? "This booking request was already submitted."

@@ -46,6 +46,7 @@ export type RoleMoreIcon =
   | "flag"
   | "gift"
   | "gear"
+  | "grid"
   | "heart"
   | "list"
   | "receipt"
@@ -72,6 +73,30 @@ export type RoleNavigationConfig = {
   moreLinks: readonly NavigationLink[];
   routePrefixes: readonly string[];
 };
+
+export const SHARED_CONTEXT_ROUTE_PREFIXES = [
+  "/account",
+  "/explore",
+  "/more",
+  "/my-place",
+  "/notifications",
+  "/settings",
+] as const;
+
+export function roleNavigationKindForContext(input: {
+  salonMode: "manage" | "staff" | null;
+  workspaceType: "account" | "personal" | "salon";
+}): RoleNavigationKind {
+  if (input.workspaceType === "salon" && input.salonMode === "staff") {
+    return "staff";
+  }
+
+  if (input.workspaceType === "salon" && input.salonMode === "manage") {
+    return "owner";
+  }
+
+  return "personal";
+}
 
 const PERSONAL_LINKS: NavigationLink[] = [
   { href: "/explore", icon: "compass", id: "explore", label: "Explore" },
@@ -119,6 +144,14 @@ const OWNER_LINKS: NavigationLink[] = [
 
 export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   personal: [
+    {
+      description: "Switch between Personal, owner salons, staff workplaces, and accounts.",
+      href: "/my-place",
+      icon: "grid",
+      id: "personal-my-place",
+      label: "My Place",
+      navigationIcon: "grid",
+    },
     {
       description: "Appointments, receipts, and salon visits tied to your profile.",
       href: "/activity",
@@ -186,6 +219,14 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   ],
   staff: [
     {
+      description: "Switch workplaces, owner salons, accounts, and Personal mode.",
+      href: "/my-place",
+      icon: "grid",
+      id: "staff-my-place",
+      label: "My Place",
+      navigationIcon: "grid",
+    },
+    {
       description: "Staff payroll, period totals, and paystub access.",
       href: "/staff/my-work?tab=payroll",
       icon: "cash",
@@ -227,6 +268,14 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
     },
   ],
   owner: [
+    {
+      description: "Switch salons, staff workplaces, accounts, and Personal mode.",
+      href: "/my-place",
+      icon: "grid",
+      id: "owner-my-place",
+      label: "My Place",
+      navigationIcon: "grid",
+    },
     {
       description: "Open the POS workspace for the current salon.",
       href: "/pos",
@@ -276,6 +325,14 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       navigationIcon: "receipt",
     },
     {
+      description: "Salon customer profiles, duplicate cleanup, and visit history.",
+      href: "/customers",
+      icon: "users",
+      id: "owner-customers",
+      label: "Customers",
+      navigationIcon: "people",
+    },
+    {
       description: "Salon settings and POS access management.",
       href: "/salon-settings",
       icon: "gear",
@@ -304,27 +361,21 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
     links: PERSONAL_LINKS,
     moreLinks: moreNavigationLinks("personal"),
     routePrefixes: [
-      "/account",
       "/activity",
       "/beauty",
       "/claim",
       "/businesses",
-      "/explore",
-      "/more",
       "/my-bookings",
-      "/my-place",
-      "/notifications",
       "/permissions",
       "/roles",
       "/salons",
-      "/settings",
       "/staff/connections",
     ],
   },
   staff: {
     ariaLabel: "Staff",
     desktopAriaLabel: "Staff desktop",
-    homeHref: "/staff/my-work",
+    homeHref: "/explore",
     kind: "staff",
     links: STAFF_LINKS,
     moreLinks: moreNavigationLinks("staff"),
@@ -337,7 +388,7 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
   owner: {
     ariaLabel: "Owner",
     desktopAriaLabel: "Owner desktop",
-    homeHref: "/staff/today",
+    homeHref: "/explore",
     kind: "owner",
     links: OWNER_LINKS,
     moreLinks: moreNavigationLinks("owner"),

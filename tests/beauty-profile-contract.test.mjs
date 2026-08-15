@@ -6,6 +6,12 @@ const migration = read("supabase/migrations/202608100005_beauty_profile_social_t
 const beautyCoverForwardMigration = read(
   "supabase/migrations/202608100006_beauty_profile_cover_media_path_backfill.sql",
 );
+const beautyCreatePostForwardMigration = read(
+  "supabase/migrations/202608110004_fix_beauty_create_post_verification_state_ambiguity.sql",
+);
+const beautySalonPublicationMigration = read(
+  "supabase/migrations/202608110005_beauty_salon_publication_approval.sql",
+);
 const allMigrationSql = readdirSync("supabase/migrations")
   .filter((name) => name.endsWith(".sql"))
   .sort()
@@ -16,6 +22,20 @@ const beautyMedia = read("lib/beauty-media.ts");
 const beautyActions = read("app/beauty/actions.ts");
 const beautyClient = read("app/beauty/beauty-profile-client.tsx");
 const beautyPage = read("app/beauty/page.tsx");
+const beautySalonPublicationService = read("lib/beauty-salon-publications.ts");
+const salonProfileService = read("lib/salon-profile.ts");
+const salonProfileTypes = read("types/salon-profile.ts");
+const salonProfileView = read("app/salon-profile/salon-profile-view.tsx");
+const salonPublicationReviewPage = read(
+  "app/salon-profile/client-transformations/page.tsx",
+);
+const salonPublicationReviewActions = read(
+  "app/salon-profile/client-transformations/actions.ts",
+);
+const salonPublicationReviewActionButton = read(
+  "app/salon-profile/client-transformations/review-action-button.tsx",
+);
+const workspacePending = read("lib/workspace-pending.ts");
 
 function read(path) {
   return readFileSync(path, "utf8");
@@ -31,6 +51,20 @@ function functionBlock(name, nextMarker) {
   assert.ok(end > start, `${name} function has a readable boundary`);
 
   return migration.slice(start, end);
+}
+
+function latestMigrationFunctionBlock(name) {
+  const start = allMigrationSql.lastIndexOf(
+    `create or replace function public.${name}`,
+  );
+
+  assert.ok(start >= 0, `${name} latest function is present`);
+
+  const end = allMigrationSql.indexOf("\n$$;", start);
+
+  assert.ok(end > start, `${name} latest function has a readable boundary`);
+
+  return allMigrationSql.slice(start, end + "\n$$;".length);
 }
 
 function sourceFunctionBlock(source, name, nextMarker) {
@@ -49,12 +83,13 @@ function sourceFunctionBlock(source, name, nextMarker) {
 }
 
 function createBeautyPostSignature() {
-  const start = migration.indexOf("create or replace function public.create_beauty_post(");
-  const end = migration.indexOf(")\nreturns jsonb", start);
+  const createBlock = latestMigrationFunctionBlock("create_beauty_post");
+  const start = createBlock.indexOf("create or replace function public.create_beauty_post(");
+  const end = createBlock.indexOf(")\nreturns jsonb", start);
 
   assert.ok(start >= 0 && end > start, "create_beauty_post signature is readable");
 
-  return migration.slice(start, end);
+  return createBlock.slice(start, end);
 }
 
 function profileColumnsCoveredByMigrations() {
@@ -137,12 +172,9 @@ test("beauty visit verification is derived from linked customer bookings and rec
 
 test("creating a beauty post never trusts client proof or reward claims", () => {
   const signature = createBeautyPostSignature();
-  const createBlock = functionBlock(
-    "create_beauty_post",
-    "create or replace function public.update_beauty_post_caption",
-  );
+  const createBlock = latestMigrationFunctionBlock("create_beauty_post");
 
-  assert.doesNotMatch(signature, /verified|booking_id|pos_ticket_id|reward/i);
+  assert.doesNotMatch(signature, /verified|verification_state|booking_id|pos_ticket_id|reward/i);
   assert.match(createBlock, /actor_user_id uuid := public\.current_public_user_id\(\)/);
   assert.match(createBlock, /clean_visibility text := 'public'/);
   assert.match(createBlock, /if actor_user_id is null then/);
@@ -150,7 +182,8 @@ test("creating a beauty post never trusts client proof or reward claims", () => 
   assert.match(createBlock, /media_path not like '%\.webp'/);
   assert.match(createBlock, /public\.find_beauty_visit_proof\(actor_user_id, p_salon_id, p_staff_id\)/);
   assert.match(createBlock, /insert into public\.beauty_post_verifications/);
-  assert.match(createBlock, /case when verification_state = 'verified' then now\(\) else null end/);
+  assert.match(createBlock, /derived_verification_state := coalesce\(proof ->> 'state', 'pending'\)/);
+  assert.match(createBlock, /case when derived_verification_state = 'verified' then now\(\) else null end/);
 });
 
 test("verified Before & After rewards use an immutable idempotent ledger", () => {
@@ -158,10 +191,7 @@ test("verified Before & After rewards use an immutable idempotent ledger", () =>
     migration.indexOf("create table public.beauty_reward_events"),
     migration.indexOf("create index beauty_posts_profile_timeline_idx"),
   );
-  const createBlock = functionBlock(
-    "create_beauty_post",
-    "create or replace function public.update_beauty_post_caption",
-  );
+  const createBlock = latestMigrationFunctionBlock("create_beauty_post");
   const timelineBlock = functionBlock(
     "list_beauty_timeline",
     "create or replace function public.get_beauty_recent_visit_candidates",
@@ -178,19 +208,237 @@ test("verified Before & After rewards use an immutable idempotent ledger", () =>
     /post_id uuid not null references public\.beauty_posts\(id\) on delete cascade/,
   );
   assert.match(migration, /insert into public\.beauty_reward_policies \([\s\S]*post_type[\s\S]*verification_state[\s\S]*reward_type[\s\S]*points_amount[\s\S]*status/);
-  assert.match(createBlock, /if verification_state = 'verified' then/);
+  assert.match(createBlock, /if derived_verification_state = 'verified' then/);
   assert.match(createBlock, /policies\.post_type = clean_post_type/);
-  assert.match(createBlock, /policies\.verification_state = verification_state/);
+  assert.match(createBlock, /policies\.verification_state = derived_verification_state/);
   assert.match(createBlock, /active_policy\.code/);
   assert.match(createBlock, /actor_user_id::text/);
-  assert.match(createBlock, /verification_method/);
-  assert.match(createBlock, /coalesce\(proof_ticket_id::text, proof_booking_id::text, post_id::text\)/);
+  assert.match(createBlock, /derived_verification_method/);
+  assert.match(createBlock, /coalesce\(proof_ticket_id::text, proof_booking_id::text, created_post_id::text\)/);
   assert.match(createBlock, /insert into public\.beauty_reward_events/);
   assert.match(createBlock, /on conflict \(idempotency_key\) do nothing/);
   assert.match(timelineBlock, /rewards\.status = 'issued'/);
   assert.match(deleteBlock, /set deleted_at = now\(\)/);
   assert.doesNotMatch(deleteBlock, /delete from public\.beauty_reward_events/);
   assert.match(deleteBlock, /'mediaPaths'/);
+});
+
+test("beauty create post forward migration disambiguates verification state", () => {
+  const createBlock = latestMigrationFunctionBlock("create_beauty_post");
+
+  assert.match(
+    beautyCreatePostForwardMigration,
+    /create or replace function public\.create_beauty_post/,
+  );
+  assert.match(createBlock, /derived_verification_state text := 'pending'/);
+  assert.match(createBlock, /derived_verification_method text := 'none'/);
+  assert.match(createBlock, /select policies\.\*/);
+  assert.match(createBlock, /policies\.verification_state = derived_verification_state/);
+  assert.match(createBlock, /'verificationState', derived_verification_state/);
+  assert.match(createBlock, /'rewardIssued', issued_reward_id is not null/);
+  assert.doesNotMatch(createBlock, /\n\s*verification_state text :=/);
+  assert.doesNotMatch(createBlock, /policies\.verification_state\s*=\s*verification_state\b/);
+  assert.doesNotMatch(createBlock, /case when verification_state = 'verified'/);
+  assert.doesNotMatch(createBlock, /'verificationState', verification_state/);
+});
+
+test("beauty salon publication approval is normalized and independent", () => {
+  const signature = createBeautyPostSignature();
+  const createBlock = latestMigrationFunctionBlock("create_beauty_post");
+  const attributionInsert = createBlock.indexOf(
+    "insert into public.beauty_post_attributions",
+  );
+  const verificationInsert = createBlock.indexOf(
+    "insert into public.beauty_post_verifications",
+  );
+  const rewardInsert = createBlock.indexOf(
+    "insert into public.beauty_reward_events",
+  );
+  const publicationInsert = createBlock.indexOf(
+    "insert into public.beauty_post_salon_publications",
+  );
+  const notificationCall = createBlock.indexOf(
+    "public.notify_beauty_salon_publication_request",
+  );
+
+  assert.match(
+    beautySalonPublicationMigration,
+    /create table if not exists public\.beauty_post_salon_publications/,
+  );
+  assert.match(
+    beautySalonPublicationMigration,
+    /unique \(post_id, salon_id\)/,
+  );
+  assert.match(
+    beautySalonPublicationMigration,
+    /status text not null default 'pending'/,
+  );
+  assert.match(
+    beautySalonPublicationMigration,
+    /status in \('pending', 'approved', 'declined'\)/,
+  );
+  assert.match(
+    beautySalonPublicationMigration,
+    /alter table public\.beauty_post_salon_publications enable row level security/,
+  );
+  assert.ok(attributionInsert >= 0, "Attribution insert is present.");
+  assert.ok(verificationInsert > attributionInsert, "Verification follows attribution.");
+  assert.ok(rewardInsert > verificationInsert, "Reward issuance follows verification.");
+  assert.ok(publicationInsert > rewardInsert, "Salon publication request follows rewards.");
+  assert.ok(notificationCall > publicationInsert, "Salon notification follows request insert.");
+  assert.doesNotMatch(signature, /publication|approval|approved|declined/i);
+  assert.match(createBlock, /derived_verification_state text := 'pending'/);
+  assert.match(createBlock, /salon_publication_status text := null/);
+  assert.match(createBlock, /'salonPublicationStatus', salon_publication_status/);
+  assert.match(createBlock, /policies\.verification_state = derived_verification_state/);
+});
+
+test("pending salon publications are not public salon profile posts", () => {
+  const publicSalonPostsBlock = latestMigrationFunctionBlock(
+    "get_public_salon_profile_beauty_posts",
+  );
+  const exploreBeautyPostsBlock = latestMigrationFunctionBlock(
+    "get_public_explore_beauty_posts",
+  );
+
+  assert.match(
+    publicSalonPostsBlock,
+    /from public\.beauty_post_salon_publications publications/,
+  );
+  assert.match(publicSalonPostsBlock, /publications\.status = 'approved'/);
+  assert.match(publicSalonPostsBlock, /posts\.post_type = 'before_after'/);
+  assert.match(
+    publicSalonPostsBlock,
+    /public\.salon_profile_public_salon_exists\(target_salon_id\)/,
+  );
+  assert.match(publicSalonPostsBlock, /left join public\.staff staff/);
+  assert.match(publicSalonPostsBlock, /staff\.display_name as staff_name/);
+  assert.doesNotMatch(publicSalonPostsBlock, /status = 'pending'/);
+  assert.doesNotMatch(
+    exploreBeautyPostsBlock,
+    /beauty_post_salon_publications/,
+    "Explore attribution should remain independent from salon profile approval.",
+  );
+  assert.match(salonProfileService, /get_public_salon_profile_beauty_posts/);
+  assert.match(salonProfileTypes, /beautyPosts: PublicSalonProfileBeautyPost\[\]/);
+  assert.match(salonProfileView, /BeautyTransformationsSection/);
+  assert.match(salonProfileView, /posts=\{data\.beautyPosts\}/);
+});
+
+test("salon publication requests notify owners and require authorized idempotent review", () => {
+  const notifyBlock = latestMigrationFunctionBlock(
+    "notify_beauty_salon_publication_request",
+  );
+  const listBlock = latestMigrationFunctionBlock(
+    "list_my_beauty_salon_publication_requests",
+  );
+  const respondBlock = latestMigrationFunctionBlock(
+    "respond_to_beauty_salon_publication_request",
+  );
+
+  assert.match(notifyBlock, /insert into public\.app_notifications/);
+  assert.match(notifyBlock, /'beauty_salon_publication_request'/);
+  assert.match(notifyBlock, /request_row\.salon_id/);
+  assert.match(notifyBlock, /'\/salon-profile\/client-transformations'/);
+  assert.match(notifyBlock, /event_key/);
+  assert.match(notifyBlock, /salon_profile\.content\.manage/);
+  assert.match(notifyBlock, /on conflict \(recipient_user_id, event_key\)/);
+  assert.match(
+    beautySalonPublicationMigration,
+    /create unique index if not exists app_notifications_beauty_publication_event_key_idx/,
+  );
+  assert.match(listBlock, /public\.user_has_salon_permission\(/);
+  assert.match(listBlock, /array\['salon_profile\.content\.manage'\]::text\[\]/);
+  assert.match(listBlock, /publications\.status = 'pending'/);
+  assert.match(respondBlock, /actor_user_id uuid := public\.current_public_user_id\(\)/);
+  assert.match(respondBlock, /select \*[\s\S]*for update/);
+  assert.match(respondBlock, /clean_response text := case/);
+  assert.match(respondBlock, /public\.user_has_salon_permission\(/);
+  assert.match(respondBlock, /array\['salon_profile\.content\.manage'\]::text\[\]/);
+  assert.match(respondBlock, /if request_row\.status <> 'pending' then/);
+  assert.match(respondBlock, /'idempotent', true/);
+  assert.match(respondBlock, /responded_by_user_id = actor_user_id/);
+  assert.match(respondBlock, /notification_type = 'beauty_salon_publication_request'/);
+  assert.match(beautySalonPublicationService, /respond_to_beauty_salon_publication_request/);
+  assert.match(beautySalonPublicationService, /BEAUTY_SALON_PUBLICATION_PERMISSION = "salon_profile\.content\.manage"/);
+  assert.match(beautySalonPublicationService, /hasPermission\(/);
+});
+
+test("salon publication review actions do not serialize framework redirects", () => {
+  const actionTryBlock = salonPublicationReviewActions.match(
+    /try \{([\s\S]*?)\n\s*\} catch \(error\) \{/,
+  );
+  const actionCatchBlock = salonPublicationReviewActions.match(
+    /\} catch \(error\) \{([\s\S]*?)\n\s*\}\n\n  revalidateBeautySalonPublicationPaths/,
+  );
+
+  assert.ok(actionTryBlock, "Review action should isolate mutation errors.");
+  assert.ok(actionCatchBlock, "Review action should handle mutation errors.");
+  assert.match(
+    salonPublicationReviewActions,
+    /let result: Awaited<[\s\S]*respondToBeautySalonPublicationRequest/,
+  );
+  assert.match(
+    actionTryBlock[1],
+    /result = await respondToBeautySalonPublicationRequest/,
+  );
+  assert.doesNotMatch(
+    actionTryBlock[1],
+    /redirectWithMessage|redirect\(/,
+    "Next redirect must not be thrown inside the mutation try block.",
+  );
+  assert.match(
+    salonPublicationReviewActions,
+    /safeTransformationActionErrorMessage/,
+  );
+  assert.doesNotMatch(
+    actionCatchBlock[1],
+    /error instanceof Error\s*\?\s*error\.message/,
+    "Raw framework or database error messages must not be rendered to users.",
+  );
+  assert.match(
+    salonPublicationReviewActions,
+    /"Added to your salon profile\."/,
+  );
+  assert.match(
+    salonPublicationReviewActions,
+    /"This transformation will stay on the customer's Beauty profile only\."/,
+  );
+  assert.match(
+    salonPublicationReviewActions,
+    /"Could not update this transformation\. Please try again\."/,
+  );
+  assert.match(salonPublicationReviewPage, /safeFeedbackMessage/);
+  assert.match(salonPublicationReviewPage, /You&apos;re all caught up/);
+});
+
+test("beauty salon publication UI stays customer-owned and review-only", () => {
+  assert.match(beautyClient, /salonPublicationLabel/);
+  assert.match(beautyClient, /Waiting for salon approval/);
+  assert.match(beautyClient, /Approved on salon profile/);
+  assert.match(beautyClient, /Salon profile share declined/);
+  assert.match(beautyClient, /canManage\s*\?\s*salonPublicationLabel/);
+  assert.match(salonPublicationReviewPage, /listBeautySalonPublicationRequests/);
+  assert.match(salonPublicationReviewPage, /Add to salon profile/);
+  assert.match(salonPublicationReviewPage, /Keep off profile/);
+  assert.match(salonPublicationReviewPage, /Feature request/);
+  assert.match(salonPublicationReviewPage, /Before/);
+  assert.match(salonPublicationReviewPage, /After/);
+  assert.match(salonPublicationReviewPage, /For \{salonName\}/);
+  assert.match(salonPublicationReviewPage, /with \{request\.staffName\}/);
+  assert.match(salonPublicationReviewPage, /Verified visit/);
+  assert.match(salonPublicationReviewPage, /Visit verification pending/);
+  assert.match(salonPublicationReviewPage, /Not verified/);
+  assert.match(salonPublicationReviewActionButton, /useFormStatus/);
+  assert.match(salonPublicationReviewActionButton, /pending \? pendingLabel : idleLabel/);
+  assert.match(salonPublicationReviewActions, /acceptBeautySalonPublicationRequestAction/);
+  assert.match(salonPublicationReviewActions, /declineBeautySalonPublicationRequestAction/);
+  assert.match(salonPublicationReviewActions, /respondToBeautySalonPublicationRequest/);
+  assert.match(salonPublicationReviewActions, /revalidateBeautySalonPublicationPaths/);
+  assert.match(workspacePending, /countPendingBeautySalonPublicationRequests/);
+  assert.match(workspacePending, /Client transformations/);
+  assert.doesNotMatch(salonPublicationReviewPage, /createBeautyPostAction/);
+  assert.doesNotMatch(salonPublicationReviewPage, /Verification \$\{request\.verificationState\}/);
 });
 
 test("beauty indexes cover timeline and visit verification lookups", () => {

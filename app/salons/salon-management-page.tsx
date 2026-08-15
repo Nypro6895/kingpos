@@ -1,5 +1,6 @@
 ﻿import { createSalonAction, setCurrentSalon } from "@/app/salons/actions";
 import { CreateSalonSubmitButton } from "@/app/salons/create-salon-submit-button";
+import { QueryErrorDialog } from "@/app/query-error-dialog";
 import {
   getCreateSalonAccount,
   getCurrentBusinessContext,
@@ -259,26 +260,15 @@ export async function SalonManagementPage({
   );
 
   if (mode === "create") {
-    const targetAccountName =
-      createSalonAccount?.name ?? context.accountName ?? "your account";
-
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-10">
-        <div className="border-b border-zinc-200 pb-6">
-          <p className="text-sm font-medium text-zinc-500">KITY Platform</p>
-          <h1 className="mt-1 text-3xl font-semibold text-zinc-950">
-            Create Salon
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600">
-            Set up a new salon under {targetAccountName}.
-          </p>
-        </div>
-
-        {errorMessage ? (
-          <p className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {errorMessage}
-          </p>
-        ) : null}
+        <QueryErrorDialog
+          message={errorMessage}
+          primaryLabel="Review form"
+          secondaryHref={routes.salons.list()}
+          secondaryLabel="Salons"
+          title="Salon action needed"
+        />
 
         {hasCreatePermission ? (
           <SalonForm createRequestKey={randomUUID()} />
@@ -294,14 +284,7 @@ export async function SalonManagementPage({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
-      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-medium text-zinc-500">KITY Platform</p>
-          <h1 className="mt-1 text-3xl font-semibold text-zinc-950">Salons</h1>
-          <p className="mt-2 text-sm text-zinc-600">
-            Manage the salons connected to your Account.
-          </p>
-        </div>
+      <div className="flex flex-wrap justify-end gap-3">
         <div className="flex flex-wrap gap-3">
           {hasCreatePermission ? (
             <Link
@@ -333,11 +316,13 @@ export async function SalonManagementPage({
         </div>
       </div>
 
-      {errorMessage ? (
-        <p className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {errorMessage}
-        </p>
-      ) : null}
+      <QueryErrorDialog
+        message={errorMessage}
+        primaryLabel="Review salons"
+        secondaryHref="/my-place"
+        secondaryLabel="My Place"
+        title="Salon action needed"
+      />
       {createdMessage ? (
         <p className="mt-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
           {createdMessage}

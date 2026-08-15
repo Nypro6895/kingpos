@@ -319,18 +319,12 @@ function StaffPortalHeader({
 }) {
   return (
     <div className="border-b border-zinc-200 pb-4">
-      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            My Work
-          </p>
-          <h1 className="mt-1 truncate text-2xl font-semibold text-zinc-950 sm:text-3xl">
-            {staffName}
-          </h1>
-          <p className="mt-1 text-sm text-zinc-600">
-            {weekday}, {dateLabel} / {salonName}
-          </p>
-        </div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-zinc-600">
+        <span className="font-semibold text-zinc-950">{staffName}</span>
+        <span aria-hidden="true">/</span>
+        <span>{weekday}, {dateLabel}</span>
+        <span aria-hidden="true">/</span>
+        <span className="min-w-0 truncate">{salonName}</span>
       </div>
       <nav
         aria-label="Staff portal tabs"
@@ -1341,8 +1335,7 @@ function MyAnalysisTab({
 function StaffPortalLoadError({ label = "Staff Portal" }: { label?: string }) {
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">My Work</h1>
-      <p className="mt-6 rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+      <p className="rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">
         {label} could not load right now. Please refresh or try again after the
         current salon is available.
       </p>
@@ -1376,8 +1369,7 @@ export default async function StaffMyWorkPage({
   if (!context.currentSalon) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">My Work</h1>
-        <p className="mt-6 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
+        <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
           Please select a salon first.
         </p>
       </main>
@@ -1387,8 +1379,7 @@ export default async function StaffMyWorkPage({
   if (!staff) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">My Work</h1>
-        <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           No active staff profile is linked to your account for this salon.
         </p>
       </main>

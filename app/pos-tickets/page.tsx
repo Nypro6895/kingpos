@@ -434,10 +434,7 @@ export default async function PosTicketsPage({
   if (!canViewTickets) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">
-          Daily POS Work Log
-        </h1>
-        <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           You do not have permission to view POS tickets.
         </p>
       </main>
@@ -482,15 +479,6 @@ export default async function PosTicketsPage({
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-6 text-zinc-950 sm:px-6">
-      <div className="border-b border-zinc-200 pb-4">
-        <h1 className="text-2xl font-semibold tracking-normal">
-          Daily POS Work Log
-        </h1>
-        <p className="mt-1 text-sm text-zinc-600">
-          Staff income history, customer visit history, and daily salon operations.
-        </p>
-      </div>
-
       <WorkLogFilters
         query={searchQuery}
         selectedDate={selectedDate}

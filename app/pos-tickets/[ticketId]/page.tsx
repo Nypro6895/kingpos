@@ -462,8 +462,7 @@ export default async function PosTicketDetailPage({
   if (!canViewTickets) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">POS Ticket</h1>
-        <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           You do not have permission to view POS tickets.
         </p>
       </main>
@@ -479,8 +478,7 @@ export default async function PosTicketDetailPage({
   if (!ticket) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">POS Ticket</h1>
-        <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           POS Ticket was not found for the current salon.
         </p>
       </main>
@@ -546,16 +544,17 @@ export default async function PosTicketDetailPage({
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
       <div className="border-b border-zinc-200 pb-6">
-        <Link className="text-sm font-medium text-zinc-950 underline" href="/pos-tickets">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link className="text-sm font-medium text-zinc-950 underline" href="/pos-tickets">
           Back to POS Tickets
-        </Link>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <h1 className="text-3xl font-semibold text-zinc-950">
-            {ticket.ticket_number}
-          </h1>
+          </Link>
           <StatusBadge status={ticket.status} />
         </div>
-        <div className="mt-4 grid gap-3 text-sm text-zinc-700 sm:grid-cols-3">
+        <div className="mt-4 grid gap-3 text-sm text-zinc-700 sm:grid-cols-4">
+          <p>
+            <span className="font-medium text-zinc-950">Ticket:</span>{" "}
+            {ticket.ticket_number}
+          </p>
           <p>
             <span className="font-medium text-zinc-950">Created Time:</span>{" "}
             {formatTicketDateTime(ticket.created_at)}

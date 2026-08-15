@@ -6,6 +6,10 @@ const migration = readFileSync(
   "supabase/migrations/202607250005_staff_check_in_and_turn_adjustment.sql",
   "utf8",
 );
+const queueTurnFixMigration = readFileSync(
+  "supabase/migrations/202608150003_fix_staff_queue_increment_bootstrap.sql",
+  "utf8",
+);
 const posActions = readFileSync("app/pos/actions.ts", "utf8");
 const posDeskClient = readFileSync("app/pos/pos-desk-client.tsx", "utf8");
 const posSettingsActions = readFileSync("app/pos/settings/actions.ts", "utf8");
@@ -17,16 +21,20 @@ const portableCapabilities = readFileSync(
 );
 const staffService = readFileSync("lib/staff.ts", "utf8");
 
-function functionBlock(name, nextMarker) {
-  const start = migration.indexOf(`create or replace function public.${name}`);
+function functionBlockFrom(source, name, nextMarker) {
+  const start = source.indexOf(`create or replace function public.${name}`);
 
   assert.ok(start >= 0, `${name} function is present`);
 
-  const end = nextMarker ? migration.indexOf(nextMarker, start + 1) : -1;
+  const end = nextMarker ? source.indexOf(nextMarker, start + 1) : -1;
 
   assert.ok(end > start, `${name} function has a readable boundary`);
 
-  return migration.slice(start, end);
+  return source.slice(start, end);
+}
+
+function functionBlock(name, nextMarker) {
+  return functionBlockFrom(migration, name, nextMarker);
 }
 
 test("staff check-in migration creates the operational queue and audit surface", () => {
@@ -70,6 +78,72 @@ test("receipt submit preserves turn facts and increments the queue counter", () 
   assert.match(portableReceiptBlock, /insert into public\.pos_ticket_item_turn_parts/);
   assert.match(portableReceiptBlock, /public\.increment_staff_queue_turns/);
   assert.match(posActions, /"increment_staff_queue_turns"/);
+});
+
+test("large turn queue increment does not bootstrap from the same ticket turn parts", () => {
+  const incrementBlock = functionBlockFrom(
+    queueTurnFixMigration,
+    "increment_staff_queue_turns",
+    "grant execute on function public.increment_staff_queue_turns",
+  );
+  const positiveDeltaBlock = incrementBlock.slice(
+    incrementBlock.indexOf("perform pg_advisory_xact_lock"),
+  );
+
+  assert.match(positiveDeltaBlock, /count\(\*\)::integer - coalesce\(p_delta, 0\)/);
+  assert.match(positiveDeltaBlock, /values \(\s*coalesce\(historical_large_turn_count, 0\),\s+p_salon_id,\s+p_staff_id,\s+'not_checked_in',\s+p_work_date\s+\)/);
+  assert.match(positiveDeltaBlock, /on conflict \(salon_id, staff_id, work_date\) do nothing/);
+  assert.match(positiveDeltaBlock, /set queue_turn_count = queue_turn_count \+ p_delta/);
+  assert.doesNotMatch(positiveDeltaBlock, /ensure_staff_workday_for_queue/);
+  assert.doesNotMatch(positiveDeltaBlock, /do update/);
+});
+
+test("large turn queue increment preserves historical missing-row facts without double-counting the current event", () => {
+  function applyPositiveIncrement({
+    delta,
+    existingQueue,
+    largeFactsAfterCurrentInsert,
+  }) {
+    const seededQueue =
+      typeof existingQueue === "number"
+        ? existingQueue
+        : Math.max(largeFactsAfterCurrentInsert - delta, 0);
+
+    return seededQueue + delta;
+  }
+
+  assert.equal(
+    applyPositiveIncrement({
+      delta: 1,
+      existingQueue: 0,
+      largeFactsAfterCurrentInsert: 1,
+    }),
+    1,
+  );
+  assert.equal(
+    applyPositiveIncrement({
+      delta: 1,
+      existingQueue: 1,
+      largeFactsAfterCurrentInsert: 2,
+    }),
+    2,
+  );
+  assert.equal(
+    applyPositiveIncrement({
+      delta: 1,
+      existingQueue: 3,
+      largeFactsAfterCurrentInsert: 1,
+    }),
+    4,
+  );
+  assert.equal(
+    applyPositiveIncrement({
+      delta: 1,
+      existingQueue: null,
+      largeFactsAfterCurrentInsert: 4,
+    }),
+    4,
+  );
 });
 
 test("portable access exposes check-in by default but keeps turn adjustment gated", () => {

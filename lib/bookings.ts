@@ -8,6 +8,10 @@ import {
   BOOKING_INSPIRATION_SELECT,
   mapBookingInspirationsByBookingId,
 } from "@/lib/booking-inspirations";
+import {
+  resolveBeautyProfilesForSalonCustomers,
+  type ResolvedBeautyProfile,
+} from "@/lib/beauty-relationship";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { POS_TICKET_WITH_RELATIONS_SELECT } from "@/lib/pos-tickets";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
@@ -62,6 +66,7 @@ export type BookingWorkspaceSearchParams = {
   bookingId?: string | string[];
   date?: string | string[];
   q?: string | string[];
+  range?: string | string[];
   request?: string | string[];
   section?: string | string[];
   service?: string | string[];
@@ -73,8 +78,11 @@ export type BookingWorkspaceSearchParams = {
   view?: string | string[];
 };
 
+export type BookingWorkspaceDateRange = "all" | "day" | "next7";
+
 export type BookingWorkspaceFilters = {
   date: string;
+  dateRange: BookingWorkspaceDateRange;
   query: string;
   selectedBookingId: string | null;
   selectedRequestId: string | null;
@@ -114,6 +122,7 @@ export type BookingWorkspaceTicketSummary = {
 
 export type BookingWorkspaceItem = Booking & {
   assignedStaffNames: string[];
+  beautyProfile: ResolvedBeautyProfile | null;
   customer: Pick<Customer, "email" | "id" | "name" | "phone"> | null;
   durationMinutes: number;
   events: BookingStatusEvent[];
@@ -245,6 +254,17 @@ function addDays(date: string, days: number) {
   )}`;
 }
 
+function addMonths(date: string, months: number) {
+  const [year, month] = date.split("-").map(Number);
+  const utcDate = new Date(Date.UTC(year, month - 1 + months, 1));
+  return `${utcDate.getUTCFullYear()}-${pad(utcDate.getUTCMonth() + 1)}-01`;
+}
+
+function monthStart(date: string) {
+  const [year, month] = date.split("-").map(Number);
+  return `${year}-${pad(month)}-01`;
+}
+
 function dayOfWeek(date: string) {
   const [year, month, day] = date.split("-").map(Number);
   return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
@@ -360,6 +380,18 @@ function normalizeView(value: string): BookingWorkspaceView {
   return value === "day" || value === "week" ? value : "list";
 }
 
+function normalizeDateRange(value: string): BookingWorkspaceDateRange {
+  if (value === "next7") {
+    return "next7";
+  }
+
+  if (value === "all" || value === "month") {
+    return "all";
+  }
+
+  return "day";
+}
+
 function normalizeTab(
   value: string,
   section: string,
@@ -443,9 +475,12 @@ function buildFilters(
 ): BookingWorkspaceFilters {
   const requestedDate = cleanParam(rawSearchParams.date);
   const today = formatDateInTimeZone(new Date(), timeZone);
+  const dateRange = normalizeDateRange(cleanParam(rawSearchParams.range));
+  const view = normalizeView(cleanParam(rawSearchParams.view));
 
   return {
     date: isIsoDate(requestedDate) ? requestedDate : today,
+    dateRange,
     query: cleanParam(rawSearchParams.q),
     selectedBookingId: cleanParam(rawSearchParams.bookingId) || null,
     selectedRequestId: cleanParam(rawSearchParams.request) || null,
@@ -457,44 +492,84 @@ function buildFilters(
       cleanParam(rawSearchParams.tab),
       cleanParam(rawSearchParams.section),
     ),
-    view: normalizeView(cleanParam(rawSearchParams.view)),
+    view: dateRange === "day" ? view : "list",
   };
 }
 
 function buildRange(filters: BookingWorkspaceFilters, timeZone: string) {
+  const rangeKind = filters.dateRange;
   const startDate =
-    filters.view === "week"
-      ? addDays(filters.date, -dayOfWeek(filters.date))
-      : filters.date;
-  const spanDays = filters.view === "week" ? 7 : 1;
-  const endDate = addDays(startDate, spanDays);
+    rangeKind === "all"
+      ? monthStart(filters.date)
+      : rangeKind === "next7"
+        ? filters.date
+        : filters.view === "week"
+          ? addDays(filters.date, -dayOfWeek(filters.date))
+          : filters.date;
+  const endDate =
+    rangeKind === "all"
+      ? addMonths(startDate, 1)
+      : addDays(startDate, rangeKind === "next7" || filters.view === "week" ? 7 : 1);
   const startIso =
     zonedDateTimeToUtcIso({ date: startDate, time: "00:00", timeZone }) ??
     `${startDate}T00:00:00.000Z`;
   const endIso =
     zonedDateTimeToUtcIso({ date: endDate, time: "00:00", timeZone }) ??
     `${endDate}T00:00:00.000Z`;
-  const days = Array.from({ length: spanDays }, (_, index) => {
-    const date = addDays(startDate, index);
+  const days: BookingWorkspaceRange["days"] = [];
+  let cursorDate = startDate;
 
-    return {
-      date,
-      label: labelForDate(date, timeZone),
-    };
-  });
+  while (cursorDate < endDate && days.length < 31) {
+    days.push({
+      date: cursorDate,
+      label: labelForDate(cursorDate, timeZone),
+    });
+    cursorDate = addDays(cursorDate, 1);
+  }
 
   return {
     days,
     endIso,
-    label:
-      filters.view === "week"
-        ? `${labelForDate(startDate, timeZone)} - ${labelForDate(
-            addDays(endDate, -1),
-            timeZone,
-          )}`
-        : labelForDate(startDate, timeZone),
+    label: rangeLabel({
+      dateRange: rangeKind,
+      endDate,
+      startDate,
+      timeZone,
+      view: filters.view,
+    }),
     startIso,
   };
+}
+
+function rangeLabel(input: {
+  dateRange: BookingWorkspaceDateRange;
+  endDate: string;
+  startDate: string;
+  timeZone: string;
+  view: BookingWorkspaceView;
+}) {
+  if (input.dateRange === "all") {
+    const startIso = zonedDateTimeToUtcIso({
+      date: input.startDate,
+      time: "12:00",
+      timeZone: input.timeZone,
+    });
+
+    return new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      timeZone: input.timeZone,
+      year: "numeric",
+    }).format(startIso ? new Date(startIso) : new Date(`${input.startDate}T12:00:00Z`));
+  }
+
+  if (input.dateRange === "next7" || input.view === "week") {
+    return `${labelForDate(input.startDate, input.timeZone)} - ${labelForDate(
+      addDays(input.endDate, -1),
+      input.timeZone,
+    )}`;
+  }
+
+  return labelForDate(input.startDate, input.timeZone);
 }
 
 function numberValue(value: string | number | null | undefined) {
@@ -697,6 +772,7 @@ function mapBookings(input: {
     return {
       ...booking,
       assignedStaffNames,
+      beautyProfile: null,
       durationMinutes: Math.max(
         0,
         Math.round(
@@ -890,7 +966,7 @@ export async function getCurrentSalonBookingWorkspace(
     .lt("start_at", range.endIso)
     .gt("end_at", range.startIso)
     .order("start_at", { ascending: true })
-    .limit(filters.view === "list" ? 100 : 300)
+    .limit(filters.dateRange === "all" ? 500 : filters.view === "list" ? 200 : 300)
     .returns<BookingWithCustomerStaffRow[]>();
   const customersQuery = canManageBookings
     ? supabase
@@ -1063,7 +1139,7 @@ export async function getCurrentSalonBookingWorkspace(
     ticketsResult.data ?? [],
     loadedBookingRows,
   );
-  const bookings = mapBookings({
+  const mappedBookings = mapBookings({
     bookings: loadedBookingRows,
     events: eventsResult.data ?? [],
     inspirationsByBookingId: mapBookingInspirationsByBookingId(
@@ -1073,6 +1149,14 @@ export async function getCurrentSalonBookingWorkspace(
     staff: staffResult.data ?? [],
     ticketsByBookingId,
   }).filter((booking) => matchesBookingFilters({ booking, filters }));
+  const beautyProfilesByCustomerId = await resolveBeautyProfilesForSalonCustomers({
+    context,
+    customerIds: mappedBookings.map((booking) => booking.customer_id),
+  });
+  const bookings = mappedBookings.map((booking) => ({
+    ...booking,
+    beautyProfile: beautyProfilesByCustomerId.get(booking.customer_id) ?? null,
+  }));
   const options = {
     assignments: assignmentsResult.data ?? [],
     availabilityRules: availabilityRulesResult.data ?? [],

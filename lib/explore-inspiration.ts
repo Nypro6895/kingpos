@@ -230,6 +230,7 @@ function diversifyInspirationItems(items: ExploreInspirationItem[]) {
 
 export async function getExploreInspirationPage(input: {
   cursor?: ExploreInspirationCursor | null;
+  diversify?: boolean;
   pageSize?: number;
 } = {}): Promise<ExploreInspirationPage> {
   const supabase = createSupabaseServerClient();
@@ -324,7 +325,10 @@ export async function getExploreInspirationPage(input: {
     return {
       error: null,
       hasMore,
-      items: diversifyInspirationItems(itemsWithBooking),
+      items:
+        input.diversify === false
+          ? itemsWithBooking
+          : diversifyInspirationItems(itemsWithBooking),
       nextCursor,
     };
   } catch (error) {

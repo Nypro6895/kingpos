@@ -26,38 +26,6 @@ function formatMoney(value: number) {
   }).format(value);
 }
 
-function parseDateParts(value: string) {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-
-  if (!match) {
-    return null;
-  }
-
-  const [, year, month, day] = match;
-
-  return {
-    day: Number(day),
-    month: Number(month),
-    year: Number(year),
-  };
-}
-
-function formatDateHeader(value: string, timeZone: string) {
-  const parts = parseDateParts(value);
-
-  if (!parts) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-    timeZone,
-    weekday: "short",
-    year: "numeric",
-  }).format(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)));
-}
-
 function getReportHref(date: string) {
   return `/reports?${new URLSearchParams({ date }).toString()}`;
 }
@@ -80,8 +48,7 @@ function SummaryCard({
 function NoPermissionState() {
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <h1 className="text-3xl font-semibold text-zinc-950">Reports</h1>
-      <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+      <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
         You do not have permission to view reports.
       </p>
     </main>
@@ -98,7 +65,7 @@ function DateSelector({
   return (
     <form
       action="/reports"
-      className="mt-5 flex flex-col gap-3 border-b border-zinc-200 pb-5 sm:flex-row sm:items-end"
+      className="flex flex-col gap-3 border-b border-zinc-200 pb-5 sm:flex-row sm:items-end"
       method="get"
     >
       <label className="block sm:w-56">
@@ -200,17 +167,6 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-6 text-zinc-950 sm:px-6">
-      <div className="border-b border-zinc-200 pb-4">
-        <p className="text-sm font-medium text-zinc-500">Reports</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-normal">
-          Daily POS Closing
-        </h1>
-        <p className="mt-1 text-sm text-zinc-600">
-          {context.currentSalon.name} on{" "}
-          {formatDateHeader(report.reportDate, context.user.timezone)}
-        </p>
-      </div>
-
       <DateSelector selectedDate={report.reportDate} today={today} />
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">

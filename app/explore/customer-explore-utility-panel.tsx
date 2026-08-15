@@ -1,25 +1,23 @@
 "use client";
 
-import { useCustomerShellContext } from "@/app/customer-shell-context";
 import type {
-  ExploreNotificationItem,
-  ExploreUpcomingBooking,
-  ExploreUtilityContent,
+  ExploreDiscoveryResultKind,
+  ExploreDiscoveryPreview,
+  ExploreDiscoveryShortcut,
 } from "@/types/explore";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
-type UtilityIconName =
-  | "bell"
+type DiscoveryIconName =
   | "calendar"
-  | "gift"
-  | "message"
-  | "percent"
-  | "star"
-  | "user";
+  | "compass"
+  | "flame"
+  | "scissors"
+  | "sparkle"
+  | "star";
 
-function UtilityIcon({ name }: { name: UtilityIconName }) {
+function DiscoveryIcon({ name }: { name: DiscoveryIconName }) {
   const common = {
     "aria-hidden": true,
     className: "h-4 w-4",
@@ -30,402 +28,449 @@ function UtilityIcon({ name }: { name: UtilityIconName }) {
     strokeWidth: 2,
     viewBox: "0 0 24 24",
   };
-  const paths: Record<UtilityIconName, ReactNode> = {
-    bell: (
-      <>
-        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
-        <path d="M10 19a2 2 0 0 0 4 0" />
-      </>
-    ),
+  const paths: Record<DiscoveryIconName, ReactNode> = {
     calendar: (
       <>
         <rect height="18" rx="2" width="18" x="3" y="4" />
-        <path d="M16 2v4" />
-        <path d="M8 2v4" />
-        <path d="M3 10h18" />
+        <path d="M16 2v4M8 2v4M3 10h18" />
       </>
     ),
-    gift: (
+    compass: (
       <>
-        <rect height="13" rx="2" width="18" x="3" y="8" />
-        <path d="M12 8v13M3 12h18" />
-        <path d="M7.5 8A2.5 2.5 0 1 1 12 6a2.5 2.5 0 1 1 4.5 2" />
+        <circle cx="12" cy="12" r="10" />
+        <path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8 4.8-2.2Z" />
       </>
     ),
-    message: (
+    flame: (
+      <path d="M8.5 14.5A4.5 4.5 0 0 0 17 12c0-4-4-6-4-9-2.5 1.8-6 5.2-6 9a5 5 0 0 0 10 0" />
+    ),
+    scissors: (
       <>
-        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-        <path d="M8 9h8M8 13h5" />
+        <circle cx="6" cy="6" r="3" />
+        <circle cx="6" cy="18" r="3" />
+        <path d="M20 4 8.1 15.9M8.1 8.1 20 20" />
       </>
     ),
-    percent: (
+    sparkle: (
       <>
-        <path d="m19 5-14 14" />
-        <circle cx="7" cy="7" r="2" />
-        <circle cx="17" cy="17" r="2" />
+        <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z" />
+        <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" />
       </>
     ),
     star: (
       <path d="m12 2 3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z" />
-    ),
-    user: (
-      <>
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 22a8 8 0 0 1 16 0" />
-      </>
     ),
   };
 
   return <svg {...common}>{paths[name]}</svg>;
 }
 
-function dateParts(booking: ExploreUpcomingBooking) {
-  const date = new Date(booking.startAt);
-
-  if (Number.isNaN(date.getTime())) {
-    return {
-      day: "--",
-      month: "---",
-      range: "Time pending",
-    };
-  }
-
-  const month = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    timeZone: booking.salonTimezone,
-  }).format(date);
-  const day = new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    timeZone: booking.salonTimezone,
-  }).format(date);
-  const weekday = new Intl.DateTimeFormat("en-US", {
-    timeZone: booking.salonTimezone,
-    weekday: "long",
-  }).format(date);
-  const timeFormatter = new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: booking.salonTimezone,
-  });
-  const end = new Date(booking.endAt);
-  const range = Number.isNaN(end.getTime())
-    ? `${weekday}, ${timeFormatter.format(date)}`
-    : `${weekday}, ${timeFormatter.format(date)} - ${timeFormatter.format(end)}`;
-
-  return { day, month, range };
-}
-
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
-    style: "currency",
-  }).format(value);
-}
-
-function formatStatus(value: string) {
-  return value
-    .split("_")
-    .filter(Boolean)
-    .map((part) => `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}`)
-    .join(" ") || "Booked";
-}
-
-function formatNotificationDate(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "No date";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    month: "short",
-  }).format(date);
-}
-
-function initialsFor(value: string) {
-  return (
-    value
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("") || "K"
-  );
-}
-
-function notificationIcon(kind: ExploreNotificationItem["kind"]): UtilityIconName {
-  if (kind === "booking") {
+function shortcutIcon(shortcut: ExploreDiscoveryShortcut): DiscoveryIconName {
+  if (shortcut.id === "upcoming-booking") {
     return "calendar";
   }
 
-  if (kind === "message") {
-    return "message";
+  if (shortcut.id === "trending") {
+    return "sparkle";
   }
 
-  if (kind === "offer") {
-    return "percent";
-  }
-
-  if (kind === "review") {
+  if (shortcut.id === "top-rated") {
     return "star";
   }
 
-  return "bell";
+  if (shortcut.action.type === "category") {
+    return "scissors";
+  }
+
+  if (shortcut.id === "recommended") {
+    return "sparkle";
+  }
+
+  return "compass";
 }
 
-function UpcomingBookingCard({
-  booking,
-  bookingLoadError,
+function shortcutActive(
+  shortcut: ExploreDiscoveryShortcut,
+  activeResultKind: ExploreDiscoveryResultKind | null,
+) {
+  return (
+    shortcut.action.type === "result" &&
+    shortcut.action.resultKind === activeResultKind
+  );
+}
+
+function initialsFor(value: string | null | undefined) {
+  return (
+    value
+      ?.replace(/[^a-z0-9\s]/gi, " ")
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "R"
+  );
+}
+
+function moduleAriaLabel(shortcut: ExploreDiscoveryShortcut) {
+  return [
+    shortcut.actionLabel,
+    shortcut.label,
+    shortcut.context,
+    shortcut.detail,
+  ]
+    .filter(Boolean)
+    .join(". ");
+}
+
+function previewGroupLabel(shortcut: ExploreDiscoveryShortcut) {
+  const previewLabels = shortcut.previews
+    .map((preview) => preview.label)
+    .filter(Boolean)
+    .slice(0, 3);
+
+  return previewLabels.length > 0
+    ? `${shortcut.label} previews: ${previewLabels.join(", ")}`
+    : `${shortcut.label} preview`;
+}
+
+function DiscoveryPreviewImage({
+  className,
+  fallbackLabel,
+  preview,
+  sizes,
 }: {
-  booking: ExploreUpcomingBooking | null;
-  bookingLoadError: boolean;
+  className: string;
+  fallbackLabel: string;
+  preview: ExploreDiscoveryPreview | undefined;
+  sizes: string;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const date = booking ? dateParts(booking) : null;
-  const imageUrl = booking && !imageFailed ? booking.salonImageUrl : null;
+  const imageUrl = imageFailed ? null : preview?.imageUrl;
 
   return (
-    <section
-      className="rounded-[1.15rem] bg-surface-elevated p-4 shadow-[0_12px_36px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80"
-      data-testid="upcoming-booking-card"
+    <span
+      className={[
+        "relative block overflow-hidden bg-surface-muted",
+        className,
+      ].join(" ")}
     >
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-text-primary">
-          Upcoming Booking
-        </h2>
-        <Link
-          className="whitespace-nowrap text-xs font-semibold text-brand-orange hover:text-brand-orange-hover"
-          href="/my-bookings"
-        >
-          View all
-        </Link>
-      </div>
-
-      {bookingLoadError ? (
-        <p className="mt-4 rounded-2xl bg-surface-muted p-4 text-sm leading-6 text-text-secondary">
-          Upcoming bookings could not be loaded right now.
-        </p>
-      ) : booking && date ? (
-        <Link
-          className="mt-4 grid gap-3 rounded-2xl bg-white text-left transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          href={booking.bookingHref}
-        >
-          <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-3">
-            <span className="relative block aspect-square overflow-hidden rounded-2xl bg-surface-muted text-sm font-semibold text-brand-orange">
-              {imageUrl ? (
-                <Image
-                  alt={`${booking.salonName} booking image`}
-                  className="object-cover"
-                  fill
-                  onError={() => setImageFailed(true)}
-                  sizes="88px"
-                  src={imageUrl}
-                />
-              ) : (
-                <span className="grid h-full w-full place-items-center bg-brand-orange-soft">
-                  {initialsFor(booking.salonName)}
-                </span>
-              )}
-            </span>
-            <span className="grid min-w-0 content-start gap-2">
-              <span className="flex min-w-0 items-start justify-between gap-2">
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-text-primary">
-                    {booking.salonName}
-                  </span>
-                  {booking.salonLocation ? (
-                    <span className="mt-0.5 block truncate text-xs text-text-secondary">
-                      {booking.salonLocation}
-                    </span>
-                  ) : null}
-                </span>
-                <span className="shrink-0 rounded-full bg-brand-orange-soft px-2 py-1 text-[10px] font-semibold text-brand-orange">
-                  {formatStatus(booking.status)}
-                </span>
-              </span>
-              <span className="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-3">
-                <span className="grid h-12 place-items-center rounded-2xl bg-surface-muted text-center text-brand-black">
-                  <span>
-                    <span className="block text-[10px] font-semibold uppercase text-brand-orange">
-                      {date.month}
-                    </span>
-                    <span className="block text-base font-semibold leading-none">
-                      {date.day}
-                    </span>
-                  </span>
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-xs font-semibold text-text-primary">
-                    {date.range}
-                  </span>
-                  <span className="mt-1 block line-clamp-2 text-xs leading-5 text-text-secondary">
-                    {booking.serviceSummary}
-                  </span>
-                </span>
-              </span>
-            </span>
-          </div>
-          <div className="grid gap-2 border-t border-divider-subtle px-1 pt-3">
-            <div className="flex items-center justify-between gap-3 text-xs">
-              <span className="text-text-secondary">{booking.staffSummary}</span>
-              {booking.totalAmount > 0 ? (
-                <span className="font-semibold text-text-primary">
-                  {formatMoney(booking.totalAmount)}
-                </span>
-              ) : null}
-            </div>
-          </div>
-        </Link>
+      {imageUrl ? (
+        <Image
+          alt=""
+          className="object-cover transition duration-300 group-hover:scale-[1.025]"
+          fill
+          loading="lazy"
+          onError={() => setImageFailed(true)}
+          sizes={sizes}
+          src={imageUrl}
+        />
       ) : (
-        <div className="mt-4 grid gap-4 rounded-2xl bg-surface-muted p-4">
-          <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-brand-orange-soft text-brand-orange">
-              <UtilityIcon name="calendar" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-text-primary">
-                No upcoming bookings
-              </p>
-              <p className="mt-1 text-xs leading-5 text-text-secondary">
-                Confirmed appointments will appear here.
-              </p>
-            </div>
-          </div>
-          <Link
-            className="inline-flex min-h-10 items-center justify-center rounded-full bg-surface-elevated px-4 text-xs font-semibold text-text-primary shadow-sm transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            href="/my-bookings"
-          >
-            Open Bookings
-          </Link>
-        </div>
+        <span className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] text-sm font-semibold text-brand-orange">
+          {initialsFor(preview?.label ?? fallbackLabel)}
+        </span>
       )}
-    </section>
+    </span>
   );
 }
 
-function RecentNotificationsCard({
-  notificationLoadError,
-  notifications,
+function FeaturedPreviewMosaic({
+  shortcut,
 }: {
-  notificationLoadError: boolean;
-  notifications: ExploreNotificationItem[];
+  shortcut: ExploreDiscoveryShortcut;
 }) {
   return (
-    <section
-      className="rounded-[1.15rem] bg-surface-elevated p-4 shadow-[0_12px_36px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80"
-      data-testid="recent-notifications-card"
+    <span
+      aria-label={previewGroupLabel(shortcut)}
+      className="grid h-36 grid-cols-[minmax(0,1fr)_4.2rem] gap-1.5"
+      role="img"
     >
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-text-primary">
-          Recent Notifications
-        </h2>
-        <Link
-          className="whitespace-nowrap text-xs font-semibold text-brand-orange hover:text-brand-orange-hover"
-          href="/notifications"
-        >
-          View all
-        </Link>
-      </div>
+      <DiscoveryPreviewImage
+        className="h-full rounded-[0.85rem]"
+        fallbackLabel={shortcut.label}
+        preview={shortcut.previews[0]}
+        sizes="220px"
+      />
+      <span className="grid grid-rows-2 gap-1.5">
+        <DiscoveryPreviewImage
+          className="h-full rounded-[0.7rem]"
+          fallbackLabel={shortcut.label}
+          preview={shortcut.previews[1]}
+          sizes="80px"
+        />
+        <DiscoveryPreviewImage
+          className="h-full rounded-[0.7rem]"
+          fallbackLabel={shortcut.label}
+          preview={shortcut.previews[2]}
+          sizes="80px"
+        />
+      </span>
+    </span>
+  );
+}
 
-      {notificationLoadError ? (
-        <p className="mt-4 rounded-2xl bg-surface-muted p-4 text-sm leading-6 text-text-secondary">
-          Notifications could not be loaded right now.
-        </p>
-      ) : notifications.length > 0 ? (
-        <div className="mt-4 grid gap-2">
-          {notifications.map((item) => (
-            <Link
-              className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-white px-2.5 py-2 transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={item.href}
-              key={item.id}
+function CompactPreviewStrip({
+  shortcut,
+}: {
+  shortcut: ExploreDiscoveryShortcut;
+}) {
+  const previews = shortcut.previews.slice(0, 3);
+  const gridClass =
+    previews.length >= 3
+      ? "grid-cols-3"
+      : previews.length === 2
+        ? "grid-cols-2"
+        : "grid-cols-1";
+
+  return (
+    <span
+      aria-label={previewGroupLabel(shortcut)}
+      className={[
+        "grid h-16 gap-1 overflow-hidden rounded-[0.75rem]",
+        gridClass,
+      ].join(" ")}
+      role="img"
+    >
+      {previews.map((preview) => (
+        <DiscoveryPreviewImage
+          className="h-16"
+          fallbackLabel={shortcut.label}
+          key={preview.sourceId}
+          preview={preview}
+          sizes="72px"
+        />
+      ))}
+    </span>
+  );
+}
+
+function BookingPreview({
+  shortcut,
+}: {
+  shortcut: ExploreDiscoveryShortcut;
+}) {
+  return (
+    <span
+      aria-label={previewGroupLabel(shortcut)}
+      className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-[0.9rem] bg-surface-muted"
+      role="img"
+    >
+      <DiscoveryPreviewImage
+        className="h-full w-full rounded-[0.9rem]"
+        fallbackLabel={shortcut.context ?? shortcut.label}
+        preview={shortcut.previews[0]}
+        sizes="64px"
+      />
+    </span>
+  );
+}
+
+function DiscoveryModuleText({
+  featured = false,
+  shortcut,
+}: {
+  featured?: boolean;
+  shortcut: ExploreDiscoveryShortcut;
+}) {
+  return (
+    <span className={featured ? "grid gap-1.5 px-1" : "min-w-0"}>
+      <span
+        className={[
+          "block font-semibold text-text-primary",
+          featured ? "text-base" : "truncate text-sm",
+        ].join(" ")}
+      >
+        {shortcut.label}
+      </span>
+      {shortcut.context ? (
+        <span
+          className={[
+            "block text-text-secondary",
+            featured ? "text-sm leading-5" : "truncate text-xs",
+          ].join(" ")}
+        >
+          {shortcut.context}
+        </span>
+      ) : null}
+      {shortcut.detail ? (
+        <span
+          className={[
+            "block text-text-muted",
+            featured ? "line-clamp-2 text-xs leading-5" : "mt-1 line-clamp-2 text-xs leading-4",
+          ].join(" ")}
+        >
+          {shortcut.detail}
+        </span>
+      ) : null}
+      <span
+        className={[
+          "mt-1 block text-xs font-semibold text-brand-orange",
+          featured ? "" : "truncate",
+        ].join(" ")}
+      >
+        {shortcut.actionLabel}
+      </span>
+    </span>
+  );
+}
+
+function DiscoveryVisualModule({
+  activeResultKind,
+  featured,
+  onSelect,
+  shortcut,
+}: {
+  activeResultKind: ExploreDiscoveryResultKind | null;
+  featured: boolean;
+  onSelect: (shortcut: ExploreDiscoveryShortcut) => void;
+  shortcut: ExploreDiscoveryShortcut;
+}) {
+  const active = shortcutActive(shortcut, activeResultKind);
+  const interactiveClass = [
+    "group block w-full rounded-[1rem] bg-white text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+    active
+      ? "shadow-[0_14px_34px_rgba(235,111,54,0.1)] ring-1 ring-brand-orange/35"
+      : "shadow-[0_12px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(35,25,22,0.07)]",
+    featured ? "p-2.5" : "p-2",
+  ].join(" ");
+  const content =
+    shortcut.moduleKind === "booking" ? (
+      <span className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+        <BookingPreview shortcut={shortcut} />
+        <DiscoveryModuleText shortcut={shortcut} />
+      </span>
+    ) : featured ? (
+      <span className="grid gap-3">
+        <FeaturedPreviewMosaic shortcut={shortcut} />
+        <DiscoveryModuleText featured shortcut={shortcut} />
+      </span>
+    ) : (
+      <span className="grid gap-2.5">
+        <CompactPreviewStrip shortcut={shortcut} />
+        <DiscoveryModuleText shortcut={shortcut} />
+      </span>
+    );
+
+  if (shortcut.action.type === "href") {
+    return (
+      <Link
+        aria-label={moduleAriaLabel(shortcut)}
+        className={interactiveClass}
+        href={shortcut.action.href}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      aria-label={moduleAriaLabel(shortcut)}
+      aria-pressed={active}
+      className={interactiveClass}
+      onClick={() => onSelect(shortcut)}
+      type="button"
+    >
+      {content}
+    </button>
+  );
+}
+
+export function MobileDiscoveryShortcuts({
+  activeResultKind,
+  onSelect,
+  shortcuts,
+}: {
+  activeResultKind: ExploreDiscoveryResultKind | null;
+  onSelect: (shortcut: ExploreDiscoveryShortcut) => void;
+  shortcuts: ExploreDiscoveryShortcut[];
+}) {
+  if (shortcuts.length === 0) {
+    return null;
+  }
+
+  return (
+    <nav
+      aria-label="Explore discovery shortcuts"
+      className="no-scrollbar -mx-4 overflow-x-auto px-4 pb-1 xl:hidden"
+      data-testid="explore-mobile-discovery-shortcuts"
+    >
+      <div className="flex w-max gap-2">
+        {shortcuts.map((shortcut) => {
+          const active = shortcutActive(shortcut, activeResultKind);
+          const className = [
+            "inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+            active
+              ? "bg-brand-orange-soft text-brand-orange ring-1 ring-brand-orange/35"
+              : "bg-surface-elevated text-text-secondary ring-1 ring-divider-subtle/85 hover:text-text-primary hover:ring-brand-orange/25",
+          ].join(" ");
+          const content = (
+            <>
+              <DiscoveryIcon name={shortcutIcon(shortcut)} />
+              <span>{shortcut.label}</span>
+            </>
+          );
+
+          if (shortcut.action.type === "href") {
+            return (
+              <Link className={className} href={shortcut.action.href} key={shortcut.id}>
+                {content}
+              </Link>
+            );
+          }
+
+          return (
+            <button
+              aria-pressed={active}
+              className={className}
+              key={shortcut.id}
+              onClick={() => onSelect(shortcut)}
+              type="button"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-brand-teal-soft text-brand-teal">
-                <UtilityIcon name={notificationIcon(item.kind)} />
-              </span>
-              <span className="min-w-0">
-                <span className="block line-clamp-2 text-xs font-semibold leading-5 text-text-primary">
-                  {item.title}
-                </span>
-                <span className="mt-0.5 block truncate text-[11px] text-text-secondary">
-                  {item.body ?? formatNotificationDate(item.createdAt)}
-                </span>
-              </span>
-              <span className="grid justify-items-end gap-2">
-                {!item.read ? (
-                  <span className="h-2 w-2 rounded-full bg-brand-orange" />
-                ) : (
-                  <span className="h-2 w-2 rounded-full bg-divider-subtle" />
-                )}
-                <span className="text-[10px] text-text-muted">
-                  {formatNotificationDate(item.createdAt)}
-                </span>
-              </span>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <p className="mt-4 rounded-2xl bg-surface-muted p-4 text-sm leading-6 text-text-secondary">
-          No customer notifications yet.
-        </p>
-      )}
-    </section>
+              {content}
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
 
-export function CustomerExploreUtilityPanel({
-  utilityContent,
+export function ExploreDiscoveryRail({
+  activeResultKind,
+  onSelect,
+  shortcuts,
 }: {
-  utilityContent: ExploreUtilityContent;
+  activeResultKind: ExploreDiscoveryResultKind | null;
+  onSelect: (shortcut: ExploreDiscoveryShortcut) => void;
+  shortcuts: ExploreDiscoveryShortcut[];
 }) {
-  const customerShell = useCustomerShellContext();
-
-  if (!customerShell?.isCustomerShell) {
+  if (shortcuts.length === 0) {
     return null;
   }
 
   return (
     <aside
-      aria-label="Customer utility"
+      aria-label="Explore discovery"
       className="hidden min-h-[calc(100vh-5.25rem)] min-w-0 bg-transparent px-4 py-5 xl:block 2xl:px-5"
-      data-testid="customer-desktop-utility"
+      data-testid="explore-desktop-discovery-rail"
     >
-      <div className="sticky top-[5.25rem] grid gap-5">
-        <UpcomingBookingCard
-          booking={utilityContent.upcomingBooking}
-          bookingLoadError={utilityContent.bookingLoadError}
-        />
-        <RecentNotificationsCard
-          notificationLoadError={utilityContent.notificationLoadError}
-          notifications={utilityContent.notifications}
-        />
-
-        <section className="overflow-hidden rounded-[1.15rem] bg-[linear-gradient(135deg,var(--brand-teal),#006c68)] text-white shadow-[0_16px_42px_rgba(0,111,107,0.16)]">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 p-5">
-            <div className="min-w-0">
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/14 text-white ring-1 ring-white/22">
-                <UtilityIcon name="gift" />
-              </span>
-              <h2 className="mt-4 text-base font-semibold">Refer & Earn</h2>
-              <p className="mt-2 text-sm leading-6 text-white/78">
-                Invite friends to discover salons you love. Perks appear when
-                they are available for your account.
-              </p>
-              <Link
-                className="mt-4 inline-flex min-h-10 w-fit items-center justify-center rounded-full bg-white px-5 text-xs font-semibold text-brand-teal transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                href="/more/memberships"
-              >
-                View perks
-              </Link>
-            </div>
-            <span className="hidden h-20 w-20 place-items-center rounded-[1.25rem] bg-white/12 text-white ring-1 ring-white/18 2xl:grid">
-              <UtilityIcon name="star" />
-            </span>
-          </div>
-        </section>
+      <div className="sticky top-[5.25rem] grid gap-3.5">
+        <div className="px-1">
+          <h2 className="text-sm font-semibold text-text-primary">
+            Discover
+          </h2>
+        </div>
+        <div className="grid gap-3">
+          {shortcuts.map((shortcut, index) => (
+            <DiscoveryVisualModule
+              activeResultKind={activeResultKind}
+              featured={index === 0 && shortcut.previews.length >= 3}
+              key={shortcut.id}
+              onSelect={onSelect}
+              shortcut={shortcut}
+            />
+          ))}
+        </div>
       </div>
     </aside>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { LogoutButton } from "@/app/account/logout-button";
+import { ActionDialog } from "@/app/action-dialog";
 import {
   CustomerShellContextProvider,
   type CustomerNotificationSummary,
@@ -12,16 +13,19 @@ import { safeAccountAvatarUrl } from "@/lib/account-avatar";
 import {
   ROLE_NAVIGATION,
   ROLE_MORE_ITEMS,
+  SHARED_CONTEXT_ROUTE_PREFIXES,
   type NavigationIcon,
   type NavigationLink,
   type NavigationSection,
   type RoleNavigationConfig,
   type RoleNavigationKind,
   type RoleMoreItem,
+  roleNavigationKindForContext,
 } from "@/app/role-navigation";
 import {
   setCurrentWorkspace,
   switchWorkspaceDestination,
+  switchWorkspaceLanding,
 } from "@/app/salons/actions";
 import Image from "next/image";
 import Link from "next/link";
@@ -57,6 +61,7 @@ type RouteWorkspaceKind =
   | "manage"
   | "personal"
   | "salon"
+  | "shared"
   | "staff";
 
 type NavigationShellProps = {
@@ -318,18 +323,27 @@ function isShelllessPath(pathname: string) {
   );
 }
 
+function isSharedContextRoute(pathname: string) {
+  return SHARED_CONTEXT_ROUTE_PREFIXES.some((prefix) =>
+    matchesPath(pathname, prefix),
+  );
+}
+
 function getRouteWorkspaceKind(pathname: string): RouteWorkspaceKind | null {
+  if (pathname === "/" || isSharedContextRoute(pathname)) {
+    return "shared";
+  }
+
+  if (matchesPath(pathname, "/salon-profile")) {
+    return "salon";
+  }
+
   if (
-    pathname === "/" ||
     ROLE_NAVIGATION.personal.routePrefixes.some((prefix) =>
       matchesPath(pathname, prefix),
     )
   ) {
     return "personal";
-  }
-
-  if (matchesPath(pathname, "/salon-profile")) {
-    return "salon";
   }
 
   if (
@@ -358,6 +372,15 @@ function routeNavigationForWorkspaceKind(input: {
 }): RoleNavigationConfig | null {
   if (input.routeWorkspaceKind === "personal") {
     return ROLE_NAVIGATION.personal;
+  }
+
+  if (input.routeWorkspaceKind === "shared") {
+    return ROLE_NAVIGATION[
+      roleNavigationKindForContext({
+        salonMode: input.salonMode,
+        workspaceType: input.workspaceType,
+      })
+    ];
   }
 
   if (input.routeWorkspaceKind === "staff") {
@@ -906,6 +929,46 @@ function CustomerContextSheet({
     });
   };
 
+  const runWorkspaceSwitch: RunWorkspaceAction = (workspace, action) => {
+    const key = actionKey(workspace, action);
+
+    if (pendingKey) {
+      return;
+    }
+
+    setError(null);
+    setPendingKey(key);
+    startTransition(async () => {
+      try {
+        if (workspace.id === currentWorkspaceId) {
+          closeAndFocus();
+          router.push(action.href);
+          router.refresh();
+          setPendingKey(null);
+          return;
+        }
+
+        const result = await switchWorkspaceLanding({
+          workspaceId: workspace.id,
+        });
+
+        if (!result.ok) {
+          setError(result.message);
+          setPendingKey(null);
+          return;
+        }
+
+        closeAndFocus();
+        router.push(result.href);
+        router.refresh();
+        setPendingKey(null);
+      } catch {
+        setError(WORKSPACE_SWITCH_ERROR);
+        setPendingKey(null);
+      }
+    });
+  };
+
   return (
     <div
       className="fixed inset-0 z-[80] bg-zinc-950/25 backdrop-blur-[2px] lg:hidden"
@@ -959,7 +1022,7 @@ function CustomerContextSheet({
                 accountAvatarUrl={accountAvatarUrl}
                 accountLabel={accountLabel}
                 currentWorkspaceId={currentWorkspaceId}
-                onRunAction={runAction}
+                onRunAction={runWorkspaceSwitch}
                 pendingKey={pendingKey}
                 workspace={personalWorkspace}
               />
@@ -994,7 +1057,7 @@ function CustomerContextSheet({
                     accountLabel={accountLabel}
                     currentWorkspaceId={currentWorkspaceId}
                     key={workspace.id}
-                    onRunAction={runAction}
+                    onRunAction={runWorkspaceSwitch}
                     pendingKey={pendingKey}
                     workspace={workspace}
                   />
@@ -1003,11 +1066,6 @@ function CustomerContextSheet({
             </section>
           ))}
 
-          {error ? (
-            <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
-              {error}
-            </p>
-          ) : null}
         </div>
 
         <div className="shrink-0 border-t border-border-subtle bg-surface px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
@@ -1040,6 +1098,17 @@ function CustomerContextSheet({
           </div>
         </div>
       </aside>
+      <ActionDialog
+        description={error ?? ""}
+        onClose={() => setError(null)}
+        open={Boolean(error)}
+        primaryAction={{
+          label: "Review workspaces",
+          onClick: () => setError(null),
+        }}
+        secondaryAction={{ href: "/explore", label: "Explore" }}
+        title="Workspace action needed"
+      />
     </div>
   );
 }
@@ -1468,6 +1537,46 @@ function CustomerDesktopWorkspaceSwitcher({
     });
   };
 
+  const runWorkspaceSwitch: RunWorkspaceAction = (workspace, action) => {
+    const key = actionKey(workspace, action);
+
+    if (pendingKey) {
+      return;
+    }
+
+    setError(null);
+    setPendingKey(key);
+    startTransition(async () => {
+      try {
+        if (workspace.id === currentWorkspaceId) {
+          router.push(action.href);
+          router.refresh();
+          setOpen(false);
+          setPendingKey(null);
+          return;
+        }
+
+        const result = await switchWorkspaceLanding({
+          workspaceId: workspace.id,
+        });
+
+        if (!result.ok) {
+          setError(result.message);
+          setPendingKey(null);
+          return;
+        }
+
+        router.push(result.href);
+        router.refresh();
+        setOpen(false);
+        setPendingKey(null);
+      } catch {
+        setError(WORKSPACE_SWITCH_ERROR);
+        setPendingKey(null);
+      }
+    });
+  };
+
   const workspaceRows = [
     ...(personalWorkspace ? [personalWorkspace] : []),
     ...staffWorkspaces,
@@ -1551,7 +1660,7 @@ function CustomerDesktopWorkspaceSwitcher({
                   ].join(" ")}
                   disabled={isSelected || Boolean(pendingKey)}
                   key={workspace.id}
-                  onClick={() => runAction(workspace, action)}
+                  onClick={() => runWorkspaceSwitch(workspace, action)}
                   type="button"
                 >
                   <WorkspaceAvatar
@@ -1578,12 +1687,6 @@ function CustomerDesktopWorkspaceSwitcher({
               );
             })}
           </div>
-
-          {error ? (
-            <p className="mt-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-800">
-              {error}
-            </p>
-          ) : null}
 
           <div className="mt-2 grid gap-1 border-t border-border-subtle pt-2">
             {createSalonTarget ? (
@@ -1613,6 +1716,17 @@ function CustomerDesktopWorkspaceSwitcher({
           </div>
         </div>
       ) : null}
+      <ActionDialog
+        description={error ?? ""}
+        onClose={() => setError(null)}
+        open={Boolean(error)}
+        primaryAction={{
+          label: "Review workspaces",
+          onClick: () => setError(null),
+        }}
+        secondaryAction={{ href: "/my-place", label: "My Place" }}
+        title="Workspace action needed"
+      />
     </section>
   );
 }
@@ -2313,9 +2427,9 @@ function AppRail({
   return (
     <aside className="fixed inset-y-0 left-0 z-50 hidden w-16 flex-col border-r border-zinc-200 bg-white lg:flex">
       <Link
-        aria-label="Reylumi My Place"
+        aria-label="Reylumi Explore"
         className="mx-auto mt-3 grid h-10 w-10 place-items-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-        href="/my-place"
+        href="/explore"
         title="Reylumi"
       >
         <ReylumiMark className="h-10 w-10 text-lg" />
@@ -2792,7 +2906,7 @@ export function NavigationShell({
   });
   const showRoleMobileShell = Boolean(routeNavigation);
   const showRoleDesktopShell = Boolean(routeNavigation);
-  const routeUsesPersonalShell = routeWorkspaceKind === "personal";
+  const routeUsesPersonalShell = routeNavigation?.kind === "personal";
   const desktopShellBreakpoint = routeUsesPersonalShell ? "lg" : "xl";
   const isSalonManageRoute =
     workspaceType === "salon" &&
@@ -2804,9 +2918,16 @@ export function NavigationShell({
     routeWorkspaceKind === "staff";
   const isSharedSalonRoute =
     workspaceType === "salon" && routeWorkspaceKind === "salon";
+  const isSharedContextWorkspaceRoute =
+    workspaceType === "salon" &&
+    (salonMode === "manage" || salonMode === "staff") &&
+    routeWorkspaceKind === "shared";
   const showWorkspaceContextSidebar =
     !routeUsesPersonalShell &&
-    (isSalonManageRoute || isSalonStaffRoute || isSharedSalonRoute);
+    (isSalonManageRoute ||
+      isSalonStaffRoute ||
+      isSharedSalonRoute ||
+      isSharedContextWorkspaceRoute);
   const showWorkspaceSidebar = showWorkspaceContextSidebar;
   const baseShellHiddenClass = showRoleDesktopShell
     ? desktopShellBreakpoint === "lg"

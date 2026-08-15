@@ -45,6 +45,11 @@
   padding-block: 26px 112px;
 }
 
+.services-page__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .services-button {
   display: inline-flex;
   min-height: 40px;

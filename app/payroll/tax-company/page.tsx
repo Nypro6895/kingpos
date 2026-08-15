@@ -76,8 +76,6 @@ function getTaxCompanyHref(period: PayrollPeriod) {
 function NoPermissionState({ message }: { message: string }) {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-10">
-      <p className="text-sm font-medium text-zinc-500">Payroll</p>
-      <h1 className="text-3xl font-semibold text-zinc-950">Tax company could not load</h1>
       <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
         {message}
       </p>
@@ -267,12 +265,8 @@ export default async function PayrollTaxCompanyPage({
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
       <header className="flex flex-col gap-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-zinc-500">Payroll</p>
-            <h1 className="mt-1 text-3xl font-semibold text-zinc-950">
-              Payroll Tax Company
-            </h1>
-            <p className="mt-2 text-sm text-zinc-500">
+          <div className="min-w-0">
+            <p className="text-sm text-zinc-500">
               {data.period.label} - {statementLabel}
             </p>
           </div>

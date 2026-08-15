@@ -72,6 +72,18 @@ function isTerminalStatus(status: CanonicalBookingStatus) {
   return status === "completed" || status === "cancelled" || status === "no_show";
 }
 
+function confirmationStatusForTransition(status: CanonicalBookingStatus) {
+  if (status === "cancelled" || status === "no_show") {
+    return "cancelled";
+  }
+
+  if (status !== "pending") {
+    return "confirmed";
+  }
+
+  return null;
+}
+
 async function ensureLineHasNoBlockingConflict(input: {
   bookingId: string;
   bookingLineId: string;
@@ -329,7 +341,12 @@ export async function transitionBookingStatus(
       );
     }
 
-    return updateCurrentSalonBooking(input.bookingId, { status: input.nextStatus });
+    const confirmationStatus = confirmationStatusForTransition(input.nextStatus);
+
+    return updateCurrentSalonBooking(input.bookingId, {
+      status: input.nextStatus,
+      ...(confirmationStatus ? { confirmation_status: confirmationStatus } : {}),
+    });
   } catch (error) {
     return bookingFailureFromUnknown(error);
   }
@@ -581,6 +598,7 @@ export async function cancelCanonicalBooking(
         cancellation_reason: input.reason.trim(),
         cancelled_at: new Date().toISOString(),
         cancelled_by_user_id: context.user.id,
+        confirmation_status: "cancelled",
         status: "cancelled",
         updated_by_user_id: context.user.id,
       })
@@ -635,6 +653,7 @@ export async function markBookingNoShow(
     const { error } = await context.supabase
       .from("bookings")
       .update({
+        confirmation_status: "cancelled",
         no_show_at: new Date().toISOString(),
         no_show_by_user_id: context.user.id,
         no_show_reason: input.reason?.trim() || null,

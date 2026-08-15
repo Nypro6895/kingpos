@@ -30,12 +30,6 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
   if (!canViewServices) {
     return (
       <main className="services-page">
-        <header className="services-page__header">
-          <div className="services-page__frame">
-            <h1>Services</h1>
-            <p>Manage salon services and online booking.</p>
-          </div>
-        </header>
         <div className="services-page__frame services-page__empty">
           You do not have permission to view services.
         </div>

@@ -1788,11 +1788,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   if (!canViewStaff) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">Staff</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Manage staff profiles, account connection, booking setup, and POS access.
-        </p>
-        <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           You do not have permission to view staff.
         </p>
       </main>
@@ -1871,22 +1867,16 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   return (
     <>
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold text-zinc-950">Staff</h1>
-            <p className="mt-2 text-sm text-zinc-600">
-              Manage staff profiles, account connection, booking setup, and POS access.
-            </p>
-          </div>
-          {canManageStaff ? (
+        {canManageStaff ? (
+          <div className="flex justify-end">
             <Link
               className="inline-flex min-h-10 items-center justify-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               href={addStaffHref}
             >
               + Add Staff
             </Link>
-          ) : null}
-        </header>
+          </div>
+        ) : null}
 
         {connectionNotice ? (
           <NoticeBanner>{connectionNotice}</NoticeBanner>

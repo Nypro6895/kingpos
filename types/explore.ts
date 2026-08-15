@@ -130,6 +130,109 @@ export type ExploreInspirationPage = {
   nextCursor: ExploreInspirationCursor | null;
 };
 
+export type ExploreFeedCursor = string;
+
+export type ExplorePersonalPostCursor = {
+  createdAt: string;
+  postId: string;
+};
+
+export type ExploreFeedSourceType = "personal" | "salon";
+
+export type ExploreFeedCandidateClass = "organic" | "sponsored";
+
+export type ExploreFeedRankingSignals = {
+  engagementVelocityScore: number;
+  freshnessScore: number;
+  locationAffinityScore: number;
+  qualityScore: number;
+  relevanceScore: number;
+};
+
+export type ExploreFeedAuthor = {
+  avatarUrl: string | null;
+  id: string;
+  kind: "person" | "salon";
+  name: string;
+};
+
+export type ExploreFeedMedia = {
+  aspectRatio: number | null;
+  height: number | null;
+  id: string;
+  imageUrl: string;
+  layoutVariant: ExploreInspirationLayoutVariant;
+  role: "after" | "before" | "image";
+  width: number | null;
+};
+
+export type ExploreFeedDestination = {
+  href: string | null;
+  type: "personal-post" | "salon-post" | "salon-profile";
+};
+
+export type ExploreFeedSalonContext = {
+  city: string | null;
+  href: string | null;
+  id: string;
+  name: string;
+  state: string | null;
+};
+
+export type ExploreFeedBooking = {
+  enabled: boolean;
+  href: string | null;
+  label: string;
+  readiness: string | null;
+  serviceId: string | null;
+};
+
+export type ExploreFeedPersonalContext = {
+  postType: "before_after" | "regular";
+  profileId: string;
+};
+
+export type ExploreFeedItem = {
+  author: ExploreFeedAuthor;
+  booking: ExploreFeedBooking | null;
+  caption: string | null;
+  candidateClass: ExploreFeedCandidateClass;
+  contentId: string;
+  contentType: "beauty_post" | "look" | "salon_recommendation" | "update";
+  destination: ExploreFeedDestination;
+  feedKey: string;
+  id: string;
+  media: ExploreFeedMedia[];
+  personal: ExploreFeedPersonalContext | null;
+  publishedAt: string;
+  rankingSignals: ExploreFeedRankingSignals;
+  salon: ExploreFeedSalonContext | null;
+  serviceCategory: string | null;
+  serviceName: string | null;
+  sourceSortId: string;
+  sourceType: ExploreFeedSourceType;
+};
+
+export type ExplorePersonalPostItem = ExploreFeedItem & {
+  contentType: "beauty_post";
+  personal: ExploreFeedPersonalContext;
+  sourceType: "personal";
+};
+
+export type ExplorePersonalPostPage = {
+  error: string | null;
+  hasMore: boolean;
+  items: ExplorePersonalPostItem[];
+  nextCursor: ExplorePersonalPostCursor | null;
+};
+
+export type ExploreFeedPage = {
+  error: string | null;
+  hasMore: boolean;
+  items: ExploreFeedItem[];
+  nextCursor: ExploreFeedCursor | null;
+};
+
 export type ExploreHomeContent = {
   error: string | null;
   inspiration: ExploreInspirationPage;
@@ -170,6 +273,57 @@ export type ExploreUtilityContent = {
   notifications: ExploreNotificationItem[];
   unreadNotificationCount: number;
   upcomingBooking: ExploreUpcomingBooking | null;
+};
+
+export type ExploreDiscoveryResultKind =
+  | "near_you"
+  | "recommended"
+  | "top_rated"
+  | "trending";
+
+export type ExploreDiscoveryShortcutAction =
+  | {
+      href: string;
+      type: "href";
+    }
+  | {
+      category: string;
+      type: "category";
+    }
+  | {
+      resultKind: ExploreDiscoveryResultKind;
+      type: "result";
+    };
+
+export type ExploreDiscoveryPreview = {
+  alt: string;
+  imageUrl: string;
+  label: string | null;
+  meta: string | null;
+  sourceId: string;
+};
+
+export type ExploreDiscoveryModuleKind =
+  | "booking"
+  | "category"
+  | "nearby"
+  | "recommended"
+  | "top_rated"
+  | "visual";
+
+export type ExploreDiscoveryShortcut = {
+  action: ExploreDiscoveryShortcutAction;
+  actionLabel: string;
+  context: string | null;
+  detail: string | null;
+  id: string;
+  label: string;
+  moduleKind: ExploreDiscoveryModuleKind;
+  previews: ExploreDiscoveryPreview[];
+};
+
+export type ExploreDiscoveryContent = {
+  shortcuts: ExploreDiscoveryShortcut[];
 };
 
 export type ExploreNearYouResponse = {

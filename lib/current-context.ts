@@ -1366,7 +1366,7 @@ export async function getCurrentStaffBusinessContext(): Promise<CurrentBusinessC
     currentSalon: currentStaffSalon,
     currentStaffSalon,
     currentWorkspace,
-    defaultRouteForCurrentContext: currentWorkspace.defaultHref,
+    defaultRouteForCurrentContext: getWorkspaceLandingHref(currentWorkspace),
     permissionCodes: [],
     permissions: [],
     salonId: currentStaffSalon.id,
@@ -1585,8 +1585,7 @@ export async function getCurrentBusinessContext(): Promise<CurrentBusinessContex
     currentSalon,
     currentStaffSalon: currentWorkspace.salonMode === "staff" ? currentSalon : null,
     currentWorkspace,
-    defaultRouteForCurrentContext:
-      currentWorkspace.type === "personal" ? "/explore" : currentWorkspace.defaultHref,
+    defaultRouteForCurrentContext: getWorkspaceLandingHref(currentWorkspace),
     permissionCodes: activePermissions,
     permissions: activePermissions,
     salonId: currentSalon?.id ?? null,
@@ -1690,6 +1689,7 @@ export async function setNormalizedWorkspaceContext(
 export function getWorkspaceActionHrefs(workspace: CurrentWorkspaceOption) {
   return new Set(
     [
+      getWorkspaceLandingHref(workspace),
       workspace.defaultHref,
       workspace.primaryAction?.href,
       workspace.secondaryAction?.href,
@@ -1697,6 +1697,14 @@ export function getWorkspaceActionHrefs(workspace: CurrentWorkspaceOption) {
       ...workspace.menuActions.map((action) => action.href),
     ].filter((href): href is string => Boolean(href)),
   );
+}
+
+export function getWorkspaceLandingHref(workspace: CurrentWorkspaceOption) {
+  if (workspace.type === "personal") {
+    return "/explore";
+  }
+
+  return workspace.defaultHref;
 }
 
 export function isWorkspaceDestinationAllowed(

@@ -13,6 +13,7 @@ export type CustomerNotificationSummary = {
     id: string;
     label: string;
   }>;
+  beautyPublicationRequests: number;
   bookingNotifications: number;
   managerApplications: number;
   previewItems: NotificationFeedItem[];

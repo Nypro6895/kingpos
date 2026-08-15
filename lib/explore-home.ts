@@ -258,7 +258,7 @@ export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
       rpc("get_public_explore_popular_services", {
         p_limit: HOME_POPULAR_SERVICE_LIMIT,
       }),
-      getExploreInspirationPage(),
+      getExploreInspirationPage({ diversify: false }),
     ]);
     let error: string | null = null;
 

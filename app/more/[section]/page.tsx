@@ -28,8 +28,6 @@ type MoreSection = {
   actionHref: string;
   actionLabel: string;
   description: string;
-  eyebrow: string;
-  title: string;
 };
 
 const MORE_SECTIONS: Record<string, MoreSection> = {
@@ -38,32 +36,24 @@ const MORE_SECTIONS: Record<string, MoreSection> = {
     actionLabel: "Browse salons",
     description:
       "Customer memberships will appear here when they are available for your account.",
-    eyebrow: "Memberships",
-    title: "No memberships yet",
   },
   reviews: {
     actionHref: "/explore",
     actionLabel: "Explore salons",
     description:
       "Reviews posted from your customer account will appear here.",
-    eyebrow: "Reviews",
-    title: "No reviews yet",
   },
   "gift-cards": {
     actionHref: "/more",
     actionLabel: "Back to More",
     description:
       "Gift card balances and history will appear here when they are available.",
-    eyebrow: "Gift Cards",
-    title: "No gift cards yet",
   },
   reports: {
     actionHref: "/notifications",
     actionLabel: "Open notifications",
     description:
       "Support updates tied to your customer account will appear here when they are available.",
-    eyebrow: "Reports",
-    title: "Reports & Support",
   },
 };
 
@@ -134,13 +124,9 @@ function EmptyState({
   actionHref,
   actionLabel,
   description,
-  eyebrow,
-  title,
 }: MoreSection) {
   return (
     <section className="grid gap-4 rounded-2xl border border-dashed border-border-subtle bg-surface px-5 py-8 text-center shadow-sm">
-      <p className="text-xs font-bold uppercase text-brand-orange">{eyebrow}</p>
-      <h1 className="text-2xl font-extrabold text-text-primary">{title}</h1>
       <p className="mx-auto max-w-md text-sm leading-6 text-text-secondary">
         {description}
       </p>
@@ -151,26 +137,6 @@ function EmptyState({
         {actionLabel}
       </Link>
     </section>
-  );
-}
-
-function Header({
-  eyebrow,
-  summary,
-  title,
-}: {
-  eyebrow: string;
-  summary: string;
-  title: string;
-}) {
-  return (
-    <header>
-      <p className="text-xs font-bold uppercase text-brand-orange">{eyebrow}</p>
-      <h1 className="mt-1 text-3xl font-extrabold text-text-primary">{title}</h1>
-      <p className="mt-2 max-w-2xl text-sm font-semibold text-text-secondary">
-        {summary}
-      </p>
-    </header>
   );
 }
 
@@ -311,8 +277,6 @@ function SavedPostsSection({ posts }: { posts: AccountSavedPost[] }) {
         actionHref="/explore"
         actionLabel="Explore salons"
         description="Saved posts will appear here from Personal, Staff, and Owner."
-        eyebrow="Saved Post"
-        title="No saved posts yet"
       />
     );
   }
@@ -333,8 +297,6 @@ function FavoriteShopsSection({ shops }: { shops: AccountFavoriteShop[] }) {
         actionHref="/explore"
         actionLabel="Find salons"
         description="Favorite shops will appear here from every role."
-        eyebrow="Favorite Shop"
-        title="No favorite shops yet"
       />
     );
   }
@@ -361,8 +323,6 @@ function FavoriteCustomersSection({
         actionHref="/more"
         actionLabel="Back to More"
         description="Favorite customers will appear here from every role."
-        eyebrow="Favorite Customer"
-        title="No favorite customers yet"
       />
     );
   }
@@ -399,11 +359,6 @@ export default async function MoreSectionPage({ params }: MoreSectionPageProps) 
       <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto grid w-full max-w-4xl gap-5">
           <BackLink />
-          <Header
-            eyebrow="Saved Post"
-            summary="Saved posts belong to this account and stay in sync across Personal, Staff, and Owner."
-            title="Saved Post"
-          />
           <SavedPostsSection posts={posts} />
         </div>
       </main>
@@ -417,11 +372,6 @@ export default async function MoreSectionPage({ params }: MoreSectionPageProps) 
       <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto grid w-full max-w-4xl gap-5">
           <BackLink />
-          <Header
-            eyebrow="Favorite Shop"
-            summary="Favorite shops belong to this account and are shared by every role."
-            title="Favorite Shop"
-          />
           <FavoriteShopsSection shops={shops} />
         </div>
       </main>
@@ -435,11 +385,6 @@ export default async function MoreSectionPage({ params }: MoreSectionPageProps) 
       <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto grid w-full max-w-4xl gap-5">
           <BackLink />
-          <Header
-            eyebrow="Favorite Customer"
-            summary="Favorite customers belong to this account and are shared by every role."
-            title="Favorite Customer"
-          />
           <FavoriteCustomersSection
             canOpenCustomers={isSalonManageContext(context)}
             customers={customers}

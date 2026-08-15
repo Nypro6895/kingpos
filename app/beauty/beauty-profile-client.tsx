@@ -26,6 +26,7 @@ import type {
   BeautyAttributionStaff,
   BeautyPostMediaInput,
   BeautyProfileSummary,
+  BeautyProfileVisibility,
   BeautyRecentVisitCandidate,
   BeautyTimelineCursor,
   BeautyTimelinePage,
@@ -148,6 +149,38 @@ function verificationLabel(
   }
 
   return "Visit verification pending";
+}
+
+function salonPublicationLabel(
+  publication: BeautyTimelinePost["salonPublication"],
+) {
+  if (!publication) {
+    return null;
+  }
+
+  if (publication.status === "approved") {
+    return "Approved on salon profile";
+  }
+
+  if (publication.status === "declined") {
+    return "Salon profile share declined";
+  }
+
+  return "Waiting for salon approval";
+}
+
+function salonPublicationClassName(
+  publication: BeautyTimelinePost["salonPublication"],
+) {
+  if (publication?.status === "approved") {
+    return "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200";
+  }
+
+  if (publication?.status === "declined") {
+    return "bg-surface-muted text-text-secondary ring-1 ring-divider-subtle";
+  }
+
+  return "bg-amber-50 text-amber-900 ring-1 ring-amber-200";
 }
 
 function readImage(file: File) {
@@ -603,6 +636,10 @@ function PostCard({
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
   const attribution = post.attribution;
+  const salonPublication = post.salonPublication;
+  const salonPublicationStatusLabel = canManage
+    ? salonPublicationLabel(salonPublication)
+    : null;
   const showCaptionBelowMedia = post.media.length > 0;
 
   function saveCaption(event: FormEvent<HTMLFormElement>) {
@@ -682,6 +719,17 @@ function PostCard({
               </p>
             ) : null}
           </div>
+        ) : null}
+
+        {salonPublicationStatusLabel && salonPublication ? (
+          <p
+            className={classNames(
+              "w-fit rounded-full px-3 py-1.5 text-xs font-extrabold",
+              salonPublicationClassName(salonPublication),
+            )}
+          >
+            {salonPublicationStatusLabel}
+          </p>
         ) : null}
 
         {post.reward ? (
@@ -828,6 +876,8 @@ export function BeautyProfileClient({
   const [profile, setProfile] = useState(initialProfile);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
   const [profileDraftBio, setProfileDraftBio] = useState(initialProfile.bio ?? "");
+  const [profileDraftVisibility, setProfileDraftVisibility] =
+    useState<BeautyProfileVisibility>(initialProfile.visibility);
   const [profileEditorError, setProfileEditorError] = useState("");
   const [profileUpload, setProfileUpload] = useState<ProfileUploadTarget | null>(
     null,
@@ -1079,6 +1129,7 @@ export function BeautyProfileClient({
 
   function openProfileEditor() {
     setProfileDraftBio(profile.bio ?? "");
+    setProfileDraftVisibility(profile.visibility);
     setProfileEditorError("");
     setProfileUpload(null);
     setProfileUploadProgress(0);
@@ -1272,6 +1323,7 @@ export function BeautyProfileClient({
           coverMediaPath: coverUpload?.path ?? null,
           removeAvatar,
           removeCover,
+          visibility: profileDraftVisibility,
         });
 
         if (result.error !== null) {
@@ -1281,6 +1333,7 @@ export function BeautyProfileClient({
 
         setProfile(result.profile);
         setProfileDraftBio(result.profile.bio ?? "");
+        setProfileDraftVisibility(result.profile.visibility);
         setRemoveCover(false);
         setRemoveAvatar(false);
         resetProfileEditorUploads(false);
@@ -1598,8 +1651,8 @@ export function BeautyProfileClient({
         setSuccessNotice(
           composerMode === "before_after"
             ? newestVerification?.state === "verified"
-              ? "Before & After published with a verified visit."
-              : "Before & After published. Visit verification is pending."
+              ? "Before & After published with a verified visit. Salon approval is pending."
+              : "Before & After published. Salon approval and visit verification are pending."
             : "Beauty moment shared.",
         );
         resetComposer(false);
@@ -2018,6 +2071,59 @@ export function BeautyProfileClient({
                     {profileDraftBio.length}/500
                   </span>
                 </label>
+
+                <section className="grid gap-3">
+                  <div>
+                    <p className="text-xs font-bold uppercase text-text-secondary">
+                      Profile visibility
+                    </p>
+                    <p className="mt-1 text-sm font-semibold leading-6 text-text-secondary">
+                      Private hides you from discovery and keeps Beauty content
+                      hidden from salons.
+                    </p>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {[
+                      {
+                        description:
+                          "Anyone on ReyLUMI can view your Beauty profile.",
+                        label: "Public",
+                        value: "public" as const,
+                      },
+                      {
+                        description:
+                          "Hidden from discovery. Salons can only see that it is private.",
+                        label: "Private",
+                        value: "self" as const,
+                      },
+                    ].map((option) => {
+                      const selected = profileDraftVisibility === option.value;
+
+                      return (
+                        <button
+                          aria-pressed={selected}
+                          className={classNames(
+                            "grid gap-1 rounded-2xl border px-4 py-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60",
+                            selected
+                              ? "border-brand-orange bg-brand-orange-soft text-brand-orange"
+                              : "border-border-subtle bg-surface-muted text-text-primary hover:border-brand-orange/50",
+                          )}
+                          disabled={profileEditorBusy}
+                          key={option.value}
+                          onClick={() => setProfileDraftVisibility(option.value)}
+                          type="button"
+                        >
+                          <span className="text-sm font-extrabold">
+                            {option.label}
+                          </span>
+                          <span className="text-xs font-semibold leading-5 text-text-secondary">
+                            {option.description}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
 
                 {profileUpload ? (
                   <p

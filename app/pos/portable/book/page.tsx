@@ -38,16 +38,10 @@ export default async function PortableBookPage({
       data-portable-pos-page="book"
     >
       <div className="mx-auto grid max-w-7xl gap-5">
-        <header className="flex flex-wrap items-end justify-between gap-3 border-b border-zinc-200 pb-4">
-          <div>
-            <p className="text-sm font-semibold uppercase text-teal-800">
-              Portable Book
-            </p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-normal">
-              {formatDate(data.date)}
-            </h1>
-            <p className="mt-1 text-sm text-zinc-600">{data.salonName}</p>
-          </div>
+        <header className="flex flex-wrap items-end justify-between gap-3">
+          <p className="text-sm font-medium text-zinc-600">
+            {data.salonName} / {formatDate(data.date)}
+          </p>
           <form className="flex items-end gap-2" method="get">
             <label className="block">
               <span className="text-xs font-semibold uppercase text-zinc-500">

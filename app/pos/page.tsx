@@ -45,8 +45,7 @@ export default async function PosDeskPage() {
       </nav>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-normal">POS Desk</h1>
-          <p className="text-sm text-zinc-600">
+          <p className="text-sm font-medium text-zinc-600">
             {data.context.currentSalon?.name ?? "Current salon"} · {data.today}
           </p>
         </div>

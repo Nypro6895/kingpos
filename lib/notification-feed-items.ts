@@ -1,4 +1,5 @@
 import type { AppNotification } from "@/lib/app-notifications";
+import { getManageWorkspaceId } from "@/lib/current-context";
 import type {
   SalonStaffConnectionRequestWithDetails,
   StaffConnectionDashboardRequest,
@@ -8,6 +9,13 @@ import type {
   NotificationFeedGroupKey,
   NotificationFeedItem,
 } from "@/types/notifications";
+
+export const BEAUTY_SALON_PUBLICATION_REQUEST_TYPE =
+  "beauty_salon_publication_request";
+export const BEAUTY_SALON_PUBLICATION_REQUEST_HREF =
+  "/salon-profile/client-transformations";
+export const PUBLIC_BOOKING_CREATED_TYPE = "public_booking_created";
+export const PUBLIC_BOOKING_HREF = "/bookings";
 
 function titleCase(value: string) {
   return value
@@ -62,12 +70,70 @@ function isSameDate(left: Date, right: Date) {
   );
 }
 
-function notificationDestination(notification: AppNotification) {
+function safeNotificationHref(href: string | null | undefined) {
+  const trimmed = href?.trim() ?? "";
+
+  return trimmed.startsWith("/") && !trimmed.startsWith("//")
+    ? trimmed
+    : "/notifications";
+}
+
+function matchesPath(href: string, path: string) {
+  const [pathname] = href.split("?");
+
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
+export function resolveAppNotificationDestination(
+  notification: AppNotification,
+) {
   if (notification.recipient_kind === "customer" && notification.booking_id) {
-    return `/my-bookings/${notification.booking_id}`;
+    const href = `/my-bookings/${notification.booking_id}`;
+
+    return {
+      href,
+      label: appNotificationActionLabel(href),
+      workspaceId: null,
+    };
   }
 
-  return notification.href.startsWith("/") ? notification.href : "/notifications";
+  const href = safeNotificationHref(notification.href);
+  const shouldOpenManageWorkspace =
+    notification.recipient_kind === "owner_manager" &&
+    Boolean(notification.salon_id) &&
+    ((notification.notification_type === BEAUTY_SALON_PUBLICATION_REQUEST_TYPE &&
+      matchesPath(href, BEAUTY_SALON_PUBLICATION_REQUEST_HREF)) ||
+      (notification.notification_type === PUBLIC_BOOKING_CREATED_TYPE &&
+        matchesPath(href, PUBLIC_BOOKING_HREF)));
+
+  return {
+    href,
+    label: appNotificationActionLabel(href),
+    workspaceId:
+      shouldOpenManageWorkspace && notification.salon_id
+        ? getManageWorkspaceId(notification.salon_id)
+        : null,
+  };
+}
+
+function appNotificationActionLabel(href: string) {
+  if (href.startsWith("/my-bookings")) {
+    return "View booking";
+  }
+
+  if (href.startsWith("/bookings")) {
+    return "Review booking";
+  }
+
+  if (href.startsWith("/staff/appointments")) {
+    return "View appointment";
+  }
+
+  if (href.startsWith("/salon-profile/client-transformations")) {
+    return "Review";
+  }
+
+  return "Open";
 }
 
 function staffRequestTimestamp(request: StaffConnectionDashboardRequest) {
@@ -86,14 +152,15 @@ export function appNotificationToFeedItem(
   now = new Date(),
 ): NotificationFeedItem {
   const kindLabel = titleCase(notification.notification_type || "Notification");
-  const href = notificationDestination(notification);
+  const destination = resolveAppNotificationDestination(notification);
 
   return {
     action: {
-      href,
-      label: href.startsWith("/my-bookings") ? "View booking" : "Open",
+      href: destination.href,
+      label: destination.label,
       notificationId: notification.id,
       type: "open-app",
+      workspaceId: destination.workspaceId,
     },
     body: notification.body,
     createdAt: notification.created_at,

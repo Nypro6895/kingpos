@@ -22,6 +22,7 @@ import {
 } from "@/lib/salon-profile-media";
 import type {
   ProfileFeedItem,
+  PublicSalonProfileBeautyPost,
   PublicSalonProfileComment,
   PublicSalonProfileData,
   PublicSalonProfileLook,
@@ -2206,6 +2207,107 @@ function CuratedLookSection({
   );
 }
 
+function BeautyTransformationsSection({
+  posts,
+}: {
+  posts: PublicSalonProfileBeautyPost[];
+}) {
+  if (posts.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="grid gap-4">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+          Client transformations
+        </p>
+        <h2 className="mt-1 text-2xl font-semibold text-zinc-950">
+          Shared by customers
+        </h2>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {posts.map((post) => {
+          const before =
+            post.media.find((item) => item.role === "before") ?? post.media[0];
+          const after =
+            post.media.find((item) => item.role === "after") ??
+            post.media.find((item) => item.id !== before?.id) ??
+            post.media[1] ??
+            before;
+          const meta = joinMeta([
+            post.staffName ? `With ${post.staffName}` : null,
+            post.verificationState === "verified" ? "Verified visit" : null,
+            timeAgo(post.publishedAt),
+          ]);
+
+          return (
+            <a
+              className="group overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_55px_rgba(24,24,27,.06)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_70px_rgba(24,24,27,.08)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+              href={post.postHref}
+              key={post.id}
+            >
+              <div className="grid grid-cols-2 gap-1 bg-zinc-100">
+                <div className="relative">
+                  <LookImage
+                    className="aspect-[4/5] w-full"
+                    imageUrl={before?.url ?? null}
+                    title={`${post.authorDisplayName} before`}
+                  />
+                  <span className="absolute left-2 top-2 rounded-full bg-white/92 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-700 shadow-sm">
+                    Before
+                  </span>
+                </div>
+                <div className="relative">
+                  <LookImage
+                    className="aspect-[4/5] w-full"
+                    imageUrl={after?.url ?? null}
+                    title={`${post.authorDisplayName} after`}
+                  />
+                  <span className="absolute left-2 top-2 rounded-full bg-white/92 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-700 shadow-sm">
+                    After
+                  </span>
+                </div>
+              </div>
+              <div className="grid gap-2 p-4">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-zinc-950 text-xs font-semibold text-white">
+                    {post.authorAvatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        alt={`${post.authorDisplayName} profile`}
+                        className="h-full w-full object-cover"
+                        src={post.authorAvatarUrl}
+                      />
+                    ) : (
+                      initialsFor(post.authorDisplayName)
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-zinc-950">
+                      {post.authorDisplayName}
+                    </p>
+                    {meta ? (
+                      <p className="truncate text-xs font-medium text-zinc-500">
+                        {meta}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+                {post.caption ? (
+                  <p className="line-clamp-2 text-sm leading-5 text-zinc-700">
+                    {post.caption}
+                  </p>
+                ) : null}
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function CommentsPanel({
   capabilities,
   comments,
@@ -3498,6 +3600,7 @@ export function SalonProfileView({
               Drop a real photo and caption to start the salon story.
             </EmptyState>
           ) : null}
+          <BeautyTransformationsSection posts={data.beautyPosts} />
           <section className="grid gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">

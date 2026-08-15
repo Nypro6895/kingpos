@@ -37,12 +37,6 @@ export default async function EditCustomerPage({
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-10">
-      <div className="border-b border-zinc-200 pb-6">
-        <p className="text-sm font-medium text-zinc-500">Customers</p>
-        <h1 className="mt-1 text-3xl font-semibold text-zinc-950">Edit Customer</h1>
-        <p className="mt-2 text-sm text-zinc-600">{customer.name}</p>
-      </div>
-
       <CustomerForm
         action={updateCustomer}
         customer={customer}

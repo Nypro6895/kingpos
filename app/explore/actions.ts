@@ -1,9 +1,11 @@
 "use server";
 
+import { getExploreFeedPage } from "@/lib/explore-feed";
 import { getExploreInspirationPage } from "@/lib/explore-inspiration";
 import { getExploreNearYouSalons } from "@/lib/explore-home";
 import { searchExploreSalons } from "@/lib/explore-search";
 import type {
+  ExploreFeedCursor,
   ExploreInspirationCursor,
   ExploreSearchInput,
 } from "@/types/explore";
@@ -31,4 +33,8 @@ export async function loadExploreInspirationAction(
   cursor: ExploreInspirationCursor | null,
 ) {
   return getExploreInspirationPage({ cursor });
+}
+
+export async function loadExploreFeedAction(cursor: ExploreFeedCursor | null) {
+  return getExploreFeedPage({ cursor });
 }

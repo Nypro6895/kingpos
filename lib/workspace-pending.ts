@@ -11,6 +11,7 @@ import {
   getCurrentAppNotifications,
   type AppNotificationQueryScope,
 } from "@/lib/app-notifications";
+import { countPendingBeautySalonPublicationRequests } from "@/lib/beauty-salon-publications";
 import {
   appNotificationToFeedItem,
   managerApplicationsSummaryToFeedItem,
@@ -30,6 +31,7 @@ export type WorkspacePendingSummaryItem = {
 
 export type WorkspacePendingSummary = {
   items: WorkspacePendingSummaryItem[];
+  beautyPublicationRequests: number;
   managerApplications: number;
   bookingNotifications: number;
   previewItems: NotificationFeedItem[];
@@ -42,6 +44,7 @@ export type WorkspacePendingSummary = {
 function emptyPendingSummary(): WorkspacePendingSummary {
   return {
     items: [],
+    beautyPublicationRequests: 0,
     bookingNotifications: 0,
     managerApplications: 0,
     previewItems: [],
@@ -63,6 +66,7 @@ function pendingDashboardCount(
 
 function buildItems(input: {
   bookingNotifications: number;
+  beautyPublicationRequests: number;
   managerApplications: number;
   staffApplications: number;
   staffInvites: number;
@@ -98,6 +102,14 @@ function buildItems(input: {
       count: input.managerApplications,
       id: "manager-applications",
       label: "Manager reviews",
+    });
+  }
+
+  if (input.beautyPublicationRequests > 0) {
+    items.push({
+      count: input.beautyPublicationRequests,
+      id: "beauty-publication-requests",
+      label: "Client transformations",
     });
   }
 
@@ -149,6 +161,7 @@ export async function getWorkspacePendingSummary(
   let staffInvites = 0;
   let staffApplications = 0;
   let managerApplications = 0;
+  let beautyPublicationRequests = 0;
   const notificationScope = getAppNotificationScopeForContext(context);
   const now = new Date();
   const [bookingNotifications, appNotificationPreviews] = await Promise.all([
@@ -215,7 +228,13 @@ export async function getWorkspacePendingSummary(
     );
   }
 
+  beautyPublicationRequests =
+    isSalonManageContext(context) && context.currentSalon
+      ? await countPendingBeautySalonPublicationRequests(context)
+      : 0;
+
   const items = buildItems({
+    beautyPublicationRequests,
     bookingNotifications,
     managerApplications,
     staffApplications,
@@ -223,6 +242,7 @@ export async function getWorkspacePendingSummary(
   });
 
   return {
+    beautyPublicationRequests,
     bookingNotifications,
     items,
     managerApplications,
@@ -230,6 +250,11 @@ export async function getWorkspacePendingSummary(
     reviewHref: "/notifications",
     staffApplications,
     staffInvites,
-    total: staffInvites + staffApplications + managerApplications + bookingNotifications,
+    total:
+      staffInvites +
+      staffApplications +
+      managerApplications +
+      bookingNotifications +
+      beautyPublicationRequests,
   };
 }

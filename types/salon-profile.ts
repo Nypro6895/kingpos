@@ -1,5 +1,9 @@
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
+import type {
+  BeautyPostType,
+  BeautyVerificationState,
+} from "@/types/beauty";
 
 export const SALON_PROFILE_MOOD_OPTIONS = [
   "Soft & clean",
@@ -230,6 +234,31 @@ export type PublicSalonProfileUpdate = {
   type: SalonProfileUpdateType;
 };
 
+export type PublicSalonProfileBeautyPostMedia = {
+  displayOrder: number;
+  height: number | null;
+  id: string;
+  role: "after" | "before" | "image";
+  url: string | null;
+  width: number | null;
+};
+
+export type PublicSalonProfileBeautyPost = {
+  approvedAt: string | null;
+  authorAvatarUrl: string | null;
+  authorDisplayName: string;
+  caption: string | null;
+  id: string;
+  media: PublicSalonProfileBeautyPostMedia[];
+  postHref: string;
+  postType: BeautyPostType;
+  profileId: string;
+  publishedAt: string;
+  staffId: string | null;
+  staffName: string | null;
+  verificationState: BeautyVerificationState | null;
+};
+
 export type PublicSalonProfileComment = {
   authorDisplayName: string;
   authorUserId: string | null;
@@ -345,6 +374,7 @@ export type PublicSalonProfileBookingRequest = {
 };
 
 export type PublicSalonProfileData = {
+  beautyPosts: PublicSalonProfileBeautyPost[];
   comments: PublicSalonProfileComment[];
   feed: ProfileFeedItem[];
   looks: PublicSalonProfileLook[];

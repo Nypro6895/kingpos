@@ -21,11 +21,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
   if (!canViewBookings) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">Booking</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Owner appointment workspace for this salon.
-        </p>
-        <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           You do not have permission to view bookings.
         </p>
       </main>

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getBeautyMediaPublicUrl } from "@/lib/beauty-media";
 import {
   getCurrentBusinessContext,
   isSalonManageContext,
@@ -17,10 +18,16 @@ import {
 } from "@/lib/salon-profile-media";
 import { SERVICE_SELECT } from "@/lib/services";
 import { resolveStaffAccountForSalon } from "@/lib/staff-account";
-import { createAuthenticatedSupabaseServerClient, createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createAuthenticatedSupabaseServerClient,
+  createSupabaseServerClient,
+  getSupabaseConfig,
+} from "@/lib/supabase/server";
 import { STAFF_LEGACY_SELECT } from "@/lib/staff";
 import type {
   PublicSalonProfile,
+  PublicSalonProfileBeautyPost,
+  PublicSalonProfileBeautyPostMedia,
   PublicSalonProfileComment,
   PublicSalonProfileData,
   PublicSalonProfileLook,
@@ -208,6 +215,32 @@ type PublicUpdateRow = {
   update_type: SalonProfileUpdateType;
 };
 
+type PublicBeautyPostMediaRow = {
+  displayOrder?: number | string | null;
+  height?: number | string | null;
+  id?: string | null;
+  mimeType?: string | null;
+  objectPath?: string | null;
+  role?: string | null;
+  width?: number | string | null;
+};
+
+type PublicBeautyPostRow = {
+  approved_at: string | null;
+  author_avatar_url: string | null;
+  author_display_name: string | null;
+  caption: string | null;
+  created_at: string;
+  media: unknown;
+  post_id: string;
+  post_type: string | null;
+  profile_id: string;
+  publication_id: string;
+  staff_id: string | null;
+  staff_name: string | null;
+  verification_state: string | null;
+};
+
 type PublicCommentRow = {
   author_display_name: string | null;
   author_user_id: string | null;
@@ -338,6 +371,33 @@ function toStringArray(value: unknown) {
           typeof item === "string" && item.trim().length > 0,
       )
     : [];
+}
+
+function publicBeautyPostMediaRole(
+  value: string | null | undefined,
+): "after" | "before" | "image" | null {
+  return value === "after" || value === "before" || value === "image"
+    ? value
+    : null;
+}
+
+function publicBeautyVerificationState(
+  value: string | null | undefined,
+): PublicSalonProfileBeautyPost["verificationState"] {
+  if (
+    value === "pending" ||
+    value === "rejected" ||
+    value === "unverified" ||
+    value === "verified"
+  ) {
+    return value;
+  }
+
+  return null;
+}
+
+function publicBeautyPostType(value: string | null | undefined) {
+  return value === "before_after" ? "before_after" : "regular";
 }
 
 type SalonProfileAuthorSnapshot = {
@@ -488,6 +548,19 @@ export function getSalonProfileMediaUrl(path: string | null | undefined) {
   return supabase.storage
     .from(SALON_PROFILE_MEDIA_BUCKET)
     .getPublicUrl(cleanedPath).data.publicUrl;
+}
+
+function getPublicBeautyMediaUrl(path: string | null | undefined) {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    return null;
+  }
+
+  return getBeautyMediaPublicUrl({
+    path,
+    supabaseUrl: config.supabaseUrl,
+  });
 }
 
 function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
@@ -1120,6 +1193,54 @@ function mapPublicUpdate(row: PublicUpdateRow): PublicSalonProfileUpdate {
   };
 }
 
+function mapPublicBeautyPostMedia(
+  row: PublicBeautyPostMediaRow,
+): PublicSalonProfileBeautyPostMedia | null {
+  const id = optionalText(row.id);
+  const role = publicBeautyPostMediaRole(row.role);
+
+  if (!id || !role) {
+    return null;
+  }
+
+  return {
+    displayOrder: readCount(row.displayOrder),
+    height: readCount(row.height) || null,
+    id,
+    role,
+    url: getPublicBeautyMediaUrl(optionalText(row.objectPath)),
+    width: readCount(row.width) || null,
+  };
+}
+
+function mapPublicBeautyPost(
+  row: PublicBeautyPostRow,
+): PublicSalonProfileBeautyPost {
+  const mediaRows = Array.isArray(row.media)
+    ? (row.media as PublicBeautyPostMediaRow[])
+    : [];
+
+  return {
+    approvedAt: row.approved_at,
+    authorAvatarUrl: row.author_avatar_url,
+    authorDisplayName: row.author_display_name ?? "Reylumi customer",
+    caption: row.caption,
+    id: row.post_id,
+    media: mediaRows
+      .map(mapPublicBeautyPostMedia)
+      .filter((item): item is PublicSalonProfileBeautyPostMedia => Boolean(item)),
+    postHref: `/explore/beauty/${encodeURIComponent(
+      row.profile_id,
+    )}/posts/${encodeURIComponent(row.post_id)}`,
+    postType: publicBeautyPostType(row.post_type),
+    profileId: row.profile_id,
+    publishedAt: row.created_at,
+    staffId: row.staff_id,
+    staffName: row.staff_name,
+    verificationState: publicBeautyVerificationState(row.verification_state),
+  };
+}
+
 function mapPublicComment(row: PublicCommentRow): PublicSalonProfileComment {
   return {
     authorDisplayName: row.author_display_name ?? "Reylumi customer",
@@ -1256,6 +1377,7 @@ export async function getPublicSalonProfileData(
     staffResult,
     looksResult,
     updatesResult,
+    beautyPostsResult,
     commentsResult,
     reviewSummaryResult,
     reviewsResult,
@@ -1265,6 +1387,10 @@ export async function getPublicSalonProfileData(
     rpc("get_public_salon_profile_staff", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_looks", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_updates", { target_salon_id: salonId }),
+    rpc("get_public_salon_profile_beauty_posts", {
+      p_limit: 6,
+      target_salon_id: salonId,
+    }),
     rpc("get_public_salon_profile_comments", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_review_summary", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_reviews", { target_salon_id: salonId }),
@@ -1276,6 +1402,7 @@ export async function getPublicSalonProfileData(
     staffResult,
     looksResult,
     updatesResult,
+    beautyPostsResult,
     commentsResult,
     reviewSummaryResult,
     reviewsResult,
@@ -1313,6 +1440,9 @@ export async function getPublicSalonProfileData(
   const updateRows = Array.isArray(updatesResult.data)
     ? (updatesResult.data as PublicUpdateRow[])
     : [];
+  const beautyPostRows = Array.isArray(beautyPostsResult.data)
+    ? (beautyPostsResult.data as PublicBeautyPostRow[])
+    : [];
   const commentRows = Array.isArray(commentsResult.data)
     ? (commentsResult.data as PublicCommentRow[])
     : [];
@@ -1327,6 +1457,7 @@ export async function getPublicSalonProfileData(
   const updates = updateRows.map(mapPublicUpdate);
 
   return {
+    beautyPosts: beautyPostRows.map(mapPublicBeautyPost),
     comments: commentRows.map(mapPublicComment),
     feed: buildSalonProfileFeed({
       looks,

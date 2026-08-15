@@ -30,6 +30,7 @@ import type {
   BeautyAttributionSalon,
   BeautyPostCreateInput,
   BeautyProfileSummary,
+  BeautyProfileVisibility,
   BeautyTimelineCursor,
   BeautyTimelinePage,
 } from "@/types/beauty";
@@ -127,6 +128,7 @@ export async function updateBeautyProfileAction(input: {
   coverMediaPath?: string | null;
   removeAvatar?: boolean;
   removeCover?: boolean;
+  visibility?: BeautyProfileVisibility;
 }): Promise<BeautyMutationResult<{ profile: BeautyProfileSummary }>> {
   const result = await updateBeautyProfile({
     avatarPath: input.avatarPath ?? null,
@@ -134,7 +136,7 @@ export async function updateBeautyProfileAction(input: {
     coverMediaPath: input.coverMediaPath ?? null,
     removeAvatar: input.removeAvatar === true,
     removeCover: input.removeCover === true,
-    visibility: "public",
+    visibility: input.visibility ?? undefined,
   });
 
   if (!result.ok) {
@@ -143,6 +145,8 @@ export async function updateBeautyProfileAction(input: {
 
   revalidatePath("/beauty");
   revalidatePath("/account");
+  revalidatePath("/explore");
+  revalidatePath(`/explore/beauty/${result.data.id}`);
   revalidatePath("/", "layout");
 
   return {

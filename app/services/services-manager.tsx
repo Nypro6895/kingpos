@@ -935,13 +935,9 @@ export function ServicesManager({
 
   return (
     <main className="services-page">
-      <header className="services-page__header">
-        <div className="services-page__frame services-page__header-inner">
-          <div>
-            <h1>Services</h1>
-            <p>Manage salon services and online booking.</p>
-          </div>
-          {data.canManage ? (
+      <div className="services-page__frame services-page__content">
+        {data.canManage ? (
+          <div className="services-page__actions">
             <button
               className="services-button services-button--primary"
               onClick={() => setShowCreate(true)}
@@ -950,11 +946,9 @@ export function ServicesManager({
               <span aria-hidden="true">+</span>
               New service
             </button>
-          ) : null}
-        </div>
-      </header>
+          </div>
+        ) : null}
 
-      <div className="services-page__frame services-page__content">
         {!data.canManage ? (
           <p className="services-message">
             You have read-only access to the service catalog.

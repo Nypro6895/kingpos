@@ -258,19 +258,11 @@ function Header({
   return (
     <div className="staff-appointments-header">
       <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-zinc-500">
-              {data.context.currentAccount?.name ?? data.context.accountName} /{" "}
-              {data.context.currentStaffSalon?.name}
-            </p>
-            <h1 className="mt-1 text-3xl font-semibold text-zinc-950">
-              Staff Appointments
-            </h1>
-            <p className="mt-2 text-sm text-zinc-600">
-              Your assigned appointments, service notes, and schedule blocks.
-            </p>
-          </div>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <p className="min-w-0 truncate text-sm font-semibold text-zinc-500">
+            {data.context.currentAccount?.name ?? data.context.accountName} /{" "}
+            {data.context.currentStaffSalon?.name}
+          </p>
           <nav className="staff-appointments-view-tabs">
             {(["list", "day", "week"] as const).map((view) => (
               <Link

@@ -115,7 +115,7 @@ function statusClass(status: string) {
     return "border-amber-200 bg-amber-50 text-amber-800";
   }
 
-  return "border-[#d7c8d3] bg-[#f7f2f7] text-[#642a56]";
+  return "border-[#ffd6c4] bg-[#fff0e8] text-[#f26f3d]";
 }
 
 function statusText(status: string) {
@@ -217,7 +217,7 @@ function SalonThumb({ booking }: { booking: CustomerBookingSummary }) {
     : `${salonName} salon`;
 
   return (
-    <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#efe8f3] text-sm font-extrabold text-[#642a56]">
+    <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#fff0e8] text-sm font-extrabold text-[#f26f3d]">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -237,7 +237,7 @@ function StaffPill({ lines }: { lines: CustomerBookingLine[] }) {
 
   return (
     <span className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold text-[#786d78]">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f7f2f7] text-xs font-extrabold text-[#642a56]">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fff0e8] text-xs font-extrabold text-[#f26f3d]">
         {staff.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img alt={`${staff.label} profile`} className="h-full w-full object-cover" src={staff.avatarUrl} />
@@ -260,11 +260,11 @@ function BookingRow({ booking }: { booking: CustomerBookingSummary }) {
 
   return (
     <Link
-      className="group grid gap-4 rounded-2xl border border-[#e7dfe5] bg-white p-4 transition hover:border-[#d7c8d3] hover:shadow-[0_14px_36px_rgba(57,37,52,0.08)] md:grid-cols-[auto_1fr_auto] md:items-center"
+      className="group grid gap-4 rounded-2xl border border-[#f0e6df] bg-white p-4 transition hover:border-[#ffd6c4] hover:shadow-[0_14px_36px_rgba(242,111,61,0.08)] md:grid-cols-[auto_1fr_auto] md:items-center"
       href={`/my-bookings/${booking.id}`}
     >
       <div className="flex items-center gap-3 md:block md:text-center">
-        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#f7f2f7] text-[#642a56] md:mx-auto">
+        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#fff0e8] text-[#f26f3d] md:mx-auto">
           <span className="text-xs font-extrabold uppercase tracking-[0.12em]">
             {dateParts.month}
           </span>
@@ -307,13 +307,13 @@ function BookingRow({ booking }: { booking: CustomerBookingSummary }) {
               <StaffPill lines={lines} />
             </div>
           </div>
-          <p className="text-sm font-extrabold text-[#642a56]">
+          <p className="text-sm font-extrabold text-[#f26f3d]">
             {formatMoney(totalAmount(lines))}
           </p>
         </div>
       </div>
 
-      <span className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#d7c8d3] px-4 text-sm font-extrabold text-[#211c24] transition group-hover:border-[#8f4a7b] group-hover:text-[#642a56]">
+      <span className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#ffd6c4] px-4 text-sm font-extrabold text-[#211c24] transition group-hover:border-[#e85f2b] group-hover:text-[#f26f3d]">
         View details
       </span>
     </Link>
@@ -339,19 +339,11 @@ export default async function MyBookingsPage({
   return (
     <main className={classNames(styles.bookingSurface, "min-h-screen overflow-x-hidden bg-[#fbf9f7] px-4 py-6 sm:px-6 lg:px-8")}>
       <div className="mx-auto grid w-full max-w-6xl gap-5">
-        <header className="flex flex-col gap-4 border-b border-[#e7dfe5] pb-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold leading-tight text-[#211c24]">
-              Bookings
-            </h1>
-            <p className="mt-2 text-sm font-semibold text-[#786d78]">
-              Your appointments across all salons.
-            </p>
-          </div>
+        <div className="flex justify-end">
           <Link className={classNames(styles.secondaryButton, "w-fit px-4")} href="/explore">
             Explore salons
           </Link>
-        </header>
+        </div>
 
         {message ? (
           <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
@@ -373,8 +365,8 @@ export default async function MyBookingsPage({
                 className={classNames(
                   "min-h-10 shrink-0 border-b-2 px-1 pt-2 text-sm font-extrabold transition",
                   active
-                    ? "border-[#642a56] text-[#642a56]"
-                    : "border-transparent text-[#786d78] hover:text-[#642a56]",
+                    ? "border-[#f26f3d] text-[#f26f3d]"
+                    : "border-transparent text-[#786d78] hover:text-[#f26f3d]",
                 )}
                 href={tab.href}
                 key={tab.id}
@@ -386,7 +378,7 @@ export default async function MyBookingsPage({
         </nav>
 
         {bookings.length === 0 ? (
-          <section className="rounded-2xl border border-dashed border-[#d7c8d3] bg-white p-6">
+          <section className="rounded-2xl border border-dashed border-[#ffd6c4] bg-white p-6">
             <h2 className="text-lg font-extrabold text-[#211c24]">
               No {scope === "upcoming" ? "upcoming" : scope} bookings
             </h2>
@@ -404,7 +396,7 @@ export default async function MyBookingsPage({
           <div className="grid gap-6">
             {groupedBookings.map(([label, group]) => (
               <section className="grid gap-3" key={label}>
-                <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#8f4a7b]">
+                <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#e85f2b]">
                   {label}
                 </h2>
                 <div className="grid gap-3">

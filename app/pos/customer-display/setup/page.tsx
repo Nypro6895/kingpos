@@ -32,15 +32,6 @@ export default async function CustomerDisplaySetupPage() {
     <main className="grid min-h-screen place-items-center bg-zinc-100 px-4 py-8 text-zinc-950">
       <div className="grid w-full max-w-md justify-items-center gap-6">
         <ReylumiLogo />
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold tracking-normal text-zinc-950">
-            Pair Customer Display
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Enter the existing POS ID and passcode for this station. The kiosk
-            will open without putting the live checkout token in the URL.
-          </p>
-        </div>
         <PortablePosLoginForm
           rememberedAccessId={rememberedAccessId}
           returnTo="/pos/customer-display"

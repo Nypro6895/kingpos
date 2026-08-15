@@ -4,6 +4,7 @@ import {
   getCreateSalonAccount,
   getCurrentBusinessContext,
   getCurrentStaffBusinessContext,
+  getWorkspaceLandingHref,
   getManageWorkspaceId,
   getStaffWorkspaceId,
   isWorkspaceDestinationAllowed,
@@ -155,48 +156,6 @@ export type WorkspaceDestinationActionResult =
       ok: false;
     };
 
-async function getManageDefaultRedirect(context: Awaited<ReturnType<typeof getCurrentBusinessContext>>) {
-  if (
-    isOwnerMembership(context.currentMembership) ||
-    (await hasPermission("staff.view", context))
-  ) {
-    return "/staff/today";
-  }
-
-  if (await hasPermission("booking.view", context)) {
-    return "/bookings";
-  }
-
-  if (await hasPermission("tickets.manage", context)) {
-    return "/pos";
-  }
-
-  if (await hasPermission("customers.view", context)) {
-    return "/customers";
-  }
-
-  if (await hasPermission("services.view", context)) {
-    return "/services";
-  }
-
-  if (
-    (await hasPermission("payroll.view", context)) ||
-    (await hasPermission("payroll.manage", context))
-  ) {
-    return "/payroll";
-  }
-
-  if (await hasPermission("reports.view", context)) {
-    return "/reports";
-  }
-
-  if (await hasPermission("salon_settings.view", context)) {
-    return "/salon-settings";
-  }
-
-  return "/my-place";
-}
-
 async function switchWorkspaceToDestination(input: {
   destinationHref: string;
   workspaceId: string;
@@ -225,7 +184,7 @@ async function switchWorkspaceToDestination(input: {
     };
   }
 
-  const href = destinationHref || workspace.defaultHref;
+  const href = destinationHref || getWorkspaceLandingHref(workspace);
 
   if (!isWorkspaceDestinationAllowed(workspace, href)) {
     return {
@@ -256,6 +215,15 @@ export async function switchWorkspaceDestination(input: {
   workspaceId: string;
 }): Promise<WorkspaceDestinationActionResult> {
   return switchWorkspaceToDestination(input);
+}
+
+export async function switchWorkspaceLanding(input: {
+  workspaceId: string;
+}): Promise<WorkspaceDestinationActionResult> {
+  return switchWorkspaceToDestination({
+    destinationHref: "",
+    workspaceId: input.workspaceId,
+  });
 }
 
 export async function switchWorkspaceDestinationFormAction(formData: FormData) {
@@ -293,7 +261,7 @@ export async function setCurrentWorkspace(formData: FormData) {
   await setNormalizedWorkspaceContext(workspace);
 
   revalidatePath("/", "layout");
-  redirect(workspace.defaultHref);
+  redirect(getWorkspaceLandingHref(workspace));
 }
 
 export async function setCurrentSalon(formData: FormData) {
@@ -347,22 +315,13 @@ export async function setCurrentSalon(formData: FormData) {
     redirectWithError("You can only switch to a salon connected to your Account.");
   }
 
-  const selectedContext = {
-    ...context,
-    currentSalon: allowedSalon,
-    salonId: allowedSalon.id,
-    salonMode: "manage" as const,
-    workspaceType: "salon" as const,
-  };
   if (!workspace) {
     redirectWithError("You can only switch to a salon connected to your Account.");
   }
 
-  const redirectTo = workspace.defaultHref || (await getManageDefaultRedirect(selectedContext));
-
   await setNormalizedWorkspaceContext(workspace);
   revalidatePath("/", "layout");
-  redirect(redirectTo);
+  redirect(getWorkspaceLandingHref(workspace));
 }
 
 export async function setCurrentStaffSalon(formData: FormData) {
@@ -401,5 +360,5 @@ export async function setCurrentStaffSalon(formData: FormData) {
 
   await setNormalizedWorkspaceContext(workspace);
   revalidatePath("/", "layout");
-  redirect("/staff/my-work");
+  redirect(getWorkspaceLandingHref(workspace));
 }

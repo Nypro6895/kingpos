@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionDialog } from "@/app/action-dialog";
 import { switchWorkspaceDestination } from "@/app/salons/actions";
 import {
   CurrentWorkspaceCard,
@@ -264,11 +265,6 @@ export function QuickWorkspacePanel({
               variant="panel"
             />
           </div>
-          {error ? (
-            <p className="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-              {error}
-            </p>
-          ) : null}
         </div>
 
         <div className="grid min-w-0 flex-1 content-start gap-4 overflow-y-auto overflow-x-hidden px-3 py-4">
@@ -442,6 +438,17 @@ export function QuickWorkspacePanel({
           </Link>
         </div>
       </aside>
+      <ActionDialog
+        description={error ?? ""}
+        onClose={() => setError(null)}
+        open={Boolean(error)}
+        primaryAction={{
+          label: "Review workspaces",
+          onClick: () => setError(null),
+        }}
+        secondaryAction={{ href: "/explore", label: "Explore" }}
+        title="Workspace action needed"
+      />
     </div>
   );
 }

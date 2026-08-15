@@ -31,8 +31,10 @@ import type {
   BeautyPostMedia,
   BeautyPostMediaInput,
   BeautyPostReward,
+  BeautyPostSalonPublication,
   BeautyPostType,
   BeautyPostVerification,
+  BeautySalonPublicationStatus,
   BeautyProfileSummary,
   BeautyProfileVisibility,
   BeautyRecentVisitCandidate,
@@ -99,6 +101,14 @@ type BeautyProfileRow = {
   updated_at: string;
   user_id: string;
   visibility: string;
+};
+
+type BeautySalonPublicationStatusRow = {
+  post_id: string;
+  publication_id: string;
+  requested_at: string;
+  responded_at: string | null;
+  status: string;
 };
 
 type StorageObjectMetadata = {
@@ -225,6 +235,16 @@ function verificationMethod(value: unknown): BeautyVerificationMethod {
   }
 
   return "none";
+}
+
+function salonPublicationStatus(
+  value: unknown,
+): BeautySalonPublicationStatus | null {
+  if (value === "approved" || value === "declined" || value === "pending") {
+    return value;
+  }
+
+  return null;
 }
 
 function mediaRole(value: unknown): BeautyPostMediaRole {
@@ -495,6 +515,25 @@ function mapReward(raw: unknown): BeautyPostReward | null {
   };
 }
 
+function mapSalonPublicationStatusRow(
+  row: BeautySalonPublicationStatusRow,
+): BeautyPostSalonPublication | null {
+  const id = cleanUuid(row.publication_id);
+  const status = salonPublicationStatus(row.status);
+  const requestedAt = readString(row.requested_at);
+
+  if (!id || !status || !requestedAt) {
+    return null;
+  }
+
+  return {
+    id,
+    requestedAt,
+    respondedAt: readString(row.responded_at),
+    status,
+  };
+}
+
 function mapTimelinePost(raw: unknown): BeautyTimelinePost | null {
   const record = asRecord(raw);
   const id = cleanUuid(readString(record.id));
@@ -532,6 +571,7 @@ function mapTimelinePost(raw: unknown): BeautyTimelinePost | null {
       .filter((item): item is BeautyPostMedia => Boolean(item)),
     profileId,
     reward: mapReward(record.reward),
+    salonPublication: null,
     type: postType(record.type),
     updatedAt,
     verification: mapVerification(record.verification),
@@ -565,6 +605,55 @@ function mapTimelinePayload(data: unknown): BeautyTimelinePage {
   };
 }
 
+async function attachBeautySalonPublicationStatuses(input: {
+  page: BeautyTimelinePage;
+  supabase: AuthenticatedSupabaseClient;
+}): Promise<BeautyTimelinePage> {
+  const postIds = input.page.items.map((item) => item.id);
+
+  if (postIds.length === 0) {
+    return input.page;
+  }
+
+  const { data, error } = await input.supabase
+    .rpc("get_my_beauty_salon_publication_statuses", {
+      p_post_ids: postIds,
+    })
+    .returns<BeautySalonPublicationStatusRow[]>();
+
+  if (error) {
+    console.error("Supabase load Beauty salon publication statuses failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+    });
+    return input.page;
+  }
+
+  const publicationByPostId = new Map<string, BeautyPostSalonPublication>();
+  const rows = Array.isArray(data)
+    ? (data as BeautySalonPublicationStatusRow[])
+    : [];
+
+  for (const row of rows) {
+    const postId = cleanUuid(row.post_id);
+    const publication = mapSalonPublicationStatusRow(row);
+
+    if (postId && publication && !publicationByPostId.has(postId)) {
+      publicationByPostId.set(postId, publication);
+    }
+  }
+
+  return {
+    ...input.page,
+    items: input.page.items.map((item) => ({
+      ...item,
+      salonPublication: publicationByPostId.get(item.id) ?? null,
+    })),
+  };
+}
+
 export async function getBeautyTimelinePage(input: {
   cursor?: BeautyTimelineCursor | null;
   pageSize?: number;
@@ -592,6 +681,51 @@ export async function getBeautyTimelinePage(input: {
       hint: error.hint,
       message: error.message,
       profileId,
+    });
+
+    return emptyTimelinePage("Beauty timeline could not be loaded.");
+  }
+
+  return attachBeautySalonPublicationStatuses({
+    page: mapTimelinePayload(data),
+    supabase,
+  });
+}
+
+export async function getBeautyTimelinePageForSalonCustomer(input: {
+  cursor?: BeautyTimelineCursor | null;
+  customerId: string;
+  pageSize?: number;
+  salonId: string;
+}): Promise<BeautyTimelinePage> {
+  const supabase = await createAuthenticatedSupabaseServerClient();
+  const salonId = cleanUuid(input.salonId);
+  const customerId = cleanUuid(input.customerId);
+
+  if (!supabase || !salonId || !customerId) {
+    return emptyTimelinePage("Beauty timeline could not be loaded.");
+  }
+
+  const cursor = normalizeCursor(input.cursor);
+  const { data, error } = await supabase.rpc(
+    "list_beauty_timeline_for_salon_customer",
+    {
+      p_cursor_created_at: cursor?.createdAt ?? null,
+      p_cursor_post_id: cursor?.postId ?? null,
+      p_customer_id: customerId,
+      p_page_size: input.pageSize ?? 12,
+      p_salon_id: salonId,
+    },
+  );
+
+  if (error) {
+    console.warn("Supabase load salon customer Beauty timeline skipped", {
+      code: error.code,
+      customerId,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      salonId,
     });
 
     return emptyTimelinePage("Beauty timeline could not be loaded.");
@@ -955,6 +1089,8 @@ export async function createBeautyPost(
     postId: string;
     profileId: string;
     rewardIssued: boolean;
+    salonPublicationId: string | null;
+    salonPublicationStatus: BeautySalonPublicationStatus | null;
     verificationMethod: BeautyVerificationMethod;
     verificationState: BeautyVerificationState;
   }>
@@ -1047,6 +1183,10 @@ export async function createBeautyPost(
       postId,
       profileId,
       rewardIssued: readBoolean(payload.rewardIssued),
+      salonPublicationId: cleanUuid(readString(payload.salonPublicationId)),
+      salonPublicationStatus: salonPublicationStatus(
+        payload.salonPublicationStatus,
+      ),
       verificationMethod: verificationMethod(payload.verificationMethod),
       verificationState: verificationState(payload.verificationState),
     },

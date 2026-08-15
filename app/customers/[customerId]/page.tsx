@@ -4,6 +4,10 @@ import {
   type CustomerTicketSummary,
   type CustomerTimelineItem,
 } from "@/lib/customers";
+import {
+  resolveBeautyProfileForSalonCustomer,
+  type BeautyProfileResolveResult,
+} from "@/lib/beauty-relationship";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import type { Customer } from "@/types/customer";
@@ -14,6 +18,12 @@ import type { ReactNode } from "react";
 type CustomerDetailPageProps = {
   params: Promise<{
     customerId: string;
+  }>;
+  searchParams: Promise<{
+    error?: string;
+    group?: string;
+    history?: string;
+    merged?: string;
   }>;
 };
 
@@ -85,6 +95,113 @@ function StatusBadge({ customer }: { customer: Customer }) {
     >
       {customer.status === "active" ? "Active" : "Inactive"}
     </span>
+  );
+}
+
+function ReylumiProfileCard({
+  linked,
+  result,
+}: {
+  linked: boolean;
+  result: BeautyProfileResolveResult | null;
+}) {
+  if (!linked) {
+    return (
+      <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 p-4">
+        <p className="text-sm font-semibold text-zinc-950">
+          No ReyLUMI profile linked
+        </p>
+        <p className="mt-1 text-sm text-zinc-600">
+          This customer is only a salon CRM record right now.
+        </p>
+      </div>
+    );
+  }
+
+  if (result?.ok && result.state === "unlinked") {
+    return (
+      <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 p-4">
+        <p className="text-sm font-semibold text-zinc-950">
+          No ReyLUMI profile linked
+        </p>
+        <p className="mt-1 text-sm text-zinc-600">
+          This customer is only a salon CRM record right now.
+        </p>
+      </div>
+    );
+  }
+
+  if (result?.ok && result.state === "profile_not_created") {
+    return (
+      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+        <p className="text-sm font-semibold text-zinc-950">
+          ReyLUMI account linked
+        </p>
+        <p className="mt-1 text-sm text-zinc-600">
+          Beauty profile is not available yet.
+        </p>
+      </div>
+    );
+  }
+
+  if (!result?.ok || !result.profile) {
+    return (
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <p className="text-sm font-semibold text-amber-950">
+          ReyLUMI account linked
+        </p>
+        <p className="mt-1 text-sm text-amber-800">
+          Beauty profile could not be checked right now.
+        </p>
+      </div>
+    );
+  }
+
+  const { profile } = result;
+  const isPrivate = profile.state === "private";
+
+  return (
+    <div className="grid gap-4 rounded-lg border border-orange-100 bg-gradient-to-br from-white to-orange-50/60 p-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-orange-100 text-sm font-extrabold text-orange-700 ring-1 ring-orange-200">
+          {profile.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              alt={`${profile.displayName} Beauty profile`}
+              className="h-full w-full object-cover"
+              src={profile.avatarUrl}
+            />
+          ) : (
+            profile.initials
+          )}
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-semibold text-zinc-950">
+            {profile.displayName}
+          </span>
+          <span className="mt-1 inline-flex rounded-full bg-white px-2 py-1 text-[11px] font-semibold capitalize text-orange-700 ring-1 ring-orange-100">
+            {isPrivate ? "Beauty profile is private" : "Public Beauty profile"}
+          </span>
+        </span>
+      </div>
+      {isPrivate ? (
+        <p className="text-sm leading-6 text-zinc-600">
+          This customer has a ReyLUMI Beauty identity, but their Beauty content
+          is private.
+        </p>
+      ) : null}
+      {!isPrivate && profile.bio ? (
+        <p className="line-clamp-3 text-sm leading-6 text-zinc-600">
+          {profile.bio}
+        </p>
+      ) : null}
+      <Link
+        className="inline-flex min-h-10 w-fit items-center justify-center rounded-md bg-[#f26f3d] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#e85f2b]"
+        href={profile.href}
+      >
+        View Beauty Profile
+      </Link>
+    </div>
   );
 }
 
@@ -211,30 +328,64 @@ function Timeline({ items }: { items: CustomerTimelineItem[] }) {
   );
 }
 
-export default async function CustomerDetailPage({ params }: CustomerDetailPageProps) {
+function historyFilterHref(customerId: string, filter: string, group?: string) {
+  const params = new URLSearchParams();
+
+  if (group) {
+    params.set("group", group);
+  }
+
+  if (filter !== "all") {
+    params.set("history", filter);
+  }
+
+  const query = params.toString();
+
+  return query ? `/customers/${customerId}?${query}` : `/customers/${customerId}`;
+}
+
+export default async function CustomerDetailPage({
+  params,
+  searchParams,
+}: CustomerDetailPageProps) {
   const { customerId } = await params;
+  const { error, group, history, merged } = await searchParams;
+  const historyFilter = ["appointments", "tickets", "timeline"].includes(history ?? "")
+    ? history
+    : "all";
   await requireSalonManagePageContext(`/customers/${customerId}`);
-  const { context, data } = await getCurrentSalonCustomerDetail(customerId);
+  const { context, data } = await getCurrentSalonCustomerDetail(customerId, {
+    walkingGroup: group === "walking",
+  });
 
   if (!data) {
     notFound();
   }
 
   const customer = data.customer;
+  const beautyProfileResult = customer.customer_user_id
+    ? await resolveBeautyProfileForSalonCustomer({
+        context,
+        customerId: customer.id,
+      })
+    : null;
   const canManageCustomers = await hasPermission("customers.manage", context);
+  const showAppointments =
+    historyFilter === "all" || historyFilter === "appointments";
+  const showTickets = historyFilter === "all" || historyFilter === "tickets";
+  const showTimeline = historyFilter === "all" || historyFilter === "timeline";
   const lastVisit = data.bookingHistory.find((booking) =>
     booking.normalizedStatus === "completed",
   );
 
   return (
     <main className="mx-auto grid w-full max-w-6xl gap-6 px-6 py-10">
-      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-medium text-zinc-500">Customers</p>
-          <h1 className="mt-1 text-3xl font-semibold text-zinc-950">{customer.name}</h1>
-          <div className="mt-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
+          <span className="min-w-0 truncate text-sm font-semibold text-zinc-950">
+            {customer.name}
+          </span>
             <StatusBadge customer={customer} />
-          </div>
         </div>
         <div className="flex flex-wrap gap-3">
           <Link
@@ -243,7 +394,7 @@ export default async function CustomerDetailPage({ params }: CustomerDetailPageP
           >
             Customers
           </Link>
-          {canManageCustomers ? (
+          {canManageCustomers && !data.isWalkingGroup ? (
             <Link
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               href={`/customers/${customer.id}/edit`}
@@ -254,13 +405,27 @@ export default async function CustomerDetailPage({ params }: CustomerDetailPageP
         </div>
       </div>
 
+      {merged ? (
+        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          Merged {merged} duplicate customer record{merged === "1" ? "" : "s"}.
+        </p>
+      ) : null}
+
+      {error ? (
+        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+          {error}
+        </p>
+      ) : null}
+
       {data.duplicateCandidates.length > 0 ? (
         <section className="rounded-lg border border-amber-200 bg-amber-50 px-5 py-4">
           <h2 className="text-base font-semibold text-amber-950">
-            Possible duplicate customer
+            {data.isWalkingGroup ? "Walking group" : "Possible duplicate customer"}
           </h2>
           <p className="mt-1 text-sm text-amber-800">
-            Matching phone or email exists in this salon. No merge was performed.
+            {data.isWalkingGroup
+              ? "This view combines walk-in records that have no customer contact information."
+              : "Matching phone or email exists in this salon. No merge was performed."}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {data.duplicateCandidates.map((candidate) => (
@@ -277,31 +442,67 @@ export default async function CustomerDetailPage({ params }: CustomerDetailPageP
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="grid gap-6">
-          <Section title="Upcoming Appointments">
-            <BookingList
-              empty="No upcoming appointments."
-              items={data.upcomingBookings}
-            />
-          </Section>
+        <section className="grid content-start gap-6">
+          <div className="flex flex-wrap items-start gap-2">
+            {[
+              ["all", "All"],
+              ["appointments", "Appointments"],
+              ["tickets", "Tickets"],
+              ["timeline", "Timeline"],
+            ].map(([value, label]) => (
+              <Link
+                className={
+                  historyFilter === value
+                    ? "inline-flex h-10 shrink-0 items-center rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white"
+                    : "inline-flex h-10 shrink-0 items-center rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950"
+                }
+                href={historyFilterHref(customer.id, value, group)}
+                key={value}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
 
-          <Section title="Booking History">
-            <BookingList
-              empty="No booking history yet."
-              items={data.bookingHistory}
-            />
-          </Section>
+          {showAppointments ? (
+            <>
+              <Section title="Upcoming Appointments">
+                <BookingList
+                  empty="No upcoming appointments."
+                  items={data.upcomingBookings}
+                />
+              </Section>
 
-          <Section title="POS Ticket History">
-            <TicketList items={data.tickets} />
-          </Section>
+              <Section title="Booking History">
+                <BookingList
+                  empty="No booking history yet."
+                  items={data.bookingHistory}
+                />
+              </Section>
+            </>
+          ) : null}
 
-          <Section title="Timeline">
-            <Timeline items={data.timeline} />
-          </Section>
+          {showTickets ? (
+            <Section title="POS Ticket History">
+              <TicketList items={data.tickets} />
+            </Section>
+          ) : null}
+
+          {showTimeline ? (
+            <Section title="Timeline">
+              <Timeline items={data.timeline} />
+            </Section>
+          ) : null}
         </section>
 
         <aside className="grid h-fit gap-6">
+          <Section title="ReyLUMI Profile">
+            <ReylumiProfileCard
+              linked={Boolean(customer.customer_user_id)}
+              result={beautyProfileResult}
+            />
+          </Section>
+
           <Section title="Identity">
             <dl className="divide-y divide-zinc-100">
               <DetailRow label="Customer Name" value={customer.name} />

@@ -166,14 +166,9 @@ export default async function NotificationsPage({
   return (
     <main className="min-h-screen overflow-x-hidden bg-zinc-100 px-3 py-4 sm:px-6 lg:px-8">
       <section className="mx-auto max-w-3xl overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-        <header className="px-4 pb-3 pt-4 sm:px-5">
-          <div className="flex items-center gap-3">
-            <h1 className="min-w-0 flex-1 text-2xl font-bold text-zinc-950">
-              Notifications
-            </h1>
-            <MarkAllReadButton unreadCount={unreadAppNotifications} />
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+        <header className="flex flex-col gap-3 px-4 pb-3 pt-4 sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
             <Link className={tabClass(filter === "all")} href="/notifications">
               All
             </Link>
@@ -186,6 +181,8 @@ export default async function NotificationsPage({
                 <span className="ml-1 text-xs">({unreadTotal})</span>
               ) : null}
             </Link>
+            </div>
+            <MarkAllReadButton unreadCount={unreadAppNotifications} />
           </div>
         </header>
 

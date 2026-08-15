@@ -188,6 +188,13 @@ function NotificationRow({
             value={item.action.notificationId}
           />
           <input name="href" type="hidden" value={item.action.href} />
+          {item.action.workspaceId ? (
+            <input
+              name="workspace_id"
+              type="hidden"
+              value={item.action.workspaceId}
+            />
+          ) : null}
           <button className={rowClass(compact, true)} type="submit">
             <NotificationContent compact={compact} item={item} />
           </button>

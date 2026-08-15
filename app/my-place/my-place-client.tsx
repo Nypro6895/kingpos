@@ -1,9 +1,9 @@
 "use client";
 
+import { ActionDialog } from "@/app/action-dialog";
 import { switchWorkspaceDestination } from "@/app/salons/actions";
 import {
   HubIcon,
-  QuickAccessItem,
   SearchField,
   WorkspaceActionButton,
   WorkspaceGroup,
@@ -14,7 +14,6 @@ import {
 } from "@/app/workspace-hub-ui";
 import {
   actionKey,
-  buildWorkspaceShortcuts,
   workspaceSearchText,
 } from "@/app/workspace-display";
 import type {
@@ -53,6 +52,42 @@ function findOwnerAccountWorkspace(input: {
   );
 }
 
+function workspaceErrorDialogCopy(message: string) {
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("salon workspace")) {
+    return {
+      description:
+        "That page needs an active salon workspace. Choose an owner or staff workspace here, or return to Explore.",
+      title: "Salon workspace required",
+    };
+  }
+
+  if (lowerMessage.includes("account workspace")) {
+    return {
+      description:
+        "That page needs an active account workspace. Choose an account workspace here, or return to Explore.",
+      title: "Account workspace required",
+    };
+  }
+
+  if (
+    lowerMessage.includes("no longer have access") ||
+    lowerMessage.includes("connected to your account")
+  ) {
+    return {
+      description:
+        "That workspace is not available to your account anymore. Review your available workspaces or return to Explore.",
+      title: "Workspace unavailable",
+    };
+  }
+
+  return {
+    description: message,
+    title: "Workspace action needed",
+  };
+}
+
 export function MyPlaceClient({
   currentWorkspace,
   error,
@@ -86,12 +121,6 @@ export function MyPlaceClient({
   const accountWorkspaces = workspaceOptions.filter(
     (workspace) => workspace.type === "account" && matchesWorkspace(workspace),
   );
-  const quickAccess = buildWorkspaceShortcuts({
-    currentWorkspace,
-    limit: 6,
-    query: normalizedQuery,
-    workspaceOptions,
-  });
   const ownerAccountWorkspace = findOwnerAccountWorkspace({
     currentWorkspace,
     workspaceOptions,
@@ -112,17 +141,18 @@ export function MyPlaceClient({
         .join(" ")
         .toLowerCase()
         .includes(normalizedQuery));
-  const showQuickAccess = quickAccess.length > 0;
   const showManageGroup = !isFiltering || manageWorkspaces.length > 0;
   const showStaffGroup = !isFiltering || staffWorkspaces.length > 0;
   const showAccountGroup = !isFiltering || accountWorkspaces.length > 0;
   const hasResults =
-    quickAccess.length > 0 ||
     manageWorkspaces.length > 0 ||
     staffWorkspaces.length > 0 ||
     accountWorkspaces.length > 0 ||
     pendingMatches;
   const pendingSeparator = " " + String.fromCharCode(183) + " ";
+  const errorDialog = errorMessage
+    ? workspaceErrorDialogCopy(errorMessage)
+    : null;
 
   const runAction: RunWorkspaceAction = (
     workspace: CurrentWorkspaceOption,
@@ -163,40 +193,41 @@ export function MyPlaceClient({
 
   return (
     <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-7 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-3xl font-semibold text-zinc-950">My Place</h1>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-            Your salons, workplaces, and account spaces.
-          </p>
-        </div>
-        <div className="flex min-w-0 flex-wrap gap-2">
-          {ownerAccountWorkspace && createSalonAction ? (
-            <WorkspaceActionButton
-              action={{
-                ...createSalonAction,
-                id: "create-salon",
-                label: "Create Salon",
-              }}
-              icon="plus"
-              onRunAction={runAction}
-              pendingKey={pendingKey}
-              variant="primary"
-              workspace={ownerAccountWorkspace}
-            />
-          ) : null}
-          <Link className={hubButtonClass("secondary")} href="/staff/connections">
-            <HubIcon className="h-4 w-4 shrink-0" name="user-plus" />
-            <span className="truncate">Apply to Salon</span>
-          </Link>
-        </div>
+      <div className="flex min-w-0 flex-wrap gap-2">
+        {ownerAccountWorkspace && createSalonAction ? (
+          <WorkspaceActionButton
+            action={{
+              ...createSalonAction,
+              id: "create-salon",
+              label: "Create Salon",
+            }}
+            icon="plus"
+            onRunAction={runAction}
+            pendingKey={pendingKey}
+            variant="primary"
+            workspace={ownerAccountWorkspace}
+          />
+        ) : null}
+        <Link className={hubButtonClass("secondary")} href="/staff/connections">
+          <HubIcon className="h-4 w-4 shrink-0" name="user-plus" />
+          <span className="truncate">Apply to Salon</span>
+        </Link>
       </div>
 
-      {errorMessage ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {errorMessage}
-        </p>
-      ) : null}
+      <ActionDialog
+        description={errorDialog?.description ?? ""}
+        onClose={() => setErrorMessage(null)}
+        open={Boolean(errorDialog)}
+        primaryAction={{
+          label: "Choose workspace",
+          onClick: () => {
+            setErrorMessage(null);
+            window.setTimeout(() => searchRef.current?.focus(), 0);
+          },
+        }}
+        secondaryAction={{ href: "/explore", label: "Explore" }}
+        title={errorDialog?.title ?? "Workspace action needed"}
+      />
 
       <SearchField
         onChange={setQuery}
@@ -210,26 +241,6 @@ export function MyPlaceClient({
           searchRef.current = node;
         }}
       />
-
-      {showQuickAccess ? (
-        <WorkspaceGroup
-          count={quickAccess.length}
-          description="Open frequently used destinations directly."
-          icon="zap"
-          title="Quick Access"
-        >
-          <div className="grid min-w-0 grid-cols-1 gap-2 p-3 md:grid-cols-2 xl:grid-cols-3">
-            {quickAccess.map((shortcut) => (
-              <QuickAccessItem
-                key={shortcut.id}
-                onRunAction={runAction}
-                pendingKey={pendingKey}
-                shortcut={shortcut}
-              />
-            ))}
-          </div>
-        </WorkspaceGroup>
-      ) : null}
 
       <div
         className={

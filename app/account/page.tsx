@@ -24,8 +24,7 @@ export default async function AccountPage() {
   if (!user) {
     return (
       <main className="mx-auto w-full max-w-2xl px-6 py-12">
-        <h1 className="text-2xl font-semibold text-zinc-950">Account</h1>
-        <p className="mt-4 text-zinc-700">You need to log in to view your account.</p>
+        <p className="text-zinc-700">You need to log in to view your account.</p>
         <div className="mt-6 flex gap-3">
           <Link
             className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"

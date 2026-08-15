@@ -446,11 +446,7 @@ export default async function SalonSettingsPage({
   if (!canViewSettings) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-semibold text-zinc-950">Salon Settings</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Manage business information for this salon.
-        </p>
-        <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
           You do not have permission to view salon settings.
         </p>
       </main>
@@ -477,14 +473,7 @@ export default async function SalonSettingsPage({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
-      <div className="border-b border-zinc-200 pb-6">
-        <h1 className="text-3xl font-semibold text-zinc-950">Salon Settings</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Manage business information for this salon.
-        </p>
-      </div>
-
-      <section className="mt-8">
+      <section>
         <h2 className="text-lg font-semibold text-zinc-950">
           Business Information
         </h2>

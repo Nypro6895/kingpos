@@ -63,17 +63,7 @@ export default async function SettingsPage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="border-b border-zinc-200 pb-6">
-        <p className="text-sm font-semibold text-zinc-500">Settings</p>
-        <h1 className="mt-1 text-3xl font-semibold text-zinc-950">
-          Account Settings
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-          Personal account controls stay separate from Business administration.
-        </p>
-      </div>
-
-      <section className="mt-6 grid gap-3 md:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-3">
         <div className="rounded-lg border border-zinc-200 bg-white p-4">
           <p className="text-xs font-semibold uppercase text-zinc-500">Account</p>
           <p className="mt-2 truncate text-lg font-semibold text-zinc-950">

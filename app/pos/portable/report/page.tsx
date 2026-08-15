@@ -28,13 +28,10 @@ function PortableReportDenied() {
       data-portable-pos-page="report"
     >
       <div className="mx-auto grid max-w-3xl gap-4">
-        <p className="text-sm font-semibold uppercase text-teal-800">
-          Portable Report
-        </p>
         <div className="rounded-lg border border-zinc-200 bg-white p-5">
-          <h1 className="text-2xl font-semibold tracking-normal">
+          <h2 className="text-2xl font-semibold tracking-normal">
             Report unavailable
-          </h1>
+          </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
             This Portable POS device does not have report access. Enable the
             restricted Report capability from POS Settings before using this
@@ -64,18 +61,10 @@ export default async function PortableReportPage({
       data-portable-pos-page="report"
     >
       <div className="mx-auto grid max-w-7xl gap-5">
-        <header className="flex flex-wrap items-end justify-between gap-3 border-b border-zinc-200 pb-4">
-          <div>
-            <p className="text-sm font-semibold uppercase text-teal-800">
-              Portable Report
-            </p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-normal">
-              {data.salonName}
-            </h1>
-            <p className="mt-1 text-sm text-zinc-600">
-              {formatDate(data.reportDate, data.timezone)}
-            </p>
-          </div>
+        <header className="flex flex-wrap items-end justify-between gap-3">
+          <p className="text-sm font-medium text-zinc-600">
+            {data.salonName} / {formatDate(data.reportDate, data.timezone)}
+          </p>
           <form className="flex items-end gap-2" method="get">
             <label className="block">
               <span className="text-xs font-semibold uppercase text-zinc-500">

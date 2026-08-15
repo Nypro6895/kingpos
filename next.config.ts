@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
+const SUPABASE_PUBLIC_IMAGE_BUCKETS = [
+  "account-avatars",
+  "beauty-profile-media",
+  "salon-profile-media",
+] as const;
+
 function supabaseImagePatterns(): NonNullable<
   NextConfig["images"]
 >["remotePatterns"] {
@@ -11,14 +17,19 @@ function supabaseImagePatterns(): NonNullable<
 
   try {
     const url = new URL(supabaseUrl);
+    const protocol = url.protocol.replace(":", "");
 
-    return [
-      {
-        protocol: url.protocol.replace(":", "") as "http" | "https",
-        hostname: url.hostname,
-        pathname: "/storage/v1/object/public/salon-profile-media/**",
-      },
-    ];
+    if (!url.hostname || (protocol !== "http" && protocol !== "https")) {
+      return [];
+    }
+
+    return SUPABASE_PUBLIC_IMAGE_BUCKETS.map((bucket) => ({
+      protocol,
+      hostname: url.hostname,
+      port: url.port,
+      pathname: `/storage/v1/object/public/${bucket}/**`,
+      search: "",
+    }));
   } catch {
     return [];
   }

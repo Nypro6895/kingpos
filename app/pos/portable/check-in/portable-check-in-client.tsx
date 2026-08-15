@@ -268,9 +268,9 @@ export function PortableCheckInClient({
         data-portable-check-in-page
       >
         <div className="max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
-          <h1 className="text-xl font-semibold text-zinc-950">
+          <h2 className="text-xl font-semibold text-zinc-950">
             Staff check-in is off
-          </h1>
+          </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
             Enable staff check-in from POS Settings before using this Portable
             page.
@@ -286,13 +286,8 @@ export function PortableCheckInClient({
       data-portable-check-in-page
     >
       <header className="shrink-0 rounded-lg border border-zinc-200 bg-white px-4 py-3 shadow-sm">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-zinc-500">{data.today}</p>
-            <h1 className="text-2xl font-semibold tracking-normal">
-              Staff Check-in
-            </h1>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-zinc-500">{data.today}</p>
           <p className="text-sm font-medium text-zinc-600">{data.salonName}</p>
         </div>
         {notice ? (

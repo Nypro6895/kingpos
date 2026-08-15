@@ -6,6 +6,17 @@ import {
 } from "@/lib/current-context";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
+import {
+  buildSameWeekdayComparisonDates,
+  calculateDailyPosSalesComparison,
+  type DailyPosSalesComparison,
+} from "@/lib/daily-pos-sales-comparison";
+import {
+  buildSalonActivityBuckets,
+  getLocalDateHour,
+  type SalonActivityBucketSource,
+  type SalonBusinessHoursWindow,
+} from "@/lib/salon-business-hours";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type { CurrentBusinessContext } from "@/lib/current-context";
@@ -99,6 +110,7 @@ type ReportTicketPayment = {
 };
 
 type ReportTicketRow = {
+  closed_at: string | null;
   discount_type: PosTicketDiscountType;
   discount_value: number;
   id: string;
@@ -121,13 +133,16 @@ type StaffEarningRow = {
 };
 
 type DailyReportCore = {
+  activityPoints: DailyPosHourlyActivityPoint[];
   allTickets: ReportTicketRow[];
   closing: PosDailyClosing | null;
   closingInputs: DailyPosClosingInputs;
   finalizedTickets: ReportTicketRow[];
   metadata: DailyPosReportMetadata;
   reportDate: string;
+  staffAttributionSource: DailyPosStaffAttributionSource;
   staffRows: DailyPosReportStaffRow[];
+  tipAttributionSource: DailyPosTipAttributionSource;
   totals: DailyPosReportTotals;
 };
 
@@ -210,6 +225,39 @@ export type PayrollReadyDailyFinancial = {
   pendingCorrectionCount: number;
   reportDate: string;
   snapshotTotals: DailyClosingSnapshotTotals | null;
+};
+
+export type DailyPosStaffAttributionSource =
+  | "none"
+  | "pos_ticket_staff_earnings"
+  | "pos_ticket_items";
+
+export type DailyPosTipAttributionSource =
+  | "none"
+  | "pos_ticket_staff_earnings"
+  | "unallocated";
+
+export type DailyPosHourlyActivityPoint = {
+  discount: number;
+  hour: number | null;
+  isAfterHours: boolean;
+  isExceptional: boolean;
+  isLatest: boolean;
+  label: string;
+  service: number;
+  source: SalonActivityBucketSource;
+  ticketCount: number;
+  tip: number;
+  total: number;
+};
+
+export type DailyPosTodayFinancialData = {
+  activityPoints: DailyPosHourlyActivityPoint[];
+  businessHours: SalonBusinessHoursWindow | null;
+  salesComparison: DailyPosSalesComparison | null;
+  staffAttributionSource: DailyPosStaffAttributionSource;
+  staffRows: DailyPosReportStaffRow[];
+  tipAttributionSource: DailyPosTipAttributionSource;
 };
 
 function roundMoney(value: number) {
@@ -599,6 +647,149 @@ function buildStaffRowsFromTickets(
     .sort((left, right) => left.staffName.localeCompare(right.staffName));
 }
 
+function buildHourlyActivityPoints(input: {
+  businessHours?: SalonBusinessHoursWindow | null;
+  reportDate: string;
+  tickets: ReportTicketRow[];
+  timeZone: string;
+}): DailyPosHourlyActivityPoint[] {
+  const rowsByHour = new Map<
+    number,
+    {
+      discountCents: number;
+      serviceCents: number;
+      ticketCount: number;
+      tipCents: number;
+    }
+  >();
+
+  for (const ticket of input.tickets) {
+    const local = getLocalDateHour(ticket.opened_at, input.timeZone);
+
+    if (!local || local.date !== input.reportDate) {
+      continue;
+    }
+
+    const activeItems = getActiveItems(ticket);
+    const serviceCents = sumCents(
+      activeItems.map((item) => getItemServiceTotalCents(item)),
+    );
+    const totals = calculateTicketTotals({
+      discountType: ticket.discount_type,
+      discountValue: Number(ticket.discount_value),
+      items: activeItems.map((item) => ({
+        line_total: fromCents(getItemServiceTotalCents(item)),
+      })),
+      taxRate: Number(ticket.tax_rate),
+      tipType: ticket.tip_type,
+      tipValue: Number(ticket.tip_value),
+    });
+    const existing = rowsByHour.get(local.hour) ?? {
+      discountCents: 0,
+      serviceCents: 0,
+      ticketCount: 0,
+      tipCents: 0,
+    };
+
+    existing.discountCents += toCents(totals.discount_amount);
+    existing.serviceCents += serviceCents;
+    existing.ticketCount += 1;
+    existing.tipCents += toCents(totals.tip_amount);
+    rowsByHour.set(local.hour, existing);
+  }
+
+  const orderedBuckets = buildSalonActivityBuckets({
+    activeHours: rowsByHour.keys(),
+    businessHours: input.businessHours,
+    date: input.reportDate,
+    timeZone: input.timeZone,
+  });
+
+  const points: DailyPosHourlyActivityPoint[] = [];
+
+  for (const bucket of orderedBuckets) {
+    const row = bucket.hours.reduce(
+      (total, hour) => {
+        const hourRow = rowsByHour.get(hour);
+
+        if (!hourRow) {
+          return total;
+        }
+
+        return {
+          discountCents: total.discountCents + hourRow.discountCents,
+          serviceCents: total.serviceCents + hourRow.serviceCents,
+          ticketCount: total.ticketCount + hourRow.ticketCount,
+          tipCents: total.tipCents + hourRow.tipCents,
+        };
+      },
+      {
+        discountCents: 0,
+        serviceCents: 0,
+        ticketCount: 0,
+        tipCents: 0,
+      },
+    );
+    const totalCents = row.serviceCents + row.tipCents - row.discountCents;
+
+    points.push({
+      discount: fromCents(row.discountCents),
+      hour: bucket.hour,
+      isAfterHours: bucket.source === "after_hours",
+      isExceptional: bucket.exceptional,
+      isLatest: false,
+      label: bucket.label,
+      service: fromCents(row.serviceCents),
+      source: bucket.source,
+      ticketCount: row.ticketCount,
+      tip: fromCents(row.tipCents),
+      total: fromCents(totalCents),
+    });
+  }
+
+  if (points.length > 0) {
+    points[points.length - 1] = {
+      ...points[points.length - 1],
+      isLatest: true,
+    };
+  }
+
+  return points;
+}
+
+async function buildSalesComparison(input: {
+  auth: ReportAuthContext;
+  reportDate: string;
+  selectedTotal: number;
+  timeZone: string;
+}): Promise<DailyPosSalesComparison> {
+  const comparisonDates = buildSameWeekdayComparisonDates({
+    reportDate: input.reportDate,
+  });
+  const comparisonCores = await Promise.all(
+    comparisonDates.map((date) =>
+      loadLiveDailyPosReport(date, input.auth, {
+        includeActivityPoints: false,
+        timeZone: input.timeZone,
+      }),
+    ),
+  );
+  const comparableTotals = comparisonCores
+    .filter(
+      (core) =>
+        core.reportDate < input.reportDate &&
+        core.metadata.finalizedTicketCount > 0 &&
+        core.totals.expectedTotal > 0,
+    )
+    .map((core) => core.totals.expectedTotal);
+
+  return calculateDailyPosSalesComparison({
+    comparableTotals,
+    reportDate: input.reportDate,
+    selectedTotal: input.selectedTotal,
+  });
+}
+
 async function requireReportContext(
   permissionCode: string,
   context?: CurrentBusinessContext,
@@ -622,6 +813,53 @@ async function requireReportContext(
   }
 
   await requirePermission(permissionCode, resolvedContext);
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  return {
+    context: resolvedContext,
+    Account: resolvedContext.currentAccount,
+    salon: resolvedContext.currentSalon,
+    supabase,
+    user: resolvedContext.user,
+  };
+}
+
+async function requireAnyReportContext(
+  permissionCodes: string[],
+  context?: CurrentBusinessContext,
+): Promise<ReportAuthContext> {
+  const resolvedContext = context ?? (await getCurrentBusinessContext());
+
+  if (!resolvedContext.user) {
+    throw new Error("You must be logged in to view reports.");
+  }
+
+  if (!isSalonManageContext(resolvedContext)) {
+    throw new Error("Open reports from a Business workspace.");
+  }
+
+  if (!resolvedContext.currentAccount) {
+    throw new Error("Choose a salon workspace before viewing reports.");
+  }
+
+  if (!resolvedContext.currentSalon) {
+    throw new Error("Please select a salon first.");
+  }
+
+  const allowed = await Promise.all(
+    permissionCodes.map((permissionCode) =>
+      hasPermission(permissionCode, resolvedContext),
+    ),
+  );
+
+  if (!allowed.some(Boolean)) {
+    throw new Error(`Missing required permission: ${permissionCodes.join(", ")}`);
+  }
 
   const supabase = await createAuthenticatedSupabaseServerClient();
 
@@ -694,12 +932,57 @@ export async function canRequestFinancialCorrections(
   );
 }
 
+export async function getDailyPosTodayFinancialData(input: {
+  businessHours?: SalonBusinessHoursWindow | null;
+  context?: CurrentBusinessContext;
+  reportDate: string;
+  timeZone: string;
+}): Promise<DailyPosTodayFinancialData> {
+  const auth = await requireAnyReportContext(
+    [
+      DAILY_POS_REPORT_PERMISSIONS.view,
+      "payroll.view",
+      "payroll.manage",
+      "tickets.view",
+      "tickets.manage",
+    ],
+    input.context,
+  );
+  const core = await loadLiveDailyPosReport(input.reportDate, auth, {
+    businessHours: input.businessHours,
+    timeZone: input.timeZone,
+  });
+  const salesComparison = await buildSalesComparison({
+    auth,
+    reportDate: input.reportDate,
+    selectedTotal: core.totals.expectedTotal,
+    timeZone: input.timeZone,
+  });
+
+  return {
+    activityPoints: core.activityPoints,
+    businessHours: input.businessHours ?? null,
+    salesComparison,
+    staffAttributionSource: core.staffAttributionSource,
+    staffRows: core.staffRows,
+    tipAttributionSource: core.tipAttributionSource,
+  };
+}
+
 async function loadLiveDailyPosReport(
   reportDate: string,
   auth: ReportAuthContext,
+  options: {
+    businessHours?: SalonBusinessHoursWindow | null;
+    includeActivityPoints?: boolean;
+    timeZone?: string;
+  } = {},
 ): Promise<DailyReportCore> {
   const { Account, salon, supabase, user } = auth;
-  const bounds = getUtcBoundsForLocalDate(reportDate, user.timezone);
+  const bounds = getUtcBoundsForLocalDate(
+    reportDate,
+    options.timeZone ?? user.timezone,
+  );
 
   const [{ data: closing, error: closingError }, { data: tickets, error: ticketsError }] =
     await Promise.all([
@@ -712,7 +995,7 @@ async function loadLiveDailyPosReport(
       supabase
         .from("pos_tickets")
         .select(
-          "id, opened_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, line_total, is_removed, assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name), turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))",
+          "id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, line_total, is_removed, assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name), turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))",
         )
         .eq("salon_id", salon.id)
         .gte("opened_at", bounds.openedFrom)
@@ -752,7 +1035,9 @@ async function loadLiveDailyPosReport(
   const allTickets = tickets ?? [];
   const finalizedTickets = allTickets.filter((ticket) => ticket.status === "closed");
   const finalizedTicketIds = finalizedTickets.map((ticket) => ticket.id);
+  let staffAttributionSource: DailyPosStaffAttributionSource = "none";
   let staffRows: DailyPosReportStaffRow[] = [];
+  let tipAttributionSource: DailyPosTipAttributionSource = "none";
 
   if (finalizedTicketIds.length > 0) {
     const { data: earnings, error: earningsError } = await supabase
@@ -779,10 +1064,15 @@ async function loadLiveDailyPosReport(
       throw new Error(earningsError.message);
     }
 
-    staffRows =
-      (earnings ?? []).length > 0
-        ? buildStaffRowsFromEarnings(earnings ?? [])
-        : buildStaffRowsFromTickets(finalizedTickets);
+    if ((earnings ?? []).length > 0) {
+      staffRows = buildStaffRowsFromEarnings(earnings ?? []);
+      staffAttributionSource = "pos_ticket_staff_earnings";
+      tipAttributionSource = "pos_ticket_staff_earnings";
+    } else {
+      staffRows = buildStaffRowsFromTickets(finalizedTickets);
+      staffAttributionSource =
+        staffRows.length > 0 ? "pos_ticket_items" : "none";
+    }
   }
 
   const closingInputs = getClosingInputs(closing);
@@ -796,6 +1086,13 @@ async function loadLiveDailyPosReport(
   const totalStaffEarnedCents = sumCents(
     staffRows.map((row) => toCents(row.totalEarned)),
   );
+  if (
+    tipAttributionSource === "none" &&
+    totalTipCents > 0 &&
+    finalizedTickets.length > 0
+  ) {
+    tipAttributionSource = "unallocated";
+  }
   const totalGiftCardCents = 0;
   const expectedTotalCents =
     totalStaffEarnedCents +
@@ -805,6 +1102,15 @@ async function loadLiveDailyPosReport(
   const differenceCents = actualTotalCents - expectedTotalCents;
 
   return {
+    activityPoints:
+      options.includeActivityPoints === false
+        ? []
+        : buildHourlyActivityPoints({
+            businessHours: options.businessHours,
+            reportDate,
+            tickets: finalizedTickets,
+            timeZone: options.timeZone ?? user.timezone,
+          }),
     allTickets,
     closing: closing ?? null,
     closingInputs,
@@ -820,7 +1126,9 @@ async function loadLiveDailyPosReport(
       ticketCount: allTickets.length,
     },
     reportDate,
+    staffAttributionSource,
     staffRows,
+    tipAttributionSource,
     totals: {
       actualTotal: fromCents(actualTotalCents),
       difference: fromCents(differenceCents),

@@ -1,8 +1,10 @@
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import {
   ROLE_MORE_ITEMS,
+  roleNavigationKindForContext,
   type RoleMoreIcon,
   type RoleMoreItem,
+  type RoleNavigationKind,
 } from "@/app/role-navigation";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -10,6 +12,16 @@ import type { ReactNode } from "react";
 
 type MoreIconName = RoleMoreIcon;
 type MoreItem = RoleMoreItem;
+type MoreSection = {
+  id: string;
+  items: MoreItem[];
+  summary: string;
+  title: string;
+};
+
+type MoreContent = {
+  sections: MoreSection[];
+};
 
 function MoreIcon({ name }: { name: MoreIconName }) {
   const common = {
@@ -59,6 +71,14 @@ function MoreIcon({ name }: { name: MoreIconName }) {
         <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
       </>
     ),
+    grid: (
+      <>
+        <rect height="7" rx="1.5" width="7" x="3" y="3" />
+        <rect height="7" rx="1.5" width="7" x="14" y="3" />
+        <rect height="7" rx="1.5" width="7" x="3" y="14" />
+        <rect height="7" rx="1.5" width="7" x="14" y="14" />
+      </>
+    ),
     heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />,
     list: (
       <>
@@ -98,22 +118,129 @@ function MoreIcon({ name }: { name: MoreIconName }) {
   return <svg {...common}>{paths[name]}</svg>;
 }
 
-function personalMoreItems() {
+function pickMoreItems(
+  items: readonly MoreItem[],
+  ids: readonly string[],
+): MoreItem[] {
+  const itemsById = new Map(items.map((item) => [item.id, item]));
+
+  return ids
+    .map((id) => itemsById.get(id))
+    .filter((item): item is MoreItem => Boolean(item));
+}
+
+function formatItemCount(count: number) {
+  return `${count} ${count === 1 ? "item" : "items"}`;
+}
+
+function personalMoreItems(): MoreContent {
   return {
-    eyebrow: "Personal",
-    items: ROLE_MORE_ITEMS.personal,
-    summary: "Saved posts, favorite profiles, memberships, and account support.",
-    title: "More",
+    sections: [
+      {
+        id: "workspace",
+        items: pickMoreItems(ROLE_MORE_ITEMS.personal, ["personal-my-place"]),
+        summary: "Choose the account, salon, or workplace you want to use.",
+        title: "Workspace",
+      },
+      {
+        id: "beauty-history",
+        items: pickMoreItems(ROLE_MORE_ITEMS.personal, [
+          "personal-activity",
+          "personal-saved-post",
+          "personal-favorite-customer",
+          "personal-favorite-shop",
+        ]),
+        summary: "Review visits, saved posts, and favorite people or places.",
+        title: "Beauty & history",
+      },
+      {
+        id: "account",
+        items: pickMoreItems(ROLE_MORE_ITEMS.personal, [
+          "personal-memberships",
+          "personal-reviews",
+          "personal-gift-cards",
+          "personal-reports",
+        ]),
+        summary: "Manage memberships, reviews, rewards, and support history.",
+        title: "Account",
+      },
+    ],
   };
+}
+
+function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {
+  if (roleKind === "owner") {
+    return {
+      sections: [
+        {
+          id: "workspace",
+          items: pickMoreItems(ROLE_MORE_ITEMS.owner, ["owner-my-place"]),
+          summary: "Switch salons, staff workplaces, accounts, or Personal mode.",
+          title: "Workspace",
+        },
+        {
+          id: "front-desk",
+          items: pickMoreItems(ROLE_MORE_ITEMS.owner, [
+            "owner-pos",
+            "owner-ticket",
+            "owner-customers",
+            "owner-staff",
+            "owner-services",
+          ]),
+          summary: "Open daily tools for sales, tickets, customers, team, and services.",
+          title: "Front desk",
+        },
+        {
+          id: "business",
+          items: pickMoreItems(ROLE_MORE_ITEMS.owner, [
+            "owner-report",
+            "owner-payroll",
+            "owner-setting",
+          ]),
+          summary: "Review performance, payroll, and salon configuration.",
+          title: "Business",
+        },
+      ],
+    };
+  }
+
+  if (roleKind === "staff") {
+    return {
+      sections: [
+        {
+          id: "work",
+          items: pickMoreItems(ROLE_MORE_ITEMS.staff, [
+            "staff-my-place",
+            "staff-payroll",
+            "staff-statistics",
+          ]),
+          summary: "Switch workplaces and review your pay or performance.",
+          title: "Work",
+        },
+        {
+          id: "saved-following",
+          items: pickMoreItems(ROLE_MORE_ITEMS.staff, [
+            "staff-saved-post",
+            "staff-favorite-customer",
+            "staff-favorite-shop",
+          ]),
+          summary: "Keep track of saved posts, favorite people, and favorite shops.",
+          title: "Saved & following",
+        },
+      ],
+    };
+  }
+
+  return personalMoreItems();
 }
 
 function MoreItemLink({ item }: { item: MoreItem }) {
   return (
     <Link
-      className="grid min-h-[72px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border-subtle bg-surface px-4 text-left shadow-sm transition hover:border-brand-orange/40 hover:shadow-[0_16px_36px_rgba(23,19,22,0.06)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+      className="group grid min-h-[88px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-border-subtle bg-surface px-4 text-left shadow-sm transition hover:border-brand-orange/40 hover:shadow-[0_16px_36px_rgba(23,19,22,0.06)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
       href={item.href}
     >
-      <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-orange-soft text-brand-orange">
+      <span className="grid h-11 w-11 place-items-center rounded-lg bg-brand-orange-soft text-brand-orange transition group-hover:bg-brand-orange group-hover:text-white">
         <MoreIcon name={item.icon} />
       </span>
       <span className="min-w-0">
@@ -124,7 +251,10 @@ function MoreItemLink({ item }: { item: MoreItem }) {
           {item.description}
         </span>
       </span>
-      <span aria-hidden="true" className="text-xl text-text-secondary">
+      <span
+        aria-hidden="true"
+        className="text-xl text-text-secondary transition group-hover:translate-x-0.5 group-hover:text-brand-orange"
+      >
         {">"}
       </span>
     </Link>
@@ -138,28 +268,46 @@ export default async function MorePage() {
     redirect("/login?next=/more");
   }
 
-  const more = personalMoreItems();
+  const roleKind = roleNavigationKindForContext({
+    salonMode: context.salonMode,
+    workspaceType: context.workspaceType,
+  });
+  const more = roleMoreItems(roleKind);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-5xl gap-5">
-        <header>
-          <p className="text-xs font-bold uppercase text-brand-orange">
-            {more.eyebrow}
-          </p>
-          <h1 className="mt-1 text-3xl font-extrabold text-text-primary">
-            {more.title}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm font-semibold text-text-secondary">
-            {more.summary}
-          </p>
-        </header>
-
-        <section className="grid gap-3 md:grid-cols-2" aria-label="More options">
-          {more.items.map((item) => (
-            <MoreItemLink item={item} key={item.href} />
+        <div className="grid gap-7">
+          {more.sections.map((section) => (
+            <section
+              aria-labelledby={`more-${section.id}-title`}
+              className="grid gap-3"
+              key={section.id}
+            >
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2
+                    className="text-base font-extrabold text-text-primary"
+                    id={`more-${section.id}-title`}
+                  >
+                    {section.title}
+                  </h2>
+                  <p className="mt-1 text-sm font-semibold text-text-secondary">
+                    {section.summary}
+                  </p>
+                </div>
+                <p className="text-xs font-bold uppercase text-text-secondary">
+                  {formatItemCount(section.items.length)}
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {section.items.map((item) => (
+                  <MoreItemLink item={item} key={item.href} />
+                ))}
+              </div>
+            </section>
           ))}
-        </section>
+        </div>
       </div>
     </main>
   );

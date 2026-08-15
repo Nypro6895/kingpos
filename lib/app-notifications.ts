@@ -2,6 +2,9 @@ import "server-only";
 
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 
+const APP_NOTIFICATION_SELECT =
+  "id, salon_id, recipient_kind, notification_type, booking_id, title, body, href, read_at, created_at";
+
 export type AppNotification = {
   body: string | null;
   booking_id: string | null;
@@ -47,6 +50,39 @@ function recipientKinds(
       : [];
 }
 
+export async function getCurrentAppNotification(notificationId: string) {
+  const id = notificationId.trim();
+
+  if (!id) {
+    return null;
+  }
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("app_notifications")
+    .select(APP_NOTIFICATION_SELECT)
+    .eq("id", id)
+    .maybeSingle<AppNotification>();
+
+  if (error) {
+    console.error("Supabase load app notification failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      notificationId: id,
+    });
+    return null;
+  }
+
+  return data ?? null;
+}
+
 export async function getCurrentAppNotifications(
   input: GetCurrentAppNotificationsInput = {},
 ) {
@@ -60,9 +96,7 @@ export async function getCurrentAppNotifications(
 
   let query = supabase
     .from("app_notifications")
-    .select(
-      "id, salon_id, recipient_kind, notification_type, booking_id, title, body, href, read_at, created_at",
-    );
+    .select(APP_NOTIFICATION_SELECT);
   const kinds = recipientKinds(options.recipientKind);
 
   if (kinds.length === 1) {
