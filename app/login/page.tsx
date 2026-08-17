@@ -1,4 +1,5 @@
 import { LoginForm } from "@/app/login/login-form";
+import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,14 +17,6 @@ export const metadata: Metadata = {
   title: "Log in | ReyLUMI",
   description: "Sign in to ReyLUMI to discover services, save your beauty journey, and book your favorites.",
 };
-
-function getNextPath(value: string | undefined) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/account";
-  }
-
-  return value;
-}
 
 function BrandLogo({ className = "" }: { className?: string }) {
   return (
@@ -163,7 +156,7 @@ function MobileBrandVisual() {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { error, message, next } = await searchParams;
-  const nextPath = getNextPath(next);
+  const nextPath = sanitizeAuthReturnPath(next);
 
   return (
     <main className="min-h-dvh overflow-x-hidden bg-[linear-gradient(135deg,#fffaf5_0%,#ffffff_48%,#eef8f6_100%)] text-text-primary">

@@ -4,6 +4,7 @@ import {
   getCurrentBusinessContext,
   isSalonManageContext,
 } from "@/lib/current-context";
+import { getCustomerVisitQueueForSalonOrEmpty } from "@/lib/customer-visits";
 import { requirePermission } from "@/lib/permissions";
 import {
   getCurrentSalonPosSettings,
@@ -102,6 +103,7 @@ export async function getCurrentSalonPosDeskData() {
       services: [],
       staff: [],
       today: getTodayDate(),
+      waitingVisits: [],
     };
   }
 
@@ -120,6 +122,7 @@ export async function getCurrentSalonPosDeskData() {
     customersResult,
     servicesResult,
     staffResult,
+    waitingVisits,
     workdaysResult,
     turnsResult,
   ] = await Promise.all([
@@ -147,6 +150,11 @@ export async function getCurrentSalonPosDeskData() {
         .eq("pos_enabled", true)
         .order("display_name", { ascending: true })
         .returns<Array<Omit<PosDeskStaff, "today_status" | "turns">>>(),
+      getCustomerVisitQueueForSalonOrEmpty({
+        limit: 25,
+        salonId: salon.id,
+        supabase,
+      }),
       loadPosDeskWorkdays(supabase, {
         salonId: salon.id,
         workDate: today,
@@ -266,5 +274,6 @@ export async function getCurrentSalonPosDeskData() {
     staff,
     today,
     totalsPreview: calculateTicketTotals({ items: [] }),
+    waitingVisits,
   };
 }

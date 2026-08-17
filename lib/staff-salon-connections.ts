@@ -576,32 +576,48 @@ async function createUnconnectedStaffForInvite(
   return data;
 }
 
-async function loadInviteAccount(
+async function resolveExistingInviteAccount(
   auth: StaffConnectionAuthContext,
-  accountUserId: string,
+  input: Extract<CreateSalonStaffInviteInput, { mode: "existing_account" }>,
 ) {
-  const { data, error } = await auth.supabase
-    .from("users")
-    .select(STAFF_CONNECTION_ACCOUNT_SELECT)
-    .eq("id", accountUserId)
-    .maybeSingle<StaffConnectionAccount>();
+  const contact = requireStaffConnectionContact(input);
+  const { data, error } = await auth.supabase.rpc(
+    "search_staff_connection_account_exact",
+    {
+      p_email: contact.email,
+      p_phone: contact.phone,
+      target_account_id: auth.Account.id,
+      target_salon_id: auth.salon.id,
+    },
+  );
 
   if (error) {
     throw new StaffSalonConnectionError("INVALID_INPUT", error.message);
   }
 
-  if (!data) {
-    throw new StaffSalonConnectionError("ACCOUNT_NOT_FOUND", "Account was not found.");
-  }
+  const rows = Array.isArray(data) ? (data as AccountSearchRpcRow[]) : [];
+  const result = mapSearchRow(rows[0] ?? null);
 
-  if (data.status !== "active") {
+  if (result.status === "ambiguous") {
     throw new StaffSalonConnectionError(
-      "ACCOUNT_NOT_INVITABLE",
-      "This account cannot receive staff invitations.",
+      "AMBIGUOUS_ACCOUNT_SEARCH",
+      "More than one account matched. Refine the email or phone.",
     );
   }
 
-  return data;
+  if (
+    result.status !== "found" ||
+    result.account.id !== input.account_user_id
+  ) {
+    throw new StaffSalonConnectionError("ACCOUNT_NOT_FOUND", "Account was not found.");
+  }
+
+  return {
+    display_name: result.account.display_name,
+    email: contact.email,
+    id: result.account.id,
+    phone: contact.phone,
+  };
 }
 
 async function assertAccountNotConnectedToSalon(
@@ -814,15 +830,11 @@ async function createExistingAccountInvite(
   auth: StaffConnectionAuthContext,
   input: Extract<CreateSalonStaffInviteInput, { mode: "existing_account" }>,
 ) {
-  const account = await loadInviteAccount(auth, input.account_user_id);
+  const account = await resolveExistingInviteAccount(auth, input);
   await assertAccountNotConnectedToSalon(auth, account.id);
 
-  const targetEmail =
-    normalizeStaffConnectionEmail(input.email) ??
-    safeNormalizeStoredEmail(account.email);
-  const targetPhone =
-    normalizeStaffConnectionPhone(input.phone) ??
-    safeNormalizeStoredPhone(account.phone);
+  const targetEmail = account.email;
+  const targetPhone = account.phone;
   const staff = input.staff_id
     ? await loadStaffForInvite(auth, input.staff_id)
     : await createUnconnectedStaffForInvite(auth, {

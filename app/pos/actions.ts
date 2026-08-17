@@ -12,6 +12,13 @@ import {
   issueCustomerClaimTokenForTicket,
   type CustomerClaimOffer,
 } from "@/lib/customer-identity-claims";
+import {
+  cancelCustomerVisit,
+  completeCustomerVisitForTicket,
+  resolveCustomerDisplaySubmission,
+  selectCustomerVisitForLiveDraft,
+  updateCustomerVisitRequestedServices,
+} from "@/lib/customer-visits";
 import { requirePermission } from "@/lib/permissions";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import { getTurnType, parsePosAmountInput } from "@/lib/pos-desk-amounts";
@@ -30,6 +37,11 @@ import {
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
+import type {
+  CustomerDisplayVisit,
+  CustomerVisitRequestedService,
+  CustomerVisitStatus,
+} from "@/types/customer-visit";
 import type {
   PosDeskCustomer,
   PosDisplayChannelView,
@@ -73,9 +85,42 @@ export type CustomerDisplayTipOption = {
   percentage: number;
 };
 
+export type CustomerDisplayPhoneResult =
+  | {
+      mode: "check_in";
+      state: "already_checked_in" | "checked_in";
+      visit: CustomerDisplayVisit;
+    }
+  | {
+      mode: "checkout";
+      snapshot: PosLiveDraftView;
+      visit: CustomerDisplayVisit | null;
+    };
+
+type CustomerDisplayPhoneActionResult =
+  | { data: CustomerDisplayPhoneResult; ok: true }
+  | {
+      code?: string;
+      error: string;
+      mode?: "check_in" | "checkout";
+      ok: false;
+    };
+
+type WaitingVisitActionResult =
+  | {
+      data: {
+        snapshot?: PosLiveDraftView;
+        status?: CustomerVisitStatus | null;
+        visit?: CustomerDisplayVisit | null;
+        visitId?: string | null;
+      };
+      ok: true;
+    }
+  | { error: string; ok: false };
+
 const CUSTOMER_DISPLAY_COMPLETED_RESET_DELAY_MS = 30 * 1000;
 const LIVE_DRAFT_SELECT =
-  "id, salon_id, token, customer, staff_lines, selected_staff_id, tip, subtotal, discount, tax, total_before_tip, total, status, version, customer_version, receipt_version, completed_at, reset_at, last_customer_action_id, last_tip_action_id, updated_at";
+  "id, salon_id, token, customer, staff_lines, selected_staff_id, tip, subtotal, discount, tax, total_before_tip, total, status, version, customer_version, receipt_version, completed_at, reset_at, last_customer_action_id, last_tip_action_id, customer_handoff_started_at, updated_at";
 
 const SESSION_SELECT = `
   id,
@@ -95,6 +140,14 @@ const SESSION_SELECT = `
   created_at,
   updated_at
 `;
+
+async function broadcastWaitingChangeByLiveDraftToken(token: string) {
+  const result = await getPosLiveDraft(token);
+
+  if (result.ok && result.data?.salon_id) {
+    await broadcastPosStaffChange(result.data.salon_id, "waiting");
+  }
+}
 
 const SESSION_LINE_SELECT = `
   id,
@@ -153,6 +206,7 @@ type RawDisplayChannel = {
 type RawLiveDraft = {
   completed_at: string | null;
   customer: PosLiveDraftCustomer | null;
+  customer_handoff_started_at?: string | null;
   customer_version: number;
   discount: number;
   id: string;
@@ -254,6 +308,69 @@ function normalizeLiveDraftStaffLines(
     .filter((line) => Boolean(line.staffId));
 }
 
+function normalizeRequestedService(
+  value: unknown,
+): CustomerVisitRequestedService | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const payload = value as Record<string, unknown>;
+  const id = typeof payload.id === "string" ? payload.id : "";
+  const name = typeof payload.name === "string" ? payload.name : "";
+
+  if (!id || !name) {
+    return null;
+  }
+
+  const basePrice = Number(payload.basePrice ?? payload.base_price ?? 0);
+  const durationMinutes = Number(
+    payload.durationMinutes ?? payload.duration_minutes ?? 0,
+  );
+  const sortOrder = Number(payload.sortOrder ?? payload.sort_order ?? 1);
+
+  return {
+    basePrice: Number.isFinite(basePrice) ? basePrice : 0,
+    category: typeof payload.category === "string" ? payload.category : null,
+    durationMinutes: Number.isFinite(durationMinutes) ? durationMinutes : 0,
+    id,
+    name,
+    sortOrder: Math.max(
+      1,
+      Math.round(Number.isFinite(sortOrder) ? sortOrder : 1),
+    ),
+  };
+}
+
+function normalizeRequestedServices(
+  value: unknown,
+): CustomerVisitRequestedService[] {
+  return Array.isArray(value)
+    ? value
+        .map(normalizeRequestedService)
+        .filter(
+          (service): service is CustomerVisitRequestedService =>
+            Boolean(service),
+        )
+    : [];
+}
+
+function normalizeLiveDraftCustomer(
+  customer: PosLiveDraftCustomer | null,
+): PosLiveDraftCustomer | null {
+  if (!customer) {
+    return null;
+  }
+
+  return {
+    id: customer.id ?? null,
+    name: customer.name,
+    phone: customer.phone ?? null,
+    requestedServices: normalizeRequestedServices(customer.requestedServices),
+    visitId: customer.visitId ?? null,
+  };
+}
+
 function toLiveDraftView(raw: RawLiveDraft): PosLiveDraftView {
   const tip = Number(raw.tip ?? 0);
   const total = Number(raw.total ?? 0);
@@ -263,7 +380,8 @@ function toLiveDraftView(raw: RawLiveDraft): PosLiveDraftView {
 
   return {
     completed_at: raw.completed_at ?? null,
-    customer: raw.customer,
+    customer: normalizeLiveDraftCustomer(raw.customer),
+    customer_handoff_started_at: raw.customer_handoff_started_at ?? null,
     customer_version: Number(raw.customer_version ?? 0),
     discount: Number(raw.discount ?? 0),
     id: raw.id,
@@ -297,6 +415,18 @@ function getLiveDraftTipBase(liveDraft: PosLiveDraftView | null) {
   }
 
   return Math.max(0, liveDraft.total - liveDraft.tip);
+}
+
+function hasActiveLiveDraftHandoff(input: {
+  staffLines: PosLiveDraftReceiptLine[];
+  subtotal: number;
+  totalBeforeTip: number;
+}) {
+  return (
+    input.staffLines.some((line) => Number(line.amount) > 0) ||
+    Number(input.subtotal) > 0 ||
+    Number(input.totalBeforeTip) > 0
+  );
 }
 
 function getCustomerDisplayTipAmounts(input: {
@@ -334,6 +464,7 @@ async function resetExpiredLiveDraftForPos(input: {
     .update({
       completed_at: null,
       customer: null,
+      customer_handoff_started_at: null,
       discount: 0,
       last_customer_action_id: null,
       last_tip_action_id: null,
@@ -856,6 +987,7 @@ async function finalizeLiveDraftForPos(input: {
     .from("pos_live_drafts")
     .update({
       completed_at: completedAt.toISOString(),
+      customer_handoff_started_at: null,
       reset_at: resetAt.toISOString(),
       status: "closed",
       version: Number(existing.version) + 1,
@@ -1087,6 +1219,26 @@ async function createTicketFromSubmitInput(
       throw new Error(auditError.message);
     }
 
+    try {
+      const visitResult = await completeCustomerVisitForTicket({
+        customerId: customer.id,
+        preferredVisitId: cleanOptional(input.customerVisitId),
+        salonId: salon.id,
+        supabase,
+        ticketId: ticket.id,
+      });
+
+      if (visitResult.ok && visitResult.appointmentId) {
+        revalidatePath("/bookings");
+      }
+    } catch (visitError) {
+      console.error("Unable to complete customer visit after POS submit", {
+        error: visitError instanceof Error ? visitError.message : visitError,
+        salonId: salon.id,
+        ticketId: ticket.id,
+      });
+    }
+
     if (sessionId) {
       const { error: sessionError } = await supabase
         .from("pos_desk_sessions")
@@ -1308,6 +1460,132 @@ export async function getPosLiveDraft(
   }
 }
 
+export async function getCustomerDisplayServiceCatalog(
+  token: string,
+): Promise<CustomerVisitRequestedService[]> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    if (!supabase || !cleanOptional(token)) {
+      return [];
+    }
+
+    const { data, error } = await supabase.rpc(
+      "get_customer_display_service_catalog",
+      {
+        p_token: token,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return normalizeRequestedServices(data);
+  } catch (error) {
+    console.error("Unable to load customer display service catalog", {
+      error: error instanceof Error ? error.message : error,
+    });
+    return [];
+  }
+}
+
+export async function saveCustomerDisplayRequestedServices(input: {
+  serviceIds: string[];
+  token: string;
+  visitId: string;
+}): Promise<CustomerDisplayPhoneActionResult> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    if (!supabase) {
+      throw new Error("Supabase environment variables are missing.");
+    }
+
+    const result = await updateCustomerVisitRequestedServices({
+      serviceIds: input.serviceIds,
+      supabase,
+      token: input.token,
+      visitId: input.visitId,
+    });
+
+    if (!result.ok) {
+      return {
+        code: result.code,
+        error: result.message,
+        mode: result.mode,
+        ok: false,
+      };
+    }
+
+    if (!result.visit) {
+      throw new Error("Unable to load your check-in.");
+    }
+
+    revalidatePath("/pos");
+    revalidatePath("/pos/portable");
+    revalidatePath("/staff/today");
+    await broadcastWaitingChangeByLiveDraftToken(input.token);
+
+    return {
+      data: {
+        mode: "check_in",
+        state: result.state ?? "checked_in",
+        visit: result.visit,
+      },
+      ok: true,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unable to save service request. Please ask the front desk.",
+      ok: false,
+    };
+  }
+}
+
+export async function resetCustomerDisplayCompletedDraft(input: {
+  token: string;
+}): Promise<ActionResult<PosLiveDraftView | null>> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    if (!supabase) {
+      throw new Error("Supabase environment variables are missing.");
+    }
+
+    const { data, error } = await supabase.rpc(
+      "reset_completed_pos_live_draft",
+      {
+        p_token: input.token,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      return { data: null, ok: true };
+    }
+
+    const snapshot = toLiveDraftView(data as RawLiveDraft);
+    await broadcastPosLiveDraftSnapshot(snapshot, "customer_display");
+
+    return { data: snapshot, ok: true };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unable to reset customer display.",
+      ok: false,
+    };
+  }
+}
+
 export async function touchCustomerDisplayLiveDraftActivity(input: {
   resetSeconds?: number;
   token: string;
@@ -1381,18 +1659,27 @@ export async function updatePosActiveDraft(input: {
       Number.isFinite(input.totalBeforeTip) && Number(input.totalBeforeTip) >= 0
         ? roundMoney(Number(input.totalBeforeTip))
         : roundMoney(Math.max(0, input.total - input.tip));
+    const normalizedStaffLines = normalizeLiveDraftStaffLines(input.staffLines);
+    const handoffStartedAt = hasActiveLiveDraftHandoff({
+      staffLines: normalizedStaffLines,
+      subtotal: roundMoney(input.subtotal),
+      totalBeforeTip,
+    })
+      ? new Date().toISOString()
+      : null;
     const { data, error } = await supabase
       .from("pos_live_drafts")
       .update({
         completed_at: null,
         customer: wasCompleted ? null : undefined,
+        customer_handoff_started_at: handoffStartedAt,
         discount: roundMoney(input.discount ?? 0),
         last_customer_action_id: wasCompleted ? null : undefined,
         last_tip_action_id: wasCompleted ? null : undefined,
         receipt_version: Number(existing.receipt_version) + 1,
         reset_at: null,
         selected_staff_id: input.selectedStaffId,
-        staff_lines: normalizeLiveDraftStaffLines(input.staffLines),
+        staff_lines: normalizedStaffLines,
         status: "draft",
         subtotal: roundMoney(input.subtotal),
         tax: roundMoney(input.tax ?? 0),
@@ -1700,6 +1987,176 @@ export async function getCustomerDisplayLiveDraftTipOptions(input: {
     return {
       error:
         error instanceof Error ? error.message : "Unable to load tip options.",
+      ok: false,
+    };
+  }
+}
+
+export async function submitCustomerDisplayPhone(input: {
+  name?: string | null;
+  phone: string;
+  requestId?: string | null;
+  token: string;
+}): Promise<CustomerDisplayPhoneActionResult> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    if (!supabase) {
+      throw new Error("Supabase environment variables are missing.");
+    }
+
+    const result = await resolveCustomerDisplaySubmission({
+      customerName: cleanOptional(input.name),
+      phone: input.phone,
+      requestId: cleanOptional(input.requestId),
+      supabase,
+      token: input.token,
+    });
+
+    if (!result.ok) {
+      return {
+        code: result.code,
+        error: result.message,
+        mode: result.mode,
+        ok: false,
+      };
+    }
+
+    if (result.mode === "checkout") {
+      if (!result.snapshot) {
+        throw new Error("This checkout session is no longer active.");
+      }
+
+      const snapshot = toLiveDraftView(result.snapshot as RawLiveDraft);
+      await broadcastPosLiveDraftSnapshot(snapshot, "customer_display");
+      await broadcastPosStaffChange(snapshot.salon_id, "waiting");
+      revalidatePath("/pos");
+      revalidatePath("/pos/portable");
+      revalidatePath("/staff/today");
+
+      return {
+        data: {
+          mode: "checkout",
+          snapshot,
+          visit: result.visit,
+        },
+        ok: true,
+      };
+    }
+
+    if (!result.visit) {
+      throw new Error("Unable to load your check-in.");
+    }
+
+    revalidatePath("/pos");
+    revalidatePath("/pos/portable");
+    revalidatePath("/staff/today");
+    revalidatePath("/bookings");
+    await broadcastWaitingChangeByLiveDraftToken(input.token);
+
+    return {
+      data: {
+        mode: "check_in",
+        state: result.state ?? "checked_in",
+        visit: result.visit,
+      },
+      ok: true,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unable to continue. Please ask the front desk.",
+      ok: false,
+    };
+  }
+}
+
+export async function selectWaitingVisitForPos(input: {
+  token: string;
+  visitId: string;
+}): Promise<WaitingVisitActionResult> {
+  try {
+    const { salon, supabase } = await requirePosDeskMutationContext();
+    const token = cleanOptional(input.token);
+    const visitId = cleanOptional(input.visitId);
+
+    if (!token || !visitId) {
+      throw new Error("Choose a waiting client first.");
+    }
+
+    const result = await selectCustomerVisitForLiveDraft({
+      supabase,
+      token,
+      visitId,
+    });
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    const snapshot = toLiveDraftView(result.snapshot as RawLiveDraft);
+    await broadcastPosLiveDraftSnapshot(snapshot, "pos");
+    await broadcastPosStaffChange(salon.id, "waiting");
+
+    revalidatePath("/pos");
+    revalidatePath("/pos/portable");
+    revalidatePath("/staff/today");
+
+    return {
+      data: {
+        snapshot,
+        visit: result.visit,
+      },
+      ok: true,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Unable to select waiting client.",
+      ok: false,
+    };
+  }
+}
+
+export async function cancelWaitingVisitForPos(input: {
+  visitId: string;
+}): Promise<WaitingVisitActionResult> {
+  try {
+    const { salon, supabase } = await requirePosDeskMutationContext();
+    const visitId = cleanOptional(input.visitId);
+
+    if (!visitId) {
+      throw new Error("Choose a waiting client first.");
+    }
+
+    const result = await cancelCustomerVisit({
+      reason: "Removed from POS waiting list.",
+      supabase,
+      visitId,
+    });
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    revalidatePath("/pos");
+    revalidatePath("/pos/portable");
+    revalidatePath("/staff/today");
+    await broadcastPosStaffChange(salon.id, "waiting");
+
+    return {
+      data: {
+        status: result.status,
+        visitId: result.visitId,
+      },
+      ok: true,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Unable to remove waiting client.",
       ok: false,
     };
   }
@@ -2410,6 +2867,26 @@ export async function submitSessionToTicket(
 
     if (auditError) {
       throw new Error(auditError.message);
+    }
+
+    try {
+      const visitResult = await completeCustomerVisitForTicket({
+        customerId: customer.id,
+        preferredVisitId: null,
+        salonId: salon.id,
+        supabase,
+        ticketId: ticket.id,
+      });
+
+      if (visitResult.ok && visitResult.appointmentId) {
+        revalidatePath("/bookings");
+      }
+    } catch (visitError) {
+      console.error("Unable to complete customer visit after session submit", {
+        error: visitError instanceof Error ? visitError.message : visitError,
+        salonId: salon.id,
+        ticketId: ticket.id,
+      });
     }
 
     const { error: sessionError } = await supabase

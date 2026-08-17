@@ -5,7 +5,9 @@ import {
   portableGetPosLiveDraft,
   portableSearchPosDeskCustomers,
   portableAdjustStaffTurn,
+  portableCancelWaitingVisitForPos,
   portableSubmitPosDeskReceipt,
+  portableSelectWaitingVisitForPos,
   portableUpdatePosActiveDraft,
   portableUpdatePosLiveDraftCustomer,
 } from "@/app/pos/portable/actions";
@@ -39,9 +41,11 @@ export default async function PortablePosPage() {
       <PosDeskClient
         actions={{
           adjustStaffTurn: portableAdjustStaffTurn,
+          cancelWaitingVisitForPos: portableCancelWaitingVisitForPos,
           createPosDeskCustomer: portableCreatePosDeskCustomer,
           getPosLiveDraft: portableGetPosLiveDraft,
           searchPosDeskCustomers: portableSearchPosDeskCustomers,
+          selectWaitingVisitForPos: portableSelectWaitingVisitForPos,
           submitPosDeskReceipt: portableSubmitPosDeskReceipt,
           updatePosActiveDraft: portableUpdatePosActiveDraft,
           updatePosLiveDraftCustomer: portableUpdatePosLiveDraftCustomer,
@@ -55,6 +59,7 @@ export default async function PortablePosPage() {
         staff={data.staff}
         surface="portable"
         today={data.today}
+        waitingVisits={data.waitingVisits}
       />
     </section>
   );

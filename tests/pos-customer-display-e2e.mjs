@@ -13,11 +13,137 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { chromium } from "playwright-core";
 
+function getPosWorkDate(timeZone = "America/Chicago") {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone,
+    year: "numeric",
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+
+  if (values.year && values.month && values.day) {
+    return `${values.year}-${values.month}-${values.day}`;
+  }
+
+  return new Date().toISOString().slice(0, 10);
+}
+
 const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
 const ACCOUNT_ID = "55555555-5555-4555-8555-555555555555";
 const SALON_ID = "66666666-6666-4666-8666-666666666666";
 const STAFF_ID = "77777777-7777-4777-8777-777777777777";
+const POS_WORK_DATE = getPosWorkDate();
+const STAFF_TONE_FIXTURE = [
+  {
+    firstName: "Macy",
+    id: "77777777-7777-4777-8777-777777777701",
+    lastName: "Eight",
+    name: "Macy Eight",
+    queueTurns: 8,
+  },
+  {
+    firstName: "Tracy",
+    id: "77777777-7777-4777-8777-777777777702",
+    lastName: "Ten",
+    name: "Tracy Ten",
+    queueTurns: 10,
+  },
+  {
+    firstName: "Lucy",
+    id: "77777777-7777-4777-8777-777777777703",
+    lastName: "Eleven",
+    name: "Lucy Eleven",
+    queueTurns: 11,
+  },
+  {
+    firstName: "David",
+    id: "77777777-7777-4777-8777-777777777704",
+    lastName: "Twelve",
+    name: "David Twelve",
+    queueTurns: 12,
+  },
+];
 const SERVICE_ID = "88888888-8888-4888-8888-888888888888";
+const EXTRA_SERVICES = [
+  {
+    category: "Nails",
+    duration: 50,
+    id: "88888888-8888-4888-8888-888888888001",
+    name: "Full Set",
+    price: 65,
+  },
+  {
+    category: "Nails",
+    duration: 35,
+    id: "88888888-8888-4888-8888-888888888002",
+    name: "Pedicure",
+    price: 45,
+  },
+  {
+    category: "Nails",
+    duration: 30,
+    id: "88888888-8888-4888-8888-888888888003",
+    name: "Gel Polish",
+    price: 28,
+  },
+  {
+    category: "Nails",
+    duration: 45,
+    id: "88888888-8888-4888-8888-888888888004",
+    name: "Dip Powder",
+    price: 55,
+  },
+  {
+    category: "Nails",
+    duration: 15,
+    id: "88888888-8888-4888-8888-888888888005",
+    name: "French Tip",
+    price: 12,
+  },
+  {
+    category: "Nails",
+    duration: 20,
+    id: "88888888-8888-4888-8888-888888888006",
+    name: "Nail Art",
+    price: 18,
+  },
+  {
+    category: "Nails",
+    duration: 40,
+    id: "88888888-8888-4888-8888-888888888007",
+    name: "Acrylic Fill",
+    price: 42,
+  },
+  {
+    category: "Nails",
+    duration: 10,
+    id: "88888888-8888-4888-8888-888888888008",
+    name: "Repair",
+    price: 10,
+  },
+  {
+    category: "Nails",
+    duration: 15,
+    id: "88888888-8888-4888-8888-888888888009",
+    name: "Chrome",
+    price: 20,
+  },
+  {
+    category: "Spa",
+    duration: 30,
+    id: "88888888-8888-4888-8888-88888888800a",
+    name: "Deluxe Spa",
+    price: 58,
+  },
+  {
+    category: "Care",
+    duration: 15,
+    id: "88888888-8888-4888-8888-88888888800b",
+    name: "Cuticle Care",
+    price: 16,
+  },
+];
 const CUSTOMER_ID = "99999999-9999-4999-8999-999999999999";
 const ACCESS_KEY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const ACCESS_ID = "codex-browser-e2e-pos";
@@ -42,6 +168,11 @@ const REQUIRED_DISPLAY_VIEWPORTS = [
   { height: 820, width: 1180 },
   { height: 768, width: 1024 },
 ];
+const WAITING_DRAWER_QA_VIEWPORTS = [
+  { height: 900, width: 1440 },
+  { height: 768, width: 1024 },
+  { height: 844, width: 390 },
+];
 const RECEIPT_VISIBLE_TARGETS = {
   "1024x768": 5,
   "1180x820": 6,
@@ -59,7 +190,7 @@ const POS_VISIBLE_TARGETS = {
 const PORTABLE_NAV_POSITION_STORAGE_KEY = "kingpos-portable-nav-position";
 const PORTABLE_NAV_CHILD_GAP = 14;
 const PORTABLE_NAV_MAIN_GAP = 10;
-const PORTABLE_NAV_OPEN_SETTLE_MS = 460;
+const PORTABLE_NAV_OPEN_SETTLE_MS = 1400;
 
 function queryLinkedDatabase(sql) {
   const tempDir = mkdtempSync(join(tmpdir(), "kingpos-browser-e2e-"));
@@ -201,6 +332,7 @@ function updateLiveDraftReceipt(liveDraftId, lines) {
       tip = ${totals.tip},
       total_before_tip = ${totals.totalBeforeTip},
       total = ${totals.total},
+      customer_handoff_started_at = now(),
       selected_staff_id = ${sqlString(STAFF_ID)},
       status = 'draft',
       completed_at = null,
@@ -225,7 +357,9 @@ function createIsolatedLiveDraft() {
       tip,
       total_before_tip,
       total,
-      status
+      status,
+      created_at,
+      updated_at
     )
     values (
       ${sqlString(OTHER_LIVE_DRAFT_ID)}::uuid,
@@ -238,8 +372,78 @@ function createIsolatedLiveDraft() {
       0,
       0,
       0,
-      'draft'
+      'draft',
+      now() - interval '1 day',
+      now() - interval '1 day'
     );
+  `);
+}
+
+function createWaitingOverflowFixture() {
+  const rows = Array.from({ length: 18 }, (_, index) => {
+    const suffix = String(index + 100).padStart(12, "0");
+    const customerId = `99999999-9999-4999-8999-${suffix}`;
+    const visitId = `bbbbbbbb-bbbb-4bbb-8bbb-${suffix}`;
+    const service = EXTRA_SERVICES[index % EXTRA_SERVICES.length];
+
+    return {
+      customerId,
+      name: `Overflow Guest ${String(index + 1).padStart(2, "0")} With Very Long Check In Name`,
+      phone: `555019${String(index).padStart(4, "0")}`,
+      serviceId: service.id,
+      visitId,
+    };
+  });
+
+  queryLinkedDatabase(`
+    insert into public.customers (id, location_id, name, phone, status, source)
+    values
+      ${rows
+        .map(
+          (row) => `(
+            ${sqlString(row.customerId)}::uuid,
+            ${sqlString(SALON_ID)}::uuid,
+            ${sqlString(row.name)},
+            ${sqlString(row.phone)},
+            'active',
+            'manual'
+          )`,
+        )
+        .join(",\n      ")};
+
+    insert into public.customer_visits (
+      id,
+      salon_id,
+      customer_id,
+      source,
+      status,
+      checked_in_at
+    )
+    values
+      ${rows
+        .map(
+          (row, index) => `(
+            ${sqlString(row.visitId)}::uuid,
+            ${sqlString(SALON_ID)}::uuid,
+            ${sqlString(row.customerId)}::uuid,
+            'walk_in',
+            'waiting',
+            now() + interval '${index + 1} minutes'
+          )`,
+        )
+        .join(",\n      ")};
+
+    insert into public.customer_visit_services (visit_id, service_id, sort_order)
+    values
+      ${rows
+        .map(
+          (row) => `(
+            ${sqlString(row.visitId)}::uuid,
+            ${sqlString(row.serviceId)}::uuid,
+            1
+          )`,
+        )
+        .join(",\n      ")};
   `);
 }
 
@@ -254,6 +458,7 @@ function cleanupFixture() {
     delete from public.pos_ticket_item_turn_parts where salon_id = ${sqlString(SALON_ID)}::uuid;
     delete from public.pos_ticket_items where salon_id = ${sqlString(SALON_ID)}::uuid;
     delete from public.pos_tickets where salon_id = ${sqlString(SALON_ID)}::uuid;
+    delete from public.customer_visits where salon_id = ${sqlString(SALON_ID)}::uuid;
     delete from public.customers where location_id = ${sqlString(SALON_ID)}::uuid;
     delete from public.pos_live_drafts where salon_id = ${sqlString(SALON_ID)}::uuid;
     delete from public.pos_portable_access_keys where salon_id = ${sqlString(SALON_ID)}::uuid;
@@ -302,6 +507,55 @@ function setupFixture() {
       true
     );
 
+    insert into public.staff (
+      id,
+      salon_id,
+      display_name,
+      first_name,
+      last_name,
+      job_title,
+      is_active,
+      pos_enabled
+    )
+    values
+      ${STAFF_TONE_FIXTURE.map(
+        (staff) => `(
+          ${sqlString(staff.id)}::uuid,
+          ${sqlString(SALON_ID)}::uuid,
+          ${sqlString(staff.name)},
+          ${sqlString(staff.firstName)},
+          ${sqlString(staff.lastName)},
+          'Nail tech',
+          true,
+          true
+        )`,
+      ).join(",\n      ")};
+
+    insert into public.staff_workdays (
+      salon_id,
+      staff_id,
+      work_date,
+      status,
+      queue_turn_count
+    )
+    values
+      (
+        ${sqlString(SALON_ID)}::uuid,
+        ${sqlString(STAFF_ID)}::uuid,
+        ${sqlString(POS_WORK_DATE)}::date,
+        'not_checked_in',
+        8
+      ),
+      ${STAFF_TONE_FIXTURE.map(
+        (staff) => `(
+          ${sqlString(SALON_ID)}::uuid,
+          ${sqlString(staff.id)}::uuid,
+          ${sqlString(POS_WORK_DATE)}::date,
+          'not_checked_in',
+          ${staff.queueTurns}
+        )`,
+      ).join(",\n      ")};
+
     insert into public.services (
       id,
       salon_id,
@@ -309,7 +563,8 @@ function setupFixture() {
       category,
       base_price,
       duration_minutes,
-      is_active
+      is_active,
+      online_booking_enabled
     )
     values (
       ${sqlString(SERVICE_ID)}::uuid,
@@ -318,8 +573,33 @@ function setupFixture() {
       'Nails',
       50,
       30,
+      true,
       true
     );
+
+    insert into public.services (
+      id,
+      salon_id,
+      name,
+      category,
+      base_price,
+      duration_minutes,
+      is_active,
+      online_booking_enabled
+    )
+    values
+      ${EXTRA_SERVICES.map(
+        (service) => `(
+          ${sqlString(service.id)}::uuid,
+          ${sqlString(SALON_ID)}::uuid,
+          ${sqlString(service.name)},
+          ${sqlString(service.category)},
+          ${service.price},
+          ${service.duration},
+          true,
+          true
+        )`,
+      ).join(",\n      ")};
 
     insert into public.customers (id, location_id, name, phone, status, source)
     values (
@@ -495,26 +775,6 @@ async function assertDefaultReceiptBackground(page) {
   );
 }
 
-async function assertDefaultPromoSlide(page) {
-  const activeSlide = page.locator('[data-customer-display-ad-image="active"]');
-
-  await activeSlide.waitFor({ timeout: 12000 });
-
-  const src = await activeSlide.getAttribute("src");
-  const path = src ? new URL(src, BASE_URL).pathname : "";
-
-  assert.equal(
-    path,
-    DEFAULT_PROMO_SLIDE_URL,
-    "Attract slideshow should use the default Reylumi promo image.",
-  );
-  assert.notEqual(
-    path,
-    DEFAULT_RECEIPT_BACKGROUND_URL,
-    "Attract slideshow should not use the receipt background image.",
-  );
-}
-
 async function assertCompletedScreenUsesDarkText(page) {
   const textMetrics = await page
     .locator("[data-customer-display-completed] h1")
@@ -552,7 +812,7 @@ async function assertIsolatedDisplayDoesNotReceiveDraft(context) {
     await isolatedDisplay.getByText("Codex E2E Salon").first().waitFor({
       timeout: 12000,
     });
-    await isolatedDisplay.getByText("Waiting for services").waitFor({
+    await isolatedDisplay.getByText("Enter your phone number").waitFor({
       timeout: 12000,
     });
     const bodyText = await isolatedDisplay.locator("body").innerText();
@@ -704,6 +964,520 @@ async function waitForPosReceiptLines(page, expectedCount) {
   );
 }
 
+async function waitForPosToast(page, expectations) {
+  const toast = page.locator("[data-pos-toast]");
+
+  await toast.waitFor({ timeout: 12000 });
+
+  if (expectations.tone) {
+    assert.equal(
+      await toast.getAttribute("data-pos-toast-tone"),
+      expectations.tone,
+      `POS toast should use ${expectations.tone} tone.`,
+    );
+  }
+
+  const text = await toast.innerText();
+
+  if (expectations.title) {
+    assert.match(text, expectations.title, "POS toast title should match.");
+  }
+
+  if (expectations.detail) {
+    assert.match(text, expectations.detail, "POS toast detail should match.");
+  }
+
+  if (expectations.amount) {
+    const amount = toast.locator("[data-pos-toast-amount]");
+    await amount.waitFor({ timeout: 12000 });
+    assert.match(
+      await amount.innerText(),
+      expectations.amount,
+      "POS toast amount should match.",
+    );
+  }
+
+  return toast;
+}
+
+async function assertPortablePosPolishBase(page) {
+  await page.locator("[data-pos-current-input]").waitFor({ timeout: 12000 });
+  await page.locator("[data-pos-service-tiles]").waitFor({ timeout: 12000 });
+  await page
+    .locator("[data-pos-service-tile]", { hasText: "Codex Manicure" })
+    .waitFor({ timeout: 12000 });
+  const visibleTileCount = await page.locator("[data-pos-service-tile]").count();
+
+  assert.ok(
+    visibleTileCount > 1 && visibleTileCount <= 10,
+    `POS should show a compact capped service set; got ${visibleTileCount}.`,
+  );
+  const defaultTileMetrics = await page
+    .locator("[data-pos-service-tile]", { hasText: "Full Set" })
+    .first()
+    .evaluate((tile) => {
+      const style = window.getComputedStyle(tile);
+
+      return {
+        backgroundImage: style.backgroundImage,
+        borderTopWidth: style.borderTopWidth,
+        boxShadow: style.boxShadow,
+        tagName: tile.tagName,
+      };
+    });
+
+  assert.equal(defaultTileMetrics.tagName, "BUTTON");
+  const serviceTileLayout = await page.evaluate(() => {
+    const workspace = document.querySelector("[data-pos-service-workspace]");
+    const tiles = Array.from(document.querySelectorAll("[data-pos-service-tile]"));
+    const rects = tiles.map((tile) => tile.getBoundingClientRect());
+    const firstTop = rects[0]?.top ?? 0;
+
+    return {
+      firstRowCount: rects.filter((rect) => Math.abs(rect.top - firstTop) <= 2)
+        .length,
+      maxHeight: Math.max(...rects.map((rect) => rect.height)),
+      maxWidth: Math.max(...rects.map((rect) => rect.width)),
+      minHeight: Math.min(...rects.map((rect) => rect.height)),
+      texts: tiles.map((tile) => tile.textContent?.trim() ?? ""),
+      workspaceText: workspace?.textContent ?? "",
+    };
+  });
+
+  assert.ok(
+    serviceTileLayout.firstRowCount >= 3,
+    `POS service buttons should fit several per row; got ${serviceTileLayout.firstRowCount}.`,
+  );
+  assert.ok(
+    serviceTileLayout.maxWidth <= 130,
+    `POS service buttons should stay compact; max width ${serviceTileLayout.maxWidth}.`,
+  );
+  assert.ok(
+    serviceTileLayout.minHeight >= 44 && serviceTileLayout.maxHeight <= 64,
+    `POS service buttons should be touchable but compact; height range ${serviceTileLayout.minHeight}-${serviceTileLayout.maxHeight}.`,
+  );
+  assert.equal(
+    serviceTileLayout.texts.every((text) => text.length > 0 && !text.includes("\n")),
+    true,
+    "POS service quick-pick buttons should show only the title.",
+  );
+  assert.equal(
+    serviceTileLayout.workspaceText.includes("Manual amount"),
+    false,
+    "POS Services workspace should not show Manual amount helper text.",
+  );
+  assert.notEqual(
+    defaultTileMetrics.backgroundImage,
+    "none",
+    "Default POS service tiles should have a visible surface treatment.",
+  );
+  assert.notEqual(
+    defaultTileMetrics.borderTopWidth,
+    "0px",
+    "Default POS service tiles should have a visible border.",
+  );
+  assert.notEqual(
+    defaultTileMetrics.boxShadow,
+    "none",
+    "Default POS service tiles should have subtle depth.",
+  );
+  assert.equal(
+    await page.getByText(/No catalog/).count(),
+    0,
+    "Catalog-present POS should not show No catalog clutter.",
+  );
+
+  assert.equal(
+    await page.locator("[data-pos-amount-summary]").count(),
+    0,
+    "Right sidebar should not show the old amount summary card.",
+  );
+  assert.equal(
+    await page.locator("[data-pos-entered-amount-row]").count(),
+    0,
+    "Right sidebar should not duplicate entered amounts.",
+  );
+  assert.equal(
+    await page.locator("[data-pos-amount-total]").count(),
+    0,
+    "Right sidebar should not duplicate the receipt total.",
+  );
+  const moreButton = page.locator("[data-pos-service-more]");
+  await moreButton.waitFor({
+    timeout: 12000,
+  });
+  await moreButton.click();
+  const servicePicker = page.locator("[data-pos-service-picker]");
+  await servicePicker.getByRole("heading", { name: "Select Service" }).waitFor({
+    timeout: 12000,
+  });
+  await servicePicker.getByRole("button", { name: /Deluxe Spa/ }).waitFor({
+    timeout: 12000,
+  });
+  await servicePicker.getByRole("button", { name: "Custom amount" }).waitFor({
+    timeout: 12000,
+  });
+  assert.equal(
+    await servicePicker.getByText(/No catalog/).count(),
+    0,
+    "Service catalog modal should use clean manual-entry wording.",
+  );
+  await servicePicker.getByRole("button", { name: "Close" }).click();
+
+  await page.getByRole("button", { name: "Submit" }).click();
+  await waitForPosToast(page, {
+    detail: /Add at least one service amount before submit\./,
+    title: /POS action needs attention/,
+    tone: "error",
+  });
+  await page.locator("[data-pos-toast]").waitFor({
+    state: "detached",
+    timeout: 7000,
+  });
+}
+
+async function assertStaffToneBoardVisuals(page) {
+  await page.locator("[data-pos-staff-turn-board]").waitFor({ timeout: 12000 });
+  await page
+    .locator("[data-pos-staff-tone][data-pos-staff-large-turns='12']")
+    .waitFor({ timeout: 12000 });
+
+  const metrics = await page.evaluate(() => {
+    const cards = Array.from(
+      document.querySelectorAll("[data-pos-staff-tone]"),
+    ).map((card) => {
+      const style = window.getComputedStyle(card);
+
+      return {
+        ariaLabel: card.getAttribute("aria-label") ?? "",
+        color: style.color,
+        largeTurns: Number(card.getAttribute("data-pos-staff-large-turns")),
+        text: card.textContent ?? "",
+        title: card.getAttribute("title") ?? "",
+        tone: Number(card.getAttribute("data-pos-staff-tone")),
+      };
+    });
+
+    return { cards };
+  });
+  const cardsByTurns = new Map();
+
+  for (const card of metrics.cards) {
+    if (!cardsByTurns.has(card.largeTurns)) {
+      cardsByTurns.set(card.largeTurns, []);
+    }
+
+    cardsByTurns.get(card.largeTurns).push(card);
+  }
+
+  for (const turnCount of [8, 10, 11, 12]) {
+    assert.ok(
+      cardsByTurns.has(turnCount),
+      `Staff Turn Board should render a ${turnCount}-turn card.`,
+    );
+  }
+
+  const eightTones = new Set(
+    (cardsByTurns.get(8) ?? []).map((card) => card.tone),
+  );
+  assert.equal(eightTones.size, 1, "Equal 8-turn staff should share one tone.");
+  assert.ok(
+    cardsByTurns.get(8)[0].tone < cardsByTurns.get(10)[0].tone &&
+      cardsByTurns.get(10)[0].tone < cardsByTurns.get(11)[0].tone &&
+      cardsByTurns.get(11)[0].tone < cardsByTurns.get(12)[0].tone,
+    `Staff tones should progress smoothly upward; got ${JSON.stringify(
+      metrics.cards.map((card) => ({
+        largeTurns: card.largeTurns,
+        tone: card.tone,
+      })),
+    )}.`,
+  );
+  assert.equal(
+    metrics.cards.every((card) => !/(^|\s)S\s+\d/.test(card.text)),
+    true,
+    "Staff cards should not show an S prefix before small turns.",
+  );
+  assert.equal(
+    metrics.cards.every(
+      (card) =>
+        card.ariaLabel.includes("large turns") &&
+        card.ariaLabel.includes("small turns") &&
+        card.title.includes("large turns") &&
+        card.title.includes("small turns"),
+    ),
+    true,
+    "Staff cards should preserve accessible large/small turn semantics.",
+  );
+  assert.notEqual(
+    cardsByTurns.get(12)[0].color,
+    "rgb(255, 255, 255)",
+    "Highest tone should remain readable with dark text, not a harsh dark card.",
+  );
+}
+
+async function selectWaitingVisitFromPopover(page) {
+  const waitingButton = page.locator("[data-pos-waiting-launcher]");
+
+  await waitingButton.waitFor({ timeout: 12000 });
+  await waitingButton.click();
+
+  const drawer = page.locator("[data-pos-waiting-drawer]");
+  await drawer.waitFor({ timeout: 12000 });
+
+  const waitingBox = await waitingButton.boundingBox();
+  const drawerBox = await drawer.boundingBox();
+
+  assert.ok(waitingBox, "Waiting launcher should have a visible box.");
+  assert.ok(drawerBox, "Waiting drawer should have a visible box.");
+  assert.ok(
+    drawerBox.y >= waitingBox.y + waitingBox.height - 4 &&
+      drawerBox.y <= waitingBox.y + waitingBox.height + 24,
+    `Waiting drawer should open below the launcher; launcher ${JSON.stringify(
+      waitingBox,
+    )}, drawer ${JSON.stringify(drawerBox)}.`,
+  );
+  assert.ok(
+    Math.abs(drawerBox.x - waitingBox.x) <= 24 ||
+      Math.abs(drawerBox.x + drawerBox.width - (waitingBox.x + waitingBox.width)) <=
+        24,
+    `Waiting drawer should stay visually anchored to the launcher; launcher ${JSON.stringify(
+      waitingBox,
+    )}, drawer ${JSON.stringify(drawerBox)}.`,
+  );
+  assert.equal(
+    await drawer.getByRole("button", { exact: true, name: "Select" }).count(),
+    0,
+    "Waiting rows should not render a separate Select button.",
+  );
+  assert.equal(
+    await drawer.getByRole("button", { name: "Remove from waiting" }).count(),
+    0,
+    "Remove should stay in the overflow action until opened.",
+  );
+
+  const rowButton = drawer
+    .locator("[data-pos-waiting-row-select]", { hasText: "Display Walkin" })
+    .first();
+  await rowButton.waitFor({ timeout: 12000 });
+  await rowButton.click();
+  await drawer.waitFor({ state: "detached", timeout: 12000 });
+  await page.getByText("Display Walkin").first().waitFor({ timeout: 12000 });
+
+  const requestedTile = page
+    .locator("[data-pos-service-tile][data-pos-requested-service='true']", {
+      hasText: "Codex Manicure",
+    })
+    .first();
+  await requestedTile.waitFor({ timeout: 12000 });
+  assert.equal(
+    await requestedTile.getAttribute("aria-pressed"),
+    "true",
+    "Requested service tile should be selected after choosing the waiting row.",
+  );
+  await requestedTile.click();
+  assert.equal(
+    await page.locator("[data-pos-toast]").count(),
+    0,
+    "Selecting a waiting row or service tile should not show a POS toast.",
+  );
+}
+
+async function assertWaitingDrawerFitsViewport(page, viewport) {
+  await page.setViewportSize(viewport);
+
+  const waitingButton = page.locator("[data-pos-waiting-launcher]");
+  await waitingButton.waitFor({ timeout: 12000 });
+  await waitingButton.click();
+
+  const drawer = page.locator("[data-pos-waiting-drawer]");
+  await drawer.waitFor({ timeout: 12000 });
+
+  const metrics = await page.evaluate(() => {
+    const rectJson = (rect) => ({
+      bottom: rect.bottom,
+      height: rect.height,
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+      width: rect.width,
+    });
+    const drawerElement = document.querySelector("[data-pos-waiting-drawer]");
+    const launcher = document.querySelector("[data-pos-waiting-launcher]");
+    const portalLayer = document.querySelector("[data-pos-waiting-portal-layer]");
+    const scrollRegion = document.querySelector(
+      "[data-pos-waiting-drawer-scroll]",
+    );
+    const drawerRect = drawerElement?.getBoundingClientRect() ?? null;
+    const topElement = drawerRect
+      ? document.elementFromPoint(
+          Math.min(drawerRect.right - 2, drawerRect.left + drawerRect.width / 2),
+          Math.min(drawerRect.bottom - 2, drawerRect.top + 16),
+        )
+      : null;
+    const doc = document.documentElement;
+    const body = document.body;
+    const scrollStyle = scrollRegion
+      ? window.getComputedStyle(scrollRegion)
+      : null;
+
+    return {
+      drawer: drawerElement
+        ? rectJson(drawerElement.getBoundingClientRect())
+        : null,
+      horizontalOverflow:
+        doc.scrollWidth > window.innerWidth + 1 ||
+        body.scrollWidth > window.innerWidth + 1,
+      launcher: launcher ? rectJson(launcher.getBoundingClientRect()) : null,
+      placement:
+        drawerElement?.getAttribute("data-pos-waiting-drawer-placement") ?? "",
+      portalLayerParentIsBody: portalLayer?.parentElement === document.body,
+      portalLayerPresent: Boolean(portalLayer),
+      scrollRegion: scrollRegion
+        ? {
+            clientHeight: scrollRegion.clientHeight,
+            overflowY: scrollStyle?.overflowY ?? "",
+            scrollHeight: scrollRegion.scrollHeight,
+        }
+        : null,
+      topElementInsideDrawer:
+        Boolean(drawerElement && topElement && drawerElement.contains(topElement)),
+      viewport: {
+        height: window.innerHeight,
+        width: window.innerWidth,
+      },
+    };
+  });
+  const label = viewportLabel(viewport);
+
+  assert.ok(metrics.drawer, `Waiting drawer should exist at ${label}.`);
+  assert.ok(metrics.launcher, `Waiting launcher should exist at ${label}.`);
+  assert.equal(
+    metrics.portalLayerPresent,
+    true,
+    `Waiting drawer should render through a portal layer at ${label}.`,
+  );
+  assert.equal(
+    metrics.portalLayerParentIsBody,
+    true,
+    `Waiting portal layer should be attached to document.body at ${label}.`,
+  );
+  assert.equal(
+    metrics.topElementInsideDrawer,
+    true,
+    `Waiting drawer should be topmost above POS panels at ${label}.`,
+  );
+  assert.ok(metrics.scrollRegion, `Waiting drawer scroll region should exist at ${label}.`);
+  assert.ok(
+    metrics.drawer.left >= -1 &&
+      metrics.drawer.top >= -1 &&
+      metrics.drawer.right <= metrics.viewport.width + 1 &&
+      metrics.drawer.bottom <= metrics.viewport.height + 1,
+    `Waiting drawer should fit viewport at ${label}; got ${JSON.stringify(
+      metrics.drawer,
+    )}.`,
+  );
+  assert.equal(
+    metrics.horizontalOverflow,
+    false,
+    `Waiting drawer should not create page horizontal overflow at ${label}.`,
+  );
+  assert.ok(
+    metrics.drawer.top >= metrics.launcher.bottom - 4 ||
+      metrics.drawer.bottom <= metrics.launcher.top + 4,
+    `Waiting drawer should remain vertically connected to launcher at ${label}.`,
+  );
+  assert.ok(
+    Math.abs(metrics.drawer.left - metrics.launcher.left) <= 32 ||
+      Math.abs(metrics.drawer.right - metrics.launcher.right) <= 32 ||
+      metrics.placement === "sheet",
+    `Waiting drawer should remain horizontally connected to launcher at ${label}.`,
+  );
+  assert.ok(
+    ["auto", "scroll"].includes(metrics.scrollRegion.overflowY),
+    `Waiting drawer should scroll internally at ${label}.`,
+  );
+  assert.ok(
+    metrics.scrollRegion.scrollHeight > metrics.scrollRegion.clientHeight,
+    `Waiting long queue should overflow inside the drawer body at ${label}.`,
+  );
+
+  await drawer.getByRole("button", { name: "Close" }).click();
+  await drawer.waitFor({ state: "detached", timeout: 12000 });
+  await waitingButton.waitFor({ timeout: 12000 });
+}
+
+async function assertCustomerCheckInServiceGridCompact(page) {
+  await page.setViewportSize({ height: 768, width: 1024 });
+  await page
+    .locator("[data-customer-display-service-card]")
+    .first()
+    .waitFor({ timeout: 12000 });
+
+  const metrics = await page.evaluate(() => {
+    const cards = Array.from(
+      document.querySelectorAll("[data-customer-display-service-card]"),
+    );
+    const cardRects = cards.map((card) => card.getBoundingClientRect());
+    const firstTop = cardRects[0]?.top ?? 0;
+    const firstCard = cards[0] ?? null;
+    const firstCardStyle = firstCard ? window.getComputedStyle(firstCard) : null;
+    const doc = document.documentElement;
+    const body = document.body;
+
+    return {
+      cardCount: cards.length,
+      firstCardBackgroundImage: firstCardStyle?.backgroundImage ?? "",
+      firstCardBorderWidth: firstCardStyle?.borderTopWidth ?? "",
+      firstCardShadow: firstCardStyle?.boxShadow ?? "",
+      firstCardTagName: firstCard?.tagName ?? "",
+      firstRowCount: cardRects.filter((rect) => Math.abs(rect.top - firstTop) <= 2)
+        .length,
+      maxCardHeight: Math.max(...cardRects.map((rect) => rect.height)),
+      horizontalOverflow:
+        doc.scrollWidth > window.innerWidth + 1 ||
+        body.scrollWidth > window.innerWidth + 1,
+    };
+  });
+
+  assert.ok(
+    metrics.cardCount >= EXTRA_SERVICES.length + 1,
+    `Check-in should render the full service catalog; got ${metrics.cardCount}.`,
+  );
+  assert.ok(
+    metrics.firstRowCount >= 3,
+    `Check-in service grid should fit at least 3 services per row on tablet; got ${metrics.firstRowCount}.`,
+  );
+  assert.ok(
+    metrics.maxCardHeight <= 90,
+    `Check-in service cards should stay compact; max height ${metrics.maxCardHeight}.`,
+  );
+  assert.equal(
+    metrics.firstCardTagName,
+    "BUTTON",
+    "Check-in service cards should render as interactive buttons.",
+  );
+  assert.notEqual(
+    metrics.firstCardBackgroundImage,
+    "none",
+    "Check-in service cards should have a visible surface treatment.",
+  );
+  assert.notEqual(
+    metrics.firstCardBorderWidth,
+    "0px",
+    "Check-in service cards should have a visible border.",
+  );
+  assert.notEqual(
+    metrics.firstCardShadow,
+    "none",
+    "Check-in service cards should have subtle depth.",
+  );
+  assert.equal(
+    metrics.horizontalOverflow,
+    false,
+    "Check-in service grid should not create horizontal overflow.",
+  );
+}
+
 async function applyPosReceiptFixture(page, liveDraftId, lines) {
   updateLiveDraftReceipt(liveDraftId, lines);
   await page.reload({ waitUntil: "networkidle" });
@@ -745,10 +1519,11 @@ async function setPortableFloatingNavPosition(page, xRatio, yRatio) {
       yRatio,
     },
   );
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload({ waitUntil: "domcontentloaded" });
   await page.locator("[data-portable-floating-nav-button]").waitFor({
     timeout: 12000,
   });
+  await page.waitForTimeout(250);
 }
 
 async function disableNextDevOverlayPointerEvents(page) {
@@ -1037,13 +1812,13 @@ function assertPortableFloatingNavGeometry(metrics, options = {}) {
   );
   assert.deepEqual(
     metrics.links.map((link) => link.id),
-    ["pos", "ticket", "book", "report"],
+    ["pos", "ticket", "checkIn", "book", "report"],
     `${options.label ?? "Portable nav"} should preserve Portable route order.`,
   );
   assert.equal(metrics.lock?.ariaLabel, "Lock Portable POS");
   assert.deepEqual(
     metrics.actions.map((action) => action.id),
-    ["pos", "ticket", "book", "report", "lock"],
+    ["pos", "ticket", "checkIn", "book", "report", "lock"],
     `${options.label ?? "Portable nav"} should keep stable logical action order.`,
   );
 
@@ -1607,7 +2382,9 @@ async function getPortableReceiptMetrics(page) {
     const receiptHeader = document.querySelector("[data-pos-receipt-header]");
     const receiptPanel = document.querySelector("[data-pos-receipt-panel]");
     const staffBoard = document.querySelector("[data-pos-staff-turn-board]");
-    const servicePanel = document.querySelector("[data-pos-service-panel]");
+    const serviceWorkspace = document.querySelector("[data-pos-service-workspace]");
+    const amountPanel = document.querySelector("[data-pos-amount-panel]");
+    const currentInput = document.querySelector("[data-pos-current-input]");
     const regionRect = lineRegion?.getBoundingClientRect() ?? null;
     const visibleInRegion = (rect) =>
       regionRect
@@ -1653,11 +2430,21 @@ async function getPortableReceiptMetrics(page) {
 
     return {
       bodyText: document.body.textContent ?? "",
+      amountSummaryCount: document.querySelectorAll("[data-pos-amount-summary]")
+        .length,
+      amountTotalCount: document.querySelectorAll("[data-pos-amount-total]")
+        .length,
+      currentInputRect: currentInput
+        ? rectJson(currentInput.getBoundingClientRect())
+        : null,
       documentScroll:
         doc.scrollHeight > window.innerHeight + 1 ||
         doc.scrollWidth > window.innerWidth + 1 ||
         body.scrollHeight > window.innerHeight + 1 ||
         body.scrollWidth > window.innerWidth + 1,
+      enteredAmountRowCount: document.querySelectorAll(
+        "[data-pos-entered-amount-row]",
+      ).length,
       lineRegion: lineRegion
         ? {
             clientHeight: lineRegion.clientHeight,
@@ -1672,8 +2459,16 @@ async function getPortableReceiptMetrics(page) {
         : null,
       receiptPanelRect: receiptPanel ? rectJson(receiptPanel.getBoundingClientRect()) : null,
       rows,
-      servicePanelRect: servicePanel
-        ? rectJson(servicePanel.getBoundingClientRect())
+      amountPanelRect: amountPanel
+        ? rectJson(amountPanel.getBoundingClientRect())
+        : null,
+      requestedServiceTileCount: document.querySelectorAll(
+        "[data-pos-service-tile][data-pos-requested-service='true']",
+      ).length,
+      serviceTileCount: document.querySelectorAll("[data-pos-service-tile]")
+        .length,
+      serviceWorkspaceRect: serviceWorkspace
+        ? rectJson(serviceWorkspace.getBoundingClientRect())
         : null,
       staffBoardRect: staffBoard ? rectJson(staffBoard.getBoundingClientRect()) : null,
       totalsRect: totals ? rectJson(totals.getBoundingClientRect()) : null,
@@ -1691,7 +2486,25 @@ function assertPortableReceiptMetrics(metrics, expectedLines, viewport, options 
   assert.ok(metrics.lineRegion, `Portable receipt line region should exist at ${label}.`);
   assert.ok(metrics.totalsRect, `Portable totals should exist at ${label}.`);
   assert.ok(metrics.staffBoardRect, `Staff Turn Board should exist at ${label}.`);
-  assert.ok(metrics.servicePanelRect, `Service panel should exist at ${label}.`);
+  assert.ok(metrics.serviceWorkspaceRect, `Service workspace should exist at ${label}.`);
+  assert.ok(metrics.amountPanelRect, `Amount panel should exist at ${label}.`);
+  assert.ok(metrics.currentInputRect, `Current input should exist at ${label}.`);
+  assert.ok(metrics.serviceTileCount >= 1, `Service tiles should exist at ${label}.`);
+  assert.equal(
+    metrics.amountSummaryCount,
+    0,
+    `Old amount summary card should be absent at ${label}.`,
+  );
+  assert.equal(
+    metrics.enteredAmountRowCount,
+    0,
+    `Entered amount rows should not be duplicated in the sidebar at ${label}.`,
+  );
+  assert.equal(
+    metrics.amountTotalCount,
+    0,
+    `Sidebar total duplicate should be absent at ${label}.`,
+  );
   assert.equal(metrics.rows.length, expectedLines.length, `Portable receipt row count at ${label}.`);
 
   expectedLines.forEach((line, index) => {
@@ -1817,19 +2630,19 @@ async function waitForPortableTotals(page, expectations, timeout = 12000) {
 
 async function assertPortableAdjustmentsAppearAndClear(page) {
   await page.setViewportSize({ height: 900, width: 1440 });
-  const servicePanel = page.locator("[data-pos-service-panel]");
+  const amountPanel = page.locator("[data-pos-amount-panel]");
   const waitForKeypadMode = async (mode) => {
     await page.waitForFunction(
       (expectedMode) =>
         document
-          .querySelector("[data-pos-service-panel]")
+          .querySelector("[data-pos-amount-panel]")
           ?.getAttribute("data-pos-keypad-mode") === expectedMode,
       mode,
       { timeout: 12000 },
     );
   };
 
-  await servicePanel.getByRole("button", { name: "Discount" }).click();
+  await amountPanel.getByRole("button", { name: "Discount" }).click();
   await waitForKeypadMode("discount");
   await clickKeypadAmount(page, "5");
   await waitForPortableTotals(page, {
@@ -1843,13 +2656,13 @@ async function assertPortableAdjustmentsAppearAndClear(page) {
     "Portable discount input should hold the keyed value.",
   );
 
-  await servicePanel.locator("[data-pos-keypad-clear]").click();
+  await amountPanel.locator("[data-pos-keypad-clear]").click();
   await waitForPortableTotals(page, {
     excludes: ["Discount"],
     includes: ["Total", "$5,225.00"],
   });
 
-  await servicePanel.getByRole("button", { name: "Tip" }).click();
+  await amountPanel.getByRole("button", { name: "Tip" }).click();
   await waitForKeypadMode("tip");
   await clickKeypadAmount(page, "7");
   await waitForPortableTotals(page, { includes: ["Tip", "$5,232.00"] });
@@ -1859,7 +2672,7 @@ async function assertPortableAdjustmentsAppearAndClear(page) {
     "Portable tip input should hold the keyed value.",
   );
 
-  await servicePanel.locator("[data-pos-keypad-clear]").click();
+  await amountPanel.locator("[data-pos-keypad-clear]").click();
   await waitForPortableTotals(page, {
     excludes: ["Tip"],
     includes: ["Total", "$5,225.00"],
@@ -2269,9 +3082,11 @@ async function assertDisplayViewportHealth(page, sizes) {
         document.querySelectorAll(
           [
             "[data-customer-display-attract]",
+            "[data-customer-display-checkin-shell]",
             "[data-customer-display-checkout]",
             "[data-customer-display-summary]",
             "[data-customer-display-interaction-panel]",
+            "[data-customer-display-service-select]",
             "[data-customer-display-completed]",
           ].join(","),
         ),
@@ -2290,18 +3105,26 @@ async function assertDisplayViewportHealth(page, sizes) {
         })
         .map((element) => element.getAttribute("data-customer-display-attract")
           ?? element.getAttribute("data-customer-display-checkout")
+          ?? element.getAttribute("data-customer-display-checkin-shell")
           ?? element.getAttribute("data-customer-display-summary")
           ?? element.getAttribute("data-customer-display-interaction-panel")
+          ?? element.getAttribute("data-customer-display-service-select")
           ?? element.getAttribute("data-customer-display-completed")
           ?? element.tagName);
       const panel = document.querySelector("[data-customer-display-interaction-panel]");
       const totalTextVisible = Boolean(document.body.textContent?.includes("Current total"));
+      const phoneTextVisible = Boolean(
+        document.body.textContent?.includes("Enter your phone number"),
+      );
+      const serviceSelectVisible = Boolean(
+        document.body.textContent?.includes("What are you here for?"),
+      );
       const attractTextVisible = Boolean(
         document.body.textContent?.includes("Touch anywhere to begin"),
       );
       const completedTextVisible = Boolean(document.body.textContent?.includes("Thank you"));
       const primaryVisible = Boolean(
-        panel || attractTextVisible || completedTextVisible,
+        panel || phoneTextVisible || serviceSelectVisible || attractTextVisible || completedTextVisible,
       );
 
       return {
@@ -2313,7 +3136,11 @@ async function assertDisplayViewportHealth(page, sizes) {
         overflowing,
         primaryVisible,
         totalOrStateVisible:
-          totalTextVisible || attractTextVisible || completedTextVisible,
+          totalTextVisible ||
+          phoneTextVisible ||
+          serviceSelectVisible ||
+          attractTextVisible ||
+          completedTextVisible,
       };
     });
 
@@ -2400,6 +3227,8 @@ async function main() {
     await pos.getByRole("button", { name: "Open POS" }).click();
     await pos.getByText("Codex E2E Salon").first().waitFor({ timeout: 12000 });
     await assertPortableShell(pos);
+    await assertPortablePosPolishBase(pos);
+    await assertStaffToneBoardVisuals(pos);
 
     const setupContext = await browser.newContext({
       viewport: { height: 1024, width: 768 },
@@ -2461,12 +3290,16 @@ async function main() {
     );
     assert.equal(
       await display.getByText("Waiting for services").count(),
-      1,
-      "Empty receipt message should appear only once.",
+      0,
+      "Idle check-in should not show an empty receipt message.",
     );
-    await assertDefaultReceiptBackground(display);
+    assert.equal(
+      await display.locator("[data-customer-display-summary]").count(),
+      0,
+      "Idle check-in should not render the receipt summary.",
+    );
     await assertDisplayViewportHealth(display, REQUIRED_DISPLAY_VIEWPORTS);
-    await captureDisplayScreenshots(display, "receipt-empty");
+    await captureDisplayScreenshots(display, "idle-checkin");
     keypadDimensions = await assertPhoneKeypadAcrossViewports(display, "phone-initial");
     await display.setViewportSize({ height: 900, width: 1440 });
     const confirmPhone = display.getByRole("button", {
@@ -2490,19 +3323,74 @@ async function main() {
     assert.equal(await phoneTextbox.inputValue(), "(5");
     await display.getByRole("button", { name: "Clear" }).click();
 
+    await clickCustomerDisplayPhoneKeypad(display, "5550107777");
+    await display
+      .getByRole("heading", { name: "Enter customer name" })
+      .waitFor({ timeout: 12000 });
+    await display.getByLabel("Customer name").fill("Display Walkin");
+    await display.getByRole("button", { name: "Continue" }).click();
+    await display
+      .getByRole("heading", { name: "What are you here for?" })
+      .waitFor({ timeout: 12000 });
+    assert.equal(
+      await display.locator("[data-customer-display-summary]").count(),
+      0,
+      "Check-in service selection should not render a receipt summary.",
+    );
+    await assertCustomerCheckInServiceGridCompact(display);
+    await display.setViewportSize({ height: 900, width: 1440 });
+    await display.getByRole("button", { name: /Codex Manicure/ }).click();
+    await display.getByRole("button", { name: "Check in" }).click();
+    await display
+      .getByRole("heading", { name: "You are checked in" })
+      .waitFor({ timeout: 12000 });
+    await display.getByText("Codex Manicure").waitFor({ timeout: 12000 });
+    const selectedServiceRows = queryLinkedDatabase(`
+      select services.id as service_id
+      from public.customer_visits visits
+      join public.customers customers
+        on customers.id = visits.customer_id
+       and customers.location_id = visits.salon_id
+      join public.customer_visit_services visit_services
+        on visit_services.visit_id = visits.id
+      join public.services services
+        on services.id = visit_services.service_id
+      where visits.salon_id = ${sqlString(SALON_ID)}::uuid
+        and public.normalize_customer_claim_phone(customers.phone) = public.normalize_customer_claim_phone('5550107777')
+      order by visit_services.sort_order;
+    `);
+
+    assert.deepEqual(
+      selectedServiceRows.map((row) => row.service_id),
+      [SERVICE_ID],
+    );
+    await waitForBody(
+      display,
+      () =>
+        !document.body.textContent?.includes("Display Walkin") &&
+        Boolean(document.body.textContent?.includes("Enter your phone number")),
+      12000,
+    );
+    createWaitingOverflowFixture();
+    await pos.reload({ waitUntil: "networkidle" });
+    await pos.getByText("Codex E2E Salon").first().waitFor({ timeout: 12000 });
+    for (const viewport of WAITING_DRAWER_QA_VIEWPORTS) {
+      await assertWaitingDrawerFitsViewport(pos, viewport);
+    }
+    await pos.setViewportSize({ height: 900, width: 1440 });
+    await selectWaitingVisitFromPopover(pos);
+
     await advanceDisplayClock(display, 121000);
-    await display.getByText("Touch anywhere to begin").waitFor({ timeout: 12000 });
-    await assertDefaultPromoSlide(display);
+    await assertCustomerDisplayPhoneCopy(display);
+    assert.equal(
+      await display.locator("[data-customer-display-summary]").count(),
+      0,
+      "Idle timeout should keep the check-in canvas receipt-free.",
+    );
     await assertDisplayViewportHealth(display, REQUIRED_DISPLAY_VIEWPORTS);
     await display.setViewportSize({ height: 900, width: 1440 });
 
-    await display.locator("[data-customer-display-attract]").click({
-      position: { x: 40, y: 40 },
-    });
-    await assertCustomerDisplayPhoneCopy(display);
-
     await advanceDisplayClock(display, 121000);
-    await display.getByText("Touch anywhere to begin").waitFor({ timeout: 12000 });
     await pos.getByRole("button", { name: /Codexia/ }).click();
     await assertCustomerDisplayPhoneCopy(display);
     mark("staff selection woke display");
@@ -2512,7 +3400,7 @@ async function main() {
       display,
       () =>
         Boolean(document.body.textContent?.includes("$50.00")) &&
-        Boolean(document.body.textContent?.includes("Service 1")),
+        Boolean(document.body.textContent?.includes("Codex Manicure")),
     );
     assert.equal(
       await display.locator("[data-customer-display-receipt-line]").count(),
@@ -2525,6 +3413,18 @@ async function main() {
     await waitForBody(
       display,
       () => Boolean(document.body.textContent?.includes("$60.00")),
+    );
+    await pos.getByRole("button", { name: "Change" }).click();
+    await waitForBody(
+      display,
+      () =>
+        Boolean(document.body.textContent?.includes("$60.00")) &&
+        !document.body.textContent?.includes("Welcome back, Display"),
+    );
+    assert.equal(
+      await pos.locator("[data-pos-toast]").count(),
+      0,
+      "Clearing a selected customer should not show a POS toast.",
     );
 
     const threeReceiptLines = makeReceiptLines(3);
@@ -2629,6 +3529,7 @@ async function main() {
     await display
       .getByRole("heading", { name: "Welcome, Guest" })
       .waitFor({ timeout: 12000 });
+    await assertDefaultReceiptBackground(display);
     await display.getByRole("button", { name: "Change" }).click();
     await assertCustomerDisplayPhoneCopy(display);
 
@@ -2676,6 +3577,14 @@ async function main() {
 
     await pos.getByRole("button", { name: "Submit" }).click();
     mark("first submit clicked");
+    const firstSubmitToast = await waitForPosToast(pos, {
+      amount: /\$69\.00/,
+      detail: /Codex Customer/,
+      title: /Ticket .* submitted/,
+      tone: "success",
+    });
+    await firstSubmitToast.locator("[data-pos-toast-close]").click();
+    await firstSubmitToast.waitFor({ state: "detached", timeout: 12000 });
     await display.getByText(/Thank you, Codex!/).waitFor({ timeout: 15000 });
     await assertCompletedScreenUsesDarkText(display);
     mark("first thank you visible");
@@ -2719,6 +3628,26 @@ async function main() {
     );
     await assertDisplayViewportHealth(display, REQUIRED_DISPLAY_VIEWPORTS);
     await display.setViewportSize({ height: 900, width: 1440 });
+    await display.locator("[data-customer-display-completed]").click({
+      position: { x: 40, y: 40 },
+    });
+    await assertCustomerDisplayPhoneCopy(display);
+    const touchResetRows = queryLinkedDatabase(`
+      select
+        customer,
+        reset_at,
+        status,
+        total::text,
+        tip::text
+      from public.pos_live_drafts
+      where id = ${sqlString(liveDraftId)}::uuid;
+    `);
+
+    assert.equal(touchResetRows[0].customer, null);
+    assert.equal(touchResetRows[0].reset_at, null);
+    assert.equal(touchResetRows[0].status, "draft");
+    assert.equal(Number(touchResetRows[0].total), 0);
+    assert.equal(Number(touchResetRows[0].tip), 0);
 
     await pos.getByRole("button", { name: /Codexia/ }).click();
     mark("new staff clicked");
@@ -2755,6 +3684,16 @@ async function main() {
     await assertDownloadQrSafe(display, liveDraftToken);
 
     await pos.getByRole("button", { name: "Submit" }).click();
+    await waitForPosToast(pos, {
+      amount: /\$30\.00/,
+      detail: /Display New Customer/,
+      title: /Ticket .* submitted/,
+      tone: "success",
+    });
+    await pos.locator("[data-pos-toast]").waitFor({
+      state: "detached",
+      timeout: 7000,
+    });
     await display.getByText("Thank you").waitFor({ timeout: 15000 });
     queryLinkedDatabase(`
       update public.pos_live_drafts
@@ -2770,7 +3709,7 @@ async function main() {
       12000,
     );
     await advanceDisplayClock(display, 121000);
-    await display.getByText("Touch anywhere to begin").waitFor({ timeout: 12000 });
+    await assertCustomerDisplayPhoneCopy(display);
 
     const resetRows = queryLinkedDatabase(`
       select status, total::text, tip::text

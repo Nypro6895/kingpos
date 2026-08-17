@@ -26,6 +26,10 @@ type PublicUserStatusRow = {
   status: KingUserStatus;
 };
 
+type SupabaseCookieWriter = {
+  delete: (name: string) => unknown;
+};
+
 export function getSupabaseCookieOptions(maxAge?: number) {
   return {
     httpOnly: true,
@@ -34,6 +38,25 @@ export function getSupabaseCookieOptions(maxAge?: number) {
     path: "/",
     ...(maxAge ? { maxAge } : {}),
   };
+}
+
+export function isSupabaseAuthTokenCookieName(name: string) {
+  return (
+    name.startsWith("sb-") &&
+    (name.endsWith("-auth-token") || name.includes("-auth-token."))
+  );
+}
+
+export function clearSupabaseSessionCookieWriter(
+  cookieStore: SupabaseCookieWriter,
+  cookieNames: string[] = [],
+) {
+  cookieStore.delete(ACCESS_TOKEN_COOKIE);
+  cookieStore.delete(REFRESH_TOKEN_COOKIE);
+
+  for (const name of cookieNames.filter(isSupabaseAuthTokenCookieName)) {
+    cookieStore.delete(name);
+  }
 }
 
 export function getSupabaseConfig(): SupabaseConfig | null {
@@ -204,44 +227,6 @@ async function isAccessTokenAllowedForAppSession(
   return !isDeniedKingUserStatus(userStatus?.status);
 }
 
-function readSessionFromCookieValue(value: string): Partial<SupabaseSessionTokens> {
-  const decodedValue = decodeURIComponent(value);
-
-  if (decodedValue.startsWith("base64-")) {
-    const rawJson = Buffer.from(decodedValue.slice("base64-".length), "base64").toString(
-      "utf8",
-    );
-    return readSessionFromCookieValue(rawJson);
-  }
-
-  if (decodedValue.startsWith("{")) {
-    const parsed = JSON.parse(decodedValue) as {
-      access_token?: string;
-      refresh_token?: string;
-    };
-
-    return {
-      accessToken: parsed.access_token,
-      refreshToken: parsed.refresh_token,
-    };
-  }
-
-  if (decodedValue.startsWith("[")) {
-    const parsed = JSON.parse(decodedValue) as string[];
-
-    return {
-      accessToken: parsed[0],
-      refreshToken: parsed[1],
-    };
-  }
-
-  return { accessToken: decodedValue || undefined };
-}
-
-function readTokenFromCookieValue(value: string) {
-  return readSessionFromCookieValue(value).accessToken ?? null;
-}
-
 export async function getAccessTokenFromRequest() {
   const authorization = (await headers()).get("authorization");
   const bearerPrefix = "Bearer ";
@@ -253,23 +238,7 @@ export async function getAccessTokenFromRequest() {
   const cookieStore = await cookies();
   const directCookie = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
 
-  if (directCookie) {
-    return directCookie;
-  }
-
-  const authCookie = cookieStore
-    .getAll()
-    .find((cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token"));
-
-  if (!authCookie) {
-    return null;
-  }
-
-  try {
-    return readTokenFromCookieValue(authCookie.value);
-  } catch {
-    return null;
-  }
+  return directCookie ?? null;
 }
 
 export async function getSupabaseSessionTokensFromRequest(): Promise<SupabaseSessionTokens | null> {
@@ -288,27 +257,6 @@ export async function getSupabaseSessionTokensFromRequest(): Promise<SupabaseSes
       accessToken,
       refreshToken: directRefreshToken,
     };
-  }
-
-  const authCookie = cookieStore
-    .getAll()
-    .find((cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token"));
-
-  if (!authCookie) {
-    return null;
-  }
-
-  try {
-    const sessionTokens = readSessionFromCookieValue(authCookie.value);
-
-    if (sessionTokens.accessToken && sessionTokens.refreshToken) {
-      return {
-        accessToken: sessionTokens.accessToken,
-        refreshToken: sessionTokens.refreshToken,
-      };
-    }
-  } catch {
-    return null;
   }
 
   return null;
@@ -331,15 +279,10 @@ export async function setSupabaseSessionCookies(session: Session) {
 
 export async function clearSupabaseSessionCookies() {
   const cookieStore = await cookies();
-
-  cookieStore.delete(ACCESS_TOKEN_COOKIE);
-  cookieStore.delete(REFRESH_TOKEN_COOKIE);
-
-  for (const cookie of cookieStore.getAll()) {
-    if (cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token")) {
-      cookieStore.delete(cookie.name);
-    }
-  }
+  clearSupabaseSessionCookieWriter(
+    cookieStore,
+    cookieStore.getAll().map((cookie) => cookie.name),
+  );
 }
 
 export async function getSupabaseAuthUser() {

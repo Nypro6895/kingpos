@@ -1,4 +1,5 @@
 import type { Customer } from "@/types/customer";
+import type { CustomerVisitRequestedService } from "@/types/customer-visit";
 import type { PosTicketDiscountType } from "@/types/pos-ticket";
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
@@ -47,6 +48,7 @@ export type PosDeskSubmitInput = {
   customerId?: string | null;
   customerLookup?: string | null;
   customerName?: string | null;
+  customerVisitId?: string | null;
   discountType?: PosTicketDiscountType;
   discountValue?: number;
   lines: PosDeskSubmitLine[];
@@ -161,6 +163,8 @@ export type PosLiveDraftCustomer = {
   id: string | null;
   name: string;
   phone: string | null;
+  requestedServices?: CustomerVisitRequestedService[];
+  visitId?: string | null;
 };
 
 export type PosLiveDraftReceiptLine = {
@@ -178,6 +182,7 @@ export type PosLiveDraftReceiptLine = {
 export type PosLiveDraftView = {
   completed_at: string | null;
   customer: PosLiveDraftCustomer | null;
+  customer_handoff_started_at: string | null;
   customer_version: number;
   discount: number;
   id: string;

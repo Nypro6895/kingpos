@@ -34,6 +34,7 @@ import {
   type StaffWithTodayWorkday,
 } from "@/lib/staff-workdays";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+import { getCustomerVisitQueueForSalonOrEmpty } from "@/lib/customer-visits";
 import {
   getTodayQuickAccessConfiguration,
   type TodayQuickAccessConfiguration,
@@ -43,6 +44,7 @@ import {
   type BookingLine,
   type BookingStatus,
 } from "@/types/booking";
+import type { CustomerVisitQueueItem } from "@/types/customer-visit";
 import type { DailyPosReport } from "@/types/pos-daily-closing";
 import type { StaffWorkdayStatus } from "@/types/staff-workday";
 
@@ -55,7 +57,7 @@ export type TodayClientPresence = {
   href: string | null;
   id: string;
   serviceLabel: string | null;
-  source: "appointment";
+  source: "appointment" | "customer_screen" | "walk_in";
   status: "waiting" | "in_service" | "completed";
 };
 
@@ -103,7 +105,8 @@ export type TodayLoadError = {
     | "notifications"
     | "quick_accesses"
     | "reports"
-    | "staff";
+    | "staff"
+    | "waiting";
   message: string;
 };
 
@@ -771,25 +774,27 @@ function isActiveStaffStatus(status: StaffWorkdayStatus | "not_checked_in") {
   return status !== "not_checked_in" && ACTIVE_STAFF_STATUSES.has(status);
 }
 
-function mapWaitingClients(
-  bookings: TodayBookingRow[],
+function mapWaitingVisits(
+  visits: CustomerVisitQueueItem[],
   date: string,
 ): TodayClientPresence[] {
-  return bookings
-    .filter((booking) => normalizeBookingStatus(booking.status) === "checked_in")
-    .map((booking) => ({
-      appointmentAt: booking.start_at,
-      appointmentId: booking.id,
-      assignedStaff: bookingStaffReference(booking),
-      customerId: booking.customer_id,
-      displayName: customerDisplayName(booking),
-      href: bookingHref(booking.id, date),
-      id: `appointment:${booking.id}`,
-      serviceLabel: bookingServiceLabel(booking),
-      source: "appointment" as const,
-      status: "waiting" as const,
-    }))
-    .slice(0, 5);
+  return visits.slice(0, 5).map((visit) => ({
+    appointmentAt: visit.appointmentStartAt ?? undefined,
+    appointmentId: visit.appointmentId ?? undefined,
+    assignedStaff: visit.assignedStaffId
+      ? {
+          id: visit.assignedStaffId,
+          name: visit.assignedStaffName ?? "Assigned staff",
+        }
+      : null,
+    customerId: visit.customerId,
+    displayName: visit.customerName,
+    href: visit.appointmentId ? bookingHref(visit.appointmentId, date) : null,
+    id: `visit:${visit.id}`,
+    serviceLabel: visit.serviceLabel,
+    source: visit.source,
+    status: "waiting" as const,
+  }));
 }
 
 function mapUpcomingBookings(input: {
@@ -1591,9 +1596,11 @@ export async function getTodayDashboard(
       fallbackReason: "Salon business hours could not be resolved.",
       timeZone: clock.timezone,
     });
+  const waitingSalonId = context.currentSalon?.id ?? null;
   const [
     staffResult,
     bookingsResult,
+    waitingVisitsResult,
     reportResult,
     financialResult,
     notificationsResult,
@@ -1611,6 +1618,46 @@ export async function getTodayDashboard(
             timezone: clock.timezone,
           })
         : Promise.resolve({ data: [] as TodayBookingRow[], error: null }),
+      permissions.canViewBookings && dayView.isCurrentDate && waitingSalonId
+        ? (async () => {
+            const supabase = await createAuthenticatedSupabaseServerClient();
+
+            if (!supabase) {
+              return {
+                data: [] as CustomerVisitQueueItem[],
+                error: {
+                  area: "waiting" as const,
+                  message: "Waiting clients could not be loaded.",
+                },
+              };
+            }
+
+            try {
+              return {
+                data: await getCustomerVisitQueueForSalonOrEmpty({
+                  limit: 25,
+                  salonId: waitingSalonId,
+                  supabase,
+                }),
+                error: null,
+              };
+            } catch (error) {
+              return {
+                data: [] as CustomerVisitQueueItem[],
+                error: {
+                  area: "waiting" as const,
+                  message:
+                    error instanceof Error
+                      ? error.message
+                      : "Waiting clients could not be loaded.",
+                },
+              };
+            }
+          })()
+        : Promise.resolve({
+            data: [] as CustomerVisitQueueItem[],
+            error: null,
+          }),
       permissions.canViewReports
         ? loadReportDashboardData({ context, date: clock.date })
         : Promise.resolve({ data: null, error: null }),
@@ -1631,6 +1678,7 @@ export async function getTodayDashboard(
     businessHoursResult.error,
     staffResult.error,
     bookingsResult.error,
+    waitingVisitsResult.error,
     reportResult.error,
     financialResult.error,
     notificationsResult.error,
@@ -1665,7 +1713,7 @@ export async function getTodayDashboard(
     timeZone: clock.timezone,
   });
   const waitingClients = permissions.canViewBookings && dayView.isCurrentDate
-    ? mapWaitingClients(bookings, clock.date)
+    ? mapWaitingVisits(waitingVisitsResult.data ?? [], clock.date)
     : [];
   const upcomingBookings = permissions.canViewBookings
     ? mapUpcomingBookings({

@@ -19,6 +19,13 @@ import {
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type {
+  CustomerDisplayVisit,
+  CustomerVisitQueueItem,
+  CustomerVisitRequestedService,
+  CustomerVisitSource,
+  CustomerVisitStatus,
+} from "@/types/customer-visit";
+import type {
   PosDeskCustomer,
   PosDeskService,
   PosDeskStaff,
@@ -54,6 +61,18 @@ type PosDeskActionResult =
       ticketNumber: string;
     };
 
+type WaitingVisitActionResult =
+  | {
+      data: {
+        snapshot?: PosLiveDraftView;
+        status?: CustomerVisitStatus | null;
+        visit?: CustomerDisplayVisit | null;
+        visitId?: string | null;
+      };
+      ok: true;
+    }
+  | { error: string; ok: false };
+
 export type PortablePosLoginState = {
   error: string | null;
 };
@@ -76,6 +95,7 @@ type PortableDeskRpcData = {
   settings?: unknown;
   services: PosDeskService[];
   staff: PosDeskStaff[];
+  waitingVisits?: unknown;
 };
 
 export type PortableTodayStaffRow = {
@@ -293,6 +313,166 @@ function normalizePortableNullableString(value: unknown) {
   return typeof value === "string" && value.trim() ? value : null;
 }
 
+function normalizePortableRequestedService(
+  value: unknown,
+): CustomerVisitRequestedService | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const payload = value as Record<string, unknown>;
+  const id = normalizePortableString(payload.id);
+  const name = normalizePortableString(payload.name);
+
+  if (!id || !name) {
+    return null;
+  }
+
+  return {
+    basePrice: normalizePortableNumber(
+      payload.basePrice ?? payload.base_price,
+    ),
+    category: normalizePortableNullableString(payload.category),
+    durationMinutes: normalizePortableNumber(
+      payload.durationMinutes ?? payload.duration_minutes,
+    ),
+    id,
+    name,
+    sortOrder: Math.max(
+      1,
+      Math.round(
+        normalizePortableNumber(payload.sortOrder ?? payload.sort_order) || 1,
+      ),
+    ),
+  };
+}
+
+function normalizePortableRequestedServices(
+  value: unknown,
+): CustomerVisitRequestedService[] {
+  return Array.isArray(value)
+    ? value
+        .map(normalizePortableRequestedService)
+        .filter(
+          (service): service is CustomerVisitRequestedService =>
+            Boolean(service),
+        )
+    : [];
+}
+
+const PORTABLE_VISIT_SOURCES = new Set<CustomerVisitSource>([
+  "appointment",
+  "customer_screen",
+  "walk_in",
+]);
+const PORTABLE_VISIT_STATUSES = new Set<CustomerVisitStatus>([
+  "cancelled",
+  "checkout",
+  "completed",
+  "in_service",
+  "waiting",
+]);
+
+function normalizePortableVisitSource(value: unknown): CustomerVisitSource {
+  return typeof value === "string" &&
+    PORTABLE_VISIT_SOURCES.has(value as CustomerVisitSource)
+    ? (value as CustomerVisitSource)
+    : "customer_screen";
+}
+
+function normalizePortableVisitStatus(value: unknown): CustomerVisitStatus {
+  return typeof value === "string" &&
+    PORTABLE_VISIT_STATUSES.has(value as CustomerVisitStatus)
+    ? (value as CustomerVisitStatus)
+    : "waiting";
+}
+
+function normalizePortableWaitingVisit(
+  value: unknown,
+): CustomerVisitQueueItem | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const payload = value as Record<string, unknown>;
+  const checkedInAt = normalizePortableString(payload.checkedInAt);
+  const customerId = normalizePortableString(payload.customerId);
+  const customerName = normalizePortableString(payload.customerName);
+  const id = normalizePortableString(payload.id);
+  const salonId = normalizePortableString(payload.salonId);
+
+  if (!checkedInAt || !customerId || !customerName || !id || !salonId) {
+    return null;
+  }
+
+  return {
+    appointmentId: normalizePortableNullableString(payload.appointmentId),
+    appointmentStartAt: normalizePortableNullableString(
+      payload.appointmentStartAt,
+    ),
+    assignedStaffId: normalizePortableNullableString(payload.assignedStaffId),
+    assignedStaffName: normalizePortableNullableString(payload.assignedStaffName),
+    checkedInAt,
+    customerId,
+    customerName,
+    customerPhone: normalizePortableNullableString(payload.customerPhone),
+    id,
+    requestedServices: normalizePortableRequestedServices(
+      payload.requestedServices,
+    ),
+    salonId,
+    serviceLabel: normalizePortableNullableString(payload.serviceLabel),
+    source: normalizePortableVisitSource(payload.source),
+    status: normalizePortableVisitStatus(payload.status),
+    ticketId: normalizePortableNullableString(payload.ticketId),
+  };
+}
+
+function normalizePortableWaitingVisits(value: unknown) {
+  return Array.isArray(value)
+    ? value
+        .map(normalizePortableWaitingVisit)
+        .filter((visit): visit is CustomerVisitQueueItem => Boolean(visit))
+    : [];
+}
+
+function normalizePortableDisplayVisit(
+  value: unknown,
+): CustomerDisplayVisit | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const payload = value as Record<string, unknown>;
+  const checkedInAt = normalizePortableString(payload.checkedInAt);
+  const customerId = normalizePortableString(payload.customerId);
+  const id = normalizePortableString(payload.id);
+
+  if (!checkedInAt || !customerId || !id) {
+    return null;
+  }
+
+  return {
+    appointmentId: normalizePortableNullableString(payload.appointmentId),
+    checkedInAt,
+    customerId,
+    firstName: normalizePortableNullableString(payload.firstName),
+    id,
+    requestedServices: normalizePortableRequestedServices(
+      payload.requestedServices,
+    ),
+    source: normalizePortableVisitSource(payload.source),
+    status: normalizePortableVisitStatus(payload.status),
+    ticketId: normalizePortableNullableString(payload.ticketId),
+  };
+}
+
+function readPortableResultPayload(value: unknown) {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 function normalizePortableTicket(value: unknown): PortableTicketRow | null {
   if (!value || typeof value !== "object") {
     return null;
@@ -426,6 +606,24 @@ function normalizeLiveDraftStaffLines(
     .filter((line) => Boolean(line.staffId));
 }
 
+function normalizeLiveDraftCustomer(
+  customer: PosLiveDraftCustomer | null,
+): PosLiveDraftCustomer | null {
+  if (!customer) {
+    return null;
+  }
+
+  return {
+    id: customer.id ?? null,
+    name: customer.name,
+    phone: customer.phone ?? null,
+    requestedServices: normalizePortableRequestedServices(
+      customer.requestedServices,
+    ),
+    visitId: customer.visitId ?? null,
+  };
+}
+
 function normalizeLiveDraft(value: PosLiveDraftView | null): PosLiveDraftView | null {
   if (!value) {
     return null;
@@ -436,7 +634,8 @@ function normalizeLiveDraft(value: PosLiveDraftView | null): PosLiveDraftView | 
 
   return {
     completed_at: value.completed_at ?? null,
-    customer: value.customer,
+    customer: normalizeLiveDraftCustomer(value.customer),
+    customer_handoff_started_at: value.customer_handoff_started_at ?? null,
     customer_version: Number(value.customer_version ?? 0),
     discount: Number(value.discount ?? 0),
     id: value.id,
@@ -693,6 +892,7 @@ async function loadPortablePosDeskData(): Promise<{
   services: PosDeskService[];
   staff: PosDeskStaff[];
   today: string;
+  waitingVisits: CustomerVisitQueueItem[];
 }> {
   const { keyId, portableSession, signature, supabase } =
     await requirePortablePosSessionContext();
@@ -725,6 +925,7 @@ async function loadPortablePosDeskData(): Promise<{
     services: payload.services ?? [],
     staff: payload.staff ?? [],
     today,
+    waitingVisits: normalizePortableWaitingVisits(payload.waitingVisits),
   };
 }
 
@@ -736,6 +937,7 @@ export async function getPortablePosDeskData(): Promise<{
   services: PosDeskService[];
   staff: PosDeskStaff[];
   today: string;
+  waitingVisits: CustomerVisitQueueItem[];
 }> {
   await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
   return loadPortablePosDeskData();
@@ -1279,6 +1481,133 @@ export async function portableGetPosLiveDraft(
   token: string,
 ): Promise<ActionResult<PosLiveDraftView | null>> {
   return getPosLiveDraft(token);
+}
+
+export async function portableSelectWaitingVisitForPos(input: {
+  token: string;
+  visitId: string;
+}): Promise<WaitingVisitActionResult> {
+  try {
+    const { keyId, portableSession, signature, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const token = input.token.trim();
+    const visitId = input.visitId.trim();
+
+    if (!token || !visitId) {
+      throw new Error("Choose a waiting client first.");
+    }
+
+    const { data, error } = await supabase.rpc(
+      "select_pos_portable_customer_visit_for_live_draft",
+      {
+        p_key_id: keyId,
+        p_session_signature: signature,
+        p_token: token,
+        p_visit_id: visitId,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error("Portable POS session expired. Log in again.");
+    }
+
+    const payload = readPortableResultPayload(data);
+
+    if (payload.ok !== true) {
+      throw new Error(
+        normalizePortableString(payload.message) || "Unable to select waiting client.",
+      );
+    }
+
+    const snapshot = normalizeLiveDraft(payload.snapshot as PosLiveDraftView | null);
+
+    if (!snapshot) {
+      throw new Error("Live draft was not found.");
+    }
+
+    await broadcastPosLiveDraftSnapshot(snapshot, "pos");
+    revalidatePath("/pos");
+    revalidatePath("/pos/portable");
+    revalidatePath("/staff/today");
+    await broadcastPosStaffChange(portableSession.salon_id, "waiting");
+
+    return {
+      data: {
+        snapshot,
+        visit: normalizePortableDisplayVisit(payload.visit),
+      },
+      ok: true,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Unable to select waiting client.",
+      ok: false,
+    };
+  }
+}
+
+export async function portableCancelWaitingVisitForPos(input: {
+  visitId: string;
+}): Promise<WaitingVisitActionResult> {
+  try {
+    const { keyId, portableSession, signature, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+    const visitId = input.visitId.trim();
+
+    if (!visitId) {
+      throw new Error("Choose a waiting client first.");
+    }
+
+    const { data, error } = await supabase.rpc(
+      "cancel_pos_portable_customer_visit",
+      {
+        p_key_id: keyId,
+        p_reason: "Removed from Portable POS waiting list.",
+        p_session_signature: signature,
+        p_visit_id: visitId,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error("Portable POS session expired. Log in again.");
+    }
+
+    const payload = readPortableResultPayload(data);
+
+    if (payload.ok !== true) {
+      throw new Error(
+        normalizePortableString(payload.message) || "Unable to remove waiting client.",
+      );
+    }
+
+    revalidatePath("/pos");
+    revalidatePath("/pos/portable");
+    revalidatePath("/staff/today");
+    await broadcastPosStaffChange(portableSession.salon_id, "waiting");
+
+    return {
+      data: {
+        status: normalizePortableVisitStatus(payload.status),
+        visitId: normalizePortableNullableString(payload.visitId),
+      },
+      ok: true,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Unable to remove waiting client.",
+      ok: false,
+    };
+  }
 }
 
 export async function portableSubmitPosDeskReceipt(

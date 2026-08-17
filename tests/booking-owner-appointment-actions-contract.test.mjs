@@ -9,6 +9,17 @@ function read(path) {
   return readFileSync(join(root, path), "utf8");
 }
 
+function assertAppearsInOrder(source, labels) {
+  let cursor = -1;
+
+  for (const label of labels) {
+    const index = source.indexOf(label, cursor + 1);
+    assert.notEqual(index, -1, `Expected to find ${label}`);
+    assert.ok(index > cursor, `Expected ${label} after previous marker`);
+    cursor = index;
+  }
+}
+
 test("owner appointment rows expose customer, edit, ticket, and settings actions", () => {
   const client = read("app/bookings/booking-workspace-client.tsx");
   const actions = read("app/bookings/actions.ts");
@@ -60,4 +71,45 @@ test("owner appointment rows expose customer, edit, ticket, and settings actions
   assert.match(migration, /'services_adjusted'/);
 
   assert.match(notifications, /href\.startsWith\("\/staff\/appointments"\)/);
+});
+
+test("booking list columns follow the requested owner workflow order", () => {
+  const client = read("app/bookings/booking-workspace-client.tsx");
+  const css = read("app/bookings/booking-workspace.css");
+  const headerStart = client.indexOf("<div className={styles.tableHeader}>");
+  const headerEnd = client.indexOf("{visibleBookings.map", headerStart);
+  const rowStart = client.indexOf("<div className={styles.tableRow}>");
+  const rowEnd = client.indexOf("{result ?", rowStart);
+
+  assert.notEqual(headerStart, -1);
+  assert.notEqual(headerEnd, -1);
+  assert.notEqual(rowStart, -1);
+  assert.notEqual(rowEnd, -1);
+
+  assertAppearsInOrder(client.slice(headerStart, headerEnd), [
+    "<div>Time</div>",
+    "<div>Professional</div>",
+    "<div>Services</div>",
+    "<div>Customer</div>",
+    "<div>Total</div>",
+    "<div>Status</div>",
+    "<div>Create ticket</div>",
+    "<div>Edit</div>",
+  ]);
+
+  assertAppearsInOrder(client.slice(rowStart, rowEnd), [
+    'aria-label="Adjust appointment time"',
+    'aria-label="Adjust appointment professional"',
+    'aria-label="Adjust appointment services"',
+    "booking.customer?.name",
+    "{formatMoney(booking.subtotal)}",
+    'aria-label="Adjust appointment status"',
+    "createTicket",
+    'aria-label="Open appointment settings"',
+  ]);
+
+  assert.match(
+    css,
+    /grid-template-columns: 112px minmax\(190px, 1fr\) minmax\(240px, 1\.35fr\) minmax\(210px, 1\.1fr\) 104px 126px 126px 54px;/,
+  );
 });

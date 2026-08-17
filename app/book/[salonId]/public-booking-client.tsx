@@ -161,6 +161,18 @@ function initialsFor(value: string | null | undefined) {
     : "K";
 }
 
+function normalizeWebsite(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
+
+function displayWebsite(value: string | null | undefined) {
+  return value?.replace(/^https?:\/\//i, "").replace(/\/$/, "") ?? null;
+}
+
 function draftStorageKey(salonId: string | null | undefined) {
   return salonId ? `kingpos.publicBookingDraft.${salonId}` : null;
 }
@@ -474,6 +486,35 @@ function staffEligibleForServices(data: PublicBookingPageData, serviceIds: strin
 }
 
 function UnavailableState({ data }: { data: PublicBookingPageData }) {
+  const salon = data.salon;
+  const canOpenSalonProfile = Boolean(salon && data.state !== "not_public");
+  const salonProfileHref =
+    salon && data.state !== "not_public"
+      ? `/explore/salons/${salon.salonId}`
+      : "/explore";
+  const salonWebsite = normalizeWebsite(salon?.website);
+  const contactHref = salon?.phone
+    ? `tel:${salon.phone}`
+    : salon?.email
+      ? `mailto:${salon.email}`
+      : salonWebsite;
+  const contactLabel = salon?.phone
+    ? salon.phone
+    : salon?.email
+      ? salon.email
+      : salonWebsite
+        ? displayWebsite(salon?.website)
+        : null;
+  const isMissingSalon = data.state === "not_found" || !salon;
+  const title = isMissingSalon
+    ? data.title
+    : `${salon.name} is not ready for online booking yet`;
+  const message = isMissingSalon
+    ? data.message
+    : canOpenSalonProfile
+      ? "This booking page is not available yet. Please contact the salon directly, visit their profile, or return to Explore."
+      : "This booking page is not available yet. Please contact the salon directly or return to Explore.";
+
   return (
     <main
       className={classNames(styles.bookingSurface, styles.publicRoot)}
@@ -481,30 +522,65 @@ function UnavailableState({ data }: { data: PublicBookingPageData }) {
       data-testid="public-booking-root"
     >
       <div className="mx-auto flex min-h-screen w-full max-w-4xl items-center px-5 py-10">
-        <section className={classNames(styles.publicCard, "w-full p-6")}>
-          <p className={styles.eyebrow}>Reylumi booking</p>
-          <h1 className={classNames(styles.pageTitle, "mt-3")}>{data.title}</h1>
-          <p className="mt-3 text-sm leading-6 text-[#786d78]">{data.message}</p>
-          {data.readiness.length > 0 ? (
-            <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-              {data.readiness.map((item) => (
-                <li
-                  className="flex items-center justify-between gap-3 rounded-xl border border-[#f0e6df] bg-white px-4 py-3 text-sm"
-                  key={item.id}
-                >
-                  <span className="font-extrabold text-[#211c24]">{item.label}</span>
-                  <span
-                    className={classNames(
-                      styles.statusBadge,
-                      item.complete ? styles.statusArrived : styles.statusPending,
-                    )}
+        <section className={classNames(styles.publicCard, "w-full p-6 sm:p-8")}>
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+            {salon?.logoUrl || salon?.coverUrl ? (
+              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-[#f0e6df] bg-white">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  alt=""
+                  className="h-full w-full object-cover"
+                  src={salon.logoUrl ?? salon.coverUrl ?? ""}
+                />
+              </div>
+            ) : salon ? (
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#fff0e8] text-lg font-extrabold text-[#f26f3d]">
+                {initialsFor(salon.name)}
+              </div>
+            ) : null}
+            <div className="min-w-0">
+              <p className={styles.eyebrow}>Reylumi booking</p>
+              <h1 className={classNames(styles.pageTitle, "mt-3")}>{title}</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#786d78]">
+                {message}
+              </p>
+              {contactLabel ? (
+                <p className="mt-4 text-sm font-semibold text-[#211c24]">
+                  Contact:{" "}
+                  <a
+                    className="text-[#e85f2b] underline-offset-4 hover:underline"
+                    href={contactHref ?? undefined}
                   >
-                    {item.complete ? "Ready" : "Needs setup"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+                    {contactLabel}
+                  </a>
+                </p>
+              ) : null}
+            </div>
+          </div>
+          <div className="mt-7 flex flex-wrap gap-3">
+            {canOpenSalonProfile ? (
+              <a
+                className={classNames(styles.secondaryButton, "px-5")}
+                href={salonProfileHref}
+              >
+                View salon profile
+              </a>
+            ) : null}
+            <a
+              className={classNames(styles.secondaryButton, "px-5")}
+              href="/explore"
+            >
+              Back to Explore
+            </a>
+            {contactHref ? (
+              <a
+                className={classNames(styles.primaryButton, "px-5")}
+                href={contactHref}
+              >
+                Contact salon
+              </a>
+            ) : null}
+          </div>
         </section>
       </div>
     </main>

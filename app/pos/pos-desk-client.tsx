@@ -10,10 +10,12 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import { QrCodeTile } from "@/components/qr-code-tile";
 import { usePathname, useRouter } from "next/navigation";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { parsePosAmountInput } from "@/lib/pos-desk-amounts";
+import { getStaffTurnToneLevel } from "@/lib/pos-staff-turn-tone";
 import {
   getPosLiveDraftRealtimeChannel,
   POS_LIVE_DRAFT_BROADCAST_EVENT,
@@ -26,14 +28,17 @@ import {
 } from "@/lib/pos-staff-realtime";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
+  cancelWaitingVisitForPos,
   createPosDeskCustomer,
   getPosLiveDraft,
   searchPosDeskCustomers,
+  selectWaitingVisitForPos,
   submitPosDeskReceipt,
   touchCustomerDisplayLiveDraftActivity,
   updatePosActiveDraft,
   updatePosLiveDraftCustomer,
 } from "@/app/pos/actions";
+import type { CustomerVisitQueueItem } from "@/types/customer-visit";
 import type {
   PosDeskCustomer,
   PosDeskSessionLine,
@@ -59,6 +64,7 @@ type DraftState = {
   customerId: string | null;
   customerLookup: string;
   customerName: string;
+  customerVisitId: string | null;
   discountInput: string;
   discountType: "fixed_amount" | "percentage";
   editingLineId: string | null;
@@ -90,6 +96,14 @@ type SubmittedCustomerClaim = {
   token: string;
 };
 
+type PosToast = {
+  amount?: string;
+  detail?: string;
+  id: number;
+  title: string;
+  tone: "error" | "success";
+};
+
 type PosDeskClientActions = {
   adjustStaffTurn: (input: {
     delta: number;
@@ -112,9 +126,11 @@ type PosDeskClientActions = {
       }
     | { error: string; ok: false }
   >;
+  cancelWaitingVisitForPos: typeof cancelWaitingVisitForPos;
   createPosDeskCustomer: typeof createPosDeskCustomer;
   getPosLiveDraft: typeof getPosLiveDraft;
   searchPosDeskCustomers: typeof searchPosDeskCustomers;
+  selectWaitingVisitForPos: typeof selectWaitingVisitForPos;
   submitPosDeskReceipt: typeof submitPosDeskReceipt;
   touchCustomerDisplayLiveDraftActivity: typeof touchCustomerDisplayLiveDraftActivity;
   updatePosActiveDraft: typeof updatePosActiveDraft;
@@ -126,6 +142,7 @@ const emptyDraft: DraftState = {
   customerId: null,
   customerLookup: "",
   customerName: "",
+  customerVisitId: null,
   discountInput: "",
   discountType: "fixed_amount",
   editingLineId: null,
@@ -142,18 +159,98 @@ const emptyCustomerCreateDraft: CustomerCreateDraft = {
   phone: "",
 };
 
+const EMPTY_REQUESTED_SERVICES: NonNullable<
+  PosLiveDraftCustomer["requestedServices"]
+> = [];
+
 const POS_IDLE_RESET_MS = 3 * 60 * 1000;
+const POS_TOAST_DISMISS_MS = 5000;
+const VISIBLE_SERVICE_TILE_LIMIT = 10;
+const WAITING_DRAWER_MARGIN = 12;
+const WAITING_DRAWER_DESKTOP_WIDTH = 420;
+const WAITING_DRAWER_PORTABLE_WIDTH = 460;
+const WAITING_DRAWER_MAX_HEIGHT = 560;
 const DISPLAY_IDLE_RESET_SECONDS = 180;
 const DISPLAY_ACTIVITY_THROTTLE_MS = 5000;
 const PASSCODE_IDLE_CLEAR_MS = 2 * 60 * 1000;
 const STAFF_TURN_HOLD_MS = 3000;
 const STAFF_TURN_HOLD_MOVE_CANCEL_PX = 10;
 
+type WaitingDrawerPlacement = {
+  left: number;
+  maxHeight: number;
+  top: number;
+  width: number;
+};
+
 function formatMoney(amount: number) {
   return new Intl.NumberFormat("en-US", {
     currency: "USD",
     style: "currency",
   }).format(amount);
+}
+
+function formatAppointmentTime(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatWaitDuration(value: string) {
+  const checkedInAt = new Date(value).getTime();
+
+  if (Number.isNaN(checkedInAt)) {
+    return "Waiting";
+  }
+
+  const totalMinutes = Math.max(0, Math.floor((Date.now() - checkedInAt) / 60000));
+
+  if (totalMinutes < 1) {
+    return "Just now";
+  }
+
+  if (totalMinutes < 60) {
+    return `${totalMinutes}m`;
+  }
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+}
+
+function getVisitSourceLabel(source: CustomerVisitQueueItem["source"]) {
+  if (source === "appointment") {
+    return "Appt";
+  }
+
+  if (source === "walk_in") {
+    return "Walk-in";
+  }
+
+  return "Screen";
+}
+
+function getWaitingVisitMetaParts(visit: CustomerVisitQueueItem) {
+  const appointmentTime = formatAppointmentTime(visit.appointmentStartAt);
+
+  return [
+    formatWaitDuration(visit.checkedInAt),
+    appointmentTime ?? getVisitSourceLabel(visit.source),
+    visit.serviceLabel,
+    visit.assignedStaffName,
+  ].filter((part): part is string => Boolean(part));
 }
 
 function normalizeKeypadInput(current: string, key: string) {
@@ -209,26 +306,94 @@ function canOfferCustomerCreate(value: string) {
   return isCompleteUsPhone(trimmed) || trimmed.length >= 6;
 }
 
-function getStaffCardColor(largeTurns: number, smallTurns: number, selected: boolean) {
-  if (selected) {
-    return "border-emerald-700 bg-emerald-50 text-zinc-950 ring-2 ring-emerald-600";
+const STAFF_TURN_TONE_CLASSES = [
+  "border-cyan-200/90 bg-gradient-to-br from-cyan-100/90 via-teal-50/90 to-white/80 text-zinc-950 shadow-[0_10px_24px_rgba(8,145,178,0.10)]",
+  "border-lime-200/90 bg-gradient-to-br from-lime-100/90 via-green-50/90 to-white/80 text-zinc-950 shadow-[0_12px_26px_rgba(101,163,13,0.12)]",
+  "border-yellow-300/90 bg-gradient-to-br from-yellow-100/95 via-amber-50/90 to-white/82 text-zinc-950 shadow-[0_14px_30px_rgba(217,119,6,0.14)]",
+  "border-orange-300/90 bg-gradient-to-br from-orange-100/95 via-amber-100/90 to-white/82 text-zinc-950 shadow-[0_16px_34px_rgba(234,88,12,0.16)]",
+  "border-rose-300/90 bg-gradient-to-br from-rose-100/95 via-orange-100/90 to-white/82 text-zinc-950 shadow-[0_18px_38px_rgba(244,63,94,0.18)]",
+];
+
+function clampNumber(value: number, min: number, max: number) {
+  if (max < min) {
+    return min;
   }
 
-  const heat = Math.min(6, largeTurns * 2 + smallTurns);
+  return Math.min(max, Math.max(min, value));
+}
 
-  if (heat <= 1) {
-    return "border-zinc-200 bg-zinc-50 text-zinc-950";
-  }
+function getWaitingDrawerPlacement(
+  anchorRect: DOMRect | null,
+  viewportWidth: number,
+  viewportHeight: number,
+  portable: boolean,
+): WaitingDrawerPlacement {
+  const availableWidth = Math.max(0, viewportWidth - WAITING_DRAWER_MARGIN * 2);
+  const preferredWidth = portable
+    ? WAITING_DRAWER_PORTABLE_WIDTH
+    : WAITING_DRAWER_DESKTOP_WIDTH;
+  const width = Math.min(preferredWidth, availableWidth);
+  const anchorBottom = anchorRect?.bottom ?? WAITING_DRAWER_MARGIN;
+  const anchorTop = anchorRect?.top ?? WAITING_DRAWER_MARGIN;
+  const preferredTop = anchorBottom + 8;
+  const heightLimit = Math.min(
+    WAITING_DRAWER_MAX_HEIGHT,
+    Math.max(0, viewportHeight - WAITING_DRAWER_MARGIN * 2),
+  );
+  const availableBelow =
+    viewportHeight - preferredTop - WAITING_DRAWER_MARGIN;
+  const top =
+    availableBelow >= 240
+      ? preferredTop
+      : clampNumber(
+          anchorTop - heightLimit - 8,
+          WAITING_DRAWER_MARGIN,
+          viewportHeight - heightLimit - WAITING_DRAWER_MARGIN,
+        );
+  const maxHeight = Math.max(
+    0,
+    Math.min(
+      WAITING_DRAWER_MAX_HEIGHT,
+      viewportHeight - top - WAITING_DRAWER_MARGIN,
+    ),
+  );
+  const preferredLeft = anchorRect?.left ?? WAITING_DRAWER_MARGIN;
+  const rightAlignedLeft = anchorRect
+    ? anchorRect.right - width
+    : WAITING_DRAWER_MARGIN;
+  const left =
+    preferredLeft + width <= viewportWidth - WAITING_DRAWER_MARGIN ||
+    rightAlignedLeft < WAITING_DRAWER_MARGIN
+      ? preferredLeft
+      : rightAlignedLeft;
 
-  if (heat <= 3) {
-    return "border-amber-200 bg-amber-50 text-zinc-950";
-  }
+  return {
+    left: clampNumber(
+      left,
+      WAITING_DRAWER_MARGIN,
+      viewportWidth - width - WAITING_DRAWER_MARGIN,
+    ),
+    maxHeight,
+    top,
+    width,
+  };
+}
 
-  if (heat <= 5) {
-    return "border-orange-300 bg-orange-100 text-zinc-950";
-  }
+function getStaffCardToneClass(toneLevel: number, selected: boolean) {
+  const boundedToneLevel = clampNumber(
+    toneLevel,
+    0,
+    STAFF_TURN_TONE_CLASSES.length - 1,
+  );
 
-  return "border-red-400 bg-red-700 text-white";
+  return [
+    STAFF_TURN_TONE_CLASSES[boundedToneLevel],
+    selected
+      ? "ring-2 ring-brand-orange ring-offset-2 ring-offset-white after:absolute after:right-2 after:top-2 after:h-2.5 after:w-2.5 after:rounded-full after:bg-white after:ring-2 after:ring-brand-orange after:content-['']"
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function hasPositiveAmount(line: PosDeskSessionLine) {
@@ -299,6 +464,7 @@ export function PosDeskClient({
   surface = "standard",
   staff,
   today,
+  waitingVisits = [],
 }: {
   actions?: Partial<PosDeskClientActions>;
   activeSession: PosDeskSessionView | null;
@@ -310,13 +476,18 @@ export function PosDeskClient({
   surface?: "portable" | "standard";
   staff: PosDeskStaff[];
   today?: string;
+  waitingVisits?: CustomerVisitQueueItem[];
 }) {
   const adjustStaffTurnAction = actions?.adjustStaffTurn;
+  const cancelWaitingVisitAction =
+    actions?.cancelWaitingVisitForPos ?? cancelWaitingVisitForPos;
   const createCustomerAction =
     actions?.createPosDeskCustomer ?? createPosDeskCustomer;
   const getLiveDraftAction = actions?.getPosLiveDraft ?? getPosLiveDraft;
   const searchCustomersAction =
     actions?.searchPosDeskCustomers ?? searchPosDeskCustomers;
+  const selectWaitingVisitAction =
+    actions?.selectWaitingVisitForPos ?? selectWaitingVisitForPos;
   const submitReceiptAction =
     actions?.submitPosDeskReceipt ?? submitPosDeskReceipt;
   const updateActiveDraftAction =
@@ -350,6 +521,7 @@ export function PosDeskClient({
     customerId: initialLiveDraftCustomer?.id ?? null,
     customerLookup: initialLiveDraftCustomer?.phone ?? "",
     customerName: initialLiveDraftCustomer?.name ?? "",
+    customerVisitId: initialLiveDraftCustomer?.visitId ?? null,
     editingLineId: initialSelectedLine?.id ?? null,
     selectedServiceId: initialSelectedLine?.service_id ?? null,
     selectedStaffId: initialLiveDraftSelectedStaffId,
@@ -380,11 +552,23 @@ export function PosDeskClient({
   const [liveCustomer, setLiveCustomer] = useState<PosLiveDraftCustomer | null>(
     initialLiveDraftCustomer,
   );
+  const [removedWaitingVisitIds, setRemovedWaitingVisitIds] = useState<
+    Set<string>
+  >(() => new Set());
+  const [waitingVisitBusyId, setWaitingVisitBusyId] = useState<string | null>(
+    null,
+  );
+  const [waitingDrawerOpen, setWaitingDrawerOpen] = useState(false);
+  const [waitingDrawerPlacement, setWaitingDrawerPlacement] =
+    useState<WaitingDrawerPlacement | null>(null);
+  const [openWaitingVisitMenuId, setOpenWaitingVisitMenuId] = useState<
+    string | null
+  >(null);
   const [draftRestored, setDraftRestored] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<PosToast | null>(null);
   const [customerClaim, setCustomerClaim] =
     useState<SubmittedCustomerClaim | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [liveDraftSyncNonce, setLiveDraftSyncNonce] = useState(0);
@@ -411,6 +595,7 @@ export function PosDeskClient({
   const suppressNextStaffClickRef = useRef(false);
   const submitLockedRef = useRef(false);
   const tipInputRef = useRef<HTMLInputElement | null>(null);
+  const waitingButtonRef = useRef<HTMLButtonElement | null>(null);
   const receiptLocked = isResetting || isSubmitting;
   const receiptLockMessage = isSubmitting
     ? "Receipt is submitting. Please wait."
@@ -420,19 +605,61 @@ export function PosDeskClient({
   const liveDraftToken = liveDraft?.token;
   const staffRealtimeSalonId = liveDraft?.salon_id ?? activeSession?.salon_id ?? null;
   const isPortableSurface = surface === "portable";
+  const selectedWaitingVisitId = draft.customerVisitId;
+  const visitQueue = useMemo(
+    () => waitingVisits.filter((visit) => !removedWaitingVisitIds.has(visit.id)),
+    [removedWaitingVisitIds, waitingVisits],
+  );
+  const updateWaitingDrawerPlacement = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    setWaitingDrawerPlacement(
+      getWaitingDrawerPlacement(
+        waitingButtonRef.current?.getBoundingClientRect() ?? null,
+        window.innerWidth,
+        window.innerHeight,
+        isPortableSurface || window.innerWidth < 640,
+      ),
+    );
+  }, [isPortableSurface]);
 
   const selectedService = services.find(
     (service) => service.id === draft.selectedServiceId,
   );
   const selectedCustomer = liveCustomer;
+  const requestedServices =
+    selectedCustomer?.requestedServices ?? EMPTY_REQUESTED_SERVICES;
+  const serviceIdSet = useMemo(
+    () => new Set(services.map((service) => service.id)),
+    [services],
+  );
   const tipAmount = Number(draft.tipInput || 0);
   const discountAmount = Number(draft.discountInput || 0);
   const staffLines = draftStaffLines;
+  const positiveStaffLines = useMemo(
+    () => staffLines.filter(hasPositiveAmount),
+    [staffLines],
+  );
+  const unpricedRequestedServices = useMemo(
+    () =>
+      requestedServices.filter(
+        (service) =>
+          !positiveStaffLines.some((line) => line.service_id === service.id),
+      ),
+    [positiveStaffLines, requestedServices],
+  );
   const tipSuggestions =
     defaults.tipSuggestions.length > 0
       ? defaults.tipSuggestions.slice(0, 4)
       : [5, 10, 15, 20];
   const sortedStaff = staff;
+  const staffTurnToneCounts = useMemo(
+    () =>
+      staff.map((member) => member.turns.queueTurns ?? member.turns.largeTurns),
+    [staff],
+  );
   const customerClaimUrl = useMemo(() => {
     if (!customerClaim) {
       return null;
@@ -459,6 +686,63 @@ export function PosDeskClient({
       service.name.toLowerCase().includes(query),
     );
   }, [serviceSearch, services]);
+  const visibleServiceTiles = useMemo(() => {
+    const tiles: Array<{
+      category: string | null;
+      id: string;
+      name: string;
+      requested: boolean;
+    }> = [];
+    const seen = new Set<string>();
+    const addTile = (input: {
+      category?: string | null;
+      id: string;
+      name: string;
+      requested?: boolean;
+    }) => {
+      if (seen.has(input.id) || tiles.length >= VISIBLE_SERVICE_TILE_LIMIT) {
+        return;
+      }
+
+      seen.add(input.id);
+      tiles.push({
+        category: input.category ?? null,
+        id: input.id,
+        name: input.name,
+        requested: Boolean(input.requested),
+      });
+    };
+
+    for (const service of requestedServices) {
+      addTile({
+        category: service.category,
+        id: service.id,
+        name: service.name,
+        requested: true,
+      });
+    }
+
+    if (selectedService) {
+      addTile({
+        category: selectedService.category,
+        id: selectedService.id,
+        name: selectedService.name,
+      });
+    }
+
+    for (const service of services) {
+      addTile({
+        category: service.category,
+        id: service.id,
+        name: service.name,
+      });
+    }
+
+    return tiles;
+  }, [requestedServices, selectedService, services]);
+  const hasHiddenServiceTiles = services.some(
+    (service) => !visibleServiceTiles.some((tile) => tile.id === service.id),
+  );
   const totals = useMemo(
     () =>
       calculateTicketTotals({
@@ -524,6 +808,7 @@ export function PosDeskClient({
       Boolean(draft.customerId) ||
       Boolean(draft.customerLookup.trim()) ||
       Boolean(draft.customerName.trim()) ||
+      Boolean(draft.customerVisitId) ||
       Boolean(draft.discountInput.trim()) ||
       Boolean(draft.giftCardInput.trim()) ||
       Boolean(draft.note.trim()) ||
@@ -534,6 +819,7 @@ export function PosDeskClient({
       draft.customerId,
       draft.customerLookup,
       draft.customerName,
+      draft.customerVisitId,
       draft.discountInput,
       draft.giftCardInput,
       draft.note,
@@ -550,6 +836,7 @@ export function PosDeskClient({
         customerId: draft.customerId,
         customerLookup: draft.customerLookup,
         customerName: draft.customerName,
+        customerVisitId: draft.customerVisitId,
         discountInput: draft.discountInput,
         discountType: draft.discountType,
         giftCardInput: draft.giftCardInput,
@@ -568,6 +855,7 @@ export function PosDeskClient({
       draft.customerId,
       draft.customerLookup,
       draft.customerName,
+      draft.customerVisitId,
       draft.discountInput,
       draft.discountType,
       draft.giftCardInput,
@@ -583,6 +871,60 @@ export function PosDeskClient({
     setDraft((current) => ({ ...current, ...next }));
     setError(null);
   }, []);
+
+  const showToast = useCallback((input: Omit<PosToast, "id">) => {
+    setToast({
+      ...input,
+      id: Date.now(),
+    });
+  }, []);
+
+  const showError = useCallback((message: string) => {
+    setError(message);
+    showToast({
+      detail: message,
+      title: "POS action needs attention",
+      tone: "error",
+    });
+  }, [showToast]);
+
+  useEffect(() => {
+    if (!toast) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setToast((current) => (current?.id === toast.id ? null : current));
+    }, POS_TOAST_DISMISS_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [toast]);
+
+  useEffect(() => {
+    if (!waitingDrawerOpen) {
+      return;
+    }
+
+    updateWaitingDrawerPlacement();
+    function closeWaitingOnEscape(event: globalThis.KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setWaitingDrawerOpen(false);
+      setOpenWaitingVisitMenuId(null);
+    }
+
+    window.addEventListener("keydown", closeWaitingOnEscape);
+    window.addEventListener("resize", updateWaitingDrawerPlacement);
+    window.addEventListener("scroll", updateWaitingDrawerPlacement, true);
+
+    return () => {
+      window.removeEventListener("keydown", closeWaitingOnEscape);
+      window.removeEventListener("resize", updateWaitingDrawerPlacement);
+      window.removeEventListener("scroll", updateWaitingDrawerPlacement, true);
+    };
+  }, [updateWaitingDrawerPlacement, waitingDrawerOpen]);
 
   const clearStaffTurnHold = useCallback(() => {
     const hold = holdStaffPointerRef.current;
@@ -638,10 +980,10 @@ export function PosDeskClient({
         return;
       }
 
-      setError(result.error);
+      showError(result.error);
       setLastAction("Display activity sync failed");
     });
-  }, [liveDraftToken, touchLiveDraftActivityAction]);
+  }, [liveDraftToken, showError, touchLiveDraftActivityAction]);
 
   const focusReceiptMoneyInput = useCallback((mode: "discount" | "tip") => {
     setKeypadMode(mode);
@@ -743,7 +1085,7 @@ export function PosDeskClient({
         }
 
         if (!result.ok) {
-          setError(result.error);
+          showError(result.error);
           setLastAction("Customer sync failed");
           return;
         }
@@ -751,13 +1093,13 @@ export function PosDeskClient({
         liveDraftVersionRef.current = result.data.version;
       });
     },
-    [liveDraftToken, startTransition, updateLiveDraftCustomerAction],
+    [liveDraftToken, showError, startTransition, updateLiveDraftCustomerAction],
   );
 
   const saveCustomerToSession = useCallback(
     (customer?: PosDeskCustomer) => {
       if (receiptLocked) {
-        setError(receiptLockMessage);
+        showError(receiptLockMessage);
         setLastAction("Customer save blocked");
         return;
       }
@@ -781,6 +1123,7 @@ export function PosDeskClient({
           customerId: customer.id,
           customerLookup: customer.phone ?? customer.email ?? customer.name,
           customerName: customer.name,
+          customerVisitId: null,
         });
         setCustomerResults([]);
         setCustomerSearchComplete(false);
@@ -789,7 +1132,6 @@ export function PosDeskClient({
       if (nextCustomer) {
         publishCustomerToLiveDraft(nextCustomer);
       }
-      setMessage("Customer saved locally.");
       setLastAction("Customer saved locally");
     },
     [
@@ -798,6 +1140,7 @@ export function PosDeskClient({
       publishCustomerToLiveDraft,
       receiptLockMessage,
       receiptLocked,
+      showError,
       updateDraft,
     ],
   );
@@ -837,7 +1180,7 @@ export function PosDeskClient({
         totalBeforeTip: liveTotalBeforeTip,
       }).then((result) => {
         if (!result.ok) {
-          setError(result.error);
+          showError(result.error);
           setLastAction("Live draft sync failed");
           return;
         }
@@ -873,6 +1216,7 @@ export function PosDeskClient({
     totals.tip_amount,
     totals.total,
     updateActiveDraftAction,
+    showError,
   ]);
 
   useEffect(() => {
@@ -901,7 +1245,7 @@ export function PosDeskClient({
         totalBeforeTip: liveTotalBeforeTip,
       }).then((result) => {
         if (!result.ok) {
-          setError(result.error);
+          showError(result.error);
           setLastAction("Live draft sync failed");
           return;
         }
@@ -927,6 +1271,7 @@ export function PosDeskClient({
     totals.tip_amount,
     totals.total,
     updateActiveDraftAction,
+    showError,
   ]);
 
   useEffect(() => {
@@ -962,7 +1307,7 @@ export function PosDeskClient({
           }
         } catch (error) {
           if (!cancelled) {
-            setError(
+            showError(
               error instanceof Error ? error.message : "Unable to search customer.",
             );
             setCustomerSearchComplete(true);
@@ -976,7 +1321,13 @@ export function PosDeskClient({
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [draft.customerLookup, receiptLocked, searchCustomersAction, selectedCustomer]);
+  }, [
+    draft.customerLookup,
+    receiptLocked,
+    searchCustomersAction,
+    selectedCustomer,
+    showError,
+  ]);
 
   const applyCustomerDisplaySnapshot = useCallback(
     (snapshot: PosLiveDraftView) => {
@@ -1002,19 +1353,33 @@ export function PosDeskClient({
           next.customerId = snapshot.customer.id;
           next.customerLookup = snapshot.customer.phone ?? current.customerLookup;
           next.customerName = snapshot.customer.name;
+          next.customerVisitId = snapshot.customer.visitId ?? null;
+          const firstRequestedServiceId =
+            snapshot.customer.requestedServices?.find((service) =>
+              serviceIdSet.has(service.id),
+            )?.id ?? null;
+
+          if (
+            firstRequestedServiceId &&
+            (!current.selectedServiceId ||
+              !serviceIdSet.has(current.selectedServiceId))
+          ) {
+            next.selectedServiceId = firstRequestedServiceId;
+          }
         }
 
-        if (!snapshot.customer && current.customerId) {
+        if (!snapshot.customer && (current.customerId || current.customerVisitId)) {
           next.customerId = null;
           next.customerLookup = "";
           next.customerName = "";
+          next.customerVisitId = null;
         }
 
         return next;
       });
       setLastAction("Customer display synced");
     },
-    [],
+    [serviceIdSet],
   );
 
   useEffect(() => {
@@ -1077,7 +1442,7 @@ export function PosDeskClient({
   ]);
 
   useEffect(() => {
-    if (!staffRealtimeSalonId || !isPortableSurface) {
+    if (!staffRealtimeSalonId) {
       return;
     }
 
@@ -1103,7 +1468,7 @@ export function PosDeskClient({
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [isPortableSurface, router, staffRealtimeSalonId]);
+  }, [router, staffRealtimeSalonId]);
 
   function createStaffLine(
     staffId: string,
@@ -1126,6 +1491,39 @@ export function PosDeskClient({
       turn_large_count: 0,
       turn_small_count: 0,
     };
+  }
+
+  function getNextRequestedServiceIdForLine(
+    currentLine: PosDeskSessionLine | null,
+  ) {
+    if (requestedServices.length === 0) {
+      return null;
+    }
+
+    const completedServiceIds = new Set(
+      staffLines
+        .filter(hasPositiveAmount)
+        .map((line) => line.service_id)
+        .filter((serviceId): serviceId is string => Boolean(serviceId)),
+    );
+
+    if (currentLine?.service_id) {
+      completedServiceIds.add(currentLine.service_id);
+    }
+
+    return (
+      requestedServices.find((service) => !completedServiceIds.has(service.id))
+        ?.id ?? null
+    );
+  }
+
+  function createNextStaffEntry(staffId: string, currentLine: PosDeskSessionLine | null) {
+    const nextServiceId = getNextRequestedServiceIdForLine(currentLine);
+    return createStaffLine(
+      staffId,
+      staffLines.length + 1,
+      nextServiceId ?? null,
+    );
   }
 
   function getActiveLine(lines = staffLines) {
@@ -1284,7 +1682,7 @@ export function PosDeskClient({
 
   function selectStaff(staffId: string) {
     if (receiptLocked) {
-      setError(receiptLockMessage);
+      showError(receiptLockMessage);
       setLastAction("Staff select blocked");
       return;
     }
@@ -1328,18 +1726,21 @@ export function PosDeskClient({
       return;
     }
 
-    if (existingStaffLine) {
+    if (existingStaffLine && (!activeLine || !hasPositiveAmount(activeLine))) {
       focusLine(existingStaffLine);
       queueLiveDraftSync();
       setLastAction("Existing staff line selected");
       return;
     }
 
-    const nextLine = createStaffLine(
-      staffId,
-      staffLines.length + 1,
-      activeLine ? null : draft.selectedServiceId,
-    );
+    const nextLine =
+      activeLine && hasPositiveAmount(activeLine)
+        ? createNextStaffEntry(staffId, activeLine)
+        : createStaffLine(
+            staffId,
+            staffLines.length + 1,
+            draft.selectedServiceId,
+          );
     setDraftStaffLines((current) => [...current, nextLine]);
     focusLine(nextLine);
     queueLiveDraftSync();
@@ -1358,14 +1759,13 @@ export function PosDeskClient({
 
   function removeLine(lineId: string) {
     if (receiptLocked) {
-      setError(receiptLockMessage);
+      showError(receiptLockMessage);
       setLastAction("Edit blocked");
       return;
     }
 
     const nextLines = staffLines.filter((line) => line.id !== lineId);
     setDraftStaffLines(nextLines);
-    setMessage("Receipt line removed.");
     setLastAction("Line removed");
     setDraft((current) => ({
       ...current,
@@ -1379,7 +1779,7 @@ export function PosDeskClient({
 
   function updateSelectedStaffAmount(amountInput: string) {
     if (!draft.editingLineId) {
-      setError("Select staff before entering an amount.");
+      showError("Select staff before entering an amount.");
       setLastAction("Amount blocked");
       return;
     }
@@ -1448,6 +1848,33 @@ export function PosDeskClient({
     }
 
     const activeLine = getActiveLine();
+
+    if (activeLine && hasPositiveAmount(activeLine)) {
+      const staffId = activeLine.staff_id ?? draft.selectedStaffId;
+
+      if (!staffId) {
+        updateDraft({ selectedServiceId: serviceId });
+        setShowServicePicker(false);
+        setServiceSearch("");
+        setKeypadMode("amount");
+        return;
+      }
+
+      const nextLine = createStaffLine(
+        staffId,
+        staffLines.length + 1,
+        serviceId,
+      );
+
+      setDraftStaffLines((current) => [...current, nextLine]);
+      focusLine(nextLine);
+      queueLiveDraftSync();
+      setShowServicePicker(false);
+      setServiceSearch("");
+      setKeypadMode("amount");
+      return;
+    }
+
     const lineToUpdate =
       activeLine ??
       (draft.selectedStaffId
@@ -1606,7 +2033,6 @@ export function PosDeskClient({
     setLiveCustomer(null);
     setDraftRestored(false);
     setError(null);
-    setMessage(null);
     setCustomerClaim(null);
     setCustomerResults([]);
     setCustomerSearchComplete(false);
@@ -1668,16 +2094,14 @@ export function PosDeskClient({
         router.refresh();
 
         if (reason === "idle") {
-          setMessage("POS reset after 3 minutes without activity.");
           setLastAction("Idle reset");
         } else if (reason === "manual") {
-          setMessage("Receipt reset.");
           setLastAction("Receipt reset");
         }
 
         return true;
       } catch (error) {
-        setError(
+        showError(
           error instanceof Error ? error.message : "Unable to reset POS receipt.",
         );
         setLastAction("Reset failed");
@@ -1687,7 +2111,7 @@ export function PosDeskClient({
         setIsResetting(false);
       }
     },
-    [clearDraft, router, syncEmptyLiveDraft],
+    [clearDraft, router, showError, syncEmptyLiveDraft],
   );
 
   useEffect(() => {
@@ -1711,13 +2135,13 @@ export function PosDeskClient({
 
   function submitReceipt() {
     if (submitLockedRef.current) {
-      setMessage("Receipt is already submitting. Please wait.");
+      showError("Receipt is already submitting. Please wait.");
       setLastAction("Submit already running");
       return;
     }
 
     if (isResetting) {
-      setError("Receipt is resetting. Please wait.");
+      showError("Receipt is resetting. Please wait.");
       setLastAction("Submit blocked");
       return;
     }
@@ -1731,7 +2155,7 @@ export function PosDeskClient({
         editingLineId: null,
         selectedStaffId: null,
       });
-      setError("Add at least one service amount before submit.");
+      showError("Add at least one service amount before submit.");
       setLastAction("Submit blocked");
       return;
     }
@@ -1761,7 +2185,12 @@ export function PosDeskClient({
     submitLockedRef.current = true;
     setIsSubmitting(true);
     setCustomerClaim(null);
-    setMessage("Submitting receipt...");
+    const submittedCustomerName =
+      draft.customerName.trim() ||
+      selectedCustomer?.name ||
+      draft.customerLookup.trim() ||
+      "Walk-in";
+    const submittedTotal = totals.total;
     startTransition(async () => {
       try {
         setError(null);
@@ -1769,6 +2198,8 @@ export function PosDeskClient({
           customerId: draft.customerId ?? selectedCustomer?.id,
           customerLookup: draft.customerLookup || selectedCustomer?.phone,
           customerName: draft.customerName || selectedCustomer?.name,
+          customerVisitId:
+            draft.customerVisitId ?? selectedCustomer?.visitId ?? null,
           discountType: draft.discountType,
           discountValue: totals.discount_value,
           lines: submitLines,
@@ -1778,20 +2209,23 @@ export function PosDeskClient({
         });
 
         if (!result.ok) {
-          setMessage(null);
-          setError(result.error);
+          showError(result.error);
           setLastAction("Submit failed");
           return;
         }
 
         holdCompletedDisplayRef.current = true;
         clearDraft();
-        setMessage(`Ticket ${result.ticketNumber} submitted.`);
+        showToast({
+          amount: formatMoney(submittedTotal),
+          detail: submittedCustomerName,
+          title: `Ticket ${result.ticketNumber} submitted`,
+          tone: "success",
+        });
         setCustomerClaim(result.customerClaim ?? null);
         setLastAction("Receipt submitted");
       } catch (error) {
-        setMessage(null);
-        setError(
+        showError(
           error instanceof Error ? error.message : "Unable to submit POS receipt.",
         );
         setLastAction("Submit failed");
@@ -1858,11 +2292,13 @@ export function PosDeskClient({
       }
 
       closeTurnAdjustment();
-      setMessage(
-        `${staffName} turn adjusted ${result.data.delta > 0 ? "+" : ""}${
+      showToast({
+        detail: `${staffName} ${result.data.delta > 0 ? "+" : ""}${
           result.data.delta
-        } to ${result.data.newTurn}.`,
-      );
+        } to ${result.data.newTurn}`,
+        title: "Turn adjusted",
+        tone: "success",
+      });
       setLastAction("Staff turn adjusted");
       router.refresh();
     });
@@ -1873,13 +2309,133 @@ export function PosDeskClient({
       customerId: null,
       customerLookup: "",
       customerName: "",
+      customerVisitId: null,
     });
     setCustomerResults([]);
     setCustomerSearchComplete(false);
     setShowCustomerCreateModal(false);
     publishCustomerToLiveDraft(null);
-    setMessage("Customer cleared.");
     setLastAction("Customer cleared");
+  }
+
+  function selectWaitingVisit(visit: CustomerVisitQueueItem) {
+    if (receiptLocked) {
+      showError(receiptLockMessage);
+      setLastAction("Waiting client select blocked");
+      return;
+    }
+
+    if (!liveDraftToken) {
+      showError("Live draft is unavailable. Open POS again and retry.");
+      setLastAction("Waiting client select blocked");
+      return;
+    }
+
+    setWaitingVisitBusyId(visit.id);
+    startTransition(async () => {
+      try {
+        const result = await selectWaitingVisitAction({
+          token: liveDraftToken,
+          visitId: visit.id,
+        });
+
+        if (!result.ok) {
+          showError(result.error);
+          setLastAction("Waiting client select failed");
+          return;
+        }
+
+        if (result.data.snapshot) {
+          applyCustomerDisplaySnapshot(result.data.snapshot);
+        } else {
+          const customer = {
+            id: visit.customerId,
+            name: visit.customerName,
+            phone: visit.customerPhone,
+            requestedServices: visit.requestedServices,
+            visitId: visit.id,
+          };
+          const firstRequestedServiceId =
+            visit.requestedServices.find((service) => serviceIdSet.has(service.id))
+              ?.id ?? null;
+          setLiveCustomer(customer);
+          updateDraft({
+            customerId: visit.customerId,
+            customerLookup: visit.customerPhone ?? "",
+            customerName: visit.customerName,
+            customerVisitId: visit.id,
+            selectedServiceId: firstRequestedServiceId ?? draft.selectedServiceId,
+          });
+        }
+
+        setLastAction("Waiting client selected");
+        setOpenWaitingVisitMenuId(null);
+        setWaitingDrawerOpen(false);
+        router.refresh();
+      } catch (error) {
+        showError(
+          error instanceof Error
+            ? error.message
+            : "Unable to select waiting client.",
+        );
+        setLastAction("Waiting client select failed");
+      } finally {
+        setWaitingVisitBusyId((current) => (current === visit.id ? null : current));
+      }
+    });
+  }
+
+  function removeWaitingVisit(visit: CustomerVisitQueueItem) {
+    setWaitingVisitBusyId(visit.id);
+    startTransition(async () => {
+      try {
+        const result = await cancelWaitingVisitAction({
+          visitId: visit.id,
+        });
+
+        if (!result.ok) {
+          showError(result.error);
+          setLastAction("Waiting client remove failed");
+          return;
+        }
+
+        setRemovedWaitingVisitIds((current) => {
+          const next = new Set(current);
+          next.add(visit.id);
+          return next;
+        });
+
+        if (draft.customerVisitId === visit.id) {
+          const customer = liveCustomer
+            ? { ...liveCustomer, visitId: null }
+            : null;
+
+          updateDraft({ customerVisitId: null });
+
+          if (customer) {
+            publishCustomerToLiveDraft(customer);
+          }
+        }
+
+        showToast({
+          detail: getFirstName(visit.customerName),
+          title: "Removed from waiting",
+          tone: "success",
+        });
+        setLastAction("Waiting client removed");
+        setOpenWaitingVisitMenuId(null);
+        router.refresh();
+      } catch (error) {
+        showError(
+          error instanceof Error
+            ? error.message
+            : "Unable to remove waiting client.",
+        );
+        setLastAction("Waiting client remove failed");
+      } finally {
+        setWaitingVisitBusyId((current) => (current === visit.id ? null : current));
+      }
+    });
   }
 
   function openCustomerCreateFromLookup() {
@@ -1896,7 +2452,7 @@ export function PosDeskClient({
     const name = customerCreateDraft.name.trim();
 
     if (!name) {
-      setError("Customer name is required.");
+      showError("Customer name is required.");
       setLastAction("Customer create blocked");
       return;
     }
@@ -1909,7 +2465,7 @@ export function PosDeskClient({
       });
 
       if (!result.ok) {
-        setError(result.error);
+        showError(result.error);
         setLastAction("Customer create failed");
         return;
       }
@@ -1917,7 +2473,6 @@ export function PosDeskClient({
       setShowCustomerCreateModal(false);
       setCustomerCreateDraft(emptyCustomerCreateDraft);
       saveCustomerToSession(result.data);
-      setMessage("Customer created.");
       setLastAction("Customer created");
     });
   }
@@ -1926,18 +2481,17 @@ export function PosDeskClient({
     const nextTip = Number(value || 0);
 
     if (!Number.isFinite(nextTip) || nextTip < 0) {
-      setError("Tip must be zero or greater.");
+      showError("Tip must be zero or greater.");
       setLastAction("Tip save blocked");
       return;
     }
 
     if (receiptLocked) {
-      setError(receiptLockMessage);
+      showError(receiptLockMessage);
       setLastAction("Tip save blocked");
       return;
     }
 
-    setMessage("Tip saved locally.");
     setLastAction("Tip saved locally");
   }
 
@@ -2052,7 +2606,7 @@ export function PosDeskClient({
       }
     : undefined;
   const panelClass = [
-    "flex min-h-0 flex-col overflow-hidden rounded-lg border border-zinc-300 bg-white",
+    "flex min-h-0 flex-col overflow-hidden rounded-lg border border-white/70 bg-white/80 shadow-[0_18px_46px_rgba(24,24,27,0.10)] backdrop-blur",
     isPortableSurface ? "p-3" : "p-4",
   ].join(" ");
   const showSubtotalRow =
@@ -2060,9 +2614,253 @@ export function PosDeskClient({
     (totals.discount_amount > 0 ||
       totals.tax_amount !== 0 ||
       totals.tip_amount > 0);
+  const waitingDrawerTitle = `Waiting ${visitQueue.length}`;
+  const waitingRows = (
+    <div className="grid gap-2">
+      {visitQueue.map((visit) => {
+        const selected = selectedWaitingVisitId === visit.id;
+        const busy = waitingVisitBusyId === visit.id;
+        const menuOpen = openWaitingVisitMenuId === visit.id;
+        const meta = getWaitingVisitMetaParts(visit);
+
+        return (
+          <div
+            className={[
+              "grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md border p-1.5",
+              selected
+                ? "border-emerald-400 bg-emerald-50"
+                : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50",
+            ].join(" ")}
+            data-pos-waiting-row
+            key={visit.id}
+          >
+            <button
+              aria-label={`Select ${visit.customerName} from waiting`}
+              className="grid min-h-14 min-w-0 rounded px-2 py-1 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-wait disabled:opacity-60"
+              data-pos-waiting-row-select
+              disabled={isPending || receiptLocked || !liveDraftToken || busy}
+              onClick={() => selectWaitingVisit(visit)}
+              type="button"
+            >
+              <div className="min-w-0">
+                <div className="flex min-w-0 items-center gap-2">
+                  <p className="truncate text-sm font-semibold text-zinc-950">
+                    {visit.customerName}
+                  </p>
+                  {selected ? (
+                    <span className="shrink-0 rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                      Selected
+                    </span>
+                  ) : null}
+                  {busy ? (
+                    <span className="shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-[11px] font-semibold text-zinc-700">
+                      Working
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-zinc-600">
+                  {meta.join(" / ")}
+                </p>
+              </div>
+            </button>
+            <div className="relative">
+              <button
+                aria-expanded={menuOpen}
+                aria-label={`More actions for ${visit.customerName}`}
+                className="grid h-10 w-10 place-items-center rounded-md border border-zinc-300 bg-white text-sm font-bold text-zinc-700 disabled:opacity-50"
+                disabled={isPending || busy}
+                onClick={() =>
+                  setOpenWaitingVisitMenuId((current) =>
+                    current === visit.id ? null : visit.id,
+                  )
+                }
+                type="button"
+              >
+                ...
+              </button>
+              {menuOpen ? (
+                <div className="absolute right-0 top-11 z-10 w-44 rounded-md border border-zinc-200 bg-white p-1 shadow-lg">
+                  <button
+                    className="min-h-10 w-full rounded px-3 text-left text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                    disabled={isPending || busy}
+                    onClick={() => removeWaitingVisit(visit)}
+                    type="button"
+                  >
+                    Remove from waiting
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+  const waitingButton = (
+    <button
+      aria-expanded={waitingDrawerOpen}
+      aria-label={`Open waiting list${visitQueue.length > 0 ? `, ${visitQueue.length} waiting` : ""}`}
+      className="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-zinc-950 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+      data-pos-waiting-launcher
+      onClick={() => {
+        updateWaitingDrawerPlacement();
+        setWaitingDrawerOpen((current) => {
+          if (current) {
+            setOpenWaitingVisitMenuId(null);
+          }
+
+          return !current;
+        });
+      }}
+      ref={waitingButtonRef}
+      type="button"
+    >
+      <span>Waiting</span>
+      {visitQueue.length > 0 ? (
+        <span
+          className="rounded-full bg-zinc-950 px-2 py-0.5 text-xs font-semibold text-white"
+          data-pos-waiting-count
+        >
+          {visitQueue.length}
+        </span>
+      ) : null}
+    </button>
+  );
+  const waitingDrawer = waitingDrawerOpen ? (
+    <div
+      className="fixed inset-0 z-[45] pointer-events-none"
+      data-pos-waiting-portal-layer
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-auto bg-transparent"
+        onClick={() => {
+          setWaitingDrawerOpen(false);
+          setOpenWaitingVisitMenuId(null);
+        }}
+      />
+      <div
+        aria-label={waitingDrawerTitle}
+        className="fixed z-10 pointer-events-auto flex min-w-0 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white/95 shadow-2xl backdrop-blur"
+        data-pos-waiting-drawer
+        data-pos-waiting-drawer-placement={
+          isPortableSurface ||
+          (waitingDrawerPlacement?.width ?? WAITING_DRAWER_DESKTOP_WIDTH) <
+            WAITING_DRAWER_DESKTOP_WIDTH
+            ? "sheet"
+            : "popover"
+        }
+        role="dialog"
+        style={
+          waitingDrawerPlacement ?? {
+            left: WAITING_DRAWER_MARGIN,
+            maxHeight: WAITING_DRAWER_MAX_HEIGHT,
+            top: WAITING_DRAWER_MARGIN,
+            width: WAITING_DRAWER_DESKTOP_WIDTH,
+          }
+        }
+      >
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3">
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold text-zinc-950">
+              {waitingDrawerTitle}
+            </h2>
+            <p className="text-xs font-medium text-zinc-500">
+              Oldest check-in first
+            </p>
+          </div>
+          <button
+            className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold"
+            onClick={() => {
+              setWaitingDrawerOpen(false);
+              setOpenWaitingVisitMenuId(null);
+            }}
+            type="button"
+          >
+            Close
+          </button>
+        </div>
+        <div
+          className="min-h-0 flex-1 overflow-auto px-3 py-3"
+          data-pos-waiting-drawer-scroll
+        >
+          {visitQueue.length === 0 ? (
+            <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-3 text-sm font-medium text-zinc-600">
+              Waiting 0
+            </div>
+          ) : (
+            waitingRows
+          )}
+        </div>
+        <div className="flex shrink-0 justify-end border-t border-zinc-200 px-4 py-3">
+          <button
+            className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700"
+            onClick={() => {
+              setOpenWaitingVisitMenuId(null);
+              router.refresh();
+            }}
+            type="button"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;
+  const waitingDrawerLayer =
+    waitingDrawer && typeof document !== "undefined"
+      ? createPortal(waitingDrawer, document.body)
+      : null;
 
   return (
     <>
+      {toast ? (
+        <div
+          aria-live="polite"
+          className="fixed left-1/2 top-1/2 z-[70] w-[min(420px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-lg border border-white/80 bg-white/78 p-4 shadow-[0_22px_60px_rgba(24,24,27,0.18)] backdrop-blur-xl"
+          data-pos-toast
+          data-pos-toast-tone={toast.tone}
+          role={toast.tone === "error" ? "alert" : "status"}
+        >
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/92 via-white/74 to-teal-50/64" />
+          <div className="relative flex items-start gap-3">
+            <div
+              aria-hidden="true"
+              className={[
+                "mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full shadow-[0_0_0_5px_rgba(255,255,255,0.62)]",
+                toast.tone === "success" ? "bg-emerald-500" : "bg-red-500",
+              ].join(" ")}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-base font-bold text-zinc-950">{toast.title}</p>
+              {toast.detail ? (
+                <p className="mt-1 truncate text-sm font-medium text-zinc-600">
+                  {toast.detail}
+                </p>
+              ) : null}
+              {toast.amount ? (
+                <p
+                  className="mt-2 text-3xl font-black leading-none tracking-normal text-zinc-950 tabular-nums"
+                  data-pos-toast-amount
+                >
+                  {toast.amount}
+                </p>
+              ) : null}
+            </div>
+            <button
+              aria-label="Close notification"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/80 bg-white/80 text-sm font-bold text-zinc-600 shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+              data-pos-toast-close
+              onClick={() => setToast(null)}
+              onPointerDown={(event) => event.stopPropagation()}
+              type="button"
+            >
+              X
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {waitingDrawerLayer}
       {showCustomerCreateModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4">
           <div className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-lg border border-zinc-200 bg-white p-4 shadow-xl">
@@ -2149,7 +2947,10 @@ export function PosDeskClient({
 
       {showServicePicker ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-zinc-950/40 px-4">
-          <div className="max-h-[86vh] w-full max-w-2xl overflow-hidden rounded-lg border border-zinc-200 bg-white p-4 shadow-xl">
+          <div
+            className="max-h-[86vh] w-full max-w-2xl overflow-hidden rounded-lg border border-white/70 bg-white/90 p-4 shadow-2xl backdrop-blur"
+            data-pos-service-picker
+          >
             <div className="mb-3 flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold">Select Service</h2>
               <button
@@ -2168,15 +2969,15 @@ export function PosDeskClient({
             />
             <div className="grid max-h-[58vh] grid-cols-1 gap-2 overflow-auto sm:grid-cols-2">
               <button
-                className="min-h-16 rounded border border-zinc-300 bg-zinc-50 px-4 py-3 text-left font-semibold"
+                className="min-h-14 rounded-lg border border-zinc-200 bg-zinc-50/80 px-4 py-3 text-left text-sm font-semibold text-zinc-700 transition hover:bg-white"
                 onClick={() => selectService(null)}
                 type="button"
               >
-                No catalog service
+                Custom amount
               </button>
               {filteredServices.map((service) => (
                 <button
-                  className="min-h-16 rounded border border-zinc-200 bg-white px-4 py-3 text-left hover:bg-zinc-50"
+                  className="min-h-14 rounded-lg border border-zinc-200 bg-white/80 px-4 py-3 text-left text-sm shadow-sm transition hover:bg-white"
                   key={service.id}
                   onClick={() => selectService(service.id)}
                   type="button"
@@ -2399,7 +3200,12 @@ export function PosDeskClient({
               : "shrink-0 space-y-3 border-b border-zinc-200 py-3"
           }
         >
-          <label className="block text-sm font-medium">Customer</label>
+          <div className="flex items-center justify-between gap-2">
+            <label className="block text-sm font-medium">Customer</label>
+            <div className="relative shrink-0">
+              {waitingButton}
+            </div>
+          </div>
           {selectedCustomer ? (
             <div className="flex items-center justify-between gap-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5">
               <div className="min-w-0">
@@ -2801,11 +3607,11 @@ export function PosDeskClient({
             </>
           )}
           <div
-            className="flex justify-between border-t border-zinc-200 pt-2 text-lg font-semibold"
+            className="flex items-end justify-between gap-3 border-t border-zinc-200 pt-2 text-xl font-semibold"
             data-pos-receipt-total
           >
-            <span>Total</span>
-            <span className="tabular-nums">{formatMoney(totals.total)}</span>
+            <span className="text-sm uppercase text-zinc-500">Total</span>
+            <span className="text-2xl tabular-nums">{formatMoney(totals.total)}</span>
           </div>
           {!isPortableSurface ? (
             <textarea
@@ -2822,14 +3628,22 @@ export function PosDeskClient({
         </div>
       </section>
 
-      <section className={panelClass} data-pos-staff-turn-board>
-        <div className="mb-3 flex shrink-0 items-center justify-between">
-          <h2 className="text-lg font-semibold">Staff Turn Board</h2>
-          <p className="text-sm text-zinc-600">
+      <section
+        className={[
+          "flex min-h-0 flex-col overflow-y-auto overflow-x-hidden rounded-lg border border-white/70 bg-white/80 shadow-[0_18px_46px_rgba(24,24,27,0.10)] backdrop-blur",
+          isPortableSurface ? "p-3" : "p-4",
+        ].join(" ")}
+        data-pos-staff-turn-board
+      >
+        <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-zinc-950">
+            Staff Turn Board
+          </h2>
+          <p className="rounded-full border border-teal-100 bg-teal-50/80 px-2.5 py-1 text-xs font-semibold text-teal-900">
             Large turn: {formatMoney(defaults.largeTurnThreshold)}
           </p>
         </div>
-        <div className="grid min-h-0 flex-1 grid-cols-[repeat(auto-fill,minmax(86px,94px))] content-start justify-start gap-2 overflow-auto pr-1">
+        <div className="grid max-h-[min(42dvh,390px)] min-h-0 shrink-0 grid-cols-[repeat(auto-fill,minmax(90px,104px))] content-start justify-start gap-2 overflow-y-auto overflow-x-hidden pr-1">
           {sortedStaff.map((member) => {
             const selected = draft.selectedStaffId === member.id;
             const unavailable =
@@ -2837,18 +3651,25 @@ export function PosDeskClient({
               member.today_status === "auto_checked_out" ||
               member.today_status === "unavailable" ||
               !member.is_active;
-            const colorClass = getStaffCardColor(
-              member.turns.queueTurns ?? member.turns.largeTurns,
-              member.turns.smallTurns,
-              selected,
+            const staffTurnCount =
+              member.turns.queueTurns ?? member.turns.largeTurns;
+            const turnToneLevel = getStaffTurnToneLevel(
+              staffTurnCount,
+              staffTurnToneCounts,
             );
+            const colorClass = getStaffCardToneClass(turnToneLevel, selected);
             const holdActive = turnHoldStaffId === member.id;
+            const staffStatusLabel = member.today_status.replaceAll("_", " ");
 
             return (
               <button
-                className={`relative aspect-square overflow-hidden rounded-lg border p-1.5 text-center transition ${colorClass} ${
+                aria-label={`${member.display_name}, ${staffTurnCount} large turns, ${member.turns.smallTurns} small turns. ${staffStatusLabel}`}
+                aria-pressed={selected}
+                className={`relative aspect-square overflow-hidden rounded-lg border p-2 text-center transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(35,25,22,0.14)] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 ${colorClass} ${
                   unavailable ? "opacity-60" : ""
                 }`}
+                data-pos-staff-large-turns={staffTurnCount}
+                data-pos-staff-tone={turnToneLevel}
                 disabled={receiptLocked}
                 key={member.id}
                 onClick={() => handleStaffCardClick(member.id)}
@@ -2864,7 +3685,7 @@ export function PosDeskClient({
                 onPointerMove={handleStaffPointerMove}
                 onPointerUp={handleStaffPointerEnd}
                 type="button"
-                title={`Queue ${member.turns.queueTurns ?? member.turns.largeTurns}. ${member.today_status.replaceAll("_", " ")}`}
+                title={`${member.display_name}: ${staffTurnCount} large turns, ${member.turns.smallTurns} small turns. ${staffStatusLabel}`}
               >
                 {holdActive ? (
                   <span
@@ -2877,227 +3698,319 @@ export function PosDeskClient({
                     }}
                   />
                 ) : null}
-                <span className="block truncate text-base font-semibold leading-tight">
+                <span className="relative z-10 block truncate text-[15px] font-semibold leading-tight">
                   {getFirstName(member.display_name)}
                 </span>
-                <span className="mt-0.5 block text-3xl font-bold leading-none">
+                <span className="relative z-10 mt-1 block text-[34px] font-bold leading-none tabular-nums">
                   {member.turns.queueTurns ?? member.turns.largeTurns}
                 </span>
-                <span className="mt-0.5 block text-lg font-semibold leading-none opacity-85">
-                  S {member.turns.smallTurns}
+                <span className="relative z-10 mt-1 block text-sm font-semibold leading-none opacity-80">
+                  {member.turns.smallTurns}
                 </span>
               </button>
             );
           })}
+        </div>
+        <div
+          className="mt-3 shrink-0 border-t border-white/70 pt-3"
+          data-pos-service-workspace
+        >
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-zinc-950">Services</h2>
+            </div>
+            <button
+              className="min-h-8 shrink-0 rounded-lg border border-zinc-200 bg-white/70 px-2.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
+              disabled={receiptLocked}
+              onClick={() => {
+                setShowServicePicker(true);
+                setKeypadMode("amount");
+              }}
+              type="button"
+            >
+              {hasHiddenServiceTiles ? "More" : "Catalog"}
+            </button>
+          </div>
+
+          {visibleServiceTiles.length > 0 ? (
+            <div
+              className="grid max-h-40 grid-cols-[repeat(auto-fill,minmax(96px,112px))] content-start justify-start gap-2 overflow-hidden"
+              data-pos-service-tiles
+              data-pos-requested-services={
+                requestedServices.length > 0 ? "visible" : undefined
+              }
+            >
+              {visibleServiceTiles.map((service) => {
+                const entered = positiveStaffLines.some(
+                  (line) => line.service_id === service.id,
+                );
+                const selected = draft.selectedServiceId === service.id;
+
+                return (
+                  <button
+                    aria-pressed={selected}
+                    className={[
+                      "relative min-h-12 overflow-hidden rounded-lg border px-2.5 py-2 text-left text-sm font-semibold shadow-[0_9px_18px_rgba(35,25,22,0.08)] transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(242,111,61,0.13)] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2",
+                      selected
+                        ? "border-brand-orange bg-gradient-to-br from-brand-orange-soft via-white/90 to-amber-50/90 text-zinc-950 ring-2 ring-brand-orange/25"
+                        : entered
+                          ? "border-zinc-200 bg-zinc-100/80 text-zinc-500 shadow-inner"
+                          : service.requested
+                            ? "border-brand-orange/35 bg-gradient-to-br from-brand-orange-soft/90 via-white/85 to-amber-50/85 text-zinc-950 hover:border-brand-orange/55"
+                            : "border-brand-orange/25 bg-gradient-to-br from-[#fffaf7] via-white/85 to-brand-orange-soft/60 text-zinc-950 hover:border-brand-orange/45",
+                    ].join(" ")}
+                    data-pos-requested-service={
+                      service.requested ? "true" : undefined
+                    }
+                    data-pos-service-tile
+                    disabled={receiptLocked}
+                    key={service.id}
+                    onClick={() => selectService(service.id)}
+                    type="button"
+                  >
+                    {selected ? (
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-y-2 left-1.5 w-1 rounded-full bg-brand-orange"
+                      />
+                    ) : null}
+                    <span className="block truncate pl-1.5 leading-tight">
+                      {service.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="rounded-lg border border-zinc-200 bg-white/70 px-3 py-3 text-sm font-medium text-zinc-500">
+              Service catalog empty. Custom price entry stays available.
+            </p>
+          )}
+
+          <div className="mt-2 flex flex-wrap justify-end gap-2">
+            {hasHiddenServiceTiles ? (
+              <button
+                className="min-h-8 rounded-lg border border-zinc-200 bg-white/70 px-2.5 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
+                data-pos-service-more
+                disabled={receiptLocked}
+                onClick={() => {
+                  setShowServicePicker(true);
+                  setKeypadMode("amount");
+                }}
+                type="button"
+              >
+                More
+              </button>
+            ) : null}
+          </div>
+          {unpricedRequestedServices.length > 0 ? (
+            <p className="mt-2 truncate text-xs font-medium text-teal-800">
+              Next requested: {unpricedRequestedServices[0].name}
+            </p>
+          ) : null}
         </div>
       </section>
 
       <section
         className={panelClass}
         data-pos-keypad-mode={keypadMode}
-        data-pos-service-panel
+        data-pos-amount-panel
       >
         <div className="min-h-0 flex-1 overflow-auto pr-1">
-        {draftRestored ? (
-          <p className="mb-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            Unsaved POS draft saved on this device.
-          </p>
-        ) : null}
-        {error ? (
-          <p className="mb-3 rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">
-            {error}
-          </p>
-        ) : null}
-        {message ? (
-          <p className="mb-3 rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-            {message}
-          </p>
-        ) : null}
-        {customerClaim && customerClaimUrl ? (
-          <div className="mb-3 grid justify-items-center gap-3 rounded border border-emerald-300 bg-emerald-50 px-3 py-4 text-center">
-            <div>
-              <p className="text-sm font-bold text-emerald-950">
-                Save receipt & visit history to ReyLUMI
-              </p>
-              <p className="mt-1 text-xs font-medium text-emerald-800">
-                Scan with your phone to connect this visit.
-              </p>
-            </div>
-            <QrCodeTile
-              ariaLabel="Customer history claim QR code"
-              className="aspect-square w-40 rounded-md bg-white p-3 shadow-sm"
-              dataKind="claim"
-              fallbackMessage="Open the claim link on the customer's phone."
-              valueToEncode={customerClaimUrl}
-            />
-            <a
-              className="text-xs font-bold text-emerald-900 underline"
-              href={customerClaim.claimPath}
-              rel="noreferrer"
-              target="_blank"
-            >
-              Open claim link
-            </a>
-          </div>
-        ) : null}
-
-        <div className="mb-3">
-          <label className="mb-1 block text-sm font-medium">Service</label>
-          <button
-            className="flex min-h-12 w-full items-center justify-between rounded border border-zinc-300 bg-white px-3 py-2 text-left"
-            disabled={receiptLocked}
-            onClick={() => {
-              setShowServicePicker(true);
-              setKeypadMode("amount");
-            }}
-            type="button"
-          >
-            <span className="font-medium">
-              {selectedService?.name ?? "No catalog service"}
-            </span>
-            <span className="text-sm text-zinc-500">Change</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
-          {["7", "8", "9", "4", "5", "6", "1", "2", "3", ".", "0", "/"].map(
-            (key) => (
-              <button
-                className="min-h-14 rounded bg-zinc-900 text-xl font-semibold text-white"
-                disabled={receiptLocked}
-                key={key}
-                onClick={() => handleKeypadKey(key)}
-                type="button"
+          {draftRestored ? (
+            <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50/90 px-3 py-2 text-sm font-medium text-amber-900">
+              Unsaved POS draft saved on this device.
+            </p>
+          ) : null}
+          {customerClaim && customerClaimUrl ? (
+            <div className="mb-3 grid justify-items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-4 text-center shadow-sm">
+              <div>
+                <p className="text-sm font-bold text-emerald-950">
+                  Save receipt & visit history to ReyLUMI
+                </p>
+                <p className="mt-1 text-xs font-medium text-emerald-800">
+                  Scan with your phone to connect this visit.
+                </p>
+              </div>
+              <QrCodeTile
+                ariaLabel="Customer history claim QR code"
+                className="aspect-square w-40 rounded-lg bg-white p-3 shadow-sm"
+                dataKind="claim"
+                fallbackMessage="Open the claim link on the customer's phone."
+                valueToEncode={customerClaimUrl}
+              />
+              <a
+                className="text-xs font-bold text-emerald-900 underline"
+                href={customerClaim.claimPath}
+                rel="noreferrer"
+                target="_blank"
               >
-                {key}
-              </button>
-            ),
-          )}
-          <button
-            className="min-h-12 rounded border border-zinc-300 bg-white font-medium"
-            disabled={receiptLocked}
-            onClick={handleKeypadBack}
-            type="button"
-          >
-            Back
-          </button>
-          <button
-            className="min-h-12 rounded border border-zinc-300 bg-white font-medium"
-            data-pos-keypad-clear
-            disabled={receiptLocked}
-            onClick={handleKeypadClear}
-            type="button"
-          >
-            Clear
-          </button>
-        </div>
+                Open claim link
+              </a>
+            </div>
+          ) : null}
 
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <button
-            className={[
-              "min-h-11 rounded border px-3 py-2 text-sm font-semibold",
-              keypadMode === "discount"
-                ? "border-zinc-950 bg-zinc-950 text-white"
-                : "border-zinc-300 bg-white text-zinc-950",
-            ].join(" ")}
-            disabled={receiptLocked}
-            onClick={() => focusReceiptMoneyInput("discount")}
-            type="button"
+          <div
+            className="mb-3 rounded-lg border border-white/80 bg-gradient-to-br from-white/90 via-zinc-50/80 to-teal-50/60 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_24px_rgba(24,24,27,0.08)]"
+            data-pos-current-input
           >
-            Discount
-          </button>
-          <button
-            className={[
-              "min-h-11 rounded border px-3 py-2 text-sm font-semibold",
-              keypadMode === "tip"
-                ? "border-zinc-950 bg-zinc-950 text-white"
-                : "border-zinc-300 bg-white text-zinc-950",
-            ].join(" ")}
-            disabled={receiptLocked}
-            onClick={() => focusReceiptMoneyInput("tip")}
-            type="button"
-          >
-            Tip
-          </button>
-        </div>
+            <p className="text-[11px] font-semibold uppercase text-zinc-500">
+              Current input
+            </p>
+            <p className="mt-1 min-h-10 text-3xl font-semibold tabular-nums text-zinc-950">
+              {keypadMode === "amount"
+                ? draft.amountInput
+                  ? `$${draft.amountInput}`
+                  : "$0"
+                : keypadMode === "tip"
+                  ? `Tip ${draft.tipInput ? `$${draft.tipInput}` : "$0"}`
+                  : keypadMode === "discount"
+                    ? `Discount ${
+                        draft.discountInput ? `$${draft.discountInput}` : "$0"
+                      }`
+                    : draft.customerLookup || "$0"}
+            </p>
+          </div>
 
-        <div className="mt-3 grid grid-cols-[auto_1fr] gap-3">
-          <div className="grid grid-cols-2 overflow-hidden rounded border border-zinc-300 text-sm">
+          <div className="grid grid-cols-3 gap-2">
+            {["7", "8", "9", "4", "5", "6", "1", "2", "3", ".", "0", "/"].map(
+              (key) => (
+                <button
+                  className="min-h-14 rounded-lg border border-zinc-800 bg-gradient-to-b from-zinc-800 to-zinc-950 text-xl font-semibold text-white shadow-[0_10px_22px_rgba(24,24,27,0.18)] transition hover:-translate-y-0.5 active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
+                  disabled={receiptLocked}
+                  key={key}
+                  onClick={() => handleKeypadKey(key)}
+                  type="button"
+                >
+                  {key}
+                </button>
+              ),
+            )}
             <button
-              className={`px-3 py-2 font-medium ${
-                draft.discountType === "fixed_amount"
-                  ? "bg-zinc-950 text-white"
-                  : "bg-white text-zinc-800"
-              }`}
-              onClick={() => {
-                updateDraft({ discountType: "fixed_amount" });
-                focusReceiptMoneyInput("discount");
-              }}
+              className="min-h-12 rounded-lg border border-zinc-200 bg-white/75 font-semibold text-zinc-700 shadow-sm transition hover:bg-white active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
+              disabled={receiptLocked}
+              onClick={handleKeypadBack}
               type="button"
             >
-              $
+              Back
             </button>
             <button
-              className={`px-3 py-2 font-medium ${
-                draft.discountType === "percentage"
-                  ? "bg-zinc-950 text-white"
-                  : "bg-white text-zinc-800"
-              }`}
-              onClick={() => {
-                updateDraft({ discountType: "percentage" });
-                focusReceiptMoneyInput("discount");
-              }}
+              className="min-h-12 rounded-lg border border-zinc-200 bg-white/75 font-semibold text-zinc-700 shadow-sm transition hover:bg-white active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
+              data-pos-keypad-clear
+              disabled={receiptLocked}
+              onClick={handleKeypadClear}
               type="button"
             >
-              %
+              Clear
             </button>
           </div>
-          <div className="grid grid-cols-4 gap-2">
-            {tipSuggestions.map((amount, index) => (
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              className={[
+                "min-h-11 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2",
+                keypadMode === "discount"
+                  ? "border-teal-500 bg-teal-50 text-teal-950 ring-2 ring-teal-600/20"
+                  : "border-zinc-200 bg-white/75 text-zinc-800 hover:bg-white",
+              ].join(" ")}
+              disabled={receiptLocked}
+              onClick={() => focusReceiptMoneyInput("discount")}
+              type="button"
+            >
+              Discount
+            </button>
+            <button
+              className={[
+                "min-h-11 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2",
+                keypadMode === "tip"
+                  ? "border-teal-500 bg-teal-50 text-teal-950 ring-2 ring-teal-600/20"
+                  : "border-zinc-200 bg-white/75 text-zinc-800 hover:bg-white",
+              ].join(" ")}
+              disabled={receiptLocked}
+              onClick={() => focusReceiptMoneyInput("tip")}
+              type="button"
+            >
+              Tip
+            </button>
+          </div>
+
+          <div className="mt-3 grid grid-cols-[auto_1fr] gap-3">
+            <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-zinc-200 bg-white/75 text-sm shadow-sm">
               <button
-                className="rounded border border-zinc-300 bg-white px-2 py-2 text-sm font-semibold"
-                disabled={receiptLocked}
-                key={`${amount}-${index}`}
+                className={`px-3 py-2 font-semibold transition ${
+                  draft.discountType === "fixed_amount"
+                    ? "bg-zinc-950 text-white"
+                    : "text-zinc-700 hover:bg-white"
+                }`}
                 onClick={() => {
-                  updateDraft({ tipInput: String(amount) });
-                  focusReceiptMoneyInput("tip");
-                  saveTipToSession(String(amount));
+                  updateDraft({ discountType: "fixed_amount" });
+                  focusReceiptMoneyInput("discount");
                 }}
                 type="button"
               >
-                ${amount}
+                $
               </button>
-            ))}
+              <button
+                className={`px-3 py-2 font-semibold transition ${
+                  draft.discountType === "percentage"
+                    ? "bg-zinc-950 text-white"
+                    : "text-zinc-700 hover:bg-white"
+                }`}
+                onClick={() => {
+                  updateDraft({ discountType: "percentage" });
+                  focusReceiptMoneyInput("discount");
+                }}
+                type="button"
+              >
+                %
+              </button>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {tipSuggestions.map((amount, index) => (
+                <button
+                  className="rounded-lg border border-zinc-200 bg-white/75 px-2 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-white active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
+                  disabled={receiptLocked}
+                  key={`${amount}-${index}`}
+                  onClick={() => {
+                    updateDraft({ tipInput: String(amount) });
+                    focusReceiptMoneyInput("tip");
+                    saveTipToSession(String(amount));
+                  }}
+                  type="button"
+                >
+                  ${amount}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <button
-          className="mt-3 min-h-11 w-full rounded border border-zinc-200 bg-zinc-100 px-3 py-2 text-left text-sm font-medium text-zinc-500"
-          disabled
-          onFocus={() => setKeypadMode("gift_card")}
-          type="button"
-        >
-          Gift card
-        </button>
-
-        <div className="mt-4 grid grid-cols-2 gap-2">
           <button
-            className="rounded border border-zinc-300 bg-white px-3 py-3 font-medium disabled:opacity-50"
-            disabled={isPending || isResetting || isSubmitting}
-            onClick={cancelActiveSession}
+            className="mt-3 min-h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50/80 px-3 py-2 text-left text-sm font-medium text-zinc-500 shadow-inner"
+            disabled
+            onFocus={() => setKeypadMode("gift_card")}
             type="button"
           >
-            {isResetting ? "Resetting" : "Reset"}
+            Gift card
           </button>
-          <button
-            className="rounded bg-zinc-950 px-3 py-3 font-semibold text-white disabled:opacity-50"
-            disabled={isPending || isResetting || isSubmitting}
-            onClick={submitReceipt}
-            type="button"
-          >
-            {isSubmitting ? "Submitting" : "Submit"}
-          </button>
-        </div>
+
+          <div className="mt-4 grid grid-cols-[0.85fr_1.15fr] gap-2">
+            <button
+              className="rounded-lg border border-zinc-200 bg-white/80 px-3 py-3 font-semibold text-zinc-700 shadow-sm transition hover:bg-white active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
+              disabled={isPending || isResetting || isSubmitting}
+              onClick={cancelActiveSession}
+              type="button"
+            >
+              {isResetting ? "Resetting" : "Reset"}
+            </button>
+            <button
+              className="rounded-lg border border-brand-orange bg-gradient-to-b from-brand-orange via-[#ef5d28] to-brand-orange-hover px-3 py-3 font-bold text-white shadow-[0_16px_30px_rgba(242,111,61,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(242,111,61,0.34)] active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2"
+              disabled={isPending || isResetting || isSubmitting}
+              onClick={submitReceipt}
+              type="button"
+            >
+              {isSubmitting ? "Submitting" : "Submit"}
+            </button>
+          </div>
         </div>
       </section>
       </div>

@@ -8,6 +8,7 @@ import {
   isSalonStaffContext,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
+import { loginHrefForReturnPath } from "@/lib/auth-routing";
 import { redirect } from "next/navigation";
 
 type AuthenticatedBusinessContext = CurrentBusinessContext & {
@@ -44,7 +45,7 @@ export type AccountPageContext = AuthenticatedBusinessContext & {
 };
 
 function loginRedirect(nextPath: string) {
-  return `/login?next=${encodeURIComponent(nextPath)}`;
+  return loginHrefForReturnPath(nextPath);
 }
 
 export async function requireSalonManagePageContext(

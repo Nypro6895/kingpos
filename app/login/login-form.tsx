@@ -1,6 +1,7 @@
 "use client";
 
 import { readAuthResponse } from "@/lib/auth-response";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -54,7 +55,7 @@ function PasswordVisibilityIcon({ isVisible }: { isVisible: boolean }) {
   );
 }
 
-export function LoginForm({ nextPath = "/account" }: { nextPath?: string }) {
+export function LoginForm({ nextPath = "/explore" }: { nextPath?: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,7 +78,7 @@ export function LoginForm({ nextPath = "/account" }: { nextPath?: string }) {
         return;
       }
 
-      router.push(result.redirectTo ?? "/account");
+      router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
       setError("Unable to log in. Please check your connection and try again.");
@@ -120,9 +121,17 @@ export function LoginForm({ nextPath = "/account" }: { nextPath?: string }) {
         </div>
 
         <div>
-          <label className="block text-sm font-extrabold text-text-primary" htmlFor="password">
-            Password
-          </label>
+          <div className="flex items-center justify-between gap-3">
+            <label className="block text-sm font-extrabold text-text-primary" htmlFor="password">
+              Password
+            </label>
+            <Link
+              className="text-sm font-extrabold text-brand-orange underline-offset-4 transition hover:text-brand-orange-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
+              href={`/forgot-password?next=${encodeURIComponent(nextPath)}`}
+            >
+              Forgot password?
+            </Link>
+          </div>
           <div className="relative">
             <input
               aria-invalid={Boolean(error)}

@@ -1,13 +1,19 @@
-import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "@/lib/supabase/server";
+import { clearSupabaseSessionCookieWriter } from "@/lib/supabase/server";
+import { clearWorkspaceContextCookies } from "@/lib/current-context";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST() {
+  const cookieStore = await cookies();
   const response = NextResponse.json({
     redirectTo: "/login?message=You have been logged out.",
   });
 
-  response.cookies.delete(ACCESS_TOKEN_COOKIE);
-  response.cookies.delete(REFRESH_TOKEN_COOKIE);
+  clearSupabaseSessionCookieWriter(
+    response.cookies,
+    cookieStore.getAll().map((cookie) => cookie.name),
+  );
+  clearWorkspaceContextCookies(response.cookies);
 
   return response;
 }

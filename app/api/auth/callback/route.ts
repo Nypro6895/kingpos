@@ -4,21 +4,20 @@ import {
   createSupabaseServerClient,
   getSupabaseCookieOptions,
 } from "@/lib/supabase/server";
+import {
+  fallbackPostAuthWorkspaceNavigation,
+  getPostAuthWorkspaceNavigation,
+} from "@/lib/post-auth-routing";
+import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
+import { writeNormalizedWorkspaceContextCookies } from "@/lib/current-context";
 import { NextResponse } from "next/server";
-
-function sanitizeNextPath(value: string | null) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/account";
-  }
-
-  return value;
-}
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const nextPath = sanitizeNextPath(url.searchParams.get("next"));
+  const requestedPath = url.searchParams.get("next");
+  const nextPath = sanitizeAuthReturnPath(requestedPath);
   const supabase = createSupabaseServerClient();
 
   if (!supabase || !code) {
@@ -46,7 +45,19 @@ export async function GET(request: Request) {
     );
   }
 
-  const response = NextResponse.redirect(new URL(nextPath, url.origin));
+  const navigation = await getPostAuthWorkspaceNavigation({
+    accessToken: data.session.access_token,
+    requestedPath,
+  }).catch((error: unknown) => {
+    console.error("Unable to resolve post-callback workspace navigation", {
+      message: error instanceof Error ? error.message : String(error),
+    });
+
+    return fallbackPostAuthWorkspaceNavigation();
+  });
+  const response = NextResponse.redirect(
+    new URL(navigation.redirectTo, url.origin),
+  );
   response.cookies.set(
     ACCESS_TOKEN_COOKIE,
     data.session.access_token,
@@ -57,6 +68,9 @@ export async function GET(request: Request) {
     data.session.refresh_token,
     getSupabaseCookieOptions(60 * 60 * 24 * 30),
   );
+  if (navigation.workspace) {
+    writeNormalizedWorkspaceContextCookies(response.cookies, navigation.workspace);
+  }
 
   return response;
 }

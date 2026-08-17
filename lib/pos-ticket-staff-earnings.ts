@@ -530,6 +530,7 @@ async function loadTicketsForDate(input: {
       "id, salon_id, ticket_sequence, opened_at, discount_type, discount_value, tax_rate, tip_type, tip_value, ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, unit_price, line_total, is_removed, created_at, turn_parts:pos_ticket_item_turn_parts(id, amount, turn_type, turn_index))",
     )
     .eq("salon_id", input.salonId)
+    .eq("status", "closed")
     .gte("opened_at", bounds.openedFrom)
     .lte("opened_at", bounds.openedTo)
     .order("opened_at", { ascending: true })

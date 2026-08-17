@@ -604,6 +604,33 @@ function bookingStatusLabel(status: TodayUpcomingBooking["status"]) {
     .join(" ");
 }
 
+function clientPresenceStatusLabel(status: TodayClientPresence["status"]) {
+  if (status === "in_service") {
+    return "In service";
+  }
+
+  return status[0].toUpperCase() + status.slice(1);
+}
+
+function rightNowStatusToneClass(
+  status: TodayClientPresence["status"] | TodayUpcomingBooking["status"],
+) {
+  if (
+    status === "confirmed" ||
+    status === "checked_in" ||
+    status === "in_service" ||
+    status === "completed"
+  ) {
+    return "bg-emerald-50 text-emerald-700";
+  }
+
+  if (status === "pending" || status === "waiting") {
+    return "bg-amber-50 text-amber-700";
+  }
+
+  return "bg-zinc-100 text-zinc-600";
+}
+
 function Card({
   action,
   children,
@@ -751,38 +778,48 @@ function WaitingClientRow({
   client: TodayClientPresence;
   timeZone: string;
 }) {
+  const sourceLabel =
+    client.source === "appointment"
+      ? "appointment"
+      : client.source === "walk_in"
+        ? "walk-in"
+        : "customer screen";
+  const title = [
+    `Checked in from ${sourceLabel}`,
+    client.appointmentAt ? formatTime(client.appointmentAt, timeZone) : null,
+    client.assignedStaff?.name ?? null,
+  ]
+    .filter(Boolean)
+    .join(" / ");
   const content = (
-    <div className="flex items-start gap-3 py-3">
-      <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-amber-100 text-sm font-semibold text-amber-800">
+    <div
+      className="grid min-h-11 grid-cols-[2rem_minmax(0,1fr)_minmax(0,1.1fr)_auto] items-center gap-2 py-2"
+      title={title}
+    >
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800">
         {getInitials(client.displayName)}
       </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <p className="break-words text-sm font-semibold text-zinc-950">
-            {client.displayName}
-          </p>
-          <span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-            Waiting
-          </span>
-        </div>
-        <p className="mt-1 text-sm text-zinc-600">
-          {client.serviceLabel ?? "Service not selected"}
-        </p>
-        <p className="mt-1 text-xs text-zinc-500">
-          Checked in from appointment
-          {client.appointmentAt
-            ? ` / ${formatTime(client.appointmentAt, timeZone)}`
-            : ""}
-          {client.assignedStaff ? ` / ${client.assignedStaff.name}` : ""}
-        </p>
-      </div>
+      <p className="min-w-0 truncate text-sm font-semibold text-zinc-950">
+        {client.displayName}
+      </p>
+      <p className="min-w-0 truncate text-xs font-medium text-zinc-500">
+        {client.serviceLabel ?? "Service not selected"}
+      </p>
+      <span
+        className={classNames(
+          "justify-self-end rounded-full px-2 py-0.5 text-xs font-semibold",
+          rightNowStatusToneClass(client.status),
+        )}
+      >
+        {clientPresenceStatusLabel(client.status)}
+      </span>
     </div>
   );
 
   if (client.href) {
     return (
       <Link
-        className="block hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+        className="block rounded-lg px-2 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
         href={client.href}
       >
         {content}
@@ -790,7 +827,7 @@ function WaitingClientRow({
     );
   }
 
-  return content;
+  return <div className="px-2">{content}</div>;
 }
 
 function UpcomingBookingRow({
@@ -802,27 +839,70 @@ function UpcomingBookingRow({
 }) {
   return (
     <Link
-      className="block hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+      className="block rounded-lg px-2 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
       href={booking.href}
     >
-      <div className="flex items-start gap-3 py-3">
-        <div className="w-16 shrink-0 text-sm font-semibold text-zinc-950">
+      <div className="grid min-h-11 grid-cols-[4.5rem_minmax(0,1fr)_minmax(0,1.1fr)_auto] items-center gap-2 py-2">
+        <div className="shrink-0 text-sm font-semibold tabular-nums text-zinc-950">
           {formatTime(booking.startAt, timeZone)}
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="break-words text-sm font-semibold text-zinc-950">
-            {booking.customerName}
-          </p>
-          <p className="mt-1 text-sm text-zinc-600">
-            {booking.serviceLabel ?? "Service not selected"}
-          </p>
-          <p className="mt-1 text-xs text-zinc-500">
-            {bookingStatusLabel(booking.status)}
-            {booking.assignedStaff ? ` / ${booking.assignedStaff.name}` : ""}
-          </p>
-        </div>
+        <p className="min-w-0 truncate text-sm font-semibold text-zinc-950">
+          {booking.customerName}
+        </p>
+        <p
+          className="min-w-0 truncate text-xs font-medium text-zinc-500"
+          title={booking.assignedStaff ? `Assigned staff: ${booking.assignedStaff.name}` : undefined}
+        >
+          {booking.serviceLabel ?? "Service not selected"}
+        </p>
+        <span
+          className={classNames(
+            "justify-self-end rounded-full px-2 py-0.5 text-xs font-semibold",
+            rightNowStatusToneClass(booking.status),
+          )}
+        >
+          {bookingStatusLabel(booking.status)}
+        </span>
       </div>
     </Link>
+  );
+}
+
+function ScheduleTextLink({ href }: { href: string }) {
+  return (
+    <Link
+      className="shrink-0 text-xs font-semibold text-amber-800 underline-offset-4 transition hover:text-amber-950 hover:underline focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-amber-500 sm:text-sm"
+      href={href}
+    >
+      View schedule
+    </Link>
+  );
+}
+
+function RightNowSection({
+  action,
+  children,
+  count,
+  title,
+}: {
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  count: number;
+  title: string;
+}) {
+  return (
+    <div className="min-w-0 rounded-xl border border-zinc-100 bg-zinc-50/35 p-3 sm:p-4">
+      <div className="mb-2 flex min-h-9 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-baseline gap-2">
+          <h2 className="truncate text-base font-semibold text-zinc-950">
+            {title}
+          </h2>
+          <span className="text-xs font-medium text-zinc-500">{count}</span>
+        </div>
+        {action}
+      </div>
+      <div className="divide-y divide-zinc-100">{children}</div>
+    </div>
   );
 }
 
@@ -831,20 +911,13 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
   const hasUpcoming = dashboard.rightNow.upcomingBookings.length > 0;
   const canViewBookings = dashboard.permissions.canViewBookings;
   const isCurrentDate = dashboard.dayView.isCurrentDate;
+  const scheduleAction = dashboard.rightNow.scheduleHref ? (
+    <ScheduleTextLink href={dashboard.rightNow.scheduleHref} />
+  ) : null;
 
   return (
-    <Card
-      action={
-        dashboard.rightNow.scheduleHref ? (
-          <ActionLink
-            href={dashboard.rightNow.scheduleHref}
-            label="View schedule"
-          />
-        ) : null
-      }
-      icon={isCurrentDate ? "clock" : "calendar"}
-      title={isCurrentDate ? "Right Now" : "Day Schedule"}
-    >
+    <section className="rounded-xl border border-zinc-200 bg-white shadow-[0_10px_30px_rgba(24,24,27,0.04)]">
+      <div className="px-4 py-4 sm:px-5">
       {!canViewBookings ? (
         <CompactEmptyState
           detail="Booking access is required to show waiting clients and upcoming appointments."
@@ -852,16 +925,11 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
         />
       ) : !isCurrentDate ? (
         hasUpcoming ? (
-          <div className="min-w-0">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold text-zinc-950">
-                Appointments
-              </h3>
-              <span className="text-xs font-medium text-zinc-500">
-                {dashboard.rightNow.upcomingBookings.length}
-              </span>
-            </div>
-            <div className="divide-y divide-zinc-100">
+          <RightNowSection
+            action={scheduleAction}
+            count={dashboard.rightNow.upcomingBookings.length}
+            title="Appointments"
+          >
               {dashboard.rightNow.upcomingBookings.map((booking) => (
                 <UpcomingBookingRow
                   booking={booking}
@@ -869,8 +937,7 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
                   timeZone={dashboard.timezone}
                 />
               ))}
-            </div>
-          </div>
+          </RightNowSection>
         ) : (
           <CompactEmptyState
             detail="This date has no scheduled appointments."
@@ -886,18 +953,15 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
         <div
           className={classNames(
             "grid gap-5",
-            hasWaiting && hasUpcoming ? "lg:grid-cols-2" : null,
+            hasWaiting && hasUpcoming ? "xl:grid-cols-2" : null,
           )}
         >
           {hasWaiting ? (
-            <div className="min-w-0">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <h3 className="text-sm font-semibold text-zinc-950">Waiting</h3>
-                <span className="text-xs font-medium text-zinc-500">
-                  {dashboard.rightNow.waitingClients.length}
-                </span>
-              </div>
-              <div className="divide-y divide-zinc-100">
+            <RightNowSection
+              action={!hasUpcoming ? scheduleAction : undefined}
+              count={dashboard.rightNow.waitingClients.length}
+              title="Waiting"
+            >
                 {dashboard.rightNow.waitingClients.map((client) => (
                   <WaitingClientRow
                     client={client}
@@ -905,21 +969,17 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
                     timeZone={dashboard.timezone}
                   />
                 ))}
-              </div>
-            </div>
+            </RightNowSection>
           ) : (
             <EmptyLine label="No clients waiting right now." />
           )}
 
           {hasUpcoming ? (
-            <div className="min-w-0">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <h3 className="text-sm font-semibold text-zinc-950">Upcoming</h3>
-                <span className="text-xs font-medium text-zinc-500">
-                  {dashboard.rightNow.upcomingBookings.length}
-                </span>
-              </div>
-              <div className="divide-y divide-zinc-100">
+            <RightNowSection
+              action={scheduleAction}
+              count={dashboard.rightNow.upcomingBookings.length}
+              title="Upcoming"
+            >
                 {dashboard.rightNow.upcomingBookings.map((booking) => (
                   <UpcomingBookingRow
                     booking={booking}
@@ -927,14 +987,14 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
                     timeZone={dashboard.timezone}
                   />
                 ))}
-              </div>
-            </div>
+            </RightNowSection>
           ) : (
             <EmptyLine label="No upcoming appointments remaining today." />
           )}
         </div>
       )}
-    </Card>
+      </div>
+    </section>
   );
 }
 

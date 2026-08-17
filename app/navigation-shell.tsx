@@ -314,7 +314,9 @@ function matchesPath(pathname: string, path: string) {
 
 function isShelllessPath(pathname: string) {
   return (
+    pathname === "/forgot-password" ||
     pathname === "/login" ||
+    pathname === "/reset-password" ||
     pathname === "/signup" ||
     pathname.startsWith("/book/") ||
     pathname.startsWith("/booking/manage/") ||

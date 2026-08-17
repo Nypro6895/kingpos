@@ -75,3 +75,35 @@ test("public booking confirmation links authenticated customers and notifies sal
     "Terminal manager actions should not leave request confirmation pending.",
   );
 });
+
+test("unavailable public booking does not expose owner setup readiness", () => {
+  const publicBookingClient = read(
+    "app/book/[salonId]/public-booking-client.tsx",
+  );
+  const publicBooking = read("lib/public-booking.ts");
+  const unavailableState = publicBookingClient.slice(
+    publicBookingClient.indexOf("function UnavailableState"),
+    publicBookingClient.indexOf("function slotHour"),
+  );
+
+  assert.doesNotMatch(
+    unavailableState,
+    /data\.readiness|Needs setup|readiness\.map/,
+    "Customer unavailable state must not show owner setup checklist items.",
+  );
+  assert.match(
+    unavailableState,
+    /data\.state !== "not_public"/,
+    "Unpublished salons must not link customers to a public profile route that 404s.",
+  );
+  assert.match(
+    publicBooking,
+    /const unavailableBase = \{[\s\S]*readiness: \[\] as PublicBookingReadinessItem\[\]/,
+    "Unavailable public booking payloads should not carry setup readiness to the client.",
+  );
+  assert.match(
+    publicBooking,
+    /This booking page is not available yet\. Please contact the salon directly/,
+    "Incomplete booking copy should stay customer-facing.",
+  );
+});

@@ -4,12 +4,17 @@ import { routes } from "@/lib/routes";
 import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
+  createUserScopedSupabaseServerClient,
 } from "@/lib/supabase/server";
 import {
   SALON_PROFILE_MEDIA_BUCKET,
   normalizeSalonProfileMediaPath,
 } from "@/lib/salon-profile-media";
-import { getCurrentKingUser } from "@/lib/users/current-user";
+import { isDeniedKingUserStatus } from "@/lib/users/account-status";
+import {
+  getCurrentKingUser,
+  getKingUserForAuthUser,
+} from "@/lib/users/current-user";
 import type { Account, AccountMembership } from "@/types/account";
 import type { Business } from "@/types/business";
 import type { Location } from "@/types/location";
@@ -128,6 +133,29 @@ export type CurrentBusinessContext = {
 };
 
 type CookieStore = Awaited<ReturnType<typeof cookies>>;
+type CookieReader = Pick<CookieStore, "get">;
+type WorkspaceCookieWriter = {
+  delete(name: string): unknown;
+  set(
+    name: string,
+    value: string,
+    options: {
+      httpOnly: boolean;
+      maxAge: number;
+      path: string;
+      sameSite: "lax";
+      secure: boolean;
+    },
+  ): unknown;
+};
+type SupabaseContextClient = NonNullable<
+  ReturnType<typeof createSupabaseServerClient>
+>;
+
+type CurrentBusinessContextOptions = {
+  accessToken?: string | null;
+  cookieStore?: CookieReader | null;
+};
 
 type PermissionRow = {
   code: string;
@@ -722,12 +750,11 @@ function permissionArray(permissionCodes: Set<string>) {
 
 async function loadPermissionCodesForMembership(
   membership: CurrentMembership | null,
+  supabase: SupabaseContextClient | null,
 ) {
   if (!membership?.role_id) {
     return new Set<string>();
   }
-
-  const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
     return new Set<string>();
@@ -778,9 +805,11 @@ async function loadPermissionCodesForMembership(
   return new Set((permissions ?? []).map((permission) => permission.code));
 }
 
-async function loadCurrentMemberships() {
-  const user = await getCurrentKingUser();
-
+async function loadCurrentMemberships(input: {
+  supabase: SupabaseContextClient | null;
+  user: KingUser | null;
+}) {
+  const { supabase, user } = input;
   if (!user) {
     return {
       accountMemberships: [] as AccountMembershipWithAccount[],
@@ -788,8 +817,6 @@ async function loadCurrentMemberships() {
       user,
     };
   }
-
-  const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
     return {
@@ -1001,6 +1028,7 @@ async function loadCurrentMemberships() {
 async function loadMissingAccounts(input: {
   accountsById: Map<string, Account>;
   accountIds: string[];
+  supabase: SupabaseContextClient | null;
 }) {
   const missingAccountIds = input.accountIds.filter(
     (accountId) => !input.accountsById.has(accountId),
@@ -1010,13 +1038,11 @@ async function loadMissingAccounts(input: {
     return;
   }
 
-  const supabase = await createAuthenticatedSupabaseServerClient();
-
-  if (!supabase) {
+  if (!input.supabase) {
     return;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await input.supabase
     .from("accounts")
     .select(ACCOUNT_SELECT)
     .in("id", missingAccountIds)
@@ -1040,18 +1066,17 @@ async function loadMissingAccounts(input: {
 
 async function loadStaffSalons(input: {
   accountsById: Map<string, Account>;
+  supabase: SupabaseContextClient | null;
   user: KingUser;
 }) {
-  const supabase = await createAuthenticatedSupabaseServerClient();
-
-  if (!supabase) {
+  if (!input.supabase) {
     return {
       staffSalons: [] as Location[],
       workspaceOptions: [] as CurrentWorkspaceOption[],
     };
   }
 
-  const { data: staffRows, error: staffError } = await supabase
+  const { data: staffRows, error: staffError } = await input.supabase
     .from("staff")
     .select("id, salon_id")
     .eq("account_user_id", input.user.id)
@@ -1097,7 +1122,7 @@ async function loadStaffSalons(input: {
     };
   }
 
-  const { data: staffSalons, error: staffSalonsError } = await supabase
+  const { data: staffSalons, error: staffSalonsError } = await input.supabase
     .from("locations")
     .select(LOCATION_SELECT)
     .in("id", salonIds)
@@ -1137,10 +1162,11 @@ async function loadStaffSalons(input: {
       .map((salon) => salon.account_id)
       .filter((accountId): accountId is string => Boolean(accountId)),
     accountsById: input.accountsById,
+    supabase: input.supabase,
   });
   const profilesBySalonId = await loadSalonWorkspaceProfiles({
     salonIds: salons.map((salon) => salon.id),
-    supabase,
+    supabase: input.supabase,
   });
 
   return {
@@ -1160,22 +1186,8 @@ async function loadStaffSalons(input: {
   };
 }
 
-function getFallbackWorkspace(input: {
-  accountOptions: CurrentWorkspaceOption[];
-  manageOptions: CurrentWorkspaceOption[];
-  personalWorkspace: CurrentWorkspaceOption;
-  staffOptions: CurrentWorkspaceOption[];
-}) {
-  return (
-    input.accountOptions[0] ??
-    input.manageOptions[0] ??
-    input.staffOptions[0] ??
-    input.personalWorkspace
-  );
-}
-
 function resolveWorkspaceFromCookie(input: {
-  cookieStore: CookieStore;
+  cookieStore: CookieReader;
   fallbackWorkspace: CurrentWorkspaceOption;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
@@ -1378,16 +1390,54 @@ export async function getCurrentStaffBusinessContext(): Promise<CurrentBusinessC
   };
 }
 
-export async function getCurrentBusinessContext(): Promise<CurrentBusinessContext> {
-  const supabase = await createAuthenticatedSupabaseServerClient();
-  const { accountMemberships, salonMemberships, user } =
-    await loadCurrentMemberships();
+async function getCurrentBusinessContextAuth(
+  accessToken: string | null | undefined,
+) {
+  if (accessToken) {
+    const supabase = createUserScopedSupabaseServerClient(accessToken);
 
-  if (!supabase || !user) {
+    if (!supabase) {
+      return { supabase: null, user: null };
+    }
+
+    const { data, error } = await supabase.auth.getUser(accessToken);
+
+    if (error || !data.user) {
+      return { supabase: null, user: null };
+    }
+
+    const user = await getKingUserForAuthUser(data.user, accessToken);
+
+    if (!user || isDeniedKingUserStatus(user.status)) {
+      return { supabase: null, user: null };
+    }
+
+    return { supabase, user };
+  }
+
+  const [supabase, user] = await Promise.all([
+    createAuthenticatedSupabaseServerClient(),
+    getCurrentKingUser(),
+  ]);
+
+  return { supabase, user };
+}
+
+export async function getCurrentBusinessContext(
+  options: CurrentBusinessContextOptions = {},
+): Promise<CurrentBusinessContext> {
+  const auth = await getCurrentBusinessContextAuth(
+    options.accessToken,
+  );
+  const { accountMemberships, salonMemberships, user } =
+    await loadCurrentMemberships(auth);
+
+  if (!auth.supabase || !user) {
     return emptyContext(user);
   }
 
-  const cookieStore = await cookies();
+  const supabase = auth.supabase;
+  const cookieStore = options.cookieStore ?? (await cookies());
   const accountsById = new Map<string, Account>();
 
   for (const membership of accountMemberships) {
@@ -1399,17 +1449,18 @@ export async function getCurrentBusinessContext(): Promise<CurrentBusinessContex
   await loadMissingAccounts({
     accountIds: salonMemberships.map((membership) => membership.account_id),
     accountsById,
+    supabase: auth.supabase,
   });
 
   const enrichedSalonMemberships = salonMemberships.map((membership) => ({
     ...membership,
     account: accountsById.get(membership.account_id) ?? null,
   }));
-  const accounts = dedupeById([...accountsById.values()]);
+  const memberAccounts = dedupeById([...accountsById.values()]);
   const accountMembershipByAccountId = new Map(
     accountMemberships.map((membership) => [membership.account_id, membership]),
   );
-  const accountIds = accounts.map((account) => account.id);
+  const accountIds = memberAccounts.map((account) => account.id);
   const accountSalonResult =
     accountIds.length > 0
       ? await supabase
@@ -1445,7 +1496,12 @@ export async function getCurrentBusinessContext(): Promise<CurrentBusinessContex
     salonIds: allSalons.map((salon) => salon.id),
     supabase,
   });
-  const staffLinkedContext = await loadStaffSalons({ accountsById, user });
+  const staffLinkedContext = await loadStaffSalons({
+    accountsById,
+    supabase,
+    user,
+  });
+  const availableAccounts = dedupeById([...accountsById.values()]);
   const personalWorkspace = buildPersonalWorkspaceOption();
   const accountOptions = accountMemberships
     .map((membership) =>
@@ -1464,7 +1520,7 @@ export async function getCurrentBusinessContext(): Promise<CurrentBusinessContex
   for (const membership of [...accountMemberships, ...enrichedSalonMemberships]) {
     permissionCodesByMembershipId.set(
       membership.id,
-      await loadPermissionCodesForMembership(membership),
+      await loadPermissionCodesForMembership(membership, supabase),
     );
   }
 
@@ -1514,15 +1570,9 @@ export async function getCurrentBusinessContext(): Promise<CurrentBusinessContex
     ...manageWorkspaceOptions,
     ...staffLinkedContext.workspaceOptions,
   ]);
-  const fallbackWorkspace = getFallbackWorkspace({
-    accountOptions,
-    manageOptions: manageWorkspaceOptions,
-    personalWorkspace,
-    staffOptions: staffLinkedContext.workspaceOptions,
-  });
   const currentWorkspace = resolveWorkspaceFromCookie({
     cookieStore,
-    fallbackWorkspace,
+    fallbackWorkspace: personalWorkspace,
     workspaceOptions,
   });
   const currentAccount = findAccountForWorkspace({
@@ -1562,7 +1612,7 @@ export async function getCurrentBusinessContext(): Promise<CurrentBusinessContex
     accountName: currentWorkspace.accountName,
     accountRole,
     activeRole: buildActiveRole(currentWorkspace, accountRole),
-    availableAccounts: accounts,
+    availableAccounts,
     availableBusinesses: allBusinesses,
     availableManageSalons: allSalons,
     availableStaffSalons: staffLinkedContext.staffSalons,
@@ -1619,7 +1669,7 @@ async function setPersistentCookie(name: string, value: string) {
 }
 
 function setWorkspaceCookie(
-  cookieStore: CookieStore,
+  cookieStore: WorkspaceCookieWriter,
   name: string,
   value: string,
 ) {
@@ -1632,11 +1682,10 @@ function setWorkspaceCookie(
   });
 }
 
-export async function setNormalizedWorkspaceContext(
+export function writeNormalizedWorkspaceContextCookies(
+  cookieStore: WorkspaceCookieWriter,
   workspace: CurrentWorkspaceOption,
 ) {
-  const cookieStore = await cookies();
-
   setWorkspaceCookie(cookieStore, SELECTED_WORKSPACE_COOKIE, workspace.id);
 
   if (workspace.accountId) {
@@ -1684,6 +1733,22 @@ export async function setNormalizedWorkspaceContext(
     cookieStore.delete(CURRENT_MANAGE_SALON_COOKIE);
     cookieStore.delete(LEGACY_CURRENT_SALON_COOKIE);
   }
+}
+
+export function clearWorkspaceContextCookies(cookieStore: WorkspaceCookieWriter) {
+  cookieStore.delete(CURRENT_ACCOUNT_COOKIE);
+  cookieStore.delete(CURRENT_MANAGE_SALON_COOKIE);
+  cookieStore.delete(CURRENT_STAFF_SALON_COOKIE);
+  cookieStore.delete(LEGACY_CURRENT_SALON_COOKIE);
+  cookieStore.delete(SELECTED_WORKSPACE_COOKIE);
+}
+
+export async function setNormalizedWorkspaceContext(
+  workspace: CurrentWorkspaceOption,
+) {
+  const cookieStore = await cookies();
+
+  writeNormalizedWorkspaceContextCookies(cookieStore, workspace);
 }
 
 export function getWorkspaceActionHrefs(workspace: CurrentWorkspaceOption) {

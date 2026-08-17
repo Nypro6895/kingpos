@@ -383,7 +383,7 @@
 [data-booking-surface="owner"] .booking-table-header,
 [data-booking-surface="owner"] .booking-table-row {
   display: grid;
-  grid-template-columns: 112px minmax(210px, 1.1fr) minmax(240px, 1.35fr) minmax(190px, 1fr) 126px 104px 126px 54px;
+  grid-template-columns: 112px minmax(190px, 1fr) minmax(240px, 1.35fr) minmax(210px, 1.1fr) 104px 126px 126px 54px;
 }
 
 [data-booking-surface="owner"] .booking-table-header {
@@ -579,6 +579,35 @@
 
 [data-booking-surface="owner"] .booking-inline-popover--status {
   min-width: 240px;
+}
+
+[data-booking-surface="owner"].booking-inline-popover-layer {
+  left: 0;
+  position: fixed;
+  top: 0;
+  transition: opacity 80ms ease;
+  z-index: 2000;
+}
+
+[data-booking-surface="owner"].booking-inline-popover-layer .booking-inline-popover {
+  left: auto;
+  max-height: min(360px, calc(100vh - 24px));
+  max-width: calc(100vw - 24px);
+  min-width: min(260px, calc(100vw - 24px));
+  overflow: auto;
+  position: static;
+  top: auto;
+  z-index: auto;
+}
+
+[data-booking-surface="owner"].booking-inline-popover-layer
+  .booking-inline-popover--wide {
+  min-width: min(330px, calc(100vw - 24px));
+}
+
+[data-booking-surface="owner"].booking-inline-popover-layer
+  .booking-inline-popover--status {
+  min-width: min(240px, calc(100vw - 24px));
 }
 
 [data-booking-surface="owner"] .booking-inline-popover__header {

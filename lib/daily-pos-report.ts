@@ -2342,7 +2342,6 @@ export async function createDailyClosingCorrectionRequest(
         field: input.field,
         value: oldValue,
       },
-      account_id: auth.Account.id,
       reason,
       requested_by: auth.user.id,
       requested_value_json: {

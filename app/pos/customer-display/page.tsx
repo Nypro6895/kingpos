@@ -1,5 +1,8 @@
 import { CustomerDisplayClient } from "@/app/pos/customer-display/customer-display-client";
-import { getOrCreatePosLiveDraft } from "@/app/pos/actions";
+import {
+  getCustomerDisplayServiceCatalog,
+  getOrCreatePosLiveDraft,
+} from "@/app/pos/actions";
 import {
   getCurrentPortablePosSession,
   getPortablePosDeskData,
@@ -60,11 +63,18 @@ export default async function CustomerDisplayPage({
 }: CustomerDisplayPageProps) {
   const { token = "" } = await searchParams;
   const resolvedToken = await resolveCustomerDisplayToken(token);
-  const settings = await getPublicPosDisplaySettingsByToken(resolvedToken);
+  const [settings, serviceCatalog] = await Promise.all([
+    getPublicPosDisplaySettingsByToken(resolvedToken),
+    getCustomerDisplayServiceCatalog(resolvedToken),
+  ]);
 
   return (
     <main className="h-dvh overflow-hidden bg-zinc-950 text-white">
-      <CustomerDisplayClient settings={settings} token={resolvedToken} />
+      <CustomerDisplayClient
+        serviceCatalog={serviceCatalog}
+        settings={settings}
+        token={resolvedToken}
+      />
     </main>
   );
 }

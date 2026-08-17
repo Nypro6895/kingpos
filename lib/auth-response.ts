@@ -1,5 +1,6 @@
 ﻿export type AuthResponse = {
   error?: string;
+  message?: string;
   redirectTo?: string;
 };
 

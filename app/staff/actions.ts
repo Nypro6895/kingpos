@@ -251,6 +251,12 @@ function getInviteDeliveryNotice(
   return `${message} Email not sent: ${delivery.reason}`;
 }
 
+function revalidateStaffInviteWorkspaceContext() {
+  revalidatePath("/staff/connections");
+  revalidatePath("/my-place");
+  revalidatePath("/", "layout");
+}
+
 function parseApplicationInput(input: ActionInput): SubmitStaffSalonApplicationInput {
   return {
     message: readActionOptionalString(input, "message"),
@@ -1053,7 +1059,7 @@ export async function acceptStaffInviteAction(
   try {
     const data = await acceptStaffInviteInService(readActionString(input, "token"));
 
-    revalidatePath("/staff/connections");
+    revalidateStaffInviteWorkspaceContext();
 
     return { data, ok: true };
   } catch (error) {
@@ -1087,7 +1093,7 @@ export async function acceptStaffInviteByRequestFormAction(formData: FormData) {
     redirectWithConnectionError("/staff/connections", connectionError.message);
   }
 
-  revalidatePath("/staff/connections");
+  revalidateStaffInviteWorkspaceContext();
   redirect("/staff/connections?connection_notice=Invitation accepted.");
 }
 
@@ -1117,7 +1123,7 @@ export async function acceptStaffInviteTokenFormAction(formData: FormData) {
     );
   }
 
-  revalidatePath("/staff/connections");
+  revalidateStaffInviteWorkspaceContext();
   redirect("/staff/connections?connection_notice=Invitation accepted.");
 }
 

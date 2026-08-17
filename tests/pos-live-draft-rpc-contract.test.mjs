@@ -97,9 +97,13 @@ function queryLinkedDatabase(sql) {
   assert.equal(
     result.status,
     0,
-    `supabase db query failed: ${
-      result.error?.message ?? result.stderr ?? result.stdout
-    }`,
+    [
+      `supabase db query failed: ${result.error?.message ?? "command exited non-zero"}`,
+      result.stderr,
+      result.stdout,
+    ]
+      .filter(Boolean)
+      .join("\n"),
   );
 
   const output = result.stdout.trim();
@@ -264,6 +268,8 @@ test("PostgREST can call update_pos_portable_live_draft and rejects stale sessio
 
     assert.equal(validResult.error, null);
     assert.equal(validResult.data?.token, LIVE_DRAFT_TOKEN);
+    assert.equal(validResult.data?.staff_lines?.length, 1);
+    assert.equal(validResult.data?.staff_lines?.[0]?.amount, 50);
     assert.equal(Number(validResult.data?.subtotal), 50);
     assert.equal(Number(validResult.data?.discount), 5);
     assert.equal(Number(validResult.data?.tax), 2.5);
@@ -288,6 +294,8 @@ test("PostgREST can call update_pos_portable_live_draft and rejects stale sessio
         tip::text,
         total_before_tip::text,
         total::text,
+        staff_lines,
+        customer_handoff_started_at is not null as has_handoff,
         version,
         receipt_version,
         status
@@ -302,9 +310,179 @@ test("PostgREST can call update_pos_portable_live_draft and rejects stale sessio
     assert.equal(Number(rows[0].tip), 7.25);
     assert.equal(Number(rows[0].total_before_tip), 47.5);
     assert.equal(Number(rows[0].total), 54.75);
+    assert.equal(rows[0].staff_lines.length, 1);
+    assert.equal(Number(rows[0].staff_lines[0].amount), 50);
+    assert.equal(rows[0].has_handoff, true);
     assert.equal(rows[0].version, 1);
     assert.equal(rows[0].receipt_version, 1);
     assert.equal(rows[0].status, "draft");
+  } finally {
+    cleanupFixture();
+  }
+});
+
+test("PostgREST live draft lookup resets expired completed drafts without version ambiguity", async () => {
+  setupFixture();
+
+  try {
+    queryLinkedDatabase(`
+      update public.pos_live_drafts
+      set
+        completed_at = now() - interval '2 minutes',
+        customer = jsonb_build_object('id', null, 'name', 'Contract Customer', 'phone', '5550101234'),
+        customer_handoff_started_at = now() - interval '3 minutes',
+        reset_at = now() - interval '1 second',
+        selected_staff_id = 'contract-staff',
+        staff_lines = jsonb_build_array(
+          jsonb_build_object(
+            'amount', 30,
+            'amountInput', '30',
+            'id', 'contract-reset-line',
+            'label', 'Reset Line',
+            'sortOrder', 1,
+            'staffId', 'contract-staff',
+            'staffName', 'Contract Staff'
+          )
+        ),
+        status = 'closed',
+        subtotal = 30,
+        tip = 5,
+        total = 35,
+        total_before_tip = 30,
+        version = 7
+      where id = ${sqlString(LIVE_DRAFT_ID)}::uuid;
+    `);
+
+    const { supabaseAnonKey, supabaseUrl } = getSupabaseConfig();
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        persistSession: false,
+      },
+    });
+
+    const result = await supabase.rpc("get_pos_live_draft_by_token", {
+      p_token: LIVE_DRAFT_TOKEN,
+    });
+
+    assert.equal(result.error, null);
+    assert.equal(result.data?.[0]?.status, "draft");
+    assert.equal(Number(result.data?.[0]?.subtotal), 0);
+    assert.equal(Number(result.data?.[0]?.tip), 0);
+    assert.equal(Number(result.data?.[0]?.total), 0);
+    assert.equal(result.data?.[0]?.version, 8);
+
+    const rows = queryLinkedDatabase(`
+      select
+        completed_at,
+        customer,
+        customer_handoff_started_at,
+        reset_at,
+        selected_staff_id,
+        staff_lines,
+        status,
+        subtotal::text,
+        tip::text,
+        total::text,
+        version
+      from public.pos_live_drafts
+      where id = ${sqlString(LIVE_DRAFT_ID)}::uuid;
+    `);
+
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].completed_at, null);
+    assert.equal(rows[0].customer, null);
+    assert.equal(rows[0].customer_handoff_started_at, null);
+    assert.equal(rows[0].reset_at, null);
+    assert.equal(rows[0].selected_staff_id, null);
+    assert.deepEqual(rows[0].staff_lines, []);
+    assert.equal(rows[0].status, "draft");
+    assert.equal(Number(rows[0].subtotal), 0);
+    assert.equal(Number(rows[0].tip), 0);
+    assert.equal(Number(rows[0].total), 0);
+    assert.equal(rows[0].version, 8);
+  } finally {
+    cleanupFixture();
+  }
+});
+
+test("PostgREST can immediately reset a completed live draft after Thank You touch", async () => {
+  setupFixture();
+
+  try {
+    queryLinkedDatabase(`
+      update public.pos_live_drafts
+      set
+        completed_at = now(),
+        customer = jsonb_build_object('id', null, 'name', 'Touch Reset', 'phone', '5550102222'),
+        customer_handoff_started_at = null,
+        reset_at = now() + interval '30 seconds',
+        selected_staff_id = 'contract-staff',
+        staff_lines = jsonb_build_array(
+          jsonb_build_object(
+            'amount', 40,
+            'amountInput', '40',
+            'id', 'contract-touch-line',
+            'label', 'Touch Line',
+            'sortOrder', 1,
+            'staffId', 'contract-staff',
+            'staffName', 'Contract Staff'
+          )
+        ),
+        status = 'closed',
+        subtotal = 40,
+        tip = 6,
+        total = 46,
+        total_before_tip = 40,
+        version = 3
+      where id = ${sqlString(LIVE_DRAFT_ID)}::uuid;
+    `);
+
+    const { supabaseAnonKey, supabaseUrl } = getSupabaseConfig();
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        persistSession: false,
+      },
+    });
+
+    const result = await supabase.rpc("reset_completed_pos_live_draft", {
+      p_token: LIVE_DRAFT_TOKEN,
+    });
+
+    assert.equal(result.error, null);
+    assert.equal(result.data?.status, "draft");
+    assert.equal(Number(result.data?.total), 0);
+    assert.equal(Number(result.data?.tip), 0);
+
+    const rows = queryLinkedDatabase(`
+      select
+        completed_at,
+        customer,
+        reset_at,
+        selected_staff_id,
+        staff_lines,
+        status,
+        subtotal::text,
+        tip::text,
+        total::text,
+        version
+      from public.pos_live_drafts
+      where id = ${sqlString(LIVE_DRAFT_ID)}::uuid;
+    `);
+
+    assert.equal(rows[0].completed_at, null);
+    assert.equal(rows[0].customer, null);
+    assert.equal(rows[0].reset_at, null);
+    assert.equal(rows[0].selected_staff_id, null);
+    assert.deepEqual(rows[0].staff_lines, []);
+    assert.equal(rows[0].status, "draft");
+    assert.equal(Number(rows[0].subtotal), 0);
+    assert.equal(Number(rows[0].tip), 0);
+    assert.equal(Number(rows[0].total), 0);
+    assert.equal(rows[0].version, 4);
   } finally {
     cleanupFixture();
   }

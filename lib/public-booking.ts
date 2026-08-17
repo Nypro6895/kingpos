@@ -1719,13 +1719,17 @@ export async function getPublicBookingPageData(
     staff: context.staff,
     staffByService: byService,
   };
+  const unavailableBase = {
+    ...base,
+    readiness: [] as PublicBookingReadinessItem[],
+  };
 
   if (context.state === "not_found") {
     return unavailablePage(
       "not_found",
       "Salon not found",
       "This booking link does not match an active salon.",
-      base,
+      unavailableBase,
     );
   }
 
@@ -1734,7 +1738,7 @@ export async function getPublicBookingPageData(
       "not_public",
       "This salon is not public yet",
       "Online booking opens after the salon publishes a public profile.",
-      base,
+      unavailableBase,
     );
   }
 
@@ -1743,7 +1747,7 @@ export async function getPublicBookingPageData(
       "booking_disabled",
       "Online booking is not open yet",
       "This salon has not enabled public online booking.",
-      base,
+      unavailableBase,
     );
   }
 
@@ -1751,8 +1755,8 @@ export async function getPublicBookingPageData(
     return unavailablePage(
       "incomplete",
       "Online booking is not ready",
-      "This salon still needs services, professionals, and availability before public booking can open.",
-      base,
+      "This booking page is not available yet. Please contact the salon directly or check their profile for updates.",
+      unavailableBase,
     );
   }
 

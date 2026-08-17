@@ -28,6 +28,7 @@ import type {
 } from "@/types/booking";
 import { BOOKING_SOURCES } from "@/types/booking";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { createPortal } from "react-dom";
 import {
   useEffect,
   useMemo,
@@ -1785,6 +1786,145 @@ function buildAppointmentRowTimeSlots() {
 }
 
 const APPOINTMENT_ROW_TIME_SLOTS = buildAppointmentRowTimeSlots();
+const INLINE_POPOVER_GAP = 8;
+const INLINE_POPOVER_VIEWPORT_MARGIN = 12;
+
+function AppointmentInlinePopoverPortal<TElement extends HTMLElement>({
+  anchorRef,
+  children,
+  onClose,
+}: {
+  anchorRef: { current: TElement | null };
+  children: ReactNode;
+  onClose: () => void;
+}) {
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const portalTarget = typeof document === "undefined" ? null : document.body;
+  const [position, setPosition] = useState({
+    left: INLINE_POPOVER_VIEWPORT_MARGIN,
+    top: INLINE_POPOVER_VIEWPORT_MARGIN,
+    visible: false,
+  });
+
+  useEffect(() => {
+    if (!portalTarget) {
+      return;
+    }
+
+    function updatePosition() {
+      const anchor = anchorRef.current;
+      const overlay = overlayRef.current;
+
+      if (!anchor || !overlay) {
+        setPosition((current) => ({ ...current, visible: false }));
+        return;
+      }
+
+      const anchorRect = anchor.getBoundingClientRect();
+      const overlayRect = overlay.getBoundingClientRect();
+      const overlayWidth = overlayRect.width;
+      const overlayHeight = overlayRect.height;
+      const maxLeft =
+        window.innerWidth - overlayWidth - INLINE_POPOVER_VIEWPORT_MARGIN;
+      const maxTop =
+        window.innerHeight - overlayHeight - INLINE_POPOVER_VIEWPORT_MARGIN;
+      const spaceBelow =
+        window.innerHeight -
+        anchorRect.bottom -
+        INLINE_POPOVER_GAP -
+        INLINE_POPOVER_VIEWPORT_MARGIN;
+      const spaceAbove =
+        anchorRect.top - INLINE_POPOVER_GAP - INLINE_POPOVER_VIEWPORT_MARGIN;
+      const openAbove = overlayHeight > spaceBelow && spaceAbove > spaceBelow;
+      const preferredTop = openAbove
+        ? anchorRect.top - overlayHeight - INLINE_POPOVER_GAP
+        : anchorRect.bottom + INLINE_POPOVER_GAP;
+
+      setPosition({
+        left: Math.max(
+          INLINE_POPOVER_VIEWPORT_MARGIN,
+          Math.min(anchorRect.left, maxLeft),
+        ),
+        top: Math.max(
+          INLINE_POPOVER_VIEWPORT_MARGIN,
+          Math.min(preferredTop, maxTop),
+        ),
+        visible: true,
+      });
+    }
+
+    const animationFrame = window.requestAnimationFrame(updatePosition);
+
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [anchorRef, children, portalTarget]);
+
+  useEffect(() => {
+    if (!portalTarget) {
+      return;
+    }
+
+    function handlePointerDown(event: MouseEvent | TouchEvent) {
+      const target = event.target;
+
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (
+        overlayRef.current?.contains(target) ||
+        anchorRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      onClose();
+    }
+
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [anchorRef, onClose, portalTarget]);
+
+  if (!portalTarget) {
+    return null;
+  }
+
+  return createPortal(
+    <div
+      className="booking-inline-popover-layer"
+      data-booking-surface="owner"
+      ref={overlayRef}
+      style={{
+        left: position.left,
+        opacity: position.visible ? 1 : 0,
+        pointerEvents: position.visible ? "auto" : "none",
+        top: position.top,
+      }}
+    >
+      {children}
+    </div>,
+    portalTarget,
+  );
+}
 
 function appointmentEditableLines(booking: BookingWorkspaceItem) {
   return booking.lines.filter(
@@ -2228,6 +2368,10 @@ function AppointmentTableRow({
   timezone: string;
 }) {
   const router = useRouter();
+  const timeAnchorRef = useRef<HTMLButtonElement | null>(null);
+  const servicesAnchorRef = useRef<HTMLButtonElement | null>(null);
+  const professionalAnchorRef = useRef<HTMLButtonElement | null>(null);
+  const statusAnchorRef = useRef<HTMLButtonElement | null>(null);
   const [popover, setPopover] = useState<AppointmentRowEditMode | null>(null);
   const [draft, setDraft] = useState(() =>
     appointmentRowDraftFromBooking(booking, timezone),
@@ -2394,6 +2538,7 @@ function AppointmentTableRow({
               )}
               disabled={!canManage}
               onClick={() => setPopover(popover === "time" ? null : "time")}
+              ref={timeAnchorRef}
               type="button"
             >
               <span className="grid text-sm font-extrabold text-[#211c24]">
@@ -2409,14 +2554,102 @@ function AppointmentTableRow({
               </span>
             </button>
             {popover === "time" ? (
-              <AppointmentRowInlinePopover
-                booking={booking}
-                draft={draft}
-                mode="time"
-                onChange={updateDraft}
+              <AppointmentInlinePopoverPortal
+                anchorRef={timeAnchorRef}
                 onClose={() => setPopover(null)}
-                options={options}
-              />
+              >
+                <AppointmentRowInlinePopover
+                  booking={booking}
+                  draft={draft}
+                  mode="time"
+                  onChange={updateDraft}
+                  onClose={() => setPopover(null)}
+                  options={options}
+                />
+              </AppointmentInlinePopoverPortal>
+            ) : null}
+          </div>
+        </div>
+        <div>
+          <div className="booking-inline-anchor">
+            <button
+              aria-label="Adjust appointment professional"
+              className={classNames(
+                "booking-cell-button",
+                staffChanged && "booking-cell-button-dirty",
+              )}
+              disabled={!canManage}
+              onClick={() =>
+                setPopover(popover === "professional" ? null : "professional")
+              }
+              ref={professionalAnchorRef}
+              type="button"
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <StaffAvatar
+                  imageUrl={draftStaff?.public_profile_photo_path}
+                  label={draftStaff?.display_name ?? draftStaffName}
+                  size="small"
+                />
+                <span className="truncate text-sm font-extrabold text-[#211c24]">
+                  {draftStaffName}
+                </span>
+              </span>
+            </button>
+            {popover === "professional" ? (
+              <AppointmentInlinePopoverPortal
+                anchorRef={professionalAnchorRef}
+                onClose={() => setPopover(null)}
+              >
+                <AppointmentRowInlinePopover
+                  booking={booking}
+                  draft={draft}
+                  mode="professional"
+                  onChange={updateDraft}
+                  onClose={() => setPopover(null)}
+                  options={options}
+                />
+              </AppointmentInlinePopoverPortal>
+            ) : null}
+          </div>
+        </div>
+        <div>
+          <div className="booking-inline-anchor">
+            <button
+              aria-label="Adjust appointment services"
+              className={classNames(
+                "booking-cell-button",
+                servicesChanged && "booking-cell-button-dirty",
+              )}
+              disabled={!canManage}
+              onClick={() => setPopover(popover === "services" ? null : "services")}
+              ref={servicesAnchorRef}
+              title={serviceReplacementBlockMessage(booking) ?? undefined}
+              type="button"
+            >
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-extrabold text-[#211c24]">
+                  {summary.primary}
+                </span>
+                <span className="block truncate text-xs text-[#786d78]">
+                  {summary.detail}
+                </span>
+              </span>
+            </button>
+            {popover === "services" ? (
+              <AppointmentInlinePopoverPortal
+                anchorRef={servicesAnchorRef}
+                onClose={() => setPopover(null)}
+              >
+                <AppointmentRowInlinePopover
+                  booking={booking}
+                  draft={draft}
+                  mode="services"
+                  onChange={updateDraft}
+                  onClose={() => setPopover(null)}
+                  options={options}
+                />
+              </AppointmentInlinePopoverPortal>
             ) : null}
           </div>
         </div>
@@ -2463,75 +2696,9 @@ function AppointmentTableRow({
           </span>
         </div>
         <div>
-          <div className="booking-inline-anchor">
-            <button
-              aria-label="Adjust appointment services"
-              className={classNames(
-                "booking-cell-button",
-                servicesChanged && "booking-cell-button-dirty",
-              )}
-              disabled={!canManage}
-              onClick={() => setPopover(popover === "services" ? null : "services")}
-              title={serviceReplacementBlockMessage(booking) ?? undefined}
-              type="button"
-            >
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-extrabold text-[#211c24]">
-                  {summary.primary}
-                </span>
-                <span className="block truncate text-xs text-[#786d78]">
-                  {summary.detail}
-                </span>
-              </span>
-            </button>
-            {popover === "services" ? (
-              <AppointmentRowInlinePopover
-                booking={booking}
-                draft={draft}
-                mode="services"
-                onChange={updateDraft}
-                onClose={() => setPopover(null)}
-                options={options}
-              />
-            ) : null}
-          </div>
-        </div>
-        <div>
-          <div className="booking-inline-anchor">
-            <button
-              aria-label="Adjust appointment professional"
-              className={classNames(
-                "booking-cell-button",
-                staffChanged && "booking-cell-button-dirty",
-              )}
-              disabled={!canManage}
-              onClick={() =>
-                setPopover(popover === "professional" ? null : "professional")
-              }
-              type="button"
-            >
-              <span className="flex min-w-0 items-center gap-2">
-                <StaffAvatar
-                  imageUrl={draftStaff?.public_profile_photo_path}
-                  label={draftStaff?.display_name ?? draftStaffName}
-                  size="small"
-                />
-                <span className="truncate text-sm font-extrabold text-[#211c24]">
-                  {draftStaffName}
-                </span>
-              </span>
-            </button>
-            {popover === "professional" ? (
-              <AppointmentRowInlinePopover
-                booking={booking}
-                draft={draft}
-                mode="professional"
-                onChange={updateDraft}
-                onClose={() => setPopover(null)}
-                options={options}
-              />
-            ) : null}
-          </div>
+          <span className="text-sm font-extrabold text-[#211c24]">
+            {formatMoney(booking.subtotal)}
+          </span>
         </div>
         <div>
           <div className="booking-inline-anchor">
@@ -2543,26 +2710,27 @@ function AppointmentTableRow({
               )}
               disabled={!statusEditable}
               onClick={() => setPopover(popover === "status" ? null : "status")}
+              ref={statusAnchorRef}
               type="button"
             >
               <StatusBadge status={draftStatus} />
             </button>
             {popover === "status" ? (
-              <AppointmentRowInlinePopover
-                booking={booking}
-                draft={draft}
-                mode="status"
-                onChange={updateDraft}
+              <AppointmentInlinePopoverPortal
+                anchorRef={statusAnchorRef}
                 onClose={() => setPopover(null)}
-                options={options}
-              />
+              >
+                <AppointmentRowInlinePopover
+                  booking={booking}
+                  draft={draft}
+                  mode="status"
+                  onChange={updateDraft}
+                  onClose={() => setPopover(null)}
+                  options={options}
+                />
+              </AppointmentInlinePopoverPortal>
             ) : null}
           </div>
-        </div>
-        <div>
-          <span className="text-sm font-extrabold text-[#211c24]">
-            {formatMoney(booking.subtotal)}
-          </span>
         </div>
         <div>
           {booking.posTicket ? (
@@ -2710,13 +2878,13 @@ function CalendarView({
         <div className={styles.table}>
           <div className={styles.tableHeader}>
             <div>Time</div>
-            <div>Customer</div>
-            <div>Services</div>
             <div>Professional</div>
-            <div>Status</div>
+            <div>Services</div>
+            <div>Customer</div>
             <div>Total</div>
-            <div>Ticket</div>
-            <div />
+            <div>Status</div>
+            <div>Create ticket</div>
+            <div>Edit</div>
           </div>
           {visibleBookings.map((booking) => (
             <AppointmentTableRow

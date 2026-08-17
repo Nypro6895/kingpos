@@ -38,18 +38,17 @@ test("Today staff services reuse daily report staff attribution", () => {
   assert.doesNotMatch(todayDashboard, /serviceSales:\s*input\.activity\?\.assignedServiceAmount \?\? 0/);
 });
 
-test("Today waiting state remains checked-in booking only and has no fake chart", () => {
-  assert.match(
-    todayDashboard,
-    /normalizeBookingStatus\(booking\.status\) === "checked_in"/,
-  );
-  assert.match(todayDashboard, /source: "appointment" as const/);
-  assert.doesNotMatch(todayDashboard, /customer_check_in" as const/);
+test("Today waiting state consumes active customer visits and has no fake chart", () => {
+  assert.match(todayDashboard, /getCustomerVisitQueueForSalonOrEmpty/);
+  assert.match(todayDashboard, /function mapWaitingVisits/);
+  assert.match(todayDashboard, /id: `visit:\$\{visit\.id\}`/);
+  assert.match(todayDashboard, /source: visit\.source/);
+  assert.match(todayDashboard, /dayView\.isCurrentDate\s*\?\s*mapWaitingVisits/);
+  assert.doesNotMatch(todayDashboard, /mapWaitingClients\(bookings, clock\.date\)/);
   assert.match(
     todayDashboard.match(/function buildWaitingMetric[\s\S]*?function buildAttention/)?.[0] ?? "",
     /chart: null/,
   );
-  assert.doesNotMatch(todayDashboard, /walk-in|kiosk|qr/i);
 });
 
 test("KPI and performance charts are server model data, not client fetches", () => {
@@ -147,7 +146,7 @@ test("Day View validates URL date and propagates selected business date", () => 
   assert.match(todayDashboard, /date: dayView\.selectedDate/);
   assert.match(todayDashboard, /loadBusinessHoursDashboardData\(\{/);
   assert.match(todayDashboard, /dayView\.isCurrentDate/);
-  assert.match(todayDashboard, /mapWaitingClients\(bookings, clock\.date\)/);
+  assert.match(todayDashboard, /mapWaitingVisits\(waitingVisitsResult\.data \?\? \[\], clock\.date\)/);
   assert.match(todayPage, /searchParams: Promise/);
   assert.match(todayPage, /getTodayDashboard\(context, \{ date: params\.date \}\)/);
   assert.match(todayPage, /function DayViewControl/);

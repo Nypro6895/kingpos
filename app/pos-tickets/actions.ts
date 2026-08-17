@@ -24,7 +24,10 @@ import {
   POS_PAYMENT_SELECT,
 } from "@/lib/pos-payments";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
-import { recalculateStaffEarningsForDate } from "@/lib/pos-ticket-staff-earnings";
+import {
+  recalculateStaffEarningsForDate,
+  recalculateTicketStaffEarnings,
+} from "@/lib/pos-ticket-staff-earnings";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { PosTicketAuditAction } from "@/types/pos-ticket-audit-log";
@@ -1690,7 +1693,25 @@ export async function closePosTicket(formData: FormData) {
     redirectWithCheckoutError(message, ticketId, returnPath);
   }
 
+  try {
+    await recalculateTicketStaffEarnings(ticketId);
+  } catch (earningError) {
+    const message =
+      earningError instanceof Error
+        ? earningError.message
+        : "Unable to update Payroll staff earnings.";
+    console.error("Supabase POS ticket staff earnings recalculation failed", {
+      message,
+      ticketId,
+      salonId: salon.id,
+      accountId: context.currentAccount?.id,
+      userId: user.id,
+    });
+    redirectWithCheckoutError(message, ticketId, returnPath);
+  }
+
   revalidatePath("/pos-tickets");
+  revalidatePath("/payroll");
   revalidatePath(returnPath);
   redirectAfterMutation(returnPath);
 }
@@ -2222,7 +2243,6 @@ export async function correctClosedPosTicket(formData: FormData) {
         replacement_ticket_item_id: replacementItemId,
         salon_id: salon.id,
         ticket_id: ticketId,
-        ticket_item_id: item.id,
       });
 
     if (adjustmentError) {
@@ -2707,7 +2727,6 @@ async function insertLockedStaffCorrectionHistory(input: {
       replacement_ticket_item_id: null,
       salon_id: input.salonId,
       ticket_id: input.ticketId,
-      ticket_item_id: input.ticketItemId,
     });
 
   if (error) {
@@ -4112,7 +4131,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
         replacement_ticket_item_id: replacementItemIds[0] ?? null,
         salon_id: salon.id,
         ticket_id: ticketId,
-        ticket_item_id: itemUpdates[0]?.item_id ?? null,
       });
 
     if (adjustmentError) {

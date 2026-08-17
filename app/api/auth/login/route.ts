@@ -4,7 +4,12 @@ import {
   createSupabaseServerClient,
   getSupabaseCookieOptions,
 } from "@/lib/supabase/server";
+import {
+  fallbackPostAuthWorkspaceNavigation,
+  getPostAuthWorkspaceNavigation,
+} from "@/lib/post-auth-routing";
 import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
+import { writeNormalizedWorkspaceContextCookies } from "@/lib/current-context";
 import { NextResponse } from "next/server";
 
 function readString(formData: FormData, key: string) {
@@ -12,20 +17,12 @@ function readString(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function sanitizeNextPath(value: string) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/account";
-  }
-
-  return value;
-}
-
 export async function POST(request: Request) {
   const supabase = createSupabaseServerClient();
   const formData = await request.formData();
   const email = readString(formData, "email").toLowerCase();
   const password = readString(formData, "password");
-  const nextPath = sanitizeNextPath(readString(formData, "next"));
+  const requestedPath = readString(formData, "next");
 
   if (!supabase) {
     return NextResponse.json(
@@ -52,7 +49,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const response = NextResponse.json({ redirectTo: nextPath });
+  const navigation = await getPostAuthWorkspaceNavigation({
+    accessToken: data.session.access_token,
+    requestedPath,
+  }).catch((error: unknown) => {
+    console.error("Unable to resolve post-login workspace navigation", {
+      message: error instanceof Error ? error.message : String(error),
+    });
+
+    return fallbackPostAuthWorkspaceNavigation();
+  });
+  const response = NextResponse.json({ redirectTo: navigation.redirectTo });
   response.cookies.set(
     ACCESS_TOKEN_COOKIE,
     data.session.access_token,
@@ -63,6 +70,9 @@ export async function POST(request: Request) {
     data.session.refresh_token,
     getSupabaseCookieOptions(60 * 60 * 24 * 30),
   );
+  if (navigation.workspace) {
+    writeNormalizedWorkspaceContextCookies(response.cookies, navigation.workspace);
+  }
 
   return response;
 }

@@ -5,12 +5,14 @@
 import type { CSSProperties, KeyboardEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  confirmCustomerDisplayLiveDraftCustomer,
   confirmCustomerDisplayLiveDraftTip,
-  createCustomerDisplayLiveDraftCustomer,
   getCustomerDisplayLiveDraftTipOptions,
   getPosLiveDraft,
+  resetCustomerDisplayCompletedDraft,
+  saveCustomerDisplayRequestedServices,
   searchCustomerDisplayLiveDraftCustomers,
+  submitCustomerDisplayPhone,
+  type CustomerDisplayPhoneResult,
   type CustomerDisplayTipOption,
 } from "@/app/pos/actions";
 import { QrCodeTile } from "@/components/qr-code-tile";
@@ -28,6 +30,7 @@ import type {
   PosLiveDraftCustomer,
   PosLiveDraftView,
 } from "@/types/pos-desk";
+import type { CustomerVisitRequestedService } from "@/types/customer-visit";
 
 type CustomerDisplaySettings = {
   appDownloadUrl: string;
@@ -50,14 +53,23 @@ type CustomerDisplaySettings = {
 };
 
 type ConnectionState = "connected" | "connecting" | "reconnecting";
-type DisplayMode = "attract" | "completed" | "phone" | "profile" | "tip";
+type DisplayMode =
+  | "attract"
+  | "checkin"
+  | "completed"
+  | "phone"
+  | "profile"
+  | "service_select"
+  | "tip";
 type TipOption = CustomerDisplayTipOption;
+type CheckInState = Extract<CustomerDisplayPhoneResult, { mode: "check_in" }>;
+type CustomerDisplayService = CustomerVisitRequestedService;
 
-const EMPTY_IDLE_TIMEOUT_MS = 120 * 1000;
+const CHECKIN_SUCCESS_RESET_MS = 5500;
 const SLIDESHOW_INTERVAL_MS = 7000;
 
 const PHONE_KEYPAD_STYLE = {
-  "--customer-display-key-size": "clamp(72px, min(8.8vh, 6.2vw), 92px)",
+  "--customer-display-key-size": "clamp(80px, min(9.6vh, 6.8vw), 94px)",
   gridTemplateColumns: "repeat(3, var(--customer-display-key-size))",
 } as CSSProperties;
 
@@ -174,10 +186,14 @@ function digitsOnly(value: string) {
   return value.replace(/\D/g, "");
 }
 
+function localPhoneKey(value: string | null | undefined) {
+  const digits = digitsOnly(value ?? "");
+  return digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+}
+
 function formatPhoneDisplay(value: string) {
   const digits = digitsOnly(value).slice(0, 11);
-  const localDigits =
-    digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+  const localDigits = localPhoneKey(digits);
   const area = localDigits.slice(0, 3);
   const prefix = localDigits.slice(3, 6);
   const line = localDigits.slice(6, 10);
@@ -198,9 +214,7 @@ function formatPhoneDisplay(value: string) {
 }
 
 function maskPhone(value: string | null | undefined) {
-  const digits = digitsOnly(value ?? "");
-  const localDigits =
-    digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+  const localDigits = localPhoneKey(value);
   const lastFour = localDigits.slice(-4);
 
   return lastFour ? `***-***-${lastFour}` : "Phone confirmed";
@@ -254,14 +268,6 @@ function isEmptyDraft(liveDraft: PosLiveDraftView | null) {
   );
 }
 
-function hasDraftActivity(liveDraft: PosLiveDraftView | null) {
-  return (
-    Boolean(liveDraft?.selected_staff_id) ||
-    Boolean(liveDraft?.customer) ||
-    hasMeaningfulReceipt(liveDraft)
-  );
-}
-
 function getTipBase(liveDraft: PosLiveDraftView | null) {
   if (!liveDraft) {
     return 0;
@@ -286,6 +292,10 @@ function getTipOptions(settings: CustomerDisplaySettings, liveDraft: PosLiveDraf
     amount: roundMoney((base * percentage) / 100),
     percentage,
   }));
+}
+
+function serviceSummaryLabel(services: CustomerDisplayService[]) {
+  return services.map((service) => service.name).join(" / ");
 }
 
 function FullscreenIcon() {
@@ -641,6 +651,7 @@ function PhoneEntryPanel({
   onSkipToTip,
   onSubmitPhone,
   phoneInput,
+  showTipShortcut,
 }: {
   customerResults: PosLiveDraftCustomer[];
   customerStatus: string | null;
@@ -652,6 +663,7 @@ function PhoneEntryPanel({
   onSkipToTip: () => void;
   onSubmitPhone: () => void;
   phoneInput: string;
+  showTipShortcut: boolean;
 }) {
   const formattedPhone = formatPhoneDisplay(phoneInput);
 
@@ -689,7 +701,7 @@ function PhoneEntryPanel({
           Enter your phone number
         </h2>
         <p className="mt-2 text-sm font-medium leading-6 text-zinc-500">
-          We&apos;ll find your profile and keep your receipt connected.
+          We&apos;ll find your profile and keep your visit connected.
         </p>
       </div>
 
@@ -731,14 +743,16 @@ function PhoneEntryPanel({
         />
       </div>
 
-      <button
-        className="mt-4 min-h-14 rounded-2xl bg-zinc-950 px-4 text-lg font-semibold text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-zinc-950/20"
-        disabled={disabled || isCustomerPending}
-        onClick={onSkipToTip}
-        type="button"
-      >
-        Tip
-      </button>
+      {showTipShortcut ? (
+        <button
+          className="mt-4 min-h-14 rounded-2xl bg-zinc-950 px-4 text-lg font-semibold text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-zinc-950/20"
+          disabled={disabled || isCustomerPending}
+          onClick={onSkipToTip}
+          type="button"
+        >
+          Tip
+        </button>
+      ) : null}
 
       <div className="mt-4 grid min-h-20 content-start gap-2">
         {isSearching ? (
@@ -851,8 +865,8 @@ function ProfileCreationPanel({
 
       <div className="grid content-center gap-3">
         <p className="rounded-2xl border border-teal-700/10 bg-teal-50/80 px-4 py-3 text-sm font-medium leading-6 text-teal-900">
-          We did not find this phone number. Create a profile to earn rewards
-          and continue checkout.
+          We did not find this phone number. Create a profile to continue your
+          visit.
         </p>
         {customerStatus ? (
           <p className="rounded-xl bg-white/80 px-3 py-2 text-sm font-medium text-zinc-600">
@@ -1174,6 +1188,8 @@ function TransactionSummary({
   const statusLabel =
     displayMode === "tip"
       ? "Ready for tip"
+      : displayMode === "checkin"
+        ? "Checked in"
       : displayMode === "profile"
         ? "Creating profile"
         : connectionLabel;
@@ -1427,11 +1443,8 @@ function CheckoutShell({
       <ReylumiCornerLogo behindPanels />
       <div className="relative z-10 grid h-full place-items-center px-4 py-4 sm:px-6 sm:py-6">
         <div
-          className="grid h-full max-h-[880px] min-h-0 w-full max-w-[1280px] gap-4"
+          className="grid h-full max-h-[880px] min-h-0 w-full max-w-[1280px] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,430px)]"
           data-customer-display-checkout
-          style={{
-            gridTemplateColumns: "minmax(0, 1fr) minmax(320px, 430px)",
-          }}
         >
           <TransactionSummary
             connectionState={connectionState}
@@ -1442,7 +1455,7 @@ function CheckoutShell({
           />
           <div className="min-h-0">{children}</div>
           {error ? (
-            <p className="col-span-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 lg:col-span-2">
               {error}
             </p>
           ) : null}
@@ -1452,16 +1465,82 @@ function CheckoutShell({
   );
 }
 
+function CheckInShell({
+  backgroundImageUrl,
+  children,
+  error,
+  isFullscreen,
+  onFullscreen,
+  settings,
+}: {
+  backgroundImageUrl: string;
+  children: React.ReactNode;
+  error: string | null;
+  isFullscreen: boolean;
+  onFullscreen: () => void;
+  settings: CustomerDisplaySettings;
+}) {
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-stone-100">
+      <img
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover opacity-100"
+        data-customer-display-checkin-background
+        src={backgroundImageUrl}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(240,253,250,0.7) 50%, rgba(255,247,237,0.58))",
+        }}
+      />
+      <FullscreenButton hidden={isFullscreen} onClick={onFullscreen} />
+      <ReylumiCornerLogo behindPanels />
+      <div
+        className="relative z-10 grid h-full min-h-0 px-4 py-4 sm:px-6 sm:py-6"
+        data-customer-display-checkin-shell
+        style={{ gridTemplateRows: "auto minmax(0, 1fr) auto" }}
+      >
+        <header className="flex min-w-0 items-center justify-between gap-4 pr-14">
+          <SalonBrand
+            logoUrl={settings.salonLogoUrl}
+            name={settings.salonName}
+            showName={settings.customerShowSalonName}
+            tone="dark"
+          />
+        </header>
+
+        <div className="grid min-h-0 place-items-center py-3">
+          <div className="h-full min-h-0 w-full max-w-3xl">{children}</div>
+        </div>
+
+        {error ? (
+          <p className="mx-auto max-w-3xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            {error}
+          </p>
+        ) : (
+          <span />
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CompletedScreen({
   backgroundImageUrl,
   isFullscreen,
   liveDraft,
+  onReset,
   onFullscreen,
   resetSeconds,
 }: {
   backgroundImageUrl: string;
   isFullscreen: boolean;
   liveDraft: PosLiveDraftView | null;
+  onReset: () => void;
   onFullscreen: () => void;
   resetSeconds: number | null;
 }) {
@@ -1472,6 +1551,15 @@ function CompletedScreen({
     <section
       className="relative grid h-full w-full place-items-center overflow-hidden bg-stone-50 px-6 text-center text-zinc-950"
       data-customer-display-completed
+      onClick={onReset}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onReset();
+        }
+      }}
+      role="button"
+      tabIndex={0}
     >
       <img
         alt=""
@@ -1498,6 +1586,9 @@ function CompletedScreen({
         <p className="mx-auto mt-5 max-w-2xl text-xl leading-8 text-zinc-800">
           We appreciate your visit. Please see our team if you need anything else.
         </p>
+        <p className="mt-6 text-sm font-semibold uppercase text-teal-800">
+          Tap to continue
+        </p>
         {resetSeconds !== null ? (
           <p className="mt-6 text-sm font-medium text-zinc-600">
             Resetting in {resetSeconds}s
@@ -1508,10 +1599,171 @@ function CompletedScreen({
   );
 }
 
+function CheckInConfirmationPanel({
+  checkIn,
+}: {
+  checkIn: CheckInState;
+}) {
+  const firstName = checkIn.visit.firstName ?? "Guest";
+  const requestedServices = checkIn.visit.requestedServices;
+  const requestedServiceLabel = serviceSummaryLabel(requestedServices);
+  const title =
+    checkIn.state === "already_checked_in"
+      ? "You are already checked in"
+      : "You are checked in";
+  const sourceLabel =
+    checkIn.visit.source === "appointment"
+      ? "Appointment"
+      : checkIn.visit.source === "walk_in"
+        ? "Walk-in"
+        : "Customer screen";
+
+  return (
+    <section
+      className="grid h-full min-h-0 content-center gap-5 rounded-2xl border border-stone-200/80 bg-stone-50/95 p-5 text-center shadow-2xl"
+      data-customer-display-checkin
+    >
+      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-teal-700 text-white shadow-lg">
+        <CheckIcon />
+      </div>
+      <div>
+        <p className="text-sm font-semibold uppercase text-teal-700">
+          {sourceLabel}
+        </p>
+        <h2 className="mt-2 text-4xl font-semibold leading-tight text-zinc-950">
+          {title}
+        </h2>
+        <p className="mt-3 text-2xl font-semibold text-zinc-800">
+          Thanks, {firstName}.
+        </p>
+      </div>
+      <p className="mx-auto max-w-sm text-base font-medium leading-7 text-zinc-600">
+        {requestedServiceLabel || "Our team has your arrival."}
+      </p>
+      {requestedServiceLabel ? (
+        <p className="mx-auto max-w-sm text-base font-medium leading-7 text-zinc-600">
+          We&apos;ll be with you shortly.
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function ServiceSelectionPanel({
+  checkIn,
+  disabled,
+  onBack,
+  onSubmit,
+  selectedServiceIds,
+  services,
+  toggleService,
+}: {
+  checkIn: CheckInState;
+  disabled: boolean;
+  onBack: () => void;
+  onSubmit: () => void;
+  selectedServiceIds: string[];
+  services: CustomerDisplayService[];
+  toggleService: (serviceId: string) => void;
+}) {
+  const selectedSet = new Set(selectedServiceIds);
+  const firstName = checkIn.visit.firstName ?? "Guest";
+
+  return (
+    <section
+      className="grid h-full min-h-0 gap-3 rounded-lg border border-white/70 bg-stone-50/90 p-4 shadow-2xl backdrop-blur"
+      data-customer-display-service-select
+      style={{ gridTemplateRows: "auto minmax(0, 1fr) auto" }}
+    >
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold uppercase text-teal-700">
+            Check in
+          </p>
+          <h2 className="mt-1 text-2xl font-semibold leading-tight text-zinc-950">
+            What are you here for?
+          </h2>
+          <p className="mt-1 text-sm font-medium leading-6 text-zinc-500">
+            Thanks, {firstName}. Select any services you&apos;d like today.
+          </p>
+        </div>
+        <button
+          className="min-h-10 shrink-0 rounded-lg border border-stone-200 bg-white/80 px-3 text-sm font-semibold text-zinc-700 shadow-sm transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
+          disabled={disabled}
+          onClick={onBack}
+          type="button"
+        >
+          Back
+        </button>
+      </div>
+
+      <div className="min-h-0 overflow-y-auto pr-1">
+        <div
+          className="grid gap-2 sm:grid-cols-2 md:grid-cols-3"
+          data-customer-display-service-grid
+        >
+          {services.map((service) => {
+            const selected = selectedSet.has(service.id);
+            const meta = [
+              service.category,
+              service.durationMinutes ? `${service.durationMinutes} min` : null,
+            ]
+              .filter(Boolean)
+              .join(" / ");
+
+            return (
+              <button
+                aria-pressed={selected}
+                className={[
+                  "relative grid min-h-[76px] content-between overflow-hidden rounded-lg border px-3 py-2.5 text-left shadow-[0_10px_22px_rgba(35,25,22,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(242,111,61,0.12)] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-orange/20",
+                  selected
+                    ? "border-brand-orange bg-gradient-to-br from-brand-orange-soft via-white to-amber-50 text-zinc-950 ring-2 ring-brand-orange/25"
+                    : "border-brand-orange/25 bg-gradient-to-br from-[#fffaf7] via-white/90 to-brand-orange-soft/55 text-zinc-950 hover:border-brand-orange/45",
+                ].join(" ")}
+                data-customer-display-service-card
+                disabled={disabled}
+                key={service.id}
+                onClick={() => toggleService(service.id)}
+                type="button"
+              >
+                {selected ? (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-y-2 left-1.5 w-1 rounded-full bg-brand-orange"
+                  />
+                ) : null}
+                <span className="block truncate pl-1.5 text-base font-semibold leading-tight">
+                  {service.name}
+                </span>
+                {meta ? (
+                  <span className="mt-1 block truncate pl-1.5 text-xs font-medium text-zinc-500">
+                    {meta}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <button
+        className="min-h-[52px] rounded-lg bg-teal-700 px-4 py-3 text-lg font-semibold text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
+        disabled={disabled}
+        onClick={onSubmit}
+        type="button"
+      >
+        {disabled ? "Saving" : "Check in"}
+      </button>
+    </section>
+  );
+}
+
 export function CustomerDisplayClient({
+  serviceCatalog,
   settings,
   token,
 }: {
+  serviceCatalog: CustomerDisplayService[];
   settings: CustomerDisplaySettings;
   token: string;
 }) {
@@ -1525,13 +1777,18 @@ export function CustomerDisplayClient({
   const [isChangingCustomer, setIsChangingCustomer] = useState(false);
   const [createCustomerMode, setCreateCustomerMode] = useState(false);
   const [customerNameInput, setCustomerNameInput] = useState("");
-  const [newCustomerId, setNewCustomerId] = useState<string | null>(null);
+  const [newCustomerKey, setNewCustomerKey] = useState<string | null>(null);
+  const [checkInState, setCheckInState] = useState<CheckInState | null>(null);
+  const [serviceSelectionState, setServiceSelectionState] =
+    useState<CheckInState | null>(null);
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [customerResults, setCustomerResults] = useState<PosLiveDraftCustomer[]>(
     [],
   );
   const [customerStatus, setCustomerStatus] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isCustomerPending, setIsCustomerPending] = useState(false);
+  const [isServicePending, setIsServicePending] = useState(false);
   const [customTipInput, setCustomTipInput] = useState("");
   const [customTipMode, setCustomTipMode] = useState(false);
   const [isTipPending, setIsTipPending] = useState(false);
@@ -1540,9 +1797,6 @@ export function CustomerDisplayClient({
   const [slideIndex, setSlideIndex] = useState(0);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [serverOffsetMs, setServerOffsetMs] = useState(0);
-  const [lastCustomerInteractionServerMs, setLastCustomerInteractionServerMs] =
-    useState<number | null>(null);
-  const [forceAttractAfterReset, setForceAttractAfterReset] = useState(false);
   const [serverTipOptions, setServerTipOptions] = useState<TipOption[] | null>(
     null,
   );
@@ -1550,7 +1804,9 @@ export function CustomerDisplayClient({
   const liveDraftRef = useRef<PosLiveDraftView | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const serverOffsetRef = useRef(0);
+  const lastCustomerInteractionServerMsRef = useRef<number | null>(null);
   const versionRef = useRef<number | null>(null);
+  const completedResetInFlightRef = useRef(false);
 
   const attractImages = useMemo(
     () => [
@@ -1565,60 +1821,80 @@ export function CustomerDisplayClient({
   const liveDraftCustomer = liveDraft?.customer;
   const liveDraftResetAt = liveDraft?.reset_at;
   const liveDraftStatus = liveDraft?.status;
+  const checkInFirstName = checkInState?.visit.firstName ?? null;
+  const selectableServiceIds = useMemo(
+    () => new Set(serviceCatalog.map((service) => service.id)),
+    [serviceCatalog],
+  );
   const phoneDigits = digitsOnly(phoneInput);
   const currentServerMs = nowMs + serverOffsetMs;
-  const updatedAtMs = liveDraft?.updated_at
-    ? new Date(liveDraft.updated_at).getTime()
-    : 0;
-  const latestInteractionMs = Math.max(
-    updatedAtMs,
-    lastCustomerInteractionServerMs ?? 0,
-  );
   const customerInteractionInProgress =
     phoneDigits.length > 0 ||
     isSearching ||
     isCustomerPending ||
     isChangingCustomer ||
     createCustomerMode ||
+    Boolean(checkInState) ||
+    Boolean(serviceSelectionState) ||
     customerNameInput.trim().length > 0 ||
     customerResults.length > 0;
-  const idleExpired =
-    latestInteractionMs > 0 &&
-    currentServerMs - latestInteractionMs >= EMPTY_IDLE_TIMEOUT_MS;
   const resetAtMs = liveDraftResetAt ? new Date(liveDraftResetAt).getTime() : 0;
   const completedResetActive =
     liveDraftStatus === "closed" &&
     Boolean(liveDraftResetAt) &&
     resetAtMs > currentServerMs;
+  const hasCheckoutHandoff =
+    liveDraftStatus === "draft" &&
+    (Boolean(liveDraft?.customer_handoff_started_at) ||
+      hasMeaningfulReceipt(liveDraft));
   const neutralWelcomeLabel = settings.salonName?.trim()
     ? `Welcome to ${settings.salonName.trim()}`
     : "Welcome";
-  const identityLabel = guestConfirmed
-    ? "Welcome, Guest"
-    : liveDraftCustomer
-      ? `${newCustomerId && newCustomerId === liveDraftCustomer.id ? "Welcome" : "Welcome back"}, ${
-          getFirstName(liveDraftCustomer.name) || "Guest"
-        }`
-      : neutralWelcomeLabel;
+  const liveDraftCustomerKeys = liveDraftCustomer
+    ? [liveDraftCustomer.id, localPhoneKey(liveDraftCustomer.phone)].filter(
+        (value): value is string => Boolean(value),
+      )
+    : [];
+  const identityLabel = (() => {
+    if (checkInState) {
+      return `Welcome${checkInFirstName ? `, ${checkInFirstName}` : ""}`;
+    }
+
+    if (guestConfirmed) {
+      return "Welcome, Guest";
+    }
+
+    if (liveDraftCustomer) {
+      const profileWasJustCreated =
+        customerStatus === "Customer profile created.";
+      const prefix =
+        profileWasJustCreated ||
+        (newCustomerKey && liveDraftCustomerKeys.includes(newCustomerKey))
+          ? "Welcome"
+          : "Welcome back";
+
+      return `${prefix}, ${getFirstName(liveDraftCustomer.name) || "Guest"}`;
+    }
+
+    return neutralWelcomeLabel;
+  })();
   const displayMode: DisplayMode = (() => {
     if (completedResetActive) {
       return "completed";
     }
 
-    if (
-      forceAttractAfterReset &&
-      isEmptyDraft(liveDraft) &&
-      !customerInteractionInProgress
-    ) {
-      return "attract";
+    if (checkInState) {
+      return "checkin";
+    }
+
+    if (serviceSelectionState) {
+      return "service_select";
     }
 
     if (
-      (!liveDraft && !lastCustomerInteractionServerMs) ||
-      (isEmptyDraft(liveDraft) &&
-        !hasDraftActivity(liveDraft) &&
-        !customerInteractionInProgress &&
-        idleExpired)
+      !token &&
+      (!liveDraft || isEmptyDraft(liveDraft)) &&
+      !customerInteractionInProgress
     ) {
       return "attract";
     }
@@ -1627,7 +1903,11 @@ export function CustomerDisplayClient({
       return "profile";
     }
 
-    if ((liveDraftCustomer || guestConfirmed) && !isChangingCustomer) {
+    if (
+      hasCheckoutHandoff &&
+      (liveDraftCustomer || guestConfirmed) &&
+      !isChangingCustomer
+    ) {
       return "tip";
     }
 
@@ -1646,8 +1926,8 @@ export function CustomerDisplayClient({
     .join(" ");
 
   const markCustomerInteraction = useCallback(() => {
-    setLastCustomerInteractionServerMs(Date.now() + serverOffsetRef.current);
-    setForceAttractAfterReset(false);
+    lastCustomerInteractionServerMsRef.current =
+      Date.now() + serverOffsetRef.current;
   }, []);
 
   const applySnapshot = useCallback((snapshot: PosLiveDraftView) => {
@@ -1658,9 +1938,6 @@ export function CustomerDisplayClient({
       return;
     }
 
-    const previous = liveDraftRef.current;
-    const wasCompleted = previous?.status === "closed";
-
     versionRef.current = snapshot.version;
     const nextServerOffsetMs = new Date(snapshot.server_now).getTime() - Date.now();
 
@@ -1669,14 +1946,6 @@ export function CustomerDisplayClient({
     liveDraftRef.current = snapshot;
     setLiveDraft(snapshot);
     setConnectionState("connected");
-
-    if (hasDraftActivity(snapshot)) {
-      setForceAttractAfterReset(false);
-    }
-
-    if (wasCompleted && isEmptyDraft(snapshot)) {
-      setForceAttractAfterReset(true);
-    }
 
     if (
       snapshot.status === "closed" ||
@@ -1688,7 +1957,7 @@ export function CustomerDisplayClient({
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
       setCustomerNameInput("");
-      setNewCustomerId(null);
+      setNewCustomerKey(null);
       setCustomerResults([]);
       setCustomerStatus(null);
       setCustomTipInput("");
@@ -1701,6 +1970,9 @@ export function CustomerDisplayClient({
       setIsChangingCustomer(false);
       setCreateCustomerMode(false);
       setCustomerNameInput("");
+      setCheckInState(null);
+      setServiceSelectionState(null);
+      setSelectedServiceIds([]);
       setConfirmedPhone(snapshot.customer.phone);
     }
   }, []);
@@ -1740,15 +2012,66 @@ export function CustomerDisplayClient({
       setPhoneInput(nextDigits);
       setGuestConfirmed(false);
       setCreateCustomerMode(false);
+      setCheckInState(null);
       setCustomerNameInput("");
-      setNewCustomerId(null);
+      setNewCustomerKey(null);
       setCustomerStatus(null);
+      setServiceSelectionState(null);
+      setSelectedServiceIds([]);
 
       if (nextDigits.length < 10) {
         lastSubmittedPhoneRef.current = "";
       }
     },
     [markCustomerInteraction],
+  );
+
+  const applyCustomerPhoneResult = useCallback(
+    (
+      result: CustomerDisplayPhoneResult,
+      phone: string,
+      options?: { newCustomer?: boolean },
+    ) => {
+      setConfirmedPhone(phone);
+      setGuestConfirmed(false);
+      setIsChangingCustomer(false);
+      setCreateCustomerMode(false);
+      setCustomerNameInput("");
+      setCustomerResults([]);
+      setCustomTipInput("");
+      setCustomTipMode(false);
+      setServiceSelectionState(null);
+
+      if (result.mode === "checkout") {
+        setCheckInState(null);
+        setSelectedServiceIds([]);
+        setNewCustomerKey(
+          options?.newCustomer ? localPhoneKey(phone) : null,
+        );
+        applySnapshot(result.snapshot);
+        setCustomerStatus("Customer confirmed.");
+        return;
+      }
+
+      if (serviceCatalog.length > 0) {
+        const nextSelectedIds = result.visit.requestedServices
+          .map((service) => service.id)
+          .filter((serviceId) => selectableServiceIds.has(serviceId));
+
+        setSelectedServiceIds(nextSelectedIds);
+        setServiceSelectionState(result);
+        setCheckInState(null);
+      } else {
+        setSelectedServiceIds([]);
+        setServiceSelectionState(null);
+        setCheckInState(result);
+      }
+      setPhoneInput("");
+      setNewCustomerKey(options?.newCustomer ? result.visit.customerId : null);
+      setCustomerStatus(null);
+      lastSubmittedPhoneRef.current = "";
+    },
+    [applySnapshot, selectableServiceIds, serviceCatalog.length],
   );
 
   const submitPhoneLookup = useCallback(
@@ -1760,64 +2083,49 @@ export function CustomerDisplayClient({
       }
 
       markCustomerInteraction();
-      setIsSearching(true);
+      setIsSearching(false);
       setError(null);
 
-      const result = await searchCustomerDisplayLiveDraftCustomers({
-        phone: nextDigits,
-        token,
-      });
-
-      setIsSearching(false);
-
-      if (!result.ok) {
-        setCustomerStatus(result.error);
-        return;
-      }
-
-      const matches = result.data;
-      setCustomerResults(matches);
-
       if (!isUsPhoneCandidate(nextDigits)) {
-        setCustomerStatus(matches.length > 0 ? null : "No customer found.");
+        setCustomerStatus("Enter a 10 digit phone number.");
         return;
       }
-
-      const exactMatch =
-        matches.find((customer) => digitsOnly(customer.phone ?? "") === nextDigits) ??
-        (matches.length === 1 ? matches[0] : null);
 
       setConfirmedPhone(nextDigits);
-
-      if (!exactMatch?.id) {
-        setGuestConfirmed(false);
-        setIsChangingCustomer(false);
-        setCreateCustomerMode(true);
-        setCustomerNameInput("");
-        setCustomerResults([]);
-        setCustomerStatus("No matching profile found. Create a profile to continue.");
-        return;
-      }
-
       setIsCustomerPending(true);
-      const confirmResult = await confirmCustomerDisplayLiveDraftCustomer({
-        customerId: exactMatch.id,
+      const result = await submitCustomerDisplayPhone({
+        phone: nextDigits,
         requestId: getRequestId(),
         token,
       });
       setIsCustomerPending(false);
 
-      if (!confirmResult.ok) {
-        setError(confirmResult.error);
+      if (!result.ok) {
+        if (result.code === "profile_required") {
+          setConfirmedPhone(nextDigits);
+          setGuestConfirmed(false);
+          setIsChangingCustomer(false);
+          setCreateCustomerMode(true);
+          setCustomerNameInput("");
+          setCustomerResults([]);
+          setCustomerStatus(result.error);
+          return;
+        }
+
+        setCustomerStatus(result.error);
         return;
       }
 
-      applySnapshot(confirmResult.data);
-      setCustomerStatus("Customer confirmed.");
+      applyCustomerPhoneResult(result.data, nextDigits);
     },
-    [applySnapshot, liveDraftStatus, markCustomerInteraction, phoneInput, token],
+    [
+      applyCustomerPhoneResult,
+      liveDraftStatus,
+      markCustomerInteraction,
+      phoneInput,
+      token,
+    ],
   );
-
   const enterFullscreen = useCallback(() => {
     const target = rootRef.current;
 
@@ -2022,6 +2330,7 @@ export function CustomerDisplayClient({
     if (
       displayMode !== "phone" ||
       liveDraftStatus !== "draft" ||
+      !hasCheckoutHandoff ||
       phoneDigits.length < 4 ||
       isUsPhoneCandidate(phoneDigits)
     ) {
@@ -2063,7 +2372,14 @@ export function CustomerDisplayClient({
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [displayMode, liveDraftStatus, phoneDigits, phoneInput, token]);
+  }, [
+    displayMode,
+    hasCheckoutHandoff,
+    liveDraftStatus,
+    phoneDigits,
+    phoneInput,
+    token,
+  ]);
 
   useEffect(() => {
     if (
@@ -2082,8 +2398,36 @@ export function CustomerDisplayClient({
     void submitPhoneLookup(phoneDigits);
   }, [displayMode, liveDraftStatus, phoneDigits, submitPhoneLookup]);
 
+  useEffect(() => {
+    if (!checkInState) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setCheckInState(null);
+      setPhoneInput("");
+      setConfirmedPhone(null);
+      setGuestConfirmed(false);
+      setIsChangingCustomer(false);
+      setCreateCustomerMode(false);
+      setCustomerNameInput("");
+      setNewCustomerKey(null);
+      setCustomerResults([]);
+      setCustomerStatus(null);
+      setCustomTipInput("");
+      setCustomTipMode(false);
+      setServiceSelectionState(null);
+      setSelectedServiceIds([]);
+      lastSubmittedPhoneRef.current = "";
+    }, CHECKIN_SUCCESS_RESET_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [checkInState]);
+
   async function confirmCustomer(customer: PosLiveDraftCustomer) {
-    if (!customer.id) {
+    const phone = digitsOnly(customer.phone ?? phoneInput).slice(0, 11);
+
+    if (!token || liveDraftStatus !== "draft" || !customer.id || !isUsPhoneCandidate(phone)) {
       return;
     }
 
@@ -2091,8 +2435,8 @@ export function CustomerDisplayClient({
     setIsCustomerPending(true);
     setError(null);
 
-    const result = await confirmCustomerDisplayLiveDraftCustomer({
-      customerId: customer.id,
+    const result = await submitCustomerDisplayPhone({
+      phone,
       requestId: getRequestId(),
       token,
     });
@@ -2100,14 +2444,11 @@ export function CustomerDisplayClient({
     setIsCustomerPending(false);
 
     if (!result.ok) {
-      setError(result.error);
+      setCustomerStatus(result.error);
       return;
     }
 
-    setConfirmedPhone(customer.phone ?? phoneInput);
-    setNewCustomerId(null);
-    applySnapshot(result.data);
-    setCustomerStatus("Customer confirmed.");
+    applyCustomerPhoneResult(result.data, phone);
   }
 
   async function createCustomerProfile() {
@@ -2132,7 +2473,7 @@ export function CustomerDisplayClient({
     setIsCustomerPending(true);
     setError(null);
 
-    const result = await createCustomerDisplayLiveDraftCustomer({
+    const result = await submitCustomerDisplayPhone({
       name,
       phone,
       requestId: getRequestId(),
@@ -2147,11 +2488,12 @@ export function CustomerDisplayClient({
     }
 
     setConfirmedPhone(phone);
-    setCreateCustomerMode(false);
-    setCustomerNameInput("");
-    setNewCustomerId(result.data.customer?.id ?? null);
-    applySnapshot(result.data);
-    setCustomerStatus("Customer profile created.");
+    applyCustomerPhoneResult(result.data, phone, { newCustomer: true });
+    setCustomerStatus(
+      result.data.mode === "checkout"
+        ? "Customer profile created."
+        : "Profile created.",
+    );
   }
 
   async function confirmTip(tipAmount: number) {
@@ -2184,16 +2526,22 @@ export function CustomerDisplayClient({
 
   function beginFromAttract() {
     markCustomerInteraction();
+    setCheckInState(null);
+    setServiceSelectionState(null);
+    setSelectedServiceIds([]);
     setIsChangingCustomer(false);
   }
 
   function changeCustomer() {
     markCustomerInteraction();
+    setCheckInState(null);
+    setServiceSelectionState(null);
+    setSelectedServiceIds([]);
     setIsChangingCustomer(true);
     setGuestConfirmed(false);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
-    setNewCustomerId(null);
+    setNewCustomerKey(null);
     setConfirmedPhone(null);
     setPhoneInput("");
     setCustomerResults([]);
@@ -2202,12 +2550,19 @@ export function CustomerDisplayClient({
   }
 
   function continueToTipAsGuest() {
+    if (!hasMeaningfulReceipt(liveDraft)) {
+      return;
+    }
+
     markCustomerInteraction();
+    setCheckInState(null);
+    setServiceSelectionState(null);
+    setSelectedServiceIds([]);
     setGuestConfirmed(true);
     setIsChangingCustomer(false);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
-    setNewCustomerId(null);
+    setNewCustomerKey(null);
     setConfirmedPhone(null);
     setPhoneInput("");
     setCustomerResults([]);
@@ -2217,17 +2572,113 @@ export function CustomerDisplayClient({
 
   function returnToPhoneEntry() {
     markCustomerInteraction();
+    setCheckInState(null);
+    setServiceSelectionState(null);
+    setSelectedServiceIds([]);
     setCreateCustomerMode(false);
     setCustomerNameInput("");
     setCustomerStatus(null);
     lastSubmittedPhoneRef.current = "";
   }
 
+  function toggleRequestedService(serviceId: string) {
+    if (isServicePending || !selectableServiceIds.has(serviceId)) {
+      return;
+    }
+
+    markCustomerInteraction();
+    setSelectedServiceIds((current) =>
+      current.includes(serviceId)
+        ? current.filter((id) => id !== serviceId)
+        : [...current, serviceId],
+    );
+    setError(null);
+    setCustomerStatus(null);
+  }
+
+  async function submitRequestedServices() {
+    if (!serviceSelectionState || !token || liveDraftStatus !== "draft") {
+      return;
+    }
+
+    markCustomerInteraction();
+    setIsServicePending(true);
+    setError(null);
+
+    const result = await saveCustomerDisplayRequestedServices({
+      serviceIds: selectedServiceIds,
+      token,
+      visitId: serviceSelectionState.visit.id,
+    });
+
+    setIsServicePending(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
+    if (result.data.mode !== "check_in") {
+      setError("Unable to save service request. Please ask the front desk.");
+      return;
+    }
+
+    setServiceSelectionState(null);
+    setSelectedServiceIds([]);
+    setCheckInState(result.data);
+    setCustomerStatus(null);
+  }
+
+  async function resetCompletedNow() {
+    if (
+      completedResetInFlightRef.current ||
+      !token ||
+      liveDraftStatus !== "closed"
+    ) {
+      return;
+    }
+
+    completedResetInFlightRef.current = true;
+    setError(null);
+
+    const result = await resetCustomerDisplayCompletedDraft({ token });
+
+    completedResetInFlightRef.current = false;
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
+    if (result.data) {
+      applySnapshot(result.data);
+    } else {
+      setLiveDraft(null);
+      liveDraftRef.current = null;
+    }
+
+    setPhoneInput("");
+    setConfirmedPhone(null);
+    setGuestConfirmed(false);
+    setIsChangingCustomer(false);
+    setCreateCustomerMode(false);
+    setCustomerNameInput("");
+    setNewCustomerKey(null);
+    setCustomerResults([]);
+    setCustomerStatus(null);
+    setCustomTipInput("");
+    setCustomTipMode(false);
+    setCheckInState(null);
+    setServiceSelectionState(null);
+    setSelectedServiceIds([]);
+    lastSubmittedPhoneRef.current = "";
+  }
+
   return (
     <div className={rootClass} ref={rootRef}>
-      {displayMode === "attract" || displayMode === "completed" ? null : (
+      {displayMode === "tip" ? (
         <FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />
-      )}
+      ) : null}
       <div className="customer-display-auto-scale h-full w-full">
         {displayMode === "attract" ? (
           <AttractScreen
@@ -2245,9 +2696,12 @@ export function CustomerDisplayClient({
             isFullscreen={isFullscreen}
             liveDraft={liveDraft}
             onFullscreen={enterFullscreen}
+            onReset={() => void resetCompletedNow()}
             resetSeconds={resetSeconds}
           />
-        ) : (
+        ) : displayMode === "tip" ||
+          (hasCheckoutHandoff &&
+            (displayMode === "phone" || displayMode === "profile")) ? (
           <CheckoutShell
             backgroundImageUrl={backgroundImageUrl}
             connectionState={connectionState}
@@ -2300,9 +2754,61 @@ export function CustomerDisplayClient({
                 onSkipToTip={continueToTipAsGuest}
                 onSubmitPhone={() => void submitPhoneLookup(phoneInput)}
                 phoneInput={phoneInput}
+                showTipShortcut={hasCheckoutHandoff}
               />
             )}
           </CheckoutShell>
+        ) : (
+          <CheckInShell
+            backgroundImageUrl={backgroundImageUrl}
+            error={error}
+            isFullscreen={isFullscreen}
+            onFullscreen={enterFullscreen}
+            settings={settings}
+          >
+            {displayMode === "checkin" && checkInState ? (
+              <CheckInConfirmationPanel checkIn={checkInState} />
+            ) : displayMode === "service_select" && serviceSelectionState ? (
+              <ServiceSelectionPanel
+                checkIn={serviceSelectionState}
+                disabled={isServicePending}
+                onBack={returnToPhoneEntry}
+                onSubmit={() => void submitRequestedServices()}
+                selectedServiceIds={selectedServiceIds}
+                services={serviceCatalog}
+                toggleService={toggleRequestedService}
+              />
+            ) : displayMode === "profile" ? (
+              <ProfileCreationPanel
+                customerStatus={customerStatus}
+                disabled={!token || liveDraftStatus !== "draft"}
+                isPending={isCustomerPending}
+                nameInput={customerNameInput}
+                onBack={returnToPhoneEntry}
+                onNameInput={(value) => {
+                  markCustomerInteraction();
+                  setCustomerNameInput(value);
+                  setCustomerStatus(null);
+                }}
+                onSubmit={() => void createCustomerProfile()}
+                phone={confirmedPhone ?? phoneInput}
+              />
+            ) : (
+              <PhoneEntryPanel
+                customerResults={customerResults}
+                customerStatus={customerStatus}
+                disabled={!token || liveDraftStatus !== "draft"}
+                isCustomerPending={isCustomerPending}
+                isSearching={isSearching}
+                onConfirmCustomer={confirmCustomer}
+                onPhoneInput={handlePhoneInput}
+                onSkipToTip={continueToTipAsGuest}
+                onSubmitPhone={() => void submitPhoneLookup(phoneInput)}
+                phoneInput={phoneInput}
+                showTipShortcut={hasCheckoutHandoff}
+              />
+            )}
+          </CheckInShell>
         )}
       </div>
     </div>

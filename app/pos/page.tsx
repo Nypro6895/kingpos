@@ -71,6 +71,7 @@ export default async function PosDeskPage() {
         salonName={data.context.currentSalon?.name ?? "KITY"}
         services={data.services}
         staff={data.staff}
+        waitingVisits={data.waitingVisits}
       />
     </main>
   );

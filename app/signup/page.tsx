@@ -1,4 +1,5 @@
 import { SignupForm } from "@/app/signup/signup-form";
+import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import Link from "next/link";
 
 type SignupPageProps = {
@@ -8,17 +9,9 @@ type SignupPageProps = {
   }>;
 };
 
-function getNextPath(value: string | undefined) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/account";
-  }
-
-  return value;
-}
-
 export default async function SignupPage({ searchParams }: SignupPageProps) {
   const { error, next } = await searchParams;
-  const nextPath = getNextPath(next);
+  const nextPath = sanitizeAuthReturnPath(next);
 
   return (
     <main className="relative z-10 mx-auto w-full max-w-md px-6 py-12 pointer-events-auto">

@@ -7,7 +7,7 @@ import { useState } from "react";
 const inputClassName =
   "mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-950 pointer-events-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950";
 
-export function SignupForm({ nextPath = "/account" }: { nextPath?: string }) {
+export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,7 +29,7 @@ export function SignupForm({ nextPath = "/account" }: { nextPath?: string }) {
         return;
       }
 
-      router.push(result.redirectTo ?? "/account");
+      router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
       setError("Unable to create account. Please check your connection and try again.");
