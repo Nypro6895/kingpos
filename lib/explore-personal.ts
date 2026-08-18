@@ -1,5 +1,9 @@
 import "server-only";
 
+import {
+  beautyPostBookingPresentation,
+} from "@/lib/beauty-booking-verification";
+import { loadBeautyPostVerifiedBookingCounts } from "@/lib/beauty-post-booking-counts";
 import { getBeautyMediaPublicUrl } from "@/lib/beauty-media";
 import {
   createSupabaseServerClient,
@@ -8,6 +12,7 @@ import {
 import type {
   ExploreFeedMedia,
   ExploreFeedRankingSignals,
+  ExploreFeedVerificationState,
   ExploreInspirationLayoutVariant,
   ExplorePersonalPostCursor,
   ExplorePersonalPostItem,
@@ -56,6 +61,7 @@ type ExplorePersonalPostRow = {
   post_id: string;
   post_type: string | null;
   profile_id: string;
+  booking_enabled: boolean | null;
   salon_city: string | null;
   salon_href: string | null;
   salon_id: string | null;
@@ -63,6 +69,7 @@ type ExplorePersonalPostRow = {
   salon_state: string | null;
   service_category: string | null;
   service_name: string | null;
+  verification_state: string | null;
 };
 
 function emptyPersonalPostPage(error: string | null = null): ExplorePersonalPostPage {
@@ -220,6 +227,49 @@ function diagnosticJson(value: Record<string, unknown>) {
   return JSON.stringify(value);
 }
 
+function verificationState(
+  value: string | null | undefined,
+): ExploreFeedVerificationState | null {
+  if (
+    value === "pending" ||
+    value === "rejected" ||
+    value === "unverified" ||
+    value === "verified"
+  ) {
+    return value;
+  }
+
+  return null;
+}
+
+async function attachExploreBookingCounts(
+  input: {
+    items: ExplorePersonalPostItem[];
+    rpc: RpcRunner;
+  },
+) {
+  const countsByPostId = await loadBeautyPostVerifiedBookingCounts({
+    postIds: input.items
+      .map((item) => (item.booking?.eligible ? item.id : null))
+      .filter((postId): postId is string => Boolean(postId)),
+    rpc: input.rpc,
+  });
+
+  return input.items.map((item) => {
+    if (!item.booking) {
+      return item;
+    }
+
+    return {
+      ...item,
+      booking: {
+        ...item.booking,
+        bookedCount: countsByPostId.get(item.id) ?? 0,
+      },
+    };
+  });
+}
+
 function asMediaRows(value: unknown): ExplorePersonalMediaRow[] {
   return Array.isArray(value) ? (value as ExplorePersonalMediaRow[]) : [];
 }
@@ -294,6 +344,16 @@ function mapPersonalPostRow(
   const postType = row.post_type === "before_after" ? "before_after" : "regular";
   const salonId = cleanString(row.salon_id);
   const salonName = cleanString(row.salon_name);
+  const verification = verificationState(row.verification_state);
+  const booking = beautyPostBookingPresentation({
+    bookedCount: 0,
+    bookingEnabled: row.booking_enabled === true,
+    postId,
+    salonId,
+    salonName,
+    source: "explore",
+    verificationState: verification,
+  });
 
   return {
     author: {
@@ -302,7 +362,13 @@ function mapPersonalPostRow(
       kind: "person",
       name: authorName,
     },
-    booking: null,
+    booking: booking.eligible
+      ? {
+          ...booking,
+          readiness: null,
+          serviceId: null,
+        }
+      : null,
     caption: cleanString(row.caption_excerpt),
     candidateClass: "organic",
     contentId: postId,
@@ -340,6 +406,7 @@ function mapPersonalPostRow(
     serviceName: cleanString(row.service_name),
     sourceSortId: postId,
     sourceType: "personal",
+    verification: verification ? { state: verification } : null,
   };
 }
 
@@ -419,10 +486,15 @@ export async function getExplorePersonalPostPage(input: {
         return true;
       });
 
+    const itemsWithBookingCounts = await attachExploreBookingCounts({
+      items,
+      rpc,
+    });
+
     return {
       error: null,
       hasMore,
-      items,
+      items: itemsWithBookingCounts,
       nextCursor,
     };
   } catch (error) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { loadExploreFeedAction } from "@/app/explore/actions";
+import { BeforeAfterCompare } from "@/components/before-after-compare";
 import type {
   ExploreFeedCursor,
   ExploreFeedItem,
@@ -18,7 +19,7 @@ import {
 } from "react";
 
 const EXPLORE_FEED_SESSION_KEY = "kingpos-explore-continuous-feed";
-const EXPLORE_FEED_SESSION_VERSION = 3;
+const EXPLORE_FEED_SESSION_VERSION = 5;
 const EXPLORE_FEED_SESSION_TTL_MS = 30 * 60 * 1000;
 const EXPLORE_FEED_SESSION_ITEM_LIMIT = 120;
 
@@ -155,6 +156,18 @@ function appendUniqueFeedItems(
   return nextItems.length > 0 ? [...current, ...nextItems] : current;
 }
 
+function mergeStoredFeedItems(
+  stored: ExploreFeedItem[],
+  fresh: ExploreFeedItem[],
+) {
+  const freshByKey = new Map(fresh.map((item) => [feedItemKey(item), item]));
+  const merged = stored.map((item) => freshByKey.get(feedItemKey(item)) ?? item);
+  const mergedKeys = new Set(merged.map(feedItemKey));
+  const freshOnlyItems = fresh.filter((item) => !mergedKeys.has(feedItemKey(item)));
+
+  return freshOnlyItems.length > 0 ? [...merged, ...freshOnlyItems] : merged;
+}
+
 function displayName(value: string | null | undefined, fallback: string) {
   const trimmed = value?.trim();
 
@@ -171,6 +184,14 @@ function serviceLabel(item: ExploreFeedItem) {
     displayName(item.serviceCategory, "") ||
     null
   );
+}
+
+function verificationLabel(item: ExploreFeedItem) {
+  return item.verification?.state === "verified" ? "Verified visit" : null;
+}
+
+function bookingCountLabel(count: number) {
+  return `${count} booked`;
 }
 
 function timeAgo(value: string) {
@@ -328,36 +349,48 @@ function SingleMedia({
   );
 }
 
-function BeforeAfterMedia({ item }: { item: ExploreFeedItem }) {
+function beforeAfterMediaPair(item: ExploreFeedItem) {
+  if (
+    item.sourceType !== "personal" ||
+    item.personal?.postType !== "before_after"
+  ) {
+    return null;
+  }
+
   const before = item.media.find((media) => media.role === "before");
   const after = item.media.find((media) => media.role === "after");
-  const firstMedia = item.media[0];
 
   if (!before || !after) {
+    return null;
+  }
+
+  return { after, before };
+}
+
+function BeforeAfterMedia({ item }: { item: ExploreFeedItem }) {
+  const pair = beforeAfterMediaPair(item);
+  const firstMedia = item.media[0];
+
+  if (!pair) {
     return firstMedia ? <SingleMedia item={item} media={firstMedia} /> : null;
   }
 
   return (
-    <div className="grid grid-cols-2 gap-1 overflow-hidden bg-surface-muted">
-      {[
-        { label: "Before", media: before },
-        { label: "After", media: after },
-      ].map(({ label, media }) => (
-        <div className="relative aspect-[4/5] min-w-0 bg-surface-muted" key={media.id}>
-          <Image
-            alt={`${label} image from ${item.author.name}`}
-            className="object-cover"
-            fill
-            loading="lazy"
-            sizes="(max-width: 768px) 50vw, 360px"
-            src={media.imageUrl}
-          />
-          <span className="absolute left-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold uppercase text-white backdrop-blur">
-            {label}
-          </span>
-        </div>
-      ))}
-    </div>
+    <BeforeAfterCompare
+      after={{
+        alt: `After image from ${item.author.name}`,
+        id: pair.after.id,
+        url: pair.after.imageUrl,
+      }}
+      aspectClassName="aspect-[4/5]"
+      before={{
+        alt: `Before image from ${item.author.name}`,
+        id: pair.before.id,
+        url: pair.before.imageUrl,
+      }}
+      roundedClassName="rounded-none"
+      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 68vw, 720px"
+    />
   );
 }
 
@@ -394,17 +427,26 @@ function FeedMedia({ item }: { item: ExploreFeedItem }) {
 function ExploreFeedCard({ item }: { item: ExploreFeedItem }) {
   const service = serviceLabel(item);
   const location = locationLabel(item);
+  const verifiedLabel = verificationLabel(item);
   const href = item.destination.href;
   const isSalonRecommendation = item.contentType === "salon_recommendation";
-  const bookingHref =
-    item.booking?.enabled && item.booking.href ? item.booking.href : null;
+  const booking = item.booking?.eligible ? item.booking : null;
+  const bookingHref = booking?.href ?? null;
+  const bookedCount = booking?.bookedCount ?? null;
+  const showBeautyBookedCount =
+    item.contentType === "beauty_post" && bookedCount !== null;
+  const showContextBadge =
+    !(
+      item.sourceType === "personal" &&
+      item.personal?.postType === "before_after"
+    );
   const contextLine =
     isSalonRecommendation
-      ? [location, service].filter(Boolean).join(" · ") || "Recommended salon"
+      ? [location, service].filter(Boolean).join(" / ") || "Recommended salon"
       : item.sourceType === "personal"
-        ? [item.salon?.name, location].filter(Boolean).join(" · ") ||
+        ? [item.salon?.name, location, verifiedLabel].filter(Boolean).join(" / ") ||
           "Beauty Profile"
-        : [item.salon?.name, location].filter(Boolean).join(" · ");
+        : [item.salon?.name, location].filter(Boolean).join(" / ");
   const postHref = href && !isSalonRecommendation ? href : null;
   const recommendationProfileHref =
     href && isSalonRecommendation && !bookingHref ? href : null;
@@ -442,13 +484,17 @@ function ExploreFeedCard({ item }: { item: ExploreFeedItem }) {
       </div>
 
       {href ? (
-        <Link
-          aria-label={`Open ${itemContextLabel(item)} by ${item.author.name}`}
-          className="group block focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-orange"
-          href={href}
-        >
-          {media}
-        </Link>
+        beforeAfterMediaPair(item) ? (
+          media
+        ) : (
+          <Link
+            aria-label={`Open ${itemContextLabel(item)} by ${item.author.name}`}
+            className="group block focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-orange"
+            href={href}
+          >
+            {media}
+          </Link>
+        )
       ) : (
         media
       )}
@@ -465,43 +511,70 @@ function ExploreFeedCard({ item }: { item: ExploreFeedItem }) {
               {service}
             </span>
           ) : null}
-          <span className="rounded-full bg-brand-teal-soft px-2.5 py-1 text-[11px] font-semibold text-brand-teal">
-            {itemContextLabel(item)}
-          </span>
+          {showContextBadge ? (
+            <span className="rounded-full bg-brand-teal-soft px-2.5 py-1 text-[11px] font-semibold text-brand-teal">
+              {itemContextLabel(item)}
+            </span>
+          ) : null}
+          {verifiedLabel ? (
+            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-100">
+              {verifiedLabel}
+            </span>
+          ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-2 pt-0.5">
-          {bookingHref ? (
-            <Link
-              className="inline-flex min-h-9 items-center rounded-full bg-brand-orange px-3.5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={bookingHref}
-            >
-              {item.booking?.label ?? "Book"}
-            </Link>
+        <div className="grid gap-2 pt-0.5">
+          {showBeautyBookedCount ? (
+            <p className="text-xs font-semibold text-text-muted">
+              {bookingCountLabel(bookedCount)}
+            </p>
           ) : null}
-          {postHref ? (
-            <Link
-              className="inline-flex min-h-9 items-center rounded-full bg-surface-muted px-3.5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={postHref}
-            >
-              View post
-            </Link>
-          ) : null}
-          {recommendationProfileHref ? (
-            <Link
-              className="inline-flex min-h-9 items-center rounded-full bg-surface-muted px-3.5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={recommendationProfileHref}
-            >
-              View salon
-            </Link>
-          ) : null}
-          {salonHref ? (
-            <Link
-              className="inline-flex min-h-9 items-center rounded-full bg-surface-muted px-3.5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={salonHref}
-            >
-              View salon
-            </Link>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            {bookingHref ? (
+              <Link
+                aria-label={[
+                  booking?.label ?? "Book",
+                  showBeautyBookedCount
+                    ? bookingCountLabel(bookedCount)
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
+                className={[
+                  "inline-flex min-h-9 max-w-full items-center justify-center rounded-full bg-brand-orange px-3.5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+                  item.contentType === "beauty_post" ? "w-full sm:w-auto" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                href={bookingHref}
+              >
+                <span className="truncate">{booking?.label ?? "Book"}</span>
+              </Link>
+            ) : null}
+            {postHref ? (
+              <Link
+                className="inline-flex min-h-9 items-center rounded-full bg-surface-muted px-3.5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                href={postHref}
+              >
+                View post
+              </Link>
+            ) : null}
+            {recommendationProfileHref ? (
+              <Link
+                className="inline-flex min-h-9 items-center rounded-full bg-surface-muted px-3.5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                href={recommendationProfileHref}
+              >
+                View salon
+              </Link>
+            ) : null}
+            {salonHref ? (
+              <Link
+                className="inline-flex min-h-9 items-center rounded-full bg-surface-muted px-3.5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                href={salonHref}
+              >
+                View salon
+              </Link>
+            ) : null}
+          </div>
         </div>
       </div>
     </article>
@@ -625,7 +698,7 @@ export function ExploreFeed({ initialPage }: { initialPage: ExploreFeedPage }) {
         return;
       }
 
-      setItems((current) => appendUniqueFeedItems(stored.items, current));
+      setItems((current) => mergeStoredFeedItems(stored.items, current));
       setCursor(stored.cursor);
       setHasMore(stored.hasMore);
       setPaginationError("");

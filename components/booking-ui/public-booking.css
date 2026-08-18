@@ -156,6 +156,40 @@
   width: calc(100% - 56px);
 }
 
+[data-booking-surface="public"] .public-booking-brand-bar {
+  align-items: center;
+  display: flex;
+  grid-column: 1 / -1;
+  min-height: 44px;
+}
+
+[data-booking-surface="public"] .public-booking-brand-link {
+  align-items: center;
+  border-radius: 10px;
+  display: inline-flex;
+  min-height: 44px;
+  padding: 5px 7px;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+[data-booking-surface="public"] .public-booking-brand-link:hover {
+  background: rgba(255, 240, 232, 0.72);
+  transform: translateY(-1px);
+}
+
+[data-booking-surface="public"] .public-booking-brand-link:focus-visible {
+  outline: 2px solid var(--booking-orange);
+  outline-offset: 4px;
+}
+
+[data-booking-surface="public"] .public-booking-brand-logo {
+  display: block;
+  height: 34px;
+  width: auto;
+}
+
 [data-booking-surface="public"] .public-booking-progress {
   display: grid;
   gap: 0;
@@ -715,6 +749,14 @@
 }
 
 @media (max-width: 640px) {
+  [data-booking-surface="public"] .public-booking-brand-bar {
+    justify-content: center;
+  }
+
+  [data-booking-surface="public"] .public-booking-brand-logo {
+    height: 30px;
+  }
+
   [data-booking-surface="public"] .public-booking-professional-grid {
     grid-template-columns: 1fr;
   }

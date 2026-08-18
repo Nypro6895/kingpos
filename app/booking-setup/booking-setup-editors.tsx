@@ -384,17 +384,9 @@ function onlineBookingStatus(
   readiness?: StaffBookingReadiness | null,
 ) {
   const onlineServiceCount = readiness?.onlineAssignedServiceCount ?? 0;
-  const profileReady =
-    staff.public_profile_visible &&
-    staff.owner_public_enabled &&
-    staff.staff_public_consent_status === "granted";
 
   if (!staff.online_booking_enabled) {
-    return { detail: "Staff profile off", enabled: false, label: "Off" };
-  }
-
-  if (!profileReady) {
-    return { detail: "Profile not public", enabled: false, label: "Off" };
+    return { detail: "Online booking off", enabled: false, label: "Off" };
   }
 
   if (onlineServiceCount === 0) {

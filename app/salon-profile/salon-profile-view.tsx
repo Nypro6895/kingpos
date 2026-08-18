@@ -15,6 +15,7 @@ import {
   updateSalonProfileIdentityAction,
   updateSalonProfileIdentityMediaAction,
 } from "@/app/salon-profile/actions";
+import { BeforeAfterCompare } from "@/components/before-after-compare";
 import {
   SALON_PROFILE_ALLOWED_IMAGE_TYPES,
   SALON_PROFILE_IMAGE_LIMITS,
@@ -2207,6 +2208,10 @@ function CuratedLookSection({
   );
 }
 
+function beautyBookedCountLabel(count: number) {
+  return `${count} booked`;
+}
+
 function BeautyTransformationsSection({
   posts,
 }: {
@@ -2240,35 +2245,38 @@ function BeautyTransformationsSection({
             post.verificationState === "verified" ? "Verified visit" : null,
             timeAgo(post.publishedAt),
           ]);
+          const booking = post.booking?.eligible ? post.booking : null;
+          const bookingHref = booking?.href ?? null;
+          const bookedCount = booking?.bookedCount ?? null;
 
           return (
-            <a
-              className="group overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_55px_rgba(24,24,27,.06)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_70px_rgba(24,24,27,.08)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-              href={post.postHref}
+            <article
+              className="group overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_55px_rgba(24,24,27,.06)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_70px_rgba(24,24,27,.08)]"
               key={post.id}
             >
-              <div className="grid grid-cols-2 gap-1 bg-zinc-100">
-                <div className="relative">
-                  <LookImage
-                    className="aspect-[4/5] w-full"
-                    imageUrl={before?.url ?? null}
-                    title={`${post.authorDisplayName} before`}
-                  />
-                  <span className="absolute left-2 top-2 rounded-full bg-white/92 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-700 shadow-sm">
-                    Before
-                  </span>
-                </div>
-                <div className="relative">
-                  <LookImage
-                    className="aspect-[4/5] w-full"
-                    imageUrl={after?.url ?? null}
-                    title={`${post.authorDisplayName} after`}
-                  />
-                  <span className="absolute left-2 top-2 rounded-full bg-white/92 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-700 shadow-sm">
-                    After
-                  </span>
-                </div>
-              </div>
+              <BeforeAfterCompare
+                after={
+                  after?.url
+                    ? {
+                        alt: `After image from ${post.authorDisplayName}`,
+                        id: after.id,
+                        url: after.url,
+                      }
+                    : null
+                }
+                aspectClassName="aspect-[4/5]"
+                before={
+                  before?.url
+                    ? {
+                        alt: `Before image from ${post.authorDisplayName}`,
+                        id: before.id,
+                        url: before.url,
+                      }
+                    : null
+                }
+                roundedClassName="rounded-none"
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
               <div className="grid gap-2 p-4">
                 <div className="flex items-center gap-3">
                   <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-zinc-950 text-xs font-semibold text-white">
@@ -2299,8 +2307,39 @@ function BeautyTransformationsSection({
                     {post.caption}
                   </p>
                 ) : null}
+                <div className="grid gap-2 pt-1">
+                  {bookedCount !== null ? (
+                    <p className="text-xs font-semibold text-zinc-500">
+                      {beautyBookedCountLabel(bookedCount)}
+                    </p>
+                  ) : null}
+                  <div className="flex flex-wrap gap-2">
+                    {bookingHref ? (
+                      <a
+                        aria-label={[
+                          booking?.label ?? "Book",
+                          bookedCount !== null
+                            ? beautyBookedCountLabel(bookedCount)
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(", ")}
+                        className="inline-flex min-h-10 flex-1 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:flex-none"
+                        href={bookingHref}
+                      >
+                        <span className="truncate">{booking?.label ?? "Book"}</span>
+                      </a>
+                    ) : null}
+                    <a
+                      className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                      href={post.postHref}
+                    >
+                      View post
+                    </a>
+                  </div>
+                </div>
               </div>
-            </a>
+            </article>
           );
         })}
       </div>

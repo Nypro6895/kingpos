@@ -1,7 +1,9 @@
 import {
+  confirmStaffBookingAction,
   completeStaffAppointmentLineAction,
   startStaffAppointmentLineAction,
 } from "@/app/staff/appointments/actions";
+import { StaffBookingSettings } from "@/app/staff/appointments/staff-booking-settings-client";
 import {
   getCurrentStaffAppointments,
   type StaffAppointmentLine,
@@ -11,6 +13,7 @@ import {
 } from "@/lib/staff-appointments";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { CSSProperties } from "react";
 
 type StaffAppointmentsPageProps = {
   searchParams?: Promise<StaffAppointmentsSearchParams>;
@@ -90,6 +93,10 @@ function formatDateTime(value: string, timeZone: string) {
 }
 
 function formatToolbarDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return "Today";
+  }
+
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "long",
@@ -151,7 +158,7 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={classNames(
-        "inline-flex w-fit rounded-md border px-2 py-1 text-xs font-semibold",
+        "staff-appointments-status-badge inline-flex w-fit rounded-md border px-2 py-1 text-xs font-semibold",
         statusTone(status),
       )}
     >
@@ -160,72 +167,48 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function SetupSummary({ data }: { data: StaffAppointmentsData }) {
-  const readiness = data.bookingReadiness;
-  const workingRules = data.availabilityRules.filter(
-    (rule) => rule.rule_type === "working",
-  );
-  const breaks = data.availabilityRules.filter((rule) => rule.rule_type === "break");
+function ConfirmationBadge({
+  confirmationStatus,
+}: {
+  confirmationStatus: StaffAppointmentLine["confirmationStatus"];
+}) {
+  if (confirmationStatus !== "requested") {
+    return null;
+  }
 
   return (
-    <section className="staff-appointments-panel grid gap-4 p-5">
-      <div>
-        <p className="text-xs font-semibold uppercase text-zinc-500">
-          Booking setup
-        </p>
-        <h2 className="mt-1 text-lg font-semibold text-zinc-950">
-          {readiness?.ready ? "Booking ready" : "Needs setup"}
-        </h2>
-      </div>
-      {readiness && readiness.reasons.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
-          {readiness.reasons.map((reason) => (
-            <span
-              className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800"
-              key={reason.code}
-            >
-              {reason.label}
-            </span>
-          ))}
-        </div>
-      ) : null}
-      <div className="grid gap-3 text-sm">
-        <div>
-          <p className="font-semibold text-zinc-950">Online booking services</p>
-          <p className="mt-1 text-zinc-600">
-            {data.assignedServices.length > 0
-              ? data.assignedServices
-                  .map(
-                    (service) =>
-                      `${service.name}${service.onlineBookable ? "" : " (offline)"}`,
-                  )
-                  .join(", ")
-              : "None"}
-          </p>
-        </div>
-        <div>
-          <p className="font-semibold text-zinc-950">Recurring schedule</p>
-          <p className="mt-1 text-zinc-600">
-            {workingRules.length} working intervals / {breaks.length} breaks
-          </p>
-        </div>
-        <div>
-          <p className="font-semibold text-zinc-950">Upcoming blocks</p>
-          <p className="mt-1 text-zinc-600">
-            {data.timeBlocks.length > 0
-              ? data.timeBlocks
-                  .slice(0, 3)
-                  .map((block) => block.reason || block.block_type.replace(/_/g, " "))
-                  .join(", ")
-              : "None"}
-          </p>
-        </div>
-      </div>
-    </section>
+    <span className="staff-appointments-confirmation-badge">
+      Pending
+    </span>
   );
 }
 
-function buildHref(params: StaffAppointmentsSearchParams, next: Record<string, string>) {
+function appointmentRequiresConfirmation(appointment: StaffAppointmentLine) {
+  return (
+    appointment.status === "pending" ||
+    appointment.confirmationStatus === "requested"
+  );
+}
+
+function appointmentDisplayStatus(appointment: StaffAppointmentLine) {
+  return appointmentRequiresConfirmation(appointment)
+    ? "pending"
+    : appointment.status;
+}
+
+function formatAppointmentDate(value: string, timeZone: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone,
+    weekday: "short",
+  }).format(new Date(value));
+}
+
+function buildHref(
+  params: StaffAppointmentsSearchParams,
+  next: Record<string, null | string | undefined>,
+) {
   const query = new URLSearchParams();
   const date = firstParam(params.date);
   const view = firstParam(params.view);
@@ -239,76 +222,108 @@ function buildHref(params: StaffAppointmentsSearchParams, next: Record<string, s
   }
 
   for (const [key, value] of Object.entries(next)) {
+    if (!value) {
+      continue;
+    }
+
     query.set(key, value);
   }
 
-  return `/staff/appointments?${query.toString()}`;
+  const queryString = query.toString();
+
+  return queryString ? `/staff/appointments?${queryString}` : "/staff/appointments";
 }
 
 function Header({
   data,
   params,
+  salonId,
 }: {
   data: StaffAppointmentsData;
   params: StaffAppointmentsSearchParams;
+  salonId: string | null;
 }) {
-  const selectedDate = firstParam(params.date) ?? data.days[0]?.date ?? "";
+  const selectedDate =
+    firstParam(params.date) ?? data.days[0]?.date ?? todayInTimeZone(data.timezone);
   const step = data.view === "week" ? 7 : 1;
+  const salonName =
+    data.context.currentStaffSalon?.name ??
+    data.context.salonName ??
+    "Staff schedule";
 
   return (
-    <div className="staff-appointments-header">
-      <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <p className="min-w-0 truncate text-sm font-semibold text-zinc-500">
-            {data.context.currentAccount?.name ?? data.context.accountName} /{" "}
-            {data.context.currentStaffSalon?.name}
+    <header className="staff-appointments-header">
+      <div className="staff-appointments-frame staff-appointments-header-frame">
+        <div className="staff-appointments-titlebar">
+          <div className="min-w-0">
+            <p className="staff-appointments-title-kicker">Staff appointments</p>
+            <h1>{salonName}</h1>
+          </div>
+          <p className="staff-appointments-title-date">
+            {formatToolbarDate(selectedDate)}
           </p>
-          <nav className="staff-appointments-view-tabs">
-            {(["list", "day", "week"] as const).map((view) => (
-              <Link
-                aria-current={data.view === view ? "page" : undefined}
-                className={classNames(
-                  "staff-appointments-view-tab",
-                  data.view === view
-                    ? "staff-appointments-view-tab--active"
-                    : "staff-appointments-view-tab--idle",
-                )}
-                href={buildHref(params, { view })}
-                key={view}
-              >
-                {VIEW_LABELS[view]}
-              </Link>
-            ))}
-          </nav>
         </div>
         <div className="staff-appointments-toolbar">
-          <Link
-            className="staff-appointments-secondary-button"
-            href={buildHref(params, { date: todayInTimeZone(data.timezone) })}
-          >
-            Today
-          </Link>
-          <Link
-            className="staff-appointments-icon-button"
-            href={buildHref(params, { date: addDays(selectedDate, -step) })}
-          >
-            <ChevronIcon direction="left" />
-            <span className="sr-only">Previous range</span>
-          </Link>
-          <div className="staff-appointments-date-display">
-            <span>{formatToolbarDate(selectedDate)}</span>
-            <CalendarIcon />
+          <div className="staff-appointments-toolbar-controls">
+            <Link
+              className="staff-appointments-secondary-button"
+              href={buildHref(params, { date: todayInTimeZone(data.timezone) })}
+            >
+              Today
+            </Link>
+            <Link
+              className="staff-appointments-icon-button"
+              href={buildHref(params, { date: addDays(selectedDate, -step) })}
+            >
+              <ChevronIcon direction="left" />
+              <span className="sr-only">Previous range</span>
+            </Link>
+            <div className="staff-appointments-date-display">
+              <span>{formatToolbarDate(selectedDate)}</span>
+              <CalendarIcon />
+            </div>
+            <Link
+              className="staff-appointments-icon-button"
+              href={buildHref(params, { date: addDays(selectedDate, step) })}
+            >
+              <ChevronIcon direction="right" />
+              <span className="sr-only">Next range</span>
+            </Link>
           </div>
-          <Link
-            className="staff-appointments-icon-button"
-            href={buildHref(params, { date: addDays(selectedDate, step) })}
-          >
-            <ChevronIcon direction="right" />
-            <span className="sr-only">Next range</span>
-          </Link>
+          <div className="staff-appointments-toolbar-actions">
+            <nav className="staff-appointments-view-tabs staff-appointments-toolbar-tabs">
+              {(["list", "day", "week"] as const).map((view) => (
+                <Link
+                  aria-current={data.view === view ? "page" : undefined}
+                  className={classNames(
+                    "staff-appointments-view-tab",
+                    data.view === view
+                      ? "staff-appointments-view-tab--active"
+                      : "staff-appointments-view-tab--idle",
+                  )}
+                  href={buildHref(params, { view })}
+                  key={view}
+                >
+                  {VIEW_LABELS[view]}
+                </Link>
+              ))}
+            </nav>
+            {data.staff && salonId ? (
+              <StaffBookingSettings
+                assignedServices={data.assignedServices}
+                availabilityRules={data.availabilityRules}
+                salonBookingStatus={data.salonBookingStatus}
+                salonId={salonId}
+                staff={data.staff}
+                timeBlocks={data.timeBlocks}
+                timezone={data.timezone}
+                variant="toolbar"
+              />
+            ) : null}
+          </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 }
 
@@ -321,26 +336,316 @@ function AppointmentSummary({
   params: StaffAppointmentsSearchParams;
   timezone: string;
 }) {
+  const displayStatus = appointmentDisplayStatus(appointment);
+  const isQuickOpen = firstParam(params.quickId) === appointment.bookingId;
+
   return (
-    <Link
-      className="staff-appointments-card grid gap-2 p-3"
-      href={buildHref(params, { bookingId: appointment.bookingId })}
+    <article
+      className="staff-appointments-card staff-appointments-appointment-card"
+      data-status={displayStatus}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold text-zinc-950">
-            {formatTime(appointment.startAt, timezone)} -{" "}
-            {formatTime(appointment.endAt, timezone)}
-          </p>
-          <p className="mt-1 text-sm text-zinc-700">{appointment.customerName}</p>
+      <Link
+        className="staff-appointments-appointment-row"
+        href={buildHref(params, { quickId: appointment.bookingId })}
+      >
+        <div className="staff-appointments-appointment-primary">
+          <span>{formatAppointmentDate(appointment.startAt, timezone)}</span>
+          <strong>{appointmentTimeRange(appointment, timezone)}</strong>
         </div>
-        <StatusBadge status={appointment.status} />
-      </div>
-      <p className="text-sm text-zinc-600">{appointment.serviceName}</p>
-      <p className="text-xs font-semibold text-zinc-500">
-        Line: {appointment.lineStatus.replace(/_/g, " ")}
-      </p>
-    </Link>
+        <div className="staff-appointments-appointment-main">
+          <strong>{appointment.serviceName}</strong>
+          <span>{appointment.customerName}</span>
+        </div>
+        <div className="staff-appointments-appointment-status">
+          <StatusBadge status={displayStatus} />
+        </div>
+      </Link>
+      {isQuickOpen ? (
+        <QuickAppointmentPopover
+          appointment={appointment}
+          params={params}
+        />
+      ) : null}
+    </article>
+  );
+}
+
+function QuickAppointmentPopover({
+  appointment,
+  className,
+  params,
+  style,
+}: {
+  appointment: StaffAppointmentLine;
+  className?: string;
+  params: StaffAppointmentsSearchParams;
+  style?: CSSProperties;
+}) {
+  const canConfirm =
+    appointmentRequiresConfirmation(appointment) &&
+    appointment.status !== "cancelled" &&
+    appointment.status !== "no_show";
+
+  return (
+    <div
+      aria-label={`Quick actions for ${appointment.customerName}`}
+      className={classNames("staff-appointments-quick-popover", className)}
+      role="dialog"
+      style={style}
+    >
+      {canConfirm ? (
+        <div className="staff-appointments-quick-actions">
+          <form action={confirmStaffBookingAction}>
+            <input name="booking_id" type="hidden" value={appointment.bookingId} />
+            <button className="staff-appointments-primary-button" type="submit">
+              Confirm
+            </button>
+          </form>
+          <Link
+            className="staff-appointments-secondary-button"
+            href={buildHref(params, { quickId: null })}
+          >
+            Cancel
+          </Link>
+        </div>
+      ) : (
+        <div className="staff-appointments-quick-state">
+          <StatusBadge status={appointmentDisplayStatus(appointment)} />
+          <Link
+            className="staff-appointments-secondary-button"
+            href={buildHref(params, { quickId: null })}
+          >
+            Close
+          </Link>
+        </div>
+      )}
+      <Link
+        className="staff-appointments-quick-detail"
+        href={buildHref(params, { bookingId: appointment.bookingId })}
+      >
+        Detail
+      </Link>
+    </div>
+  );
+}
+
+function timeToMinutes(value: string) {
+  const [hour = "0", minute = "0"] = value.slice(0, 5).split(":");
+  const hourNumber = Number(hour);
+  const minuteNumber = Number(minute);
+
+  if (!Number.isFinite(hourNumber) || !Number.isFinite(minuteNumber)) {
+    return 0;
+  }
+
+  return hourNumber * 60 + minuteNumber;
+}
+
+function endTimeToMinutes(value: string) {
+  const minutes = timeToMinutes(value);
+
+  return minutes === 0 ? 24 * 60 : minutes;
+}
+
+function minutesLabel(totalMinutes: number) {
+  const hour = Math.floor(totalMinutes / 60);
+  const minute = totalMinutes % 60;
+  const date = new Date(Date.UTC(2026, 0, 1, hour, minute));
+
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: minute ? "2-digit" : undefined,
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function dayOfWeek(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+}
+
+function effectiveRulesForStaff(
+  data: StaffAppointmentsData,
+  ruleType: "break" | "working",
+) {
+  const staffId = data.staff?.id;
+  const activeRules = data.availabilityRules.filter(
+    (rule) => rule.is_active && rule.rule_type === ruleType,
+  );
+
+  if (!staffId) {
+    return activeRules.filter((rule) => !rule.staff_id);
+  }
+
+  const staffRules = activeRules.filter((rule) => rule.staff_id === staffId);
+
+  return staffRules.length > 0
+    ? staffRules
+    : activeRules.filter((rule) => !rule.staff_id);
+}
+
+function isRuleEffectiveOnDate(
+  rule: StaffAppointmentsData["availabilityRules"][number],
+  date: string,
+) {
+  return (
+    rule.day_of_week === dayOfWeek(date) &&
+    (!rule.effective_start_date || rule.effective_start_date <= date) &&
+    (!rule.effective_end_date || rule.effective_end_date >= date)
+  );
+}
+
+function appointmentsForDate(data: StaffAppointmentsData, date: string) {
+  return data.appointments.filter(
+    (appointment) => dateParts(appointment.startAt, data.timezone).date === date,
+  );
+}
+
+function blocksForDate(data: StaffAppointmentsData, date: string) {
+  return data.timeBlocks.filter((block) => {
+    const startDate = dateParts(block.starts_at, data.timezone).date;
+    const endMs = new Date(block.ends_at).getTime();
+    const inclusiveEnd = Number.isFinite(endMs)
+      ? new Date(Math.max(0, endMs - 1)).toISOString()
+      : block.ends_at;
+    const endDate = dateParts(inclusiveEnd, data.timezone).date;
+
+    return startDate <= date && endDate >= date;
+  });
+}
+
+function timelineBounds(data: StaffAppointmentsData) {
+  const appointmentStarts: number[] = [];
+  const appointmentEnds: number[] = [];
+  const workingStarts: number[] = [];
+  const workingEnds: number[] = [];
+  const workingRules = effectiveRulesForStaff(data, "working");
+
+  for (const day of data.days) {
+    for (const rule of workingRules) {
+      if (!isRuleEffectiveOnDate(rule, day.date)) {
+        continue;
+      }
+
+      workingStarts.push(timeToMinutes(rule.starts_at_local));
+      workingEnds.push(endTimeToMinutes(rule.ends_at_local));
+    }
+
+    for (const appointment of appointmentsForDate(data, day.date)) {
+      appointmentStarts.push(dateParts(appointment.startAt, data.timezone).minutes);
+      appointmentEnds.push(dateParts(appointment.endAt, data.timezone).minutes);
+    }
+  }
+
+  const starts = workingStarts.length > 0 ? workingStarts : appointmentStarts;
+  const ends = workingEnds.length > 0 ? workingEnds : appointmentEnds;
+  const start = Math.max(0, Math.min(...starts, 9 * 60));
+  const end = Math.min(24 * 60, Math.max(...ends, 17 * 60));
+
+  return {
+    end: Math.max(end, start + 60),
+    start,
+  };
+}
+
+function timelineMetrics(data: StaffAppointmentsData) {
+  const bounds = timelineBounds(data);
+  const total = Math.max(60, bounds.end - bounds.start);
+  const height = Math.max(320, Math.ceil(total / 60) * 72);
+  const ticks: number[] = [];
+
+  for (let tick = bounds.start; tick <= bounds.end; tick += 60) {
+    ticks.push(tick);
+  }
+
+  if (ticks[ticks.length - 1] !== bounds.end) {
+    ticks.push(bounds.end);
+  }
+
+  const position = (startMinutes: number, endMinutes: number) => {
+    const visibleStart = Math.max(bounds.start, Math.min(bounds.end, startMinutes));
+    const visibleEnd = Math.max(visibleStart + 1, Math.min(bounds.end, endMinutes));
+    const top = ((visibleStart - bounds.start) / total) * height;
+    const blockHeight = ((visibleEnd - visibleStart) / total) * height;
+
+    return {
+      height: Math.max(46, blockHeight),
+      top,
+    };
+  };
+
+  return { ...bounds, height, position, ticks, total };
+}
+
+function appointmentPosition(
+  appointment: StaffAppointmentLine,
+  timezone: string,
+  metrics: ReturnType<typeof timelineMetrics>,
+) {
+  return metrics.position(
+    dateParts(appointment.startAt, timezone).minutes,
+    dateParts(appointment.endAt, timezone).minutes,
+  );
+}
+
+function appointmentTimeRange(appointment: StaffAppointmentLine, timezone: string) {
+  return `${formatTime(appointment.startAt, timezone)}-${formatTime(
+    appointment.endAt,
+    timezone,
+  )}`;
+}
+
+function TimelineAppointmentCard({
+  appointment,
+  compact = false,
+  metrics,
+  params,
+  timezone,
+}: {
+  appointment: StaffAppointmentLine;
+  compact?: boolean;
+  metrics: ReturnType<typeof timelineMetrics>;
+  params: StaffAppointmentsSearchParams;
+  timezone: string;
+}) {
+  const itemPosition = appointmentPosition(appointment, timezone, metrics);
+  const displayStatus = appointmentDisplayStatus(appointment);
+  const isQuickOpen = firstParam(params.quickId) === appointment.bookingId;
+
+  return (
+    <>
+      <Link
+        className={classNames(
+          "staff-appointments-timeline-card",
+          compact && "staff-appointments-timeline-card--compact",
+        )}
+        data-status={displayStatus}
+        href={buildHref(params, { quickId: appointment.bookingId })}
+        style={{ height: itemPosition.height, top: itemPosition.top }}
+      >
+        <span className="staff-appointments-status-dot" />
+        <span className="staff-appointments-timeline-card-title">
+          {appointment.customerName}
+        </span>
+        <span className="staff-appointments-timeline-card-service">
+          {appointment.serviceName}
+        </span>
+        <span className="staff-appointments-timeline-card-time">
+          {appointmentTimeRange(appointment, timezone)}
+        </span>
+        <span className="staff-appointments-timeline-card-status">
+          {STATUS_LABELS[displayStatus] ?? displayStatus}
+        </span>
+      </Link>
+      {isQuickOpen ? (
+        <QuickAppointmentPopover
+          appointment={appointment}
+          className="staff-appointments-timeline-popover"
+          params={params}
+          style={{ top: itemPosition.top + Math.min(itemPosition.height, 52) }}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -352,98 +657,32 @@ function DayCanvas({
   params: StaffAppointmentsSearchParams;
 }) {
   const date = data.days[0]?.date;
-  const dayAppointments = data.appointments.filter(
-    (appointment) => dateParts(appointment.startAt, data.timezone).date === date,
-  );
-  const starts = dayAppointments.map(
-    (appointment) => dateParts(appointment.startAt, data.timezone).minutes,
-  );
-  const ends = dayAppointments.map(
-    (appointment) => dateParts(appointment.endAt, data.timezone).minutes,
-  );
-  const start = Math.max(0, Math.min(...starts, 9 * 60) - 60);
-  const end = Math.min(24 * 60, Math.max(...ends, 18 * 60) + 60);
-  const total = Math.max(240, end - start);
-  const height = Math.max(420, Math.ceil(total / 60) * 68);
-  const hours = Array.from({ length: Math.ceil(total / 60) + 1 }, (_, index) => start + index * 60);
-  const position = (startAt: string, endAt: string) => {
-    const top = ((dateParts(startAt, data.timezone).minutes - start) / total) * height;
-    const blockHeight =
-      ((dateParts(endAt, data.timezone).minutes -
-        dateParts(startAt, data.timezone).minutes) /
-        total) *
-      height;
-
-    return { height: Math.max(44, blockHeight), top };
-  };
+  const dayAppointments = date ? appointmentsForDate(data, date) : [];
 
   return (
-    <section className="staff-appointments-panel overflow-hidden">
-      <div className="border-b border-[#e7dfe5] bg-[#fbfafb] px-4 py-3">
-        <h2 className="font-semibold text-zinc-950">{data.days[0]?.label}</h2>
-        <p className="mt-1 text-sm text-zinc-500">{data.timezone}</p>
+    <section className="staff-appointments-panel staff-appointments-day-board">
+      <div className="staff-appointments-section-head staff-appointments-day-head">
+        <div>
+          <h2>{data.days[0]?.label}</h2>
+          <p>{dayAppointments.length} assigned appointments</p>
+        </div>
+        <span>{data.timezone}</span>
       </div>
-      <div className="grid grid-cols-[72px_minmax(0,1fr)]">
-        <div className="relative bg-zinc-50" style={{ height }}>
-          {hours.map((hour) => (
-            <div
-              className="absolute left-0 right-0 -translate-y-2 px-3 text-xs text-zinc-500"
-              key={hour}
-              style={{ top: ((hour - start) / total) * height }}
-            >
-              {Math.floor(hour / 60)}:00
-            </div>
-          ))}
-        </div>
-        <div className="relative" style={{ height }}>
-          {hours.map((hour) => (
-            <div
-              className="absolute left-0 right-0 border-t border-zinc-100"
-              key={hour}
-              style={{ top: ((hour - start) / total) * height }}
+      <div className="staff-appointments-day-card-list">
+        {dayAppointments.length > 0 ? (
+          dayAppointments.map((appointment) => (
+            <AppointmentSummary
+              appointment={appointment}
+              key={appointment.id}
+              params={params}
+              timezone={data.timezone}
             />
-          ))}
-          {data.timeBlocks.map((block) => {
-            const blockPosition = position(block.starts_at, block.ends_at);
-
-            return (
-              <div
-                className="absolute left-3 right-3 rounded-md border border-zinc-300 bg-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-600"
-                key={block.id}
-                style={{ height: blockPosition.height, top: blockPosition.top }}
-              >
-                {block.reason || block.block_type.replace(/_/g, " ")}
-              </div>
-            );
-          })}
-          {dayAppointments.map((appointment) => {
-            const itemPosition = position(appointment.startAt, appointment.endAt);
-
-            return (
-              <Link
-                className="absolute left-3 right-3 rounded-md border border-[#642a56] bg-[#642a56] px-3 py-2 text-white shadow-sm"
-                href={buildHref(params, { bookingId: appointment.bookingId })}
-                key={appointment.id}
-                style={{ height: itemPosition.height, top: itemPosition.top }}
-              >
-                <span className="block truncate text-sm font-semibold">
-                  {appointment.customerName}
-                </span>
-                <span className="mt-1 block truncate text-xs text-zinc-200">
-                  {appointment.serviceName}
-                </span>
-                <span className="mt-1 block text-xs text-zinc-300">
-                  {appointment.lineStatus.replace(/_/g, " ")}
-                </span>
-              </Link>
-            );
-          })}
-          {dayAppointments.length === 0 ? (
-            <div className="staff-appointments-empty absolute inset-x-4 top-8 p-4 text-sm">
-              No assigned appointments for this day.
-            </div>
-          ) : null}
-        </div>
+          ))
+        ) : (
+          <div className="staff-appointments-empty p-4 text-sm">
+            No assigned appointments for this day.
+          </div>
+        )}
       </div>
     </section>
   );
@@ -456,24 +695,106 @@ function WeekView({
   data: StaffAppointmentsData;
   params: StaffAppointmentsSearchParams;
 }) {
-  return (
-    <div className="grid gap-3 lg:grid-cols-7">
-      {data.days.map((day) => {
-        const dayAppointments = data.appointments.filter(
-          (appointment) => dateParts(appointment.startAt, data.timezone).date === day.date,
-        );
+  const metrics = timelineMetrics(data);
 
-        return (
-          <section className="staff-appointments-panel overflow-hidden" key={day.date}>
-            <div className="border-b border-[#e7dfe5] bg-[#fbfafb] px-3 py-2">
-              <h2 className="text-sm font-semibold text-zinc-950">{day.label}</h2>
-              <p className="text-xs text-zinc-500">
-                {dayAppointments.length} assigned
-              </p>
+  return (
+    <section className="staff-appointments-panel staff-appointments-week-panel">
+      <div className="staff-appointments-section-head staff-appointments-week-head">
+        <div className="staff-appointments-week-head-gutter" />
+        {data.days.map((day) => {
+          return (
+            <div className="staff-appointments-week-day-head" key={day.date}>
+              <h2>{day.label}</h2>
+              <p>{appointmentsForDate(data, day.date).length} assigned</p>
             </div>
-            <div className="grid gap-2 p-2">
+          );
+        })}
+      </div>
+      <div
+        className="staff-appointments-week-timeline"
+        style={{
+          gridTemplateColumns: `72px repeat(${data.days.length}, minmax(0, 1fr))`,
+        }}
+      >
+        <div className="staff-appointments-time-gutter" style={{ height: metrics.height }}>
+          {metrics.ticks.map((hour) => (
+            <div
+              className="staff-appointments-time-label"
+              key={hour}
+              style={{ top: ((hour - metrics.start) / metrics.total) * metrics.height }}
+            >
+              {minutesLabel(hour)}
+            </div>
+          ))}
+        </div>
+        {data.days.map((day) => {
+          const dayAppointments = appointmentsForDate(data, day.date);
+          const dayBlocks = blocksForDate(data, day.date);
+
+          return (
+            <div
+              className="staff-appointments-day-column"
+              key={day.date}
+              style={{ height: metrics.height }}
+            >
+              {metrics.ticks.map((hour) => (
+                <div
+                  className="staff-appointments-time-line"
+                  key={hour}
+                  style={{
+                    top: ((hour - metrics.start) / metrics.total) * metrics.height,
+                  }}
+                />
+              ))}
+              {dayBlocks.map((block) => {
+                const blockStart = dateParts(block.starts_at, data.timezone);
+                const blockEnd = dateParts(block.ends_at, data.timezone);
+                const blockPosition = metrics.position(
+                  blockStart.date < day.date ? metrics.start : blockStart.minutes,
+                  blockEnd.date > day.date || blockEnd.minutes === 0
+                    ? metrics.end
+                    : blockEnd.minutes,
+                );
+
+                return (
+                  <div
+                    className="staff-appointments-time-block"
+                    key={block.id}
+                    style={{ height: blockPosition.height, top: blockPosition.top }}
+                  >
+                    {block.reason || block.block_type.replace(/_/g, " ")}
+                  </div>
+                );
+              })}
+              {dayAppointments.map((appointment) => (
+                <TimelineAppointmentCard
+                  appointment={appointment}
+                  compact
+                  key={appointment.id}
+                  metrics={metrics}
+                  params={params}
+                  timezone={data.timezone}
+                />
+              ))}
               {dayAppointments.length === 0 ? (
-                  <p className="staff-appointments-empty px-3 py-6 text-sm">
+                <div className="staff-appointments-day-empty">No appointments</div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+      <div className="staff-appointments-week-mobile">
+        {data.days.map((day) => {
+          const dayAppointments = appointmentsForDate(data, day.date);
+
+          return (
+            <section className="staff-appointments-week-mobile-day" key={day.date}>
+              <div>
+                <h2>{day.label}</h2>
+                <p>{dayAppointments.length} assigned</p>
+              </div>
+              {dayAppointments.length === 0 ? (
+                <p className="staff-appointments-empty p-4 text-sm">
                   No appointments
                 </p>
               ) : (
@@ -486,11 +807,11 @@ function WeekView({
                   />
                 ))
               )}
-            </div>
-          </section>
-        );
-      })}
-    </div>
+            </section>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -581,112 +902,145 @@ function AppointmentInspiration({
 function DetailPanel({
   appointment,
   canViewTickets,
+  params,
   timezone,
 }: {
   appointment: StaffAppointmentLine | null;
   canViewTickets: boolean;
+  params: StaffAppointmentsSearchParams;
   timezone: string;
 }) {
   if (!appointment) {
-    return (
-      <aside className="staff-appointments-empty p-5 text-sm">
-        Select an appointment to see service details.
-      </aside>
-    );
+    return null;
   }
 
+  const appointmentClosed =
+    appointment.status === "cancelled" || appointment.status === "no_show";
+  const requiresConfirmation = appointmentRequiresConfirmation(appointment);
+  const canConfirm = requiresConfirmation && !appointmentClosed;
   const canStart =
     appointment.lineStatus === "scheduled" &&
-    appointment.status !== "cancelled" &&
-    appointment.status !== "no_show";
+    !requiresConfirmation &&
+    !appointmentClosed;
   const canComplete =
     (appointment.lineStatus === "scheduled" ||
       appointment.lineStatus === "in_service") &&
-    appointment.status !== "cancelled" &&
-    appointment.status !== "no_show";
+    !requiresConfirmation &&
+    !appointmentClosed;
 
   return (
-    <aside className="staff-appointments-panel grid gap-4 p-5">
-      <div>
-        <p className="text-xs font-semibold uppercase text-zinc-500">
-          Appointment detail
-        </p>
-        <h2 className="mt-1 text-xl font-semibold text-zinc-950">
-          {appointment.customerName}
-        </h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          {formatDateTime(appointment.startAt, timezone)}
-        </p>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <StatusBadge status={appointment.status} />
-        <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600">
-          Line: {appointment.lineStatus.replace(/_/g, " ")}
-        </span>
-        {appointment.ticketId && canViewTickets ? (
+    <div className="staff-appointments-detail-overlay">
+      <Link
+        aria-label="Close appointment detail"
+        className="staff-appointments-detail-backdrop"
+        href={buildHref(params, { bookingId: null })}
+      />
+      <aside className="staff-appointments-detail-sheet">
+        <div className="staff-appointments-detail-head">
+          <div>
+            <p className="staff-appointments-detail-kicker">
+              Appointment detail
+            </p>
+            <h2>
+              {appointment.customerName}
+            </h2>
+            <p>
+              {formatDateTime(appointment.startAt, timezone)}
+            </p>
+          </div>
           <Link
-            className="rounded-md border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-semibold text-sky-800"
-            href={`/pos-tickets/${appointment.ticketId}`}
+            aria-label="Close appointment detail"
+            className="staff-appointments-detail-close"
+            href={buildHref(params, { bookingId: null })}
           >
-            Open ticket
+            x
           </Link>
-        ) : null}
-      </div>
-      <dl className="grid gap-2 text-sm">
-        <div>
-          <dt className="font-semibold text-zinc-950">Service</dt>
-          <dd className="text-zinc-700">{appointment.serviceName}</dd>
         </div>
-        <AppointmentInspiration appointment={appointment} />
-        <div>
-          <dt className="font-semibold text-zinc-950">Contact</dt>
-          <dd className="text-zinc-700">
-            {appointment.customerPhone || "No day-of phone"}
-          </dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-zinc-950">Customer note</dt>
-          <dd className="text-zinc-700">{appointment.publicNotes || "None"}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-zinc-950">Service note</dt>
-          <dd className="text-zinc-700">{appointment.serviceNote || "None"}</dd>
-        </div>
-      </dl>
-      {appointment.status === "cancelled" || appointment.status === "no_show" ? (
-        <p className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
-          This appointment is no longer active.
-        </p>
-      ) : null}
-      <form action={startStaffAppointmentLineAction} className="grid gap-2">
-        <input name="booking_line_id" type="hidden" value={appointment.id} />
-        <label className="grid gap-1">
-          <span className="text-sm font-semibold text-zinc-700">Service note</span>
-          <textarea
-            className="staff-appointments-field min-h-20 py-2"
-            defaultValue={appointment.serviceNote ?? ""}
-            name="service_note"
-          />
-        </label>
-        <div className="flex flex-wrap gap-2">
-          <button
-            className="staff-appointments-primary-button disabled:opacity-50"
-            disabled={!canStart}
-            type="submit"
+        <div className="staff-appointments-detail-body">
+          <div className="staff-appointments-detail-badges">
+            <StatusBadge status={appointmentDisplayStatus(appointment)} />
+            <ConfirmationBadge confirmationStatus={appointment.confirmationStatus} />
+            <span className="staff-appointments-line-status">
+              Line: {appointment.lineStatus.replace(/_/g, " ")}
+            </span>
+            {appointment.ticketId && canViewTickets ? (
+              <Link
+                className="staff-appointments-ticket-link"
+                href={`/pos-tickets/${appointment.ticketId}`}
+              >
+                Open ticket
+              </Link>
+            ) : null}
+          </div>
+          <dl className="staff-appointments-detail-list">
+            <div>
+              <dt>Service</dt>
+              <dd>{appointment.serviceName}</dd>
+            </div>
+            <AppointmentInspiration appointment={appointment} />
+            <div>
+              <dt>Contact</dt>
+              <dd>{appointment.customerPhone || "No day-of phone"}</dd>
+            </div>
+            <div>
+              <dt>Customer note</dt>
+              <dd>{appointment.publicNotes || "None"}</dd>
+            </div>
+          </dl>
+          {appointmentClosed ? (
+            <p className="staff-appointments-detail-muted">
+              This appointment is no longer active.
+            </p>
+          ) : null}
+          {requiresConfirmation ? (
+            <div className="staff-appointments-warning staff-appointments-detail-warning">
+              <p>Customer booking is waiting for confirmation.</p>
+              <form action={confirmStaffBookingAction}>
+                <input name="booking_id" type="hidden" value={appointment.bookingId} />
+                <button
+                  className="staff-appointments-primary-button disabled:opacity-50"
+                  disabled={!canConfirm}
+                  type="submit"
+                >
+                  Confirm booking
+                </button>
+              </form>
+            </div>
+          ) : null}
+          <form
+            action={startStaffAppointmentLineAction}
+            className="staff-appointments-detail-form"
           >
-            Start service
-          </button>
-          <button
-            className="staff-appointments-secondary-button disabled:opacity-50"
-            formAction={completeStaffAppointmentLineAction}
-            disabled={!canComplete}
-            type="submit"
-          >
-            Complete service
-          </button>
+            <input name="booking_line_id" type="hidden" value={appointment.id} />
+            <label>
+              <span>Service note</span>
+              <textarea
+                className="staff-appointments-field"
+                defaultValue={appointment.serviceNote ?? ""}
+                name="service_note"
+              />
+            </label>
+            <div className="staff-appointments-detail-actions">
+              <button
+                className="staff-appointments-primary-button disabled:opacity-50"
+                disabled={!canStart}
+                type="submit"
+              >
+                Start service
+              </button>
+              <button
+                className="staff-appointments-secondary-button disabled:opacity-50"
+                formAction={completeStaffAppointmentLineAction}
+                disabled={!canComplete}
+                type="submit"
+              >
+                Complete service
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
-    </aside>
+      </aside>
+    </div>
   );
 }
 
@@ -695,6 +1049,7 @@ export default async function StaffAppointmentsPage({
 }: StaffAppointmentsPageProps) {
   const params = (await searchParams) ?? {};
   const data = await getCurrentStaffAppointments(params);
+  const salonId = data.context.currentStaffSalon?.id ?? data.context.salonId;
 
   if (!data.context.user) {
     redirect("/login?next=/staff/appointments");
@@ -705,30 +1060,26 @@ export default async function StaffAppointmentsPage({
       className="staff-appointments-root"
       data-staff-appointments-surface="staff"
     >
-      <Header data={data} params={params} />
-      <section className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
-        <div className="min-w-0">
-          {!data.staff ? (
-            <div className="staff-appointments-empty p-6 text-sm">
-              No active staff profile is linked to this account for the selected
-              staff workspace.
-            </div>
-          ) : data.view === "week" ? (
-            <WeekView data={data} params={params} />
-          ) : data.view === "list" ? (
-            <ListView data={data} params={params} />
-          ) : (
-            <DayCanvas data={data} params={params} />
-          )}
-        </div>
-        <div className="grid h-fit gap-4">
-          <DetailPanel
-            appointment={data.selectedAppointment}
-            canViewTickets={data.canViewTickets}
-            timezone={data.timezone}
-          />
-          <SetupSummary data={data} />
-        </div>
+      <Header data={data} params={params} salonId={salonId} />
+      <section className="staff-appointments-frame staff-appointments-body py-4">
+        {!data.staff ? (
+          <div className="staff-appointments-empty p-6 text-sm">
+            No active staff profile is linked to this account for the selected
+            staff workspace.
+          </div>
+        ) : data.view === "week" ? (
+          <WeekView data={data} params={params} />
+        ) : data.view === "list" ? (
+          <ListView data={data} params={params} />
+        ) : (
+          <DayCanvas data={data} params={params} />
+        )}
+        <DetailPanel
+          appointment={data.selectedAppointment}
+          canViewTickets={data.canViewTickets}
+          params={params}
+          timezone={data.timezone}
+        />
       </section>
     </main>
   );

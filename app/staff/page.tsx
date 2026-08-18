@@ -1214,8 +1214,6 @@ function DetailActions({
   );
 }
 
-// Legacy drawer kept temporarily; staff editing now happens inline in StaffDirectoryEditor.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function StaffDetailDrawer({
   bookingSetup,
   canManagePayroll,
@@ -1224,6 +1222,7 @@ function StaffDetailDrawer({
   inviteToken,
   member,
   requests,
+  salonName,
 }: {
   bookingSetup: BookingSetupData;
   canManagePayroll: boolean;
@@ -1232,6 +1231,7 @@ function StaffDetailDrawer({
   inviteToken?: string;
   member: StaffDirectoryMember;
   requests: SalonStaffConnectionRequestWithDetails[];
+  salonName: string;
 }) {
   const accountStatus = getAccountStatus(member, requests);
   const bookingStatus = getBookingStatus(
@@ -1287,7 +1287,8 @@ function StaffDetailDrawer({
             Public Staff Profile
           </h3>
           <p className="mt-1 text-sm text-zinc-600">
-            This is the staff identity customers see on Salon Profile.
+            This is the staff identity customers see in booking and on Salon
+            Profile.
           </p>
         </div>
         <div className="mt-4">
@@ -1300,6 +1301,7 @@ function StaffDetailDrawer({
             onlineBookingEnabled={member.online_booking_enabled}
             ownerPublicEnabled={member.owner_public_enabled}
             publicProfileVisible={member.public_profile_visible}
+            salonName={salonName}
             staffPublicConsentStatus={member.staff_public_consent_status}
             showPasscodeControls={false}
             specialties={member.specialties}
@@ -1781,6 +1783,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   const inviteRequestId = stringParam(params.invite_request);
   const inviteToken = stringParam(params.invite_token);
   const query = stringParam(params.q)?.trim() ?? "";
+  const selectedStaffId = stringParam(params.staff);
   const showAddStaff = stringParam(params.add) === "1" || Boolean(error);
 
   const canViewStaff = await hasPermission(STAFF_PERMISSIONS.view, context);
@@ -1864,6 +1867,16 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   );
   const addStaffHref = getStaffHref({ add: true, query });
   const closeHref = getStaffHref({ query });
+  const selectedMember = selectedStaffId
+    ? directory.staff.find((member) => member.id === selectedStaffId)
+    : null;
+  const profileHrefByStaffId = Object.fromEntries(
+    matchingStaff.map((member) => [
+      member.id,
+      getStaffHref({ query, staffId: member.id }),
+    ]),
+  );
+
   return (
     <>
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
@@ -1895,6 +1908,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
             canManageStaff={canManageStaff}
             hasAnyStaff={directory.staff.length > 0}
             hiddenStaff={hiddenStaff}
+            profileHrefByStaffId={profileHrefByStaffId}
             query={query}
             statusByStaffId={statusByStaffId}
           />
@@ -1924,6 +1938,18 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
           lookupError={lookupError}
           lookupResult={lookupResult}
           staff={directory.staff}
+        />
+      ) : null}
+      {canManageStaff && selectedMember ? (
+        <StaffDetailDrawer
+          bookingSetup={bookingSetup}
+          canManagePayroll={canManagePayroll}
+          closeHref={closeHref}
+          inviteRequestId={inviteRequestId}
+          inviteToken={inviteToken}
+          member={selectedMember}
+          requests={connectionRequests}
+          salonName={context.currentSalon.name}
         />
       ) : null}
     </>

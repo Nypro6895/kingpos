@@ -1,3 +1,5 @@
+import type { BeautyPostBookingPresentation } from "@/lib/beauty-booking-verification";
+
 export const EXPLORE_CATEGORY_OPTIONS = [
   "All",
   "Manicure",
@@ -179,10 +181,7 @@ export type ExploreFeedSalonContext = {
   state: string | null;
 };
 
-export type ExploreFeedBooking = {
-  enabled: boolean;
-  href: string | null;
-  label: string;
+export type ExploreFeedBooking = BeautyPostBookingPresentation & {
   readiness: string | null;
   serviceId: string | null;
 };
@@ -190,6 +189,16 @@ export type ExploreFeedBooking = {
 export type ExploreFeedPersonalContext = {
   postType: "before_after" | "regular";
   profileId: string;
+};
+
+export type ExploreFeedVerificationState =
+  | "pending"
+  | "rejected"
+  | "unverified"
+  | "verified";
+
+export type ExploreFeedVerification = {
+  state: ExploreFeedVerificationState;
 };
 
 export type ExploreFeedItem = {
@@ -211,6 +220,7 @@ export type ExploreFeedItem = {
   serviceName: string | null;
   sourceSortId: string;
   sourceType: ExploreFeedSourceType;
+  verification: ExploreFeedVerification | null;
 };
 
 export type ExplorePersonalPostItem = ExploreFeedItem & {

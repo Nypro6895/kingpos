@@ -75,6 +75,13 @@ export type BeautyPostSalonPublication = {
   status: BeautySalonPublicationStatus;
 };
 
+export type BeautyPostBookingAction = {
+  href: string;
+  salonId: string;
+  salonName: string;
+  verifiedBookingCount: number;
+};
+
 export type BeautyTimelinePost = {
   attribution: BeautyPostAttribution | null;
   author: {
@@ -82,6 +89,7 @@ export type BeautyTimelinePost = {
     displayName: string;
     profileId: string;
   };
+  bookingAction: BeautyPostBookingAction | null;
   caption: string | null;
   createdAt: string;
   editedAt: string | null;

@@ -22,6 +22,11 @@ import {
   isSalonManageContext,
 } from "@/lib/current-context";
 import { requirePermission } from "@/lib/permissions";
+import { SERVICE_PERMISSIONS } from "@/lib/services";
+import {
+  STAFF_PERMISSIONS,
+  createStaff as createStaffRecord,
+} from "@/lib/staff";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   BookingConfirmationMode,
@@ -38,6 +43,7 @@ export type BookingActionResult = {
   field?: string;
   message: string;
   ok: boolean;
+  staffId?: string;
   ticketId?: string;
 };
 
@@ -116,6 +122,29 @@ export type UpdateBookingSettingsInput = {
   timezoneIana: string;
 };
 
+export type UpdateQuickSetupServiceOnlineInput = {
+  onlineBookingEnabled: boolean;
+  serviceId: string;
+};
+
+export type UpdateQuickSetupStaffOnlineInput = {
+  onlineBookingEnabled: boolean;
+  staffId: string;
+};
+
+export type UpdateQuickSetupAssignmentInput = {
+  selected: boolean;
+  serviceId: string;
+  staffId: string;
+};
+
+export type CreateQuickSetupStaffInput = {
+  displayName: string;
+  jobTitle?: string | null;
+  onlineBookingEnabled: boolean;
+  serviceIds?: string[];
+};
+
 type BookingActionContext = {
   Account: NonNullable<
     Awaited<ReturnType<typeof getCurrentBusinessContext>>["currentAccount"]
@@ -163,6 +192,16 @@ function cleanId(value: string | null | undefined) {
   const trimmed = cleanString(value);
 
   return trimmed || null;
+}
+
+function cleanIdList(values: string[] | null | undefined) {
+  return Array.from(
+    new Set(
+      (values ?? [])
+        .map((value) => cleanId(value))
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
 }
 
 function normalizeSource(value: BookingSource | undefined) {
@@ -224,6 +263,428 @@ async function requireBookingActionContext(): Promise<
   };
 }
 
+async function requireBookingSetupMutationContext(
+  permission: string,
+): Promise<
+  | { data: BookingActionContext; ok: true }
+  | { error: BookingActionResult; ok: false }
+> {
+  const [context, supabase] = await Promise.all([
+    getCurrentBusinessContext(),
+    createAuthenticatedSupabaseServerClient(),
+  ]);
+
+  if (!context.user || !supabase) {
+    return {
+      error: failure("Sign in required.", { code: "unauthenticated" }),
+      ok: false,
+    };
+  }
+
+  if (
+    !isSalonManageContext(context) ||
+    !context.currentAccount ||
+    !context.currentSalon
+  ) {
+    return {
+      error: failure("Open bookings from a Business workspace.", {
+        code: "invalid_context",
+      }),
+      ok: false,
+    };
+  }
+
+  try {
+    await requirePermission(permission, context);
+  } catch {
+    return {
+      error: failure("You do not have permission to manage this setup area.", {
+        code: "forbidden",
+      }),
+      ok: false,
+    };
+  }
+
+  return {
+    data: {
+      Account: context.currentAccount,
+      salon: context.currentSalon,
+      supabase,
+      user: context.user,
+    },
+    ok: true,
+  };
+}
+
+function revalidateBookingSetupChange(salonId: string) {
+  revalidatePath("/bookings");
+  revalidatePath("/services");
+  revalidatePath("/staff");
+  revalidatePath("/staff/appointments");
+  revalidatePath("/salon-profile");
+  revalidatePath("/explore");
+  revalidatePath(`/book/${salonId}`);
+}
+
+export async function createQuickSetupStaffAction(
+  input: CreateQuickSetupStaffInput,
+): Promise<BookingActionResult> {
+  const displayName = cleanString(input.displayName);
+  const jobTitle = cleanString(input.jobTitle);
+  const serviceIds = cleanIdList(input.serviceIds);
+
+  if (!displayName) {
+    return failure("Professional name is required.", { field: "displayName" });
+  }
+
+  if (displayName.length > 120) {
+    return failure("Professional name must be 120 characters or fewer.", {
+      field: "displayName",
+    });
+  }
+
+  if (jobTitle && jobTitle.length > 120) {
+    return failure("Job title must be 120 characters or fewer.", {
+      field: "jobTitle",
+    });
+  }
+
+  try {
+    const context = await requireBookingSetupMutationContext(
+      STAFF_PERMISSIONS.manage,
+    );
+
+    if (!context.ok) {
+      return context.error;
+    }
+
+    if (serviceIds.length > 0) {
+      const assignmentContext = await requireBookingSetupMutationContext(
+        BOOKING_PERMISSIONS.manage,
+      );
+
+      if (!assignmentContext.ok) {
+        return assignmentContext.error;
+      }
+
+      const { data: services, error } = await context.data.supabase
+        .from("services")
+        .select("id")
+        .eq("salon_id", context.data.salon.id)
+        .eq("is_active", true)
+        .in("id", serviceIds);
+
+      if (error) {
+        throw error;
+      }
+
+      if ((services ?? []).length !== serviceIds.length) {
+        return failure("Choose active services from this salon.", {
+          field: "serviceIds",
+        });
+      }
+    }
+
+    const staff = await createStaffRecord({
+      display_name: displayName,
+      is_active: true,
+      job_title: jobTitle,
+      online_booking_enabled: input.onlineBookingEnabled,
+      owner_public_enabled: false,
+      pos_enabled: true,
+      public_profile_visible: false,
+      salon_profile_content_posting_enabled: false,
+      staff_public_consent_status: "not_requested",
+    });
+
+    if (serviceIds.length > 0) {
+      const { error } = await context.data.supabase
+        .from("staff_service_assignments")
+        .insert(
+          serviceIds.map((serviceId) => ({
+            created_by_user_id: context.data.user.id,
+            is_active: true,
+            online_bookable: true,
+            salon_id: context.data.salon.id,
+            service_id: serviceId,
+            staff_id: staff.id,
+            updated_by_user_id: context.data.user.id,
+          })),
+        );
+
+      if (error) {
+        throw error;
+      }
+    }
+
+    revalidateBookingSetupChange(context.data.salon.id);
+    return {
+      message:
+        serviceIds.length > 0
+          ? "Professional created and matched to services."
+          : "Professional created.",
+      ok: true,
+      staffId: staff.id,
+    };
+  } catch (error) {
+    return failure(
+      error instanceof Error
+        ? error.message
+        : "Professional could not be created.",
+      { code: "database_error" },
+    );
+  }
+}
+
+export async function updateQuickSetupServiceOnlineAction(
+  input: UpdateQuickSetupServiceOnlineInput,
+): Promise<BookingActionResult> {
+  const serviceId = cleanId(input.serviceId);
+
+  if (!serviceId) {
+    return failure("Service id is required.", { field: "serviceId" });
+  }
+
+  try {
+    const context = await requireBookingSetupMutationContext(
+      SERVICE_PERMISSIONS.manage,
+    );
+
+    if (!context.ok) {
+      return context.error;
+    }
+
+    const { data: service, error: loadError } = await context.data.supabase
+      .from("services")
+      .select("id, is_active")
+      .eq("id", serviceId)
+      .eq("salon_id", context.data.salon.id)
+      .maybeSingle<{ id: string; is_active: boolean }>();
+
+    if (loadError) {
+      throw loadError;
+    }
+
+    if (!service) {
+      return failure("Service was not found.", { code: "not_found" });
+    }
+
+    if (input.onlineBookingEnabled && !service.is_active) {
+      return failure("Activate this service before offering it online.", {
+        field: "serviceId",
+      });
+    }
+
+    const { error } = await context.data.supabase
+      .from("services")
+      .update({
+        online_booking_enabled: input.onlineBookingEnabled,
+      })
+      .eq("id", serviceId)
+      .eq("salon_id", context.data.salon.id);
+
+    if (error) {
+      throw error;
+    }
+
+    revalidateBookingSetupChange(context.data.salon.id);
+    return success(
+      input.onlineBookingEnabled
+        ? "Service is bookable online."
+        : "Service removed from online booking.",
+    );
+  } catch (error) {
+    return failure(
+      error instanceof Error
+        ? error.message
+        : "Service online booking could not be updated.",
+      { code: "database_error" },
+    );
+  }
+}
+
+export async function updateQuickSetupStaffOnlineAction(
+  input: UpdateQuickSetupStaffOnlineInput,
+): Promise<BookingActionResult> {
+  const staffId = cleanId(input.staffId);
+
+  if (!staffId) {
+    return failure("Professional id is required.", { field: "staffId" });
+  }
+
+  try {
+    const context = await requireBookingSetupMutationContext(
+      STAFF_PERMISSIONS.manage,
+    );
+
+    if (!context.ok) {
+      return context.error;
+    }
+
+    const { data: staff, error: loadError } = await context.data.supabase
+      .from("staff")
+      .select("id, is_active")
+      .eq("id", staffId)
+      .eq("salon_id", context.data.salon.id)
+      .maybeSingle<{ id: string; is_active: boolean }>();
+
+    if (loadError) {
+      throw loadError;
+    }
+
+    if (!staff) {
+      return failure("Professional was not found.", { code: "not_found" });
+    }
+
+    if (input.onlineBookingEnabled && !staff.is_active) {
+      return failure("Activate this professional before online booking.", {
+        field: "staffId",
+      });
+    }
+
+    const { error } = await context.data.supabase
+      .from("staff")
+      .update({
+        online_booking_enabled: input.onlineBookingEnabled,
+      })
+      .eq("id", staffId)
+      .eq("salon_id", context.data.salon.id);
+
+    if (error) {
+      throw error;
+    }
+
+    revalidateBookingSetupChange(context.data.salon.id);
+    return success(
+      input.onlineBookingEnabled
+        ? "Professional is available online."
+        : "Professional removed from online booking.",
+    );
+  } catch (error) {
+    return failure(
+      error instanceof Error
+        ? error.message
+        : "Professional online booking could not be updated.",
+      { code: "database_error" },
+    );
+  }
+}
+
+export async function updateQuickSetupAssignmentAction(
+  input: UpdateQuickSetupAssignmentInput,
+): Promise<BookingActionResult> {
+  const serviceId = cleanId(input.serviceId);
+  const staffId = cleanId(input.staffId);
+
+  if (!serviceId || !staffId) {
+    return failure("Choose a service and professional.", {
+      field: !serviceId ? "serviceId" : "staffId",
+    });
+  }
+
+  try {
+    const context = await requireBookingSetupMutationContext(
+      BOOKING_PERMISSIONS.manage,
+    );
+
+    if (!context.ok) {
+      return context.error;
+    }
+
+    const [serviceResult, staffResult, assignmentResult] = await Promise.all([
+      context.data.supabase
+        .from("services")
+        .select("id, is_active")
+        .eq("id", serviceId)
+        .eq("salon_id", context.data.salon.id)
+        .maybeSingle<{ id: string; is_active: boolean }>(),
+      context.data.supabase
+        .from("staff")
+        .select("id, is_active")
+        .eq("id", staffId)
+        .eq("salon_id", context.data.salon.id)
+        .maybeSingle<{ id: string; is_active: boolean }>(),
+      context.data.supabase
+        .from("staff_service_assignments")
+        .select("id")
+        .eq("salon_id", context.data.salon.id)
+        .eq("service_id", serviceId)
+        .eq("staff_id", staffId)
+        .maybeSingle<{ id: string }>(),
+    ]);
+
+    const firstError =
+      serviceResult.error ?? staffResult.error ?? assignmentResult.error;
+
+    if (firstError) {
+      throw firstError;
+    }
+
+    if (!serviceResult.data) {
+      return failure("Service was not found.", { code: "not_found" });
+    }
+
+    if (!staffResult.data) {
+      return failure("Professional was not found.", { code: "not_found" });
+    }
+
+    if (
+      input.selected &&
+      (!serviceResult.data.is_active || !staffResult.data.is_active)
+    ) {
+      return failure("Only active services and professionals can be matched.", {
+        field: "assignment",
+      });
+    }
+
+    if (assignmentResult.data) {
+      const { error } = await context.data.supabase
+        .from("staff_service_assignments")
+        .update({
+          ...(input.selected ? { is_active: true } : {}),
+          online_bookable: input.selected,
+          updated_by_user_id: context.data.user.id,
+        })
+        .eq("id", assignmentResult.data.id)
+        .eq("salon_id", context.data.salon.id);
+
+      if (error) {
+        throw error;
+      }
+    } else if (input.selected) {
+      const { error } = await context.data.supabase
+        .from("staff_service_assignments")
+        .insert({
+          created_by_user_id: context.data.user.id,
+          is_active: true,
+          online_bookable: true,
+          salon_id: context.data.salon.id,
+          service_id: serviceId,
+          staff_id: staffId,
+          updated_by_user_id: context.data.user.id,
+        });
+
+      if (error) {
+        throw error;
+      }
+    }
+
+    revalidateBookingSetupChange(context.data.salon.id);
+    return success(
+      input.selected
+        ? "Professional can take this service online."
+        : "Professional removed from this online service.",
+    );
+  } catch (error) {
+    return failure(
+      error instanceof Error
+        ? error.message
+        : "Booking assignment could not be updated.",
+      { code: "database_error" },
+    );
+  }
+}
+
 async function loadBookingSettings(context: BookingActionContext) {
   const { data, error } = await context.supabase
     .from("booking_settings")
@@ -283,11 +744,45 @@ function uniqueIds(ids: Array<string | null | undefined>) {
 }
 
 function revalidateBookingChange(bookingId: string) {
+  revalidatePath("/", "layout");
   revalidatePath("/bookings");
   revalidatePath("/my-bookings");
   revalidatePath(`/my-bookings/${bookingId}`);
   revalidatePath("/staff/appointments");
   revalidatePath("/notifications");
+}
+
+async function resolveBookingRequestNotifications(
+  context: BookingActionContext,
+  bookingId: string,
+) {
+  const { data, error } = await context.supabase.rpc(
+    "resolve_public_booking_request_notifications",
+    {
+      target_booking_id: bookingId,
+    },
+  );
+
+  if (error) {
+    console.error("Supabase booking request notification resolution failed", {
+      bookingId,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+    });
+    return;
+  }
+
+  const payload = data as { code?: string; message?: string; ok?: boolean } | null;
+
+  if (payload?.ok === false) {
+    console.error("Booking request notification resolution rejected", {
+      bookingId,
+      code: payload.code,
+      message: payload.message,
+    });
+  }
 }
 
 async function notifyBookingChange(
@@ -503,6 +998,7 @@ export async function runBookingStatusAction(
     return context.error;
   }
 
+  const commandStatus = statusForCommand(input.command);
   const result =
     input.command === "cancel"
       ? await cancelCanonicalBooking({
@@ -516,7 +1012,7 @@ export async function runBookingStatusAction(
           })
         : await transitionBookingStatus({
             bookingId,
-            nextStatus: statusForCommand(input.command) ?? "confirmed",
+            nextStatus: commandStatus ?? "confirmed",
           });
 
   if (!result.ok) {
@@ -526,10 +1022,19 @@ export async function runBookingStatusAction(
     });
   }
 
-  await notifyBookingChange(context.data, {
-    bookingId,
-    changeType: `status_${statusForCommand(input.command) ?? input.command}`,
-  });
+  const didChange = !("changed" in result.data) || result.data.changed !== false;
+
+  if (didChange) {
+    await notifyBookingChange(context.data, {
+      bookingId,
+      changeType: `status_${commandStatus ?? input.command}`,
+    });
+  }
+
+  if (input.command === "confirm") {
+    await resolveBookingRequestNotifications(context.data, bookingId);
+  }
+
   revalidateBookingChange(bookingId);
 
   if (input.command === "check_in" || input.command === "start_service") {
@@ -1002,10 +1507,7 @@ export async function updateBookingSettingsAction(
           .select("id")
           .eq("salon_id", context.data.salon.id)
           .eq("is_active", true)
-          .eq("online_booking_enabled", true)
-          .eq("owner_public_enabled", true)
-          .eq("public_profile_visible", true)
-          .eq("staff_public_consent_status", "granted"),
+          .eq("online_booking_enabled", true),
         context.data.supabase
           .from("staff_availability_rules")
           .select("id")

@@ -27,7 +27,11 @@ import {
 } from "@/lib/current-context";
 import { requirePermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
-import type { BookingLine, CanonicalBookingStatus } from "@/types/booking";
+import type {
+  BookingConfirmationStatus,
+  BookingLine,
+  CanonicalBookingStatus,
+} from "@/types/booking";
 
 const ALLOWED_TRANSITIONS: Record<CanonicalBookingStatus, CanonicalBookingStatus[]> = {
   pending: ["confirmed", "cancelled"],
@@ -72,7 +76,9 @@ function isTerminalStatus(status: CanonicalBookingStatus) {
   return status === "completed" || status === "cancelled" || status === "no_show";
 }
 
-function confirmationStatusForTransition(status: CanonicalBookingStatus) {
+function confirmationStatusForTransition(
+  status: CanonicalBookingStatus,
+): BookingConfirmationStatus | null {
   if (status === "cancelled" || status === "no_show") {
     return "cancelled";
   }
@@ -277,7 +283,7 @@ export async function createCanonicalBookingForCurrentSalon(
 async function updateCurrentSalonBooking(
   bookingId: string,
   values: Record<string, unknown>,
-): Promise<BookingDomainResult<{ bookingId: string }>> {
+): Promise<BookingDomainResult<{ bookingId: string; changed?: boolean }>> {
   try {
     const context = await requireManageBookingDomainContext();
 
@@ -298,7 +304,7 @@ async function updateCurrentSalonBooking(
       throw error;
     }
 
-    return bookingOk({ bookingId });
+    return bookingOk({ bookingId, changed: true });
   } catch (error) {
     return bookingFailureFromUnknown(error);
   }
@@ -306,7 +312,7 @@ async function updateCurrentSalonBooking(
 
 export async function transitionBookingStatus(
   input: BookingStatusTransitionInput,
-): Promise<BookingDomainResult<{ bookingId: string }>> {
+): Promise<BookingDomainResult<{ bookingId: string; changed?: boolean }>> {
   try {
     const context = await requireManageBookingDomainContext();
 
@@ -316,10 +322,13 @@ export async function transitionBookingStatus(
 
     const { data: currentBooking, error: loadError } = await context.supabase
       .from("bookings")
-      .select("status")
+      .select("status, confirmation_status")
       .eq("id", input.bookingId)
       .eq("salon_id", context.salon.id)
-      .maybeSingle<{ status: CanonicalBookingStatus | "scheduled" }>();
+      .maybeSingle<{
+        confirmation_status: BookingConfirmationStatus | null;
+        status: CanonicalBookingStatus | "scheduled";
+      }>();
 
     if (loadError) {
       throw loadError;
@@ -331,22 +340,94 @@ export async function transitionBookingStatus(
 
     const currentStatus =
       currentBooking.status === "scheduled" ? "confirmed" : currentBooking.status;
-    const allowed = ALLOWED_TRANSITIONS[currentStatus] ?? [];
+    const confirmationStatus = confirmationStatusForTransition(input.nextStatus);
+    const needsStatusUpdate = currentBooking.status !== input.nextStatus;
+    const needsConfirmationUpdate =
+      confirmationStatus !== null &&
+      currentBooking.confirmation_status !== confirmationStatus;
 
-    if (!allowed.includes(input.nextStatus)) {
-      return bookingFailure(
-        "invalid_input",
-        `Cannot transition booking from ${currentStatus} to ${input.nextStatus}.`,
-        "nextStatus",
-      );
+    if (currentStatus === input.nextStatus) {
+      if (!needsStatusUpdate && !needsConfirmationUpdate) {
+        return bookingOk({ bookingId: input.bookingId, changed: false });
+      }
+    } else {
+      const allowed = ALLOWED_TRANSITIONS[currentStatus] ?? [];
+
+      if (!allowed.includes(input.nextStatus)) {
+        return bookingFailure(
+          "invalid_input",
+          `Cannot transition booking from ${currentStatus} to ${input.nextStatus}.`,
+          "nextStatus",
+        );
+      }
     }
 
-    const confirmationStatus = confirmationStatusForTransition(input.nextStatus);
-
-    return updateCurrentSalonBooking(input.bookingId, {
+    const nextValues = {
       status: input.nextStatus,
       ...(confirmationStatus ? { confirmation_status: confirmationStatus } : {}),
-    });
+      updated_by_user_id: context.user.id,
+    };
+
+    let updateQuery = context.supabase
+      .from("bookings")
+      .update(nextValues)
+      .eq("id", input.bookingId)
+      .eq("salon_id", context.salon.id)
+      .eq("status", currentBooking.status);
+
+    updateQuery =
+      currentBooking.confirmation_status === null
+        ? updateQuery.is("confirmation_status", null)
+        : updateQuery.eq(
+            "confirmation_status",
+            currentBooking.confirmation_status,
+          );
+
+    const { data: updatedBooking, error: updateError } = await updateQuery
+      .select("id")
+      .maybeSingle<{ id: string }>();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    if (updatedBooking) {
+      return bookingOk({ bookingId: input.bookingId, changed: true });
+    }
+
+    const { data: latestBooking, error: latestError } = await context.supabase
+      .from("bookings")
+      .select("status, confirmation_status")
+      .eq("id", input.bookingId)
+      .eq("salon_id", context.salon.id)
+      .maybeSingle<{
+        confirmation_status: BookingConfirmationStatus | null;
+        status: CanonicalBookingStatus | "scheduled";
+      }>();
+
+    if (latestError) {
+      throw latestError;
+    }
+
+    if (!latestBooking) {
+      return bookingFailure("not_found", "Booking was not found.");
+    }
+
+    const latestStatus = normalizeMutableStatus(latestBooking.status);
+
+    if (
+      latestStatus === input.nextStatus &&
+      (confirmationStatus === null ||
+        latestBooking.confirmation_status === confirmationStatus)
+    ) {
+      return bookingOk({ bookingId: input.bookingId, changed: false });
+    }
+
+    return bookingFailure(
+      "conflict",
+      "Booking status changed. Refresh and try again.",
+      "status",
+    );
   } catch (error) {
     return bookingFailureFromUnknown(error);
   }

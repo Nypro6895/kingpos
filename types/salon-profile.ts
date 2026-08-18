@@ -1,3 +1,4 @@
+import type { BeautyPostBookingPresentation } from "@/lib/beauty-booking-verification";
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
 import type {
@@ -247,6 +248,7 @@ export type PublicSalonProfileBeautyPost = {
   approvedAt: string | null;
   authorAvatarUrl: string | null;
   authorDisplayName: string;
+  booking: BeautyPostBookingPresentation | null;
   caption: string | null;
   id: string;
   media: PublicSalonProfileBeautyPostMedia[];

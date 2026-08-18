@@ -431,6 +431,7 @@ export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
   revalidatePath("/salon-profile");
 
   if (context.currentSalon) {
+    revalidatePath(`/book/${context.currentSalon.id}`);
     revalidatePath(getSalonProfileHref(context.currentSalon.id));
   }
 
@@ -713,6 +714,7 @@ export async function updateStaffPublicProfileAction(
   revalidatePath("/salon-profile");
 
   if (context.currentSalon) {
+    revalidatePath(`/book/${context.currentSalon.id}`);
     revalidatePath(getSalonProfileHref(context.currentSalon.id));
   }
 

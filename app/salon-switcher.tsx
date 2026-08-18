@@ -1,4 +1,5 @@
 import { NavigationShell } from "@/app/navigation-shell";
+import { GuestNavigationShell } from "@/app/guest-navigation-shell";
 import {
   ROLE_NAVIGATION,
   type NavigationLink,
@@ -137,7 +138,7 @@ export async function SalonSwitcher({
   context: CurrentBusinessContext;
 }) {
   if (!context.user) {
-    return <>{children}</>;
+    return <GuestNavigationShell>{children}</GuestNavigationShell>;
   }
 
   const isOwner = isOwnerMembership(context.currentMembership);

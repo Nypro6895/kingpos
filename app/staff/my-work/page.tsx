@@ -13,10 +13,12 @@ import {
 import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-editor";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import type { StaffAssignedWorkTicket } from "@/lib/staff-workdays";
+import type { Staff } from "@/types/staff";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 type StaffPortalTab = "daily" | "payroll" | "analysis";
+type StaffPortalTabId = StaffPortalTab | "profile";
 type StaffPortalPeriodTab = Exclude<StaffPortalTab, "daily">;
 type StaffPortalPeriodData = Pick<
   StaffPayrollPortalData,
@@ -24,7 +26,7 @@ type StaffPortalPeriodData = Pick<
 >;
 type StaffPortalTabItem = {
   href: string;
-  id: StaffPortalTab;
+  id: StaffPortalTabId;
   label: string;
 };
 
@@ -34,6 +36,7 @@ type StaffMyWorkSearchParams = {
   error?: string | string[];
   month?: string | string[];
   payPeriodStart?: string | string[];
+  profile?: string | string[];
   preset?: string | string[];
   segment?: string | string[];
   start?: string | string[];
@@ -46,8 +49,9 @@ type StaffMyWorkPageProps = {
 
 const STAFF_PORTAL_TABS: Array<Omit<StaffPortalTabItem, "href">> = [
   { id: "daily", label: "Daily" },
-  { id: "payroll", label: "My Payroll" },
-  { id: "analysis", label: "My Analysis" },
+  { id: "payroll", label: "My Pay" },
+  { id: "analysis", label: "Analysis" },
+  { id: "profile", label: "Profile Setting" },
 ];
 
 function formatMoney(value: number) {
@@ -96,6 +100,20 @@ function formatWorkDate(value: string) {
       weekday: "long",
     }).format(date),
   };
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+
+  if (hour < 12) {
+    return "Good morning";
+  }
+
+  if (hour < 17) {
+    return "Good afternoon";
+  }
+
+  return "Good evening";
 }
 
 function formatTime(value: string | null) {
@@ -245,6 +263,13 @@ function buildStaffPortalTabs(params: StaffMyWorkSearchParams | undefined) {
   ] as const;
 
   return STAFF_PORTAL_TABS.map((tab) => {
+    if (tab.id === "profile") {
+      return {
+        ...tab,
+        href: "/staff/my-work?profile=1",
+      } satisfies StaffPortalTabItem;
+    }
+
     const urlParams = new URLSearchParams();
 
     for (const name of periodParamNames) {
@@ -305,52 +330,94 @@ function getAnalysisRangeHref(option: { endDate: string; startDate: string }) {
 function StaffPortalHeader({
   activeTab,
   dateLabel,
+  profileActive,
   salonName,
   staffName,
+  staffRole,
   tabs,
   weekday,
+  workStatusLabel,
 }: {
   activeTab: StaffPortalTab;
   dateLabel: string;
+  profileActive: boolean;
   salonName: string;
   staffName: string;
+  staffRole: string | null;
   tabs: StaffPortalTabItem[];
   weekday: string;
+  workStatusLabel: string;
 }) {
-  return (
-    <div className="border-b border-zinc-200 pb-4">
-      <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-zinc-600">
-        <span className="font-semibold text-zinc-950">{staffName}</span>
-        <span aria-hidden="true">/</span>
-        <span>{weekday}, {dateLabel}</span>
-        <span aria-hidden="true">/</span>
-        <span className="min-w-0 truncate">{salonName}</span>
-      </div>
-      <nav
-        aria-label="Staff portal tabs"
-        className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1"
-      >
-        {tabs.map((tab) => {
-          const isActive = tab.id === activeTab;
+  const isCheckedIn = workStatusLabel !== STAFF_WORKDAY_STATUS_LABELS.not_checked_in;
 
-          return (
-            <Link
-              aria-current={isActive ? "page" : undefined}
-              className={[
-                "inline-flex min-h-10 shrink-0 items-center rounded-md border px-3 py-2 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
-                isActive
-                  ? "border-zinc-950 bg-zinc-950 text-white"
-                  : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:text-zinc-950",
-              ].join(" ")}
-              href={tab.href}
-              key={tab.id}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
-      </nav>
-    </div>
+  return (
+    <section className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-zinc-500">
+            Today is {weekday}, {dateLabel}
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold leading-tight text-zinc-950 sm:text-3xl">
+            {getGreeting()}, {staffName}
+          </h1>
+        </div>
+        <span
+          className={[
+            "inline-flex w-fit items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold",
+            isCheckedIn
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border-amber-200 bg-amber-50 text-amber-800",
+          ].join(" ")}
+        >
+          <span
+            aria-hidden="true"
+            className={[
+              "size-2 rounded-full",
+              isCheckedIn ? "bg-emerald-500" : "bg-amber-500",
+            ].join(" ")}
+          />
+          {workStatusLabel}
+        </span>
+      </div>
+
+      <div className="mt-5 flex flex-col gap-4 border-t border-zinc-100 pt-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <p className="truncate text-base font-semibold text-zinc-950">
+            {salonName}
+          </p>
+          <p className="mt-1 text-sm text-zinc-500">
+            {staffRole?.trim() || "Staff"}
+          </p>
+        </div>
+        <nav
+          aria-label="Staff portal tabs"
+          className="flex w-full gap-1 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 p-1 lg:w-auto"
+        >
+          {tabs.map((tab) => {
+            const isActive =
+              tab.id === "profile"
+                ? profileActive
+                : tab.id === activeTab && !profileActive;
+
+            return (
+              <Link
+                aria-current={isActive ? "page" : undefined}
+                className={[
+                  "inline-flex min-h-10 shrink-0 items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
+                  isActive
+                    ? "bg-zinc-950 text-white shadow-sm"
+                    : "text-zinc-600 hover:bg-white hover:text-zinc-950",
+                ].join(" ")}
+                href={tab.href}
+                key={tab.id}
+              >
+                {tab.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+    </section>
   );
 }
 
@@ -463,6 +530,133 @@ function StaffTicketCard({ ticket }: { ticket: StaffAssignedWorkTicket }) {
         </p>
       ) : null}
     </article>
+  );
+}
+
+function ticketServiceSummary(ticket: StaffAssignedWorkTicket) {
+  if (ticket.services.length === 0) {
+    return "No assigned services";
+  }
+
+  return ticket.services
+    .map((service) => `${service.serviceName} x${formatNumber(service.quantity)}`)
+    .join(", ");
+}
+
+function TicketStatusBadge({ status }: { status: string | null }) {
+  const label = formatStatus(status);
+  const tone =
+    status === "closed"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : status === "open"
+        ? "border-sky-200 bg-sky-50 text-sky-700"
+        : "border-zinc-200 bg-zinc-50 text-zinc-700";
+
+  return (
+    <span
+      className={`inline-flex w-fit items-center rounded-md border px-2 py-1 text-xs font-medium ${tone}`}
+    >
+      {label}
+    </span>
+  );
+}
+
+function StaffTicketTable({ tickets }: { tickets: StaffAssignedWorkTicket[] }) {
+  return (
+    <>
+      <div className="hidden overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm md:block">
+        <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
+          <thead className="bg-zinc-50 text-xs font-semibold uppercase text-zinc-500">
+            <tr>
+              <th className="whitespace-nowrap px-4 py-3" scope="col">
+                Time
+              </th>
+              <th className="min-w-48 px-4 py-3" scope="col">
+                Customer
+              </th>
+              <th className="whitespace-nowrap px-4 py-3" scope="col">
+                Ticket
+              </th>
+              <th className="whitespace-nowrap px-4 py-3" scope="col">
+                Status
+              </th>
+              <th className="min-w-72 px-4 py-3" scope="col">
+                Services
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-right" scope="col">
+                Service
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-right" scope="col">
+                Tip
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-right" scope="col">
+                Turns
+              </th>
+              <th className="whitespace-nowrap px-4 py-3 text-right" scope="col">
+                Income
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-100">
+            {tickets.map((ticket) => {
+              const ticketTime = formatTime(ticket.openedAt ?? ticket.firstActivityAt);
+              const turnLabel = ticket.hasEarning
+                ? formatNumber(ticket.totalTurns)
+                : "-";
+
+              return (
+                <tr className="hover:bg-zinc-50" key={ticket.id}>
+                  <td className="whitespace-nowrap px-4 py-3 text-zinc-700">
+                    {ticketTime}
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-zinc-950">
+                      {ticket.customerName ?? "Walk-in customer"}
+                    </p>
+                    {ticket.customerPhone ? (
+                      <p className="mt-0.5 text-xs text-zinc-500">
+                        {ticket.customerPhone}
+                      </p>
+                    ) : null}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-zinc-700">
+                    {ticket.ticketNumber ?? "Ticket"}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <TicketStatusBadge status={ticket.status} />
+                  </td>
+                  <td className="px-4 py-3 text-zinc-700">
+                    <span className="line-clamp-2">{ticketServiceSummary(ticket)}</span>
+                    {!ticket.hasEarning ? (
+                      <span className="mt-1 block text-xs text-amber-700">
+                        Earnings pending
+                      </span>
+                    ) : null}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-zinc-950">
+                    {formatMoney(ticket.serviceTotal)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-zinc-950">
+                    {formatMoney(ticket.tipAmount)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-zinc-950">
+                    {turnLabel}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-semibold text-zinc-950">
+                    {formatMoney(ticket.totalEarning)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="grid gap-3 md:hidden">
+        {tickets.map((ticket) => (
+          <StaffTicketCard key={ticket.id} ticket={ticket} />
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -1343,6 +1537,64 @@ function StaffPortalLoadError({ label = "Staff Portal" }: { label?: string }) {
   );
 }
 
+function StaffProfileSettingsDrawer({
+  closeHref,
+  salonName,
+  staff,
+}: {
+  closeHref: string;
+  salonName: string;
+  staff: Staff;
+}) {
+  return (
+    <div className="fixed inset-0 z-50">
+      <Link
+        aria-label="Close public profile settings"
+        className="absolute inset-0 bg-zinc-950/30"
+        href={closeHref}
+      />
+      <aside
+        aria-modal="true"
+        className="absolute right-0 top-0 flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-white shadow-xl"
+        role="dialog"
+      >
+        <header className="flex items-start justify-between gap-4 border-b border-zinc-200 px-6 py-5">
+          <div>
+            <h2 className="text-xl font-semibold text-zinc-950">
+              Public Staff Profile
+            </h2>
+            <p className="mt-1 text-sm text-zinc-500">
+              Set the name and photo customers see in booking.
+            </p>
+          </div>
+          <Link
+            aria-label="Close public profile settings"
+            className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-950"
+            href={closeHref}
+          >
+            Close
+          </Link>
+        </header>
+        <div className="px-6 py-5">
+          <StaffPublicProfileEditor
+            avatarUrl={getSalonProfileMediaUrl(staff.public_profile_photo_path)}
+            bio={staff.public_bio}
+            displayName={staff.display_name}
+            jobTitle={staff.job_title}
+            onlineBookingEnabled={staff.online_booking_enabled}
+            ownerPublicEnabled={staff.owner_public_enabled}
+            publicProfileVisible={staff.public_profile_visible}
+            salonName={salonName}
+            staffPublicConsentStatus={staff.staff_public_consent_status}
+            specialties={staff.specialties}
+            staffId={staff.id}
+          />
+        </div>
+      </aside>
+    </div>
+  );
+}
+
 export default async function StaffMyWorkPage({
   searchParams,
 }: StaffMyWorkPageProps) {
@@ -1459,159 +1711,116 @@ export default async function StaffMyWorkPage({
     totalTurns > 0;
   const hasTicketsWithoutEarnings =
     workTickets.length > 0 && workTickets.every((ticket) => !ticket.hasEarning);
+  const showProfileSettings =
+    activeTab === "daily" && stringParam(params?.profile) === "1";
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-      <StaffPortalHeader
-        activeTab={activeTab}
-        dateLabel={dateLabel}
-        salonName={context.currentSalon.name}
-        staffName={staff.display_name}
-        tabs={tabs}
-        weekday={weekday}
-      />
+    <>
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
+        <StaffPortalHeader
+          activeTab={activeTab}
+          dateLabel={dateLabel}
+          profileActive={showProfileSettings}
+          salonName={context.currentSalon.name}
+          staffName={staff.display_name}
+          staffRole={staff.job_title}
+          tabs={tabs}
+          weekday={weekday}
+          workStatusLabel={workStatusLabel}
+        />
 
-      {error ? (
-        <p className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
+        {error ? (
+          <p className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            {error}
+          </p>
+        ) : null}
 
-      {activeTab === "daily" ? (
-        <>
-          <section className="mt-6 rounded-lg border border-zinc-200 bg-white p-4 sm:mt-8 sm:p-5">
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="md:col-span-2">
-                <p className="text-sm text-zinc-500">Work status</p>
-                <p className="mt-2 text-2xl font-semibold text-zinc-950">
-                  {workStatusLabel}
-                </p>
-                <p className="mt-1 text-sm text-zinc-600">
-                  Today updates as your tickets and earnings are posted.
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-zinc-500">Check-in</p>
-                <p className="mt-1 text-lg font-semibold text-zinc-950">
-                  {formatTime(workday?.check_in_at ?? null)}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-zinc-500">Check-out</p>
-                <p className="mt-1 text-lg font-semibold text-zinc-950">
-                  {formatTime(workday?.check_out_at ?? null)}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section className="mt-5 grid grid-cols-1 gap-3 min-[430px]:grid-cols-2 lg:grid-cols-4">
-            <SummaryCard
-              detail={`Big ${formatNumber(activity.bigTurns)} / Small ${formatNumber(
-                activity.smallTurns,
-              )}`}
-              label="Total turns"
-              value={formatNumber(totalTurns)}
-            />
-            <SummaryCard
-              detail="From staff ticket earnings"
-              label="Service total"
-              value={formatMoney(activity.assignedServiceAmount)}
-            />
-            <SummaryCard
-              detail="Allocated to your staff profile"
-              label="Tip"
-              value={formatMoney(activity.tipAmount)}
-            />
-            <SummaryCard
-              detail="Service total plus allocated tip"
-              label="Today income"
-              value={formatMoney(activity.totalEarning)}
-            />
-          </section>
-
-          <section className="mt-8">
-            <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-zinc-950">
-                  Today&apos;s Tickets
-                </h2>
-                <p className="text-sm text-zinc-600">
-                  Only services assigned to {staff.display_name} are shown.
-                </p>
-              </div>
-              <p className="text-sm text-zinc-500">
-                {workTickets.length} {workTickets.length === 1 ? "ticket" : "tickets"}
-              </p>
-            </div>
-
-            {workTickets.length === 0 ? (
-              <EmptyTickets
-                excludedTicketCount={excludedTicketCount}
-                workStatus={workStatus}
-                hasTodayActivity={hasTodayActivity}
+        {activeTab === "daily" ? (
+          <>
+            <section className="mt-6 grid grid-cols-1 gap-3 min-[430px]:grid-cols-2 lg:grid-cols-4">
+              <SummaryCard
+                detail={`Big ${formatNumber(activity.bigTurns)} / Small ${formatNumber(
+                  activity.smallTurns,
+                )}`}
+                label="Total turns"
+                value={formatNumber(totalTurns)}
               />
-            ) : (
-              <div className="space-y-3">
-                {hasTicketsWithoutEarnings ? (
-                  <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                    Tickets are assigned to you, but earnings are not ready yet.
+              <SummaryCard
+                detail="From staff ticket earnings"
+                label="Service total"
+                value={formatMoney(activity.assignedServiceAmount)}
+              />
+              <SummaryCard
+                detail="Allocated to your staff profile"
+                label="Tip"
+                value={formatMoney(activity.tipAmount)}
+              />
+              <SummaryCard
+                detail="Service total plus allocated tip"
+                label="Today income"
+                value={formatMoney(activity.totalEarning)}
+              />
+            </section>
+
+            <section className="mt-8">
+              <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-zinc-950">
+                    Today&apos;s Tickets
+                  </h2>
+                  <p className="text-sm text-zinc-600">
+                    Only services assigned to {staff.display_name} are shown.
                   </p>
-                ) : null}
-                {workTickets.map((ticket) => (
-                  <StaffTicketCard key={ticket.id} ticket={ticket} />
-                ))}
+                </div>
+                <p className="text-sm text-zinc-500">
+                  {workTickets.length}{" "}
+                  {workTickets.length === 1 ? "ticket" : "tickets"}
+                </p>
               </div>
-            )}
-          </section>
 
-          <section className="mt-8 rounded-lg border border-zinc-200 bg-white p-4 sm:p-5">
-            <div>
-              <h2 className="text-xl font-semibold text-zinc-950">
-                Public Staff Profile
-              </h2>
-              <p className="mt-1 text-sm leading-6 text-zinc-600">
-                This controls how you appear on {context.currentSalon.name}&apos;s
-                Salon Profile. You can opt out without changing your employment,
-                payroll, or schedule.
-              </p>
-            </div>
-            <div className="mt-4 max-w-2xl">
-              <StaffPublicProfileEditor
-                avatarUrl={getSalonProfileMediaUrl(
-                  staff.public_profile_photo_path,
-                )}
-                bio={staff.public_bio}
-                displayName={staff.display_name}
-                jobTitle={staff.job_title}
-                onlineBookingEnabled={staff.online_booking_enabled}
-                ownerPublicEnabled={staff.owner_public_enabled}
-                publicProfileVisible={staff.public_profile_visible}
-                salonName={context.currentSalon.name}
-                staffPublicConsentStatus={staff.staff_public_consent_status}
-                specialties={staff.specialties}
-                staffId={staff.id}
-              />
-            </div>
-          </section>
-        </>
-      ) : activeTab === "payroll" ? (
-        payrollData ? (
-          <MyPayrollTab data={payrollData} />
-        ) : (
-          <p className="mt-8 rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">
-            My Payroll could not load right now.
-          </p>
-        )
-      ) : activeTab === "analysis" ? (
-        analysisData ? (
-          <MyAnalysisTab data={analysisData} today={today} />
-        ) : (
-          <p className="mt-8 rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">
-            My Analysis could not load right now.
-          </p>
-        )
+              {workTickets.length === 0 ? (
+                <EmptyTickets
+                  excludedTicketCount={excludedTicketCount}
+                  workStatus={workStatus}
+                  hasTodayActivity={hasTodayActivity}
+                />
+              ) : (
+                <div className="space-y-3">
+                  {hasTicketsWithoutEarnings ? (
+                    <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                      Tickets are assigned to you, but earnings are not ready yet.
+                    </p>
+                  ) : null}
+                  <StaffTicketTable tickets={workTickets} />
+                </div>
+              )}
+            </section>
+          </>
+        ) : activeTab === "payroll" ? (
+          payrollData ? (
+            <MyPayrollTab data={payrollData} />
+          ) : (
+            <p className="mt-8 rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+              My Payroll could not load right now.
+            </p>
+          )
+        ) : activeTab === "analysis" ? (
+          analysisData ? (
+            <MyAnalysisTab data={analysisData} today={today} />
+          ) : (
+            <p className="mt-8 rounded-lg border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+              My Analysis could not load right now.
+            </p>
+          )
+        ) : null}
+      </main>
+      {showProfileSettings ? (
+        <StaffProfileSettingsDrawer
+          closeHref="/staff/my-work"
+          salonName={context.currentSalon.name}
+          staff={staff}
+        />
       ) : null}
-    </main>
+    </>
   );
 }

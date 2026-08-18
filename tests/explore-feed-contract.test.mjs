@@ -16,7 +16,7 @@ const salonProfileReviewsRpcHardening = read(
   "supabase/migrations/202608110002_public_salon_profile_reviews_rpc_hardening.sql",
 );
 const publicExploreBeautyPosts = read(
-  "supabase/migrations/202608110003_public_explore_beauty_posts.sql",
+  "supabase/migrations/202608180001_beauty_post_booking_public_surfaces.sql",
 );
 const salonProfileRpcHardeningSql = [
   salonProfileRpcHardening,
@@ -52,14 +52,19 @@ function functionBlock(name, nextMarker) {
 
 function sourceFunctionBlock(source, name, nextMarker) {
   const start = source.indexOf(`function ${name}`);
+  const asyncStart = source.indexOf(`async function ${name}`);
+  const functionStart =
+    asyncStart >= 0 && (start < 0 || asyncStart < start) ? asyncStart : start;
 
-  assert.ok(start >= 0, `${name} source function is present`);
+  assert.ok(functionStart >= 0, `${name} source function is present`);
 
-  const end = nextMarker ? source.indexOf(nextMarker, start + 1) : source.length;
+  const end = nextMarker
+    ? source.indexOf(nextMarker, functionStart + 1)
+    : source.length;
 
-  assert.ok(end > start, `${name} source function has a readable boundary`);
+  assert.ok(end > functionStart, `${name} source function has a readable boundary`);
 
-  return source.slice(start, end);
+  return source.slice(functionStart, end);
 }
 
 test("explore feed service unifies Salon and Personal sources with one opaque cursor", () => {
@@ -142,11 +147,19 @@ test("public explore Beauty RPC exposes eligible public Personal posts only", ()
     publicExploreBeautyPosts,
     /create or replace function public\.get_public_explore_beauty_posts/,
   );
+  assert.match(publicExploreBeautyPosts, /drop function if exists public\.get_public_explore_beauty_posts/);
   assert.match(publicExploreBeautyPosts, /security definer/);
   assert.match(publicExploreBeautyPosts, /set search_path = public/);
   assert.match(publicExploreBeautyPosts, /from public\.beauty_posts posts/);
   assert.match(publicExploreBeautyPosts, /join public\.beauty_profiles profiles/);
   assert.match(publicExploreBeautyPosts, /join public\.users users/);
+  assert.match(publicExploreBeautyPosts, /left join public\.beauty_post_verifications verifications/);
+  assert.match(publicExploreBeautyPosts, /left join public\.booking_settings booking_settings/);
+  assert.match(publicExploreBeautyPosts, /verification_state text/);
+  assert.match(publicExploreBeautyPosts, /booking_enabled boolean/);
+  assert.match(publicExploreBeautyPosts, /verifications\.state as verification_state/);
+  assert.match(publicExploreBeautyPosts, /booking_settings\.online_booking_visible/);
+  assert.match(publicExploreBeautyPosts, /booking_settings\.guest_booking_enabled/);
   assert.match(publicExploreBeautyPosts, /posts\.deleted_at is null/);
   assert.match(publicExploreBeautyPosts, /posts\.visibility = 'public'/);
   assert.match(publicExploreBeautyPosts, /posts\.moderation_status = 'visible'/);
@@ -176,6 +189,15 @@ test("Personal Explore service normalizes Beauty posts without leaking raw stora
   assert.match(personalService, /candidateClass:\s*"organic"/);
   assert.match(personalService, /rankingSignalsForPersonalPost/);
   assert.match(personalService, /personalPostHref/);
+  assert.match(personalService, /verificationState/);
+  assert.match(personalService, /beautyPostBookingPresentation/);
+  assert.match(personalService, /source:\s*"explore"/);
+  assert.match(personalService, /bookingEnabled:\s*row\.booking_enabled === true/);
+  assert.match(personalService, /booking:\s*booking\.eligible\s*\?/);
+  assert.match(personalService, /attachExploreBookingCounts/);
+  assert.match(personalService, /loadBeautyPostVerifiedBookingCounts/);
+  assert.match(personalService, /bookedCount/);
+  assert.doesNotMatch(personalService, /verifiedBookingCount/);
   assert.match(personalService, /safeHttpUrl\(row\.author_avatar_url\)/);
   assert.doesNotMatch(personalService, /email|phone|auth_user_id/);
 });
@@ -184,13 +206,71 @@ test("Personal Explore service treats zero RPC rows as a valid empty page and lo
   assert.match(personalService, /const rows = Array\.isArray\(data\) \? \(data as ExplorePersonalPostRow\[\]\) : \[\]/);
   assert.match(personalService, /const visibleRows = rows\.slice\(0, pageSize\)/);
   assert.match(personalService, /const hasMore = rows\.length > pageSize/);
-  assert.match(personalService, /return \{\s*error:\s*null,\s*hasMore,\s*items,\s*nextCursor/s);
+  assert.match(personalService, /const itemsWithBookingCounts = await attachExploreBookingCounts\(\{\s*items,\s*rpc,\s*\}\)/s);
+  assert.match(personalService, /return \{\s*error:\s*null,\s*hasMore,\s*items:\s*itemsWithBookingCounts,\s*nextCursor/s);
   assert.match(personalService, /if \(error\) \{/);
   assert.match(personalService, /supabaseErrorDiagnostics/);
   assert.match(personalService, /diagnosticJson/);
   assert.match(personalService, /status:\s*typeof status === "number" \? status : null/);
   assert.match(personalService, /statusText:\s*diagnosticString\(statusText\)/);
   assert.match(personalService, /args:\s*rpcArgs/);
+});
+
+test("Beauty post booking count and inspiration attribution stay server-owned", () => {
+  assert.match(
+    publicExploreBeautyPosts,
+    /create or replace function public\.get_public_beauty_post_booking_counts/,
+  );
+  assert.match(publicExploreBeautyPosts, /bookings\.source_reference_type = 'beauty_post'/);
+  assert.match(publicExploreBeautyPosts, /bookings\.confirmation_status = 'confirmed'/);
+  assert.match(
+    publicExploreBeautyPosts,
+    /bookings\.status in \('confirmed', 'checked_in', 'in_service', 'completed'\)/,
+  );
+  assert.match(publicExploreBeautyPosts, /profiles\.visibility = 'public'/);
+  assert.match(publicExploreBeautyPosts, /verifications\.state = 'verified'/);
+  assert.match(publicExploreBeautyPosts, /create or replace function public\.get_public_content_booking_options/);
+  assert.match(publicExploreBeautyPosts, /media_bucket text/);
+  assert.match(publicExploreBeautyPosts, /'beauty_post'::text as source_type/);
+  assert.match(publicExploreBeautyPosts, /'beauty-profile-media'::text as media_bucket/);
+  assert.match(publicExploreBeautyPosts, /'Book this transformation'::text as cta_label/);
+  assert.match(publicExploreBeautyPosts, /'\?inspiration=' \|\| posts\.id::text \|\| '&source=public_profile'/);
+  assert.match(personalService, /loadBeautyPostVerifiedBookingCounts/);
+  assert.match(personalPostRoute, /bookingCountLabel/);
+  assert.match(feedClient, /bookingCountLabel/);
+});
+
+test("Beauty booking CTA does not depend on booking-count RPC success", () => {
+  const attachBlock = sourceFunctionBlock(
+    personalService,
+    "attachExploreBookingCounts",
+    "function asMediaRows",
+  );
+  const mapBlock = sourceFunctionBlock(
+    personalService,
+    "mapPersonalPostRow",
+    "export async function getExplorePersonalPostPage",
+  );
+
+  assert.match(mapBlock, /const booking = beautyPostBookingPresentation\(\{/);
+  assert.match(mapBlock, /bookingEnabled:\s*row\.booking_enabled === true/);
+  assert.match(mapBlock, /booking:\s*booking\.eligible\s*\?/);
+  assert.match(attachBlock, /loadBeautyPostVerifiedBookingCounts/);
+  assert.match(attachBlock, /if \(!item\.booking\) \{\s*return item;\s*\}/);
+  assert.match(attachBlock, /bookedCount: countsByPostId\.get\(item\.id\) \?\? 0/);
+  assert.doesNotMatch(attachBlock, /bookedCount: countsByPostId\.get\(item\.id\) \|\| undefined/);
+});
+
+test("Explore DTO restore keeps fresh Beauty booking presentation over stale session copies", () => {
+  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*5/);
+  assert.match(feedClient, /function mergeStoredFeedItems/);
+  assert.match(feedClient, /const freshByKey = new Map/);
+  assert.match(feedClient, /freshByKey\.get\(feedItemKey\(item\)\) \?\? item/);
+  assert.match(feedClient, /setItems\(\(current\) => mergeStoredFeedItems\(stored\.items, current\)\)/);
+  assert.doesNotMatch(
+    feedClient,
+    /setItems\(\(current\) => appendUniqueFeedItems\(stored\.items, current\)\)/,
+  );
 });
 
 test("unified feed contract uses source-qualified identity and normalized media", () => {
@@ -213,6 +293,10 @@ test("unified feed contract uses source-qualified identity and normalized media"
 
 test("explore page and action expose a reusable server feed contract", () => {
   assert.match(types, /export type ExploreFeedPage/);
+  assert.match(types, /export type ExploreFeedVerification/);
+  assert.match(types, /verification:\s*ExploreFeedVerification \| null/);
+  assert.match(types, /BeautyPostBookingPresentation/);
+  assert.match(types, /export type ExploreFeedBooking = BeautyPostBookingPresentation/);
   assert.match(actions, /export async function loadExploreFeedAction/);
   assert.match(actions, /return getExploreFeedPage\(\{ cursor \}\)/);
   assert.match(page, /getExploreFeedPage\(\{ homeContent \}\)/);
@@ -252,10 +336,19 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.match(feedClient, /window\.scrollTo\(0, stored\.scrollY\)/);
   assert.match(feedClient, /appendUniqueFeedItems/);
   assert.match(feedClient, /return item\.feedKey/);
-  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*3/);
+  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*5/);
   assert.match(feedClient, /data-source-type=\{item\.sourceType\}/);
   assert.match(feedClient, /BeforeAfterMedia/);
+  assert.match(feedClient, /BeforeAfterCompare/);
+  assert.match(feedClient, /beforeAfterMediaPair/);
+  assert.match(feedClient, /beforeAfterMediaPair\(item\) \? \(\s*media\s*\) : \(/);
   assert.match(feedClient, /salon_recommendation/);
+  assert.match(feedClient, /Verified visit/);
+  assert.match(feedClient, /bookingCountLabel/);
+  assert.match(feedClient, /bookingHref/);
+  assert.match(feedClient, /booking\?\.label \?\? "Book"/);
+  assert.match(feedClient, /View post/);
+  assert.match(feedClient, /View salon/);
   assert.doesNotMatch(feedClient, /Fresh inspiration/i);
   assert.doesNotMatch(feedClient, /Beauty stories/i);
   assert.match(feedClient, /loadExploreFeedAction\(cursor\)/);
@@ -325,8 +418,17 @@ test("discovery rail and mobile shortcuts only render server-provided data-backe
 test("public Beauty post route is read-only and backed by the Personal Explore service", () => {
   assert.match(personalPostRoute, /getPublicExploreBeautyPost/);
   assert.match(personalPostRoute, /notFound\(\)/);
+  assert.match(personalPostRoute, /BeforeAfterCompare/);
+  assert.match(personalPostRoute, /<PostMedia item=\{item\} \/>/);
   assert.match(personalPostRoute, /View salon/);
-  assert.match(personalPostRoute, /href="\/explore"/);
+  assert.match(personalPostRoute, /Verified visit/);
+  assert.match(personalPostRoute, /bookingHref/);
+  assert.match(personalPostRoute, /item\.booking\?\.eligible/);
+  assert.match(personalPostRoute, /booking\?\.label \?\? "Book"/);
+  assert.match(personalPostRoute, /booking\?\.bookedCount/);
+  assert.match(personalPostRoute, /bookingCountLabel/);
+  assert.match(personalPostRoute, /const showPostTypeBadge = item\.personal\?\.postType !== "before_after"/);
+  assert.doesNotMatch(personalPostRoute, /href="\/explore"/);
   assert.doesNotMatch(
     personalPostRoute,
     /createBeautyPostAction|updateBeautyPostCaptionAction|deleteBeautyPostAction|Edit|Delete/,

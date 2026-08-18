@@ -12,6 +12,7 @@ import {
   updateBeautyPostCaptionAction,
   updateBeautyProfileAction,
 } from "@/app/beauty/actions";
+import { BeforeAfterCompare } from "@/components/before-after-compare";
 import {
   ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES,
   ACCOUNT_AVATAR_IMAGE_LIMIT,
@@ -38,6 +39,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   useTransition,
   type ChangeEvent,
   type FormEvent,
@@ -151,36 +153,248 @@ function verificationLabel(
   return "Visit verification pending";
 }
 
-function salonPublicationLabel(
-  publication: BeautyTimelinePost["salonPublication"],
-) {
-  if (!publication) {
-    return null;
-  }
-
-  if (publication.status === "approved") {
-    return "Approved on salon profile";
-  }
-
-  if (publication.status === "declined") {
-    return "Salon profile share declined";
-  }
-
-  return "Waiting for salon approval";
+function publicBeautyPostHref(post: BeautyTimelinePost) {
+  return `/explore/beauty/${encodeURIComponent(
+    post.author.profileId,
+  )}/posts/${encodeURIComponent(post.id)}`;
 }
 
-function salonPublicationClassName(
-  publication: BeautyTimelinePost["salonPublication"],
-) {
-  if (publication?.status === "approved") {
-    return "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200";
+function subscribeToLocationOrigin() {
+  return () => {};
+}
+
+function getLocationOriginSnapshot() {
+  return typeof window === "undefined" ? "" : window.location.origin;
+}
+
+function getServerOriginSnapshot() {
+  return "";
+}
+
+function SharePostAction({ post }: { post: BeautyTimelinePost }) {
+  const relativeHref = publicBeautyPostHref(post);
+  const origin = useSyncExternalStore(
+    subscribeToLocationOrigin,
+    getLocationOriginSnapshot,
+    getServerOriginSnapshot,
+  );
+  const shareUrl = origin ? new URL(relativeHref, origin).toString() : relativeHref;
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const shareButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState("");
+  const hintId = `share-reward-hint-${post.id}`;
+  const dialogTitleId = `share-post-title-${post.id}`;
+  const shareText =
+    "Share this post. Bookings from your post may earn Beauty points and qualify for salon rewards.";
+  const encodedUrl = encodeURIComponent(shareUrl);
+  const encodedText = encodeURIComponent(shareText);
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=144x144&data=${encodedUrl}`;
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const previousFocus =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const fallbackFocus = shareButtonRef.current;
+    const focusTimer = window.setTimeout(() => {
+      dialogRef.current
+        ?.querySelector<HTMLElement>("button, a, summary")
+        ?.focus();
+    }, 0);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener("keydown", onKeyDown);
+      if (previousFocus && document.contains(previousFocus)) {
+        previousFocus.focus();
+      } else {
+        fallbackFocus?.focus();
+      }
+    };
+  }, [open]);
+
+  async function copyShareLink() {
+    try {
+      if (!navigator.clipboard) {
+        setStatus("Copy the link from the opened post.");
+        return;
+      }
+
+      await navigator.clipboard.writeText(shareUrl);
+      setStatus("Link copied.");
+    } catch {
+      setStatus("Copy the link from the opened post.");
+    }
   }
 
-  if (publication?.status === "declined") {
-    return "bg-surface-muted text-text-secondary ring-1 ring-divider-subtle";
+  async function shareWithDevice() {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          text: shareText,
+          title: "My Reylumi post",
+          url: shareUrl,
+        });
+        setStatus("Share opened.");
+        return;
+      } catch {
+        return;
+      }
+    }
+
+    await copyShareLink();
   }
 
-  return "bg-amber-50 text-amber-900 ring-1 ring-amber-200";
+  return (
+    <>
+      <span className="group relative inline-flex">
+        <button
+          aria-describedby={hintId}
+          className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-extrabold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          onClick={() => {
+            setStatus("");
+            setOpen(true);
+          }}
+          ref={shareButtonRef}
+          type="button"
+        >
+          Share
+        </button>
+        <span
+          className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 hidden w-64 rounded-2xl bg-text-primary px-3 py-2 text-left text-xs font-semibold leading-5 text-white shadow-lg group-hover:block group-focus-within:block"
+          id={hintId}
+          role="tooltip"
+        >
+          {shareText}
+        </span>
+      </span>
+
+      {open ? (
+        <div
+          aria-labelledby={dialogTitleId}
+          aria-modal="true"
+          className="fixed inset-0 z-[70] grid place-items-end bg-zinc-950/45 p-0 backdrop-blur-sm sm:place-items-center sm:p-6"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setOpen(false);
+            }
+          }}
+          role="dialog"
+        >
+          <div
+            className="grid w-full gap-4 rounded-t-2xl bg-surface p-5 shadow-2xl ring-1 ring-divider-subtle sm:max-w-sm sm:rounded-2xl"
+            ref={dialogRef}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2
+                  className="text-base font-extrabold text-text-primary"
+                  id={dialogTitleId}
+                >
+                  Share this post
+                </h2>
+                <p className="mt-1 text-sm font-semibold leading-6 text-text-secondary">
+                  {shareText}
+                </p>
+              </div>
+              <button
+                aria-label="Close share options"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted text-lg font-extrabold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                onClick={() => setOpen(false)}
+                type="button"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="grid gap-2">
+              <button
+                className="min-h-11 rounded-full bg-brand-orange px-4 text-sm font-extrabold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                onClick={() => void shareWithDevice()}
+                type="button"
+              >
+                Share with device
+              </button>
+              <button
+                className="min-h-11 rounded-full bg-surface-muted px-4 text-sm font-extrabold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                onClick={() => void copyShareLink()}
+                type="button"
+              >
+                Copy link
+              </button>
+              <a
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-surface-muted px-4 text-sm font-extrabold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                href={relativeHref}
+              >
+                Open post
+              </a>
+            </div>
+
+            <div className="flex flex-wrap gap-2 text-xs font-extrabold text-text-secondary">
+              <a
+                className="rounded-full bg-surface-muted px-3 py-2 ring-1 ring-divider-subtle transition hover:text-brand-orange"
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Facebook
+              </a>
+              <a
+                className="rounded-full bg-surface-muted px-3 py-2 ring-1 ring-divider-subtle transition hover:text-brand-orange"
+                href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                X
+              </a>
+              <a
+                className="rounded-full bg-surface-muted px-3 py-2 ring-1 ring-divider-subtle transition hover:text-brand-orange"
+                href={`mailto:?subject=${encodeURIComponent("My Reylumi post")}&body=${encodedText}%0A%0A${encodedUrl}`}
+              >
+                Email
+              </a>
+              <a
+                className="rounded-full bg-surface-muted px-3 py-2 ring-1 ring-divider-subtle transition hover:text-brand-orange"
+                href={`sms:?&body=${encodedText}%20${encodedUrl}`}
+              >
+                SMS
+              </a>
+            </div>
+
+            <details className="rounded-2xl bg-surface-muted p-3 text-xs font-bold text-text-secondary ring-1 ring-divider-subtle">
+              <summary className="cursor-pointer text-text-primary">
+                QR code
+              </summary>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                alt="QR code for this Reylumi post"
+                className="mt-3 h-36 w-36 rounded-xl bg-white"
+                src={qrCodeUrl}
+              />
+            </details>
+
+            {status ? (
+              <p className="text-xs font-bold text-brand-teal" role="status">
+                {status}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
 }
 
 function readImage(file: File) {
@@ -473,98 +687,35 @@ function mediaAspectClass(media: BeautyTimelinePost["media"][number]) {
   return "aspect-square";
 }
 
-function BeforeAfterCompare({
-  after,
-  before,
-}: {
-  after: BeautyTimelinePost["media"][number] | undefined;
-  before: BeautyTimelinePost["media"][number] | undefined;
-}) {
-  const [position, setPosition] = useState(50);
-
-  if (!before?.url || !after?.url) {
-    return (
-      <div className="grid grid-cols-2 gap-1 overflow-hidden rounded-[1.15rem] bg-surface-muted">
-        {[
-          { label: "Before", media: before },
-          { label: "After", media: after },
-        ].map((item) => (
-          <div className="relative aspect-[4/5] bg-surface-muted" key={item.label}>
-            {item.media?.url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                alt={`${item.label} image for Beauty post`}
-                className="h-full w-full object-cover"
-                loading="lazy"
-                src={item.media.url}
-              />
-            ) : null}
-            <span className="absolute left-2 top-2 rounded-full bg-white/92 px-2.5 py-1 text-[11px] font-extrabold uppercase text-text-primary shadow-sm ring-1 ring-divider-subtle/70">
-              {item.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative overflow-hidden rounded-[1.15rem] bg-surface-muted shadow-[0_18px_46px_rgba(35,25,22,0.08)] ring-1 ring-divider-subtle/80">
-      <div className="relative aspect-[4/5] max-h-[42rem] w-full">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          alt="After image for Beauty transformation"
-          className="absolute inset-0 h-full w-full object-cover"
-          loading="lazy"
-          src={after.url}
-        />
-        <div
-          className="absolute inset-0 overflow-hidden"
-          style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            alt="Before image for Beauty transformation"
-            className="h-full w-full object-cover"
-            loading="lazy"
-            src={before.url}
-          />
-        </div>
-        <div
-          aria-hidden
-          className="absolute bottom-0 top-0 w-0.5 bg-white shadow-[0_0_0_1px_rgba(23,19,22,0.18)]"
-          style={{ left: `${position}%` }}
-        />
-        <span className="absolute left-3 top-3 rounded-full bg-white/92 px-3 py-1 text-[11px] font-extrabold uppercase text-text-primary shadow-sm ring-1 ring-divider-subtle/70">
-          Before
-        </span>
-        <span className="absolute right-3 top-3 rounded-full bg-white/92 px-3 py-1 text-[11px] font-extrabold uppercase text-text-primary shadow-sm ring-1 ring-divider-subtle/70">
-          After
-        </span>
-        <label className="absolute inset-x-4 bottom-4 grid gap-1 rounded-full bg-white/88 px-4 py-2 shadow-sm ring-1 ring-divider-subtle/80 backdrop-blur">
-          <span className="sr-only">Compare before and after images</span>
-          <input
-            aria-label="Compare before and after images"
-            className="h-5 w-full cursor-ew-resize"
-            max={88}
-            min={12}
-            onChange={(event) => setPosition(Number(event.currentTarget.value))}
-            style={{ accentColor: "var(--brand-orange)" }}
-            type="range"
-            value={position}
-          />
-        </label>
-      </div>
-    </div>
-  );
-}
-
 function PostMedia({ post }: { post: BeautyTimelinePost }) {
   if (post.type === "before_after") {
     const before = post.media.find((item) => item.role === "before");
     const after = post.media.find((item) => item.role === "after");
 
-    return <BeforeAfterCompare after={after} before={before} />;
+    return (
+      <BeforeAfterCompare
+        after={
+          after?.url
+            ? {
+                alt: "After image for Beauty transformation",
+                id: after.id,
+                url: after.url,
+              }
+            : null
+        }
+        before={
+          before?.url
+            ? {
+                alt: "Before image for Beauty transformation",
+                id: before.id,
+                url: before.url,
+              }
+            : null
+        }
+        roundedClassName="rounded-[1.15rem]"
+        sizes="(max-width: 768px) 100vw, 720px"
+      />
+    );
   }
 
   if (post.media.length === 0) {
@@ -636,10 +787,6 @@ function PostCard({
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
   const attribution = post.attribution;
-  const salonPublication = post.salonPublication;
-  const salonPublicationStatusLabel = canManage
-    ? salonPublicationLabel(salonPublication)
-    : null;
   const showCaptionBelowMedia = post.media.length > 0;
 
   function saveCaption(event: FormEvent<HTMLFormElement>) {
@@ -721,23 +868,6 @@ function PostCard({
           </div>
         ) : null}
 
-        {salonPublicationStatusLabel && salonPublication ? (
-          <p
-            className={classNames(
-              "w-fit rounded-full px-3 py-1.5 text-xs font-extrabold",
-              salonPublicationClassName(salonPublication),
-            )}
-          >
-            {salonPublicationStatusLabel}
-          </p>
-        ) : null}
-
-        {post.reward ? (
-          <p className="w-fit rounded-full bg-brand-teal-soft px-3 py-1.5 text-xs font-extrabold text-brand-teal ring-1 ring-brand-teal/15">
-            Beauty reward recorded after verification
-          </p>
-        ) : null}
-
         {editing ? (
           <form className="grid gap-3" onSubmit={saveCaption}>
             <label className="grid gap-1.5">
@@ -785,7 +915,10 @@ function PostCard({
         ) : null}
 
         {canManage && !editing ? (
-          <div className="flex justify-end gap-2 border-t border-divider-subtle pt-3">
+          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-divider-subtle pt-3">
+            {post.visibility === "public" ? (
+              <SharePostAction post={post} />
+            ) : null}
             <button
               className="min-h-10 rounded-full bg-surface-muted px-4 text-sm font-bold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
               disabled={pending}
@@ -794,14 +927,24 @@ function PostCard({
             >
               Edit
             </button>
-            <button
-              className="min-h-10 rounded-full bg-red-50 px-4 text-sm font-bold text-red-700 ring-1 ring-red-200 transition hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-wait disabled:opacity-60"
-              disabled={pending}
-              onClick={() => setConfirmingDelete(true)}
-              type="button"
-            >
-              Delete
-            </button>
+            <details className="relative">
+              <summary
+                aria-label="More post actions"
+                className="grid min-h-10 min-w-10 cursor-pointer list-none place-items-center rounded-full bg-surface-muted px-3 text-sm font-extrabold text-text-primary ring-1 ring-divider-subtle transition marker:hidden hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              >
+                ...
+              </summary>
+              <div className="absolute right-0 top-12 z-20 grid min-w-32 gap-1 rounded-2xl bg-surface p-2 shadow-xl ring-1 ring-divider-subtle">
+                <button
+                  className="min-h-10 rounded-xl px-3 text-left text-sm font-bold text-red-700 transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-wait disabled:opacity-60"
+                  disabled={pending}
+                  onClick={() => setConfirmingDelete(true)}
+                  type="button"
+                >
+                  Delete
+                </button>
+              </div>
+            </details>
           </div>
         ) : null}
       </div>
@@ -1679,21 +1822,25 @@ export function BeautyProfileClient({
     <main className="min-h-screen overflow-x-hidden bg-surface-muted px-3 py-4 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-3xl gap-4">
         <section className="overflow-hidden rounded-[1.35rem] bg-surface shadow-[0_16px_44px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/80">
-          <div className="relative h-24 overflow-hidden bg-brand-orange-soft sm:h-32">
+          <div className="relative min-h-[13.5rem] overflow-hidden bg-[linear-gradient(135deg,var(--brand-orange),var(--brand-teal))] sm:min-h-[15.5rem]">
             {profile.coverImageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 alt={`${profile.displayName} Beauty cover`}
-                className="h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover"
                 src={profile.coverImageUrl}
               />
             ) : (
-              <div className="h-full w-full bg-[linear-gradient(135deg,var(--brand-orange-soft),var(--surface-muted))]" />
+              <div className="absolute inset-0 bg-[linear-gradient(135deg,var(--brand-orange),var(--brand-teal))]" />
             )}
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-[linear-gradient(to_top,rgba(23,19,22,0.74),rgba(23,19,22,0.32)_48%,rgba(23,19,22,0.04))]"
+            />
             {profile.isSelf ? (
               <button
                 aria-label="Edit Beauty profile"
-                className="absolute right-3 top-3 min-h-9 rounded-full bg-white/88 px-3 text-xs font-extrabold text-text-primary shadow-sm ring-1 ring-divider-subtle/80 backdrop-blur transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                className="absolute right-3 top-3 z-20 min-h-9 rounded-full bg-white/90 px-3 text-xs font-extrabold text-text-primary shadow-sm ring-1 ring-white/65 backdrop-blur transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
                 onClick={openProfileEditor}
                 ref={profileEditButtonRef}
                 type="button"
@@ -1701,23 +1848,21 @@ export function BeautyProfileClient({
                 Edit
               </button>
             ) : null}
-          </div>
-          <div className="px-4 pb-4 sm:px-5 sm:pb-5">
-            <div className="-mt-8 flex items-end gap-3 sm:-mt-10 sm:gap-4">
+            <div className="absolute inset-x-0 bottom-0 z-10 flex items-end gap-3 px-4 pb-4 sm:gap-4 sm:px-5 sm:pb-5">
               <ProfileAvatar
-                className="h-20 w-20 border-4 border-surface text-lg shadow-md sm:h-24 sm:w-24"
+                className="h-20 w-20 border-4 border-white text-lg shadow-[0_18px_38px_rgba(23,19,22,0.26)] sm:h-24 sm:w-24"
                 profile={profile}
               />
               <div className="min-w-0 pb-1">
-                <h1 className="truncate text-2xl font-extrabold text-text-primary">
+                <h1 className="truncate text-2xl font-extrabold text-white drop-shadow-sm">
                   {profile.displayName}
                 </h1>
                 {profile.bio ? (
-                  <p className="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-text-secondary">
+                  <p className="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-white/88 drop-shadow-sm">
                     {profile.bio}
                   </p>
                 ) : profile.isSelf ? (
-                  <p className="mt-1 text-sm font-semibold text-text-muted">
+                  <p className="mt-1 text-sm font-semibold text-white/78 drop-shadow-sm">
                     Add a Beauty bio
                   </p>
                 ) : null}

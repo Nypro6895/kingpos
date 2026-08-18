@@ -162,6 +162,13 @@ export type BookingWorkspaceOptions = {
   timeBlocks: StaffTimeBlock[];
 };
 
+export type BookingWorkspaceSetupPermissions = {
+  canManageAvailability: boolean;
+  canManageBooking: boolean;
+  canManageServices: boolean;
+  canManageStaff: boolean;
+};
+
 export type BookingWorkspaceConfigWarning = {
   code:
     | "missing_active_services"
@@ -180,6 +187,7 @@ export type BookingWorkspaceData = {
   options: BookingWorkspaceOptions;
   range: BookingWorkspaceRange;
   requests: BookingWorkspaceRequest[];
+  setupPermissions: BookingWorkspaceSetupPermissions;
   settings: BookingSettings;
   timezone: string;
   warnings: BookingWorkspaceConfigWarning[];
@@ -799,6 +807,7 @@ function buildWarnings(input: {
   assignments: StaffServiceAssignment[];
   availabilityRules: StaffAvailabilityRule[];
   services: Service[];
+  staff: Staff[];
 }) {
   const warnings: BookingWorkspaceConfigWarning[] = [];
 
@@ -827,10 +836,19 @@ function buildWarnings(input: {
 
   if (
     input.assignments.filter(
-      (assignment) =>
-        assignment.is_active &&
-        assignment.online_bookable &&
-        onlineServiceIds.has(assignment.service_id),
+      (assignment) => {
+        const member = input.staff.find(
+          (candidate) => candidate.id === assignment.staff_id,
+        );
+
+        return (
+          assignment.is_active &&
+          assignment.online_bookable &&
+          onlineServiceIds.has(assignment.service_id) &&
+          member?.is_active === true &&
+          member.online_booking_enabled === true
+        );
+      },
     ).length === 0
   ) {
     warnings.push({
@@ -918,7 +936,15 @@ export async function getCurrentSalonBookingWorkspace(
     throw new Error("Supabase environment variables are missing.");
   }
 
-  const canManageBookings = await hasPermission(BOOKING_PERMISSIONS.manage, context);
+  const [
+    canManageBookings,
+    canManageServices,
+    canManageStaff,
+  ] = await Promise.all([
+    hasPermission(BOOKING_PERMISSIONS.manage, context),
+    hasPermission("services.manage", context),
+    hasPermission("staff.manage", context),
+  ]);
   const { data: settingsData, error: settingsError } = await supabase
     .from("booking_settings")
     .select(BOOKING_SETTINGS_SELECT)
@@ -1185,12 +1211,19 @@ export async function getCurrentSalonBookingWorkspace(
       staff: staffResult.data ?? [],
       usersById: requestUsersById,
     }),
+    setupPermissions: {
+      canManageAvailability: canManageBookings || canManageStaff,
+      canManageBooking: canManageBookings,
+      canManageServices,
+      canManageStaff,
+    },
     settings,
     timezone,
     warnings: buildWarnings({
       assignments: options.assignments,
       availabilityRules: options.availabilityRules,
       services: options.services,
+      staff: options.staff,
     }),
   };
 }

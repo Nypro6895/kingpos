@@ -1,4 +1,5 @@
 import { getPublicExploreBeautyPost } from "@/lib/explore-personal";
+import { BeforeAfterCompare } from "@/components/before-after-compare";
 import type { ExploreFeedItem, ExploreFeedMedia } from "@/types/explore";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -60,6 +61,14 @@ function postLabel(item: ExploreFeedItem) {
     : "Beauty moment";
 }
 
+function verificationLabel(item: ExploreFeedItem) {
+  return item.verification?.state === "verified" ? "Verified visit" : null;
+}
+
+function bookingCountLabel(count: number) {
+  return `${count} booked`;
+}
+
 function SingleMedia({
   item,
   media,
@@ -90,26 +99,22 @@ function PostMedia({ item }: { item: ExploreFeedItem }) {
 
   if (item.personal?.postType === "before_after" && before && after) {
     return (
-      <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-[1.25rem] bg-surface-muted ring-1 ring-divider-subtle/80">
-        {[
-          { label: "Before", media: before },
-          { label: "After", media: after },
-        ].map(({ label, media }) => (
-          <div className="relative aspect-[4/5] min-w-0" key={media.id}>
-            <Image
-              alt={`${label} image from ${item.author.name}`}
-              className="object-cover"
-              fill
-              priority
-              sizes="(max-width: 768px) 50vw, 360px"
-              src={media.imageUrl}
-            />
-            <span className="absolute left-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold uppercase text-white backdrop-blur">
-              {label}
-            </span>
-          </div>
-        ))}
-      </div>
+      <BeforeAfterCompare
+        after={{
+          alt: `After image from ${item.author.name}`,
+          id: after.id,
+          url: after.imageUrl,
+        }}
+        aspectClassName="aspect-[4/5]"
+        before={{
+          alt: `Before image from ${item.author.name}`,
+          id: before.id,
+          url: before.imageUrl,
+        }}
+        priority
+        roundedClassName="rounded-[1.25rem]"
+        sizes="(max-width: 768px) 100vw, 720px"
+      />
     );
   }
 
@@ -156,26 +161,15 @@ export default async function PublicBeautyPostPage({
     notFound();
   }
 
+  const booking = item.booking?.eligible ? item.booking : null;
+  const bookingHref = booking?.href ?? null;
+  const verifiedLabel = verificationLabel(item);
+  const bookedCount = booking?.bookedCount ?? null;
+  const showPostTypeBadge = item.personal?.postType !== "before_after";
+
   return (
     <main className="min-h-screen bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
       <article className="mx-auto grid max-w-[44rem] gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <Link
-            className="rounded-full bg-surface px-4 py-2 text-sm font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            href="/explore"
-          >
-            Explore
-          </Link>
-          {item.salon?.href ? (
-            <Link
-              className="rounded-full bg-surface px-4 py-2 text-sm font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={item.salon.href}
-            >
-              View salon
-            </Link>
-          ) : null}
-        </div>
-
         <section
           className="overflow-hidden rounded-[1.35rem] bg-surface-elevated shadow-[0_18px_44px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80"
           id={`post-${item.id}`}
@@ -211,6 +205,40 @@ export default async function PublicBeautyPostPage({
 
           <PostMedia item={item} />
 
+          {(bookingHref || item.salon?.href) ? (
+            <div className="grid gap-2 px-4 pt-4">
+              {bookedCount !== null ? (
+                <p className="text-xs font-semibold text-text-muted">
+                  {bookingCountLabel(bookedCount)}
+                </p>
+              ) : null}
+              <div className="grid gap-2 sm:flex sm:flex-wrap">
+                {bookingHref ? (
+                  <Link
+                    aria-label={[
+                      booking?.label ?? "Book",
+                      bookedCount !== null ? bookingCountLabel(bookedCount) : null,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                    className="inline-flex min-h-10 max-w-full items-center justify-center rounded-full bg-brand-orange px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                    href={bookingHref}
+                  >
+                    <span className="truncate">{booking?.label ?? "Book"}</span>
+                  </Link>
+                ) : null}
+                {item.salon?.href ? (
+                  <Link
+                    className="inline-flex min-h-10 items-center justify-center rounded-full bg-surface px-4 py-2 text-sm font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                    href={item.salon.href}
+                  >
+                    View salon
+                  </Link>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
           <div className="grid gap-3 p-4">
             {item.caption ? (
               <p className="whitespace-pre-wrap text-sm leading-6 text-text-primary">
@@ -223,9 +251,16 @@ export default async function PublicBeautyPostPage({
                   {item.serviceName ?? item.serviceCategory}
                 </span>
               ) : null}
-              <span className="rounded-full bg-brand-teal-soft px-3 py-1 text-xs font-semibold text-brand-teal">
-                {postLabel(item)}
-              </span>
+              {showPostTypeBadge ? (
+                <span className="rounded-full bg-brand-teal-soft px-3 py-1 text-xs font-semibold text-brand-teal">
+                  {postLabel(item)}
+                </span>
+              ) : null}
+              {verifiedLabel ? (
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                  {verifiedLabel}
+                </span>
+              ) : null}
             </div>
           </div>
         </section>

@@ -310,7 +310,7 @@ export function PublicTeamSettingsEditor({
                 />
                 <Toggle
                   checked={member.onlineBookingEnabled}
-                  disabled={!canManageSettings || !effectivePublic}
+                  disabled={!canManageSettings || !member.isActive}
                   label="Direct booking"
                   onChange={(checked) =>
                     updateMember(member.id, { onlineBookingEnabled: checked })

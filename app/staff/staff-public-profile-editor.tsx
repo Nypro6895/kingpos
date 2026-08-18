@@ -167,6 +167,13 @@ export function StaffPublicProfileEditor({
       ? staffPublicConsentStatus === "granted"
       : publicProfileVisible === true;
   const effectivePublic = ownerPublicEnabled && hasConsent;
+  const subject = canChangeConsent ? "You" : "This staff member";
+  const objectSubject = canChangeConsent ? "you" : "this staff member";
+  const visibilityCopy = effectivePublic
+    ? `${subject} can appear in booking and on this salon profile.`
+    : hasConsent
+      ? "The salon has not enabled this public listing."
+      : `${subject} has opted out of the public team.`;
 
   useEffect(() => {
     return () => {
@@ -318,7 +325,7 @@ export function StaffPublicProfileEditor({
                 name="appear_publicly"
                 type="checkbox"
               />
-              Appear publicly on this salon profile
+              Appear in booking and on this salon profile
             </label>
             {!canChangeConsent ? (
               <p className="max-w-sm text-xs leading-5 text-zinc-500">
@@ -327,13 +334,9 @@ export function StaffPublicProfileEditor({
             ) : null}
             <p className="max-w-sm text-xs leading-5 text-zinc-500">
               {salonName ? `${salonName}: ` : ""}
-              {effectivePublic
-                ? "Your profile can appear publicly."
-                : hasConsent
-                  ? "The salon has not enabled your public listing."
-                  : "You have opted out of the public team."}
+              {visibilityCopy}
               {onlineBookingEnabled && effectivePublic
-                ? " Online booking can show you as an artist."
+                ? ` Online booking can show ${objectSubject} as an artist.`
                 : ""}
             </p>
           </div>

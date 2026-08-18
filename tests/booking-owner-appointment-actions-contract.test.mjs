@@ -23,6 +23,7 @@ function assertAppearsInOrder(source, labels) {
 test("owner appointment rows expose customer, edit, ticket, and settings actions", () => {
   const client = read("app/bookings/booking-workspace-client.tsx");
   const actions = read("app/bookings/actions.ts");
+  const domain = read("lib/booking-domain/mutations.ts");
   const bookingLoader = read("lib/bookings.ts");
   const migration = read(
     "supabase/migrations/202608140002_booking_change_notifications.sql",
@@ -52,8 +53,31 @@ test("owner appointment rows expose customer, edit, ticket, and settings actions
   assert.match(actions, /rpc\(\s*"replace_booking_services"/);
   assert.match(actions, /notifyBookingChange/);
   assert.match(actions, /rpc\("notify_booking_change"/);
+  assert.match(actions, /rpc\(\s*"resolve_public_booking_request_notifications"/);
+  assert.match(
+    actions,
+    /const didChange = !\("changed" in result\.data\) \|\| result\.data\.changed !== false/,
+    "Owner status actions should know when a concurrent confirm was already applied.",
+  );
+  assert.match(
+    actions,
+    /if \(didChange\) \{[\s\S]*await notifyBookingChange/,
+    "Owner confirm no-ops must not create duplicate customer/staff change notifications.",
+  );
+  assert.match(
+    actions,
+    /if \(input\.command === "confirm"\) \{[\s\S]*await resolveBookingRequestNotifications/,
+    "Owner confirm should resolve the original pending booking request notifications.",
+  );
+  assert.match(actions, /revalidatePath\("\/", "layout"\)/);
   assert.match(actions, /revalidatePath\("\/staff\/appointments"\)/);
   assert.match(actions, /revalidatePath\("\/notifications"\)/);
+
+  assert.match(domain, /changed\?: boolean/);
+  assert.match(domain, /\.select\("status, confirmation_status"\)/);
+  assert.match(domain, /\.eq\("status", currentBooking\.status\)/);
+  assert.match(domain, /bookingOk\(\{ bookingId: input\.bookingId, changed: false \}\)/);
+  assert.match(domain, /Booking status changed\. Refresh and try again\./);
 
   assert.match(bookingLoader, /range\?: string \| string\[\]/);
   assert.match(bookingLoader, /BookingWorkspaceDateRange = "all" \| "day" \| "next7"/);

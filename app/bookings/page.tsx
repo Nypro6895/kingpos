@@ -42,6 +42,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
       range={workspace.range}
       requests={workspace.requests}
       salonName={context.currentSalon.name}
+      setupPermissions={workspace.setupPermissions}
       settings={workspace.settings}
       timezone={workspace.timezone}
       warnings={workspace.warnings}

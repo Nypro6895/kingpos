@@ -14,6 +14,7 @@ type BadgeTone = "danger" | "dark" | "neutral" | "success" | "warning";
 export type StaffDirectoryStatusBadge = {
   href?: string | null;
   label: string;
+  note?: string;
   tone: BadgeTone;
 };
 
@@ -28,6 +29,7 @@ type StaffDirectoryEditorProps = {
   canManageStaff: boolean;
   hasAnyStaff: boolean;
   hiddenStaff: StaffDirectoryMember[];
+  profileHrefByStaffId: Record<string, string>;
   query: string;
   statusByStaffId: Record<string, StaffDirectoryStatus>;
 };
@@ -173,6 +175,17 @@ function StatusBadgeLink({ status }: { status: StaffDirectoryStatusBadge }) {
   return <Badge tone={status.tone}>{status.label}</Badge>;
 }
 
+function StaffStatusAlert({ status }: { status: StaffDirectoryStatusBadge }) {
+  return (
+    <div className="grid gap-1">
+      <StatusBadgeLink status={status} />
+      {status.note ? (
+        <span className="text-xs text-zinc-500">{status.note}</span>
+      ) : null}
+    </div>
+  );
+}
+
 function EmptyState({
   addHref,
   canManageStaff,
@@ -306,6 +319,7 @@ function StaffRow({
   editing,
   onToggleEditing,
   onUpdate,
+  profileHref,
   row,
   status,
 }: {
@@ -314,6 +328,7 @@ function StaffRow({
   editing: boolean;
   onToggleEditing: () => void;
   onUpdate: (patch: Partial<RowState>) => void;
+  profileHref?: string;
   row: RowState;
   status: StaffDirectoryStatus;
 }) {
@@ -325,7 +340,11 @@ function StaffRow({
         status.booking,
         status.payroll,
         row.passcodeIsDefault
-          ? { label: "Default PIN", tone: "warning" as const }
+          ? {
+              label: "Default PIN",
+              note: "Default PIN: 1234",
+              tone: "warning" as const,
+            }
           : null,
       ].filter((item): item is StaffDirectoryStatusBadge => Boolean(item?.label))
     : [];
@@ -485,7 +504,7 @@ function StaffRow({
         <div className="grid gap-2">
           {alerts.length > 0 ? (
             alerts.map((alert) => (
-              <StatusBadgeLink key={alert.label} status={alert} />
+              <StaffStatusAlert key={alert.label} status={alert} />
             ))
           ) : (
             <span className="text-xs text-zinc-500">No alerts</span>
@@ -507,6 +526,14 @@ function StaffRow({
             >
               {editing ? "Done" : "Edit"}
             </button>
+            {profileHref ? (
+              <Link
+                className="inline-flex min-h-9 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-950"
+                href={profileHref}
+              >
+                Profile
+              </Link>
+            ) : null}
             {editing ? (
               <div className="grid gap-1.5">
                 <input
@@ -542,6 +569,7 @@ function StaffTable({
   editingIds,
   onToggleEditing,
   onUpdate,
+  profileHrefByStaffId,
   rows,
   statusByStaffId,
 }: {
@@ -550,6 +578,7 @@ function StaffTable({
   editingIds: Set<string>;
   onToggleEditing: (staffId: string) => void;
   onUpdate: (staffId: string, patch: Partial<RowState>) => void;
+  profileHrefByStaffId: Record<string, string>;
   rows: RowState[];
   statusByStaffId: Record<string, StaffDirectoryStatus>;
 }) {
@@ -584,6 +613,7 @@ function StaffTable({
               key={row.id}
               onToggleEditing={() => onToggleEditing(row.id)}
               onUpdate={(patch) => onUpdate(row.id, patch)}
+              profileHref={canManageStaff ? profileHrefByStaffId[row.id] : undefined}
               row={row}
               status={
                 statusByStaffId[row.id] ?? {
@@ -605,6 +635,7 @@ export function StaffDirectoryEditor({
   canManageStaff,
   hasAnyStaff,
   hiddenStaff,
+  profileHrefByStaffId,
   query,
   statusByStaffId,
 }: StaffDirectoryEditorProps) {
@@ -676,6 +707,7 @@ export function StaffDirectoryEditor({
           editingIds={editingIds}
           onToggleEditing={toggleEditing}
           onUpdate={updateRow}
+          profileHrefByStaffId={profileHrefByStaffId}
           rows={activeRows}
           statusByStaffId={statusByStaffId}
         />
@@ -704,6 +736,7 @@ export function StaffDirectoryEditor({
               editingIds={editingIds}
               onToggleEditing={toggleEditing}
               onUpdate={updateRow}
+              profileHrefByStaffId={profileHrefByStaffId}
               rows={hiddenRows}
               statusByStaffId={statusByStaffId}
             />

@@ -5477,6 +5477,10 @@ export type Database = {
         Args: { p_booking_line_id: string; p_service_note?: string }
         Returns: Json
       }
+      confirm_assigned_booking: {
+        Args: { p_booking_id: string }
+        Returns: Json
+      }
       confirm_pos_display_channel_tip: {
         Args: { p_customer_message: Json; p_token: string }
         Returns: Json
@@ -5726,6 +5730,7 @@ export type Database = {
           credited_staff_id: string
           credited_staff_name: string
           cta_label: string
+          media_bucket: string
           media_path: string
           primary_service_base_price: number
           primary_service_duration_minutes: number
@@ -5736,6 +5741,13 @@ export type Database = {
           salon_id: string
           source_type: string
           title: string
+        }[]
+      }
+      get_public_beauty_post_booking_counts: {
+        Args: { p_post_ids?: string[] }
+        Returns: {
+          post_id: string
+          verified_booking_count: number
         }[]
       }
       get_public_explore_decision_signals: {
@@ -6159,6 +6171,10 @@ export type Database = {
         }
         Returns: Json
       }
+      resolve_public_booking_request_notifications: {
+        Args: { target_booking_id: string }
+        Returns: Json
+      }
       search_public_explore_salons: {
         Args: {
           p_category?: string
@@ -6242,6 +6258,10 @@ export type Database = {
       seed_default_roles_for_account: {
         Args: { target_account_id: string }
         Returns: undefined
+      }
+      set_own_staff_online_booking: {
+        Args: { p_online_booking_enabled: boolean; p_salon_id: string }
+        Returns: Json
       }
       increment_staff_queue_turns: {
         Args: {

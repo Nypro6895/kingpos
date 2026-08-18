@@ -88,8 +88,8 @@ function PublicTeamSettingsSection({
           Public team & staff profiles
         </h2>
         <p className="mt-1 text-sm leading-6 text-zinc-600">
-          Control which active staff can appear publicly, receive direct booking
-          requests, and post to Salon Profile. Staff opt-out cannot be overridden here.
+          Control public listing, direct booking, and Salon Profile posting as
+          separate staff settings. Staff public opt-out cannot be overridden here.
         </p>
       </div>
 

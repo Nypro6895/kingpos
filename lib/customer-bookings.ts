@@ -114,10 +114,6 @@ type ServiceRow = {
   online_booking_enabled: boolean;
 };
 
-type ServiceAddOnLinkRow = {
-  add_on_service_id: string;
-};
-
 type PublicSalonProfileRow = {
   address_line1: string | null;
   address_line2: string | null;
@@ -464,22 +460,10 @@ async function loadServiceBookableRows(
     return new Map<string, boolean>();
   }
 
-  const linksResult = await context.supabase
-    .from("service_add_on_links")
-    .select("add_on_service_id")
-    .eq("is_active", true)
-    .in("add_on_service_id", serviceIds)
-    .returns<ServiceAddOnLinkRow[]>();
-  const addOnOnlyServiceIds = new Set(
-    linksResult.error ? [] : (linksResult.data ?? []).map((link) => link.add_on_service_id),
-  );
-
   return new Map(
     (data ?? []).map((service) => [
       service.id,
-      service.is_active &&
-        service.online_booking_enabled &&
-        !addOnOnlyServiceIds.has(service.id),
+      service.is_active && service.online_booking_enabled,
     ]),
   );
 }

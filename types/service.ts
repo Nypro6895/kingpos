@@ -22,6 +22,7 @@ export type ServiceAddOnLink = {
 
 export type ServiceBookingStaff = {
   avatarPath: string | null;
+  bookingReady: boolean;
   displayName: string;
   id: string;
   isActive: boolean;

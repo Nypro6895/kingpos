@@ -19,6 +19,11 @@ import {
   type BeautyPostMediaRole,
 } from "@/lib/beauty-media";
 import {
+  BEAUTY_BOOK_VERIFIED_BOOKING_STATUSES,
+  beautyBookingHrefForSalon,
+  isBeautyBookVerifiedBooking,
+} from "@/lib/beauty-booking-verification";
+import {
   createAuthenticatedSupabaseServerClient,
   getSupabaseConfig,
 } from "@/lib/supabase/server";
@@ -109,6 +114,12 @@ type BeautySalonPublicationStatusRow = {
   requested_at: string;
   responded_at: string | null;
   status: string;
+};
+type BeautyBookVerifiedBookingRow = {
+  confirmation_status: string | null;
+  id: string;
+  salon_id: string;
+  status: string | null;
 };
 
 type StorageObjectMetadata = {
@@ -558,10 +569,11 @@ function mapTimelinePost(raw: unknown): BeautyTimelinePost | null {
   return {
     attribution: mapAttribution(record.attribution),
     author: {
-      avatarUrl: safeHttpUrl(readString(author.avatarUrl)),
+    avatarUrl: safeHttpUrl(readString(author.avatarUrl)),
       displayName: authorDisplayName,
       profileId: authorProfileId,
     },
+    bookingAction: null,
     caption: readString(record.caption),
     createdAt,
     editedAt: readString(record.editedAt),
@@ -654,15 +666,117 @@ async function attachBeautySalonPublicationStatuses(input: {
   };
 }
 
+async function loadBeautyBookVerifiedCountsBySalon(input: {
+  salonIds: string[];
+  supabase: AuthenticatedSupabaseClient;
+  userId: string;
+}) {
+  const uniqueSalonIds = Array.from(
+    new Set(
+      input.salonIds
+        .map((salonId) => cleanUuid(salonId))
+        .filter((salonId): salonId is string => Boolean(salonId)),
+    ),
+  );
+  const counts = new Map<string, number>();
+
+  if (uniqueSalonIds.length === 0) {
+    return counts;
+  }
+
+  const { data, error } = await input.supabase
+    .from("bookings")
+    .select("id, salon_id, status, confirmation_status")
+    .eq("customer_user_id", input.userId)
+    .eq("confirmation_status", "confirmed")
+    .in("salon_id", uniqueSalonIds)
+    .in("status", BEAUTY_BOOK_VERIFIED_BOOKING_STATUSES)
+    .returns<BeautyBookVerifiedBookingRow[]>();
+
+  if (error) {
+    console.error("Supabase load Beauty verified booking counts failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      userId: input.userId,
+    });
+    return counts;
+  }
+
+  for (const row of data ?? []) {
+    if (
+      cleanUuid(row.salon_id) &&
+      isBeautyBookVerifiedBooking({
+        confirmationStatus: row.confirmation_status,
+        status: row.status,
+      })
+    ) {
+      counts.set(row.salon_id, (counts.get(row.salon_id) ?? 0) + 1);
+    }
+  }
+
+  return counts;
+}
+
+async function attachBeautyBookingActions(input: {
+  page: BeautyTimelinePage;
+  supabase: AuthenticatedSupabaseClient;
+  userId: string;
+}): Promise<BeautyTimelinePage> {
+  const verifiedPostSalons = input.page.items
+    .filter((item) => item.verification?.state === "verified")
+    .map((item) => item.attribution)
+    .filter((item): item is NonNullable<BeautyTimelinePost["attribution"]> =>
+      Boolean(item),
+    );
+
+  if (verifiedPostSalons.length === 0) {
+    return input.page;
+  }
+
+  const countsBySalonId = await loadBeautyBookVerifiedCountsBySalon({
+    salonIds: verifiedPostSalons.map((item) => item.salonId),
+    supabase: input.supabase,
+    userId: input.userId,
+  });
+
+  return {
+    ...input.page,
+    items: input.page.items.map((item) => {
+      const attribution = item.attribution;
+      const href = attribution ? beautyBookingHrefForSalon(attribution.salonId) : null;
+
+      if (item.verification?.state !== "verified" || !attribution || !href) {
+        return {
+          ...item,
+          bookingAction: null,
+        };
+      }
+
+      return {
+        ...item,
+        bookingAction: {
+          href,
+          salonId: attribution.salonId,
+          salonName: attribution.salonName,
+          verifiedBookingCount: countsBySalonId.get(attribution.salonId) ?? 0,
+        },
+      };
+    }),
+  };
+}
+
 export async function getBeautyTimelinePage(input: {
   cursor?: BeautyTimelineCursor | null;
   pageSize?: number;
   profileId: string;
 }): Promise<BeautyTimelinePage> {
   const supabase = await createAuthenticatedSupabaseServerClient();
+  const user = await getCurrentKingUser();
   const profileId = cleanUuid(input.profileId);
 
-  if (!supabase || !profileId) {
+  if (!supabase || !user || !profileId) {
     return emptyTimelinePage("Beauty timeline could not be loaded.");
   }
 
@@ -686,9 +800,15 @@ export async function getBeautyTimelinePage(input: {
     return emptyTimelinePage("Beauty timeline could not be loaded.");
   }
 
-  return attachBeautySalonPublicationStatuses({
+  const pageWithPublication = await attachBeautySalonPublicationStatuses({
     page: mapTimelinePayload(data),
     supabase,
+  });
+
+  return attachBeautyBookingActions({
+    page: pageWithPublication,
+    supabase,
+    userId: user.id,
   });
 }
 

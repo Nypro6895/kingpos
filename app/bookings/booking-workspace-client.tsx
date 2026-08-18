@@ -2,16 +2,26 @@
 
 import {
   createBookingPosTicketAction,
+  createQuickSetupStaffAction,
   createOwnerAppointmentAction,
   reassignOwnerBookingAction,
   rescheduleOwnerBookingAction,
   runBookingStatusAction,
   replaceOwnerBookingServicesAction,
   updateBookingSettingsAction,
+  updateQuickSetupAssignmentAction,
+  updateQuickSetupServiceOnlineAction,
+  updateQuickSetupStaffOnlineAction,
   type BookingActionResult,
   type CreateOwnerAppointmentInput,
   type UpdateBookingSettingsInput,
 } from "@/app/bookings/actions";
+import {
+  createStaffTimeBlockAction,
+  saveStaffWeeklyAvailabilityAction,
+  type BookingSetupActionResult,
+} from "@/app/booking-setup/actions";
+import { createServiceAction } from "@/app/services/actions";
 import { StaffAvailabilityEditor } from "@/app/booking-setup/booking-setup-editors";
 import type {
   BookingWorkspaceData,
@@ -27,6 +37,7 @@ import type {
   BookingTicketCreationMode,
 } from "@/types/booking";
 import { BOOKING_SOURCES } from "@/types/booking";
+import type { SaveServiceConfigsResult } from "@/types/service";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
@@ -61,6 +72,8 @@ type DraftPrefill = {
   staffId?: string | null;
   startLocal?: string | null;
 };
+
+type QuickSetupPanelId = "hours" | "professionals" | "rules" | "services";
 
 const STATUS_LABELS: Record<string, string> = {
   cancelled: "Cancelled",
@@ -355,6 +368,2206 @@ function activeBooking(booking: BookingWorkspaceItem) {
   );
 }
 
+const QUICK_SETUP_DAYS = [
+  { id: 0, label: "Sun" },
+  { id: 1, label: "Mon" },
+  { id: 2, label: "Tue" },
+  { id: 3, label: "Wed" },
+  { id: 4, label: "Thu" },
+  { id: 5, label: "Fri" },
+  { id: 6, label: "Sat" },
+] as const;
+
+function settingsToInput(
+  settings: BookingWorkspaceClientProps["settings"],
+): UpdateBookingSettingsInput {
+  return {
+    anyProfessionalEnabled: settings.any_professional_enabled,
+    bookingEnabled: settings.booking_enabled,
+    cancellationWindowMinutes: settings.cancellation_window_minutes,
+    confirmationMode: settings.confirmation_mode,
+    defaultCleanupBufferMinutes: settings.default_cleanup_buffer_minutes,
+    guestBookingEnabled: settings.guest_booking_enabled,
+    maximumAdvanceWindowDays: settings.maximum_advance_window_days,
+    minimumLeadTimeMinutes: settings.minimum_lead_time_minutes,
+    onlineBookingVisible: settings.online_booking_visible,
+    sameDayBookingEnabled: settings.same_day_booking_enabled,
+    slotIntervalMinutes: settings.slot_interval_minutes,
+    splitStaffAppointmentEnabled: settings.split_staff_appointment_enabled,
+    ticketCreationMode: settings.ticket_creation_mode,
+    timezoneIana: settings.timezone_iana,
+  };
+}
+
+function assignmentKey(serviceId: string, staffId: string) {
+  return `${serviceId}:${staffId}`;
+}
+
+function assignmentEnabled(
+  options: BookingWorkspaceClientProps["options"],
+  serviceId: string,
+  staffId: string,
+) {
+  return options.assignments.some(
+    (assignment) =>
+      assignment.service_id === serviceId &&
+      assignment.staff_id === staffId &&
+      assignment.is_active &&
+      assignment.online_bookable,
+  );
+}
+
+function assignmentValue(input: {
+  overrides: Record<string, boolean>;
+  options: BookingWorkspaceClientProps["options"];
+  serviceId: string;
+  staffId: string;
+}) {
+  const key = assignmentKey(input.serviceId, input.staffId);
+
+  return input.overrides[key] ?? assignmentEnabled(
+    input.options,
+    input.serviceId,
+    input.staffId,
+  );
+}
+
+function serviceStaffIds(
+  options: BookingWorkspaceClientProps["options"],
+  overrides: Record<string, boolean>,
+  serviceId: string,
+) {
+  return options.staff
+    .filter((member) =>
+      assignmentValue({
+        options,
+        overrides,
+        serviceId,
+        staffId: member.id,
+      }),
+    )
+    .map((member) => member.id);
+}
+
+function staffServiceIds(
+  options: BookingWorkspaceClientProps["options"],
+  overrides: Record<string, boolean>,
+  staffId: string,
+) {
+  return options.services
+    .filter((service) =>
+      assignmentValue({
+        options,
+        overrides,
+        serviceId: service.id,
+        staffId,
+      }),
+    )
+    .map((service) => service.id);
+}
+
+function staffBookingReady(member: BookingWorkspaceClientProps["options"]["staff"][number]) {
+  return member.is_active && member.online_booking_enabled;
+}
+
+function formatLocalClock(value: string) {
+  const [hours = "0", minutes = "0"] = value.slice(0, 5).split(":");
+  const hourNumber = Number(hours);
+  const minuteNumber = Number(minutes);
+
+  if (!Number.isFinite(hourNumber) || !Number.isFinite(minuteNumber)) {
+    return value.slice(0, 5);
+  }
+
+  const suffix = hourNumber >= 12 ? "PM" : "AM";
+  const displayHour = hourNumber % 12 || 12;
+
+  return minuteNumber === 0
+    ? `${displayHour} ${suffix}`
+    : `${displayHour}:${String(minuteNumber).padStart(2, "0")} ${suffix}`;
+}
+
+function workingRulesForStaff(
+  options: BookingWorkspaceClientProps["options"],
+  staffId: string,
+) {
+  const activeRules = options.availabilityRules.filter(
+    (rule) => rule.is_active && rule.rule_type === "working",
+  );
+  const staffRules = activeRules.filter((rule) => rule.staff_id === staffId);
+  const rules = staffRules.length > 0
+    ? staffRules
+    : activeRules.filter((rule) => !rule.staff_id);
+
+  return rules
+    .sort(
+      (left, right) =>
+        left.day_of_week - right.day_of_week ||
+        left.starts_at_local.localeCompare(right.starts_at_local),
+    );
+}
+
+function breakRulesForStaff(
+  options: BookingWorkspaceClientProps["options"],
+  staffId: string,
+) {
+  const activeRules = options.availabilityRules.filter(
+    (rule) => rule.is_active && rule.rule_type === "break",
+  );
+  const staffRules = activeRules.filter((rule) => rule.staff_id === staffId);
+  const rules = staffRules.length > 0
+    ? staffRules
+    : activeRules.filter((rule) => !rule.staff_id);
+
+  return rules
+    .sort(
+      (left, right) =>
+        left.day_of_week - right.day_of_week ||
+        left.starts_at_local.localeCompare(right.starts_at_local),
+    );
+}
+
+function summarizeStaffHours(
+  options: BookingWorkspaceClientProps["options"],
+  staffId: string,
+) {
+  const rules = workingRulesForStaff(options, staffId);
+
+  if (rules.length === 0) {
+    return "No bookable hours";
+  }
+
+  const days = QUICK_SETUP_DAYS.filter((day) =>
+    rules.some((rule) => rule.day_of_week === day.id),
+  );
+  const firstDayRules = rules.filter((rule) => rule.day_of_week === days[0]?.id);
+  const firstSummary = firstDayRules
+    .map(
+      (rule) =>
+        `${formatLocalClock(rule.starts_at_local)}-${formatLocalClock(
+          rule.ends_at_local,
+        )}`,
+    )
+    .join(", ");
+  const sameHours = days.every((day) => {
+    const summary = rules
+      .filter((rule) => rule.day_of_week === day.id)
+      .map(
+        (rule) =>
+          `${formatLocalClock(rule.starts_at_local)}-${formatLocalClock(
+            rule.ends_at_local,
+          )}`,
+      )
+      .join(", ");
+
+    return summary === firstSummary;
+  });
+  const visibleDays = days.map((day) => day.label).slice(0, 4).join(", ");
+  const extra = days.length > 4 ? ` +${days.length - 4}` : "";
+
+  return sameHours
+    ? `${visibleDays}${extra}, ${firstSummary}`
+    : `${days.length} available day${days.length === 1 ? "" : "s"}`;
+}
+
+function summarizeBookingHours(options: BookingWorkspaceClientProps["options"]) {
+  const staffWithHours = options.staff.filter(
+    (member) => member.is_active && staffHasWorkingHours(options, member.id),
+  ).length;
+
+  if (staffWithHours === 0) {
+    return "No professional hours";
+  }
+
+  return `${staffWithHours} professional${staffWithHours === 1 ? "" : "s"} with hours`;
+}
+
+function upcomingTimeOffBlocks(
+  options: BookingWorkspaceClientProps["options"],
+  staffId: string,
+) {
+  const nowMs = Date.now();
+
+  return options.timeBlocks
+    .filter(
+      (block) =>
+        block.is_active !== false &&
+        block.block_type === "time_off" &&
+        block.staff_id === staffId &&
+        new Date(block.ends_at).getTime() >= nowMs,
+    )
+    .sort(
+      (left, right) =>
+        new Date(left.starts_at).getTime() - new Date(right.starts_at).getTime(),
+    );
+}
+
+function formatDateOnly(value: string, timeZone: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone,
+  }).format(new Date(value));
+}
+
+function formatTimeOffRange(
+  block: BookingWorkspaceClientProps["options"]["timeBlocks"][number],
+  timeZone: string,
+) {
+  const start = formatDateOnly(block.starts_at, timeZone);
+  const end = formatDateOnly(block.ends_at, timeZone);
+
+  return start === end ? start : `${start} - ${end}`;
+}
+
+function bookingRulesSummary(settings: BookingWorkspaceClientProps["settings"]) {
+  return `${formatMinutes(settings.minimum_lead_time_minutes)} notice / ${
+    settings.maximum_advance_window_days
+  } days ahead`;
+}
+
+function InlineActionMessage({
+  result,
+}: {
+  result:
+    | BookingActionResult
+    | BookingSetupActionResult
+    | SaveServiceConfigsResult
+    | null;
+}) {
+  if (!result) {
+    return null;
+  }
+
+  const message =
+    "message" in result
+      ? result.message
+      : result.ok
+        ? "Saved."
+        : result.error ?? "Could not save.";
+
+  return (
+    <p
+      className={classNames(
+        "rounded-lg border px-3 py-2 text-sm",
+        result.ok
+          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+          : "border-red-200 bg-red-50 text-red-800",
+      )}
+      role="status"
+    >
+      {message}
+    </p>
+  );
+}
+
+function MiniSwitch({
+  checked,
+  disabled,
+  label,
+  onChange,
+}: {
+  checked: boolean;
+  disabled?: boolean;
+  label: string;
+  onChange: (next: boolean) => void;
+}) {
+  return (
+    <button
+      aria-checked={checked}
+      aria-label={label}
+      className={classNames(
+        "relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition",
+        checked
+          ? "border-[#f26f3d] bg-[#f26f3d]"
+          : "border-[#ffd6c4] bg-[#fff0e8]",
+        disabled && "cursor-not-allowed opacity-50",
+      )}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      role="switch"
+      type="button"
+    >
+      <span
+        aria-hidden="true"
+        className={classNames(
+          "absolute h-5 w-5 rounded-full bg-white shadow-sm transition",
+          checked ? "left-6" : "left-1",
+        )}
+      />
+    </button>
+  );
+}
+
+function QuickSetupCard({
+  detail,
+  metric,
+  onOpen,
+  status,
+  title,
+}: {
+  detail: string;
+  metric: string;
+  onOpen: () => void;
+  status?: "attention" | "ready";
+  title: string;
+}) {
+  return (
+    <button
+      className="flex min-h-20 w-full items-center justify-between gap-3 rounded-xl border border-[#f0e6df] bg-white px-4 py-3 text-left transition hover:border-[#ffd6c4] hover:bg-[#fffaf7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f26f3d]"
+      onClick={onOpen}
+      type="button"
+    >
+      <div className="min-w-0">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span className="text-sm font-extrabold text-[#211c24]">{title}</span>
+          <span className="text-sm font-semibold text-[#786d78]">{metric}</span>
+        </div>
+        <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#786d78]">
+          {detail}
+        </p>
+      </div>
+      <span
+        className={classNames(
+          styles.statusBadge,
+          status === "attention" ? styles.statusPending : styles.statusArrived,
+        )}
+      >
+        {status === "attention" ? "Needs setup" : "Ready"}
+      </span>
+    </button>
+  );
+}
+
+function QuickSetupDrawerFrame({
+  children,
+  onClose,
+  subtitle,
+  title,
+}: {
+  children: ReactNode;
+  onClose: () => void;
+  subtitle: string;
+  title: string;
+}) {
+  return (
+    <ModalFrame label={title} onClose={onClose} size="wide">
+      <div className="flex items-start justify-between gap-4 border-b border-[#f0e6df] px-5 py-4">
+        <div className="min-w-0">
+          <p className={styles.eyebrow}>Quick setup</p>
+          <h2 className="mt-2 text-xl font-extrabold text-[#211c24]">{title}</h2>
+          <p className="mt-1 text-sm leading-5 text-[#786d78]">{subtitle}</p>
+        </div>
+        <button
+          aria-label="Close quick setup"
+          className={classNames(styles.secondaryButton, "h-10 px-3")}
+          onClick={onClose}
+          type="button"
+        >
+          Close
+        </button>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
+    </ModalFrame>
+  );
+}
+
+function QuickCreateServiceCard({
+  canManage,
+  onCreated,
+  onResult,
+  options,
+}: {
+  canManage: boolean;
+  onCreated: (serviceId: string | null) => void;
+  onResult: (result: SaveServiceConfigsResult) => void;
+  options: BookingWorkspaceClientProps["options"];
+}) {
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("0");
+  const [durationMinutes, setDurationMinutes] = useState("30");
+  const [onlineBookingEnabled, setOnlineBookingEnabled] = useState(true);
+  const [bookingStaffIds, setBookingStaffIds] = useState<string[]>([]);
+  const [isPending, startTransition] = useTransition();
+  const activeStaff = options.staff.filter((member) => member.is_active);
+  const disabled = !canManage || isPending;
+
+  function toggleStaff(staffId: string, checked: boolean) {
+    setBookingStaffIds((current) =>
+      checked
+        ? Array.from(new Set([...current, staffId]))
+        : current.filter((id) => id !== staffId),
+    );
+  }
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const trimmedName = name.trim();
+    const parsedPrice = Number.parseFloat(price);
+    const parsedDuration = Number.parseInt(durationMinutes, 10);
+
+    if (!trimmedName) {
+      onResult({ message: "Service name is required.", ok: false });
+      return;
+    }
+
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+      onResult({ message: "Price must be zero or greater.", ok: false });
+      return;
+    }
+
+    if (
+      !Number.isInteger(parsedDuration) ||
+      parsedDuration < 1 ||
+      parsedDuration > 1_440
+    ) {
+      onResult({
+        message: "Duration must be between 1 and 1,440 minutes.",
+        ok: false,
+      });
+      return;
+    }
+
+    const activeStaffIds = new Set(activeStaff.map((member) => member.id));
+
+    startTransition(async () => {
+      const response = await createServiceAction({
+        addOnServiceIds: [],
+        basePrice: parsedPrice,
+        bookingStaffIds: bookingStaffIds.filter((staffId) =>
+          activeStaffIds.has(staffId),
+        ),
+        category: null,
+        description: null,
+        durationMinutes: parsedDuration,
+        isActive: true,
+        name: trimmedName,
+        onlineBookingEnabled,
+      });
+
+      onResult(response);
+
+      if (response.ok) {
+        setName("");
+        setPrice("0");
+        setDurationMinutes("30");
+        setBookingStaffIds([]);
+        setOnlineBookingEnabled(true);
+        onCreated(response.serviceIds[0] ?? null);
+      }
+    });
+  }
+
+  return (
+    <form
+      className="grid gap-4 rounded-xl border border-[#f0e6df] bg-[#fffaf7] p-4"
+      onSubmit={submit}
+    >
+      <div>
+        <p className="text-sm font-extrabold text-[#211c24]">
+          Create quick service
+        </p>
+        <p className="mt-1 text-sm text-[#786d78]">
+          Add the basic service now. Use Advanced settings for categories,
+          add-ons, and longer descriptions.
+        </p>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_120px_140px]">
+        <label className="grid gap-1">
+          <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#786d78]">
+            Service name
+          </span>
+          <input
+            className={styles.field}
+            disabled={disabled}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Pedicure Deluxe"
+            value={name}
+          />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#786d78]">
+            Price
+          </span>
+          <input
+            className={styles.field}
+            disabled={disabled}
+            inputMode="decimal"
+            min="0"
+            onChange={(event) => setPrice(event.target.value)}
+            type="number"
+            value={price}
+          />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#786d78]">
+            Minutes
+          </span>
+          <input
+            className={styles.field}
+            disabled={disabled}
+            min="1"
+            onChange={(event) => setDurationMinutes(event.target.value)}
+            type="number"
+            value={durationMinutes}
+          />
+        </label>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-lg border border-[#f0e6df] bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-extrabold text-[#211c24]">
+            Show online booking
+          </p>
+          <p className="mt-1 text-xs text-[#786d78]">
+            Keep it on when customers can choose this service.
+          </p>
+        </div>
+        <MiniSwitch
+          checked={onlineBookingEnabled}
+          disabled={disabled}
+          label="Online booking for new service"
+          onChange={setOnlineBookingEnabled}
+        />
+      </div>
+
+      {activeStaff.length > 0 ? (
+        <div className="grid gap-2">
+          <p className="text-sm font-extrabold text-[#211c24]">
+            Professionals who can take it
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {activeStaff.map((member) => (
+              <label
+                className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-[#f0e6df] bg-white px-3"
+                key={member.id}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-extrabold text-[#211c24]">
+                    {member.display_name}
+                  </span>
+                  <span className="block text-xs text-[#786d78]">
+                    {staffBookingReady(member) ? "Booking ready" : "Booking off"}
+                  </span>
+                </span>
+                <input
+                  checked={bookingStaffIds.includes(member.id)}
+                  disabled={disabled}
+                  onChange={(event) =>
+                    toggleStaff(member.id, event.target.checked)
+                  }
+                  type="checkbox"
+                />
+              </label>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="rounded-lg border border-[#f0e6df] bg-white p-3 text-sm text-[#786d78]">
+          No professionals yet. Create staff in Quick Setup, then match them to
+          this service.
+        </p>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          className={styles.primaryButton}
+          disabled={disabled}
+          type="submit"
+        >
+          {isPending ? "Creating..." : "Create service"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function QuickCreateStaffCard({
+  canManageAssignments,
+  canManageStaff,
+  onCreated,
+  onResult,
+  options,
+}: {
+  canManageAssignments: boolean;
+  canManageStaff: boolean;
+  onCreated: (staffId: string | null) => void;
+  onResult: (result: BookingActionResult) => void;
+  options: BookingWorkspaceClientProps["options"];
+}) {
+  const [displayName, setDisplayName] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [onlineBookingEnabled, setOnlineBookingEnabled] = useState(true);
+  const [serviceIds, setServiceIds] = useState<string[]>([]);
+  const [isPending, startTransition] = useTransition();
+  const activeServices = options.services.filter((service) => service.is_active);
+  const disabled = !canManageStaff || isPending;
+
+  function toggleService(serviceId: string, checked: boolean) {
+    setServiceIds((current) =>
+      checked
+        ? Array.from(new Set([...current, serviceId]))
+        : current.filter((id) => id !== serviceId),
+    );
+  }
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const trimmedName = displayName.trim();
+
+    if (!trimmedName) {
+      onResult({
+        field: "displayName",
+        message: "Professional name is required.",
+        ok: false,
+      });
+      return;
+    }
+
+    startTransition(async () => {
+      const response = await createQuickSetupStaffAction({
+        displayName: trimmedName,
+        jobTitle: jobTitle.trim() || null,
+        onlineBookingEnabled,
+        serviceIds: canManageAssignments ? serviceIds : [],
+      });
+
+      onResult(response);
+
+      if (response.ok) {
+        setDisplayName("");
+        setJobTitle("");
+        setOnlineBookingEnabled(true);
+        setServiceIds([]);
+        onCreated(response.staffId ?? null);
+      }
+    });
+  }
+
+  return (
+    <form
+      className="grid gap-4 rounded-xl border border-[#f0e6df] bg-[#fffaf7] p-4"
+      onSubmit={submit}
+    >
+      <div>
+        <p className="text-sm font-extrabold text-[#211c24]">
+          Create quick professional
+        </p>
+        <p className="mt-1 text-sm text-[#786d78]">
+          Add the basic staff profile now. Use Advanced settings for contact,
+          payroll, and profile details.
+        </p>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,220px)]">
+        <label className="grid gap-1">
+          <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#786d78]">
+            Display name
+          </span>
+          <input
+            className={styles.field}
+            disabled={disabled}
+            onChange={(event) => setDisplayName(event.target.value)}
+            placeholder="Macy"
+            value={displayName}
+          />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#786d78]">
+            Role
+          </span>
+          <input
+            className={styles.field}
+            disabled={disabled}
+            onChange={(event) => setJobTitle(event.target.value)}
+            placeholder="Nail tech"
+            value={jobTitle}
+          />
+        </label>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-lg border border-[#f0e6df] bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-extrabold text-[#211c24]">
+            Enable online booking
+          </p>
+          <p className="mt-1 text-xs text-[#786d78]">
+            Customers can choose this professional once hours and services are
+            ready.
+          </p>
+        </div>
+        <MiniSwitch
+          checked={onlineBookingEnabled}
+          disabled={disabled}
+          label="Online booking for new professional"
+          onChange={setOnlineBookingEnabled}
+        />
+      </div>
+
+      {activeServices.length > 0 ? (
+        <div className="grid gap-2">
+          <p className="text-sm font-extrabold text-[#211c24]">
+            Services they can take
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {activeServices.map((service) => {
+              const assignmentDisabled =
+                disabled || !canManageAssignments || !service.online_booking_enabled;
+
+              return (
+                <label
+                  className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-[#f0e6df] bg-white px-3"
+                  key={service.id}
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-extrabold text-[#211c24]">
+                      {service.name}
+                    </span>
+                    <span className="block text-xs text-[#786d78]">
+                      {service.online_booking_enabled
+                        ? "Online service"
+                        : "Turn service online first"}
+                    </span>
+                  </span>
+                  <input
+                    checked={serviceIds.includes(service.id)}
+                    disabled={assignmentDisabled}
+                    onChange={(event) =>
+                      toggleService(service.id, event.target.checked)
+                    }
+                    type="checkbox"
+                  />
+                </label>
+              );
+            })}
+          </div>
+          {!canManageAssignments ? (
+            <p className="text-xs text-[#786d78]">
+              Service matching is read-only for this account.
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <p className="rounded-lg border border-[#f0e6df] bg-white p-3 text-sm text-[#786d78]">
+          No services yet. Create services in Quick Setup, then match them to
+          this professional.
+        </p>
+      )}
+
+      <button className={styles.primaryButton} disabled={disabled} type="submit">
+        {isPending ? "Creating..." : "Create professional"}
+      </button>
+    </form>
+  );
+}
+
+function ServicesQuickSetupDrawer({
+  canManageAssignments,
+  canManageServices,
+  initialServiceId,
+  onClose,
+  options,
+}: {
+  canManageAssignments: boolean;
+  canManageServices: boolean;
+  initialServiceId?: string | null;
+  onClose: () => void;
+  options: BookingWorkspaceClientProps["options"];
+}) {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [expandedServiceId, setExpandedServiceId] = useState<string | null>(
+    initialServiceId && options.services.some((service) => service.id === initialServiceId)
+      ? initialServiceId
+      : options.services[0]?.id ?? null,
+  );
+  const [showCreateForm, setShowCreateForm] = useState(
+    options.services.length === 0,
+  );
+  const [serviceOverrides, setServiceOverrides] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [assignmentOverrides, setAssignmentOverrides] = useState<
+    Record<string, boolean>
+  >({});
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const [result, setResult] = useState<
+    BookingActionResult | SaveServiceConfigsResult | null
+  >(null);
+  const [, startTransition] = useTransition();
+  const normalizedQuery = query.trim().toLowerCase();
+  const services = options.services.filter(
+    (service) =>
+      !normalizedQuery ||
+      service.name.toLowerCase().includes(normalizedQuery) ||
+      (service.category ?? "").toLowerCase().includes(normalizedQuery),
+  );
+
+  function serviceOnline(service: BookingWorkspaceClientProps["options"]["services"][number]) {
+    return serviceOverrides[service.id] ?? service.online_booking_enabled;
+  }
+
+  function updateServiceOnline(serviceId: string, next: boolean) {
+    setPendingKey(`service:${serviceId}`);
+    setResult(null);
+    startTransition(async () => {
+      const response = await updateQuickSetupServiceOnlineAction({
+        onlineBookingEnabled: next,
+        serviceId,
+      });
+      setResult(response);
+      setPendingKey(null);
+
+      if (response.ok) {
+        setServiceOverrides((current) => ({ ...current, [serviceId]: next }));
+        router.refresh();
+      }
+    });
+  }
+
+  function updateAssignment(serviceId: string, staffId: string, selected: boolean) {
+    const key = assignmentKey(serviceId, staffId);
+    setPendingKey(`assignment:${key}`);
+    setResult(null);
+    startTransition(async () => {
+      const response = await updateQuickSetupAssignmentAction({
+        selected,
+        serviceId,
+        staffId,
+      });
+      setResult(response);
+      setPendingKey(null);
+
+      if (response.ok) {
+        setAssignmentOverrides((current) => ({ ...current, [key]: selected }));
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <QuickSetupDrawerFrame
+      onClose={onClose}
+      subtitle="Choose which active services appear online and which professionals can receive them."
+      title="Services"
+    >
+      <div className="grid gap-4">
+        <InlineActionMessage result={result} />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            className={classNames(styles.secondaryButton, "w-full sm:w-auto")}
+            disabled={!canManageServices}
+            onClick={() => setShowCreateForm((current) => !current)}
+            type="button"
+          >
+            {showCreateForm ? "Hide quick create" : "Create service"}
+          </button>
+          <a className="text-sm font-extrabold text-[#f26f3d]" href="/services">
+            Advanced service settings
+          </a>
+        </div>
+        {showCreateForm ? (
+          <QuickCreateServiceCard
+            canManage={canManageServices}
+            onCreated={(serviceId) => {
+              setQuery("");
+              setExpandedServiceId(serviceId);
+              setShowCreateForm(false);
+              router.refresh();
+            }}
+            onResult={setResult}
+            options={options}
+          />
+        ) : null}
+        <label className="grid gap-1">
+          <span className="sr-only">Search services</span>
+          <input
+            className={classNames(styles.field, "w-full")}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search services"
+            type="search"
+            value={query}
+          />
+        </label>
+        <div className="grid gap-3">
+          {services.length === 0 ? (
+            <p className="rounded-xl border border-[#f0e6df] bg-[#fffaf7] p-4 text-sm text-[#786d78]">
+              No services match that search. Use quick create above or open
+              advanced service settings.
+            </p>
+          ) : null}
+          {services.map((service) => {
+            const online = serviceOnline(service);
+            const assignedStaffIds = serviceStaffIds(
+              options,
+              assignmentOverrides,
+              service.id,
+            );
+            const expanded = expandedServiceId === service.id;
+
+            return (
+              <section
+                className="rounded-xl border border-[#f0e6df] bg-white p-4"
+                key={service.id}
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <button
+                    className="min-w-0 text-left"
+                    onClick={() =>
+                      setExpandedServiceId(expanded ? null : service.id)
+                    }
+                    type="button"
+                  >
+                    <span className="block truncate text-base font-extrabold text-[#211c24]">
+                      {service.name}
+                    </span>
+                    <span className="mt-1 block text-sm text-[#786d78]">
+                      {formatMoney(Number(service.base_price))} /{" "}
+                      {formatMinutes(service.duration_minutes)}
+                    </span>
+                  </button>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={classNames(
+                        styles.statusBadge,
+                        online ? styles.statusArrived : styles.statusMuted,
+                      )}
+                    >
+                      {online ? "Online" : "Off"}
+                    </span>
+                    <MiniSwitch
+                      checked={online}
+                      disabled={
+                        !canManageServices ||
+                        pendingKey === `service:${service.id}` ||
+                        !service.is_active
+                      }
+                      label={`Online booking for ${service.name}`}
+                      onChange={(next) => updateServiceOnline(service.id, next)}
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-[#786d78]">
+                  <span>
+                    {assignedStaffIds.length} professional
+                    {assignedStaffIds.length === 1 ? "" : "s"}
+                  </span>
+                  {!service.is_active ? <span>Inactive service</span> : null}
+                  <a
+                    className="font-extrabold text-[#f26f3d]"
+                    href={`/services?service=${service.id}`}
+                  >
+                    Edit service details
+                  </a>
+                </div>
+                {expanded ? (
+                  <div className="mt-4 grid gap-2 border-t border-[#f0e6df] pt-4">
+                    <p className="text-sm font-extrabold text-[#211c24]">
+                      Available professionals
+                    </p>
+                    {options.staff.length === 0 ? (
+                      <p className="rounded-lg border border-[#f0e6df] bg-[#fffaf7] p-3 text-sm text-[#786d78]">
+                        No professionals yet. Create staff from the
+                        Professionals quick setup card before matching this
+                        service.
+                      </p>
+                    ) : null}
+                    {options.staff.map((member) => {
+                      const checked = assignmentValue({
+                        options,
+                        overrides: assignmentOverrides,
+                        serviceId: service.id,
+                        staffId: member.id,
+                      });
+                      const disabled =
+                        !canManageAssignments ||
+                        pendingKey ===
+                          `assignment:${assignmentKey(service.id, member.id)}` ||
+                        !service.is_active ||
+                        !member.is_active;
+
+                      return (
+                        <label
+                          className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-[#f0e6df] px-3"
+                          key={member.id}
+                        >
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-extrabold text-[#211c24]">
+                              {member.display_name}
+                            </span>
+                            <span className="block text-xs text-[#786d78]">
+                              {staffBookingReady(member)
+                                ? "Booking ready"
+                                : member.is_active
+                                  ? "Online booking off"
+                                  : "Inactive professional"}
+                            </span>
+                          </span>
+                          <input
+                            checked={checked}
+                            disabled={disabled}
+                            onChange={(event) =>
+                              updateAssignment(
+                                service.id,
+                                member.id,
+                                event.target.checked,
+                              )
+                            }
+                            type="checkbox"
+                          />
+                        </label>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </section>
+            );
+          })}
+        </div>
+        {!canManageServices || !canManageAssignments ? (
+          <p className="text-sm text-[#786d78]">
+            Some controls are read-only because this account does not have the
+            matching Services or Booking permission.
+          </p>
+        ) : null}
+      </div>
+    </QuickSetupDrawerFrame>
+  );
+}
+
+function QuickTimeOffForm({
+  canManage,
+  staffId,
+  timezone,
+}: {
+  canManage: boolean;
+  staffId: string;
+  timezone: string;
+}) {
+  const router = useRouter();
+  const defaultDate = addDays(todayInTimeZone(timezone), 1);
+  const [startDate, setStartDate] = useState(defaultDate);
+  const [endDate, setEndDate] = useState(defaultDate);
+  const [reason, setReason] = useState("");
+  const [result, setResult] = useState<BookingSetupActionResult | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function resetTimeOff() {
+    setStartDate(defaultDate);
+    setEndDate(defaultDate);
+    setReason("");
+    setResult(null);
+  }
+
+  function submit(overrideConflicts = false) {
+    if (!startDate || !endDate || startDate > endDate) {
+      setResult({ error: "Choose a valid date range.", ok: false });
+      return;
+    }
+
+    setResult(null);
+    startTransition(async () => {
+      const response = await createStaffTimeBlockAction({
+        blockType: "time_off",
+        endLocal: `${endDate}T23:59`,
+        overrideConflicts,
+        reason,
+        staffId,
+        startLocal: `${startDate}T00:00`,
+        timezoneIana: timezone,
+      });
+      setResult(response);
+
+      if (response.ok) {
+        setReason("");
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <div className="grid gap-3 rounded-xl border border-[#f0e6df] bg-[#fffaf7] p-4">
+      <InlineActionMessage result={result} />
+      <div className="grid gap-3 lg:grid-cols-[150px_150px_minmax(0,1fr)]">
+        <label className="grid gap-1">
+          <span className="text-xs font-extrabold uppercase text-[#786d78]">
+            From
+          </span>
+          <input
+            className={styles.field}
+            disabled={!canManage || isPending}
+            onChange={(event) => setStartDate(event.target.value)}
+            type="date"
+            value={startDate}
+          />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs font-extrabold uppercase text-[#786d78]">
+            To
+          </span>
+          <input
+            className={styles.field}
+            disabled={!canManage || isPending}
+            onChange={(event) => setEndDate(event.target.value)}
+            type="date"
+            value={endDate}
+          />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs font-extrabold uppercase text-[#786d78]">
+            Reason
+          </span>
+          <input
+            className={styles.field}
+            disabled={!canManage || isPending}
+            onChange={(event) => setReason(event.target.value)}
+            placeholder="Optional"
+            value={reason}
+          />
+        </label>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button
+          className={classNames(styles.primaryButton, "px-4")}
+          disabled={!canManage || isPending}
+          onClick={() => submit(false)}
+          type="button"
+        >
+          {isPending ? "Adding" : "Add time off"}
+        </button>
+        <button
+          className={classNames(styles.secondaryButton, "px-4")}
+          disabled={isPending}
+          onClick={resetTimeOff}
+          type="button"
+        >
+          Reset
+        </button>
+        {!result?.ok && result?.conflicts?.length ? (
+          <button
+            className={classNames(styles.secondaryButton, "px-4")}
+            disabled={!canManage || isPending}
+            onClick={() => submit(true)}
+            type="button"
+          >
+            Save with override
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+type SimpleHoursDayDraft = {
+  enabled: boolean;
+  endsAt: string;
+  startsAt: string;
+};
+
+function defaultSimpleHoursDay(): SimpleHoursDayDraft {
+  return {
+    enabled: false,
+    endsAt: "17:00",
+    startsAt: "09:00",
+  };
+}
+
+function simpleHoursDraftForStaff(
+  options: BookingWorkspaceClientProps["options"],
+  staffId: string,
+) {
+  return Object.fromEntries(
+    QUICK_SETUP_DAYS.map((day) => {
+      const dayRules = workingRulesForStaff(options, staffId).filter(
+        (rule) => rule.day_of_week === day.id,
+      );
+
+      if (dayRules.length === 0) {
+        return [day.id, defaultSimpleHoursDay()];
+      }
+
+      return [
+        day.id,
+        {
+          enabled: true,
+          endsAt: dayRules[dayRules.length - 1].ends_at_local.slice(0, 5),
+          startsAt: dayRules[0].starts_at_local.slice(0, 5),
+        },
+      ];
+    }),
+  ) as Record<number, SimpleHoursDayDraft>;
+}
+
+function simpleHoursDraftKey(draft: Record<number, SimpleHoursDayDraft>) {
+  return JSON.stringify(
+    QUICK_SETUP_DAYS.map((day) => [
+      day.id,
+      draft[day.id].enabled,
+      draft[day.id].startsAt,
+      draft[day.id].endsAt,
+    ]),
+  );
+}
+
+function SimpleBookingHoursEditor({
+  canManage,
+  options,
+  staffId,
+  timezone,
+}: {
+  canManage: boolean;
+  options: BookingWorkspaceClientProps["options"];
+  staffId: string;
+  timezone: string;
+}) {
+  const router = useRouter();
+  const [editing, setEditing] = useState(false);
+  const initialDraft = useMemo(
+    () => simpleHoursDraftForStaff(options, staffId),
+    [options, staffId],
+  );
+  const initialKey = `${staffId}:${simpleHoursDraftKey(initialDraft)}`;
+  const [draftState, setDraftState] = useState<{
+    draft: Record<number, SimpleHoursDayDraft>;
+    key: string;
+  }>(() => ({
+    draft: initialDraft,
+    key: initialKey,
+  }));
+  const draft = draftState.key === initialKey ? draftState.draft : initialDraft;
+  const [result, setResult] = useState<BookingSetupActionResult | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function updateDay(dayId: number, patch: Partial<SimpleHoursDayDraft>) {
+    setDraftState({
+      draft: {
+        ...draft,
+        [dayId]: {
+          ...draft[dayId],
+          ...patch,
+        },
+      },
+      key: initialKey,
+    });
+  }
+
+  function resetDraft() {
+    setDraftState({ draft: initialDraft, key: initialKey });
+    setResult(null);
+  }
+
+  function saveHours() {
+    const invalidDay = QUICK_SETUP_DAYS.find((day) => {
+      const dayDraft = draft[day.id];
+      return dayDraft.enabled && dayDraft.startsAt >= dayDraft.endsAt;
+    });
+
+    if (invalidDay) {
+      setResult({
+        error: `${invalidDay.label} start time must be before end time.`,
+        ok: false,
+      });
+      return;
+    }
+
+    const existingBreakRules = breakRulesForStaff(options, staffId).map((rule) => ({
+      dayOfWeek: rule.day_of_week,
+      effectiveEndDate: rule.effective_end_date,
+      effectiveStartDate: rule.effective_start_date,
+      endsAtLocal: rule.ends_at_local.slice(0, 5),
+      ruleType: "break" as const,
+      startsAtLocal: rule.starts_at_local.slice(0, 5),
+      timezoneIana: timezone,
+    }));
+    const workingRules = QUICK_SETUP_DAYS.filter((day) => draft[day.id].enabled).map(
+      (day) => ({
+        dayOfWeek: day.id,
+        endsAtLocal: draft[day.id].endsAt,
+        ruleType: "working" as const,
+        startsAtLocal: draft[day.id].startsAt,
+        timezoneIana: timezone,
+      }),
+    );
+
+    setResult(null);
+    startTransition(async () => {
+      const response = await saveStaffWeeklyAvailabilityAction({
+        rules: [...workingRules, ...existingBreakRules],
+        staffId,
+      });
+      setResult(response);
+
+      if (response.ok) {
+        setEditing(false);
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <section className="grid gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-extrabold text-[#211c24]">Booking hours</p>
+          <p className="mt-1 text-sm text-[#786d78]">
+            {summarizeStaffHours(options, staffId)}
+          </p>
+        </div>
+        {editing ? null : (
+          <button
+            className={classNames(styles.secondaryButton, "px-3")}
+            disabled={!canManage}
+            onClick={() => setEditing(true)}
+            type="button"
+          >
+            Edit hours
+          </button>
+        )}
+      </div>
+      <InlineActionMessage result={result} />
+      {editing ? (
+        <div className="grid gap-2 rounded-xl border border-[#f0e6df] bg-[#fffaf7] p-3">
+          {QUICK_SETUP_DAYS.map((day) => {
+            const dayDraft = draft[day.id];
+
+            return (
+              <div
+                className="grid gap-2 rounded-lg border border-[#f0e6df] bg-white p-3 sm:grid-cols-[76px_86px_1fr]"
+                key={day.id}
+              >
+                <strong className="self-center text-sm text-[#211c24]">
+                  {day.label}
+                </strong>
+                <label className="flex items-center gap-2 text-sm font-semibold text-[#786d78]">
+                  <input
+                    checked={dayDraft.enabled}
+                    disabled={!canManage || isPending}
+                    onChange={(event) =>
+                      updateDay(day.id, { enabled: event.target.checked })
+                    }
+                    type="checkbox"
+                  />
+                  {dayDraft.enabled ? "Open" : "Off"}
+                </label>
+                <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr]">
+                  <input
+                    className={styles.field}
+                    disabled={!canManage || isPending || !dayDraft.enabled}
+                    onChange={(event) =>
+                      updateDay(day.id, { startsAt: event.target.value })
+                    }
+                    type="time"
+                    value={dayDraft.startsAt}
+                  />
+                  <span className="hidden self-center text-center text-[#786d78] sm:block">
+                    -
+                  </span>
+                  <input
+                    className={styles.field}
+                    disabled={!canManage || isPending || !dayDraft.enabled}
+                    onChange={(event) =>
+                      updateDay(day.id, { endsAt: event.target.value })
+                    }
+                    type="time"
+                    value={dayDraft.endsAt}
+                  />
+                </div>
+              </div>
+            );
+          })}
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button
+              className={classNames(styles.primaryButton, "px-4")}
+              disabled={!canManage || isPending}
+              onClick={saveHours}
+              type="button"
+            >
+              {isPending ? "Saving" : "Save hours"}
+            </button>
+            <button
+              className={classNames(styles.secondaryButton, "px-4")}
+              disabled={isPending}
+              onClick={resetDraft}
+              type="button"
+            >
+              Reset
+            </button>
+            <button
+              className={classNames(styles.secondaryButton, "px-4")}
+              disabled={isPending}
+              onClick={() => {
+                resetDraft();
+                setEditing(false);
+              }}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+          <p className="text-xs leading-5 text-[#786d78]">
+            This quick editor saves one working interval per day and keeps existing
+            breaks. Use Advanced availability for multiple intervals or exceptions.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {QUICK_SETUP_DAYS.map((day) => {
+            const dayWorking = workingRulesForStaff(options, staffId).filter(
+              (rule) => rule.day_of_week === day.id,
+            );
+            const dayBreaks = breakRulesForStaff(options, staffId).filter(
+              (rule) => rule.day_of_week === day.id,
+            );
+
+            return (
+              <div
+                className="rounded-lg border border-[#f0e6df] px-3 py-2 text-sm"
+                key={day.id}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <strong className="text-[#211c24]">{day.label}</strong>
+                  <span className="text-right text-[#786d78]">
+                    {dayWorking.length > 0
+                      ? dayWorking
+                          .map(
+                            (rule) =>
+                              `${formatLocalClock(
+                                rule.starts_at_local,
+                              )} - ${formatLocalClock(rule.ends_at_local)}`,
+                          )
+                          .join(", ")
+                      : "Off"}
+                  </span>
+                </div>
+                {dayBreaks.length > 0 ? (
+                  <p className="mt-1 text-xs text-[#786d78]">
+                    Break{" "}
+                    {dayBreaks
+                      .map(
+                        (rule) =>
+                          `${formatLocalClock(
+                            rule.starts_at_local,
+                          )} - ${formatLocalClock(rule.ends_at_local)}`,
+                      )
+                      .join(", ")}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ProfessionalDetailPanel({
+  assignmentOverrides,
+  canManageAssignments,
+  canManageAvailability,
+  canManageStaff,
+  onAssignmentChange,
+  onStaffOnlineChange,
+  options,
+  pendingKey,
+  staff,
+  staffOnline,
+  timezone,
+}: {
+  assignmentOverrides: Record<string, boolean>;
+  canManageAssignments: boolean;
+  canManageAvailability: boolean;
+  canManageStaff: boolean;
+  onAssignmentChange: (serviceId: string, staffId: string, selected: boolean) => void;
+  onStaffOnlineChange: (staffId: string, selected: boolean) => void;
+  options: BookingWorkspaceClientProps["options"];
+  pendingKey: string | null;
+  staff: BookingWorkspaceClientProps["options"]["staff"][number];
+  staffOnline: boolean;
+  timezone: string;
+}) {
+  const timeOff = upcomingTimeOffBlocks(options, staff.id);
+  const services = options.services.filter((service) => service.is_active);
+
+  return (
+    <section className="grid gap-5 rounded-xl border border-[#f0e6df] bg-white p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h3 className="truncate text-xl font-extrabold text-[#211c24]">
+            {staff.display_name}
+          </h3>
+          <p className="mt-1 text-sm text-[#786d78]">
+            {staff.job_title ?? "Professional"}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span
+            className={classNames(
+              styles.statusBadge,
+              staffOnline ? styles.statusArrived : styles.statusMuted,
+            )}
+          >
+            {staffOnline ? "Online" : "Off"}
+          </span>
+          <MiniSwitch
+            checked={staffOnline}
+            disabled={!canManageStaff || pendingKey === `staff:${staff.id}`}
+            label={`Online booking for ${staff.display_name}`}
+            onChange={(next) => onStaffOnlineChange(staff.id, next)}
+          />
+        </div>
+      </div>
+
+      <SimpleBookingHoursEditor
+        canManage={canManageAvailability}
+        options={options}
+        staffId={staff.id}
+        timezone={timezone}
+      />
+
+      <section className="grid gap-3">
+        <p className="text-sm font-extrabold text-[#211c24]">Bookable services</p>
+        {services.length === 0 ? (
+          <p className="rounded-lg border border-[#f0e6df] bg-[#fffaf7] p-3 text-sm text-[#786d78]">
+            No active services yet. Create a service from the Services quick
+            setup card before matching it to this professional.
+          </p>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {services.map((service) => {
+              const checked = assignmentValue({
+                options,
+                overrides: assignmentOverrides,
+                serviceId: service.id,
+                staffId: staff.id,
+              });
+              const disabled =
+                !canManageAssignments ||
+                pendingKey ===
+                  `assignment:${assignmentKey(service.id, staff.id)}`;
+
+              return (
+                <label
+                  className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-[#f0e6df] px-3"
+                  key={service.id}
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-extrabold text-[#211c24]">
+                      {service.name}
+                    </span>
+                    <span className="block text-xs text-[#786d78]">
+                      {service.online_booking_enabled
+                        ? "Online service"
+                        : "Service off"}
+                    </span>
+                  </span>
+                  <input
+                    checked={checked}
+                    disabled={disabled || !service.online_booking_enabled}
+                    onChange={(event) =>
+                      onAssignmentChange(
+                        service.id,
+                        staff.id,
+                        event.target.checked,
+                      )
+                    }
+                    type="checkbox"
+                  />
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="grid gap-3">
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-extrabold text-[#211c24]">Time off</p>
+          <p className="text-sm text-[#786d78]">
+            {timeOff.length === 0
+              ? "No upcoming time off"
+              : `${timeOff.length} upcoming range${timeOff.length === 1 ? "" : "s"}`}
+          </p>
+        </div>
+        {timeOff.length > 0 ? (
+          <div className="grid gap-2">
+            {timeOff.slice(0, 3).map((block) => (
+              <div
+                className="rounded-lg border border-[#f0e6df] px-3 py-2 text-sm"
+                key={block.id}
+              >
+                <strong className="text-[#211c24]">
+                  {formatTimeOffRange(block, timezone)}
+                </strong>
+                {block.reason ? (
+                  <p className="mt-1 text-[#786d78]">{block.reason}</p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <QuickTimeOffForm
+          canManage={canManageAvailability}
+          staffId={staff.id}
+          timezone={timezone}
+        />
+      </section>
+
+      <a className="text-sm font-extrabold text-[#f26f3d]" href={`/staff?staff=${staff.id}`}>
+        Edit staff details
+      </a>
+    </section>
+  );
+}
+
+function ProfessionalsQuickSetupDrawer({
+  canManageAssignments,
+  canManageAvailability,
+  canManageStaff,
+  initialStaffId,
+  onClose,
+  options,
+  timezone,
+}: {
+  canManageAssignments: boolean;
+  canManageAvailability: boolean;
+  canManageStaff: boolean;
+  initialStaffId?: string | null;
+  onClose: () => void;
+  options: BookingWorkspaceClientProps["options"];
+  timezone: string;
+}) {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(
+    initialStaffId && options.staff.some((member) => member.id === initialStaffId)
+      ? initialStaffId
+      : options.staff[0]?.id ?? null,
+  );
+  const [showCreateForm, setShowCreateForm] = useState(
+    options.staff.length === 0,
+  );
+  const [staffOverrides, setStaffOverrides] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [assignmentOverrides, setAssignmentOverrides] = useState<
+    Record<string, boolean>
+  >({});
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const [result, setResult] = useState<BookingActionResult | null>(null);
+  const [, startTransition] = useTransition();
+  const normalizedQuery = query.trim().toLowerCase();
+  const staff = options.staff.filter(
+    (member) =>
+      !normalizedQuery ||
+      member.display_name.toLowerCase().includes(normalizedQuery) ||
+      (member.job_title ?? "").toLowerCase().includes(normalizedQuery),
+  );
+  const selectedStaff =
+    options.staff.find((member) => member.id === selectedStaffId) ??
+    staff[0] ??
+    null;
+
+  function staffOnline(member: BookingWorkspaceClientProps["options"]["staff"][number]) {
+    return staffOverrides[member.id] ?? member.online_booking_enabled;
+  }
+
+  function updateStaffOnline(staffId: string, next: boolean) {
+    setPendingKey(`staff:${staffId}`);
+    setResult(null);
+    startTransition(async () => {
+      const response = await updateQuickSetupStaffOnlineAction({
+        onlineBookingEnabled: next,
+        staffId,
+      });
+      setResult(response);
+      setPendingKey(null);
+
+      if (response.ok) {
+        setStaffOverrides((current) => ({ ...current, [staffId]: next }));
+        router.refresh();
+      }
+    });
+  }
+
+  function updateAssignment(serviceId: string, staffId: string, selected: boolean) {
+    const key = assignmentKey(serviceId, staffId);
+    setPendingKey(`assignment:${key}`);
+    setResult(null);
+    startTransition(async () => {
+      const response = await updateQuickSetupAssignmentAction({
+        selected,
+        serviceId,
+        staffId,
+      });
+      setResult(response);
+      setPendingKey(null);
+
+      if (response.ok) {
+        setAssignmentOverrides((current) => ({ ...current, [key]: selected }));
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <QuickSetupDrawerFrame
+      onClose={onClose}
+      subtitle="Set who appears online, review hours, and match professionals to services."
+      title="Professionals"
+    >
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+        <div className="grid content-start gap-3">
+          <InlineActionMessage result={result} />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <button
+              className={classNames(styles.secondaryButton, "w-full sm:w-auto")}
+              disabled={!canManageStaff}
+              onClick={() => setShowCreateForm((current) => !current)}
+              type="button"
+            >
+              {showCreateForm ? "Hide quick create" : "Create professional"}
+            </button>
+            <a
+              className="text-sm font-extrabold text-[#f26f3d]"
+              href="/staff?add=1"
+            >
+              Advanced staff settings
+            </a>
+          </div>
+          {showCreateForm ? (
+            <QuickCreateStaffCard
+              canManageAssignments={canManageAssignments}
+              canManageStaff={canManageStaff}
+              onCreated={(staffId) => {
+                setQuery("");
+                setSelectedStaffId(staffId);
+                setShowCreateForm(false);
+                router.refresh();
+              }}
+              onResult={setResult}
+              options={options}
+            />
+          ) : null}
+          <label className="grid gap-1">
+            <span className="sr-only">Search professionals</span>
+            <input
+              className={classNames(styles.field, "w-full")}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search professionals"
+              type="search"
+              value={query}
+            />
+          </label>
+          {staff.map((member) => {
+            const online = staffOnline(member);
+            const selected = selectedStaff?.id === member.id;
+            const servicesCount = staffServiceIds(
+              options,
+              assignmentOverrides,
+              member.id,
+            ).length;
+
+            return (
+              <button
+                className={classNames(
+                  "grid gap-2 rounded-xl border bg-white p-4 text-left transition",
+                  selected ? "border-[#f26f3d]" : "border-[#f0e6df]",
+                )}
+                key={member.id}
+                onClick={() => setSelectedStaffId(member.id)}
+                type="button"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-extrabold text-[#211c24]">
+                      {member.display_name}
+                    </p>
+                    <p className="mt-1 text-xs text-[#786d78]">
+                      {summarizeStaffHours(options, member.id)}
+                    </p>
+                  </div>
+                  <span
+                    className={classNames(
+                      styles.statusBadge,
+                      online ? styles.statusArrived : styles.statusMuted,
+                    )}
+                  >
+                    {online ? "On" : "Off"}
+                  </span>
+                </div>
+                <p className="text-sm text-[#786d78]">
+                  {servicesCount} service{servicesCount === 1 ? "" : "s"}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+        {selectedStaff ? (
+          <ProfessionalDetailPanel
+            assignmentOverrides={assignmentOverrides}
+            canManageAssignments={canManageAssignments}
+            canManageAvailability={canManageAvailability}
+            canManageStaff={canManageStaff}
+            onAssignmentChange={updateAssignment}
+            onStaffOnlineChange={updateStaffOnline}
+            options={options}
+            pendingKey={pendingKey}
+            staff={selectedStaff}
+            staffOnline={staffOnline(selectedStaff)}
+            timezone={timezone}
+          />
+        ) : (
+          <p className="rounded-xl border border-[#f0e6df] bg-white p-4 text-sm text-[#786d78]">
+            No professionals found. Use quick create or open advanced staff
+            settings.
+          </p>
+        )}
+      </div>
+    </QuickSetupDrawerFrame>
+  );
+}
+
+function BookingHoursQuickSetupDrawer({
+  canManageAvailability,
+  initialStaffId,
+  onClose,
+  options,
+  timezone,
+}: {
+  canManageAvailability: boolean;
+  initialStaffId?: string | null;
+  onClose: () => void;
+  options: BookingWorkspaceClientProps["options"];
+  timezone: string;
+}) {
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(
+    initialStaffId && options.staff.some((member) => member.id === initialStaffId)
+      ? initialStaffId
+      : options.staff[0]?.id ?? null,
+  );
+  const selectedStaff =
+    options.staff.find((member) => member.id === selectedStaffId) ??
+    options.staff[0] ??
+    null;
+
+  return (
+    <QuickSetupDrawerFrame
+      onClose={onClose}
+      subtitle="Review simple weekly booking hours and add time off without leaving Booking."
+      title="Booking hours"
+    >
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+        <div className="grid content-start gap-2">
+          {options.staff.map((member) => (
+            <button
+              className={classNames(
+                "rounded-xl border bg-white p-4 text-left transition",
+                selectedStaff?.id === member.id
+                  ? "border-[#f26f3d]"
+                  : "border-[#f0e6df]",
+              )}
+              key={member.id}
+              onClick={() => setSelectedStaffId(member.id)}
+              type="button"
+            >
+              <p className="truncate text-sm font-extrabold text-[#211c24]">
+                {member.display_name}
+              </p>
+              <p className="mt-1 text-sm text-[#786d78]">
+                {summarizeStaffHours(options, member.id)}
+              </p>
+            </button>
+          ))}
+        </div>
+        {selectedStaff ? (
+          <section className="grid gap-5 rounded-xl border border-[#f0e6df] bg-white p-4">
+            <div>
+              <h3 className="text-lg font-extrabold text-[#211c24]">
+                {selectedStaff.display_name}
+              </h3>
+              <p className="mt-1 text-sm text-[#786d78]">
+                {summarizeStaffHours(options, selectedStaff.id)}
+              </p>
+            </div>
+            <SimpleBookingHoursEditor
+              canManage={canManageAvailability}
+              options={options}
+              staffId={selectedStaff.id}
+              timezone={timezone}
+            />
+            <QuickTimeOffForm
+              canManage={canManageAvailability}
+              staffId={selectedStaff.id}
+              timezone={timezone}
+            />
+            <a className="text-sm font-extrabold text-[#f26f3d]" href="/bookings?tab=availability">
+              Advanced availability
+            </a>
+          </section>
+        ) : null}
+      </div>
+    </QuickSetupDrawerFrame>
+  );
+}
+
+function BookingRulesQuickSetupDrawer({
+  canManage,
+  onClose,
+  settings,
+}: {
+  canManage: boolean;
+  onClose: () => void;
+  settings: BookingWorkspaceClientProps["settings"];
+}) {
+  const router = useRouter();
+  const [result, setResult] = useState<BookingActionResult | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [state, setState] = useState<UpdateBookingSettingsInput>(() =>
+    settingsToInput(settings),
+  );
+
+  function setBoolean(key: keyof UpdateBookingSettingsInput, value: boolean) {
+    setState((current) => ({ ...current, [key]: value }));
+  }
+
+  function setNumber(key: keyof UpdateBookingSettingsInput, value: string) {
+    setState((current) => ({ ...current, [key]: Number(value) }));
+  }
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setResult(null);
+    startTransition(async () => {
+      const response = await updateBookingSettingsAction(state);
+      setResult(response);
+
+      if (response.ok) {
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <QuickSetupDrawerFrame
+      onClose={onClose}
+      subtitle="Adjust the common online booking rules. Advanced settings stay on the Settings tab."
+      title="Booking rules"
+    >
+      <form className="grid max-w-3xl gap-4" onSubmit={submit}>
+        <InlineActionMessage result={result} />
+        <section className="grid gap-4 rounded-xl border border-[#f0e6df] bg-white p-4 sm:grid-cols-2">
+          <NumberField
+            disabled={!canManage}
+            label={`Minimum notice (${formatMinutes(state.minimumLeadTimeMinutes)})`}
+            onChange={(value) => setNumber("minimumLeadTimeMinutes", value)}
+            suffix="min"
+            value={state.minimumLeadTimeMinutes}
+          />
+          <NumberField
+            disabled={!canManage}
+            label="Booking horizon"
+            onChange={(value) => setNumber("maximumAdvanceWindowDays", value)}
+            suffix="days"
+            value={state.maximumAdvanceWindowDays}
+          />
+          <label className="grid gap-1">
+            <span className="text-sm font-extrabold text-[#211c24]">
+              Slot interval
+            </span>
+            <select
+              className={styles.select}
+              disabled={!canManage}
+              onChange={(event) =>
+                setNumber("slotIntervalMinutes", event.target.value)
+              }
+              value={state.slotIntervalMinutes}
+            >
+              {[5, 10, 15, 20, 30, 60].map((interval) => (
+                <option key={interval} value={interval}>
+                  {interval} min
+                </option>
+              ))}
+            </select>
+          </label>
+          <NumberField
+            disabled={!canManage}
+            label={`Cancellation window (${formatMinutes(
+              state.cancellationWindowMinutes,
+            )})`}
+            onChange={(value) => setNumber("cancellationWindowMinutes", value)}
+            suffix="min"
+            value={state.cancellationWindowMinutes}
+          />
+        </section>
+        <section className="grid gap-3 rounded-xl border border-[#f0e6df] bg-white p-4 sm:grid-cols-2">
+          <Toggle
+            checked={state.anyProfessionalEnabled}
+            disabled={!canManage}
+            label="Any Professional"
+            onChange={(value) => setBoolean("anyProfessionalEnabled", value)}
+          />
+          <Toggle
+            checked={state.guestBookingEnabled}
+            disabled={!canManage}
+            label="Guest booking"
+            onChange={(value) => setBoolean("guestBookingEnabled", value)}
+          />
+          <label className="grid gap-1">
+            <span className="text-sm font-extrabold text-[#211c24]">
+              Confirmation
+            </span>
+            <select
+              className={styles.select}
+              disabled={!canManage}
+              onChange={(event) =>
+                setState((current) => ({
+                  ...current,
+                  confirmationMode: event.target.value as BookingConfirmationMode,
+                }))
+              }
+              value={state.confirmationMode}
+            >
+              <option value="request_confirmation">Request confirmation</option>
+              <option value="instant_booking">Instant booking</option>
+            </select>
+          </label>
+          <a
+            className={classNames(styles.secondaryButton, "self-end px-4")}
+            href="/bookings?tab=settings"
+          >
+            Advanced settings
+          </a>
+        </section>
+        {canManage ? (
+          <button
+            className={classNames(styles.primaryButton, "w-fit px-5")}
+            disabled={isPending}
+            type="submit"
+          >
+            {isPending ? "Saving" : "Save rules"}
+          </button>
+        ) : (
+          <p className="text-sm text-[#786d78]">You have read-only booking access.</p>
+        )}
+      </form>
+    </QuickSetupDrawerFrame>
+  );
+}
+
+function OnlineBookingControlCard({
+  canManage,
+  isReady,
+  publicBookingHref,
+  settings,
+}: {
+  canManage: boolean;
+  isReady: boolean;
+  publicBookingHref: string;
+  settings: BookingWorkspaceClientProps["settings"];
+}) {
+  const router = useRouter();
+  const [result, setResult] = useState<BookingActionResult | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const isOn = settings.booking_enabled;
+  const isPublished = settings.booking_enabled && settings.online_booking_visible;
+  const isLive = isPublished && isReady;
+
+  function copyPublicUrl() {
+    const url =
+      typeof window === "undefined"
+        ? publicBookingHref
+        : `${window.location.origin}${publicBookingHref}`;
+    void navigator.clipboard?.writeText(url);
+  }
+
+  function togglePublished() {
+    const next = !isPublished;
+    const input = {
+      ...settingsToInput(settings),
+      bookingEnabled: next,
+      onlineBookingVisible: next,
+    };
+
+    setResult(null);
+    startTransition(async () => {
+      const response = await updateBookingSettingsAction(input);
+      setResult(response);
+
+      if (response.ok) {
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <article className={classNames(styles.panel, "grid gap-4 p-5")}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className={styles.eyebrow}>Online booking</p>
+          <h2 className="mt-2 text-lg font-extrabold text-[#211c24]">
+            {isLive ? "Live" : isPublished ? "Not live yet" : "Offline"}
+          </h2>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <span
+            className={classNames(
+              styles.statusBadge,
+              isOn ? styles.statusArrived : styles.statusMuted,
+            )}
+          >
+            {isOn ? "On" : "Off"}
+          </span>
+          <span
+            className={classNames(
+              styles.statusBadge,
+              isLive ? styles.statusArrived : styles.statusPending,
+            )}
+          >
+            {isLive ? "Live" : "Not live"}
+          </span>
+        </div>
+      </div>
+      <InlineActionMessage result={result} />
+      <p className="break-all rounded-xl border border-[#f0e6df] bg-[#fffaf7] px-3 py-2 text-sm text-[#211c24]">
+        {publicBookingHref}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button
+          className={classNames(styles.primaryButton, "px-4")}
+          disabled={!canManage || isPending}
+          onClick={togglePublished}
+          type="button"
+        >
+          {isPending
+            ? "Saving"
+            : isPublished
+              ? "Turn off"
+              : "Turn on"}
+        </button>
+        <button
+          className={classNames(styles.secondaryButton, "px-4")}
+          onClick={copyPublicUrl}
+          type="button"
+        >
+          Copy
+        </button>
+        <a
+          className={classNames(styles.secondaryButton, "px-4")}
+          href={publicBookingHref}
+          rel="noreferrer"
+          target="_blank"
+        >
+          Open public page
+        </a>
+      </div>
+    </article>
+  );
+}
+
 function rangeScopedBookings(
   bookings: BookingWorkspaceItem[],
   filters: BookingWorkspaceFilters,
@@ -469,6 +2682,11 @@ function ModalFrame({
       aria-label={label}
       aria-modal="true"
       className="fixed inset-0 z-50 grid bg-zinc-950/35 p-0 sm:p-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
       onKeyDown={onKeyDown}
       role="dialog"
     >
@@ -4254,18 +6472,6 @@ function buildReadinessByStaff(input: {
         });
       }
 
-      if (
-        !member.public_profile_visible ||
-        !member.owner_public_enabled ||
-        member.staff_public_consent_status !== "granted"
-      ) {
-        reasons.push({
-          code: "profile_not_public",
-          cta: "staff_profile",
-          label: "Profile not public",
-        });
-      }
-
       if (onlineAssignments.length === 0) {
         reasons.push({
           code: "no_assigned_services",
@@ -4315,6 +6521,24 @@ function bookingReadinessSteps(input: {
 }) {
   const warningCodes = new Set(input.warnings.map((warning) => warning.code));
   const missingAvailabilityStaffId = firstStaffMissingAvailability(input.options);
+  const bookableServiceCount = input.options.services.filter(
+    (service) => service.is_active && service.online_booking_enabled,
+  ).length;
+  const staffReadiness = Object.values(
+    buildReadinessByStaff({
+      bookingEnabled: true,
+      options: input.options,
+    }),
+  );
+  const readyProfessionalCount = staffReadiness.filter(
+    (readiness) => readiness.ready,
+  ).length;
+  const professionalsWithHours = input.options.staff.filter(
+    (member) => member.is_active && staffHasWorkingHours(input.options, member.id),
+  ).length;
+  const missingHoursStaff = missingAvailabilityStaffId
+    ? input.options.staff.find((member) => member.id === missingAvailabilityStaffId)
+    : null;
 
   return [
     {
@@ -4322,6 +6546,13 @@ function bookingReadinessSteps(input: {
         !warningCodes.has("missing_active_services") &&
         !warningCodes.has("missing_online_services"),
       cta: "Manage services",
+      detail:
+        bookableServiceCount > 0
+          ? `${bookableServiceCount} bookable service${
+              bookableServiceCount === 1 ? "" : "s"
+            }`
+          : "No services available online",
+      fixPanel: "services" as const,
       href: "/services",
       id: "services",
       label: "Services",
@@ -4329,18 +6560,33 @@ function bookingReadinessSteps(input: {
     {
       complete: !warningCodes.has("missing_staff_assignments"),
       cta: "Manage Booking staff",
+      detail:
+        readyProfessionalCount > 0
+          ? `${readyProfessionalCount} professional${
+              readyProfessionalCount === 1 ? "" : "s"
+            } available`
+          : "No online service-professional match",
+      fixPanel: "professionals" as const,
       href: "/services",
       id: "assignments",
-      label: "Booking staff",
+      label: "Professionals",
     },
     {
       complete: !warningCodes.has("missing_availability"),
       cta: "Set staff hours",
+      detail:
+        missingHoursStaff
+          ? `${missingHoursStaff.display_name} has no bookable hours`
+          : `${professionalsWithHours} professional${
+              professionalsWithHours === 1 ? "" : "s"
+            } with hours`,
+      fixPanel: "hours" as const,
+      focusStaffId: missingAvailabilityStaffId,
       href: `/bookings?tab=availability${
         missingAvailabilityStaffId ? `&staffId=${missingAvailabilityStaffId}` : ""
       }`,
       id: "availability",
-      label: "Staff availability",
+      label: "Booking hours",
     },
     {
       complete:
@@ -4348,9 +6594,13 @@ function bookingReadinessSteps(input: {
         input.onlineBookingVisible &&
         Boolean(input.timezoneIana.trim()),
       cta: "Review settings",
+      detail: input.bookingEnabled && input.onlineBookingVisible
+        ? "Publishing controls are on"
+        : "Online booking is not live",
+      fixPanel: "rules" as const,
       href: "/bookings?tab=settings",
       id: "settings",
-      label: "Booking settings",
+      label: "Booking rules",
     },
   ];
 }
@@ -4729,19 +6979,26 @@ function SettingsPanel({
 }
 
 function BookingPagePanel({
+  canManage,
   options,
   publicBookingHref,
   salonName,
+  setupPermissions,
   settings,
   warnings,
 }: {
+  canManage: boolean;
   options: BookingWorkspaceClientProps["options"];
   publicBookingHref: string;
   salonName: string;
+  setupPermissions: BookingWorkspaceClientProps["setupPermissions"];
   settings: BookingWorkspaceClientProps["settings"];
   warnings: BookingWorkspaceClientProps["warnings"];
 }) {
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [activeSetup, setActiveSetup] = useState<QuickSetupPanelId | null>(null);
+  const [focusedStaffId, setFocusedStaffId] = useState<string | null>(null);
+  const [focusedServiceId, setFocusedServiceId] = useState<string | null>(null);
   const readiness = bookingReadinessSteps({
     bookingEnabled: settings.booking_enabled,
     onlineBookingVisible: settings.online_booking_visible,
@@ -4751,94 +7008,79 @@ function BookingPagePanel({
     warnings,
   });
   const readyCount = readiness.filter((item) => item.complete).length;
-  const isLive = settings.booking_enabled && settings.online_booking_visible;
+  const isReady = readyCount === readiness.length;
+  const bookableServices = options.services.filter(
+    (service) => service.is_active && service.online_booking_enabled,
+  );
+  const onlineStaff = options.staff.filter(
+    (member) => member.is_active && member.online_booking_enabled,
+  );
+  const readyStaffCount = Object.values(
+    buildReadinessByStaff({ bookingEnabled: true, options }),
+  ).filter((item) => item.ready).length;
 
-  function copyPublicUrl() {
-    const url =
-      typeof window === "undefined"
-        ? publicBookingHref
-        : `${window.location.origin}${publicBookingHref}`;
-    void navigator.clipboard?.writeText(url);
+  function openSetup(
+    panel: QuickSetupPanelId,
+    focusStaffId?: string | null,
+    focusServiceId?: string | null,
+  ) {
+    setActiveSetup(panel);
+    setFocusedStaffId(focusStaffId ?? null);
+    setFocusedServiceId(focusServiceId ?? null);
   }
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[355px_minmax(0,1fr)]">
+    <section className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
       <div className="grid content-start gap-4">
+        <OnlineBookingControlCard
+          canManage={canManage}
+          isReady={isReady}
+          publicBookingHref={publicBookingHref}
+          settings={settings}
+        />
+
         <article className={classNames(styles.panel, "p-5")}>
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className={styles.eyebrow}>Publishing</p>
-              <h2 className="mt-3 text-xl font-extrabold text-[#211c24]">
-                {isLive ? "Booking page is live" : "Booking page is offline"}
+              <p className={styles.eyebrow}>Quick setup</p>
+              <h2 className="mt-2 text-lg font-extrabold text-[#211c24]">
+                Online booking setup
               </h2>
             </div>
-            <span
-              className={classNames(
-                styles.statusBadge,
-                isLive ? styles.statusArrived : styles.statusPending,
-              )}
-            >
-              {isLive ? "Live" : "Offline"}
+            <span className="text-xs font-extrabold text-[#786d78]">
+              {readyCount}/{readiness.length}
             </span>
           </div>
-          <p className="mt-4 break-all rounded-xl border border-[#f0e6df] bg-[#fffaf7] px-3 py-3 text-sm text-[#211c24]">
-            {publicBookingHref}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              className={classNames(styles.secondaryButton, "px-4")}
-              onClick={copyPublicUrl}
-              type="button"
-            >
-              Copy
-            </button>
-            <a
-              className={classNames(styles.primaryButton, "px-4")}
-              href={publicBookingHref}
-              rel="noreferrer"
-              target="_blank"
-            >
-              Open public page
-            </a>
-          </div>
-        </article>
-
-        <article className={classNames(styles.panel, "p-5")}>
-          <p className={styles.eyebrow}>Readiness</p>
-          <h2 className="mt-3 text-xl font-extrabold text-[#211c24]">
-            {readyCount} of {readiness.length} checks ready
-          </h2>
           <div className="mt-4 grid gap-2">
-            {readiness.map((item) => (
-              <a
-                className="flex items-center justify-between gap-3 rounded-xl border border-[#f0e6df] bg-white px-3 py-3 text-sm transition hover:border-[#ffd6c4]"
-                href={item.href}
-                key={item.id}
-              >
-                <span className="font-extrabold text-[#211c24]">{item.label}</span>
-                <span
-                  className={classNames(
-                    styles.statusBadge,
-                    item.complete ? styles.statusArrived : styles.statusPending,
-                  )}
-                >
-                  {item.complete ? "Ready" : "Needs setup"}
-                </span>
-              </a>
-            ))}
+            <QuickSetupCard
+              detail="Active services customers can choose online."
+              metric={`${bookableServices.length} bookable`}
+              onOpen={() => openSetup("services")}
+              status={readiness.find((item) => item.id === "services")?.complete ? "ready" : "attention"}
+              title="Services"
+            />
+            <QuickSetupCard
+              detail={`${onlineStaff.length} of ${options.staff.length} staff enabled online.`}
+              metric={`${readyStaffCount} ready`}
+              onOpen={() => openSetup("professionals")}
+              status={readiness.find((item) => item.id === "assignments")?.complete ? "ready" : "attention"}
+              title="Professionals"
+            />
+            <QuickSetupCard
+              detail="Based on professional weekly schedules and time off."
+              metric={summarizeBookingHours(options)}
+              onOpen={() => openSetup("hours")}
+              status={readiness.find((item) => item.id === "availability")?.complete ? "ready" : "attention"}
+              title="Booking hours"
+            />
+            <QuickSetupCard
+              detail={settings.any_professional_enabled ? "Customers may choose Any Professional." : "Customers choose from available professionals."}
+              metric={bookingRulesSummary(settings)}
+              onOpen={() => openSetup("rules")}
+              status={readiness.find((item) => item.id === "settings")?.complete ? "ready" : "attention"}
+              title="Booking rules"
+            />
           </div>
-        </article>
-
-        <article className={classNames(styles.panel, "p-5")}>
-          <p className={styles.eyebrow}>Booking health</p>
-          <h2 className="mt-3 text-xl font-extrabold text-[#211c24]">
-            {Math.round((readyCount / Math.max(1, readiness.length)) * 100)}%
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-[#786d78]">
-            {readyCount === readiness.length
-              ? "Customers can reach the live booking flow with current services, staff, and scheduling rules."
-              : "Finish the remaining readiness items before promoting the booking page."}
-          </p>
         </article>
       </div>
 
@@ -4846,7 +7088,7 @@ function BookingPagePanel({
         <div className="flex flex-col gap-3 border-b border-[#f0e6df] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className={styles.eyebrow}>Customer preview</p>
-            <h2 className="mt-2 text-xl font-extrabold text-[#211c24]">{salonName}</h2>
+            <h2 className="mt-2 text-lg font-extrabold text-[#211c24]">{salonName}</h2>
           </div>
           <div className="flex rounded-xl border border-[#ffd6c4] bg-white p-1">
             {(["desktop", "mobile"] as const).map((mode) => (
@@ -4886,6 +7128,42 @@ function BookingPagePanel({
           </div>
         </div>
       </article>
+      {activeSetup === "services" ? (
+        <ServicesQuickSetupDrawer
+          canManageAssignments={setupPermissions.canManageBooking}
+          canManageServices={setupPermissions.canManageServices}
+          initialServiceId={focusedServiceId}
+          onClose={() => setActiveSetup(null)}
+          options={options}
+        />
+      ) : null}
+      {activeSetup === "professionals" ? (
+        <ProfessionalsQuickSetupDrawer
+          canManageAssignments={setupPermissions.canManageBooking}
+          canManageAvailability={setupPermissions.canManageAvailability}
+          canManageStaff={setupPermissions.canManageStaff}
+          initialStaffId={focusedStaffId}
+          onClose={() => setActiveSetup(null)}
+          options={options}
+          timezone={settings.timezone_iana}
+        />
+      ) : null}
+      {activeSetup === "hours" ? (
+        <BookingHoursQuickSetupDrawer
+          canManageAvailability={setupPermissions.canManageAvailability}
+          initialStaffId={focusedStaffId}
+          onClose={() => setActiveSetup(null)}
+          options={options}
+          timezone={settings.timezone_iana}
+        />
+      ) : null}
+      {activeSetup === "rules" ? (
+        <BookingRulesQuickSetupDrawer
+          canManage={setupPermissions.canManageBooking}
+          onClose={() => setActiveSetup(null)}
+          settings={settings}
+        />
+      ) : null}
     </section>
   );
 }
@@ -5241,6 +7519,7 @@ export function BookingWorkspaceClient({
   range,
   requests,
   salonName,
+  setupPermissions,
   settings,
   timezone,
   warnings,
@@ -5398,9 +7677,11 @@ export function BookingWorkspaceClient({
 
         {filters.tab === "booking-page" ? (
           <BookingPagePanel
+            canManage={canManageBookings}
             options={options}
             publicBookingHref={publicBookingHref}
             salonName={salonName}
+            setupPermissions={setupPermissions}
             settings={settings}
             warnings={warnings}
           />

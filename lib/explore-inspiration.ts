@@ -4,6 +4,7 @@ import {
   contentBookingOptionKey,
   loadPublicContentBookingOptions,
 } from "@/lib/content-booking";
+import { normalizePublicBookingHref } from "@/lib/public-booking-routes";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -174,7 +175,10 @@ function mapInspirationRow(
       ? row.bookable_service_id
       : null,
     bookingEnabled: row.booking_enabled === true,
-    bookingHref: row.booking_enabled === true ? cleanString(row.booking_href) : null,
+    bookingHref:
+      row.booking_enabled === true
+        ? normalizePublicBookingHref(row.booking_href)
+        : null,
     bookingLabel: "Book this look",
     bookingReadiness: null,
     captionExcerpt: cleanString(row.caption_excerpt),

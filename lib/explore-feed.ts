@@ -493,10 +493,13 @@ function mapSalonFeedItem(item: ExploreInspirationItem): ExploreFeedItem {
       name: authorName,
     },
     booking: {
-      enabled: item.bookingEnabled,
+      bookedCount: 0,
+      eligible: item.bookingEnabled === true && Boolean(item.bookingHref),
       href: item.bookingHref,
       label: item.bookingLabel,
       readiness: item.bookingReadiness,
+      salonId: item.salonId,
+      salonName: item.salonName,
       serviceId: item.bookableServiceId,
     },
     candidateClass: "organic",
@@ -524,6 +527,7 @@ function mapSalonFeedItem(item: ExploreInspirationItem): ExploreFeedItem {
     serviceName: item.serviceName,
     sourceSortId: item.mediaId,
     sourceType: "salon",
+    verification: null,
   };
 }
 
@@ -591,10 +595,13 @@ function mapRecommendationFeedItem(
       name: salon.name,
     },
     booking: {
-      enabled: salon.bookingEnabled,
+      bookedCount: 0,
+      eligible: salon.bookingEnabled === true && Boolean(salon.bookingHref),
       href: salon.bookingEnabled ? salon.bookingHref : null,
       label: "Book",
       readiness: null,
+      salonId: salon.id,
+      salonName: salon.name,
       serviceId: salon.bookableServiceId,
     },
     candidateClass: "organic",
@@ -632,6 +639,7 @@ function mapRecommendationFeedItem(
     serviceName: recommendationServiceName(salon),
     sourceSortId: `${String(rank).padStart(4, "0")}:${salon.id}`,
     sourceType: "salon",
+    verification: null,
   };
 }
 

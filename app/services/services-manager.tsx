@@ -98,7 +98,7 @@ function draftReadiness(
   const selectedStaff = data.staff.filter((member) =>
     config.bookingStaffIds.includes(member.id),
   );
-  const readyStaffCount = selectedStaff.filter((member) => member.publicReady).length;
+  const readyStaffCount = selectedStaff.filter((member) => member.bookingReady).length;
   const ready =
     config.isActive &&
     config.onlineBookingEnabled &&
@@ -348,11 +348,11 @@ function ServiceEditor({
           </div>
           <p>
             {readiness.ready
-              ? `${readiness.readyStaffCount} online-ready professional${
+              ? `${readiness.readyStaffCount} booking-ready professional${
                   readiness.readyStaffCount === 1 ? "" : "s"
                 } selected.`
               : config.onlineBookingEnabled
-                ? "Select at least one online-ready professional."
+                ? "Select at least one active professional with online booking on."
                 : "Online booking is currently off for this service."}
           </p>
         </div>
@@ -406,9 +406,11 @@ function ServiceEditor({
                     <span>
                       {!member.isActive
                         ? "Inactive professional"
-                        : member.publicReady
-                          ? "Online-ready"
-                          : "Online setup incomplete"}
+                        : member.bookingReady
+                          ? member.publicReady
+                            ? "Booking ready"
+                            : "Booking ready / Profile hidden"
+                          : "Online booking off"}
                     </span>
                   </span>
                   <span
@@ -416,16 +418,16 @@ function ServiceEditor({
                     data-state={
                       !member.isActive
                         ? "inactive"
-                        : member.publicReady
+                        : member.bookingReady
                           ? "ready"
                           : "warning"
                     }
                   >
                     {!member.isActive
                       ? "Inactive"
-                      : member.publicReady
+                      : member.bookingReady
                         ? "Ready"
-                        : "Needs setup"}
+                        : "Booking off"}
                   </span>
                 </label>
               );

@@ -4,6 +4,7 @@ import {
   getCurrentBusinessContext,
   isSalonManageContext,
 } from "@/lib/current-context";
+import { getSalonOnlineBookingStatus } from "@/lib/booking-status";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { SERVICE_SELECT } from "@/lib/services";
 import { STAFF_SELECT } from "@/lib/staff";
@@ -32,9 +33,7 @@ export type BookingSetupReasonCode =
   | "no_assigned_services"
   | "no_working_hours"
   | "online_booking_disabled"
-  | "profile_not_public"
-  | "staff_inactive"
-  | "staff_public_consent_missing";
+  | "staff_inactive";
 
 export type StaffBookingReadiness = {
   assignedServiceCount: number;
@@ -71,7 +70,8 @@ export type BookingSetupData = {
   timezone: string;
 };
 
-const BOOKING_SETTINGS_TIMEZONE_SELECT = "timezone_iana, booking_enabled, online_booking_visible";
+const BOOKING_SETTINGS_TIMEZONE_SELECT =
+  "timezone_iana, booking_enabled, online_booking_visible, guest_booking_enabled";
 
 function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
@@ -197,22 +197,6 @@ export function getStaffBookingReadiness(input: {
     });
   }
 
-  if (!input.staff.owner_public_enabled || !input.staff.public_profile_visible) {
-    reasons.push({
-      code: "profile_not_public",
-      cta: "staff_profile",
-      label: "Profile not public",
-    });
-  }
-
-  if (input.staff.staff_public_consent_status !== "granted") {
-    reasons.push({
-      code: "staff_public_consent_missing",
-      cta: "staff_profile",
-      label: "Public consent missing",
-    });
-  }
-
   if (assignedServices.length === 0) {
     reasons.push({
       code: "no_assigned_services",
@@ -334,7 +318,13 @@ export async function getCurrentSalonBookingSetup(
       .select(BOOKING_SETTINGS_TIMEZONE_SELECT)
       .eq("salon_id", salon.id)
       .maybeSingle<
-        Pick<BookingSettings, "booking_enabled" | "online_booking_visible" | "timezone_iana">
+        Pick<
+          BookingSettings,
+          | "booking_enabled"
+          | "guest_booking_enabled"
+          | "online_booking_visible"
+          | "timezone_iana"
+        >
       >(),
   ]);
 
@@ -364,13 +354,14 @@ export async function getCurrentSalonBookingSetup(
   const assignments = assignmentsResult.data ?? [];
   const availabilityRules = availabilityResult.data ?? [];
   const timeBlocks = blocksResult.data ?? [];
+  const salonBookingStatus = getSalonOnlineBookingStatus(settingsResult.data);
   const readinessByStaffId = Object.fromEntries(
     staff.map((member) => [
       member.id,
       getStaffBookingReadiness({
         assignments,
         availabilityRules,
-        bookingEnabled: settingsResult.data?.booking_enabled ?? false,
+        bookingEnabled: salonBookingStatus.onlineBookingOpen,
         services,
         staff: member,
         timeBlocks,

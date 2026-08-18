@@ -4,7 +4,9 @@ import { localDateTimeToUtcIso } from "@/lib/bookings";
 import {
   getCurrentBusinessContext,
   isSalonManageContext,
+  isSalonStaffContext,
 } from "@/lib/current-context";
+import { resolveStaffAccountForSalon } from "@/lib/staff-account";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -65,11 +67,11 @@ function revalidateBookingSetupPaths(salonId: string) {
 async function getActionContext() {
   const context = await getCurrentBusinessContext();
 
-  if (!context.user || !isSalonManageContext(context)) {
+  if (!context.user) {
     throw new Error("Open a salon workspace before managing booking setup.");
   }
 
-  if (!context.currentAccount || !context.currentSalon) {
+  if (!context.currentSalon) {
     throw new Error("Choose a salon before managing booking setup.");
   }
 
@@ -79,9 +81,30 @@ async function getActionContext() {
     throw new Error("Supabase environment variables are missing.");
   }
 
+  if (isSalonStaffContext(context)) {
+    const staffResolution = await resolveStaffAccountForSalon({ context, supabase });
+
+    if (staffResolution.status !== "found") {
+      throw new Error("No active staff profile is linked to your account for this salon.");
+    }
+
+    return {
+      context,
+      accountId: context.currentAccount?.id ?? context.accountId,
+      ownStaffId: staffResolution.staff.id,
+      salonId: context.currentSalon.id,
+      supabase,
+    };
+  }
+
+  if (!isSalonManageContext(context) || !context.currentAccount) {
+    throw new Error("Open a salon workspace before managing booking setup.");
+  }
+
   return {
     context,
     accountId: context.currentAccount.id,
+    ownStaffId: null,
     salonId: context.currentSalon.id,
     supabase,
   };
@@ -103,12 +126,51 @@ function rpcPayload(value: unknown): JsonObject {
     : {};
 }
 
+function ensureMutableStaffId(
+  actionContext: Awaited<ReturnType<typeof getActionContext>>,
+  requestedStaffId: string,
+) {
+  if (actionContext.ownStaffId && requestedStaffId !== actionContext.ownStaffId) {
+    throw new Error("You can only update your own booking settings.");
+  }
+
+  return requestedStaffId;
+}
+
+async function ensureMutableTimeBlock(
+  actionContext: Awaited<ReturnType<typeof getActionContext>>,
+  blockId: string,
+) {
+  if (!actionContext.ownStaffId) {
+    return;
+  }
+
+  const { data, error } = await actionContext.supabase
+    .from("staff_time_blocks")
+    .select("id, staff_id")
+    .eq("id", blockId)
+    .eq("salon_id", actionContext.salonId)
+    .maybeSingle<{ id: string; staff_id: string | null }>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data || data.staff_id !== actionContext.ownStaffId) {
+    throw new Error("You can only update your own time off.");
+  }
+}
+
 export async function saveStaffWeeklyAvailabilityAction(input: {
   rules: WeeklyAvailabilityDraftRule[];
   staffId: string;
 }): Promise<BookingSetupActionResult> {
   try {
-    const { salonId, supabase } = await getActionContext();
+    const actionContext = await getActionContext();
+    const staffId = ensureMutableStaffId(
+      actionContext,
+      ensureUuid(input.staffId, "Staff"),
+    );
     const payload = input.rules.map((rule) => ({
       day_of_week: rule.dayOfWeek,
       effective_end_date: rule.effectiveEndDate ?? null,
@@ -118,17 +180,17 @@ export async function saveStaffWeeklyAvailabilityAction(input: {
       starts_at_local: rule.startsAtLocal,
       timezone_iana: rule.timezoneIana,
     }));
-    const { error } = await supabase.rpc("save_staff_weekly_availability", {
+    const { error } = await actionContext.supabase.rpc("save_staff_weekly_availability", {
       p_rules: payload,
-      p_salon_id: salonId,
-      p_staff_id: ensureUuid(input.staffId, "Staff"),
+      p_salon_id: actionContext.salonId,
+      p_staff_id: staffId,
     });
 
     if (error) {
       return failure(error.message);
     }
 
-    revalidateBookingSetupPaths(salonId);
+    revalidateBookingSetupPaths(actionContext.salonId);
     return { ok: true };
   } catch (error) {
     return failure(
@@ -141,7 +203,16 @@ export async function createStaffTimeBlockAction(
   input: CreateTimeBlockInput,
 ): Promise<BookingSetupActionResult> {
   try {
-    const { salonId, supabase } = await getActionContext();
+    const actionContext = await getActionContext();
+    const staffId = ensureMutableStaffId(
+      actionContext,
+      ensureUuid(input.staffId, "Staff"),
+    );
+
+    if (actionContext.ownStaffId && input.blockType !== "time_off") {
+      return failure("Staff can only add time off from this workspace.");
+    }
+
     const startsAt = localDateTimeToUtcIso(input.startLocal, input.timezoneIana);
     const endsAt = localDateTimeToUtcIso(input.endLocal, input.timezoneIana);
 
@@ -149,13 +220,13 @@ export async function createStaffTimeBlockAction(
       return failure("Select a valid start and end time.");
     }
 
-    const { data, error } = await supabase.rpc("create_staff_time_block", {
+    const { data, error } = await actionContext.supabase.rpc("create_staff_time_block", {
       p_block_type: input.blockType,
       p_ends_at: endsAt,
       p_override_conflicts: input.overrideConflicts === true,
       p_reason: input.reason ?? null,
-      p_salon_id: salonId,
-      p_staff_id: ensureUuid(input.staffId, "Staff"),
+      p_salon_id: actionContext.salonId,
+      p_staff_id: staffId,
       p_starts_at: startsAt,
       p_timezone_iana: input.timezoneIana,
     });
@@ -174,7 +245,7 @@ export async function createStaffTimeBlockAction(
       });
     }
 
-    revalidateBookingSetupPaths(salonId);
+    revalidateBookingSetupPaths(actionContext.salonId);
     return {
       blockId: typeof result.block_id === "string" ? result.block_id : undefined,
       ok: true,
@@ -190,17 +261,20 @@ export async function cancelStaffTimeBlockAction(input: {
   blockId: string;
 }): Promise<BookingSetupActionResult> {
   try {
-    const { salonId, supabase } = await getActionContext();
-    const { error } = await supabase.rpc("cancel_staff_time_block", {
-      p_block_id: ensureUuid(input.blockId, "Time block"),
-      p_salon_id: salonId,
+    const actionContext = await getActionContext();
+    const blockId = ensureUuid(input.blockId, "Time block");
+    await ensureMutableTimeBlock(actionContext, blockId);
+
+    const { error } = await actionContext.supabase.rpc("cancel_staff_time_block", {
+      p_block_id: blockId,
+      p_salon_id: actionContext.salonId,
     });
 
     if (error) {
       return failure(error.message);
     }
 
-    revalidateBookingSetupPaths(salonId);
+    revalidateBookingSetupPaths(actionContext.salonId);
     return { ok: true };
   } catch (error) {
     return failure(

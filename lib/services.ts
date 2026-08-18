@@ -121,6 +121,7 @@ export async function getCurrentSalonServicesWorkspace(
   const staff = rawStaff.map(
     (member): ServiceBookingStaff => ({
       avatarPath: member.public_profile_photo_path,
+      bookingReady: member.is_active && member.online_booking_enabled,
       displayName: member.display_name,
       id: member.id,
       isActive: member.is_active,
@@ -128,8 +129,6 @@ export async function getCurrentSalonServicesWorkspace(
       ownerPublicEnabled: member.owner_public_enabled,
       publicProfileVisible: member.public_profile_visible,
       publicReady:
-        member.is_active &&
-        member.online_booking_enabled &&
         member.owner_public_enabled &&
         member.public_profile_visible &&
         member.staff_public_consent_status === "granted",

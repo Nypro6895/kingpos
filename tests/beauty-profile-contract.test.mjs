@@ -320,9 +320,19 @@ test("pending salon publications are not public salon profile posts", () => {
     "Explore attribution should remain independent from salon profile approval.",
   );
   assert.match(salonProfileService, /get_public_salon_profile_beauty_posts/);
+  assert.match(salonProfileService, /loadBeautyPostVerifiedBookingCounts/);
+  assert.match(salonProfileService, /beautyPostBookingPresentation/);
   assert.match(salonProfileTypes, /beautyPosts: PublicSalonProfileBeautyPost\[\]/);
+  assert.match(salonProfileTypes, /BeautyPostBookingPresentation/);
   assert.match(salonProfileView, /BeautyTransformationsSection/);
+  assert.match(salonProfileView, /BeforeAfterCompare/);
   assert.match(salonProfileView, /posts=\{data\.beautyPosts\}/);
+  assert.match(salonProfileView, /post\.booking\?\.eligible/);
+  assert.match(salonProfileView, /booking\?\.bookedCount/);
+  assert.match(salonProfileView, /beautyBookedCountLabel/);
+  assert.match(salonProfileView, /href=\{bookingHref\}/);
+  assert.match(salonProfileView, /View post/);
+  assert.doesNotMatch(salonProfileView, /beautyPostBookingHref/);
 });
 
 test("salon publication requests notify owners and require authorized idempotent review", () => {
@@ -413,11 +423,33 @@ test("salon publication review actions do not serialize framework redirects", ()
 });
 
 test("beauty salon publication UI stays customer-owned and review-only", () => {
-  assert.match(beautyClient, /salonPublicationLabel/);
-  assert.match(beautyClient, /Waiting for salon approval/);
-  assert.match(beautyClient, /Approved on salon profile/);
-  assert.match(beautyClient, /Salon profile share declined/);
-  assert.match(beautyClient, /canManage\s*\?\s*salonPublicationLabel/);
+  assert.match(beautyClient, /SharePostAction/);
+  assert.match(beautyClient, /Share this post/);
+  assert.match(beautyClient, /Bookings from your post may earn Beauty points/);
+  assert.match(beautyClient, /group-hover:block group-focus-within:block/);
+  assert.match(beautyClient, /role="dialog"/);
+  assert.match(beautyClient, /aria-modal="true"/);
+  assert.match(beautyClient, /event\.key === "Escape"/);
+  assert.match(beautyClient, /setOpen\(true\)/);
+  assert.match(beautyClient, /Share with device/);
+  assert.match(beautyClient, /Copy link/);
+  assert.match(beautyClient, /Open post/);
+  assert.match(beautyClient, /QR code/);
+  assert.match(beautyClient, /api\.qrserver\.com/);
+  assert.match(beautyClient, /More post actions/);
+  assert.match(beautyClient, /Delete this Beauty post/);
+  assert.doesNotMatch(beautyClient, /salonPublicationLabel/);
+  assert.doesNotMatch(beautyClient, /Not on salon profile yet/);
+  assert.doesNotMatch(beautyClient, /Shown on salon profile/);
+  assert.doesNotMatch(beautyClient, /Not shown on salon profile/);
+  assert.doesNotMatch(beautyClient, /The salon can choose to feature this post/);
+  assert.doesNotMatch(beautyClient, /Reward saved/);
+  assert.doesNotMatch(beautyClient, /Verified visit counted for Beauty rewards/);
+  assert.doesNotMatch(beautyClient, /SharePostPrompt/);
+  assert.doesNotMatch(beautyClient, /Waiting for salon approval/);
+  assert.doesNotMatch(beautyClient, /Beauty reward recorded after verification/);
+  assert.doesNotMatch(beautyClient, /Book at \{post\.bookingAction\.salonName\}/);
+  assert.doesNotMatch(beautyClient, /canManage\s*\?\s*salonPublicationLabel/);
   assert.match(salonPublicationReviewPage, /listBeautySalonPublicationRequests/);
   assert.match(salonPublicationReviewPage, /Add to salon profile/);
   assert.match(salonPublicationReviewPage, /Keep off profile/);

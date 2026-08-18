@@ -77,6 +77,9 @@ const styles = {
   addonGrid: "public-booking-addon-grid",
   addonPanel: "public-booking-addon-panel",
   bookingSurface: "public-booking-surface",
+  brandBar: "public-booking-brand-bar",
+  brandLink: "public-booking-brand-link",
+  brandLogo: "public-booking-brand-logo",
   checkboxInput: "public-booking-checkbox-input",
   checkboxVisual: "public-booking-checkbox-visual",
   editorialImage: "public-booking-editorial-image",
@@ -485,11 +488,29 @@ function staffEligibleForServices(data: PublicBookingPageData, serviceIds: strin
     .filter((staff): staff is PublicBookingPageData["staff"][number] => Boolean(staff));
 }
 
+function ReylumiExploreLink() {
+  return (
+    <a
+      aria-label="Go to Reylumi Explore"
+      className={styles.brandLink}
+      data-testid="public-booking-reylumi-link"
+      href="/explore"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        alt="Reylumi"
+        className={styles.brandLogo}
+        src="/brand/reylumi-logo-horizontal.png"
+      />
+    </a>
+  );
+}
+
 function UnavailableState({ data }: { data: PublicBookingPageData }) {
   const salon = data.salon;
-  const canOpenSalonProfile = Boolean(salon && data.state !== "not_public");
+  const canOpenSalonProfile = Boolean(salon?.publicProfileEnabled);
   const salonProfileHref =
-    salon && data.state !== "not_public"
+    salon && canOpenSalonProfile
       ? `/explore/salons/${salon.salonId}`
       : "/explore";
   const salonWebsite = normalizeWebsite(salon?.website);
@@ -522,66 +543,69 @@ function UnavailableState({ data }: { data: PublicBookingPageData }) {
       data-testid="public-booking-root"
     >
       <div className="mx-auto flex min-h-screen w-full max-w-4xl items-center px-5 py-10">
-        <section className={classNames(styles.publicCard, "w-full p-6 sm:p-8")}>
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-            {salon?.logoUrl || salon?.coverUrl ? (
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-[#f0e6df] bg-white">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  alt=""
-                  className="h-full w-full object-cover"
-                  src={salon.logoUrl ?? salon.coverUrl ?? ""}
-                />
-              </div>
-            ) : salon ? (
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#fff0e8] text-lg font-extrabold text-[#f26f3d]">
-                {initialsFor(salon.name)}
-              </div>
-            ) : null}
-            <div className="min-w-0">
-              <p className={styles.eyebrow}>Reylumi booking</p>
-              <h1 className={classNames(styles.pageTitle, "mt-3")}>{title}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#786d78]">
-                {message}
-              </p>
-              {contactLabel ? (
-                <p className="mt-4 text-sm font-semibold text-[#211c24]">
-                  Contact:{" "}
-                  <a
-                    className="text-[#e85f2b] underline-offset-4 hover:underline"
-                    href={contactHref ?? undefined}
-                  >
-                    {contactLabel}
-                  </a>
-                </p>
+        <div className="w-full">
+          <ReylumiExploreLink />
+          <section className={classNames(styles.publicCard, "mt-5 w-full p-6 sm:p-8")}>
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+              {salon?.logoUrl || salon?.coverUrl ? (
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-[#f0e6df] bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt=""
+                    className="h-full w-full object-cover"
+                    src={salon.logoUrl ?? salon.coverUrl ?? ""}
+                  />
+                </div>
+              ) : salon ? (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#fff0e8] text-lg font-extrabold text-[#f26f3d]">
+                  {initialsFor(salon.name)}
+                </div>
               ) : null}
+              <div className="min-w-0">
+                <p className={styles.eyebrow}>Reylumi booking</p>
+                <h1 className={classNames(styles.pageTitle, "mt-3")}>{title}</h1>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-[#786d78]">
+                  {message}
+                </p>
+                {contactLabel ? (
+                  <p className="mt-4 text-sm font-semibold text-[#211c24]">
+                    Contact:{" "}
+                    <a
+                      className="text-[#e85f2b] underline-offset-4 hover:underline"
+                      href={contactHref ?? undefined}
+                    >
+                      {contactLabel}
+                    </a>
+                  </p>
+                ) : null}
+              </div>
             </div>
-          </div>
-          <div className="mt-7 flex flex-wrap gap-3">
-            {canOpenSalonProfile ? (
+            <div className="mt-7 flex flex-wrap gap-3">
+              {canOpenSalonProfile ? (
+                <a
+                  className={classNames(styles.secondaryButton, "px-5")}
+                  href={salonProfileHref}
+                >
+                  View salon profile
+                </a>
+              ) : null}
               <a
                 className={classNames(styles.secondaryButton, "px-5")}
-                href={salonProfileHref}
+                href="/explore"
               >
-                View salon profile
+                Back to Explore
               </a>
-            ) : null}
-            <a
-              className={classNames(styles.secondaryButton, "px-5")}
-              href="/explore"
-            >
-              Back to Explore
-            </a>
-            {contactHref ? (
-              <a
-                className={classNames(styles.primaryButton, "px-5")}
-                href={contactHref}
-              >
-                Contact salon
-              </a>
-            ) : null}
-          </div>
-        </section>
+              {contactHref ? (
+                <a
+                  className={classNames(styles.primaryButton, "px-5")}
+                  href={contactHref}
+                >
+                  Contact salon
+                </a>
+              ) : null}
+            </div>
+          </section>
+        </div>
       </div>
     </main>
   );
@@ -614,10 +638,17 @@ function BookingInspirationCard({
   onChangeService?: () => void;
   onRemove?: () => void;
 }) {
-  const contentLabel = inspiration.contentType === "update" ? "post" : "look";
+  const contentLabel =
+    inspiration.contentType === "beauty_post"
+      ? "transformation"
+      : inspiration.contentType === "update"
+        ? "post"
+        : "look";
   const label =
     currentServiceName && inspiration.contentType === "look"
       ? "BOOK THIS LOOK"
+      : inspiration.contentType === "beauty_post"
+        ? "BOOK THIS TRANSFORMATION"
       : "BOOK WITH THIS INSPIRATION";
   const serviceLabel = currentServiceName
     ? `You're booking ${currentServiceName}${
@@ -735,7 +766,9 @@ function BookingInspirationSummaryRow({
     ? `Booking as ${currentServiceName}`
     : "Choose a service to continue.";
   const label =
-    inspiration.contentType === "update"
+    inspiration.contentType === "beauty_post"
+      ? "Inspired by this transformation"
+      : inspiration.contentType === "update"
       ? "Inspired by this post"
       : "Inspired by this look";
 
@@ -897,9 +930,10 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
           .filter((service): service is PublicBookingPageData["services"][number] =>
             Boolean(service),
           )
+          .filter((service) => !selectedServiceIds.includes(service.id))
           .map((service) => ({ parent, service })),
       ),
-    [data.services, selectedServices],
+    [data.services, selectedServiceIds, selectedServices],
   );
   const selectedAddOns = useMemo(
     () =>
@@ -1119,7 +1153,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     setSelectedServiceIds(nextSelectedServiceIds);
     setSelectedAddOnSelections((current) =>
       current.filter((selection) =>
-        nextSelectedServiceIds.includes(selection.parentServiceId),
+        nextSelectedServiceIds.includes(selection.parentServiceId) &&
+        !nextSelectedServiceIds.includes(selection.serviceId),
       ),
     );
     setSelectedSlotStart("");
@@ -1212,6 +1247,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       const validAddOnSelections = draft.selectedAddOnSelections.filter(
         (selection) =>
           validServiceIdSet.has(selection.parentServiceId) &&
+          !validServiceIdSet.has(selection.serviceId) &&
           data.services.some((service) => service.id === selection.serviceId),
       );
       const firstService = mainServices.find(
@@ -1439,7 +1475,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         : "/explore";
   const signInHref = `/login?next=${encodeURIComponent(authReturnPath)}`;
   const signupHref = `/signup?next=${encodeURIComponent(authReturnPath)}`;
-  const salonProfileHref = data.salon
+  const salonProfileHref = data.salon?.publicProfileEnabled
     ? `/explore/salons/${data.salon.salonId}`
     : "/explore";
 
@@ -1741,6 +1777,10 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       data-testid="public-booking-root"
     >
       <section className={styles.publicShell} data-testid="public-booking-shell">
+        <div className={styles.brandBar}>
+          <ReylumiExploreLink />
+        </div>
+
         {isQuickBook ? (
           <div
             className={styles.quickBookStrip}

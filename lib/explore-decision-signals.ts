@@ -1,5 +1,7 @@
 import "server-only";
 
+import { normalizePublicBookingHref } from "@/lib/public-booking-routes";
+
 export type ExploreDecisionSignals = {
   averageRating: number | null;
   bookableServiceId: string | null;
@@ -79,16 +81,6 @@ function cleanString(value: string | null | undefined) {
   return trimmed ? trimmed : null;
 }
 
-function safeBookingHref(value: string | null | undefined) {
-  const href = cleanString(value);
-
-  if (!href) {
-    return null;
-  }
-
-  return href.startsWith("/") ? href : null;
-}
-
 function mapDecisionSignalsRow(
   row: ExploreDecisionSignalsRow,
 ): ExploreDecisionSignals {
@@ -99,7 +91,9 @@ function mapDecisionSignalsRow(
     bookableServiceId: cleanString(row.bookable_service_id),
     bookableServiceName: cleanString(row.bookable_service_name),
     bookingEnabled,
-    bookingHref: bookingEnabled ? safeBookingHref(row.booking_href) : null,
+    bookingHref: bookingEnabled
+      ? normalizePublicBookingHref(row.booking_href)
+      : null,
     nextAvailabilityLabel: bookingEnabled
       ? cleanString(row.next_availability_label)
       : null,

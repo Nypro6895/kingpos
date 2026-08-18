@@ -81,6 +81,9 @@ test("unavailable public booking does not expose owner setup readiness", () => {
     "app/book/[salonId]/public-booking-client.tsx",
   );
   const publicBooking = read("lib/public-booking.ts");
+  const directBookingMigration = read(
+    "supabase/migrations/202608180003_public_booking_direct_link_visibility.sql",
+  );
   const unavailableState = publicBookingClient.slice(
     publicBookingClient.indexOf("function UnavailableState"),
     publicBookingClient.indexOf("function slotHour"),
@@ -93,8 +96,23 @@ test("unavailable public booking does not expose owner setup readiness", () => {
   );
   assert.match(
     unavailableState,
-    /data\.state !== "not_public"/,
+    /salon\?\.publicProfileEnabled/,
     "Unpublished salons must not link customers to a public profile route that 404s.",
+  );
+  assert.match(
+    publicBooking,
+    /publicProfileEnabled: boolean/,
+    "Public booking should carry profile publication separately from booking availability.",
+  );
+  assert.doesNotMatch(
+    directBookingMigration,
+    /when settings\.public_discovery_enabled is not true then 'not_public'/,
+    "Direct public booking links should not require Explore publication.",
+  );
+  assert.match(
+    directBookingMigration,
+    /'public_discovery_enabled', coalesce\(settings\.public_discovery_enabled, false\)/,
+    "The public booking payload should still say whether the Explore profile is published.",
   );
   assert.match(
     publicBooking,
@@ -105,5 +123,63 @@ test("unavailable public booking does not expose owner setup readiness", () => {
     publicBooking,
     /This booking page is not available yet\. Please contact the salon directly/,
     "Incomplete booking copy should stay customer-facing.",
+  );
+});
+
+test("public booking uses staff-specific availability before salon fallback", () => {
+  const publicBooking = read("lib/public-booking.ts");
+
+  assert.match(
+    publicBooking,
+    /function availabilityRulesForStaff/,
+    "Public slots should resolve effective rules through one helper.",
+  );
+  assert.match(
+    publicBooking,
+    /const staffRules = rules\.filter\(\(rule\) => rule\.staffId === staffId\)/,
+    "Staff-specific rules should be detected before fallback rules.",
+  );
+  assert.match(
+    publicBooking,
+    /staffRules\.length > 0[\s\S]*rules\.filter\(\(rule\) => !rule\.staffId\)/,
+    "Salon-level hours should only be a fallback when staff has no custom rules.",
+  );
+  assert.match(
+    publicBooking,
+    /availabilityRulesForStaff\(\s*input\.context,\s*input\.staffId,\s*"working"[\s\S]*\.some/,
+    "lineAvailable should use effective working rules.",
+  );
+  assert.match(
+    publicBooking,
+    /availabilityRulesForStaff\(\s*input\.context,\s*input\.staffId,\s*"break"[\s\S]*\.some/,
+    "Break rules should follow the same effective-rule model.",
+  );
+  assert.match(
+    publicBooking,
+    /for \(const staffId of firstLineStaffIds\)[\s\S]*availabilityRulesForStaff\(context, staffId, "working"\)/,
+    "Candidate slot starts should be generated from each candidate staff member's effective hours.",
+  );
+});
+
+test("staff and public booking share salon online booking gates", () => {
+  const bookingStatus = read("lib/booking-status.ts");
+  const directBookingMigration = read(
+    "supabase/migrations/202608180003_public_booking_direct_link_visibility.sql",
+  );
+
+  assert.match(
+    directBookingMigration,
+    /booking_settings\.booking_enabled is not true[\s\S]*booking_settings\.online_booking_visible is not true[\s\S]*booking_settings\.guest_booking_enabled is not true/,
+    "Public booking readiness is gated by booking_settings booking, visibility, and guest-booking fields.",
+  );
+  assert.match(
+    bookingStatus,
+    /bookingEnabled && onlineBookingVisible && guestBookingEnabled/,
+    "Staff-facing salon booking status should use the same public booking gates.",
+  );
+  assert.doesNotMatch(
+    bookingStatus,
+    /public_discovery_enabled|owner_public_enabled|public_profile_visible|staff_public_consent_status/,
+    "Public/Profile visibility must not determine salon online booking state.",
   );
 });

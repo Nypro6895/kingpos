@@ -1,5 +1,7 @@
 import "server-only";
 
+import { beautyPostBookingPresentation } from "@/lib/beauty-booking-verification";
+import { loadBeautyPostVerifiedBookingCounts } from "@/lib/beauty-post-booking-counts";
 import { getBeautyMediaPublicUrl } from "@/lib/beauty-media";
 import {
   getCurrentBusinessContext,
@@ -229,6 +231,7 @@ type PublicBeautyPostRow = {
   approved_at: string | null;
   author_avatar_url: string | null;
   author_display_name: string | null;
+  booking_enabled: boolean | null;
   caption: string | null;
   created_at: string;
   media: unknown;
@@ -1215,10 +1218,25 @@ function mapPublicBeautyPostMedia(
 
 function mapPublicBeautyPost(
   row: PublicBeautyPostRow,
+  salon: {
+    id: string;
+    name: string;
+  },
 ): PublicSalonProfileBeautyPost {
   const mediaRows = Array.isArray(row.media)
     ? (row.media as PublicBeautyPostMediaRow[])
     : [];
+  const verificationState = publicBeautyVerificationState(row.verification_state);
+  const booking = beautyPostBookingPresentation({
+    bookedCount: 0,
+    bookingEnabled: row.booking_enabled === true,
+    labelStyle: "short",
+    postId: row.post_id,
+    salonId: salon.id,
+    salonName: salon.name,
+    source: "public_profile",
+    verificationState,
+  });
 
   return {
     approvedAt: row.approved_at,
@@ -1229,6 +1247,7 @@ function mapPublicBeautyPost(
     media: mediaRows
       .map(mapPublicBeautyPostMedia)
       .filter((item): item is PublicSalonProfileBeautyPostMedia => Boolean(item)),
+    booking: booking.eligible ? booking : null,
     postHref: `/explore/beauty/${encodeURIComponent(
       row.profile_id,
     )}/posts/${encodeURIComponent(row.post_id)}`,
@@ -1237,7 +1256,7 @@ function mapPublicBeautyPost(
     publishedAt: row.created_at,
     staffId: row.staff_id,
     staffName: row.staff_name,
-    verificationState: publicBeautyVerificationState(row.verification_state),
+    verificationState,
   };
 }
 
@@ -1455,9 +1474,31 @@ export async function getPublicSalonProfileData(
   const mappedProfile = mapPublicProfile(profile);
   const looks = lookRows.map(mapPublicLook);
   const updates = updateRows.map(mapPublicUpdate);
+  const beautyPosts = beautyPostRows.map((row) =>
+    mapPublicBeautyPost(row, {
+      id: mappedProfile.salonId,
+      name: mappedProfile.name,
+    }),
+  );
+  const beautyBookingCounts = await loadBeautyPostVerifiedBookingCounts({
+    postIds: beautyPosts
+      .map((post) => (post.booking?.eligible ? post.id : null))
+      .filter((postId): postId is string => Boolean(postId)),
+    rpc,
+  });
 
   return {
-    beautyPosts: beautyPostRows.map(mapPublicBeautyPost),
+    beautyPosts: beautyPosts.map((post) =>
+      post.booking
+        ? {
+            ...post,
+            booking: {
+              ...post.booking,
+              bookedCount: beautyBookingCounts.get(post.id) ?? 0,
+            },
+          }
+        : post,
+    ),
     comments: commentRows.map(mapPublicComment),
     feed: buildSalonProfileFeed({
       looks,
