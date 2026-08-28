@@ -326,6 +326,78 @@
   padding: 14px;
 }
 
+.staff-appointments-day-layout {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 0.82fr) minmax(300px, 0.58fr);
+  padding: 14px;
+}
+
+.staff-appointments-day-layout .staff-appointments-day-card-list {
+  padding: 0;
+}
+
+.staff-appointments-day-card-list--compact {
+  gap: 8px;
+}
+
+.staff-appointments-day-next-panel {
+  background: var(--staff-booking-soft);
+  border-left: 1px solid var(--staff-booking-border);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.staff-appointments-day-next-head {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.staff-appointments-day-next-head h3 {
+  color: var(--staff-booking-ink);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.staff-appointments-day-next-head p {
+  color: var(--staff-booking-muted);
+  font-size: 12px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.staff-appointments-day-next-list {
+  display: grid;
+  gap: 8px;
+}
+
+.staff-appointments-day-next-more {
+  align-items: center;
+  background: var(--staff-booking-surface);
+  border: 1px solid var(--staff-booking-strong-border);
+  border-radius: 8px;
+  color: var(--staff-booking-plum-dark);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 900;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 10px;
+  text-decoration: none;
+}
+
+.staff-appointments-day-next-more:hover {
+  background: var(--staff-booking-lilac);
+  color: var(--staff-booking-plum-dark);
+}
+
 .staff-appointments-appointment-card {
   border-left: 4px solid var(--staff-booking-teal);
 }
@@ -385,6 +457,42 @@
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+}
+
+.staff-appointments-appointment-card--compact .staff-appointments-appointment-row {
+  align-items: start;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 58px;
+  padding: 10px 12px;
+}
+
+.staff-appointments-appointment-card--compact .staff-appointments-appointment-primary {
+  gap: 2px;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.staff-appointments-appointment-card--compact .staff-appointments-appointment-main {
+  gap: 2px;
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.staff-appointments-appointment-card--compact .staff-appointments-appointment-status {
+  align-self: start;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.staff-appointments-appointment-card--compact .staff-appointments-appointment-primary strong,
+.staff-appointments-appointment-card--compact .staff-appointments-appointment-main strong {
+  font-size: 13px;
+}
+
+.staff-appointments-appointment-card--compact .staff-appointments-appointment-primary span,
+.staff-appointments-appointment-card--compact .staff-appointments-appointment-main span {
+  font-size: 11px;
 }
 
 .staff-appointments-quick-popover {
@@ -498,17 +606,20 @@
 }
 
 .staff-appointments-timeline-card {
-  background: #eaf7f5;
-  border: 1px solid #b8dbd6;
+  background: #e7f7f5;
+  border: 1px solid #9ccfca;
+  border-left: 4px solid var(--staff-booking-teal);
   border-radius: 6px;
-  box-shadow: 0 10px 22px rgba(47, 111, 106, 0.13);
-  color: #184b48;
-  display: grid;
+  box-shadow: 0 10px 22px rgba(47, 111, 106, 0.12);
+  color: #123f3c;
+  display: flex;
+  flex-direction: column;
   gap: 3px;
+  justify-content: flex-start;
   left: 12px;
   min-height: 46px;
   overflow: hidden;
-  padding: 8px 10px;
+  padding: 7px 9px 8px;
   position: absolute;
   right: 12px;
   text-decoration: none;
@@ -516,20 +627,22 @@
 }
 
 .staff-appointments-timeline-card--compact {
-  left: 5px;
-  padding: 7px;
-  right: 5px;
+  left: 7px;
+  padding: 6px 7px;
+  right: 7px;
 }
 
 .staff-appointments-timeline-card[data-status="pending"] {
   background: #fff7ed;
   border-color: #fdba74;
+  border-left-color: #d97706;
   color: #8a3a0d;
 }
 
 .staff-appointments-timeline-card[data-status="completed"] {
   background: #ecfdf3;
   border-color: #abefc6;
+  border-left-color: #079455;
   color: #067647;
 }
 
@@ -537,6 +650,7 @@
 .staff-appointments-timeline-card[data-status="in_service"] {
   background: #eff6ff;
   border-color: #bfdbfe;
+  border-left-color: #2563eb;
   color: #1d4ed8;
 }
 
@@ -544,24 +658,23 @@
 .staff-appointments-timeline-card[data-status="no_show"] {
   background: #fff1f2;
   border-color: #fecdd3;
+  border-left-color: #e11d48;
   color: #be123c;
 }
 
-.staff-appointments-status-dot {
-  background: currentColor;
-  border-radius: 999px;
-  height: 7px;
-  opacity: 0.75;
-  position: absolute;
-  right: 7px;
-  top: 7px;
-  width: 7px;
+.staff-appointments-timeline-card-head {
+  align-items: center;
+  display: flex;
+  gap: 5px;
+  min-height: 14px;
 }
 
+.staff-appointments-timeline-card-head,
 .staff-appointments-timeline-card-title,
 .staff-appointments-timeline-card-service,
 .staff-appointments-timeline-card-time,
 .staff-appointments-timeline-card-status {
+  line-height: 1.12;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -569,28 +682,49 @@
 }
 
 .staff-appointments-timeline-card-title {
-  font-size: 13px;
+  color: inherit;
+  font-size: 12px;
   font-weight: 900;
-  padding-right: 12px;
+  line-height: 1.16;
 }
 
-.staff-appointments-timeline-card-service,
-.staff-appointments-timeline-card-time,
-.staff-appointments-timeline-card-status {
+.staff-appointments-timeline-card-service {
   color: currentColor;
-  font-size: 11px;
-  font-weight: 700;
-  opacity: 0.82;
+  font-size: 10.5px;
+  font-weight: 800;
+  opacity: 0.9;
+}
+
+.staff-appointments-timeline-card-time {
+  color: currentColor;
+  flex: 1 1 auto;
+  font-size: 10px;
+  font-weight: 900;
+  opacity: 0.95;
 }
 
 .staff-appointments-timeline-card-status {
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(120, 109, 120, 0.18);
   border-radius: 999px;
-  font-size: 10px;
-  margin-top: 2px;
-  padding: 3px 6px;
-  width: fit-content;
+  color: currentColor;
+  flex: 0 1 auto;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  max-width: 74px;
+  padding: 2px 5px;
+  width: auto;
+}
+
+.staff-appointments-timeline-card--short {
+  gap: 2px;
+  justify-content: center;
+}
+
+.staff-appointments-timeline-card--short .staff-appointments-timeline-card-service,
+.staff-appointments-timeline-card--short .staff-appointments-timeline-card-status {
+  display: none;
 }
 
 .staff-appointments-timeline-popover {
@@ -1118,6 +1252,17 @@
   }
 }
 
+@media (max-width: 900px) {
+  .staff-appointments-day-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .staff-appointments-day-next-panel {
+    border-left: 0;
+    border-top: 1px solid var(--staff-booking-border);
+  }
+}
+
 @media (max-width: 640px) {
   .staff-appointments-header-frame {
     padding-bottom: 18px;
@@ -1177,9 +1322,18 @@
     display: grid;
   }
 
+  .staff-appointments-day-layout {
+    padding: 10px;
+  }
+
   .staff-appointments-appointment-row {
     align-items: start;
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .staff-appointments-appointment-card--compact .staff-appointments-appointment-status {
+    grid-column: 1;
+    grid-row: auto;
   }
 
   .staff-appointments-appointment-status {

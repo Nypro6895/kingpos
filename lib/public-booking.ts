@@ -5,6 +5,7 @@ import { formatDateInTimeZone, zonedDateTimeToUtcIso } from "@/lib/bookings";
 import { mapBookingInspiration } from "@/lib/booking-inspirations";
 import { loadPublicContentBookingOptions } from "@/lib/content-booking";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
+import { getStaffProfileAvatarUrl } from "@/lib/staff-profile";
 import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
@@ -666,7 +667,10 @@ function parseContextPayload(payload: unknown): RawContext {
         }
 
         return {
-          avatarUrl: getSalonProfileMediaUrl(nonEmptyString(staff.avatar_path)),
+          avatarUrl: getStaffProfileAvatarUrl({
+            accountAvatarUrl: nonEmptyString(staff.account_avatar_url),
+            staffProfilePhotoPath: nonEmptyString(staff.avatar_path),
+          }),
           bio: nonEmptyString(staff.bio),
           displayName: nonEmptyString(staff.display_name) ?? "Professional",
           id,

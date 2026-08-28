@@ -7,7 +7,7 @@ const baselineMigration = readFileSync(
   "utf8",
 );
 const phoneIdentityMigration = readFileSync(
-  "supabase/migrations/202608170001_staff_connection_phone_identity.sql",
+  "supabase/migrations/202608180006_staff_connection_phone_identity.sql",
   "utf8",
 );
 const staffWorkspaceContextMigration = readFileSync(

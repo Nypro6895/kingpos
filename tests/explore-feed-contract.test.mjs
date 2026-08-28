@@ -6,7 +6,14 @@ const actions = read("app/explore/actions.ts");
 const client = read("app/explore/explore-client.tsx");
 const feedClient = read("app/explore/explore-feed.tsx");
 const feedService = read("lib/explore-feed.ts");
+const homeService = read("lib/explore-home.ts");
 const inspirationService = read("lib/explore-inspiration.ts");
+const searchService = read("lib/explore-search.ts");
+const salonLogoService = read("lib/explore-salon-logos.ts");
+const decisionSignalsService = read("lib/explore-decision-signals.ts");
+const trustComponent = read("components/reylumi-trust.tsx");
+const contentBookingService = read("lib/content-booking.ts");
+const beautyPostBookingCountsService = read("lib/beauty-post-booking-counts.ts");
 const discoveryRail = read("app/explore/customer-explore-utility-panel.tsx");
 const migration = read("supabase/migrations/202607240001_account_salon_baseline.sql");
 const salonProfileRpcHardening = read(
@@ -18,6 +25,9 @@ const salonProfileReviewsRpcHardening = read(
 const publicExploreBeautyPosts = read(
   "supabase/migrations/202608180001_beauty_post_booking_public_surfaces.sql",
 );
+const exploreBeautyPostSalonLogo = read(
+  "supabase/migrations/202608210002_explore_beauty_post_salon_logo.sql",
+);
 const salonProfileRpcHardeningSql = [
   salonProfileRpcHardening,
   salonProfileReviewsRpcHardening,
@@ -27,9 +37,9 @@ const allMigrationSql = readdirSync("supabase/migrations")
   .sort()
   .map((name) => read(`supabase/migrations/${name}`))
   .join("\n\n");
-const page = read("app/explore/page.tsx");
+const page = read("app/(app)/explore/page.tsx");
 const personalPostRoute = read(
-  "app/explore/beauty/[profileId]/posts/[postId]/page.tsx",
+  "app/(app)/explore/beauty/[profileId]/posts/[postId]/page.tsx",
 );
 const personalService = read("lib/explore-personal.ts");
 const types = read("types/explore.ts");
@@ -75,7 +85,8 @@ test("explore feed service unifies Salon and Personal sources with one opaque cu
   assert.match(feedService, /toString\("base64url"\)/);
   assert.match(feedService, /Buffer\.from\(value,\s*"base64url"\)/);
   assert.match(feedService, /decodeExploreFeedCursor/);
-  assert.match(feedService, /EXPLORE_FEED_CURSOR_VERSION\s*=\s*3/);
+  assert.match(feedService, /EXPLORE_FEED_CURSOR_VERSION\s*=\s*4/);
+  assert.match(feedService, /EXPLORE_FEED_CANDIDATE_POOL_MULTIPLIER\s*=\s*2/);
   assert.match(feedService, /normalizeLimit/);
   assert.match(feedService, /EXPLORE_FEED_MAX_PAGE_SIZE\s*=\s*18/);
   assert.match(feedService, /personal:\s*ExplorePersonalPostCursor \| null/);
@@ -93,7 +104,7 @@ test("explore feed cursor records exhausted sources so empty sources are not res
   assert.match(feedService, /type ExploreFeedSourceCompletion/);
   assert.match(feedService, /completed:\s*\{\s*personal:\s*false,\s*recommendation:\s*false,\s*salon:\s*false/s);
   assert.match(feedService, /normalizeCompletion/);
-  assert.match(feedService, /payload\.version !== EXPLORE_FEED_CURSOR_VERSION && payload\.version !== 2/);
+  assert.match(feedService, /payload\.version !== EXPLORE_FEED_CURSOR_VERSION &&\s*payload\.version !== 3 &&\s*payload\.version !== 2/s);
   assert.match(feedService, /sourceState\.completed\.salon\s*\?\s*Promise\.resolve\(emptyInspirationSourcePage\(\)\)/s);
   assert.match(feedService, /sourceState\.completed\.personal\s*\?\s*Promise\.resolve\(emptyPersonalSourcePage\(\)\)/s);
   assert.match(feedService, /sourceState\.completed\.recommendation\s*\?\s*Promise\.resolve\(emptyRecommendationSourcePage\(\)\)/s);
@@ -117,7 +128,7 @@ test("explore feed keeps empty source responses distinct from source errors", ()
 test("explore inspiration keeps carousel diversification out of deterministic feed calls", () => {
   assert.match(inspirationService, /diversify\?: boolean/);
   assert.match(inspirationService, /input\.diversify === false/);
-  assert.match(inspirationService, /diversifyInspirationItems\(itemsWithBooking\)/);
+  assert.match(inspirationService, /diversifyInspirationItems\(itemsWithSaveStates\)/);
   assert.match(read("lib/explore-home.ts"), /getExploreInspirationPage\(\{ diversify: false \}\)/);
 });
 
@@ -160,6 +171,11 @@ test("public explore Beauty RPC exposes eligible public Personal posts only", ()
   assert.match(publicExploreBeautyPosts, /verifications\.state as verification_state/);
   assert.match(publicExploreBeautyPosts, /booking_settings\.online_booking_visible/);
   assert.match(publicExploreBeautyPosts, /booking_settings\.guest_booking_enabled/);
+  assert.match(exploreBeautyPostSalonLogo, /drop function if exists public\.get_public_explore_beauty_posts/);
+  assert.match(exploreBeautyPostSalonLogo, /salon_logo_path text/);
+  assert.match(exploreBeautyPostSalonLogo, /settings\.public_profile_logo_path as salon_logo_path/);
+  assert.match(exploreBeautyPostSalonLogo, /eligible_posts\.salon_logo_path/);
+  assert.match(exploreBeautyPostSalonLogo, /grant execute on function public\.get_public_explore_beauty_posts/);
   assert.match(publicExploreBeautyPosts, /posts\.deleted_at is null/);
   assert.match(publicExploreBeautyPosts, /posts\.visibility = 'public'/);
   assert.match(publicExploreBeautyPosts, /posts\.moderation_status = 'visible'/);
@@ -197,6 +213,13 @@ test("Personal Explore service normalizes Beauty posts without leaking raw stora
   assert.match(personalService, /attachExploreBookingCounts/);
   assert.match(personalService, /loadBeautyPostVerifiedBookingCounts/);
   assert.match(personalService, /bookedCount/);
+  assert.match(personalService, /getSalonProfileMediaUrl/);
+  assert.match(personalService, /salon_logo_path/);
+  assert.match(personalService, /loadPublicSalonLogoPaths/);
+  assert.match(personalService, /logoPathMap/);
+  assert.match(personalService, /row\.salon_logo_path \?\? fallbackSalonLogoPath/);
+  assert.match(salonLogoService, /get_public_salon_profile/);
+  assert.match(salonLogoService, /target_salon_id: salonId/);
   assert.doesNotMatch(personalService, /verifiedBookingCount/);
   assert.match(personalService, /safeHttpUrl\(row\.author_avatar_url\)/);
   assert.doesNotMatch(personalService, /email|phone|auth_user_id/);
@@ -207,13 +230,43 @@ test("Personal Explore service treats zero RPC rows as a valid empty page and lo
   assert.match(personalService, /const visibleRows = rows\.slice\(0, pageSize\)/);
   assert.match(personalService, /const hasMore = rows\.length > pageSize/);
   assert.match(personalService, /const itemsWithBookingCounts = await attachExploreBookingCounts\(\{\s*items,\s*rpc,\s*\}\)/s);
-  assert.match(personalService, /return \{\s*error:\s*null,\s*hasMore,\s*items:\s*itemsWithBookingCounts,\s*nextCursor/s);
+  assert.match(personalService, /const itemsWithSaveStates = await attachPersonalPostSaveStates\(\s*itemsWithBookingCounts,\s*\)/s);
+  assert.match(personalService, /return \{\s*error:\s*null,\s*hasMore,\s*items:\s*itemsWithSaveStates,\s*nextCursor/s);
   assert.match(personalService, /if \(error\) \{/);
   assert.match(personalService, /supabaseErrorDiagnostics/);
   assert.match(personalService, /diagnosticJson/);
   assert.match(personalService, /status:\s*typeof status === "number" \? status : null/);
   assert.match(personalService, /statusText:\s*diagnosticString\(statusText\)/);
   assert.match(personalService, /args:\s*rpcArgs/);
+});
+
+test("Explore salon logos are normalized across every public source", () => {
+  assert.match(types, /logoImageUrl: string \| null/);
+  assert.match(types, /salonLogoImageUrl: string \| null/);
+  assert.match(salonLogoService, /export async function loadPublicSalonLogoPaths/);
+  assert.match(salonLogoService, /get_public_salon_profile/);
+  assert.match(salonLogoService, /logo_path/);
+
+  assert.match(inspirationService, /salon_logo_path/);
+  assert.match(inspirationService, /salonLogoImageUrl: getSalonProfileMediaUrl/);
+  assert.match(inspirationService, /loadPublicSalonLogoPaths/);
+  assert.match(inspirationService, /itemsWithLogos/);
+
+  assert.match(homeService, /logo_image_path/);
+  assert.match(homeService, /logoImageUrl: getSalonProfileMediaUrl/);
+  assert.match(homeService, /loadPublicSalonLogoPaths/);
+  assert.match(homeService, /logoPathMap\.get\(row\.salon_id\)/);
+
+  assert.match(searchService, /logo_image_path/);
+  assert.match(searchService, /logoImageUrl: getSalonProfileMediaUrl/);
+  assert.match(searchService, /loadPublicSalonLogoPaths/);
+  assert.match(searchService, /logoPathMap\.get\(row\.salon_id\)/);
+
+  assert.match(feedService, /avatarUrl: item\.salonLogoImageUrl/);
+  assert.match(feedService, /logoImageUrl: item\.salonLogoImageUrl/);
+  assert.match(feedService, /avatarUrl: salon\.logoImageUrl/);
+  assert.match(feedService, /logoImageUrl: salon\.logoImageUrl/);
+  assert.doesNotMatch(feedService, /logoImageUrl:\s*null/);
 });
 
 test("Beauty post booking count and inspiration attribution stay server-owned", () => {
@@ -261,8 +314,27 @@ test("Beauty booking CTA does not depend on booking-count RPC success", () => {
   assert.doesNotMatch(attachBlock, /bookedCount: countsByPostId\.get\(item\.id\) \|\| undefined/);
 });
 
+test("Explore optional data fallbacks do not use dev-overlay console errors", () => {
+  const optionalExploreSources = [
+    homeService,
+    inspirationService,
+    searchService,
+    decisionSignalsService,
+    personalService,
+    contentBookingService,
+    beautyPostBookingCountsService,
+  ].join("\n\n");
+
+  assert.doesNotMatch(optionalExploreSources, /console\.error\(\s*"Explore/);
+  assert.doesNotMatch(optionalExploreSources, /Public content booking options RPC failed/);
+  assert.doesNotMatch(optionalExploreSources, /Beauty post booking counts failed/);
+  assert.match(optionalExploreSources, /console\.warn\(\s*"Explore inspiration unavailable"/);
+  assert.match(optionalExploreSources, /console\.warn\(\s*"Explore public salon search unavailable"/);
+  assert.match(optionalExploreSources, /console\.warn\(\s*"Explore personal beauty posts unavailable"/);
+});
+
 test("Explore DTO restore keeps fresh Beauty booking presentation over stale session copies", () => {
-  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*5/);
+  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*9/);
   assert.match(feedClient, /function mergeStoredFeedItems/);
   assert.match(feedClient, /const freshByKey = new Map/);
   assert.match(feedClient, /freshByKey\.get\(feedItemKey\(item\)\) \?\? item/);
@@ -284,8 +356,14 @@ test("unified feed contract uses source-qualified identity and normalized media"
   assert.match(types, /candidateClass: ExploreFeedCandidateClass/);
   assert.match(types, /export type ExploreFeedMedia/);
   assert.match(types, /export type ExplorePersonalPostPage/);
+  assert.match(types, /logoImageUrl: string \| null/);
   assert.match(feedService, /feedKey: `salon:\$\{item\.contentType\}:\$\{item\.contentId\}`/);
   assert.match(feedService, /feedKey: `salon:recommendation:\$\{salon\.id\}`/);
+  assert.match(feedService, /logoImageUrl: item\.salonLogoImageUrl/);
+  assert.match(feedService, /logoImageUrl: salon\.logoImageUrl/);
+  assert.match(feedService, /recommendationPostPreviewsBySalonId/);
+  assert.match(feedService, /recommendationPostBySalonId\.get\(salon\.id\)/);
+  assert.match(feedService, /featuredPost\?\.media \?\? coverMedia/);
   assert.match(personalService, /feedKey:\s*`personal:\$\{postId\}`/);
   assert.match(feedService, /compareNaturalCandidateOrder/);
   assert.match(feedService, /right\.item\.sourceSortId\.localeCompare\(left\.item\.sourceSortId\)/);
@@ -310,6 +388,14 @@ test("explore feed ranking and diversity live in the server feed layer", () => {
   assert.match(feedService, /ORGANIC_RANKING_WEIGHTS/);
   assert.match(feedService, /engagementVelocity:\s*0/);
   assert.match(feedService, /weightedRankingScore/);
+  assert.match(feedService, /createExploreFeedSessionSeed/);
+  assert.match(feedService, /sessionSeed/);
+  assert.match(feedService, /stableHashScore/);
+  assert.match(feedService, /recentPriorityScore/);
+  assert.match(feedService, /sessionVariationScore/);
+  assert.match(feedService, /freshnessBucket/);
+  assert.match(feedService, /arrangeSourceCandidates/);
+  assert.match(feedService, /sourceCandidatePoolSize\(pageSize\)/);
   assert.match(feedService, /rankingSignalsForSalonContent/);
   assert.match(feedService, /rankingSignalsForPersonalContent/);
   assert.match(feedService, /rankingSignalsForRecommendation/);
@@ -319,6 +405,7 @@ test("explore feed ranking and diversity live in the server feed layer", () => {
   assert.match(feedService, /entityRunLength/);
   assert.match(feedService, /authorRunLength/);
   assert.match(feedService, /if \(item\.salon\?\.id\)/);
+  assert.match(feedService, /compareNaturalCandidateOrder\(boundary,\s*candidate\) < 0/);
   assert.match(feedService, /sourceRun >= 1/);
   assert.match(feedService, /authorRun >= 1/);
   assert.match(feedService, /FEED_SOURCES\.map/);
@@ -333,22 +420,48 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.match(feedClient, /mountedRef/);
   assert.match(feedClient, /paginationError && !options\.retry/);
   assert.match(feedClient, /sessionStorage/);
+  assert.match(feedClient, /shouldRestoreStoredFeedState/);
+  assert.match(feedClient, /navigation\?\.type !== "reload"/);
+  assert.match(feedClient, /sessionStorage\.removeItem\(EXPLORE_FEED_SESSION_KEY\)/);
   assert.match(feedClient, /window\.scrollTo\(0, stored\.scrollY\)/);
   assert.match(feedClient, /appendUniqueFeedItems/);
   assert.match(feedClient, /return item\.feedKey/);
-  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*5/);
+  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*9/);
   assert.match(feedClient, /data-source-type=\{item\.sourceType\}/);
   assert.match(feedClient, /BeforeAfterMedia/);
   assert.match(feedClient, /BeforeAfterCompare/);
   assert.match(feedClient, /beforeAfterMediaPair/);
-  assert.match(feedClient, /beforeAfterMediaPair\(item\) \? \(\s*media\s*\) : \(/);
+  assert.match(feedClient, /FeedMediaFrame/);
+  assert.match(feedClient, /FeedSalonIdentityLine/);
+  assert.match(feedClient, /FeedHeaderTitle/);
+  assert.match(feedClient, /FeedSalonLogo/);
+  assert.match(feedClient, /item\.author\.kind === "salon" \? item\.salon\?\.logoImageUrl : null/);
+  assert.match(feedClient, /logoImageUrl/);
+  assert.match(feedClient, /item\.sourceType === "personal" && Boolean\(salon\)/);
+  assert.match(feedClient, /LumiTrustPopover/);
+  assert.match(feedClient, /presentation="spark"/);
+  assert.match(feedClient, /entityName=\{item\.salon\.name\}/);
+  assert.match(feedClient, /actionHref=\{trustHref\}/);
+  assert.match(feedClient, /authorHref/);
+  assert.match(feedClient, /\/explore\/beauty\/\$\{encodeURIComponent\(item\.personal\.profileId\)\}/);
+  assert.match(feedClient, /bookedCount > 0/);
+  assert.match(feedClient, /router\.push\(href\)/);
+  assert.match(feedClient, /pointerMovedRef/);
+  assert.match(feedClient, /isComparatorControl/);
+  assert.doesNotMatch(feedClient, /FeedTrustOverlay/);
+  assert.doesNotMatch(feedClient, /LinkedShopTrustRow/);
+  assert.doesNotMatch(feedClient, /Linked salon/);
   assert.match(feedClient, /salon_recommendation/);
-  assert.match(feedClient, /Verified visit/);
+  assert.doesNotMatch(feedClient, /function verificationLabel/);
   assert.match(feedClient, /bookingCountLabel/);
+  assert.match(feedClient, /bookedCountText/);
   assert.match(feedClient, /bookingHref/);
   assert.match(feedClient, /booking\?\.label \?\? "Book"/);
-  assert.match(feedClient, /View post/);
-  assert.match(feedClient, /View salon/);
+  assert.match(feedClient, /FeedShareButton/);
+  assert.match(feedClient, /navigator\.share/);
+  assert.doesNotMatch(feedClient, />\s*View post\s*</);
+  assert.doesNotMatch(feedClient, />\s*View salon\s*</);
+  assert.doesNotMatch(feedClient, /TrustFactPill/);
   assert.doesNotMatch(feedClient, /Fresh inspiration/i);
   assert.doesNotMatch(feedClient, /Beauty stories/i);
   assert.match(feedClient, /loadExploreFeedAction\(cursor\)/);
@@ -359,15 +472,41 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.doesNotMatch(feedClient, />\s*(Like|Follow|Save|Comment)\s*</);
 });
 
+test("LUMI trust UI is shared, interactive, and keeps signals separated", () => {
+  assert.match(trustComponent, /export function LumiTrustPopover/);
+  assert.match(trustComponent, /aria-haspopup="dialog"/);
+  assert.match(trustComponent, /aria-expanded=\{open\}/);
+  assert.match(trustComponent, /onMouseEnter=\{openPopover\}/);
+  assert.match(trustComponent, /onClick=\{togglePopover\}/);
+  assert.match(trustComponent, /export function LumiTrustSpark/);
+  assert.match(trustComponent, /viewBox="0 0 20 20"/);
+  assert.match(trustComponent, /data-lumi-trust-level=\{level\}/);
+  assert.match(trustComponent, /LUMI_TRUST_FILL_RATIO/);
+  assert.match(trustComponent, /presentation\?: "label" \| "spark"/);
+  assert.match(trustComponent, /actionHref\?: string \| null/);
+  assert.match(trustComponent, /actionLabel = "View trust details"/);
+  assert.match(trustComponent, /summary\.evidenceRows/);
+  assert.match(trustComponent, /entityName\?: string \| null/);
+  assert.doesNotMatch(trustComponent, /Verification, stars, ranking, and linked state are separate signals/);
+  assert.doesNotMatch(trustComponent, /Ranking appears only when/);
+  assert.match(client, /LumiTrustPopover/);
+  assert.match(feedClient, /LumiTrustPopover/);
+  assert.match(client, /presentation="spark"/);
+  assert.doesNotMatch(client, /cardTrustLabel/);
+  assert.doesNotMatch(client, /cardTrustAriaLabel/);
+});
+
 test("explore feed visual rhythm stays compact and image-led", () => {
   assert.match(client, /Featured now/);
-  assert.match(client, /min-h-\[8rem\]/);
+  assert.match(client, /min-h-\[7\.25rem\]/);
   assert.match(client, /heroHref/);
-  assert.match(client, /max-w-\[44rem\] gap-3 px-4 pb-2 pt-3/);
-  assert.match(feedClient, /Math\.min\(1\.45,\s*Math\.max\(0\.86,\s*media\.aspectRatio\)\)/);
-  assert.match(feedClient, /rounded-\[1rem\] bg-white/);
-  assert.match(feedClient, /line-clamp-3 text-sm leading-6/);
-  assert.match(feedClient, /<div className="grid gap-4">/);
+  assert.match(client, /max-w-\[40rem\] gap-2\.5 px-4 pb-2 pt-3/);
+  assert.match(feedClient, /Math\.min\(1\.55,\s*Math\.max\(1\.06,\s*media\.aspectRatio\)\)/);
+  assert.match(feedClient, /isRecommendationCoverMedia/);
+  assert.match(feedClient, /h-\[13rem\] sm:h-\[16rem\] lg:h-\[17rem\]/);
+  assert.match(feedClient, /rounded-\[0\.95rem\] bg-white/);
+  assert.match(feedClient, /line-clamp-2 text-sm leading-5/);
+  assert.match(feedClient, /<div className="grid gap-3">/);
   assert.match(feedClient, /aspect-\[4\/3\] bg-surface-muted/);
   assert.doesNotMatch(feedClient, /grid gap-5/);
 });
@@ -379,7 +518,7 @@ test("explore default home renders one centered feed and moves legacy sections b
     "function ExploreNotice",
   );
 
-  assert.match(homeBlock, /max-w-\[44rem\]/);
+  assert.match(homeBlock, /max-w-\[40rem\]/);
   assert.match(homeBlock, /<ExploreFeed initialPage=\{initialFeed\}/);
   assert.doesNotMatch(homeBlock, /TopRatedSalonsSection/);
   assert.doesNotMatch(homeBlock, /TrendingDesignsSection/);
@@ -427,6 +566,9 @@ test("public Beauty post route is read-only and backed by the Personal Explore s
   assert.match(personalPostRoute, /booking\?\.label \?\? "Book"/);
   assert.match(personalPostRoute, /booking\?\.bookedCount/);
   assert.match(personalPostRoute, /bookingCountLabel/);
+  assert.match(personalPostRoute, /PostHeaderTitle/);
+  assert.match(personalPostRoute, /SalonLogo/);
+  assert.match(personalPostRoute, /logoImageUrl/);
   assert.match(personalPostRoute, /const showPostTypeBadge = item\.personal\?\.postType !== "before_after"/);
   assert.doesNotMatch(personalPostRoute, /href="\/explore"/);
   assert.doesNotMatch(

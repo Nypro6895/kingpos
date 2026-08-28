@@ -101,7 +101,6 @@ export function beautyPostBookingPresentation(input: {
   const salonId = cleanUuid(input.salonId);
   const salonName = cleanText(input.salonName);
   const canBuildHref =
-    input.verificationState === "verified" &&
     input.bookingEnabled === true &&
     Boolean(postId && salonId);
   const href =

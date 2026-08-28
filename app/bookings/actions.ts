@@ -390,11 +390,8 @@ export async function createQuickSetupStaffAction(
       is_active: true,
       job_title: jobTitle,
       online_booking_enabled: input.onlineBookingEnabled,
-      owner_public_enabled: false,
       pos_enabled: true,
-      public_profile_visible: false,
       salon_profile_content_posting_enabled: false,
-      staff_public_consent_status: "not_requested",
     });
 
     if (serviceIds.length > 0) {

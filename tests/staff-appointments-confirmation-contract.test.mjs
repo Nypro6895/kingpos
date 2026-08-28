@@ -20,6 +20,9 @@ test("staff schedule keeps salon-facing UX and staff booking controls", () => {
   );
   const setupActions = read("app/booking-setup/actions.ts");
   const bookingStatus = read("lib/booking-status.ts");
+  const unifiedStaffProfileMigration = read(
+    "supabase/migrations/202608180009_unified_staff_profile_public_presentation.sql",
+  );
 
   assert.match(
     page,
@@ -105,8 +108,8 @@ test("staff schedule keeps salon-facing UX and staff booking controls", () => {
 
   assert.match(actions, /export async function confirmStaffBookingAction/);
   assert.match(actions, /rpc\("confirm_assigned_booking"/);
-  assert.match(actions, /export async function updateStaffOnlineBookingAction/);
-  assert.match(actions, /rpc\("set_own_staff_online_booking"/);
+  assert.doesNotMatch(actions, /updateStaffOnlineBookingAction/);
+  assert.doesNotMatch(actions, /set_own_staff_online_booking/);
   assert.match(actions, /revalidatePath\("\/", "layout"\)/);
   assert.match(actions, /revalidatePath\("\/notifications"\)/);
 
@@ -129,10 +132,15 @@ test("staff schedule keeps salon-facing UX and staff booking controls", () => {
   assert.doesNotMatch(settingsClient, /Your settings are saved here/);
   assert.match(settingsClient, /saveStaffWeeklyAvailabilityAction/);
   assert.match(settingsClient, /createStaffTimeBlockAction/);
-  assert.match(settingsClient, /updateStaffOnlineBookingAction/);
+  assert.doesNotMatch(settingsClient, /updateStaffOnlineBookingAction/);
   assert.match(settingsClient, /Bookable services/);
   assert.match(settingsClient, /Read-only/);
   assert.match(settingsClient, /Booking notifications/);
+  assert.match(
+    unifiedStaffProfileMigration,
+    /drop function if exists public\.set_own_staff_online_booking\(uuid, boolean\)/,
+    "Staff online booking is now owner-managed, not a staff self-service RPC.",
+  );
 
   assert.match(setupActions, /isSalonStaffContext/);
   assert.match(setupActions, /resolveStaffAccountForSalon/);
@@ -250,12 +258,6 @@ test("staff booking confirmation is guarded and assigned staff are notified", ()
     /create policy "booking_participant_read_booking_lines"[\s\S]*public\.current_user_can_read_booking_line/,
     "Booking line visibility should use a non-recursive participant helper.",
   );
-  assert.match(
-    migration,
-    /create or replace function public\.set_own_staff_online_booking/,
-    "Staff should have a self-service online booking toggle.",
-  );
-
   assert.match(migration, /'staff'[\s\S]*'public_booking_created'/);
   assert.match(migration, /staff_href := '\/staff\/appointments\?date='/);
   assert.match(migration, /public_booking_created_staff:/);
@@ -336,5 +338,4 @@ test("staff booking confirmation is guarded and assigned staff are notified", ()
 
   assert.match(types, /confirm_assigned_booking/);
   assert.match(types, /resolve_public_booking_request_notifications/);
-  assert.match(types, /set_own_staff_online_booking/);
 });

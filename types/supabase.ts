@@ -5957,6 +5957,7 @@ export type Database = {
       get_public_salon_profile_staff: {
         Args: { target_salon_id: string }
         Returns: {
+          account_avatar_url: string | null
           avatar_path: string
           bio: string
           display_name: string

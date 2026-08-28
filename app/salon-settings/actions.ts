@@ -3,10 +3,23 @@
 import { createHash, randomBytes } from "crypto";
 import { getSalonProfileHref } from "@/lib/salon-profile";
 import {
+  closeSalonPermanently,
+  disableSalon,
+  getSalonClosureReview,
+  getSalonLifecycle,
+  reactivateSalon,
+} from "@/lib/salon-lifecycle";
+import { createSalonLifecycleExport } from "@/lib/lifecycle-export";
+import { normalizeSalonLifecycleStatus } from "@/lib/salon-lifecycle-rules";
+import {
   getCurrentSalonSetting,
   updateCurrentSalonSetting,
 } from "@/lib/salon-settings";
-import { getCurrentBusinessContext, isSalonManageContext } from "@/lib/current-context";
+import {
+  getCurrentBusinessContext,
+  isOwnerMembership,
+  isSalonManageContext,
+} from "@/lib/current-context";
 import { refreshCurrentSalonMapLocation } from "@/lib/location/salon-map-location";
 import { hasPermission } from "@/lib/permissions";
 import { PORTABLE_POS_ACCESS_SETUP_MESSAGE } from "@/lib/pos-portable-access";
@@ -31,6 +44,16 @@ function readOptionalString(formData: FormData, key: string) {
 
 function redirectWithError(message: string): never {
   redirect(`/salon-settings?error=${encodeURIComponent(message)}`);
+}
+
+function redirectWithLifecycleError(message: string): never {
+  redirect(
+    `/salon-settings?lifecycle_error=${encodeURIComponent(message)}#salon-status`,
+  );
+}
+
+function redirectWithNotice(message: string): never {
+  redirect(`/salon-settings?notice=${encodeURIComponent(message)}#salon-status`);
 }
 
 function redirectWithPosAccessError(message: string): never {
@@ -98,6 +121,75 @@ async function requirePortablePosAccessMutationContext() {
   };
 }
 
+async function requireSalonLifecycleMutationContext() {
+  const context = await getCurrentBusinessContext();
+
+  if (
+    !context.user ||
+    !isSalonManageContext(context) ||
+    !context.currentSalon
+  ) {
+    redirectWithLifecycleError("Choose an owner salon workspace first.");
+  }
+
+  if (!(await hasPermission("salon_settings.manage", context))) {
+    redirectWithLifecycleError(
+      "You do not have permission to manage salon lifecycle.",
+    );
+  }
+
+  if (
+    !isOwnerMembership(context.currentMembership) &&
+    !context.permissionCodes.includes("account.manage")
+  ) {
+    redirectWithLifecycleError("Only an Owner can change salon lifecycle.");
+  }
+
+  return {
+    context,
+    salon: context.currentSalon,
+    user: context.user,
+  };
+}
+
+async function requireSalonBackupContext() {
+  const context = await getCurrentBusinessContext();
+
+  if (
+    !context.user ||
+    !isSalonManageContext(context) ||
+    !context.currentSalon
+  ) {
+    throw new Error("Choose an owner salon workspace first.");
+  }
+
+  return {
+    context,
+    salon: context.currentSalon,
+    user: context.user,
+  };
+}
+
+function requireChecked(formData: FormData, key: string, message: string) {
+  if (formData.get(key) !== "on") {
+    redirectWithLifecycleError(message);
+  }
+}
+
+export type SalonBackupActionResult =
+  | {
+      error: null;
+      expiresAt: string;
+      filename: string;
+      signedUrl: string;
+    }
+  | {
+      error: string;
+      expiresAt?: never;
+      filename?: never;
+      signedUrl?: never;
+    };
+
 export async function updateSalonSettings(formData: FormData) {
   const businessName = readRequiredString(formData, "business_name");
 
@@ -132,6 +224,137 @@ export async function updateSalonSettings(formData: FormData) {
   revalidatePath("/salon-settings");
   revalidatePath("/explore");
   redirect("/salon-settings");
+}
+
+export async function disableCurrentSalonAction(formData: FormData) {
+  requireChecked(
+    formData,
+    "disable_acknowledged",
+    "Confirm that new business activity will be paused.",
+  );
+
+  const { salon } = await requireSalonLifecycleMutationContext();
+  const lifecycle = await getSalonLifecycle(salon.id);
+
+  if (!lifecycle || lifecycle.lifecycleStatus !== "active") {
+    redirectWithLifecycleError("Only an active salon can be disabled.");
+  }
+
+  try {
+    await disableSalon({
+      reason: readOptionalString(formData, "disable_reason"),
+      salonId: salon.id,
+    });
+  } catch (error) {
+    redirectWithLifecycleError(
+      error instanceof Error ? error.message : "Salon could not be disabled.",
+    );
+  }
+
+  revalidatePath("/salon-settings");
+  revalidatePath("/", "layout");
+  redirectWithNotice("Salon disabled. Historical data remains available.");
+}
+
+export async function reactivateCurrentSalonAction(formData: FormData) {
+  requireChecked(
+    formData,
+    "reactivate_acknowledged",
+    "Confirm that business activity can resume.",
+  );
+
+  const { salon } = await requireSalonLifecycleMutationContext();
+  const lifecycle = await getSalonLifecycle(salon.id);
+
+  if (!lifecycle || lifecycle.lifecycleStatus !== "disabled") {
+    redirectWithLifecycleError("Only a temporarily disabled salon can be reactivated.");
+  }
+
+  try {
+    await reactivateSalon({
+      reason: readOptionalString(formData, "reactivate_reason"),
+      salonId: salon.id,
+    });
+  } catch (error) {
+    redirectWithLifecycleError(
+      error instanceof Error ? error.message : "Salon could not be reactivated.",
+    );
+  }
+
+  revalidatePath("/salon-settings");
+  revalidatePath("/", "layout");
+  redirectWithNotice("Salon reactivated.");
+}
+
+export async function closeCurrentSalonPermanentlyAction(formData: FormData) {
+  const { context, salon } = await requireSalonLifecycleMutationContext();
+  const lifecycle = await getSalonLifecycle(salon.id);
+  const lifecycleStatus = normalizeSalonLifecycleStatus(lifecycle?.status);
+
+  if (!lifecycle || lifecycleStatus === "permanently_closed") {
+    redirectWithLifecycleError("This salon is already permanently closed.");
+  }
+
+  const confirmationName = readRequiredString(formData, "confirmation_name");
+
+  if (confirmationName !== salon.name) {
+    redirectWithLifecycleError("Type the salon name exactly to confirm permanent closure.");
+  }
+
+  requireChecked(
+    formData,
+    "backup_acknowledged",
+    "Acknowledge the backup/export choice before closing this salon.",
+  );
+
+  const review = await getSalonClosureReview({
+    context,
+    salonId: salon.id,
+  });
+
+  if (!review.canClose) {
+    redirectWithLifecycleError(
+      "Resolve future bookings, pending appointments, and open POS tickets before permanently closing this salon.",
+    );
+  }
+
+  try {
+    await closeSalonPermanently({
+      reason: readOptionalString(formData, "closure_reason"),
+      salonId: salon.id,
+    });
+  } catch (error) {
+    redirectWithLifecycleError(
+      error instanceof Error
+        ? error.message
+        : "Salon could not be permanently closed.",
+    );
+  }
+
+  revalidatePath("/salon-settings");
+  revalidatePath("/", "layout");
+  redirectWithNotice("Salon permanently closed. Historical access remains available.");
+}
+
+export async function generateCurrentSalonBackupAction(): Promise<SalonBackupActionResult> {
+  try {
+    const { salon } = await requireSalonBackupContext();
+    const salonExport = await createSalonLifecycleExport({
+      salonId: salon.id,
+    });
+
+    return {
+      error: null,
+      expiresAt: salonExport.expiresAt,
+      filename: salonExport.filename,
+      signedUrl: salonExport.signedUrl,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error ? error.message : "Salon export could not be generated.",
+    };
+  }
 }
 
 export async function createPortablePosAccessAction(formData: FormData) {
@@ -262,7 +485,6 @@ export async function refreshSalonMapLocation() {
 }
 
 export type PublicTeamBatchUpdate = {
-  ownerPublicEnabled: boolean;
   onlineBookingEnabled: boolean;
   profileDisplayOrder: number;
   salonProfileContentPostingEnabled: boolean;
@@ -311,7 +533,6 @@ export async function updateStaffPublicTeamBatchAction(
 
   const normalizedUpdates = updates.map((update) => ({
     online_booking_enabled: update.onlineBookingEnabled === true,
-    owner_public_enabled: update.ownerPublicEnabled === true,
     profile_display_order: Number.isFinite(update.profileDisplayOrder)
       ? Math.trunc(update.profileDisplayOrder)
       : 0,
@@ -339,7 +560,18 @@ export async function updateStaffPublicTeamBatchAction(
   }
 
   revalidatePath("/salon-settings");
+  revalidatePath("/staff");
+  revalidatePath("/staff/my-work");
+  revalidatePath("/services");
+  revalidatePath("/booking-setup");
+  revalidatePath("/bookings");
+  revalidatePath("/staff/appointments");
+  revalidatePath("/pos");
+  revalidatePath("/pos/portable");
+  revalidatePath("/pos/portable/check-in");
+  revalidatePath("/payroll");
   revalidatePath("/salon-profile");
+  revalidatePath(`/book/${salon.id}`);
   revalidatePath(getSalonProfileHref(salon.id));
   return { error: null, updatedCount: typeof data === "number" ? data : 0 };
 }

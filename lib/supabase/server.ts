@@ -224,7 +224,33 @@ async function isAccessTokenAllowedForAppSession(
     return false;
   }
 
-  return !isDeniedKingUserStatus(userStatus?.status);
+  if (userStatus?.status) {
+    return !isDeniedKingUserStatus(userStatus.status);
+  }
+
+  const { data: authIdentityDeleted, error: authIdentityDeletedError } =
+    await supabase.rpc("auth_identity_is_deleted", {
+      p_auth_user_id: authData.user.id,
+    });
+
+  if (authIdentityDeletedError) {
+    if (
+      authIdentityDeletedError.code !== "42883" &&
+      authIdentityDeletedError.code !== "42P01"
+    ) {
+      console.error("Unable to verify deleted auth identity for app session", {
+        authUserId: authData.user.id,
+        code: authIdentityDeletedError.code,
+        details: authIdentityDeletedError.details,
+        hint: authIdentityDeletedError.hint,
+        message: authIdentityDeletedError.message,
+      });
+    }
+
+    return true;
+  }
+
+  return authIdentityDeleted !== true;
 }
 
 export async function getAccessTokenFromRequest() {

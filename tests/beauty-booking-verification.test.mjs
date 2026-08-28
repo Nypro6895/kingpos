@@ -108,7 +108,7 @@ test("beauty post booking presentation does not let missing counts block Book", 
   );
 });
 
-test("beauty post booking presentation requires verification and public booking eligibility", () => {
+test("beauty post booking presentation requires linked public booking eligibility", () => {
   assert.equal(
     beautyPostBookingPresentation({
       bookedCount: 0,
@@ -117,6 +117,17 @@ test("beauty post booking presentation requires verification and public booking 
       salonId,
       source: "explore",
       verificationState: "pending",
+    }).eligible,
+    true,
+  );
+  assert.equal(
+    beautyPostBookingPresentation({
+      bookedCount: 0,
+      bookingEnabled: true,
+      postId,
+      salonId: null,
+      source: "explore",
+      verificationState: "verified",
     }).eligible,
     false,
   );

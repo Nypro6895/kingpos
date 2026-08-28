@@ -14,10 +14,8 @@ export type PublicTeamSettingsMember = {
   isActive: boolean;
   jobTitle: string | null;
   onlineBookingEnabled: boolean;
-  ownerPublicEnabled: boolean;
   profileDisplayOrder: number;
   salonProfileContentPostingEnabled: boolean;
-  staffPublicConsentStatus: "granted" | "not_requested" | "opted_out";
 };
 
 type DraftMember = PublicTeamSettingsMember;
@@ -40,7 +38,6 @@ function memberSignature(member: DraftMember) {
   return JSON.stringify({
     id: member.id,
     onlineBookingEnabled: member.onlineBookingEnabled,
-    ownerPublicEnabled: member.ownerPublicEnabled,
     profileDisplayOrder: member.profileDisplayOrder,
     salonProfileContentPostingEnabled: member.salonProfileContentPostingEnabled,
   });
@@ -49,7 +46,6 @@ function memberSignature(member: DraftMember) {
 function buildPayload(members: DraftMember[]): PublicTeamBatchUpdate[] {
   return members.map((member) => ({
     onlineBookingEnabled: member.onlineBookingEnabled,
-    ownerPublicEnabled: member.ownerPublicEnabled,
     profileDisplayOrder: member.profileDisplayOrder,
     salonProfileContentPostingEnabled: member.salonProfileContentPostingEnabled,
     staffId: member.id,
@@ -119,7 +115,6 @@ export function PublicTeamSettingsEditor({
       Pick<
         DraftMember,
         | "onlineBookingEnabled"
-        | "ownerPublicEnabled"
         | "profileDisplayOrder"
         | "salonProfileContentPostingEnabled"
       >
@@ -192,6 +187,30 @@ export function PublicTeamSettingsEditor({
           onClick={() =>
             applyAll((member) =>
               member.isActive
+                ? { onlineBookingEnabled: true }
+                : null,
+            )
+          }
+          type="button"
+        >
+          Turn online booking on for all active
+        </button>
+        <button
+          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
+          disabled={!canManageSettings}
+          onClick={() =>
+            applyAll(() => ({ onlineBookingEnabled: false }))
+          }
+          type="button"
+        >
+          Turn online booking off for all
+        </button>
+        <button
+          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
+          disabled={!canManageSettings}
+          onClick={() =>
+            applyAll((member) =>
+              member.isActive
                 ? { salonProfileContentPostingEnabled: true }
                 : null,
             )
@@ -210,63 +229,34 @@ export function PublicTeamSettingsEditor({
         >
           Disable posting for all
         </button>
-        <button
-          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
-          disabled={!canManageSettings}
-          onClick={() =>
-            applyAll((member) =>
-              member.isActive && member.staffPublicConsentStatus !== "opted_out"
-                ? { ownerPublicEnabled: true }
-                : null,
-            )
-          }
-          type="button"
-        >
-          Show all eligible staff
-        </button>
-        <button
-          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
-          disabled={!canManageSettings}
-          onClick={() => applyAll(() => ({ ownerPublicEnabled: false }))}
-          type="button"
-        >
-          Hide all staff
-        </button>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-        <div className="hidden grid-cols-[minmax(13rem,1.3fr)_repeat(4,minmax(8rem,.8fr))] gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500 lg:grid">
+        <div className="hidden grid-cols-[minmax(13rem,1.3fr)_repeat(3,minmax(8rem,.8fr))] gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500 lg:grid">
           <span>Staff</span>
-          <span>Public</span>
-          <span>Booking</span>
+          <span>Online booking</span>
           <span>Posting</span>
           <span>Order</span>
         </div>
         <div className="divide-y divide-zinc-200">
           {draftMembers.map((member) => {
-            const consentLabel =
-              member.staffPublicConsentStatus === "granted"
-                ? "Staff consented"
-                : member.staffPublicConsentStatus === "opted_out"
-                  ? "Staff opted out"
-                  : "Consent not requested";
             const effectivePublic =
               member.isActive &&
-              member.ownerPublicEnabled &&
-              member.staffPublicConsentStatus === "granted";
+              (member.onlineBookingEnabled ||
+                member.salonProfileContentPostingEnabled);
             const rowDirty =
               savedSignatures.get(member.id) !== memberSignature(member);
 
             return (
               <div
-                className="grid gap-4 p-4 lg:grid-cols-[minmax(13rem,1.3fr)_repeat(4,minmax(8rem,.8fr))] lg:items-center"
+                className="grid gap-4 p-4 lg:grid-cols-[minmax(13rem,1.3fr)_repeat(3,minmax(8rem,.8fr))] lg:items-center"
                 key={member.id}
               >
                 <div className="flex min-w-0 items-start gap-3">
                   {member.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      alt={`${member.displayName} public profile`}
+                      alt={`${member.displayName} Staff Profile`}
                       className="h-12 w-12 shrink-0 rounded-full border border-zinc-200 object-cover"
                       src={member.avatarUrl}
                     />
@@ -291,27 +281,17 @@ export function PublicTeamSettingsEditor({
                       {member.isActive ? "Active" : "Inactive"}
                     </p>
                     <p className="mt-1 text-xs font-semibold text-zinc-600">
-                      {effectivePublic ? "Visible publicly" : "Hidden publicly"} /{" "}
-                      {consentLabel}
+                      {effectivePublic
+                        ? "Staff Profile appears where this staff is online"
+                        : "Internal staff only"}
                     </p>
                   </div>
                 </div>
 
                 <Toggle
-                  checked={member.ownerPublicEnabled}
-                  disabled={
-                    !canManageSettings ||
-                    member.staffPublicConsentStatus === "opted_out"
-                  }
-                  label="Show on public profile"
-                  onChange={(checked) =>
-                    updateMember(member.id, { ownerPublicEnabled: checked })
-                  }
-                />
-                <Toggle
                   checked={member.onlineBookingEnabled}
                   disabled={!canManageSettings || !member.isActive}
-                  label="Direct booking"
+                  label="Online booking"
                   onChange={(checked) =>
                     updateMember(member.id, { onlineBookingEnabled: checked })
                   }

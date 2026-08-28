@@ -6,9 +6,17 @@ import {
 import { loadBeautyPostVerifiedBookingCounts } from "@/lib/beauty-post-booking-counts";
 import { getBeautyMediaPublicUrl } from "@/lib/beauty-media";
 import {
+  exploreFeedTrustFromDecisionSignals,
+  getExploreDecisionSignalsBySalonId,
+  type ExploreDecisionSignals,
+} from "@/lib/explore-decision-signals";
+import { loadPublicSalonLogoPaths } from "@/lib/explore-salon-logos";
+import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
+import {
   createSupabaseServerClient,
   getSupabaseConfig,
 } from "@/lib/supabase/server";
+import { getAccountSavedPostStateKeys } from "@/lib/account-social";
 import type {
   ExploreFeedMedia,
   ExploreFeedRankingSignals,
@@ -18,6 +26,7 @@ import type {
   ExplorePersonalPostItem,
   ExplorePersonalPostPage,
 } from "@/types/explore";
+import { savedPostKey } from "@/types/saved-post";
 
 const EXPLORE_PERSONAL_PAGE_SIZE = 18;
 const EXPLORE_PERSONAL_MAX_PAGE_SIZE = 24;
@@ -65,6 +74,7 @@ type ExplorePersonalPostRow = {
   salon_city: string | null;
   salon_href: string | null;
   salon_id: string | null;
+  salon_logo_path?: string | null;
   salon_name: string | null;
   salon_state: string | null;
   service_category: string | null;
@@ -204,7 +214,19 @@ function rankingSignalsForPersonalPost(input: {
 }
 
 function diagnosticString(value: unknown) {
-  return typeof value === "string" && value.trim() ? value : null;
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.trim().replace(/\s+/g, " ");
+
+  if (!normalized) {
+    return null;
+  }
+
+  return normalized.length > 280
+    ? `${normalized.slice(0, 277).trimEnd()}...`
+    : normalized;
 }
 
 function supabaseErrorDiagnostics(error: unknown) {
@@ -316,6 +338,8 @@ function personalPostHref(input: { postId: string; profileId: string }) {
 function mapPersonalPostRow(
   row: ExplorePersonalPostRow,
   supabaseUrl: string,
+  trustSignals?: ExploreDecisionSignals,
+  fallbackSalonLogoPath?: string | null,
 ): ExplorePersonalPostItem | null {
   const postId = cleanString(row.post_id);
   const profileId = cleanString(row.profile_id);
@@ -392,14 +416,23 @@ function mapPersonalPostRow(
       salonId,
       serviceName: cleanString(row.service_name),
     }),
+    saveTarget: {
+      saved: false,
+      sourceId: postId,
+      sourceType: "beauty_post",
+    },
     salon:
       salonId && salonName
         ? {
             city: cleanString(row.salon_city),
             href: cleanString(row.salon_href),
             id: salonId,
+            logoImageUrl: getSalonProfileMediaUrl(
+              row.salon_logo_path ?? fallbackSalonLogoPath,
+            ),
             name: salonName,
             state: cleanString(row.salon_state),
+            trust: exploreFeedTrustFromDecisionSignals(trustSignals),
           }
         : null,
     serviceCategory: cleanString(row.service_category),
@@ -408,6 +441,36 @@ function mapPersonalPostRow(
     sourceType: "personal",
     verification: verification ? { state: verification } : null,
   };
+}
+
+async function attachPersonalPostSaveStates(items: ExplorePersonalPostItem[]) {
+  const targets = items
+    .map((item) => item.saveTarget)
+    .filter((target): target is NonNullable<ExplorePersonalPostItem["saveTarget"]> =>
+      Boolean(target),
+    );
+
+  if (targets.length === 0) {
+    return items;
+  }
+
+  try {
+    const savedKeys = await getAccountSavedPostStateKeys(targets);
+
+    return items.map((item) =>
+      item.saveTarget
+        ? {
+            ...item,
+            saveTarget: {
+              ...item.saveTarget,
+              saved: savedKeys.has(savedPostKey(item.saveTarget)),
+            },
+          }
+        : item,
+    );
+  } catch {
+    return items;
+  }
 }
 
 export async function getExplorePersonalPostPage(input: {
@@ -445,8 +508,8 @@ export async function getExplorePersonalPostPage(input: {
     if (error) {
       const diagnostics = supabaseErrorDiagnostics(error);
 
-      console.error(
-        "Explore personal beauty posts failed",
+      console.warn(
+        "Explore personal beauty posts unavailable",
         diagnosticJson(
           process.env.NODE_ENV === "production"
             ? diagnostics
@@ -474,8 +537,30 @@ export async function getExplorePersonalPostPage(input: {
           }
         : null;
     const seenPostIds = new Set<string>();
+    const signalMap = await getExploreDecisionSignalsBySalonId(
+      rpc,
+      visibleRows
+        .map((row) => cleanString(row.salon_id))
+        .filter((salonId): salonId is string => Boolean(salonId)),
+    );
+    const logoPathMap = await loadPublicSalonLogoPaths({
+      rpc,
+      salonIds: visibleRows
+        .filter((row) => !cleanString(row.salon_logo_path))
+        .map((row) => cleanString(row.salon_id))
+        .filter((salonId): salonId is string => Boolean(salonId)),
+    });
     const items = visibleRows
-      .map((row) => mapPersonalPostRow(row, config.supabaseUrl))
+      .map((row) => {
+        const salonId = cleanString(row.salon_id);
+
+        return mapPersonalPostRow(
+          row,
+          config.supabaseUrl,
+          salonId ? signalMap.get(salonId) : undefined,
+          salonId ? logoPathMap.get(salonId) : null,
+        );
+      })
       .filter((item): item is ExplorePersonalPostItem => Boolean(item))
       .filter((item) => {
         if (seenPostIds.has(item.id)) {
@@ -490,16 +575,19 @@ export async function getExplorePersonalPostPage(input: {
       items,
       rpc,
     });
+    const itemsWithSaveStates = await attachPersonalPostSaveStates(
+      itemsWithBookingCounts,
+    );
 
     return {
       error: null,
       hasMore,
-      items: itemsWithBookingCounts,
+      items: itemsWithSaveStates,
       nextCursor,
     };
   } catch (error) {
-    console.error(
-      "Explore personal beauty posts crashed",
+    console.warn(
+      "Explore personal beauty posts unavailable",
       diagnosticJson(supabaseErrorDiagnostics(error)),
     );
 

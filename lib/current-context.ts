@@ -2,6 +2,11 @@ import "server-only";
 
 import { routes } from "@/lib/routes";
 import {
+  isActiveSalonLifecycle,
+  isHistoricalSalonLifecycle,
+  normalizeSalonLifecycleStatus,
+} from "@/lib/salon-lifecycle-rules";
+import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
   createUserScopedSupabaseServerClient,
@@ -102,6 +107,7 @@ export type CurrentBusinessContext = {
   accountName: string | null;
   accountRole: string | null;
   activeRole: CurrentActiveRole | null;
+  activeManageSalons: Location[];
   availableAccounts: Account[];
   availableBusinesses: Business[];
   availableManageSalons: Location[];
@@ -118,6 +124,8 @@ export type CurrentBusinessContext = {
   currentStaffSalon: Location | null;
   currentWorkspace: CurrentWorkspaceOption | null;
   defaultRouteForCurrentContext: string;
+  historicalManageSalons: Location[];
+  inactiveManageSalons: Location[];
   permissionCodes: string[];
   permissions: string[];
   salonId: string | null;
@@ -226,6 +234,7 @@ function emptyContext(user: KingUser | null): CurrentBusinessContext {
     accountName: null,
     accountRole: null,
     activeRole: null,
+    activeManageSalons: [],
     availableAccounts: [],
     availableBusinesses: [],
     availableManageSalons: [],
@@ -242,6 +251,8 @@ function emptyContext(user: KingUser | null): CurrentBusinessContext {
     currentStaffSalon: null,
     currentWorkspace: null,
     defaultRouteForCurrentContext: "/explore",
+    historicalManageSalons: [],
+    inactiveManageSalons: [],
     permissionCodes: [],
     permissions: [],
     salonId: null,
@@ -324,15 +335,27 @@ function buildManageWorkspaceActions(input: {
   defaultHref: string;
   isOwner: boolean;
   permissionCodes: Set<string>;
+  status: string | null | undefined;
 }) {
   const actions: CurrentWorkspaceAction[] = [];
+  const lifecycleStatus = normalizeSalonLifecycleStatus(input.status);
+  const historicalMode = lifecycleStatus !== "active";
 
-  if (canUseManageAction(input.permissionCodes, input.isOwner, "staff.view")) {
+  if (
+    !historicalMode &&
+    canUseManageAction(input.permissionCodes, input.isOwner, "staff.view")
+  ) {
     actions.push(workspaceAction("today", "Today", "/staff/today"));
   }
 
   if (canUseManageAction(input.permissionCodes, input.isOwner, "booking.view")) {
-    actions.push(workspaceAction("book", "Book", "/bookings"));
+    actions.push(
+      workspaceAction(
+        "book",
+        historicalMode ? "Booking history" : "Book",
+        "/bookings",
+      ),
+    );
   }
 
   if (
@@ -345,8 +368,21 @@ function buildManageWorkspaceActions(input: {
     actions.push(workspaceAction("profile", "Profile", "/salon-profile"));
   }
 
-  if (canUseManageAction(input.permissionCodes, input.isOwner, "tickets.manage")) {
+  if (
+    !historicalMode &&
+    canUseManageAction(input.permissionCodes, input.isOwner, "tickets.manage")
+  ) {
     actions.push(workspaceAction("pos", "POS", "/pos"));
+  }
+
+  if (
+    historicalMode &&
+    canUseManageAction(input.permissionCodes, input.isOwner, [
+      "tickets.manage",
+      "tickets.view",
+    ])
+  ) {
+    actions.push(workspaceAction("tickets", "Ticket history", "/pos-tickets"));
   }
 
   if (canUseManageAction(input.permissionCodes, input.isOwner, "staff.view")) {
@@ -370,7 +406,10 @@ function buildManageWorkspaceActions(input: {
     actions.push(workspaceAction("customers", "Customers", "/customers"));
   }
 
-  if (canUseManageAction(input.permissionCodes, input.isOwner, "services.view")) {
+  if (
+    lifecycleStatus !== "permanently_closed" &&
+    canUseManageAction(input.permissionCodes, input.isOwner, "services.view")
+  ) {
     actions.push(workspaceAction("services", "Services", "/services"));
   }
 
@@ -658,6 +697,58 @@ function getManageDefaultRoute(permissionCodes: Set<string>, isOwner: boolean) {
   return "/my-place";
 }
 
+function getHistoricalManageDefaultRoute(
+  permissionCodes: Set<string>,
+  isOwner: boolean,
+) {
+  if (permissionCodes.has("reports.view") || isOwner) {
+    return "/reports";
+  }
+
+  if (permissionCodes.has("booking.view")) {
+    return "/bookings";
+  }
+
+  if (permissionCodes.has("tickets.view") || permissionCodes.has("tickets.manage")) {
+    return "/pos-tickets";
+  }
+
+  if (permissionCodes.has("payroll.view") || permissionCodes.has("payroll.manage")) {
+    return "/payroll";
+  }
+
+  if (permissionCodes.has("customers.view")) {
+    return "/customers";
+  }
+
+  if (permissionCodes.has("staff.view")) {
+    return "/staff";
+  }
+
+  if (permissionCodes.has("salon_settings.view") || isOwner) {
+    return "/salon-settings";
+  }
+
+  return "/my-place";
+}
+
+function getManageWorkspaceDescription(input: {
+  accountName: string;
+  status: string | null | undefined;
+}) {
+  const status = normalizeSalonLifecycleStatus(input.status);
+
+  if (status === "disabled") {
+    return `${input.accountName} / Temporarily disabled`;
+  }
+
+  if (status === "permanently_closed") {
+    return `${input.accountName} / Permanently closed`;
+  }
+
+  return input.accountName;
+}
+
 function buildManageWorkspaceOption(input: {
   account: Account;
   avatarUrl: string | null;
@@ -666,11 +757,16 @@ function buildManageWorkspaceOption(input: {
   salon: Location;
 }): CurrentWorkspaceOption {
   const isOwner = isOwnerMembership(input.membership);
-  const defaultHref = getManageDefaultRoute(input.permissionCodes, isOwner);
+  const lifecycleStatus = normalizeSalonLifecycleStatus(input.salon.status);
+  const defaultHref =
+    lifecycleStatus === "active"
+      ? getManageDefaultRoute(input.permissionCodes, isOwner)
+      : getHistoricalManageDefaultRoute(input.permissionCodes, isOwner);
   const actionSet = buildManageWorkspaceActions({
     defaultHref,
     isOwner,
     permissionCodes: input.permissionCodes,
+    status: input.salon.status,
   });
 
   return {
@@ -681,7 +777,10 @@ function buildManageWorkspaceOption(input: {
     businessMode: "manage",
     businessName: input.salon.name,
     defaultHref,
-    description: input.account.name,
+    description: getManageWorkspaceDescription({
+      accountName: input.account.name,
+      status: input.salon.status,
+    }),
     id: getManageWorkspaceId(input.salon.id),
     label: input.salon.name,
     menuActions: actionSet.menuActions,
@@ -1490,6 +1589,13 @@ export async function getCurrentBusinessContext(
     ...(accountSalonResult.data ?? []),
     ...memberSalons,
   ]);
+  const activeManageSalons = allSalons.filter((salon) =>
+    isActiveSalonLifecycle(salon.status),
+  );
+  const historicalManageSalons = allSalons.filter((salon) =>
+    isHistoricalSalonLifecycle(salon.status),
+  );
+  const inactiveManageSalons = historicalManageSalons;
   const allBusinesses = allSalons as Business[];
   const salonsByAccount = groupSalonsByAccount(allSalons);
   const salonProfilesById = await loadSalonWorkspaceProfiles({
@@ -1612,6 +1718,7 @@ export async function getCurrentBusinessContext(
     accountName: currentWorkspace.accountName,
     accountRole,
     activeRole: buildActiveRole(currentWorkspace, accountRole),
+    activeManageSalons,
     availableAccounts,
     availableBusinesses: allBusinesses,
     availableManageSalons: allSalons,
@@ -1636,6 +1743,8 @@ export async function getCurrentBusinessContext(
     currentStaffSalon: currentWorkspace.salonMode === "staff" ? currentSalon : null,
     currentWorkspace,
     defaultRouteForCurrentContext: getWorkspaceLandingHref(currentWorkspace),
+    historicalManageSalons,
+    inactiveManageSalons,
     permissionCodes: activePermissions,
     permissions: activePermissions,
     salonId: currentSalon?.id ?? null,
@@ -1772,6 +1881,13 @@ export function getWorkspaceLandingHref(workspace: CurrentWorkspaceOption) {
   return workspace.defaultHref;
 }
 
+function workspaceDestinationPath(href: string) {
+  const [path = ""] = href.split("?");
+  const normalizedPath = path.replace(/\/+$/, "");
+
+  return normalizedPath || "/";
+}
+
 export function isWorkspaceDestinationAllowed(
   workspace: CurrentWorkspaceOption,
   destinationHref: string,
@@ -1780,7 +1896,20 @@ export function isWorkspaceDestinationAllowed(
     return false;
   }
 
-  return getWorkspaceActionHrefs(workspace).has(destinationHref);
+  const destinationPath = workspaceDestinationPath(destinationHref);
+
+  return Array.from(getWorkspaceActionHrefs(workspace)).some((href) => {
+    if (href === destinationHref) {
+      return true;
+    }
+
+    const allowedPath = workspaceDestinationPath(href);
+
+    return (
+      destinationPath === allowedPath ||
+      (allowedPath !== "/" && destinationPath.startsWith(`${allowedPath}/`))
+    );
+  });
 }
 
 export async function setCurrentAccountCookie(accountId: string) {

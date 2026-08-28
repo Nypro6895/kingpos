@@ -1,5 +1,6 @@
 "use client";
 
+import { LegalFooter } from "@/components/legal-footer";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import Image from "next/image";
 import Link from "next/link";
@@ -68,7 +69,11 @@ export function GuestNavigationShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  if (isGuestChromelessPath(pathname)) {
+  if (
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    isGuestChromelessPath(pathname)
+  ) {
     return <>{children}</>;
   }
 
@@ -141,6 +146,7 @@ export function GuestNavigationShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       {children}
+      <LegalFooter />
     </>
   );
 }

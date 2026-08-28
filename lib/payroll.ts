@@ -9,6 +9,7 @@ import { getUtcBoundsForLocalDate, isDateInputValue } from "@/lib/daily-pos-repo
 import { hasPermission } from "@/lib/permissions";
 import { calculateTaxCompanyReporting } from "@/lib/payroll-tax-company";
 import { STAFF_SELECT } from "@/lib/staff";
+import { getStaffPresentationsByStaffId } from "@/lib/staff-profile";
 import {
   CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE,
   resolveStaffAccountForSalon,
@@ -1221,6 +1222,7 @@ async function loadPayrollPeriodStaffInputHistory(
 function latestSettingsWithStaff(
   staffRows: Staff[],
   settings: StaffPayrollSetting[],
+  staffPresentations: Awaited<ReturnType<typeof getStaffPresentationsByStaffId>>,
 ): StaffPayrollSettingWithStaff[] {
   const settingMap = settingsByStaffId(settings);
 
@@ -1228,6 +1230,9 @@ function latestSettingsWithStaff(
     history: settingMap.get(staff.id) ?? [],
     setting: settingMap.get(staff.id)?.[0] ?? null,
     staff,
+    staffProfileAvatarUrl: staffPresentations.get(staff.id)?.avatarUrl ?? null,
+    staffProfileDisplayName:
+      staffPresentations.get(staff.id)?.displayName ?? staff.display_name,
   }));
 }
 
@@ -4401,6 +4406,10 @@ export async function getPayrollPageData(input: {
     live,
     period,
   });
+  const staffPresentations = await getStaffPresentationsByStaffId({
+    staff: staffRows,
+    supabase: auth.supabase,
+  });
 
   return {
     access: auth.access,
@@ -4413,7 +4422,11 @@ export async function getPayrollPageData(input: {
     scheduleSetup: getPayrollScheduleSetup(salonPayrollSetting),
     salonPayrollSetting,
     serviceAnalytics,
-    staffPayrollSettings: latestSettingsWithStaff(staffRows, staffSettings),
+    staffPayrollSettings: latestSettingsWithStaff(
+      staffRows,
+      staffSettings,
+      staffPresentations,
+    ),
     status: getPayrollStatusView(latestStatement, difference),
     taxCompany,
   };

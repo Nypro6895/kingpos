@@ -3,6 +3,10 @@ import "server-only";
 import { getExploreHomeContent } from "@/lib/explore-home";
 import { getExploreInspirationPage } from "@/lib/explore-inspiration";
 import { getExplorePersonalPostPage } from "@/lib/explore-personal";
+import {
+  getAccountSavedPostCounts,
+  getAccountSavedPostStateKeys,
+} from "@/lib/account-social";
 import { Buffer } from "node:buffer";
 import type {
   ExploreFeedCursor,
@@ -10,6 +14,7 @@ import type {
   ExploreFeedMedia,
   ExploreFeedPage,
   ExploreFeedRankingSignals,
+  ExploreFeedTrustSignals,
   ExploreHomeContent,
   ExploreHomeSalon,
   ExploreInspirationCursor,
@@ -18,11 +23,19 @@ import type {
   ExplorePersonalPostCursor,
   ExplorePersonalPostPage,
 } from "@/types/explore";
+import {
+  savedPostKey,
+  type AccountSavedPostStateTarget,
+} from "@/types/saved-post";
 
 const EXPLORE_FEED_PAGE_SIZE = 12;
 const EXPLORE_FEED_MAX_PAGE_SIZE = 18;
-const EXPLORE_FEED_CURSOR_VERSION = 3;
+const EXPLORE_FEED_CURSOR_VERSION = 4;
+const EXPLORE_FEED_CANDIDATE_POOL_MAX = 24;
+const EXPLORE_FEED_CANDIDATE_POOL_MULTIPLIER = 2;
 const EXPLORE_FEED_RECOMMENDATION_LIMIT = 1;
+const EXPLORE_FEED_RECENT_PRIORITY_WEIGHT = 0.18;
+const EXPLORE_FEED_SESSION_VARIATION_WEIGHT = 0.1;
 const MS_PER_DAY = 86400000;
 
 const UUID_PATTERN =
@@ -57,6 +70,7 @@ type ExploreFeedSourceCompletion = {
 
 type ExploreFeedSourceState = ExploreFeedSourceCursors & {
   completed: ExploreFeedSourceCompletion;
+  sessionSeed: string | null;
 };
 
 type ExploreFeedCursorPayload = ExploreFeedSourceState & {
@@ -84,6 +98,19 @@ type FeedCandidate = {
 
 type FeedCandidateSources = Record<ExploreFeedInternalSource, FeedCandidate[]>;
 type FeedSourceCounts = Record<ExploreFeedInternalSource, number>;
+type RecommendationPostPreview = {
+  booking: ExploreFeedItem["booking"];
+  caption: string | null;
+  dedupeKey: string;
+  destination: ExploreFeedItem["destination"];
+  media: ExploreFeedMedia;
+  publishedAt: string;
+  saveTarget: AccountSavedPostStateTarget | null;
+  serviceCategory: string | null;
+  serviceName: string | null;
+  sourceSortId: string;
+  trust: ExploreFeedTrustSignals | null;
+};
 
 const FEED_SOURCES: ExploreFeedInternalSource[] = [
   "personal",
@@ -137,6 +164,7 @@ function emptySourceState(): ExploreFeedSourceState {
     personal: null,
     recommendation: null,
     salon: null,
+    sessionSeed: null,
   };
 }
 
@@ -146,6 +174,13 @@ function normalizeLimit(value: number | null | undefined) {
   }
 
   return Math.min(EXPLORE_FEED_MAX_PAGE_SIZE, Math.max(1, Math.floor(value)));
+}
+
+function sourceCandidatePoolSize(pageSize: number) {
+  return Math.min(
+    EXPLORE_FEED_CANDIDATE_POOL_MAX,
+    Math.max(pageSize, pageSize * EXPLORE_FEED_CANDIDATE_POOL_MULTIPLIER),
+  );
 }
 
 function normalizeDate(value: unknown) {
@@ -241,6 +276,16 @@ function normalizeCompletion(value: unknown): ExploreFeedSourceCompletion {
   };
 }
 
+function normalizeSessionSeed(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  return trimmed.length >= 8 && trimmed.length <= 96 ? trimmed : null;
+}
+
 function normalizeFeedCursorPayload(value: unknown): ExploreFeedSourceState | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
@@ -248,13 +293,20 @@ function normalizeFeedCursorPayload(value: unknown): ExploreFeedSourceState | nu
 
   const payload = value as Record<string, unknown>;
 
-  if (payload.version !== EXPLORE_FEED_CURSOR_VERSION && payload.version !== 2) {
+  if (
+    payload.version !== EXPLORE_FEED_CURSOR_VERSION &&
+    payload.version !== 3 &&
+    payload.version !== 2
+  ) {
     return null;
   }
 
+  const carriesCompletion =
+    payload.version === EXPLORE_FEED_CURSOR_VERSION || payload.version === 3;
+
   return {
     completed:
-      payload.version === EXPLORE_FEED_CURSOR_VERSION
+      carriesCompletion
         ? normalizeCompletion(payload.completed)
         : {
             personal: false,
@@ -264,6 +316,10 @@ function normalizeFeedCursorPayload(value: unknown): ExploreFeedSourceState | nu
     personal: normalizePersonalCursor(payload.personal),
     recommendation: normalizeRecommendationCursor(payload.recommendation),
     salon: normalizeSalonCursor(payload.salon),
+    sessionSeed:
+      payload.version === EXPLORE_FEED_CURSOR_VERSION
+        ? normalizeSessionSeed(payload.sessionSeed)
+        : null,
   };
 }
 
@@ -279,6 +335,7 @@ function normalizeSourceState(
     personal: normalizePersonalCursor(state?.personal),
     recommendation: normalizeRecommendationCursor(state?.recommendation),
     salon: normalizeSalonCursor(state?.salon),
+    sessionSeed: normalizeSessionSeed(state?.sessionSeed),
   };
 }
 
@@ -312,6 +369,7 @@ export function encodeExploreFeedCursor(
     personal: normalizedState.personal,
     recommendation: normalizedState.recommendation,
     salon: normalizedState.salon,
+    sessionSeed: normalizedState.sessionSeed,
     version: EXPLORE_FEED_CURSOR_VERSION,
   };
 
@@ -374,6 +432,74 @@ function weightedRankingScore(signals: ExploreFeedRankingSignals) {
   );
 }
 
+function createExploreFeedSessionSeed() {
+  return `${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 12)}`;
+}
+
+function stableHashScore(value: string) {
+  let hash = 2166136261;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
+  }
+
+  return (hash >>> 0) / 4294967295;
+}
+
+function recentPriorityScore(signals: ExploreFeedRankingSignals) {
+  if (signals.freshnessScore >= 0.96) {
+    return EXPLORE_FEED_RECENT_PRIORITY_WEIGHT;
+  }
+
+  if (signals.freshnessScore >= 0.9) {
+    return EXPLORE_FEED_RECENT_PRIORITY_WEIGHT * 0.62;
+  }
+
+  if (signals.freshnessScore >= 0.82) {
+    return EXPLORE_FEED_RECENT_PRIORITY_WEIGHT * 0.32;
+  }
+
+  return 0;
+}
+
+function sessionVariationScore(input: {
+  item: ExploreFeedItem;
+  sessionSeed: string;
+}) {
+  const freshnessDamping =
+    0.38 + (1 - input.item.rankingSignals.freshnessScore) * 0.62;
+
+  return (
+    stableHashScore(`${input.sessionSeed}:${input.item.feedKey}`) *
+    EXPLORE_FEED_SESSION_VARIATION_WEIGHT *
+    freshnessDamping
+  );
+}
+
+function freshnessBucket(item: ExploreFeedItem) {
+  const score = item.rankingSignals.freshnessScore;
+
+  if (score >= 0.96) {
+    return 4;
+  }
+
+  if (score >= 0.9) {
+    return 3;
+  }
+
+  if (score >= 0.75) {
+    return 2;
+  }
+
+  if (score >= 0.5) {
+    return 1;
+  }
+
+  return 0;
+}
+
 function rankingSignalsForSalonContent(
   item: ExploreInspirationItem,
 ): ExploreFeedRankingSignals {
@@ -428,10 +554,14 @@ function rankingSignalsForRecommendation(
   publishedAt: string,
 ): ExploreFeedRankingSignals {
   const ratingScore =
-    salon.averageRating !== null && salon.reviewCount > 0
+    salon.averageRating !== null && salon.sharedExperienceCount > 0
       ? clampScore((salon.averageRating - 1) / 4)
       : 0;
-  const reviewScore = normalizedCountScore(salon.reviewCount, 40);
+  const reviewScore = normalizedCountScore(
+    Math.max(salon.sharedExperienceCount, salon.reviewCount),
+    40,
+  );
+  const verifiedVisitScore = normalizedCountScore(salon.verifiedVisitCount, 120);
   const distanceScore =
     salon.distanceMiles === null
       ? 0
@@ -443,10 +573,11 @@ function rankingSignalsForRecommendation(
     locationAffinityScore: distanceScore,
     qualityScore: clampScore(
       salon.profileCompleteness / 100 * 0.4 +
-        ratingScore * 0.22 +
-        reviewScore * 0.12 +
+        ratingScore * 0.18 +
+        reviewScore * 0.1 +
+        verifiedVisitScore * 0.08 +
         (salon.coverImageUrl ? 0.16 : 0) +
-        normalizedCountScore(salon.activeServiceCount, 12) * 0.1,
+        normalizedCountScore(salon.activeServiceCount, 12) * 0.08,
     ),
     relevanceScore: clampScore(
       normalizedCountScore(salon.relevanceScore, 100) * 0.45 +
@@ -479,6 +610,107 @@ function mapSalonMedia(item: ExploreInspirationItem): ExploreFeedMedia {
   };
 }
 
+function recommendationPreviewKeyFromSalonPost(item: ExploreInspirationItem) {
+  return `salon:${item.contentType}:${item.contentId}`;
+}
+
+function recommendationPreviewFromSalonPost(
+  item: ExploreInspirationItem,
+): RecommendationPostPreview | null {
+  const href = salonPostHref(item);
+
+  if (!href) {
+    return null;
+  }
+
+  return {
+    booking: {
+      bookedCount: 0,
+      eligible: item.bookingEnabled === true && Boolean(item.bookingHref),
+      href: item.bookingHref,
+      label: item.bookingLabel,
+      readiness: item.bookingReadiness,
+      salonId: item.salonId,
+      salonName: item.salonName,
+      serviceId: item.bookableServiceId,
+    },
+    caption: item.captionExcerpt,
+    dedupeKey: recommendationPreviewKeyFromSalonPost(item),
+    destination: {
+      href,
+      type: "salon-post",
+    },
+    media: mapSalonMedia(item),
+    publishedAt: item.publishedAt,
+    saveTarget: {
+      salonId: item.salonId,
+      saved: false,
+      sourceId: item.contentId,
+      sourceType:
+        item.contentType === "update"
+          ? "salon_profile_update"
+          : "salon_profile_look",
+    },
+    serviceCategory: item.serviceCategory,
+    serviceName: item.serviceName,
+    sourceSortId: item.mediaId,
+    trust: item.trust,
+  };
+}
+
+function compareRecommendationPostPreview(
+  left: RecommendationPostPreview,
+  right: RecommendationPostPreview,
+) {
+  const leftTime = new Date(left.publishedAt).getTime();
+  const rightTime = new Date(right.publishedAt).getTime();
+
+  if (leftTime !== rightTime) {
+    return rightTime - leftTime;
+  }
+
+  return right.sourceSortId.localeCompare(left.sourceSortId);
+}
+
+function recommendationPostPreviewsBySalonId(input: {
+  salonItems: ExploreInspirationItem[];
+}) {
+  const previews = new Map<string, RecommendationPostPreview>();
+
+  function addPreview(
+    salonId: string | null | undefined,
+    preview: RecommendationPostPreview | null,
+  ) {
+    if (!salonId || !preview) {
+      return;
+    }
+
+    const current = previews.get(salonId);
+
+    if (!current || compareRecommendationPostPreview(preview, current) < 0) {
+      previews.set(salonId, preview);
+    }
+  }
+
+  for (const item of input.salonItems) {
+    addPreview(item.salonId, recommendationPreviewFromSalonPost(item));
+  }
+
+  return previews;
+}
+
+function trustSignalsFromSalon(
+  salon: ExploreHomeSalon,
+): ExploreFeedTrustSignals {
+  return {
+    averageRating: salon.averageRating,
+    noIssueRate: salon.reputationNoIssueRate,
+    sharedExperienceCount: salon.sharedExperienceCount,
+    uniqueCustomerCount: salon.uniqueCustomerCount,
+    verifiedVisitCount: salon.verifiedVisitCount,
+  };
+}
+
 function mapSalonFeedItem(item: ExploreInspirationItem): ExploreFeedItem {
   const authorName =
     item.authorIsAnonymous || !item.authorDisplayName
@@ -487,7 +719,7 @@ function mapSalonFeedItem(item: ExploreInspirationItem): ExploreFeedItem {
 
   return {
     author: {
-      avatarUrl: null,
+      avatarUrl: item.salonLogoImageUrl,
       id: item.salonId,
       kind: "salon",
       name: authorName,
@@ -516,12 +748,23 @@ function mapSalonFeedItem(item: ExploreInspirationItem): ExploreFeedItem {
     personal: null,
     publishedAt: item.publishedAt,
     rankingSignals: rankingSignalsForSalonContent(item),
+    saveTarget: {
+      salonId: item.salonId,
+      saved: false,
+      sourceId: item.contentId,
+      sourceType:
+        item.contentType === "update"
+          ? "salon_profile_update"
+          : "salon_profile_look",
+    },
     salon: {
       city: item.salonCity,
       href: item.salonHref,
       id: item.salonId,
+      logoImageUrl: item.salonLogoImageUrl,
       name: item.salonName,
       state: item.salonState,
+      trust: item.trust,
     },
     serviceCategory: item.serviceCategory,
     serviceName: item.serviceName,
@@ -576,67 +819,78 @@ function recommendationCaption(salon: ExploreHomeSalon) {
 function mapRecommendationFeedItem(
   salon: ExploreHomeSalon,
   rank: number,
+  featuredPost: RecommendationPostPreview | null = null,
 ): ExploreFeedItem | null {
-  const publishedAt = recommendationPublishedAt(salon);
+  const publishedAt = featuredPost?.publishedAt ?? recommendationPublishedAt(salon);
   const profileHref =
     UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
       ? `/explore/salons/${encodeURIComponent(salon.id)}`
       : null;
-
-  if (!publishedAt || !profileHref || !salon.coverImageUrl) {
-    return null;
-  }
-
-  return {
-    author: {
-      avatarUrl: null,
-      id: salon.id,
-      kind: "salon",
-      name: salon.name,
-    },
-    booking: {
-      bookedCount: 0,
-      eligible: salon.bookingEnabled === true && Boolean(salon.bookingHref),
-      href: salon.bookingEnabled ? salon.bookingHref : null,
-      label: "Book",
-      readiness: null,
-      salonId: salon.id,
-      salonName: salon.name,
-      serviceId: salon.bookableServiceId,
-    },
-    candidateClass: "organic",
-    caption: recommendationCaption(salon),
-    contentId: salon.id,
-    contentType: "salon_recommendation",
-    destination: {
-      href: profileHref,
-      type: "salon-profile",
-    },
-    feedKey: `salon:recommendation:${salon.id}`,
-    id: salon.id,
-    media: [
-      {
-        aspectRatio: null,
+  const coverMedia: ExploreFeedMedia | null = salon.coverImageUrl
+    ? {
+        aspectRatio: 2.4,
         height: null,
         id: `salon-cover:${salon.id}`,
         imageUrl: salon.coverImageUrl,
         layoutVariant: "landscape",
         role: "image",
         width: null,
-      },
-    ],
+      }
+    : null;
+  const media = featuredPost?.media ?? coverMedia;
+  const destination = featuredPost?.destination.href
+    ? featuredPost.destination
+    : {
+        href: profileHref,
+        type: "salon-profile" as const,
+      };
+  const salonBooking: ExploreFeedItem["booking"] = {
+    bookedCount: 0,
+    eligible: salon.bookingEnabled === true && Boolean(salon.bookingHref),
+    href: salon.bookingEnabled ? salon.bookingHref : null,
+    label: "Book",
+    readiness: null,
+    salonId: salon.id,
+    salonName: salon.name,
+    serviceId: salon.bookableServiceId,
+  };
+
+  if (!publishedAt || !profileHref || !media) {
+    return null;
+  }
+
+  return {
+      author: {
+        avatarUrl: salon.logoImageUrl,
+        id: salon.id,
+        kind: "salon",
+        name: salon.name,
+    },
+    booking: featuredPost?.booking?.eligible ? featuredPost.booking : salonBooking,
+    candidateClass: "organic",
+    caption: featuredPost?.caption ?? recommendationCaption(salon),
+    contentId: salon.id,
+    contentType: "salon_recommendation",
+    destination,
+    feedKey: `salon:recommendation:${salon.id}`,
+    id: salon.id,
+    media: [media],
     personal: null,
     publishedAt,
     rankingSignals: rankingSignalsForRecommendation(salon, publishedAt),
-    salon: {
-      city: salon.city,
-      href: profileHref,
-      id: salon.id,
-      name: salon.name,
-      state: salon.state,
+    saveTarget: featuredPost?.saveTarget ?? null,
+      salon: {
+        city: salon.city,
+        href: profileHref,
+        id: salon.id,
+        logoImageUrl: salon.logoImageUrl,
+        name: salon.name,
+        state: salon.state,
+      trust: featuredPost?.trust ?? trustSignalsFromSalon(salon),
     },
-    serviceCategory: recommendationServiceCategory(salon),
-    serviceName: recommendationServiceName(salon),
+    serviceCategory:
+      featuredPost?.serviceCategory ?? recommendationServiceCategory(salon),
+    serviceName: featuredPost?.serviceName ?? recommendationServiceName(salon),
     sourceSortId: `${String(rank).padStart(4, "0")}:${salon.id}`,
     sourceType: "salon",
     verification: null,
@@ -724,6 +978,28 @@ function compareNaturalCandidateOrder(left: FeedCandidate, right: FeedCandidate)
   }
 
   return right.item.sourceSortId.localeCompare(left.item.sourceSortId);
+}
+
+function compareSessionCandidateOrder(
+  left: FeedCandidate,
+  right: FeedCandidate,
+) {
+  const leftBucket = freshnessBucket(left.item);
+  const rightBucket = freshnessBucket(right.item);
+
+  if (leftBucket !== rightBucket) {
+    return rightBucket - leftBucket;
+  }
+
+  if (Math.abs(left.rankingScore - right.rankingScore) > 0.00001) {
+    return right.rankingScore - left.rankingScore;
+  }
+
+  return compareNaturalCandidateOrder(left, right);
+}
+
+function arrangeSourceCandidates(candidates: FeedCandidate[]) {
+  return [...candidates].sort(compareSessionCandidateOrder);
 }
 
 function sourceRunLength(candidates: FeedCandidate[], sourceType: string) {
@@ -873,9 +1149,24 @@ function buildNextCursor(input: {
     personal: input.current.personal,
     recommendation: input.current.recommendation,
     salon: input.current.salon,
+    sessionSeed: input.current.sessionSeed,
   };
+  const sourceBoundaries: Partial<
+    Record<ExploreFeedInternalSource, FeedCandidate>
+  > = {};
 
   for (const candidate of input.visibleCandidates) {
+    const boundary = sourceBoundaries[candidate.source];
+
+    if (
+      !boundary ||
+      compareNaturalCandidateOrder(boundary, candidate) < 0
+    ) {
+      sourceBoundaries[candidate.source] = candidate;
+    }
+  }
+
+  for (const candidate of Object.values(sourceBoundaries)) {
     if (candidate.source === "salon") {
       next.salon = candidate.cursor as ExploreInspirationCursor;
     } else if (candidate.source === "personal") {
@@ -916,6 +1207,7 @@ function rankedFeedCandidate(input: {
     | ExploreInspirationCursor
     | ExplorePersonalPostCursor;
   item: ExploreFeedItem;
+  sessionSeed: string;
   source: ExploreFeedInternalSource;
 }): FeedCandidate {
   const item =
@@ -931,9 +1223,44 @@ function rankedFeedCandidate(input: {
     cursor: input.cursor,
     entityKey: feedEntityKey(item),
     item,
-    rankingScore: weightedRankingScore(item.rankingSignals),
+    rankingScore:
+      weightedRankingScore(item.rankingSignals) +
+      recentPriorityScore(item.rankingSignals) +
+      sessionVariationScore({ item, sessionSeed: input.sessionSeed }),
     source: input.source,
   };
+}
+
+async function attachFeedSaveStates(items: ExploreFeedItem[]) {
+  const targets = items
+    .map((item) => item.saveTarget)
+    .filter((target): target is AccountSavedPostStateTarget => Boolean(target));
+
+  if (targets.length === 0) {
+    return items;
+  }
+
+  try {
+    const [savedKeys, saveCounts] = await Promise.all([
+      getAccountSavedPostStateKeys(targets),
+      getAccountSavedPostCounts(targets).catch(() => new Map<string, number>()),
+    ]);
+
+    return items.map((item) =>
+      item.saveTarget
+        ? {
+            ...item,
+            saveTarget: {
+              ...item.saveTarget,
+              saveCount: saveCounts.get(savedPostKey(item.saveTarget)) ?? 0,
+              saved: savedKeys.has(savedPostKey(item.saveTarget)),
+            },
+          }
+        : item,
+    );
+  } catch {
+    return items;
+  }
 }
 
 export async function getExploreFeedPage(input: {
@@ -942,26 +1269,38 @@ export async function getExploreFeedPage(input: {
   limit?: number;
 } = {}): Promise<ExploreFeedPage> {
   const pageSize = normalizeLimit(input.limit);
-  const sourceState = decodeExploreFeedCursor(input.cursor);
+  const decodedSourceState = decodeExploreFeedCursor(input.cursor);
+  const feedSessionSeed =
+    decodedSourceState.sessionSeed ?? createExploreFeedSessionSeed();
+  const sourceState: ExploreFeedSourceState = {
+    ...decodedSourceState,
+    sessionSeed: feedSessionSeed,
+  };
+  const sourcePageSize = sourceCandidatePoolSize(pageSize);
   const initialSalonPage =
     !sourceState.completed.salon && !sourceState.salon
       ? input.homeContent?.inspiration ?? null
       : null;
+  const reusableInitialSalonPage =
+    initialSalonPage &&
+    (!initialSalonPage.hasMore || initialSalonPage.items.length >= sourcePageSize)
+      ? initialSalonPage
+      : null;
   const [salonPage, personalPage, recommendationPage] = await Promise.all([
     sourceState.completed.salon
       ? Promise.resolve(emptyInspirationSourcePage())
-      : initialSalonPage
-        ? Promise.resolve(initialSalonPage)
+      : reusableInitialSalonPage
+        ? Promise.resolve(reusableInitialSalonPage)
         : getExploreInspirationPage({
             cursor: sourceState.salon,
             diversify: false,
-            pageSize,
+            pageSize: sourcePageSize,
           }),
     sourceState.completed.personal
       ? Promise.resolve(emptyPersonalSourcePage())
       : getExplorePersonalPostPage({
           cursor: sourceState.personal,
-          pageSize,
+          pageSize: sourcePageSize,
         }),
     sourceState.completed.recommendation
       ? Promise.resolve(emptyRecommendationSourcePage())
@@ -975,16 +1314,30 @@ export async function getExploreFeedPage(input: {
     return emptyFeedPage(salonPage.error ?? personalPage.error);
   }
 
-  const salonCandidates = salonPage.items.map((item) =>
-    rankedFeedCandidate({
-      cursor: {
-        mediaId: item.mediaId,
-        publishedAt: item.publishedAt,
-      },
-      item: mapSalonFeedItem(item),
-      source: "salon",
-    }),
+  const recommendationPostBySalonId = recommendationPostPreviewsBySalonId({
+    salonItems: salonPage.items,
+  });
+  const recommendationPostKeys = new Set(
+    recommendationPage.items
+      .map((salon) => recommendationPostBySalonId.get(salon.id)?.dedupeKey)
+      .filter((key): key is string => Boolean(key)),
   );
+  const salonCandidates = salonPage.items
+    .filter(
+      (item) =>
+        !recommendationPostKeys.has(recommendationPreviewKeyFromSalonPost(item)),
+    )
+    .map((item) =>
+      rankedFeedCandidate({
+        cursor: {
+          mediaId: item.mediaId,
+          publishedAt: item.publishedAt,
+        },
+        item: mapSalonFeedItem(item),
+        sessionSeed: feedSessionSeed,
+        source: "salon",
+      }),
+    );
   const personalCandidates = personalPage.items.map((item) =>
     rankedFeedCandidate({
       cursor: {
@@ -992,13 +1345,18 @@ export async function getExploreFeedPage(input: {
         postId: item.id,
       },
       item,
+      sessionSeed: feedSessionSeed,
       source: "personal",
     }),
   );
   const recommendationCandidates = recommendationPage.items
     .map((salon, index) => {
       const rank = index + 1;
-      const item = mapRecommendationFeedItem(salon, rank);
+      const item = mapRecommendationFeedItem(
+        salon,
+        rank,
+        recommendationPostBySalonId.get(salon.id) ?? null,
+      );
 
       return item
         ? rankedFeedCandidate({
@@ -1007,15 +1365,16 @@ export async function getExploreFeedPage(input: {
               salonId: salon.id,
             },
             item,
+            sessionSeed: feedSessionSeed,
             source: "recommendation",
           })
         : null;
     })
     .filter((candidate): candidate is FeedCandidate => Boolean(candidate));
   const sources: FeedCandidateSources = {
-    personal: personalCandidates,
-    recommendation: recommendationCandidates,
-    salon: salonCandidates,
+    personal: arrangeSourceCandidates(personalCandidates),
+    recommendation: arrangeSourceCandidates(recommendationCandidates),
+    salon: arrangeSourceCandidates(salonCandidates),
   };
   const { consumed, selected } = selectVisibleCandidates({
     pageSize,
@@ -1061,10 +1420,13 @@ export async function getExploreFeedPage(input: {
       )
     : null;
 
+  const visibleItems = selected.map((candidate) => candidate.item);
+  const itemsWithSaveStates = await attachFeedSaveStates(visibleItems);
+
   return {
     error: null,
     hasMore: Boolean(nextCursor),
-    items: selected.map((candidate) => candidate.item),
+    items: itemsWithSaveStates,
     nextCursor,
   };
 }

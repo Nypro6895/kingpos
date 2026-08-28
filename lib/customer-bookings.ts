@@ -20,6 +20,7 @@ import {
   type PublicBookingSlotRequest,
 } from "@/lib/public-booking";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
+import { getStaffProfileAvatarUrl } from "@/lib/staff-profile";
 import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
@@ -131,6 +132,7 @@ type PublicSalonProfileRow = {
 };
 
 type PublicSalonStaffRow = {
+  account_avatar_url: string | null;
   avatar_path: string | null;
   display_name: string | null;
   id: string;
@@ -386,7 +388,9 @@ async function loadStaffRows(context: CustomerBookingContext, lines: BookingLine
     (data ?? []).map((staff) => [
       staff.id,
       {
-        avatarUrl: getSalonProfileMediaUrl(staff.public_profile_photo_path),
+        avatarUrl: getStaffProfileAvatarUrl({
+          staffProfilePhotoPath: staff.public_profile_photo_path,
+        }),
         displayName: staff.display_name,
         id: staff.id,
         isActive: staff.is_active,
@@ -423,7 +427,10 @@ async function loadPublicStaffRows(salonIds: string[]) {
         }
 
         staffById.set(staff.id, {
-          avatarUrl: getSalonProfileMediaUrl(staff.avatar_path),
+          avatarUrl: getStaffProfileAvatarUrl({
+            accountAvatarUrl: staff.account_avatar_url,
+            staffProfilePhotoPath: staff.avatar_path,
+          }),
           displayName: firstText(staff.display_name) ?? "Salon professional",
           id: staff.id,
           isActive: true,

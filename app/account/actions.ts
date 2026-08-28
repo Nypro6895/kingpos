@@ -7,6 +7,10 @@ import {
   safeAccountAvatarUrl,
 } from "@/lib/account-avatar";
 import {
+  cancelAccountDeletion,
+  requestAccountDeletion,
+} from "@/lib/account-deletion";
+import {
   claimCustomersForVerifiedPhone,
   getPhoneVerificationRequirement,
   inspectProfilePhoneClaim,
@@ -31,6 +35,12 @@ import {
   getAccessTokenFromRequest,
   getSupabaseConfig,
 } from "@/lib/supabase/server";
+import { createAccountDeletionExport } from "@/lib/lifecycle-export";
+import {
+  acceptOwnerTransferInvite,
+  acceptOwnerTransferInviteById,
+  createOwnerTransferInvite,
+} from "@/lib/owner-transfer";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import type { KingUser } from "@/types/user";
 import { revalidatePath } from "next/cache";
@@ -81,6 +91,41 @@ export type AccountPhoneOtpActionResult = {
   resendAfterSeconds?: number;
   status?: "already_verified" | "sent" | "verified";
 };
+
+export type AccountDeletionActionResult = {
+  error: string | null;
+  message?: string;
+};
+
+export type AccountDeletionBackupActionResult =
+  | {
+      error: null;
+      expiresAt: string;
+      filename: string;
+      signedUrl: string;
+    }
+  | {
+      error: string;
+      expiresAt?: never;
+      filename?: never;
+      signedUrl?: never;
+    };
+
+export type OwnerTransferInviteActionResult =
+  | {
+      error: null;
+      expiresAt: string;
+      inviteUrl: string | null;
+      message: string;
+      salonId: string;
+    }
+  | {
+      error: string;
+      expiresAt?: never;
+      inviteUrl?: never;
+      message?: never;
+      salonId?: never;
+    };
 
 function actionHasKey(input: ActionInput, key: string) {
   return input instanceof FormData ? input.has(key) : key in input;
@@ -699,5 +744,172 @@ export async function verifyAccountPhoneOtpAction(
         : "Phone verified.",
     normalizedPhone: verifiedPhone.data.normalizedPhone,
     status: "verified",
+  };
+}
+
+export async function requestAccountDeletionAction(
+  input: ActionInput,
+): Promise<AccountDeletionActionResult> {
+  const confirmation = readActionString(input, "confirmation");
+  const continueWithoutTransfer = readActionBoolean(
+    input,
+    "continue_without_transfer",
+  );
+  const backupAcknowledged = readActionBoolean(input, "backup_acknowledged");
+
+  if (confirmation !== "DELETE") {
+    return { error: 'Type "DELETE" to confirm the account deletion request.' };
+  }
+
+  try {
+    await requestAccountDeletion({
+      backupAcknowledged,
+      continueWithoutTransfer,
+      reason: readActionOptionalString(input, "reason"),
+    });
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Account deletion could not be requested.",
+    };
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/settings");
+  revalidatePath("/", "layout");
+
+  return {
+    error: null,
+    message: "Account deletion scheduled. You can cancel during the grace period.",
+  };
+}
+
+export async function cancelAccountDeletionAction(): Promise<AccountDeletionActionResult> {
+  try {
+    await cancelAccountDeletion();
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Account deletion could not be cancelled.",
+    };
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/settings");
+  revalidatePath("/", "layout");
+
+  return {
+    error: null,
+    message: "Account deletion cancelled.",
+  };
+}
+
+export async function generateAccountDeletionBackupAction(): Promise<AccountDeletionBackupActionResult> {
+  try {
+    const accountExport = await createAccountDeletionExport();
+
+    return {
+      error: null,
+      expiresAt: accountExport.expiresAt,
+      filename: accountExport.filename,
+      signedUrl: accountExport.signedUrl,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Account deletion export could not be generated.",
+    };
+  }
+}
+
+export async function createOwnerTransferInviteAction(
+  input: ActionInput,
+): Promise<OwnerTransferInviteActionResult> {
+  const salonId = readActionString(input, "salon_id");
+  const recipientEmail = readActionString(input, "recipient_email");
+  const mode =
+    readActionString(input, "mode") === "add_co_owner"
+      ? "add_co_owner"
+      : "transfer_ownership";
+
+  if (!salonId) {
+    return { error: "Choose a salon before creating an owner invitation." };
+  }
+
+  if (!recipientEmail) {
+    return { error: "Enter the recipient email for ownership transfer." };
+  }
+
+  try {
+    const invite = await createOwnerTransferInvite({
+      message: readActionOptionalString(input, "message"),
+      mode,
+      recipientEmail,
+      relinquishOnAccept: readActionBoolean(input, "relinquish_on_accept"),
+      salonId,
+    });
+
+    revalidatePath("/account");
+    revalidatePath("/salon-settings");
+    revalidatePath("/settings");
+    revalidatePath("/", "layout");
+
+    return {
+      error: null,
+      expiresAt: invite.expires_at,
+      inviteUrl: invite.invite_url,
+      message:
+        mode === "add_co_owner"
+          ? "Co-owner invitation created."
+          : "Ownership transfer invitation created. Deletion can continue only after the recipient accepts.",
+      salonId: invite.salon_id,
+    };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Owner invitation could not be created.",
+    };
+  }
+}
+
+export async function acceptOwnerTransferInviteAction(
+  input: ActionInput,
+): Promise<AccountDeletionActionResult> {
+  const token = readActionString(input, "token");
+
+  try {
+    if (
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        token,
+      )
+    ) {
+      await acceptOwnerTransferInviteById(token);
+    } else {
+      await acceptOwnerTransferInvite(token);
+    }
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Owner invitation could not be accepted.",
+    };
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/salon-settings");
+  revalidatePath("/", "layout");
+
+  return {
+    error: null,
+    message: "Owner invitation accepted.",
   };
 }

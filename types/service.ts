@@ -22,14 +22,12 @@ export type ServiceAddOnLink = {
 
 export type ServiceBookingStaff = {
   avatarPath: string | null;
+  avatarUrl: string | null;
   bookingReady: boolean;
   displayName: string;
   id: string;
   isActive: boolean;
   onlineBookingEnabled: boolean;
-  ownerPublicEnabled: boolean;
-  publicProfileVisible: boolean;
-  publicReady: boolean;
 };
 
 export type ServiceBookingReadinessReasonCode =

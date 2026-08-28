@@ -22,6 +22,8 @@
   --shadow-soft: 0 14px 38px rgba(35, 25, 22, 0.055);
   --danger: #dc2626;
   --success: #0f8f62;
+  --tap-feedback-highlight: rgba(242, 111, 61, 0.18);
+  --tap-feedback-ring: rgba(242, 111, 61, 0.28);
 }
 
 @theme inline {
@@ -66,6 +68,111 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@media (hover: none), (pointer: coarse) {
+  :where(
+    a[href],
+    button,
+    summary,
+    [role="button"],
+    [role="link"],
+    input[type="button"],
+    input[type="reset"],
+    input[type="submit"],
+    label:has(
+        :where(
+            input[type="checkbox"],
+            input[type="date"],
+            input[type="file"],
+            input[type="radio"]
+          ):not(:disabled)
+      )
+  ):where(:not(:disabled):not([aria-disabled="true"]):not([data-disabled])) {
+    -webkit-tap-highlight-color: var(--tap-feedback-highlight);
+    touch-action: manipulation;
+    transition-property:
+      background-color,
+      border-color,
+      color,
+      opacity,
+      outline-color,
+      scale,
+      translate;
+    transition-duration: 120ms;
+    transition-timing-function: ease-out;
+  }
+
+  :where(
+    a[href],
+    button,
+    summary,
+    [role="button"],
+    [role="link"],
+    input[type="button"],
+    input[type="reset"],
+    input[type="submit"],
+    label:has(
+        :where(
+            input[type="checkbox"],
+            input[type="date"],
+            input[type="file"],
+            input[type="radio"]
+          ):not(:disabled)
+      )
+  ):where(:not(:disabled):not([aria-disabled="true"]):not([data-disabled])):active {
+    opacity: 0.84;
+    scale: 0.985;
+    translate: 0 1px;
+  }
+
+  :is(
+    a[href],
+    button,
+    summary,
+    [role="button"],
+    [role="link"],
+    input[type="button"],
+    input[type="reset"],
+    input[type="submit"],
+    label:has(
+        :where(
+            input[type="checkbox"],
+            input[type="date"],
+            input[type="file"],
+            input[type="radio"]
+          ):not(:disabled)
+      )
+  ):where(:not(:disabled):not([aria-disabled="true"]):not([data-disabled])):active {
+    outline: 2px solid var(--tap-feedback-ring);
+    outline-offset: -2px;
+  }
+}
+
+@media (hover: none) and (prefers-reduced-motion: reduce),
+  (pointer: coarse) and (prefers-reduced-motion: reduce) {
+  :where(
+    a[href],
+    button,
+    summary,
+    [role="button"],
+    [role="link"],
+    input[type="button"],
+    input[type="reset"],
+    input[type="submit"],
+    label:has(
+        :where(
+            input[type="checkbox"],
+            input[type="date"],
+            input[type="file"],
+            input[type="radio"]
+          ):not(:disabled)
+      )
+  ):where(:not(:disabled):not([aria-disabled="true"]):not([data-disabled])):active {
+    scale: 1;
+    transition-duration: 60ms;
+    translate: 0;
+  }
 }
 
 .no-scrollbar {

@@ -82,6 +82,10 @@ export type StaffAppointmentsData = {
   canViewTickets: boolean;
   context: CurrentBusinessContext;
   days: StaffAppointmentDay[];
+  nextAppointmentDays: {
+    appointments: StaffAppointmentLine[];
+    hasMore: boolean;
+  };
   rangeEnd: string;
   rangeStart: string;
   selectedAppointment: StaffAppointmentLine | null;
@@ -131,6 +135,7 @@ type StaffAppointmentsSupabaseClient = NonNullable<
 >;
 
 const OFFLINE_SALON_BOOKING_STATUS = getSalonOnlineBookingStatus(null);
+const NEXT_APPOINTMENT_DAYS_LIMIT = 5;
 
 function firstParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -177,6 +182,37 @@ function normalizeView(value: string | null | undefined): StaffAppointmentView {
 
 function normalizeStatus(status: BookingStatus): Exclude<BookingStatus, "scheduled"> {
   return status === "scheduled" ? "confirmed" : status;
+}
+
+function appointmentLocalDate(appointment: StaffAppointmentLine, timeZone: string) {
+  return formatDateInTimeZone(new Date(appointment.startAt), timeZone);
+}
+
+function mapAppointmentLines(
+  lines: BookingLineRow[],
+  inspirationMap: Map<string, BookingInspirationView>,
+) {
+  return lines
+    .filter((line) => line.booking)
+    .map((line) => ({
+      bookingId: line.booking?.id ?? "",
+      completedAt: line.completed_at,
+      confirmationStatus: line.booking?.confirmation_status ?? "confirmed",
+      customerName: line.booking?.customer?.name ?? "Customer",
+      customerPhone: line.booking?.customer?.phone ?? null,
+      endAt: line.scheduled_end_at,
+      id: line.id,
+      inspiration: line.booking?.id
+        ? inspirationMap.get(line.booking.id) ?? null
+        : null,
+      lineStatus: normalizeLineStatus(line.line_status),
+      publicNotes: line.booking?.public_notes ?? null,
+      serviceName: line.service_name_snapshot,
+      serviceNote: line.service_note,
+      startAt: line.scheduled_start_at,
+      status: normalizeStatus(line.booking?.status ?? "confirmed"),
+      ticketId: line.booking?.pos_ticket_id ?? null,
+    }));
 }
 
 function normalizeLineStatus(status: BookingLineStatus | string): BookingLineStatus {
@@ -292,6 +328,10 @@ export async function getCurrentStaffAppointments(
       canViewTickets: false,
       context,
       days: [],
+      nextAppointmentDays: {
+        appointments: [],
+        hasMore: false,
+      },
       rangeEnd: "",
       rangeStart: "",
       selectedAppointment: null,
@@ -321,6 +361,10 @@ export async function getCurrentStaffAppointments(
       canViewTickets: false,
       context,
       days: [],
+      nextAppointmentDays: {
+        appointments: [],
+        hasMore: false,
+      },
       rangeEnd: "",
       rangeStart: "",
       selectedAppointment: null,
@@ -347,12 +391,28 @@ export async function getCurrentStaffAppointments(
   const startDate = view === "week" ? addDays(selectedDate, -dayOfWeek(selectedDate)) : selectedDate;
   const spanDays = view === "list" ? 14 : view === "week" ? 7 : 1;
   const endDate = addDays(startDate, spanDays);
+  const nextAppointmentStartDate = addDays(selectedDate, 1);
+  const nextAppointmentEndDate = addDays(selectedDate, 7 - dayOfWeek(selectedDate));
   const rangeStart =
     zonedDateTimeToUtcIso({ date: startDate, time: "00:00", timeZone: timezone }) ??
     `${startDate}T00:00:00.000Z`;
   const rangeEnd =
     zonedDateTimeToUtcIso({ date: endDate, time: "00:00", timeZone: timezone }) ??
     `${endDate}T00:00:00.000Z`;
+  const nextAppointmentRangeStart =
+    zonedDateTimeToUtcIso({
+      date: nextAppointmentStartDate,
+      time: "00:00",
+      timeZone: timezone,
+    }) ?? `${nextAppointmentStartDate}T00:00:00.000Z`;
+  const nextAppointmentRangeEnd =
+    zonedDateTimeToUtcIso({
+      date: nextAppointmentEndDate,
+      time: "00:00",
+      timeZone: timezone,
+    }) ?? `${nextAppointmentEndDate}T00:00:00.000Z`;
+  const shouldLoadNextAppointmentDays =
+    view === "day" && nextAppointmentStartDate < nextAppointmentEndDate;
   const days = Array.from({ length: spanDays }, (_, index) => {
     const date = addDays(startDate, index);
 
@@ -360,7 +420,14 @@ export async function getCurrentStaffAppointments(
   });
 
   const canViewTickets = await hasPermission("tickets.view", context);
-  const [linesResult, availabilityResult, blocksResult, assignmentsResult, servicesResult] =
+  const [
+    linesResult,
+    nextLinesResult,
+    availabilityResult,
+    blocksResult,
+    assignmentsResult,
+    servicesResult,
+  ] =
     await Promise.all([
     supabase
       .from("booking_lines")
@@ -373,6 +440,19 @@ export async function getCurrentStaffAppointments(
       .gt("scheduled_end_at", rangeStart)
       .order("scheduled_start_at", { ascending: true })
       .returns<BookingLineRow[]>(),
+    shouldLoadNextAppointmentDays
+      ? supabase
+          .from("booking_lines")
+          .select(
+            "id, booking_id, service_name_snapshot, scheduled_start_at, scheduled_end_at, line_status, completed_at, service_note, booking:bookings!inner(id, status, confirmation_status, pos_ticket_id, public_notes, salon_timezone_snapshot, customer:customers(name, phone))",
+          )
+          .eq("salon_id", context.currentStaffSalon.id)
+          .eq("assigned_staff_id", staff.id)
+          .lt("scheduled_start_at", nextAppointmentRangeEnd)
+          .gt("scheduled_end_at", nextAppointmentRangeStart)
+          .order("scheduled_start_at", { ascending: true })
+          .returns<BookingLineRow[]>()
+      : Promise.resolve({ data: [] as BookingLineRow[], error: null }),
     supabase
       .from("staff_availability_rules")
       .select("*")
@@ -407,6 +487,10 @@ export async function getCurrentStaffAppointments(
     throw new Error(linesResult.error.message);
   }
 
+  if (nextLinesResult.error) {
+    throw new Error(nextLinesResult.error.message);
+  }
+
   if (availabilityResult.error) {
     throw new Error(availabilityResult.error.message);
   }
@@ -425,7 +509,7 @@ export async function getCurrentStaffAppointments(
 
   const bookingIds = [
     ...new Set(
-      (linesResult.data ?? [])
+      [...(linesResult.data ?? []), ...(nextLinesResult.data ?? [])]
         .map((line) => line.booking?.id)
         .filter((id): id is string => Boolean(id)),
     ),
@@ -470,31 +554,31 @@ export async function getCurrentStaffAppointments(
       };
     })
     .filter((service): service is NonNullable<typeof service> => Boolean(service));
-  const appointments = (linesResult.data ?? [])
-    .filter((line) => line.booking)
-    .map((line) => ({
-      bookingId: line.booking?.id ?? "",
-      completedAt: line.completed_at,
-      confirmationStatus: line.booking?.confirmation_status ?? "confirmed",
-      customerName: line.booking?.customer?.name ?? "Customer",
-      customerPhone: line.booking?.customer?.phone ?? null,
-      endAt: line.scheduled_end_at,
-      id: line.id,
-      inspiration: line.booking?.id
-        ? inspirationMap.get(line.booking.id) ?? null
-        : null,
-      lineStatus: normalizeLineStatus(line.line_status),
-      publicNotes: line.booking?.public_notes ?? null,
-      serviceName: line.service_name_snapshot,
-      serviceNote: line.service_note,
-      startAt: line.scheduled_start_at,
-      status: normalizeStatus(line.booking?.status ?? "confirmed"),
-      ticketId: line.booking?.pos_ticket_id ?? null,
-    }));
+  const appointments = mapAppointmentLines(linesResult.data ?? [], inspirationMap);
+  const nextAppointmentCandidates = mapAppointmentLines(
+    nextLinesResult.data ?? [],
+    inspirationMap,
+  )
+    .filter(
+      (appointment) =>
+        appointmentLocalDate(appointment, timezone) > selectedDate &&
+        appointment.status !== "cancelled" &&
+        appointment.status !== "no_show",
+    )
+    .sort((left, right) => left.startAt.localeCompare(right.startAt));
+  const nextAppointmentDays = {
+    appointments: nextAppointmentCandidates.slice(0, NEXT_APPOINTMENT_DAYS_LIMIT),
+    hasMore: nextAppointmentCandidates.length > NEXT_APPOINTMENT_DAYS_LIMIT,
+  };
   const selectedBookingId = firstParam(params.bookingId);
   const selectedAppointment =
     selectedBookingId
-      ? appointments.find((appointment) => appointment.bookingId === selectedBookingId) ??
+      ? appointments.find(
+          (appointment) => appointment.bookingId === selectedBookingId,
+        ) ??
+        nextAppointmentCandidates.find(
+          (appointment) => appointment.bookingId === selectedBookingId,
+        ) ??
         null
       : null;
 
@@ -514,6 +598,7 @@ export async function getCurrentStaffAppointments(
     canViewTickets,
     context,
     days,
+    nextAppointmentDays,
     rangeEnd,
     rangeStart,
     selectedAppointment,

@@ -45,9 +45,6 @@ export type CreateStaffInput = {
   pos_enabled?: boolean;
   public_bio?: string | null;
   public_profile_photo_path?: string | null;
-  public_profile_visible?: boolean;
-  owner_public_enabled?: boolean;
-  staff_public_consent_status?: "granted" | "not_requested" | "opted_out";
   online_booking_enabled?: boolean;
   profile_display_order?: number;
   salon_profile_content_posting_enabled?: boolean;
@@ -67,7 +64,6 @@ export type UpdateStaffDirectoryBatchChange = {
   job_title?: string | null;
   last_name?: string | null;
   online_booking_enabled: boolean;
-  owner_public_enabled: boolean;
   phone?: string | null;
   postal_code?: string | null;
   pos_enabled: boolean;

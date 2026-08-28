@@ -1,4 +1,5 @@
 import type { BeautyPostBookingPresentation } from "@/lib/beauty-booking-verification";
+import type { AccountSavedPostStateTarget } from "@/types/saved-post";
 
 export const EXPLORE_CATEGORY_OPTIONS = [
   "All",
@@ -53,6 +54,7 @@ export type ExploreSearchResult = {
   isNew: boolean;
   latitude: number | null;
   latestMediaCreatedAt: string | null;
+  logoImageUrl: string | null;
   longitude: number | null;
   matchType: string;
   matchTier: number;
@@ -62,13 +64,17 @@ export type ExploreSearchResult = {
   phone: string | null;
   postalCode: string | null;
   profileCompleteness: number;
+  reputationNoIssueRate: number | null;
   relevanceScore: number;
   resultGroup: ExploreResultGroup;
+  sharedExperienceCount: number;
   reviewCount: number;
   serviceCategories: string[];
   serviceNames: string[];
   startingPrice: number | null;
   state: string | null;
+  uniqueCustomerCount: number;
+  verifiedVisitCount: number;
 };
 
 export type ExploreHomeSalonSection = "near_you" | "new" | "recommended";
@@ -116,13 +122,16 @@ export type ExploreInspirationItem = {
   mediaId: string;
   phoneHref: string | null;
   publishedAt: string;
+  saveTarget: AccountSavedPostStateTarget;
   salonCity: string | null;
   salonHref: string | null;
   salonId: string;
+  salonLogoImageUrl: string | null;
   salonName: string;
   salonState: string | null;
   serviceCategory: string | null;
   serviceName: string | null;
+  trust: ExploreFeedTrustSignals;
 };
 
 export type ExploreInspirationPage = {
@@ -173,12 +182,22 @@ export type ExploreFeedDestination = {
   type: "personal-post" | "salon-post" | "salon-profile";
 };
 
+export type ExploreFeedTrustSignals = {
+  averageRating: number | null;
+  noIssueRate: number | null;
+  sharedExperienceCount: number;
+  uniqueCustomerCount: number;
+  verifiedVisitCount: number;
+};
+
 export type ExploreFeedSalonContext = {
   city: string | null;
   href: string | null;
   id: string;
+  logoImageUrl: string | null;
   name: string;
   state: string | null;
+  trust: ExploreFeedTrustSignals;
 };
 
 export type ExploreFeedBooking = BeautyPostBookingPresentation & {
@@ -215,6 +234,7 @@ export type ExploreFeedItem = {
   personal: ExploreFeedPersonalContext | null;
   publishedAt: string;
   rankingSignals: ExploreFeedRankingSignals;
+  saveTarget: AccountSavedPostStateTarget | null;
   salon: ExploreFeedSalonContext | null;
   serviceCategory: string | null;
   serviceName: string | null;
@@ -351,6 +371,7 @@ export type ExploreMapSalon = {
   longitude: number;
   name: string;
   serviceLabel: string | null;
+  trust: ExploreFeedTrustSignals;
 };
 
 export type ExploreSearchSections = {

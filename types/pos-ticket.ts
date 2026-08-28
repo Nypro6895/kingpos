@@ -38,7 +38,7 @@ export type PosTicketWithRelations = PosTicket & {
   adjustments?: Array<{
     action: "item_corrected" | "item_removed" | "item_replaced";
     created_at: string;
-    created_by: string;
+    created_by: string | null;
     created_by_user: Pick<KingUser, "id" | "display_name" | "email"> | null;
     after_snapshot: unknown;
     before_snapshot: unknown;

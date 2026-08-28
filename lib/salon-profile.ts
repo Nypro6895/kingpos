@@ -9,6 +9,7 @@ import {
   isSalonStaffContext,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
+import { getHistoricalUserDisplayName } from "@/lib/deleted-user-display";
 import { syncCurrentSalonMapLocationAddressState } from "@/lib/location/salon-map-location";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import {
@@ -21,6 +22,11 @@ import {
 import { SERVICE_SELECT } from "@/lib/services";
 import { resolveStaffAccountForSalon } from "@/lib/staff-account";
 import {
+  getStaffPresentationsByStaffId,
+  getStaffProfileAvatarUrl,
+  type StaffPresentation,
+} from "@/lib/staff-profile";
+import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
   getSupabaseConfig,
@@ -32,7 +38,11 @@ import type {
   PublicSalonProfileBeautyPostMedia,
   PublicSalonProfileComment,
   PublicSalonProfileData,
+  PublicSalonProfileExperience,
+  PublicSalonProfileExperienceIssueStatus,
+  PublicSalonProfileExperienceState,
   PublicSalonProfileLook,
+  PublicSalonProfileReputationSummary,
   PublicSalonProfileReview,
   PublicSalonProfileReviewSummary,
   PublicSalonProfileService,
@@ -75,6 +85,7 @@ type ProfileManageData = {
   services: Service[];
   setting: SalonProfileSetting;
   staff: Staff[];
+  staffPresentations: Map<string, StaffPresentation>;
   updates: SalonProfileUpdate[];
 };
 
@@ -157,6 +168,7 @@ type PublicServiceRow = {
 };
 
 type PublicStaffRow = {
+  account_avatar_url: string | null;
   avatar_path: string | null;
   bio: string | null;
   display_name: string;
@@ -260,13 +272,20 @@ type PublicCommentRow = {
 
 type PublicReviewSummaryRow = {
   average_rating: number | string | null;
+  experience_count?: number | string | null;
+  issue_count?: number | string | null;
+  legacy_review_count?: number | string | null;
+  no_issue_count?: number | string | null;
+  no_issue_rate?: number | string | null;
   rating_1_count: number | string | null;
   rating_2_count: number | string | null;
   rating_3_count: number | string | null;
   rating_4_count: number | string | null;
   rating_5_count: number | string | null;
   review_count: number | string | null;
+  unique_customer_count?: number | string | null;
   verified_count: number | string | null;
+  verified_visit_count?: number | string | null;
 };
 
 type PublicReviewRow = {
@@ -281,6 +300,28 @@ type PublicReviewRow = {
   reply_created_at: string | null;
   reply_id: string | null;
   salon_id: string;
+  title: string | null;
+  updated_at: string;
+  verification_status: "unverified" | "verified";
+  verified_booking_id: string | null;
+};
+
+type PublicExperienceRow = {
+  author_display_name: string | null;
+  author_user_id: string;
+  body: string | null;
+  created_at: string;
+  edited_at: string | null;
+  feedback_state: string | null;
+  id: string;
+  issue_status: string | null;
+  rating: number | string | null;
+  reply_body: string | null;
+  reply_created_at: string | null;
+  reply_id: string | null;
+  salon_id: string;
+  source: string | null;
+  ticket_id: string | null;
   title: string | null;
   updated_at: string;
   verification_status: "unverified" | "verified";
@@ -365,6 +406,12 @@ function readMoney(value: number | string | null | undefined) {
   }
 
   return null;
+}
+
+function readRatio(value: number | string | null | undefined) {
+  const parsed = readMoney(value);
+
+  return parsed === null ? null : Math.max(0, Math.min(1, parsed));
 }
 
 function toStringArray(value: unknown) {
@@ -1002,6 +1049,7 @@ export async function getCurrentSalonProfileManageData(
       services: [],
       setting,
       staff: [],
+      staffPresentations: new Map(),
       updates: [],
     };
   }
@@ -1059,6 +1107,10 @@ export async function getCurrentSalonProfileManageData(
 
   const services = servicesResult.data ?? [];
   const staff = staffResult.data ?? [];
+  const staffPresentations = await getStaffPresentationsByStaffId({
+    staff,
+    supabase,
+  });
   const settingOrFallback = settingWithSalonName(
     setting ?? fallbackSetting(resolvedContext),
     resolvedContext,
@@ -1082,6 +1134,7 @@ export async function getCurrentSalonProfileManageData(
     services,
     setting: settingOrFallback,
     staff,
+    staffPresentations,
     updates,
   };
 }
@@ -1131,7 +1184,10 @@ function mapPublicService(row: PublicServiceRow): PublicSalonProfileService {
 
 function mapPublicStaff(row: PublicStaffRow): PublicSalonProfileStaff {
   return {
-    avatarUrl: getSalonProfileMediaUrl(row.avatar_path),
+    avatarUrl: getStaffProfileAvatarUrl({
+      accountAvatarUrl: row.account_avatar_url,
+      staffProfilePhotoPath: row.avatar_path,
+    }),
     bio: row.bio,
     displayName: row.display_name,
     id: row.id,
@@ -1262,7 +1318,10 @@ function mapPublicBeautyPost(
 
 function mapPublicComment(row: PublicCommentRow): PublicSalonProfileComment {
   return {
-    authorDisplayName: row.author_display_name ?? "Reylumi customer",
+    authorDisplayName: getHistoricalUserDisplayName({
+      context: "review",
+      fallbackName: row.author_display_name ?? "Reylumi customer",
+    }),
     authorUserId: row.author_user_id,
     body: row.body,
     createdAt: row.created_at,
@@ -1293,9 +1352,43 @@ function mapReviewSummary(
   };
 }
 
+function mapReputationSummary(
+  row: PublicReviewSummaryRow | null | undefined,
+): PublicSalonProfileReputationSummary {
+  const verifiedVisitCount = readCount(row?.verified_visit_count);
+  const legacyReviewCount = readCount(row?.legacy_review_count ?? row?.review_count);
+  const experienceCount = readCount(row?.experience_count ?? row?.review_count);
+  const issueCount = readCount(row?.issue_count);
+  const noIssueCount =
+    row?.no_issue_count === undefined
+      ? Math.max(0, verifiedVisitCount - issueCount)
+      : readCount(row.no_issue_count);
+
+  return {
+    averageRating: readMoney(row?.average_rating),
+    experienceCount,
+    issueCount,
+    legacyReviewCount,
+    noIssueCount,
+    noIssueRate: readRatio(row?.no_issue_rate),
+    ratingCounts: {
+      1: readCount(row?.rating_1_count),
+      2: readCount(row?.rating_2_count),
+      3: readCount(row?.rating_3_count),
+      4: readCount(row?.rating_4_count),
+      5: readCount(row?.rating_5_count),
+    },
+    uniqueCustomerCount: readCount(row?.unique_customer_count),
+    verifiedVisitCount,
+  };
+}
+
 function mapPublicReview(row: PublicReviewRow): PublicSalonProfileReview {
   return {
-    authorDisplayName: row.author_display_name ?? "Reylumi customer",
+    authorDisplayName: getHistoricalUserDisplayName({
+      context: "review",
+      fallbackName: row.author_display_name ?? "Reylumi customer",
+    }),
     authorUserId: row.author_user_id,
     body: row.body,
     createdAt: row.created_at,
@@ -1310,6 +1403,82 @@ function mapPublicReview(row: PublicReviewRow): PublicSalonProfileReview {
     updatedAt: row.updated_at,
     verificationStatus: row.verification_status,
     verifiedBookingId: row.verified_booking_id,
+  };
+}
+
+function publicExperienceState(
+  value: string | null | undefined,
+): PublicSalonProfileExperienceState {
+  return value === "good" || value === "issue" ? value : "legacy";
+}
+
+function publicExperienceIssueStatus(
+  value: string | null | undefined,
+): PublicSalonProfileExperienceIssueStatus | null {
+  if (value === "acknowledged" || value === "open" || value === "resolved") {
+    return value;
+  }
+
+  return null;
+}
+
+function mapPublicExperience(
+  row: PublicExperienceRow,
+): PublicSalonProfileExperience {
+  const source = row.source === "legacy_review" ? "legacy_review" : "experience";
+
+  return {
+    authorDisplayName: getHistoricalUserDisplayName({
+      context: "review",
+      fallbackName: row.author_display_name ?? "Reylumi customer",
+    }),
+    authorUserId: row.author_user_id,
+    body: row.body,
+    createdAt: row.created_at,
+    editedAt: row.edited_at,
+    feedbackState:
+      source === "legacy_review"
+        ? "legacy"
+        : publicExperienceState(row.feedback_state),
+    id: row.id,
+    issueStatus: publicExperienceIssueStatus(row.issue_status),
+    rating: readMoney(row.rating),
+    replyBody: row.reply_body,
+    replyCreatedAt: row.reply_created_at,
+    replyId: row.reply_id,
+    salonId: row.salon_id,
+    source,
+    ticketId: row.ticket_id,
+    title: row.title,
+    updatedAt: row.updated_at,
+    verificationStatus: row.verification_status,
+    verifiedBookingId: row.verified_booking_id,
+  };
+}
+
+function mapReviewToExperience(
+  review: PublicSalonProfileReview,
+): PublicSalonProfileExperience {
+  return {
+    authorDisplayName: review.authorDisplayName,
+    authorUserId: review.authorUserId,
+    body: review.body,
+    createdAt: review.createdAt,
+    editedAt: review.editedAt,
+    feedbackState: "legacy",
+    id: review.id,
+    issueStatus: null,
+    rating: review.rating,
+    replyBody: review.replyBody,
+    replyCreatedAt: review.replyCreatedAt,
+    replyId: review.replyId,
+    salonId: review.salonId,
+    source: "legacy_review",
+    ticketId: null,
+    title: review.title,
+    updatedAt: review.updatedAt,
+    verificationStatus: review.verificationStatus,
+    verifiedBookingId: review.verifiedBookingId,
   };
 }
 
@@ -1398,6 +1567,8 @@ export async function getPublicSalonProfileData(
     updatesResult,
     beautyPostsResult,
     commentsResult,
+    reputationSummaryResult,
+    experiencesResult,
     reviewSummaryResult,
     reviewsResult,
   ] = await Promise.all([
@@ -1411,6 +1582,8 @@ export async function getPublicSalonProfileData(
       target_salon_id: salonId,
     }),
     rpc("get_public_salon_profile_comments", { target_salon_id: salonId }),
+    rpc("get_public_salon_profile_reputation_summary", { target_salon_id: salonId }),
+    rpc("get_public_salon_profile_experiences", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_review_summary", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_reviews", { target_salon_id: salonId }),
   ]);
@@ -1435,6 +1608,18 @@ export async function getPublicSalonProfileData(
         salonId,
       });
       return null;
+    }
+  }
+
+  for (const result of [reputationSummaryResult, experiencesResult]) {
+    if (result.error) {
+      console.warn("Optional public reputation RPC unavailable", {
+        code: result.error.code,
+        details: result.error.details,
+        hint: result.error.hint,
+        message: result.error.message,
+        salonId,
+      });
     }
   }
 
@@ -1468,9 +1653,22 @@ export async function getPublicSalonProfileData(
   const reviewSummaryRows = Array.isArray(reviewSummaryResult.data)
     ? (reviewSummaryResult.data as PublicReviewSummaryRow[])
     : [];
+  const reputationSummaryRows =
+    !reputationSummaryResult.error && Array.isArray(reputationSummaryResult.data)
+      ? (reputationSummaryResult.data as PublicReviewSummaryRow[])
+      : [];
   const reviewRows = Array.isArray(reviewsResult.data)
     ? (reviewsResult.data as PublicReviewRow[])
     : [];
+  const experienceRows =
+    !experiencesResult.error && Array.isArray(experiencesResult.data)
+      ? (experiencesResult.data as PublicExperienceRow[])
+      : [];
+  const reviews = reviewRows.map(mapPublicReview);
+  const experiences =
+    experienceRows.length > 0
+      ? experienceRows.map(mapPublicExperience)
+      : reviews.map(mapReviewToExperience);
   const mappedProfile = mapPublicProfile(profile);
   const looks = lookRows.map(mapPublicLook);
   const updates = updateRows.map(mapPublicUpdate);
@@ -1508,8 +1706,12 @@ export async function getPublicSalonProfileData(
     }),
     looks,
     profile: mappedProfile,
+    reputationSummary: mapReputationSummary(
+      reputationSummaryRows[0] ?? reviewSummaryRows[0] ?? null,
+    ),
     reviewSummary: mapReviewSummary(reviewSummaryRows[0] ?? null),
-    reviews: reviewRows.map(mapPublicReview),
+    reviews,
+    experiences,
     services: serviceRows.map(mapPublicService),
     staff: staffRows.map(mapPublicStaff),
     updates,

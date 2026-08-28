@@ -80,7 +80,7 @@ export async function loadBeautyPostVerifiedBookingCounts(input: {
   );
 
   if (error) {
-    console.error("Beauty post booking counts failed", {
+    console.warn("Beauty post booking counts unavailable", {
       code: diagnosticString(error.code),
       details: diagnosticString(error.details),
       hint: diagnosticString(error.hint),

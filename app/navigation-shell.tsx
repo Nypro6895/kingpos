@@ -1234,6 +1234,7 @@ function RoleMorePanel({
             pathname,
             searchParams,
           );
+          const isSavedPostItem = item.href === "/more/saved-post";
 
           return (
             <Link
@@ -1242,8 +1243,9 @@ function RoleMorePanel({
                 "grid min-h-12 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 py-2 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
                 isActive
                   ? "bg-brand-orange-soft text-brand-orange"
-                  : "text-text-primary hover:bg-surface-muted",
+                : "text-text-primary hover:bg-surface-muted",
               ].join(" ")}
+              data-saved-post-target={isSavedPostItem ? "true" : undefined}
               href={item.href}
               key={item.id}
             >
@@ -1291,6 +1293,7 @@ function CustomerDesktopMoreMenu({
           customerDesktopNavClass(isActive),
           "cursor-pointer list-none [&::-webkit-details-marker]:hidden",
         ].join(" ")}
+        data-more-menu-target="true"
       >
         <span
           className={[
@@ -1336,6 +1339,7 @@ function SidebarMoreMenu({
           sidebarLinkClass(isActive),
           "cursor-pointer list-none [&::-webkit-details-marker]:hidden",
         ].join(" ")}
+        data-more-menu-target="true"
         title={link.label}
       >
         <Icon name={link.icon} />
@@ -1372,6 +1376,7 @@ function RailMoreMenu({
           railLinkClass(isActive),
           "cursor-pointer list-none [&::-webkit-details-marker]:hidden",
         ].join(" ")}
+        data-more-menu-target="true"
         title={link.label}
       >
         <Icon name={link.icon} />
@@ -2756,6 +2761,7 @@ function MobileMoreMenu({
             ? "bg-brand-orange-soft text-brand-orange"
             : "text-text-secondary hover:bg-surface-muted hover:text-text-primary",
         ].join(" ")}
+        data-more-menu-target="true"
       >
         {isActive ? (
           <span

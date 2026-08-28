@@ -64,6 +64,17 @@ export type CustomerActivityService = {
   unitPrice?: number;
 };
 
+export type CustomerActivityVisitExperienceState = "good" | "issue";
+
+export type CustomerActivityVerifiedVisit = {
+  countsTowardReputation: boolean;
+  experienceBody: string | null;
+  experienceCreatedAt: string | null;
+  experienceState: CustomerActivityVisitExperienceState | null;
+  status: "verified";
+  windowDays: number;
+};
+
 export type CustomerActivityStatus =
   | "cancelled"
   | "completed"
@@ -83,6 +94,7 @@ export type CustomerPurchaseActivity = {
   title: string;
   total: number;
   type: "purchase";
+  verifiedVisit: CustomerActivityVerifiedVisit | null;
 };
 
 export type CustomerBookingActivity = {
@@ -149,6 +161,7 @@ export type CustomerActivityReceipt = {
   ticketId: string;
   ticketNumber: string;
   totals: ReturnType<typeof calculateTicketTotals>;
+  verifiedVisit: CustomerActivityVerifiedVisit | null;
 };
 
 type RawRecord = Record<string, unknown>;
@@ -263,6 +276,31 @@ function parsePayments(value: unknown): RawPayment[] {
   });
 }
 
+function readExperienceState(
+  value: unknown,
+): CustomerActivityVisitExperienceState | null {
+  return value === "good" || value === "issue" ? value : null;
+}
+
+function parseVerifiedVisit(value: unknown): CustomerActivityVerifiedVisit | null {
+  const raw = asRecord(value);
+
+  if (raw.status !== "verified") {
+    return null;
+  }
+
+  const windowDays = Math.max(1, Math.round(readNumber(raw.windowDays) || 10));
+
+  return {
+    countsTowardReputation: raw.countsTowardReputation === true,
+    experienceBody: readString(raw.experienceBody),
+    experienceCreatedAt: readString(raw.experienceCreatedAt),
+    experienceState: readExperienceState(raw.experienceState),
+    status: "verified",
+    windowDays,
+  };
+}
+
 function uniqueServiceNames(services: CustomerActivityService[]) {
   return [
     ...new Set(
@@ -349,6 +387,7 @@ function mapPurchaseActivity(entry: unknown): CustomerPurchaseActivity | null {
     title: activityTitle(services, "Purchase"),
     total: totals.total,
     type: "purchase",
+    verifiedVisit: parseVerifiedVisit(raw.verifiedVisit),
   };
 }
 
@@ -581,6 +620,7 @@ function mapReceipt(entry: unknown): CustomerActivityReceipt | null {
     ticketId,
     ticketNumber: readString(raw.ticketNumber) ?? "Receipt",
     totals,
+    verifiedVisit: parseVerifiedVisit(raw.verifiedVisit),
   };
 }
 

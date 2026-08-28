@@ -9,6 +9,12 @@ import {
   MobileDiscoveryShortcuts,
 } from "@/app/explore/customer-explore-utility-panel";
 import { ExploreFeed } from "@/app/explore/explore-feed";
+import { SavePostButton } from "@/app/saved-post/save-post-button";
+import {
+  LumiTrustMark,
+  LumiTrustPopover,
+  TrustFactPill,
+} from "@/components/reylumi-trust";
 import {
   type ExploreDiscoveryContent,
   type ExploreDiscoveryResultKind,
@@ -25,6 +31,13 @@ import {
   type ExploreSearchResponse,
   type ExploreSearchResult,
 } from "@/types/explore";
+import {
+  buildReylumiTrustSummary,
+  compareReylumiTopRatedSalons,
+  orderReylumiExploreResults,
+  type ReylumiExploreSearchOrder,
+  type ReylumiTrustSummary,
+} from "@/lib/reylumi-trust";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -650,7 +663,7 @@ function ExploreHero({
 
   return (
     <section
-      className="relative min-h-[8rem] overflow-hidden rounded-[1rem] bg-white shadow-[0_10px_28px_rgba(35,25,22,0.04)] ring-1 ring-divider-subtle/65"
+      className="relative min-h-[7.25rem] overflow-hidden rounded-[0.95rem] bg-white shadow-[0_8px_22px_rgba(35,25,22,0.035)] ring-1 ring-divider-subtle/65"
       data-testid="explore-hero"
     >
       {activeSlide ? (
@@ -659,7 +672,7 @@ function ExploreHero({
           className="object-cover object-[72%_center] transition-opacity duration-500"
           fill
           priority
-          sizes="(max-width: 768px) 100vw, 44rem"
+          sizes="(max-width: 768px) 100vw, 40rem"
           src={activeSlide.imageUrl}
         />
       ) : (
@@ -683,12 +696,12 @@ function ExploreHero({
             : "bg-white/18",
         ].join(" ")}
       />
-      <div className="relative z-10 grid min-h-[8rem] content-center gap-2.5 px-4 py-4 sm:px-5 lg:max-w-[66%]">
+      <div className="relative z-10 grid min-h-[7.25rem] content-center gap-2 px-4 py-3.5 sm:px-5 lg:max-w-[66%]">
         <div>
           <p className="text-[11px] font-semibold uppercase text-brand-orange">
             Featured now
           </p>
-          <h2 className="mt-1 line-clamp-2 max-w-sm text-lg font-semibold leading-tight text-text-primary sm:text-xl">
+          <h2 className="mt-1 line-clamp-2 max-w-sm text-lg font-semibold leading-tight text-text-primary">
             {heroTitle}
           </h2>
           <p className="mt-1 line-clamp-1 max-w-sm text-xs font-semibold text-brand-teal">
@@ -698,14 +711,14 @@ function ExploreHero({
         <div className="flex flex-wrap gap-2">
           {heroHref ? (
             <Link
-              className="inline-flex min-h-9 items-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              className="inline-flex min-h-8 items-center rounded-full bg-brand-orange px-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               href={heroHref}
             >
               {heroActionLabel}
             </Link>
           ) : (
             <button
-              className="inline-flex min-h-9 items-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              className="inline-flex min-h-8 items-center rounded-full bg-brand-orange px-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               onClick={onExploreClick}
               type="button"
             >
@@ -773,11 +786,11 @@ function MobileExploreSearch({
   return (
     <form
       action="/explore"
-      className="grid gap-2 rounded-[1.1rem] bg-surface-elevated p-2 shadow-[0_12px_34px_rgba(35,25,22,0.05)] ring-1 ring-divider-subtle/75 xl:hidden"
+      className="grid gap-2 rounded-[0.95rem] bg-surface-elevated p-2 shadow-[0_10px_26px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 xl:hidden"
       role="search"
     >
       <label
-        className="grid min-h-12 gap-0.5 rounded-[0.85rem] bg-surface-muted px-3 py-2 ring-1 ring-transparent transition focus-within:bg-white focus-within:ring-brand-orange/25"
+        className="grid min-h-11 gap-0.5 rounded-[0.8rem] bg-surface-muted px-3 py-1.5 ring-1 ring-transparent transition focus-within:bg-white focus-within:ring-brand-orange/25"
         htmlFor="customer-mobile-explore-search"
       >
         <span className="text-[11px] font-medium text-text-muted">
@@ -800,13 +813,13 @@ function MobileExploreSearch({
       ) : null}
       <div className="grid grid-cols-2 gap-2">
         <button
-          className="min-h-11 rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          className="min-h-10 rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
           type="submit"
         >
           Search
         </button>
         <button
-          className="min-h-11 rounded-full bg-brand-teal-soft px-4 text-sm font-semibold text-brand-teal transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal disabled:cursor-not-allowed disabled:opacity-60"
+          className="min-h-10 rounded-full bg-brand-teal-soft px-4 text-sm font-semibold text-brand-teal transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal disabled:cursor-not-allowed disabled:opacity-60"
           disabled={!canUseLocation}
           onClick={onCurrentLocation}
           type="button"
@@ -843,22 +856,11 @@ function topRatedSalons(
     content.recommendedSalons,
     content.newSalons,
   )
-    .sort((left, right) => {
-      const ratingDelta =
-        (right.averageRating ?? -1) - (left.averageRating ?? -1);
-
-      if (ratingDelta !== 0) {
-        return ratingDelta;
-      }
-
-      const reviewDelta = right.reviewCount - left.reviewCount;
-
-      if (reviewDelta !== 0) {
-        return reviewDelta;
-      }
-
-      return right.activeServiceCount - left.activeServiceCount;
-    })
+    .filter(
+      (salon) =>
+        salon.averageRating !== null && salon.sharedExperienceCount > 0,
+    )
+    .sort(compareReylumiTopRatedSalons)
     .slice(0, 8);
 }
 
@@ -908,10 +910,7 @@ function CompactSalonCard({ salon }: { salon: ExploreHomeSalon }) {
   const service = featuredServiceLine(salon);
   const price = priceLine(salon);
   const availability = salon.nextAvailabilityLabel;
-  const ratingLabel =
-    salon.averageRating !== null && salon.reviewCount > 0
-      ? formatRating(salon.averageRating)
-      : null;
+  const trustSummary = salonTrustSummary(salon);
 
   return (
     <article
@@ -938,14 +937,11 @@ function CompactSalonCard({ salon }: { salon: ExploreHomeSalon }) {
                 {salonInitials(displayName)}
               </span>
             )}
-            {ratingLabel ? (
-              <span
-                aria-label={cardReviewAriaLabel(salon)}
-                className="absolute bottom-2 left-2 rounded-full bg-white/95 px-2 py-0.5 text-[11px] font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle/75"
-              >
-                <span className="text-brand-orange">&#9733;</span> {ratingLabel}
-              </span>
-            ) : null}
+            <LumiTrustMark
+              className="absolute left-2 top-2 grid h-5 w-5 place-items-center bg-white/95 p-0 text-brand-orange shadow-sm ring-1 ring-brand-orange/20"
+              presentation="spark"
+              summary={trustSummary}
+            />
           </span>
         </span>
         <span className="grid min-h-[6.9rem] content-between gap-2 p-3 pt-2.5">
@@ -1065,11 +1061,11 @@ function TopRatedSalonsSection({
     return (
       <section className="grid gap-3" data-testid="top-rated-salons">
         {sectionHeader({
-          subtitle: "Public salon profiles will appear here when available.",
-          title: "Top Rated Salons Near You",
+          subtitle: "Salons will appear here when Experience signals are available.",
+          title: "Top Rated Salons",
         })}
         <div className="rounded-2xl border border-dashed border-divider-subtle bg-surface-elevated p-5 text-sm text-text-secondary">
-          No rated salons are available yet.
+          No salons have enough Experience signals yet.
         </div>
       </section>
     );
@@ -1079,8 +1075,8 @@ function TopRatedSalonsSection({
     <section className="grid gap-3" data-testid="top-rated-salons">
       {sectionHeader({
         actionHref: "/explore",
-        subtitle: "Real public salons sorted by rating signals when available.",
-        title: "Top Rated Salons Near You",
+        subtitle: "Sorted by customer rating with ReyLUMI activity context.",
+        title: "Top Rated Salons",
       })}
       <TopRatedCarousel salons={salons} />
     </section>
@@ -1100,8 +1096,11 @@ function TrendingDesignTile({
   const href = UUID_PATTERN.test(item.salonId)
     ? salonGalleryHref(item.salonId)
     : null;
-  const tileClass =
+  const trustSummary = buildReylumiTrustSummary(item.trust);
+  const tileFrameClass =
     "group relative aspect-[1.15/1] min-w-[6.75rem] max-w-[6.75rem] snap-start overflow-hidden rounded-[0.8rem] bg-surface-muted text-left shadow-[0_8px_20px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(35,25,22,0.08)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:min-w-[7.5rem] sm:max-w-[7.5rem] lg:min-w-[8.25rem] lg:max-w-[8.25rem]";
+  const tileActionClass =
+    "absolute inset-0 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange";
   const tileContent = (
     <>
       <Image
@@ -1120,30 +1119,40 @@ function TrendingDesignTile({
           {remainingLabel}
         </span>
       ) : null}
+      <LumiTrustMark
+        className="absolute left-2 top-2 z-10 grid h-5 w-5 place-items-center bg-white/95 p-0 text-brand-orange shadow-sm ring-1 ring-brand-orange/20"
+        presentation="spark"
+        summary={trustSummary}
+      />
     </>
   );
 
-  if (href) {
-    return (
-      <Link
-        aria-label={`Open ${salonName} designs`}
-        className={tileClass}
-        href={href}
-      >
-        {tileContent}
-      </Link>
-    );
-  }
-
   return (
-    <button
-      aria-label={`Open ${salonName} design`}
-      className={tileClass}
-      onClick={() => onOpen(item)}
-      type="button"
-    >
-      {tileContent}
-    </button>
+    <div className={tileFrameClass}>
+      {href ? (
+        <Link
+          aria-label={`Open ${salonName} designs`}
+          className={tileActionClass}
+          href={href}
+        >
+          {tileContent}
+        </Link>
+      ) : (
+        <button
+          aria-label={`Open ${salonName} design`}
+          className={tileActionClass}
+          onClick={() => onOpen(item)}
+          type="button"
+        >
+          {tileContent}
+        </button>
+      )}
+      <SavePostButton
+        className="absolute bottom-1.5 right-1.5 z-30 origin-bottom-right scale-75 shadow-sm sm:bottom-2 sm:right-2 sm:scale-[.82]"
+        initialSaved={item.saveTarget.saved}
+        target={item.saveTarget}
+      />
+    </div>
   );
 }
 
@@ -1230,35 +1239,31 @@ function mapSalonToMapSalon(salon: ExploreHomeSalon): ExploreMapSalon | null {
     longitude: salon.longitude,
     name: salon.name,
     serviceLabel: cardDetailLine(salon) || null,
+    trust: {
+      averageRating: salon.averageRating,
+      noIssueRate: salon.reputationNoIssueRate,
+      sharedExperienceCount: salon.sharedExperienceCount,
+      uniqueCustomerCount: salon.uniqueCustomerCount,
+      verifiedVisitCount: salon.verifiedVisitCount,
+    },
   };
 }
 
-function reviewCountLabel(count: number) {
-  return `${count} review${count === 1 ? "" : "s"}`;
+function salonTrustSummary(salon: ExploreSearchResult) {
+  return buildReylumiTrustSummary(salon, {
+    isNew: salon.isNew,
+  });
 }
 
-function formatRating(value: number) {
-  return (Math.round(value * 10) / 10).toFixed(1);
-}
-
-function cardReviewLabel(salon: ExploreSearchResult) {
-  if (salon.averageRating === null || salon.reviewCount <= 0) {
-    return null;
-  }
-
-  return `${formatRating(salon.averageRating)} / 5 (${reviewCountLabel(
-    salon.reviewCount,
-  )})`;
-}
-
-function cardReviewAriaLabel(salon: ExploreSearchResult) {
-  if (salon.averageRating === null || salon.reviewCount <= 0) {
-    return undefined;
-  }
-
-  return `Rated ${formatRating(salon.averageRating)} out of 5 from ${reviewCountLabel(
-    salon.reviewCount,
-  )}`;
+function metricTrustFacts(summary: ReylumiTrustSummary) {
+  return summary.facts
+    .filter(
+      (fact) =>
+        fact.kind === "rating" ||
+        fact.kind === "experience" ||
+        fact.kind === "verified_visit",
+    )
+    .slice(0, 3);
 }
 
 function SalonCard({
@@ -1277,17 +1282,17 @@ function SalonCard({
   const distance = formatDistance(salon.distanceMiles);
   const location = formatSalonLocation(salon);
   const canViewProfile = UUID_PATTERN.test(salon.id) && salon.hasPublicProfile;
+  const profileHref = canViewProfile ? salonProfileHref(salon.id) : null;
   const [imageFailed, setImageFailed] = useState(false);
   const imageUrl = imageFailed ? null : salon.coverImageUrl;
   const detailLine = cardDetailLine(salon);
-  const reviewLabel = cardReviewLabel(salon);
-  const reviewAriaLabel = cardReviewAriaLabel(salon);
+  const trustSummary = salonTrustSummary(salon);
   const availabilityLabel = salon.nextAvailabilityLabel;
   const bookingHref =
     salon.bookingEnabled && salon.bookingHref ? salon.bookingHref : null;
   const cardSizeClass = featured
-    ? "aspect-[4/5] sm:aspect-[3/2] xl:aspect-[16/10]"
-    : "aspect-[4/5]";
+    ? "aspect-[4/3] sm:aspect-[3/2] xl:aspect-[16/9]"
+    : "aspect-[4/3] sm:aspect-[1/1]";
   const imageSizes = featured
     ? "(max-width: 768px) 100vw, (max-width: 1280px) 66vw, 42vw"
     : "(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 24vw";
@@ -1295,7 +1300,7 @@ function SalonCard({
   return (
     <article
       className={[
-        "group relative min-h-full overflow-hidden rounded-[1.15rem] bg-text-primary shadow-[var(--shadow-soft)] ring-1 ring-divider-subtle/80 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_60px_rgba(80,47,36,0.13)] focus-within:ring-brand-orange/35",
+        "group relative min-h-full overflow-hidden rounded-[1rem] bg-text-primary shadow-[0_12px_32px_rgba(80,47,36,0.08)] ring-1 ring-divider-subtle/80 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_46px_rgba(80,47,36,0.12)] focus-within:ring-brand-orange/35",
         cardSizeClass,
       ].join(" ")}
       title={address || undefined}
@@ -1325,46 +1330,67 @@ function SalonCard({
         className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(31,23,27,0.10),rgba(31,23,27,0.03)_36%,rgba(31,23,27,0.76))]"
       />
 
-      <div className="absolute left-3 right-3 top-3 z-10 flex items-start justify-between gap-2">
+      <div className="absolute left-2.5 right-2.5 top-2.5 z-10 flex items-start justify-between gap-2">
         <span
           aria-label={rankAriaLabel}
-          className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-brand-orange shadow-sm"
+          className="grid min-h-9 min-w-9 place-items-center rounded-[0.85rem] bg-white px-2 py-1 text-center text-[11px] font-bold leading-tight text-brand-orange shadow-sm"
         >
           {rankLabel}
         </span>
         {distance ? (
-          <span className="rounded-full bg-text-primary/45 px-2.5 py-1 text-xs font-semibold text-white ring-1 ring-white/20">
+          <span className="rounded-full bg-text-primary/45 px-2.5 py-1 text-[11px] font-semibold text-white ring-1 ring-white/20">
             {distance}
           </span>
         ) : null}
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-10 p-4 text-white sm:p-5">
+      <div className="absolute inset-x-0 bottom-0 z-10 p-3.5 text-white sm:p-4">
         <div className="min-w-0">
-          <h3
-            className={[
-              "line-clamp-2 font-semibold leading-tight",
-              featured ? "text-2xl" : "text-xl",
-            ].join(" ")}
-          >
-            {salon.name}
-          </h3>
+          <div className="flex min-w-0 items-center gap-1.5">
+            {profileHref ? (
+              <Link
+                className="min-w-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                href={profileHref}
+              >
+                <h3
+                  className={[
+                    "line-clamp-2 font-semibold leading-tight transition hover:text-brand-orange",
+                    featured ? "text-xl sm:text-2xl" : "text-lg",
+                  ].join(" ")}
+                >
+                  {salon.name}
+                </h3>
+              </Link>
+            ) : (
+              <h3
+                className={[
+                  "min-w-0 line-clamp-2 font-semibold leading-tight",
+                  featured ? "text-xl sm:text-2xl" : "text-lg",
+                ].join(" ")}
+              >
+                {salon.name}
+              </h3>
+            )}
+            <LumiTrustPopover
+              actionHref={profileHref ? `${profileHref}#lumi-trust` : null}
+              align="right"
+              className="shrink-0"
+              entityName={salon.name}
+              markClassName="grid h-8 w-8 place-items-center rounded-full bg-white/92 p-0 text-brand-orange shadow-sm ring-1 ring-brand-orange/20 hover:bg-brand-orange-soft"
+              panelClassName="text-zinc-700"
+              presentation="spark"
+              size="sm"
+              summary={trustSummary}
+            />
+          </div>
           {location ? (
             <p className="mt-1 truncate text-sm font-medium text-white/80">
               {location}
             </p>
           ) : null}
           {detailLine ? (
-            <p className="mt-2 line-clamp-1 text-sm font-semibold text-white">
+            <p className="mt-1.5 line-clamp-1 text-sm font-semibold text-white">
               {detailLine}
-            </p>
-          ) : null}
-          {reviewLabel ? (
-            <p
-              aria-label={reviewAriaLabel}
-              className="mt-2 line-clamp-1 text-sm font-semibold text-white"
-            >
-              {reviewLabel}
             </p>
           ) : null}
           {availabilityLabel ? (
@@ -1374,35 +1400,32 @@ function SalonCard({
           ) : null}
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           {bookingHref ? (
             <Link
-              className="inline-flex min-h-9 items-center rounded-full bg-brand-orange px-3 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-flex min-h-8 items-center rounded-full bg-brand-orange px-3 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               href={bookingHref}
             >
               Book
             </Link>
           ) : null}
-          {canViewProfile ? (
+          {profileHref ? (
             <Link
               className={[
-                "inline-flex min-h-9 items-center rounded-full px-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                "inline-flex min-h-8 items-center rounded-full px-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                 bookingHref
                   ? "bg-white/15 text-white ring-1 ring-white/25 hover:bg-white/20"
                   : "bg-white text-text-primary hover:bg-brand-orange-soft",
               ].join(" ")}
-              href={salonProfileHref(salon.id)}
+              href={profileHref}
             >
               View salon
             </Link>
           ) : null}
-          {callHref ? (
+          {callHref && !bookingHref && !canViewProfile ? (
             <a
               aria-label={`Call ${salon.name}`}
-              className={[
-                "min-h-9 items-center rounded-full bg-white/15 px-3 text-sm font-semibold text-white ring-1 ring-white/25 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-                bookingHref ? "hidden sm:inline-flex" : "inline-flex",
-              ].join(" ")}
+              className="inline-flex min-h-8 items-center rounded-full bg-white/15 px-3 text-sm font-semibold text-white ring-1 ring-white/25 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               href={callHref}
             >
               Call
@@ -1467,6 +1490,26 @@ function bestMatchCountLabel(count: number) {
 
 function hasMeasuredDistance(results: ExploreSearchResult[]) {
   return results.some((salon) => salon.distanceMiles !== null);
+}
+
+type SearchOrderMode = ReylumiExploreSearchOrder;
+
+type SearchShortcut = {
+  category?: string;
+  label: string;
+  location?: string;
+  query?: string;
+};
+
+function orderedSearchSections(
+  sections: ExploreSearchResponse["sections"],
+  mode: SearchOrderMode,
+) {
+  return {
+    bestMatches: orderReylumiExploreResults(sections.bestMatches, mode),
+    nearby: orderReylumiExploreResults(sections.nearby, mode),
+    recommended: orderReylumiExploreResults(sections.recommended, mode),
+  };
 }
 
 function quotedQuery(query: string) {
@@ -1603,16 +1646,16 @@ function ResultSection({
   }
 
   return (
-    <section className="grid gap-3">
+    <section className="grid gap-2.5">
       <div>
-        <h3 className="text-xl font-semibold text-text-primary">{title}</h3>
+        <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
         {description ? (
           <p className="mt-1 text-sm font-medium text-text-secondary">
             {description}
           </p>
         ) : null}
       </div>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {results.map((salon, index) => {
           const featured = index === 0 && results.length >= 3;
           const rank = searchRankBadge(rankKind, index);
@@ -1636,6 +1679,103 @@ function ResultSection({
   );
 }
 
+function SearchRefinementBar({
+  category,
+  location,
+  mode,
+  onModeChange,
+  onShortcut,
+  query,
+  workspaceLocation,
+}: {
+  category: string;
+  location: string;
+  mode: SearchOrderMode;
+  onModeChange: (mode: SearchOrderMode) => void;
+  onShortcut: (input: {
+    category?: string;
+    location?: string;
+    query?: string;
+  }) => void;
+  query: string;
+  workspaceLocation: ExploreInitialLocation;
+}) {
+  const displayLocation = formatDisplayLocation(
+    location.trim() || workspaceLocation.label,
+  );
+  const locationName = displayLocation.split(",")[0]?.trim();
+  const normalizedCategory = cleanCategory(category);
+  const shortcutLocation = displayLocation || workspaceLocation.label;
+  const shortcutQuery = query.trim();
+  const ordering: { label: string; mode: SearchOrderMode }[] = [
+    { label: "Best match", mode: "relevance" },
+    { label: "Trusted first", mode: "trusted" },
+    { label: "Open booking", mode: "bookable" },
+    { label: "Closest", mode: "closest" },
+  ];
+  const shortcutCandidates: Array<SearchShortcut | null> = [
+    normalizedCategory
+      ? null
+      : { category: "Nails", label: "Nails" },
+    shortcutQuery.toLowerCase() === "full-set"
+      ? null
+      : { label: "Full-set", query: "Full-Set" },
+    shortcutLocation
+      ? {
+          label: locationName ? `Near ${locationName}` : "Near this area",
+          location: shortcutLocation,
+        }
+      : null,
+    shortcutQuery || normalizedCategory
+      ? { label: "Clear term", query: "", category: "All" }
+      : null,
+  ];
+  const shortcuts = shortcutCandidates.filter(
+    (shortcut): shortcut is SearchShortcut => Boolean(shortcut),
+  );
+
+  return (
+    <section
+      aria-label="Search refinement"
+      className="grid gap-3 rounded-2xl bg-surface-elevated p-3 ring-1 ring-divider-subtle/75"
+      data-testid="explore-search-refinement"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        {ordering.map((item) => (
+          <button
+            aria-pressed={mode === item.mode}
+            className={[
+              "min-h-9 rounded-full px-3 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+              mode === item.mode
+                ? "bg-text-primary text-white"
+                : "bg-white text-text-secondary ring-1 ring-divider-subtle hover:text-brand-orange",
+            ].join(" ")}
+            key={item.mode}
+            onClick={() => onModeChange(item.mode)}
+            type="button"
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      {shortcuts.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {shortcuts.map((shortcut) => (
+            <button
+              className="min-h-9 rounded-full bg-white px-3 text-xs font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              key={`${shortcut.label}:${shortcut.query ?? ""}:${shortcut.location ?? ""}:${shortcut.category ?? ""}`}
+              onClick={() => onShortcut(shortcut)}
+              type="button"
+            >
+              {shortcut.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function InspirationPreview({
   item,
   onClose,
@@ -1649,6 +1789,8 @@ function InspirationPreview({
   const location = inspirationLocation(item);
   const service = inspirationServiceLabel(item);
   const publishedAt = inspirationDateLabel(item.publishedAt);
+  const trustSummary = buildReylumiTrustSummary(item.trust);
+  const trustFacts = metricTrustFacts(trustSummary);
 
   useEffect(() => {
     previousFocusRef.current =
@@ -1724,6 +1866,11 @@ function InspirationPreview({
             sizes="(max-width: 768px) 100vw, 68vw"
             src={item.imageUrl}
           />
+          <SavePostButton
+            className="absolute bottom-4 right-4 z-10"
+            initialSaved={item.saveTarget.saved}
+            target={item.saveTarget}
+          />
         </div>
         <div className="grid max-h-[52dvh] min-h-0 content-between gap-5 overflow-y-auto p-5 sm:max-h-none sm:p-6">
           <div>
@@ -1757,6 +1904,20 @@ function InspirationPreview({
                 {service}
               </p>
             ) : null}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <LumiTrustPopover
+                entityName={item.salonName}
+                markClassName="bg-surface-muted px-3 py-1 text-brand-orange ring-1 ring-divider-subtle"
+                summary={trustSummary}
+              />
+              {trustFacts.slice(0, 2).map((fact) => (
+                <TrustFactPill
+                  className="max-w-[12rem] bg-surface-muted px-3 py-1 text-text-primary ring-1 ring-divider-subtle"
+                  fact={fact}
+                  key={fact.kind}
+                />
+              ))}
+            </div>
             {item.captionExcerpt ? (
               <p className="mt-3 text-sm leading-6 text-text-secondary">
                 {item.captionExcerpt}
@@ -1828,7 +1989,7 @@ function discoveryBadgeLabel(salon: ExploreHomeSalon, fallback: string) {
     return "Popular";
   }
 
-  if (salon.averageRating !== null && salon.reviewCount > 0) {
+  if (salon.averageRating !== null && salon.sharedExperienceCount > 0) {
     return "Top Rated";
   }
 
@@ -1870,10 +2031,14 @@ function RecommendedFeatureCard({
   const reason = discoveryBadgeLabel(salon, "Recommended");
   const { primaryHref, primaryLabel, viewHref } = recommendedCardLinks(salon);
   const showSecondaryViewAction = viewHref !== primaryHref;
-  const reviewAriaLabel = cardReviewAriaLabel(salon);
+  const trustSummary = salonTrustSummary(salon);
+  const trustHref =
+    UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
+      ? `${salonProfileHref(salon.id)}#lumi-trust`
+      : null;
 
   return (
-    <article className="group relative min-h-[23rem] overflow-hidden rounded-[1.15rem] bg-text-primary shadow-[0_18px_46px_rgba(35,25,22,0.09)] ring-1 ring-divider-subtle/75">
+    <article className="group relative min-h-[19rem] overflow-hidden rounded-[1rem] bg-text-primary shadow-[0_14px_38px_rgba(35,25,22,0.08)] ring-1 ring-divider-subtle/75">
       {imageUrl ? (
         <Image
           alt={`${displayName} salon photo`}
@@ -1892,18 +2057,29 @@ function RecommendedFeatureCard({
         aria-hidden
         className="absolute inset-0 bg-[linear-gradient(90deg,rgba(31,23,27,0.88),rgba(31,23,27,0.56)_42%,rgba(31,23,27,0.08)_100%)]"
       />
-      <div className="relative z-10 grid min-h-[23rem] max-w-[72%] content-end gap-4 p-5 text-white sm:p-6">
+      <div className="relative z-10 grid min-h-[19rem] max-w-[76%] content-end gap-3.5 p-4 text-white sm:p-5">
         <div>
-          <span className="inline-flex w-fit rounded-full bg-white/14 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20">
-            Recommended because {reason.toLowerCase()}
-          </span>
-          <h3 className="mt-4 line-clamp-2 text-2xl font-semibold leading-tight">
+          <div className="flex flex-wrap gap-2">
+            <LumiTrustPopover
+              actionHref={trustHref}
+              entityName={displayName}
+              markClassName="grid h-8 w-8 place-items-center rounded-full bg-white/92 p-0 text-brand-orange ring-1 ring-brand-orange/20 hover:bg-brand-orange-soft"
+              panelClassName="text-zinc-700"
+              presentation="spark"
+              size="sm"
+              summary={trustSummary}
+            />
+            <span className="inline-flex w-fit rounded-full bg-white/14 px-2.5 py-1 text-[11px] font-semibold text-white ring-1 ring-white/20">
+              Recommended because {reason.toLowerCase()}
+            </span>
+          </div>
+          <h3 className="mt-3 line-clamp-2 text-xl font-semibold leading-tight sm:text-2xl">
             {displayName}
           </h3>
-          <p className="mt-2 line-clamp-2 max-w-md text-sm leading-6 text-white/78">
+          <p className="mt-2 line-clamp-2 max-w-md text-sm leading-5 text-white/78">
             {service
-              ? `A polished match for ${service.toLowerCase()} with easy booking and salon signals that fit your Explore picks.`
-              : "A polished salon pick with profile signals, nearby discovery, and easy booking when available."}
+              ? `A polished match for ${service.toLowerCase()} with public salon details and booking when available.`
+              : "A polished salon pick with public details, nearby discovery, and booking when available."}
           </p>
           {location ? (
             <p className="mt-2 truncate text-xs font-semibold text-white/70">
@@ -1913,34 +2089,26 @@ function RecommendedFeatureCard({
         </div>
         <div className="flex min-h-7 flex-wrap items-center gap-2 text-xs">
           {service ? (
-            <span className="max-w-full truncate rounded-full bg-white/16 px-2.5 py-1 font-semibold text-white ring-1 ring-white/18">
+            <span className="max-w-full truncate rounded-full bg-white/16 px-2.5 py-0.5 font-semibold text-white ring-1 ring-white/18">
               {service}
             </span>
           ) : null}
           {price ? (
-            <span className="rounded-full bg-white px-2.5 py-1 font-semibold text-text-primary">
+            <span className="rounded-full bg-white px-2.5 py-0.5 font-semibold text-text-primary">
               {price}
-            </span>
-          ) : null}
-          {salon.averageRating !== null && salon.reviewCount > 0 ? (
-            <span
-              aria-label={reviewAriaLabel}
-              className="rounded-full bg-white/16 px-2.5 py-1 font-semibold text-white ring-1 ring-white/18"
-            >
-              <span aria-hidden>&#9733;</span> {formatRating(salon.averageRating)}
             </span>
           ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="inline-flex min-h-9 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             href={primaryHref}
           >
             {primaryLabel}
           </Link>
           {showSecondaryViewAction ? (
             <Link
-              className="inline-flex min-h-10 items-center justify-center rounded-full bg-white/14 px-4 text-sm font-semibold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-flex min-h-9 items-center justify-center rounded-full bg-white/14 px-4 text-sm font-semibold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               href={viewHref}
             >
               View salon
@@ -1972,7 +2140,7 @@ function RecommendedMiniTile({
       aria-label={`Feature ${displayName}`}
       aria-pressed={active}
       className={[
-        "group relative aspect-[1.18/1] overflow-hidden rounded-[0.95rem] bg-surface-muted shadow-[0_8px_20px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+        "group relative aspect-[1.35/1] overflow-hidden rounded-[0.9rem] bg-surface-muted shadow-[0_7px_18px_rgba(35,25,22,0.04)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
         active ? "ring-2 ring-brand-orange" : "",
       ].join(" ")}
       onClick={() => onSelect(index)}
@@ -2035,16 +2203,16 @@ function RecommendedForYouSection({
     .slice(0, 4);
 
   return (
-    <section className="grid gap-3" data-testid={testId}>
+    <section className="grid gap-2.5" data-testid={testId}>
       <div>
         <h2 className="text-xl font-semibold text-text-primary">{title}</h2>
         <p className="mt-1 text-sm leading-6 text-text-secondary">
           {description}
         </p>
       </div>
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,0.72fr)]">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(15rem,0.72fr)]">
         <RecommendedFeatureCard salon={activeSalon} />
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1 xl:grid-cols-2">
+        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-1 xl:grid-cols-2">
           {miniSalons.map(({ index, salon }) => (
             <RecommendedMiniTile
               active={index === activeIndexWithinBounds}
@@ -2163,7 +2331,7 @@ function NearYouHomeSection({
   }
 
   return (
-    <section className="grid gap-3">
+    <section className="grid gap-2.5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-text-primary">Near you</h2>
@@ -2237,7 +2405,7 @@ function NearYouHomeSection({
         </>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {results.map((salon, index) => {
           const featured = index === 0 && results.length >= 3;
           const rank = homeRankBadge(salon, index);
@@ -2386,7 +2554,7 @@ function PopularServiceCard({
   return (
     <button
       aria-label={`Search salons offering ${service.category}`}
-      className="group grid min-h-[12.25rem] overflow-hidden rounded-[1.05rem] bg-surface-elevated text-left shadow-[0_10px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(35,25,22,0.075)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+      className="group grid min-h-[9.75rem] overflow-hidden rounded-[0.95rem] bg-surface-elevated text-left shadow-[0_8px_22px_rgba(35,25,22,0.04)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(35,25,22,0.07)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
       onClick={() => onSelectCategory(service.category)}
       type="button"
     >
@@ -2397,7 +2565,7 @@ function PopularServiceCard({
       >
         <span className="absolute inset-x-0 bottom-0 h-16 bg-[linear-gradient(0deg,rgba(36,27,31,0.34),rgba(36,27,31,0))]" />
       </span>
-      <span className="grid gap-2 p-3.5">
+      <span className="grid gap-1.5 p-3">
         <span className="truncate text-base font-semibold text-text-primary">
           {service.category}
         </span>
@@ -2409,7 +2577,7 @@ function PopularServiceCard({
         <span className="text-xs font-medium text-text-muted">
           {service.salonCount} nearby salon{service.salonCount === 1 ? "" : "s"}
         </span>
-        <span className="mt-1 inline-flex w-fit items-center rounded-full bg-brand-orange-soft px-3 py-1.5 text-xs font-semibold text-brand-orange">
+        <span className="mt-0.5 inline-flex w-fit items-center rounded-full bg-brand-orange-soft px-3 py-1 text-xs font-semibold text-brand-orange">
           View all
         </span>
       </span>
@@ -2431,7 +2599,7 @@ function PopularServicesSection({
   }
 
   return (
-    <section className="grid gap-3" data-testid="popular-services">
+    <section className="grid gap-2.5" data-testid="popular-services">
       <div>
         <h2 className="text-xl font-semibold text-text-primary">
           Explore by Service
@@ -2440,7 +2608,7 @@ function PopularServicesSection({
           Start with the look or care you want, then compare salons.
         </p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {services.map((service) => (
           <PopularServiceCard
             key={service.category}
@@ -2487,10 +2655,10 @@ function ExploreDiscoveryResults({
 }) {
   return (
     <section
-      className="mx-auto grid w-full max-w-none gap-5 px-4 py-5 sm:px-6 lg:pl-8 lg:pr-3"
+      className="mx-auto grid w-full max-w-none gap-4 px-4 py-4 sm:px-6 lg:pl-8 lg:pr-3"
       data-testid="explore-discovery-results"
     >
-      <div className="mx-auto flex w-full max-w-[44rem] items-start justify-between gap-4">
+      <div className="mx-auto flex w-full max-w-[40rem] items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase text-brand-teal">
             Discovery
@@ -2515,7 +2683,7 @@ function ExploreDiscoveryResults({
             userCoordinates={gpsCoordinates}
           />
         ) : (
-          <div className="mx-auto w-full max-w-[44rem]">
+          <div className="mx-auto w-full max-w-[40rem]">
             <ExploreNotice
               action={
                 <button
@@ -2547,7 +2715,7 @@ function ExploreDiscoveryResults({
 
       {kind === "recommended" ? (
         <RecommendedForYouSection
-          description="Personalized from public profile signals, service fit, and booking readiness."
+          description="Personalized from public salon details, service fit, and availability context."
           results={content.recommendedSalons}
           testId="recommended-discovery-results"
           title="Recommended salons"
@@ -2585,7 +2753,7 @@ function ExploreHomeSections({
   return (
     <section
       aria-busy={false}
-      className="mx-auto grid w-full max-w-[44rem] gap-3 px-4 py-3 sm:px-6 lg:px-3"
+      className="mx-auto grid w-full max-w-[40rem] gap-2.5 px-4 py-3 sm:px-6 lg:px-3"
       data-testid="explore-home-content"
     >
       {content.error ? (
@@ -2810,6 +2978,8 @@ export function ExploreClient({
     useState(initialSearchMode);
   const [activeDiscoveryResult, setActiveDiscoveryResult] =
     useState<ExploreDiscoveryResultKind | null>(null);
+  const [searchOrderMode, setSearchOrderMode] =
+    useState<SearchOrderMode>("relevance");
   const appliedSavedLocation = useRef(false);
 
   const gpsActive = Boolean(gpsResponse && !location.trim());
@@ -2817,7 +2987,10 @@ export function ExploreClient({
   const activeResponse: ExploreSearchResponse =
     gpsActive && gpsResponse ? gpsResponse : initialResponse;
   const activeResults = activeResponse.results;
-  const activeSections = activeResponse.sections;
+  const activeSections = useMemo(
+    () => orderedSearchSections(activeResponse.sections, searchOrderMode),
+    [activeResponse.sections, searchOrderMode],
+  );
   const hasBestMatches = activeSections.bestMatches.length > 0;
   const hasNearbyResults = activeSections.nearby.length > 0;
   const hasRecommendedResults = activeSections.recommended.length > 0;
@@ -3039,6 +3212,40 @@ export function ExploreClient({
     });
   }
 
+  function applySearchShortcut(input: {
+    category?: string;
+    location?: string;
+    query?: string;
+  }) {
+    const nextCategory =
+      input.category === undefined ? selectedCategory : input.category;
+    const nextLocation =
+      input.location === undefined ? location : input.location;
+    const nextQuery = input.query === undefined ? query : input.query;
+
+    setQuery(nextQuery);
+    setLocation(nextLocation);
+    setCategory(nextCategory);
+    setGpsResponse(null);
+    setNearYouSalons([]);
+    setActiveDiscoveryResult(null);
+    setExplicitSearchMode(true);
+    setSearchOrderMode("relevance");
+
+    const url = buildUrl({
+      category: nextCategory,
+      location: nextLocation,
+      page: 1,
+      pathname,
+      query: nextQuery,
+      searchParams: new URLSearchParams(searchParams.toString()),
+    });
+
+    startTransition(() => {
+      router.push(url, { scroll: false });
+    });
+  }
+
   function goToPage(nextPage: number) {
     if (gpsActive && gpsCoordinates) {
       void runGpsSearch(gpsCoordinates, nextPage);
@@ -3099,7 +3306,7 @@ export function ExploreClient({
       <div
         className={[
           hasDiscoveryRail
-            ? "xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(19.5rem,19.5rem)] 2xl:grid-cols-[minmax(0,1fr)_minmax(21rem,21rem)]"
+            ? "xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(17.5rem,17.5rem)] 2xl:grid-cols-[minmax(0,1fr)_minmax(19rem,19rem)]"
             : "",
           "xl:items-start",
         ].join(" ")}
@@ -3107,7 +3314,7 @@ export function ExploreClient({
       >
         <div className="min-w-0 overflow-hidden" data-testid="explore-main-column">
           <section className="bg-transparent" data-testid="explore-top-section">
-            <div className="mx-auto grid w-full max-w-[44rem] gap-3 px-4 pb-2 pt-3 sm:px-6 lg:px-3">
+            <div className="mx-auto grid w-full max-w-[40rem] gap-2.5 px-4 pb-2 pt-3 sm:px-6 lg:px-3">
               <CategoryChips
                 category={selectedCategory}
                 onChange={selectCategory}
@@ -3154,7 +3361,7 @@ export function ExploreClient({
             />
           ) : (
             <>
-              <section className="mx-auto grid w-full max-w-none gap-4 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:pl-8 lg:pr-3">
+              <section className="mx-auto grid w-full max-w-none gap-3 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:pl-8 lg:pr-3">
                 <div>
                   <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
                     {summaryText}
@@ -3179,7 +3386,19 @@ export function ExploreClient({
                 ) : null}
               </section>
 
-              <section className="mx-auto grid w-full max-w-none gap-4 px-4 sm:px-6 lg:pl-8 lg:pr-3">
+              <section className="mx-auto grid w-full max-w-none gap-3 px-4 sm:px-6 lg:pl-8 lg:pr-3">
+                {searchMode ? (
+                  <SearchRefinementBar
+                    category={selectedCategory}
+                    location={location}
+                    mode={searchOrderMode}
+                    onModeChange={setSearchOrderMode}
+                    onShortcut={applySearchShortcut}
+                    query={query}
+                    workspaceLocation={workspaceLocation}
+                  />
+                ) : null}
+
                 {activeResponse.error ? (
                   <ExploreNotice
                     title="We couldn't load salons right now."
@@ -3256,7 +3475,7 @@ export function ExploreClient({
                     </div>
                   </div>
                 ) : (
-                  <div className="grid gap-8">
+                  <div className="grid gap-6">
                     <ResultSection
                       description={`${activeSections.bestMatches.length} result${
                         activeSections.bestMatches.length === 1 ? "" : "s"

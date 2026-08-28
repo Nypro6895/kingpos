@@ -6,7 +6,6 @@ import {
   saveStaffWeeklyAvailabilityAction,
   type BookingSetupActionResult,
 } from "@/app/booking-setup/actions";
-import { updateStaffOnlineBookingAction } from "@/app/staff/appointments/actions";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import type { SalonOnlineBookingStatus } from "@/lib/booking-status";
@@ -266,7 +265,6 @@ export function StaffBookingSettings({
   assignedServices,
   availabilityRules,
   salonBookingStatus,
-  salonId,
   staff,
   timeBlocks,
   timezone,
@@ -275,7 +273,6 @@ export function StaffBookingSettings({
   assignedServices: StaffSettingsService[];
   availabilityRules: StaffAvailabilityRule[];
   salonBookingStatus: SalonOnlineBookingStatus;
-  salonId: string;
   staff: StaffSettingsStaff;
   timeBlocks: StaffTimeBlock[];
   timezone: string;
@@ -479,27 +476,18 @@ export function StaffBookingSettings({
             <div className="staff-booking-settings-content">
               <section className="staff-booking-settings-section">
                 <div>
-                  <h3>Accept online bookings</h3>
+                  <h3>Online booking</h3>
                   <p>{status.body}</p>
                 </div>
-                <form action={updateStaffOnlineBookingAction}>
-                  <input name="salon_id" type="hidden" value={salonId} />
-                  <input
-                    name="online_booking_enabled"
-                    type="hidden"
-                    value={staff.onlineBookingEnabled ? "false" : "true"}
-                  />
-                  <button
-                    className={classNames(
-                      "staff-booking-settings-toggle",
-                      staff.onlineBookingEnabled &&
-                        "staff-booking-settings-toggle--on",
-                    )}
-                    type="submit"
-                  >
-                    {staff.onlineBookingEnabled ? "On" : "Off"}
-                  </button>
-                </form>
+                <span
+                  className={classNames(
+                    "staff-booking-settings-toggle",
+                    staff.onlineBookingEnabled &&
+                      "staff-booking-settings-toggle--on",
+                  )}
+                >
+                  {staff.onlineBookingEnabled ? "On" : "Off"}
+                </span>
               </section>
 
               <section className="staff-booking-settings-section staff-booking-settings-section--stack">

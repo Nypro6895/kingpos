@@ -1,6 +1,11 @@
-﻿import "server-only";
+import "server-only";
 
 import { getCurrentBusinessContext, isOwnerMembership } from "@/lib/current-context";
+import {
+  canPerformSalonOperation,
+  getSalonLifecycleDenialMessage,
+  getSalonOperationForPermissionCode,
+} from "@/lib/salon-lifecycle-rules";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Permission, RolePermission } from "@/types/permission";
@@ -19,6 +24,32 @@ export type AccountPermissionSet = {
   permissions: Permission[];
   roles: RoleWithPermissions[];
 };
+
+function getSalonLifecyclePermissionDenial(
+  permissionCode: string,
+  context: CurrentBusinessContext,
+) {
+  const operation = getSalonOperationForPermissionCode(permissionCode);
+
+  if (!operation || !context.currentSalon) {
+    return null;
+  }
+
+  if (
+    canPerformSalonOperation({
+      operation,
+      status: context.currentSalon.status,
+    })
+  ) {
+    return null;
+  }
+
+  return getSalonLifecycleDenialMessage({
+    operation,
+    salonName: context.currentSalon.name,
+    status: context.currentSalon.status,
+  });
+}
 
 export async function getCurrentRolePermissionCodes(
   context?: CurrentBusinessContext,
@@ -91,6 +122,10 @@ export async function hasPermission(
 ) {
   const resolvedContext = context ?? (await getCurrentBusinessContext());
 
+  if (getSalonLifecyclePermissionDenial(permissionCode, resolvedContext)) {
+    return false;
+  }
+
   if (isOwnerMembership(resolvedContext.currentMembership)) {
     return true;
   }
@@ -103,9 +138,19 @@ export async function requirePermission(
   permissionCode: string,
   context?: CurrentBusinessContext,
 ) {
-  const allowed = await hasPermission(permissionCode, context);
+  const resolvedContext = context ?? (await getCurrentBusinessContext());
+  const allowed = await hasPermission(permissionCode, resolvedContext);
 
   if (!allowed) {
+    const lifecycleDenial = getSalonLifecyclePermissionDenial(
+      permissionCode,
+      resolvedContext,
+    );
+
+    if (lifecycleDenial) {
+      throw new Error(lifecycleDenial);
+    }
+
     throw new Error(`Missing required permission: ${permissionCode}`);
   }
 }

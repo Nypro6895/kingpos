@@ -9,7 +9,7 @@ import type { KingUser } from "@/types/user";
 import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
 
 const USER_SELECT =
-  "id, auth_user_id, email, phone, first_name, last_name, display_name, avatar_url, status, language, timezone, last_login_at, created_at, updated_at";
+  "id, auth_user_id, email, phone, first_name, last_name, display_name, avatar_url, status, language, timezone, deletion_requested_at, deletion_scheduled_for, deleted_at, anonymized_at, deletion_finalization_started_at, deletion_finalized_at, deletion_finalization_attempts, deletion_finalization_failed_at, deletion_finalization_error, last_login_at, created_at, updated_at";
 
 function readMetadataString(metadata: SupabaseAuthUser["user_metadata"], key: string) {
   const value = metadata[key];
@@ -100,6 +100,31 @@ async function createMissingKingUser(
   return existingUser;
 }
 
+async function authIdentityWasFinalized(
+  supabase: NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+  authUser: SupabaseAuthUser,
+) {
+  const { data, error } = await supabase.rpc("auth_identity_is_deleted", {
+    p_auth_user_id: authUser.id,
+  });
+
+  if (error) {
+    if (error.code !== "42883" && error.code !== "42P01") {
+      console.error("Unable to check deleted auth identity tombstone", {
+        authUserId: authUser.id,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        message: error.message,
+      });
+    }
+
+    return false;
+  }
+
+  return data === true;
+}
+
 export async function getKingUserForAuthUser(
   authUser: SupabaseAuthUser,
   accessToken?: string | null,
@@ -125,6 +150,13 @@ export async function getKingUserForAuthUser(
       message: error.message,
       details: error.details,
       hint: error.hint,
+    });
+    return null;
+  }
+
+  if (!data && (await authIdentityWasFinalized(supabase, authUser))) {
+    console.log("Deleted auth identity tombstone blocked public user fallback", {
+      authUserId: authUser.id,
     });
     return null;
   }

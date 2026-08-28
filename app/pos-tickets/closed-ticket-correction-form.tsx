@@ -3,13 +3,15 @@
 import { useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
-  correctClosedPosTicketInline,
-  submitLockedStaffFinancialCorrection,
+  correctClosedPosTicketInline as ownerCorrectClosedPosTicketInline,
+  submitLockedStaffFinancialCorrection as ownerSubmitLockedStaffFinancialCorrection,
 } from "@/app/pos-tickets/actions";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
-import type { PosTicketWithRelations } from "@/types/pos-ticket";
-import type { Service } from "@/types/service";
-import type { Staff } from "@/types/staff";
+import type {
+  PosTicketDiscountType,
+  PosTicketStatus,
+  PosTicketTipType,
+} from "@/types/pos-ticket";
 
 type EditablePart = {
   amount: string;
@@ -35,21 +37,117 @@ type MoneyTarget =
   | { kind: "totalTip" }
   | null;
 
+type TicketCorrectionAction = (formData: FormData) => Promise<void>;
+
+export type TicketCorrectionFormActions = {
+  correctClosedTicket: TicketCorrectionAction;
+  submitLockedStaffFinancialCorrection?: TicketCorrectionAction;
+};
+
+export type TicketCorrectionServiceOption = {
+  id: string;
+  name: string;
+};
+
+export type TicketCorrectionStaffOption = {
+  display_name: string;
+  id: string;
+};
+
+export type EditablePosTicket = {
+  adjustments?: Array<{
+    action: "item_corrected" | "item_removed" | "item_replaced";
+    after_snapshot: unknown;
+    before_snapshot: unknown;
+    created_at: string;
+    created_by: string | null;
+    created_by_user: {
+      display_name: string | null;
+      email: string | null;
+      id: string;
+    } | null;
+    id: string;
+    reason: string;
+    ticket_id: string;
+  }>;
+  customer: {
+    email: string | null;
+    id: string;
+    name: string;
+    phone: string | null;
+  } | null;
+  discount_type: PosTicketDiscountType;
+  discount_value: number;
+  id: string;
+  opened_at: string;
+  source_booking_id: string | null;
+  staff_earnings?: Array<{
+    manual_tip_amount: number | null;
+    staff_id: string;
+    tip_amount: number;
+    tip_is_manual: boolean;
+  }>;
+  status: PosTicketStatus;
+  tax_rate: number;
+  ticket_items: Array<{
+    assigned_staff: {
+      display_name: string;
+      id: string;
+      job_title?: string | null;
+    } | null;
+    assigned_staff_id: string | null;
+    created_at: string;
+    id: string;
+    line_total: number;
+    running_turns?: {
+      big: number | null;
+      small: number | null;
+    };
+    service: {
+      id: string;
+      name: string;
+    } | null;
+    service_id: string | null;
+    turn_parts?: Array<{
+      amount: number;
+      created_at?: string;
+      id: string;
+      staff_id?: string;
+      ticket_id?: string;
+      ticket_item_id?: string;
+      turn_index: number;
+      turn_type: "large" | "small";
+      work_date?: string;
+    }>;
+  }>;
+  tip_type: PosTicketTipType;
+  tip_value: number;
+};
+
 type DailyPosTicketCardProps = {
+  actions?: TicketCorrectionFormActions;
   businessDateCompactLabel: string;
   canApplyFinancialCorrection: boolean;
   canEdit: boolean;
   dailyNumber: number;
   isBusinessDateLocked: boolean;
+  requireServiceForActiveLines?: boolean;
   returnTo: string;
-  services: Service[];
-  staff: Staff[];
-  ticket: PosTicketWithRelations;
+  services: TicketCorrectionServiceOption[];
+  staff: TicketCorrectionStaffOption[];
+  ticket: EditablePosTicket;
+  timeZone?: string;
 };
 
 type TicketHistoryAdjustment = NonNullable<
-  PosTicketWithRelations["adjustments"]
+  EditablePosTicket["adjustments"]
 >[number];
+
+const OWNER_TICKET_CORRECTION_ACTIONS: Required<TicketCorrectionFormActions> = {
+  correctClosedTicket: ownerCorrectClosedPosTicketInline,
+  submitLockedStaffFinancialCorrection:
+    ownerSubmitLockedStaffFinancialCorrection,
+};
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -62,23 +160,25 @@ function formatNumber(value: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
 
-function formatTime(value: string) {
+function formatTime(value: string, timeZone?: string) {
   return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
+    ...(timeZone ? { timeZone } : {}),
   }).format(new Date(value));
 }
 
-function formatDate(value: string) {
+function formatDate(value: string, timeZone?: string) {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
+    ...(timeZone ? { timeZone } : {}),
     year: "numeric",
   }).format(new Date(value));
 }
 
-function formatDateTime(value: string) {
-  return `${formatTime(value)} | ${formatDate(value)}`;
+function formatDateTime(value: string, timeZone?: string) {
+  return `${formatTime(value, timeZone)} | ${formatDate(value, timeZone)}`;
 }
 
 function toMoneyNumber(value: string) {
@@ -191,7 +291,7 @@ function allocateTipCentsByStaff(
   return tipCentsByStaffId;
 }
 
-function getInitialLines(ticket: PosTicketWithRelations): EditableLine[] {
+function getInitialLines(ticket: EditablePosTicket): EditableLine[] {
   return (ticket.ticket_items ?? []).map((item) => {
     const parts =
       item.turn_parts && item.turn_parts.length > 0
@@ -222,7 +322,7 @@ function getInitialLines(ticket: PosTicketWithRelations): EditableLine[] {
   });
 }
 
-function getInitialStaffTips(ticket: PosTicketWithRelations, totalTipAmount: number) {
+function getInitialStaffTips(ticket: EditablePosTicket, totalTipAmount: number) {
   const tipsByStaffId = new Map<string, number>();
 
   for (const earning of ticket.staff_earnings ?? []) {
@@ -261,7 +361,7 @@ function getInitialStaffTips(ticket: PosTicketWithRelations, totalTipAmount: num
   return tipsByStaffId;
 }
 
-function getInitialManualStaffTips(ticket: PosTicketWithRelations) {
+function getInitialManualStaffTips(ticket: EditablePosTicket) {
   const tipsByStaffId = new Map<string, number>();
 
   for (const earning of ticket.staff_earnings ?? []) {
@@ -281,13 +381,17 @@ function getInitialManualStaffTips(ticket: PosTicketWithRelations) {
 function SaveButton({
   canApplyFinancialCorrection,
   canSave,
+  correctClosedTicketAction,
   isCorrectionMode,
   onCorrectionIntentChange,
+  submitLockedStaffFinancialCorrectionAction,
 }: {
   canApplyFinancialCorrection: boolean;
   canSave: boolean;
+  correctClosedTicketAction: TicketCorrectionAction;
   isCorrectionMode: boolean;
   onCorrectionIntentChange: (intent: "apply" | "request") => void;
+  submitLockedStaffFinancialCorrectionAction: TicketCorrectionAction;
 }) {
   const { pending } = useFormStatus();
 
@@ -298,7 +402,7 @@ function SaveButton({
           <button
             className="rounded border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
             disabled={!canSave || pending}
-            formAction={submitLockedStaffFinancialCorrection}
+            formAction={submitLockedStaffFinancialCorrectionAction}
             onClick={() => onCorrectionIntentChange("request")}
             type="submit"
           >
@@ -308,7 +412,7 @@ function SaveButton({
         <button
           className="rounded bg-zinc-950 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
           disabled={!canSave || pending}
-          formAction={submitLockedStaffFinancialCorrection}
+          formAction={submitLockedStaffFinancialCorrectionAction}
           onClick={() =>
             onCorrectionIntentChange(
               canApplyFinancialCorrection ? "apply" : "request",
@@ -332,7 +436,7 @@ function SaveButton({
     <button
       className="rounded bg-zinc-950 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500"
       disabled={!canSave || pending}
-      formAction={correctClosedPosTicketInline}
+      formAction={correctClosedTicketAction}
       type="submit"
     >
       {pending ? "Saving..." : "Save Correction"}
@@ -913,16 +1017,23 @@ function buildCorrectionChangeSummary(beforeSnapshot: unknown, afterSnapshot: un
 }
 
 export function DailyPosTicketCard({
+  actions,
   businessDateCompactLabel,
   canApplyFinancialCorrection,
   canEdit,
   dailyNumber,
   isBusinessDateLocked,
+  requireServiceForActiveLines = true,
   returnTo,
   services,
   staff,
   ticket,
+  timeZone,
 }: DailyPosTicketCardProps) {
+  const correctionActions = actions ?? OWNER_TICKET_CORRECTION_ACTIONS;
+  const lockedCorrectionAction =
+    correctionActions.submitLockedStaffFinancialCorrection ??
+    correctionActions.correctClosedTicket;
   const initialLines = useMemo(() => getInitialLines(ticket), [ticket]);
   const initialLineByKey = useMemo(
     () => new Map(initialLines.map((line) => [line.key, line])),
@@ -1108,7 +1219,7 @@ export function DailyPosTicketCard({
   const invalidTipTotal = !Number.isFinite(totalTipAmount) || safeTotalTipCents < 0;
   const invalidAddedLine = addedItems.some(
     (line) =>
-      !line.service_id ||
+      (requireServiceForActiveLines && !line.service_id) ||
       !line.staff_id ||
       line.parts.length === 0 ||
       line.parts.some(
@@ -1117,7 +1228,7 @@ export function DailyPosTicketCard({
   );
   const invalidExistingLine = activeLines.some(
     (line) =>
-      !line.serviceId ||
+      (requireServiceForActiveLines && !line.serviceId) ||
       !line.staffId ||
       line.parts.length === 0 ||
       line.parts.some((part) => safeCents(part.amount) <= 0) ||
@@ -1588,7 +1699,7 @@ export function DailyPosTicketCard({
                 key={adjustment.id}
               >
                 <span className="font-medium text-zinc-800">
-                  {formatDateTime(adjustment.created_at)}
+                  {formatDateTime(adjustment.created_at, timeZone)}
                 </span>
                 <span className="px-1 text-zinc-400">|</span>
                 {isCorrection ? (
@@ -1633,7 +1744,7 @@ export function DailyPosTicketCard({
 
   return (
     <article className="border-b border-zinc-200 last:border-b-0">
-      <form action={correctClosedPosTicketInline}>
+      <form action={correctionActions.correctClosedTicket}>
         {isEditing ? (
           <>
             <input name="ticket_id" type="hidden" value={ticket.id} />
@@ -1661,7 +1772,9 @@ export function DailyPosTicketCard({
         ) : null}
         <div className="grid items-center gap-2 bg-zinc-50 px-3 py-2 text-sm sm:grid-cols-[48px_80px_minmax(150px,1fr)_110px_150px_130px_56px]">
           <span className="font-semibold text-zinc-950">#{dailyNumber}</span>
-          <span className="text-zinc-700">{formatTime(ticket.opened_at)}</span>
+          <span className="text-zinc-700">
+            {formatTime(ticket.opened_at, timeZone)}
+          </span>
           <span className="min-w-0 truncate font-medium text-zinc-950">
             {ticket.customer?.name ?? "Walk-in Customer"}
             {ticket.source_booking_id ? (
@@ -1758,9 +1871,13 @@ export function DailyPosTicketCard({
                       : invalidTipTotal
                         ? "Total tip must be zero or greater."
                         : invalidAddedLine
-                          ? "Added lines require staff, service, and parts greater than 0."
+                          ? requireServiceForActiveLines
+                            ? "Added lines require staff, service, and parts greater than 0."
+                            : "Added lines require staff and parts greater than 0."
                           : invalidExistingLine
-                            ? "Active lines require staff, service, and positive parts."
+                            ? requireServiceForActiveLines
+                              ? "Active lines require staff, service, and positive parts."
+                              : "Active lines require staff and positive parts."
                             : hasChange
                               ? "Ready to save correction."
                               : "Make a change to enable save."}
@@ -1776,8 +1893,10 @@ export function DailyPosTicketCard({
                 <SaveButton
                   canApplyFinancialCorrection={canApplyFinancialCorrection}
                   canSave={canSave}
+                  correctClosedTicketAction={correctionActions.correctClosedTicket}
                   isCorrectionMode={isCorrectionMode}
                   onCorrectionIntentChange={setCorrectionIntent}
+                  submitLockedStaffFinancialCorrectionAction={lockedCorrectionAction}
                 />
               </div>
             </div>

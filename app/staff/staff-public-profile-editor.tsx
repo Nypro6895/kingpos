@@ -9,21 +9,17 @@ import {
   SALON_PROFILE_ALLOWED_IMAGE_TYPES,
   SALON_PROFILE_IMAGE_LIMITS,
 } from "@/lib/salon-profile-media";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 type StaffPublicProfileEditorProps = {
   avatarUrl: string | null;
   bio: string | null;
-  canChangeConsent?: boolean;
+  canEditSalonRole?: boolean;
   displayName: string;
   jobTitle: string | null;
-  ownerPublicEnabled?: boolean;
-  onlineBookingEnabled?: boolean;
-  publicProfileVisible?: boolean;
-  salonName?: string | null;
   showPasscodeControls?: boolean;
   specialties: string[];
-  staffPublicConsentStatus?: "granted" | "not_requested" | "opted_out";
   staffId: string;
 };
 
@@ -139,18 +135,14 @@ function uploadToSupabase(input: {
 export function StaffPublicProfileEditor({
   avatarUrl,
   bio,
-  canChangeConsent = true,
+  canEditSalonRole = false,
   displayName,
   jobTitle,
-  onlineBookingEnabled = false,
-  ownerPublicEnabled = true,
-  publicProfileVisible,
-  salonName,
   showPasscodeControls = true,
   specialties,
-  staffPublicConsentStatus,
   staffId,
 }: StaffPublicProfileEditorProps) {
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
   const [avatarPath, setAvatarPath] = useState("");
@@ -162,18 +154,6 @@ export function StaffPublicProfileEditor({
   const [passcodeNotice, setPasscodeNotice] = useState("");
   const [previewUrl, setPreviewUrl] = useState(avatarUrl);
   const [progress, setProgress] = useState(0);
-  const hasConsent =
-    staffPublicConsentStatus !== undefined
-      ? staffPublicConsentStatus === "granted"
-      : publicProfileVisible === true;
-  const effectivePublic = ownerPublicEnabled && hasConsent;
-  const subject = canChangeConsent ? "You" : "This staff member";
-  const objectSubject = canChangeConsent ? "you" : "this staff member";
-  const visibilityCopy = effectivePublic
-    ? `${subject} can appear in booking and on this salon profile.`
-    : hasConsent
-      ? "The salon has not enabled this public listing."
-      : `${subject} has opted out of the public team.`;
 
   useEffect(() => {
     return () => {
@@ -254,7 +234,9 @@ export function StaffPublicProfileEditor({
     if (result.error) {
       setError(result.error);
     } else {
-      setNotice("Public staff profile saved.");
+      setAvatarPath("");
+      setNotice("Staff Profile saved.");
+      router.refresh();
     }
 
     setBusy(false);
@@ -284,106 +266,95 @@ export function StaffPublicProfileEditor({
       <form className="grid gap-4" onSubmit={save}>
         <input name="staff_id" type="hidden" value={staffId} />
         <input name="public_profile_photo_path" type="hidden" value={avatarPath} />
-        <div className="flex items-center gap-4">
-          {previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              alt={`${displayName} public profile`}
-              className="h-16 w-16 rounded-full border border-zinc-200 object-cover"
-              src={previewUrl}
-            />
-          ) : (
-            <div className="grid h-16 w-16 place-items-center rounded-full bg-zinc-950 text-sm font-semibold text-white">
-              {displayName
-                .split(/\s+/)
-                .slice(0, 2)
-                .map((part) => part[0]?.toUpperCase())
-                .join("")}
-            </div>
-          )}
-          <div className="grid gap-2">
-            <input
-              accept={SALON_PROFILE_ALLOWED_IMAGE_TYPES.join(",")}
-              className="sr-only"
-              onChange={(event) => void uploadAvatar(event.currentTarget.files?.[0] ?? null)}
-              ref={inputRef}
-              type="file"
-            />
-            <button
-              className="w-fit rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
-              disabled={busy}
-              onClick={() => inputRef.current?.click()}
-              type="button"
-            >
-              {busy && progress > 0 ? `Uploading ${progress}%` : "Change photo"}
-            </button>
-            <label className="flex items-center gap-2 text-sm text-zinc-700">
-              <input
-                className="size-4 rounded border-zinc-300"
-                defaultChecked={hasConsent}
-                disabled={!canChangeConsent}
-                name="appear_publicly"
-                type="checkbox"
+        <section className="grid gap-4">
+          <h3 className="text-sm font-semibold text-zinc-950">Identity</h3>
+          <div className="flex items-center gap-4">
+            {previewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt={`${displayName} Staff Profile`}
+                className="h-16 w-16 rounded-full border border-zinc-200 object-cover"
+                src={previewUrl}
               />
-              Appear in booking and on this salon profile
-            </label>
-            {!canChangeConsent ? (
-              <p className="max-w-sm text-xs leading-5 text-zinc-500">
-                Staff controls this opt-in from their own workspace.
-              </p>
-            ) : null}
-            <p className="max-w-sm text-xs leading-5 text-zinc-500">
-              {salonName ? `${salonName}: ` : ""}
-              {visibilityCopy}
-              {onlineBookingEnabled && effectivePublic
-                ? ` Online booking can show ${objectSubject} as an artist.`
-                : ""}
-            </p>
+            ) : (
+              <div className="grid h-16 w-16 place-items-center rounded-full bg-zinc-950 text-sm font-semibold text-white">
+                {displayName
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((part) => part[0]?.toUpperCase())
+                  .join("")}
+              </div>
+            )}
+            <div className="grid gap-2">
+              <input
+                accept={SALON_PROFILE_ALLOWED_IMAGE_TYPES.join(",")}
+                className="sr-only"
+                onChange={(event) =>
+                  void uploadAvatar(event.currentTarget.files?.[0] ?? null)
+                }
+                ref={inputRef}
+                type="file"
+              />
+              <button
+                className="w-fit rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
+                disabled={busy}
+                onClick={() => inputRef.current?.click()}
+                type="button"
+              >
+                {busy && progress > 0 ? `Uploading ${progress}%` : "Change photo"}
+              </button>
+            </div>
           </div>
-        </div>
-        <label className="grid gap-2">
-          <span className="text-sm font-medium text-zinc-700">Public name</span>
-          <input
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-            defaultValue={displayName}
-            name="display_name"
-            required
-          />
-        </label>
-        <label className="grid gap-2">
-          <span className="text-sm font-medium text-zinc-700">Title</span>
-          <input
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-            defaultValue={jobTitle ?? ""}
-            name="job_title"
-          />
-        </label>
-        <label className="grid gap-2">
-          <span className="text-sm font-medium text-zinc-700">Short bio</span>
-          <textarea
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm leading-6"
-            defaultValue={bio ?? ""}
-            name="public_bio"
-            rows={3}
-          />
-        </label>
-        <label className="grid gap-2">
-          <span className="text-sm font-medium text-zinc-700">Specialties</span>
-          <input
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
-            defaultValue={specialties.join(", ")}
-            name="specialties"
-            placeholder="Chrome, Gel-X, Nail art"
-          />
-        </label>
+          <label className="grid gap-2">
+            <span className="text-sm font-medium text-zinc-700">Display name</span>
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              defaultValue={displayName}
+              name="display_name"
+              required
+            />
+          </label>
+          <label className="grid gap-2">
+            <span className="text-sm font-medium text-zinc-700">Role / title</span>
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              defaultValue={jobTitle ?? ""}
+              disabled={!canEditSalonRole}
+              name="job_title"
+            />
+          </label>
+          <label className="grid gap-2">
+            <span className="text-sm font-medium text-zinc-700">
+              Professional intro
+            </span>
+            <textarea
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm leading-6"
+              defaultValue={bio ?? ""}
+              name="public_bio"
+              rows={3}
+            />
+          </label>
+        </section>
+        <section className="grid gap-3 border-t border-zinc-200 pt-4">
+          <h3 className="text-sm font-semibold text-zinc-950">Skills</h3>
+          <label className="grid gap-2">
+            <span className="text-sm font-medium text-zinc-700">Specialties</span>
+            <input
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
+              defaultValue={specialties.join(", ")}
+              name="specialties"
+              placeholder="Chrome, Gel-X, Nail art"
+            />
+          </label>
+        </section>
         {error ? <p className="text-sm text-red-700">{error}</p> : null}
         {notice ? <p className="text-sm text-emerald-700">{notice}</p> : null}
         <button
-          className="w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="min-h-10 w-full rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 sm:w-fit"
           disabled={busy}
           type="submit"
         >
-          Save public profile
+          Save Staff Profile
         </button>
       </form>
 
@@ -452,7 +423,7 @@ export function StaffPublicProfileEditor({
             <p className="text-sm text-emerald-700">{passcodeNotice}</p>
           ) : null}
           <button
-            className="w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="min-h-10 w-full rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 sm:w-fit"
             disabled={passcodeBusy}
             type="submit"
           >

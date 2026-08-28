@@ -2140,6 +2140,7 @@ export async function correctClosedPosTicket(formData: FormData) {
     let action: "item_corrected" | "item_removed" | "item_replaced" = "item_corrected";
     let replacementItemId: string | null = null;
     const serviceChanged = serviceId !== item.service_id;
+    const lineTotal = Math.round((quantity * unitPrice + Number.EPSILON) * 100) / 100;
 
     if (removeItem || serviceChanged) {
       action = removeItem ? "item_removed" : "item_replaced";
@@ -2173,6 +2174,7 @@ export async function correctClosedPosTicket(formData: FormData) {
           .from("pos_ticket_items")
           .insert({
             assigned_staff_id: assignedStaffId,
+            line_total: lineTotal,
             notes: item.notes,
             pos_ticket_id: ticketId,
             quantity,
@@ -2203,6 +2205,7 @@ export async function correctClosedPosTicket(formData: FormData) {
         .from("pos_ticket_items")
         .update({
           assigned_staff_id: assignedStaffId,
+          line_total: lineTotal,
           quantity,
           unit_price: unitPrice,
         })
@@ -3851,6 +3854,7 @@ export async function correctClosedPosTicketInline(formData: FormData) {
           .from("pos_ticket_items")
           .insert({
             assigned_staff_id: update.staff_id,
+            line_total: lineTotal,
             notes: currentItem.notes,
             pos_ticket_id: ticketId,
             quantity: 1,
@@ -3933,6 +3937,7 @@ export async function correctClosedPosTicketInline(formData: FormData) {
           .from("pos_ticket_items")
           .update({
             assigned_staff_id: update.staff_id,
+            line_total: lineTotal,
             quantity: 1,
             unit_price: lineTotal,
           })
@@ -3971,6 +3976,7 @@ export async function correctClosedPosTicketInline(formData: FormData) {
         const { error: unchangedUpdateError } = await supabase
           .from("pos_ticket_items")
           .update({
+            line_total: lineTotal,
             quantity: 1,
             unit_price: lineTotal,
           })
@@ -4000,6 +4006,7 @@ export async function correctClosedPosTicketInline(formData: FormData) {
         .from("pos_ticket_items")
         .insert({
           assigned_staff_id: addedItem.staff_id,
+          line_total: lineTotal,
           pos_ticket_id: ticketId,
           quantity: 1,
           salon_id: salon.id,

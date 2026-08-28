@@ -44,9 +44,12 @@ export type ResolvedBeautyProfile = {
   coverMediaPath: string | null;
   createdAt: string | null;
   displayName: string;
+  followerCount: number;
   href: string;
   id: string;
   initials: string;
+  isFollowing: boolean;
+  isSelf: boolean;
   state: Extract<BeautyProfileRelationshipState, "private" | "public">;
   visibility: BeautyProfileVisibility;
 };
@@ -106,6 +109,24 @@ function asRecord(value: unknown): RawRecord {
 
 function readString(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function readBoolean(value: unknown) {
+  return value === true;
+}
+
+function readNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number.parseInt(value, 10);
+
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
 }
 
 function cleanUuid(value: string | null | undefined) {
@@ -236,9 +257,12 @@ function mapProfilePayload(
       coverMediaPath: profileState === "public" ? coverMediaPath : null,
       createdAt: readString(profile.createdAt),
       displayName,
+      followerCount: Math.max(0, readNumber(profile.followerCount) ?? 0),
       href: beautyProfileHref({ customerId, profileId: id, state: profileState }),
       id,
       initials: initialsFor(displayName),
+      isFollowing: readBoolean(profile.isFollowing),
+      isSelf: readBoolean(profile.isSelf),
       state: profileState,
       visibility,
     },
@@ -457,7 +481,9 @@ export async function getPublicBeautyProfile(
   profileId: string,
 ): Promise<BeautyProfileResolveResult> {
   const cleanProfileId = cleanUuid(profileId);
-  const supabase = createSupabaseServerClient();
+  const supabase =
+    (await createAuthenticatedSupabaseServerClient()) ??
+    createSupabaseServerClient();
 
   if (!cleanProfileId) {
     return {

@@ -1,25 +1,36 @@
 "use client";
 
 import { loadExploreFeedAction } from "@/app/explore/actions";
+import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
+import { LumiTrustPopover } from "@/components/reylumi-trust";
 import type {
   ExploreFeedCursor,
   ExploreFeedItem,
   ExploreFeedMedia,
   ExploreFeedPage,
 } from "@/types/explore";
+import {
+  buildReylumiTrustSummary,
+  type ReylumiTrustSummary,
+} from "@/lib/reylumi-trust";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+  type ReactNode,
 } from "react";
 
 const EXPLORE_FEED_SESSION_KEY = "kingpos-explore-continuous-feed";
-const EXPLORE_FEED_SESSION_VERSION = 5;
+const EXPLORE_FEED_SESSION_VERSION = 9;
 const EXPLORE_FEED_SESSION_TTL_MS = 30 * 60 * 1000;
 const EXPLORE_FEED_SESSION_ITEM_LIMIT = 120;
 
@@ -137,6 +148,14 @@ function writeStoredFeedState(input: {
   }
 }
 
+function shouldRestoreStoredFeedState() {
+  const navigation = window.performance.getEntriesByType("navigation")[0] as
+    | PerformanceNavigationTiming
+    | undefined;
+
+  return navigation?.type !== "reload";
+}
+
 function appendUniqueFeedItems(
   current: ExploreFeedItem[],
   incoming: ExploreFeedItem[],
@@ -186,43 +205,112 @@ function serviceLabel(item: ExploreFeedItem) {
   );
 }
 
-function verificationLabel(item: ExploreFeedItem) {
-  return item.verification?.state === "verified" ? "Verified visit" : null;
+function feedTrustSummary(item: ExploreFeedItem): ReylumiTrustSummary | null {
+  if (!item.salon) {
+    return null;
+  }
+
+  return buildReylumiTrustSummary(
+    item.salon.trust,
+    {
+      verifiedVisitState: item.verification?.state === "verified",
+    },
+  );
 }
 
 function bookingCountLabel(count: number) {
   return `${count} booked`;
 }
 
+function ActionTooltip({
+  children,
+  label,
+}: {
+  children: ReactNode;
+  label: string;
+}) {
+  return (
+    <span className="group/action relative inline-flex">
+      {children}
+      <span
+        className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-zinc-950 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-lg group-hover/action:block group-focus-within/action:block"
+        role="tooltip"
+      >
+        {label}
+      </span>
+    </span>
+  );
+}
+
+function BookActionIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <path d="M3.5 9h17" />
+      <path d="M5 4h14a2 2 0 0 1 2 2v13a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Z" />
+      <path d="m9 15 2 2 4-5" />
+    </svg>
+  );
+}
+
+function ShareActionIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+      <path d="m16 6-4-4-4 4" />
+      <path d="M12 2v14" />
+    </svg>
+  );
+}
+
 function timeAgo(value: string) {
   const time = new Date(value).getTime();
 
   if (!Number.isFinite(time)) {
-    return "Recently";
+    return "recent";
   }
 
   const seconds = Math.max(1, Math.floor((Date.now() - time) / 1000));
 
   if (seconds < 60) {
-    return "Just now";
+    return "now";
   }
 
   const minutes = Math.floor(seconds / 60);
 
   if (minutes < 60) {
-    return `${minutes}m ago`;
+    return `${minutes}m`;
   }
 
   const hours = Math.floor(minutes / 60);
 
   if (hours < 24) {
-    return `${hours}h ago`;
+    return `${hours}h`;
   }
 
   const days = Math.floor(hours / 24);
 
   if (days < 7) {
-    return `${days}d ago`;
+    return `${days}d`;
   }
 
   return new Intl.DateTimeFormat("en-US", {
@@ -233,7 +321,7 @@ function timeAgo(value: string) {
 
 function mediaAspectRatio(media: ExploreFeedMedia | undefined) {
   if (media?.aspectRatio && media.aspectRatio > 0) {
-    const ratio = Math.min(1.45, Math.max(0.86, media.aspectRatio));
+    const ratio = Math.min(1.55, Math.max(1.06, media.aspectRatio));
     return `${ratio}`;
   }
 
@@ -246,6 +334,16 @@ function mediaAspectRatio(media: ExploreFeedMedia | undefined) {
   }
 
   return "4 / 5";
+}
+
+function isRecommendationCoverMedia(
+  item: ExploreFeedItem,
+  media: ExploreFeedMedia | undefined,
+) {
+  return (
+    item.contentType === "salon_recommendation" &&
+    media?.id.startsWith("salon-cover:") === true
+  );
 }
 
 function initialsFor(value: string) {
@@ -295,20 +393,319 @@ function imageAlt(item: ExploreFeedItem) {
 }
 
 function FeedAvatar({ item }: { item: ExploreFeedItem }) {
+  const avatarUrl =
+    item.author.avatarUrl ??
+    (item.author.kind === "salon" ? item.salon?.logoImageUrl : null);
+  const avatarName =
+    item.author.kind === "salon"
+      ? (item.salon?.name ?? item.author.name)
+      : item.author.name;
+
   return (
-    <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-text-primary text-sm font-semibold text-white">
-      {item.author.avatarUrl ? (
+    <span className="relative grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-text-primary text-sm font-semibold text-white">
+      {avatarUrl ? (
         <Image
-          alt={`${item.author.name} profile`}
+          alt={`${avatarName} profile`}
           className="object-cover"
           fill
-          sizes="40px"
-          src={item.author.avatarUrl}
+          sizes="36px"
+          src={avatarUrl}
         />
       ) : (
         initialsFor(item.author.name)
       )}
     </span>
+  );
+}
+
+function FeedSalonLogo({ item }: { item: ExploreFeedItem }) {
+  const salon = item.salon;
+
+  if (!salon) {
+    return null;
+  }
+
+  return (
+    <span
+      aria-hidden
+      className="relative grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-orange-soft text-[0.55rem] font-extrabold text-brand-orange ring-1 ring-divider-subtle"
+    >
+      {salon.logoImageUrl ? (
+        <Image
+          alt=""
+          className="object-cover"
+          fill
+          sizes="20px"
+          src={salon.logoImageUrl}
+        />
+      ) : (
+        initialsFor(salon.name)
+      )}
+    </span>
+  );
+}
+
+function FeedHeaderTitle({
+  authorHref,
+  item,
+}: {
+  authorHref: string;
+  item: ExploreFeedItem;
+}) {
+  const salon = item.salon;
+  const authorName = displayName(item.author.name, "Reylumi");
+  const isLinkedPersonal = item.sourceType === "personal" && Boolean(salon);
+
+  if (!isLinkedPersonal || !salon) {
+    return (
+      <Link
+        className="min-w-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+        href={authorHref}
+      >
+        <span className="block truncate text-sm font-semibold text-text-primary transition hover:text-brand-orange">
+          {authorName}
+        </span>
+      </Link>
+    );
+  }
+
+  const summary = feedTrustSummary(item);
+  const profileHref = salon.href ?? null;
+  const trustHref = profileHref ? `${profileHref}#lumi-trust` : null;
+  const salonIdentity = (
+    <span className="inline-flex min-w-0 max-w-[13rem] items-center gap-1.5">
+      <FeedSalonLogo item={item} />
+      <span className="truncate">{salon.name}</span>
+    </span>
+  );
+
+  return (
+    <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold text-text-primary">
+      <Link
+        className="block min-w-0 max-w-[9rem] truncate rounded-md transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:max-w-[11rem]"
+        href={authorHref}
+      >
+        {authorName}
+      </Link>
+      <span className="shrink-0 font-medium text-text-secondary">at</span>
+      {profileHref ? (
+        <Link
+          className="min-w-0 rounded-md transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          href={profileHref}
+        >
+          {salonIdentity}
+        </Link>
+      ) : (
+        salonIdentity
+      )}
+      {summary ? (
+        <LumiTrustPopover
+          actionHref={trustHref}
+          entityName={salon.name}
+          markClassName="grid h-8 w-8 place-items-center rounded-full bg-white p-0 text-brand-orange shadow-[0_5px_14px_rgba(246,125,68,0.18)] ring-1 ring-brand-orange/25 hover:bg-brand-orange-soft"
+          panelClassName="text-zinc-700"
+          presentation="spark"
+          size="sm"
+          summary={summary}
+        />
+      ) : null}
+    </span>
+  );
+}
+
+function FeedSalonIdentityLine({ item }: { item: ExploreFeedItem }) {
+  const summary = feedTrustSummary(item);
+  const location = locationLabel(item);
+  const profileHref = item.salon?.href ?? null;
+  const trustHref = profileHref ? `${profileHref}#lumi-trust` : null;
+
+  if (!item.salon) {
+    return (
+      <span className="block truncate text-xs font-medium text-text-secondary">
+        {itemContextLabel(item)}
+      </span>
+    );
+  }
+
+  if (item.sourceType === "personal") {
+    return location ? (
+      <span className="mt-0.5 block truncate text-xs font-medium text-text-secondary">
+        {location}
+      </span>
+    ) : null;
+  }
+
+  return (
+    <span className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-xs font-medium text-text-secondary">
+      {profileHref ? (
+        <Link
+          className="min-w-0 max-w-[12rem] truncate rounded-md font-semibold text-text-primary transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          href={profileHref}
+        >
+          {item.salon.name}
+        </Link>
+      ) : (
+        <span className="min-w-0 max-w-[12rem] truncate font-semibold text-text-primary">
+          {item.salon.name}
+        </span>
+      )}
+      {summary ? (
+        <LumiTrustPopover
+          actionHref={trustHref}
+          entityName={item.salon.name}
+          markClassName="grid h-8 w-8 place-items-center rounded-full bg-white p-0 text-brand-orange shadow-[0_5px_14px_rgba(246,125,68,0.18)] ring-1 ring-brand-orange/25 hover:bg-brand-orange-soft"
+          panelClassName="text-zinc-700"
+          presentation="spark"
+          size="sm"
+          summary={summary}
+        />
+      ) : null}
+      {location ? (
+        <>
+          <span aria-hidden className="text-text-muted/60">
+            {"\u00b7"}
+          </span>
+          <span className="min-w-0 truncate">{location}</span>
+        </>
+      ) : null}
+    </span>
+  );
+}
+
+function FeedStatusLine({
+  href,
+  item,
+  service,
+  showContextBadge,
+}: {
+  href: string | null;
+  item: ExploreFeedItem;
+  service: string | null;
+  showContextBadge: boolean;
+}) {
+  const details = [
+    showContextBadge ? itemContextLabel(item) : null,
+    service,
+  ].filter((detail): detail is string => Boolean(detail));
+
+  if (details.length === 0) {
+    return null;
+  }
+
+  const status = (
+    <p className="text-xs font-semibold text-text-muted">
+      {details.join(" \u00b7 ")}
+    </p>
+  );
+
+  return href ? (
+    <Link
+      className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+      href={href}
+    >
+      {status}
+    </Link>
+  ) : (
+    status
+  );
+}
+
+function shareTitle(item: ExploreFeedItem) {
+  return (
+    displayName(item.caption, "") ||
+    `${itemContextLabel(item)} by ${displayName(item.author.name, "Reylumi")}`
+  );
+}
+
+function FeedShareButton({
+  href,
+  item,
+}: {
+  href: string;
+  item: ExploreFeedItem;
+}) {
+  const [status, setStatus] = useState<"copied" | "idle">("idle");
+  const timerRef = useRef<number | null>(null);
+
+  function markCopied() {
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+    }
+
+    setStatus("copied");
+    timerRef.current = window.setTimeout(() => {
+      setStatus("idle");
+      timerRef.current = null;
+    }, 1600);
+  }
+
+  async function copyUrl(url: string) {
+    if (!navigator.clipboard) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(url);
+    markCopied();
+  }
+
+  async function sharePost(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const url = new URL(href, window.location.origin).toString();
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle(item),
+          url,
+        });
+        return;
+      }
+
+      await copyUrl(url);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      try {
+        await copyUrl(url);
+      } catch {
+        setStatus("idle");
+      }
+    }
+  }
+
+  useEffect(
+    () => () => {
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
+
+  return (
+    <ActionTooltip label={status === "copied" ? "Copied" : "Share"}>
+      <button
+        aria-label={`Share ${itemContextLabel(item)} by ${displayName(
+          item.author.name,
+          "Reylumi",
+        )}`}
+        className="grid h-8 w-8 place-items-center rounded-full bg-white text-text-secondary ring-1 ring-divider-subtle transition hover:bg-surface-muted hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+        onClick={(event) => {
+          void sharePost(event);
+        }}
+        title={status === "copied" ? "Copied" : "Share"}
+        type="button"
+      >
+        <ShareActionIcon />
+      </button>
+      <span aria-live="polite" className="sr-only">
+        {status === "copied" ? "Link copied." : ""}
+      </span>
+    </ActionTooltip>
   );
 }
 
@@ -320,11 +717,19 @@ function SingleMedia({
   media: ExploreFeedMedia;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
+  const isCoverFallback = isRecommendationCoverMedia(item, media);
 
   return (
     <div
-      className="relative overflow-hidden bg-surface-muted"
-      style={{ aspectRatio: mediaAspectRatio(media) }}
+      className={[
+        "relative overflow-hidden bg-surface-muted",
+        isCoverFallback ? "h-[13rem] sm:h-[16rem] lg:h-[17rem]" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={
+        isCoverFallback ? undefined : { aspectRatio: mediaAspectRatio(media) }
+      }
     >
       {imageFailed ? (
         <div
@@ -382,7 +787,7 @@ function BeforeAfterMedia({ item }: { item: ExploreFeedItem }) {
         id: pair.after.id,
         url: pair.after.imageUrl,
       }}
-      aspectClassName="aspect-[4/5]"
+      aspectClassName="aspect-[4/5] sm:aspect-[4/3]"
       before={{
         alt: `Before image from ${item.author.name}`,
         id: pair.before.id,
@@ -405,17 +810,19 @@ function FeedMedia({ item }: { item: ExploreFeedItem }) {
     );
   }
 
-  if (
+  const isBeforeAfter =
     item.sourceType === "personal" &&
-    item.personal?.postType === "before_after"
-  ) {
-    return <BeforeAfterMedia item={item} />;
-  }
+    item.personal?.postType === "before_after";
+  const media = isBeforeAfter ? (
+    <BeforeAfterMedia item={item} />
+  ) : (
+    <SingleMedia item={item} media={firstMedia} />
+  );
 
   return (
     <div className="relative">
-      <SingleMedia item={item} media={firstMedia} />
-      {item.media.length > 1 ? (
+      {media}
+      {!isBeforeAfter && item.media.length > 1 ? (
         <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-bold text-white backdrop-blur">
           {item.media.length} photos
         </span>
@@ -424,155 +831,230 @@ function FeedMedia({ item }: { item: ExploreFeedItem }) {
   );
 }
 
+function FeedMediaFrame({
+  href,
+  item,
+}: {
+  href: string | null;
+  item: ExploreFeedItem;
+}) {
+  const router = useRouter();
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const pointerMovedRef = useRef(false);
+  const media = <FeedMedia item={item} />;
+  const isBeforeAfter = Boolean(beforeAfterMediaPair(item));
+
+  function startPointer(event: PointerEvent<HTMLDivElement>) {
+    pointerStartRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+    };
+    pointerMovedRef.current = false;
+  }
+
+  function movePointer(event: PointerEvent<HTMLDivElement>) {
+    const start = pointerStartRef.current;
+
+    if (!start) {
+      return;
+    }
+
+    const deltaX = Math.abs(event.clientX - start.x);
+    const deltaY = Math.abs(event.clientY - start.y);
+
+    if (deltaX > 6 || deltaY > 6) {
+      pointerMovedRef.current = true;
+    }
+  }
+
+  function isComparatorControl(target: EventTarget | null) {
+    return (
+      target instanceof Element &&
+      Boolean(
+        target.closest(
+          "a,button,input,textarea,select,[role='button'],[role='slider']",
+        ),
+      )
+    );
+  }
+
+  function openBeforeAfterPost(event: MouseEvent<HTMLDivElement>) {
+    if (!href || pointerMovedRef.current || isComparatorControl(event.target)) {
+      pointerMovedRef.current = false;
+      return;
+    }
+
+    router.push(href);
+  }
+
+  function openBeforeAfterPostFromKeyboard(event: KeyboardEvent<HTMLDivElement>) {
+    if (!href || isComparatorControl(event.target)) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      router.push(href);
+    }
+  }
+
+  return (
+    <div
+      aria-label={
+        href && isBeforeAfter
+          ? `Open ${itemContextLabel(item)} by ${item.author.name}`
+          : undefined
+      }
+      className={[
+        "relative",
+        href && isBeforeAfter
+          ? "cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-orange"
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      onClick={href && isBeforeAfter ? openBeforeAfterPost : undefined}
+      onKeyDown={
+        href && isBeforeAfter ? openBeforeAfterPostFromKeyboard : undefined
+      }
+      onPointerDown={href && isBeforeAfter ? startPointer : undefined}
+      onPointerMove={href && isBeforeAfter ? movePointer : undefined}
+      role={href && isBeforeAfter ? "link" : undefined}
+      tabIndex={href && isBeforeAfter ? 0 : undefined}
+    >
+      {href && !isBeforeAfter ? (
+        <Link
+          aria-label={`Open ${itemContextLabel(item)} by ${item.author.name}`}
+          className="group block focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-orange"
+          href={href}
+        >
+          {media}
+        </Link>
+      ) : (
+        media
+      )}
+    </div>
+  );
+}
+
 function ExploreFeedCard({ item }: { item: ExploreFeedItem }) {
   const service = serviceLabel(item);
-  const location = locationLabel(item);
-  const verifiedLabel = verificationLabel(item);
   const href = item.destination.href;
   const isSalonRecommendation = item.contentType === "salon_recommendation";
   const booking = item.booking?.eligible ? item.booking : null;
   const bookingHref = booking?.href ?? null;
   const bookedCount = booking?.bookedCount ?? null;
   const showBeautyBookedCount =
-    item.contentType === "beauty_post" && bookedCount !== null;
+    item.contentType === "beauty_post" &&
+    bookedCount !== null &&
+    bookedCount > 0;
+  const bookedCountText = showBeautyBookedCount
+    ? bookingCountLabel(bookedCount)
+    : null;
   const showContextBadge =
     !(
       item.sourceType === "personal" &&
       item.personal?.postType === "before_after"
     );
-  const contextLine =
-    isSalonRecommendation
-      ? [location, service].filter(Boolean).join(" / ") || "Recommended salon"
-      : item.sourceType === "personal"
-        ? [item.salon?.name, location, verifiedLabel].filter(Boolean).join(" / ") ||
-          "Beauty Profile"
-        : [item.salon?.name, location].filter(Boolean).join(" / ");
   const postHref = href && !isSalonRecommendation ? href : null;
-  const recommendationProfileHref =
-    href && isSalonRecommendation && !bookingHref ? href : null;
-  const salonHref =
-    item.salon?.href && !isSalonRecommendation && item.salon.href !== href
-      ? item.salon.href
-      : null;
-  const media = <FeedMedia item={item} />;
+  const actionHref = postHref ?? href;
+  const authorHref =
+    item.sourceType === "personal" && item.personal?.profileId
+      ? `/explore/beauty/${encodeURIComponent(item.personal.profileId)}`
+      : actionHref ?? item.salon?.href ?? "/explore";
 
   return (
     <article
-      className="overflow-hidden rounded-[1rem] bg-white shadow-[0_10px_28px_rgba(35,25,22,0.04)] ring-1 ring-divider-subtle/65"
+      className="overflow-visible rounded-[0.95rem] bg-white shadow-[0_8px_22px_rgba(35,25,22,0.035)] ring-1 ring-divider-subtle/65"
       data-feed-key={item.feedKey}
       data-source-type={item.sourceType}
       data-testid="explore-feed-card"
     >
-      <div className="flex min-w-0 items-center justify-between gap-3 px-3.5 py-3">
+      <div className="flex min-w-0 items-center justify-between gap-2.5 px-3 py-2.5">
         <Link
-          className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          href={href ?? item.salon?.href ?? "/explore"}
+          aria-label={`Open ${displayName(item.author.name, "Reylumi")}`}
+          className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          href={authorHref}
         >
           <FeedAvatar item={item} />
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold text-text-primary">
-              {displayName(item.author.name, "Reylumi")}
-            </span>
-            <span className="block truncate text-xs font-medium text-text-secondary">
-              {contextLine}
-            </span>
-          </span>
         </Link>
+        <div className="grid min-w-0 flex-1 gap-0.5">
+          <FeedHeaderTitle authorHref={authorHref} item={item} />
+          <FeedSalonIdentityLine item={item} />
+        </div>
         <span className="shrink-0 text-[11px] font-semibold text-text-muted">
           {timeAgo(item.publishedAt)}
         </span>
       </div>
 
-      {href ? (
-        beforeAfterMediaPair(item) ? (
-          media
-        ) : (
-          <Link
-            aria-label={`Open ${itemContextLabel(item)} by ${item.author.name}`}
-            className="group block focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-orange"
-            href={href}
-          >
-            {media}
-          </Link>
-        )
-      ) : (
-        media
-      )}
+      <FeedMediaFrame href={href} item={item} />
 
-      <div className="grid gap-2.5 px-3.5 py-3">
+      <div className="grid gap-2 px-3 py-2.5">
         {item.caption ? (
-          <p className="line-clamp-3 text-sm leading-6 text-text-primary">
-            {item.caption}
-          </p>
-        ) : null}
-        <div className="flex flex-wrap items-center gap-1.5">
-          {service ? (
-            <span className="rounded-full bg-brand-orange-soft px-2.5 py-1 text-[11px] font-semibold text-brand-orange">
-              {service}
-            </span>
-          ) : null}
-          {showContextBadge ? (
-            <span className="rounded-full bg-brand-teal-soft px-2.5 py-1 text-[11px] font-semibold text-brand-teal">
-              {itemContextLabel(item)}
-            </span>
-          ) : null}
-          {verifiedLabel ? (
-            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-100">
-              {verifiedLabel}
-            </span>
-          ) : null}
-        </div>
-        <div className="grid gap-2 pt-0.5">
-          {showBeautyBookedCount ? (
-            <p className="text-xs font-semibold text-text-muted">
-              {bookingCountLabel(bookedCount)}
+          actionHref ? (
+            <Link
+              className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              href={actionHref}
+            >
+              <p className="line-clamp-2 text-sm leading-5 text-text-primary transition hover:text-brand-orange">
+                {item.caption}
+              </p>
+            </Link>
+          ) : (
+            <p className="line-clamp-2 text-sm leading-5 text-text-primary">
+              {item.caption}
             </p>
-          ) : null}
-          <div className="flex flex-wrap items-center gap-2">
-            {bookingHref ? (
-              <Link
-                aria-label={[
-                  booking?.label ?? "Book",
-                  showBeautyBookedCount
-                    ? bookingCountLabel(bookedCount)
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(", ")}
-                className={[
-                  "inline-flex min-h-9 max-w-full items-center justify-center rounded-full bg-brand-orange px-3.5 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-                  item.contentType === "beauty_post" ? "w-full sm:w-auto" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                href={bookingHref}
-              >
-                <span className="truncate">{booking?.label ?? "Book"}</span>
-              </Link>
-            ) : null}
-            {postHref ? (
-              <Link
-                className="inline-flex min-h-9 items-center rounded-full bg-surface-muted px-3.5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={postHref}
-              >
-                View post
-              </Link>
-            ) : null}
-            {recommendationProfileHref ? (
-              <Link
-                className="inline-flex min-h-9 items-center rounded-full bg-surface-muted px-3.5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={recommendationProfileHref}
-              >
-                View salon
-              </Link>
-            ) : null}
-            {salonHref ? (
-              <Link
-                className="inline-flex min-h-9 items-center rounded-full bg-surface-muted px-3.5 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={salonHref}
-              >
-                View salon
-              </Link>
+          )
+        ) : null}
+        <FeedStatusLine
+          href={actionHref}
+          item={item}
+          service={service}
+          showContextBadge={showContextBadge}
+        />
+        <div className="grid gap-2 pt-0.5">
+          <div className="flex items-center gap-1.5">
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+              {bookingHref ? (
+                <ActionTooltip
+                  label={
+                    bookedCountText
+                      ? `${bookedCountText}. Book this post`
+                      : booking?.label ?? "Book"
+                  }
+                >
+                  <Link
+                    aria-label={[
+                      bookedCountText ? "Book this post" : booking?.label ?? "Book",
+                      bookedCountText,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                    className="inline-flex h-8 max-w-full items-center justify-center gap-1.5 rounded-full bg-brand-orange px-2.5 text-xs font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                    href={bookingHref}
+                    title={
+                      bookedCountText
+                        ? `${bookedCountText}. Book this post`
+                        : booking?.label ?? "Book"
+                    }
+                  >
+                    <BookActionIcon />
+                    <span className="truncate">
+                      {bookedCountText ?? "Book"}
+                    </span>
+                  </Link>
+                </ActionTooltip>
+              ) : null}
+              {actionHref ? <FeedShareButton href={actionHref} item={item} /> : null}
+            </div>
+            {item.saveTarget ? (
+              <SavePostButton
+                className="ml-auto shrink-0"
+                initialSaved={item.saveTarget.saved}
+                saveCount={item.saveTarget.saveCount}
+                size="compact"
+                target={item.saveTarget}
+              />
             ) : null}
           </div>
         </div>
@@ -583,8 +1065,8 @@ function ExploreFeedCard({ item }: { item: ExploreFeedItem }) {
 
 function ExploreFeedSkeleton() {
   return (
-    <article className="overflow-hidden rounded-[1rem] bg-white shadow-[0_10px_28px_rgba(35,25,22,0.035)] ring-1 ring-divider-subtle/65">
-      <div className="flex items-center gap-3 px-3.5 py-3">
+    <article className="overflow-hidden rounded-[0.95rem] bg-white shadow-[0_8px_22px_rgba(35,25,22,0.035)] ring-1 ring-divider-subtle/65">
+      <div className="flex items-center gap-3 px-3 py-2.5">
         <div className="h-10 w-10 rounded-full bg-surface-muted" />
         <div className="grid flex-1 gap-2">
           <div className="h-3 w-32 rounded-full bg-surface-muted" />
@@ -592,7 +1074,7 @@ function ExploreFeedSkeleton() {
         </div>
       </div>
       <div className="aspect-[4/3] bg-surface-muted" />
-      <div className="grid gap-2.5 px-3.5 py-3">
+      <div className="grid gap-2 px-3 py-2.5">
         <div className="h-3 w-11/12 rounded-full bg-surface-muted" />
         <div className="h-3 w-7/12 rounded-full bg-surface-muted" />
       </div>
@@ -686,6 +1168,11 @@ export function ExploreFeed({ initialPage }: { initialPage: ExploreFeedPage }) {
 
     restoredRef.current = true;
 
+    if (!shouldRestoreStoredFeedState()) {
+      window.sessionStorage.removeItem(EXPLORE_FEED_SESSION_KEY);
+      return;
+    }
+
     const route = `${window.location.pathname}${window.location.search}`;
     const stored = readStoredFeedState(route, firstKey);
 
@@ -743,7 +1230,7 @@ export function ExploreFeed({ initialPage }: { initialPage: ExploreFeedPage }) {
     <section
       aria-busy={loadingMore}
       aria-label="Explore discovery feed"
-      className="mx-auto grid w-full max-w-[44rem] gap-3"
+      className="mx-auto grid w-full max-w-[40rem] gap-2.5"
       id="explore-feed"
       data-testid="explore-continuous-feed"
     >
@@ -759,7 +1246,7 @@ export function ExploreFeed({ initialPage }: { initialPage: ExploreFeedPage }) {
         </div>
       ) : null}
 
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {memoizedItems.map((item) => (
           <ExploreFeedCard item={item} key={feedItemKey(item)} />
         ))}
@@ -779,7 +1266,7 @@ export function ExploreFeed({ initialPage }: { initialPage: ExploreFeedPage }) {
       ) : null}
 
       {loadingMore ? (
-        <div className="grid gap-4" aria-label="Loading more Explore posts">
+        <div className="grid gap-3" aria-label="Loading more Explore posts">
           <ExploreFeedSkeleton />
         </div>
       ) : null}

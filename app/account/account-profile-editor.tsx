@@ -228,11 +228,11 @@ function uploadToSupabase(input: {
 
 function ProfileField({ label, value }: ProfileFieldProps) {
   return (
-    <div className="rounded-2xl border border-border-subtle bg-surface-muted px-4 py-3">
-      <dt className="text-xs font-bold uppercase tracking-[0.12em] text-text-secondary">
+    <div className="grid gap-1 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+      <dt className="text-xs font-semibold uppercase text-zinc-500">
         {label}
       </dt>
-      <dd className="mt-1 min-h-6 break-words text-sm font-semibold text-text-primary">
+      <dd className="min-h-6 break-words text-sm font-semibold text-zinc-950">
         {displayValue(value)}
       </dd>
     </div>
@@ -249,16 +249,16 @@ function EditableField({
   const fieldId = `account-profile-${name}`;
 
   return (
-    <div className="grid gap-1.5">
+    <div className="grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <label
-        className="text-xs font-bold uppercase tracking-[0.12em] text-text-secondary"
+        className="text-xs font-semibold uppercase text-zinc-500"
         htmlFor={fieldId}
       >
         {label}
       </label>
       <input
         autoComplete={autoComplete}
-        className="block min-h-12 w-full rounded-xl border border-border-subtle bg-surface px-3 text-sm font-semibold text-text-primary outline-none transition placeholder:text-text-secondary focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+        className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10"
         id={fieldId}
         name={name}
         onChange={(event) => onChange(name, event.currentTarget.value)}
@@ -270,11 +270,11 @@ function EditableField({
 
 function ReadonlyField({ label, value }: ProfileFieldProps) {
   return (
-    <div className="grid gap-1.5">
-      <span className="text-xs font-bold uppercase tracking-[0.12em] text-text-secondary">
+    <div className="grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+      <span className="text-xs font-semibold uppercase text-zinc-500">
         {label}
       </span>
-      <span className="flex min-h-12 items-center rounded-xl border border-border-subtle bg-surface-muted px-3 text-sm font-semibold text-text-primary">
+      <span className="flex min-h-11 items-center rounded-md border border-zinc-200 bg-zinc-50 px-3 text-sm font-semibold text-zinc-950">
         {displayValue(value)}
       </span>
     </div>
@@ -325,7 +325,7 @@ function PhoneVerificationDialog({
       <div
         aria-labelledby="phone-verification-title"
         aria-modal="true"
-        className="relative w-full max-w-md rounded-2xl bg-surface p-5 shadow-[0_24px_80px_rgba(23,19,22,0.22)] outline-none sm:p-6"
+        className="relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-surface p-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] shadow-[0_24px_80px_rgba(23,19,22,0.22)] outline-none sm:p-6"
         ref={dialogRef}
         role="dialog"
         tabIndex={-1}
@@ -824,45 +824,58 @@ export function AccountProfileEditor({
   }
 
   return (
-    <section className="py-2 sm:py-4" onKeyDown={onEditorKeyDown}>
-      <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-[var(--shadow-soft)]">
-        <div className="p-5 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-4">
-              <span className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full border border-border-subtle bg-brand-orange-soft text-xl font-extrabold text-brand-orange">
-                {avatarPreviewUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt={`${currentName} avatar`}
-                    className="h-full w-full object-cover"
-                    src={avatarPreviewUrl}
-                  />
-                ) : (
-                  initialsFor(currentName)
-                )}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-2xl font-extrabold text-text-primary">
-                  {currentName}
-                </p>
-                <p className="mt-1 truncate text-sm font-semibold text-text-secondary">
-                  {user.email ?? "Personal account"}
-                </p>
-              </div>
+    <section
+      className="scroll-mt-6"
+      id="profile-contact"
+      onKeyDown={onEditorKeyDown}
+    >
+      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-zinc-950">
+            Profile & contact
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-zinc-500">
+            Name, avatar, email, phone, language, and timezone.
+          </p>
+        </div>
+        {!editing ? (
+          <button
+            className="min-h-10 rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+            onClick={beginEdit}
+            type="button"
+          >
+            Edit profile
+          </button>
+        ) : null}
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-border-subtle bg-white">
+        <div className="flex flex-col gap-4 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-border-subtle bg-brand-orange-soft text-lg font-extrabold text-brand-orange">
+              {avatarPreviewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  alt={`${currentName} avatar`}
+                  className="h-full w-full object-cover"
+                  src={avatarPreviewUrl}
+                />
+              ) : (
+                initialsFor(currentName)
+              )}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-xl font-semibold text-zinc-950">
+                {currentName}
+              </p>
+              <p className="mt-1 truncate text-sm font-semibold text-zinc-500">
+                {user.email ?? "Personal account"}
+              </p>
             </div>
-            {!editing ? (
-              <button
-                className="min-h-11 rounded-full border border-border-subtle px-5 text-sm font-extrabold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                onClick={beginEdit}
-                type="button"
-              >
-                Edit
-              </button>
-            ) : null}
           </div>
 
           {editing ? (
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               <input
                 accept={ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES.join(",")}
                 className="sr-only"
@@ -871,7 +884,7 @@ export function AccountProfileEditor({
                 type="file"
               />
               <button
-                className="min-h-11 rounded-full border border-border-subtle px-4 text-sm font-bold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
+                className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
                 disabled={busy}
                 onClick={() => fileInputRef.current?.click()}
                 type="button"
@@ -882,7 +895,7 @@ export function AccountProfileEditor({
               </button>
               {avatarPreviewUrl ? (
                 <button
-                  className="min-h-11 rounded-full border border-border-subtle px-4 text-sm font-bold text-text-primary transition hover:border-brand-orange/40 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
+                  className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
                   disabled={busy}
                   onClick={removeAvatar}
                   type="button"
@@ -892,57 +905,59 @@ export function AccountProfileEditor({
               ) : null}
             </div>
           ) : null}
+        </div>
 
-          {editing ? (
-            <>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <EditableField
-                  autoComplete="name"
-                  label="Display name"
-                  name="display_name"
-                  onChange={updateValue}
-                  value={values.display_name}
-                />
-                <ReadonlyField label="Email" value={user.email} />
-                <EditableField
-                  autoComplete="given-name"
-                  label="First name"
-                  name="first_name"
-                  onChange={updateValue}
-                  value={values.first_name}
-                />
-                <EditableField
-                  autoComplete="family-name"
-                  label="Last name"
-                  name="last_name"
-                  onChange={updateValue}
-                  value={values.last_name}
-                />
-                <EditableField
-                  autoComplete="tel"
-                  label="Phone"
-                  name="phone"
-                  onChange={updateValue}
-                  value={values.phone}
-                />
-                <ReadonlyField label="Status" value={user.status} />
-                <EditableField
-                  label="Language"
-                  name="language"
-                  onChange={updateValue}
-                  value={values.language}
-                />
-                <EditableField
-                  label="Timezone"
-                  name="timezone"
-                  onChange={updateValue}
-                  value={values.timezone}
-                />
-                <ReadonlyField label="Created" value={createdAtLabel} />
-              </div>
-              <div className="mt-7 flex flex-col-reverse gap-2 border-t border-border-subtle pt-5 sm:flex-row sm:justify-end">
+        {editing ? (
+          <>
+            <div>
+              <EditableField
+                autoComplete="name"
+                label="Display name"
+                name="display_name"
+                onChange={updateValue}
+                value={values.display_name}
+              />
+              <ReadonlyField label="Email" value={user.email} />
+              <EditableField
+                autoComplete="given-name"
+                label="First name"
+                name="first_name"
+                onChange={updateValue}
+                value={values.first_name}
+              />
+              <EditableField
+                autoComplete="family-name"
+                label="Last name"
+                name="last_name"
+                onChange={updateValue}
+                value={values.last_name}
+              />
+              <EditableField
+                autoComplete="tel"
+                label="Phone"
+                name="phone"
+                onChange={updateValue}
+                value={values.phone}
+              />
+              <ReadonlyField label="Status" value={user.status} />
+              <EditableField
+                label="Language"
+                name="language"
+                onChange={updateValue}
+                value={values.language}
+              />
+              <EditableField
+                label="Timezone"
+                name="timezone"
+                onChange={updateValue}
+                value={values.timezone}
+              />
+              <ReadonlyField label="Created" value={createdAtLabel} />
+            </div>
+            <div className="sticky bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur">
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
                 <button
-                  className="min-h-12 rounded-full border border-border-subtle px-5 text-sm font-extrabold text-text-primary transition hover:border-brand-orange/40 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
+                  className="min-h-10 rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
                   disabled={busy}
                   onClick={cancelEdit}
                   type="button"
@@ -950,38 +965,38 @@ export function AccountProfileEditor({
                   Cancel
                 </button>
                 <button
-                  className="min-h-12 rounded-full bg-brand-orange px-6 text-sm font-extrabold text-white shadow-[0_14px_30px_rgba(255,107,53,0.2)] transition hover:bg-brand-orange/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
+                  className="min-h-10 rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
                   disabled={busy}
                   onClick={saveProfile}
                   type="button"
                 >
-                  {saving ? "Saving..." : "Save"}
+                  {saving ? "Saving..." : "Save profile"}
                 </button>
               </div>
-            </>
-          ) : (
-            <dl className="mt-6 grid gap-3 sm:grid-cols-2">
-              <ProfileField label="Display name" value={currentName} />
-              <ProfileField label="Email" value={user.email} />
-              <ProfileField label="Phone" value={values.phone} />
-              <ProfileField label="First name" value={values.first_name} />
-              <ProfileField label="Last name" value={values.last_name} />
-              <ProfileField label="Language" value={values.language} />
-              <ProfileField label="Timezone" value={values.timezone} />
-              <ProfileField label="Status" value={user.status} />
-              <ProfileField label="Created" value={createdAtLabel} />
-            </dl>
-          )}
-        </div>
+            </div>
+          </>
+        ) : (
+          <dl>
+            <ProfileField label="Display name" value={currentName} />
+            <ProfileField label="Email" value={user.email} />
+            <ProfileField label="Phone" value={values.phone} />
+            <ProfileField label="First name" value={values.first_name} />
+            <ProfileField label="Last name" value={values.last_name} />
+            <ProfileField label="Language" value={values.language} />
+            <ProfileField label="Timezone" value={values.timezone} />
+            <ProfileField label="Status" value={user.status} />
+            <ProfileField label="Created" value={createdAtLabel} />
+          </dl>
+        )}
       </div>
 
       {error ? (
-        <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+        <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
           {error}
         </p>
       ) : null}
       {notice ? (
-        <p className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+        <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
           {notice}
         </p>
       ) : null}

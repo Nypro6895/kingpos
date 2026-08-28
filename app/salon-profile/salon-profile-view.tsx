@@ -2,7 +2,6 @@
 
 import {
   createSalonProfileCommentAction,
-  createSalonProfileReviewAction,
   createSalonProfileReviewReplyAction,
   createSalonProfileSocialPostAction,
   deleteSalonProfileLookDirectAction,
@@ -15,19 +14,30 @@ import {
   updateSalonProfileIdentityAction,
   updateSalonProfileIdentityMediaAction,
 } from "@/app/salon-profile/actions";
+import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
+import {
+  LumiTrustPopover,
+  LumiTrustSpark,
+} from "@/components/reylumi-trust";
 import {
   SALON_PROFILE_ALLOWED_IMAGE_TYPES,
   SALON_PROFILE_IMAGE_LIMITS,
   type SalonProfileMediaKind,
 } from "@/lib/salon-profile-media";
+import { buildReylumiTrustSummary } from "@/lib/reylumi-trust";
+import {
+  formatSalonProfileTeamCount,
+  formatSalonProfileTeamOverflowLabel,
+  getSalonProfileTeamPreview,
+} from "@/lib/salon-profile-team";
 import type {
   ProfileFeedItem,
   PublicSalonProfileBeautyPost,
   PublicSalonProfileComment,
   PublicSalonProfileData,
+  PublicSalonProfileExperience,
   PublicSalonProfileLook,
-  PublicSalonProfileReview,
   PublicSalonProfileService,
   PublicSalonProfileStaff,
   SalonProfileReadiness,
@@ -60,7 +70,13 @@ type SalonProfileViewProps = {
   notice?: string;
 };
 
-type TabId = "about" | "discover" | "gallery" | "reviews" | "services" | "team";
+type TabId =
+  | "about"
+  | "discover"
+  | "experiences"
+  | "gallery"
+  | "services"
+  | "team";
 type ComposerType = "auto" | "look" | "opening" | "update";
 type SalonProfileUploadableKind = Extract<
   SalonProfileMediaKind,
@@ -75,6 +91,33 @@ type BookingContext = {
   updateId?: string | null;
 } | null;
 
+type TimelineItem =
+  | { id: string; item: ProfileFeedItem; publishedAt: string | null; type: "post" }
+  | {
+      id: string;
+      posts: PublicSalonProfileBeautyPost[];
+      publishedAt: string | null;
+      type: "shared";
+    };
+
+type GalleryItem =
+  | {
+      id: string;
+      imageUrl: string;
+      item: ProfileFeedItem;
+      publishedAt: string | null;
+      title: string;
+      type: "feed";
+    }
+  | {
+      id: string;
+      imageUrl: string;
+      post: PublicSalonProfileBeautyPost;
+      publishedAt: string | null;
+      title: string;
+      type: "beauty";
+    };
+
 type CommentTarget = {
   lookId?: string | null;
   title: string;
@@ -86,12 +129,23 @@ const TABS: Array<{ id: TabId; label: string }> = [
   { id: "gallery", label: "Gallery" },
   { id: "services", label: "Services" },
   { id: "team", label: "Team" },
-  { id: "reviews", label: "Reviews" },
+  { id: "experiences", label: "Experiences" },
   { id: "about", label: "About" },
 ];
 
+const INITIAL_TIMELINE_ITEM_COUNT = 6;
+const TIMELINE_LOAD_STEP = 4;
+
 function tabFromHash(hash: string) {
   const value = hash.replace(/^#/, "");
+
+  if (value === "reviews") {
+    return "experiences";
+  }
+
+  if (value === "lumi-trust" || value === "lumi-trust-details") {
+    return "experiences";
+  }
 
   return TABS.find((tab) => tab.id === value)?.id ?? null;
 }
@@ -296,6 +350,75 @@ function timeAgo(value: string | null) {
     day: "numeric",
     month: "short",
   }).format(date);
+}
+
+function timestampValue(value: string | null) {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function beautyPostPublishedAt(post: PublicSalonProfileBeautyPost) {
+  return post.publishedAt;
+}
+
+function buildTimelineItems(input: {
+  beautyPosts: PublicSalonProfileBeautyPost[];
+  feedItems: ProfileFeedItem[];
+}): TimelineItem[] {
+  const postItems: TimelineItem[] = input.feedItems.map((item) => ({
+    id: `${item.contentType}-${item.id}`,
+    item,
+    publishedAt: item.publishedAt,
+    type: "post",
+  }));
+  const sharedItems: TimelineItem[] = input.beautyPosts.map((post) => ({
+    id: `shared-${post.id}`,
+    posts: [post],
+    publishedAt: beautyPostPublishedAt(post),
+    type: "shared",
+  }));
+
+  return [...postItems, ...sharedItems].sort(
+    (left, right) =>
+      timestampValue(right.publishedAt) - timestampValue(left.publishedAt),
+  );
+}
+
+function buildGalleryItems(input: {
+  beautyPosts: PublicSalonProfileBeautyPost[];
+  feedItems: ProfileFeedItem[];
+}): GalleryItem[] {
+  const feedImages: GalleryItem[] = input.feedItems
+    .filter((item) => Boolean(item.imageUrl))
+    .map((item) => ({
+      id: `${item.contentType}-${item.id}`,
+      imageUrl: item.imageUrl ?? "",
+      item,
+      publishedAt: item.publishedAt,
+      title: item.title,
+      type: "feed",
+    }));
+  const beautyImages: GalleryItem[] = input.beautyPosts.flatMap((post) =>
+    post.media
+      .filter((media) => Boolean(media.url))
+      .map((media) => ({
+        id: `beauty-${post.id}-${media.id}`,
+        imageUrl: media.url ?? "",
+        post,
+        publishedAt: beautyPostPublishedAt(post),
+        title: post.caption ?? `Shared by ${post.authorDisplayName}`,
+        type: "beauty",
+      })),
+  );
+
+  return [...feedImages, ...beautyImages].sort(
+    (left, right) =>
+      timestampValue(right.publishedAt) - timestampValue(left.publishedAt),
+  );
 }
 
 function imageFallbackClass(seed: string) {
@@ -873,14 +996,14 @@ function Modal({
       />
       <div
         className={[
-          "relative mt-auto grid max-h-[min(92dvh,900px)] w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:m-auto sm:max-w-2xl sm:rounded-2xl",
+          "relative mt-auto grid max-h-[100dvh] w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:m-auto sm:max-h-[min(92dvh,900px)] sm:max-w-2xl sm:rounded-2xl",
           panelClassName,
         ].join(" ")}
         ref={dialogRef}
         tabIndex={-1}
       >
-        <div className="z-10 flex min-h-14 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-5">
-          <h2 className="text-base font-semibold text-zinc-950" id={titleId}>
+        <div className="z-10 flex min-h-14 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 sm:px-5">
+          <h2 className="min-w-0 text-base font-semibold text-zinc-950" id={titleId}>
             {title}
           </h2>
           <button
@@ -892,11 +1015,11 @@ function Modal({
             x
           </button>
         </div>
-        <div className={["overflow-y-auto p-5", bodyClassName].join(" ")}>
+        <div className={["overscroll-contain overflow-y-auto p-4 sm:p-5", bodyClassName].join(" ")}>
           {children}
         </div>
         {footer ? (
-          <div className="z-10 border-t border-zinc-200 bg-white px-5 py-4">
+          <div className="z-10 border-t border-zinc-200 bg-white px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:px-5 sm:py-4">
             {footer}
           </div>
         ) : null}
@@ -1017,11 +1140,11 @@ function ProfileEditor({
           />
         </div>
         <Field defaultValue={setting.country} label="Country" name="country" />
-        <div className="flex justify-end gap-2 border-t border-zinc-200 pt-4">
-          <Button onClick={onClose} variant="secondary">
+        <div className="flex flex-col gap-2 border-t border-zinc-200 pt-4 sm:flex-row sm:justify-end">
+          <Button className="w-full sm:w-auto" onClick={onClose} variant="secondary">
             Cancel
           </Button>
-          <Button type="submit" variant="primary">
+          <Button className="w-full sm:w-auto" type="submit" variant="primary">
             Save changes
           </Button>
         </div>
@@ -1321,13 +1444,19 @@ function ComposerModal({
     <Modal
       bodyClassName="p-0"
       footer={
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-zinc-500" aria-live="polite">
+        <div className="grid gap-2 sm:flex sm:items-center sm:justify-between sm:gap-3">
+          <p className="min-w-0 text-xs leading-5 text-zinc-500 sm:text-sm" aria-live="polite">
             {submitting
               ? `${pendingLabel} ${progress}%`
               : "Photo, caption, and publish happen in one step."}
           </p>
-          <Button disabled={submitting} form={formId} type="submit" variant="primary">
+          <Button
+            className="w-full shrink-0 sm:w-auto"
+            disabled={submitting}
+            form={formId}
+            type="submit"
+            variant="primary"
+          >
             {submitting ? `${pendingLabel}...` : primaryLabel}
           </Button>
         </div>
@@ -1337,7 +1466,7 @@ function ComposerModal({
       panelClassName="sm:max-w-[46rem]"
       title={contentType === "opening" ? "Share opening" : "Create post"}
     >
-      <form className="grid gap-4 p-5" id={formId} onSubmit={submit}>
+      <form className="grid gap-4 p-4 sm:p-5" id={formId} onSubmit={submit}>
         <div className="flex items-center gap-3">
           <Avatar
             logoUrl={data.profile.logoImageUrl}
@@ -1364,7 +1493,7 @@ function ComposerModal({
           value={caption}
         />
         <div
-          className="grid min-h-36 cursor-pointer place-items-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4 text-center transition hover:border-zinc-400"
+          className="grid min-h-28 cursor-pointer place-items-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4 text-center transition hover:border-zinc-400 sm:min-h-36"
           onClick={() => fileInputRef.current?.click()}
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => {
@@ -1695,6 +1824,56 @@ function Avatar({
   );
 }
 
+function TeamPreviewRows({
+  onViewTeam,
+  staff,
+}: {
+  onViewTeam: () => void;
+  staff: PublicSalonProfileStaff[];
+}) {
+  const preview = getSalonProfileTeamPreview(staff);
+  const overflowLabel = formatSalonProfileTeamOverflowLabel(
+    preview.hiddenMembers,
+  );
+
+  return (
+    <div className="mt-4 grid gap-3">
+      {preview.previewMembers.map((member) => (
+        <div className="flex items-center gap-3" key={member.id}>
+          <Avatar logoUrl={member.avatarUrl} name={member.displayName} size="sm" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-zinc-950">
+              {member.displayName}
+            </p>
+            {member.jobTitle ? (
+              <p className="truncate text-xs text-zinc-500">{member.jobTitle}</p>
+            ) : null}
+          </div>
+        </div>
+      ))}
+      {preview.hasOverflow ? (
+        <button
+          className="flex w-full items-center gap-3 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/70 p-2 text-left transition hover:border-zinc-300 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+          onClick={onViewTeam}
+          type="button"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-xs font-semibold text-zinc-700 shadow-sm">
+            +{preview.hiddenCount}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-zinc-950">
+              {overflowLabel}
+            </span>
+            <span className="block text-xs text-zinc-500">
+              View all {formatSalonProfileTeamCount(preview.totalCount)}
+            </span>
+          </span>
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 function FeedCard({
   capabilities,
   comments,
@@ -1703,8 +1882,10 @@ function FeedCard({
   logoUrl,
   onBook,
   onComment,
+  onOpenPost,
   onRefresh,
   onSave,
+  onSavedChange,
   onShare,
   saved,
   saveCount,
@@ -1716,8 +1897,10 @@ function FeedCard({
   logoUrl: string | null;
   onBook: (context: BookingContext) => void;
   onComment: (target: CommentTarget) => void;
+  onOpenPost: (item: ProfileFeedItem) => void;
   onRefresh: () => void;
   onSave: (look: PublicSalonProfileLook) => void;
+  onSavedChange: (look: PublicSalonProfileLook, saved: boolean) => void;
   onShare: (item?: ProfileFeedItem) => void;
   saved: boolean;
   saveCount: number;
@@ -1774,7 +1957,7 @@ function FeedCard({
 
   return (
     <article
-      className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_55px_rgba(24,24,27,.06)]"
+      className="min-h-[calc(100svh-8rem)] scroll-mt-24 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_55px_rgba(24,24,27,.06)]"
       id={`${item.contentType}-${item.id}`}
     >
       <div className="flex items-start justify-between gap-3 p-4">
@@ -1866,12 +2049,40 @@ function FeedCard({
         </div>
       ) : null}
       {item.imageUrl ? (
-        <div className="bg-zinc-100">
-          <LookImage
-            className="aspect-[4/5] max-h-[720px] w-full"
-            imageUrl={item.imageUrl}
-            title={title}
-          />
+        <div className="relative bg-zinc-100">
+          <button
+            className="block w-full text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
+            onClick={() => onOpenPost(item)}
+            type="button"
+          >
+            <LookImage
+              className="aspect-[4/5] max-h-[760px] w-full"
+              imageUrl={item.imageUrl}
+              title={title}
+            />
+          </button>
+          {look ? (
+            <SavePostButton
+              className="absolute bottom-3 right-3"
+              initialSaved={saved}
+              onSavedChange={(active) => onSavedChange(look, active)}
+              saveCount={saveCount}
+              target={{
+                salonId: item.salonId,
+                sourceId: look.id,
+                sourceType: "salon_profile_look",
+              }}
+            />
+          ) : item.contentType === "update" ? (
+            <SavePostButton
+              className="absolute bottom-3 right-3"
+              target={{
+                salonId: item.salonId,
+                sourceId: item.id,
+                sourceType: "salon_profile_update",
+              }}
+            />
+          ) : null}
         </div>
       ) : null}
       <div className="grid gap-3 p-4">
@@ -1926,9 +2137,7 @@ function FeedCard({
         <div
           className={[
             "grid gap-2",
-            look
-              ? "sm:grid-cols-[.8fr_.8fr_.8fr_1.1fr]"
-              : "sm:grid-cols-[.8fr_.8fr_1.1fr]",
+            look ? "sm:grid-cols-5" : "sm:grid-cols-4",
           ].join(" ")}
         >
           {look ? (
@@ -1936,6 +2145,9 @@ function FeedCard({
               {saved ? "Saved" : "Save"}
             </Button>
           ) : null}
+          <Button onClick={() => onOpenPost(item)} variant="secondary">
+            View post
+          </Button>
           <Button
             onClick={() =>
               onComment({
@@ -1975,246 +2187,15 @@ function FeedCard({
   );
 }
 
-function CuratedLookSection({
-  canBook,
-  companionLooks,
-  featuredLook,
-  moodOptions,
-  onBook,
-  onChooseLook,
-  onMoodSelect,
-  onNext,
-  onOpen,
-  onPrevious,
-  onSave,
-  selectedMood,
-  savedLookIds,
-  saveCounts,
-}: {
-  canBook: boolean;
-  companionLooks: PublicSalonProfileLook[];
-  featuredLook: PublicSalonProfileLook | null;
-  moodOptions: string[];
-  onBook: (context: BookingContext) => void;
-  onChooseLook: (look: PublicSalonProfileLook) => void;
-  onMoodSelect: (mood: string) => void;
-  onNext: () => void;
-  onOpen: (look: PublicSalonProfileLook) => void;
-  onPrevious: () => void;
-  onSave: (look: PublicSalonProfileLook) => void;
-  selectedMood: string | null;
-  savedLookIds: Set<string>;
-  saveCounts: Map<string, number>;
-}) {
-  const railRef = useRef<HTMLDivElement | null>(null);
-
-  function scrollRail(direction: 1 | -1) {
-    railRef.current?.scrollBy({
-      behavior: "smooth",
-      left: direction * 220,
-    });
-  }
-
-  if (!featuredLook) {
-    return (
-      <section className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
-          Curated for you
-        </p>
-        <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight text-zinc-950 sm:text-4xl">
-          Your next set is one tap away.
-        </h2>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600">
-          Choose a feeling. This salon will share real looks here as soon as they
-          are published.
-        </p>
-      </section>
-    );
-  }
-
-  const price = formatMoney(featuredLook.startingPrice);
-  const duration = formatDuration(featuredLook.durationMinutes);
-  const meta = joinMeta([
-    featuredLook.mood,
-    featuredLook.serviceName,
-    duration,
-    price ? `From ${price}` : null,
-    featuredLook.recommendedStaffName
-      ? `With ${featuredLook.recommendedStaffName}`
-      : null,
-  ]);
-
-  return (
-    <section className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_22px_70px_rgba(24,24,27,.07)]">
-      <div className="grid lg:grid-cols-[minmax(0,1.45fr)_minmax(22rem,.85fr)]">
-        <div className="relative bg-zinc-100">
-          <button
-            className="block w-full text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
-            onClick={() => onOpen(featuredLook)}
-            type="button"
-          >
-            <LookImage
-              className="aspect-[4/5] w-full lg:min-h-[34rem]"
-              imageUrl={featuredLook.imageUrl}
-              title={featuredLook.title}
-            />
-          </button>
-          <Button
-            aria-label={
-              savedLookIds.has(featuredLook.id) ? "Remove saved look" : "Save look"
-            }
-            className="absolute right-4 top-4 min-h-10 rounded-full bg-white/95 px-4 shadow-sm"
-            onClick={() => onSave(featuredLook)}
-            variant="secondary"
-          >
-            {savedLookIds.has(featuredLook.id) ? "Saved" : "Save"}
-          </Button>
-        </div>
-        <div className="flex flex-col justify-between gap-8 p-6 sm:p-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
-              Curated for you
-            </p>
-            <h2 className="mt-3 font-serif text-4xl font-semibold leading-tight text-zinc-950 sm:text-5xl">
-              Your next set is one tap away.
-            </h2>
-            <p className="mt-4 text-sm leading-6 text-zinc-600">
-              Choose a feeling. We will show you a real look from this salon.
-            </p>
-            <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
-              {moodOptions.map((mood) => (
-                <button
-                  aria-pressed={selectedMood === mood}
-                  className={[
-                    "shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
-                    selectedMood === mood
-                      ? "border-zinc-950 bg-zinc-950 text-white"
-                      : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300",
-                  ].join(" ")}
-                  key={mood}
-                  onClick={() => onMoodSelect(mood)}
-                  type="button"
-                >
-                  {mood}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-5">
-            {featuredLook.badge ? (
-              <span className="w-max rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-600">
-                {featuredLook.badge}
-              </span>
-            ) : null}
-            <button
-              className="text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-950"
-              onClick={() => onOpen(featuredLook)}
-              type="button"
-            >
-              <h3 className="font-serif text-3xl font-semibold leading-tight text-zinc-950">
-                {featuredLook.title}
-              </h3>
-              {featuredLook.caption ?? featuredLook.emotionalDescription ? (
-                <p className="mt-3 text-sm leading-6 text-zinc-700">
-                  {featuredLook.caption ?? featuredLook.emotionalDescription}
-                </p>
-              ) : null}
-            </button>
-            {meta ? <p className="text-sm text-zinc-500">{meta}</p> : null}
-            {(saveCounts.get(featuredLook.id) ?? 0) > 0 ? (
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
-                {saveCounts.get(featuredLook.id)} save
-                {saveCounts.get(featuredLook.id) === 1 ? "" : "s"}
-              </p>
-            ) : null}
-            <div className="grid gap-3 sm:grid-cols-[.8fr_1.2fr]">
-              <Button onClick={() => onSave(featuredLook)} variant="secondary">
-                {savedLookIds.has(featuredLook.id) ? "Saved" : "Save"}
-              </Button>
-              <Button
-                disabled={!canBook}
-                onClick={() =>
-                  onBook({
-                    lookId: featuredLook.id,
-                    note: featuredLook.bookingNote,
-                    serviceId: featuredLook.serviceId,
-                    staffId: featuredLook.recommendedStaffId,
-                    title: "Book this exact look",
-                  })
-                }
-                variant="primary"
-              >
-                Book this look
-              </Button>
-            </div>
-          </div>
-
-          {companionLooks.length > 0 ? (
-            <div className="grid gap-3">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-                  More to explore
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    aria-label="Previous featured look"
-                    className="h-9 min-h-9 w-9 rounded-full px-0"
-                    onClick={onPrevious}
-                    variant="secondary"
-                  >
-                    &lt;
-                  </Button>
-                  <Button
-                    aria-label="Next featured look"
-                    className="h-9 min-h-9 w-9 rounded-full px-0"
-                    onClick={onNext}
-                    variant="secondary"
-                  >
-                    &gt;
-                  </Button>
-                </div>
-              </div>
-              <div
-                className="-mx-2 flex snap-x snap-mandatory gap-3 overflow-x-auto px-2 pb-1"
-                ref={railRef}
-              >
-                {companionLooks.map((look) => (
-                  <button
-                    className="grid w-32 shrink-0 snap-start gap-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-                    key={look.id}
-                    onClick={() => {
-                      onChooseLook(look);
-                      window.setTimeout(() => scrollRail(1), 0);
-                    }}
-                    type="button"
-                  >
-                    <LookImage
-                      className="aspect-[4/5] w-full rounded-xl"
-                      imageUrl={look.imageUrl}
-                      title={look.title}
-                    />
-                    <span className="line-clamp-2 text-xs font-semibold leading-4 text-zinc-700">
-                      {look.title}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function beautyBookedCountLabel(count: number) {
   return `${count} booked`;
 }
 
 function BeautyTransformationsSection({
+  onOpenPost,
   posts,
 }: {
+  onOpenPost?: (post: PublicSalonProfileBeautyPost) => void;
   posts: PublicSalonProfileBeautyPost[];
 }) {
   if (posts.length === 0) {
@@ -2222,7 +2203,7 @@ function BeautyTransformationsSection({
   }
 
   return (
-    <section className="grid gap-4">
+    <section className="grid min-h-[calc(100svh-8rem)] scroll-mt-24 content-center gap-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
           Client transformations
@@ -2231,7 +2212,7 @@ function BeautyTransformationsSection({
           Shared by customers
         </h2>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3">
         {posts.map((post) => {
           const before =
             post.media.find((item) => item.role === "before") ?? post.media[0];
@@ -2242,7 +2223,7 @@ function BeautyTransformationsSection({
             before;
           const meta = joinMeta([
             post.staffName ? `With ${post.staffName}` : null,
-            post.verificationState === "verified" ? "Verified visit" : null,
+            post.verificationState === "verified" ? "Verified Visit" : null,
             timeAgo(post.publishedAt),
           ]);
           const booking = post.booking?.eligible ? post.booking : null;
@@ -2254,29 +2235,38 @@ function BeautyTransformationsSection({
               className="group overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_18px_55px_rgba(24,24,27,.06)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_70px_rgba(24,24,27,.08)]"
               key={post.id}
             >
-              <BeforeAfterCompare
-                after={
-                  after?.url
-                    ? {
-                        alt: `After image from ${post.authorDisplayName}`,
-                        id: after.id,
-                        url: after.url,
-                      }
-                    : null
-                }
-                aspectClassName="aspect-[4/5]"
-                before={
-                  before?.url
-                    ? {
-                        alt: `Before image from ${post.authorDisplayName}`,
-                        id: before.id,
-                        url: before.url,
-                      }
-                    : null
-                }
-                roundedClassName="rounded-none"
-                sizes="(max-width: 640px) 100vw, 50vw"
-              />
+              <div className="relative">
+                <BeforeAfterCompare
+                  after={
+                    after?.url
+                      ? {
+                          alt: `After image from ${post.authorDisplayName}`,
+                          id: after.id,
+                          url: after.url,
+                        }
+                      : null
+                  }
+                  aspectClassName="aspect-[4/5]"
+                  before={
+                    before?.url
+                      ? {
+                          alt: `Before image from ${post.authorDisplayName}`,
+                          id: before.id,
+                          url: before.url,
+                        }
+                      : null
+                  }
+                  roundedClassName="rounded-none"
+                  sizes="(max-width: 640px) 100vw, 50vw"
+                />
+                <SavePostButton
+                  className="absolute bottom-3 right-3"
+                  target={{
+                    sourceId: post.id,
+                    sourceType: "beauty_post",
+                  }}
+                />
+              </div>
               <div className="grid gap-2 p-4">
                 <div className="flex items-center gap-3">
                   <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-zinc-950 text-xs font-semibold text-white">
@@ -2330,12 +2320,22 @@ function BeautyTransformationsSection({
                         <span className="truncate">{booking?.label ?? "Book"}</span>
                       </a>
                     ) : null}
-                    <a
-                      className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-                      href={post.postHref}
-                    >
-                      View post
-                    </a>
+                    {onOpenPost ? (
+                      <button
+                        className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                        onClick={() => onOpenPost(post)}
+                        type="button"
+                      >
+                        View post
+                      </button>
+                    ) : (
+                      <a
+                        className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                        href={post.postHref}
+                      >
+                        View post
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2569,164 +2569,181 @@ function CommentItem({
   );
 }
 
-function ReviewRatingInput({
-  onChange,
+function formatPercent(value: number | null) {
+  if (value === null) {
+    return "Not enough data";
+  }
+
+  return `${Math.round(value * 100)}%`;
+}
+
+function profileTrustSummary(
+  summary: PublicSalonProfileData["reputationSummary"],
+) {
+  return buildReylumiTrustSummary(
+    {
+      averageRating: summary.averageRating,
+      noIssueRate: summary.noIssueRate,
+      sharedExperienceCount: summary.experienceCount,
+      uniqueCustomerCount: summary.uniqueCustomerCount,
+      verifiedVisitCount: summary.verifiedVisitCount,
+    },
+  );
+}
+
+function TrustDetail({
+  description,
+  label,
   value,
 }: {
-  onChange: (value: number) => void;
-  value: number;
+  description: string;
+  label: string;
+  value: string;
 }) {
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label="Review rating">
-      {[1, 2, 3, 4, 5].map((rating) => (
-        <button
-          aria-pressed={value === rating}
-          className={[
-            "h-10 min-w-10 rounded-full border px-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
-            value === rating
-              ? "border-zinc-950 bg-zinc-950 text-white"
-              : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300",
-          ].join(" ")}
-          key={rating}
-          onClick={() => onChange(rating)}
-          type="button"
-        >
-          {rating}
-        </button>
-      ))}
+    <div className="border-t border-zinc-200/80 pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
+      <p className="text-xs font-semibold uppercase text-zinc-500">{label}</p>
+      <p className="mt-1 text-base font-semibold text-zinc-950">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-zinc-500">{description}</p>
     </div>
   );
 }
 
-function ReviewSummaryPanel({
+function ExperienceSummaryPanel({
   summary,
 }: {
-  summary: PublicSalonProfileData["reviewSummary"];
+  summary: PublicSalonProfileData["reputationSummary"];
 }) {
+  const trustSummary = profileTrustSummary(summary);
   const maxCount = Math.max(...Object.values(summary.ratingCounts), 1);
   const average = summary.averageRating?.toFixed(1) ?? "New";
+  const hasPublicMetrics =
+    summary.experienceCount > 0 ||
+    summary.uniqueCustomerCount > 0 ||
+    summary.verifiedVisitCount > 0 ||
+    summary.noIssueRate !== null;
 
   return (
-    <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-        Customer reviews
-      </p>
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+    <section
+      aria-labelledby="lumi-trust-profile-title"
+      className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]"
+      id="lumi-trust"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-4xl font-semibold text-zinc-950">{average}</p>
-          <p className="mt-1 text-sm text-zinc-500">
-            {summary.reviewCount} review{summary.reviewCount === 1 ? "" : "s"}
-            {summary.verifiedCount > 0
-              ? ` / ${summary.verifiedCount} verified`
-              : ""}
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-orange">
+            LUMI Trust
+          </p>
+          <h3
+            className="mt-2 text-2xl font-semibold text-zinc-950"
+            id="lumi-trust-profile-title"
+          >
+            Current trust evidence
+          </h3>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+            ReyLUMI shows the trust evidence currently available for this salon.
+            This signal is not a guarantee of service quality or future visits.
           </p>
         </div>
-        <div className="grid min-w-52 flex-1 gap-2 sm:max-w-sm">
-          {[5, 4, 3, 2, 1].map((rating) => {
-            const count = summary.ratingCounts[rating as 1 | 2 | 3 | 4 | 5];
-
-            return (
-              <div className="grid grid-cols-[2rem_1fr_2rem] items-center gap-2" key={rating}>
-                <span className="text-xs font-semibold text-zinc-500">
-                  {rating}
-                </span>
-                <div className="h-2 overflow-hidden rounded-full bg-zinc-100">
-                  <div
-                    className="h-full rounded-full bg-zinc-950"
-                    style={{ width: `${(count / maxCount) * 100}%` }}
-                  />
-                </div>
-                <span className="text-right text-xs text-zinc-500">{count}</span>
-              </div>
-            );
-          })}
+        <div className="flex max-w-sm items-center gap-3 rounded-xl bg-zinc-50 px-3 py-3 ring-1 ring-zinc-200">
+          <LumiTrustSpark
+            className="text-brand-orange"
+            level={trustSummary.level}
+            size="lg"
+          />
+          <div>
+            <p className="text-sm font-semibold text-zinc-950">
+              {trustSummary.mark.label}
+            </p>
+            <p className="mt-0.5 text-xs leading-5 text-zinc-600">
+              {trustSummary.mark.detail}
+            </p>
+          </div>
         </div>
       </div>
-    </section>
-  );
-}
-
-function ReviewComposer({
-  disabledReason,
-  onPosted,
-  salonId,
-}: {
-  disabledReason: string | null;
-  onPosted: () => void;
-  salonId: string;
-}) {
-  const [body, setBody] = useState("");
-  const [rating, setRating] = useState(5);
-  const [status, setStatus] = useState("");
-  const [title, setTitle] = useState("");
-  const [isPending, startTransition] = useTransition();
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (disabledReason) {
-      setStatus(disabledReason);
-      return;
-    }
-
-    if (!body.trim()) {
-      setStatus("Write your review before posting.");
-      return;
-    }
-
-    startTransition(async () => {
-      const result = await createSalonProfileReviewAction({
-        body,
-        rating,
-        salonId,
-        title: title || null,
-      });
-
-      if (result.error) {
-        setStatus(result.error);
-        return;
-      }
-
-      setBody("");
-      setTitle("");
-      setRating(5);
-      setStatus("Review posted.");
-      onPosted();
-    });
-  }
-
-  return (
-    <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
-      <h3 className="font-semibold text-zinc-950">Share your experience</h3>
-      {disabledReason ? (
-        <p className="mt-2 text-sm leading-6 text-zinc-600">{disabledReason}</p>
+      {trustSummary.evidenceRows.length > 0 ? (
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {trustSummary.evidenceRows.map((row) => (
+            <div
+              className="rounded-xl border border-zinc-200 bg-zinc-50 p-3"
+              key={row.kind}
+            >
+              <p className="text-xs font-semibold uppercase text-zinc-500">
+                {row.label}
+              </p>
+              {row.value ? (
+                <p className="mt-1 text-base font-semibold text-zinc-950">
+                  {row.value}
+                </p>
+              ) : null}
+              <p className="mt-1 text-xs leading-5 text-zinc-600">
+                {row.detail}
+              </p>
+            </div>
+          ))}
+        </div>
       ) : (
-        <form className="mt-4 grid gap-3" onSubmit={submit}>
-          <ReviewRatingInput onChange={setRating} value={rating} />
-          <input
-            className="min-h-11 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
-            maxLength={120}
-            onChange={(event) => setTitle(event.currentTarget.value)}
-            placeholder="Optional title"
-            value={title}
-          />
-          <textarea
-            className="min-h-28 resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-6 text-zinc-950 outline-none transition focus:border-zinc-950"
-            maxLength={2000}
-            onChange={(event) => setBody(event.currentTarget.value)}
-            placeholder="What should future customers know?"
-            value={body}
-          />
-          <div className="flex items-center justify-between gap-3">
-            <p aria-live="polite" className="text-sm text-zinc-600">
-              {status}
-            </p>
-            <Button disabled={isPending} type="submit" variant="primary">
-              {isPending ? "Posting..." : "Post review"}
-            </Button>
-          </div>
-        </form>
+        <p className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-6 text-zinc-600">
+          {trustSummary.mark.detail}
+        </p>
       )}
+      {hasPublicMetrics ? (
+        <div className="mt-5 grid gap-3 border-y border-zinc-100 py-4 text-sm sm:grid-cols-3">
+          <TrustDetail
+            description="Unique customers represented in public Experience signals."
+            label="Customers"
+            value={String(summary.uniqueCustomerCount)}
+          />
+          <TrustDetail
+            description="Share of confirmed activity without a reported issue."
+            label="No issue"
+            value={formatPercent(summary.noIssueRate)}
+          />
+          <TrustDetail
+            description="Customer Experiences that reported a problem."
+            label="Issues"
+            value={String(summary.issueCount)}
+          />
+        </div>
+      ) : null}
+      {hasPublicMetrics ? (
+        <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-zinc-950">
+              {summary.experienceCount} Experience
+              {summary.experienceCount === 1 ? "" : "s"} /{" "}
+              {summary.verifiedVisitCount} Verified Visit
+              {summary.verifiedVisitCount === 1 ? "" : "s"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-zinc-500">
+              Customer rating remains separate from LUMI Trust.
+            </p>
+          </div>
+          <div className="grid min-w-52 flex-1 gap-2 sm:max-w-sm">
+            <p className="text-right text-sm font-semibold text-zinc-950">
+              {summary.averageRating === null ? average : `\u2605 ${average}`}
+            </p>
+            {[5, 4, 3, 2, 1].map((rating) => {
+              const count = summary.ratingCounts[rating as 1 | 2 | 3 | 4 | 5];
+
+              return (
+                <div className="grid grid-cols-[2rem_1fr_2rem] items-center gap-2" key={rating}>
+                  <span className="text-xs font-semibold text-zinc-500">
+                    {rating}
+                  </span>
+                  <div className="h-2 overflow-hidden rounded-full bg-zinc-100">
+                    <div
+                      className="h-full rounded-full bg-zinc-950"
+                      style={{ width: `${(count / maxCount) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-right text-xs text-zinc-500">{count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -2736,7 +2753,7 @@ function ReviewReplyForm({
   review,
 }: {
   onPosted: () => void;
-  review: PublicSalonProfileReview;
+  review: PublicSalonProfileExperience;
 }) {
   const [body, setBody] = useState("");
   const [status, setStatus] = useState("");
@@ -2789,50 +2806,86 @@ function ReviewReplyForm({
   );
 }
 
-function ReviewCard({
+function experienceStateLabel(experience: PublicSalonProfileExperience) {
+  if (experience.feedbackState === "issue") {
+    return experience.issueStatus === "resolved"
+      ? "Issue resolved"
+      : "Issue shared";
+  }
+
+  if (experience.feedbackState === "good") {
+    return "Good experience";
+  }
+
+  return experience.rating ? `${experience.rating}/5` : "Experience";
+}
+
+function ExperienceCard({
   canReplyAsSalon,
+  experience,
   onPosted,
-  review,
 }: {
   canReplyAsSalon: boolean;
+  experience: PublicSalonProfileExperience;
   onPosted: () => void;
-  review: PublicSalonProfileReview;
 }) {
+  const canReplyToExperience =
+    canReplyAsSalon && experience.source === "legacy_review";
+  const meta = [
+    experience.rating ? `${experience.rating}/5` : null,
+    timeAgo(experience.createdAt),
+  ]
+    .filter(Boolean)
+    .join(" / ");
+
   return (
     <article className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_14px_42px_rgba(24,24,27,.05)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-semibold text-zinc-950">{review.authorDisplayName}</p>
-          <p className="mt-1 text-sm text-zinc-500">
-            {review.rating}/5 / {timeAgo(review.createdAt)}
+          <p className="font-semibold text-zinc-950">
+            {experience.authorDisplayName}
           </p>
+          {meta ? <p className="mt-1 text-sm text-zinc-500">{meta}</p> : null}
         </div>
         <span
           className={[
             "rounded-full px-3 py-1 text-xs font-semibold",
-            review.verificationStatus === "verified"
+            experience.verificationStatus === "verified"
               ? "bg-emerald-50 text-emerald-800"
               : "bg-zinc-100 text-zinc-600",
           ].join(" ")}
         >
-          {review.verificationStatus === "verified" ? "Verified visit" : "Customer review"}
+          {experience.verificationStatus === "verified"
+            ? "Verified Visit"
+            : "Experience"}
         </span>
       </div>
-      {review.title ? (
-        <h3 className="mt-4 font-semibold text-zinc-950">{review.title}</h3>
+      <p className="mt-4 text-sm font-semibold text-zinc-950">
+        {experienceStateLabel(experience)}
+      </p>
+      {experience.title ? (
+        <h3 className="mt-2 font-semibold text-zinc-950">{experience.title}</h3>
       ) : null}
-      <p className="mt-3 text-sm leading-6 text-zinc-700">{review.body}</p>
-      {review.replyBody ? (
+      {experience.body ? (
+        <p className="mt-3 text-sm leading-6 text-zinc-700">
+          {experience.body}
+        </p>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-zinc-500">
+          Quick feedback, no details added.
+        </p>
+      )}
+      {experience.replyBody ? (
         <div className="mt-4 rounded-xl bg-zinc-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
             Salon reply
           </p>
           <p className="mt-2 text-sm leading-6 text-zinc-700">
-            {review.replyBody}
+            {experience.replyBody}
           </p>
         </div>
-      ) : canReplyAsSalon ? (
-        <ReviewReplyForm onPosted={onPosted} review={review} />
+      ) : canReplyToExperience ? (
+        <ReviewReplyForm onPosted={onPosted} review={experience} />
       ) : null}
     </article>
   );
@@ -2848,6 +2901,7 @@ function LookDetailDialog({
   onCommentPosted,
   onSave,
   onShare,
+  onViewInTimeline,
   saveCount,
   salonId,
 }: {
@@ -2860,6 +2914,7 @@ function LookDetailDialog({
   onCommentPosted: () => void;
   onSave: (look: PublicSalonProfileLook) => void;
   onShare: () => void;
+  onViewInTimeline: (targetId: string) => void;
   saveCount: number;
   salonId: string;
 }) {
@@ -2883,7 +2938,7 @@ function LookDetailDialog({
       className="fixed inset-0 z-50 grid bg-zinc-950/45 p-0 backdrop-blur-sm sm:p-6"
       role="dialog"
     >
-      <div className="mt-auto grid max-h-[94vh] overflow-auto rounded-t-xl bg-white shadow-2xl sm:m-auto sm:max-h-[88vh] sm:w-full sm:max-w-5xl sm:rounded-xl">
+      <div className="mt-auto grid max-h-[100dvh] overflow-auto overscroll-contain rounded-t-xl bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl sm:m-auto sm:max-h-[88vh] sm:w-full sm:max-w-5xl sm:rounded-xl sm:pb-0">
         <div className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,.8fr)]">
           <LookImage
             className="aspect-[4/3] w-full lg:h-full lg:min-h-[34rem]"
@@ -2946,12 +3001,18 @@ function LookDetailDialog({
                 </p>
               ) : null}
             </div>
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="grid gap-2 sm:grid-cols-4">
               <Button onClick={() => onSave(look)} variant="secondary">
                 {isSaved ? "Saved" : "Save"}
               </Button>
               <Button onClick={onShare} variant="secondary">
                 Share
+              </Button>
+              <Button
+                onClick={() => onViewInTimeline(`look-${look.id}`)}
+                variant="secondary"
+              >
+                View in timeline
               </Button>
               <Button
                 disabled={!capabilities.canBook}
@@ -2979,6 +3040,295 @@ function LookDetailDialog({
                 title: look.title,
               }}
             />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FeedPostDetailDialog({
+  capabilities,
+  comments,
+  item,
+  onBook,
+  onClose,
+  onCommentPosted,
+  onShare,
+  onViewInTimeline,
+  salonId,
+}: {
+  capabilities: SalonProfileViewerCapabilities;
+  comments: PublicSalonProfileComment[];
+  item: ProfileFeedItem;
+  onBook: (context: BookingContext) => void;
+  onClose: () => void;
+  onCommentPosted: () => void;
+  onShare: (item?: ProfileFeedItem) => void;
+  onViewInTimeline: (targetId: string) => void;
+  salonId: string;
+}) {
+  const titleId = useId();
+  const title =
+    item.contentType === "look"
+      ? item.title
+      : item.caption || item.title || "Salon update";
+  const meta = joinMeta([
+    item.contentType === "look" ? item.mood : null,
+    item.serviceName,
+    item.contentType === "look" && item.recommendedStaffName
+      ? `With ${item.recommendedStaffName}`
+      : null,
+    item.contentType === "update" && item.staffName
+      ? `With ${item.staffName}`
+      : null,
+    timeAgo(item.publishedAt),
+  ]);
+
+  useEffect(() => {
+    function onKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      aria-labelledby={titleId}
+      aria-modal="true"
+      className="fixed inset-0 z-50 grid bg-zinc-950/45 p-0 backdrop-blur-sm sm:p-6"
+      role="dialog"
+    >
+      <div className="mt-auto grid max-h-[100dvh] overflow-auto overscroll-contain rounded-t-xl bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl sm:m-auto sm:max-h-[88vh] sm:w-full sm:max-w-5xl sm:rounded-xl sm:pb-0">
+        <div className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,.8fr)]">
+          {item.imageUrl ? (
+            <LookImage
+              className="aspect-[4/5] w-full lg:h-full lg:min-h-[34rem]"
+              imageUrl={item.imageUrl}
+              title={title}
+            />
+          ) : (
+            <div className="grid min-h-[18rem] place-items-center bg-zinc-100 p-6 text-center text-zinc-500">
+              No image attached
+            </div>
+          )}
+          <div className="grid content-start gap-5 p-5 sm:p-7">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar
+                    logoUrl={item.authorAvatarUrl}
+                    name={item.authorName}
+                    size="sm"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-zinc-950">
+                      {item.authorName}
+                    </p>
+                    {meta ? (
+                      <p className="truncate text-xs text-zinc-500">{meta}</p>
+                    ) : null}
+                  </div>
+                </div>
+                <h2
+                  className="mt-5 text-3xl font-semibold text-zinc-950"
+                  id={titleId}
+                >
+                  {title}
+                </h2>
+                {item.caption ? (
+                  <p className="mt-3 text-sm leading-6 text-zinc-700">
+                    <CaptionWithHashtags text={item.caption} />
+                  </p>
+                ) : null}
+                {item.hashtags.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.hashtags.map((tag) => (
+                      <a
+                        className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-200"
+                        href={`/explore?q=${encodeURIComponent(`#${tag}`)}`}
+                        key={tag}
+                      >
+                        #{tag}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+              <Button onClick={onClose} variant="secondary">
+                Close
+              </Button>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <Button onClick={() => onShare(item)} variant="secondary">
+                Share
+              </Button>
+              <Button
+                onClick={() => onViewInTimeline(`${item.contentType}-${item.id}`)}
+                variant="secondary"
+              >
+                View in timeline
+              </Button>
+              <Button
+                disabled={!capabilities.canBook}
+                onClick={() =>
+                  onBook({
+                    lookId: item.contentType === "look" ? item.id : null,
+                    note: item.caption,
+                    title:
+                      item.contentType === "look"
+                        ? "Book this look"
+                        : "Book with this inspiration",
+                    updateId: item.contentType === "update" ? item.id : null,
+                  })
+                }
+                variant="primary"
+              >
+                {item.contentType === "look" ? "Book look" : "Book inspiration"}
+              </Button>
+            </div>
+            <CommentsPanel
+              capabilities={capabilities}
+              comments={comments}
+              onPosted={onCommentPosted}
+              salonId={salonId}
+              target={{
+                lookId: item.contentType === "look" ? item.id : null,
+                title,
+                updateId: item.contentType === "update" ? item.id : null,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BeautyPostDetailDialog({
+  onClose,
+  onViewInTimeline,
+  post,
+}: {
+  onClose: () => void;
+  onViewInTimeline: (targetId: string) => void;
+  post: PublicSalonProfileBeautyPost;
+}) {
+  const titleId = useId();
+  const before = post.media.find((item) => item.role === "before") ?? post.media[0];
+  const after =
+    post.media.find((item) => item.role === "after") ??
+    post.media.find((item) => item.id !== before?.id) ??
+    post.media[1] ??
+    before;
+  const meta = joinMeta([
+    post.staffName ? `With ${post.staffName}` : null,
+    post.verificationState === "verified" ? "Verified Visit" : null,
+    timeAgo(post.publishedAt),
+  ]);
+
+  useEffect(() => {
+    function onKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      aria-labelledby={titleId}
+      aria-modal="true"
+      className="fixed inset-0 z-50 grid bg-zinc-950/45 p-0 backdrop-blur-sm sm:p-6"
+      role="dialog"
+    >
+      <div className="mt-auto grid max-h-[100dvh] overflow-auto overscroll-contain rounded-t-xl bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl sm:m-auto sm:max-h-[88vh] sm:w-full sm:max-w-5xl sm:rounded-xl sm:pb-0">
+        <div className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,.8fr)]">
+          <BeforeAfterCompare
+            after={
+              after?.url
+                ? {
+                    alt: `After image from ${post.authorDisplayName}`,
+                    id: after.id,
+                    url: after.url,
+                  }
+                : null
+            }
+            aspectClassName="aspect-[4/5] lg:min-h-[34rem]"
+            before={
+              before?.url
+                ? {
+                    alt: `Before image from ${post.authorDisplayName}`,
+                    id: before.id,
+                    url: before.url,
+                  }
+                : null
+            }
+            roundedClassName="rounded-none"
+            sizes="(max-width: 1024px) 100vw, 60vw"
+          />
+          <div className="grid content-start gap-5 p-5 sm:p-7">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-zinc-950 text-xs font-semibold text-white">
+                    {post.authorAvatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        alt={`${post.authorDisplayName} profile`}
+                        className="h-full w-full object-cover"
+                        src={post.authorAvatarUrl}
+                      />
+                    ) : (
+                      initialsFor(post.authorDisplayName)
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-zinc-950">
+                      {post.authorDisplayName}
+                    </p>
+                    {meta ? (
+                      <p className="truncate text-xs text-zinc-500">{meta}</p>
+                    ) : null}
+                  </div>
+                </div>
+                <h2
+                  className="mt-5 text-3xl font-semibold text-zinc-950"
+                  id={titleId}
+                >
+                  Shared by customers
+                </h2>
+                {post.caption ? (
+                  <p className="mt-3 text-sm leading-6 text-zinc-700">
+                    {post.caption}
+                  </p>
+                ) : null}
+              </div>
+              <Button onClick={onClose} variant="secondary">
+                Close
+              </Button>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <a
+                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                href={post.postHref}
+              >
+                Open Beauty post
+              </a>
+              <Button
+                onClick={() => onViewInTimeline(`shared-${post.id}`)}
+                variant="secondary"
+              >
+                View in timeline
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -3239,7 +3589,7 @@ function PublicationDrawer({
         >
           View public route
         </a>
-        <form action={setSalonProfilePublicationAction} className="border-t border-zinc-200 pt-4">
+        <form action={setSalonProfilePublicationAction} className="grid gap-2 border-t border-zinc-200 pt-4">
           <input name="salon_id" type="hidden" value={setting.salon_id} />
           <input
             name="public_discovery_enabled"
@@ -3247,6 +3597,7 @@ function PublicationDrawer({
             value={nextEnabled ? "true" : "false"}
           />
           <Button
+            className="w-full sm:w-auto"
             disabled={nextEnabled && !readiness.canPublish}
             type="submit"
             variant={nextEnabled ? "primary" : "secondary"}
@@ -3294,6 +3645,9 @@ export function SalonProfileView({
   const [detailLook, setDetailLook] = useState<PublicSalonProfileLook | null>(
     null,
   );
+  const [detailPost, setDetailPost] = useState<ProfileFeedItem | null>(null);
+  const [detailBeautyPost, setDetailBeautyPost] =
+    useState<PublicSalonProfileBeautyPost | null>(null);
   const [detailStaff, setDetailStaff] =
     useState<PublicSalonProfileStaff | null>(null);
   const [composerType, setComposerType] = useState<ComposerType | null>(null);
@@ -3302,7 +3656,8 @@ export function SalonProfileView({
   const [ownerMenuOpen, setOwnerMenuOpen] = useState(false);
   const ownerMenuButtonRef = useRef<HTMLButtonElement | null>(null);
   const ownerMenuRef = useRef<HTMLDivElement | null>(null);
-  const [reviewFilter, setReviewFilter] = useState<"all" | "verified">("all");
+  const [experienceFilter, setExperienceFilter] =
+    useState<"all" | "issues" | "verified">("all");
   const [commentTarget, setCommentTarget] = useState<CommentTarget | null>(null);
   const comments = data.comments;
   const [savedLookIds, setSavedLookIds] = useState(
@@ -3311,6 +3666,18 @@ export function SalonProfileView({
   const [saveCounts, setSaveCounts] = useState(
     new Map(sortedLooks.map((look) => [look.id, look.saveCount])),
   );
+  const [visibleTimelineCount, setVisibleTimelineCount] = useState(
+    INITIAL_TIMELINE_ITEM_COUNT,
+  );
+  const timelineSentinelRef = useRef<HTMLDivElement | null>(null);
+  const tabScrollPositions = useRef<Record<TabId, number>>({
+    about: 0,
+    discover: 0,
+    experiences: 0,
+    gallery: 0,
+    services: 0,
+    team: 0,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -3337,6 +3704,25 @@ export function SalonProfileView({
       window.removeEventListener("hashchange", syncTabFromHash);
     };
   }, []);
+  useEffect(() => {
+    if (selectedTab !== "experiences") {
+      return undefined;
+    }
+
+    const hash = window.location.hash.replace(/^#/, "");
+
+    if (hash !== "lumi-trust" && hash !== "lumi-trust-details") {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      document
+        .getElementById("lumi-trust")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+
+    return () => window.clearTimeout(timer);
+  }, [selectedTab]);
   const [isFollowing, setFollowing] = useState(profile.isFollowing);
   const [followerCount, setFollowerCount] = useState(profile.followerCount);
   const [statusMessage, setStatusMessage] = useState("");
@@ -3395,10 +3781,6 @@ export function SalonProfileView({
     matchingLooks[0] ??
     sortedLooks[0] ??
     null;
-  const companionLooks = sortedLooks
-    .filter((look) => look.id !== featuredLook?.id)
-    .slice(0, 5);
-  const featuredLookIds = new Set(featuredLook ? [featuredLook.id] : []);
   const primaryMobileLook = matchingLooks[0] ?? sortedLooks[0] ?? null;
   const feedItems = data.feed.length
     ? data.feed
@@ -3427,12 +3809,15 @@ export function SalonProfileView({
         hashtags: look.hashtags,
         title: look.title,
       }));
-  const visibleFeed = feedItems
-    .filter(
-      (item) =>
-        item.contentType !== "look" || !featuredLookIds.has(item.id),
-    )
-    .slice(0, 24);
+  const timelineItems = buildTimelineItems({
+    beautyPosts: data.beautyPosts,
+    feedItems,
+  });
+  const visibleTimelineItems = timelineItems.slice(0, visibleTimelineCount);
+  const galleryItems = buildGalleryItems({
+    beautyPosts: data.beautyPosts,
+    feedItems,
+  });
   const address = formatAddress(profile);
 
   useEffect(() => {
@@ -3475,6 +3860,35 @@ export function SalonProfileView({
     };
   }, [ownerMenuOpen]);
 
+  useEffect(() => {
+    if (
+      selectedTab !== "discover" ||
+      visibleTimelineCount >= timelineItems.length
+    ) {
+      return;
+    }
+
+    const sentinel = timelineSentinelRef.current;
+
+    if (!sentinel) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleTimelineCount((current) =>
+            Math.min(timelineItems.length, current + TIMELINE_LOAD_STEP),
+          );
+        }
+      },
+      { rootMargin: "720px 0px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [selectedTab, timelineItems.length, visibleTimelineCount]);
+
   function refresh() {
     router.refresh();
   }
@@ -3494,19 +3908,54 @@ export function SalonProfileView({
     setFeaturedLookId(null);
   }
 
-  function shiftFeatured(direction: 1 | -1) {
-    const source = matchingLooks.length > 0 ? matchingLooks : sortedLooks;
-
-    if (source.length < 2) {
+  function changeTab(tab: TabId) {
+    if (tab === selectedTab) {
       return;
     }
 
-    const currentIndex = Math.max(
-      0,
-      source.findIndex((look) => look.id === featuredLook?.id),
-    );
-    const nextIndex = (currentIndex + direction + source.length) % source.length;
-    setFeaturedLookId(source[nextIndex].id);
+    tabScrollPositions.current[selectedTab] = window.scrollY;
+    setSelectedTab(tab);
+    window.requestAnimationFrame(() => {
+      window.scrollTo({
+        behavior: "auto",
+        top: tabScrollPositions.current[tab],
+      });
+    });
+  }
+
+  function openTimelinePost(item: ProfileFeedItem) {
+    setDetailPost(item);
+  }
+
+  function openGalleryItem(item: GalleryItem) {
+    if (item.type === "beauty") {
+      setDetailBeautyPost(item.post);
+      return;
+    }
+
+    openTimelinePost(item.item);
+  }
+
+  function viewInTimeline(targetId: string) {
+    tabScrollPositions.current[selectedTab] = window.scrollY;
+
+    const targetIndex = timelineItems.findIndex((item) => item.id === targetId);
+
+    if (targetIndex >= 0) {
+      setVisibleTimelineCount((current) =>
+        Math.max(current, targetIndex + 1, INITIAL_TIMELINE_ITEM_COUNT),
+      );
+    }
+
+    setDetailLook(null);
+    setDetailPost(null);
+    setDetailBeautyPost(null);
+    setSelectedTab("discover");
+    window.setTimeout(() => {
+      document
+        .getElementById(targetId)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
   }
 
   function onTabKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -3518,7 +3967,35 @@ export function SalonProfileView({
     const currentIndex = TABS.findIndex((tab) => tab.id === selectedTab);
     const direction = event.key === "ArrowRight" ? 1 : -1;
     const nextIndex = (currentIndex + direction + TABS.length) % TABS.length;
-    setSelectedTab(TABS[nextIndex].id);
+    changeTab(TABS[nextIndex].id);
+  }
+
+  function applyLookSaveState(look: PublicSalonProfileLook, active: boolean) {
+    setSavedLookIds((current) => {
+      const wasSaved = current.has(look.id);
+
+      if (wasSaved === active) {
+        return current;
+      }
+
+      setSaveCounts((counts) => {
+        const nextCounts = new Map(counts);
+        const currentCount = nextCounts.get(look.id) ?? 0;
+
+        nextCounts.set(look.id, Math.max(0, currentCount + (active ? 1 : -1)));
+        return nextCounts;
+      });
+
+      const next = new Set(current);
+
+      if (active) {
+        next.add(look.id);
+      } else {
+        next.delete(look.id);
+      }
+
+      return next;
+    });
   }
 
   function toggleSave(look: PublicSalonProfileLook) {
@@ -3530,23 +4007,7 @@ export function SalonProfileView({
         return;
       }
 
-      setSavedLookIds((current) => {
-        const next = new Set(current);
-
-        if (result.active) {
-          next.add(look.id);
-        } else {
-          next.delete(look.id);
-        }
-
-        return next;
-      });
-      setSaveCounts((current) => {
-        const next = new Map(current);
-        const currentCount = next.get(look.id) ?? 0;
-        next.set(look.id, Math.max(0, currentCount + (result.active ? 1 : -1)));
-        return next;
-      });
+      applyLookSaveState(look, result.active);
       setStatusMessage(result.active ? "Look saved." : "Look removed.");
     });
   }
@@ -3597,235 +4058,91 @@ export function SalonProfileView({
   }
 
   function renderDiscover() {
-    const website = normalizeWebsite(profile.website);
-    const phone = formatPhone(profile.phone);
-    const hasDetails = Boolean(address || phone || website);
-
     return (
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
-        <div className="grid gap-6">
-          {capabilities.canCreateContent ? (
-            <ComposerCard
-              logoUrl={profile.logoImageUrl}
-              name={profile.name}
-              onOpen={setComposerType}
-            />
-          ) : manageData && !capabilities.canEditProfile ? (
-            <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
-              Posting is disabled for your staff profile.
-            </section>
-          ) : null}
-          <CuratedLookSection
-            companionLooks={companionLooks}
-            featuredLook={featuredLook}
-            moodOptions={moodOptions}
-            canBook={capabilities.canBook}
-            onBook={openBooking}
-            onChooseLook={(look) => {
-              setSelectedMood(look.mood ?? null);
-              setFeaturedLookId(look.id);
-            }}
-            onMoodSelect={selectMood}
-            onNext={() => shiftFeatured(1)}
-            onOpen={setDetailLook}
-            onPrevious={() => shiftFeatured(-1)}
-            onSave={toggleSave}
-            saveCounts={saveCounts}
-            savedLookIds={savedLookIds}
-            selectedMood={selectedMood}
+      <div className="mx-auto grid w-full max-w-4xl gap-8">
+        {capabilities.canCreateContent ? (
+          <ComposerCard
+            logoUrl={profile.logoImageUrl}
+            name={profile.name}
+            onOpen={setComposerType}
           />
-          {!featuredLook && capabilities.canCreateContent ? (
-            <EmptyState title="Share your first look">
-              Drop a real photo and caption to start the salon story.
-            </EmptyState>
-          ) : null}
-          <BeautyTransformationsSection posts={data.beautyPosts} />
-          <section className="grid gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-                Latest
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold text-zinc-950">
-                Recent posts
-              </h2>
-            </div>
-            {visibleFeed.length === 0 ? (
-              <EmptyState title="No recent posts">
-                Published looks and salon updates will appear here after the
-                featured look.
-              </EmptyState>
-            ) : (
-              visibleFeed.map((item) => {
-                const look =
-                  item.contentType === "look" ? lookById.get(item.id) ?? null : null;
-
+        ) : manageData && !capabilities.canEditProfile ? (
+          <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 text-sm text-zinc-600 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+            Posting is disabled for your staff profile.
+          </section>
+        ) : null}
+        {visibleTimelineItems.length === 0 ? (
+          <EmptyState title="No recent posts">
+            Published looks, salon updates, and customer shares will appear here
+            from newest to oldest.
+          </EmptyState>
+        ) : (
+          <section aria-label="Salon timeline" className="grid gap-8">
+            {visibleTimelineItems.map((timelineItem) => {
+              if (timelineItem.type === "shared") {
                 return (
-                  <FeedCard
-                    capabilities={capabilities}
-                    comments={comments}
-                    item={item}
-                    key={`${item.contentType}-${item.id}`}
-                    look={look}
-                    logoUrl={profile.logoImageUrl}
-                    onBook={openBooking}
-                    onComment={setCommentTarget}
-                    onRefresh={refresh}
-                    onSave={toggleSave}
-                    onShare={shareSalon}
-                    saved={look ? savedLookIds.has(look.id) : false}
-                    saveCount={look ? saveCounts.get(look.id) ?? 0 : 0}
-                  />
+                  <div id={timelineItem.id} key={timelineItem.id}>
+                    <BeautyTransformationsSection
+                      onOpenPost={setDetailBeautyPost}
+                      posts={timelineItem.posts}
+                    />
+                  </div>
                 );
-              })
-            )}
-          </section>
-        </div>
-        <aside className="grid h-max gap-4 lg:sticky lg:top-20">
-          <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
-              Book online
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold leading-tight text-zinc-950">
-              Ready for your next set?
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-zinc-600">
-              Send a request with the exact look, service, artist, and time you
-              prefer.
-            </p>
-            <Button
-              className="mt-5 w-full"
-              disabled={!capabilities.canBook}
-              onClick={() => openBooking({ title: "Find an appointment" })}
-              variant="primary"
+              }
+
+              const item = timelineItem.item;
+              const look =
+                item.contentType === "look" ? lookById.get(item.id) ?? null : null;
+
+              return (
+                <FeedCard
+                  capabilities={capabilities}
+                  comments={comments}
+                  item={item}
+                  key={timelineItem.id}
+                  look={look}
+                  logoUrl={profile.logoImageUrl}
+                  onBook={openBooking}
+                  onComment={setCommentTarget}
+                  onOpenPost={openTimelinePost}
+                  onRefresh={refresh}
+                  onSave={toggleSave}
+                  onSavedChange={applyLookSaveState}
+                  onShare={shareSalon}
+                  saved={look ? savedLookIds.has(look.id) : false}
+                  saveCount={look ? saveCounts.get(look.id) ?? 0 : 0}
+                />
+              );
+            })}
+            <div
+              className="grid min-h-24 place-items-center text-sm font-semibold text-zinc-500"
+              ref={timelineSentinelRef}
             >
-              Find an appointment
-            </Button>
-            {featuredLook ? (
-              <Button
-                className="mt-2 w-full"
-                disabled={!capabilities.canBook}
-                onClick={() =>
-                  openBooking({
-                    lookId: featuredLook.id,
-                    note: featuredLook.bookingNote,
-                    serviceId: featuredLook.serviceId,
-                    staffId: featuredLook.recommendedStaffId,
-                    title: "Book this exact look",
-                  })
-                }
-                variant="secondary"
-              >
-                Book featured look
-              </Button>
-            ) : null}
-          </section>
-
-          <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="font-semibold text-zinc-950">Salon details</h2>
-              {capabilities.canEditProfile ? (
-                <button
-                  className="text-sm font-semibold text-zinc-600 underline-offset-4 hover:text-zinc-950 hover:underline"
-                  onClick={() => setProfileEditorOpen(true)}
-                  type="button"
-                >
-                  Edit
-                </button>
-              ) : null}
+              {visibleTimelineCount < timelineItems.length
+                ? "Loading older posts"
+                : "End of timeline"}
             </div>
-            {hasDetails ? (
-              <div className="mt-4 grid gap-4 text-sm text-zinc-600">
-                {address ? (
-                  <div>
-                    <p className="font-semibold text-zinc-950">Address</p>
-                    <p className="mt-1 leading-6">{address}</p>
-                    <a
-                      className="mt-2 inline-flex font-semibold text-zinc-950 underline-offset-4 hover:underline"
-                      href={directionsUrl(address)}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      Get directions
-                    </a>
-                  </div>
-                ) : null}
-                {phone ? (
-                  <div>
-                    <p className="font-semibold text-zinc-950">Phone</p>
-                    <a
-                      className="mt-1 inline-flex underline-offset-4 hover:underline"
-                      href={`tel:${profile.phone?.replace(/\D/g, "")}`}
-                    >
-                      {phone}
-                    </a>
-                  </div>
-                ) : null}
-                {website ? (
-                  <div>
-                    <p className="font-semibold text-zinc-950">Website</p>
-                    <a
-                      className="mt-1 inline-flex underline-offset-4 hover:underline"
-                      href={website}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      {displayWebsite(profile.website)}
-                    </a>
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <p className="mt-4 text-sm leading-6 text-zinc-500">
-                Contact details will appear here once the salon publishes them.
-              </p>
-            )}
           </section>
-
-          {data.staff.length > 0 ? (
-            <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="font-semibold text-zinc-950">Team</h2>
-                <button
-                  className="text-sm font-semibold text-zinc-600 underline-offset-4 hover:text-zinc-950 hover:underline"
-                  onClick={() => setSelectedTab("team")}
-                  type="button"
-                >
-                  View team
-                </button>
-              </div>
-              <div className="mt-4 grid gap-3">
-                {data.staff.slice(0, 3).map((member) => (
-                  <div className="flex items-center gap-3" key={member.id}>
-                    <div className="grid h-11 w-11 place-items-center rounded-full bg-zinc-950 text-xs font-semibold text-white">
-                      {initialsFor(member.displayName)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-zinc-950">
-                        {member.displayName}
-                      </p>
-                      {member.jobTitle ? (
-                        <p className="text-xs text-zinc-500">{member.jobTitle}</p>
-                      ) : null}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ) : null}
-        </aside>
+        )}
       </div>
     );
   }
 
   function renderGallery() {
-    const galleryLooks = selectedMood
-      ? sortedLooks.filter((look) => look.mood === selectedMood)
-      : sortedLooks;
+    const visibleGalleryItems = selectedMood
+      ? galleryItems.filter(
+          (item) =>
+            item.type === "feed" &&
+            item.item.contentType === "look" &&
+            item.item.mood === selectedMood,
+        )
+      : galleryItems;
 
-    if (galleryLooks.length === 0) {
+    if (visibleGalleryItems.length === 0) {
       return (
         <EmptyState title="Gallery is waiting">
-          Published looks will build this gallery automatically.
+          Images from published posts and customer shares will build this
+          gallery automatically.
         </EmptyState>
       );
     }
@@ -3847,7 +4164,7 @@ export function SalonProfileView({
               }}
               type="button"
             >
-              All looks
+              All images
             </button>
             {moodOptions
               .filter((mood) => mood !== "Surprise me")
@@ -3868,40 +4185,89 @@ export function SalonProfileView({
               ))}
           </div>
         ) : null}
-        <div className="columns-2 gap-3 sm:columns-3 xl:columns-4">
-          {galleryLooks.map((look, index) => (
-            <button
-              className="group relative mb-3 block w-full break-inside-avoid overflow-hidden rounded-2xl bg-zinc-100 text-left shadow-[0_14px_40px_rgba(24,24,27,.06)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-              key={look.id}
-              onClick={() => setDetailLook(look)}
-              type="button"
-            >
-              <LookImage
-                className={[
-                  "w-full transition duration-300 group-hover:scale-[1.02] motion-reduce:transition-none",
-                  index % 3 === 0 ? "aspect-[4/5]" : "aspect-square",
-                ].join(" ")}
-                imageUrl={look.imageUrl}
-                title={look.title}
-              />
-              <span className="absolute inset-x-0 bottom-0 bg-white/92 p-3 opacity-0 shadow-[0_-12px_30px_rgba(24,24,27,.08)] transition group-hover:opacity-100 group-focus-visible:opacity-100">
-                <span className="block text-sm font-semibold text-zinc-950">
-                  {look.title}
-                </span>
-                <span className="mt-1 block text-xs text-zinc-600">
-                  {joinMeta([
-                    look.mood,
-                    look.serviceName,
-                    (saveCounts.get(look.id) ?? 0) > 0
-                      ? `${saveCounts.get(look.id)} save${
-                          saveCounts.get(look.id) === 1 ? "" : "s"
-                        }`
-                      : null,
-                  ])}
-                </span>
-              </span>
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+          {visibleGalleryItems.map((galleryItem) => {
+            const feedGalleryItem =
+              galleryItem.type === "feed" ? galleryItem : null;
+            const galleryLook =
+              feedGalleryItem?.item.contentType === "look"
+                ? lookById.get(feedGalleryItem.item.id) ?? null
+                : null;
+
+            return (
+              <div
+                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-zinc-100 shadow-[0_14px_40px_rgba(24,24,27,.06)]"
+                key={galleryItem.id}
+              >
+                <button
+                  className="block h-full w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                  onClick={() => openGalleryItem(galleryItem)}
+                  type="button"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt={galleryItem.title}
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
+                    src={galleryItem.imageUrl}
+                  />
+                  <span className="absolute inset-x-0 bottom-0 bg-white/92 p-3 opacity-0 shadow-[0_-12px_30px_rgba(24,24,27,.08)] transition group-hover:opacity-100 group-focus-within:opacity-100">
+                    <span className="block text-sm font-semibold text-zinc-950">
+                      {galleryItem.title}
+                    </span>
+                    <span className="mt-1 block text-xs text-zinc-600">
+                      {galleryItem.type === "feed"
+                        ? joinMeta([
+                            galleryItem.item.authorName,
+                            galleryItem.item.contentType === "look"
+                              ? galleryItem.item.mood
+                              : "Salon update",
+                            galleryItem.item.serviceName,
+                            timeAgo(galleryItem.item.publishedAt),
+                          ])
+                        : joinMeta([
+                            galleryItem.post.authorDisplayName,
+                            "Shared by customer",
+                            timeAgo(galleryItem.post.publishedAt),
+                          ])}
+                    </span>
+                  </span>
+                </button>
+                {galleryLook && feedGalleryItem ? (
+                  <SavePostButton
+                    className="absolute bottom-3 right-3"
+                    initialSaved={savedLookIds.has(galleryLook.id)}
+                    onSavedChange={(active) =>
+                      applyLookSaveState(galleryLook, active)
+                    }
+                    saveCount={saveCounts.get(galleryLook.id) ?? 0}
+                    target={{
+                      salonId: feedGalleryItem.item.salonId,
+                      sourceId: galleryLook.id,
+                      sourceType: "salon_profile_look",
+                    }}
+                  />
+                ) : feedGalleryItem &&
+                  feedGalleryItem.item.contentType === "update" ? (
+                  <SavePostButton
+                    className="absolute bottom-3 right-3"
+                    target={{
+                      salonId: feedGalleryItem.item.salonId,
+                      sourceId: feedGalleryItem.item.id,
+                      sourceType: "salon_profile_update",
+                    }}
+                  />
+                ) : galleryItem.type === "beauty" ? (
+                  <SavePostButton
+                    className="absolute bottom-3 right-3"
+                    target={{
+                      sourceId: galleryItem.post.id,
+                      sourceType: "beauty_post",
+                    }}
+                  />
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       </section>
     );
@@ -3979,65 +4345,77 @@ export function SalonProfileView({
     );
   }
 
-  function renderReviews() {
-    const visibleReviews =
-      reviewFilter === "verified"
-        ? data.reviews.filter(
-            (review) => review.verificationStatus === "verified",
+  function renderExperiences() {
+    const visibleExperiences =
+      experienceFilter === "verified"
+        ? data.experiences.filter(
+            (experience) => experience.verificationStatus === "verified",
           )
-        : data.reviews;
-    const reviewDisabledReason = !capabilities.isAuthenticated
-      ? "Sign in to write a public review."
-      : isManagedViewer
-        ? "Open the public profile as a customer to write a review."
-        : null;
+        : experienceFilter === "issues"
+          ? data.experiences.filter(
+              (experience) => experience.feedbackState === "issue",
+            )
+          : data.experiences;
 
     return (
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,.45fr)]">
         <div className="grid gap-4">
-          <ReviewSummaryPanel summary={data.reviewSummary} />
+          <ExperienceSummaryPanel summary={data.reputationSummary} />
           <div className="flex flex-wrap gap-2">
-            {(["all", "verified"] as const).map((filter) => (
+            {(["all", "verified", "issues"] as const).map((filter) => (
               <button
-                aria-pressed={reviewFilter === filter}
+                aria-pressed={experienceFilter === filter}
                 className={[
                   "rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
-                  reviewFilter === filter
+                  experienceFilter === filter
                     ? "border-zinc-950 bg-zinc-950 text-white"
                     : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300",
                 ].join(" ")}
                 key={filter}
-                onClick={() => setReviewFilter(filter)}
+                onClick={() => setExperienceFilter(filter)}
                 type="button"
               >
-                {filter === "all" ? "All reviews" : "Verified visits"}
+                {filter === "all"
+                  ? "All Experiences"
+                  : filter === "verified"
+                    ? "Verified Visits"
+                    : "Issues"}
               </button>
             ))}
           </div>
-          {visibleReviews.length > 0 ? (
+          {visibleExperiences.length > 0 ? (
             <div className="grid gap-3">
-              {visibleReviews.map((review) => (
-                <ReviewCard
+              {visibleExperiences.map((experience) => (
+                <ExperienceCard
                   canReplyAsSalon={capabilities.canReplyAsSalon}
-                  key={review.id}
+                  experience={experience}
+                  key={experience.id}
                   onPosted={refresh}
-                  review={review}
                 />
               ))}
             </div>
           ) : (
-            <EmptyState title="No reviews yet">
-              {reviewFilter === "verified"
-                ? "Verified appointment reviews will appear after customers review completed bookings."
-                : "Customer reviews will appear here when they are posted."}
+            <EmptyState title="No Experiences yet">
+              {experienceFilter === "verified"
+                ? "Shared Experiences tied to Verified Visits will appear here after customers respond from their Activity."
+                : experienceFilter === "issues"
+                  ? "Issue Experiences will appear here when customers report a problem."
+                  : "Customers can share a lightweight Experience after a verified POS visit."}
             </EmptyState>
           )}
         </div>
-        <ReviewComposer
-          disabledReason={reviewDisabledReason}
-          onPosted={refresh}
-          salonId={profile.salonId}
-        />
+        <aside className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+            After a visit
+          </p>
+          <h3 className="mt-3 font-semibold text-zinc-950">
+            Feedback starts from a Verified Visit.
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-zinc-600">
+            Customers see Good / Had an issue in their Activity after a completed
+            POS ticket is linked to their active account. Details are optional.
+          </p>
+        </aside>
       </div>
     );
   }
@@ -4136,26 +4514,25 @@ export function SalonProfileView({
           </section>
           {data.staff.length > 0 ? (
             <section className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-[0_18px_55px_rgba(24,24,27,.06)]">
-              <h4 className="font-semibold text-zinc-950">Team preview</h4>
-              <div className="mt-4 grid gap-3">
-                {data.staff.slice(0, 3).map((member) => (
-                  <div className="flex items-center gap-3" key={member.id}>
-                    <Avatar
-                      logoUrl={member.avatarUrl}
-                      name={member.displayName}
-                      size="sm"
-                    />
-                    <div>
-                      <p className="text-sm font-semibold text-zinc-950">
-                        {member.displayName}
-                      </p>
-                      {member.jobTitle ? (
-                        <p className="text-xs text-zinc-500">{member.jobTitle}</p>
-                      ) : null}
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h4 className="font-semibold text-zinc-950">Team preview</h4>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    {formatSalonProfileTeamCount(data.staff.length)}
+                  </p>
+                </div>
+                <button
+                  className="text-sm font-semibold text-zinc-600 underline-offset-4 hover:text-zinc-950 hover:underline"
+                  onClick={() => changeTab("team")}
+                  type="button"
+                >
+                  View team ({data.staff.length})
+                </button>
               </div>
+              <TeamPreviewRows
+                onViewTeam={() => changeTab("team")}
+                staff={data.staff}
+              />
             </section>
           ) : null}
         </aside>
@@ -4172,8 +4549,8 @@ export function SalonProfileView({
           ? renderServices()
           : selectedTab === "team"
             ? renderTeam()
-            : selectedTab === "reviews"
-              ? renderReviews()
+            : selectedTab === "experiences"
+              ? renderExperiences()
               : renderAbout();
   const locationLabel = formatLocation(profile);
   const identityMeta = [
@@ -4192,11 +4569,12 @@ export function SalonProfileView({
   const canOpenPublicProfile =
     Boolean(manageData?.publicHref) && Boolean(manageData?.readiness.isExploreEligible);
   const canShowManageMenu = isManagedViewer && capabilities.canPublish;
+  const trustSummary = profileTrustSummary(data.reputationSummary);
 
   return (
     <div className="min-w-0 overflow-x-hidden bg-[#f6f5f3] text-zinc-950">
       <div className="mx-auto grid w-full max-w-[88rem] gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <section className="group rounded-2xl border border-zinc-200/80 bg-white shadow-[0_24px_80px_rgba(24,24,27,.08)]">
+        <section className="group min-w-0 rounded-2xl border border-zinc-200/80 bg-white shadow-[0_24px_80px_rgba(24,24,27,.08)]">
           <div className="relative z-0 h-[13rem] overflow-hidden rounded-t-2xl bg-zinc-100 sm:h-[16rem] lg:h-[17rem]">
             <SalonCover coverImageUrl={profile.coverImageUrl} name={profile.name} />
             {capabilities.canEditProfile ? (
@@ -4212,7 +4590,7 @@ export function SalonProfileView({
             ) : null}
           </div>
 
-          <div className="relative z-10 px-4 pb-0 sm:px-6 lg:px-8">
+          <div className="relative z-10 min-w-0 px-4 pb-0 sm:px-6 lg:px-8">
             <div className="-mt-12 flex flex-col gap-5 pb-6 sm:-mt-16 lg:flex-row lg:items-end lg:justify-between">
               <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end">
                 <div className="relative w-max shrink-0">
@@ -4231,9 +4609,20 @@ export function SalonProfileView({
                 </div>
 
                 <div className="relative z-10 min-w-0 pt-1 sm:pb-2">
-                  <h2 className="text-3xl font-semibold leading-tight text-zinc-950 sm:text-4xl">
-                    {profile.name}
-                  </h2>
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                    <h2 className="min-w-0 max-w-full text-3xl font-semibold leading-tight text-zinc-950 sm:text-4xl">
+                      {profile.name}
+                    </h2>
+                    <LumiTrustPopover
+                      actionHref="#lumi-trust"
+                      align="left"
+                      entityName={profile.name}
+                      markClassName="grid h-9 w-9 place-items-center rounded-full bg-white p-0 text-brand-orange shadow-sm ring-1 ring-brand-orange/25 hover:bg-brand-orange-soft"
+                      presentation="spark"
+                      size="md"
+                      summary={trustSummary}
+                    />
+                  </div>
                   {profile.description ? (
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
                       {profile.description}
@@ -4339,7 +4728,7 @@ export function SalonProfileView({
 
             <div
               aria-label="Salon profile sections"
-              className="sticky top-0 z-20 -mx-4 flex gap-1 overflow-x-auto border-t border-zinc-100 bg-white/95 px-4 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+              className="sticky top-0 z-20 -mx-4 flex max-w-full gap-1 overflow-x-auto border-t border-zinc-100 bg-white/95 px-4 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
               onKeyDown={onTabKeyDown}
               role="tablist"
             >
@@ -4358,7 +4747,7 @@ export function SalonProfileView({
                     ].join(" ")}
                     id={`salon-profile-tab-${tab.id}`}
                     key={tab.id}
-                    onClick={() => setSelectedTab(tab.id)}
+                    onClick={() => changeTab(tab.id)}
                     role="tab"
                     type="button"
                   >
@@ -4491,8 +4880,29 @@ export function SalonProfileView({
           onCommentPosted={refresh}
           onSave={toggleSave}
           onShare={() => void shareSalon()}
+          onViewInTimeline={viewInTimeline}
           saveCount={saveCounts.get(detailLook.id) ?? 0}
           salonId={profile.salonId}
+        />
+      ) : null}
+      {detailPost ? (
+        <FeedPostDetailDialog
+          capabilities={capabilities}
+          comments={comments}
+          item={detailPost}
+          onBook={openBooking}
+          onClose={() => setDetailPost(null)}
+          onCommentPosted={refresh}
+          onShare={shareSalon}
+          onViewInTimeline={viewInTimeline}
+          salonId={profile.salonId}
+        />
+      ) : null}
+      {detailBeautyPost ? (
+        <BeautyPostDetailDialog
+          onClose={() => setDetailBeautyPost(null)}
+          onViewInTimeline={viewInTimeline}
+          post={detailBeautyPost}
         />
       ) : null}
       {detailStaff ? (

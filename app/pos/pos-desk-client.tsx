@@ -3687,6 +3687,14 @@ export function PosDeskClient({
                 type="button"
                 title={`${member.display_name}: ${staffTurnCount} large turns, ${member.turns.smallTurns} small turns. ${staffStatusLabel}`}
               >
+                {member.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover opacity-20"
+                    src={member.avatar_url}
+                  />
+                ) : null}
                 {holdActive ? (
                   <span
                     aria-hidden="true"

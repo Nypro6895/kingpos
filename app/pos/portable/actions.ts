@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getPosLiveDraft } from "@/app/pos/actions";
+import { safeAccountAvatarUrl } from "@/lib/account-avatar";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import {
   DEFAULT_PORTABLE_POS_CAPABILITIES,
@@ -13,9 +14,11 @@ import {
 import { broadcastPosLiveDraftSnapshot } from "@/lib/pos-live-draft-realtime-server";
 import { broadcastPosStaffChange } from "@/lib/pos-staff-realtime-server";
 import {
+  getPosDisplaySalonLogoUrl,
   getPosDeskDefaults,
   normalizePosSettingsPayload,
 } from "@/lib/pos-settings";
+import { getStaffProfileAvatarUrl } from "@/lib/staff-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type {
@@ -34,6 +37,11 @@ import type {
   PosLiveDraftReceiptLine,
   PosLiveDraftView,
 } from "@/types/pos-desk";
+import type {
+  PosTicketDiscountType,
+  PosTicketStatus,
+  PosTicketTipType,
+} from "@/types/pos-ticket";
 
 const PORTABLE_POS_KEY_ID_COOKIE = "kingpos-portable-pos-key-id";
 const PORTABLE_POS_SIGNATURE_COOKIE = "kingpos-portable-pos-session";
@@ -90,11 +98,14 @@ type PortablePosSignInResult = PortablePosSession & {
 };
 
 type PortableDeskRpcData = {
-  liveDraft: PosLiveDraftView | null;
-  salonName: string;
+  liveDraft?: PosLiveDraftView | null;
+  live_draft?: PosLiveDraftView | null;
+  salonName?: unknown;
+  salon_name?: unknown;
   settings?: unknown;
-  services: PosDeskService[];
-  staff: PosDeskStaff[];
+  services?: PosDeskService[];
+  staff?: unknown;
+  waiting_visits?: unknown;
   waitingVisits?: unknown;
 };
 
@@ -109,6 +120,7 @@ export type PortableTodayStaffRow = {
 };
 
 export type PortableCheckInStaffRow = {
+  avatarUrl: string | null;
   checkInAt: string | null;
   checkInSequence: number | null;
   displayName: string;
@@ -122,6 +134,7 @@ export type PortableCheckInStaffRow = {
 export type PortableCheckInData = {
   checkInEnabled: boolean;
   salonId: string;
+  salonLogoUrl: string | null;
   salonName: string;
   staff: PortableCheckInStaffRow[];
   today: string;
@@ -150,29 +163,94 @@ export type PortableTodayData = {
   today: string;
 };
 
+export type PortableTicketTurnPart = {
+  amount: number;
+  createdAt: string;
+  id: string;
+  staffId: string | null;
+  ticketId: string;
+  ticketItemId: string;
+  turnIndex: number;
+  turnType: "large" | "small";
+  workDate: string;
+};
+
+export type PortableTicketItemRow = {
+  createdAt: string;
+  id: string;
+  lineTotal: number;
+  posTicketId: string;
+  runningTurnBig: number | null;
+  runningTurnSmall: number | null;
+  serviceId: string | null;
+  serviceName: string;
+  staffId: string | null;
+  staffName: string | null;
+  turnParts: PortableTicketTurnPart[];
+};
+
+export type PortableTicketStaffEarningRow = {
+  manualTipAmount: number | null;
+  staffId: string;
+  tipAmount: number;
+  tipIsManual: boolean;
+};
+
+export type PortableTicketAdjustmentRow = {
+  action: "item_corrected" | "item_removed" | "item_replaced";
+  afterSnapshot: unknown;
+  beforeSnapshot: unknown;
+  createdAt: string;
+  createdBy: string | null;
+  createdByUser: {
+    displayName: string | null;
+    email: string | null;
+    id: string;
+  } | null;
+  id: string;
+  reason: string;
+  ticketId: string;
+};
+
 export type PortableTicketRow = {
+  adjustments: PortableTicketAdjustmentRow[];
   closedAt: string | null;
+  createdAt: string;
+  customerEmail: string | null;
+  customerId: string | null;
   customerName: string | null;
   customerPhone: string | null;
   discountAmount: number;
+  discountType: PosTicketDiscountType;
+  discountValue: number;
   id: string;
+  items: PortableTicketItemRow[];
   openedAt: string;
   paid: number;
   remaining: number;
   serviceCount: number;
-  status: string;
+  sourceBookingId: string | null;
+  staffEarnings: PortableTicketStaffEarningRow[];
+  status: PosTicketStatus;
   subtotal: number;
   taxAmount: number;
+  taxRate: number;
   ticketNumber: string;
   ticketSequence: number;
   tipAmount: number;
+  tipType: PosTicketTipType;
+  tipValue: number;
   total: number;
 };
 
 export type PortableTicketData = {
+  canEdit: boolean;
   date: string;
+  isBusinessDateLocked: boolean;
   salonName: string;
   setupMessage: string | null;
+  services: PosDeskService[];
+  staff: PosDeskStaff[];
   tickets: PortableTicketRow[];
   timezone: string;
 };
@@ -313,6 +391,149 @@ function normalizePortableNullableString(value: unknown) {
   return typeof value === "string" && value.trim() ? value : null;
 }
 
+const PORTABLE_STAFF_STATUSES = new Set<PosDeskStaff["today_status"]>([
+  "auto_checked_out",
+  "break",
+  "checked_in",
+  "checked_out",
+  "not_checked_in",
+  "unavailable",
+  "working",
+]);
+
+function normalizePortableStaffStatus(
+  value: unknown,
+): PosDeskStaff["today_status"] {
+  const status = normalizePortableString(value);
+
+  return PORTABLE_STAFF_STATUSES.has(status as PosDeskStaff["today_status"])
+    ? (status as PosDeskStaff["today_status"])
+    : "not_checked_in";
+}
+
+function readPortableNumberField(
+  payload: Record<string, unknown>,
+  keys: string[],
+  fallback = 0,
+) {
+  for (const key of keys) {
+    const value = payload[key];
+
+    if (value !== null && value !== undefined) {
+      return normalizePortableNumber(value);
+    }
+  }
+
+  return fallback;
+}
+
+function normalizePortableDeskTurns(value: unknown): PosDeskStaff["turns"] {
+  const payload = readPortableResultPayload(value);
+  const largeTurns = readPortableNumberField(payload, [
+    "largeTurns",
+    "large_turns",
+  ]);
+  const queueTurns = readPortableNumberField(
+    payload,
+    ["queueTurns", "queue_turns"],
+    largeTurns,
+  );
+
+  return {
+    largeTurns,
+    queueTurns,
+    receiptLargeTurns: readPortableNumberField(
+      payload,
+      ["receiptLargeTurns", "receipt_large_turns"],
+      largeTurns,
+    ),
+    smallTurns: readPortableNumberField(payload, [
+      "smallTurns",
+      "small_turns",
+    ]),
+    totalTurns: readPortableNumberField(
+      payload,
+      ["totalTurns", "total_turns"],
+      queueTurns,
+    ),
+  };
+}
+
+function normalizePortableDeskStaffAvatarUrl(
+  payload: Record<string, unknown>,
+) {
+  const directAvatarUrl = safeAccountAvatarUrl(
+    normalizePortableNullableString(payload.avatarUrl ?? payload.avatar_url),
+  );
+
+  return (
+    directAvatarUrl ??
+    getStaffProfileAvatarUrl({
+      accountAvatarUrl: normalizePortableNullableString(
+        payload.accountAvatarUrl ?? payload.account_avatar_url,
+      ),
+      beautyAvatarUrl: normalizePortableNullableString(
+        payload.beautyAvatarUrl ?? payload.beauty_avatar_url,
+      ),
+      staffProfilePhotoPath: normalizePortableNullableString(
+        payload.staffProfilePhotoPath ??
+          payload.staff_profile_photo_path ??
+          payload.avatarPath ??
+          payload.avatar_path,
+      ),
+    })
+  );
+}
+
+function normalizePortableDeskStaffRow(value: unknown): PosDeskStaff | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const payload = value as Record<string, unknown>;
+  const id = normalizePortableString(payload.id);
+  const displayName = normalizePortableString(
+    payload.display_name ?? payload.displayName,
+  );
+
+  if (!id || !displayName) {
+    return null;
+  }
+
+  const checkInSequence =
+    payload.check_in_sequence ?? payload.checkInSequence;
+  const isActive = payload.is_active ?? payload.isActive;
+
+  return {
+    avatar_url: normalizePortableDeskStaffAvatarUrl(payload),
+    check_in_at: normalizePortableNullableString(
+      payload.check_in_at ?? payload.checkInAt,
+    ),
+    check_in_sequence:
+      checkInSequence === null || checkInSequence === undefined
+        ? null
+        : normalizePortableNumber(checkInSequence),
+    display_name: displayName,
+    id,
+    is_active: isActive === undefined ? true : Boolean(isActive),
+    job_title: normalizePortableNullableString(
+      payload.job_title ?? payload.jobTitle,
+    ),
+    today_status: normalizePortableStaffStatus(
+      payload.today_status ?? payload.todayStatus ?? payload.status,
+    ),
+    turns: normalizePortableDeskTurns(payload.turns),
+  };
+}
+
+function normalizePortableDeskStaffRows(value: unknown) {
+  return Array.isArray(value)
+    ? value
+        .map(normalizePortableDeskStaffRow)
+        .filter((member): member is PosDeskStaff => Boolean(member))
+    : [];
+}
+
 function normalizePortableRequestedService(
   value: unknown,
 ): CustomerVisitRequestedService | null {
@@ -371,6 +592,12 @@ const PORTABLE_VISIT_STATUSES = new Set<CustomerVisitStatus>([
   "completed",
   "in_service",
   "waiting",
+]);
+const PORTABLE_TICKET_STATUSES = new Set<PosTicketStatus>([
+  "open",
+  "closed",
+  "cancelled",
+  "voided",
 ]);
 
 function normalizePortableVisitSource(value: unknown): CustomerVisitSource {
@@ -473,6 +700,236 @@ function readPortableResultPayload(value: unknown) {
     : {};
 }
 
+function normalizePortableTicketStatus(value: unknown): PosTicketStatus {
+  return typeof value === "string" &&
+    PORTABLE_TICKET_STATUSES.has(value as PosTicketStatus)
+    ? (value as PosTicketStatus)
+    : "open";
+}
+
+function normalizePortableDiscountType(value: unknown): PosTicketDiscountType {
+  return value === "percentage" ? "percentage" : "fixed_amount";
+}
+
+function normalizePortableTipType(value: unknown): PosTicketTipType {
+  return value === "percentage" ? "percentage" : "fixed_amount";
+}
+
+function normalizePortableTicketTurnPart(
+  value: unknown,
+  fallback: {
+    createdAt: string;
+    index: number;
+    itemId: string;
+    staffId: string | null;
+    ticketId: string;
+    workDate: string;
+  },
+): PortableTicketTurnPart | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const payload = value as Record<string, unknown>;
+  const amount = normalizePortableNumber(payload.amount);
+  const turnIndex =
+    normalizePortableNumber(payload.turnIndex ?? payload.turn_index) ||
+    fallback.index;
+  const rawTurnType = normalizePortableString(
+    payload.turnType ?? payload.turn_type,
+  );
+  const createdAt =
+    normalizePortableString(payload.createdAt ?? payload.created_at) ||
+    fallback.createdAt;
+  const ticketItemId =
+    normalizePortableString(
+      payload.ticketItemId ?? payload.ticket_item_id,
+    ) || fallback.itemId;
+  const ticketId =
+    normalizePortableString(payload.ticketId ?? payload.ticket_id) ||
+    fallback.ticketId;
+
+  return {
+    amount,
+    createdAt,
+    id:
+      normalizePortableString(payload.id) ||
+      `${fallback.itemId}:part:${turnIndex}`,
+    staffId:
+      normalizePortableNullableString(payload.staffId ?? payload.staff_id) ??
+      fallback.staffId,
+    ticketId,
+    ticketItemId,
+    turnIndex,
+    turnType: rawTurnType === "large" ? "large" : "small",
+    workDate:
+      normalizePortableString(payload.workDate ?? payload.work_date) ||
+      fallback.workDate,
+  };
+}
+
+function normalizePortableTicketItem(
+  value: unknown,
+  fallback: {
+    openedAt: string;
+    ticketId: string;
+    workDate: string;
+  },
+): PortableTicketItemRow | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const payload = value as Record<string, unknown>;
+  const id = normalizePortableString(payload.id);
+  const serviceName = normalizePortableString(
+    payload.serviceName ?? payload.service_name,
+  ) || "Service";
+
+  if (!id) {
+    return null;
+  }
+
+  const rawTurnParts = payload.turnParts ?? payload.turn_parts;
+  const createdAt =
+    normalizePortableString(payload.createdAt ?? payload.created_at) ||
+    fallback.openedAt;
+  const staffId = normalizePortableNullableString(
+    payload.staffId ?? payload.staff_id,
+  );
+
+  return {
+    createdAt,
+    id,
+    lineTotal: normalizePortableNumber(payload.lineTotal ?? payload.line_total),
+    posTicketId:
+      normalizePortableString(payload.posTicketId ?? payload.pos_ticket_id) ||
+      fallback.ticketId,
+    runningTurnBig:
+      payload.runningTurnBig === null || payload.runningTurnBig === undefined
+        ? null
+        : normalizePortableNumber(
+            payload.runningTurnBig ?? payload.running_turn_big,
+          ),
+    runningTurnSmall:
+      payload.runningTurnSmall === null ||
+      payload.runningTurnSmall === undefined
+        ? null
+        : normalizePortableNumber(
+            payload.runningTurnSmall ?? payload.running_turn_small,
+          ),
+    serviceId: normalizePortableNullableString(
+      payload.serviceId ?? payload.service_id,
+    ),
+    serviceName,
+    staffId,
+    staffName: normalizePortableNullableString(
+      payload.staffName ?? payload.staff_name,
+    ),
+    turnParts: Array.isArray(rawTurnParts)
+      ? rawTurnParts
+          .map((part, index) =>
+            normalizePortableTicketTurnPart(part, {
+              createdAt,
+              index: index + 1,
+              itemId: id,
+              staffId,
+              ticketId: fallback.ticketId,
+              workDate: fallback.workDate,
+            }),
+          )
+          .filter(
+            (part): part is PortableTicketTurnPart => Boolean(part),
+          )
+      : [],
+  };
+}
+
+function normalizePortableTicketStaffEarning(
+  value: unknown,
+): PortableTicketStaffEarningRow | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const payload = value as Record<string, unknown>;
+  const staffId = normalizePortableString(payload.staffId ?? payload.staff_id);
+
+  if (!staffId) {
+    return null;
+  }
+
+  return {
+    manualTipAmount:
+      payload.manualTipAmount === null ||
+      payload.manual_tip_amount === null ||
+      payload.manualTipAmount === undefined ||
+      payload.manual_tip_amount === undefined
+        ? null
+        : normalizePortableNumber(
+            payload.manualTipAmount ?? payload.manual_tip_amount,
+          ),
+    staffId,
+    tipAmount: normalizePortableNumber(
+      payload.tipAmount ?? payload.tip_amount,
+    ),
+    tipIsManual: Boolean(payload.tipIsManual ?? payload.tip_is_manual),
+  };
+}
+
+function normalizePortableTicketAdjustment(
+  value: unknown,
+): PortableTicketAdjustmentRow | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const payload = value as Record<string, unknown>;
+  const id = normalizePortableString(payload.id);
+  const ticketId = normalizePortableString(payload.ticketId ?? payload.ticket_id);
+  const rawAction = normalizePortableString(payload.action);
+  const createdAt = normalizePortableString(
+    payload.createdAt ?? payload.created_at,
+  );
+
+  if (
+    !id ||
+    !ticketId ||
+    !createdAt ||
+    !["item_corrected", "item_removed", "item_replaced"].includes(rawAction)
+  ) {
+    return null;
+  }
+
+  const createdByUserPayload = readPortableResultPayload(
+    payload.createdByUser ?? payload.created_by_user,
+  );
+  const createdByUserId = normalizePortableString(createdByUserPayload.id);
+
+  return {
+    action: rawAction as PortableTicketAdjustmentRow["action"],
+    afterSnapshot: payload.afterSnapshot ?? payload.after_snapshot ?? {},
+    beforeSnapshot: payload.beforeSnapshot ?? payload.before_snapshot ?? {},
+    createdAt,
+    createdBy: normalizePortableNullableString(
+      payload.createdBy ?? payload.created_by,
+    ),
+    createdByUser: createdByUserId
+      ? {
+          displayName: normalizePortableNullableString(
+            createdByUserPayload.displayName ??
+              createdByUserPayload.display_name,
+          ),
+          email: normalizePortableNullableString(createdByUserPayload.email),
+          id: createdByUserId,
+        }
+      : null,
+    id,
+    reason: normalizePortableString(payload.reason),
+    ticketId,
+  };
+}
+
 function normalizePortableTicket(value: unknown): PortableTicketRow | null {
   if (!value || typeof value !== "object") {
     return null;
@@ -480,28 +937,94 @@ function normalizePortableTicket(value: unknown): PortableTicketRow | null {
 
   const payload = value as Record<string, unknown>;
   const id = normalizePortableString(payload.id);
-  const openedAt = normalizePortableString(payload.openedAt);
+  const openedAt = normalizePortableString(payload.openedAt ?? payload.opened_at);
+  const workDate =
+    normalizePortableString(payload.workDate ?? payload.work_date) ||
+    openedAt.slice(0, 10);
 
   if (!id || !openedAt) {
     return null;
   }
 
   return {
-    closedAt: normalizePortableNullableString(payload.closedAt),
-    customerName: normalizePortableNullableString(payload.customerName),
-    customerPhone: normalizePortableNullableString(payload.customerPhone),
-    discountAmount: normalizePortableNumber(payload.discountAmount),
+    adjustments: Array.isArray(payload.adjustments)
+      ? payload.adjustments
+          .map(normalizePortableTicketAdjustment)
+          .filter(
+            (adjustment): adjustment is PortableTicketAdjustmentRow =>
+              Boolean(adjustment),
+          )
+      : [],
+    closedAt: normalizePortableNullableString(payload.closedAt ?? payload.closed_at),
+    createdAt:
+      normalizePortableString(payload.createdAt ?? payload.created_at) || openedAt,
+    customerEmail: normalizePortableNullableString(
+      payload.customerEmail ?? payload.customer_email,
+    ),
+    customerId: normalizePortableNullableString(
+      payload.customerId ?? payload.customer_id,
+    ),
+    customerName: normalizePortableNullableString(
+      payload.customerName ?? payload.customer_name,
+    ),
+    customerPhone: normalizePortableNullableString(
+      payload.customerPhone ?? payload.customer_phone,
+    ),
+    discountAmount: normalizePortableNumber(
+      payload.discountAmount ?? payload.discount_amount,
+    ),
+    discountType: normalizePortableDiscountType(
+      payload.discountType ?? payload.discount_type,
+    ),
+    discountValue: normalizePortableNumber(
+      payload.discountValue ?? payload.discount_value,
+    ),
     id,
+    items: Array.isArray(payload.items)
+      ? payload.items
+          .map((item) =>
+            normalizePortableTicketItem(item, {
+              openedAt,
+              ticketId: id,
+              workDate,
+            }),
+          )
+          .filter((item): item is PortableTicketItemRow => Boolean(item))
+      : [],
     openedAt,
     paid: normalizePortableNumber(payload.paid),
     remaining: normalizePortableNumber(payload.remaining),
-    serviceCount: normalizePortableNumber(payload.serviceCount),
-    status: normalizePortableString(payload.status) || "open",
+    serviceCount: normalizePortableNumber(
+      payload.serviceCount ?? payload.service_count,
+    ),
+    sourceBookingId: normalizePortableNullableString(
+      payload.sourceBookingId ?? payload.source_booking_id,
+    ),
+    staffEarnings: (
+      Array.isArray(payload.staffEarnings)
+        ? payload.staffEarnings
+        : Array.isArray(payload.staff_earnings)
+          ? payload.staff_earnings
+          : []
+    )
+      .map(normalizePortableTicketStaffEarning)
+      .filter(
+        (earning): earning is PortableTicketStaffEarningRow =>
+          Boolean(earning),
+      ),
+    status: normalizePortableTicketStatus(payload.status),
     subtotal: normalizePortableNumber(payload.subtotal),
-    taxAmount: normalizePortableNumber(payload.taxAmount),
-    ticketNumber: normalizePortableString(payload.ticketNumber) || "Ticket",
-    ticketSequence: normalizePortableNumber(payload.ticketSequence),
-    tipAmount: normalizePortableNumber(payload.tipAmount),
+    taxAmount: normalizePortableNumber(payload.taxAmount ?? payload.tax_amount),
+    taxRate: normalizePortableNumber(payload.taxRate ?? payload.tax_rate),
+    ticketNumber:
+      normalizePortableString(payload.ticketNumber ?? payload.ticket_number) ||
+      "Ticket",
+    ticketSequence: normalizePortableNumber(
+      payload.ticketSequence ?? payload.ticket_sequence,
+    ),
+    tipAmount: normalizePortableNumber(payload.tipAmount ?? payload.tip_amount),
+    tipType: normalizePortableTipType(payload.tipType ?? payload.tip_type),
+    tipValue: normalizePortableNumber(payload.tipValue ?? payload.tip_value),
     total: normalizePortableNumber(payload.total),
   };
 }
@@ -580,6 +1103,45 @@ function readPortableReturnTo(formData: FormData) {
   }
 
   return "/pos/portable";
+}
+
+function readPortableTicketReturnTo(formData: FormData) {
+  const value = readString(formData, "return_to");
+
+  if (
+    value === "/pos/portable/ticket" ||
+    value.startsWith("/pos/portable/ticket?")
+  ) {
+    return value;
+  }
+
+  return "/pos/portable/ticket";
+}
+
+function redirectWithPortableTicketError(
+  message: string,
+  returnPath = "/pos/portable/ticket",
+): never {
+  const params = new URLSearchParams({ error: message });
+  const separator = returnPath.includes("?") ? "&" : "?";
+
+  redirect(`${returnPath}${separator}${params.toString()}`);
+}
+
+function readPortableJsonArray(formData: FormData, key: string): unknown[] {
+  const value = readString(formData, key);
+
+  if (!value) {
+    return [];
+  }
+
+  const parsed = JSON.parse(value);
+
+  if (!Array.isArray(parsed)) {
+    throw new Error(`${key} must be an array.`);
+  }
+
+  return parsed;
 }
 
 function normalizeLiveDraftStaffLines(
@@ -919,13 +1481,19 @@ async function loadPortablePosDeskData(): Promise<{
 
   return {
     defaults: getPosDeskDefaults(settings),
-    liveDraft: normalizeLiveDraft(payload.liveDraft),
+    liveDraft: normalizeLiveDraft(
+      (payload.liveDraft ?? payload.live_draft ?? null) as PosLiveDraftView | null,
+    ),
     salonLogoUrl: settings.salonLogoUrl,
-    salonName: payload.salonName,
+    salonName:
+      normalizePortableString(payload.salonName ?? payload.salon_name) ||
+      portableSession.salon_name,
     services: payload.services ?? [],
-    staff: payload.staff ?? [],
+    staff: normalizePortableDeskStaffRows(payload.staff),
     today,
-    waitingVisits: normalizePortableWaitingVisits(payload.waitingVisits),
+    waitingVisits: normalizePortableWaitingVisits(
+      payload.waitingVisits ?? payload.waiting_visits,
+    ),
   };
 }
 
@@ -978,6 +1546,20 @@ function normalizePortableCheckInRow(value: unknown): PortableCheckInStaffRow | 
   }
 
   return {
+    avatarUrl: getStaffProfileAvatarUrl({
+      accountAvatarUrl: normalizePortableNullableString(
+        payload.accountAvatarUrl ?? payload.account_avatar_url,
+      ),
+      beautyAvatarUrl: normalizePortableNullableString(
+        payload.beautyAvatarUrl ?? payload.beauty_avatar_url,
+      ),
+      staffProfilePhotoPath: normalizePortableNullableString(
+        payload.staffProfilePhotoPath ??
+          payload.staff_profile_photo_path ??
+          payload.avatarPath ??
+          payload.avatar_path,
+      ),
+    }),
     checkInAt: normalizePortableNullableString(payload.checkInAt),
     checkInSequence:
       payload.checkInSequence === null || payload.checkInSequence === undefined
@@ -990,6 +1572,22 @@ function normalizePortableCheckInRow(value: unknown): PortableCheckInStaffRow | 
     queueTurnCount: normalizePortableNumber(payload.queueTurnCount),
     status: normalizePortableString(payload.status) || "not_checked_in",
   };
+}
+
+function getPortableSalonLogoUrlFromPayload(payload: Record<string, unknown>) {
+  const directUrl = normalizePortableNullableString(
+    payload.salonLogoUrl ?? payload.salon_logo_url,
+  );
+
+  if (directUrl?.startsWith("http://") || directUrl?.startsWith("https://")) {
+    return directUrl;
+  }
+
+  return getPosDisplaySalonLogoUrl(
+    normalizePortableNullableString(
+      payload.salonLogoPath ?? payload.salon_logo_path,
+    ),
+  );
 }
 
 export async function getPortableCheckInData(): Promise<PortableCheckInData> {
@@ -1013,6 +1611,7 @@ export async function getPortableCheckInData(): Promise<PortableCheckInData> {
     return {
       checkInEnabled: false,
       salonId: portableSession.salon_id,
+      salonLogoUrl: null,
       salonName: portableSession.salon_name,
       staff: [],
       today: getTodayDate(),
@@ -1026,10 +1625,22 @@ export async function getPortableCheckInData(): Promise<PortableCheckInData> {
         .map(normalizePortableCheckInRow)
         .filter((row): row is PortableCheckInStaffRow => Boolean(row))
     : [];
+  let salonLogoUrl = getPortableSalonLogoUrlFromPayload(payload);
+
+  if (!salonLogoUrl) {
+    const settingsResult = await supabase.rpc("get_pos_setting_payload", {
+      target_salon_id: portableSession.salon_id,
+    });
+
+    if (!settingsResult.error) {
+      salonLogoUrl = normalizePosSettingsPayload(settingsResult.data).salonLogoUrl;
+    }
+  }
 
   return {
     checkInEnabled: Boolean(payload.checkInEnabled),
     salonId: portableSession.salon_id,
+    salonLogoUrl,
     salonName:
       normalizePortableString(payload.salonName) || portableSession.salon_name,
     staff,
@@ -1094,11 +1705,118 @@ export async function portableSubmitAttendanceEvent(
   }
 }
 
+export async function correctPortableClosedPosTicketInline(formData: FormData) {
+  const returnPath = readPortableTicketReturnTo(formData);
+  const ticketId = readString(formData, "ticket_id");
+  let salonId: string | null = null;
+
+  try {
+    const reason = readString(formData, "correction_reason");
+
+    if (!ticketId) {
+      throw new Error("Ticket id is required.");
+    }
+
+    if (!reason) {
+      throw new Error("Correction reason is required.");
+    }
+
+    const tipTotal = Number(readString(formData, "tip_total") || "0");
+
+    if (!Number.isFinite(tipTotal) || tipTotal < 0) {
+      throw new Error("Total tip must be zero or greater.");
+    }
+
+    const itemUpdates = readPortableJsonArray(formData, "item_updates");
+    const itemParts = readPortableJsonArray(formData, "item_parts");
+    const addedItems = readPortableJsonArray(formData, "added_items");
+    const staffTipOverrides = readPortableJsonArray(
+      formData,
+      "staff_tip_overrides",
+    );
+    const { keyId, portableSession, signature, supabase } =
+      await requirePortableCapability(PORTABLE_POS_CAPABILITIES.posUse);
+
+    if (
+      !hasPortableCapability(
+        portableSession,
+        PORTABLE_POS_CAPABILITIES.todayView,
+      )
+    ) {
+      throw new Error(
+        "This Portable POS device is not allowed to view ticket history.",
+      );
+    }
+
+    salonId = portableSession.salon_id;
+
+    const { data, error } = await supabase.rpc(
+      "correct_pos_portable_closed_ticket",
+      {
+        p_added_items: addedItems,
+        p_item_parts: itemParts,
+        p_item_updates: itemUpdates,
+        p_key_id: keyId,
+        p_reason: reason,
+        p_session_signature: signature,
+        p_staff_tip_overrides: staffTipOverrides,
+        p_ticket_id: ticketId,
+        p_tip_total: tipTotal,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      throw new Error("Portable POS session expired. Log in again.");
+    }
+
+    const payload = readPortableResultPayload(data);
+
+    if (payload.ok !== true) {
+      throw new Error(
+        normalizePortableString(payload.message) ||
+          "Unable to correct closed ticket.",
+      );
+    }
+
+    revalidatePath("/pos");
+    revalidatePath("/pos-tickets");
+    revalidatePath("/pos/portable");
+    revalidatePath("/pos/portable/ticket");
+    revalidatePath("/reports");
+    revalidatePath("/staff/today");
+    revalidatePath("/staff/my-work");
+    revalidatePath(returnPath);
+    await broadcastPosStaffChange(portableSession.salon_id, "pos");
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unable to correct closed ticket.";
+
+    console.error("Supabase Portable inline correct closed POS ticket failed", {
+      message,
+      salonId,
+      ticketId,
+    });
+    redirectWithPortableTicketError(message, returnPath);
+  }
+
+  redirect(returnPath);
+}
+
 export async function getPortableTicketData(
   date = getTodayDate(),
 ): Promise<PortableTicketData> {
   const { keyId, portableSession, signature, supabase } =
     await requirePortableCapability(PORTABLE_POS_CAPABILITIES.todayView);
+  const canUsePortablePos = hasPortableCapability(
+    portableSession,
+    PORTABLE_POS_CAPABILITIES.posUse,
+  );
   const rpcResult = await supabase.rpc("get_pos_portable_ticket_data", {
     p_date: date,
     p_key_id: keyId,
@@ -1107,17 +1825,26 @@ export async function getPortableTicketData(
 
   if (rpcResult.error || !rpcResult.data) {
     return {
+      canEdit: false,
       date,
+      isBusinessDateLocked: false,
       salonName: portableSession.salon_name,
+      services: [],
       setupMessage:
         "Portable Ticket data RPC is not applied yet. Apply the Portable ticket migration before enabling this page.",
+      staff: [],
       tickets: [],
       timezone: "America/Chicago",
     };
   }
 
   const payload = rpcResult.data as {
+    canEdit?: unknown;
+    can_edit?: unknown;
+    isBusinessDateLocked?: unknown;
+    is_business_date_locked?: unknown;
     salonName?: unknown;
+    salon_name?: unknown;
     tickets?: unknown;
     timezone?: unknown;
   };
@@ -1126,12 +1853,43 @@ export async function getPortableTicketData(
         .map(normalizePortableTicket)
         .filter((ticket): ticket is PortableTicketRow => Boolean(ticket))
     : [];
+  const isBusinessDateLocked = Boolean(
+    payload.isBusinessDateLocked ?? payload.is_business_date_locked,
+  );
+  let canEdit =
+    canUsePortablePos &&
+    !isBusinessDateLocked &&
+    Boolean(payload.canEdit ?? payload.can_edit);
+  let editOptions: {
+    services: PosDeskService[];
+    staff: PosDeskStaff[];
+  } = { services: [], staff: [] };
+
+  if (canEdit) {
+    try {
+      const deskData = await loadPortablePosDeskData();
+      editOptions = {
+        services: deskData.services,
+        staff: deskData.staff,
+      };
+    } catch (error) {
+      canEdit = false;
+      console.warn("Portable Ticket edit options unavailable.", {
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
 
   return {
+    canEdit,
     date,
+    isBusinessDateLocked,
     salonName:
-      normalizePortableString(payload.salonName) || portableSession.salon_name,
+      normalizePortableString(payload.salonName ?? payload.salon_name) ||
+      portableSession.salon_name,
+    services: editOptions.services,
     setupMessage: null,
+    staff: editOptions.staff,
     tickets,
     timezone: normalizePortableString(payload.timezone) || "America/Chicago",
   };

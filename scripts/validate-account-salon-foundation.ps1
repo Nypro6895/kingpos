@@ -47,6 +47,18 @@ Invoke-Step "Account-Salon identity and RLS gate test" {
   npx supabase db query --local --file supabase/tests/account_salon_identity_rls_gate.sql
 }
 
+Invoke-Step "Account-Salon lifecycle foundation test" {
+  npx supabase db query --local --file supabase/tests/account_salon_lifecycle_foundation.sql
+}
+
+Invoke-Step "Account deletion flow test" {
+  npx supabase db query --local --file supabase/tests/account_deletion_flow.sql
+}
+
+Invoke-Step "Account lifecycle Phase 3 test" {
+  npx supabase db query --local --file supabase/tests/account_lifecycle_phase3.sql
+}
+
 Invoke-Step "Regenerate Supabase types from local baseline schema" {
   $generatedTypes = npx supabase gen types typescript --local
 

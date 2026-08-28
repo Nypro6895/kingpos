@@ -9,6 +9,7 @@ import { headers } from "next/headers";
 import { isEmailProviderConfigured, sendEmail } from "@/lib/email";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { STAFF_SELECT } from "@/lib/staff";
+import { initializeStaffProfileDefaultsForStaffId } from "@/lib/staff-profile";
 import {
   normalizeStaffConnectionEmail,
   normalizeStaffConnectionPhone,
@@ -374,6 +375,29 @@ function requireRpcObject(data: unknown): StaffConnectionRpcResult {
   }
 
   return data as StaffConnectionRpcResult;
+}
+
+async function initializeAcceptedStaffProfileDefaults(
+  supabase: SupabaseServerClient,
+  result: StaffConnectionRpcResult,
+) {
+  if (result.status !== "accepted" || !result.staff_id) {
+    return;
+  }
+
+  try {
+    await initializeStaffProfileDefaultsForStaffId({
+      salonId: result.salon_id,
+      staffId: result.staff_id,
+      supabase,
+    });
+  } catch (error) {
+    console.error("Staff Profile defaults could not be initialized", {
+      error,
+      salonId: result.salon_id,
+      staffId: result.staff_id,
+    });
+  }
 }
 
 function requirePublicSupabaseClient() {
@@ -1013,7 +1037,10 @@ export async function acceptStaffInvite(token: string) {
       throw new StaffSalonConnectionError("INVALID_INPUT", error.message);
     }
 
-    return requireRpcObject(data);
+    const result = requireRpcObject(data);
+    await initializeAcceptedStaffProfileDefaults(supabase, result);
+
+    return result;
   } catch (error) {
     throw toConnectionError(error);
   }
@@ -1067,7 +1094,10 @@ export async function acceptStaffInviteByRequestId(requestId: string) {
       throw new StaffSalonConnectionError("INVALID_INPUT", error.message);
     }
 
-    return requireRpcObject(data);
+    const result = requireRpcObject(data);
+    await initializeAcceptedStaffProfileDefaults(supabase, result);
+
+    return result;
   } catch (error) {
     throw toConnectionError(error);
   }
@@ -1292,7 +1322,10 @@ export async function reviewStaffSalonApplication(
       throw new StaffSalonConnectionError("INVALID_INPUT", error.message);
     }
 
-    return requireRpcObject(data);
+    const result = requireRpcObject(data);
+    await initializeAcceptedStaffProfileDefaults(supabase, result);
+
+    return result;
   } catch (error) {
     throw toConnectionError(error);
   }

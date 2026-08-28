@@ -20,9 +20,6 @@ type ReadinessStaff = {
   id: string;
   is_active: boolean;
   online_booking_enabled: boolean;
-  owner_public_enabled: boolean;
-  public_profile_visible: boolean;
-  staff_public_consent_status: string;
 };
 
 export function getServiceBookingReadiness(input: {

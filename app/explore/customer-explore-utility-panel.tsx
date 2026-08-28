@@ -181,24 +181,24 @@ function FeaturedPreviewMosaic({
   return (
     <span
       aria-label={previewGroupLabel(shortcut)}
-      className="grid h-36 grid-cols-[minmax(0,1fr)_4.2rem] gap-1.5"
+      className="grid h-28 grid-cols-[minmax(0,1fr)_3.6rem] gap-1.5"
       role="img"
     >
       <DiscoveryPreviewImage
-        className="h-full rounded-[0.85rem]"
+        className="h-full rounded-[0.75rem]"
         fallbackLabel={shortcut.label}
         preview={shortcut.previews[0]}
         sizes="220px"
       />
       <span className="grid grid-rows-2 gap-1.5">
         <DiscoveryPreviewImage
-          className="h-full rounded-[0.7rem]"
+          className="h-full rounded-[0.65rem]"
           fallbackLabel={shortcut.label}
           preview={shortcut.previews[1]}
           sizes="80px"
         />
         <DiscoveryPreviewImage
-          className="h-full rounded-[0.7rem]"
+          className="h-full rounded-[0.65rem]"
           fallbackLabel={shortcut.label}
           preview={shortcut.previews[2]}
           sizes="80px"
@@ -225,14 +225,14 @@ function CompactPreviewStrip({
     <span
       aria-label={previewGroupLabel(shortcut)}
       className={[
-        "grid h-16 gap-1 overflow-hidden rounded-[0.75rem]",
+        "grid h-14 gap-1 overflow-hidden rounded-[0.7rem]",
         gridClass,
       ].join(" ")}
       role="img"
     >
       {previews.map((preview) => (
         <DiscoveryPreviewImage
-          className="h-16"
+          className="h-14"
           fallbackLabel={shortcut.label}
           key={preview.sourceId}
           preview={preview}
@@ -251,11 +251,11 @@ function BookingPreview({
   return (
     <span
       aria-label={previewGroupLabel(shortcut)}
-      className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-[0.9rem] bg-surface-muted"
+      className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-[0.8rem] bg-surface-muted"
       role="img"
     >
       <DiscoveryPreviewImage
-        className="h-full w-full rounded-[0.9rem]"
+        className="h-full w-full rounded-[0.8rem]"
         fallbackLabel={shortcut.context ?? shortcut.label}
         preview={shortcut.previews[0]}
         sizes="64px"
@@ -272,11 +272,11 @@ function DiscoveryModuleText({
   shortcut: ExploreDiscoveryShortcut;
 }) {
   return (
-    <span className={featured ? "grid gap-1.5 px-1" : "min-w-0"}>
+    <span className={featured ? "grid gap-1 px-1" : "min-w-0"}>
       <span
         className={[
           "block font-semibold text-text-primary",
-          featured ? "text-base" : "truncate text-sm",
+          featured ? "text-sm" : "truncate text-sm",
         ].join(" ")}
       >
         {shortcut.label}
@@ -285,7 +285,7 @@ function DiscoveryModuleText({
         <span
           className={[
             "block text-text-secondary",
-            featured ? "text-sm leading-5" : "truncate text-xs",
+            featured ? "text-xs leading-4" : "truncate text-xs",
           ].join(" ")}
         >
           {shortcut.context}
@@ -295,7 +295,7 @@ function DiscoveryModuleText({
         <span
           className={[
             "block text-text-muted",
-            featured ? "line-clamp-2 text-xs leading-5" : "mt-1 line-clamp-2 text-xs leading-4",
+            featured ? "line-clamp-2 text-xs leading-4" : "mt-1 line-clamp-2 text-xs leading-4",
           ].join(" ")}
         >
           {shortcut.detail}
@@ -326,25 +326,25 @@ function DiscoveryVisualModule({
 }) {
   const active = shortcutActive(shortcut, activeResultKind);
   const interactiveClass = [
-    "group block w-full rounded-[1rem] bg-white text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+    "group block w-full rounded-[0.9rem] bg-white text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
     active
       ? "shadow-[0_14px_34px_rgba(235,111,54,0.1)] ring-1 ring-brand-orange/35"
       : "shadow-[0_12px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(35,25,22,0.07)]",
-    featured ? "p-2.5" : "p-2",
+    featured ? "p-2" : "p-2",
   ].join(" ");
   const content =
     shortcut.moduleKind === "booking" ? (
-      <span className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+      <span className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2.5">
         <BookingPreview shortcut={shortcut} />
         <DiscoveryModuleText shortcut={shortcut} />
       </span>
     ) : featured ? (
-      <span className="grid gap-3">
+      <span className="grid gap-2">
         <FeaturedPreviewMosaic shortcut={shortcut} />
         <DiscoveryModuleText featured shortcut={shortcut} />
       </span>
     ) : (
-      <span className="grid gap-2.5">
+      <span className="grid gap-2">
         <CompactPreviewStrip shortcut={shortcut} />
         <DiscoveryModuleText shortcut={shortcut} />
       </span>
@@ -398,7 +398,7 @@ export function MobileDiscoveryShortcuts({
         {shortcuts.map((shortcut) => {
           const active = shortcutActive(shortcut, activeResultKind);
           const className = [
-            "inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+            "inline-flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-semibold shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
             active
               ? "bg-brand-orange-soft text-brand-orange ring-1 ring-brand-orange/35"
               : "bg-surface-elevated text-text-secondary ring-1 ring-divider-subtle/85 hover:text-text-primary hover:ring-brand-orange/25",
@@ -451,16 +451,16 @@ export function ExploreDiscoveryRail({
   return (
     <aside
       aria-label="Explore discovery"
-      className="hidden min-h-[calc(100vh-5.25rem)] min-w-0 bg-transparent px-4 py-5 xl:block 2xl:px-5"
+      className="hidden min-h-[calc(100vh-5.25rem)] min-w-0 bg-transparent px-3 py-4 xl:block 2xl:px-4"
       data-testid="explore-desktop-discovery-rail"
     >
-      <div className="sticky top-[5.25rem] grid gap-3.5">
+      <div className="sticky top-[5.25rem] grid gap-3">
         <div className="px-1">
           <h2 className="text-sm font-semibold text-text-primary">
             Discover
           </h2>
         </div>
-        <div className="grid gap-3">
+        <div className="grid gap-2.5">
           {shortcuts.map((shortcut, index) => (
             <DiscoveryVisualModule
               activeResultKind={activeResultKind}

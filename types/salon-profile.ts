@@ -282,6 +282,25 @@ export type PublicSalonProfileReviewSummary = {
   verifiedCount: number;
 };
 
+export type PublicSalonProfileReputationSummary = {
+  averageRating: number | null;
+  experienceCount: number;
+  issueCount: number;
+  legacyReviewCount: number;
+  noIssueCount: number;
+  noIssueRate: number | null;
+  ratingCounts: Record<1 | 2 | 3 | 4 | 5, number>;
+  uniqueCustomerCount: number;
+  verifiedVisitCount: number;
+};
+
+export type PublicSalonProfileExperienceState = "good" | "issue" | "legacy";
+
+export type PublicSalonProfileExperienceIssueStatus =
+  | "acknowledged"
+  | "open"
+  | "resolved";
+
 export type PublicSalonProfileReview = {
   authorDisplayName: string;
   authorUserId: string;
@@ -294,6 +313,28 @@ export type PublicSalonProfileReview = {
   replyCreatedAt: string | null;
   replyId: string | null;
   salonId: string;
+  title: string | null;
+  updatedAt: string;
+  verificationStatus: "unverified" | "verified";
+  verifiedBookingId: string | null;
+};
+
+export type PublicSalonProfileExperience = {
+  authorDisplayName: string;
+  authorUserId: string;
+  body: string | null;
+  createdAt: string;
+  editedAt: string | null;
+  feedbackState: PublicSalonProfileExperienceState;
+  id: string;
+  issueStatus: PublicSalonProfileExperienceIssueStatus | null;
+  rating: number | null;
+  replyBody: string | null;
+  replyCreatedAt: string | null;
+  replyId: string | null;
+  salonId: string;
+  source: "experience" | "legacy_review";
+  ticketId: string | null;
   title: string | null;
   updatedAt: string;
   verificationStatus: "unverified" | "verified";
@@ -378,9 +419,11 @@ export type PublicSalonProfileBookingRequest = {
 export type PublicSalonProfileData = {
   beautyPosts: PublicSalonProfileBeautyPost[];
   comments: PublicSalonProfileComment[];
+  experiences: PublicSalonProfileExperience[];
   feed: ProfileFeedItem[];
   looks: PublicSalonProfileLook[];
   profile: PublicSalonProfile;
+  reputationSummary: PublicSalonProfileReputationSummary;
   reviewSummary: PublicSalonProfileReviewSummary;
   reviews: PublicSalonProfileReview[];
   services: PublicSalonProfileService[];

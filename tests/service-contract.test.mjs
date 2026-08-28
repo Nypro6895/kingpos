@@ -11,9 +11,6 @@ const readyStaff = {
   id: "staff-a",
   is_active: true,
   online_booking_enabled: true,
-  owner_public_enabled: true,
-  public_profile_visible: true,
-  staff_public_consent_status: "granted",
 };
 
 const selectedAssignment = {
@@ -53,7 +50,7 @@ test("readiness requires the service online flag and a booking-enabled selected 
   assert.equal(ready.eligibleBookingStaffCount, 1);
 });
 
-test("readiness does not require staff public profile visibility", () => {
+test("readiness depends on staff active state and online booking only", () => {
   const result = getServiceBookingReadiness({
     assignments: [selectedAssignment],
     service: {
@@ -64,9 +61,6 @@ test("readiness does not require staff public profile visibility", () => {
     staff: [
       {
         ...readyStaff,
-        owner_public_enabled: false,
-        public_profile_visible: false,
-        staff_public_consent_status: "not_requested",
       },
     ],
   });

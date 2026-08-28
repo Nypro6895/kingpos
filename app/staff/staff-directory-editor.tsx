@@ -37,6 +37,7 @@ type StaffDirectoryEditorProps = {
 type RowState = {
   addressLine1: string;
   addressLine2: string;
+  avatarUrl: string | null;
   city: string;
   displayName: string;
   email: string;
@@ -50,8 +51,8 @@ type RowState = {
   passcodeIsDefault: boolean;
   phone: string;
   postalCode: string;
+  postingEnabled: boolean;
   posEnabled: boolean;
-  profileEnabled: boolean;
   state: string;
 };
 
@@ -90,6 +91,7 @@ function rowFromMember(
   return {
     addressLine1: clean(member.address_line1),
     addressLine2: clean(member.address_line2),
+    avatarUrl: member.staff_profile_avatar_url,
     city: clean(member.city),
     displayName: clean(member.display_name),
     email: clean(member.email) || clean(member.connected_user?.email),
@@ -103,10 +105,8 @@ function rowFromMember(
     passcodeIsDefault: member.passcode_is_default === true,
     phone: clean(member.phone) || clean(member.connected_user?.phone),
     postalCode: clean(member.postal_code),
+    postingEnabled: member.salon_profile_content_posting_enabled,
     posEnabled: member.pos_enabled,
-    profileEnabled:
-      member.owner_public_enabled ||
-      member.salon_profile_content_posting_enabled,
     state: clean(member.state),
   };
 }
@@ -125,8 +125,8 @@ function rowSignature(row: RowState) {
     onlineBookingEnabled: row.onlineBookingEnabled,
     phone: row.phone.trim(),
     postalCode: row.postalCode.trim(),
+    postingEnabled: row.postingEnabled,
     posEnabled: row.posEnabled,
-    profileEnabled: row.profileEnabled,
     state: row.state.trim(),
   });
 }
@@ -275,9 +275,9 @@ function HiddenInputs({ rows }: { rows: RowState[] }) {
           {row.posEnabled ? (
             <input name={fieldName("pos_enabled", row.id)} readOnly value="on" />
           ) : null}
-          {row.profileEnabled ? (
+          {row.postingEnabled ? (
             <input
-              name={fieldName("owner_public_enabled", row.id)}
+              name={fieldName("salon_profile_content_posting_enabled", row.id)}
               readOnly
               value="on"
             />
@@ -354,7 +354,16 @@ function StaffRow({
       <td className="px-4 py-4 align-top">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
-            {getInitials(row.displayName)}
+            {row.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt=""
+                className="h-full w-full rounded-full object-cover"
+                src={row.avatarUrl}
+              />
+            ) : (
+              getInitials(row.displayName)
+            )}
           </span>
           <div className="min-w-0 flex-1">
             {editing ? (
@@ -482,15 +491,20 @@ function StaffRow({
               onUpdate({
                 isActive,
                 posEnabled: isActive ? row.posEnabled : false,
-                profileEnabled: isActive ? row.profileEnabled : false,
+                onlineBookingEnabled: isActive
+                  ? row.onlineBookingEnabled
+                  : false,
+                postingEnabled: isActive ? row.postingEnabled : false,
               })
             }
           />
           <AccessToggle
-            checked={row.profileEnabled}
+            checked={row.onlineBookingEnabled}
             disabled={disabled || !row.isActive}
-            label="Enable profile"
-            onChange={(profileEnabled) => onUpdate({ profileEnabled })}
+            label="Online booking"
+            onChange={(onlineBookingEnabled) =>
+              onUpdate({ onlineBookingEnabled })
+            }
           />
           <AccessToggle
             checked={row.posEnabled}

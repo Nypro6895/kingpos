@@ -352,6 +352,8 @@ export type StaffPayrollSettingWithStaff = {
   history: StaffPayrollSetting[];
   setting: StaffPayrollSetting | null;
   staff: Staff;
+  staffProfileAvatarUrl: string | null;
+  staffProfileDisplayName: string;
 };
 
 export type PayrollPeriodOption = {

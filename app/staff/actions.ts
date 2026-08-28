@@ -116,7 +116,13 @@ function readActionOptionalString(input: ActionInput, key: string) {
 }
 
 function readActionBoolean(input: ActionInput, key: string) {
-  const value = input instanceof FormData ? input.get(key) : input[key];
+  if (input instanceof FormData) {
+    return input
+      .getAll(key)
+      .some((value) => value === "on" || value === "true");
+  }
+
+  const value = input[key];
 
   if (typeof value === "boolean") {
     return value;
@@ -393,17 +399,12 @@ export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
       "online_booking_enabled",
       staffId,
     ),
-    owner_public_enabled: readBatchBoolean(
-      formData,
-      "owner_public_enabled",
-      staffId,
-    ),
     phone: readBatchOptionalString(formData, "phone", staffId),
     postal_code: readBatchOptionalString(formData, "postal_code", staffId),
     pos_enabled: readBatchBoolean(formData, "pos_enabled", staffId),
     salon_profile_content_posting_enabled: readBatchBoolean(
       formData,
-      "owner_public_enabled",
+      "salon_profile_content_posting_enabled",
       staffId,
     ),
     staff_id: staffId,
@@ -426,8 +427,14 @@ export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
 
   revalidatePath("/staff");
   revalidatePath("/staff/my-work");
+  revalidatePath("/services");
+  revalidatePath("/booking-setup");
   revalidatePath("/bookings");
+  revalidatePath("/staff/appointments");
   revalidatePath("/pos");
+  revalidatePath("/pos/portable");
+  revalidatePath("/pos/portable/check-in");
+  revalidatePath("/payroll");
   revalidatePath("/salon-profile");
 
   if (context.currentSalon) {
@@ -605,7 +612,7 @@ async function assertCanMutateStaffPublicProfile(staffId: string) {
     staffResolution.status === "found" && staffResolution.staff.id === staffId;
 
   if (!canManageStaff && !canEditSelf) {
-    throw new Error("You can only update your own public staff profile.");
+    throw new Error("You can only update your own Staff Profile.");
   }
 
   const { data: staff, error } = await supabase
@@ -691,9 +698,6 @@ export async function updateStaffPublicProfileAction(
         input,
         "public_profile_photo_path",
       ),
-      staffPublicConsentStatus: readActionBoolean(input, "appear_publicly")
-        ? "granted"
-        : "opted_out",
       removePhoto: readActionBoolean(input, "remove_photo"),
       specialties: readActionStringList(input, "specialties"),
       staffId,
@@ -703,7 +707,7 @@ export async function updateStaffPublicProfileAction(
       error:
         error instanceof Error
           ? error.message
-          : "Staff public profile could not be saved.",
+          : "Staff Profile could not be saved.",
     };
   }
 
@@ -711,7 +715,16 @@ export async function updateStaffPublicProfileAction(
 
   revalidatePath("/staff");
   revalidatePath("/staff/my-work");
+  revalidatePath("/salon-settings");
   revalidatePath("/salon-profile");
+  revalidatePath("/services");
+  revalidatePath("/booking-setup");
+  revalidatePath("/bookings");
+  revalidatePath("/staff/appointments");
+  revalidatePath("/pos");
+  revalidatePath("/pos/portable");
+  revalidatePath("/pos/portable/check-in");
+  revalidatePath("/payroll");
 
   if (context.currentSalon) {
     revalidatePath(`/book/${context.currentSalon.id}`);

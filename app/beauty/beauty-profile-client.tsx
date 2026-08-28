@@ -12,6 +12,7 @@ import {
   updateBeautyPostCaptionAction,
   updateBeautyProfileAction,
 } from "@/app/beauty/actions";
+import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
 import {
   ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES,
@@ -294,7 +295,7 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
           role="dialog"
         >
           <div
-            className="grid w-full gap-4 rounded-t-2xl bg-surface p-5 shadow-2xl ring-1 ring-divider-subtle sm:max-w-sm sm:rounded-2xl"
+            className="grid max-h-[calc(100dvh-1rem)] w-full gap-4 overflow-y-auto rounded-t-2xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl ring-1 ring-divider-subtle sm:max-w-sm sm:rounded-2xl sm:p-5"
             ref={dialogRef}
           >
             <div className="flex items-start justify-between gap-3">
@@ -852,7 +853,20 @@ function PostCard({
         <VerificationBadge verification={post.verification} />
       </div>
 
-      <PostMedia post={post} />
+      {post.visibility === "public" && post.media.length > 0 ? (
+        <div className="relative">
+          <PostMedia post={post} />
+          <SavePostButton
+            className="absolute bottom-3 right-3"
+            target={{
+              sourceId: post.id,
+              sourceType: "beauty_post",
+            }}
+          />
+        </div>
+      ) : (
+        <PostMedia post={post} />
+      )}
 
       <div className="grid gap-3 px-1 pb-1">
         {attribution ? (
@@ -956,7 +970,7 @@ function PostCard({
           className="fixed inset-0 z-[60] grid place-items-end bg-zinc-950/45 p-0 backdrop-blur-sm sm:place-items-center sm:p-6"
           role="dialog"
         >
-          <div className="grid w-full gap-4 rounded-t-2xl bg-surface p-5 shadow-2xl ring-1 ring-divider-subtle sm:max-w-sm sm:rounded-2xl">
+          <div className="grid max-h-[calc(100dvh-1rem)] w-full gap-4 overflow-y-auto rounded-t-2xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl ring-1 ring-divider-subtle sm:max-w-sm sm:rounded-2xl sm:p-5">
             <div>
               <h2
                 className="text-lg font-extrabold text-text-primary"
@@ -2064,7 +2078,7 @@ export function BeautyProfileClient({
             aria-describedby="beauty-profile-editor-description"
             aria-labelledby="beauty-profile-editor-title"
             aria-modal="true"
-            className="relative flex max-h-[100dvh] w-full flex-col overflow-hidden bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl"
+            className="relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl"
             onSubmit={saveBeautyProfile}
             ref={profileEditorDialogRef}
             role="dialog"
@@ -2095,7 +2109,7 @@ export function BeautyProfileClient({
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-auto px-4 py-4 sm:px-5">
+            <div className="min-h-0 flex-1 overscroll-contain overflow-auto px-4 py-4 sm:px-5">
               <div className="grid gap-5">
                 <section className="grid gap-3">
                   <div>
@@ -2288,9 +2302,9 @@ export function BeautyProfileClient({
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-border-subtle px-4 py-4 sm:px-5">
+            <div className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:flex-row sm:justify-end sm:px-5 sm:py-4">
               <button
-                className="min-h-11 rounded-full border border-border-subtle px-4 text-sm font-extrabold text-text-primary"
+                className="min-h-11 w-full rounded-full border border-border-subtle px-4 text-sm font-extrabold text-text-primary sm:w-auto"
                 disabled={profileEditorBusy}
                 onClick={closeProfileEditor}
                 type="button"
@@ -2298,7 +2312,7 @@ export function BeautyProfileClient({
                 Cancel
               </button>
               <button
-                className="min-h-11 rounded-full bg-brand-orange px-5 text-sm font-extrabold text-white disabled:cursor-wait disabled:opacity-60"
+                className="min-h-11 w-full rounded-full bg-brand-orange px-5 text-sm font-extrabold text-white disabled:cursor-wait disabled:opacity-60 sm:w-auto"
                 disabled={profileEditorBusy}
                 type="submit"
               >
@@ -2321,7 +2335,7 @@ export function BeautyProfileClient({
             aria-describedby="beauty-composer-description"
             aria-labelledby="beauty-composer-title"
             aria-modal="true"
-            className="relative flex max-h-[100dvh] w-full flex-col overflow-hidden bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
+            className="relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
             ref={composerDialogRef}
             role="dialog"
             tabIndex={-1}
@@ -2351,7 +2365,7 @@ export function BeautyProfileClient({
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-auto px-4 py-4 sm:px-5">
+            <div className="min-h-0 flex-1 overscroll-contain overflow-auto px-4 py-4 sm:px-5">
               <div className="grid gap-5">
                 {composerMode === "regular" ? (
                   <>
@@ -2435,7 +2449,7 @@ export function BeautyProfileClient({
                           Add one Before image and one After image.
                         </p>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-2 sm:gap-3">
                         {[
                           {
                             inputRef: beforeInputRef,
@@ -2464,7 +2478,7 @@ export function BeautyProfileClient({
                               type="file"
                             />
                             <button
-                              className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-dashed border-border-subtle bg-surface-muted text-sm font-extrabold text-text-secondary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60"
+                              className="relative aspect-[4/5] max-h-56 overflow-hidden rounded-2xl border border-dashed border-border-subtle bg-surface-muted text-sm font-extrabold text-text-secondary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60 sm:max-h-none"
                               disabled={composerBusy}
                               onClick={() => slot.inputRef.current?.click()}
                               type="button"
@@ -2657,9 +2671,9 @@ export function BeautyProfileClient({
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-border-subtle px-4 py-4 sm:px-5">
+            <div className="flex shrink-0 flex-col gap-2 border-t border-border-subtle px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:flex-row sm:justify-end sm:px-5 sm:py-4">
               <button
-                className="min-h-11 rounded-full border border-border-subtle px-4 text-sm font-extrabold text-text-primary"
+                className="min-h-11 w-full rounded-full border border-border-subtle px-4 text-sm font-extrabold text-text-primary sm:w-auto"
                 disabled={composerBusy}
                 onClick={closeComposer}
                 type="button"
@@ -2667,7 +2681,7 @@ export function BeautyProfileClient({
                 Cancel
               </button>
               <button
-                className="min-h-11 rounded-full bg-brand-orange px-5 text-sm font-extrabold text-white shadow-sm transition hover:bg-brand-orange-hover disabled:cursor-wait disabled:opacity-60"
+                className="min-h-11 w-full rounded-full bg-brand-orange px-5 text-sm font-extrabold text-white shadow-sm transition hover:bg-brand-orange-hover disabled:cursor-wait disabled:opacity-60 sm:w-auto"
                 disabled={composerBusy}
                 onClick={publishPost}
                 type="button"

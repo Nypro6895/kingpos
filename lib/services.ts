@@ -7,6 +7,7 @@ import {
 import { getServiceBookingReadiness } from "@/lib/service-contract";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { STAFF_SELECT } from "@/lib/staff";
+import { getStaffPresentationsByStaffId } from "@/lib/staff-profile";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { StaffServiceAssignment } from "@/types/booking";
@@ -118,20 +119,20 @@ export async function getCurrentSalonServicesWorkspace(
   const addOnLinks = linksResult.data ?? [];
   const assignments = assignmentsResult.data ?? [];
   const rawStaff = staffResult.data ?? [];
+  const staffPresentations = await getStaffPresentationsByStaffId({
+    staff: rawStaff,
+    supabase,
+  });
   const staff = rawStaff.map(
     (member): ServiceBookingStaff => ({
       avatarPath: member.public_profile_photo_path,
+      avatarUrl: staffPresentations.get(member.id)?.avatarUrl ?? null,
       bookingReady: member.is_active && member.online_booking_enabled,
-      displayName: member.display_name,
+      displayName:
+        staffPresentations.get(member.id)?.displayName ?? member.display_name,
       id: member.id,
       isActive: member.is_active,
       onlineBookingEnabled: member.online_booking_enabled,
-      ownerPublicEnabled: member.owner_public_enabled,
-      publicProfileVisible: member.public_profile_visible,
-      publicReady:
-        member.owner_public_enabled &&
-        member.public_profile_visible &&
-        member.staff_public_consent_status === "granted",
     }),
   );
   const services = rawServices.map((service) => ({

@@ -57,7 +57,7 @@ type PosTicketAdjustmentRow = {
   after_snapshot: unknown;
   before_snapshot: unknown;
   created_at: string;
-  created_by: string;
+  created_by: string | null;
   id: string;
   reason: string;
   ticket_id: string;
@@ -71,6 +71,8 @@ type SourceBookingRow = {
 };
 
 const DAILY_WORK_LOG_BIG_TURN_THRESHOLD = 25;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const POS_TICKET_PERMISSIONS = {
   void: "tickets.void",
@@ -90,6 +92,12 @@ export const POS_TICKET_STAFF_OPTION_SELECT =
 export type PosTicketStaffOption = Staff & {
   today_status: StaffWorkdayStatus | "not_checked_in";
 };
+
+function normalizeUuid(value: string | null | undefined) {
+  const trimmed = value?.trim() ?? "";
+
+  return UUID_PATTERN.test(trimmed) ? trimmed : null;
+}
 
 function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
@@ -254,7 +262,11 @@ async function loadAdjustmentsForTickets(input: {
   }
 
   const userIds = Array.from(
-    new Set((adjustments ?? []).map((adjustment) => adjustment.created_by)),
+    new Set(
+      (adjustments ?? [])
+        .map((adjustment) => normalizeUuid(adjustment.created_by))
+        .filter((userId): userId is string => Boolean(userId)),
+    ),
   );
   const usersById = new Map<string, Pick<KingUser, "id" | "display_name" | "email">>();
 
@@ -289,11 +301,15 @@ async function loadAdjustmentsForTickets(input: {
   >();
 
   for (const adjustment of adjustments ?? []) {
+    const createdByUserId = normalizeUuid(adjustment.created_by);
+
     adjustmentsByTicketId.set(adjustment.ticket_id, [
       ...(adjustmentsByTicketId.get(adjustment.ticket_id) ?? []),
       {
         ...adjustment,
-        created_by_user: usersById.get(adjustment.created_by) ?? null,
+        created_by_user: createdByUserId
+          ? usersById.get(createdByUserId) ?? null
+          : null,
       },
     ]);
   }

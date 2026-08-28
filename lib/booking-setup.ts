@@ -8,6 +8,7 @@ import { getSalonOnlineBookingStatus } from "@/lib/booking-status";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { SERVICE_SELECT } from "@/lib/services";
 import { STAFF_SELECT } from "@/lib/staff";
+import { getStaffPresentationsByStaffId } from "@/lib/staff-profile";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type {
@@ -58,6 +59,11 @@ export type BookingSetupPermissions = {
   canViewAssignments: boolean;
 };
 
+export type BookingSetupStaff = Staff & {
+  staff_profile_avatar_url: string | null;
+  staff_profile_display_name: string;
+};
+
 export type BookingSetupData = {
   assignments: StaffServiceAssignment[];
   availabilityRules: StaffAvailabilityRule[];
@@ -65,7 +71,7 @@ export type BookingSetupData = {
   readinessByStaffId: Record<string, StaffBookingReadiness>;
   salonId: string;
   services: Service[];
-  staff: Staff[];
+  staff: BookingSetupStaff[];
   timeBlocks: StaffTimeBlock[];
   timezone: string;
 };
@@ -127,12 +133,16 @@ function activeWorkingRulesForStaff(input: {
   rules: StaffAvailabilityRule[];
   staffId: string;
 }) {
-  return input.rules.filter(
+  const rules = input.rules.filter(
     (rule) =>
       rule.is_active &&
-      rule.rule_type === "working" &&
-      (!rule.staff_id || rule.staff_id === input.staffId),
+      rule.rule_type === "working",
   );
+  const staffRules = rules.filter((rule) => rule.staff_id === input.staffId);
+
+  return staffRules.length > 0
+    ? staffRules
+    : rules.filter((rule) => !rule.staff_id);
 }
 
 function activeUpcomingBlocksForStaff(input: {
@@ -349,7 +359,17 @@ export async function getCurrentSalonBookingSetup(
     throw new Error(firstError.message);
   }
 
-  const staff = staffResult.data ?? [];
+  const rawStaff = staffResult.data ?? [];
+  const staffPresentations = await getStaffPresentationsByStaffId({
+    staff: rawStaff,
+    supabase,
+  });
+  const staff = rawStaff.map((member) => ({
+    ...member,
+    staff_profile_avatar_url: staffPresentations.get(member.id)?.avatarUrl ?? null,
+    staff_profile_display_name:
+      staffPresentations.get(member.id)?.displayName ?? member.display_name,
+  }));
   const services = servicesResult.data ?? [];
   const assignments = assignmentsResult.data ?? [];
   const availabilityRules = availabilityResult.data ?? [];

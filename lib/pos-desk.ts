@@ -11,6 +11,13 @@ import {
   getPosDeskDefaults,
   normalizePosSettingsPayload,
 } from "@/lib/pos-settings";
+import {
+  getStaffPresentationBeautyIdentityForStaff,
+  getStaffPresentationUserForStaff,
+  getStaffProfileAvatarUrl,
+  getStaffProfileDisplayName,
+  loadStaffPresentationUsers,
+} from "@/lib/staff-profile";
 import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
@@ -23,6 +30,7 @@ import type {
   PosDeskStaff,
   PosDeskTurnSummary,
 } from "@/types/pos-desk";
+import type { Staff } from "@/types/staff";
 import type { StaffWorkdayStatus } from "@/types/staff-workday";
 
 export const POS_DESK_DEFAULTS = getPosDeskDefaults(
@@ -42,6 +50,16 @@ type PosDeskWorkdayRow = {
   staff_id: string;
   status: StaffWorkdayStatus;
 };
+type PosDeskStaffRow = Pick<
+  Staff,
+  | "account_user_id"
+  | "display_name"
+  | "id"
+  | "is_active"
+  | "job_title"
+  | "public_profile_photo_path"
+  | "user_id"
+>;
 
 async function loadPosDeskWorkdays(
   supabase: PosDeskSupabaseClient,
@@ -144,12 +162,14 @@ export async function getCurrentSalonPosDeskData() {
         .returns<PosDeskService[]>(),
       supabase
         .from("staff")
-        .select("id, display_name, job_title, is_active")
+        .select(
+          "id, account_user_id, user_id, display_name, job_title, is_active, public_profile_photo_path",
+        )
         .eq("salon_id", salon.id)
         .eq("is_active", true)
         .eq("pos_enabled", true)
         .order("display_name", { ascending: true })
-        .returns<Array<Omit<PosDeskStaff, "today_status" | "turns">>>(),
+        .returns<PosDeskStaffRow[]>(),
       getCustomerVisitQueueForSalonOrEmpty({
         limit: 25,
         salonId: salon.id,
@@ -183,6 +203,10 @@ export async function getCurrentSalonPosDeskData() {
   const workdayByStaffId = new Map(
     (workdaysResult.data ?? []).map((workday) => [workday.staff_id, workday]),
   );
+  const staffPresentationUsers = await loadStaffPresentationUsers({
+    staff: staffResult.data ?? [],
+    supabase,
+  });
   const turnsByStaffId = new Map<string, PosDeskTurnSummary>();
 
   for (const member of staffResult.data ?? []) {
@@ -215,6 +239,14 @@ export async function getCurrentSalonPosDeskData() {
   const staff = (staffResult.data ?? [])
     .map<PosDeskStaff>((member) => {
       const workday = workdayByStaffId.get(member.id);
+      const connectedUser = getStaffPresentationUserForStaff(
+        member,
+        staffPresentationUsers,
+      );
+      const beautyIdentity = getStaffPresentationBeautyIdentityForStaff(
+        member,
+        staffPresentationUsers,
+      );
       const turns = turnsByStaffId.get(member.id) ?? {
         largeTurns: 0,
         queueTurns: 0,
@@ -228,9 +260,21 @@ export async function getCurrentSalonPosDeskData() {
           : turns.receiptLargeTurns;
 
       return {
-        ...member,
+        avatar_url: getStaffProfileAvatarUrl({
+          accountAvatarUrl: connectedUser?.avatar_url,
+          beautyAvatarUrl: beautyIdentity?.avatar_url,
+          staffProfilePhotoPath: member.public_profile_photo_path,
+        }),
         check_in_at: workday?.check_in_at ?? null,
         check_in_sequence: workday?.check_in_sequence ?? null,
+        display_name: getStaffProfileDisplayName(
+          member,
+          connectedUser,
+          beautyIdentity,
+        ),
+        id: member.id,
+        is_active: member.is_active,
+        job_title: member.job_title,
         today_status: workday?.status ?? "not_checked_in",
         turns: {
           ...turns,

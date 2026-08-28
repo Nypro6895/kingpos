@@ -399,7 +399,12 @@ function ServiceEditor({
                     type="checkbox"
                   />
                   <span className="booking-option-row__avatar" aria-hidden="true">
-                    {initials(member.displayName)}
+                    {member.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img alt="" src={member.avatarUrl} />
+                    ) : (
+                      initials(member.displayName)
+                    )}
                   </span>
                   <span className="booking-option-row__body">
                     <strong>{member.displayName}</strong>
@@ -407,9 +412,7 @@ function ServiceEditor({
                       {!member.isActive
                         ? "Inactive professional"
                         : member.bookingReady
-                          ? member.publicReady
-                            ? "Booking ready"
-                            : "Booking ready / Profile hidden"
+                          ? "Booking ready"
                           : "Online booking off"}
                     </span>
                   </span>

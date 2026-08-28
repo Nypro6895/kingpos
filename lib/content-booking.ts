@@ -257,7 +257,7 @@ export async function loadPublicContentBookingOptions(salonIds: string[]) {
   });
 
   if (error) {
-    console.error("Public content booking options RPC failed", {
+    console.warn("Public content booking options unavailable", {
       code: error.code,
       details: error.details,
       hint: error.hint,
