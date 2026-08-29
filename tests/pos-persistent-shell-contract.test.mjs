@@ -70,7 +70,7 @@ test("owner and portable ticket surfaces share the rapid mobile presentation lay
 test("rapid mobile flow is service first and keeps the existing POS engine as source of truth", () => {
   assert.match(rapidBridge, /data-pos-service-tile/);
   assert.match(rapidBridge, /setStage\("staff"\)/);
-  assert.match(rapidBridge, /chooseStaffForNewService/);
+  assert.match(rapidBridge, /chooseNewStaff/);
   assert.match(rapidBridge, /applyService\(pendingService\)/);
   assert.match(rapidBridge, /setStage\("amount"\)/);
   assert.match(rapidBridge, /data-pos-keypad-clear/);
@@ -93,8 +93,8 @@ test("mobile presentation hides engine panels and keeps services inside the view
 test("mobile receipt exposes direct service, technician, amount, remove, and checkout actions", () => {
   assert.match(rapidBridge, /service-edit/);
   assert.match(rapidBridge, /staff-edit/);
-  assert.match(rapidBridge, /focusReceiptLine/);
-  assert.match(rapidBridge, /removeReceiptLine/);
-  assert.match(rapidBridge, /submitReceipt/);
+  assert.match(rapidBridge, /focusLine/);
+  assert.match(rapidBridge, /removeLine/);
+  assert.match(rapidBridge, /checkout/);
   assert.match(rapidBridge, /text-brand-orange/);
 });
