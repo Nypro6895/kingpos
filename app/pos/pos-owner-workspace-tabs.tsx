@@ -11,6 +11,14 @@ const OWNER_POS_TABS = [
   { href: "/reports", id: "report", label: "Report" },
 ] as const;
 
+type IdleWindow = Window & {
+  cancelIdleCallback?: (handle: number) => void;
+  requestIdleCallback?: (
+    callback: IdleRequestCallback,
+    options?: IdleRequestOptions,
+  ) => number;
+};
+
 function isActive(pathname: string, href: string) {
   if (href === "/pos") return pathname === "/pos";
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -26,14 +34,15 @@ export function PosOwnerWorkspaceTabs() {
         if (!isActive(pathname, tab.href)) router.prefetch(tab.href);
       }
     };
+    const idleWindow = window as IdleWindow;
 
-    if ("requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(prefetch, { timeout: 1000 });
-      return () => window.cancelIdleCallback(id);
+    if (typeof idleWindow.requestIdleCallback === "function") {
+      const id = idleWindow.requestIdleCallback(prefetch, { timeout: 1000 });
+      return () => idleWindow.cancelIdleCallback?.(id);
     }
 
-    const id = window.setTimeout(prefetch, 200);
-    return () => window.clearTimeout(id);
+    const id = globalThis.setTimeout(prefetch, 200);
+    return () => globalThis.clearTimeout(id);
   }, [pathname, router]);
 
   return (
