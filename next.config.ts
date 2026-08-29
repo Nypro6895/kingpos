@@ -5,6 +5,9 @@ const SUPABASE_PUBLIC_IMAGE_BUCKETS = [
   "beauty-profile-media",
   "salon-profile-media",
 ] as const;
+const MAX_DEPLOYMENT_ID_LENGTH = 32;
+const SHORT_GIT_SHA_LENGTH = 12;
+const FULL_GIT_SHA_PATTERN = /^[0-9a-f]{40}$/i;
 
 function supabaseImagePatterns(): NonNullable<
   NextConfig["images"]
@@ -47,7 +50,29 @@ function deploymentIdentifier(): string | undefined {
     .find(Boolean);
 }
 
-const deploymentId = deploymentIdentifier();
+function normalizeDeploymentId(identifier: string | undefined): string | undefined {
+  if (!identifier) {
+    return undefined;
+  }
+
+  if (identifier.length <= MAX_DEPLOYMENT_ID_LENGTH) {
+    return identifier;
+  }
+
+  if (FULL_GIT_SHA_PATTERN.test(identifier)) {
+    return identifier.slice(0, SHORT_GIT_SHA_LENGTH);
+  }
+
+  return identifier.slice(0, MAX_DEPLOYMENT_ID_LENGTH);
+}
+
+const deploymentSourceId = deploymentIdentifier();
+const deploymentId = normalizeDeploymentId(deploymentSourceId);
+
+if (deploymentId) {
+  // Next.js rereads this env var during build and uses it over config.deploymentId.
+  process.env.NEXT_DEPLOYMENT_ID = deploymentId;
+}
 
 const nextConfig: NextConfig = {
   images: {
@@ -55,7 +80,7 @@ const nextConfig: NextConfig = {
   },
   reactCompiler: true,
   deploymentId,
-  generateBuildId: async () => deploymentId ?? null,
+  generateBuildId: async () => deploymentSourceId ?? null,
 };
 
 export default nextConfig;
