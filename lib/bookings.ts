@@ -15,6 +15,7 @@ import {
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { POS_TICKET_WITH_RELATIONS_SELECT } from "@/lib/pos-tickets";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
+import { searchTextMatches } from "@/lib/search-normalization";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type {
@@ -711,8 +712,7 @@ function matchesBookingFilters(input: {
   }
 
   if (filters.query) {
-    const query = filters.query.toLowerCase();
-    const haystack = [
+    const matchesQuery = searchTextMatches([
       booking.id,
       booking.idempotency_key,
       booking.source_reference_id,
@@ -721,12 +721,9 @@ function matchesBookingFilters(input: {
       booking.customer?.email,
       ...booking.serviceNames,
       ...booking.assignedStaffNames,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
+    ], filters.query);
 
-    if (!haystack.includes(query)) {
+    if (!matchesQuery) {
       return false;
     }
   }

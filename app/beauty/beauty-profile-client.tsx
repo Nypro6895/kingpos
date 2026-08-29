@@ -12,6 +12,7 @@ import {
   updateBeautyPostCaptionAction,
   updateBeautyProfileAction,
 } from "@/app/beauty/actions";
+import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
 import {
@@ -34,6 +35,7 @@ import type {
   BeautyTimelinePage,
   BeautyTimelinePost,
 } from "@/types/beauty";
+import type { PostCommentViewer } from "@/types/post-comments";
 import {
   useCallback,
   useEffect,
@@ -47,6 +49,7 @@ import {
 } from "react";
 
 type BeautyProfileClientProps = {
+  commentViewer: PostCommentViewer;
   initialTimeline: BeautyTimelinePage;
   profile: BeautyProfileSummary;
   visitCandidates: BeautyRecentVisitCandidate[];
@@ -773,22 +776,45 @@ function PostMedia({ post }: { post: BeautyTimelinePost }) {
 
 function PostCard({
   canManage,
+  commentViewer,
   onCaptionUpdated,
+  onCommentCountChange,
   onDeleted,
   post,
 }: {
   canManage: boolean;
+  commentViewer: PostCommentViewer;
   onCaptionUpdated: (postId: string, caption: string | null) => void;
+  onCommentCountChange: (postId: string, count: number) => void;
   onDeleted: (postId: string) => void;
   post: BeautyTimelinePost;
 }) {
   const [editing, setEditing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentCountState, setCommentCountState] = useState(() => ({
+    count: post.commentCount,
+    postId: post.id,
+  }));
   const [draftCaption, setDraftCaption] = useState(post.caption ?? "");
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
   const attribution = post.attribution;
   const showCaptionBelowMedia = post.media.length > 0;
+  const commentTarget = {
+    profileId: post.profileId,
+    salonId: attribution?.salonId ?? null,
+    sourceId: post.id,
+    sourceType: "beauty_post" as const,
+    title: post.caption ?? "Beauty post",
+  };
+  const commentCount =
+    commentCountState.postId === post.id ? commentCountState.count : post.commentCount;
+
+  function handleCommentCountChange(count: number) {
+    setCommentCountState({ count, postId: post.id });
+    onCommentCountChange(post.id, count);
+  }
 
   function saveCaption(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -928,6 +954,36 @@ function PostCard({
           </p>
         ) : null}
 
+        {post.visibility === "public" ? (
+          <div className="grid gap-3 border-t border-divider-subtle pt-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold">
+              <button
+                aria-expanded={commentsOpen}
+                className="rounded-full bg-surface-muted px-4 py-2 text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                onClick={() => setCommentsOpen((current) => !current)}
+                type="button"
+              >
+                {commentCount} comment{commentCount === 1 ? "" : "s"}
+              </button>
+              <a
+                className="rounded-full px-3 py-2 text-text-secondary transition hover:bg-surface-muted hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                href={publicBeautyPostHref(post)}
+              >
+                Open post
+              </a>
+            </div>
+            {commentsOpen ? (
+              <PostCommentThread
+                compact
+                initialCount={commentCount}
+                onCountChange={handleCommentCountChange}
+                target={commentTarget}
+                viewer={commentViewer}
+              />
+            ) : null}
+          </div>
+        ) : null}
+
         {canManage && !editing ? (
           <div className="flex flex-wrap items-center justify-end gap-2 border-t border-divider-subtle pt-3">
             {post.visibility === "public" ? (
@@ -1013,6 +1069,7 @@ function PostCard({
 }
 
 export function BeautyProfileClient({
+  commentViewer,
   initialTimeline,
   profile: initialProfile,
   visitCandidates,
@@ -1828,6 +1885,20 @@ export function BeautyProfileClient({
     );
   }
 
+  function updatePostCommentCount(postId: string, commentCount: number) {
+    setPosts((current) => {
+      const hasChange = current.some(
+        (post) => post.id === postId && post.commentCount !== commentCount,
+      );
+
+      return hasChange
+        ? current.map((post) =>
+            post.id === postId ? { ...post, commentCount } : post,
+          )
+        : current;
+    });
+  }
+
   function removeDeletedPost(postId: string) {
     setPosts((current) => current.filter((post) => post.id !== postId));
   }
@@ -2027,8 +2098,10 @@ export function BeautyProfileClient({
               {visiblePosts.map((post) => (
                 <PostCard
                   canManage={profile.isSelf && post.profileId === profile.id}
+                  commentViewer={commentViewer}
                   key={post.id}
                   onCaptionUpdated={updatePostCaption}
+                  onCommentCountChange={updatePostCommentCount}
                   onDeleted={removeDeletedPost}
                   post={post}
                 />

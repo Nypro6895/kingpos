@@ -31,12 +31,15 @@ import {
   createSupabaseServerClient,
   getSupabaseConfig,
 } from "@/lib/supabase/server";
+import {
+  getPostCommentCount,
+  getPostCommentCounts,
+} from "@/lib/post-comments";
 import { STAFF_LEGACY_SELECT } from "@/lib/staff";
 import type {
   PublicSalonProfile,
   PublicSalonProfileBeautyPost,
   PublicSalonProfileBeautyPostMedia,
-  PublicSalonProfileComment,
   PublicSalonProfileData,
   PublicSalonProfileExperience,
   PublicSalonProfileExperienceIssueStatus,
@@ -254,20 +257,6 @@ type PublicBeautyPostRow = {
   staff_id: string | null;
   staff_name: string | null;
   verification_state: string | null;
-};
-
-type PublicCommentRow = {
-  author_display_name: string | null;
-  author_user_id: string | null;
-  body: string;
-  created_at: string;
-  id: string;
-  is_salon_reply: boolean | null;
-  look_id: string | null;
-  parent_comment_id: string | null;
-  salon_id: string;
-  updated_at: string;
-  update_id: string | null;
 };
 
 type PublicReviewSummaryRow = {
@@ -1299,6 +1288,7 @@ function mapPublicBeautyPost(
     authorAvatarUrl: row.author_avatar_url,
     authorDisplayName: row.author_display_name ?? "Reylumi customer",
     caption: row.caption,
+    commentCount: 0,
     id: row.post_id,
     media: mediaRows
       .map(mapPublicBeautyPostMedia)
@@ -1313,25 +1303,6 @@ function mapPublicBeautyPost(
     staffId: row.staff_id,
     staffName: row.staff_name,
     verificationState,
-  };
-}
-
-function mapPublicComment(row: PublicCommentRow): PublicSalonProfileComment {
-  return {
-    authorDisplayName: getHistoricalUserDisplayName({
-      context: "review",
-      fallbackName: row.author_display_name ?? "Reylumi customer",
-    }),
-    authorUserId: row.author_user_id,
-    body: row.body,
-    createdAt: row.created_at,
-    id: row.id,
-    isSalonReply: row.is_salon_reply ?? false,
-    lookId: row.look_id,
-    parentCommentId: row.parent_comment_id,
-    salonId: row.salon_id,
-    updatedAt: row.updated_at,
-    updateId: row.update_id,
   };
 }
 
@@ -1566,7 +1537,6 @@ export async function getPublicSalonProfileData(
     looksResult,
     updatesResult,
     beautyPostsResult,
-    commentsResult,
     reputationSummaryResult,
     experiencesResult,
     reviewSummaryResult,
@@ -1581,7 +1551,6 @@ export async function getPublicSalonProfileData(
       p_limit: 6,
       target_salon_id: salonId,
     }),
-    rpc("get_public_salon_profile_comments", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_reputation_summary", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_experiences", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_review_summary", { target_salon_id: salonId }),
@@ -1595,7 +1564,6 @@ export async function getPublicSalonProfileData(
     looksResult,
     updatesResult,
     beautyPostsResult,
-    commentsResult,
     reviewSummaryResult,
     reviewsResult,
   ]) {
@@ -1647,9 +1615,6 @@ export async function getPublicSalonProfileData(
   const beautyPostRows = Array.isArray(beautyPostsResult.data)
     ? (beautyPostsResult.data as PublicBeautyPostRow[])
     : [];
-  const commentRows = Array.isArray(commentsResult.data)
-    ? (commentsResult.data as PublicCommentRow[])
-    : [];
   const reviewSummaryRows = Array.isArray(reviewSummaryResult.data)
     ? (reviewSummaryResult.data as PublicReviewSummaryRow[])
     : [];
@@ -1684,20 +1649,34 @@ export async function getPublicSalonProfileData(
       .filter((postId): postId is string => Boolean(postId)),
     rpc,
   });
+  const beautyCommentCounts = await getPostCommentCounts(
+    beautyPosts.map((post) => ({
+      profileId: post.profileId,
+      salonId: mappedProfile.salonId,
+      sourceId: post.id,
+      sourceType: "beauty_post",
+      title: post.caption ?? "Beauty post",
+    })),
+  );
 
   return {
-    beautyPosts: beautyPosts.map((post) =>
-      post.booking
+    beautyPosts: beautyPosts.map((post) => ({
+      ...post,
+      booking: post.booking
         ? {
-            ...post,
-            booking: {
-              ...post.booking,
-              bookedCount: beautyBookingCounts.get(post.id) ?? 0,
-            },
+            ...post.booking,
+            bookedCount: beautyBookingCounts.get(post.id) ?? 0,
           }
-        : post,
-    ),
-    comments: commentRows.map(mapPublicComment),
+        : null,
+      commentCount: getPostCommentCount(beautyCommentCounts, {
+        profileId: post.profileId,
+        salonId: mappedProfile.salonId,
+        sourceId: post.id,
+        sourceType: "beauty_post",
+        title: post.caption ?? "Beauty post",
+      }),
+    })),
+    comments: [],
     feed: buildSalonProfileFeed({
       looks,
       profileName: mappedProfile.name,

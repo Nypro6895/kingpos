@@ -2,6 +2,7 @@
   CurrentWorkspaceAction,
   CurrentWorkspaceOption,
 } from "@/lib/current-context";
+import { normalizeSearchText } from "@/lib/search-normalization";
 
 export type WorkspaceShortcut = {
   action: CurrentWorkspaceAction;
@@ -92,8 +93,8 @@ export function workspaceSearchText(workspace: CurrentWorkspaceOption) {
     ...workspace.menuActions.map((action) => action.label),
   ]
     .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+    .map((value) => normalizeSearchText(value))
+    .join(" ");
 }
 
 export function actionKey(

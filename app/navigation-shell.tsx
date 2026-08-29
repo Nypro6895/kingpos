@@ -1977,7 +1977,7 @@ function CustomerDesktopHeader({
 }) {
   const exploreQuery =
     pathname === "/explore"
-      ? searchParams.get("q") ?? searchParams.get("location") ?? ""
+      ? searchParams.get("q") ?? ""
       : "";
   const router = useRouter();
   const accountSubtitle =

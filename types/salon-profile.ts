@@ -250,6 +250,7 @@ export type PublicSalonProfileBeautyPost = {
   authorDisplayName: string;
   booking: BeautyPostBookingPresentation | null;
   caption: string | null;
+  commentCount: number;
   id: string;
   media: PublicSalonProfileBeautyPostMedia[];
   postHref: string;
@@ -264,13 +265,15 @@ export type PublicSalonProfileBeautyPost = {
 export type PublicSalonProfileComment = {
   authorDisplayName: string;
   authorUserId: string | null;
+  beautyPostId: string | null;
   body: string;
   createdAt: string;
+  editedAt: string | null;
   id: string;
   isSalonReply: boolean;
   lookId: string | null;
   parentCommentId: string | null;
-  salonId: string;
+  salonId: string | null;
   updatedAt: string;
   updateId: string | null;
 };
@@ -400,6 +403,7 @@ export type SalonProfileViewerCapabilities = {
   canPublish: boolean;
   canReplyAsSalon: boolean;
   canViewDraftContent: boolean;
+  currentUserId: string | null;
   isAuthenticated: boolean;
   isOwnSalon: boolean;
 };

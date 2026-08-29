@@ -3,6 +3,7 @@ import {
   type CurrentWorkspaceOption,
 } from "@/lib/current-context";
 import { routes } from "@/lib/routes";
+import { searchTextMatches } from "@/lib/search-normalization";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
@@ -439,8 +440,7 @@ function searchText(row: SettingRow) {
     row.scope,
     ...row.keywords,
   ]
-    .join(" ")
-    .toLowerCase();
+    .join(" ");
 }
 
 function filterSections(input: {
@@ -448,16 +448,13 @@ function filterSections(input: {
   scope: ScopeFilter;
   sections: SettingSection[];
 }) {
-  const normalizedQuery = input.query.trim().toLowerCase();
-
   return input.sections
     .map((section) => ({
       ...section,
       rows: section.rows.filter((row) => {
         const scopeMatches =
           input.scope === "all" || row.scope === input.scope;
-        const queryMatches =
-          !normalizedQuery || searchText(row).includes(normalizedQuery);
+        const queryMatches = searchTextMatches([searchText(row)], input.query);
 
         return scopeMatches && queryMatches;
       }),

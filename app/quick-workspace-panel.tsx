@@ -22,6 +22,7 @@ import type {
   CurrentWorkspaceAction,
   CurrentWorkspaceOption,
 } from "@/lib/current-context";
+import { normalizeSearchText } from "@/lib/search-normalization";
 import type { WorkspacePendingSummary } from "@/lib/workspace-pending";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -60,7 +61,7 @@ export function QuickWorkspacePanel({
   const panelRef = useRef<HTMLElement | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
 
-  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedQuery = normalizeSearchText(query);
   const isFiltering = normalizedQuery.length > 0;
   const currentWorkspaceId = currentWorkspace?.id ?? null;
 
@@ -97,8 +98,8 @@ export function QuickWorkspacePanel({
         "review",
         ...notificationSummary.items.map((item) => item.label),
       ]
+        .map((value) => normalizeSearchText(value))
         .join(" ")
-        .toLowerCase()
         .includes(normalizedQuery));
   const showQuickAccess = quickAccess.length > 0;
   const showManageGroup = !isFiltering || manageWorkspaces.length > 0;

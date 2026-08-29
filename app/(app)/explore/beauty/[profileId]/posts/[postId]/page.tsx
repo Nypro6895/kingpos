@@ -1,4 +1,6 @@
 import { getPublicExploreBeautyPost } from "@/lib/explore-personal";
+import { getPostCommentViewer } from "@/lib/post-comments";
+import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
 import type { ExploreFeedItem, ExploreFeedMedia } from "@/types/explore";
@@ -234,7 +236,10 @@ export default async function PublicBeautyPostPage({
   params,
 }: PublicBeautyPostPageProps) {
   const { postId, profileId } = await params;
-  const item = await getPublicExploreBeautyPost({ postId, profileId });
+  const [item, commentViewer] = await Promise.all([
+    getPublicExploreBeautyPost({ postId, profileId }),
+    getPostCommentViewer(),
+  ]);
 
   if (!item || item.personal.profileId !== profileId) {
     notFound();
@@ -356,6 +361,22 @@ export default async function PublicBeautyPostPage({
               ) : null}
             </div>
           </div>
+        </section>
+        <section
+          className="rounded-[1.35rem] bg-surface-elevated p-4 shadow-[0_18px_44px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80"
+          id="comments"
+        >
+          <PostCommentThread
+            initialCount={item.commentCount}
+            target={{
+              profileId: item.personal.profileId,
+              salonId: item.salon?.id ?? null,
+              sourceId: item.id,
+              sourceType: "beauty_post",
+              title: item.caption ?? postLabel(item),
+            }}
+            viewer={commentViewer}
+          />
         </section>
       </article>
     </main>

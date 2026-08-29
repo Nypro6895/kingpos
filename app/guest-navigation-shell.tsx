@@ -82,7 +82,7 @@ export function GuestNavigationShell({ children }: { children: ReactNode }) {
   );
   const exploreQuery =
     pathname === "/explore"
-      ? searchParams.get("q") ?? searchParams.get("location") ?? ""
+      ? searchParams.get("q") ?? ""
       : "";
   const isLoginPage = pathname === "/login";
   const isSignupPage = pathname === "/signup";

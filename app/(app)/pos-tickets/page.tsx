@@ -12,6 +12,7 @@ import {
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
+import { searchTextMatches } from "@/lib/search-normalization";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type { PosTicketWithRelations } from "@/types/pos-ticket";
 import type { Service } from "@/types/service";
@@ -230,12 +231,6 @@ function ticketMatchesSearch(
   query: string,
   dailyNumber: number,
 ) {
-  const normalizedQuery = query.trim().toLowerCase();
-
-  if (!normalizedQuery) {
-    return true;
-  }
-
   const searchableValues = [
     String(dailyNumber),
     `#${dailyNumber}`,
@@ -264,9 +259,7 @@ function ticketMatchesSearch(
 
   searchableValues.push(String(totals.subtotal), formatMoney(totals.subtotal));
 
-  return searchableValues.some((value) =>
-    value.toLowerCase().includes(normalizedQuery),
-  );
+  return searchTextMatches(searchableValues, query);
 }
 
 function filterTicketsBySearch(

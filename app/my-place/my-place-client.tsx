@@ -21,6 +21,7 @@ import type {
   CurrentWorkspaceOption,
 } from "@/lib/current-context";
 import { routes } from "@/lib/routes";
+import { normalizeSearchText } from "@/lib/search-normalization";
 import type { WorkspacePendingSummary } from "@/lib/workspace-pending";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -100,7 +101,7 @@ export function MyPlaceClient({
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const searchRef = useRef<HTMLInputElement | null>(null);
-  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedQuery = normalizeSearchText(query);
   const isFiltering = normalizedQuery.length > 0;
   const currentWorkspaceId = currentWorkspace?.id ?? null;
   const matchesWorkspace = (workspace: CurrentWorkspaceOption) =>
@@ -138,8 +139,8 @@ export function MyPlaceClient({
         "notifications",
         ...pendingSummary.items.map((item) => item.label),
       ]
+        .map((value) => normalizeSearchText(value))
         .join(" ")
-        .toLowerCase()
         .includes(normalizedQuery));
   const showManageGroup = !isFiltering || manageWorkspaces.length > 0;
   const showStaffGroup = !isFiltering || staffWorkspaces.length > 0;

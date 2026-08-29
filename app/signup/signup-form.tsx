@@ -71,6 +71,9 @@ export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
 
     try {
       const response = await fetch("/api/auth/signup", {
+        headers: {
+          Accept: "application/json",
+        },
         method: "POST",
         body: new FormData(event.currentTarget),
       });
@@ -103,8 +106,10 @@ export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
       ) : null}
 
       <form
+        action="/api/auth/signup"
         aria-describedby={error ? "signup-form-error" : undefined}
         className="relative z-10 mt-6 space-y-5 pointer-events-auto"
+        method="post"
         onSubmit={handleSubmit}
       >
         <input name="next" type="hidden" value={nextPath} />

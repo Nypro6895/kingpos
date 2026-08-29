@@ -21,6 +21,7 @@ import {
   POS_LIVE_DRAFT_BROADCAST_EVENT,
   type PosLiveDraftBroadcastPayload,
 } from "@/lib/pos-live-draft-realtime";
+import { searchTextMatches } from "@/lib/search-normalization";
 import {
   getPosStaffRealtimeChannel,
   POS_STAFF_BROADCAST_EVENT,
@@ -676,14 +677,8 @@ export function PosDeskClient({
     [staffLines],
   );
   const filteredServices = useMemo(() => {
-    const query = serviceSearch.trim().toLowerCase();
-
-    if (!query) {
-      return services;
-    }
-
     return services.filter((service) =>
-      service.name.toLowerCase().includes(query),
+      searchTextMatches([service.name, service.category], serviceSearch),
     );
   }, [serviceSearch, services]);
   const visibleServiceTiles = useMemo(() => {

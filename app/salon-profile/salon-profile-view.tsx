@@ -1,19 +1,18 @@
 ﻿"use client";
 
 import {
-  createSalonProfileCommentAction,
   createSalonProfileReviewReplyAction,
   createSalonProfileSocialPostAction,
   deleteSalonProfileLookDirectAction,
   getSalonProfileMediaUploadSessionAction,
   setSalonProfilePublicationAction,
-  setSalonProfileCommentStatusAction,
   setSalonProfileLookStatusDirectAction,
   toggleSalonFollowAction,
   toggleSalonLookSaveAction,
   updateSalonProfileIdentityAction,
   updateSalonProfileIdentityMediaAction,
 } from "@/app/salon-profile/actions";
+import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
 import {
@@ -26,6 +25,7 @@ import {
   type SalonProfileMediaKind,
 } from "@/lib/salon-profile-media";
 import { buildReylumiTrustSummary } from "@/lib/reylumi-trust";
+import { searchTextMatches } from "@/lib/search-normalization";
 import {
   formatSalonProfileTeamCount,
   formatSalonProfileTeamOverflowLabel,
@@ -34,7 +34,6 @@ import {
 import type {
   ProfileFeedItem,
   PublicSalonProfileBeautyPost,
-  PublicSalonProfileComment,
   PublicSalonProfileData,
   PublicSalonProfileExperience,
   PublicSalonProfileLook,
@@ -44,6 +43,10 @@ import type {
   SalonProfileSetting,
   SalonProfileViewerCapabilities,
 } from "@/types/salon-profile";
+import type {
+  PostCommentTarget,
+  PostCommentViewer,
+} from "@/types/post-comments";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
@@ -118,12 +121,6 @@ type GalleryItem =
       type: "beauty";
     };
 
-type CommentTarget = {
-  lookId?: string | null;
-  title: string;
-  updateId?: string | null;
-};
-
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "discover", label: "Discover" },
   { id: "gallery", label: "Gallery" },
@@ -160,6 +157,7 @@ const EMPTY_CAPABILITIES: SalonProfileViewerCapabilities = {
   canPublish: false,
   canReplyAsSalon: false,
   canViewDraftContent: false,
+  currentUserId: null,
   isAuthenticated: false,
   isOwnSalon: false,
 };
@@ -212,6 +210,49 @@ const mediaConfig: Record<
     targetBytes: 1.5 * 1024 * 1024,
   },
 };
+
+function postCommentViewer(
+  capabilities: SalonProfileViewerCapabilities,
+): PostCommentViewer {
+  return {
+    canModerate: capabilities.canModerateComments,
+    canReplyAsSalon: capabilities.canReplyAsSalon,
+    isAuthenticated: capabilities.isAuthenticated,
+    userId: capabilities.currentUserId,
+  };
+}
+
+function profileFeedCommentTarget(
+  item: ProfileFeedItem,
+  title: string,
+): PostCommentTarget {
+  return {
+    salonId: item.salonId,
+    sourceId: item.id,
+    sourceType:
+      item.contentType === "look"
+        ? "salon_profile_look"
+        : "salon_profile_update",
+    title,
+  };
+}
+
+function beautyPostCommentTarget(
+  post: PublicSalonProfileBeautyPost,
+  salonId: string,
+): PostCommentTarget {
+  return {
+    profileId: post.profileId,
+    salonId,
+    sourceId: post.id,
+    sourceType: "beauty_post",
+    title: post.caption ?? "Beauty post",
+  };
+}
+
+function postCommentKey(target: Pick<PostCommentTarget, "sourceId" | "sourceType">) {
+  return `${target.sourceType}:${target.sourceId}`;
+}
 
 function formatMoney(value: number | null) {
   if (value === null) {
@@ -643,6 +684,116 @@ function Button({
       {...props}
     >
       {children}
+    </button>
+  );
+}
+
+type TimelineActionIconName =
+  | "book"
+  | "comment"
+  | "love"
+  | "open"
+  | "share"
+  | "timeline";
+
+function TimelineActionIcon({ name }: { name: TimelineActionIconName }) {
+  const common = {
+    "aria-hidden": true,
+    className: "h-4 w-4 shrink-0",
+    fill: "none",
+    stroke: "currentColor",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    strokeWidth: 2,
+    viewBox: "0 0 24 24",
+  } as const;
+
+  if (name === "book") {
+    return (
+      <svg {...common}>
+        <path d="M8 2v4" />
+        <path d="M16 2v4" />
+        <path d="M3.5 9h17" />
+        <path d="M5 4h14a2 2 0 0 1 2 2v13a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Z" />
+        <path d="m9 15 2 2 4-5" />
+      </svg>
+    );
+  }
+
+  if (name === "comment") {
+    return (
+      <svg {...common}>
+        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+      </svg>
+    );
+  }
+
+  if (name === "love") {
+    return (
+      <svg {...common}>
+        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
+      </svg>
+    );
+  }
+
+  if (name === "open") {
+    return (
+      <svg {...common}>
+        <path d="M15 3h6v6" />
+        <path d="M10 14 21 3" />
+        <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" />
+      </svg>
+    );
+  }
+
+  if (name === "timeline") {
+    return (
+      <svg {...common}>
+        <path d="M4 6h16" />
+        <path d="M4 12h16" />
+        <path d="M4 18h10" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...common}>
+      <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+      <path d="m16 6-4-4-4 4" />
+      <path d="M12 2v14" />
+    </svg>
+  );
+}
+
+function TimelineActionButton({
+  active = false,
+  children,
+  className = "",
+  icon,
+  tone = "default",
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  active?: boolean;
+  icon: TimelineActionIconName;
+  tone?: "default" | "primary";
+}) {
+  return (
+    <button
+      className={[
+        "inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 px-1.5 py-2 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950 disabled:cursor-not-allowed disabled:text-zinc-400",
+        tone === "primary"
+          ? "text-brand-orange hover:bg-brand-orange-soft hover:text-brand-orange"
+          : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950",
+        active ? "bg-zinc-50 text-zinc-950" : "",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      type="button"
+      {...props}
+    >
+      <TimelineActionIcon name={icon} />
+      <span className="min-w-0 truncate">{children}</span>
     </button>
   );
 }
@@ -1423,17 +1574,10 @@ function ComposerModal({
   const pendingLabel = contentType === "opening" ? "Sharing" : "Posting";
   const suggestedService = hashtagSuggestionsForServices(caption, data.services);
   const filteredServices = data.services.filter((service) => {
-    const query = serviceSearch.trim().toLowerCase();
-
-    if (!query) {
-      return true;
-    }
-
-    return [service.name, service.category, service.description]
-      .some(
-        (value) =>
-          typeof value === "string" && value.toLowerCase().includes(query),
-      );
+    return searchTextMatches(
+      [service.name, service.category, service.description],
+      serviceSearch,
+    );
   });
   const additionalServices = data.services.filter(
     (service) => service.id !== serviceId,
@@ -1876,30 +2020,28 @@ function TeamPreviewRows({
 
 function FeedCard({
   capabilities,
-  comments,
+  commentCount: initialCommentCount,
   item,
   look,
   logoUrl,
   onBook,
-  onComment,
+  onCommentCountChange,
   onOpenPost,
   onRefresh,
-  onSave,
   onSavedChange,
   onShare,
   saved,
   saveCount,
 }: {
   capabilities: SalonProfileViewerCapabilities;
-  comments: PublicSalonProfileComment[];
+  commentCount: number;
   item: ProfileFeedItem;
   look: PublicSalonProfileLook | null;
   logoUrl: string | null;
   onBook: (context: BookingContext) => void;
-  onComment: (target: CommentTarget) => void;
+  onCommentCountChange: (target: PostCommentTarget, count: number) => void;
   onOpenPost: (item: ProfileFeedItem) => void;
   onRefresh: () => void;
-  onSave: (look: PublicSalonProfileLook) => void;
   onSavedChange: (look: PublicSalonProfileLook, saved: boolean) => void;
   onShare: (item?: ProfileFeedItem) => void;
   saved: boolean;
@@ -1907,17 +2049,37 @@ function FeedCard({
 }) {
   const [managing, startManageTransition] = useTransition();
   const [menuOpen, setMenuOpen] = useState(false);
-  const targetComments = comments.filter((comment) =>
-    item.contentType === "look"
-      ? comment.lookId === item.id
-      : comment.updateId === item.id,
-  );
-  const targetCommentCount = targetComments.length;
-  const previewComments = targetComments.slice(-2);
+  const [commentsExpanded, setCommentsExpanded] = useState(false);
+  const [commentCountState, setCommentCountState] = useState(() => ({
+    count: initialCommentCount,
+    itemId: item.id,
+  }));
+  const commentsPanelId = useId();
   const title =
     item.contentType === "look"
       ? item.title
       : item.caption || item.title || "Salon update";
+  const commentTarget = profileFeedCommentTarget(item, title);
+  const viewer = postCommentViewer(capabilities);
+  const commentCount =
+    commentCountState.itemId === item.id
+      ? commentCountState.count
+      : initialCommentCount;
+
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+
+    if (hash === `${item.contentType}-${item.id}`) {
+      const params = new URLSearchParams(window.location.search);
+
+      if (params.has("comment")) {
+        const timer = window.setTimeout(() => setCommentsExpanded(true), 0);
+        return () => window.clearTimeout(timer);
+      }
+    }
+
+    return undefined;
+  }, [item.contentType, item.id]);
 
   function updateLookStatus(status?: "archived" | "draft" | "published", isPinned?: boolean) {
     if (!look) {
@@ -1953,6 +2115,11 @@ function FeedCard({
         onRefresh();
       }
     });
+  }
+
+  function updateCommentCount(count: number) {
+    setCommentCountState({ count, itemId: item.id });
+    onCommentCountChange(commentTarget, count);
   }
 
   return (
@@ -2061,28 +2228,6 @@ function FeedCard({
               title={title}
             />
           </button>
-          {look ? (
-            <SavePostButton
-              className="absolute bottom-3 right-3"
-              initialSaved={saved}
-              onSavedChange={(active) => onSavedChange(look, active)}
-              saveCount={saveCount}
-              target={{
-                salonId: item.salonId,
-                sourceId: look.id,
-                sourceType: "salon_profile_look",
-              }}
-            />
-          ) : item.contentType === "update" ? (
-            <SavePostButton
-              className="absolute bottom-3 right-3"
-              target={{
-                salonId: item.salonId,
-                sourceId: item.id,
-                sourceType: "salon_profile_update",
-              }}
-            />
-          ) : null}
         </div>
       ) : null}
       <div className="grid gap-3 p-4">
@@ -2096,75 +2241,82 @@ function FeedCard({
             <span>With {item.staffName}</span>
           ) : null}
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3 text-sm text-zinc-500">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3 text-xs font-medium text-zinc-500">
           <span>
             {item.contentType === "look" && saveCount > 0
               ? `${saveCount} save${saveCount === 1 ? "" : "s"}`
               : null}
           </span>
           <span>
-            {targetCommentCount || item.commentCount} comment
-            {(targetCommentCount || item.commentCount) === 1 ? "" : "s"}
+            {commentCount} comment
+            {commentCount === 1 ? "" : "s"}
           </span>
         </div>
-        {previewComments.length > 0 ? (
-          <div className="grid gap-2 rounded-lg bg-zinc-50 p-3">
-            {previewComments.map((comment) => (
-              <p className="text-sm leading-6 text-zinc-700" key={comment.id}>
-                <span className="font-semibold text-zinc-950">
-                  {comment.authorDisplayName}
-                </span>{" "}
-                {comment.body}
-              </p>
-            ))}
-            {targetCommentCount > previewComments.length ? (
-              <button
-                className="w-max text-sm font-semibold text-zinc-600 underline-offset-4 hover:text-zinc-950 hover:underline"
-                onClick={() =>
-                  onComment({
-                    lookId: item.contentType === "look" ? item.id : null,
-                    title,
-                    updateId: item.contentType === "update" ? item.id : null,
-                  })
-                }
-                type="button"
-              >
-                View all comments
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-        <div
-          className={[
-            "grid gap-2",
-            look ? "sm:grid-cols-5" : "sm:grid-cols-4",
-          ].join(" ")}
-        >
+        <div className="grid auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
           {look ? (
-            <Button onClick={() => onSave(look)} variant="secondary">
-              {saved ? "Saved" : "Save"}
-            </Button>
+            <SavePostButton
+              className="min-w-0 flex-1 border-r border-zinc-100 last:border-r-0"
+              initialSaved={saved}
+              onSavedChange={(active) => onSavedChange(look, active)}
+              saveCount={saveCount}
+              size="toolbar"
+              target={{
+                salonId: item.salonId,
+                sourceId: look.id,
+                sourceType: "salon_profile_look",
+              }}
+            />
+          ) : item.contentType === "update" ? (
+            <SavePostButton
+              className="min-w-0 flex-1 border-r border-zinc-100 last:border-r-0"
+              size="toolbar"
+              target={{
+                salonId: item.salonId,
+                sourceId: item.id,
+                sourceType: "salon_profile_update",
+              }}
+            />
           ) : null}
-          <Button onClick={() => onOpenPost(item)} variant="secondary">
-            View post
-          </Button>
-          <Button
-            onClick={() =>
-              onComment({
-                lookId: item.contentType === "look" ? item.id : null,
-                title,
-                updateId: item.contentType === "update" ? item.id : null,
-              })
+          <TimelineActionButton
+            aria-label="View post"
+            className="border-r border-zinc-100 last:border-r-0"
+            icon="open"
+            onClick={() => onOpenPost(item)}
+            title="View post"
+          >
+            View
+          </TimelineActionButton>
+          <TimelineActionButton
+            active={commentsExpanded}
+            aria-controls={commentsPanelId}
+            aria-expanded={commentsExpanded}
+            aria-label={
+              commentCount > 0
+                ? `Read ${commentCount} comments or write a comment`
+                : "Write a comment"
             }
-            variant="secondary"
+            className="border-r border-zinc-100 last:border-r-0"
+            icon="comment"
+            onClick={() => setCommentsExpanded((current) => !current)}
+            title="Comment"
           >
             Comment
-          </Button>
-          <Button onClick={() => onShare(item)} variant="secondary">
+          </TimelineActionButton>
+          <TimelineActionButton
+            aria-label={`Share ${title}`}
+            className="border-r border-zinc-100 last:border-r-0"
+            icon="share"
+            onClick={() => void onShare(item)}
+            title="Share"
+          >
             Share
-          </Button>
+          </TimelineActionButton>
           {capabilities.canBook ? (
-            <Button
+            <TimelineActionButton
+              aria-label={
+                item.contentType === "look" ? "Book look" : "Book inspiration"
+              }
+              icon="book"
               onClick={() =>
                 onBook({
                   lookId: item.contentType === "look" ? item.id : null,
@@ -2176,12 +2328,30 @@ function FeedCard({
                   updateId: item.contentType === "update" ? item.id : null,
                 })
               }
-              variant="primary"
+              title={
+                item.contentType === "look" ? "Book look" : "Book inspiration"
+              }
+              tone="primary"
             >
-              {item.contentType === "look" ? "Book look" : "Book inspiration"}
-            </Button>
+              Book
+            </TimelineActionButton>
           ) : null}
         </div>
+        {commentsExpanded ? (
+          <div
+            className="rounded-xl border border-zinc-200 bg-zinc-50/75 p-3"
+            id={commentsPanelId}
+          >
+            <PostCommentThread
+              autoFocusComposer
+              compact
+              initialCount={commentCount}
+              onCountChange={updateCommentCount}
+              target={commentTarget}
+              viewer={viewer}
+            />
+          </div>
+        ) : null}
       </div>
     </article>
   );
@@ -2192,9 +2362,11 @@ function beautyBookedCountLabel(count: number) {
 }
 
 function BeautyTransformationsSection({
+  commentCountForPost,
   onOpenPost,
   posts,
 }: {
+  commentCountForPost?: (post: PublicSalonProfileBeautyPost) => number;
   onOpenPost?: (post: PublicSalonProfileBeautyPost) => void;
   posts: PublicSalonProfileBeautyPost[];
 }) {
@@ -2229,6 +2401,8 @@ function BeautyTransformationsSection({
           const booking = post.booking?.eligible ? post.booking : null;
           const bookingHref = booking?.href ?? null;
           const bookedCount = booking?.bookedCount ?? null;
+          const displayedCommentCount =
+            commentCountForPost?.(post) ?? post.commentCount;
 
           return (
             <article
@@ -2258,13 +2432,6 @@ function BeautyTransformationsSection({
                   }
                   roundedClassName="rounded-none"
                   sizes="(max-width: 640px) 100vw, 50vw"
-                />
-                <SavePostButton
-                  className="absolute bottom-3 right-3"
-                  target={{
-                    sourceId: post.id,
-                    sourceType: "beauty_post",
-                  }}
                 />
               </div>
               <div className="grid gap-2 p-4">
@@ -2303,7 +2470,40 @@ function BeautyTransformationsSection({
                       {beautyBookedCountLabel(bookedCount)}
                     </p>
                   ) : null}
-                  <div className="flex flex-wrap gap-2">
+                  <p className="text-xs font-semibold text-zinc-500">
+                    {displayedCommentCount} comment
+                    {displayedCommentCount === 1 ? "" : "s"}
+                  </p>
+                  <div className="grid auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
+                    <SavePostButton
+                      className="min-w-0 flex-1 border-r border-zinc-100 last:border-r-0"
+                      size="toolbar"
+                      target={{
+                        sourceId: post.id,
+                        sourceType: "beauty_post",
+                      }}
+                    />
+                    {onOpenPost ? (
+                      <TimelineActionButton
+                        aria-label="Read or write comments"
+                        className="border-r border-zinc-100 last:border-r-0"
+                        icon="comment"
+                        onClick={() => onOpenPost(post)}
+                        title="Comment"
+                      >
+                        Comment
+                      </TimelineActionButton>
+                    ) : (
+                      <a
+                        aria-label="Read or write comments"
+                        className="inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 border-r border-zinc-100 px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
+                        href={`${post.postHref}#comments`}
+                        title="Comment"
+                      >
+                        <TimelineActionIcon name="comment" />
+                        <span className="truncate">Comment</span>
+                      </a>
+                    )}
                     {bookingHref ? (
                       <a
                         aria-label={[
@@ -2314,26 +2514,34 @@ function BeautyTransformationsSection({
                         ]
                           .filter(Boolean)
                           .join(", ")}
-                        className="inline-flex min-h-10 flex-1 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:flex-none"
+                        className="inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 border-r border-zinc-100 px-1.5 py-2 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
                         href={bookingHref}
+                        title={booking?.label ?? "Book"}
                       >
-                        <span className="truncate">{booking?.label ?? "Book"}</span>
+                        <TimelineActionIcon name="book" />
+                        <span className="truncate">Book</span>
                       </a>
                     ) : null}
                     {onOpenPost ? (
                       <button
-                        className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                        aria-label="View post"
+                        className="inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
                         onClick={() => onOpenPost(post)}
+                        title="View post"
                         type="button"
                       >
-                        View post
+                        <TimelineActionIcon name="open" />
+                        <span className="truncate">View</span>
                       </button>
                     ) : (
                       <a
-                        className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                        aria-label="View post"
+                        className="inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
                         href={post.postHref}
+                        title="View post"
                       >
-                        View post
+                        <TimelineActionIcon name="open" />
+                        <span className="truncate">View</span>
                       </a>
                     )}
                   </div>
@@ -2344,228 +2552,6 @@ function BeautyTransformationsSection({
         })}
       </div>
     </section>
-  );
-}
-
-function CommentsPanel({
-  capabilities,
-  comments,
-  onPosted,
-  salonId,
-  target,
-}: {
-  capabilities: SalonProfileViewerCapabilities;
-  comments: PublicSalonProfileComment[];
-  onPosted: () => void;
-  salonId: string;
-  target: CommentTarget;
-}) {
-  const [body, setBody] = useState("");
-  const [asSalon, setAsSalon] = useState(false);
-  const [replyTo, setReplyTo] = useState<PublicSalonProfileComment | null>(null);
-  const [status, setStatus] = useState("");
-  const [isPending, startTransition] = useTransition();
-  const thread = comments.filter((comment) =>
-    target.lookId ? comment.lookId === target.lookId : comment.updateId === target.updateId,
-  );
-  const topLevel = thread.filter((comment) => !comment.parentCommentId);
-
-  function submit() {
-    if (!capabilities.isAuthenticated) {
-      setStatus("Sign in to comment.");
-      return;
-    }
-
-    if (!body.trim()) {
-      setStatus("Write a comment first.");
-      return;
-    }
-
-    startTransition(async () => {
-      const result = await createSalonProfileCommentAction({
-        asSalonReply: asSalon && capabilities.canReplyAsSalon,
-        body,
-        lookId: target.lookId ?? null,
-        parentCommentId: replyTo?.id ?? null,
-        salonId,
-        updateId: target.updateId ?? null,
-      });
-
-      if (result.error) {
-        setStatus(result.error);
-        return;
-      }
-
-      setBody("");
-      setReplyTo(null);
-      setStatus("Comment posted.");
-      onPosted();
-    });
-  }
-
-  function moderate(commentId: string, nextStatus: "deleted" | "hidden") {
-    startTransition(async () => {
-      const result = await setSalonProfileCommentStatusAction({
-        commentId,
-        salonId,
-        status: nextStatus,
-      });
-
-      if (result.error) {
-        setStatus(result.error);
-        return;
-      }
-
-      onPosted();
-    });
-  }
-
-  return (
-    <section className="grid gap-4">
-      <div>
-        <h3 className="text-base font-semibold text-zinc-950">Comments</h3>
-        <p className="text-sm text-zinc-500">{target.title}</p>
-      </div>
-      <div className="grid gap-3">
-        {topLevel.length === 0 ? (
-          <p className="rounded-lg bg-zinc-50 p-4 text-sm text-zinc-600">
-            No comments yet.
-          </p>
-        ) : (
-          topLevel.map((comment) => (
-          <CommentItem
-            canModerate={capabilities.canModerateComments}
-            canReply={capabilities.canReplyAsSalon}
-            comment={comment}
-            key={comment.id}
-            onModerate={moderate}
-            onReply={(nextComment) => {
-              setReplyTo(nextComment);
-              setAsSalon(true);
-            }}
-            replies={thread.filter(
-              (reply) => reply.parentCommentId === comment.id,
-              )}
-            />
-          ))
-        )}
-      </div>
-      <div className="grid gap-2">
-        {replyTo ? (
-          <div className="flex items-center justify-between gap-3 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-            <span>Replying to {replyTo.authorDisplayName}</span>
-            <button
-              className="font-semibold underline-offset-4 hover:underline"
-              onClick={() => setReplyTo(null)}
-              type="button"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : null}
-        <textarea
-          className="min-h-24 resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-6 text-zinc-950 outline-none transition focus:border-zinc-950"
-          maxLength={1000}
-          onChange={(event) => setBody(event.currentTarget.value)}
-          placeholder={
-            capabilities.isAuthenticated
-              ? "Write a public comment..."
-              : "Sign in to comment."
-          }
-          value={body}
-        />
-        {capabilities.canReplyAsSalon ? (
-          <label className="flex items-center gap-2 text-sm text-zinc-700">
-            <input
-              checked={asSalon}
-              className="size-4"
-              onChange={(event) => setAsSalon(event.currentTarget.checked)}
-              type="checkbox"
-            />
-            Reply as salon
-          </label>
-        ) : null}
-        <div className="flex items-center justify-between gap-3">
-          <p aria-live="polite" className="text-sm text-zinc-600">
-            {status}
-          </p>
-          <Button disabled={isPending} onClick={() => submit()} variant="primary">
-            {isPending ? "Posting..." : replyTo ? "Post reply" : "Post comment"}
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function CommentItem({
-  canModerate,
-  canReply,
-  comment,
-  onModerate,
-  onReply,
-  replies,
-}: {
-  canModerate: boolean;
-  canReply: boolean;
-  comment: PublicSalonProfileComment;
-  onModerate: (commentId: string, status: "deleted" | "hidden") => void;
-  onReply: (comment: PublicSalonProfileComment) => void;
-  replies: PublicSalonProfileComment[];
-}) {
-  return (
-    <div className="grid gap-2">
-      <div className="rounded-lg bg-zinc-50 p-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-zinc-950">
-              {comment.authorDisplayName}
-              {comment.isSalonReply ? (
-                <span className="ml-2 rounded-md bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800">
-                  Salon
-                </span>
-              ) : null}
-            </p>
-            <p className="mt-1 text-sm leading-6 text-zinc-700">{comment.body}</p>
-          </div>
-          <div className="flex gap-1">
-            {canReply ? (
-              <Button
-                className="min-h-8 px-2 text-xs"
-                onClick={() => onReply(comment)}
-                variant="subtle"
-              >
-                Reply
-              </Button>
-            ) : null}
-            {canModerate ? (
-              <Button
-                className="min-h-8 px-2 text-xs text-red-700"
-                onClick={() => onModerate(comment.id, "hidden")}
-                variant="subtle"
-              >
-                Hide
-              </Button>
-            ) : null}
-          </div>
-        </div>
-      </div>
-      {replies.length > 0 ? (
-        <div className="ml-5 grid gap-2 border-l border-zinc-200 pl-3">
-          {replies.map((reply) => (
-            <CommentItem
-              canModerate={canModerate}
-              canReply={false}
-              comment={reply}
-              key={reply.id}
-              onModerate={onModerate}
-              onReply={onReply}
-              replies={[]}
-            />
-          ))}
-        </div>
-      ) : null}
-    </div>
   );
 }
 
@@ -2893,12 +2879,12 @@ function ExperienceCard({
 
 function LookDetailDialog({
   capabilities,
-  comments,
+  commentCount: initialCommentCount,
   isSaved,
   look,
   onBook,
   onClose,
-  onCommentPosted,
+  onCommentCountChange,
   onSave,
   onShare,
   onViewInTimeline,
@@ -2906,12 +2892,12 @@ function LookDetailDialog({
   salonId,
 }: {
   capabilities: SalonProfileViewerCapabilities;
-  comments: PublicSalonProfileComment[];
+  commentCount: number;
   isSaved: boolean;
   look: PublicSalonProfileLook;
   onBook: (context: BookingContext) => void;
   onClose: () => void;
-  onCommentPosted: () => void;
+  onCommentCountChange: (target: PostCommentTarget, count: number) => void;
   onSave: (look: PublicSalonProfileLook) => void;
   onShare: () => void;
   onViewInTimeline: (targetId: string) => void;
@@ -2919,6 +2905,36 @@ function LookDetailDialog({
   salonId: string;
 }) {
   const titleId = useId();
+  const commentsPanelId = useId();
+  const [commentCountState, setCommentCountState] = useState(() => ({
+    count: initialCommentCount,
+    lookId: look.id,
+  }));
+  const viewer = postCommentViewer(capabilities);
+  const commentTarget: PostCommentTarget = {
+    salonId,
+    sourceId: look.id,
+    sourceType: "salon_profile_look",
+    title: look.title,
+  };
+  const commentCount =
+    commentCountState.lookId === look.id
+      ? commentCountState.count
+      : initialCommentCount;
+
+  function updateCommentCount(count: number) {
+    setCommentCountState({ count, lookId: look.id });
+    onCommentCountChange(commentTarget, count);
+  }
+
+  function focusCommentsPanel() {
+    const panel = document.getElementById(commentsPanelId);
+
+    panel?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    panel
+      ?.querySelector<HTMLTextAreaElement>("textarea")
+      ?.focus({ preventScroll: true });
+  }
 
   useEffect(() => {
     function onKeyDown(event: globalThis.KeyboardEvent) {
@@ -3001,21 +3017,51 @@ function LookDetailDialog({
                 </p>
               ) : null}
             </div>
-            <div className="grid gap-2 sm:grid-cols-4">
-              <Button onClick={() => onSave(look)} variant="secondary">
-                {isSaved ? "Saved" : "Save"}
-              </Button>
-              <Button onClick={onShare} variant="secondary">
-                Share
-              </Button>
-              <Button
-                onClick={() => onViewInTimeline(`look-${look.id}`)}
-                variant="secondary"
+            <div className="grid auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
+              <TimelineActionButton
+                active={isSaved}
+                aria-label={isSaved ? "Remove saved look" : "Love this look"}
+                aria-pressed={isSaved}
+                className="border-r border-zinc-100 last:border-r-0"
+                icon="love"
+                onClick={() => onSave(look)}
+                title={isSaved ? "Saved" : "Love"}
               >
-                View in timeline
-              </Button>
-              <Button
+                {isSaved ? "Loved" : "Love"}
+              </TimelineActionButton>
+              <TimelineActionButton
+                aria-label="Share"
+                className="border-r border-zinc-100 last:border-r-0"
+                icon="share"
+                onClick={onShare}
+                title="Share"
+              >
+                Share
+              </TimelineActionButton>
+              <TimelineActionButton
+                aria-controls={commentsPanelId}
+                aria-label="Read or write comments"
+                className="border-r border-zinc-100 last:border-r-0"
+                icon="comment"
+                onClick={focusCommentsPanel}
+                title="Comment"
+              >
+                Comment
+              </TimelineActionButton>
+              <TimelineActionButton
+                aria-label="View in timeline"
+                className="border-r border-zinc-100 last:border-r-0"
+                icon="timeline"
+                onClick={() => onViewInTimeline(`look-${look.id}`)}
+                title="View in timeline"
+              >
+                Timeline
+              </TimelineActionButton>
+              <TimelineActionButton
+                aria-label="Book exact look"
+                className="border-r border-zinc-100 last:border-r-0"
                 disabled={!capabilities.canBook}
+                icon="book"
                 onClick={() =>
                   onBook({
                     lookId: look.id,
@@ -3025,21 +3071,20 @@ function LookDetailDialog({
                     title: "Book this exact look",
                   })
                 }
-                variant="primary"
+                title="Book exact look"
+                tone="primary"
               >
-                Book exact look
-              </Button>
+                Book
+              </TimelineActionButton>
             </div>
-            <CommentsPanel
-              capabilities={capabilities}
-              comments={comments}
-              onPosted={onCommentPosted}
-              salonId={salonId}
-              target={{
-                lookId: look.id,
-                title: look.title,
-              }}
-            />
+            <div id={commentsPanelId}>
+              <PostCommentThread
+                initialCount={commentCount}
+                onCountChange={updateCommentCount}
+                target={commentTarget}
+                viewer={viewer}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -3049,30 +3094,35 @@ function LookDetailDialog({
 
 function FeedPostDetailDialog({
   capabilities,
-  comments,
+  commentCount: initialCommentCount,
   item,
   onBook,
   onClose,
-  onCommentPosted,
+  onCommentCountChange,
   onShare,
   onViewInTimeline,
-  salonId,
 }: {
   capabilities: SalonProfileViewerCapabilities;
-  comments: PublicSalonProfileComment[];
+  commentCount: number;
   item: ProfileFeedItem;
   onBook: (context: BookingContext) => void;
   onClose: () => void;
-  onCommentPosted: () => void;
+  onCommentCountChange: (target: PostCommentTarget, count: number) => void;
   onShare: (item?: ProfileFeedItem) => void;
   onViewInTimeline: (targetId: string) => void;
-  salonId: string;
 }) {
   const titleId = useId();
+  const commentsPanelId = useId();
+  const [commentCountState, setCommentCountState] = useState(() => ({
+    count: initialCommentCount,
+    itemId: item.id,
+  }));
   const title =
     item.contentType === "look"
       ? item.title
       : item.caption || item.title || "Salon update";
+  const viewer = postCommentViewer(capabilities);
+  const commentTarget = profileFeedCommentTarget(item, title);
   const meta = joinMeta([
     item.contentType === "look" ? item.mood : null,
     item.serviceName,
@@ -3084,6 +3134,24 @@ function FeedPostDetailDialog({
       : null,
     timeAgo(item.publishedAt),
   ]);
+  const commentCount =
+    commentCountState.itemId === item.id
+      ? commentCountState.count
+      : initialCommentCount;
+
+  function focusCommentsPanel() {
+    const panel = document.getElementById(commentsPanelId);
+
+    panel?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    panel
+      ?.querySelector<HTMLTextAreaElement>("textarea")
+      ?.focus({ preventScroll: true });
+  }
+
+  function updateCommentCount(count: number) {
+    setCommentCountState({ count, itemId: item.id });
+    onCommentCountChange(commentTarget, count);
+  }
 
   useEffect(() => {
     function onKeyDown(event: globalThis.KeyboardEvent) {
@@ -3163,18 +3231,42 @@ function FeedPostDetailDialog({
                 Close
               </Button>
             </div>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <Button onClick={() => onShare(item)} variant="secondary">
-                Share
-              </Button>
-              <Button
-                onClick={() => onViewInTimeline(`${item.contentType}-${item.id}`)}
-                variant="secondary"
+            <div className="grid auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
+              <TimelineActionButton
+                aria-label={`Share ${title}`}
+                className="border-r border-zinc-100 last:border-r-0"
+                icon="share"
+                onClick={() => void onShare(item)}
+                title="Share"
               >
-                View in timeline
-              </Button>
-              <Button
+                Share
+              </TimelineActionButton>
+              <TimelineActionButton
+                aria-controls={commentsPanelId}
+                aria-label="Read or write comments"
+                className="border-r border-zinc-100 last:border-r-0"
+                icon="comment"
+                onClick={focusCommentsPanel}
+                title="Comment"
+              >
+                Comment
+              </TimelineActionButton>
+              <TimelineActionButton
+                aria-label="View in timeline"
+                className="border-r border-zinc-100 last:border-r-0"
+                icon="timeline"
+                onClick={() => onViewInTimeline(`${item.contentType}-${item.id}`)}
+                title="View in timeline"
+              >
+                Timeline
+              </TimelineActionButton>
+              <TimelineActionButton
+                aria-label={
+                  item.contentType === "look" ? "Book look" : "Book inspiration"
+                }
+                className="border-r border-zinc-100 last:border-r-0"
                 disabled={!capabilities.canBook}
+                icon="book"
                 onClick={() =>
                   onBook({
                     lookId: item.contentType === "look" ? item.id : null,
@@ -3186,22 +3278,22 @@ function FeedPostDetailDialog({
                     updateId: item.contentType === "update" ? item.id : null,
                   })
                 }
-                variant="primary"
+                title={
+                  item.contentType === "look" ? "Book look" : "Book inspiration"
+                }
+                tone="primary"
               >
-                {item.contentType === "look" ? "Book look" : "Book inspiration"}
-              </Button>
+                Book
+              </TimelineActionButton>
             </div>
-            <CommentsPanel
-              capabilities={capabilities}
-              comments={comments}
-              onPosted={onCommentPosted}
-              salonId={salonId}
-              target={{
-                lookId: item.contentType === "look" ? item.id : null,
-                title,
-                updateId: item.contentType === "update" ? item.id : null,
-              }}
-            />
+            <div id={commentsPanelId}>
+              <PostCommentThread
+                initialCount={commentCount}
+                onCountChange={updateCommentCount}
+                target={commentTarget}
+                viewer={viewer}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -3210,15 +3302,30 @@ function FeedPostDetailDialog({
 }
 
 function BeautyPostDetailDialog({
+  capabilities,
+  commentCount: initialCommentCount,
   onClose,
+  onCommentCountChange,
   onViewInTimeline,
   post,
+  salonId,
 }: {
+  capabilities: SalonProfileViewerCapabilities;
+  commentCount: number;
   onClose: () => void;
+  onCommentCountChange: (target: PostCommentTarget, count: number) => void;
   onViewInTimeline: (targetId: string) => void;
   post: PublicSalonProfileBeautyPost;
+  salonId: string;
 }) {
   const titleId = useId();
+  const commentsPanelId = useId();
+  const [commentCountState, setCommentCountState] = useState(() => ({
+    count: initialCommentCount,
+    postId: post.id,
+  }));
+  const viewer = postCommentViewer(capabilities);
+  const commentTarget = beautyPostCommentTarget(post, salonId);
   const before = post.media.find((item) => item.role === "before") ?? post.media[0];
   const after =
     post.media.find((item) => item.role === "after") ??
@@ -3230,6 +3337,24 @@ function BeautyPostDetailDialog({
     post.verificationState === "verified" ? "Verified Visit" : null,
     timeAgo(post.publishedAt),
   ]);
+  const commentCount =
+    commentCountState.postId === post.id
+      ? commentCountState.count
+      : initialCommentCount;
+
+  function updateCommentCount(count: number) {
+    setCommentCountState({ count, postId: post.id });
+    onCommentCountChange(commentTarget, count);
+  }
+
+  function focusCommentsPanel() {
+    const panel = document.getElementById(commentsPanelId);
+
+    panel?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    panel
+      ?.querySelector<HTMLTextAreaElement>("textarea")
+      ?.focus({ preventScroll: true });
+  }
 
   useEffect(() => {
     function onKeyDown(event: globalThis.KeyboardEvent) {
@@ -3315,19 +3440,50 @@ function BeautyPostDetailDialog({
                 Close
               </Button>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
+              <SavePostButton
+                className="min-w-0 flex-1 border-r border-zinc-100 last:border-r-0"
+                size="toolbar"
+                target={{
+                  sourceId: post.id,
+                  sourceType: "beauty_post",
+                }}
+              />
               <a
-                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+                className="inline-flex min-h-9 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 border-r border-zinc-100 px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
                 href={post.postHref}
+                title="Open Beauty post"
               >
-                Open Beauty post
+                <TimelineActionIcon name="open" />
+                <span className="truncate">Open</span>
               </a>
-              <Button
-                onClick={() => onViewInTimeline(`shared-${post.id}`)}
-                variant="secondary"
+              <TimelineActionButton
+                aria-controls={commentsPanelId}
+                aria-label="Read or write comments"
+                className="border-r border-zinc-100 last:border-r-0"
+                icon="comment"
+                onClick={focusCommentsPanel}
+                title="Comment"
               >
-                View in timeline
-              </Button>
+                Comment
+              </TimelineActionButton>
+              <TimelineActionButton
+                aria-label="View in timeline"
+                className="border-r border-zinc-100 last:border-r-0"
+                icon="timeline"
+                onClick={() => onViewInTimeline(`shared-${post.id}`)}
+                title="View in timeline"
+              >
+                Timeline
+              </TimelineActionButton>
+            </div>
+            <div id={commentsPanelId}>
+              <PostCommentThread
+                initialCount={commentCount}
+                onCountChange={updateCommentCount}
+                target={commentTarget}
+                viewer={viewer}
+              />
             </div>
           </div>
         </div>
@@ -3658,8 +3814,10 @@ export function SalonProfileView({
   const ownerMenuRef = useRef<HTMLDivElement | null>(null);
   const [experienceFilter, setExperienceFilter] =
     useState<"all" | "issues" | "verified">("all");
-  const [commentTarget, setCommentTarget] = useState<CommentTarget | null>(null);
-  const comments = data.comments;
+  const [commentTarget, setCommentTarget] = useState<PostCommentTarget | null>(null);
+  const [commentCountOverrides, setCommentCountOverrides] = useState(
+    new Map<string, number>(),
+  );
   const [savedLookIds, setSavedLookIds] = useState(
     new Set(sortedLooks.filter((look) => look.isSaved).map((look) => look.id)),
   );
@@ -3670,6 +3828,7 @@ export function SalonProfileView({
     INITIAL_TIMELINE_ITEM_COUNT,
   );
   const timelineSentinelRef = useRef<HTMLDivElement | null>(null);
+  const timelineHashHandledRef = useRef<string | null>(null);
   const tabScrollPositions = useRef<Record<TabId, number>>({
     about: 0,
     discover: 0,
@@ -3723,6 +3882,7 @@ export function SalonProfileView({
 
     return () => window.clearTimeout(timer);
   }, [selectedTab]);
+
   const [isFollowing, setFollowing] = useState(profile.isFollowing);
   const [followerCount, setFollowerCount] = useState(profile.followerCount);
   const [statusMessage, setStatusMessage] = useState("");
@@ -3814,6 +3974,52 @@ export function SalonProfileView({
     feedItems,
   });
   const visibleTimelineItems = timelineItems.slice(0, visibleTimelineCount);
+
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+
+    if (
+      !hash.startsWith("look-") &&
+      !hash.startsWith("update-") &&
+      !hash.startsWith("shared-")
+    ) {
+      return undefined;
+    }
+
+    if (timelineHashHandledRef.current === hash) {
+      return undefined;
+    }
+
+    const targetIndex = timelineItems.findIndex((item) => item.id === hash);
+
+    if (targetIndex < 0) {
+      return undefined;
+    }
+
+    timelineHashHandledRef.current = hash;
+
+    let scrollTimer: number | undefined;
+    const stateTimer = window.setTimeout(() => {
+      setSelectedTab("discover");
+      setVisibleTimelineCount((current) =>
+        Math.max(current, targetIndex + 1, INITIAL_TIMELINE_ITEM_COUNT),
+      );
+      scrollTimer = window.setTimeout(() => {
+        document
+          .getElementById(hash)
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 120);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(stateTimer);
+
+      if (scrollTimer !== undefined) {
+        window.clearTimeout(scrollTimer);
+      }
+    };
+  }, [timelineItems]);
+
   const galleryItems = buildGalleryItems({
     beautyPosts: data.beautyPosts,
     feedItems,
@@ -3891,6 +4097,26 @@ export function SalonProfileView({
 
   function refresh() {
     router.refresh();
+  }
+
+  function commentCountForTarget(target: PostCommentTarget, fallback: number) {
+    return commentCountOverrides.get(postCommentKey(target)) ?? fallback;
+  }
+
+  function updateCommentCountForTarget(
+    target: PostCommentTarget,
+    commentCount: number,
+  ) {
+    setCommentCountOverrides((current) => {
+      if (current.get(postCommentKey(target)) === commentCount) {
+        return current;
+      }
+
+      const next = new Map(current);
+
+      next.set(postCommentKey(target), commentCount);
+      return next;
+    });
   }
 
   function selectMood(mood: string) {
@@ -4083,6 +4309,12 @@ export function SalonProfileView({
                 return (
                   <div id={timelineItem.id} key={timelineItem.id}>
                     <BeautyTransformationsSection
+                      commentCountForPost={(post) =>
+                        commentCountForTarget(
+                          beautyPostCommentTarget(post, profile.salonId),
+                          post.commentCount,
+                        )
+                      }
                       onOpenPost={setDetailBeautyPost}
                       posts={timelineItem.posts}
                     />
@@ -4097,16 +4329,23 @@ export function SalonProfileView({
               return (
                 <FeedCard
                   capabilities={capabilities}
-                  comments={comments}
+                  commentCount={commentCountForTarget(
+                    profileFeedCommentTarget(
+                      item,
+                      item.contentType === "look"
+                        ? item.title
+                        : item.caption || item.title || "Salon update",
+                    ),
+                    item.commentCount,
+                  )}
                   item={item}
                   key={timelineItem.id}
                   look={look}
                   logoUrl={profile.logoImageUrl}
                   onBook={openBooking}
-                  onComment={setCommentTarget}
+                  onCommentCountChange={updateCommentCountForTarget}
                   onOpenPost={openTimelinePost}
                   onRefresh={refresh}
-                  onSave={toggleSave}
                   onSavedChange={applyLookSaveState}
                   onShare={shareSalon}
                   saved={look ? savedLookIds.has(look.id) : false}
@@ -4793,42 +5032,57 @@ export function SalonProfileView({
       </section>
 
       {primaryMobileLook && canShowBook ? (
-        <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-[.28fr_.32fr_.4fr] gap-2 border-t border-zinc-200 bg-white/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-10px_30px_rgba(24,24,27,.12)] backdrop-blur md:hidden">
-          <Button
-            className="min-h-11 px-3"
-            disabled={isPending}
-            onClick={() => toggleSave(primaryMobileLook)}
-            variant="secondary"
-          >
-            {savedLookIds.has(primaryMobileLook.id) ? "Saved" : "Save"}
-          </Button>
-          <Button
-            className="min-h-11 px-3"
-            onClick={() =>
-              setCommentTarget({
-                lookId: primaryMobileLook.id,
-                title: primaryMobileLook.title,
-              })
-            }
-            variant="secondary"
-          >
-            Comment
-          </Button>
-          <Button
-            className="min-h-11 px-3"
-            onClick={() =>
-              openBooking({
-                lookId: primaryMobileLook.id,
-                note: primaryMobileLook.caption ?? primaryMobileLook.bookingNote,
-                serviceId: primaryMobileLook.serviceId,
-                staffId: primaryMobileLook.recommendedStaffId,
-                title: "Book this exact look",
-              })
-            }
-            variant="primary"
-          >
-            Book
-          </Button>
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-10px_30px_rgba(24,24,27,.12)] backdrop-blur md:hidden">
+          <div className="mx-auto grid max-w-md auto-cols-fr grid-flow-col overflow-hidden rounded-xl border border-zinc-200 bg-white">
+            <SavePostButton
+              className="min-w-0 flex-1 border-r border-zinc-100 last:border-r-0"
+              initialSaved={savedLookIds.has(primaryMobileLook.id)}
+              onSavedChange={(active) =>
+                applyLookSaveState(primaryMobileLook, active)
+              }
+              saveCount={saveCounts.get(primaryMobileLook.id) ?? 0}
+              size="toolbar"
+              target={{
+                salonId: profile.salonId,
+                sourceId: primaryMobileLook.id,
+                sourceType: "salon_profile_look",
+              }}
+            />
+            <TimelineActionButton
+              aria-label="Comment"
+              className="border-r border-zinc-100 last:border-r-0"
+              disabled={isPending}
+              icon="comment"
+              onClick={() =>
+                setCommentTarget({
+                  salonId: profile.salonId,
+                  sourceId: primaryMobileLook.id,
+                  sourceType: "salon_profile_look",
+                  title: primaryMobileLook.title,
+                })
+              }
+              title="Comment"
+            >
+              Comment
+            </TimelineActionButton>
+            <TimelineActionButton
+              aria-label="Book exact look"
+              icon="book"
+              onClick={() =>
+                openBooking({
+                  lookId: primaryMobileLook.id,
+                  note: primaryMobileLook.caption ?? primaryMobileLook.bookingNote,
+                  serviceId: primaryMobileLook.serviceId,
+                  staffId: primaryMobileLook.recommendedStaffId,
+                  title: "Book this exact look",
+                })
+              }
+              title="Book exact look"
+              tone="primary"
+            >
+              Book
+            </TimelineActionButton>
+          </div>
         </div>
       ) : null}
 
@@ -4860,24 +5114,33 @@ export function SalonProfileView({
       ) : null}
       {commentTarget ? (
         <Modal onClose={() => setCommentTarget(null)} title="Comments">
-          <CommentsPanel
-            capabilities={capabilities}
-            comments={comments}
-            onPosted={refresh}
-            salonId={profile.salonId}
+          <PostCommentThread
+            initialCount={commentCountForTarget(commentTarget, 0)}
+            onCountChange={(count) =>
+              updateCommentCountForTarget(commentTarget, count)
+            }
             target={commentTarget}
+            viewer={postCommentViewer(capabilities)}
           />
         </Modal>
       ) : null}
       {detailLook ? (
         <LookDetailDialog
           capabilities={capabilities}
-          comments={comments}
+          commentCount={commentCountForTarget(
+            {
+              salonId: profile.salonId,
+              sourceId: detailLook.id,
+              sourceType: "salon_profile_look",
+              title: detailLook.title,
+            },
+            detailLook.commentCount,
+          )}
           isSaved={savedLookIds.has(detailLook.id)}
           look={detailLook}
           onBook={openBooking}
           onClose={() => setDetailLook(null)}
-          onCommentPosted={refresh}
+          onCommentCountChange={updateCommentCountForTarget}
           onSave={toggleSave}
           onShare={() => void shareSalon()}
           onViewInTimeline={viewInTimeline}
@@ -4888,21 +5151,35 @@ export function SalonProfileView({
       {detailPost ? (
         <FeedPostDetailDialog
           capabilities={capabilities}
-          comments={comments}
+          commentCount={commentCountForTarget(
+            profileFeedCommentTarget(
+              detailPost,
+              detailPost.contentType === "look"
+                ? detailPost.title
+                : detailPost.caption || detailPost.title || "Salon update",
+            ),
+            detailPost.commentCount,
+          )}
           item={detailPost}
           onBook={openBooking}
           onClose={() => setDetailPost(null)}
-          onCommentPosted={refresh}
+          onCommentCountChange={updateCommentCountForTarget}
           onShare={shareSalon}
           onViewInTimeline={viewInTimeline}
-          salonId={profile.salonId}
         />
       ) : null}
       {detailBeautyPost ? (
         <BeautyPostDetailDialog
+          capabilities={capabilities}
+          commentCount={commentCountForTarget(
+            beautyPostCommentTarget(detailBeautyPost, profile.salonId),
+            detailBeautyPost.commentCount,
+          )}
           onClose={() => setDetailBeautyPost(null)}
+          onCommentCountChange={updateCommentCountForTarget}
           onViewInTimeline={viewInTimeline}
           post={detailBeautyPost}
+          salonId={profile.salonId}
         />
       ) : null}
       {detailStaff ? (

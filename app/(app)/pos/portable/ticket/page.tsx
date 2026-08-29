@@ -8,6 +8,7 @@ import {
   DailyPosTicketCard,
   type EditablePosTicket,
 } from "@/app/pos-tickets/closed-ticket-correction-form";
+import { searchTextMatches } from "@/lib/search-normalization";
 import Link from "next/link";
 
 type PortableTicketPageProps = {
@@ -236,12 +237,6 @@ function ticketMatchesSearch(
   dailyNumber: number,
   timeZone: string,
 ) {
-  const normalizedQuery = query.trim().toLowerCase();
-
-  if (!normalizedQuery) {
-    return true;
-  }
-
   const searchableValues = [
     String(dailyNumber),
     `#${dailyNumber}`,
@@ -278,9 +273,7 @@ function ticketMatchesSearch(
     formatMoney(Math.max(0, ticket.remaining)),
   ];
 
-  return searchableValues.some((value) =>
-    value.toLowerCase().includes(normalizedQuery),
-  );
+  return searchTextMatches(searchableValues, query);
 }
 
 function filterTicketsBySearch(

@@ -91,6 +91,7 @@ export type BeautyTimelinePost = {
   };
   bookingAction: BeautyPostBookingAction | null;
   caption: string | null;
+  commentCount: number;
   createdAt: string;
   editedAt: string | null;
   id: string;

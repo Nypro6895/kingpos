@@ -32,6 +32,7 @@ type DisplayMedia = {
 type DisplayPost = {
   attribution: string | null;
   caption: string | null;
+  commentCount: number;
   createdAt: string;
   href: string | null;
   id: string;
@@ -85,6 +86,7 @@ function publicPostToDisplayPost(post: ExplorePersonalPostItem): DisplayPost {
   return {
     attribution: post.salon?.name ?? null,
     caption: post.caption,
+    commentCount: post.commentCount,
     createdAt: post.publishedAt,
     href: post.destination.href,
     id: post.id,
@@ -224,6 +226,14 @@ function PostCard({
         ) : null}
         {post.attribution ? (
           <p className="text-xs font-bold text-text-muted">{post.attribution}</p>
+        ) : null}
+        {post.href ? (
+          <Link
+            className="w-fit rounded-full bg-surface-muted px-3 py-1.5 text-xs font-extrabold text-text-secondary transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+            href={`${post.href}#comments`}
+          >
+            {post.commentCount} comment{post.commentCount === 1 ? "" : "s"}
+          </Link>
         ) : null}
       </div>
     </article>

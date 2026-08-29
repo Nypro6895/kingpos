@@ -68,6 +68,9 @@ export function LoginForm({ nextPath = "/explore" }: { nextPath?: string }) {
 
     try {
       const response = await fetch("/api/auth/login", {
+        headers: {
+          Accept: "application/json",
+        },
         method: "POST",
         body: new FormData(event.currentTarget),
       });
@@ -100,8 +103,10 @@ export function LoginForm({ nextPath = "/explore" }: { nextPath?: string }) {
       ) : null}
 
       <form
+        action="/api/auth/login"
         aria-describedby={error ? "login-form-error" : undefined}
         className="relative z-10 mt-6 space-y-5"
+        method="post"
         onSubmit={handleSubmit}
       >
         <input name="next" type="hidden" value={nextPath} />

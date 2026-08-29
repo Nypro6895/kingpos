@@ -11,7 +11,7 @@ function read(path) {
 
 test("login exposes forgot password without losing the return path", () => {
   const loginForm = read("app/login/login-form.tsx");
-  const forgotPage = read("app/forgot-password/page.tsx");
+  const forgotPage = read("app/(app)/forgot-password/page.tsx");
   const forgotForm = read("app/forgot-password/forgot-password-form.tsx");
 
   assert.match(loginForm, /Forgot password\?/);
@@ -25,7 +25,7 @@ test("login exposes forgot password without losing the return path", () => {
 });
 
 test("forgot password API sends a non-enumerating reset email", () => {
-  const route = read("app/api/auth/forgot-password/route.ts");
+  const route = read("app/(app)/api/auth/forgot-password/route.ts");
 
   assert.match(route, /resetPasswordForEmail\(email,\s*\{/);
   assert.match(route, /redirectTo: resetPasswordRedirectUrl\(request, nextPath\)/);
@@ -35,7 +35,7 @@ test("forgot password API sends a non-enumerating reset email", () => {
 });
 
 test("reset password page consumes recovery tokens and updates the user password", () => {
-  const resetPage = read("app/reset-password/page.tsx");
+  const resetPage = read("app/(app)/reset-password/page.tsx");
   const resetForm = read("app/reset-password/reset-password-form.tsx");
 
   assert.match(resetPage, /sanitizeAuthReturnPath\(next\)/);

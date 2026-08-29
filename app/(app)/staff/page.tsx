@@ -21,6 +21,7 @@ import { StaffSlideOver } from "@/app/staff/staff-slide-over";
 import { safeAccountAvatarUrl } from "@/lib/account-avatar";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
+import { searchTextMatches } from "@/lib/search-normalization";
 import {
   getCurrentSalonStaffDirectory,
   STAFF_PERMISSIONS,
@@ -221,13 +222,7 @@ function getPosStatus(member: StaffDirectoryMember): {
 }
 
 function memberMatchesSearch(member: StaffDirectoryMember, query: string) {
-  const normalizedQuery = query.trim().toLowerCase();
-
-  if (!normalizedQuery) {
-    return true;
-  }
-
-  const searchableText = [
+  return searchTextMatches([
     member.display_name,
     member.first_name,
     member.last_name,
@@ -237,12 +232,7 @@ function memberMatchesSearch(member: StaffDirectoryMember, query: string) {
     member.connected_user?.display_name,
     member.connected_user?.email,
     member.connected_user?.phone,
-  ]
-    .filter((value): value is string => Boolean(value))
-    .join(" ")
-    .toLowerCase();
-
-  return searchableText.includes(normalizedQuery);
+  ], query);
 }
 
 function getInitials(value: string) {

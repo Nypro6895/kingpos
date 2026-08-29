@@ -20,6 +20,7 @@ import {
   updateCustomerVisitRequestedServices,
 } from "@/lib/customer-visits";
 import { requirePermission } from "@/lib/permissions";
+import { normalizePhoneForIdentity } from "@/lib/phone-normalization";
 import { POS_DESK_DEFAULTS } from "@/lib/pos-desk";
 import { getTurnType, parsePosAmountInput } from "@/lib/pos-desk-amounts";
 import { broadcastPosLiveDraftSnapshot } from "@/lib/pos-live-draft-realtime-server";
@@ -560,6 +561,33 @@ async function findOrCreateDeskCustomer(input: {
   const lookup = cleanOptional(input.customerLookup);
 
   if (lookup) {
+    const normalizedPhone = normalizePhoneForIdentity(lookup);
+
+    if (normalizedPhone) {
+      const { data, error } = await supabase.rpc("search_salon_customers", {
+        p_limit: 1,
+        p_offset: 0,
+        p_query: lookup,
+        p_salon_id: salon.id,
+        p_status: "active",
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const customer = ((data ?? []) as PosDeskCustomer[])[0];
+
+      if (customer) {
+        return {
+          email: customer.email,
+          id: customer.id,
+          name: customer.name,
+          phone: customer.phone,
+        };
+      }
+    }
+
     const escaped = lookup.replaceAll("%", "\\%").replaceAll("_", "\\_");
     const { data, error } = await supabase
       .from("customers")
@@ -1360,22 +1388,24 @@ export async function searchPosDeskCustomers(search: string) {
     return [];
   }
 
-  const escaped = trimmed.replaceAll("%", "\\%").replaceAll("_", "\\_");
-  const { data, error } = await supabase
-    .from("customers")
-    .select("id, name, phone, email")
-    .eq("location_id", salon.id)
-    .eq("status", "active")
-    .or(`name.ilike.%${escaped}%,phone.ilike.%${escaped}%,email.ilike.%${escaped}%`)
-    .order("created_at", { ascending: false })
-    .limit(10)
-    .returns<PosDeskCustomer[]>();
+  const { data, error } = await supabase.rpc("search_salon_customers", {
+    p_limit: 10,
+    p_offset: 0,
+    p_query: trimmed,
+    p_salon_id: salon.id,
+    p_status: "active",
+  });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data ?? [];
+  return ((data ?? []) as PosDeskCustomer[]).map((customer) => ({
+    email: customer.email,
+    id: customer.id,
+    name: customer.name,
+    phone: customer.phone,
+  }));
 }
 
 export async function getOrCreatePosLiveDraft(): Promise<ActionResult<PosLiveDraftView>> {

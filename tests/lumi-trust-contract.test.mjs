@@ -159,6 +159,8 @@ test("Lumi Spark visual contract uses one orange four-point SVG with five fill s
   assert.match(trustComponent, /full:\s*1/);
   assert.match(trustComponent, /const LUMI_SPARK_PATH/);
   assert.match(trustComponent, /clipPath/);
+  assert.match(trustComponent, /createPortal/);
+  assert.match(trustComponent, /fixed z-\[90\]/);
   assert.match(trustComponent, /data-lumi-trust-level/);
   assert.match(trustComponent, /fill="currentColor"/);
   assert.match(trustComponent, /stroke="currentColor"/);

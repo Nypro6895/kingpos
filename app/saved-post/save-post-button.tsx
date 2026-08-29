@@ -28,7 +28,7 @@ type SavePostButtonProps = {
   initialSaved?: boolean;
   onSavedChange?: (saved: boolean) => void;
   saveCount?: number | null;
-  size?: "compact" | "default";
+  size?: "compact" | "default" | "toolbar";
   target: AccountSavedPostTarget | null | undefined;
 };
 
@@ -158,6 +158,7 @@ function SavePostButtonInner({
   const stableSalonId = stableTarget.salonId;
   const stableSourceId = stableTarget.sourceId;
   const stableSourceType = stableTarget.sourceType;
+  const isToolbar = size === "toolbar";
 
   useEffect(() => {
     let active = true;
@@ -313,19 +314,35 @@ function SavePostButtonInner({
 
   return (
     <span
-      className={["z-20 inline-grid", className]
+      className={[
+        "z-20",
+        isToolbar ? "inline-flex min-w-0" : "inline-grid",
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
     >
-      <span className="group/save relative inline-grid">
+      <span
+        className={[
+          "group/save relative",
+          isToolbar ? "inline-flex min-w-0" : "inline-grid",
+        ].join(" ")}
+      >
         <button
           aria-describedby={tooltipId}
           aria-label={saveAriaLabel}
           aria-pressed={saved}
           className={[
-            "grid place-items-center rounded-full bg-white/92 text-zinc-700 shadow-[0_10px_24px_rgba(24,24,27,.18)] ring-1 ring-white/80 backdrop-blur transition hover:scale-105 hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-            size === "compact" ? "h-8 w-8" : "h-10 w-10",
-            saved ? "text-brand-orange ring-brand-orange/30" : "",
+            isToolbar
+              ? "inline-flex min-h-9 w-full min-w-0 items-center justify-center gap-1.5 rounded-none bg-transparent px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-orange"
+              : "grid place-items-center rounded-full bg-white/92 text-zinc-700 shadow-[0_10px_24px_rgba(24,24,27,.18)] ring-1 ring-white/80 backdrop-blur transition hover:scale-105 hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+            !isToolbar && size === "compact" ? "h-8 w-8" : "",
+            !isToolbar && size !== "compact" ? "h-10 w-10" : "",
+            saved
+              ? isToolbar
+                ? "text-brand-orange"
+                : "text-brand-orange ring-brand-orange/30"
+              : "",
             isSaving || isPending ? "cursor-wait" : "",
           ].join(" ")}
           data-saving={isSaving || isPending ? "true" : undefined}
@@ -336,7 +353,12 @@ function SavePostButtonInner({
         >
           <svg
             aria-hidden="true"
-            className={size === "compact" ? "h-4 w-4" : "h-5 w-5"}
+            className={[
+              size === "compact" || isToolbar ? "h-4 w-4" : "h-5 w-5",
+              isToolbar ? "shrink-0" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             fill={saved ? "currentColor" : "none"}
             stroke="currentColor"
             strokeLinecap="round"
@@ -346,8 +368,16 @@ function SavePostButtonInner({
           >
             <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
           </svg>
+          {isToolbar ? (
+            <span className="min-w-0 truncate">{saved ? "Loved" : "Love"}</span>
+          ) : null}
+          {isToolbar && displaySaveCount > 0 ? (
+            <span className="shrink-0 text-[11px] font-bold tabular-nums text-zinc-500">
+              {displaySaveCount}
+            </span>
+          ) : null}
         </button>
-        {displaySaveCount > 0 ? (
+        {!isToolbar && displaySaveCount > 0 ? (
           <span className="pointer-events-none absolute -right-1.5 -top-1.5 z-10 min-w-5 rounded-full bg-brand-orange px-1.5 py-0.5 text-center text-[10px] font-extrabold leading-none text-white shadow-[0_8px_18px_rgba(242,111,61,.28)] ring-2 ring-white">
             +{displaySaveCount}
           </span>

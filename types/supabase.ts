@@ -3382,13 +3382,15 @@ export type Database = {
         Row: {
           author_display_name: string | null
           author_user_id: string | null
+          beauty_post_id: string | null
           body: string
           created_at: string
+          edited_at: string | null
           id: string
           is_salon_reply: boolean
           look_id: string | null
           parent_comment_id: string | null
-          salon_id: string
+          salon_id: string | null
           status: string
           update_id: string | null
           updated_at: string
@@ -3396,13 +3398,15 @@ export type Database = {
         Insert: {
           author_display_name?: string | null
           author_user_id?: string | null
+          beauty_post_id?: string | null
           body: string
           created_at?: string
+          edited_at?: string | null
           id?: string
           is_salon_reply?: boolean
           look_id?: string | null
           parent_comment_id?: string | null
-          salon_id: string
+          salon_id?: string | null
           status?: string
           update_id?: string | null
           updated_at?: string
@@ -3410,13 +3414,15 @@ export type Database = {
         Update: {
           author_display_name?: string | null
           author_user_id?: string | null
+          beauty_post_id?: string | null
           body?: string
           created_at?: string
+          edited_at?: string | null
           id?: string
           is_salon_reply?: boolean
           look_id?: string | null
           parent_comment_id?: string | null
-          salon_id?: string
+          salon_id?: string | null
           status?: string
           update_id?: string | null
           updated_at?: string
@@ -3427,6 +3433,13 @@ export type Database = {
             columns: ["author_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_comments_beauty_post_id_fkey"
+            columns: ["beauty_post_id"]
+            isOneToOne: false
+            referencedRelation: "beauty_posts"
             referencedColumns: ["id"]
           },
           {
@@ -5863,19 +5876,50 @@ export type Database = {
           website: string
         }[]
       }
+      count_public_post_comments: {
+        Args: { p_target_id: string; p_target_type: string }
+        Returns: number
+      }
+      get_public_post_comments: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_target_id: string
+          p_target_type: string
+        }
+        Returns: {
+          author_display_name: string
+          author_user_id: string | null
+          beauty_post_id: string | null
+          body: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          is_salon_reply: boolean
+          look_id: string | null
+          parent_comment_id: string | null
+          root_count: number
+          salon_id: string | null
+          total_count: number
+          update_id: string | null
+          updated_at: string
+        }[]
+      }
       get_public_salon_profile_comments: {
         Args: { target_salon_id: string }
         Returns: {
           author_display_name: string
-          author_user_id: string
+          author_user_id: string | null
+          beauty_post_id: string | null
           body: string
           created_at: string
+          edited_at: string | null
           id: string
           is_salon_reply: boolean
-          look_id: string
-          parent_comment_id: string
-          salon_id: string
-          update_id: string
+          look_id: string | null
+          parent_comment_id: string | null
+          salon_id: string | null
+          update_id: string | null
           updated_at: string
         }[]
       }

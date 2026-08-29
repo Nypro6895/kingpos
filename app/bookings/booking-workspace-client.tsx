@@ -30,6 +30,7 @@ import type {
   BookingWorkspaceRequest,
 } from "@/lib/bookings";
 import type { StaffBookingReadiness } from "@/lib/booking-setup";
+import { searchTextMatches } from "@/lib/search-normalization";
 import type {
   BookingConfirmationMode,
   BookingSource,
@@ -1198,12 +1199,9 @@ function ServicesQuickSetupDrawer({
     BookingActionResult | SaveServiceConfigsResult | null
   >(null);
   const [, startTransition] = useTransition();
-  const normalizedQuery = query.trim().toLowerCase();
   const services = options.services.filter(
     (service) =>
-      !normalizedQuery ||
-      service.name.toLowerCase().includes(normalizedQuery) ||
-      (service.category ?? "").toLowerCase().includes(normalizedQuery),
+      searchTextMatches([service.name, service.category], query),
   );
 
   function serviceOnline(service: BookingWorkspaceClientProps["options"]["services"][number]) {
@@ -2059,12 +2057,9 @@ function ProfessionalsQuickSetupDrawer({
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [, startTransition] = useTransition();
-  const normalizedQuery = query.trim().toLowerCase();
   const staff = options.staff.filter(
     (member) =>
-      !normalizedQuery ||
-      member.display_name.toLowerCase().includes(normalizedQuery) ||
-      (member.job_title ?? "").toLowerCase().includes(normalizedQuery),
+      searchTextMatches([member.display_name, member.job_title], query),
   );
   const selectedStaff =
     options.staff.find((member) => member.id === selectedStaffId) ??

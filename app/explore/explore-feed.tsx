@@ -1,6 +1,7 @@
 "use client";
 
 import { loadExploreFeedAction } from "@/app/explore/actions";
+import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
 import { LumiTrustPopover } from "@/components/reylumi-trust";
@@ -10,6 +11,10 @@ import type {
   ExploreFeedMedia,
   ExploreFeedPage,
 } from "@/types/explore";
+import type {
+  PostCommentTarget,
+  PostCommentViewer,
+} from "@/types/post-comments";
 import {
   buildReylumiTrustSummary,
   type ReylumiTrustSummary,
@@ -77,6 +82,12 @@ function isStoredFeedItem(value: unknown): value is ExploreFeedItem {
   );
 }
 
+function normalizeStoredFeedItem(item: ExploreFeedItem): ExploreFeedItem {
+  return typeof item.commentCount === "number"
+    ? item
+    : { ...item, commentCount: 0 };
+}
+
 function readStoredFeedState(
   route: string,
   expectedFirstKey: string | null,
@@ -99,6 +110,7 @@ function readStoredFeedState(
 
     const items = parsed.items
       .filter(isStoredFeedItem)
+      .map(normalizeStoredFeedItem)
       .slice(0, EXPLORE_FEED_SESSION_ITEM_LIMIT);
     const firstKey = items[0] ? feedItemKey(items[0]) : null;
 
@@ -278,6 +290,23 @@ function ShareActionIcon() {
       <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
       <path d="m16 6-4-4-4 4" />
       <path d="M12 2v14" />
+    </svg>
+  );
+}
+
+function CommentActionIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
     </svg>
   );
 }
@@ -937,10 +966,37 @@ function FeedMediaFrame({
   );
 }
 
-function ExploreFeedCard({ item }: { item: ExploreFeedItem }) {
+function exploreCommentTarget(item: ExploreFeedItem): PostCommentTarget | null {
+  if (!item.saveTarget) {
+    return null;
+  }
+
+  return {
+    profileId: item.personal?.profileId ?? null,
+    salonId: item.saveTarget.salonId ?? item.salon?.id ?? null,
+    sourceId: item.saveTarget.sourceId,
+    sourceType: item.saveTarget.sourceType,
+    title: displayName(item.caption, "") || itemContextLabel(item),
+  };
+}
+
+function ExploreFeedCard({
+  item,
+  onCommentCountChange,
+  viewer,
+}: {
+  item: ExploreFeedItem;
+  onCommentCountChange: (feedKey: string, count: number) => void;
+  viewer: PostCommentViewer;
+}) {
   const service = serviceLabel(item);
   const href = item.destination.href;
   const isSalonRecommendation = item.contentType === "salon_recommendation";
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentCountState, setCommentCountState] = useState(() => ({
+    count: item.commentCount,
+    feedKey: item.feedKey,
+  }));
   const booking = item.booking?.eligible ? item.booking : null;
   const bookingHref = booking?.href ?? null;
   const bookedCount = booking?.bookedCount ?? null;
@@ -962,6 +1018,16 @@ function ExploreFeedCard({ item }: { item: ExploreFeedItem }) {
     item.sourceType === "personal" && item.personal?.profileId
       ? `/explore/beauty/${encodeURIComponent(item.personal.profileId)}`
       : actionHref ?? item.salon?.href ?? "/explore";
+  const commentTarget = exploreCommentTarget(item);
+  const commentCount =
+    commentCountState.feedKey === item.feedKey
+      ? commentCountState.count
+      : item.commentCount;
+
+  function updateCommentCount(count: number) {
+    setCommentCountState({ count, feedKey: item.feedKey });
+    onCommentCountChange(item.feedKey, count);
+  }
 
   return (
     <article
@@ -1046,6 +1112,22 @@ function ExploreFeedCard({ item }: { item: ExploreFeedItem }) {
                 </ActionTooltip>
               ) : null}
               {actionHref ? <FeedShareButton href={actionHref} item={item} /> : null}
+              {commentTarget ? (
+                <ActionTooltip label="Comment">
+                  <button
+                    aria-controls={`comments-${item.feedKey}`}
+                    aria-expanded={commentsOpen}
+                    aria-label={`Comment on ${itemContextLabel(item)}`}
+                    className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full bg-white px-2.5 text-xs font-semibold text-text-secondary ring-1 ring-divider-subtle transition hover:bg-surface-muted hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                    onClick={() => setCommentsOpen((current) => !current)}
+                    title="Comment"
+                    type="button"
+                  >
+                    <CommentActionIcon />
+                    <span>{commentCount}</span>
+                  </button>
+                </ActionTooltip>
+              ) : null}
             </div>
             {item.saveTarget ? (
               <SavePostButton
@@ -1057,6 +1139,20 @@ function ExploreFeedCard({ item }: { item: ExploreFeedItem }) {
               />
             ) : null}
           </div>
+          {commentsOpen && commentTarget ? (
+            <div
+              className="rounded-xl bg-surface-muted/70 p-3 ring-1 ring-divider-subtle/70"
+              id={`comments-${item.feedKey}`}
+            >
+              <PostCommentThread
+                compact
+                initialCount={commentCount}
+                onCountChange={updateCommentCount}
+                target={commentTarget}
+                viewer={viewer}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </article>
@@ -1082,7 +1178,13 @@ function ExploreFeedSkeleton() {
   );
 }
 
-export function ExploreFeed({ initialPage }: { initialPage: ExploreFeedPage }) {
+export function ExploreFeed({
+  initialPage,
+  viewer,
+}: {
+  initialPage: ExploreFeedPage;
+  viewer: PostCommentViewer;
+}) {
   const [items, setItems] = useState(initialPage.items);
   const [cursor, setCursor] = useState<ExploreFeedCursor | null>(
     initialPage.nextCursor,
@@ -1101,6 +1203,20 @@ export function ExploreFeed({ initialPage }: { initialPage: ExploreFeedPage }) {
   const isEmpty = items.length === 0 && !paginationError;
   const initialFailure = items.length === 0 && Boolean(paginationError);
   const memoizedItems = useMemo(() => items, [items]);
+
+  const updateCommentCount = useCallback((feedKey: string, commentCount: number) => {
+    setItems((current) => {
+      const hasChange = current.some(
+        (item) => feedItemKey(item) === feedKey && item.commentCount !== commentCount,
+      );
+
+      return hasChange
+        ? current.map((item) =>
+            feedItemKey(item) === feedKey ? { ...item, commentCount } : item,
+          )
+        : current;
+    });
+  }, []);
 
   const loadNextPage = useCallback(
     async (options: { retry?: boolean } = {}) => {
@@ -1248,7 +1364,12 @@ export function ExploreFeed({ initialPage }: { initialPage: ExploreFeedPage }) {
 
       <div className="grid gap-3">
         {memoizedItems.map((item) => (
-          <ExploreFeedCard item={item} key={feedItemKey(item)} />
+          <ExploreFeedCard
+            item={item}
+            key={feedItemKey(item)}
+            onCommentCountChange={updateCommentCount}
+            viewer={viewer}
+          />
         ))}
       </div>
 

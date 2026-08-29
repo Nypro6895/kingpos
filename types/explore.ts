@@ -227,6 +227,7 @@ export type ExploreFeedItem = {
   candidateClass: ExploreFeedCandidateClass;
   contentId: string;
   contentType: "beauty_post" | "look" | "salon_recommendation" | "update";
+  commentCount: number;
   destination: ExploreFeedDestination;
   feedKey: string;
   id: string;

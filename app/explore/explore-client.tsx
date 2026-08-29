@@ -38,6 +38,7 @@ import {
   type ReylumiExploreSearchOrder,
   type ReylumiTrustSummary,
 } from "@/lib/reylumi-trust";
+import type { PostCommentViewer } from "@/types/post-comments";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -61,6 +62,7 @@ export type ExploreQuickAction = {
 };
 
 type ExploreClientProps = {
+  commentViewer: PostCommentViewer;
   discoveryContent: ExploreDiscoveryContent;
   hasUrlLocation: boolean;
   homeContent: ExploreHomeContent;
@@ -2726,12 +2728,14 @@ function ExploreDiscoveryResults({
 }
 
 function ExploreHomeSections({
+  commentViewer,
   content,
   gpsMessage,
   initialFeed,
   nearYouSalons,
   onSelectCategory,
 }: {
+  commentViewer: PostCommentViewer;
   content: ExploreHomeContent;
   gpsMessage: string | null;
   initialFeed: ExploreFeedPage;
@@ -2767,7 +2771,7 @@ function ExploreHomeSections({
           {gpsMessage}
         </ExploreNotice>
       ) : null}
-      <ExploreFeed initialPage={initialFeed} />
+      <ExploreFeed initialPage={initialFeed} viewer={commentViewer} />
 
       {initialFeed.items.length === 0 ? (
         <PopularServicesSection
@@ -2946,6 +2950,7 @@ function QuickActions({ actions }: { actions: ExploreQuickAction[] }) {
 }
 
 export function ExploreClient({
+  commentViewer,
   discoveryContent,
   hasUrlLocation,
   homeContent,
@@ -3344,6 +3349,7 @@ export function ExploreClient({
 
           {homeMode ? (
             <ExploreHomeSections
+              commentViewer={commentViewer}
               content={homeContent}
               gpsMessage={gpsMessage}
               initialFeed={initialFeed}
@@ -3515,8 +3521,7 @@ export function ExploreClient({
                   </div>
                 )}
 
-                {activeResponse.groupCounts.bestMatches >
-                activeResponse.pageSize ? (
+                {activeResponse.totalCount > activeResponse.pageSize ? (
                   <Pagination
                     disabled={isSearching}
                     onPageChange={goToPage}

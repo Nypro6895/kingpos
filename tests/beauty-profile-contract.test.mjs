@@ -21,13 +21,13 @@ const beautyService = read("lib/beauty.ts");
 const beautyMedia = read("lib/beauty-media.ts");
 const beautyActions = read("app/beauty/actions.ts");
 const beautyClient = read("app/beauty/beauty-profile-client.tsx");
-const beautyPage = read("app/beauty/page.tsx");
+const beautyPage = read("app/(app)/beauty/page.tsx");
 const beautySalonPublicationService = read("lib/beauty-salon-publications.ts");
 const salonProfileService = read("lib/salon-profile.ts");
 const salonProfileTypes = read("types/salon-profile.ts");
 const salonProfileView = read("app/salon-profile/salon-profile-view.tsx");
 const salonPublicationReviewPage = read(
-  "app/salon-profile/client-transformations/page.tsx",
+  "app/(app)/salon-profile/client-transformations/page.tsx",
 );
 const salonPublicationReviewActions = read(
   "app/salon-profile/client-transformations/actions.ts",
@@ -326,7 +326,8 @@ test("pending salon publications are not public salon profile posts", () => {
   assert.match(salonProfileTypes, /BeautyPostBookingPresentation/);
   assert.match(salonProfileView, /BeautyTransformationsSection/);
   assert.match(salonProfileView, /BeforeAfterCompare/);
-  assert.match(salonProfileView, /posts=\{data\.beautyPosts\}/);
+  assert.match(salonProfileView, /commentCountForPost=\{\(post\) =>/);
+  assert.match(salonProfileView, /posts=\{timelineItem\.posts\}/);
   assert.match(salonProfileView, /post\.booking\?\.eligible/);
   assert.match(salonProfileView, /booking\?\.bookedCount/);
   assert.match(salonProfileView, /beautyBookedCountLabel/);

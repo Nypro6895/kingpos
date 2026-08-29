@@ -38,7 +38,7 @@ test("login return hrefs encode sanitized internal paths", () => {
 
 test("server auth only trusts app-owned session cookies", () => {
   const server = read("lib/supabase/server.ts");
-  const logoutRoute = read("app/api/auth/logout/route.ts");
+  const logoutRoute = read("app/(app)/api/auth/logout/route.ts");
   const accessTokenFunction = server.slice(
     server.indexOf("export async function getAccessTokenFromRequest"),
     server.indexOf("export async function getSupabaseSessionTokensFromRequest"),
@@ -57,6 +57,27 @@ test("server auth only trusts app-owned session cookies", () => {
   assert.match(server, /clearSupabaseSessionCookieWriter/);
   assert.match(logoutRoute, /clearSupabaseSessionCookieWriter\(\s*response\.cookies/);
   assert.match(logoutRoute, /cookieStore\.getAll\(\)\.map/);
+});
+
+test("credential auth forms post natively and routes keep JSON fetch behavior", () => {
+  const loginForm = read("app/login/login-form.tsx");
+  const signupForm = read("app/signup/signup-form.tsx");
+  const loginRoute = read("app/(app)/api/auth/login/route.ts");
+  const signupRoute = read("app/(app)/api/auth/signup/route.ts");
+
+  assert.match(loginForm, /action="\/api\/auth\/login"/);
+  assert.match(loginForm, /method="post"/);
+  assert.match(loginForm, /Accept: "application\/json"/);
+  assert.match(signupForm, /action="\/api\/auth\/signup"/);
+  assert.match(signupForm, /method="post"/);
+  assert.match(signupForm, /Accept: "application\/json"/);
+
+  assert.match(loginRoute, /function wantsJsonResponse\(request: Request\)/);
+  assert.match(loginRoute, /function loginErrorResponse/);
+  assert.match(loginRoute, /NextResponse\.redirect\(new URL\(path, request\.url\), 303\)/);
+  assert.match(signupRoute, /function wantsJsonResponse\(request: Request\)/);
+  assert.match(signupRoute, /function signupErrorResponse/);
+  assert.match(signupRoute, /NextResponse\.redirect\(new URL\(path, request\.url\), 303\)/);
 });
 
 test("auth route classifier separates account, personal, owner, staff, salon, shared, and neutral routes", () => {

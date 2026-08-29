@@ -71,6 +71,11 @@ export type CustomerListPagination = {
   pageSize: number;
 };
 
+type CustomerSearchRpcRow = Customer & {
+  search_rank?: number | string | null;
+  total_count?: number | string | null;
+};
+
 export type CustomerBookingSummary = Booking & {
   lines: BookingLine[];
   normalizedStatus: Exclude<BookingStatus, "scheduled">;
@@ -209,15 +214,44 @@ function numberValue(value: number | string | null | undefined) {
   return Number.isFinite(numeric) ? numeric : 0;
 }
 
-function escapeSearch(value: string) {
-  return value.replaceAll("%", "\\%").replaceAll("_", "\\_");
-}
-
 function parsePage(value: string | string[] | undefined) {
   const raw = Array.isArray(value) ? value[0] : value;
   const page = Number(raw ?? 1);
 
   return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
+function readCount(value: number | string | null | undefined) {
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+}
+
+function customerFromSearchRow(row: CustomerSearchRpcRow): Customer {
+  return {
+    created_at: row.created_at,
+    created_by_user_id: row.created_by_user_id,
+    customer_user_id: row.customer_user_id,
+    email: row.email,
+    id: row.id,
+    internal_notes: row.internal_notes,
+    location_id: row.location_id,
+    name: row.name,
+    notes: row.notes,
+    phone: row.phone,
+    source: row.source,
+    staff_notes: row.staff_notes,
+    status: row.status,
+    updated_at: row.updated_at,
+    updated_by_user_id: row.updated_by_user_id,
+  };
 }
 
 async function loadCustomerMetrics(input: {
@@ -374,21 +408,50 @@ export async function getCurrentSalonCustomerList(input: {
   const page = parsePage(input.page);
   const from = (page - 1) * CUSTOMER_PAGE_SIZE;
   const to = from + CUSTOMER_PAGE_SIZE - 1;
-  let query = supabase
-    .from("customers")
-    .select(CUSTOMER_SELECT, { count: "exact" })
-    .eq("location_id", salon.id)
-    .order("created_at", { ascending: false })
-    .range(from, to);
+  let count = 0;
+  let rows: Customer[] = [];
+  let error: { code?: string; details?: string; hint?: string; message: string } | null = null;
 
   if (trimmedSearch) {
-    const escapedSearch = escapeSearch(trimmedSearch);
-    query = query.or(
-      `name.ilike.%${escapedSearch}%,phone.ilike.%${escapedSearch}%,email.ilike.%${escapedSearch}%`,
-    );
-  }
+    const result = await supabase.rpc("search_salon_customers", {
+      p_limit: CUSTOMER_PAGE_SIZE,
+      p_offset: from,
+      p_query: trimmedSearch,
+      p_salon_id: salon.id,
+      p_status: null,
+    });
+    const searchRows = (result.data ?? []) as CustomerSearchRpcRow[];
 
-  const { count, data, error } = await query.returns<Customer[]>();
+    error = result.error;
+    rows = searchRows.map(customerFromSearchRow);
+    count = readCount(searchRows[0]?.total_count);
+
+    if (!error && searchRows.length === 0 && from > 0) {
+      const countResult = await supabase.rpc("search_salon_customers", {
+        p_limit: 1,
+        p_offset: 0,
+        p_query: trimmedSearch,
+        p_salon_id: salon.id,
+        p_status: null,
+      });
+      const countRows = (countResult.data ?? []) as CustomerSearchRpcRow[];
+
+      error = countResult.error;
+      count = readCount(countRows[0]?.total_count);
+    }
+  } else {
+    const result = await supabase
+      .from("customers")
+      .select(CUSTOMER_SELECT, { count: "exact" })
+      .eq("location_id", salon.id)
+      .order("created_at", { ascending: false })
+      .range(from, to)
+      .returns<Customer[]>();
+
+    error = result.error;
+    rows = result.data ?? [];
+    count = result.count ?? 0;
+  }
 
   if (error) {
     console.error("Supabase load customers failed", {
@@ -403,7 +466,6 @@ export async function getCurrentSalonCustomerList(input: {
     throw new Error(error.message);
   }
 
-  const rows = data ?? [];
   const rowsContainWalking = rows.some(isWalkingCustomer);
   const walkingCustomers = rowsContainWalking
     ? await loadWalkingCustomers({ salonId: salon.id, supabase })

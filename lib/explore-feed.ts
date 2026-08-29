@@ -4,6 +4,11 @@ import { getExploreHomeContent } from "@/lib/explore-home";
 import { getExploreInspirationPage } from "@/lib/explore-inspiration";
 import { getExplorePersonalPostPage } from "@/lib/explore-personal";
 import {
+  getPostCommentCount,
+  getPostCommentCounts,
+  type PostCommentTarget,
+} from "@/lib/post-comments";
+import {
   getAccountSavedPostCounts,
   getAccountSavedPostStateKeys,
 } from "@/lib/account-social";
@@ -736,6 +741,7 @@ function mapSalonFeedItem(item: ExploreInspirationItem): ExploreFeedItem {
     },
     candidateClass: "organic",
     caption: item.captionExcerpt,
+    commentCount: 0,
     contentId: item.contentId,
     contentType: item.contentType,
     destination: {
@@ -869,6 +875,7 @@ function mapRecommendationFeedItem(
     booking: featuredPost?.booking?.eligible ? featuredPost.booking : salonBooking,
     candidateClass: "organic",
     caption: featuredPost?.caption ?? recommendationCaption(salon),
+    commentCount: 0,
     contentId: salon.id,
     contentType: "salon_recommendation",
     destination,
@@ -1263,6 +1270,43 @@ async function attachFeedSaveStates(items: ExploreFeedItem[]) {
   }
 }
 
+function feedCommentTarget(item: ExploreFeedItem): PostCommentTarget | null {
+  if (!item.saveTarget) {
+    return null;
+  }
+
+  return {
+    profileId: item.personal?.profileId ?? null,
+    salonId: item.saveTarget.salonId ?? item.salon?.id ?? null,
+    sourceId: item.saveTarget.sourceId,
+    sourceType: item.saveTarget.sourceType,
+    title: item.caption ?? item.author.name,
+  };
+}
+
+async function attachFeedCommentCounts(items: ExploreFeedItem[]) {
+  const targets = items
+    .map(feedCommentTarget)
+    .filter((target): target is PostCommentTarget => Boolean(target));
+
+  if (targets.length === 0) {
+    return items;
+  }
+
+  const counts = await getPostCommentCounts(targets);
+
+  return items.map((item) => {
+    const target = feedCommentTarget(item);
+
+    return target
+      ? {
+          ...item,
+          commentCount: getPostCommentCount(counts, target),
+        }
+      : item;
+  });
+}
+
 export async function getExploreFeedPage(input: {
   cursor?: ExploreFeedCursor | null;
   homeContent?: ExploreHomeContent;
@@ -1422,11 +1466,12 @@ export async function getExploreFeedPage(input: {
 
   const visibleItems = selected.map((candidate) => candidate.item);
   const itemsWithSaveStates = await attachFeedSaveStates(visibleItems);
+  const itemsWithCommentCounts = await attachFeedCommentCounts(itemsWithSaveStates);
 
   return {
     error: null,
     hasMore: Boolean(nextCursor),
-    items: itemsWithSaveStates,
+    items: itemsWithCommentCounts,
     nextCursor,
   };
 }

@@ -330,6 +330,7 @@ export default async function SalonProfilePage({
     canPublish: data.canManageIdentity,
     canReplyAsSalon: data.canManageContent,
     canViewDraftContent: data.canManageContent,
+    currentUserId: context.user?.id ?? null,
     isAuthenticated: Boolean(context.user),
     isOwnSalon: isSalonManageContext(context),
   };

@@ -27,6 +27,10 @@ import {
   createAuthenticatedSupabaseServerClient,
   getSupabaseConfig,
 } from "@/lib/supabase/server";
+import {
+  getPostCommentCount,
+  getPostCommentCounts,
+} from "@/lib/post-comments";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import type {
   BeautyAttributionSalon,
@@ -575,6 +579,7 @@ function mapTimelinePost(raw: unknown): BeautyTimelinePost | null {
     },
     bookingAction: null,
     caption: readString(record.caption),
+    commentCount: readInteger(record.commentCount) ?? 0,
     createdAt,
     editedAt: readString(record.editedAt),
     id,
@@ -588,6 +593,38 @@ function mapTimelinePost(raw: unknown): BeautyTimelinePost | null {
     updatedAt,
     verification: mapVerification(record.verification),
     visibility: profileVisibility(record.visibility),
+  };
+}
+
+async function attachBeautyCommentCounts(
+  page: BeautyTimelinePage,
+): Promise<BeautyTimelinePage> {
+  if (page.items.length === 0) {
+    return page;
+  }
+
+  const counts = await getPostCommentCounts(
+    page.items.map((item) => ({
+      profileId: item.profileId,
+      salonId: item.attribution?.salonId ?? null,
+      sourceId: item.id,
+      sourceType: "beauty_post",
+      title: item.caption ?? "Beauty post",
+    })),
+  );
+
+  return {
+    ...page,
+    items: page.items.map((item) => ({
+      ...item,
+      commentCount: getPostCommentCount(counts, {
+        profileId: item.profileId,
+        salonId: item.attribution?.salonId ?? null,
+        sourceId: item.id,
+        sourceType: "beauty_post",
+        title: item.caption ?? "Beauty post",
+      }),
+    })),
   };
 }
 
@@ -800,8 +837,11 @@ export async function getBeautyTimelinePage(input: {
     return emptyTimelinePage("Beauty timeline could not be loaded.");
   }
 
+  const pageWithCommentCounts = await attachBeautyCommentCounts(
+    mapTimelinePayload(data),
+  );
   const pageWithPublication = await attachBeautySalonPublicationStatuses({
-    page: mapTimelinePayload(data),
+    page: pageWithCommentCounts,
     supabase,
   });
 
@@ -851,7 +891,7 @@ export async function getBeautyTimelinePageForSalonCustomer(input: {
     return emptyTimelinePage("Beauty timeline could not be loaded.");
   }
 
-  return mapTimelinePayload(data);
+  return attachBeautyCommentCounts(mapTimelinePayload(data));
 }
 
 function mapVisitCandidate(raw: unknown): BeautyRecentVisitCandidate | null {

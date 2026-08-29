@@ -7,6 +7,7 @@ import type {
   CustomerActivity,
   CustomerActivitySalon,
 } from "@/lib/customer-activity";
+import { searchTextMatches } from "@/lib/search-normalization";
 
 const PAGE_SIZE = 10;
 
@@ -198,14 +199,11 @@ function activitySearchText(activity: CustomerActivity) {
     ...ids,
   ]
     .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+    .join(" ");
 }
 
 function activityMatchesQuery(activity: CustomerActivity, query: string) {
-  const normalized = query.trim().toLowerCase();
-
-  return !normalized || activitySearchText(activity).includes(normalized);
+  return searchTextMatches([activitySearchText(activity)], query);
 }
 
 function verifiedVisitPrompt(activity: CustomerActivity) {

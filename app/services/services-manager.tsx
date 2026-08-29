@@ -8,6 +8,7 @@ import {
   validateServiceConfig,
   wouldCreateServiceAddOnCycle,
 } from "@/lib/service-contract";
+import { normalizeSearchText, searchTextMatches } from "@/lib/search-normalization";
 import type {
   SaveServiceConfigsResult,
   ServiceConfigFieldErrors,
@@ -177,20 +178,14 @@ function ServiceEditor({
   const [addOnQuery, setAddOnQuery] = useState("");
   const errors = validateServiceConfig(config).fieldErrors;
   const readiness = draftReadiness(config, data);
-  const normalizedStaffQuery = staffQuery.trim().toLowerCase();
-  const normalizedAddOnQuery = addOnQuery.trim().toLowerCase();
   const visibleStaff = data.staff.filter(
-    (member) =>
-      !normalizedStaffQuery ||
-      member.displayName.toLowerCase().includes(normalizedStaffQuery),
+    (member) => searchTextMatches([member.displayName], staffQuery),
   );
   const visibleAddOns = data.services
     .filter((candidate) => candidate.id !== service.id)
     .filter(
       (candidate) =>
-        !normalizedAddOnQuery ||
-        candidate.name.toLowerCase().includes(normalizedAddOnQuery) ||
-        (candidate.category ?? "").toLowerCase().includes(normalizedAddOnQuery),
+        searchTextMatches([candidate.name, candidate.category], addOnQuery),
     )
     .sort((left, right) => {
       const leftSelected = config.addOnServiceIds.includes(left.id) ? 0 : 1;
@@ -762,7 +757,7 @@ export function ServicesManager({
   const [showCreate, setShowCreate] = useState(false);
   const [isPending, startTransition] = useTransition();
   const dirtyIds = Object.keys(drafts);
-  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedQuery = normalizeSearchText(query);
 
   const effectiveConfigs = useMemo(
     () =>
@@ -796,9 +791,10 @@ export function ServicesManager({
     const readiness = draftReadiness(config, data);
     const matchesQuery =
       !normalizedQuery ||
-      config.name.toLowerCase().includes(normalizedQuery) ||
-      (config.category ?? "").toLowerCase().includes(normalizedQuery) ||
-      (config.description ?? "").toLowerCase().includes(normalizedQuery);
+      searchTextMatches(
+        [config.name, config.category, config.description],
+        normalizedQuery,
+      );
     const matchesCategory =
       category === "all" || (config.category || "Uncategorized") === category;
     const matchesStatus =

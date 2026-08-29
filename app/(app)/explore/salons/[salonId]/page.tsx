@@ -57,6 +57,7 @@ export default async function PublicSalonProfilePage({
           canPublish: false,
           canReplyAsSalon: false,
           canViewDraftContent: false,
+          currentUserId: context.user?.id ?? null,
           isAuthenticated: Boolean(context.user),
           isOwnSalon: false,
         }}

@@ -11,6 +11,10 @@ import {
   type ExploreDecisionSignals,
 } from "@/lib/explore-decision-signals";
 import { loadPublicSalonLogoPaths } from "@/lib/explore-salon-logos";
+import {
+  getPostCommentCount,
+  getPostCommentCounts,
+} from "@/lib/post-comments";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import {
   createSupabaseServerClient,
@@ -277,7 +281,7 @@ async function attachExploreBookingCounts(
     rpc: input.rpc,
   });
 
-  return input.items.map((item) => {
+  const itemsWithBookingCounts = input.items.map((item) => {
     if (!item.booking) {
       return item;
     }
@@ -290,6 +294,8 @@ async function attachExploreBookingCounts(
       },
     };
   });
+
+  return attachPersonalPostCommentCounts(itemsWithBookingCounts);
 }
 
 function asMediaRows(value: unknown): ExplorePersonalMediaRow[] {
@@ -395,6 +401,7 @@ function mapPersonalPostRow(
       : null,
     caption: cleanString(row.caption_excerpt),
     candidateClass: "organic",
+    commentCount: 0,
     contentId: postId,
     contentType: "beauty_post",
     destination: {
@@ -441,6 +448,37 @@ function mapPersonalPostRow(
     sourceType: "personal",
     verification: verification ? { state: verification } : null,
   };
+}
+
+async function attachPersonalPostCommentCounts(items: ExplorePersonalPostItem[]) {
+  if (items.length === 0) {
+    return items;
+  }
+
+  try {
+    const counts = await getPostCommentCounts(
+      items.map((item) => ({
+        profileId: item.personal.profileId,
+        salonId: item.salon?.id ?? null,
+        sourceId: item.id,
+        sourceType: "beauty_post",
+        title: item.caption ?? "Beauty post",
+      })),
+    );
+
+    return items.map((item) => ({
+      ...item,
+      commentCount: getPostCommentCount(counts, {
+        profileId: item.personal.profileId,
+        salonId: item.salon?.id ?? null,
+        sourceId: item.id,
+        sourceType: "beauty_post",
+        title: item.caption ?? "Beauty post",
+      }),
+    }));
+  } catch {
+    return items;
+  }
 }
 
 async function attachPersonalPostSaveStates(items: ExplorePersonalPostItem[]) {

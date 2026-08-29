@@ -12,6 +12,7 @@ import { getExploreFeedPage } from "@/lib/explore-feed";
 import { getExploreHomeContent } from "@/lib/explore-home";
 import { compareReylumiTopRatedSalons } from "@/lib/reylumi-trust";
 import { routes } from "@/lib/routes";
+import { searchTextMatches } from "@/lib/search-normalization";
 import {
   listCustomerBookings,
   type CustomerBookingLine,
@@ -692,19 +693,17 @@ function salonMatchesServiceCategory(
   salon: ExploreSearchResult,
   category: string,
 ) {
-  const target = category.trim().toLowerCase();
-
-  if (!target) {
+  if (!category.trim()) {
     return false;
   }
 
-  return [
+  return searchTextMatches([
     salon.featuredServiceCategory,
     salon.featuredServiceName,
     salon.bookableServiceName,
     ...salon.serviceCategories,
     ...salon.serviceNames,
-  ].some((value) => value?.toLowerCase().includes(target));
+  ], category);
 }
 
 function bookingStartLabel(booking: ExploreUpcomingBooking) {
@@ -1060,6 +1059,12 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     utilityContent,
     workspaceLocation,
   });
+  const commentViewer = {
+    canModerate: false,
+    canReplyAsSalon: false,
+    isAuthenticated: Boolean(context.user),
+    userId: context.user?.id ?? null,
+  };
 
   return (
     <ExploreClient
@@ -1072,6 +1077,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         locationSource,
         hasExplicitSearchParams ? "search" : "home",
       ].join(":")}
+      commentViewer={commentViewer}
       initialSearchMode={hasExplicitSearchParams}
       initialLocationSource={locationSource}
       initialResponse={searchResponse}

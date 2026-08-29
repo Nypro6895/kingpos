@@ -15,6 +15,7 @@ import {
   type FocusEvent,
   type MouseEvent,
 } from "react";
+import { createPortal } from "react-dom";
 
 type LumiTrustSparkSize = "lg" | "md" | "sm" | "xs";
 
@@ -35,6 +36,8 @@ const LUMI_TRUST_SPARK_SIZE_CLASS: Record<LumiTrustSparkSize, string> = {
   sm: "h-5 w-5",
   xs: "h-4 w-4",
 };
+const LUMI_TRUST_POPOVER_GAP = 8;
+const LUMI_TRUST_POPOVER_VIEWPORT_MARGIN = 12;
 
 function joinClasses(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -176,11 +179,17 @@ export function LumiTrustPopover({
 }) {
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
-  const [panelShift, setPanelShift] = useState(0);
+  const [panelPosition, setPanelPosition] = useState({
+    left: LUMI_TRUST_POPOVER_VIEWPORT_MARGIN,
+    top: LUMI_TRUST_POPOVER_VIEWPORT_MARGIN,
+    visible: false,
+  });
   const panelId = useId();
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeTimerRef = useRef<number | null>(null);
+  const portalTarget = typeof document === "undefined" ? null : document.body;
   const evidenceRows = summary.evidenceRows.slice(0, 5);
   const entityLabel = entityName?.trim() || null;
 
@@ -217,10 +226,14 @@ export function LumiTrustPopover({
 
   function closeOnBlur(event: FocusEvent<HTMLDivElement>) {
     const nextTarget = event.relatedTarget;
+    const root = rootRef.current;
+    const panel = panelRef.current;
 
     if (
       nextTarget instanceof Node &&
-      event.currentTarget.contains(nextTarget)
+      (event.currentTarget.contains(nextTarget) ||
+        root?.contains(nextTarget) ||
+        panel?.contains(nextTarget))
     ) {
       return;
     }
@@ -228,12 +241,12 @@ export function LumiTrustPopover({
     clearCloseTimer();
     closeTimerRef.current = window.setTimeout(() => {
       const root = rootRef.current;
+      const panel = panelRef.current;
       const activeElement = document.activeElement;
 
       if (
-        root &&
         activeElement instanceof Node &&
-        root.contains(activeElement)
+        (root?.contains(activeElement) || panel?.contains(activeElement))
       ) {
         return;
       }
@@ -260,13 +273,18 @@ export function LumiTrustPopover({
 
     function closeOnPointerDown(event: PointerEvent) {
       const root = rootRef.current;
+      const panel = panelRef.current;
 
-      if (root && event.target instanceof Node && !root.contains(event.target)) {
+      if (
+        event.target instanceof Node &&
+        !root?.contains(event.target) &&
+        !panel?.contains(event.target)
+      ) {
         closePanel();
       }
     }
 
-    function closeOnEscape(event: KeyboardEvent) {
+    function closeOnEscape(event: globalThis.KeyboardEvent) {
       if (event.key === "Escape") {
         closePanel();
       }
@@ -282,43 +300,71 @@ export function LumiTrustPopover({
   }, [open]);
 
   useLayoutEffect(() => {
-    if (!open) {
+    if (!open || !portalTarget) {
       return undefined;
     }
 
-    function updatePanelShift() {
+    function updatePanelPosition() {
+      const anchor = buttonRef.current;
       const panel = panelRef.current;
 
-      if (!panel) {
+      if (!anchor || !panel) {
+        setPanelPosition((current) => ({ ...current, visible: false }));
         return;
       }
 
-      const previousTransform = panel.style.transform;
-      panel.style.transform = "translateX(0px)";
+      const anchorRect = anchor.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      const panelWidth = panelRect.width;
+      const panelHeight = panelRect.height;
+      const maxLeft =
+        window.innerWidth - panelWidth - LUMI_TRUST_POPOVER_VIEWPORT_MARGIN;
+      const maxTop =
+        window.innerHeight - panelHeight - LUMI_TRUST_POPOVER_VIEWPORT_MARGIN;
+      const preferredLeft =
+        align === "right" ? anchorRect.right - panelWidth : anchorRect.left;
+      const spaceBelow =
+        window.innerHeight -
+        anchorRect.bottom -
+        LUMI_TRUST_POPOVER_GAP -
+        LUMI_TRUST_POPOVER_VIEWPORT_MARGIN;
+      const spaceAbove =
+        anchorRect.top -
+        LUMI_TRUST_POPOVER_GAP -
+        LUMI_TRUST_POPOVER_VIEWPORT_MARGIN;
+      const openAbove = panelHeight > spaceBelow && spaceAbove > spaceBelow;
+      const preferredTop = openAbove
+        ? anchorRect.top - panelHeight - LUMI_TRUST_POPOVER_GAP
+        : anchorRect.bottom + LUMI_TRUST_POPOVER_GAP;
 
-      const rect = panel.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const margin = 12;
-      let nextShift = 0;
-
-      if (rect.left < margin) {
-        nextShift = margin - rect.left;
-      } else if (rect.right > viewportWidth - margin) {
-        nextShift = viewportWidth - margin - rect.right;
-      }
-
-      panel.style.transform = previousTransform;
-      setPanelShift(Math.round(nextShift));
+      setPanelPosition({
+        left: Math.round(
+          Math.max(
+            LUMI_TRUST_POPOVER_VIEWPORT_MARGIN,
+            Math.min(preferredLeft, maxLeft),
+          ),
+        ),
+        top: Math.round(
+          Math.max(
+            LUMI_TRUST_POPOVER_VIEWPORT_MARGIN,
+            Math.min(preferredTop, maxTop),
+          ),
+        ),
+        visible: true,
+      });
     }
 
-    updatePanelShift();
-    window.addEventListener("resize", updatePanelShift);
+    const animationFrame = window.requestAnimationFrame(updatePanelPosition);
+    window.addEventListener("resize", updatePanelPosition);
+    window.addEventListener("scroll", updatePanelPosition, true);
 
     return () => {
-      window.removeEventListener("resize", updatePanelShift);
-      setPanelShift(0);
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", updatePanelPosition);
+      window.removeEventListener("scroll", updatePanelPosition, true);
+      setPanelPosition((current) => ({ ...current, visible: false }));
     };
-  }, [align, open]);
+  }, [align, open, portalTarget]);
 
   useEffect(
     () => () => {
@@ -329,109 +375,125 @@ export function LumiTrustPopover({
     [],
   );
 
-  return (
-    <div
-      className={joinClasses("relative inline-flex min-w-0", className)}
-      onBlur={closeOnBlur}
-      onMouseEnter={openPopover}
-      onMouseLeave={closePopover}
-      ref={rootRef}
-    >
-      <button
-        aria-controls={open ? panelId : undefined}
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        aria-label={`${summary.mark.ariaLabel}. Show LUMI Trust details.`}
-        className={joinClasses(
-          presentation === "spark"
-            ? "grid min-h-8 min-w-8 place-items-center rounded-full text-brand-orange transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            : "inline-flex min-h-8 min-w-0 items-center gap-1.5 rounded-full text-xs font-semibold text-brand-orange transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-          markClassName,
-        )}
-        onClick={togglePopover}
-        onFocus={openPopover}
-        type="button"
-      >
-        <LumiTrustSpark
-          interactive
-          level={summary.level}
-          size={presentation === "spark" ? size : "xs"}
-        />
-        {presentation === "label" ? (
-          <span className="truncate">{summary.mark.label}</span>
-        ) : null}
-      </button>
-      {open ? (
-        <div
-          className={joinClasses(
-            "absolute top-full z-50 mt-2 max-h-[min(75vh,24rem)] w-[min(19rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-zinc-200 bg-white p-3 text-left text-zinc-700 shadow-[0_18px_54px_rgba(24,24,27,.18)]",
-            align === "right" ? "right-0" : "left-0",
-            panelClassName,
-          )}
-          id={panelId}
-          ref={panelRef}
-          role="dialog"
-          style={
-            panelShift !== 0
-              ? { transform: `translateX(${panelShift}px)` }
-              : undefined
-          }
-        >
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-orange">
-            {title}
-          </p>
-          {entityLabel ? (
-            <p className="mt-1 line-clamp-2 text-sm font-semibold text-zinc-950">
-              {entityLabel}
+  const panel =
+    open && portalTarget
+      ? createPortal(
+          <div
+            className={joinClasses(
+              "fixed z-[90] max-h-[min(75vh,24rem)] w-[min(19rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-zinc-200 bg-white p-3 text-left text-zinc-700 shadow-[0_18px_54px_rgba(24,24,27,.18)] transition-opacity",
+              panelClassName,
+            )}
+            id={panelId}
+            onBlur={closeOnBlur}
+            onMouseEnter={openPopover}
+            onMouseLeave={closePopover}
+            ref={panelRef}
+            role="dialog"
+            style={{
+              left: panelPosition.left,
+              opacity: panelPosition.visible ? 1 : 0,
+              pointerEvents: panelPosition.visible ? "auto" : "none",
+              top: panelPosition.top,
+            }}
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-orange">
+              {title}
             </p>
-          ) : null}
-          <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-zinc-950">
-            <LumiTrustSpark className="text-brand-orange" level={summary.level} size="sm" />
-            <span>{summary.mark.label}</span>
-          </p>
-          <p className="mt-1 text-xs leading-5 text-zinc-600">
-            {summary.mark.detail}
-          </p>
-          {evidenceRows.length > 0 ? (
-            <div className="mt-3 grid gap-2 text-xs leading-5 text-zinc-700">
-              {evidenceRows.map((row) => (
-                <div className="flex items-start gap-2" key={row.kind}>
-                  <span
-                    aria-hidden
-                    className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-[10px] font-bold text-brand-orange"
-                  >
-                    +
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-zinc-950">
-                      {row.value ? `${row.value} ${row.label}` : row.label}
-                    </p>
-                    <p className="text-zinc-600">{row.detail}</p>
+            {entityLabel ? (
+              <p className="mt-1 line-clamp-2 text-sm font-semibold text-zinc-950">
+                {entityLabel}
+              </p>
+            ) : null}
+            <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-zinc-950">
+              <LumiTrustSpark
+                className="text-brand-orange"
+                level={summary.level}
+                size="sm"
+              />
+              <span>{summary.mark.label}</span>
+            </p>
+            <p className="mt-1 text-xs leading-5 text-zinc-600">
+              {summary.mark.detail}
+            </p>
+            {evidenceRows.length > 0 ? (
+              <div className="mt-3 grid gap-2 text-xs leading-5 text-zinc-700">
+                {evidenceRows.map((row) => (
+                  <div className="flex items-start gap-2" key={row.kind}>
+                    <span
+                      aria-hidden
+                      className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-[10px] font-bold text-brand-orange"
+                    >
+                      +
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-zinc-950">
+                        {row.value ? `${row.value} ${row.label}` : row.label}
+                      </p>
+                      <p className="text-zinc-600">{row.detail}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : null}
+            {actionHref ? (
+              <Link
+                className="mt-3 inline-flex min-h-8 items-center rounded-full bg-zinc-950 px-3 text-xs font-semibold text-white transition hover:bg-brand-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                href={actionHref}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setPinned(false);
+                  setOpen(false);
+                }}
+              >
+                {actionLabel}
+              </Link>
+            ) : null}
+          </div>,
+          portalTarget,
+        )
+      : null;
+
+  return (
+    <>
+      <div
+        className={joinClasses("inline-flex min-w-0", className)}
+        onBlur={closeOnBlur}
+        onMouseEnter={openPopover}
+        onMouseLeave={closePopover}
+        ref={rootRef}
+      >
+        <button
+          aria-controls={open ? panelId : undefined}
+          aria-expanded={open}
+          aria-haspopup="dialog"
+          aria-label={`${summary.mark.ariaLabel}. Show LUMI Trust details.`}
+          className={joinClasses(
+            presentation === "spark"
+              ? "grid min-h-8 min-w-8 place-items-center rounded-full text-brand-orange transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              : "inline-flex min-h-8 min-w-0 items-center gap-1.5 rounded-full text-xs font-semibold text-brand-orange transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+            markClassName,
+          )}
+          onClick={togglePopover}
+          onFocus={openPopover}
+          ref={buttonRef}
+          type="button"
+        >
+          <LumiTrustSpark
+            interactive
+            level={summary.level}
+            size={presentation === "spark" ? size : "xs"}
+          />
+          {presentation === "label" ? (
+            <span className="truncate">{summary.mark.label}</span>
           ) : null}
-          {actionHref ? (
-            <Link
-              className="mt-3 inline-flex min-h-8 items-center rounded-full bg-zinc-950 px-3 text-xs font-semibold text-white transition hover:bg-brand-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={actionHref}
-              onMouseDown={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-              }}
-              onPointerDown={(event) => event.stopPropagation()}
-              onClick={(event) => {
-                event.stopPropagation();
-                setPinned(false);
-                setOpen(false);
-              }}
-            >
-              {actionLabel}
-            </Link>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
+        </button>
+      </div>
+      {panel}
+    </>
   );
 }

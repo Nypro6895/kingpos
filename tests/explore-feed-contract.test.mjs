@@ -476,6 +476,8 @@ test("LUMI trust UI is shared, interactive, and keeps signals separated", () => 
   assert.match(trustComponent, /export function LumiTrustPopover/);
   assert.match(trustComponent, /aria-haspopup="dialog"/);
   assert.match(trustComponent, /aria-expanded=\{open\}/);
+  assert.match(trustComponent, /createPortal/);
+  assert.match(trustComponent, /fixed z-\[90\]/);
   assert.match(trustComponent, /onMouseEnter=\{openPopover\}/);
   assert.match(trustComponent, /onClick=\{togglePopover\}/);
   assert.match(trustComponent, /export function LumiTrustSpark/);

@@ -1,9 +1,13 @@
 import { BeautyProfileClient } from "@/app/beauty/beauty-profile-client";
 import { getSelfBeautyProfilePage } from "@/lib/beauty";
+import { getPostCommentViewer } from "@/lib/post-comments";
 import { redirect } from "next/navigation";
 
 export default async function BeautyPage() {
-  const result = await getSelfBeautyProfilePage();
+  const [result, commentViewer] = await Promise.all([
+    getSelfBeautyProfilePage(),
+    getPostCommentViewer(),
+  ]);
 
   if (!result.ok) {
     if (result.code === "sign_in_required") {
@@ -29,6 +33,7 @@ export default async function BeautyPage() {
 
   return (
     <BeautyProfileClient
+      commentViewer={commentViewer}
       initialTimeline={result.data.timeline}
       profile={result.data.profile}
       visitCandidates={result.data.visitCandidates}

@@ -311,6 +311,24 @@ export async function searchExploreSalons(
     }
 
     const rows = Array.isArray(data) ? (data as ExploreRpcRow[]) : [];
+    let countRows = rows;
+
+    if (rows.length === 0 && page > 1) {
+      const countResult = await rpc("search_public_explore_salons", {
+        p_category: category || null,
+        p_latitude: latitude,
+        p_location: location || null,
+        p_longitude: longitude,
+        p_page: 1,
+        p_page_size: 1,
+        p_query: query || null,
+      });
+
+      if (!countResult.error && Array.isArray(countResult.data)) {
+        countRows = countResult.data as ExploreRpcRow[];
+      }
+    }
+
     const signalMap = await getExploreDecisionSignalsBySalonId(
       rpc,
       rows.map((row) => row.salon_id),
@@ -329,8 +347,8 @@ export async function searchExploreSalons(
       ),
     );
     const sections = groupResults(results);
-    const groupCounts = readGroupCounts(rows);
-    const totalCount = readCount(rows[0]?.total_count);
+    const groupCounts = readGroupCounts(countRows);
+    const totalCount = readCount(countRows[0]?.total_count);
 
     return {
       category,
@@ -343,7 +361,7 @@ export async function searchExploreSalons(
       results,
       sections,
       totalCount,
-      totalPages: Math.max(1, Math.ceil(groupCounts.bestMatches / pageSize)),
+      totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
     };
   } catch (error) {
     console.warn("Explore public salon search unavailable", {
