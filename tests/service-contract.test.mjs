@@ -11,9 +11,6 @@ const readyStaff = {
   id: "staff-a",
   is_active: true,
   online_booking_enabled: true,
-  owner_public_enabled: true,
-  public_profile_visible: true,
-  staff_public_consent_status: "granted",
 };
 
 const selectedAssignment = {
@@ -23,7 +20,7 @@ const selectedAssignment = {
   staff_id: readyStaff.id,
 };
 
-test("readiness requires the service online flag and a public-ready selected staff member", () => {
+test("readiness requires the service online flag and a booking-enabled selected staff member", () => {
   const offline = getServiceBookingReadiness({
     assignments: [selectedAssignment],
     service: {
@@ -51,6 +48,25 @@ test("readiness requires the service online flag and a public-ready selected sta
   assert.equal(ready.ready, true);
   assert.equal(ready.bookingStaffCount, 1);
   assert.equal(ready.eligibleBookingStaffCount, 1);
+});
+
+test("readiness depends on staff active state and online booking only", () => {
+  const result = getServiceBookingReadiness({
+    assignments: [selectedAssignment],
+    service: {
+      id: "service-a",
+      is_active: true,
+      online_booking_enabled: true,
+    },
+    staff: [
+      {
+        ...readyStaff,
+      },
+    ],
+  });
+
+  assert.equal(result.ready, true);
+  assert.equal(result.eligibleBookingStaffCount, 1);
 });
 
 test("readiness reports selected inactive staff without considering the service ready", () => {

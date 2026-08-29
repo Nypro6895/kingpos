@@ -12,7 +12,6 @@ export type PosTicketAuditAction = (typeof POS_TICKET_AUDIT_ACTIONS)[number];
 
 export type PosTicketAuditLog = {
   id: string;
-  organization_id: string;
   salon_id: string;
   ticket_id: string;
   action: PosTicketAuditAction;

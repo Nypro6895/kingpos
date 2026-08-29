@@ -1,6 +1,11 @@
 import "server-only";
 
 import { getCurrentBusinessContext, isOwnerMembership } from "@/lib/current-context";
+import {
+  canPerformSalonOperation,
+  getSalonLifecycleDenialMessage,
+  getSalonOperationForPermissionCode,
+} from "@/lib/salon-lifecycle-rules";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Permission, RolePermission } from "@/types/permission";
@@ -15,10 +20,36 @@ export type RoleWithPermissions = Role & {
   permissions: Permission[];
 };
 
-export type OrganizationPermissionSet = {
+export type AccountPermissionSet = {
   permissions: Permission[];
   roles: RoleWithPermissions[];
 };
+
+function getSalonLifecyclePermissionDenial(
+  permissionCode: string,
+  context: CurrentBusinessContext,
+) {
+  const operation = getSalonOperationForPermissionCode(permissionCode);
+
+  if (!operation || !context.currentSalon) {
+    return null;
+  }
+
+  if (
+    canPerformSalonOperation({
+      operation,
+      status: context.currentSalon.status,
+    })
+  ) {
+    return null;
+  }
+
+  return getSalonLifecycleDenialMessage({
+    operation,
+    salonName: context.currentSalon.name,
+    status: context.currentSalon.status,
+  });
+}
 
 export async function getCurrentRolePermissionCodes(
   context?: CurrentBusinessContext,
@@ -26,7 +57,7 @@ export async function getCurrentRolePermissionCodes(
   const resolvedContext = context ?? (await getCurrentBusinessContext());
   const roleId = resolvedContext.currentMembership?.role_id;
 
-  if (!resolvedContext.user || !resolvedContext.currentOrganization || !roleId) {
+  if (!resolvedContext.user || !resolvedContext.accountId || !roleId) {
     return new Set<string>();
   }
 
@@ -49,7 +80,7 @@ export async function getCurrentRolePermissionCodes(
       details: rolePermissionsError.details,
       hint: rolePermissionsError.hint,
       roleId,
-      organizationId: resolvedContext.currentOrganization.id,
+      accountId: resolvedContext.accountId,
       userId: resolvedContext.user.id,
     });
     throw new Error(rolePermissionsError.message);
@@ -76,7 +107,7 @@ export async function getCurrentRolePermissionCodes(
       details: permissionsError.details,
       hint: permissionsError.hint,
       roleId,
-      organizationId: resolvedContext.currentOrganization.id,
+      accountId: resolvedContext.accountId,
       userId: resolvedContext.user.id,
     });
     throw new Error(permissionsError.message);
@@ -91,6 +122,10 @@ export async function hasPermission(
 ) {
   const resolvedContext = context ?? (await getCurrentBusinessContext());
 
+  if (getSalonLifecyclePermissionDenial(permissionCode, resolvedContext)) {
+    return false;
+  }
+
   if (isOwnerMembership(resolvedContext.currentMembership)) {
     return true;
   }
@@ -103,17 +138,27 @@ export async function requirePermission(
   permissionCode: string,
   context?: CurrentBusinessContext,
 ) {
-  const allowed = await hasPermission(permissionCode, context);
+  const resolvedContext = context ?? (await getCurrentBusinessContext());
+  const allowed = await hasPermission(permissionCode, resolvedContext);
 
   if (!allowed) {
+    const lifecycleDenial = getSalonLifecyclePermissionDenial(
+      permissionCode,
+      resolvedContext,
+    );
+
+    if (lifecycleDenial) {
+      throw new Error(lifecycleDenial);
+    }
+
     throw new Error(`Missing required permission: ${permissionCode}`);
   }
 }
 
-export async function getOrganizationPermissionSet(
-  organizationId: string,
+export async function getAccountPermissionSet(
+  accountId: string,
   roles: Role[],
-): Promise<OrganizationPermissionSet> {
+): Promise<AccountPermissionSet> {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -133,7 +178,7 @@ export async function getOrganizationPermissionSet(
       message: permissionsError.message,
       details: permissionsError.details,
       hint: permissionsError.hint,
-      organizationId,
+      accountId,
     });
     throw new Error(permissionsError.message);
   }
@@ -149,12 +194,12 @@ export async function getOrganizationPermissionSet(
       : { data: [], error: null };
 
   if (rolePermissionsError) {
-    console.error("Supabase load organization role permissions failed", {
+    console.error("Supabase load Account role permissions failed", {
       code: rolePermissionsError.code,
       message: rolePermissionsError.message,
       details: rolePermissionsError.details,
       hint: rolePermissionsError.hint,
-      organizationId,
+      accountId,
     });
     throw new Error(rolePermissionsError.message);
   }

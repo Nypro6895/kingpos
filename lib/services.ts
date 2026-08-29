@@ -7,6 +7,7 @@ import {
 import { getServiceBookingReadiness } from "@/lib/service-contract";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { STAFF_SELECT } from "@/lib/staff";
+import { getStaffPresentationsByStaffId } from "@/lib/staff-profile";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { StaffServiceAssignment } from "@/types/booking";
@@ -20,7 +21,7 @@ import type {
 import type { Staff } from "@/types/staff";
 
 export const SERVICE_SELECT =
-  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
+  "id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 const SERVICE_ADD_ON_LINK_SELECT =
   "id, parent_service_id, add_on_service_id, is_active, display_order";
 
@@ -29,13 +30,13 @@ export const SERVICE_PERMISSIONS = {
   manage: "services.manage",
 } as const;
 
-function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
-    throw new Error("Open services from a Manage Salon workspace.");
+    throw new Error("Open services from a Business workspace.");
   }
 
-  if (!context.currentOrganization) {
-    throw new Error("Create an organization before managing services.");
+  if (!context.currentAccount) {
+    throw new Error("Choose a salon workspace before managing services.");
   }
 
   if (!context.currentSalon) {
@@ -43,7 +44,7 @@ function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
   }
 
   return {
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
   };
 }
@@ -59,8 +60,8 @@ export async function getCurrentSalonServicesWorkspace(
 
   await requirePermission(SERVICE_PERMISSIONS.view, resolvedContext);
 
-  const { organization, salon } =
-    requireCurrentOrganizationAndSalon(resolvedContext);
+  const { Account, salon } =
+    requireCurrentAccountAndSalon(resolvedContext);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -72,7 +73,6 @@ export async function getCurrentSalonServicesWorkspace(
       supabase
         .from("services")
         .select(SERVICE_SELECT)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .order("category", { ascending: true })
         .order("name", { ascending: true })
@@ -80,20 +80,17 @@ export async function getCurrentSalonServicesWorkspace(
       supabase
         .from("service_add_on_links")
         .select(SERVICE_ADD_ON_LINK_SELECT)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .order("display_order", { ascending: true })
         .returns<ServiceAddOnLink[]>(),
       supabase
         .from("staff_service_assignments")
         .select("*")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .returns<StaffServiceAssignment[]>(),
       supabase
         .from("staff")
         .select(STAFF_SELECT)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .order("display_name", { ascending: true })
         .returns<Staff[]>(),
@@ -111,7 +108,7 @@ export async function getCurrentSalonServicesWorkspace(
       details: firstError.details,
       hint: firstError.hint,
       message: firstError.message,
-      organizationId: organization.id,
+      accountId: Account.id,
       salonId: salon.id,
       userId: resolvedContext.user.id,
     });
@@ -122,21 +119,20 @@ export async function getCurrentSalonServicesWorkspace(
   const addOnLinks = linksResult.data ?? [];
   const assignments = assignmentsResult.data ?? [];
   const rawStaff = staffResult.data ?? [];
+  const staffPresentations = await getStaffPresentationsByStaffId({
+    staff: rawStaff,
+    supabase,
+  });
   const staff = rawStaff.map(
     (member): ServiceBookingStaff => ({
       avatarPath: member.public_profile_photo_path,
-      displayName: member.display_name,
+      avatarUrl: staffPresentations.get(member.id)?.avatarUrl ?? null,
+      bookingReady: member.is_active && member.online_booking_enabled,
+      displayName:
+        staffPresentations.get(member.id)?.displayName ?? member.display_name,
       id: member.id,
       isActive: member.is_active,
       onlineBookingEnabled: member.online_booking_enabled,
-      ownerPublicEnabled: member.owner_public_enabled,
-      publicProfileVisible: member.public_profile_visible,
-      publicReady:
-        member.is_active &&
-        member.online_booking_enabled &&
-        member.owner_public_enabled &&
-        member.public_profile_visible &&
-        member.staff_public_consent_status === "granted",
     }),
   );
   const services = rawServices.map((service) => ({
@@ -179,7 +175,7 @@ export async function saveServiceConfigurations(inputs: ServiceConfigInput[]) {
 
   await requirePermission(SERVICE_PERMISSIONS.manage, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -221,7 +217,7 @@ export async function saveServiceConfigurations(inputs: ServiceConfigInput[]) {
       details: error.details,
       hint: error.hint,
       message: error.message,
-      organizationId: organization.id,
+      accountId: Account.id,
       salonId: salon.id,
       serviceIds,
       userId: context.user.id,

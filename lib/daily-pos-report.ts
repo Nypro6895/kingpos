@@ -6,6 +6,17 @@ import {
 } from "@/lib/current-context";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
+import {
+  buildSameWeekdayComparisonDates,
+  calculateDailyPosSalesComparison,
+  type DailyPosSalesComparison,
+} from "@/lib/daily-pos-sales-comparison";
+import {
+  buildSalonActivityBuckets,
+  getLocalDateHour,
+  type SalonActivityBucketSource,
+  type SalonBusinessHoursWindow,
+} from "@/lib/salon-business-hours";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
 import type { CurrentBusinessContext } from "@/lib/current-context";
@@ -44,7 +55,7 @@ export const FINANCIAL_CORRECTION_PERMISSIONS = {
 } as const;
 
 export const POS_DAILY_CLOSING_SELECT =
-  "id, organization_id, salon_id, report_date, cash_amount, credit_card_amount, other_amount, note, status, closed_at, closed_by, approved_at, approved_by, locked_at, locked_by, lock_type, lock_reason, note_snapshot, staff_earned_snapshot, tip_snapshot, discount_snapshot, gift_card_snapshot, expected_total_snapshot, actual_total_snapshot, difference_snapshot, cash_amount_snapshot, credit_card_amount_snapshot, other_amount_snapshot, ticket_count_snapshot, finalized_ticket_count_snapshot, snapshot_created_at, created_by, updated_by, created_at, updated_at";
+  "id, salon_id, report_date, cash_amount, credit_card_amount, other_amount, note, status, closed_at, closed_by, approved_at, approved_by, locked_at, locked_by, lock_type, lock_reason, note_snapshot, staff_earned_snapshot, tip_snapshot, discount_snapshot, gift_card_snapshot, expected_total_snapshot, actual_total_snapshot, difference_snapshot, cash_amount_snapshot, credit_card_amount_snapshot, other_amount_snapshot, ticket_count_snapshot, finalized_ticket_count_snapshot, snapshot_created_at, created_by, updated_by, created_at, updated_at";
 
 const FINANCIAL_DATE_LOCKED_MESSAGE =
   "This business date is locked. Please submit a correction request.";
@@ -70,7 +81,7 @@ type SupabaseServerClient = NonNullable<
 
 type ReportAuthContext = {
   context: CurrentBusinessContext;
-  organization: NonNullable<CurrentBusinessContext["currentOrganization"]>;
+  Account: NonNullable<CurrentBusinessContext["currentAccount"]>;
   salon: NonNullable<CurrentBusinessContext["currentSalon"]>;
   supabase: SupabaseServerClient;
   user: NonNullable<CurrentBusinessContext["user"]>;
@@ -99,6 +110,7 @@ type ReportTicketPayment = {
 };
 
 type ReportTicketRow = {
+  closed_at: string | null;
   discount_type: PosTicketDiscountType;
   discount_value: number;
   id: string;
@@ -121,13 +133,16 @@ type StaffEarningRow = {
 };
 
 type DailyReportCore = {
+  activityPoints: DailyPosHourlyActivityPoint[];
   allTickets: ReportTicketRow[];
   closing: PosDailyClosing | null;
   closingInputs: DailyPosClosingInputs;
   finalizedTickets: ReportTicketRow[];
   metadata: DailyPosReportMetadata;
   reportDate: string;
+  staffAttributionSource: DailyPosStaffAttributionSource;
   staffRows: DailyPosReportStaffRow[];
+  tipAttributionSource: DailyPosTipAttributionSource;
   totals: DailyPosReportTotals;
 };
 
@@ -210,6 +225,39 @@ export type PayrollReadyDailyFinancial = {
   pendingCorrectionCount: number;
   reportDate: string;
   snapshotTotals: DailyClosingSnapshotTotals | null;
+};
+
+export type DailyPosStaffAttributionSource =
+  | "none"
+  | "pos_ticket_staff_earnings"
+  | "pos_ticket_items";
+
+export type DailyPosTipAttributionSource =
+  | "none"
+  | "pos_ticket_staff_earnings"
+  | "unallocated";
+
+export type DailyPosHourlyActivityPoint = {
+  discount: number;
+  hour: number | null;
+  isAfterHours: boolean;
+  isExceptional: boolean;
+  isLatest: boolean;
+  label: string;
+  service: number;
+  source: SalonActivityBucketSource;
+  ticketCount: number;
+  tip: number;
+  total: number;
+};
+
+export type DailyPosTodayFinancialData = {
+  activityPoints: DailyPosHourlyActivityPoint[];
+  businessHours: SalonBusinessHoursWindow | null;
+  salesComparison: DailyPosSalesComparison | null;
+  staffAttributionSource: DailyPosStaffAttributionSource;
+  staffRows: DailyPosReportStaffRow[];
+  tipAttributionSource: DailyPosTipAttributionSource;
 };
 
 function roundMoney(value: number) {
@@ -599,6 +647,149 @@ function buildStaffRowsFromTickets(
     .sort((left, right) => left.staffName.localeCompare(right.staffName));
 }
 
+function buildHourlyActivityPoints(input: {
+  businessHours?: SalonBusinessHoursWindow | null;
+  reportDate: string;
+  tickets: ReportTicketRow[];
+  timeZone: string;
+}): DailyPosHourlyActivityPoint[] {
+  const rowsByHour = new Map<
+    number,
+    {
+      discountCents: number;
+      serviceCents: number;
+      ticketCount: number;
+      tipCents: number;
+    }
+  >();
+
+  for (const ticket of input.tickets) {
+    const local = getLocalDateHour(ticket.opened_at, input.timeZone);
+
+    if (!local || local.date !== input.reportDate) {
+      continue;
+    }
+
+    const activeItems = getActiveItems(ticket);
+    const serviceCents = sumCents(
+      activeItems.map((item) => getItemServiceTotalCents(item)),
+    );
+    const totals = calculateTicketTotals({
+      discountType: ticket.discount_type,
+      discountValue: Number(ticket.discount_value),
+      items: activeItems.map((item) => ({
+        line_total: fromCents(getItemServiceTotalCents(item)),
+      })),
+      taxRate: Number(ticket.tax_rate),
+      tipType: ticket.tip_type,
+      tipValue: Number(ticket.tip_value),
+    });
+    const existing = rowsByHour.get(local.hour) ?? {
+      discountCents: 0,
+      serviceCents: 0,
+      ticketCount: 0,
+      tipCents: 0,
+    };
+
+    existing.discountCents += toCents(totals.discount_amount);
+    existing.serviceCents += serviceCents;
+    existing.ticketCount += 1;
+    existing.tipCents += toCents(totals.tip_amount);
+    rowsByHour.set(local.hour, existing);
+  }
+
+  const orderedBuckets = buildSalonActivityBuckets({
+    activeHours: rowsByHour.keys(),
+    businessHours: input.businessHours,
+    date: input.reportDate,
+    timeZone: input.timeZone,
+  });
+
+  const points: DailyPosHourlyActivityPoint[] = [];
+
+  for (const bucket of orderedBuckets) {
+    const row = bucket.hours.reduce(
+      (total, hour) => {
+        const hourRow = rowsByHour.get(hour);
+
+        if (!hourRow) {
+          return total;
+        }
+
+        return {
+          discountCents: total.discountCents + hourRow.discountCents,
+          serviceCents: total.serviceCents + hourRow.serviceCents,
+          ticketCount: total.ticketCount + hourRow.ticketCount,
+          tipCents: total.tipCents + hourRow.tipCents,
+        };
+      },
+      {
+        discountCents: 0,
+        serviceCents: 0,
+        ticketCount: 0,
+        tipCents: 0,
+      },
+    );
+    const totalCents = row.serviceCents + row.tipCents - row.discountCents;
+
+    points.push({
+      discount: fromCents(row.discountCents),
+      hour: bucket.hour,
+      isAfterHours: bucket.source === "after_hours",
+      isExceptional: bucket.exceptional,
+      isLatest: false,
+      label: bucket.label,
+      service: fromCents(row.serviceCents),
+      source: bucket.source,
+      ticketCount: row.ticketCount,
+      tip: fromCents(row.tipCents),
+      total: fromCents(totalCents),
+    });
+  }
+
+  if (points.length > 0) {
+    points[points.length - 1] = {
+      ...points[points.length - 1],
+      isLatest: true,
+    };
+  }
+
+  return points;
+}
+
+async function buildSalesComparison(input: {
+  auth: ReportAuthContext;
+  reportDate: string;
+  selectedTotal: number;
+  timeZone: string;
+}): Promise<DailyPosSalesComparison> {
+  const comparisonDates = buildSameWeekdayComparisonDates({
+    reportDate: input.reportDate,
+  });
+  const comparisonCores = await Promise.all(
+    comparisonDates.map((date) =>
+      loadLiveDailyPosReport(date, input.auth, {
+        includeActivityPoints: false,
+        timeZone: input.timeZone,
+      }),
+    ),
+  );
+  const comparableTotals = comparisonCores
+    .filter(
+      (core) =>
+        core.reportDate < input.reportDate &&
+        core.metadata.finalizedTicketCount > 0 &&
+        core.totals.expectedTotal > 0,
+    )
+    .map((core) => core.totals.expectedTotal);
+
+  return calculateDailyPosSalesComparison({
+    comparableTotals,
+    reportDate: input.reportDate,
+    selectedTotal: input.selectedTotal,
+  });
+}
+
 async function requireReportContext(
   permissionCode: string,
   context?: CurrentBusinessContext,
@@ -610,11 +801,11 @@ async function requireReportContext(
   }
 
   if (!isSalonManageContext(resolvedContext)) {
-    throw new Error("Open reports from a Manage Salon workspace.");
+    throw new Error("Open reports from a Business workspace.");
   }
 
-  if (!resolvedContext.currentOrganization) {
-    throw new Error("Create an organization before viewing reports.");
+  if (!resolvedContext.currentAccount) {
+    throw new Error("Choose a salon workspace before viewing reports.");
   }
 
   if (!resolvedContext.currentSalon) {
@@ -631,7 +822,54 @@ async function requireReportContext(
 
   return {
     context: resolvedContext,
-    organization: resolvedContext.currentOrganization,
+    Account: resolvedContext.currentAccount,
+    salon: resolvedContext.currentSalon,
+    supabase,
+    user: resolvedContext.user,
+  };
+}
+
+async function requireAnyReportContext(
+  permissionCodes: string[],
+  context?: CurrentBusinessContext,
+): Promise<ReportAuthContext> {
+  const resolvedContext = context ?? (await getCurrentBusinessContext());
+
+  if (!resolvedContext.user) {
+    throw new Error("You must be logged in to view reports.");
+  }
+
+  if (!isSalonManageContext(resolvedContext)) {
+    throw new Error("Open reports from a Business workspace.");
+  }
+
+  if (!resolvedContext.currentAccount) {
+    throw new Error("Choose a salon workspace before viewing reports.");
+  }
+
+  if (!resolvedContext.currentSalon) {
+    throw new Error("Please select a salon first.");
+  }
+
+  const allowed = await Promise.all(
+    permissionCodes.map((permissionCode) =>
+      hasPermission(permissionCode, resolvedContext),
+    ),
+  );
+
+  if (!allowed.some(Boolean)) {
+    throw new Error(`Missing required permission: ${permissionCodes.join(", ")}`);
+  }
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  return {
+    context: resolvedContext,
+    Account: resolvedContext.currentAccount,
     salon: resolvedContext.currentSalon,
     supabase,
     user: resolvedContext.user,
@@ -646,11 +884,11 @@ async function requireFinancialContext(context?: CurrentBusinessContext) {
   }
 
   if (!isSalonManageContext(resolvedContext)) {
-    throw new Error("Open financial records from a Manage Salon workspace.");
+    throw new Error("Open financial records from a Business workspace.");
   }
 
-  if (!resolvedContext.currentOrganization) {
-    throw new Error("Create an organization before managing financial records.");
+  if (!resolvedContext.currentAccount) {
+    throw new Error("Choose a salon workspace before managing financial records.");
   }
 
   if (!resolvedContext.currentSalon) {
@@ -665,7 +903,7 @@ async function requireFinancialContext(context?: CurrentBusinessContext) {
 
   return {
     context: resolvedContext,
-    organization: resolvedContext.currentOrganization,
+    Account: resolvedContext.currentAccount,
     salon: resolvedContext.currentSalon,
     supabase,
     user: resolvedContext.user,
@@ -694,28 +932,71 @@ export async function canRequestFinancialCorrections(
   );
 }
 
+export async function getDailyPosTodayFinancialData(input: {
+  businessHours?: SalonBusinessHoursWindow | null;
+  context?: CurrentBusinessContext;
+  reportDate: string;
+  timeZone: string;
+}): Promise<DailyPosTodayFinancialData> {
+  const auth = await requireAnyReportContext(
+    [
+      DAILY_POS_REPORT_PERMISSIONS.view,
+      "payroll.view",
+      "payroll.manage",
+      "tickets.view",
+      "tickets.manage",
+    ],
+    input.context,
+  );
+  const core = await loadLiveDailyPosReport(input.reportDate, auth, {
+    businessHours: input.businessHours,
+    timeZone: input.timeZone,
+  });
+  const salesComparison = await buildSalesComparison({
+    auth,
+    reportDate: input.reportDate,
+    selectedTotal: core.totals.expectedTotal,
+    timeZone: input.timeZone,
+  });
+
+  return {
+    activityPoints: core.activityPoints,
+    businessHours: input.businessHours ?? null,
+    salesComparison,
+    staffAttributionSource: core.staffAttributionSource,
+    staffRows: core.staffRows,
+    tipAttributionSource: core.tipAttributionSource,
+  };
+}
+
 async function loadLiveDailyPosReport(
   reportDate: string,
   auth: ReportAuthContext,
+  options: {
+    businessHours?: SalonBusinessHoursWindow | null;
+    includeActivityPoints?: boolean;
+    timeZone?: string;
+  } = {},
 ): Promise<DailyReportCore> {
-  const { organization, salon, supabase, user } = auth;
-  const bounds = getUtcBoundsForLocalDate(reportDate, user.timezone);
+  const { Account, salon, supabase, user } = auth;
+  const bounds = getUtcBoundsForLocalDate(
+    reportDate,
+    options.timeZone ?? user.timezone,
+  );
 
   const [{ data: closing, error: closingError }, { data: tickets, error: ticketsError }] =
     await Promise.all([
       supabase
         .from("pos_daily_closings")
         .select(POS_DAILY_CLOSING_SELECT)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("report_date", reportDate)
         .maybeSingle<PosDailyClosing>(),
       supabase
         .from("pos_tickets")
         .select(
-          "id, opened_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, line_total, is_removed, assigned_staff:staff(id, display_name), turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))",
+          "id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, payments:pos_payments(payment_method, amount), ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, line_total, is_removed, assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name), turn_parts:pos_ticket_item_turn_parts(amount, staff_id, turn_index, turn_type))",
         )
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .gte("opened_at", bounds.openedFrom)
         .lte("opened_at", bounds.openedTo)
@@ -729,7 +1010,7 @@ async function loadLiveDailyPosReport(
       details: closingError.details,
       hint: closingError.hint,
       message: closingError.message,
-      organizationId: organization.id,
+      accountId: Account.id,
       reportDate,
       salonId: salon.id,
       userId: user.id,
@@ -743,7 +1024,7 @@ async function loadLiveDailyPosReport(
       details: ticketsError.details,
       hint: ticketsError.hint,
       message: ticketsError.message,
-      organizationId: organization.id,
+      accountId: Account.id,
       reportDate,
       salonId: salon.id,
       userId: user.id,
@@ -754,7 +1035,9 @@ async function loadLiveDailyPosReport(
   const allTickets = tickets ?? [];
   const finalizedTickets = allTickets.filter((ticket) => ticket.status === "closed");
   const finalizedTicketIds = finalizedTickets.map((ticket) => ticket.id);
+  let staffAttributionSource: DailyPosStaffAttributionSource = "none";
   let staffRows: DailyPosReportStaffRow[] = [];
+  let tipAttributionSource: DailyPosTipAttributionSource = "none";
 
   if (finalizedTicketIds.length > 0) {
     const { data: earnings, error: earningsError } = await supabase
@@ -762,7 +1045,6 @@ async function loadLiveDailyPosReport(
       .select(
         "staff_id, service_total, tip_amount, big_turn_count, small_turn_count, staff:staff(id, display_name)",
       )
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("work_date", reportDate)
       .in("ticket_id", finalizedTicketIds)
@@ -774,7 +1056,7 @@ async function loadLiveDailyPosReport(
         details: earningsError.details,
         hint: earningsError.hint,
         message: earningsError.message,
-        organizationId: organization.id,
+        accountId: Account.id,
         reportDate,
         salonId: salon.id,
         userId: user.id,
@@ -782,10 +1064,15 @@ async function loadLiveDailyPosReport(
       throw new Error(earningsError.message);
     }
 
-    staffRows =
-      (earnings ?? []).length > 0
-        ? buildStaffRowsFromEarnings(earnings ?? [])
-        : buildStaffRowsFromTickets(finalizedTickets);
+    if ((earnings ?? []).length > 0) {
+      staffRows = buildStaffRowsFromEarnings(earnings ?? []);
+      staffAttributionSource = "pos_ticket_staff_earnings";
+      tipAttributionSource = "pos_ticket_staff_earnings";
+    } else {
+      staffRows = buildStaffRowsFromTickets(finalizedTickets);
+      staffAttributionSource =
+        staffRows.length > 0 ? "pos_ticket_items" : "none";
+    }
   }
 
   const closingInputs = getClosingInputs(closing);
@@ -799,6 +1086,13 @@ async function loadLiveDailyPosReport(
   const totalStaffEarnedCents = sumCents(
     staffRows.map((row) => toCents(row.totalEarned)),
   );
+  if (
+    tipAttributionSource === "none" &&
+    totalTipCents > 0 &&
+    finalizedTickets.length > 0
+  ) {
+    tipAttributionSource = "unallocated";
+  }
   const totalGiftCardCents = 0;
   const expectedTotalCents =
     totalStaffEarnedCents +
@@ -808,6 +1102,15 @@ async function loadLiveDailyPosReport(
   const differenceCents = actualTotalCents - expectedTotalCents;
 
   return {
+    activityPoints:
+      options.includeActivityPoints === false
+        ? []
+        : buildHourlyActivityPoints({
+            businessHours: options.businessHours,
+            reportDate,
+            tickets: finalizedTickets,
+            timeZone: options.timeZone ?? user.timezone,
+          }),
     allTickets,
     closing: closing ?? null,
     closingInputs,
@@ -823,7 +1126,9 @@ async function loadLiveDailyPosReport(
       ticketCount: allTickets.length,
     },
     reportDate,
+    staffAttributionSource,
     staffRows,
+    tipAttributionSource,
     totals: {
       actualTotal: fromCents(actualTotalCents),
       difference: fromCents(differenceCents),
@@ -945,11 +1250,10 @@ async function insertStaffSnapshotRows(
     return;
   }
 
-  const { organization, salon, supabase } = auth;
+  const { salon, supabase } = auth;
   const rows = staffRows.map((row) => ({
     big_turn_count_snapshot: row.bigTurnCount,
     closing_id: closing.id,
-    organization_id: organization.id,
     report_date: closing.report_date,
     salon_id: salon.id,
     small_turn_count_snapshot: row.smallTurnCount,
@@ -975,11 +1279,10 @@ async function loadStaffAdjustmentTotals(
   auth: ReportAuthContext,
   reportDate: string,
 ) {
-  const { organization, salon, supabase } = auth;
+  const { salon, supabase } = auth;
   const { data, error } = await supabase
     .from("pos_financial_adjustments")
     .select("staff_id, service_delta, tip_delta, turn_delta")
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("business_date", reportDate)
     .not("staff_id", "is", null)
@@ -1031,7 +1334,6 @@ async function loadStaffNames(auth: ReportAuthContext, staffIds: string[]) {
   const { data, error } = await auth.supabase
     .from("staff")
     .select("id, display_name")
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .in("id", ids)
     .returns<Array<{ display_name: string; id: string }>>();
@@ -1048,7 +1350,7 @@ async function loadStaffSnapshotRows(
   closingId: string | null,
   reportDate: string,
 ) {
-  const { organization, salon, supabase } = auth;
+  const { salon, supabase } = auth;
   const adjustmentTotals = await loadStaffAdjustmentTotals(auth, reportDate);
   const snapshotRows = closingId
     ? await supabase
@@ -1056,7 +1358,6 @@ async function loadStaffSnapshotRows(
         .select(
           "id, staff_id, staff_name_snapshot, total_earned_snapshot, tip_snapshot, big_turn_count_snapshot, small_turn_count_snapshot, total_turns_snapshot",
         )
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("closing_id", closingId)
         .order("staff_name_snapshot", { ascending: true })
@@ -1144,7 +1445,7 @@ async function ensureDailyClosingSnapshotFromCore(
     return core.closing;
   }
 
-  const { organization, salon, supabase, user } = auth;
+  const { salon, supabase, user } = auth;
   const now = new Date().toISOString();
   const snapshot = buildSnapshotTotalsFromCore(core);
   const baseRow = {
@@ -1176,7 +1477,6 @@ async function ensureDailyClosingSnapshotFromCore(
       .from("pos_daily_closings")
       .update(baseRow)
       .eq("id", core.closing.id)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .is("snapshot_created_at", null)
       .select(POS_DAILY_CLOSING_SELECT)
@@ -1199,7 +1499,6 @@ async function ensureDailyClosingSnapshotFromCore(
         created_by: user.id,
         credit_card_amount: snapshot.creditCardAmount,
         note: snapshot.note,
-        organization_id: organization.id,
         other_amount: snapshot.otherAmount,
         report_date: core.reportDate,
         salon_id: salon.id,
@@ -1215,7 +1514,6 @@ async function ensureDailyClosingSnapshotFromCore(
       const { data: conflicted, error: conflictError } = await supabase
         .from("pos_daily_closings")
         .select(POS_DAILY_CLOSING_SELECT)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("report_date", core.reportDate)
         .single<PosDailyClosing>();
@@ -1303,14 +1601,13 @@ async function loadDailyClosingCorrectionRows(
   auth: ReportAuthContext,
   reportDate: string,
 ) {
-  const { organization, salon, supabase } = auth;
+  const { salon, supabase } = auth;
   const [requestsResult, adjustmentsResult] = await Promise.all([
     supabase
       .from("pos_financial_correction_requests")
       .select(
         "id, business_date, correction_type, old_value_json, requested_value_json, money_delta, reason, status, requested_by, requested_at, approved_by, approved_at, admin_note",
       )
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("business_date", reportDate)
       .order("created_at", { ascending: false })
@@ -1320,7 +1617,6 @@ async function loadDailyClosingCorrectionRows(
       .select(
         "id, correction_request_id, cash_delta, credit_card_delta, other_delta, service_delta, tip_delta, discount_delta, gift_card_delta, expected_total_delta, actual_total_delta, turn_delta, note, created_by, created_at",
       )
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("business_date", reportDate)
       .order("created_at", { ascending: false })
@@ -1611,7 +1907,6 @@ export async function isDailyClosingLocked(
   const { data: closing, error } = await auth.supabase
     .from("pos_daily_closings")
     .select(POS_DAILY_CLOSING_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("report_date", reportDateInput)
     .maybeSingle<PosDailyClosing>();
@@ -1643,11 +1938,11 @@ export async function assertFinancialDateMutable(
   }
 
   if (!isSalonManageContext(resolvedContext)) {
-    throw new Error("Open financial records from a Manage Salon workspace.");
+    throw new Error("Open financial records from a Business workspace.");
   }
 
-  if (!resolvedContext.currentOrganization) {
-    throw new Error("Create an organization before managing financial records.");
+  if (!resolvedContext.currentAccount) {
+    throw new Error("Choose a salon workspace before managing financial records.");
   }
 
   if (!resolvedContext.currentSalon) {
@@ -1710,7 +2005,6 @@ export async function assertTicketFinancialDateMutable(
     .from("pos_tickets")
     .select("id, opened_at")
     .eq("id", ticketId)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .maybeSingle<{ id: string; opened_at: string }>();
 
@@ -1789,7 +2083,7 @@ async function updateDailyPosClosing(input: {
   closingId: string;
   creditCardAmountCents: number;
   note: string | null;
-  organizationId: string;
+  accountId: string;
   otherAmountCents: number;
   salonId: string;
   supabase: SupabaseServerClient;
@@ -1805,7 +2099,6 @@ async function updateDailyPosClosing(input: {
       updated_by: input.userId,
     })
     .eq("id", input.closingId)
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
     .select(POS_DAILY_CLOSING_SELECT)
     .single<PosDailyClosing>();
@@ -1822,7 +2115,7 @@ export async function upsertDailyPosClosing(input: SaveDailyPosClosingInput) {
     throw new Error("Report date is required.");
   }
 
-  const { context, organization, salon, supabase, user } =
+  const { context, Account, salon, supabase, user } =
     await requireReportContext(DAILY_POS_REPORT_PERMISSIONS.edit);
 
   await assertFinancialDateMutable(input.reportDate, context, {
@@ -1839,7 +2132,6 @@ export async function upsertDailyPosClosing(input: SaveDailyPosClosingInput) {
   const { data: existing, error: existingError } = await supabase
     .from("pos_daily_closings")
     .select("id")
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("report_date", input.reportDate)
     .maybeSingle<{ id: string }>();
@@ -1855,7 +2147,7 @@ export async function upsertDailyPosClosing(input: SaveDailyPosClosingInput) {
         closingId: existing.id,
         creditCardAmountCents,
         note,
-        organizationId: organization.id,
+        accountId: Account.id,
         otherAmountCents,
         salonId: salon.id,
         supabase,
@@ -1871,7 +2163,6 @@ export async function upsertDailyPosClosing(input: SaveDailyPosClosingInput) {
       created_by: user.id,
       credit_card_amount: fromCents(creditCardAmountCents),
       note,
-      organization_id: organization.id,
       other_amount: fromCents(otherAmountCents),
       report_date: input.reportDate,
       salon_id: salon.id,
@@ -1886,7 +2177,6 @@ export async function upsertDailyPosClosing(input: SaveDailyPosClosingInput) {
       const { data: conflictedClosing, error: conflictedError } = await supabase
         .from("pos_daily_closings")
         .select("id")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("report_date", input.reportDate)
         .single<{ id: string }>();
@@ -1901,7 +2191,7 @@ export async function upsertDailyPosClosing(input: SaveDailyPosClosingInput) {
           closingId: conflictedClosing.id,
           creditCardAmountCents,
           note,
-          organizationId: organization.id,
+          accountId: Account.id,
           otherAmountCents,
           salonId: salon.id,
           supabase,
@@ -2052,7 +2342,6 @@ export async function createDailyClosingCorrectionRequest(
         field: input.field,
         value: oldValue,
       },
-      organization_id: auth.organization.id,
       reason,
       requested_by: auth.user.id,
       requested_value_json: {
@@ -2098,7 +2387,6 @@ export async function applyDailyClosingCorrection(
       "id, business_date, correction_type, old_value_json, requested_value_json, money_delta, reason, status, requested_by, requested_at, approved_by, approved_at, admin_note",
     )
     .eq("id", input.correctionRequestId)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .maybeSingle<FinancialCorrectionRequestRow>();
 
@@ -2159,7 +2447,6 @@ export async function applyDailyClosingCorrection(
       business_date: request.business_date,
       correction_request_id: request.id,
       created_by: auth.user.id,
-      organization_id: auth.organization.id,
       salon_id: auth.salon.id,
       target_id: effective.closingId,
       target_type: "daily_closing",
@@ -2180,7 +2467,6 @@ export async function applyDailyClosingCorrection(
       status: "applied",
     })
     .eq("id", request.id)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .select(
       "id, business_date, correction_type, old_value_json, requested_value_json, money_delta, reason, status, requested_by, requested_at, approved_by, approved_at, admin_note",

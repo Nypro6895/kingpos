@@ -22,18 +22,18 @@ import type {
 } from "@/types/staff-workday";
 
 export const POS_TICKET_SELECT =
-  "id, organization_id, salon_id, source_booking_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at";
+  "id, salon_id, source_booking_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at";
 
 export const POS_TICKET_ITEM_SELECT =
-  "id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, performed_by_staff_id, source_booking_id, source_booking_line_id, source_kind, service_name_snapshot, service_category_snapshot, booked_unit_price_snapshot, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at";
+  "id, salon_id, pos_ticket_id, service_id, assigned_staff_id, performed_by_staff_id, source_booking_id, source_booking_line_id, source_kind, service_name_snapshot, service_category_snapshot, booked_unit_price_snapshot, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at";
 
 export const POS_TICKET_AUDIT_LOG_SELECT =
-  "id, organization_id, salon_id, ticket_id, action, note, created_by, created_at, created_by_user:users(id, display_name, email)";
+  "id, salon_id, ticket_id, action, note, created_by, created_at, created_by_user:users(id, display_name, email)";
 
 export const POS_TICKET_WITH_RELATIONS_SELECT = `${POS_TICKET_SELECT}, audit_logs:pos_ticket_audit_logs(${POS_TICKET_AUDIT_LOG_SELECT}), customer:customers(id, name, phone, email), payments:pos_payments(${POS_PAYMENT_SELECT}), ticket_items:pos_ticket_items(${POS_TICKET_ITEM_SELECT}, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff!pos_ticket_items_assigned_staff_id_fkey(id, display_name, job_title), performed_staff:staff!pos_ticket_items_performed_by_staff_id_fkey(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date, created_at))`;
 
 const POS_TICKET_STAFF_EARNING_SELECT =
-  "id, organization_id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at";
+  "id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at";
 
 const POS_TICKET_TURN_PART_SELECT =
   "id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date, created_at";
@@ -57,7 +57,7 @@ type PosTicketAdjustmentRow = {
   after_snapshot: unknown;
   before_snapshot: unknown;
   created_at: string;
-  created_by: string;
+  created_by: string | null;
   id: string;
   reason: string;
   ticket_id: string;
@@ -71,6 +71,8 @@ type SourceBookingRow = {
 };
 
 const DAILY_WORK_LOG_BIG_TURN_THRESHOLD = 25;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const POS_TICKET_PERMISSIONS = {
   void: "tickets.void",
@@ -82,22 +84,28 @@ export const POS_TICKET_CUSTOMER_OPTION_SELECT =
   "id, location_id, customer_user_id, name, phone, email, notes, staff_notes, internal_notes, source, status, created_by_user_id, updated_by_user_id, created_at, updated_at";
 
 export const POS_TICKET_SERVICE_OPTION_SELECT =
-  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
+  "id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 
 export const POS_TICKET_STAFF_OPTION_SELECT =
-  "id, organization_id, salon_id, user_id, display_name, first_name, last_name, phone, email, job_title, is_active, created_at, updated_at";
+  "id, salon_id, user_id, account_user_id, display_name, first_name, last_name, phone, email, address_line1, address_line2, city, state, postal_code, job_title, pos_enabled, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 
 export type PosTicketStaffOption = Staff & {
   today_status: StaffWorkdayStatus | "not_checked_in";
 };
 
-function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+function normalizeUuid(value: string | null | undefined) {
+  const trimmed = value?.trim() ?? "";
+
+  return UUID_PATTERN.test(trimmed) ? trimmed : null;
+}
+
+function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
-    throw new Error("Open POS tickets from a Manage Salon workspace.");
+    throw new Error("Open POS tickets from a Business workspace.");
   }
 
-  if (!context.currentOrganization) {
-    throw new Error("Create an organization before managing POS tickets.");
+  if (!context.currentAccount) {
+    throw new Error("Choose a salon workspace before managing POS tickets.");
   }
 
   if (!context.currentSalon) {
@@ -105,7 +113,7 @@ function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
   }
 
   return {
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
   };
 }
@@ -116,7 +124,7 @@ export type PosTicketListFilters = {
 };
 
 async function loadStaffEarningsForTickets(input: {
-  organizationId: string;
+  accountId: string;
   salonId: string;
   supabase: NonNullable<
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -130,7 +138,6 @@ async function loadStaffEarningsForTickets(input: {
   const { data: earnings, error: earningsError } = await input.supabase
     .from("pos_ticket_staff_earnings")
     .select(POS_TICKET_STAFF_EARNING_SELECT)
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
     .in("ticket_id", input.ticketIds)
     .returns<Array<Omit<PosTicketStaffEarningWithStaff, "staff">>>();
@@ -142,7 +149,7 @@ async function loadStaffEarningsForTickets(input: {
       details: earningsError.details,
       hint: earningsError.hint,
       salonId: input.salonId,
-      organizationId: input.organizationId,
+      accountId: input.accountId,
       ticketIds: input.ticketIds,
     });
     throw new Error(earningsError.message);
@@ -160,7 +167,6 @@ async function loadStaffEarningsForTickets(input: {
     const { data: staffRows, error: staffError } = await input.supabase
       .from("staff")
       .select("id, display_name, job_title")
-      .eq("organization_id", input.organizationId)
       .eq("salon_id", input.salonId)
       .in("id", staffIds)
       .returns<Array<Pick<Staff, "id" | "display_name" | "job_title">>>();
@@ -172,7 +178,7 @@ async function loadStaffEarningsForTickets(input: {
         details: staffError.details,
         hint: staffError.hint,
         salonId: input.salonId,
-        organizationId: input.organizationId,
+        accountId: input.accountId,
         staffIds,
       });
       throw new Error(staffError.message);
@@ -201,7 +207,7 @@ async function loadStaffEarningsForTickets(input: {
 }
 
 async function attachStaffEarningsToTickets(input: {
-  organizationId: string;
+  accountId: string;
   salonId: string;
   supabase: NonNullable<
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -209,7 +215,7 @@ async function attachStaffEarningsToTickets(input: {
   tickets: PosTicketWithRelations[];
 }) {
   const earningsByTicketId = await loadStaffEarningsForTickets({
-    organizationId: input.organizationId,
+    accountId: input.accountId,
     salonId: input.salonId,
     supabase: input.supabase,
     ticketIds: input.tickets.map((ticket) => ticket.id),
@@ -223,7 +229,7 @@ async function attachStaffEarningsToTickets(input: {
 }
 
 async function loadAdjustmentsForTickets(input: {
-  organizationId: string;
+  accountId: string;
   salonId: string;
   supabase: NonNullable<
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -237,7 +243,6 @@ async function loadAdjustmentsForTickets(input: {
   const { data: adjustments, error } = await input.supabase
     .from("pos_ticket_adjustments")
     .select("id, ticket_id, action, reason, before_snapshot, after_snapshot, created_by, created_at")
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
     .in("ticket_id", input.ticketIds)
     .order("created_at", { ascending: false })
@@ -250,14 +255,18 @@ async function loadAdjustmentsForTickets(input: {
       details: error.details,
       hint: error.hint,
       salonId: input.salonId,
-      organizationId: input.organizationId,
+      accountId: input.accountId,
       ticketIds: input.ticketIds,
     });
     throw new Error(error.message);
   }
 
   const userIds = Array.from(
-    new Set((adjustments ?? []).map((adjustment) => adjustment.created_by)),
+    new Set(
+      (adjustments ?? [])
+        .map((adjustment) => normalizeUuid(adjustment.created_by))
+        .filter((userId): userId is string => Boolean(userId)),
+    ),
   );
   const usersById = new Map<string, Pick<KingUser, "id" | "display_name" | "email">>();
 
@@ -275,7 +284,7 @@ async function loadAdjustmentsForTickets(input: {
         details: usersError.details,
         hint: usersError.hint,
         salonId: input.salonId,
-        organizationId: input.organizationId,
+        accountId: input.accountId,
         userIds,
       });
       throw new Error(usersError.message);
@@ -292,11 +301,15 @@ async function loadAdjustmentsForTickets(input: {
   >();
 
   for (const adjustment of adjustments ?? []) {
+    const createdByUserId = normalizeUuid(adjustment.created_by);
+
     adjustmentsByTicketId.set(adjustment.ticket_id, [
       ...(adjustmentsByTicketId.get(adjustment.ticket_id) ?? []),
       {
         ...adjustment,
-        created_by_user: usersById.get(adjustment.created_by) ?? null,
+        created_by_user: createdByUserId
+          ? usersById.get(createdByUserId) ?? null
+          : null,
       },
     ]);
   }
@@ -305,7 +318,7 @@ async function loadAdjustmentsForTickets(input: {
 }
 
 async function attachAdjustmentsToTickets(input: {
-  organizationId: string;
+  accountId: string;
   salonId: string;
   supabase: NonNullable<
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -313,7 +326,7 @@ async function attachAdjustmentsToTickets(input: {
   tickets: PosTicketWithRelations[];
 }) {
   const adjustmentsByTicketId = await loadAdjustmentsForTickets({
-    organizationId: input.organizationId,
+    accountId: input.accountId,
     salonId: input.salonId,
     supabase: input.supabase,
     ticketIds: input.tickets.map((ticket) => ticket.id),
@@ -374,7 +387,7 @@ async function attachSourceBookingsToTickets(input: {
 }
 
 async function attachTurnPartsToTickets(input: {
-  organizationId: string;
+  accountId: string;
   salonId: string;
   supabase: NonNullable<
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -397,7 +410,6 @@ async function attachTurnPartsToTickets(input: {
   const { data: parts, error } = await input.supabase
     .from("pos_ticket_item_turn_parts")
     .select(POS_TICKET_TURN_PART_SELECT)
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
     .in("ticket_item_id", itemIds)
     .returns<PosTicketTurnPartRow[]>();
@@ -409,7 +421,7 @@ async function attachTurnPartsToTickets(input: {
       details: error.details,
       hint: error.hint,
       salonId: input.salonId,
-      organizationId: input.organizationId,
+      accountId: input.accountId,
       itemIds,
     });
     throw new Error(error.message);
@@ -565,7 +577,7 @@ export async function getCurrentSalonPosTickets(filters: PosTicketListFilters = 
 
   await requirePermission(POS_TICKET_PERMISSIONS.view, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -608,27 +620,27 @@ export async function getCurrentSalonPosTickets(filters: PosTicketListFilters = 
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: context.user.id,
     });
     throw new Error(error.message);
   }
 
   const ticketsWithParts = await attachTurnPartsToTickets({
-    organizationId: organization.id,
+    accountId: Account.id,
     salonId: salon.id,
     supabase,
     tickets: data ?? [],
   });
   const ticketsWithRunningTurns = attachRunningTurnsToTickets(ticketsWithParts);
   const ticketsWithEarnings = await attachStaffEarningsToTickets({
-    organizationId: organization.id,
+    accountId: Account.id,
     salonId: salon.id,
     supabase,
     tickets: ticketsWithRunningTurns,
   });
   const tickets = await attachAdjustmentsToTickets({
-    organizationId: organization.id,
+    accountId: Account.id,
     salonId: salon.id,
     supabase,
     tickets: ticketsWithEarnings,
@@ -651,7 +663,7 @@ export async function getCurrentSalonPosTicket(ticketId: string) {
 
   await requirePermission(POS_TICKET_PERMISSIONS.view, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -677,7 +689,7 @@ export async function getCurrentSalonPosTicket(ticketId: string) {
       hint: error.hint,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: context.user.id,
     });
     throw new Error(error.message);
@@ -688,20 +700,20 @@ export async function getCurrentSalonPosTicket(ticketId: string) {
   }
 
   const [ticketWithParts] = await attachTurnPartsToTickets({
-    organizationId: organization.id,
+    accountId: Account.id,
     salonId: salon.id,
     supabase,
     tickets: [data],
   });
   const [ticketWithRunningTurns] = attachRunningTurnsToTickets([ticketWithParts]);
   const [ticketWithEarnings] = await attachStaffEarningsToTickets({
-    organizationId: organization.id,
+    accountId: Account.id,
     salonId: salon.id,
     supabase,
     tickets: [ticketWithRunningTurns],
   });
   const [ticket] = await attachAdjustmentsToTickets({
-    organizationId: organization.id,
+    accountId: Account.id,
     salonId: salon.id,
     supabase,
     tickets: [ticketWithEarnings],
@@ -731,7 +743,7 @@ export async function getCurrentSalonPosTicketOptions(
     );
   }
 
-  const { salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -758,15 +770,14 @@ export async function getCurrentSalonPosTicketOptions(
     supabase
       .from("staff")
       .select(POS_TICKET_STAFF_OPTION_SELECT)
-      .eq("organization_id", context.currentOrganization?.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
+      .eq("pos_enabled", true)
       .order("display_name", { ascending: true })
       .returns<Staff[]>(),
     supabase
       .from("staff_workdays")
-      .select("id, organization_id, salon_id, staff_id, work_date, status, check_in_at, check_out_at, created_at, updated_at, staff:staff(id, display_name, job_title)")
-      .eq("organization_id", context.currentOrganization?.id)
+      .select("id, salon_id, staff_id, work_date, status, check_in_at, check_out_at, created_at, updated_at, staff:staff(id, display_name, job_title)")
       .eq("salon_id", salon.id)
       .eq("work_date", today)
       .returns<StaffWorkdayWithStaff[]>(),
@@ -779,7 +790,7 @@ export async function getCurrentSalonPosTicketOptions(
       details: customersResult.error.details,
       hint: customersResult.error.hint,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: context.user?.id,
     });
     throw new Error(customersResult.error.message);
@@ -792,7 +803,7 @@ export async function getCurrentSalonPosTicketOptions(
       details: servicesResult.error.details,
       hint: servicesResult.error.hint,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: context.user?.id,
     });
     throw new Error(servicesResult.error.message);
@@ -805,7 +816,7 @@ export async function getCurrentSalonPosTicketOptions(
       details: staffResult.error.details,
       hint: staffResult.error.hint,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: context.user?.id,
     });
     throw new Error(staffResult.error.message);
@@ -818,7 +829,7 @@ export async function getCurrentSalonPosTicketOptions(
       details: workdaysResult.error.details,
       hint: workdaysResult.error.hint,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: context.user?.id,
     });
     throw new Error(workdaysResult.error.message);

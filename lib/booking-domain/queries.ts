@@ -34,7 +34,7 @@ export async function listOwnerBookings(): Promise<
       return {
         error: {
           code: "invalid_context",
-          message: "Open bookings from a Manage Salon workspace.",
+          message: "Open bookings from a Business workspace.",
         },
         ok: false,
       };

@@ -20,9 +20,6 @@ type ReadinessStaff = {
   id: string;
   is_active: boolean;
   online_booking_enabled: boolean;
-  owner_public_enabled: boolean;
-  public_profile_visible: boolean;
-  staff_public_consent_status: string;
 };
 
 export function getServiceBookingReadiness(input: {
@@ -42,10 +39,7 @@ export function getServiceBookingReadiness(input: {
 
     return (
       member?.is_active === true &&
-      member.online_booking_enabled === true &&
-      member.owner_public_enabled === true &&
-      member.public_profile_visible === true &&
-      member.staff_public_consent_status === "granted"
+      member.online_booking_enabled === true
     );
   }).length;
   const reasons: ServiceBookingReadiness["reasons"] = [];
@@ -68,7 +62,7 @@ export function getServiceBookingReadiness(input: {
   } else if (eligibleBookingStaffCount === 0) {
     reasons.push({
       code: "no_ready_booking_staff",
-      label: "Selected booking staff are not online-ready",
+      label: "Selected booking staff are inactive or online booking is off",
     });
   }
 

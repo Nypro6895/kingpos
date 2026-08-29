@@ -24,7 +24,10 @@ import {
   POS_PAYMENT_SELECT,
 } from "@/lib/pos-payments";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
-import { recalculateStaffEarningsForDate } from "@/lib/pos-ticket-staff-earnings";
+import {
+  recalculateStaffEarningsForDate,
+  recalculateTicketStaffEarnings,
+} from "@/lib/pos-ticket-staff-earnings";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { PosTicketAuditAction } from "@/types/pos-ticket-audit-log";
@@ -395,7 +398,6 @@ type ClosedTicketFinancialTicketRow = {
   discount_value: number;
   id: string;
   opened_at: string;
-  organization_id: string;
   salon_id: string;
   status: string;
   tax_rate: number;
@@ -410,7 +412,6 @@ type ClosedTicketCurrentItemRow = {
   is_removed: boolean;
   line_total: number;
   notes: string | null;
-  organization_id: string;
   pos_ticket_id: string;
   quantity: number;
   salon_id: string;
@@ -466,7 +467,6 @@ type StaffFinancialCorrection = {
 
 type TurnPartInsertRow = {
   amount: number;
-  organization_id: string;
   salon_id: string;
   staff_id: string;
   ticket_id: string;
@@ -497,8 +497,8 @@ async function requirePosTicketMutationContext(editId?: string) {
     redirect(getRouteForInvalidSalonContext(context));
   }
 
-  if (!context.currentOrganization) {
-    redirectWithError("Create an organization before managing POS tickets.", editId);
+  if (!context.currentAccount) {
+    redirectWithError("Choose a salon workspace before managing POS tickets.", editId);
   }
 
   if (!context.currentSalon) {
@@ -514,7 +514,7 @@ async function requirePosTicketMutationContext(editId?: string) {
   return {
     supabase,
     context,
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
     user: context.user,
   };
@@ -532,8 +532,8 @@ async function requireClosedTicketCorrectionContext(editId?: string) {
     redirect(getRouteForInvalidSalonContext(context));
   }
 
-  if (!context.currentOrganization) {
-    redirectWithError("Create an organization before managing POS tickets.", editId);
+  if (!context.currentAccount) {
+    redirectWithError("Choose a salon workspace before managing POS tickets.", editId);
   }
 
   if (!context.currentSalon) {
@@ -551,7 +551,7 @@ async function requireClosedTicketCorrectionContext(editId?: string) {
   return {
     supabase,
     context,
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
     user: context.user,
   };
@@ -569,8 +569,8 @@ async function requireLockedStaffCorrectionContext(editId?: string) {
     redirect(getRouteForInvalidSalonContext(context));
   }
 
-  if (!context.currentOrganization) {
-    redirectWithError("Create an organization before managing POS tickets.", editId);
+  if (!context.currentAccount) {
+    redirectWithError("Choose a salon workspace before managing POS tickets.", editId);
   }
 
   if (!context.currentSalon) {
@@ -590,7 +590,7 @@ async function requireLockedStaffCorrectionContext(editId?: string) {
   return {
     supabase,
     context,
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
     user: context.user,
   };
@@ -611,7 +611,6 @@ async function requirePosTicketVoidContext(editId?: string) {
 async function writePosTicketAuditLog({
   action,
   note,
-  organizationId,
   salonId,
   supabase,
   ticketId,
@@ -619,7 +618,6 @@ async function writePosTicketAuditLog({
 }: {
   action: PosTicketAuditAction;
   note: string;
-  organizationId: string;
   salonId: string;
   supabase: NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>>;
   ticketId: string;
@@ -631,7 +629,6 @@ async function writePosTicketAuditLog({
       action,
       created_by: userId,
       note,
-      organization_id: organizationId,
       salon_id: salonId,
       ticket_id: ticketId,
     });
@@ -642,12 +639,10 @@ async function writePosTicketAuditLog({
 }
 
 async function loadClosedCorrectionSnapshot({
-  organizationId,
   salonId,
   supabase,
   ticketId,
 }: {
-  organizationId: string;
   salonId: string;
   supabase: NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>>;
   ticketId: string;
@@ -657,10 +652,9 @@ async function loadClosedCorrectionSnapshot({
       supabase
         .from("pos_tickets")
         .select(
-          "id, organization_id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at, ticket_items:pos_ticket_items(id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date, created_at))",
+          "id, salon_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at, ticket_items:pos_ticket_items(id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at, service:services(id, name, category, base_price, duration_minutes), assigned_staff:staff(id, display_name, job_title), turn_parts:pos_ticket_item_turn_parts(id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date, created_at))",
         )
         .eq("id", ticketId)
-        .eq("organization_id", organizationId)
         .eq("salon_id", salonId)
         .maybeSingle(),
       supabase
@@ -668,7 +662,6 @@ async function loadClosedCorrectionSnapshot({
         .select(
           "id, ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, total_earning, locked_at, payroll_batch_id",
         )
-        .eq("organization_id", organizationId)
         .eq("salon_id", salonId)
         .eq("ticket_id", ticketId),
     ]);
@@ -688,12 +681,10 @@ async function loadClosedCorrectionSnapshot({
 }
 
 async function assertWorkDateIsUnlocked({
-  organizationId,
   salonId,
   supabase,
   workDate,
 }: {
-  organizationId: string;
   salonId: string;
   supabase: NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>>;
   workDate: string;
@@ -701,7 +692,6 @@ async function assertWorkDateIsUnlocked({
   const { data, error } = await supabase
     .from("pos_ticket_staff_earnings")
     .select("id, locked_at, payroll_batch_id")
-    .eq("organization_id", organizationId)
     .eq("salon_id", salonId)
     .eq("work_date", workDate)
     .returns<Array<{ id: string; locked_at: string | null; payroll_batch_id: string | null }>>();
@@ -732,7 +722,6 @@ async function assertOpenedAtFinancialDateMutable(
 
 function buildTurnPartRows({
   itemId,
-  organizationId,
   parts,
   salonId,
   staffId,
@@ -740,7 +729,6 @@ function buildTurnPartRows({
   workDate,
 }: {
   itemId: string;
-  organizationId: string;
   parts: number[];
   salonId: string;
   staffId: string | null;
@@ -753,7 +741,6 @@ function buildTurnPartRows({
 
   return parts.filter((amount) => amount > 0).map((amount, index) => ({
     amount,
-    organization_id: organizationId,
     salon_id: salonId,
     staff_id: staffId,
     ticket_id: ticketId,
@@ -771,7 +758,6 @@ function assertTurnPartRows(rows: TurnPartInsertRow[], allowEmpty = false) {
 
   for (const row of rows) {
     if (
-      !row.organization_id ||
       !row.salon_id ||
       !row.ticket_id ||
       !row.ticket_item_id ||
@@ -803,7 +789,6 @@ function restoreTurnPartRows(rows: ExistingTurnPartRow[]) {
     .filter((row) => row.staff_id && row.amount > 0)
     .map<TurnPartInsertRow>((row) => ({
       amount: row.amount,
-      organization_id: row.organization_id,
       salon_id: row.salon_id,
       staff_id: row.staff_id,
       ticket_id: row.ticket_id,
@@ -816,7 +801,6 @@ function restoreTurnPartRows(rows: ExistingTurnPartRow[]) {
 
 async function rebuildCorrectionTurnParts({
   itemId,
-  organizationId,
   parts,
   salonId,
   staffId,
@@ -825,7 +809,6 @@ async function rebuildCorrectionTurnParts({
   workDate,
 }: {
   itemId: string;
-  organizationId: string;
   parts: number[];
   salonId: string;
   staffId: string | null;
@@ -835,7 +818,6 @@ async function rebuildCorrectionTurnParts({
 }) {
   const turnRows = buildTurnPartRows({
     itemId,
-    organizationId,
     parts,
     salonId,
     staffId,
@@ -847,10 +829,9 @@ async function rebuildCorrectionTurnParts({
   const { data: existingRows, error: existingError } = await supabase
     .from("pos_ticket_item_turn_parts")
     .select(
-      "organization_id, salon_id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date",
+      "salon_id, ticket_id, ticket_item_id, staff_id, amount, turn_type, turn_index, work_date",
     )
     .eq("ticket_item_id", itemId)
-    .eq("organization_id", organizationId)
     .eq("salon_id", salonId)
     .returns<ExistingTurnPartRow[]>();
 
@@ -864,7 +845,6 @@ async function rebuildCorrectionTurnParts({
     .from("pos_ticket_item_turn_parts")
     .delete()
     .eq("ticket_item_id", itemId)
-    .eq("organization_id", organizationId)
     .eq("salon_id", salonId);
 
   if (deleteError) {
@@ -1305,7 +1285,7 @@ function validateCreateInput(formData: FormData) {
 }
 
 export async function createPosTicket(formData: FormData) {
-  const { supabase, context, organization, salon, user } =
+  const { supabase, context, salon, user } =
     await requirePosTicketMutationContext();
   const input = validateCreateInput(formData);
 
@@ -1328,7 +1308,6 @@ export async function createPosTicket(formData: FormData) {
   const { error } = await supabase
     .from("pos_tickets")
     .insert({
-      organization_id: organization.id,
       salon_id: salon.id,
       customer_id: input.customerId,
       opened_at: input.openedAt,
@@ -1346,7 +1325,7 @@ export async function createPosTicket(formData: FormData) {
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message);
@@ -1383,7 +1362,7 @@ export async function updatePosTicketNotes(formData: FormData) {
       hint: error.hint,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, ticketId);
@@ -1420,13 +1399,11 @@ export async function updatePosTicketDiscount(formData: FormData) {
 
   const { data: ticket, error: ticketError } = await supabase
     .from("pos_tickets")
-    .select("id, organization_id, status")
+    .select("id, status")
     .eq("id", ticketId)
-    .eq("organization_id", context.currentOrganization?.id)
     .eq("salon_id", salon.id)
     .maybeSingle<{
       id: string;
-      organization_id: string;
       status: string;
     }>();
 
@@ -1454,7 +1431,6 @@ export async function updatePosTicketDiscount(formData: FormData) {
     .from("pos_ticket_items")
     .select("line_total")
     .eq("pos_ticket_id", ticketId)
-    .eq("organization_id", ticket.organization_id)
     .eq("salon_id", salon.id)
     .returns<{ line_total: number }[]>();
 
@@ -1483,7 +1459,6 @@ export async function updatePosTicketDiscount(formData: FormData) {
       discount_value: discountValue,
     })
     .eq("id", ticketId)
-    .eq("organization_id", ticket.organization_id)
     .eq("salon_id", salon.id);
 
   if (error) {
@@ -1494,7 +1469,7 @@ export async function updatePosTicketDiscount(formData: FormData) {
       hint: error.hint,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, undefined, undefined, returnPath);
@@ -1523,13 +1498,11 @@ export async function updatePosTicketTaxRate(formData: FormData) {
 
   const { data: ticket, error: ticketError } = await supabase
     .from("pos_tickets")
-    .select("id, organization_id, status")
+    .select("id, status")
     .eq("id", ticketId)
-    .eq("organization_id", context.currentOrganization?.id)
     .eq("salon_id", salon.id)
     .maybeSingle<{
       id: string;
-      organization_id: string;
       status: string;
     }>();
 
@@ -1557,7 +1530,6 @@ export async function updatePosTicketTaxRate(formData: FormData) {
     .from("pos_tickets")
     .update({ tax_rate: taxRate })
     .eq("id", ticketId)
-    .eq("organization_id", ticket.organization_id)
     .eq("salon_id", salon.id);
 
   if (error) {
@@ -1568,7 +1540,7 @@ export async function updatePosTicketTaxRate(formData: FormData) {
       hint: error.hint,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, undefined, undefined, returnPath);
@@ -1610,13 +1582,11 @@ export async function updatePosTicketTip(formData: FormData) {
 
   const { data: ticket, error: ticketError } = await supabase
     .from("pos_tickets")
-    .select("id, organization_id, status")
+    .select("id, status")
     .eq("id", ticketId)
-    .eq("organization_id", context.currentOrganization?.id)
     .eq("salon_id", salon.id)
     .maybeSingle<{
       id: string;
-      organization_id: string;
       status: string;
     }>();
 
@@ -1647,7 +1617,6 @@ export async function updatePosTicketTip(formData: FormData) {
       tip_value: tipValue,
     })
     .eq("id", ticketId)
-    .eq("organization_id", ticket.organization_id)
     .eq("salon_id", salon.id);
 
   if (error) {
@@ -1658,7 +1627,7 @@ export async function updatePosTicketTip(formData: FormData) {
       hint: error.hint,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, undefined, undefined, returnPath);
@@ -1677,7 +1646,7 @@ export async function closePosTicket(formData: FormData) {
     redirectWithError("Ticket id is required.");
   }
 
-  const { supabase, context, organization, salon, user } =
+  const { supabase, context, salon, user } =
     await requirePosTicketMutationContext(ticketId);
 
   await validateCheckoutTicket(ticketId, returnPath);
@@ -1696,7 +1665,7 @@ export async function closePosTicket(formData: FormData) {
       hint: error.hint,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithCheckoutError(error.message, ticketId, returnPath);
@@ -1706,7 +1675,6 @@ export async function closePosTicket(formData: FormData) {
     await writePosTicketAuditLog({
       action: "ticket_checked_out",
       note: "Ticket checked out.",
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
       ticketId,
@@ -1719,13 +1687,31 @@ export async function closePosTicket(formData: FormData) {
       message,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
+      userId: user.id,
+    });
+    redirectWithCheckoutError(message, ticketId, returnPath);
+  }
+
+  try {
+    await recalculateTicketStaffEarnings(ticketId);
+  } catch (earningError) {
+    const message =
+      earningError instanceof Error
+        ? earningError.message
+        : "Unable to update Payroll staff earnings.";
+    console.error("Supabase POS ticket staff earnings recalculation failed", {
+      message,
+      ticketId,
+      salonId: salon.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithCheckoutError(message, ticketId, returnPath);
   }
 
   revalidatePath("/pos-tickets");
+  revalidatePath("/payroll");
   revalidatePath(returnPath);
   redirectAfterMutation(returnPath);
 }
@@ -1739,7 +1725,7 @@ export async function cancelPosTicket(formData: FormData) {
     redirectWithError("Ticket id is required.", undefined, undefined, undefined, returnPath);
   }
 
-  const { supabase, context, organization, salon, user } =
+  const { supabase, context, salon, user } =
     await requirePosTicketMutationContext(ticketId);
 
   await validateOpenTicketRelationship(ticketId, ticketId);
@@ -1758,7 +1744,7 @@ export async function cancelPosTicket(formData: FormData) {
       hint: error.hint,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, ticketId);
@@ -1768,7 +1754,6 @@ export async function cancelPosTicket(formData: FormData) {
     await writePosTicketAuditLog({
       action: "ticket_cancelled",
       note,
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
       ticketId,
@@ -1781,7 +1766,7 @@ export async function cancelPosTicket(formData: FormData) {
       message,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(message, undefined, undefined, undefined, returnPath);
@@ -1801,14 +1786,13 @@ export async function voidPosTicket(formData: FormData) {
     redirectWithError("Ticket id is required.", undefined, undefined, undefined, returnPath);
   }
 
-  const { supabase, context, organization, salon, user } =
+  const { supabase, context, salon, user } =
     await requirePosTicketVoidContext(ticketId);
 
   const { data: ticket, error: ticketError } = await supabase
     .from("pos_tickets")
     .select("id, opened_at, status")
     .eq("id", ticketId)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .maybeSingle<{ id: string; opened_at: string; status: string }>();
 
@@ -1836,7 +1820,6 @@ export async function voidPosTicket(formData: FormData) {
     .from("pos_tickets")
     .update({ status: "voided" })
     .eq("id", ticketId)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id);
 
   if (error) {
@@ -1847,7 +1830,7 @@ export async function voidPosTicket(formData: FormData) {
       hint: error.hint,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, undefined, undefined, returnPath);
@@ -1857,7 +1840,6 @@ export async function voidPosTicket(formData: FormData) {
     await writePosTicketAuditLog({
       action: "ticket_voided",
       note,
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
       ticketId,
@@ -1870,7 +1852,7 @@ export async function voidPosTicket(formData: FormData) {
       message,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(message, undefined, undefined, undefined, returnPath);
@@ -1890,14 +1872,13 @@ export async function reopenPosTicket(formData: FormData) {
     redirectWithError("Ticket id is required.", undefined, undefined, undefined, returnPath);
   }
 
-  const { supabase, context, organization, salon, user } =
+  const { supabase, context, salon, user } =
     await requirePosTicketVoidContext(ticketId);
 
   const { data: ticket, error: ticketError } = await supabase
     .from("pos_tickets")
     .select("id, opened_at, status")
     .eq("id", ticketId)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .maybeSingle<{ id: string; opened_at: string; status: string }>();
 
@@ -1925,7 +1906,6 @@ export async function reopenPosTicket(formData: FormData) {
     .from("pos_tickets")
     .update({ status: "open", closed_at: null })
     .eq("id", ticketId)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id);
 
   if (error) {
@@ -1936,7 +1916,7 @@ export async function reopenPosTicket(formData: FormData) {
       hint: error.hint,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, undefined, undefined, returnPath);
@@ -1946,7 +1926,6 @@ export async function reopenPosTicket(formData: FormData) {
     await writePosTicketAuditLog({
       action: "ticket_reopened",
       note,
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
       ticketId,
@@ -1959,7 +1938,7 @@ export async function reopenPosTicket(formData: FormData) {
       message,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(message, undefined, undefined, undefined, returnPath);
@@ -1983,7 +1962,7 @@ export async function addPosTicketItem(formData: FormData) {
     redirectWithError("Service is required.", undefined, undefined, undefined, returnPath);
   }
 
-  const { supabase, context, organization, salon, user } =
+  const { supabase, context, salon, user } =
     await requirePosTicketMutationContext();
 
   await validateOpenTicketRelationship(ticketId, undefined, returnPath);
@@ -1992,7 +1971,6 @@ export async function addPosTicketItem(formData: FormData) {
   const { error } = await supabase
     .from("pos_ticket_items")
     .insert({
-      organization_id: organization.id,
       salon_id: salon.id,
       pos_ticket_id: ticketId,
       service_id: serviceId,
@@ -2009,7 +1987,7 @@ export async function addPosTicketItem(formData: FormData) {
       ticketId,
       serviceId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, undefined, undefined, returnPath);
@@ -2051,15 +2029,14 @@ export async function correctClosedPosTicket(formData: FormData) {
     redirectWithError("Unit Price must be greater than or equal to 0.", ticketId, itemId, undefined, returnPath);
   }
 
-  const { context, supabase, organization, salon, user } =
+  const { context, supabase, salon, user } =
     await requireClosedTicketCorrectionContext(ticketId);
 
   try {
     const { data: item, error: itemError } = await supabase
       .from("pos_ticket_items")
-      .select("id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, created_at")
+      .select("id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, created_at")
       .eq("id", itemId)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("pos_ticket_id", ticketId)
       .maybeSingle<{
@@ -2069,7 +2046,6 @@ export async function correctClosedPosTicket(formData: FormData) {
         is_removed: boolean;
         line_total: number;
         notes: string | null;
-        organization_id: string;
         pos_ticket_id: string;
         quantity: number;
         salon_id: string;
@@ -2087,14 +2063,12 @@ export async function correctClosedPosTicket(formData: FormData) {
 
     const { data: ticket, error: ticketError } = await supabase
       .from("pos_tickets")
-      .select("id, organization_id, salon_id, opened_at, status")
+      .select("id, salon_id, opened_at, status")
       .eq("id", ticketId)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .maybeSingle<{
         id: string;
         opened_at: string;
-        organization_id: string;
         salon_id: string;
         status: string;
       }>();
@@ -2116,7 +2090,6 @@ export async function correctClosedPosTicket(formData: FormData) {
         .from("services")
         .select("id")
         .eq("id", serviceId)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .maybeSingle<{ id: string }>();
 
@@ -2134,7 +2107,6 @@ export async function correctClosedPosTicket(formData: FormData) {
         .from("staff")
         .select("id")
         .eq("id", assignedStaffId)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .maybeSingle<{ id: string }>();
 
@@ -2154,14 +2126,12 @@ export async function correctClosedPosTicket(formData: FormData) {
       tryCreateSnapshot: false,
     });
     await assertWorkDateIsUnlocked({
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
       workDate,
     });
 
     const beforeSnapshot = await loadClosedCorrectionSnapshot({
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
       ticketId,
@@ -2170,6 +2140,7 @@ export async function correctClosedPosTicket(formData: FormData) {
     let action: "item_corrected" | "item_removed" | "item_replaced" = "item_corrected";
     let replacementItemId: string | null = null;
     const serviceChanged = serviceId !== item.service_id;
+    const lineTotal = Math.round((quantity * unitPrice + Number.EPSILON) * 100) / 100;
 
     if (removeItem || serviceChanged) {
       action = removeItem ? "item_removed" : "item_replaced";
@@ -2182,7 +2153,6 @@ export async function correctClosedPosTicket(formData: FormData) {
           removed_by: user.id,
         })
         .eq("id", item.id)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id);
 
       if (removeError) {
@@ -2191,7 +2161,6 @@ export async function correctClosedPosTicket(formData: FormData) {
 
       await rebuildCorrectionTurnParts({
         itemId: item.id,
-        organizationId: organization.id,
         parts: [],
         salonId: salon.id,
         staffId: null,
@@ -2205,8 +2174,8 @@ export async function correctClosedPosTicket(formData: FormData) {
           .from("pos_ticket_items")
           .insert({
             assigned_staff_id: assignedStaffId,
+            line_total: lineTotal,
             notes: item.notes,
-            organization_id: organization.id,
             pos_ticket_id: ticketId,
             quantity,
             salon_id: salon.id,
@@ -2223,8 +2192,7 @@ export async function correctClosedPosTicket(formData: FormData) {
         replacementItemId = replacement.id;
         await rebuildCorrectionTurnParts({
           itemId: replacement.id,
-          organizationId: organization.id,
-          parts: Array.from({ length: Math.max(1, Math.round(quantity)) }, () => unitPrice),
+          parts: Array.from({ length: Math.round(quantity) }, () => unitPrice),
           salonId: salon.id,
           staffId: assignedStaffId,
           supabase,
@@ -2237,11 +2205,11 @@ export async function correctClosedPosTicket(formData: FormData) {
         .from("pos_ticket_items")
         .update({
           assigned_staff_id: assignedStaffId,
+          line_total: lineTotal,
           quantity,
           unit_price: unitPrice,
         })
         .eq("id", item.id)
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id);
 
       if (updateError) {
@@ -2250,8 +2218,7 @@ export async function correctClosedPosTicket(formData: FormData) {
 
       await rebuildCorrectionTurnParts({
         itemId: item.id,
-        organizationId: organization.id,
-        parts: Array.from({ length: Math.max(1, Math.round(quantity)) }, () => unitPrice),
+        parts: Array.from({ length: Math.round(quantity) }, () => unitPrice),
         salonId: salon.id,
         staffId: assignedStaffId,
         supabase,
@@ -2263,7 +2230,6 @@ export async function correctClosedPosTicket(formData: FormData) {
     await recalculateStaffEarningsForDate(salon.id, workDate);
 
     const afterSnapshot = await loadClosedCorrectionSnapshot({
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
       ticketId,
@@ -2276,12 +2242,10 @@ export async function correctClosedPosTicket(formData: FormData) {
         after_snapshot: afterSnapshot,
         before_snapshot: beforeSnapshot,
         created_by: user.id,
-        organization_id: organization.id,
         reason,
         replacement_ticket_item_id: replacementItemId,
         salon_id: salon.id,
         ticket_id: ticketId,
-        ticket_item_id: item.id,
       });
 
     if (adjustmentError) {
@@ -2629,7 +2593,6 @@ async function insertLockedTicketFinancialCorrection(input: {
   corrections: StaffFinancialCorrection[];
   intent: LockedStaffCorrectionIntent;
   oldValue: Record<string, unknown>;
-  organizationId: string;
   reason: string;
   requestedValue: Record<string, unknown>;
   salonId: string;
@@ -2649,7 +2612,6 @@ async function insertLockedTicketFinancialCorrection(input: {
       correction_type: "ticket_correction",
       money_delta: fromCents(moneyDelta),
       old_value_json: input.oldValue,
-      organization_id: input.organizationId,
       reason: input.reason,
       requested_by: input.userId,
       requested_value_json: input.requestedValue,
@@ -2694,7 +2656,6 @@ async function insertLockedTicketFinancialCorrection(input: {
         discount_delta: 0,
         expected_total_delta: fromCents(row.expectedTotalDelta),
         note: input.reason,
-        organization_id: input.organizationId,
         salon_id: input.salonId,
         service_delta: fromCents(row.serviceDelta),
         staff_id: row.staffId,
@@ -2720,7 +2681,6 @@ async function insertLockedTicketFinancialCorrection(input: {
       status: "applied",
     })
     .eq("id", request.id)
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId);
 
   if (updateError) {
@@ -2734,7 +2694,6 @@ async function insertLockedStaffCorrectionHistory(input: {
   correctionRequestIds: string[];
   corrections: StaffFinancialCorrection[];
   intent: LockedStaffCorrectionIntent;
-  organizationId: string;
   reason: string;
   salonId: string;
   supabase: PosTicketSupabaseClient;
@@ -2743,7 +2702,6 @@ async function insertLockedStaffCorrectionHistory(input: {
   userId: string;
 }) {
   const beforeSnapshot = await loadClosedCorrectionSnapshot({
-    organizationId: input.organizationId,
     salonId: input.salonId,
     supabase: input.supabase,
     ticketId: input.ticketId,
@@ -2768,12 +2726,10 @@ async function insertLockedStaffCorrectionHistory(input: {
       },
       before_snapshot: beforeSnapshot,
       created_by: input.userId,
-      organization_id: input.organizationId,
       reason: input.reason,
       replacement_ticket_item_id: null,
       salon_id: input.salonId,
       ticket_id: input.ticketId,
-      ticket_item_id: input.ticketItemId,
     });
 
   if (error) {
@@ -2800,7 +2756,7 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
     );
   }
 
-  const { context, supabase, organization, salon, user } =
+  const { context, supabase, salon, user } =
     await requireLockedStaffCorrectionContext(ticketId);
 
   try {
@@ -2834,9 +2790,8 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
 
     const { data: ticket, error: ticketError } = await supabase
       .from("pos_tickets")
-      .select("id, organization_id, salon_id, opened_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value")
+      .select("id, salon_id, opened_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value")
       .eq("id", ticketId)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .maybeSingle<ClosedTicketFinancialTicketRow>();
 
@@ -2861,8 +2816,7 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
 
     const { data: currentItems, error: itemsError } = await supabase
       .from("pos_ticket_items")
-      .select("id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, created_at")
-      .eq("organization_id", organization.id)
+      .select("id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, created_at")
       .eq("salon_id", salon.id)
       .eq("pos_ticket_id", ticketId)
       .eq("is_removed", false)
@@ -2879,7 +2833,6 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
       const { data: currentParts, error: currentPartsError } = await supabase
         .from("pos_ticket_item_turn_parts")
         .select("ticket_item_id, amount, turn_index, created_at, id")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .in("ticket_item_id", currentItemIds)
         .returns<ClosedTicketCurrentPartRow[]>();
@@ -2991,7 +2944,6 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
       const { data: serviceRows, error: serviceError } = await supabase
         .from("services")
         .select("id")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("is_active", true)
         .in("id", serviceIds)
@@ -3012,7 +2964,6 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
       const { data: staffRows, error: staffError } = await supabase
         .from("staff")
         .select("id")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .in("id", staffIds)
         .returns<Array<{ id: string }>>();
@@ -3190,7 +3141,6 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
       await supabase
         .from("pos_ticket_staff_earnings")
         .select("staff_id, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("ticket_id", ticketId)
         .returns<ClosedTicketStaffEarningRow[]>();
@@ -3244,7 +3194,6 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
       await supabase
         .from("pos_financial_adjustments")
         .select("staff_id, service_delta, tip_delta, turn_delta")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("business_date", workDate)
         .eq("ticket_id", ticketId)
@@ -3422,7 +3371,6 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
       corrections,
       intent,
       oldValue: auditValues.oldValue,
-      organizationId: organization.id,
       reason,
       requestedValue: auditValues.requestedValue,
       salonId: salon.id,
@@ -3435,7 +3383,6 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
       correctionRequestIds: [correctionRequestId],
       corrections,
       intent,
-      organizationId: organization.id,
       reason,
       salonId: salon.id,
       supabase,
@@ -3475,7 +3422,7 @@ export async function correctClosedPosTicketInline(formData: FormData) {
     redirectWithError("Correction reason is required.", ticketId, undefined, undefined, returnPath);
   }
 
-  const { context, supabase, organization, salon, user } =
+  const { context, supabase, salon, user } =
     await requireClosedTicketCorrectionContext(ticketId);
 
   try {
@@ -3503,16 +3450,14 @@ export async function correctClosedPosTicketInline(formData: FormData) {
 
     const { data: ticket, error: ticketError } = await supabase
       .from("pos_tickets")
-      .select("id, organization_id, salon_id, opened_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value")
+      .select("id, salon_id, opened_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value")
       .eq("id", ticketId)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .maybeSingle<{
         discount_type: "fixed_amount" | "percentage";
         discount_value: number;
         id: string;
         opened_at: string;
-        organization_id: string;
         salon_id: string;
         status: string;
         tax_rate: number;
@@ -3539,7 +3484,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       tryCreateSnapshot: false,
     });
     await assertWorkDateIsUnlocked({
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
       workDate,
@@ -3547,8 +3491,7 @@ export async function correctClosedPosTicketInline(formData: FormData) {
 
     const { data: currentItems, error: itemsError } = await supabase
       .from("pos_ticket_items")
-      .select("id, organization_id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, created_at")
-      .eq("organization_id", organization.id)
+      .select("id, salon_id, pos_ticket_id, service_id, assigned_staff_id, quantity, unit_price, line_total, notes, is_removed, created_at")
       .eq("salon_id", salon.id)
       .eq("pos_ticket_id", ticketId)
       .eq("is_removed", false)
@@ -3560,7 +3503,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
           is_removed: boolean;
           line_total: number;
           notes: string | null;
-          organization_id: string;
           pos_ticket_id: string;
           quantity: number;
           salon_id: string;
@@ -3580,7 +3522,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       const { data: currentParts, error: currentPartsError } = await supabase
         .from("pos_ticket_item_turn_parts")
         .select("ticket_item_id, amount, turn_index, created_at, id")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .in("ticket_item_id", currentItemIds)
         .returns<
@@ -3697,7 +3638,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       const { data: serviceRows, error: serviceError } = await supabase
         .from("services")
         .select("id")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("is_active", true)
         .in("id", serviceIds)
@@ -3718,7 +3658,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       const { data: staffRows, error: staffError } = await supabase
         .from("staff")
         .select("id")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .in("id", staffIds)
         .returns<Array<{ id: string }>>();
@@ -3833,7 +3772,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       await supabase
         .from("pos_ticket_staff_earnings")
         .select("staff_id, tip_amount, tip_is_manual, manual_tip_amount")
-        .eq("organization_id", organization.id)
         .eq("salon_id", salon.id)
         .eq("ticket_id", ticketId)
         .returns<
@@ -3892,7 +3830,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
     }
 
     const beforeSnapshot = await loadClosedCorrectionSnapshot({
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
       ticketId,
@@ -3917,8 +3854,8 @@ export async function correctClosedPosTicketInline(formData: FormData) {
           .from("pos_ticket_items")
           .insert({
             assigned_staff_id: update.staff_id,
+            line_total: lineTotal,
             notes: currentItem.notes,
-            organization_id: organization.id,
             pos_ticket_id: ticketId,
             quantity: 1,
             salon_id: salon.id,
@@ -3934,7 +3871,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
 
         await rebuildCorrectionTurnParts({
           itemId: replacement.id,
-          organizationId: organization.id,
           parts,
           salonId: salon.id,
           staffId: update.staff_id,
@@ -3952,7 +3888,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
             removed_by: user.id,
           })
           .eq("id", currentItem.id)
-          .eq("organization_id", organization.id)
           .eq("salon_id", salon.id);
 
         if (removeError) {
@@ -3961,7 +3896,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
 
         await rebuildCorrectionTurnParts({
           itemId: currentItem.id,
-          organizationId: organization.id,
           parts: [],
           salonId: salon.id,
           staffId: null,
@@ -3981,7 +3915,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
             removed_by: user.id,
           })
           .eq("id", currentItem.id)
-          .eq("organization_id", organization.id)
           .eq("salon_id", salon.id);
 
         if (removeError) {
@@ -3990,7 +3923,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
 
         await rebuildCorrectionTurnParts({
           itemId: currentItem.id,
-          organizationId: organization.id,
           parts: [],
           salonId: salon.id,
           staffId: null,
@@ -4005,11 +3937,11 @@ export async function correctClosedPosTicketInline(formData: FormData) {
           .from("pos_ticket_items")
           .update({
             assigned_staff_id: update.staff_id,
+            line_total: lineTotal,
             quantity: 1,
             unit_price: lineTotal,
           })
           .eq("id", currentItem.id)
-          .eq("organization_id", organization.id)
           .eq("salon_id", salon.id);
 
         if (updateError) {
@@ -4018,7 +3950,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
 
         await rebuildCorrectionTurnParts({
           itemId: currentItem.id,
-          organizationId: organization.id,
           parts,
           salonId: salon.id,
           staffId: update.staff_id,
@@ -4045,11 +3976,11 @@ export async function correctClosedPosTicketInline(formData: FormData) {
         const { error: unchangedUpdateError } = await supabase
           .from("pos_ticket_items")
           .update({
+            line_total: lineTotal,
             quantity: 1,
             unit_price: lineTotal,
           })
           .eq("id", currentItem.id)
-          .eq("organization_id", organization.id)
           .eq("salon_id", salon.id);
 
         if (unchangedUpdateError) {
@@ -4058,7 +3989,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
 
         await rebuildCorrectionTurnParts({
           itemId: currentItem.id,
-          organizationId: organization.id,
           parts,
           salonId: salon.id,
           staffId: currentItem.assigned_staff_id,
@@ -4076,7 +4006,7 @@ export async function correctClosedPosTicketInline(formData: FormData) {
         .from("pos_ticket_items")
         .insert({
           assigned_staff_id: addedItem.staff_id,
-          organization_id: organization.id,
+          line_total: lineTotal,
           pos_ticket_id: ticketId,
           quantity: 1,
           salon_id: salon.id,
@@ -4093,7 +4023,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
       replacementItemIds.push(insertedItem.id);
       await rebuildCorrectionTurnParts({
         itemId: insertedItem.id,
-        organizationId: organization.id,
         parts,
         salonId: salon.id,
         staffId: addedItem.staff_id,
@@ -4130,7 +4059,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
             manual_tip_amount: null,
             tip_is_manual: false,
           })
-          .eq("organization_id", organization.id)
           .eq("salon_id", salon.id)
           .eq("ticket_id", ticketId)
           .in("staff_id", autoStaffIds);
@@ -4158,7 +4086,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
               last_big_turn_sequence: null,
               last_small_turn_sequence: null,
               manual_tip_amount: manualTipAmount,
-              organization_id: organization.id,
               salon_id: salon.id,
               service_total: 0,
               small_turn_count: 0,
@@ -4182,7 +4109,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
             manual_tip_amount: null,
             tip_is_manual: false,
           })
-          .eq("organization_id", organization.id)
           .eq("salon_id", salon.id)
           .eq("ticket_id", ticketId)
           .eq("staff_id", override.staff_id);
@@ -4196,7 +4122,6 @@ export async function correctClosedPosTicketInline(formData: FormData) {
     await recalculateStaffEarningsForDate(salon.id, workDate);
 
     const afterSnapshot = await loadClosedCorrectionSnapshot({
-      organizationId: organization.id,
       salonId: salon.id,
       supabase,
       ticketId,
@@ -4209,12 +4134,10 @@ export async function correctClosedPosTicketInline(formData: FormData) {
         after_snapshot: afterSnapshot,
         before_snapshot: beforeSnapshot,
         created_by: user.id,
-        organization_id: organization.id,
         reason,
         replacement_ticket_item_id: replacementItemIds[0] ?? null,
         salon_id: salon.id,
         ticket_id: ticketId,
-        ticket_item_id: itemUpdates[0]?.item_id ?? null,
       });
 
     if (adjustmentError) {
@@ -4290,7 +4213,7 @@ export async function updatePosTicketItem(formData: FormData) {
       hint: error.hint,
       itemId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, itemId, undefined, returnPath);
@@ -4334,7 +4257,7 @@ export async function updatePosTicketItemStaff(formData: FormData) {
       itemId,
       assignedStaffId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, itemId);
@@ -4372,7 +4295,7 @@ export async function deletePosTicketItem(formData: FormData) {
       hint: error.hint,
       itemId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, undefined, undefined, returnPath);
@@ -4405,7 +4328,7 @@ export async function addPosPayment(formData: FormData) {
     redirectWithError("Payment Method is required.", undefined, undefined, ticketId, returnPath);
   }
 
-  const { supabase, context, organization, salon, user } =
+  const { supabase, context, salon, user } =
     await requirePosTicketMutationContext();
   const note = readOptionalString(formData, "note");
 
@@ -4414,7 +4337,6 @@ export async function addPosPayment(formData: FormData) {
   const { error } = await supabase
     .from("pos_payments")
     .insert({
-      organization_id: organization.id,
       salon_id: salon.id,
       ticket_id: ticketId,
       payment_method: paymentMethod,
@@ -4433,7 +4355,7 @@ export async function addPosPayment(formData: FormData) {
       hint: error.hint,
       ticketId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, undefined, ticketId, returnPath);
@@ -4470,7 +4392,7 @@ export async function deletePosPayment(formData: FormData) {
       hint: error.hint,
       paymentId,
       salonId: salon.id,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       userId: user.id,
     });
     redirectWithError(error.message, undefined, undefined, payment.ticket_id, returnPath);

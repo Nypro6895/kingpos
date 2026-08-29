@@ -1,8 +1,10 @@
 "use server";
 
+import { createHash, randomBytes } from "crypto";
 import {
   STAFF_PERMISSIONS,
   createStaff as createStaffRecord,
+  updateStaffDirectoryBatch as updateStaffDirectoryBatchInService,
   updateStaffPublicProfile,
 } from "@/lib/staff";
 import { getCurrentBusinessContext } from "@/lib/current-context";
@@ -38,8 +40,10 @@ import { redirect } from "next/navigation";
 import type {
   CreateSalonStaffInviteInput,
   ReviewStaffSalonApplicationInput,
+  StaffInviteEmailDelivery,
   SubmitStaffSalonApplicationInput,
 } from "@/types/staff-salon-connection";
+import type { UpdateStaffDirectoryBatchChange } from "@/types/staff";
 
 type StaffConnectionActionResult<T> =
   | {
@@ -80,6 +84,23 @@ function readOptionalString(formData: FormData, key: string) {
   return value || null;
 }
 
+function splitFullName(value: string | null | undefined) {
+  const parts = (value ?? "").trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) {
+    return { firstName: null, lastName: null };
+  }
+
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: null };
+  }
+
+  return {
+    firstName: parts.slice(0, -1).join(" "),
+    lastName: parts[parts.length - 1],
+  };
+}
+
 function readActionString(input: ActionInput, key: string) {
   const value = input instanceof FormData ? input.get(key) : input[key];
 
@@ -95,13 +116,53 @@ function readActionOptionalString(input: ActionInput, key: string) {
 }
 
 function readActionBoolean(input: ActionInput, key: string) {
-  const value = input instanceof FormData ? input.get(key) : input[key];
+  if (input instanceof FormData) {
+    return input
+      .getAll(key)
+      .some((value) => value === "on" || value === "true");
+  }
+
+  const value = input[key];
 
   if (typeof value === "boolean") {
     return value;
   }
 
   return value === "on" || value === "true";
+}
+
+function digestStaffPasscode(input: {
+  passcode: string;
+  salonId: string;
+  salt: string;
+  staffId: string;
+}) {
+  return createHash("sha256")
+    .update(`${input.salonId}:${input.staffId}:${input.passcode}:${input.salt}`)
+    .digest("hex");
+}
+
+function validateStaffPasscodeFormat(passcode: string) {
+  return /^\d{4,8}$/.test(passcode);
+}
+
+function getStaffPasscodeHash(input: {
+  passcode: string;
+  salonId: string;
+  staffId: string;
+}) {
+  const salt = randomBytes(16).toString("hex");
+
+  return {
+    passcode_digest: digestStaffPasscode({
+      passcode: input.passcode,
+      salonId: input.salonId,
+      salt,
+      staffId: input.staffId,
+    }),
+    passcode_is_default: input.passcode === "1234",
+    passcode_salt: salt,
+  };
 }
 
 function getConnectionActionError(error: unknown) {
@@ -157,18 +218,49 @@ function redirectWithConnectionError(path: "/staff" | "/staff/connections", mess
 }
 
 function redirectWithInviteToken(input: {
+  emailDelivery?: StaffInviteEmailDelivery;
   message: string;
   requestId: string;
+  staffId?: string | null;
   token: string;
 }): never {
+  const message = getInviteDeliveryNotice(input.message, input.emailDelivery);
   const params = new URLSearchParams({
-    add: "1",
-    connection_notice: input.message,
+    connection_notice: message,
     invite_request: input.requestId,
     invite_token: input.token,
   });
 
+  if (input.staffId) {
+    params.set("staff", input.staffId);
+  }
+
   redirect(`/staff?${params.toString()}`);
+}
+
+function getInviteDeliveryNotice(
+  message: string,
+  delivery?: StaffInviteEmailDelivery,
+) {
+  if (!delivery) {
+    return message;
+  }
+
+  if (delivery.status === "sent") {
+    return `${message} Email sent to ${delivery.recipient}.`;
+  }
+
+  if (delivery.status === "failed") {
+    return `${message} Email delivery failed: ${delivery.reason}`;
+  }
+
+  return `${message} Email not sent: ${delivery.reason}`;
+}
+
+function revalidateStaffInviteWorkspaceContext() {
+  revalidatePath("/staff/connections");
+  revalidatePath("/my-place");
+  revalidatePath("/", "layout");
 }
 
 function parseApplicationInput(input: ActionInput): SubmitStaffSalonApplicationInput {
@@ -211,19 +303,26 @@ function parseReviewApplicationInput(
 
 export async function createStaff(formData: FormData) {
   const displayName = readRequiredString(formData, "display_name");
+  const parsedName = splitFullName(displayName);
 
   if (!displayName) {
-    redirectWithError("Display Name is required.");
+    redirectWithError("Full Name is required.");
   }
 
   try {
     await createStaffRecord({
+      address_line1: readOptionalString(formData, "address_line1"),
+      address_line2: readOptionalString(formData, "address_line2"),
+      city: readOptionalString(formData, "city"),
       display_name: displayName,
-      first_name: readOptionalString(formData, "first_name"),
-      last_name: readOptionalString(formData, "last_name"),
+      first_name: readOptionalString(formData, "first_name") ?? parsedName.firstName,
+      last_name: readOptionalString(formData, "last_name") ?? parsedName.lastName,
       phone: readOptionalString(formData, "phone"),
       email: readOptionalString(formData, "email"),
       job_title: readOptionalString(formData, "job_title"),
+      postal_code: readOptionalString(formData, "postal_code"),
+      pos_enabled: true,
+      state: readOptionalString(formData, "state"),
       is_active: formData.get("is_active") === "on",
     });
   } catch (error) {
@@ -232,6 +331,247 @@ export async function createStaff(formData: FormData) {
 
   revalidatePath("/staff");
   redirect("/staff");
+}
+
+function readBatchOptionalString(
+  formData: FormData,
+  field: string,
+  staffId: string,
+) {
+  return readOptionalString(formData, `${field}_${staffId}`);
+}
+
+function readBatchRequiredString(
+  formData: FormData,
+  field: string,
+  staffId: string,
+) {
+  return readRequiredString(formData, `${field}_${staffId}`);
+}
+
+function readBatchBoolean(formData: FormData, field: string, staffId: string) {
+  return formData.get(`${field}_${staffId}`) === "on";
+}
+
+function getStaffDirectoryRedirectHref(
+  formData: FormData,
+  noticeKey: "connection_error" | "connection_notice",
+  message: string,
+) {
+  const params = new URLSearchParams({
+    [noticeKey]: message,
+  });
+  const query = readRequiredString(formData, "q");
+
+  if (query) {
+    params.set("q", query);
+  }
+
+  return `/staff?${params.toString()}`;
+}
+
+export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
+  const staffIds = Array.from(
+    new Set(
+      formData
+        .getAll("staff_id")
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  );
+  const changes = staffIds.map<UpdateStaffDirectoryBatchChange>((staffId) => ({
+    address_line1: readBatchOptionalString(formData, "address_line1", staffId),
+    address_line2: readBatchOptionalString(formData, "address_line2", staffId),
+    city: readBatchOptionalString(formData, "city", staffId),
+    display_name: readBatchRequiredString(formData, "display_name", staffId),
+    email: readBatchOptionalString(formData, "email", staffId),
+    first_name: splitFullName(
+      readBatchOptionalString(formData, "full_name", staffId),
+    ).firstName,
+    is_active: readBatchBoolean(formData, "is_active", staffId),
+    job_title: readBatchOptionalString(formData, "job_title", staffId),
+    last_name: splitFullName(
+      readBatchOptionalString(formData, "full_name", staffId),
+    ).lastName,
+    online_booking_enabled: readBatchBoolean(
+      formData,
+      "online_booking_enabled",
+      staffId,
+    ),
+    phone: readBatchOptionalString(formData, "phone", staffId),
+    postal_code: readBatchOptionalString(formData, "postal_code", staffId),
+    pos_enabled: readBatchBoolean(formData, "pos_enabled", staffId),
+    salon_profile_content_posting_enabled: readBatchBoolean(
+      formData,
+      "salon_profile_content_posting_enabled",
+      staffId,
+    ),
+    staff_id: staffId,
+    state: readBatchOptionalString(formData, "state", staffId),
+  }));
+
+  try {
+    await updateStaffDirectoryBatchInService({ changes });
+  } catch (error) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        error instanceof Error ? error.message : "Staff changes could not be saved.",
+      ),
+    );
+  }
+
+  const context = await getCurrentBusinessContext();
+
+  revalidatePath("/staff");
+  revalidatePath("/staff/my-work");
+  revalidatePath("/services");
+  revalidatePath("/booking-setup");
+  revalidatePath("/bookings");
+  revalidatePath("/staff/appointments");
+  revalidatePath("/pos");
+  revalidatePath("/pos/portable");
+  revalidatePath("/pos/portable/check-in");
+  revalidatePath("/payroll");
+  revalidatePath("/salon-profile");
+
+  if (context.currentSalon) {
+    revalidatePath(`/book/${context.currentSalon.id}`);
+    revalidatePath(getSalonProfileHref(context.currentSalon.id));
+  }
+
+  redirect(
+    getStaffDirectoryRedirectHref(
+      formData,
+      "connection_notice",
+      "Staff changes saved.",
+    ),
+  );
+}
+
+export async function resetStaffPasscodeFormAction(formData: FormData) {
+  const staffId = readRequiredString(formData, "reset_staff_id");
+  const passcode = staffId
+    ? readRequiredString(formData, `new_passcode_${staffId}`)
+    : "";
+
+  if (!staffId) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        "Choose a staff profile before resetting a passcode.",
+      ),
+    );
+  }
+
+  if (!validateStaffPasscodeFormat(passcode)) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        "Staff passcode must be 4-8 digits.",
+      ),
+    );
+  }
+
+  const context = await getCurrentBusinessContext();
+
+  if (!context.user || !context.currentSalon) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        "Choose a salon workspace before resetting a staff passcode.",
+      ),
+    );
+  }
+
+  if (!(await hasPermission(STAFF_PERMISSIONS.manage, context))) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        "You do not have permission to reset staff passcodes.",
+      ),
+    );
+  }
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        "Supabase environment variables are missing.",
+      ),
+    );
+  }
+
+  const { data: staff, error: loadError } = await supabase
+    .from("staff")
+    .select("id")
+    .eq("id", staffId)
+    .eq("salon_id", context.currentSalon.id)
+    .maybeSingle<{ id: string }>();
+
+  if (loadError || !staff) {
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        loadError?.message ?? "Staff profile was not found.",
+      ),
+    );
+  }
+
+  const { error } = await supabase
+    .from("staff")
+    .update(
+      getStaffPasscodeHash({
+        passcode,
+        salonId: context.currentSalon.id,
+        staffId,
+      }),
+    )
+    .eq("id", staffId)
+    .eq("salon_id", context.currentSalon.id);
+
+  if (error) {
+    console.error("Supabase reset staff passcode failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      salonId: context.currentSalon.id,
+      staffId,
+      userId: context.user.id,
+    });
+    redirect(
+      getStaffDirectoryRedirectHref(
+        formData,
+        "connection_error",
+        error.message,
+      ),
+    );
+  }
+
+  revalidatePath("/staff");
+  revalidatePath("/staff/my-work");
+  revalidatePath("/pos");
+  revalidatePath("/pos/portable");
+  revalidatePath("/pos/portable/check-in");
+
+  redirect(
+    getStaffDirectoryRedirectHref(
+      formData,
+      "connection_notice",
+      "Staff passcode reset.",
+    ),
+  );
 }
 
 function readActionStringList(input: ActionInput, key: string) {
@@ -254,7 +594,7 @@ function readActionStringList(input: ActionInput, key: string) {
 async function assertCanMutateStaffPublicProfile(staffId: string) {
   const context = await getCurrentBusinessContext();
 
-  if (!context.user || !context.currentOrganization || !context.currentSalon) {
+  if (!context.user || !context.currentSalon) {
     throw new Error("Choose a salon workspace before updating staff.");
   }
 
@@ -272,14 +612,13 @@ async function assertCanMutateStaffPublicProfile(staffId: string) {
     staffResolution.status === "found" && staffResolution.staff.id === staffId;
 
   if (!canManageStaff && !canEditSelf) {
-    throw new Error("You can only update your own public staff profile.");
+    throw new Error("You can only update your own Staff Profile.");
   }
 
   const { data: staff, error } = await supabase
     .from("staff")
     .select("id")
     .eq("id", staffId)
-    .eq("organization_id", context.currentOrganization.id)
     .eq("salon_id", context.currentSalon.id)
     .maybeSingle<{ id: string }>();
 
@@ -313,7 +652,6 @@ export async function getStaffProfileAvatarUploadSessionAction(
     .insert({
       bucket: SALON_PROFILE_MEDIA_BUCKET,
       object_path: path,
-      organization_id: permissionContext.context.currentOrganization!.id,
       purpose: "staff_avatar",
       salon_id: permissionContext.context.currentSalon!.id,
       status: "pending",
@@ -360,9 +698,6 @@ export async function updateStaffPublicProfileAction(
         input,
         "public_profile_photo_path",
       ),
-      staffPublicConsentStatus: readActionBoolean(input, "appear_publicly")
-        ? "granted"
-        : "opted_out",
       removePhoto: readActionBoolean(input, "remove_photo"),
       specialties: readActionStringList(input, "specialties"),
       staffId,
@@ -372,7 +707,7 @@ export async function updateStaffPublicProfileAction(
       error:
         error instanceof Error
           ? error.message
-          : "Staff public profile could not be saved.",
+          : "Staff Profile could not be saved.",
     };
   }
 
@@ -380,11 +715,116 @@ export async function updateStaffPublicProfileAction(
 
   revalidatePath("/staff");
   revalidatePath("/staff/my-work");
+  revalidatePath("/salon-settings");
   revalidatePath("/salon-profile");
+  revalidatePath("/services");
+  revalidatePath("/booking-setup");
+  revalidatePath("/bookings");
+  revalidatePath("/staff/appointments");
+  revalidatePath("/pos");
+  revalidatePath("/pos/portable");
+  revalidatePath("/pos/portable/check-in");
+  revalidatePath("/payroll");
 
   if (context.currentSalon) {
+    revalidatePath(`/book/${context.currentSalon.id}`);
     revalidatePath(getSalonProfileHref(context.currentSalon.id));
   }
+
+  return { error: null };
+}
+
+export async function updateOwnStaffPasscodeAction(
+  input: ActionInput,
+): Promise<{ error: string | null }> {
+  const currentPasscode = readActionString(input, "current_passcode");
+  const newPasscode = readActionString(input, "new_passcode");
+  const confirmPasscode = readActionString(input, "confirm_passcode");
+  const requestedStaffId = readActionString(input, "staff_id");
+
+  if (!currentPasscode) {
+    return { error: "Current staff passcode is required." };
+  }
+
+  if (!validateStaffPasscodeFormat(newPasscode)) {
+    return { error: "New staff passcode must be 4-8 digits." };
+  }
+
+  if (newPasscode !== confirmPasscode) {
+    return { error: "New staff passcodes do not match." };
+  }
+
+  const context = await getCurrentBusinessContext();
+
+  if (!context.user || !context.currentSalon) {
+    return { error: "Choose a salon workspace before changing your passcode." };
+  }
+
+  const supabase = await createAuthenticatedSupabaseServerClient();
+
+  if (!supabase) {
+    return { error: "Supabase environment variables are missing." };
+  }
+
+  const staffResolution = await resolveStaffAccountForSalon({
+    context,
+    supabase,
+  });
+
+  if (staffResolution.status !== "found") {
+    return { error: "Your staff profile is not connected to this salon." };
+  }
+
+  const staffId = staffResolution.staff.id;
+
+  if (requestedStaffId && requestedStaffId !== staffId) {
+    return { error: "You can only change your own staff passcode." };
+  }
+
+  const { error: validationError } = await supabase.rpc(
+    "validate_staff_passcode_or_raise",
+    {
+      p_passcode: currentPasscode,
+      p_salon_id: context.currentSalon.id,
+      p_scope: "staff_self_passcode_change",
+      p_staff_id: staffId,
+    },
+  );
+
+  if (validationError) {
+    return { error: validationError.message };
+  }
+
+  const { error } = await supabase
+    .from("staff")
+    .update(
+      getStaffPasscodeHash({
+        passcode: newPasscode,
+        salonId: context.currentSalon.id,
+        staffId,
+      }),
+    )
+    .eq("id", staffId)
+    .eq("salon_id", context.currentSalon.id);
+
+  if (error) {
+    console.error("Supabase update own staff passcode failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      salonId: context.currentSalon.id,
+      staffId,
+      userId: context.user.id,
+    });
+    return { error: error.message };
+  }
+
+  revalidatePath("/staff");
+  revalidatePath("/staff/my-work");
+  revalidatePath("/pos");
+  revalidatePath("/pos/portable");
+  revalidatePath("/pos/portable/check-in");
 
   return { error: null };
 }
@@ -442,6 +882,7 @@ export async function createSalonStaffInviteFormAction(formData: FormData) {
 
   revalidatePath("/staff");
   redirectWithInviteToken({
+    emailDelivery: result.email_delivery,
     message: "Invitation created.",
     requestId: result.request.id,
     token: result.invite_token,
@@ -470,6 +911,7 @@ export async function resendSalonStaffInviteAction(
 
 export async function resendSalonStaffInviteFormAction(formData: FormData) {
   let result: Awaited<ReturnType<typeof resendSalonStaffInviteInService>>;
+  const staffId = readOptionalString(formData, "staff_id");
 
   try {
     result = await resendSalonStaffInviteInService(
@@ -482,8 +924,10 @@ export async function resendSalonStaffInviteFormAction(formData: FormData) {
 
   revalidatePath("/staff");
   redirectWithInviteToken({
+    emailDelivery: result.email_delivery,
     message: "Invitation resent. Old invite links are now invalid.",
     requestId: result.result.request_id,
+    staffId,
     token: result.invite_token,
   });
 }
@@ -630,7 +1074,7 @@ export async function acceptStaffInviteAction(
   try {
     const data = await acceptStaffInviteInService(readActionString(input, "token"));
 
-    revalidatePath("/staff/connections");
+    revalidateStaffInviteWorkspaceContext();
 
     return { data, ok: true };
   } catch (error) {
@@ -664,7 +1108,7 @@ export async function acceptStaffInviteByRequestFormAction(formData: FormData) {
     redirectWithConnectionError("/staff/connections", connectionError.message);
   }
 
-  revalidatePath("/staff/connections");
+  revalidateStaffInviteWorkspaceContext();
   redirect("/staff/connections?connection_notice=Invitation accepted.");
 }
 
@@ -694,7 +1138,7 @@ export async function acceptStaffInviteTokenFormAction(formData: FormData) {
     );
   }
 
-  revalidatePath("/staff/connections");
+  revalidateStaffInviteWorkspaceContext();
   redirect("/staff/connections?connection_notice=Invitation accepted.");
 }
 

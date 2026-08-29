@@ -16,7 +16,6 @@ export type PosTicketTipType = (typeof POS_TICKET_TIP_TYPES)[number];
 
 export type PosTicket = {
   id: string;
-  organization_id: string;
   salon_id: string;
   source_booking_id: string | null;
   ticket_number: string;
@@ -39,7 +38,7 @@ export type PosTicketWithRelations = PosTicket & {
   adjustments?: Array<{
     action: "item_corrected" | "item_removed" | "item_replaced";
     created_at: string;
-    created_by: string;
+    created_by: string | null;
     created_by_user: Pick<KingUser, "id" | "display_name" | "email"> | null;
     after_snapshot: unknown;
     before_snapshot: unknown;

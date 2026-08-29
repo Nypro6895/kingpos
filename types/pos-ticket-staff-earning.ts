@@ -14,7 +14,6 @@ export type PosTicketStaffEarning = {
   last_small_turn_sequence: number | null;
   locked_at: string | null;
   manual_tip_amount: number | null;
-  organization_id: string;
   payroll_batch_id: string | null;
   salon_id: string;
   service_total: number;

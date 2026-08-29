@@ -8,6 +8,10 @@ import {
   BOOKING_INSPIRATION_SELECT,
   mapBookingInspirationsByBookingId,
 } from "@/lib/booking-inspirations";
+import {
+  getSalonOnlineBookingStatus,
+  type SalonOnlineBookingStatus,
+} from "@/lib/booking-status";
 import { getStaffBookingReadiness, type StaffBookingReadiness } from "@/lib/booking-setup";
 import {
   getCurrentStaffBusinessContext,
@@ -36,12 +40,14 @@ export type StaffAppointmentView = "day" | "list" | "week";
 export type StaffAppointmentsSearchParams = {
   bookingId?: string | string[];
   date?: string | string[];
+  quickId?: string | string[];
   view?: string | string[];
 };
 
 export type StaffAppointmentLine = {
   bookingId: string;
   completedAt: string | null;
+  confirmationStatus: BookingConfirmationStatus;
   customerName: string;
   customerPhone: string | null;
   endAt: string;
@@ -71,17 +77,24 @@ export type StaffAppointmentsData = {
     onlineBookable: boolean;
   }>;
   availabilityRules: StaffAvailabilityRule[];
+  bookingEnabled: boolean;
   bookingReadiness: StaffBookingReadiness | null;
   canViewTickets: boolean;
   context: CurrentBusinessContext;
   days: StaffAppointmentDay[];
+  nextAppointmentDays: {
+    appointments: StaffAppointmentLine[];
+    hasMore: boolean;
+  };
   rangeEnd: string;
   rangeStart: string;
   selectedAppointment: StaffAppointmentLine | null;
+  salonBookingStatus: SalonOnlineBookingStatus;
   staff: {
     displayName: string;
     id: string;
     jobTitle: string | null;
+    onlineBookingEnabled: boolean;
   } | null;
   timeBlocks: StaffTimeBlock[];
   timezone: string;
@@ -109,6 +122,20 @@ type BookingLineRow = {
   service_name_snapshot: string;
   service_note: string | null;
 };
+
+type StaffBookingSettingsRow = {
+  booking_enabled: boolean;
+  guest_booking_enabled: boolean;
+  online_booking_visible: boolean;
+  timezone_iana: string;
+};
+
+type StaffAppointmentsSupabaseClient = NonNullable<
+  Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+>;
+
+const OFFLINE_SALON_BOOKING_STATUS = getSalonOnlineBookingStatus(null);
+const NEXT_APPOINTMENT_DAYS_LIMIT = 5;
 
 function firstParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -157,6 +184,41 @@ function normalizeStatus(status: BookingStatus): Exclude<BookingStatus, "schedul
   return status === "scheduled" ? "confirmed" : status;
 }
 
+function appointmentLocalDate(appointment: StaffAppointmentLine, timeZone: string) {
+  return formatDateInTimeZone(new Date(appointment.startAt), timeZone);
+}
+
+function mapAppointmentLines(
+  lines: BookingLineRow[],
+  inspirationMap: Map<string, BookingInspirationView>,
+) {
+  return lines
+    .filter((line) => line.booking)
+    .map((line) => ({
+      bookingId: line.booking?.id ?? "",
+      completedAt: line.completed_at,
+      confirmationStatus: line.booking?.confirmation_status ?? "confirmed",
+      customerName: line.booking?.customer?.name ?? "Customer",
+      customerPhone: line.booking?.customer?.phone ?? null,
+      endAt: line.scheduled_end_at,
+      id: line.id,
+      inspiration: line.booking?.id
+        ? inspirationMap.get(line.booking.id) ?? null
+        : null,
+      lineStatus: normalizeLineStatus(line.line_status),
+      publicNotes: line.booking?.public_notes ?? null,
+      serviceName: line.service_name_snapshot,
+      serviceNote: line.service_note,
+      startAt: line.scheduled_start_at,
+      status: normalizeStatus(line.booking?.status ?? "confirmed"),
+      ticketId: line.booking?.pos_ticket_id ?? null,
+    }));
+}
+
+function normalizeLineStatus(status: BookingLineStatus | string): BookingLineStatus {
+  return status === "in_progress" ? "in_service" : (status as BookingLineStatus);
+}
+
 async function loadCurrentStaff(context: CurrentBusinessContext) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
@@ -179,6 +241,78 @@ async function loadCurrentStaff(context: CurrentBusinessContext) {
   return data;
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function booleanValue(value: unknown) {
+  return value === true;
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : null;
+}
+
+function parseBookingSettingsRow(value: unknown): StaffBookingSettingsRow | null {
+  const row = asRecord(value);
+  const timezone = stringValue(row.timezone_iana);
+
+  if (!timezone) {
+    return null;
+  }
+
+  return {
+    booking_enabled: booleanValue(row.booking_enabled),
+    guest_booking_enabled: booleanValue(row.guest_booking_enabled),
+    online_booking_visible: booleanValue(row.online_booking_visible),
+    timezone_iana: timezone,
+  };
+}
+
+async function loadSalonBookingSettings(input: {
+  salonId: string;
+  supabase: StaffAppointmentsSupabaseClient;
+}) {
+  const { data, error } = await input.supabase
+    .from("booking_settings")
+    .select("timezone_iana, booking_enabled, online_booking_visible, guest_booking_enabled")
+    .eq("salon_id", input.salonId)
+    .maybeSingle<StaffBookingSettingsRow>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (data) {
+    return data;
+  }
+
+  const now = new Date();
+  const rangeEnd = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+  const fallback = await input.supabase.rpc("get_public_booking_context", {
+    p_range_end: rangeEnd.toISOString(),
+    p_range_start: now.toISOString(),
+    target_salon_id: input.salonId,
+  });
+
+  if (fallback.error) {
+    console.warn("Public booking settings fallback failed", {
+      code: fallback.error.code,
+      details: fallback.error.details,
+      hint: fallback.error.hint,
+      message: fallback.error.message,
+      salonId: input.salonId,
+    });
+    return null;
+  }
+
+  return parseBookingSettingsRow(asRecord(fallback.data).settings);
+}
+
 export async function getCurrentStaffAppointments(
   params: StaffAppointmentsSearchParams,
 ): Promise<StaffAppointmentsData> {
@@ -189,13 +323,19 @@ export async function getCurrentStaffAppointments(
       appointments: [],
       assignedServices: [],
       availabilityRules: [],
+      bookingEnabled: false,
       bookingReadiness: null,
       canViewTickets: false,
       context,
       days: [],
+      nextAppointmentDays: {
+        appointments: [],
+        hasMore: false,
+      },
       rangeEnd: "",
       rangeStart: "",
       selectedAppointment: null,
+      salonBookingStatus: OFFLINE_SALON_BOOKING_STATUS,
       staff: null,
       timeBlocks: [],
       timezone: "America/Chicago",
@@ -211,18 +351,24 @@ export async function getCurrentStaffAppointments(
 
   const staff = await loadCurrentStaff(context);
 
-  if (!staff || !context.currentOrganization) {
+  if (!staff) {
     return {
       appointments: [],
       assignedServices: [],
       availabilityRules: [],
+      bookingEnabled: false,
       bookingReadiness: null,
       canViewTickets: false,
       context,
       days: [],
+      nextAppointmentDays: {
+        appointments: [],
+        hasMore: false,
+      },
       rangeEnd: "",
       rangeStart: "",
       selectedAppointment: null,
+      salonBookingStatus: OFFLINE_SALON_BOOKING_STATUS,
       staff: null,
       timeBlocks: [],
       timezone: "America/Chicago",
@@ -230,17 +376,13 @@ export async function getCurrentStaffAppointments(
     };
   }
 
-  const { data: settings, error: settingsError } = await supabase
-    .from("booking_settings")
-    .select("timezone_iana, booking_enabled")
-    .eq("salon_id", context.currentStaffSalon.id)
-    .maybeSingle<{ booking_enabled: boolean; timezone_iana: string }>();
-
-  if (settingsError) {
-    throw new Error(settingsError.message);
-  }
+  const settings = await loadSalonBookingSettings({
+    salonId: context.currentStaffSalon.id,
+    supabase,
+  });
 
   const timezone = settings?.timezone_iana || "America/Chicago";
+  const salonBookingStatus = getSalonOnlineBookingStatus(settings);
   const today = formatDateInTimeZone(new Date(), timezone);
   const selectedDate = isIsoDate(firstParam(params.date))
     ? (firstParam(params.date) as string)
@@ -249,12 +391,28 @@ export async function getCurrentStaffAppointments(
   const startDate = view === "week" ? addDays(selectedDate, -dayOfWeek(selectedDate)) : selectedDate;
   const spanDays = view === "list" ? 14 : view === "week" ? 7 : 1;
   const endDate = addDays(startDate, spanDays);
+  const nextAppointmentStartDate = addDays(selectedDate, 1);
+  const nextAppointmentEndDate = addDays(selectedDate, 7 - dayOfWeek(selectedDate));
   const rangeStart =
     zonedDateTimeToUtcIso({ date: startDate, time: "00:00", timeZone: timezone }) ??
     `${startDate}T00:00:00.000Z`;
   const rangeEnd =
     zonedDateTimeToUtcIso({ date: endDate, time: "00:00", timeZone: timezone }) ??
     `${endDate}T00:00:00.000Z`;
+  const nextAppointmentRangeStart =
+    zonedDateTimeToUtcIso({
+      date: nextAppointmentStartDate,
+      time: "00:00",
+      timeZone: timezone,
+    }) ?? `${nextAppointmentStartDate}T00:00:00.000Z`;
+  const nextAppointmentRangeEnd =
+    zonedDateTimeToUtcIso({
+      date: nextAppointmentEndDate,
+      time: "00:00",
+      timeZone: timezone,
+    }) ?? `${nextAppointmentEndDate}T00:00:00.000Z`;
+  const shouldLoadNextAppointmentDays =
+    view === "day" && nextAppointmentStartDate < nextAppointmentEndDate;
   const days = Array.from({ length: spanDays }, (_, index) => {
     const date = addDays(startDate, index);
 
@@ -262,7 +420,14 @@ export async function getCurrentStaffAppointments(
   });
 
   const canViewTickets = await hasPermission("tickets.view", context);
-  const [linesResult, availabilityResult, blocksResult, assignmentsResult, servicesResult] =
+  const [
+    linesResult,
+    nextLinesResult,
+    availabilityResult,
+    blocksResult,
+    assignmentsResult,
+    servicesResult,
+  ] =
     await Promise.all([
     supabase
       .from("booking_lines")
@@ -275,6 +440,19 @@ export async function getCurrentStaffAppointments(
       .gt("scheduled_end_at", rangeStart)
       .order("scheduled_start_at", { ascending: true })
       .returns<BookingLineRow[]>(),
+    shouldLoadNextAppointmentDays
+      ? supabase
+          .from("booking_lines")
+          .select(
+            "id, booking_id, service_name_snapshot, scheduled_start_at, scheduled_end_at, line_status, completed_at, service_note, booking:bookings!inner(id, status, confirmation_status, pos_ticket_id, public_notes, salon_timezone_snapshot, customer:customers(name, phone))",
+          )
+          .eq("salon_id", context.currentStaffSalon.id)
+          .eq("assigned_staff_id", staff.id)
+          .lt("scheduled_start_at", nextAppointmentRangeEnd)
+          .gt("scheduled_end_at", nextAppointmentRangeStart)
+          .order("scheduled_start_at", { ascending: true })
+          .returns<BookingLineRow[]>()
+      : Promise.resolve({ data: [] as BookingLineRow[], error: null }),
     supabase
       .from("staff_availability_rules")
       .select("*")
@@ -309,6 +487,10 @@ export async function getCurrentStaffAppointments(
     throw new Error(linesResult.error.message);
   }
 
+  if (nextLinesResult.error) {
+    throw new Error(nextLinesResult.error.message);
+  }
+
   if (availabilityResult.error) {
     throw new Error(availabilityResult.error.message);
   }
@@ -327,7 +509,7 @@ export async function getCurrentStaffAppointments(
 
   const bookingIds = [
     ...new Set(
-      (linesResult.data ?? [])
+      [...(linesResult.data ?? []), ...(nextLinesResult.data ?? [])]
         .map((line) => line.booking?.id)
         .filter((id): id is string => Boolean(id)),
     ),
@@ -372,40 +554,43 @@ export async function getCurrentStaffAppointments(
       };
     })
     .filter((service): service is NonNullable<typeof service> => Boolean(service));
-  const appointments = (linesResult.data ?? [])
-    .filter((line) => line.booking)
-    .map((line) => ({
-      bookingId: line.booking?.id ?? "",
-      completedAt: line.completed_at,
-      customerName: line.booking?.customer?.name ?? "Customer",
-      customerPhone: line.booking?.customer?.phone ?? null,
-      endAt: line.scheduled_end_at,
-      id: line.id,
-      inspiration: line.booking?.id
-        ? inspirationMap.get(line.booking.id) ?? null
-        : null,
-      lineStatus: line.line_status,
-      publicNotes: line.booking?.public_notes ?? null,
-      serviceName: line.service_name_snapshot,
-      serviceNote: line.service_note,
-      startAt: line.scheduled_start_at,
-      status: normalizeStatus(line.booking?.status ?? "confirmed"),
-      ticketId: line.booking?.pos_ticket_id ?? null,
-    }));
+  const appointments = mapAppointmentLines(linesResult.data ?? [], inspirationMap);
+  const nextAppointmentCandidates = mapAppointmentLines(
+    nextLinesResult.data ?? [],
+    inspirationMap,
+  )
+    .filter(
+      (appointment) =>
+        appointmentLocalDate(appointment, timezone) > selectedDate &&
+        appointment.status !== "cancelled" &&
+        appointment.status !== "no_show",
+    )
+    .sort((left, right) => left.startAt.localeCompare(right.startAt));
+  const nextAppointmentDays = {
+    appointments: nextAppointmentCandidates.slice(0, NEXT_APPOINTMENT_DAYS_LIMIT),
+    hasMore: nextAppointmentCandidates.length > NEXT_APPOINTMENT_DAYS_LIMIT,
+  };
   const selectedBookingId = firstParam(params.bookingId);
   const selectedAppointment =
-    appointments.find((appointment) => appointment.bookingId === selectedBookingId) ??
-    appointments[0] ??
-    null;
+    selectedBookingId
+      ? appointments.find(
+          (appointment) => appointment.bookingId === selectedBookingId,
+        ) ??
+        nextAppointmentCandidates.find(
+          (appointment) => appointment.bookingId === selectedBookingId,
+        ) ??
+        null
+      : null;
 
   return {
     appointments,
     assignedServices,
     availabilityRules: availabilityResult.data ?? [],
+    bookingEnabled: salonBookingStatus.onlineBookingOpen,
     bookingReadiness: getStaffBookingReadiness({
       assignments: assignmentsResult.data ?? [],
       availabilityRules: availabilityResult.data ?? [],
-      bookingEnabled: settings?.booking_enabled ?? false,
+      bookingEnabled: salonBookingStatus.onlineBookingOpen,
       services: servicesResult.data ?? [],
       staff,
       timeBlocks: blocksResult.data ?? [],
@@ -413,13 +598,16 @@ export async function getCurrentStaffAppointments(
     canViewTickets,
     context,
     days,
+    nextAppointmentDays,
     rangeEnd,
     rangeStart,
     selectedAppointment,
+    salonBookingStatus,
     staff: {
       displayName: staff.display_name,
       id: staff.id,
       jobTitle: staff.job_title,
+      onlineBookingEnabled: staff.online_booking_enabled,
     },
     timeBlocks: blocksResult.data ?? [],
     timezone,

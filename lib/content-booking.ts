@@ -1,7 +1,15 @@
 import "server-only";
 
+import {
+  BEAUTY_MEDIA_BUCKET,
+  getBeautyMediaPublicUrl,
+} from "@/lib/beauty-media";
+import { normalizePublicBookingHref } from "@/lib/public-booking-routes";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  getSupabaseConfig,
+} from "@/lib/supabase/server";
 import type {
   ContentBookingMappedService,
   ContentBookingReadinessState,
@@ -25,8 +33,8 @@ type ContentBookingOptionRow = {
   credited_staff_id: string | null;
   credited_staff_name: string | null;
   cta_label: string | null;
+  media_bucket: string | null;
   media_path: string | null;
-  organization_id: string;
   primary_service_base_price: number | string | null;
   primary_service_duration_minutes: number | null;
   primary_service_id: string | null;
@@ -130,20 +138,45 @@ export function contentBookingOptionKey(input: {
   return `${input.sourceType ?? "content"}:${input.contentId}`;
 }
 
+function publicContentImageUrl(input: {
+  bucket: string | null | undefined;
+  path: string | null | undefined;
+}) {
+  if (input.bucket === BEAUTY_MEDIA_BUCKET) {
+    const config = getSupabaseConfig();
+
+    return config
+      ? getBeautyMediaPublicUrl({
+          path: input.path,
+          supabaseUrl: config.supabaseUrl,
+        })
+      : null;
+  }
+
+  return getSalonProfileMediaUrl(input.path);
+}
+
 export function mapContentBookingOptionRow(
   row: ContentBookingOptionRow,
 ): PublicContentBookingOption | null {
   const contentId = cleanUuid(row.content_id);
-  const organizationId = cleanUuid(row.organization_id);
   const salonId = cleanUuid(row.salon_id);
   const sourceType =
-    row.source_type === "salon_profile_update"
+    row.source_type === "beauty_post"
+      ? "beauty_post"
+      : row.source_type === "salon_profile_update"
       ? "salon_profile_update"
       : row.source_type === "salon_profile_look"
         ? "salon_profile_look"
         : null;
+  const contentType =
+    row.content_type === "beauty_post"
+      ? "beauty_post"
+      : row.content_type === "update"
+        ? "update"
+        : "look";
 
-  if (!contentId || !organizationId || !salonId || !sourceType) {
+  if (!contentId || !salonId || !sourceType) {
     return null;
   }
 
@@ -164,21 +197,25 @@ export function mapContentBookingOptionRow(
     additionalServices: parseMappedServices(row.additional_services),
     bookingCtaEnabled: row.booking_cta_enabled === true,
     bookingEnabled: row.booking_enabled === true,
-    bookingHref: cleanText(row.booking_href),
+    bookingHref: normalizePublicBookingHref(row.booking_href),
     bookingNote: cleanText(row.booking_note),
     caption: cleanText(row.caption),
     contentId,
-    contentType: sourceType === "salon_profile_update" ? "update" : "look",
+    contentType,
     creditedStaffId: cleanUuid(row.credited_staff_id),
     creditedStaffName: cleanText(row.credited_staff_name),
     ctaLabel:
       cleanText(row.cta_label) ??
-      (readinessState === "inspiration_only"
-        ? "Book with this inspiration"
-        : "Book this look"),
-    imageUrl: getSalonProfileMediaUrl(row.media_path),
+      (sourceType === "beauty_post"
+        ? "Book this transformation"
+        : readinessState === "inspiration_only"
+          ? "Book with this inspiration"
+          : "Book this look"),
+    imageUrl: publicContentImageUrl({
+      bucket: row.media_bucket,
+      path: row.media_path,
+    }),
     mediaPath: cleanText(row.media_path),
-    organizationId,
     primaryServiceBasePrice: moneyValue(row.primary_service_base_price),
     primaryServiceDurationMinutes:
       typeof row.primary_service_duration_minutes === "number"
@@ -220,7 +257,7 @@ export async function loadPublicContentBookingOptions(salonIds: string[]) {
   });
 
   if (error) {
-    console.error("Public content booking options RPC failed", {
+    console.warn("Public content booking options unavailable", {
       code: error.code,
       details: error.details,
       hint: error.hint,

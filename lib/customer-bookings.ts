@@ -20,6 +20,7 @@ import {
   type PublicBookingSlotRequest,
 } from "@/lib/public-booking";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
+import { getStaffProfileAvatarUrl } from "@/lib/staff-profile";
 import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
@@ -114,10 +115,6 @@ type ServiceRow = {
   online_booking_enabled: boolean;
 };
 
-type ServiceAddOnLinkRow = {
-  add_on_service_id: string;
-};
-
 type PublicSalonProfileRow = {
   address_line1: string | null;
   address_line2: string | null;
@@ -135,6 +132,7 @@ type PublicSalonProfileRow = {
 };
 
 type PublicSalonStaffRow = {
+  account_avatar_url: string | null;
   avatar_path: string | null;
   display_name: string | null;
   id: string;
@@ -390,7 +388,9 @@ async function loadStaffRows(context: CustomerBookingContext, lines: BookingLine
     (data ?? []).map((staff) => [
       staff.id,
       {
-        avatarUrl: getSalonProfileMediaUrl(staff.public_profile_photo_path),
+        avatarUrl: getStaffProfileAvatarUrl({
+          staffProfilePhotoPath: staff.public_profile_photo_path,
+        }),
         displayName: staff.display_name,
         id: staff.id,
         isActive: staff.is_active,
@@ -427,7 +427,10 @@ async function loadPublicStaffRows(salonIds: string[]) {
         }
 
         staffById.set(staff.id, {
-          avatarUrl: getSalonProfileMediaUrl(staff.avatar_path),
+          avatarUrl: getStaffProfileAvatarUrl({
+            accountAvatarUrl: staff.account_avatar_url,
+            staffProfilePhotoPath: staff.avatar_path,
+          }),
           displayName: firstText(staff.display_name) ?? "Salon professional",
           id: staff.id,
           isActive: true,
@@ -464,22 +467,10 @@ async function loadServiceBookableRows(
     return new Map<string, boolean>();
   }
 
-  const linksResult = await context.supabase
-    .from("service_add_on_links")
-    .select("add_on_service_id")
-    .eq("is_active", true)
-    .in("add_on_service_id", serviceIds)
-    .returns<ServiceAddOnLinkRow[]>();
-  const addOnOnlyServiceIds = new Set(
-    linksResult.error ? [] : (linksResult.data ?? []).map((link) => link.add_on_service_id),
-  );
-
   return new Map(
     (data ?? []).map((service) => [
       service.id,
-      service.is_active &&
-        service.online_booking_enabled &&
-        !addOnOnlyServiceIds.has(service.id),
+      service.is_active && service.online_booking_enabled,
     ]),
   );
 }
@@ -528,7 +519,7 @@ function hydrateSalon(
     ),
     displayName:
       firstText(setting?.business_name, profile?.salon_name, salon?.name) ??
-      "KingPOS salon",
+      "Reylumi salon",
     email: firstText(setting?.email, profile?.email),
     id: salonId,
     latitude: salon?.latitude ?? null,
@@ -536,7 +527,7 @@ function hydrateSalon(
       firstText(setting?.public_profile_logo_path, profile?.logo_path),
     ),
     longitude: salon?.longitude ?? null,
-    name: firstText(salon?.name, profile?.salon_name, setting?.business_name) ?? "KingPOS salon",
+    name: firstText(salon?.name, profile?.salon_name, setting?.business_name) ?? "Reylumi salon",
     phone: firstText(setting?.phone, profile?.phone, salon?.phone),
     postal_code: firstText(setting?.postal_code, profile?.postal_code, salon?.postal_code),
     publicDiscoveryEnabled: setting?.public_discovery_enabled === true || Boolean(profile),

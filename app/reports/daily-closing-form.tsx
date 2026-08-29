@@ -44,7 +44,7 @@ type ClosingFormValues = {
 const RECONCILIATION_LABELS: Record<DailyPosReconciliationStatus, string> = {
   balanced: "\u0110\u1ee7 / Balanced",
   over: "D\u01b0 / Over",
-  short: "Thi\u1ebfu / Short",
+  short: "Short",
 };
 
 const CORRECTION_FIELD_LABELS: Record<DailyClosingCorrectionField, string> = {

@@ -8,9 +8,14 @@ import {
   BOOKING_INSPIRATION_SELECT,
   mapBookingInspirationsByBookingId,
 } from "@/lib/booking-inspirations";
+import {
+  resolveBeautyProfilesForSalonCustomers,
+  type ResolvedBeautyProfile,
+} from "@/lib/beauty-relationship";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { POS_TICKET_WITH_RELATIONS_SELECT } from "@/lib/pos-tickets";
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
+import { searchTextMatches } from "@/lib/search-normalization";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type {
@@ -34,7 +39,7 @@ import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
 
 export const BOOKING_SELECT =
-  "id, organization_id, salon_id, customer_id, customer_user_id, customer_account_linked_at, customer_account_linked_by_user_id, customer_account_link_method, customer_account_link_metadata, staff_id, start_at, end_at, notes, public_notes, internal_notes, status, source, confirmation_mode, confirmation_status, salon_timezone_snapshot, customer_cancellation_token_hash, pos_ticket_id, source_reference_type, source_reference_id, idempotency_key, cancellation_reason, cancelled_at, cancelled_by_user_id, no_show_at, no_show_by_user_id, no_show_reason, created_by_user_id, updated_by_user_id, payment_status, deposit_policy_snapshot, cancellation_policy_snapshot, created_at, updated_at";
+  "id, salon_id, customer_id, customer_user_id, customer_account_linked_at, customer_account_linked_by_user_id, customer_account_link_method, customer_account_link_metadata, staff_id, start_at, end_at, notes, public_notes, internal_notes, status, source, confirmation_mode, confirmation_status, salon_timezone_snapshot, customer_cancellation_token_hash, pos_ticket_id, source_reference_type, source_reference_id, idempotency_key, cancellation_reason, cancelled_at, cancelled_by_user_id, no_show_at, no_show_by_user_id, no_show_reason, created_by_user_id, updated_by_user_id, payment_status, deposit_policy_snapshot, cancellation_policy_snapshot, created_at, updated_at";
 
 export const BOOKING_WITH_RELATIONS_SELECT = `${BOOKING_SELECT}, customer:customers(id, name, phone, email), staff:staff(id, display_name)`;
 
@@ -46,15 +51,15 @@ export const BOOKING_PERMISSIONS = {
 export const BOOKING_CUSTOMER_OPTION_SELECT =
   "id, location_id, customer_user_id, name, phone, email, notes, staff_notes, internal_notes, source, status, created_by_user_id, updated_by_user_id, created_at, updated_at";
 export const BOOKING_STAFF_OPTION_SELECT =
-  "id, organization_id, salon_id, user_id, account_user_id, display_name, first_name, last_name, phone, email, job_title, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
+  "id, salon_id, user_id, account_user_id, display_name, first_name, last_name, phone, email, address_line1, address_line2, city, state, postal_code, job_title, pos_enabled, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 export const BOOKING_SERVICE_OPTION_SELECT =
-  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
+  "id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 export const BOOKING_SETTINGS_SELECT =
-  "id, organization_id, salon_id, booking_enabled, online_booking_visible, confirmation_mode, minimum_lead_time_minutes, maximum_advance_window_days, slot_interval_minutes, default_cleanup_buffer_minutes, same_day_booking_enabled, cancellation_window_minutes, late_cancellation_policy, no_show_policy, any_professional_enabled, split_staff_appointment_enabled, guest_booking_enabled, timezone_iana, ticket_creation_mode, payment_required_enabled, deposit_required_enabled, deposit_policy, created_at, updated_at";
+  "id, salon_id, booking_enabled, online_booking_visible, confirmation_mode, minimum_lead_time_minutes, maximum_advance_window_days, slot_interval_minutes, default_cleanup_buffer_minutes, same_day_booking_enabled, cancellation_window_minutes, late_cancellation_policy, no_show_policy, any_professional_enabled, split_staff_appointment_enabled, guest_booking_enabled, timezone_iana, ticket_creation_mode, payment_required_enabled, deposit_required_enabled, deposit_policy, created_at, updated_at";
 export const BOOKING_LINE_SELECT =
-  "id, organization_id, salon_id, booking_id, parent_booking_line_id, line_type, service_id, service_name_snapshot, service_category_snapshot, service_description_snapshot, unit_price, quantity, line_total, duration_minutes, cleanup_buffer_minutes, display_order, assigned_staff_id, scheduled_start_at, scheduled_end_at, line_status, started_at, completed_at, performed_by_staff_id, service_note, internal_staff_note, line_status_updated_at, line_status_updated_by_user_id, overbooking_override_reason, overbooking_override_by_user_id, overbooking_override_at, created_at, updated_at";
+  "id, salon_id, booking_id, parent_booking_line_id, line_type, service_id, service_name_snapshot, service_category_snapshot, service_description_snapshot, unit_price, quantity, line_total, duration_minutes, cleanup_buffer_minutes, display_order, assigned_staff_id, scheduled_start_at, scheduled_end_at, line_status, started_at, completed_at, performed_by_staff_id, service_note, internal_staff_note, line_status_updated_at, line_status_updated_by_user_id, overbooking_override_reason, overbooking_override_by_user_id, overbooking_override_at, created_at, updated_at";
 export const BOOKING_STATUS_EVENT_SELECT =
-  "id, organization_id, salon_id, booking_id, event_type, old_status, new_status, actor_user_id, actor_staff_id, actor_source, metadata, created_at";
+  "id, salon_id, booking_id, event_type, old_status, new_status, actor_user_id, actor_staff_id, actor_source, metadata, created_at";
 
 export type BookingWorkspaceView = "day" | "list" | "week";
 
@@ -62,6 +67,7 @@ export type BookingWorkspaceSearchParams = {
   bookingId?: string | string[];
   date?: string | string[];
   q?: string | string[];
+  range?: string | string[];
   request?: string | string[];
   section?: string | string[];
   service?: string | string[];
@@ -73,8 +79,11 @@ export type BookingWorkspaceSearchParams = {
   view?: string | string[];
 };
 
+export type BookingWorkspaceDateRange = "all" | "day" | "next7";
+
 export type BookingWorkspaceFilters = {
   date: string;
+  dateRange: BookingWorkspaceDateRange;
   query: string;
   selectedBookingId: string | null;
   selectedRequestId: string | null;
@@ -114,6 +123,7 @@ export type BookingWorkspaceTicketSummary = {
 
 export type BookingWorkspaceItem = Booking & {
   assignedStaffNames: string[];
+  beautyProfile: ResolvedBeautyProfile | null;
   customer: Pick<Customer, "email" | "id" | "name" | "phone"> | null;
   durationMinutes: number;
   events: BookingStatusEvent[];
@@ -153,6 +163,13 @@ export type BookingWorkspaceOptions = {
   timeBlocks: StaffTimeBlock[];
 };
 
+export type BookingWorkspaceSetupPermissions = {
+  canManageAvailability: boolean;
+  canManageBooking: boolean;
+  canManageServices: boolean;
+  canManageStaff: boolean;
+};
+
 export type BookingWorkspaceConfigWarning = {
   code:
     | "missing_active_services"
@@ -171,6 +188,7 @@ export type BookingWorkspaceData = {
   options: BookingWorkspaceOptions;
   range: BookingWorkspaceRange;
   requests: BookingWorkspaceRequest[];
+  setupPermissions: BookingWorkspaceSetupPermissions;
   settings: BookingSettings;
   timezone: string;
   warnings: BookingWorkspaceConfigWarning[];
@@ -202,13 +220,13 @@ type RequestUserRow = {
   phone: string | null;
 };
 
-function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
-    throw new Error("Open bookings from a Manage Salon workspace.");
+    throw new Error("Open bookings from a Business workspace.");
   }
 
-  if (!context.currentOrganization) {
-    throw new Error("Create an organization before managing bookings.");
+  if (!context.currentAccount) {
+    throw new Error("Choose a salon workspace before managing bookings.");
   }
 
   if (!context.currentSalon) {
@@ -216,7 +234,7 @@ function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
   }
 
   return {
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
   };
 }
@@ -243,6 +261,17 @@ function addDays(date: string, days: number) {
   return `${utcDate.getUTCFullYear()}-${pad(utcDate.getUTCMonth() + 1)}-${pad(
     utcDate.getUTCDate(),
   )}`;
+}
+
+function addMonths(date: string, months: number) {
+  const [year, month] = date.split("-").map(Number);
+  const utcDate = new Date(Date.UTC(year, month - 1 + months, 1));
+  return `${utcDate.getUTCFullYear()}-${pad(utcDate.getUTCMonth() + 1)}-01`;
+}
+
+function monthStart(date: string) {
+  const [year, month] = date.split("-").map(Number);
+  return `${year}-${pad(month)}-01`;
 }
 
 function dayOfWeek(date: string) {
@@ -360,6 +389,18 @@ function normalizeView(value: string): BookingWorkspaceView {
   return value === "day" || value === "week" ? value : "list";
 }
 
+function normalizeDateRange(value: string): BookingWorkspaceDateRange {
+  if (value === "next7") {
+    return "next7";
+  }
+
+  if (value === "all" || value === "month") {
+    return "all";
+  }
+
+  return "day";
+}
+
 function normalizeTab(
   value: string,
   section: string,
@@ -404,7 +445,7 @@ function normalizeSourceFilter(value: string) {
 }
 
 function defaultBookingSettings(input: {
-  organizationId: string;
+  accountId: string;
   salonId: string;
   timezone: string;
 }): BookingSettings {
@@ -426,7 +467,6 @@ function defaultBookingSettings(input: {
     minimum_lead_time_minutes: 0,
     no_show_policy: {},
     online_booking_visible: false,
-    organization_id: input.organizationId,
     payment_required_enabled: false,
     same_day_booking_enabled: true,
     salon_id: input.salonId,
@@ -444,9 +484,12 @@ function buildFilters(
 ): BookingWorkspaceFilters {
   const requestedDate = cleanParam(rawSearchParams.date);
   const today = formatDateInTimeZone(new Date(), timeZone);
+  const dateRange = normalizeDateRange(cleanParam(rawSearchParams.range));
+  const view = normalizeView(cleanParam(rawSearchParams.view));
 
   return {
     date: isIsoDate(requestedDate) ? requestedDate : today,
+    dateRange,
     query: cleanParam(rawSearchParams.q),
     selectedBookingId: cleanParam(rawSearchParams.bookingId) || null,
     selectedRequestId: cleanParam(rawSearchParams.request) || null,
@@ -458,44 +501,84 @@ function buildFilters(
       cleanParam(rawSearchParams.tab),
       cleanParam(rawSearchParams.section),
     ),
-    view: normalizeView(cleanParam(rawSearchParams.view)),
+    view: dateRange === "day" ? view : "list",
   };
 }
 
 function buildRange(filters: BookingWorkspaceFilters, timeZone: string) {
+  const rangeKind = filters.dateRange;
   const startDate =
-    filters.view === "week"
-      ? addDays(filters.date, -dayOfWeek(filters.date))
-      : filters.date;
-  const spanDays = filters.view === "week" ? 7 : 1;
-  const endDate = addDays(startDate, spanDays);
+    rangeKind === "all"
+      ? monthStart(filters.date)
+      : rangeKind === "next7"
+        ? filters.date
+        : filters.view === "week"
+          ? addDays(filters.date, -dayOfWeek(filters.date))
+          : filters.date;
+  const endDate =
+    rangeKind === "all"
+      ? addMonths(startDate, 1)
+      : addDays(startDate, rangeKind === "next7" || filters.view === "week" ? 7 : 1);
   const startIso =
     zonedDateTimeToUtcIso({ date: startDate, time: "00:00", timeZone }) ??
     `${startDate}T00:00:00.000Z`;
   const endIso =
     zonedDateTimeToUtcIso({ date: endDate, time: "00:00", timeZone }) ??
     `${endDate}T00:00:00.000Z`;
-  const days = Array.from({ length: spanDays }, (_, index) => {
-    const date = addDays(startDate, index);
+  const days: BookingWorkspaceRange["days"] = [];
+  let cursorDate = startDate;
 
-    return {
-      date,
-      label: labelForDate(date, timeZone),
-    };
-  });
+  while (cursorDate < endDate && days.length < 31) {
+    days.push({
+      date: cursorDate,
+      label: labelForDate(cursorDate, timeZone),
+    });
+    cursorDate = addDays(cursorDate, 1);
+  }
 
   return {
     days,
     endIso,
-    label:
-      filters.view === "week"
-        ? `${labelForDate(startDate, timeZone)} - ${labelForDate(
-            addDays(endDate, -1),
-            timeZone,
-          )}`
-        : labelForDate(startDate, timeZone),
+    label: rangeLabel({
+      dateRange: rangeKind,
+      endDate,
+      startDate,
+      timeZone,
+      view: filters.view,
+    }),
     startIso,
   };
+}
+
+function rangeLabel(input: {
+  dateRange: BookingWorkspaceDateRange;
+  endDate: string;
+  startDate: string;
+  timeZone: string;
+  view: BookingWorkspaceView;
+}) {
+  if (input.dateRange === "all") {
+    const startIso = zonedDateTimeToUtcIso({
+      date: input.startDate,
+      time: "12:00",
+      timeZone: input.timeZone,
+    });
+
+    return new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      timeZone: input.timeZone,
+      year: "numeric",
+    }).format(startIso ? new Date(startIso) : new Date(`${input.startDate}T12:00:00Z`));
+  }
+
+  if (input.dateRange === "next7" || input.view === "week") {
+    return `${labelForDate(input.startDate, input.timeZone)} - ${labelForDate(
+      addDays(input.endDate, -1),
+      input.timeZone,
+    )}`;
+  }
+
+  return labelForDate(input.startDate, input.timeZone);
 }
 
 function numberValue(value: string | number | null | undefined) {
@@ -629,8 +712,7 @@ function matchesBookingFilters(input: {
   }
 
   if (filters.query) {
-    const query = filters.query.toLowerCase();
-    const haystack = [
+    const matchesQuery = searchTextMatches([
       booking.id,
       booking.idempotency_key,
       booking.source_reference_id,
@@ -639,12 +721,9 @@ function matchesBookingFilters(input: {
       booking.customer?.email,
       ...booking.serviceNames,
       ...booking.assignedStaffNames,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
+    ], filters.query);
 
-    if (!haystack.includes(query)) {
+    if (!matchesQuery) {
       return false;
     }
   }
@@ -698,6 +777,7 @@ function mapBookings(input: {
     return {
       ...booking,
       assignedStaffNames,
+      beautyProfile: null,
       durationMinutes: Math.max(
         0,
         Math.round(
@@ -724,6 +804,7 @@ function buildWarnings(input: {
   assignments: StaffServiceAssignment[];
   availabilityRules: StaffAvailabilityRule[];
   services: Service[];
+  staff: Staff[];
 }) {
   const warnings: BookingWorkspaceConfigWarning[] = [];
 
@@ -752,10 +833,19 @@ function buildWarnings(input: {
 
   if (
     input.assignments.filter(
-      (assignment) =>
-        assignment.is_active &&
-        assignment.online_bookable &&
-        onlineServiceIds.has(assignment.service_id),
+      (assignment) => {
+        const member = input.staff.find(
+          (candidate) => candidate.id === assignment.staff_id,
+        );
+
+        return (
+          assignment.is_active &&
+          assignment.online_bookable &&
+          onlineServiceIds.has(assignment.service_id) &&
+          member?.is_active === true &&
+          member.online_booking_enabled === true
+        );
+      },
     ).length === 0
   ) {
     warnings.push({
@@ -836,18 +926,25 @@ export async function getCurrentSalonBookingWorkspace(
 ): Promise<BookingWorkspaceData> {
   await requirePermission(BOOKING_PERMISSIONS.view, context);
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
     throw new Error("Supabase environment variables are missing.");
   }
 
-  const canManageBookings = await hasPermission(BOOKING_PERMISSIONS.manage, context);
+  const [
+    canManageBookings,
+    canManageServices,
+    canManageStaff,
+  ] = await Promise.all([
+    hasPermission(BOOKING_PERMISSIONS.manage, context),
+    hasPermission("services.manage", context),
+    hasPermission("staff.manage", context),
+  ]);
   const { data: settingsData, error: settingsError } = await supabase
     .from("booking_settings")
     .select(BOOKING_SETTINGS_SELECT)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .maybeSingle<BookingSettings>();
 
@@ -857,7 +954,7 @@ export async function getCurrentSalonBookingWorkspace(
       details: settingsError.details,
       hint: settingsError.hint,
       message: settingsError.message,
-      organizationId: organization.id,
+      accountId: Account.id,
       salonId: salon.id,
       userId: context.user?.id,
     });
@@ -867,7 +964,7 @@ export async function getCurrentSalonBookingWorkspace(
   const settings =
     settingsData ??
     defaultBookingSettings({
-      organizationId: organization.id,
+      accountId: Account.id,
       salonId: salon.id,
       timezone: "America/Chicago",
     });
@@ -888,12 +985,11 @@ export async function getCurrentSalonBookingWorkspace(
   const bookingsQuery = supabase
     .from("bookings")
     .select(BOOKING_WITH_RELATIONS_SELECT)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .lt("start_at", range.endIso)
     .gt("end_at", range.startIso)
     .order("start_at", { ascending: true })
-    .limit(filters.view === "list" ? 100 : 300)
+    .limit(filters.dateRange === "all" ? 500 : filters.view === "list" ? 200 : 300)
     .returns<BookingWithCustomerStaffRow[]>();
   const customersQuery = canManageBookings
     ? supabase
@@ -908,7 +1004,6 @@ export async function getCurrentSalonBookingWorkspace(
   const staffQuery = supabase
     .from("staff")
     .select(BOOKING_STAFF_OPTION_SELECT)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("is_active", true)
     .order("display_name", { ascending: true })
@@ -916,7 +1011,6 @@ export async function getCurrentSalonBookingWorkspace(
   const servicesQuery = supabase
     .from("services")
     .select(BOOKING_SERVICE_OPTION_SELECT)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("is_active", true)
     .order("name", { ascending: true })
@@ -924,21 +1018,18 @@ export async function getCurrentSalonBookingWorkspace(
   const assignmentsQuery = supabase
     .from("staff_service_assignments")
     .select("*")
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("is_active", true)
     .returns<StaffServiceAssignment[]>();
   const availabilityRulesQuery = supabase
     .from("staff_availability_rules")
     .select("*")
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("is_active", true)
     .returns<StaffAvailabilityRule[]>();
   const timeBlocksQuery = supabase
     .from("staff_time_blocks")
     .select("*")
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("is_active", true)
     .lt("starts_at", timeBlockWindow.endIso)
@@ -950,7 +1041,6 @@ export async function getCurrentSalonBookingWorkspace(
     .select(
       "id, customer_user_id, look_id, service_id, staff_id, requested_start_at, private_note, status, created_at",
     )
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .order("created_at", { ascending: false })
     .limit(25)
@@ -994,7 +1084,7 @@ export async function getCurrentSalonBookingWorkspace(
       details: error?.details,
       hint: error?.hint,
       message: error?.message,
-      organizationId: organization.id,
+      accountId: Account.id,
       salonId: salon.id,
       userId: context.user?.id,
     });
@@ -1057,7 +1147,7 @@ export async function getCurrentSalonBookingWorkspace(
       details: error?.details,
       hint: error?.hint,
       message: error?.message,
-      organizationId: organization.id,
+      accountId: Account.id,
       salonId: salon.id,
       userId: context.user?.id,
     });
@@ -1072,7 +1162,7 @@ export async function getCurrentSalonBookingWorkspace(
     ticketsResult.data ?? [],
     loadedBookingRows,
   );
-  const bookings = mapBookings({
+  const mappedBookings = mapBookings({
     bookings: loadedBookingRows,
     events: eventsResult.data ?? [],
     inspirationsByBookingId: mapBookingInspirationsByBookingId(
@@ -1082,6 +1172,14 @@ export async function getCurrentSalonBookingWorkspace(
     staff: staffResult.data ?? [],
     ticketsByBookingId,
   }).filter((booking) => matchesBookingFilters({ booking, filters }));
+  const beautyProfilesByCustomerId = await resolveBeautyProfilesForSalonCustomers({
+    context,
+    customerIds: mappedBookings.map((booking) => booking.customer_id),
+  });
+  const bookings = mappedBookings.map((booking) => ({
+    ...booking,
+    beautyProfile: beautyProfilesByCustomerId.get(booking.customer_id) ?? null,
+  }));
   const options = {
     assignments: assignmentsResult.data ?? [],
     availabilityRules: availabilityRulesResult.data ?? [],
@@ -1110,12 +1208,19 @@ export async function getCurrentSalonBookingWorkspace(
       staff: staffResult.data ?? [],
       usersById: requestUsersById,
     }),
+    setupPermissions: {
+      canManageAvailability: canManageBookings || canManageStaff,
+      canManageBooking: canManageBookings,
+      canManageServices,
+      canManageStaff,
+    },
     settings,
     timezone,
     warnings: buildWarnings({
       assignments: options.assignments,
       availabilityRules: options.availabilityRules,
       services: options.services,
+      staff: options.staff,
     }),
   };
 }
@@ -1129,7 +1234,7 @@ export async function getCurrentSalonBookings() {
 
   await requirePermission(BOOKING_PERMISSIONS.view, context);
 
-  const { salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -1149,7 +1254,7 @@ export async function getCurrentSalonBookings() {
       details: error.details,
       hint: error.hint,
       message: error.message,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       salonId: salon.id,
       userId: context.user.id,
     });
@@ -1162,7 +1267,7 @@ export async function getCurrentSalonBookings() {
 export async function getCurrentSalonBookingOptions(context: CurrentBusinessContext) {
   await requirePermission(BOOKING_PERMISSIONS.manage, context);
 
-  const { salon } = requireCurrentOrganizationAndSalon(context);
+  const { salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -1192,7 +1297,7 @@ export async function getCurrentSalonBookingOptions(context: CurrentBusinessCont
       details: customersResult.error.details,
       hint: customersResult.error.hint,
       message: customersResult.error.message,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       salonId: salon.id,
       userId: context.user?.id,
     });
@@ -1205,7 +1310,7 @@ export async function getCurrentSalonBookingOptions(context: CurrentBusinessCont
       details: staffResult.error.details,
       hint: staffResult.error.hint,
       message: staffResult.error.message,
-      organizationId: context.currentOrganization?.id,
+      accountId: context.currentAccount?.id,
       salonId: salon.id,
       userId: context.user?.id,
     });
@@ -1235,7 +1340,7 @@ export type BookingCreationSchedule = {
 
 export async function deriveBookingCreationSchedule(input: {
   cleanupBufferMinutes: number;
-  organizationId: string;
+  accountId: string;
   salonId: string;
   serviceIds: string[];
   staffIds: (string | null)[];
@@ -1256,7 +1361,6 @@ export async function deriveBookingCreationSchedule(input: {
   const { data: services, error } = await supabase
     .from("services")
     .select(BOOKING_SERVICE_OPTION_SELECT)
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
     .eq("is_active", true)
     .in("id", uniqueServiceIds)

@@ -2,6 +2,11 @@
 
 import "./explore-map.css";
 
+import {
+  LumiTrustPopover,
+} from "@/components/reylumi-trust";
+import { buildReylumiTrustSummary } from "@/lib/reylumi-trust";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Coordinates } from "@/types/location";
 import type { ExploreMapSalon } from "@/types/explore";
@@ -226,6 +231,9 @@ export function ExploreMap({
   }, [markerReadyToken, selectedSalonId]);
 
   const selectedSalon = salons.find((salon) => salon.id === selectedSalonId) ?? salons[0];
+  const selectedTrust = selectedSalon
+    ? buildReylumiTrustSummary(selectedSalon.trust)
+    : null;
 
   return (
     <div className="relative min-h-[22rem] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100">
@@ -237,13 +245,36 @@ export function ExploreMap({
       ) : null}
       {selectedSalon ? (
         <div className="absolute inset-x-3 bottom-3 rounded-md border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur">
-          <p className="line-clamp-1 text-sm font-semibold text-zinc-950">
-            {selectedSalon.name}
-          </p>
+          <div className="flex min-w-0 items-center gap-1.5">
+            {selectedSalon.href ? (
+              <Link
+                className="line-clamp-1 min-w-0 rounded-md text-sm font-semibold text-zinc-950 transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                href={selectedSalon.href}
+              >
+                {selectedSalon.name}
+              </Link>
+            ) : (
+              <p className="line-clamp-1 min-w-0 text-sm font-semibold text-zinc-950">
+                {selectedSalon.name}
+              </p>
+            )}
+            {selectedTrust ? (
+              <LumiTrustPopover
+                actionHref={
+                  selectedSalon.href ? `${selectedSalon.href}#lumi-trust` : null
+                }
+                entityName={selectedSalon.name}
+                markClassName="grid h-8 w-8 place-items-center rounded-full bg-white p-0 text-brand-orange ring-1 ring-brand-orange/20 hover:bg-brand-orange-soft"
+                presentation="spark"
+                size="sm"
+                summary={selectedTrust}
+              />
+            ) : null}
+          </div>
           <p className="mt-1 line-clamp-1 text-xs font-medium text-zinc-600">
             {[selectedSalon.locationLabel, selectedSalon.distanceMiles !== null ? `${selectedSalon.distanceMiles < 10 ? selectedSalon.distanceMiles.toFixed(1) : Math.round(selectedSalon.distanceMiles)} mi` : null]
               .filter(Boolean)
-              .join(" / ")}
+              .join(" \u00b7 ")}
           </p>
         </div>
       ) : null}

@@ -8,6 +8,7 @@ import {
   validateServiceConfig,
   wouldCreateServiceAddOnCycle,
 } from "@/lib/service-contract";
+import { normalizeSearchText, searchTextMatches } from "@/lib/search-normalization";
 import type {
   SaveServiceConfigsResult,
   ServiceConfigFieldErrors,
@@ -98,7 +99,7 @@ function draftReadiness(
   const selectedStaff = data.staff.filter((member) =>
     config.bookingStaffIds.includes(member.id),
   );
-  const readyStaffCount = selectedStaff.filter((member) => member.publicReady).length;
+  const readyStaffCount = selectedStaff.filter((member) => member.bookingReady).length;
   const ready =
     config.isActive &&
     config.onlineBookingEnabled &&
@@ -177,20 +178,14 @@ function ServiceEditor({
   const [addOnQuery, setAddOnQuery] = useState("");
   const errors = validateServiceConfig(config).fieldErrors;
   const readiness = draftReadiness(config, data);
-  const normalizedStaffQuery = staffQuery.trim().toLowerCase();
-  const normalizedAddOnQuery = addOnQuery.trim().toLowerCase();
   const visibleStaff = data.staff.filter(
-    (member) =>
-      !normalizedStaffQuery ||
-      member.displayName.toLowerCase().includes(normalizedStaffQuery),
+    (member) => searchTextMatches([member.displayName], staffQuery),
   );
   const visibleAddOns = data.services
     .filter((candidate) => candidate.id !== service.id)
     .filter(
       (candidate) =>
-        !normalizedAddOnQuery ||
-        candidate.name.toLowerCase().includes(normalizedAddOnQuery) ||
-        (candidate.category ?? "").toLowerCase().includes(normalizedAddOnQuery),
+        searchTextMatches([candidate.name, candidate.category], addOnQuery),
     )
     .sort((left, right) => {
       const leftSelected = config.addOnServiceIds.includes(left.id) ? 0 : 1;
@@ -348,11 +343,11 @@ function ServiceEditor({
           </div>
           <p>
             {readiness.ready
-              ? `${readiness.readyStaffCount} online-ready professional${
+              ? `${readiness.readyStaffCount} booking-ready professional${
                   readiness.readyStaffCount === 1 ? "" : "s"
                 } selected.`
               : config.onlineBookingEnabled
-                ? "Select at least one online-ready professional."
+                ? "Select at least one active professional with online booking on."
                 : "Online booking is currently off for this service."}
           </p>
         </div>
@@ -399,16 +394,21 @@ function ServiceEditor({
                     type="checkbox"
                   />
                   <span className="booking-option-row__avatar" aria-hidden="true">
-                    {initials(member.displayName)}
+                    {member.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img alt="" src={member.avatarUrl} />
+                    ) : (
+                      initials(member.displayName)
+                    )}
                   </span>
                   <span className="booking-option-row__body">
                     <strong>{member.displayName}</strong>
                     <span>
                       {!member.isActive
                         ? "Inactive professional"
-                        : member.publicReady
-                          ? "Online-ready"
-                          : "Online setup incomplete"}
+                        : member.bookingReady
+                          ? "Booking ready"
+                          : "Online booking off"}
                     </span>
                   </span>
                   <span
@@ -416,16 +416,16 @@ function ServiceEditor({
                     data-state={
                       !member.isActive
                         ? "inactive"
-                        : member.publicReady
+                        : member.bookingReady
                           ? "ready"
                           : "warning"
                     }
                   >
                     {!member.isActive
                       ? "Inactive"
-                      : member.publicReady
+                      : member.bookingReady
                         ? "Ready"
-                        : "Needs setup"}
+                        : "Booking off"}
                   </span>
                 </label>
               );
@@ -757,7 +757,7 @@ export function ServicesManager({
   const [showCreate, setShowCreate] = useState(false);
   const [isPending, startTransition] = useTransition();
   const dirtyIds = Object.keys(drafts);
-  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedQuery = normalizeSearchText(query);
 
   const effectiveConfigs = useMemo(
     () =>
@@ -791,9 +791,10 @@ export function ServicesManager({
     const readiness = draftReadiness(config, data);
     const matchesQuery =
       !normalizedQuery ||
-      config.name.toLowerCase().includes(normalizedQuery) ||
-      (config.category ?? "").toLowerCase().includes(normalizedQuery) ||
-      (config.description ?? "").toLowerCase().includes(normalizedQuery);
+      searchTextMatches(
+        [config.name, config.category, config.description],
+        normalizedQuery,
+      );
     const matchesCategory =
       category === "all" || (config.category || "Uncategorized") === category;
     const matchesStatus =
@@ -935,13 +936,9 @@ export function ServicesManager({
 
   return (
     <main className="services-page">
-      <header className="services-page__header">
-        <div className="services-page__frame services-page__header-inner">
-          <div>
-            <h1>Services</h1>
-            <p>Manage salon services and online booking.</p>
-          </div>
-          {data.canManage ? (
+      <div className="services-page__frame services-page__content">
+        {data.canManage ? (
+          <div className="services-page__actions">
             <button
               className="services-button services-button--primary"
               onClick={() => setShowCreate(true)}
@@ -950,11 +947,9 @@ export function ServicesManager({
               <span aria-hidden="true">+</span>
               New service
             </button>
-          ) : null}
-        </div>
-      </header>
+          </div>
+        ) : null}
 
-      <div className="services-page__frame services-page__content">
         {!data.canManage ? (
           <p className="services-message">
             You have read-only access to the service catalog.

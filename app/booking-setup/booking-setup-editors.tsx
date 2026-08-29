@@ -57,6 +57,14 @@ type WeekState = {
   key: string;
   week: Record<number, DayDraft>;
 };
+type AvailabilityStaff = Staff | BookingSetupData["staff"][number];
+type AvatarStaff = Pick<Staff, "display_name" | "public_profile_photo_path"> &
+  Partial<
+    Pick<
+      BookingSetupData["staff"][number],
+      "staff_profile_avatar_url" | "staff_profile_display_name"
+    >
+  >;
 
 function classNames(...classes: Array<false | null | string | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -100,9 +108,12 @@ function SetupStaffAvatar({
   staff,
 }: {
   className?: string;
-  staff: Pick<Staff, "display_name" | "public_profile_photo_path">;
+  staff: AvatarStaff;
 }) {
-  const avatarUrl = getStaffAvatarUrl(staff.public_profile_photo_path);
+  const displayName = staff.staff_profile_display_name || staff.display_name;
+  const avatarUrl =
+    staff.staff_profile_avatar_url ??
+    getStaffAvatarUrl(staff.public_profile_photo_path);
 
   return (
     <span className={classNames("booking-setup-avatar", className)}>
@@ -110,7 +121,7 @@ function SetupStaffAvatar({
         // eslint-disable-next-line @next/next/no-img-element
         <img alt="" className="booking-setup-avatar__image" src={avatarUrl} />
       ) : (
-        getInitials(staff.display_name)
+        getInitials(displayName)
       )}
     </span>
   );
@@ -380,21 +391,13 @@ function upcomingTimeOffForStaff(blocks: StaffTimeBlock[], staffId: string) {
 }
 
 function onlineBookingStatus(
-  staff: Staff,
+  staff: AvailabilityStaff,
   readiness?: StaffBookingReadiness | null,
 ) {
   const onlineServiceCount = readiness?.onlineAssignedServiceCount ?? 0;
-  const profileReady =
-    staff.public_profile_visible &&
-    staff.owner_public_enabled &&
-    staff.staff_public_consent_status === "granted";
 
   if (!staff.online_booking_enabled) {
-    return { detail: "Staff profile off", enabled: false, label: "Off" };
-  }
-
-  if (!profileReady) {
-    return { detail: "Profile not public", enabled: false, label: "Off" };
+    return { detail: "Online booking off", enabled: false, label: "Off" };
   }
 
   if (onlineServiceCount === 0) {
@@ -512,7 +515,7 @@ export function StaffAvailabilityEditor({
   canManage: boolean;
   readinessByStaffId: Record<string, StaffBookingReadiness>;
   selectedStaffId?: string | null;
-  staff: Staff[];
+  staff: AvailabilityStaff[];
   timeBlocks: StaffTimeBlock[];
   timezone: string;
 }) {
@@ -850,6 +853,10 @@ export function StaffAvailabilityEditor({
           <span>Expand</span>
         </div>
         {staff.map((member) => {
+          const displayName =
+            "staff_profile_display_name" in member
+              ? member.staff_profile_display_name
+              : member.display_name;
           const readiness = readinessByStaffId[member.id];
           const onlineStatus = onlineBookingStatus(member, readiness);
           const memberWeek =
@@ -894,7 +901,7 @@ export function StaffAvailabilityEditor({
                 <div className="booking-availability-staff-cell booking-availability-professional">
                   <SetupStaffAvatar staff={member} />
                   <div>
-                    <h4>{member.display_name}</h4>
+                    <h4>{displayName}</h4>
                     <p>
                       {member.job_title || "Staff"} /{" "}
                       {member.is_active ? "Active" : "Inactive"}
@@ -959,8 +966,8 @@ export function StaffAvailabilityEditor({
                 <button
                   aria-label={
                     isExpanded
-                      ? `Collapse ${member.display_name}`
-                      : `Expand ${member.display_name}`
+                      ? `Collapse ${displayName}`
+                      : `Expand ${displayName}`
                   }
                   aria-expanded={isExpanded}
                   className="booking-availability-chevron"

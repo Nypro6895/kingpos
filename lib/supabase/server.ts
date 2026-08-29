@@ -1,13 +1,33 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Session } from "@supabase/supabase-js";
+import { isDeniedKingUserStatus } from "@/lib/users/account-status";
+import type { KingUserStatus } from "@/types/user";
 import { cookies, headers } from "next/headers";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
 export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
 
+type SupabaseSessionTokens = {
+  accessToken: string;
+  refreshToken: string;
+};
+
 type SupabaseEnvStatus = {
   hasSupabaseUrl: boolean;
   hasSupabaseAnonKey: boolean;
+};
+
+type SupabaseConfig = {
+  supabaseAnonKey: string;
+  supabaseUrl: string;
+};
+
+type PublicUserStatusRow = {
+  status: KingUserStatus;
+};
+
+type SupabaseCookieWriter = {
+  delete: (name: string) => unknown;
 };
 
 export function getSupabaseCookieOptions(maxAge?: number) {
@@ -20,7 +40,26 @@ export function getSupabaseCookieOptions(maxAge?: number) {
   };
 }
 
-export function getSupabaseConfig() {
+export function isSupabaseAuthTokenCookieName(name: string) {
+  return (
+    name.startsWith("sb-") &&
+    (name.endsWith("-auth-token") || name.includes("-auth-token."))
+  );
+}
+
+export function clearSupabaseSessionCookieWriter(
+  cookieStore: SupabaseCookieWriter,
+  cookieNames: string[] = [],
+) {
+  cookieStore.delete(ACCESS_TOKEN_COOKIE);
+  cookieStore.delete(REFRESH_TOKEN_COOKIE);
+
+  for (const name of cookieNames.filter(isSupabaseAuthTokenCookieName)) {
+    cookieStore.delete(name);
+  }
+}
+
+export function getSupabaseConfig(): SupabaseConfig | null {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
@@ -54,11 +93,10 @@ export function createSupabaseServerClient() {
   });
 }
 
-export async function createAuthenticatedSupabaseServerClient() {
+export function createUserScopedSupabaseServerClient(accessToken: string) {
   const config = getSupabaseConfig();
-  const accessToken = await getAccessTokenFromRequest();
 
-  if (!config || !accessToken) {
+  if (!config) {
     return null;
   }
 
@@ -76,28 +114,143 @@ export async function createAuthenticatedSupabaseServerClient() {
   });
 }
 
-function readTokenFromCookieValue(value: string) {
-  const decodedValue = decodeURIComponent(value);
+export async function createAuthenticatedSupabaseServerClient() {
+  const config = getSupabaseConfig();
+  const accessToken = await getAccessTokenFromRequest();
 
-  if (decodedValue.startsWith("base64-")) {
-    const rawJson = Buffer.from(decodedValue.slice("base64-".length), "base64").toString(
-      "utf8",
-    );
-    const parsed = JSON.parse(rawJson) as { access_token?: string };
-    return parsed.access_token ?? null;
+  if (!config || !accessToken) {
+    return null;
   }
 
-  if (decodedValue.startsWith("{")) {
-    const parsed = JSON.parse(decodedValue) as { access_token?: string };
-    return parsed.access_token ?? null;
+  const accessTokenAllowed = await isAccessTokenAllowedForAppSession(
+    config,
+    accessToken,
+  );
+
+  if (!accessTokenAllowed) {
+    return null;
   }
 
-  if (decodedValue.startsWith("[")) {
-    const parsed = JSON.parse(decodedValue) as string[];
-    return parsed[0] ?? null;
+  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  });
+}
+
+export async function createAuthenticatedSupabaseAuthSessionServerClient() {
+  const config = getSupabaseConfig();
+  const sessionTokens = await getSupabaseSessionTokensFromRequest();
+
+  if (!config || !sessionTokens) {
+    return null;
   }
 
-  return decodedValue || null;
+  const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+
+  const { data, error } = await supabase.auth.setSession({
+    access_token: sessionTokens.accessToken,
+    refresh_token: sessionTokens.refreshToken,
+  });
+
+  if (error || !data.session || !data.user) {
+    return null;
+  }
+
+  const accessTokenAllowed = await isAccessTokenAllowedForAppSession(
+    config,
+    data.session.access_token,
+  );
+
+  if (!accessTokenAllowed) {
+    return null;
+  }
+
+  return supabase;
+}
+
+async function isAccessTokenAllowedForAppSession(
+  config: SupabaseConfig,
+  accessToken: string,
+) {
+  const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  });
+
+  const { data: authData, error: authError } = await supabase.auth.getUser(
+    accessToken,
+  );
+
+  if (authError || !authData.user) {
+    return false;
+  }
+
+  const { data: userStatus, error: userStatusError } = await supabase
+    .from("users")
+    .select("status")
+    .eq("auth_user_id", authData.user.id)
+    .maybeSingle<PublicUserStatusRow>();
+
+  if (userStatusError) {
+    console.error("Unable to verify public user status for app session", {
+      authUserId: authData.user.id,
+      code: userStatusError.code,
+      message: userStatusError.message,
+      details: userStatusError.details,
+      hint: userStatusError.hint,
+    });
+    return false;
+  }
+
+  if (userStatus?.status) {
+    return !isDeniedKingUserStatus(userStatus.status);
+  }
+
+  const { data: authIdentityDeleted, error: authIdentityDeletedError } =
+    await supabase.rpc("auth_identity_is_deleted", {
+      p_auth_user_id: authData.user.id,
+    });
+
+  if (authIdentityDeletedError) {
+    if (
+      authIdentityDeletedError.code !== "42883" &&
+      authIdentityDeletedError.code !== "42P01"
+    ) {
+      console.error("Unable to verify deleted auth identity for app session", {
+        authUserId: authData.user.id,
+        code: authIdentityDeletedError.code,
+        details: authIdentityDeletedError.details,
+        hint: authIdentityDeletedError.hint,
+        message: authIdentityDeletedError.message,
+      });
+    }
+
+    return true;
+  }
+
+  return authIdentityDeleted !== true;
 }
 
 export async function getAccessTokenFromRequest() {
@@ -111,23 +264,28 @@ export async function getAccessTokenFromRequest() {
   const cookieStore = await cookies();
   const directCookie = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
 
-  if (directCookie) {
-    return directCookie;
+  return directCookie ?? null;
+}
+
+export async function getSupabaseSessionTokensFromRequest(): Promise<SupabaseSessionTokens | null> {
+  const authorization = (await headers()).get("authorization");
+  const bearerPrefix = "Bearer ";
+  const bearerToken = authorization?.startsWith(bearerPrefix)
+    ? authorization.slice(bearerPrefix.length)
+    : null;
+  const cookieStore = await cookies();
+  const directAccessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
+  const directRefreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
+  const accessToken = bearerToken || directAccessToken;
+
+  if (accessToken && directRefreshToken) {
+    return {
+      accessToken,
+      refreshToken: directRefreshToken,
+    };
   }
 
-  const authCookie = cookieStore
-    .getAll()
-    .find((cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token"));
-
-  if (!authCookie) {
-    return null;
-  }
-
-  try {
-    return readTokenFromCookieValue(authCookie.value);
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 export async function setSupabaseSessionCookies(session: Session) {
@@ -147,15 +305,10 @@ export async function setSupabaseSessionCookies(session: Session) {
 
 export async function clearSupabaseSessionCookies() {
   const cookieStore = await cookies();
-
-  cookieStore.delete(ACCESS_TOKEN_COOKIE);
-  cookieStore.delete(REFRESH_TOKEN_COOKIE);
-
-  for (const cookie of cookieStore.getAll()) {
-    if (cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token")) {
-      cookieStore.delete(cookie.name);
-    }
-  }
+  clearSupabaseSessionCookieWriter(
+    cookieStore,
+    cookieStore.getAll().map((cookie) => cookie.name),
+  );
 }
 
 export async function getSupabaseAuthUser() {

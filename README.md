@@ -44,7 +44,7 @@ npx supabase db push
 
 ## Environment Contract
 
-KingPOS Explore Map V1 uses MapLibre in the browser and a MapTiler-compatible
+KITY Explore Map V1 uses MapLibre in the browser and a MapTiler-compatible
 server geocoding adapter. Do not commit real secrets.
 
 Required Supabase variables:

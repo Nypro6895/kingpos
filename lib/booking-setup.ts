@@ -4,9 +4,11 @@ import {
   getCurrentBusinessContext,
   isSalonManageContext,
 } from "@/lib/current-context";
+import { getSalonOnlineBookingStatus } from "@/lib/booking-status";
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { SERVICE_SELECT } from "@/lib/services";
 import { STAFF_SELECT } from "@/lib/staff";
+import { getStaffPresentationsByStaffId } from "@/lib/staff-profile";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type {
@@ -32,9 +34,7 @@ export type BookingSetupReasonCode =
   | "no_assigned_services"
   | "no_working_hours"
   | "online_booking_disabled"
-  | "profile_not_public"
-  | "staff_inactive"
-  | "staff_public_consent_missing";
+  | "staff_inactive";
 
 export type StaffBookingReadiness = {
   assignedServiceCount: number;
@@ -59,6 +59,11 @@ export type BookingSetupPermissions = {
   canViewAssignments: boolean;
 };
 
+export type BookingSetupStaff = Staff & {
+  staff_profile_avatar_url: string | null;
+  staff_profile_display_name: string;
+};
+
 export type BookingSetupData = {
   assignments: StaffServiceAssignment[];
   availabilityRules: StaffAvailabilityRule[];
@@ -66,24 +71,25 @@ export type BookingSetupData = {
   readinessByStaffId: Record<string, StaffBookingReadiness>;
   salonId: string;
   services: Service[];
-  staff: Staff[];
+  staff: BookingSetupStaff[];
   timeBlocks: StaffTimeBlock[];
   timezone: string;
 };
 
-const BOOKING_SETTINGS_TIMEZONE_SELECT = "timezone_iana, booking_enabled, online_booking_visible";
+const BOOKING_SETTINGS_TIMEZONE_SELECT =
+  "timezone_iana, booking_enabled, online_booking_visible, guest_booking_enabled";
 
-function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
+function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   if (!isSalonManageContext(context)) {
-    throw new Error("Open booking setup from a Manage Salon workspace.");
+    throw new Error("Open booking setup from a Business workspace.");
   }
 
-  if (!context.currentOrganization || !context.currentSalon) {
+  if (!context.currentAccount || !context.currentSalon) {
     throw new Error("Choose a salon workspace before managing booking setup.");
   }
 
   return {
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
   };
 }
@@ -127,12 +133,16 @@ function activeWorkingRulesForStaff(input: {
   rules: StaffAvailabilityRule[];
   staffId: string;
 }) {
-  return input.rules.filter(
+  const rules = input.rules.filter(
     (rule) =>
       rule.is_active &&
-      rule.rule_type === "working" &&
-      (!rule.staff_id || rule.staff_id === input.staffId),
+      rule.rule_type === "working",
   );
+  const staffRules = rules.filter((rule) => rule.staff_id === input.staffId);
+
+  return staffRules.length > 0
+    ? staffRules
+    : rules.filter((rule) => !rule.staff_id);
 }
 
 function activeUpcomingBlocksForStaff(input: {
@@ -197,22 +207,6 @@ export function getStaffBookingReadiness(input: {
     });
   }
 
-  if (!input.staff.owner_public_enabled || !input.staff.public_profile_visible) {
-    reasons.push({
-      code: "profile_not_public",
-      cta: "staff_profile",
-      label: "Profile not public",
-    });
-  }
-
-  if (input.staff.staff_public_consent_status !== "granted") {
-    reasons.push({
-      code: "staff_public_consent_missing",
-      cta: "staff_profile",
-      label: "Public consent missing",
-    });
-  }
-
   if (assignedServices.length === 0) {
     reasons.push({
       code: "no_assigned_services",
@@ -262,7 +256,7 @@ export async function getCurrentSalonBookingSetup(
     await requirePermission(BOOKING_SETUP_PERMISSIONS.bookingView, resolvedContext);
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { Account, salon } = requireCurrentAccountAndSalon(resolvedContext);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
@@ -299,14 +293,12 @@ export async function getCurrentSalonBookingSetup(
     supabase
       .from("staff")
       .select(STAFF_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .order("display_name", { ascending: true })
       .returns<Staff[]>(),
     supabase
       .from("services")
       .select(SERVICE_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .order("category", { ascending: true })
       .order("name", { ascending: true })
@@ -314,20 +306,17 @@ export async function getCurrentSalonBookingSetup(
     supabase
       .from("staff_service_assignments")
       .select("*")
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .returns<StaffServiceAssignment[]>(),
     supabase
       .from("staff_availability_rules")
       .select("*")
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
       .returns<StaffAvailabilityRule[]>(),
     supabase
       .from("staff_time_blocks")
       .select("*")
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
       .gte("ends_at", now.toISOString())
@@ -337,10 +326,15 @@ export async function getCurrentSalonBookingSetup(
     supabase
       .from("booking_settings")
       .select(BOOKING_SETTINGS_TIMEZONE_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .maybeSingle<
-        Pick<BookingSettings, "booking_enabled" | "online_booking_visible" | "timezone_iana">
+        Pick<
+          BookingSettings,
+          | "booking_enabled"
+          | "guest_booking_enabled"
+          | "online_booking_visible"
+          | "timezone_iana"
+        >
       >(),
   ]);
 
@@ -358,25 +352,36 @@ export async function getCurrentSalonBookingSetup(
       details: firstError.details,
       hint: firstError.hint,
       message: firstError.message,
-      organizationId: organization.id,
+      accountId: Account.id,
       salonId: salon.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(firstError.message);
   }
 
-  const staff = staffResult.data ?? [];
+  const rawStaff = staffResult.data ?? [];
+  const staffPresentations = await getStaffPresentationsByStaffId({
+    staff: rawStaff,
+    supabase,
+  });
+  const staff = rawStaff.map((member) => ({
+    ...member,
+    staff_profile_avatar_url: staffPresentations.get(member.id)?.avatarUrl ?? null,
+    staff_profile_display_name:
+      staffPresentations.get(member.id)?.displayName ?? member.display_name,
+  }));
   const services = servicesResult.data ?? [];
   const assignments = assignmentsResult.data ?? [];
   const availabilityRules = availabilityResult.data ?? [];
   const timeBlocks = blocksResult.data ?? [];
+  const salonBookingStatus = getSalonOnlineBookingStatus(settingsResult.data);
   const readinessByStaffId = Object.fromEntries(
     staff.map((member) => [
       member.id,
       getStaffBookingReadiness({
         assignments,
         availabilityRules,
-        bookingEnabled: settingsResult.data?.booking_enabled ?? false,
+        bookingEnabled: salonBookingStatus.onlineBookingOpen,
         services,
         staff: member,
         timeBlocks,

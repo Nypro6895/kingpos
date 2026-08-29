@@ -9,6 +9,7 @@ import {
   getExploreDecisionSignalsBySalonId,
   type ExploreDecisionSignals,
 } from "@/lib/explore-decision-signals";
+import { loadPublicSalonLogoPaths } from "@/lib/explore-salon-logos";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -39,6 +40,8 @@ type ExploreRpcRow = {
   is_new: boolean | null;
   latitude: number | null;
   latest_media_created_at?: string | null;
+  logo_image_path?: string | null;
+  logo_path?: string | null;
   longitude: number | null;
   match_type: string | null;
   match_tier: number | null;
@@ -151,6 +154,7 @@ function normalizeResultGroup(value: string | null | undefined): ExploreResultGr
 function mapExploreRow(
   row: ExploreRpcRow,
   signals: ExploreDecisionSignals | undefined,
+  fallbackLogoPath?: string | null,
 ): ExploreSearchResult {
   const decisionSignals = signals ?? EMPTY_EXPLORE_DECISION_SIGNALS;
 
@@ -175,6 +179,9 @@ function mapExploreRow(
     isNew: row.is_new ?? false,
     latitude: row.latitude,
     latestMediaCreatedAt: row.latest_media_created_at ?? null,
+    logoImageUrl: getSalonProfileMediaUrl(
+      row.logo_image_path ?? row.logo_path ?? fallbackLogoPath,
+    ),
     longitude: row.longitude,
     matchType: row.match_type ?? "recommended",
     matchTier: row.match_tier ?? 99,
@@ -184,13 +191,17 @@ function mapExploreRow(
     phone: row.phone,
     postalCode: row.postal_code,
     profileCompleteness: row.profile_completeness ?? 0,
+    reputationNoIssueRate: decisionSignals.noIssueRate,
     relevanceScore: row.relevance_score ?? 0,
     resultGroup: normalizeResultGroup(row.result_group),
+    sharedExperienceCount: decisionSignals.experienceCount,
     reviewCount: decisionSignals.reviewCount,
     serviceCategories: toStringArray(row.service_categories),
     serviceNames: toStringArray(row.service_names),
     startingPrice: readMoney(row.starting_price),
     state: row.state,
+    uniqueCustomerCount: decisionSignals.uniqueCustomerCount,
+    verifiedVisitCount: decisionSignals.verifiedVisitCount,
   };
 }
 
@@ -282,7 +293,7 @@ export async function searchExploreSalons(
     });
 
     if (error) {
-      console.error("Explore public salon search failed", {
+      console.warn("Explore public salon search unavailable", {
         code: error.code,
         details: error.details,
         hint: error.hint,
@@ -300,16 +311,44 @@ export async function searchExploreSalons(
     }
 
     const rows = Array.isArray(data) ? (data as ExploreRpcRow[]) : [];
+    let countRows = rows;
+
+    if (rows.length === 0 && page > 1) {
+      const countResult = await rpc("search_public_explore_salons", {
+        p_category: category || null,
+        p_latitude: latitude,
+        p_location: location || null,
+        p_longitude: longitude,
+        p_page: 1,
+        p_page_size: 1,
+        p_query: query || null,
+      });
+
+      if (!countResult.error && Array.isArray(countResult.data)) {
+        countRows = countResult.data as ExploreRpcRow[];
+      }
+    }
+
     const signalMap = await getExploreDecisionSignalsBySalonId(
       rpc,
       rows.map((row) => row.salon_id),
     );
+    const logoPathMap = await loadPublicSalonLogoPaths({
+      rpc,
+      salonIds: rows
+        .filter((row) => !(row.logo_image_path ?? row.logo_path))
+        .map((row) => row.salon_id),
+    });
     const results = rows.map((row) =>
-      mapExploreRow(row, signalMap.get(row.salon_id)),
+      mapExploreRow(
+        row,
+        signalMap.get(row.salon_id),
+        logoPathMap.get(row.salon_id),
+      ),
     );
     const sections = groupResults(results);
-    const groupCounts = readGroupCounts(rows);
-    const totalCount = readCount(rows[0]?.total_count);
+    const groupCounts = readGroupCounts(countRows);
+    const totalCount = readCount(countRows[0]?.total_count);
 
     return {
       category,
@@ -322,10 +361,10 @@ export async function searchExploreSalons(
       results,
       sections,
       totalCount,
-      totalPages: Math.max(1, Math.ceil(groupCounts.bestMatches / pageSize)),
+      totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
     };
   } catch (error) {
-    console.error("Explore public salon search crashed", {
+    console.warn("Explore public salon search unavailable", {
       message: error instanceof Error ? error.message : "Unknown error",
     });
 

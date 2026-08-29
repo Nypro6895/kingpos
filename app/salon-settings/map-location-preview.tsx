@@ -41,6 +41,13 @@ export function MapLocationPreview({
     longitude: coordinates.longitude,
     name: salonName,
     serviceLabel: null,
+    trust: {
+      averageRating: null,
+      noIssueRate: null,
+      sharedExperienceCount: 0,
+      uniqueCustomerCount: 0,
+      verifiedVisitCount: 0,
+    },
   };
 
   return (

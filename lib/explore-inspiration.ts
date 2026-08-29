@@ -4,6 +4,13 @@ import {
   contentBookingOptionKey,
   loadPublicContentBookingOptions,
 } from "@/lib/content-booking";
+import { getAccountSavedPostStateKeys } from "@/lib/account-social";
+import {
+  exploreFeedTrustFromDecisionSignals,
+  getExploreDecisionSignalsBySalonId,
+} from "@/lib/explore-decision-signals";
+import { loadPublicSalonLogoPaths } from "@/lib/explore-salon-logos";
+import { normalizePublicBookingHref } from "@/lib/public-booking-routes";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -12,6 +19,7 @@ import type {
   ExploreInspirationLayoutVariant,
   ExploreInspirationPage,
 } from "@/types/explore";
+import { savedPostKey, type AccountSavedPostStateTarget } from "@/types/saved-post";
 
 const EXPLORE_INSPIRATION_PAGE_SIZE = 18;
 const EXPLORE_INSPIRATION_MAX_PAGE_SIZE = 24;
@@ -48,6 +56,7 @@ type ExploreInspirationRow = {
   published_at: string | null;
   salon_city: string | null;
   salon_id: string;
+  salon_logo_path?: string | null;
   salon_name: string | null;
   salon_phone: string | null;
   salon_state: string | null;
@@ -174,7 +183,10 @@ function mapInspirationRow(
       ? row.bookable_service_id
       : null,
     bookingEnabled: row.booking_enabled === true,
-    bookingHref: row.booking_enabled === true ? cleanString(row.booking_href) : null,
+    bookingHref:
+      row.booking_enabled === true
+        ? normalizePublicBookingHref(row.booking_href)
+        : null,
     bookingLabel: "Book this look",
     bookingReadiness: null,
     captionExcerpt: cleanString(row.caption_excerpt),
@@ -187,13 +199,24 @@ function mapInspirationRow(
     mediaId: row.media_id,
     phoneHref: phoneHref(row.salon_phone),
     publishedAt,
+    saveTarget: {
+      salonId: row.salon_id,
+      saved: false,
+      sourceId: row.content_id,
+      sourceType:
+        row.content_type === "update"
+          ? "salon_profile_update"
+          : "salon_profile_look",
+    },
     salonCity: cleanString(row.salon_city),
     salonHref: salonProfileHref(row.salon_id),
     salonId: row.salon_id,
+    salonLogoImageUrl: getSalonProfileMediaUrl(row.salon_logo_path),
     salonName,
     salonState: cleanString(row.salon_state),
     serviceCategory: cleanString(row.service_category),
     serviceName: cleanString(row.service_name),
+    trust: exploreFeedTrustFromDecisionSignals(null),
   };
 }
 
@@ -228,8 +251,33 @@ function diversifyInspirationItems(items: ExploreInspirationItem[]) {
   return output;
 }
 
+async function attachInspirationSaveStates(items: ExploreInspirationItem[]) {
+  const targets = items
+    .map((item) => item.saveTarget)
+    .filter((target): target is AccountSavedPostStateTarget => Boolean(target));
+
+  if (targets.length === 0) {
+    return items;
+  }
+
+  try {
+    const savedKeys = await getAccountSavedPostStateKeys(targets);
+
+    return items.map((item) => ({
+      ...item,
+      saveTarget: {
+        ...item.saveTarget,
+        saved: savedKeys.has(savedPostKey(item.saveTarget)),
+      },
+    }));
+  } catch {
+    return items;
+  }
+}
+
 export async function getExploreInspirationPage(input: {
   cursor?: ExploreInspirationCursor | null;
+  diversify?: boolean;
   pageSize?: number;
 } = {}): Promise<ExploreInspirationPage> {
   const supabase = createSupabaseServerClient();
@@ -250,7 +298,7 @@ export async function getExploreInspirationPage(input: {
     });
 
     if (error) {
-      console.error("Explore inspiration failed", {
+      console.warn("Explore inspiration unavailable", {
         code: error.code,
         details: error.details,
         hint: error.hint,
@@ -283,8 +331,24 @@ export async function getExploreInspirationPage(input: {
         seenMediaIds.add(item.mediaId);
         return true;
       });
+    const logoPathMap = await loadPublicSalonLogoPaths({
+      rpc,
+      salonIds: items
+        .filter((item) => !item.salonLogoImageUrl)
+        .map((item) => item.salonId),
+    });
+    const itemsWithLogos = items.map((item) =>
+      item.salonLogoImageUrl
+        ? item
+        : {
+            ...item,
+            salonLogoImageUrl: getSalonProfileMediaUrl(
+              logoPathMap.get(item.salonId),
+            ),
+          },
+    );
     const contentOptions = await loadPublicContentBookingOptions(
-      items.map((item) => item.salonId),
+      itemsWithLogos.map((item) => item.salonId),
     );
     const optionsByContent = new Map(
       contentOptions.map((option) => [
@@ -295,7 +359,7 @@ export async function getExploreInspirationPage(input: {
         option,
       ]),
     );
-    const itemsWithBooking = items.map((item) => {
+    const itemsWithBooking = itemsWithLogos.map((item) => {
       const option = optionsByContent.get(
         contentBookingOptionKey({
           contentId: item.contentId,
@@ -320,15 +384,28 @@ export async function getExploreInspirationPage(input: {
         serviceName: option.primaryServiceName ?? item.serviceName,
       };
     });
+    const signalMap = await getExploreDecisionSignalsBySalonId(
+      rpc,
+      itemsWithBooking.map((item) => item.salonId),
+    );
+    const itemsWithTrust = itemsWithBooking.map((item) => ({
+      ...item,
+      trust: exploreFeedTrustFromDecisionSignals(signalMap.get(item.salonId)),
+    }));
+    const itemsWithSaveStates =
+      await attachInspirationSaveStates(itemsWithTrust);
 
     return {
       error: null,
       hasMore,
-      items: diversifyInspirationItems(itemsWithBooking),
+      items:
+        input.diversify === false
+          ? itemsWithSaveStates
+          : diversifyInspirationItems(itemsWithSaveStates),
       nextCursor,
     };
   } catch (error) {
-    console.error("Explore inspiration crashed", {
+    console.warn("Explore inspiration unavailable", {
       message: error instanceof Error ? error.message : "Unknown error",
     });
 

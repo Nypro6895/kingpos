@@ -430,8 +430,8 @@ function Drawer({
         onClick={onClose}
         type="button"
       />
-      <div className="relative ml-auto flex h-full w-full max-w-3xl flex-col overflow-hidden bg-white shadow-2xl sm:rounded-lg">
-        <div className="flex min-h-16 items-center justify-between gap-3 border-b border-zinc-200 px-5">
+      <div className="relative ml-auto flex h-dvh w-full max-w-3xl flex-col overflow-hidden bg-white shadow-2xl sm:h-[calc(100dvh-2rem)] sm:rounded-lg">
+        <div className="flex min-h-16 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 px-4 sm:px-5">
           <h2 className="text-lg font-semibold text-zinc-950">{title}</h2>
           <button
             className="grid h-10 w-10 place-items-center rounded-md border border-zinc-200 text-zinc-700 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
@@ -442,7 +442,7 @@ function Drawer({
             x
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-auto p-5">{children}</div>
+        <div className="min-h-0 flex-1 overscroll-contain overflow-auto p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:p-5">{children}</div>
       </div>
     </div>
   );
@@ -458,16 +458,16 @@ function SubmitFooter({
   submitLabel: string;
 }) {
   return (
-    <div className="sticky bottom-0 -mx-5 mt-6 flex justify-end gap-2 border-t border-zinc-200 bg-white px-5 py-4">
+    <div className="sticky bottom-0 -mx-4 mt-6 flex flex-col gap-2 border-t border-zinc-200 bg-white px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:-mx-5 sm:flex-row sm:justify-end sm:px-5 sm:py-4">
       <button
-        className="min-h-10 rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50"
+        className="min-h-10 w-full rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 sm:w-auto"
         onClick={onCancel}
         type="button"
       >
         Cancel
       </button>
       <button
-        className="min-h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+        className="min-h-10 w-full rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300 sm:w-auto"
         disabled={disabled}
         type="submit"
       >
@@ -1283,19 +1283,11 @@ export function SalonProfileStudio({
   return (
     <main className="min-w-0 overflow-x-hidden bg-zinc-50">
       <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 border-b border-zinc-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-3xl font-semibold text-zinc-950">
-                Salon Profile
-              </h1>
-              <span className="rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700">
-                {statusLabels[readiness.status]}
-              </span>
-            </div>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
-              Manage the public profile, visual looks, openings, and Explore readiness.
-            </p>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700">
+              {statusLabels[readiness.status]}
+            </span>
           </div>
           <div className="flex flex-wrap gap-2">
             <button

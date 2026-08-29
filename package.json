@@ -7,7 +7,16 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test:content-booking-v2": "node artifacts/content-booking-v2-qa/browser-qa.mjs"
+    "db:validate-account-salon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate-account-salon-foundation.ps1",
+    "test:account-salon-lifecycle": "node --test tests/salon-lifecycle-rules.test.mjs tests/account-salon-lifecycle-contract.test.mjs tests/account-deletion-flow-contract.test.mjs tests/account-lifecycle-phase3-contract.test.mjs",
+    "test:account-salon-baseline-static": "node scripts/verify-account-salon-baseline-static.mjs",
+    "test:pos-customer-display-e2e": "node tests/pos-customer-display-e2e.mjs",
+    "test:pos-live-draft-rpc-contract": "node --test tests/pos-live-draft-rpc-contract.test.mjs",
+    "test:customer-identity-claims": "node --test tests/customer-identity-claims-contract.test.mjs",
+    "test:customer-visits-contract": "node --test tests/customer-visits-contract.test.mjs",
+    "test:customer-visits-runtime": "node --test tests/customer-visits-runtime.test.mjs",
+    "test:staff-check-in-contract": "node --test tests/staff-check-in-contract.test.mjs",
+    "test:salon-creation-routing": "node scripts/verify-salon-creation-routing.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

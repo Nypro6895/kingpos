@@ -36,7 +36,6 @@ type RawTicket = {
   discount_value: number;
   id: string;
   opened_at: string;
-  organization_id: string;
   salon_id: string;
   staff_earnings?: PosTicketStaffEarning[] | null;
   tax_rate: number;
@@ -461,7 +460,6 @@ function calculateRowsForTickets(tickets: RawTicket[], workDate: string) {
         manual_tip_amount: tipIsManual
           ? roundMoney(existingEarning?.manual_tip_amount ?? tipAmount)
           : null,
-        organization_id: ticket.organization_id,
         salon_id: ticket.salon_id,
         service_total: staff.serviceTotal,
         small_turn_count: staff.smallTurnCount,
@@ -491,7 +489,7 @@ async function requireEarningContext() {
     throw new Error("You must be logged in to calculate staff earnings.");
   }
 
-  if (!context.currentOrganization || !context.currentSalon) {
+  if (!context.currentSalon) {
     throw new Error("Please select a salon first.");
   }
 
@@ -511,7 +509,6 @@ async function requireEarningContext() {
 
   return {
     context,
-    organization: context.currentOrganization,
     salon: context.currentSalon,
     supabase,
     timeZone: context.user.timezone,
@@ -519,7 +516,6 @@ async function requireEarningContext() {
 }
 
 async function loadTicketsForDate(input: {
-  organizationId: string;
   salonId: string;
   supabase: NonNullable<
     Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
@@ -531,10 +527,10 @@ async function loadTicketsForDate(input: {
   const { data, error } = await input.supabase
     .from("pos_tickets")
     .select(
-      "id, organization_id, salon_id, ticket_sequence, opened_at, discount_type, discount_value, tax_rate, tip_type, tip_value, ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, unit_price, line_total, is_removed, created_at, turn_parts:pos_ticket_item_turn_parts(id, amount, turn_type, turn_index))",
+      "id, salon_id, ticket_sequence, opened_at, discount_type, discount_value, tax_rate, tip_type, tip_value, ticket_items:pos_ticket_items(id, assigned_staff_id, quantity, unit_price, line_total, is_removed, created_at, turn_parts:pos_ticket_item_turn_parts(id, amount, turn_type, turn_index))",
     )
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
+    .eq("status", "closed")
     .gte("opened_at", bounds.openedFrom)
     .lte("opened_at", bounds.openedTo)
     .order("opened_at", { ascending: true })
@@ -558,9 +554,8 @@ async function loadTicketsForDate(input: {
   const { data: staffEarnings, error: staffEarningsError } = await input.supabase
     .from("pos_ticket_staff_earnings")
     .select(
-      "id, organization_id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at",
+      "id, salon_id, ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount, big_turn_count, small_turn_count, first_big_turn_sequence, last_big_turn_sequence, first_small_turn_sequence, last_small_turn_sequence, commission_amount, bonus_amount, deduction_amount, total_earning, calculation_version, locked_at, payroll_batch_id, created_at, updated_at",
     )
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
     .in("ticket_id", ticketIds)
     .returns<PosTicketStaffEarning[]>();
@@ -586,17 +581,15 @@ async function loadTicketsForDate(input: {
 }
 
 export async function calculateTicketStaffEarnings(ticketId: string) {
-  const { organization, salon, supabase, timeZone } = await requireEarningContext();
+  const { salon, supabase, timeZone } = await requireEarningContext();
   const { data: ticket, error } = await supabase
     .from("pos_tickets")
-    .select("id, opened_at, salon_id, organization_id")
+    .select("id, opened_at, salon_id")
     .eq("id", ticketId)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .maybeSingle<{
       id: string;
       opened_at: string;
-      organization_id: string;
       salon_id: string;
     }>();
 
@@ -610,7 +603,6 @@ export async function calculateTicketStaffEarnings(ticketId: string) {
 
   const workDate = formatDateInTimeZone(ticket.opened_at, timeZone);
   const tickets = await loadTicketsForDate({
-    organizationId: organization.id,
     salonId: salon.id,
     supabase,
     timeZone,
@@ -626,14 +618,13 @@ export async function recalculateStaffEarningsForDate(
   salonId: string,
   workDate: string,
 ) {
-  const { organization, salon, supabase, timeZone } = await requireEarningContext();
+  const { salon, supabase, timeZone } = await requireEarningContext();
 
   if (salon.id !== salonId) {
     throw new Error("Staff earnings can only be recalculated for the current salon.");
   }
 
   const tickets = await loadTicketsForDate({
-    organizationId: organization.id,
     salonId,
     supabase,
     timeZone,
@@ -687,7 +678,6 @@ export async function recalculateStaffEarningsForDate(
         total_earning: 0,
       })
       .eq("id", row.id)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salonId);
 
     if (error) {
@@ -699,17 +689,15 @@ export async function recalculateStaffEarningsForDate(
 }
 
 export async function recalculateTicketStaffEarnings(ticketId: string) {
-  const { organization, salon, supabase, timeZone } = await requireEarningContext();
+  const { salon, supabase, timeZone } = await requireEarningContext();
   const { data: ticket, error } = await supabase
     .from("pos_tickets")
-    .select("id, opened_at, salon_id, organization_id")
+    .select("id, opened_at, salon_id")
     .eq("id", ticketId)
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .maybeSingle<{
       id: string;
       opened_at: string;
-      organization_id: string;
       salon_id: string;
     }>();
 

@@ -1,4 +1,5 @@
 import type { Customer } from "@/types/customer";
+import type { CustomerVisitRequestedService } from "@/types/customer-visit";
 import type { PosTicketDiscountType } from "@/types/pos-ticket";
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
@@ -8,6 +9,8 @@ export type PosDeskTurnType = "large" | "small";
 
 export type PosDeskTurnSummary = {
   largeTurns: number;
+  queueTurns: number;
+  receiptLargeTurns: number;
   smallTurns: number;
   totalTurns: number;
 };
@@ -16,6 +19,9 @@ export type PosDeskStaff = Pick<
   Staff,
   "id" | "display_name" | "job_title" | "is_active"
 > & {
+  avatar_url: string | null;
+  check_in_at?: string | null;
+  check_in_sequence?: number | null;
   today_status: StaffWorkdayStatus | "not_checked_in";
   turns: PosDeskTurnSummary;
 };
@@ -43,9 +49,11 @@ export type PosDeskSubmitInput = {
   customerId?: string | null;
   customerLookup?: string | null;
   customerName?: string | null;
+  customerVisitId?: string | null;
   discountType?: PosTicketDiscountType;
   discountValue?: number;
   lines: PosDeskSubmitLine[];
+  liveDraftToken?: string | null;
   note?: string | null;
   tipAmount?: number;
 };
@@ -156,6 +164,8 @@ export type PosLiveDraftCustomer = {
   id: string | null;
   name: string;
   phone: string | null;
+  requestedServices?: CustomerVisitRequestedService[];
+  visitId?: string | null;
 };
 
 export type PosLiveDraftReceiptLine = {
@@ -171,16 +181,27 @@ export type PosLiveDraftReceiptLine = {
 };
 
 export type PosLiveDraftView = {
+  completed_at: string | null;
   customer: PosLiveDraftCustomer | null;
+  customer_handoff_started_at: string | null;
+  customer_version: number;
+  discount: number;
   id: string;
+  last_customer_action_id: string | null;
+  last_tip_action_id: string | null;
+  receipt_version: number;
+  reset_at: string | null;
   selected_staff_id: string | null;
   salon_id: string;
+  server_now: string;
   staff_lines: PosLiveDraftReceiptLine[];
   status: "draft" | "closed";
   subtotal: number;
+  tax: number;
   tip: number;
   token: string;
   total: number;
+  total_before_tip: number;
   updated_at: string;
   version: number;
 };

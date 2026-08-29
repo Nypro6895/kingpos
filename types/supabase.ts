@@ -14,84 +14,183 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_favorite_customers: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_favorite_customers_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_favorite_customers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      account_memberships: {
+        Row: {
+          account_id: string
+          created_at: string
+          id: string
+          joined_at: string | null
+          role_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          role_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          role_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_memberships_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_memberships_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accounts: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_notifications: {
         Row: {
+          account_id: string | null
           body: string | null
           booking_id: string | null
-          booking_line_id: string | null
           created_at: string
+          event_key: string | null
           href: string
           id: string
-          metadata: Json
           notification_type: string
-          organization_id: string | null
           read_at: string | null
           recipient_kind: string
           recipient_user_id: string
           salon_id: string | null
-          source_event_id: string | null
-          source_table: string
           title: string
           updated_at: string
         }
         Insert: {
+          account_id?: string | null
           body?: string | null
           booking_id?: string | null
-          booking_line_id?: string | null
           created_at?: string
+          event_key?: string | null
           href: string
           id?: string
-          metadata?: Json
           notification_type: string
-          organization_id?: string | null
           read_at?: string | null
           recipient_kind: string
           recipient_user_id: string
           salon_id?: string | null
-          source_event_id?: string | null
-          source_table?: string
           title: string
           updated_at?: string
         }
         Update: {
+          account_id?: string | null
           body?: string | null
           booking_id?: string | null
-          booking_line_id?: string | null
           created_at?: string
+          event_key?: string | null
           href?: string
           id?: string
-          metadata?: Json
           notification_type?: string
-          organization_id?: string | null
           read_at?: string | null
           recipient_kind?: string
           recipient_user_id?: string
           salon_id?: string | null
-          source_event_id?: string | null
-          source_table?: string
           title?: string
           updated_at?: string
         }
         Relationships: [
           {
+            foreignKeyName: "app_notifications_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "app_notifications_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "app_notifications_booking_line_id_fkey"
-            columns: ["booking_line_id"]
-            isOneToOne: false
-            referencedRelation: "booking_lines"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "app_notifications_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -108,13 +207,6 @@ export type Database = {
             referencedRelation: "locations"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "app_notifications_source_event_id_fkey"
-            columns: ["source_event_id"]
-            isOneToOne: false
-            referencedRelation: "booking_status_events"
-            referencedColumns: ["id"]
-          },
         ]
       }
       booking_customer_account_claims: {
@@ -126,7 +218,6 @@ export type Database = {
           customer_user_id: string
           id: string
           metadata: Json
-          organization_id: string
           proof_type: string
           salon_id: string
         }
@@ -138,7 +229,6 @@ export type Database = {
           customer_user_id: string
           id?: string
           metadata?: Json
-          organization_id: string
           proof_type: string
           salon_id: string
         }
@@ -150,7 +240,6 @@ export type Database = {
           customer_user_id?: string
           id?: string
           metadata?: Json
-          organization_id?: string
           proof_type?: string
           salon_id?: string
         }
@@ -167,13 +256,6 @@ export type Database = {
             columns: ["customer_user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "booking_customer_account_claims_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -194,7 +276,6 @@ export type Database = {
           credited_staff_name_snapshot: string | null
           id: string
           metadata: Json
-          organization_id: string
           salon_id: string
           salon_name_snapshot: string | null
           service_id: string | null
@@ -221,7 +302,6 @@ export type Database = {
           credited_staff_name_snapshot?: string | null
           id?: string
           metadata?: Json
-          organization_id: string
           salon_id: string
           salon_name_snapshot?: string | null
           service_id?: string | null
@@ -248,7 +328,6 @@ export type Database = {
           credited_staff_name_snapshot?: string | null
           id?: string
           metadata?: Json
-          organization_id?: string
           salon_id?: string
           salon_name_snapshot?: string | null
           service_id?: string | null
@@ -287,13 +366,6 @@ export type Database = {
             columns: ["credited_staff_id"]
             isOneToOne: false
             referencedRelation: "staff"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "booking_inspirations_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -340,9 +412,8 @@ export type Database = {
           line_status: string
           line_status_updated_at: string | null
           line_status_updated_by_user_id: string | null
-          line_total: number | null
+          line_total: number
           line_type: string
-          organization_id: string
           overbooking_override_at: string | null
           overbooking_override_by_user_id: string | null
           overbooking_override_reason: string | null
@@ -368,15 +439,14 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           display_order?: number
-          duration_minutes: number
+          duration_minutes?: number
           id?: string
           internal_staff_note?: string | null
           line_status?: string
           line_status_updated_at?: string | null
           line_status_updated_by_user_id?: string | null
-          line_total?: number | null
+          line_total?: number
           line_type?: string
-          organization_id: string
           overbooking_override_at?: string | null
           overbooking_override_by_user_id?: string | null
           overbooking_override_reason?: string | null
@@ -408,9 +478,8 @@ export type Database = {
           line_status?: string
           line_status_updated_at?: string | null
           line_status_updated_by_user_id?: string | null
-          line_total?: number | null
+          line_total?: number
           line_type?: string
-          organization_id?: string
           overbooking_override_at?: string | null
           overbooking_override_by_user_id?: string | null
           overbooking_override_reason?: string | null
@@ -449,13 +518,6 @@ export type Database = {
             columns: ["line_status_updated_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "booking_lines_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -512,7 +574,6 @@ export type Database = {
           minimum_lead_time_minutes: number
           no_show_policy: Json
           online_booking_visible: boolean
-          organization_id: string
           payment_required_enabled: boolean
           salon_id: string
           same_day_booking_enabled: boolean
@@ -538,7 +599,6 @@ export type Database = {
           minimum_lead_time_minutes?: number
           no_show_policy?: Json
           online_booking_visible?: boolean
-          organization_id: string
           payment_required_enabled?: boolean
           salon_id: string
           same_day_booking_enabled?: boolean
@@ -564,7 +624,6 @@ export type Database = {
           minimum_lead_time_minutes?: number
           no_show_policy?: Json
           online_booking_visible?: boolean
-          organization_id?: string
           payment_required_enabled?: boolean
           salon_id?: string
           same_day_booking_enabled?: boolean
@@ -575,13 +634,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "booking_settings_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "booking_settings_salon_id_fkey"
             columns: ["salon_id"]
@@ -603,7 +655,6 @@ export type Database = {
           metadata: Json
           new_status: string | null
           old_status: string | null
-          organization_id: string
           salon_id: string
         }
         Insert: {
@@ -617,7 +668,6 @@ export type Database = {
           metadata?: Json
           new_status?: string | null
           old_status?: string | null
-          organization_id: string
           salon_id: string
         }
         Update: {
@@ -631,7 +681,6 @@ export type Database = {
           metadata?: Json
           new_status?: string | null
           old_status?: string | null
-          organization_id?: string
           salon_id?: string
         }
         Relationships: [
@@ -654,13 +703,6 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "booking_status_events_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -698,7 +740,6 @@ export type Database = {
           no_show_by_user_id: string | null
           no_show_reason: string | null
           notes: string | null
-          organization_id: string
           payment_status: string
           pos_ticket_id: string | null
           public_notes: string | null
@@ -738,7 +779,6 @@ export type Database = {
           no_show_by_user_id?: string | null
           no_show_reason?: string | null
           notes?: string | null
-          organization_id: string
           payment_status?: string
           pos_ticket_id?: string | null
           public_notes?: string | null
@@ -778,7 +818,6 @@ export type Database = {
           no_show_by_user_id?: string | null
           no_show_reason?: string | null
           notes?: string | null
-          organization_id?: string
           payment_status?: string
           pos_ticket_id?: string | null
           public_notes?: string | null
@@ -834,13 +873,6 @@ export type Database = {
             columns: ["no_show_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -958,10 +990,12 @@ export type Database = {
       }
       locations: {
         Row: {
+          account_id: string
           address_line1: string | null
           address_line2: string | null
           city: string | null
           country: string
+          create_request_key: string | null
           created_at: string
           geocoded_at: string | null
           geocoding_address_fingerprint: string | null
@@ -973,7 +1007,6 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           name: string
-          organization_id: string
           phone: string | null
           postal_code: string | null
           state: string | null
@@ -981,10 +1014,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_id: string
           address_line1?: string | null
           address_line2?: string | null
           city?: string | null
           country?: string
+          create_request_key?: string | null
           created_at?: string
           geocoded_at?: string | null
           geocoding_address_fingerprint?: string | null
@@ -996,7 +1031,6 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           name: string
-          organization_id: string
           phone?: string | null
           postal_code?: string | null
           state?: string | null
@@ -1004,10 +1038,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_id?: string
           address_line1?: string | null
           address_line2?: string | null
           city?: string | null
           country?: string
+          create_request_key?: string | null
           created_at?: string
           geocoded_at?: string | null
           geocoding_address_fingerprint?: string | null
@@ -1019,7 +1055,6 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           name?: string
-          organization_id?: string
           phone?: string | null
           postal_code?: string | null
           state?: string | null
@@ -1028,116 +1063,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "locations_organization_id_fkey"
-            columns: ["organization_id"]
+            foreignKeyName: "locations_account_id_fkey"
+            columns: ["account_id"]
             isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      organization_memberships: {
-        Row: {
-          created_at: string
-          id: string
-          invited_by_user_id: string | null
-          joined_at: string | null
-          organization_id: string
-          role: string
-          role_id: string
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          invited_by_user_id?: string | null
-          joined_at?: string | null
-          organization_id: string
-          role?: string
-          role_id: string
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          invited_by_user_id?: string | null
-          joined_at?: string | null
-          organization_id?: string
-          role?: string
-          role_id?: string
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "organization_memberships_invited_by_user_id_fkey"
-            columns: ["invited_by_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_memberships_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_memberships_organization_role_fk"
-            columns: ["organization_id", "role_id"]
-            isOneToOne: false
-            referencedRelation: "roles"
-            referencedColumns: ["organization_id", "id"]
-          },
-          {
-            foreignKeyName: "organization_memberships_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      organizations: {
-        Row: {
-          created_at: string
-          id: string
-          legal_name: string | null
-          name: string
-          owner_user_id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          legal_name?: string | null
-          name: string
-          owner_user_id: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          legal_name?: string | null
-          name?: string
-          owner_user_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "organizations_owner_user_id_fkey"
-            columns: ["owner_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -1150,7 +1079,6 @@ export type Database = {
           id: string
           mime_type: string | null
           note: string | null
-          organization_id: string
           payroll_run_id: string
           salon_id: string
           size_bytes: number | null
@@ -1165,7 +1093,6 @@ export type Database = {
           id?: string
           mime_type?: string | null
           note?: string | null
-          organization_id: string
           payroll_run_id: string
           salon_id: string
           size_bytes?: number | null
@@ -1180,7 +1107,6 @@ export type Database = {
           id?: string
           mime_type?: string | null
           note?: string | null
-          organization_id?: string
           payroll_run_id?: string
           salon_id?: string
           size_bytes?: number | null
@@ -1189,13 +1115,6 @@ export type Database = {
           uploaded_by?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "payroll_paystubs_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "payroll_paystubs_payroll_run_id_fkey"
             columns: ["payroll_run_id"]
@@ -1235,7 +1154,6 @@ export type Database = {
           field_changes: Json
           id: string
           new_value_json: Json
-          organization_id: string
           payroll_run_id: string | null
           period_end: string
           period_staff_input_id: string | null
@@ -1245,14 +1163,13 @@ export type Database = {
           staff_id: string
         }
         Insert: {
-          change_type?: string
+          change_type: string
           created_at?: string
           created_by?: string | null
           cycle_type: string
           field_changes?: Json
           id?: string
           new_value_json?: Json
-          organization_id: string
           payroll_run_id?: string | null
           period_end: string
           period_staff_input_id?: string | null
@@ -1269,7 +1186,6 @@ export type Database = {
           field_changes?: Json
           id?: string
           new_value_json?: Json
-          organization_id?: string
           payroll_run_id?: string | null
           period_end?: string
           period_staff_input_id?: string | null
@@ -1287,24 +1203,17 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "payroll_period_staff_input_history_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payroll_period_staff_input_history_payroll_run_id_fkey"
-            columns: ["payroll_run_id"]
-            isOneToOne: false
-            referencedRelation: "payroll_runs"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "payroll_period_staff_input_history_period_staff_input_id_fkey"
             columns: ["period_staff_input_id"]
             isOneToOne: false
             referencedRelation: "payroll_period_staff_inputs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_period_staff_input_history_run_id_fkey"
+            columns: ["payroll_run_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_runs"
             referencedColumns: ["id"]
           },
           {
@@ -1331,7 +1240,6 @@ export type Database = {
           cycle_type: string
           id: string
           note: string | null
-          organization_id: string
           period_end: string
           period_start: string
           salon_id: string
@@ -1346,7 +1254,6 @@ export type Database = {
           cycle_type: string
           id?: string
           note?: string | null
-          organization_id: string
           period_end: string
           period_start: string
           salon_id: string
@@ -1361,7 +1268,6 @@ export type Database = {
           cycle_type?: string
           id?: string
           note?: string | null
-          organization_id?: string
           period_end?: string
           period_start?: string
           salon_id?: string
@@ -1370,13 +1276,6 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "payroll_period_staff_inputs_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "payroll_period_staff_inputs_salon_id_fkey"
             columns: ["salon_id"]
@@ -1409,7 +1308,6 @@ export type Database = {
           id: string
           locked_at: string | null
           locked_by: string | null
-          organization_id: string
           paid_at: string | null
           paid_by: string | null
           period_end: string
@@ -1430,7 +1328,6 @@ export type Database = {
           id?: string
           locked_at?: string | null
           locked_by?: string | null
-          organization_id: string
           paid_at?: string | null
           paid_by?: string | null
           period_end: string
@@ -1451,7 +1348,6 @@ export type Database = {
           id?: string
           locked_at?: string | null
           locked_by?: string | null
-          organization_id?: string
           paid_at?: string | null
           paid_by?: string | null
           period_end?: string
@@ -1470,13 +1366,6 @@ export type Database = {
             columns: ["locked_by"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payroll_runs_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -1513,9 +1402,8 @@ export type Database = {
           gross_sales: number
           id: string
           note: string | null
-          organization_id: string
           pay_type_used: string | null
-          payroll_run_id: string
+          payroll_run_id: string | null
           salon_id: string
           settings_used_snapshot: Json
           staff_id: string
@@ -1533,9 +1421,8 @@ export type Database = {
           gross_sales?: number
           id?: string
           note?: string | null
-          organization_id: string
           pay_type_used?: string | null
-          payroll_run_id: string
+          payroll_run_id?: string | null
           salon_id: string
           settings_used_snapshot?: Json
           staff_id: string
@@ -1553,9 +1440,8 @@ export type Database = {
           gross_sales?: number
           id?: string
           note?: string | null
-          organization_id?: string
           pay_type_used?: string | null
-          payroll_run_id?: string
+          payroll_run_id?: string | null
           salon_id?: string
           settings_used_snapshot?: Json
           staff_id?: string
@@ -1564,13 +1450,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "payroll_staff_daily_totals_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "payroll_staff_daily_totals_payroll_run_id_fkey"
             columns: ["payroll_run_id"]
@@ -1619,7 +1498,6 @@ export type Database = {
           id: string
           is_mixed_rate: boolean
           note: string | null
-          organization_id: string
           pay_type_used: string
           payroll_run_id: string
           period_staff_input_snapshot: Json
@@ -1670,8 +1548,7 @@ export type Database = {
           id?: string
           is_mixed_rate?: boolean
           note?: string | null
-          organization_id: string
-          pay_type_used: string
+          pay_type_used?: string
           payroll_run_id: string
           period_staff_input_snapshot?: Json
           salon_id: string
@@ -1721,7 +1598,6 @@ export type Database = {
           id?: string
           is_mixed_rate?: boolean
           note?: string | null
-          organization_id?: string
           pay_type_used?: string
           payroll_run_id?: string
           period_staff_input_snapshot?: Json
@@ -1749,13 +1625,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "payroll_staff_lines_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "payroll_staff_lines_payroll_run_id_fkey"
             columns: ["payroll_run_id"]
@@ -1818,7 +1687,6 @@ export type Database = {
           closing_id: string
           created_at: string
           id: string
-          organization_id: string
           report_date: string
           salon_id: string
           small_turn_count_snapshot: number
@@ -1833,7 +1701,6 @@ export type Database = {
           closing_id: string
           created_at?: string
           id?: string
-          organization_id: string
           report_date: string
           salon_id: string
           small_turn_count_snapshot?: number
@@ -1848,7 +1715,6 @@ export type Database = {
           closing_id?: string
           created_at?: string
           id?: string
-          organization_id?: string
           report_date?: string
           salon_id?: string
           small_turn_count_snapshot?: number
@@ -1864,13 +1730,6 @@ export type Database = {
             columns: ["closing_id"]
             isOneToOne: false
             referencedRelation: "pos_daily_closings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pos_daily_closing_staff_snapshots_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -1899,7 +1758,7 @@ export type Database = {
           closed_at: string | null
           closed_by: string | null
           created_at: string
-          created_by: string
+          created_by: string | null
           credit_card_amount: number
           credit_card_amount_snapshot: number | null
           difference_snapshot: number | null
@@ -1914,7 +1773,6 @@ export type Database = {
           locked_by: string | null
           note: string | null
           note_snapshot: string | null
-          organization_id: string
           other_amount: number
           other_amount_snapshot: number | null
           report_date: string
@@ -1936,7 +1794,7 @@ export type Database = {
           closed_at?: string | null
           closed_by?: string | null
           created_at?: string
-          created_by: string
+          created_by?: string | null
           credit_card_amount?: number
           credit_card_amount_snapshot?: number | null
           difference_snapshot?: number | null
@@ -1951,7 +1809,6 @@ export type Database = {
           locked_by?: string | null
           note?: string | null
           note_snapshot?: string | null
-          organization_id: string
           other_amount?: number
           other_amount_snapshot?: number | null
           report_date: string
@@ -1973,7 +1830,7 @@ export type Database = {
           closed_at?: string | null
           closed_by?: string | null
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           credit_card_amount?: number
           credit_card_amount_snapshot?: number | null
           difference_snapshot?: number | null
@@ -1988,7 +1845,6 @@ export type Database = {
           locked_by?: string | null
           note?: string | null
           note_snapshot?: string | null
-          organization_id?: string
           other_amount?: number
           other_amount_snapshot?: number | null
           report_date?: string
@@ -2031,13 +1887,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "pos_daily_closings_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "pos_daily_closings_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
@@ -2060,7 +1909,6 @@ export type Database = {
           amount_parts: Json
           created_at: string
           id: string
-          organization_id: string
           salon_id: string
           service_id: string | null
           service_label: string
@@ -2074,10 +1922,9 @@ export type Database = {
         Insert: {
           amount: number
           amount_input: string
-          amount_parts: Json
+          amount_parts?: Json
           created_at?: string
           id?: string
-          organization_id: string
           salon_id: string
           service_id?: string | null
           service_label: string
@@ -2094,7 +1941,6 @@ export type Database = {
           amount_parts?: Json
           created_at?: string
           id?: string
-          organization_id?: string
           salon_id?: string
           service_id?: string | null
           service_label?: string
@@ -2106,13 +1952,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "pos_desk_session_lines_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "pos_desk_session_lines_salon_id_fkey"
             columns: ["salon_id"]
@@ -2156,7 +1995,6 @@ export type Database = {
           id: string
           last_activity_at: string
           note: string | null
-          organization_id: string
           salon_id: string
           status: string
           submitted_ticket_id: string | null
@@ -2175,7 +2013,6 @@ export type Database = {
           id?: string
           last_activity_at?: string
           note?: string | null
-          organization_id: string
           salon_id: string
           status?: string
           submitted_ticket_id?: string | null
@@ -2194,7 +2031,6 @@ export type Database = {
           id?: string
           last_activity_at?: string
           note?: string | null
-          organization_id?: string
           salon_id?: string
           status?: string
           submitted_ticket_id?: string | null
@@ -2214,13 +2050,6 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pos_desk_sessions_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -2293,14 +2122,13 @@ export type Database = {
           cash_delta: number
           correction_request_id: string | null
           created_at: string
-          created_by: string
+          created_by: string | null
           credit_card_delta: number
           discount_delta: number
           expected_total_delta: number
           gift_card_delta: number
           id: string
           note: string | null
-          organization_id: string
           other_delta: number
           salon_id: string
           service_delta: number
@@ -2317,14 +2145,13 @@ export type Database = {
           cash_delta?: number
           correction_request_id?: string | null
           created_at?: string
-          created_by: string
+          created_by?: string | null
           credit_card_delta?: number
           discount_delta?: number
           expected_total_delta?: number
           gift_card_delta?: number
           id?: string
           note?: string | null
-          organization_id: string
           other_delta?: number
           salon_id: string
           service_delta?: number
@@ -2341,14 +2168,13 @@ export type Database = {
           cash_delta?: number
           correction_request_id?: string | null
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           credit_card_delta?: number
           discount_delta?: number
           expected_total_delta?: number
           gift_card_delta?: number
           id?: string
           note?: string | null
-          organization_id?: string
           other_delta?: number
           salon_id?: string
           service_delta?: number
@@ -2372,13 +2198,6 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pos_financial_adjustments_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -2415,18 +2234,18 @@ export type Database = {
           created_at: string
           id: string
           money_delta: number
-          old_value_json: Json | null
-          organization_id: string
+          old_value_json: Json
           reason: string
           rejected_at: string | null
           rejected_by: string | null
           requested_at: string
-          requested_by: string
+          requested_by: string | null
           requested_value_json: Json
           salon_id: string
           status: string
           target_id: string | null
           target_type: string
+          ticket_id: string | null
           updated_at: string
         }
         Insert: {
@@ -2439,18 +2258,18 @@ export type Database = {
           created_at?: string
           id?: string
           money_delta?: number
-          old_value_json?: Json | null
-          organization_id: string
+          old_value_json?: Json
           reason: string
           rejected_at?: string | null
           rejected_by?: string | null
           requested_at?: string
-          requested_by: string
-          requested_value_json: Json
+          requested_by?: string | null
+          requested_value_json?: Json
           salon_id: string
           status?: string
           target_id?: string | null
           target_type: string
+          ticket_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -2463,18 +2282,18 @@ export type Database = {
           created_at?: string
           id?: string
           money_delta?: number
-          old_value_json?: Json | null
-          organization_id?: string
+          old_value_json?: Json
           reason?: string
           rejected_at?: string | null
           rejected_by?: string | null
           requested_at?: string
-          requested_by?: string
+          requested_by?: string | null
           requested_value_json?: Json
           salon_id?: string
           status?: string
           target_id?: string | null
           target_type?: string
+          ticket_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2483,13 +2302,6 @@ export type Database = {
             columns: ["approved_by"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pos_financial_correction_requests_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -2513,74 +2325,92 @@ export type Database = {
             referencedRelation: "locations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pos_financial_correction_requests_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "pos_tickets"
+            referencedColumns: ["id"]
+          },
         ]
       }
       pos_live_drafts: {
         Row: {
+          completed_at: string | null
           created_at: string
           customer: Json | null
           customer_version: number
+          discount: number
           id: string
-          organization_id: string
+          last_customer_action_id: string | null
+          last_tip_action_id: string | null
           receipt: Json
           receipt_version: number
+          reset_at: string | null
           salon_id: string
           selected_staff_id: string | null
           staff_lines: Json
           status: string
           subtotal: number
+          tax: number
           tip: number
           token: string
           total: number
+          total_before_tip: number
           updated_at: string
           version: number
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string
           customer?: Json | null
           customer_version?: number
+          discount?: number
           id?: string
-          organization_id: string
+          last_customer_action_id?: string | null
+          last_tip_action_id?: string | null
           receipt?: Json
           receipt_version?: number
+          reset_at?: string | null
           salon_id: string
           selected_staff_id?: string | null
           staff_lines?: Json
           status?: string
           subtotal?: number
+          tax?: number
           tip?: number
           token: string
           total?: number
+          total_before_tip?: number
           updated_at?: string
           version?: number
         }
         Update: {
+          completed_at?: string | null
           created_at?: string
           customer?: Json | null
           customer_version?: number
+          discount?: number
           id?: string
-          organization_id?: string
+          last_customer_action_id?: string | null
+          last_tip_action_id?: string | null
           receipt?: Json
           receipt_version?: number
+          reset_at?: string | null
           salon_id?: string
           selected_staff_id?: string | null
           staff_lines?: Json
           status?: string
           subtotal?: number
+          tax?: number
           tip?: number
           token?: string
           total?: number
+          total_before_tip?: number
           updated_at?: string
           version?: number
         }
         Relationships: [
-          {
-            foreignKeyName: "pos_live_drafts_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "pos_live_drafts_salon_id_fkey"
             columns: ["salon_id"]
@@ -2597,19 +2427,17 @@ export type Database = {
           created_by: string | null
           id: string
           note: string | null
-          organization_id: string
           payment_method: string
           salon_id: string
           ticket_id: string
         }
         Insert: {
-          amount: number
+          amount?: number
           created_at?: string
           created_by?: string | null
           id?: string
           note?: string | null
-          organization_id: string
-          payment_method?: string
+          payment_method: string
           salon_id: string
           ticket_id: string
         }
@@ -2619,7 +2447,6 @@ export type Database = {
           created_by?: string | null
           id?: string
           note?: string | null
-          organization_id?: string
           payment_method?: string
           salon_id?: string
           ticket_id?: string
@@ -2633,23 +2460,159 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "pos_payments_organization_id_fkey"
-            columns: ["organization_id"]
+            foreignKeyName: "pos_payments_salon_id_fkey"
+            columns: ["salon_id"]
             isOneToOne: false
-            referencedRelation: "organizations"
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "pos_payments_pos_ticket_id_fkey"
+            foreignKeyName: "pos_payments_ticket_id_fkey"
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "pos_tickets"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      pos_portable_access_keys: {
+        Row: {
+          access_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          label: string | null
+          last_login_at: string | null
+          last_logout_at: string | null
+          last_used_at: string | null
+          last_user_agent: string | null
+          passcode_digest: string
+          passcode_salt: string
+          salon_id: string
+          updated_at: string
+        }
+        Insert: {
+          access_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          last_login_at?: string | null
+          last_logout_at?: string | null
+          last_used_at?: string | null
+          last_user_agent?: string | null
+          passcode_digest: string
+          passcode_salt: string
+          salon_id: string
+          updated_at?: string
+        }
+        Update: {
+          access_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          last_login_at?: string | null
+          last_logout_at?: string | null
+          last_used_at?: string | null
+          last_user_agent?: string | null
+          passcode_digest?: string
+          passcode_salt?: string
+          salon_id?: string
+          updated_at?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "pos_payments_salon_id_fkey"
+            foreignKeyName: "pos_portable_access_keys_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_portable_access_keys_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_settings: {
+        Row: {
+          app_download_url: string
+          created_at: string
+          customer_background_image_path: string | null
+          customer_left_ad_image_path: string | null
+          customer_left_ad_text: string
+          customer_promo_body: string
+          customer_promo_title: string
+          customer_right_ad_image_path: string | null
+          customer_right_ad_text: string
+          customer_show_barcode: boolean
+          customer_show_customer_name: boolean
+          customer_show_receipt_status: boolean
+          customer_show_salon_name: boolean
+          customer_show_service_name: boolean
+          customer_show_staff_name: boolean
+          large_turn_threshold: number
+          salon_id: string
+          staff_check_in_enabled: boolean
+          tip_suggestions: number[]
+          updated_at: string
+        }
+        Insert: {
+          app_download_url?: string
+          created_at?: string
+          customer_background_image_path?: string | null
+          customer_left_ad_image_path?: string | null
+          customer_left_ad_text?: string
+          customer_promo_body?: string
+          customer_promo_title?: string
+          customer_right_ad_image_path?: string | null
+          customer_right_ad_text?: string
+          customer_show_barcode?: boolean
+          customer_show_customer_name?: boolean
+          customer_show_receipt_status?: boolean
+          customer_show_salon_name?: boolean
+          customer_show_service_name?: boolean
+          customer_show_staff_name?: boolean
+          large_turn_threshold?: number
+          salon_id: string
+          staff_check_in_enabled?: boolean
+          tip_suggestions?: number[]
+          updated_at?: string
+        }
+        Update: {
+          app_download_url?: string
+          created_at?: string
+          customer_background_image_path?: string | null
+          customer_left_ad_image_path?: string | null
+          customer_left_ad_text?: string
+          customer_promo_body?: string
+          customer_promo_title?: string
+          customer_right_ad_image_path?: string | null
+          customer_right_ad_text?: string
+          customer_show_barcode?: boolean
+          customer_show_customer_name?: boolean
+          customer_show_receipt_status?: boolean
+          customer_show_salon_name?: boolean
+          customer_show_service_name?: boolean
+          customer_show_staff_name?: boolean
+          large_turn_threshold?: number
+          salon_id?: string
+          staff_check_in_enabled?: boolean
+          tip_suggestions?: number[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_settings_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: true
             referencedRelation: "locations"
             referencedColumns: ["id"]
           },
@@ -2661,42 +2624,36 @@ export type Database = {
           after_snapshot: Json
           before_snapshot: Json
           created_at: string
-          created_by: string
+          created_by: string | null
           id: string
-          organization_id: string
           reason: string
           replacement_ticket_item_id: string | null
           salon_id: string
           ticket_id: string
-          ticket_item_id: string | null
         }
         Insert: {
           action: string
-          after_snapshot: Json
-          before_snapshot: Json
+          after_snapshot?: Json
+          before_snapshot?: Json
           created_at?: string
-          created_by: string
+          created_by?: string | null
           id?: string
-          organization_id: string
           reason: string
           replacement_ticket_item_id?: string | null
           salon_id: string
           ticket_id: string
-          ticket_item_id?: string | null
         }
         Update: {
           action?: string
           after_snapshot?: Json
           before_snapshot?: Json
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           id?: string
-          organization_id?: string
           reason?: string
           replacement_ticket_item_id?: string | null
           salon_id?: string
           ticket_id?: string
-          ticket_item_id?: string | null
         }
         Relationships: [
           {
@@ -2704,13 +2661,6 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pos_ticket_adjustments_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -2734,43 +2684,33 @@ export type Database = {
             referencedRelation: "pos_tickets"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "pos_ticket_adjustments_ticket_item_id_fkey"
-            columns: ["ticket_item_id"]
-            isOneToOne: false
-            referencedRelation: "pos_ticket_items"
-            referencedColumns: ["id"]
-          },
         ]
       }
       pos_ticket_audit_logs: {
         Row: {
           action: string
           created_at: string
-          created_by: string
+          created_by: string | null
           id: string
           note: string
-          organization_id: string
           salon_id: string
           ticket_id: string
         }
         Insert: {
           action: string
           created_at?: string
-          created_by: string
+          created_by?: string | null
           id?: string
           note: string
-          organization_id: string
           salon_id: string
           ticket_id: string
         }
         Update: {
           action?: string
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           id?: string
           note?: string
-          organization_id?: string
           salon_id?: string
           ticket_id?: string
         }
@@ -2780,13 +2720,6 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pos_ticket_audit_logs_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -2810,7 +2743,6 @@ export type Database = {
           amount: number
           created_at: string
           id: string
-          organization_id: string
           salon_id: string
           staff_id: string
           ticket_id: string
@@ -2823,7 +2755,6 @@ export type Database = {
           amount: number
           created_at?: string
           id?: string
-          organization_id: string
           salon_id: string
           staff_id: string
           ticket_id: string
@@ -2836,7 +2767,6 @@ export type Database = {
           amount?: number
           created_at?: string
           id?: string
-          organization_id?: string
           salon_id?: string
           staff_id?: string
           ticket_id?: string
@@ -2846,13 +2776,6 @@ export type Database = {
           work_date?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "pos_ticket_item_turn_parts_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "pos_ticket_item_turn_parts_salon_id_fkey"
             columns: ["salon_id"]
@@ -2890,9 +2813,8 @@ export type Database = {
           created_at: string
           id: string
           is_removed: boolean
-          line_total: number | null
+          line_total: number
           notes: string | null
-          organization_id: string
           performed_by_staff_id: string | null
           pos_ticket_id: string
           quantity: number
@@ -2915,9 +2837,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_removed?: boolean
-          line_total?: number | null
+          line_total?: number
           notes?: string | null
-          organization_id: string
           performed_by_staff_id?: string | null
           pos_ticket_id: string
           quantity?: number
@@ -2931,7 +2852,7 @@ export type Database = {
           source_booking_id?: string | null
           source_booking_line_id?: string | null
           source_kind?: string
-          unit_price: number
+          unit_price?: number
           updated_at?: string
         }
         Update: {
@@ -2940,9 +2861,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_removed?: boolean
-          line_total?: number | null
+          line_total?: number
           notes?: string | null
-          organization_id?: string
           performed_by_staff_id?: string | null
           pos_ticket_id?: string
           quantity?: number
@@ -2965,13 +2885,6 @@ export type Database = {
             columns: ["assigned_staff_id"]
             isOneToOne: false
             referencedRelation: "staff"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pos_ticket_items_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -3040,7 +2953,6 @@ export type Database = {
           last_small_turn_sequence: number | null
           locked_at: string | null
           manual_tip_amount: number | null
-          organization_id: string
           payroll_batch_id: string | null
           salon_id: string
           service_total: number
@@ -3067,7 +2979,6 @@ export type Database = {
           last_small_turn_sequence?: number | null
           locked_at?: string | null
           manual_tip_amount?: number | null
-          organization_id: string
           payroll_batch_id?: string | null
           salon_id: string
           service_total?: number
@@ -3094,7 +3005,6 @@ export type Database = {
           last_small_turn_sequence?: number | null
           locked_at?: string | null
           manual_tip_amount?: number | null
-          organization_id?: string
           payroll_batch_id?: string | null
           salon_id?: string
           service_total?: number
@@ -3108,13 +3018,6 @@ export type Database = {
           work_date?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "pos_ticket_staff_earnings_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "pos_ticket_staff_earnings_salon_id_fkey"
             columns: ["salon_id"]
@@ -3142,13 +3045,12 @@ export type Database = {
         Row: {
           closed_at: string | null
           created_at: string
-          customer_id: string
+          customer_id: string | null
           discount_type: string
           discount_value: number
           id: string
           notes: string | null
           opened_at: string
-          organization_id: string
           salon_id: string
           source_booking_id: string | null
           status: string
@@ -3162,19 +3064,18 @@ export type Database = {
         Insert: {
           closed_at?: string | null
           created_at?: string
-          customer_id: string
+          customer_id?: string | null
           discount_type?: string
           discount_value?: number
           id?: string
           notes?: string | null
-          opened_at: string
-          organization_id: string
+          opened_at?: string
           salon_id: string
           source_booking_id?: string | null
           status?: string
           tax_rate?: number
-          ticket_number: string
-          ticket_sequence: number
+          ticket_number?: string
+          ticket_sequence?: number
           tip_type?: string
           tip_value?: number
           updated_at?: string
@@ -3182,13 +3083,12 @@ export type Database = {
         Update: {
           closed_at?: string | null
           created_at?: string
-          customer_id?: string
+          customer_id?: string | null
           discount_type?: string
           discount_value?: number
           id?: string
           notes?: string | null
           opened_at?: string
-          organization_id?: string
           salon_id?: string
           source_booking_id?: string | null
           status?: string
@@ -3205,13 +3105,6 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pos_tickets_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -3268,41 +3161,106 @@ export type Database = {
       }
       roles: {
         Row: {
+          account_id: string
           code: string
           created_at: string
           description: string | null
           id: string
           is_system: boolean
           name: string
-          organization_id: string
           updated_at: string
         }
         Insert: {
+          account_id: string
           code: string
           created_at?: string
           description?: string | null
           id?: string
           is_system?: boolean
           name: string
-          organization_id: string
           updated_at?: string
         }
         Update: {
+          account_id?: string
           code?: string
           created_at?: string
           description?: string | null
           id?: string
           is_system?: boolean
           name?: string
-          organization_id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "roles_organization_id_fkey"
-            columns: ["organization_id"]
+            foreignKeyName: "roles_account_id_fkey"
+            columns: ["account_id"]
             isOneToOne: false
-            referencedRelation: "organizations"
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_memberships: {
+        Row: {
+          account_id: string
+          created_at: string
+          id: string
+          joined_at: string | null
+          role_id: string | null
+          salon_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          role_id?: string | null
+          salon_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          role_id?: string | null
+          salon_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_memberships_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_memberships_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_memberships_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -3313,7 +3271,6 @@ export type Database = {
           created_at: string
           cycle_type: string
           id: string
-          organization_id: string
           salon_id: string
           updated_at: string
         }
@@ -3322,7 +3279,6 @@ export type Database = {
           created_at?: string
           cycle_type?: string
           id?: string
-          organization_id: string
           salon_id: string
           updated_at?: string
         }
@@ -3331,18 +3287,10 @@ export type Database = {
           created_at?: string
           cycle_type?: string
           id?: string
-          organization_id?: string
           salon_id?: string
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "salon_payroll_settings_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "salon_payroll_settings_salon_id_fkey"
             columns: ["salon_id"]
@@ -3355,10 +3303,9 @@ export type Database = {
       salon_profile_booking_requests: {
         Row: {
           created_at: string
-          customer_user_id: string
+          customer_user_id: string | null
           id: string
           look_id: string | null
-          organization_id: string
           private_note: string | null
           requested_start_at: string | null
           salon_id: string
@@ -3369,10 +3316,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          customer_user_id: string
+          customer_user_id?: string | null
           id?: string
           look_id?: string | null
-          organization_id: string
           private_note?: string | null
           requested_start_at?: string | null
           salon_id: string
@@ -3383,10 +3329,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          customer_user_id?: string
+          customer_user_id?: string | null
           id?: string
           look_id?: string | null
-          organization_id?: string
           private_note?: string | null
           requested_start_at?: string | null
           salon_id?: string
@@ -3408,13 +3353,6 @@ export type Database = {
             columns: ["look_id"]
             isOneToOne: false
             referencedRelation: "salon_profile_looks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "salon_profile_booking_requests_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -3442,43 +3380,49 @@ export type Database = {
       }
       salon_profile_comments: {
         Row: {
+          author_display_name: string | null
           author_user_id: string | null
+          beauty_post_id: string | null
           body: string
           created_at: string
+          edited_at: string | null
           id: string
           is_salon_reply: boolean
           look_id: string | null
-          organization_id: string
           parent_comment_id: string | null
-          salon_id: string
+          salon_id: string | null
           status: string
           update_id: string | null
           updated_at: string
         }
         Insert: {
+          author_display_name?: string | null
           author_user_id?: string | null
+          beauty_post_id?: string | null
           body: string
           created_at?: string
+          edited_at?: string | null
           id?: string
           is_salon_reply?: boolean
           look_id?: string | null
-          organization_id: string
           parent_comment_id?: string | null
-          salon_id: string
+          salon_id?: string | null
           status?: string
           update_id?: string | null
           updated_at?: string
         }
         Update: {
+          author_display_name?: string | null
           author_user_id?: string | null
+          beauty_post_id?: string | null
           body?: string
           created_at?: string
+          edited_at?: string | null
           id?: string
           is_salon_reply?: boolean
           look_id?: string | null
-          organization_id?: string
           parent_comment_id?: string | null
-          salon_id?: string
+          salon_id?: string | null
           status?: string
           update_id?: string | null
           updated_at?: string
@@ -3492,17 +3436,17 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "salon_profile_comments_beauty_post_id_fkey"
+            columns: ["beauty_post_id"]
+            isOneToOne: false
+            referencedRelation: "beauty_posts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "salon_profile_comments_look_id_fkey"
             columns: ["look_id"]
             isOneToOne: false
             referencedRelation: "salon_profile_looks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "salon_profile_comments_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -3533,58 +3477,45 @@ export type Database = {
           booking_cta_enabled: boolean
           booking_note: string | null
           created_at: string
-          created_by_user_id: string | null
           credited_staff_id: string | null
+          cta_label: string | null
           id: string
           look_id: string | null
-          organization_id: string
           primary_service_id: string | null
           salon_id: string
           source_type: string
           update_id: string | null
           updated_at: string
-          updated_by_user_id: string | null
         }
         Insert: {
           booking_cta_enabled?: boolean
           booking_note?: string | null
           created_at?: string
-          created_by_user_id?: string | null
           credited_staff_id?: string | null
+          cta_label?: string | null
           id?: string
           look_id?: string | null
-          organization_id: string
           primary_service_id?: string | null
           salon_id: string
           source_type: string
           update_id?: string | null
           updated_at?: string
-          updated_by_user_id?: string | null
         }
         Update: {
           booking_cta_enabled?: boolean
           booking_note?: string | null
           created_at?: string
-          created_by_user_id?: string | null
           credited_staff_id?: string | null
+          cta_label?: string | null
           id?: string
           look_id?: string | null
-          organization_id?: string
           primary_service_id?: string | null
           salon_id?: string
           source_type?: string
           update_id?: string | null
           updated_at?: string
-          updated_by_user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "salon_profile_content_booking_configs_created_by_user_id_fkey"
-            columns: ["created_by_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "salon_profile_content_booking_configs_credited_staff_id_fkey"
             columns: ["credited_staff_id"]
@@ -3597,13 +3528,6 @@ export type Database = {
             columns: ["look_id"]
             isOneToOne: false
             referencedRelation: "salon_profile_looks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "salon_profile_content_booking_configs_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -3627,13 +3551,6 @@ export type Database = {
             referencedRelation: "salon_profile_updates"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "salon_profile_content_booking_configs_updated_by_user_id_fkey"
-            columns: ["updated_by_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       salon_profile_content_booking_services: {
@@ -3642,33 +3559,36 @@ export type Database = {
           created_at: string
           display_order: number
           id: string
-          organization_id: string
+          is_active: boolean
           parent_service_id: string | null
           salon_id: string
           service_id: string
           service_role: string
+          updated_at: string
         }
         Insert: {
           config_id: string
           created_at?: string
           display_order?: number
           id?: string
-          organization_id: string
+          is_active?: boolean
           parent_service_id?: string | null
           salon_id: string
           service_id: string
           service_role?: string
+          updated_at?: string
         }
         Update: {
           config_id?: string
           created_at?: string
           display_order?: number
           id?: string
-          organization_id?: string
+          is_active?: boolean
           parent_service_id?: string | null
           salon_id?: string
           service_id?: string
           service_role?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -3676,13 +3596,6 @@ export type Database = {
             columns: ["config_id"]
             isOneToOne: false
             referencedRelation: "salon_profile_content_booking_configs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "salon_profile_content_booking_services_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -3737,36 +3650,36 @@ export type Database = {
       }
       salon_profile_entitlement_overrides: {
         Row: {
+          account_id: string
           created_at: string
           entitlement_code: string
           expires_at: string | null
           id: string
           limit_value: number
-          organization_id: string
           period: string
           reason: string | null
           salon_id: string
           updated_at: string
         }
         Insert: {
+          account_id: string
           created_at?: string
           entitlement_code: string
           expires_at?: string | null
           id?: string
           limit_value: number
-          organization_id: string
           period?: string
           reason?: string | null
           salon_id: string
           updated_at?: string
         }
         Update: {
+          account_id?: string
           created_at?: string
           entitlement_code?: string
           expires_at?: string | null
           id?: string
           limit_value?: number
-          organization_id?: string
           period?: string
           reason?: string | null
           salon_id?: string
@@ -3774,18 +3687,18 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "salon_profile_entitlement_overrides_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "salon_profile_entitlement_overrides_entitlement_code_fkey"
             columns: ["entitlement_code"]
             isOneToOne: false
             referencedRelation: "salon_profile_entitlement_definitions"
             referencedColumns: ["code"]
-          },
-          {
-            foreignKeyName: "salon_profile_entitlement_overrides_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "salon_profile_entitlement_overrides_salon_id_fkey"
@@ -3835,21 +3748,18 @@ export type Database = {
       salon_profile_hashtags: {
         Row: {
           created_at: string
-          display_name: string
           id: string
-          slug: string
+          tag: string
         }
         Insert: {
           created_at?: string
-          display_name: string
           id?: string
-          slug: string
+          tag: string
         }
         Update: {
           created_at?: string
-          display_name?: string
           id?: string
-          slug?: string
+          tag?: string
         }
         Relationships: []
       }
@@ -3857,22 +3767,22 @@ export type Database = {
         Row: {
           created_at: string
           hashtag_id: string
+          id: string
           look_id: string
-          organization_id: string
           salon_id: string
         }
         Insert: {
           created_at?: string
           hashtag_id: string
+          id?: string
           look_id: string
-          organization_id: string
           salon_id: string
         }
         Update: {
           created_at?: string
           hashtag_id?: string
+          id?: string
           look_id?: string
-          organization_id?: string
           salon_id?: string
         }
         Relationships: [
@@ -3891,13 +3801,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "salon_profile_look_hashtags_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "salon_profile_look_hashtags_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
@@ -3911,18 +3814,21 @@ export type Database = {
           created_at: string
           id: string
           look_id: string
+          salon_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           look_id: string
+          salon_id: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           look_id?: string
+          salon_id?: string
           user_id?: string
         }
         Relationships: [
@@ -3931,6 +3837,13 @@ export type Database = {
             columns: ["look_id"]
             isOneToOne: false
             referencedRelation: "salon_profile_looks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_look_saves_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
           {
@@ -3959,7 +3872,6 @@ export type Database = {
           is_pinned: boolean
           media_path: string | null
           mood: string | null
-          organization_id: string
           palette: string[]
           published_at: string | null
           recommended_staff_id: string | null
@@ -3987,7 +3899,6 @@ export type Database = {
           is_pinned?: boolean
           media_path?: string | null
           mood?: string | null
-          organization_id: string
           palette?: string[]
           published_at?: string | null
           recommended_staff_id?: string | null
@@ -4015,7 +3926,6 @@ export type Database = {
           is_pinned?: boolean
           media_path?: string | null
           mood?: string | null
-          organization_id?: string
           palette?: string[]
           published_at?: string | null
           recommended_staff_id?: string | null
@@ -4047,13 +3957,6 @@ export type Database = {
             columns: ["created_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "salon_profile_looks_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -4093,7 +3996,6 @@ export type Database = {
           id: string
           mime_type: string | null
           object_path: string
-          organization_id: string
           original_bytes: number | null
           orphaned_at: string | null
           processed_bytes: number | null
@@ -4119,7 +4021,6 @@ export type Database = {
           id?: string
           mime_type?: string | null
           object_path: string
-          organization_id: string
           original_bytes?: number | null
           orphaned_at?: string | null
           processed_bytes?: number | null
@@ -4145,7 +4046,6 @@ export type Database = {
           id?: string
           mime_type?: string | null
           object_path?: string
-          organization_id?: string
           original_bytes?: number | null
           orphaned_at?: string | null
           processed_bytes?: number | null
@@ -4159,13 +4059,6 @@ export type Database = {
           width?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "salon_profile_media_assets_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "salon_profile_media_assets_salon_id_fkey"
             columns: ["salon_id"]
@@ -4259,9 +4152,9 @@ export type Database = {
           author_user_id: string
           body: string
           created_at: string
+          created_by_user_id: string | null
           id: string
           moderation_status: string
-          organization_id: string
           review_id: string
           salon_id: string
           updated_at: string
@@ -4270,9 +4163,9 @@ export type Database = {
           author_user_id: string
           body: string
           created_at?: string
+          created_by_user_id?: string | null
           id?: string
           moderation_status?: string
-          organization_id: string
           review_id: string
           salon_id: string
           updated_at?: string
@@ -4281,9 +4174,9 @@ export type Database = {
           author_user_id?: string
           body?: string
           created_at?: string
+          created_by_user_id?: string | null
           id?: string
           moderation_status?: string
-          organization_id?: string
           review_id?: string
           salon_id?: string
           updated_at?: string
@@ -4297,10 +4190,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "salon_profile_review_replies_organization_id_fkey"
-            columns: ["organization_id"]
+            foreignKeyName: "salon_profile_review_replies_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
             isOneToOne: false
-            referencedRelation: "organizations"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
@@ -4328,7 +4221,6 @@ export type Database = {
           id: string
           moderation_reason: string | null
           moderation_status: string
-          organization_id: string
           rating: number
           salon_id: string
           title: string | null
@@ -4344,7 +4236,6 @@ export type Database = {
           id?: string
           moderation_reason?: string | null
           moderation_status?: string
-          organization_id: string
           rating: number
           salon_id: string
           title?: string | null
@@ -4360,7 +4251,6 @@ export type Database = {
           id?: string
           moderation_reason?: string | null
           moderation_status?: string
-          organization_id?: string
           rating?: number
           salon_id?: string
           title?: string | null
@@ -4374,13 +4264,6 @@ export type Database = {
             columns: ["author_user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "salon_profile_reviews_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -4401,10 +4284,10 @@ export type Database = {
       }
       salon_profile_subscriptions: {
         Row: {
+          account_id: string
           created_at: string
           ends_at: string | null
           id: string
-          organization_id: string
           plan_id: string
           salon_id: string
           starts_at: string
@@ -4412,10 +4295,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_id: string
           created_at?: string
           ends_at?: string | null
           id?: string
-          organization_id: string
           plan_id: string
           salon_id: string
           starts_at?: string
@@ -4423,10 +4306,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_id?: string
           created_at?: string
           ends_at?: string | null
           id?: string
-          organization_id?: string
           plan_id?: string
           salon_id?: string
           starts_at?: string
@@ -4435,10 +4318,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "salon_profile_subscriptions_organization_id_fkey"
-            columns: ["organization_id"]
+            foreignKeyName: "salon_profile_subscriptions_account_id_fkey"
+            columns: ["account_id"]
             isOneToOne: false
-            referencedRelation: "organizations"
+            referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
           {
@@ -4461,21 +4344,21 @@ export type Database = {
         Row: {
           created_at: string
           hashtag_id: string
-          organization_id: string
+          id: string
           salon_id: string
           update_id: string
         }
         Insert: {
           created_at?: string
           hashtag_id: string
-          organization_id: string
+          id?: string
           salon_id: string
           update_id: string
         }
         Update: {
           created_at?: string
           hashtag_id?: string
-          organization_id?: string
+          id?: string
           salon_id?: string
           update_id?: string
         }
@@ -4485,13 +4368,6 @@ export type Database = {
             columns: ["hashtag_id"]
             isOneToOne: false
             referencedRelation: "salon_profile_hashtags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "salon_profile_update_hashtags_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -4523,7 +4399,6 @@ export type Database = {
           ends_at: string | null
           id: string
           media_path: string | null
-          organization_id: string
           published_at: string | null
           salon_id: string
           service_id: string | null
@@ -4547,7 +4422,6 @@ export type Database = {
           ends_at?: string | null
           id?: string
           media_path?: string | null
-          organization_id: string
           published_at?: string | null
           salon_id: string
           service_id?: string | null
@@ -4556,7 +4430,7 @@ export type Database = {
           status?: string
           summary?: string | null
           title: string
-          update_type: string
+          update_type?: string
           updated_at?: string
         }
         Update: {
@@ -4571,7 +4445,6 @@ export type Database = {
           ends_at?: string | null
           id?: string
           media_path?: string | null
-          organization_id?: string
           published_at?: string | null
           salon_id?: string
           service_id?: string | null
@@ -4606,13 +4479,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "salon_profile_updates_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "salon_profile_updates_salon_id_fkey"
             columns: ["salon_id"]
             isOneToOne: false
@@ -4637,6 +4503,7 @@ export type Database = {
       }
       salon_profile_usage_events: {
         Row: {
+          account_id: string
           created_at: string
           entity_id: string | null
           entity_type: string | null
@@ -4644,11 +4511,11 @@ export type Database = {
           id: string
           idempotency_key: string | null
           occurred_at: string
-          organization_id: string
           quantity: number
           salon_id: string
         }
         Insert: {
+          account_id: string
           created_at?: string
           entity_id?: string | null
           entity_type?: string | null
@@ -4656,11 +4523,11 @@ export type Database = {
           id?: string
           idempotency_key?: string | null
           occurred_at?: string
-          organization_id: string
           quantity?: number
           salon_id: string
         }
         Update: {
+          account_id?: string
           created_at?: string
           entity_id?: string | null
           entity_type?: string | null
@@ -4668,16 +4535,15 @@ export type Database = {
           id?: string
           idempotency_key?: string | null
           occurred_at?: string
-          organization_id?: string
           quantity?: number
           salon_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "salon_profile_usage_events_organization_id_fkey"
-            columns: ["organization_id"]
+            foreignKeyName: "salon_profile_usage_events_account_id_fkey"
+            columns: ["account_id"]
             isOneToOne: false
-            referencedRelation: "organizations"
+            referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
           {
@@ -4701,7 +4567,6 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
-          organization_id: string
           phone: string | null
           postal_code: string | null
           public_discovery_enabled: boolean
@@ -4726,7 +4591,6 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
-          organization_id: string
           phone?: string | null
           postal_code?: string | null
           public_discovery_enabled?: boolean
@@ -4751,7 +4615,6 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
-          organization_id?: string
           phone?: string | null
           postal_code?: string | null
           public_discovery_enabled?: boolean
@@ -4766,13 +4629,6 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "salon_settings_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "salon_settings_salon_id_fkey"
             columns: ["salon_id"]
@@ -4789,7 +4645,6 @@ export type Database = {
           display_order: number
           id: string
           is_active: boolean
-          organization_id: string
           parent_service_id: string
           salon_id: string
           updated_at: string
@@ -4800,7 +4655,6 @@ export type Database = {
           display_order?: number
           id?: string
           is_active?: boolean
-          organization_id: string
           parent_service_id: string
           salon_id: string
           updated_at?: string
@@ -4811,7 +4665,6 @@ export type Database = {
           display_order?: number
           id?: string
           is_active?: boolean
-          organization_id?: string
           parent_service_id?: string
           salon_id?: string
           updated_at?: string
@@ -4822,13 +4675,6 @@ export type Database = {
             columns: ["add_on_service_id"]
             isOneToOne: false
             referencedRelation: "services"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "service_add_on_links_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -4858,7 +4704,6 @@ export type Database = {
           is_active: boolean
           name: string
           online_booking_enabled: boolean
-          organization_id: string
           salon_id: string
           updated_at: string
         }
@@ -4872,7 +4717,6 @@ export type Database = {
           is_active?: boolean
           name: string
           online_booking_enabled?: boolean
-          organization_id: string
           salon_id: string
           updated_at?: string
         }
@@ -4886,18 +4730,10 @@ export type Database = {
           is_active?: boolean
           name?: string
           online_booking_enabled?: boolean
-          organization_id?: string
           salon_id?: string
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "services_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "services_salon_id_fkey"
             columns: ["salon_id"]
@@ -4910,6 +4746,9 @@ export type Database = {
       staff: {
         Row: {
           account_user_id: string | null
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
           created_at: string
           display_name: string
           email: string | null
@@ -4919,9 +4758,13 @@ export type Database = {
           job_title: string | null
           last_name: string | null
           online_booking_enabled: boolean
-          organization_id: string
           owner_public_enabled: boolean
+          passcode_digest: string
+          passcode_is_default: boolean
+          passcode_salt: string
           phone: string | null
+          pos_enabled: boolean
+          postal_code: string | null
           profile_display_order: number
           public_bio: string | null
           public_profile_photo_path: string | null
@@ -4930,11 +4773,15 @@ export type Database = {
           salon_profile_content_posting_enabled: boolean
           specialties: string[]
           staff_public_consent_status: string
+          state: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           account_user_id?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
           created_at?: string
           display_name: string
           email?: string | null
@@ -4944,9 +4791,13 @@ export type Database = {
           job_title?: string | null
           last_name?: string | null
           online_booking_enabled?: boolean
-          organization_id: string
           owner_public_enabled?: boolean
+          passcode_digest?: string
+          passcode_is_default?: boolean
+          passcode_salt?: string
           phone?: string | null
+          pos_enabled?: boolean
+          postal_code?: string | null
           profile_display_order?: number
           public_bio?: string | null
           public_profile_photo_path?: string | null
@@ -4955,11 +4806,15 @@ export type Database = {
           salon_profile_content_posting_enabled?: boolean
           specialties?: string[]
           staff_public_consent_status?: string
+          state?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           account_user_id?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
           created_at?: string
           display_name?: string
           email?: string | null
@@ -4969,9 +4824,13 @@ export type Database = {
           job_title?: string | null
           last_name?: string | null
           online_booking_enabled?: boolean
-          organization_id?: string
           owner_public_enabled?: boolean
+          passcode_digest?: string
+          passcode_is_default?: boolean
+          passcode_salt?: string
           phone?: string | null
+          pos_enabled?: boolean
+          postal_code?: string | null
           profile_display_order?: number
           public_bio?: string | null
           public_profile_photo_path?: string | null
@@ -4980,6 +4839,7 @@ export type Database = {
           salon_profile_content_posting_enabled?: boolean
           specialties?: string[]
           staff_public_consent_status?: string
+          state?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -4989,13 +4849,6 @@ export type Database = {
             columns: ["account_user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "staff_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -5017,7 +4870,6 @@ export type Database = {
           ends_at_local: string
           id: string
           is_active: boolean
-          organization_id: string
           rule_type: string
           salon_id: string
           staff_id: string | null
@@ -5035,7 +4887,6 @@ export type Database = {
           ends_at_local: string
           id?: string
           is_active?: boolean
-          organization_id: string
           rule_type?: string
           salon_id: string
           staff_id?: string | null
@@ -5053,7 +4904,6 @@ export type Database = {
           ends_at_local?: string
           id?: string
           is_active?: boolean
-          organization_id?: string
           rule_type?: string
           salon_id?: string
           staff_id?: string | null
@@ -5068,13 +4918,6 @@ export type Database = {
             columns: ["created_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "staff_availability_rules_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -5113,7 +4956,6 @@ export type Database = {
           fixed_pay_amount: number
           id: string
           legal_name: string | null
-          organization_id: string
           pay_type: string
           salon_id: string
           staff_id: string
@@ -5131,12 +4973,11 @@ export type Database = {
           check_rate?: number
           commission_rate?: number
           created_at?: string
-          effective_from: string
+          effective_from?: string
           effective_to?: string | null
           fixed_pay_amount?: number
           id?: string
           legal_name?: string | null
-          organization_id: string
           pay_type?: string
           salon_id: string
           staff_id: string
@@ -5159,7 +5000,6 @@ export type Database = {
           fixed_pay_amount?: number
           id?: string
           legal_name?: string | null
-          organization_id?: string
           pay_type?: string
           salon_id?: string
           staff_id?: string
@@ -5171,13 +5011,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "staff_payroll_settings_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "staff_payroll_settings_salon_id_fkey"
             columns: ["salon_id"]
@@ -5206,7 +5039,6 @@ export type Database = {
           id: string
           initiated_by_user_id: string
           message: string | null
-          organization_id: string
           requested_job_title: string | null
           reviewed_by_user_id: string | null
           revoked_at: string | null
@@ -5229,7 +5061,6 @@ export type Database = {
           id?: string
           initiated_by_user_id: string
           message?: string | null
-          organization_id: string
           requested_job_title?: string | null
           reviewed_by_user_id?: string | null
           revoked_at?: string | null
@@ -5252,7 +5083,6 @@ export type Database = {
           id?: string
           initiated_by_user_id?: string
           message?: string | null
-          organization_id?: string
           requested_job_title?: string | null
           reviewed_by_user_id?: string | null
           revoked_at?: string | null
@@ -5277,13 +5107,6 @@ export type Database = {
             columns: ["initiated_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "staff_salon_connection_requests_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -5320,7 +5143,6 @@ export type Database = {
           id: string
           is_active: boolean
           online_bookable: boolean
-          organization_id: string
           salon_id: string
           service_id: string
           staff_id: string
@@ -5337,7 +5159,6 @@ export type Database = {
           id?: string
           is_active?: boolean
           online_bookable?: boolean
-          organization_id: string
           salon_id: string
           service_id: string
           staff_id: string
@@ -5354,7 +5175,6 @@ export type Database = {
           id?: string
           is_active?: boolean
           online_bookable?: boolean
-          organization_id?: string
           salon_id?: string
           service_id?: string
           staff_id?: string
@@ -5367,13 +5187,6 @@ export type Database = {
             columns: ["created_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "staff_service_assignments_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -5416,7 +5229,6 @@ export type Database = {
           ends_at: string
           id: string
           is_active: boolean
-          organization_id: string
           reason: string | null
           salon_id: string
           staff_id: string | null
@@ -5426,7 +5238,7 @@ export type Database = {
           updated_by_user_id: string | null
         }
         Insert: {
-          block_type?: string
+          block_type: string
           cancelled_at?: string | null
           cancelled_by_user_id?: string | null
           created_at?: string
@@ -5434,7 +5246,6 @@ export type Database = {
           ends_at: string
           id?: string
           is_active?: boolean
-          organization_id: string
           reason?: string | null
           salon_id: string
           staff_id?: string | null
@@ -5452,7 +5263,6 @@ export type Database = {
           ends_at?: string
           id?: string
           is_active?: boolean
-          organization_id?: string
           reason?: string | null
           salon_id?: string
           staff_id?: string | null
@@ -5474,13 +5284,6 @@ export type Database = {
             columns: ["created_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "staff_time_blocks_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -5508,11 +5311,16 @@ export type Database = {
       }
       staff_workdays: {
         Row: {
+          auto_checked_out_at: string | null
           check_in_at: string | null
+          check_in_sequence: number | null
           check_out_at: string | null
           created_at: string
           id: string
-          organization_id: string
+          last_leave_at: string | null
+          leave_baseline_turn_count: number | null
+          leave_cohort_staff_ids: string[]
+          queue_turn_count: number
           salon_id: string
           staff_id: string
           status: string
@@ -5520,11 +5328,16 @@ export type Database = {
           work_date: string
         }
         Insert: {
+          auto_checked_out_at?: string | null
           check_in_at?: string | null
+          check_in_sequence?: number | null
           check_out_at?: string | null
           created_at?: string
           id?: string
-          organization_id: string
+          last_leave_at?: string | null
+          leave_baseline_turn_count?: number | null
+          leave_cohort_staff_ids?: string[]
+          queue_turn_count?: number
           salon_id: string
           staff_id: string
           status?: string
@@ -5532,11 +5345,16 @@ export type Database = {
           work_date: string
         }
         Update: {
+          auto_checked_out_at?: string | null
           check_in_at?: string | null
+          check_in_sequence?: number | null
           check_out_at?: string | null
           created_at?: string
           id?: string
-          organization_id?: string
+          last_leave_at?: string | null
+          leave_baseline_turn_count?: number | null
+          leave_cohort_staff_ids?: string[]
+          queue_turn_count?: number
           salon_id?: string
           staff_id?: string
           status?: string
@@ -5544,13 +5362,6 @@ export type Database = {
           work_date?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "staff_workdays_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "staff_workdays_salon_id_fkey"
             columns: ["salon_id"]
@@ -5620,18 +5431,7 @@ export type Database = {
       }
     }
     Views: {
-      staff_account_user_link_audit: {
-        Row: {
-          account_user_id: string | null
-          details: Json | null
-          issue_code: string | null
-          legacy_auth_user_id: string | null
-          organization_id: string | null
-          salon_id: string | null
-          staff_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       accept_staff_connection_invite: {
@@ -5650,17 +5450,28 @@ export type Database = {
         }
         Returns: Json
       }
-      assign_default_permissions_for_organization: {
-        Args: { target_organization_id: string }
+      adjust_pos_portable_staff_turn: {
+        Args: {
+          p_delta: number
+          p_key_id: string
+          p_operator_passcode: string
+          p_operator_staff_id: string
+          p_reason: string
+          p_session_signature: string
+          p_target_staff_id: string
+        }
+        Returns: Json
+      }
+      auto_close_stale_staff_workdays: {
+        Args: { p_salon_id: string; p_today: string }
         Returns: undefined
       }
-      booking_status_blocks_slot: { Args: { input: string }; Returns: boolean }
       cancel_customer_booking: {
         Args: { p_booking_id: string; p_reason?: string }
         Returns: Json
       }
       cancel_public_booking_by_manage_token: {
-        Args: { p_reason: string; raw_token: string }
+        Args: { p_reason?: string; raw_token: string }
         Returns: Json
       }
       cancel_staff_salon_application: {
@@ -5669,57 +5480,68 @@ export type Database = {
       }
       cancel_staff_time_block: {
         Args: { p_block_id: string; p_salon_id: string }
-        Returns: Json
-      }
-      capture_booking_inspiration_snapshot: {
-        Args: {
-          p_booking_id: string
-          p_source_reference_id: string
-          p_source_reference_type: string
-        }
         Returns: undefined
       }
       claim_guest_booking_by_manage_token: {
         Args: { raw_token: string }
         Returns: Json
       }
-      cleanup_salon_profile_media_assets: {
-        Args: { dry_run?: boolean; older_than?: string }
-        Returns: {
-          candidate_bytes: number
-          candidate_count: number
-          dry_run_result: boolean
-        }[]
-      }
       complete_assigned_booking_line: {
         Args: { p_booking_line_id: string; p_service_note?: string }
+        Returns: Json
+      }
+      confirm_assigned_booking: {
+        Args: { p_booking_id: string }
         Returns: Json
       }
       confirm_pos_display_channel_tip: {
         Args: { p_customer_message: Json; p_token: string }
         Returns: Json
       }
+      confirm_pos_live_draft_customer: {
+        Args: { p_customer_id: string; p_request_id?: string; p_token: string }
+        Returns: Json
+      }
+      confirm_pos_live_draft_tip: {
+        Args: { p_request_id?: string; p_tip_amount: number; p_token: string }
+        Returns: Json
+      }
       convert_booking_to_pos_ticket: {
         Args: { p_booking_id: string }
         Returns: string
       }
+      create_account_salon: {
+        Args: {
+          p_account_id: string
+          p_address_line1?: string
+          p_address_line2?: string
+          p_city?: string
+          p_country?: string
+          p_create_request_key: string
+          p_name: string
+          p_phone?: string
+          p_postal_code?: string
+          p_state?: string
+        }
+        Returns: Json
+      }
       create_canonical_booking: {
         Args: {
-          p_actor_source?: string
-          p_confirmation_mode?: string
-          p_confirmation_status?: string
+          p_actor_source: string
+          p_confirmation_mode: string
+          p_confirmation_status: string
           p_customer_id: string
-          p_customer_user_id?: string
-          p_end_at?: string
-          p_idempotency_key?: string
-          p_internal_notes?: string
-          p_lines?: Json
-          p_overbooking_override_reason?: string
-          p_public_notes?: string
+          p_customer_user_id: string
+          p_end_at: string
+          p_idempotency_key: string
+          p_internal_notes: string
+          p_lines: Json
+          p_overbooking_override_reason: string
+          p_public_notes: string
           p_salon_id: string
-          p_source?: string
-          p_start_at?: string
-          p_status?: string
+          p_source: string
+          p_start_at: string
+          p_status: string
         }
         Returns: string
       }
@@ -5735,6 +5557,16 @@ export type Database = {
         Args: { p_name: string; p_phone: string; p_token: string }
         Returns: Json
       }
+      create_pos_portable_customer: {
+        Args: {
+          p_email?: string
+          p_key_id: string
+          p_name: string
+          p_phone?: string
+          p_session_signature: string
+        }
+        Returns: Json
+      }
       create_public_booking: {
         Args: {
           p_customer_email: string
@@ -5742,13 +5574,13 @@ export type Database = {
           p_customer_last_name: string
           p_customer_phone: string
           p_end_at: string
-          p_idempotency_key: string
+          p_idempotency_key?: string
           p_lines: Json
-          p_public_notes: string
+          p_public_notes?: string
           p_salon_id: string
-          p_source: string
-          p_source_reference_id: string
-          p_source_reference_type: string
+          p_source?: string
+          p_source_reference_id?: string
+          p_source_reference_type?: string
           p_start_at: string
         }
         Returns: Json
@@ -5762,45 +5594,13 @@ export type Database = {
           p_salon_id: string
           p_staff_id: string
           p_starts_at: string
-          p_timezone_iana: string
+          p_timezone_iana?: string
         }
         Returns: Json
       }
-      current_auth_staff_matches_workday: {
-        Args: {
-          target_organization_id: string
-          target_salon_id: string
-          target_staff_id: string
-        }
-        Returns: boolean
-      }
-      current_auth_user_matches_staff: {
-        Args: {
-          target_organization_id: string
-          target_salon_id: string
-          target_staff_id: string
-        }
-        Returns: boolean
-      }
       current_public_user_id: { Args: never; Returns: string }
-      current_user_can_post_salon_profile_as_staff: {
+      current_user_staff_id_for_salon: {
         Args: { target_salon_id: string }
-        Returns: boolean
-      }
-      current_user_can_view_booking: {
-        Args: { target_booking_id: string }
-        Returns: boolean
-      }
-      current_user_can_view_booking_line: {
-        Args: { target_booking_line_id: string }
-        Returns: boolean
-      }
-      current_user_is_active_staff_for_salon: {
-        Args: { target_salon_id: string }
-        Returns: boolean
-      }
-      current_user_staff_id_for_line: {
-        Args: { target_booking_line_id: string }
         Returns: string
       }
       decline_staff_connection_invite: {
@@ -5811,11 +5611,24 @@ export type Database = {
         Args: { p_request_id: string }
         Returns: Json
       }
-      explore_abbreviate_location_state: {
-        Args: { p_location: string }
-        Returns: string
+      ensure_personal_account_for_current_user: {
+        Args: { p_account_name?: string }
+        Returns: {
+          account_id: string
+          account_membership_id: string
+          created_account: boolean
+          created_membership: boolean
+        }[]
       }
-      explore_normalize_text: { Args: { p_value: string }; Returns: string }
+      finalize_pos_portable_live_draft: {
+        Args: {
+          p_key_id: string
+          p_reset_seconds?: number
+          p_session_signature: string
+          p_token: string
+        }
+        Returns: Json
+      }
       find_pos_live_draft_customer_by_phone: {
         Args: { p_phone: string; p_token: string }
         Returns: Json
@@ -5836,6 +5649,10 @@ export type Database = {
           upcoming_start_at: string
         }[]
       }
+      get_pos_customer_display_settings_by_token: {
+        Args: { p_token: string }
+        Returns: Json
+      }
       get_pos_desk_session_by_token: {
         Args: { p_token: string }
         Returns: Json
@@ -5847,19 +5664,57 @@ export type Database = {
       get_pos_live_draft_by_token: {
         Args: { p_token: string }
         Returns: {
+          completed_at: string
           customer: Json
+          customer_version: number
+          discount: number
           id: string
+          last_customer_action_id: string
+          last_tip_action_id: string
+          receipt_version: number
+          reset_at: string
           salon_id: string
           selected_staff_id: string
+          server_now: string
           staff_lines: Json
           status: string
           subtotal: number
+          tax: number
           tip: number
           token: string
           total: number
+          total_before_tip: number
           updated_at: string
           version: number
         }[]
+      }
+      get_pos_portable_access_context: {
+        Args: { p_key_id: string; p_session_signature: string }
+        Returns: Json
+      }
+      get_pos_portable_check_in_data: {
+        Args: { p_key_id: string; p_session_signature: string }
+        Returns: Json
+      }
+      get_pos_portable_desk_data: {
+        Args: {
+          p_key_id: string
+          p_session_signature: string
+          p_work_date?: string
+        }
+        Returns: Json
+      }
+      get_pos_setting_payload: {
+        Args: { target_salon_id: string }
+        Returns: Json
+      }
+      get_salon_business_date: {
+        Args: { p_salon_id: string }
+        Returns: string
+      }
+      get_salon_business_timezone: {
+        Args: { p_salon_id: string }
+        Returns: string
       }
       get_public_booking_by_manage_token: {
         Args: { raw_token: string }
@@ -5867,71 +5722,49 @@ export type Database = {
       }
       get_public_booking_context: {
         Args: {
-          p_range_end?: string
-          p_range_start?: string
+          p_range_end: string
+          p_range_start: string
           target_salon_id: string
         }
         Returns: Json
       }
-      get_public_content_booking_options:
-        | {
-            Args: { target_salon_id: string }
-            Returns: {
-              add_ons: Json
-              additional_services: Json
-              booking_cta_enabled: boolean
-              booking_enabled: boolean
-              booking_href: string
-              booking_note: string
-              caption: string
-              content_id: string
-              content_type: string
-              credited_staff_id: string
-              credited_staff_name: string
-              cta_label: string
-              media_path: string
-              organization_id: string
-              primary_service_base_price: number
-              primary_service_duration_minutes: number
-              primary_service_id: string
-              primary_service_name: string
-              readiness_message: string
-              readiness_state: string
-              salon_id: string
-              source_type: string
-              title: string
-            }[]
-          }
-        | {
-            Args: { target_salon_ids?: string[] }
-            Returns: {
-              add_ons: Json
-              additional_services: Json
-              booking_cta_enabled: boolean
-              booking_enabled: boolean
-              booking_href: string
-              booking_note: string
-              caption: string
-              content_id: string
-              content_type: string
-              credited_staff_id: string
-              credited_staff_name: string
-              cta_label: string
-              media_path: string
-              organization_id: string
-              primary_service_base_price: number
-              primary_service_duration_minutes: number
-              primary_service_id: string
-              primary_service_name: string
-              readiness_message: string
-              readiness_state: string
-              salon_id: string
-              source_type: string
-              title: string
-            }[]
-          }
+      get_public_content_booking_options: {
+        Args: { target_salon_ids?: string[] }
+        Returns: {
+          add_ons: Json
+          additional_services: Json
+          booking_cta_enabled: boolean
+          booking_enabled: boolean
+          booking_href: string
+          booking_note: string
+          caption: string
+          content_id: string
+          content_type: string
+          credited_staff_id: string
+          credited_staff_name: string
+          cta_label: string
+          media_bucket: string
+          media_path: string
+          primary_service_base_price: number
+          primary_service_duration_minutes: number
+          primary_service_id: string
+          primary_service_name: string
+          readiness_message: string
+          readiness_state: string
+          salon_id: string
+          source_type: string
+          title: string
+        }[]
+      }
+      get_public_beauty_post_booking_counts: {
+        Args: { p_post_ids?: string[] }
+        Returns: {
+          post_id: string
+          verified_booking_count: number
+        }[]
+      }
       get_public_explore_decision_signals: {
-        Args: { target_salon_ids: string[] }
+        Args: { target_salon_ids?: string[] }
         Returns: {
           average_rating: number
           bookable_service_id: string
@@ -5977,33 +5810,6 @@ export type Database = {
           updated_at: string
         }[]
       }
-      get_public_explore_home_salons_v2: {
-        Args: { p_new_limit?: number; p_recommended_limit?: number }
-        Returns: {
-          active_service_count: number
-          address_line1: string
-          address_line2: string
-          city: string
-          country: string
-          created_at: string
-          description: string
-          home_rank: number
-          is_new: boolean
-          latitude: number
-          longitude: number
-          phone: string
-          postal_code: string
-          profile_completeness: number
-          public_discovery_published_at: string
-          salon_id: string
-          salon_name: string
-          section: string
-          service_categories: string[]
-          service_names: string[]
-          state: string
-          updated_at: string
-        }[]
-      }
       get_public_explore_inspiration: {
         Args: {
           p_cursor_media_id?: string
@@ -6042,16 +5848,10 @@ export type Database = {
           salon_count: number
         }[]
       }
-      get_public_explore_salon_card_media: {
-        Args: { target_salon_id: string }
-        Returns: {
-          media_created_at: string
-          media_path: string
-        }[]
-      }
       get_public_salon_profile: {
         Args: { target_salon_id: string }
         Returns: {
+          account_id: string
           active_service_count: number
           address_line1: string
           address_line2: string
@@ -6063,7 +5863,6 @@ export type Database = {
           follower_count: number
           is_following: boolean
           logo_path: string
-          organization_id: string
           phone: string
           postal_code: string
           public_discovery_published_at: string
@@ -6077,27 +5876,51 @@ export type Database = {
           website: string
         }[]
       }
+      count_public_post_comments: {
+        Args: { p_target_id: string; p_target_type: string }
+        Returns: number
+      }
+      get_public_post_comments: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_target_id: string
+          p_target_type: string
+        }
+        Returns: {
+          author_display_name: string
+          author_user_id: string | null
+          beauty_post_id: string | null
+          body: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          is_salon_reply: boolean
+          look_id: string | null
+          parent_comment_id: string | null
+          root_count: number
+          salon_id: string | null
+          total_count: number
+          update_id: string | null
+          updated_at: string
+        }[]
+      }
       get_public_salon_profile_comments: {
         Args: { target_salon_id: string }
         Returns: {
           author_display_name: string
-          author_user_id: string
+          author_user_id: string | null
+          beauty_post_id: string | null
           body: string
           created_at: string
+          edited_at: string | null
           id: string
           is_salon_reply: boolean
-          look_id: string
-          parent_comment_id: string
-          salon_id: string
-          update_id: string
+          look_id: string | null
+          parent_comment_id: string | null
+          salon_id: string | null
+          update_id: string | null
           updated_at: string
-        }[]
-      }
-      get_public_salon_profile_hashtag_salon_ids: {
-        Args: { search_tag: string }
-        Returns: {
-          match_count: number
-          salon_id: string
         }[]
       }
       get_public_salon_profile_looks: {
@@ -6106,6 +5929,7 @@ export type Database = {
           author_avatar_path: string
           author_display_name: string
           author_staff_id: string
+          author_user_id: string
           badge: string
           booking_note: string
           caption: string
@@ -6177,6 +6001,7 @@ export type Database = {
       get_public_salon_profile_staff: {
         Args: { target_salon_id: string }
         Returns: {
+          account_avatar_url: string | null
           avatar_path: string
           bio: string
           display_name: string
@@ -6193,6 +6018,7 @@ export type Database = {
           author_avatar_path: string
           author_display_name: string
           author_staff_id: string
+          author_user_id: string
           caption: string
           comment_count: number
           cta_label: string
@@ -6225,63 +6051,46 @@ export type Database = {
           used_bytes: number
         }[]
       }
-      get_salon_profile_quota_usage: {
-        Args: { target_salon_id: string }
-        Returns: {
-          posts_limit_month: number
-          posts_limit_today: number
-          posts_used_month: number
-          posts_used_today: number
-          storage_quota_bytes: number
-          storage_remaining_bytes: number
-          storage_used_bytes: number
-        }[]
-      }
       get_staff_connection_invite_by_token: {
         Args: { p_token: string }
         Returns: Json
       }
-      hash_staff_connection_token: { Args: { input: string }; Returns: string }
-      insert_app_notification: {
-        Args: {
-          p_body: string
-          p_booking_id: string
-          p_booking_line_id: string
-          p_href: string
-          p_metadata?: Json
-          p_notification_type: string
-          p_organization_id: string
-          p_recipient_kind: string
-          p_recipient_user_id: string
-          p_salon_id: string
-          p_source_event_id: string
-          p_title: string
-        }
-        Returns: undefined
-      }
-      list_current_staff_context_salons: {
-        Args: never
+      list_account_favorite_customers: {
+        Args: { p_limit?: number }
         Returns: {
-          organization_created_at: string
-          organization_id: string
-          organization_legal_name: string
-          organization_name: string
-          organization_owner_user_id: string
-          organization_status: string
-          organization_updated_at: string
-          salon_address_line1: string
-          salon_address_line2: string
-          salon_city: string
-          salon_country: string
-          salon_created_at: string
+          customer_id: string
+          customer_name: string
+          email: string
+          favorite_id: string
+          favorited_at: string
+          phone: string
           salon_id: string
           salon_name: string
-          salon_phone: string
-          salon_postal_code: string
-          salon_state: string
-          salon_status: string
-          salon_updated_at: string
-          staff_id: string
+        }[]
+      }
+      list_account_favorite_shops: {
+        Args: { p_limit?: number }
+        Returns: {
+          city: string
+          follow_id: string
+          followed_at: string
+          salon_id: string
+          salon_name: string
+          state: string
+        }[]
+      }
+      list_account_saved_posts: {
+        Args: { p_limit?: number }
+        Returns: {
+          caption: string
+          look_id: string
+          media_path: string
+          published_at: string
+          salon_id: string
+          salon_name: string
+          saved_at: string
+          saved_id: string
+          title: string
         }[]
       }
       list_my_staff_salon_connection_requests: {
@@ -6314,55 +6123,21 @@ export type Database = {
           updated_at: string
         }[]
       }
-      mask_staff_connection_email: { Args: { input: string }; Returns: string }
-      mask_staff_connection_phone: { Args: { input: string }; Returns: string }
-      normalize_booking_status: { Args: { input: string }; Returns: string }
-      normalize_customer_contact_email: {
-        Args: { input: string }
-        Returns: string
-      }
-      normalize_customer_contact_phone: {
-        Args: { input: string }
-        Returns: string
-      }
-      normalize_salon_profile_hashtag: {
-        Args: { raw_tag: string }
-        Returns: string
-      }
-      normalize_staff_connection_email: {
-        Args: { input: string }
-        Returns: string
-      }
-      normalize_staff_connection_phone: {
-        Args: { input: string }
-        Returns: string
-      }
-      perform_booking_reschedule: {
-        Args: {
-          p_actor_user_id: string
-          p_booking_id: string
-          p_end_at: string
-          p_overbooking_override_reason?: string
-          p_require_public_availability?: boolean
-          p_start_at: string
-        }
-        Returns: undefined
-      }
-      public_booking_token_hash: {
-        Args: { raw_token: string }
-        Returns: string
-      }
-      public_staff_line_is_available: {
-        Args: {
-          p_end_at: string
-          p_ignore_booking_id?: string
-          p_organization_id: string
-          p_salon_id: string
-          p_staff_id: string
-          p_start_at: string
-          p_timezone_iana: string
-        }
+      log_out_pos_portable_access: {
+        Args: { p_key_id: string; p_session_signature: string }
         Returns: boolean
+      }
+      mask_staff_connection_email: {
+        Args: { p_email: string }
+        Returns: string
+      }
+      pos_portable_access_salon_id: {
+        Args: { p_key_id: string; p_session_signature: string }
+        Returns: string
+      }
+      pos_portable_access_signature: {
+        Args: { p_key_id: string; p_passcode_digest: string }
+        Returns: string
       }
       reschedule_canonical_booking: {
         Args: {
@@ -6409,10 +6184,6 @@ export type Database = {
         Args: { target_salon_id: string }
         Returns: boolean
       }
-      salon_profile_user_is_affiliated: {
-        Args: { target_salon_id: string }
-        Returns: boolean
-      }
       save_salon_profile_content_booking_config: {
         Args: {
           p_additional_service_ids?: string[]
@@ -6429,20 +6200,24 @@ export type Database = {
         Args: { p_configs: Json; p_salon_id: string }
         Returns: Json
       }
-      save_service_staff_assignment_batch: {
+      save_staff_weekly_availability: {
+        Args: { p_rules: Json; p_salon_id: string; p_staff_id: string }
+        Returns: undefined
+      }
+      search_pos_live_draft_customers_by_phone: {
+        Args: { p_phone: string; p_token: string }
+        Returns: Json
+      }
+      search_pos_portable_customers: {
         Args: {
-          p_salon_id: string
-          p_service_id: string
-          p_staff_assignments: Json
+          p_key_id: string
+          p_search: string
+          p_session_signature: string
         }
         Returns: Json
       }
-      save_staff_service_assignment_batch: {
-        Args: { p_assignments: Json; p_salon_id: string; p_staff_id: string }
-        Returns: Json
-      }
-      save_staff_weekly_availability: {
-        Args: { p_rules: Json; p_salon_id: string; p_staff_id: string }
+      resolve_public_booking_request_notifications: {
+        Args: { target_booking_id: string }
         Returns: Json
       }
       search_public_explore_salons: {
@@ -6491,46 +6266,6 @@ export type Database = {
           total_count: number
         }[]
       }
-      search_public_explore_salons_v2: {
-        Args: {
-          p_category?: string
-          p_latitude?: number
-          p_location?: string
-          p_longitude?: number
-          p_page?: number
-          p_page_size?: number
-          p_query?: string
-        }
-        Returns: {
-          active_service_count: number
-          address_line1: string
-          address_line2: string
-          best_match_count: number
-          city: string
-          country: string
-          description: string
-          distance_miles: number
-          group_total_count: number
-          is_new: boolean
-          latitude: number
-          longitude: number
-          match_tier: number
-          match_type: string
-          nearby_count: number
-          phone: string
-          postal_code: string
-          profile_completeness: number
-          recommended_count: number
-          relevance_score: number
-          result_group: string
-          salon_id: string
-          salon_name: string
-          service_categories: string[]
-          service_names: string[]
-          state: string
-          total_count: number
-        }[]
-      }
       search_public_staff_application_salons: {
         Args: {
           p_city?: string
@@ -6551,9 +6286,9 @@ export type Database = {
       }
       search_staff_connection_account_exact: {
         Args: {
-          p_email?: string
-          p_phone?: string
-          target_organization_id: string
+          p_email: string
+          p_phone: string
+          target_account_id: string
           target_salon_id: string
         }
         Returns: {
@@ -6563,21 +6298,50 @@ export type Database = {
           masked_email: string
           masked_phone: string
           match_type: string
-          result_status: string
         }[]
       }
-      seed_default_roles_for_organization: {
-        Args: { target_organization_id: string }
+      seed_default_roles_for_account: {
+        Args: { target_account_id: string }
         Returns: undefined
       }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
-      staff_has_effective_public_profile: {
-        Args: { staff_row: Database["public"]["Tables"]["staff"]["Row"] }
-        Returns: boolean
+      set_own_staff_online_booking: {
+        Args: { p_online_booking_enabled: boolean; p_salon_id: string }
+        Returns: Json
+      }
+      increment_staff_queue_turns: {
+        Args: {
+          p_delta: number
+          p_salon_id: string
+          p_staff_id: string
+          p_work_date: string
+        }
+        Returns: number
+      }
+      sign_in_pos_portable_access: {
+        Args: { p_access_id: string; p_passcode: string; p_user_agent?: string }
+        Returns: Json
       }
       start_assigned_booking_line: {
         Args: { p_booking_line_id: string; p_service_note?: string }
+        Returns: Json
+      }
+      submit_pos_portable_receipt: {
+        Args: {
+          p_key_id: string
+          p_receipt: Json
+          p_session_signature: string
+          p_work_date?: string
+        }
+        Returns: Json
+      }
+      submit_pos_portable_attendance_event: {
+        Args: {
+          p_event_type: string
+          p_key_id: string
+          p_passcode: string
+          p_session_signature: string
+          p_staff_id: string
+        }
         Returns: Json
       }
       submit_staff_salon_application: {
@@ -6588,18 +6352,30 @@ export type Database = {
         }
         Returns: Json
       }
+      touch_pos_live_draft_activity: {
+        Args: { p_reset_seconds?: number; p_token: string }
+        Returns: Json
+      }
+      validate_staff_passcode_or_raise: {
+        Args: {
+          p_passcode: string
+          p_salon_id: string
+          p_scope: string
+          p_staff_id: string
+        }
+        Returns: boolean
+      }
       update_closed_pos_ticket_tip_for_correction: {
         Args: { p_ticket_id: string; p_tip_type: string; p_tip_value: number }
         Returns: {
           closed_at: string | null
           created_at: string
-          customer_id: string
+          customer_id: string | null
           discount_type: string
           discount_value: number
           id: string
           notes: string | null
           opened_at: string
-          organization_id: string
           salon_id: string
           source_booking_id: string | null
           status: string
@@ -6625,10 +6401,35 @@ export type Database = {
         Args: { p_confirm?: boolean; p_tip_amount: number; p_token: string }
         Returns: Json
       }
+      update_pos_portable_live_draft: {
+        Args: {
+          p_discount?: number
+          p_key_id: string
+          p_selected_staff_id: string
+          p_session_signature: string
+          p_staff_lines: Json
+          p_subtotal: number
+          p_tax?: number
+          p_tip: number
+          p_token: string
+          p_total: number
+          p_total_before_tip?: number
+        }
+        Returns: Json
+      }
+      update_pos_portable_live_draft_customer: {
+        Args: {
+          p_customer: Json
+          p_key_id: string
+          p_session_signature: string
+          p_token: string
+        }
+        Returns: Json
+      }
       update_staff_public_team_batch: {
         Args: {
           changes: Json
-          target_organization_id: string
+          target_account_id: string
           target_salon_id: string
         }
         Returns: number
@@ -6637,30 +6438,37 @@ export type Database = {
         Args: { p_phone: string; p_token: string }
         Returns: Json
       }
-      user_belongs_to_organization: {
-        Args: { target_organization_id: string }
+      user_belongs_to_account: {
+        Args: { target_account_id: string }
         Returns: boolean
       }
-      user_can_convert_booking_to_ticket: {
-        Args: { target_organization_id: string }
+      user_can_manage_salon: {
+        Args: { target_salon_id: string }
         Returns: boolean
       }
       user_can_manage_salon_profile_media: {
         Args: { object_name: string; permission_codes: string[] }
         Returns: boolean
       }
-      user_has_organization_permission: {
-        Args: { permission_codes: string[]; target_organization_id: string }
+      user_can_read_staff_scoped_row: {
+        Args: { target_salon_id: string; target_staff_id: string }
         Returns: boolean
       }
-      user_is_active_organization_member: { Args: never; Returns: boolean }
-      user_is_organization_owner_member: {
-        Args: { target_organization_id: string }
+      user_has_account_permission: {
+        Args: { permission_codes: string[]; target_account_id: string }
         Returns: boolean
       }
-      user_owns_organization: {
-        Args: { target_organization_id: string }
+      user_has_salon_permission: {
+        Args: { permission_codes: string[]; target_salon_id: string }
         Returns: boolean
+      }
+      user_is_salon_member: {
+        Args: { target_salon_id: string }
+        Returns: boolean
+      }
+      verify_staff_connection_invite_email: {
+        Args: { p_email: string; p_token: string }
+        Returns: Json
       }
     }
     Enums: {

@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 
 import { normalizePublicSalonAddress } from "@/lib/location/address";
 import { hasValidCoordinates } from "@/lib/location/distance";
@@ -148,7 +148,7 @@ function statusCopy(status: SalonMapLocationStatus) {
     case "provider_unavailable":
       return {
         description:
-          "No server-side geocoding provider is configured, so KingPOS will not create coordinates or map markers.",
+          "No server-side geocoding provider is configured, so KITY will not create coordinates or map markers.",
         label: "Map provider not configured",
       };
   }
@@ -191,7 +191,6 @@ async function loadLocationGeocodingRow(input: {
       "latitude, longitude, geocoded_at, geocoding_status, geocoding_provider, geocoding_place_id, geocoding_error_code, geocoding_address_fingerprint, updated_at",
     )
     .eq("id", input.setting.salon_id)
-    .eq("organization_id", input.setting.organization_id)
     .maybeSingle<LocationGeocodingRow>();
 
   if (error) {
@@ -223,7 +222,7 @@ async function updateLocationGeocodingRow(input: {
     .from("locations")
     .update(input.updates)
     .eq("id", input.setting.salon_id)
-    .eq("organization_id", input.setting.organization_id);
+    .eq("account_id", input.context.currentAccount?.id ?? "");
 
   if (error) {
     console.warn("Supabase update salon map location state failed", {
@@ -246,15 +245,15 @@ async function assertCanManageMapLocation(input: {
   if (
     !context.user ||
     !isSalonManageContext(context) ||
-    !context.currentOrganization ||
+    !context.currentAccount ||
     !context.currentSalon
   ) {
-    throw new Error("Choose a Manage Salon workspace before mapping this salon.");
+    throw new Error("Choose a salon workspace before mapping this salon.");
   }
 
   if (
-    setting.organization_id !== context.currentOrganization.id ||
-    (input.reason !== "backfill" && setting.salon_id !== context.currentSalon.id)
+    input.reason !== "backfill" &&
+    setting.salon_id !== context.currentSalon.id
   ) {
     throw new Error("Map location can only be refreshed for the selected salon.");
   }

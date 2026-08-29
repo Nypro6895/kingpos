@@ -77,6 +77,9 @@ const styles = {
   addonGrid: "public-booking-addon-grid",
   addonPanel: "public-booking-addon-panel",
   bookingSurface: "public-booking-surface",
+  brandBar: "public-booking-brand-bar",
+  brandLink: "public-booking-brand-link",
+  brandLogo: "public-booking-brand-logo",
   checkboxInput: "public-booking-checkbox-input",
   checkboxVisual: "public-booking-checkbox-visual",
   editorialImage: "public-booking-editorial-image",
@@ -158,7 +161,19 @@ function initialsFor(value: string | null | undefined) {
         .slice(0, 2)
         .map((part) => part[0]?.toUpperCase())
         .join("")
-    : "KP";
+    : "K";
+}
+
+function normalizeWebsite(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
+
+function displayWebsite(value: string | null | undefined) {
+  return value?.replace(/^https?:\/\//i, "").replace(/\/$/, "") ?? null;
 }
 
 function draftStorageKey(salonId: string | null | undefined) {
@@ -473,7 +488,54 @@ function staffEligibleForServices(data: PublicBookingPageData, serviceIds: strin
     .filter((staff): staff is PublicBookingPageData["staff"][number] => Boolean(staff));
 }
 
+function ReylumiExploreLink() {
+  return (
+    <a
+      aria-label="Go to Reylumi Explore"
+      className={styles.brandLink}
+      data-testid="public-booking-reylumi-link"
+      href="/explore"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        alt="Reylumi"
+        className={styles.brandLogo}
+        src="/brand/reylumi-logo-horizontal.png"
+      />
+    </a>
+  );
+}
+
 function UnavailableState({ data }: { data: PublicBookingPageData }) {
+  const salon = data.salon;
+  const canOpenSalonProfile = Boolean(salon?.publicProfileEnabled);
+  const salonProfileHref =
+    salon && canOpenSalonProfile
+      ? `/explore/salons/${salon.salonId}`
+      : "/explore";
+  const salonWebsite = normalizeWebsite(salon?.website);
+  const contactHref = salon?.phone
+    ? `tel:${salon.phone}`
+    : salon?.email
+      ? `mailto:${salon.email}`
+      : salonWebsite;
+  const contactLabel = salon?.phone
+    ? salon.phone
+    : salon?.email
+      ? salon.email
+      : salonWebsite
+        ? displayWebsite(salon?.website)
+        : null;
+  const isMissingSalon = data.state === "not_found" || !salon;
+  const title = isMissingSalon
+    ? data.title
+    : `${salon.name} is not ready for online booking yet`;
+  const message = isMissingSalon
+    ? data.message
+    : canOpenSalonProfile
+      ? "This booking page is not available yet. Please contact the salon directly, visit their profile, or return to Explore."
+      : "This booking page is not available yet. Please contact the salon directly or return to Explore.";
+
   return (
     <main
       className={classNames(styles.bookingSurface, styles.publicRoot)}
@@ -481,31 +543,69 @@ function UnavailableState({ data }: { data: PublicBookingPageData }) {
       data-testid="public-booking-root"
     >
       <div className="mx-auto flex min-h-screen w-full max-w-4xl items-center px-5 py-10">
-        <section className={classNames(styles.publicCard, "w-full p-6")}>
-          <p className={styles.eyebrow}>KingPOS booking</p>
-          <h1 className={classNames(styles.pageTitle, "mt-3")}>{data.title}</h1>
-          <p className="mt-3 text-sm leading-6 text-[#786d78]">{data.message}</p>
-          {data.readiness.length > 0 ? (
-            <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-              {data.readiness.map((item) => (
-                <li
-                  className="flex items-center justify-between gap-3 rounded-xl border border-[#e7dfe5] bg-white px-4 py-3 text-sm"
-                  key={item.id}
+        <div className="w-full">
+          <ReylumiExploreLink />
+          <section className={classNames(styles.publicCard, "mt-5 w-full p-6 sm:p-8")}>
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+              {salon?.logoUrl || salon?.coverUrl ? (
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-[#f0e6df] bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt=""
+                    className="h-full w-full object-cover"
+                    src={salon.logoUrl ?? salon.coverUrl ?? ""}
+                  />
+                </div>
+              ) : salon ? (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#fff0e8] text-lg font-extrabold text-[#f26f3d]">
+                  {initialsFor(salon.name)}
+                </div>
+              ) : null}
+              <div className="min-w-0">
+                <p className={styles.eyebrow}>Reylumi booking</p>
+                <h1 className={classNames(styles.pageTitle, "mt-3")}>{title}</h1>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-[#786d78]">
+                  {message}
+                </p>
+                {contactLabel ? (
+                  <p className="mt-4 text-sm font-semibold text-[#211c24]">
+                    Contact:{" "}
+                    <a
+                      className="text-[#e85f2b] underline-offset-4 hover:underline"
+                      href={contactHref ?? undefined}
+                    >
+                      {contactLabel}
+                    </a>
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            <div className="mt-7 flex flex-wrap gap-3">
+              {canOpenSalonProfile ? (
+                <a
+                  className={classNames(styles.secondaryButton, "px-5")}
+                  href={salonProfileHref}
                 >
-                  <span className="font-extrabold text-[#211c24]">{item.label}</span>
-                  <span
-                    className={classNames(
-                      styles.statusBadge,
-                      item.complete ? styles.statusArrived : styles.statusPending,
-                    )}
-                  >
-                    {item.complete ? "Ready" : "Needs setup"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </section>
+                  View salon profile
+                </a>
+              ) : null}
+              <a
+                className={classNames(styles.secondaryButton, "px-5")}
+                href="/explore"
+              >
+                Back to Explore
+              </a>
+              {contactHref ? (
+                <a
+                  className={classNames(styles.primaryButton, "px-5")}
+                  href={contactHref}
+                >
+                  Contact salon
+                </a>
+              ) : null}
+            </div>
+          </section>
+        </div>
       </div>
     </main>
   );
@@ -538,10 +638,17 @@ function BookingInspirationCard({
   onChangeService?: () => void;
   onRemove?: () => void;
 }) {
-  const contentLabel = inspiration.contentType === "update" ? "post" : "look";
+  const contentLabel =
+    inspiration.contentType === "beauty_post"
+      ? "transformation"
+      : inspiration.contentType === "update"
+        ? "post"
+        : "look";
   const label =
     currentServiceName && inspiration.contentType === "look"
       ? "BOOK THIS LOOK"
+      : inspiration.contentType === "beauty_post"
+        ? "BOOK THIS TRANSFORMATION"
       : "BOOK WITH THIS INSPIRATION";
   const serviceLabel = currentServiceName
     ? `You're booking ${currentServiceName}${
@@ -555,7 +662,7 @@ function BookingInspirationCard({
       }`
     : null;
   const thumbClass = classNames(
-    "overflow-hidden rounded-lg bg-[#f7f2f7]",
+    "overflow-hidden rounded-lg bg-[#fff0e8]",
     compact ? "h-16 w-16" : "h-20 w-20 sm:h-24 sm:w-24",
   );
 
@@ -563,7 +670,7 @@ function BookingInspirationCard({
     <section
       className={classNames(
         compact
-          ? "grid grid-cols-[64px_1fr] gap-3 rounded-lg bg-[#f7f2f7] p-3"
+          ? "grid grid-cols-[64px_1fr] gap-3 rounded-lg bg-[#fff0e8] p-3"
           : classNames(styles.publicCard, "mb-5 grid gap-4 p-4 sm:grid-cols-[96px_1fr]"),
       )}
       data-testid="booking-inspiration-card"
@@ -585,7 +692,7 @@ function BookingInspirationCard({
         </a>
       ) : (
         <div className={thumbClass}>
-          <span className="grid h-full w-full place-items-center px-2 text-center text-xs font-extrabold text-[#642a56]">
+          <span className="grid h-full w-full place-items-center px-2 text-center text-xs font-extrabold text-[#f26f3d]">
             Inspiration
           </span>
         </div>
@@ -595,7 +702,7 @@ function BookingInspirationCard({
         <h2 className="mt-1 line-clamp-2 text-base font-extrabold text-[#211c24]">
           {inspiration.title}
         </h2>
-        <p className="mt-1 text-sm font-extrabold text-[#642a56]">
+        <p className="mt-1 text-sm font-extrabold text-[#f26f3d]">
           {serviceLabel}
         </p>
         {!currentServiceName && originalContext ? (
@@ -634,7 +741,7 @@ function BookingInspirationCard({
             ) : null}
             {onRemove ? (
               <button
-                className="px-2 py-2 text-sm font-extrabold text-[#642a56]"
+                className="px-2 py-2 text-sm font-extrabold text-[#f26f3d]"
                 onClick={onRemove}
                 type="button"
               >
@@ -659,13 +766,15 @@ function BookingInspirationSummaryRow({
     ? `Booking as ${currentServiceName}`
     : "Choose a service to continue.";
   const label =
-    inspiration.contentType === "update"
+    inspiration.contentType === "beauty_post"
+      ? "Inspired by this transformation"
+      : inspiration.contentType === "update"
       ? "Inspired by this post"
       : "Inspired by this look";
 
   return (
     <div className="grid grid-cols-[52px_1fr] items-center gap-3">
-      <div className="h-[52px] w-[52px] overflow-hidden rounded-lg bg-[#f7f2f7]">
+      <div className="h-[52px] w-[52px] overflow-hidden rounded-lg bg-[#fff0e8]">
         {inspiration.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -674,7 +783,7 @@ function BookingInspirationSummaryRow({
             src={inspiration.imageUrl}
           />
         ) : (
-          <span className="grid h-full w-full place-items-center text-[10px] font-extrabold text-[#642a56]">
+          <span className="grid h-full w-full place-items-center text-[10px] font-extrabold text-[#f26f3d]">
             IMG
           </span>
         )}
@@ -821,9 +930,10 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
           .filter((service): service is PublicBookingPageData["services"][number] =>
             Boolean(service),
           )
+          .filter((service) => !selectedServiceIds.includes(service.id))
           .map((service) => ({ parent, service })),
       ),
-    [data.services, selectedServices],
+    [data.services, selectedServiceIds, selectedServices],
   );
   const selectedAddOns = useMemo(
     () =>
@@ -1043,7 +1153,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     setSelectedServiceIds(nextSelectedServiceIds);
     setSelectedAddOnSelections((current) =>
       current.filter((selection) =>
-        nextSelectedServiceIds.includes(selection.parentServiceId),
+        nextSelectedServiceIds.includes(selection.parentServiceId) &&
+        !nextSelectedServiceIds.includes(selection.serviceId),
       ),
     );
     setSelectedSlotStart("");
@@ -1136,6 +1247,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       const validAddOnSelections = draft.selectedAddOnSelections.filter(
         (selection) =>
           validServiceIdSet.has(selection.parentServiceId) &&
+          !validServiceIdSet.has(selection.serviceId) &&
           data.services.some((service) => service.id === selection.serviceId),
       );
       const firstService = mainServices.find(
@@ -1304,7 +1416,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     nonEmpty([data.currentUser?.firstName, data.currentUser?.lastName].filter(Boolean).join(" ")) ??
     nonEmpty(data.currentUser?.email) ??
     nonEmpty(data.currentUser?.phone) ??
-    "Your KingPOS account";
+    "Your Reylumi account";
   const accountMaskedEmail = maskEmail(data.currentUser?.email);
   const accountMaskedPhone = maskPhone(data.currentUser?.phone);
   const signedInNeedsName =
@@ -1363,7 +1475,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         : "/explore";
   const signInHref = `/login?next=${encodeURIComponent(authReturnPath)}`;
   const signupHref = `/signup?next=${encodeURIComponent(authReturnPath)}`;
-  const salonProfileHref = data.salon
+  const salonProfileHref = data.salon?.publicProfileEnabled
     ? `/explore/salons/${data.salon.salonId}`
     : "/explore";
 
@@ -1665,6 +1777,10 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       data-testid="public-booking-root"
     >
       <section className={styles.publicShell} data-testid="public-booking-shell">
+        <div className={styles.brandBar}>
+          <ReylumiExploreLink />
+        </div>
+
         {isQuickBook ? (
           <div
             className={styles.quickBookStrip}
@@ -1806,7 +1922,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                         <span className="block text-xl font-extrabold text-[#211c24]">
                           {money(service.basePrice)}
                         </span>
-                        <span className="mt-1 block text-sm italic text-[#642a56]">
+                        <span className="mt-1 block text-sm italic text-[#f26f3d]">
                           {minutes(service.durationMinutes)}
                         </span>
                       </span>
@@ -1823,7 +1939,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                 })}
               </div>
               <section className={styles.addonPanel} data-testid="public-booking-addon-panel">
-                <p className="text-sm font-extrabold text-[#642a56]">Make it yours</p>
+                <p className="text-sm font-extrabold text-[#f26f3d]">Make it yours</p>
                 <p className="mt-1 text-sm text-[#786d78]">
                   Add linked extras for selected services.
                 </p>
@@ -1847,7 +1963,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                           key={`${parent.id}:${service.id}`}
                         >
                           <span>
-                            <span className="mb-1 block text-xs font-extrabold uppercase tracking-[0.08em] text-[#642a56]">
+                            <span className="mb-1 block text-xs font-extrabold uppercase tracking-[0.08em] text-[#f26f3d]">
                               {parent.name}
                             </span>
                             <span className="block font-extrabold text-[#211c24]">
@@ -2122,8 +2238,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                           className={classNames(
                             "min-h-12 rounded-xl border px-3 text-sm font-extrabold",
                             slot.startAt === selectedSlotStart
-                              ? "border-[#642a56] bg-[#642a56] text-white"
-                              : "border-[#e7dfe5] bg-white text-[#211c24] hover:border-[#d7c8d3]",
+                              ? "border-[#f26f3d] bg-[#f26f3d] text-white"
+                              : "border-[#f0e6df] bg-white text-[#211c24] hover:border-[#ffd6c4]",
                           )}
                           data-testid="public-booking-slot"
                           key={slot.startAt}
@@ -2164,7 +2280,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                 <div className="grid gap-5">
                   <div className={classNames(styles.publicCard, "grid gap-4 p-5")}>
                     <div className="flex items-center gap-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f7f2f7] text-base font-extrabold text-[#642a56]">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fff0e8] text-base font-extrabold text-[#f26f3d]">
                         {data.currentUser?.avatarUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -2186,7 +2302,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                         </div>
                       </div>
                     </div>
-                    <p className="rounded-xl bg-[#f7f2f7] px-4 py-3 text-sm font-extrabold text-[#642a56]">
+                    <p className="rounded-xl bg-[#fff0e8] px-4 py-3 text-sm font-extrabold text-[#f26f3d]">
                       This booking will be saved to your account.
                     </p>
                   </div>
@@ -2286,7 +2402,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                         Notes for the salon
                       </span>
                       <textarea
-                        className="min-h-20 rounded-xl border border-[#e7dfe5] px-3 py-2 text-sm outline-none focus:border-[#8f4a7b] focus:ring-4 focus:ring-[#642a56]/10"
+                        className="min-h-20 rounded-xl border border-[#f0e6df] px-3 py-2 text-sm outline-none focus:border-[#e85f2b] focus:ring-4 focus:ring-[#f26f3d]/10"
                         onChange={(event) =>
                           setCustomer((current) => ({
                             ...current,
@@ -2326,7 +2442,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                       Create account
                     </a>
                     <button
-                      className="px-1 py-2 text-left text-sm font-extrabold text-[#642a56] sm:px-3"
+                      className="px-1 py-2 text-left text-sm font-extrabold text-[#f26f3d] sm:px-3"
                       onClick={() => setIdentityMode("guest")}
                       type="button"
                     >
@@ -2385,7 +2501,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                           Notes for the salon
                         </span>
                         <textarea
-                          className="min-h-20 rounded-xl border border-[#e7dfe5] px-3 py-2 text-sm outline-none focus:border-[#8f4a7b] focus:ring-4 focus:ring-[#642a56]/10"
+                          className="min-h-20 rounded-xl border border-[#f0e6df] px-3 py-2 text-sm outline-none focus:border-[#e85f2b] focus:ring-4 focus:ring-[#f26f3d]/10"
                           onChange={(event) =>
                             setCustomer((current) => ({
                               ...current,
@@ -2397,7 +2513,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                       </label>
                       <div className="sm:col-span-2">
                         <button
-                          className="text-sm font-extrabold text-[#642a56]"
+                          className="text-sm font-extrabold text-[#f26f3d]"
                           onClick={() => setIdentityMode("choice")}
                           type="button"
                         >
@@ -2482,8 +2598,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                 </div>
               ) : null}
               {result?.ok && result.accountLinked ? (
-                <p className="mt-4 rounded-xl bg-[#f7f2f7] px-4 py-3 text-sm font-extrabold text-[#642a56]">
-                  This booking is saved to your KingPOS account.
+                <p className="mt-4 rounded-xl bg-[#fff0e8] px-4 py-3 text-sm font-extrabold text-[#f26f3d]">
+                  This booking is saved to your Reylumi account.
                 </p>
               ) : null}
               <div className="mt-6 flex flex-wrap gap-3">
@@ -2612,7 +2728,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             )}
           </div>
           {selectedSlot ? (
-            <p className="mt-5 rounded-xl bg-[#f7f2f7] px-3 py-3 text-sm font-extrabold text-[#642a56]">
+            <p className="mt-5 rounded-xl bg-[#fff0e8] px-3 py-3 text-sm font-extrabold text-[#f26f3d]">
               {formatDateTime(selectedSlot.startAt, settings.timezoneIana)}
             </p>
           ) : null}
@@ -2672,7 +2788,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                 </div>
                 <button
                   aria-label="Close details"
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#e7dfe5] text-lg font-extrabold text-[#642a56]"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#f0e6df] text-lg font-extrabold text-[#f26f3d]"
                   onClick={() => setDetailsSheetOpen(false)}
                   type="button"
                 >
@@ -2785,7 +2901,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                     Notes for the salon
                   </span>
                   <textarea
-                    className="min-h-20 rounded-xl border border-[#e7dfe5] px-3 py-2 text-sm outline-none focus:border-[#8f4a7b] focus:ring-4 focus:ring-[#642a56]/10"
+                    className="min-h-20 rounded-xl border border-[#f0e6df] px-3 py-2 text-sm outline-none focus:border-[#e85f2b] focus:ring-4 focus:ring-[#f26f3d]/10"
                     data-testid="public-booking-guest-notes"
                     onChange={(event) =>
                       setCustomerField("notes", event.target.value)

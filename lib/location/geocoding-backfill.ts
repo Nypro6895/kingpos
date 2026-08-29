@@ -40,7 +40,7 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function backfillCurrentOrganizationMapLocations(input: {
+export async function backfillCurrentAccountMapLocations(input: {
   delayMs?: number;
   limit?: number;
 } = {}): Promise<GeocodingBackfillReport> {
@@ -56,7 +56,7 @@ export async function backfillCurrentOrganizationMapLocations(input: {
   if (
     !context.user ||
     !isSalonManageContext(context) ||
-    !context.currentOrganization
+    !context.currentAccount
   ) {
     incrementReason(report, "invalid_context");
     return report;
@@ -88,7 +88,7 @@ export async function backfillCurrentOrganizationMapLocations(input: {
   const { data: activeLocations, error: locationsError } = await supabase
     .from("locations")
     .select("id, latitude, longitude, geocoding_status, geocoding_address_fingerprint")
-    .eq("organization_id", context.currentOrganization.id)
+    .eq("account_id", context.currentAccount.id)
     .eq("status", "active")
     .limit(limit)
     .returns<BackfillLocationRow[]>();
@@ -108,7 +108,6 @@ export async function backfillCurrentOrganizationMapLocations(input: {
   const { data: settings, error: settingsError } = await supabase
     .from("salon_settings")
     .select(SALON_SETTING_SELECT)
-    .eq("organization_id", context.currentOrganization.id)
     .eq("public_discovery_enabled", true)
     .in("salon_id", activeLocationIds)
     .limit(limit)
