@@ -171,8 +171,8 @@ const REQUIRED_DISPLAY_VIEWPORTS = [
 const WAITING_DRAWER_QA_VIEWPORTS = [
   { height: 900, width: 1440 },
   { height: 768, width: 1024 },
-  { height: 844, width: 390 },
 ];
+const MOBILE_RAPID_POS_VIEWPORT = { height: 844, width: 390 };
 const RECEIPT_VISIBLE_TARGETS = {
   "1024x768": 5,
   "1180x820": 6,
@@ -2049,6 +2049,8 @@ async function assertPortableFloatingNavPlacement(page, placement) {
   );
 }
 
+// Retained temporarily for comparing legacy floating-nav geometry during POS QA.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function assertPortableFloatingNavAdaptivePlacements(page) {
   const placements = [
     {
@@ -2157,11 +2159,19 @@ async function assertPortableFloatingNavAdaptivePlacements(page) {
 }
 
 async function assertPortableShell(page) {
-  await page.locator("[data-portable-floating-nav-button]").waitFor({
+  await page.locator("[data-pos-workspace-shell]").waitFor({
+    timeout: 12000,
+  });
+  await page.locator("[data-portable-pos-page='pos']").waitFor({
     timeout: 12000,
   });
 
-  const metrics = await page.evaluate(() => {
+  const navigationMarker = `portable-shell-${Date.now()}`;
+  await page.evaluate((marker) => {
+    window.__portableShellE2EMarker = marker;
+  }, navigationMarker);
+
+  const readMetrics = () => page.evaluate(() => {
     const rectJson = (rect) => ({
       bottom: rect.bottom,
       height: rect.height,
@@ -2174,7 +2184,10 @@ async function assertPortableShell(page) {
     const floatingButtons = Array.from(
       document.querySelectorAll("[data-portable-floating-nav-button]"),
     );
-    const floatingButton = floatingButtons[0] ?? null;
+    const workspace = document.querySelector("[data-pos-workspace-shell]");
+    const workspaceNav = workspace?.querySelector("nav[aria-label='POS workspace']");
+    const workspaceLinks = Array.from(workspaceNav?.querySelectorAll("a") ?? []);
+    const lockButton = workspace?.querySelector("button[aria-label='Lock POS']");
     const shell = document.querySelector("[data-portable-pos-shell]");
     const doc = document.documentElement;
     const body = document.body;
@@ -2186,18 +2199,13 @@ async function assertPortableShell(page) {
         doc.scrollWidth > window.innerWidth + 1 ||
         body.scrollHeight > window.innerHeight + 1 ||
         body.scrollWidth > window.innerWidth + 1,
-      floatingButton: floatingButton
+      floatingButtonCount: floatingButtons.length,
+      lockButton: lockButton
         ? {
-            ariaLabel: floatingButton.getAttribute("aria-label"),
-            brandIcon: Boolean(
-              floatingButton.querySelector(
-                "[data-portable-floating-nav-brand-icon]",
-              ),
-            ),
-            rect: rectJson(floatingButton.getBoundingClientRect()),
+            ariaLabel: lockButton.getAttribute("aria-label"),
+            rect: rectJson(lockButton.getBoundingClientRect()),
           }
         : null,
-      floatingButtonCount: floatingButtons.length,
       rail: rail
         ? {
             rect: rectJson(rail.getBoundingClientRect()),
@@ -2208,10 +2216,30 @@ async function assertPortableShell(page) {
             rect: rectJson(shell.getBoundingClientRect()),
           }
         : null,
+      workspace: workspace
+        ? {
+            rect: rectJson(workspace.getBoundingClientRect()),
+          }
+        : null,
+      workspaceLinks: workspaceLinks.map((link) => ({
+        ariaCurrent: link.getAttribute("aria-current"),
+        href: link.getAttribute("href"),
+        rect: rectJson(link.getBoundingClientRect()),
+        text: (link.textContent ?? "").replace(/\s+/g, " ").trim(),
+      })),
+      workspaceNav: workspaceNav
+        ? {
+            rect: rectJson(workspaceNav.getBoundingClientRect()),
+          }
+        : null,
     };
   });
+  const metrics = await readMetrics();
 
   assert.ok(metrics.shell, "Portable POS shell should exist.");
+  assert.ok(metrics.workspace, "Portable POS workspace tabs should exist.");
+  assert.ok(metrics.workspaceNav, "Portable POS workspace tab nav should exist.");
+  assert.ok(metrics.lockButton, "Portable POS lock action should exist.");
   assert.equal(metrics.rail, null, "Portable POS should not render a permanent rail.");
   assert.equal(metrics.documentScroll, false, "Portable POS document should not scroll.");
   assert.equal(
@@ -2219,125 +2247,310 @@ async function assertPortableShell(page) {
     false,
     "Large Portable POS header text should be absent.",
   );
-  assert.equal(metrics.floatingButtonCount, 1, "One floating nav control should exist.");
-  assert.ok(metrics.floatingButton, "Floating nav button should exist.");
   assert.equal(
-    metrics.floatingButton.ariaLabel,
-    "Open portable navigation",
-    "Floating nav button should have an accessible name.",
+    metrics.floatingButtonCount,
+    0,
+    "Portable POS should not render the retired floating nav control.",
   );
-  assert.ok(
-    metrics.floatingButton.rect.width >= 52 &&
-      metrics.floatingButton.rect.height >= 52,
-    "Floating nav target should keep the refined 52px minimum size.",
-  );
-  assert.ok(
-    Math.abs(metrics.floatingButton.rect.width - metrics.floatingButton.rect.height) <=
-      2,
-    "Floating nav target should be circular.",
+  assert.deepEqual(
+    metrics.workspaceLinks.map((link) => link.text),
+    ["Ticket", "Check-in", "Book", "Report"],
+    "Portable POS should expose the persistent four-tab workspace.",
   );
   assert.equal(
-    metrics.floatingButton.brandIcon,
-    true,
-    "Floating nav should use the Reylumi brand icon.",
+    metrics.workspaceLinks[0]?.ariaCurrent,
+    "page",
+    "Ticket should be active on the POS workspace.",
+  );
+  assert.ok(
+    metrics.workspace.rect.width <= 1600 &&
+      metrics.workspace.rect.left >= 0 &&
+      metrics.workspace.rect.right <= page.viewportSize().width,
+    "Persistent workspace shell should fit within the viewport.",
+  );
+  assert.ok(
+    metrics.lockButton.rect.width >= 40 && metrics.lockButton.rect.height >= 40,
+    "Lock POS should remain a stable touch target.",
   );
 
   const beforeBox = await page
     .locator("[data-portable-pos-page='pos']")
     .boundingBox();
 
-  await openPortableFloatingNav(page);
-  await page.locator("[data-portable-floating-nav-button]").click();
-  await page.locator("[data-portable-floating-nav-menu]").waitFor({
-    state: "detached",
-    timeout: 12000,
-  });
-  await openPortableFloatingNav(page);
-  const menuMetrics = await getPortableFloatingNavMetrics(page);
+  for (const route of [
+    {
+      label: "Check-in",
+      marker: null,
+      path: "/pos/portable/check-in",
+    },
+    {
+      label: "Book",
+      marker: "book",
+      path: "/pos/portable/book",
+    },
+    {
+      label: "Report",
+      marker: "report",
+      path: "/pos/portable/report",
+    },
+    {
+      label: "Ticket",
+      marker: "pos",
+      path: "/pos/portable",
+    },
+  ]) {
+    await page.getByRole("link", { exact: true, name: route.label }).click();
+    await page.waitForURL((url) => url.pathname === route.path, {
+      timeout: 12000,
+    });
+    await page.locator("[data-pos-workspace-shell]").waitFor({ timeout: 12000 });
+
+    if (route.marker) {
+      await page.locator(`[data-portable-pos-page='${route.marker}']`).waitFor({
+        timeout: 12000,
+      });
+    }
+
+    assert.equal(
+      await page.evaluate(() => window.__portableShellE2EMarker),
+      navigationMarker,
+      `Navigating to ${route.label} should keep the same document shell alive.`,
+    );
+    assert.equal(
+      await page.getByRole("link", { exact: true, name: route.label }).getAttribute("aria-current"),
+      "page",
+      `${route.label} should be active in the persistent workspace tabs.`,
+    );
+  }
+
   const afterBox = await page
     .locator("[data-portable-pos-page='pos']")
     .boundingBox();
-
-  assertPortableFloatingNavGeometry(menuMetrics, {
-    label: "default portable floating nav",
-  });
-  assert.equal(
-    await page.locator("[data-portable-floating-nav-link='report']").count(),
-    1,
-    "Report should be shown by default for Portable devices.",
-  );
-  assert.equal(
-    menuMetrics.links[0].ariaCurrent,
-    "page",
-    "POS should be active in the Portable menu.",
-  );
   assert.deepEqual(
     beforeBox,
     afterBox,
-    "Opening the floating menu should not change the POS page layout box.",
+    "Persistent tab navigation should not change the POS page layout box.",
   );
+}
 
-  await closePortableFloatingNavWithEscape(page);
-
-  await openPortableFloatingNav(page);
-  await page.mouse.click(8, 8);
-  await page.locator("[data-portable-floating-nav-menu]").waitFor({
-    state: "detached",
+async function assertRapidMobilePosFlow(page) {
+  await page.setViewportSize(MOBILE_RAPID_POS_VIEWPORT);
+  await page.locator("[data-pos-rapid-mobile-bridge]").waitFor({
+    state: "attached",
+    timeout: 12000,
+  });
+  await page.locator("[data-pos-rapid-total]").waitFor({
     timeout: 12000,
   });
 
-  await assertPortableFloatingNavAdaptivePlacements(page);
-  await page.setViewportSize({ height: 900, width: 1440 });
-  await setPortableFloatingNavPosition(page, 0.7, 0.7);
+  const initialMetrics = await page.evaluate(() => {
+    const visible = (selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return false;
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
 
-  const buttonBox = await page
-    .locator("[data-portable-floating-nav-button]")
-    .boundingBox();
-  assert.ok(buttonBox, "Floating nav button should have a box before drag.");
-  await page.mouse.move(buttonBox.x + buttonBox.width / 2, buttonBox.y + buttonBox.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(buttonBox.x - 80, buttonBox.y - 60, { steps: 6 });
-  await page.mouse.up();
-  await page.waitForTimeout(250);
+      return (
+        style.display !== "none" &&
+        style.visibility !== "hidden" &&
+        rect.width > 0 &&
+        rect.height > 0
+      );
+    };
+    const doc = document.documentElement;
+    const body = document.body;
+    const total = document.querySelector("[data-pos-rapid-total]");
+    const totalRect = total?.getBoundingClientRect() ?? null;
+    const tabShell = document.querySelector("[data-pos-workspace-shell]");
+    const tabRect = tabShell?.getBoundingClientRect() ?? null;
+
+    return {
+      amountPanelVisible: visible("[data-pos-amount-panel]"),
+      bodyText: document.body.textContent ?? "",
+      horizontalOverflow:
+        doc.scrollWidth > window.innerWidth + 1 ||
+        body.scrollWidth > window.innerWidth + 1,
+      receiptPanelVisible: visible("[data-pos-receipt-panel]"),
+      serviceTileCount: document.querySelectorAll("[data-pos-service-tile]").length,
+      tabRect: tabRect
+        ? {
+            bottom: tabRect.bottom,
+            height: tabRect.height,
+            left: tabRect.left,
+            right: tabRect.right,
+            top: tabRect.top,
+            width: tabRect.width,
+          }
+        : null,
+      totalRect: totalRect
+        ? {
+            bottom: totalRect.bottom,
+            height: totalRect.height,
+            left: totalRect.left,
+            right: totalRect.right,
+            top: totalRect.top,
+            width: totalRect.width,
+          }
+        : null,
+      visibleHeaderSearch: visible(
+        "[data-testid='customer-desktop-header'] form[role='search']",
+      ),
+    };
+  });
+
   assert.equal(
-    await page.locator("[data-portable-floating-nav-menu]").count(),
-    0,
-    "Dragging the floating nav should not open the menu.",
+    initialMetrics.receiptPanelVisible,
+    false,
+    "Rapid mobile POS should hide the old receipt panel.",
   );
-  const draggedBox = await page
-    .locator("[data-portable-floating-nav-button]")
-    .boundingBox();
-  assert.ok(draggedBox, "Floating nav button should have a box after drag.");
+  assert.equal(
+    initialMetrics.amountPanelVisible,
+    false,
+    "Rapid mobile POS should hide the old amount panel.",
+  );
+  assert.equal(
+    initialMetrics.visibleHeaderSearch,
+    false,
+    "Rapid mobile POS should hide the old bulky header search.",
+  );
+  assert.equal(
+    initialMetrics.horizontalOverflow,
+    false,
+    "Rapid mobile POS should not create body horizontal overflow.",
+  );
+  assert.ok(initialMetrics.totalRect, "Current Ticket total should be visible.");
   assert.ok(
-    Math.abs(draggedBox.x - buttonBox.x) > 20 ||
-      Math.abs(draggedBox.y - buttonBox.y) > 20,
-    "Dragging should move the floating nav control.",
+    initialMetrics.tabRect &&
+      initialMetrics.tabRect.left >= 0 &&
+      initialMetrics.tabRect.right <= MOBILE_RAPID_POS_VIEWPORT.width + 1,
+    "Persistent mobile POS tabs should fit inside the viewport.",
   );
+  assert.ok(
+    initialMetrics.serviceTileCount >= 4,
+    "Rapid mobile POS should expose service-first entry tiles.",
+  );
+  assert.match(initialMetrics.bodyText, /Current ticket/i);
 
-  await page.reload({ waitUntil: "networkidle" });
-  await page.locator("[data-portable-floating-nav-button]").waitFor({
+  await page
+    .locator("[data-pos-service-tile]", { hasText: "Codex Manicure" })
+    .first()
+    .click();
+
+  let dialog = page.getByRole("dialog");
+  await dialog.waitFor({ timeout: 12000 });
+  await dialog.getByText("Technician").first().waitFor({ timeout: 12000 });
+
+  const codexiaButton = dialog.getByRole("button", { name: /Codexia/ }).first();
+  await codexiaButton.waitFor({ timeout: 12000 });
+  const staffMetrics = await codexiaButton.evaluate((button) => {
+    const rectJson = (rect) => ({
+      bottom: rect.bottom,
+      height: rect.height,
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+      width: rect.width,
+    });
+    const children = Array.from(button.children);
+    const labelRect = children[0]?.getBoundingClientRect() ?? null;
+    const turnRect = children[1]?.getBoundingClientRect() ?? null;
+
+    return {
+      labelRect: labelRect ? rectJson(labelRect) : null,
+      text: (button.textContent ?? "").replace(/\s+/g, " ").trim(),
+      turnRect: turnRect ? rectJson(turnRect) : null,
+    };
+  });
+
+  assert.match(
+    staffMetrics.text,
+    /Codexia.*8/,
+    "Rapid mobile technician picker should show the compact turn number beside the technician.",
+  );
+  assert.ok(
+    staffMetrics.labelRect &&
+      staffMetrics.turnRect &&
+      staffMetrics.turnRect.left > staffMetrics.labelRect.left,
+    "Rapid mobile technician turn number should sit beside the technician label.",
+  );
+  await codexiaButton.click();
+
+  dialog = page.getByRole("dialog");
+  await dialog.getByText("Amount").first().waitFor({ timeout: 12000 });
+  await dialog.getByRole("button", { exact: true, name: "Clear" }).click();
+  await dialog.getByRole("button", { exact: true, name: "3" }).click();
+  await dialog.getByRole("button", { exact: true, name: "0" }).click();
+  await dialog.getByRole("button", { exact: true, name: "Done" }).click();
+  await dialog.waitFor({ state: "detached", timeout: 12000 });
+  await page
+    .locator("[data-pos-rapid-total]", { hasText: "$30.00" })
+    .waitFor({ timeout: 12000 });
+
+  await page.locator("[data-pos-rapid-total]").click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByText("Receipt").waitFor({ timeout: 12000 });
+  await dialog
+    .getByRole("button", { exact: true, name: "Codex Manicure" })
+    .click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByText("Service").first().waitFor({ timeout: 12000 });
+  await dialog.getByRole("button", { name: /Acrylic Fill/ }).click();
+  dialog = page.getByRole("dialog");
+  await dialog
+    .getByRole("button", { exact: true, name: "Acrylic Fill" })
+    .waitFor({ timeout: 12000 });
+
+  await dialog.getByRole("button", { name: /Codexia/ }).click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByText("Technician").first().waitFor({ timeout: 12000 });
+  await dialog.getByRole("button", { name: /Macy/ }).click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: /Macy/ }).waitFor({
     timeout: 12000,
   });
-  const reloadedBox = await page
-    .locator("[data-portable-floating-nav-button]")
-    .boundingBox();
-  assert.ok(reloadedBox, "Floating nav button should have a box after reload.");
-  assert.ok(
-    Math.abs(reloadedBox.x - draggedBox.x) <= 4 &&
-      Math.abs(reloadedBox.y - draggedBox.y) <= 4,
-    "Floating nav position should persist after reload.",
+
+  await dialog.getByRole("button", { name: /\$30\.00/ }).click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByText("Amount").first().waitFor({ timeout: 12000 });
+  await dialog.getByRole("button", { exact: true, name: "Clear" }).click();
+  await dialog.getByRole("button", { exact: true, name: "3" }).click();
+  await dialog.getByRole("button", { exact: true, name: "5" }).click();
+  await dialog.getByRole("button", { exact: true, name: "Done" }).click();
+  await dialog.waitFor({ state: "detached", timeout: 12000 });
+  await page
+    .locator("[data-pos-rapid-total]", { hasText: "$35.00" })
+    .waitFor({ timeout: 12000 });
+
+  await page.locator("[data-pos-rapid-total]").click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: /Remove Acrylic Fill/ }).click();
+  await dialog.getByText("No services yet.").waitFor({ timeout: 12000 });
+  await page
+    .locator("[data-pos-rapid-total]", { hasText: "$0.00" })
+    .waitFor({ timeout: 12000 });
+  await page.getByRole("button", { name: "Close" }).click();
+  await dialog.waitFor({ state: "detached", timeout: 12000 });
+
+  const finalMobileMetrics = await page.evaluate(() => {
+    const doc = document.documentElement;
+    const body = document.body;
+
+    return {
+      horizontalOverflow:
+        doc.scrollWidth > window.innerWidth + 1 ||
+        body.scrollWidth > window.innerWidth + 1,
+    };
+  });
+  assert.equal(
+    finalMobileMetrics.horizontalOverflow,
+    false,
+    "Rapid mobile receipt editing should not create body horizontal overflow.",
   );
 
-  for (const routeId of ["ticket", "book", "pos"]) {
-    await page.locator("[data-portable-floating-nav-button]").click();
-    await page.locator(`[data-portable-floating-nav-link='${routeId}']`).click();
-    await page.locator(`[data-portable-pos-page='${routeId}']`).waitFor({
-      timeout: 12000,
-    });
-    await page.locator("[data-portable-floating-nav-button]").waitFor({
-      timeout: 12000,
-    });
-  }
+  await page.setViewportSize({ height: 900, width: 1440 });
+  await page.locator("[data-portable-pos-page='pos']").waitFor({
+    timeout: 12000,
+  });
 }
 
 async function assertPortableLogout(browser) {
@@ -2351,11 +2564,10 @@ async function assertPortableLogout(browser) {
     await page.getByRole("textbox", { name: "POS ID" }).fill(ACCESS_ID);
     await page.getByLabel("Passcode").fill(PASSCODE);
     await page.getByRole("button", { name: "Open POS" }).click();
-    await page.locator("[data-portable-floating-nav-button]").waitFor({
+    await page.locator("[data-pos-workspace-shell]").waitFor({
       timeout: 12000,
     });
-    await page.locator("[data-portable-floating-nav-button]").click();
-    await page.locator("[data-portable-floating-nav-lock]").click();
+    await page.getByRole("button", { name: "Lock POS" }).click();
     await page.getByRole("button", { name: "Open POS" }).waitFor({
       timeout: 12000,
     });
@@ -3229,6 +3441,7 @@ async function main() {
     await assertPortableShell(pos);
     await assertPortablePosPolishBase(pos);
     await assertStaffToneBoardVisuals(pos);
+    await assertRapidMobilePosFlow(pos);
 
     const setupContext = await browser.newContext({
       viewport: { height: 1024, width: 768 },

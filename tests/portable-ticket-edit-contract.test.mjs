@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const portableTicketPage = readFileSync(
-  "app/pos/portable/ticket/page.tsx",
+  "app/(app)/pos/portable/ticket/page.tsx",
   "utf8",
 );
 const portableActions = readFileSync("app/pos/portable/actions.ts", "utf8");
