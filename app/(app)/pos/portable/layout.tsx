@@ -3,10 +3,10 @@ import {
   getCurrentPortablePosSession,
   getRememberedPortablePosAccessId,
 } from "@/app/pos/portable/actions";
-import { PortableFloatingNav } from "@/app/pos/portable/portable-floating-nav";
 import { PortableFullscreenButton } from "@/app/pos/portable/portable-fullscreen-button";
 import { PortablePosLoginForm } from "@/app/pos/portable/portable-login-form";
 import { PortableShellRefresh } from "@/app/pos/portable/portable-shell-refresh";
+import { PortableWorkspaceTabs } from "@/app/pos/portable/portable-workspace-tabs";
 import { PORTABLE_POS_CAPABILITIES } from "@/lib/pos-portable-capabilities";
 import { PORTABLE_POS_ROUTE_LINKS } from "@/lib/pos-portable-routes";
 
@@ -47,13 +47,9 @@ export default async function PortablePosLayout({
     return <PortableLoginScreen />;
   }
 
-  const routeLinks = PORTABLE_POS_ROUTE_LINKS.filter((link) => {
+  const workspaceLinks = PORTABLE_POS_ROUTE_LINKS.filter((link) => {
     if (link.id === "pos") {
       return session.capabilities.includes(PORTABLE_POS_CAPABILITIES.posUse);
-    }
-
-    if (link.id === "ticket") {
-      return session.capabilities.includes(PORTABLE_POS_CAPABILITIES.todayView);
     }
 
     if (link.id === "checkIn") {
@@ -64,19 +60,34 @@ export default async function PortablePosLayout({
       return session.capabilities.includes(PORTABLE_POS_CAPABILITIES.bookView);
     }
 
-    return session.capabilities.includes(PORTABLE_POS_CAPABILITIES.reportView);
-  });
+    if (link.id === "report") {
+      return session.capabilities.includes(PORTABLE_POS_CAPABILITIES.reportView);
+    }
+
+    return false;
+  }).map((link) =>
+    link.id === "pos"
+      ? {
+          ...link,
+          label: "Ticket",
+        }
+      : link,
+  );
 
   return (
     <main
-      className="portable-kiosk-surface relative h-dvh w-dvw overflow-hidden bg-zinc-100 text-zinc-950"
+      className="portable-kiosk-surface relative flex h-dvh w-dvw flex-col overflow-hidden bg-zinc-100 text-zinc-950"
       data-portable-pos-shell
       data-portable-shell
+      data-pos-persistent-workspace
     >
-      <div className="h-full min-h-0 overflow-hidden">{children}</div>
+      <PortableWorkspaceTabs
+        items={workspaceLinks}
+        salonName={session.salon_name}
+      />
+      <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
       <PortableShellRefresh />
       <PortableFullscreenButton />
-      <PortableFloatingNav items={routeLinks} salonName={session.salon_name} />
     </main>
   );
 }
