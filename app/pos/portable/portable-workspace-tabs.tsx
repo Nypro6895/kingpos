@@ -14,6 +14,14 @@ type PortableWorkspaceTabsProps = {
   salonName: string;
 };
 
+type IdleWindow = Window & {
+  cancelIdleCallback?: (handle: number) => void;
+  requestIdleCallback?: (
+    callback: IdleRequestCallback,
+    options?: IdleRequestOptions,
+  ) => number;
+};
+
 export function PortableWorkspaceTabs({
   items,
   salonName,
@@ -29,14 +37,15 @@ export function PortableWorkspaceTabs({
         }
       }
     };
+    const idleWindow = window as IdleWindow;
 
-    if ("requestIdleCallback" in window) {
-      const idleId = window.requestIdleCallback(prefetch, { timeout: 1200 });
-      return () => window.cancelIdleCallback(idleId);
+    if (typeof idleWindow.requestIdleCallback === "function") {
+      const idleId = idleWindow.requestIdleCallback(prefetch, { timeout: 1200 });
+      return () => idleWindow.cancelIdleCallback?.(idleId);
     }
 
-    const timeoutId = window.setTimeout(prefetch, 250);
-    return () => window.clearTimeout(timeoutId);
+    const timeoutId = globalThis.setTimeout(prefetch, 250);
+    return () => globalThis.clearTimeout(timeoutId);
   }, [items, pathname, router]);
 
   return (
