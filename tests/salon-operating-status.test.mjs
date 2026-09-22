@@ -7,6 +7,13 @@ import ts from "typescript";
 
 const root = process.cwd();
 const source = readFileSync(join(root, "lib/salon-operating-status-core.ts"), "utf8");
+const tableGrantsMigration = readFileSync(
+  join(
+    root,
+    "supabase/migrations/202609220001_salon_operating_status_table_grants.sql",
+  ),
+  "utf8",
+);
 const transpiled = ts.transpileModule(source, {
   compilerOptions: {
     module: ts.ModuleKind.CommonJS,
@@ -51,6 +58,21 @@ function resolve(input) {
     ...input,
   });
 }
+
+test("operating-hours tables grant RLS roles the required table privileges", () => {
+  assert.match(
+    tableGrantsMigration,
+    /grant select on table public\.salon_operating_hours to anon/,
+  );
+  assert.match(
+    tableGrantsMigration,
+    /grant select, insert, update, delete\s+on table public\.salon_operating_hours\s+to authenticated/,
+  );
+  assert.match(
+    tableGrantsMigration,
+    /grant select, insert, update, delete\s+on table public\.salon_special_hours\s+to authenticated/,
+  );
+});
 
 test("returns open now and closing label inside normal weekly hours", () => {
   const status = resolve({

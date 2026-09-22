@@ -373,7 +373,7 @@ export async function getCurrentSalonOperatingHoursSettings(
   const error = weeklyResult.error ?? specialResult.error;
 
   if (error) {
-    console.error("Supabase load salon operating hours failed", {
+    console.warn("Supabase load salon operating hours failed", {
       code: error.code,
       details: error.details,
       hint: error.hint,

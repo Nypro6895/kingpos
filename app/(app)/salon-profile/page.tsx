@@ -7,6 +7,7 @@ import {
   getSalonProfileMediaUrl,
 } from "@/lib/salon-profile";
 import { getCurrentSalonOperatingStatus } from "@/lib/salon-operating-status";
+import { defaultSalonOperatingStatus } from "@/lib/salon-operating-status-core";
 import { isPublicSalonProfileTeamEligible } from "@/lib/salon-profile-team";
 import { isSalonManageContext } from "@/lib/current-context";
 import { requireSalonWorkspacePageContext } from "@/lib/route-context-guards";
@@ -310,7 +311,9 @@ export default async function SalonProfilePage({
     );
   }
 
-  const operatingStatus = await getCurrentSalonOperatingStatus(context);
+  const operatingStatus = await getCurrentSalonOperatingStatus(context).catch(
+    () => defaultSalonOperatingStatus(),
+  );
   const previewData = buildPreviewData({
     ...data,
     accountId: data.context.currentAccount?.id ?? data.context.accountId ?? "",
