@@ -8,6 +8,10 @@ import {
 import { loadPublicSalonLogoPaths } from "@/lib/explore-salon-logos";
 import { getExploreInspirationPage } from "@/lib/explore-inspiration";
 import { searchExploreSalons } from "@/lib/explore-search";
+import {
+  getPublicSalonOperatingStatusesBySalonId,
+  operatingStatusFromMap,
+} from "@/lib/salon-operating-status";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -134,6 +138,7 @@ function normalizeHomeSection(
 function mapHomeSalonRow(
   row: ExploreHomeSalonRow,
   signals: ExploreDecisionSignals | undefined,
+  operatingStatus: ExploreSearchResult["operatingStatus"],
   fallbackLogoPath?: string | null,
 ): ExploreHomeSalon {
   const homeSection = normalizeHomeSection(row.section);
@@ -172,6 +177,7 @@ function mapHomeSalonRow(
     name: row.salon_name,
     nextAvailabilityLabel: decisionSignals.nextAvailabilityLabel,
     nextAvailableAt: decisionSignals.nextAvailableAt,
+    operatingStatus,
     phone: row.phone,
     postalCode: row.postal_code,
     profileCompleteness: row.profile_completeness ?? 0,
@@ -299,26 +305,30 @@ export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
     const serviceRows = Array.isArray(servicesResponse.data)
       ? (servicesResponse.data as ExplorePopularServiceRow[])
       : [];
-    const signalMap = salonsResponse.error
-      ? new Map<string, ExploreDecisionSignals>()
-      : await getExploreDecisionSignalsBySalonId(
-          rpc,
-          salonRows.map((row) => row.salon_id),
-        );
-    const logoPathMap = salonsResponse.error
-      ? new Map<string, string>()
-      : await loadPublicSalonLogoPaths({
-          rpc,
-          salonIds: salonRows
-            .filter((row) => !(row.logo_image_path ?? row.logo_path))
-            .map((row) => row.salon_id),
-        });
+    const salonIds = salonRows.map((row) => row.salon_id);
+    const [signalMap, logoPathMap, operatingStatusMap] = salonsResponse.error
+      ? [
+          new Map<string, ExploreDecisionSignals>(),
+          new Map<string, string>(),
+          new Map<string, ExploreSearchResult["operatingStatus"]>(),
+        ]
+      : await Promise.all([
+          getExploreDecisionSignalsBySalonId(rpc, salonIds),
+          loadPublicSalonLogoPaths({
+            rpc,
+            salonIds: salonRows
+              .filter((row) => !(row.logo_image_path ?? row.logo_path))
+              .map((row) => row.salon_id),
+          }),
+          getPublicSalonOperatingStatusesBySalonId(salonIds),
+        ]);
     const salons = salonsResponse.error
       ? []
       : salonRows.map((row) =>
           mapHomeSalonRow(
             row,
             signalMap.get(row.salon_id),
+            operatingStatusFromMap(operatingStatusMap, row.salon_id),
             logoPathMap.get(row.salon_id),
           ),
         );

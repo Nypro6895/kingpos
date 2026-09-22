@@ -22,19 +22,44 @@ const requestedServicesMigration = readFileSync(
   "supabase/migrations/202608150008_customer_visit_requested_services.sql",
   "utf8",
 );
+
+function read(path) {
+  return readFileSync(path, "utf8");
+}
+
+function readFirst(paths) {
+  for (const path of paths) {
+    try {
+      return read(path);
+    } catch (error) {
+      if (error?.code !== "ENOENT") {
+        throw error;
+      }
+    }
+  }
+
+  return read(paths[0]);
+}
+
 const customerVisitsService = readFileSync("lib/customer-visits.ts", "utf8");
 const posActions = readFileSync("app/pos/actions.ts", "utf8");
 const posClient = readFileSync("app/pos/pos-desk-client.tsx", "utf8");
 const posStaffTurnTone = readFileSync("lib/pos-staff-turn-tone.ts", "utf8");
 const portableActions = readFileSync("app/pos/portable/actions.ts", "utf8");
-const portablePage = readFileSync("app/pos/portable/page.tsx", "utf8");
+const portablePage = readFirst([
+  "app/(app)/pos/portable/page.tsx",
+  "app/pos/portable/page.tsx",
+]);
 const posStaffRealtime = readFileSync("lib/pos-staff-realtime.ts", "utf8");
 const customerDisplayClient = readFileSync(
   "app/pos/customer-display/customer-display-client.tsx",
   "utf8",
 );
 const todayDashboard = readFileSync("lib/today-dashboard.ts", "utf8");
-const todayPage = readFileSync("app/staff/today/page.tsx", "utf8");
+const todayPage = readFirst([
+  "app/(app)/staff/today/page.tsx",
+  "app/staff/today/page.tsx",
+]);
 const posDeskData = readFileSync("lib/pos-desk.ts", "utf8");
 
 function functionBlock(name, nextMarker) {
@@ -421,5 +446,5 @@ test("Today and POS data loaders consume the customer visit queue", () => {
   assert.match(todayDashboard, /mapWaitingVisits/);
   assert.match(todayDashboard, /source: "appointment" \| "customer_screen" \| "walk_in"/);
   assert.match(todayDashboard, /area: "waiting"/);
-  assert.match(todayPage, /Checked in from \{sourceLabel\}/);
+  assert.match(todayPage, /`Checked in from \$\{sourceLabel\}`/);
 });

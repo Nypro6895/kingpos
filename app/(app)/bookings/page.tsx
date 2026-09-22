@@ -1,4 +1,5 @@
 import { BookingWorkspaceClient } from "@/app/bookings/booking-workspace-client";
+import { PosOwnerWorkspaceTabs } from "@/app/pos/pos-owner-workspace-tabs";
 import {
   BOOKING_PERMISSIONS,
   getCurrentSalonBookingWorkspace,
@@ -31,21 +32,28 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
   const workspace = await getCurrentSalonBookingWorkspace(params, context);
 
   return (
-    <BookingWorkspaceClient
-      bookings={workspace.bookings}
-      canManageBookings={workspace.canManageBookings}
-      canViewBookings={workspace.canViewBookings}
-      filters={workspace.filters}
-      options={workspace.options}
-      accountName={context.currentAccount.name}
-      publicBookingHref={`/book/${context.currentSalon.id}`}
-      range={workspace.range}
-      requests={workspace.requests}
-      salonName={context.currentSalon.name}
-      setupPermissions={workspace.setupPermissions}
-      settings={workspace.settings}
-      timezone={workspace.timezone}
-      warnings={workspace.warnings}
-    />
+    <>
+      <div className="bg-[#fbfaf8] px-4 pt-4 sm:px-6">
+        <div className="mx-auto w-full max-w-7xl">
+          <PosOwnerWorkspaceTabs salonId={context.currentSalon.id} />
+        </div>
+      </div>
+      <BookingWorkspaceClient
+        bookings={workspace.bookings}
+        canManageBookings={workspace.canManageBookings}
+        canViewBookings={workspace.canViewBookings}
+        filters={workspace.filters}
+        options={workspace.options}
+        accountName={context.currentAccount.name}
+        publicBookingHref={`/book/${context.currentSalon.id}`}
+        range={workspace.range}
+        requests={workspace.requests}
+        salonName={context.currentSalon.name}
+        setupPermissions={workspace.setupPermissions}
+        settings={workspace.settings}
+        timezone={workspace.timezone}
+        warnings={workspace.warnings}
+      />
+    </>
   );
 }

@@ -12,9 +12,16 @@ const queueTurnFixMigration = readFileSync(
 );
 const posActions = readFileSync("app/pos/actions.ts", "utf8");
 const posDeskClient = readFileSync("app/pos/pos-desk-client.tsx", "utf8");
+const workspaceRefresh = readFileSync(
+  "app/pos/pos-workspace-realtime-refresh.tsx",
+  "utf8",
+);
+const posStaffRealtime = readFileSync("lib/pos-staff-realtime.ts", "utf8");
 const posSettingsActions = readFileSync("app/pos/settings/actions.ts", "utf8");
-const posSettingsPage = readFileSync("app/pos/settings/page.tsx", "utf8");
+const posSettingsPage = readFileSync("app/(app)/pos/settings/page.tsx", "utf8");
 const portableActions = readFileSync("app/pos/portable/actions.ts", "utf8");
+const bookingActions = readFileSync("app/bookings/actions.ts", "utf8");
+const staffActions = readFileSync("app/staff/actions.ts", "utf8");
 const portableCapabilities = readFileSync(
   "lib/pos-portable-capabilities.ts",
   "utf8",
@@ -266,12 +273,23 @@ test("leave and return catch-up is based on the leave cohort, not the current gl
   assert.match(attendanceBlock, /'AUTOMATIC_TURN_CATCH_UP'/);
 });
 
-test("portable check-in and POS mutations broadcast staff invalidations after commits", () => {
+test("POS workspace mutations broadcast realtime invalidations after commits", () => {
   assert.match(portableActions, /broadcastPosStaffChange\(portableSession\.salon_id, "attendance"\)/);
   assert.match(portableActions, /broadcastPosStaffChange\(portableSession\.salon_id, "turn_adjust"\)/);
   assert.match(portableActions, /broadcastPosStaffChange\(portableSession\.salon_id, "pos"\)/);
   assert.match(posDeskClient, /POS_STAFF_BROADCAST_EVENT/);
   assert.match(posDeskClient, /router\.refresh\(\)/);
+  assert.match(workspaceRefresh, /POS_STAFF_BROADCAST_EVENT/);
+  assert.match(workspaceRefresh, /payload\.salonId === salonId/);
+  assert.match(workspaceRefresh, /router\.refresh\(\)/);
+  assert.match(posStaffRealtime, /\| "booking"/);
+  assert.match(posStaffRealtime, /\| "staff"/);
+  assert.ok(
+    (bookingActions.match(/broadcastPosStaffChange\([^;\n]+, "booking"\)/g) ??
+      []).length >= 8,
+    "booking workspace changes publish POS workspace invalidations",
+  );
+  assert.match(staffActions, /broadcastPosStaffChange\(context\.currentSalon\.id, "staff"\)/);
 });
 
 test("portable POS staff-card long press has cancellation and keyboard contracts", () => {

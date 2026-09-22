@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import styles from "../auth-screen.module.css";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -62,29 +63,51 @@ function AuthVisualCard({
 
 function BrandExperience() {
   return (
-    <section className="relative hidden min-h-[calc(100dvh-9rem)] overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,#fff9f2_0%,#fff3eb_44%,#eef8f6_100%)] px-8 py-8 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.72)] lg:flex lg:flex-col xl:px-10">
-      <div className="relative z-10 flex items-start justify-between gap-6">
-        <BrandLogo />
-        <p className="max-w-48 rounded-full border border-white/80 bg-white/70 px-4 py-2 text-right text-xs font-bold uppercase text-brand-teal shadow-sm">
+    <section
+      className={[
+        styles.brandExperience,
+        "relative overflow-hidden rounded-[2rem] bg-[linear-gradient(145deg,#fff9f2_0%,#fff3eb_44%,#eef8f6_100%)] px-8 py-8 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.72)] xl:px-10",
+      ].join(" ")}
+    >
+      <div className="relative z-10 flex flex-col items-start">
+        <BrandLogo className={styles.authLogo} />
+        <p
+          className={[
+            styles.brandBadge,
+            "mt-1 text-xs font-bold uppercase text-brand-teal",
+          ].join(" ")}
+        >
           Beauty and personal services
         </p>
       </div>
 
-      <div className="relative z-10 mt-14 max-w-2xl">
-        <p className="text-sm font-extrabold uppercase text-brand-orange">
-          ReyLUMI
-        </p>
-        <h1 className="mt-4 max-w-xl text-5xl font-semibold leading-[1.02] text-text-primary xl:text-[4.35rem]">
+      <div className={[styles.brandCopy, "relative z-10 max-w-2xl"].join(" ")}>
+        <h1
+          className={[
+            styles.brandHeadline,
+            "max-w-xl font-semibold text-text-primary",
+          ].join(" ")}
+        >
           Where beauty gets personal.
         </h1>
-        <p className="mt-5 max-w-lg text-base leading-7 text-text-secondary xl:text-lg">
+        <p
+          className={[
+            styles.brandBody,
+            "max-w-lg text-base leading-7 text-text-secondary xl:text-lg",
+          ].join(" ")}
+        >
           Discover trusted places, keep your look history, and book the people
           who know your style.
         </p>
       </div>
 
-      <div className="relative z-10 mt-auto h-[min(48vh,31rem)] min-h-[24rem]">
-        <div className="absolute inset-x-0 bottom-0 top-8 overflow-hidden rounded-[1.75rem] border border-white/85 bg-white shadow-[0_28px_90px_rgba(35,25,22,0.12)]">
+      <div className={styles.brandVisual}>
+        <div
+          className={[
+            styles.brandImagePanel,
+            "absolute inset-x-0 bottom-0 overflow-hidden rounded-[1.75rem] border border-white/85 bg-white shadow-[0_28px_90px_rgba(35,25,22,0.12)]",
+          ].join(" ")}
+        >
           <Image
             alt="Nail, hair, lash, and spa service details"
             className="object-cover"
@@ -95,7 +118,7 @@ function BrandExperience() {
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0)_42%,rgba(36,27,31,0.2)_100%)]" />
         </div>
 
-        <AuthVisualCard className="absolute left-6 top-0 w-56">
+        <AuthVisualCard className={[styles.visualCard, "absolute left-6 top-0 w-56"].join(" ")}>
           <p className="text-xs font-extrabold uppercase text-brand-orange">
             Beauty profile
           </p>
@@ -104,7 +127,9 @@ function BrandExperience() {
           </p>
         </AuthVisualCard>
 
-        <AuthVisualCard className="absolute bottom-8 right-5 w-64">
+        <AuthVisualCard
+          className={[styles.visualCard, "absolute bottom-8 right-5 w-64"].join(" ")}
+        >
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-extrabold uppercase text-brand-teal">
@@ -118,7 +143,12 @@ function BrandExperience() {
           </div>
         </AuthVisualCard>
 
-        <div className="absolute bottom-10 left-6 hidden flex-wrap gap-2 xl:flex">
+        <div
+          className={[
+            styles.categoryPills,
+            "absolute bottom-10 left-6 hidden flex-wrap gap-2 xl:flex",
+          ].join(" ")}
+        >
           {["Hair", "Nails", "Spa", "Lashes", "Barber"].map((category) => (
             <span
               className="rounded-full border border-white/80 bg-white/82 px-3 py-1.5 text-xs font-extrabold text-text-primary shadow-sm backdrop-blur"
@@ -135,8 +165,13 @@ function BrandExperience() {
 
 function MobileBrandVisual() {
   return (
-    <div className="relative mt-5 overflow-hidden rounded-[1.35rem] border border-white bg-white shadow-[0_18px_48px_rgba(35,25,22,0.08)] lg:hidden">
-      <div className="relative h-28">
+    <div
+      className={[
+        styles.mobileBrandVisual,
+        "rounded-[1.35rem] border border-white bg-white shadow-[0_18px_48px_rgba(35,25,22,0.08)]",
+      ].join(" ")}
+    >
+      <div className={styles.mobileVisualImage}>
         <Image
           alt="Beauty services and salon details"
           className="object-cover"
@@ -158,58 +193,93 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const nextPath = sanitizeAuthReturnPath(next);
 
   return (
-    <main className="flex min-h-dvh flex-col overflow-x-hidden bg-[linear-gradient(135deg,#fffaf5_0%,#ffffff_48%,#eef8f6_100%)] text-text-primary">
-      <div className="mx-auto grid w-full max-w-[92rem] flex-1 gap-8 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1.28fr)_minmax(23rem,0.92fr)] lg:px-8 lg:py-8 xl:gap-12 xl:px-12">
-        <BrandExperience />
+    <div className={styles.authViewport}>
+      <main className={styles.authMain}>
+        <div className={[styles.authGrid, styles.loginGrid].join(" ")}>
+          <BrandExperience />
 
-        <section className="flex min-h-[calc(100dvh-7.5rem)] items-center justify-center lg:min-h-[calc(100dvh-9rem)]">
-          <div className="w-full max-w-[28rem]">
-            <div className="lg:hidden">
-              <BrandLogo />
-              <MobileBrandVisual />
-            </div>
+          <section className={styles.authPanel}>
+            <div className={styles.authPanelInner}>
+              <div className={styles.mobileHeader}>
+                <BrandLogo className={styles.authLogo} />
+                <MobileBrandVisual />
+              </div>
 
-            <div className="mt-6 rounded-[1.5rem] border border-white/90 bg-white/94 p-5 shadow-[0_24px_80px_rgba(35,25,22,0.11)] backdrop-blur sm:p-7 lg:mt-0">
-              <p className="hidden text-xs font-extrabold uppercase text-brand-orange lg:block">
-                ReyLUMI account
-              </p>
-              <h2 className="text-3xl font-semibold tracking-normal text-text-primary">
-                Welcome back
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Sign in to continue to ReyLUMI.
-              </p>
-
-              {message ? (
-                <p className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-                  {message}
+              <div
+                className={[
+                  styles.authCard,
+                  "rounded-[1.5rem] border border-white/90 bg-white/94 shadow-[0_24px_80px_rgba(35,25,22,0.11)] backdrop-blur",
+                ].join(" ")}
+              >
+                <p className="hidden text-xs font-extrabold uppercase text-brand-orange lg:block">
+                  ReyLUMI account
                 </p>
-              ) : null}
-              {error ? (
-                <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-                  {error}
-                </p>
-              ) : null}
-
-              <LoginForm nextPath={nextPath} />
-
-              <div className="mt-6 border-t border-divider-subtle pt-5">
-                <p className="text-sm leading-6 text-text-secondary">
-                  Discover services, save your beauty journey, and book your
-                  favorites.
-                </p>
-                <Link
-                  className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-2xl border border-border-subtle bg-surface-muted px-4 text-center text-sm font-extrabold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                  href={`/signup?next=${encodeURIComponent(nextPath)}`}
+                <h2 className="text-3xl font-semibold tracking-normal text-text-primary">
+                  Welcome back
+                </h2>
+                <p
+                  className={[
+                    styles.authIntro,
+                    "text-sm leading-6 text-text-secondary",
+                  ].join(" ")}
                 >
-                  Create a ReyLUMI account
-                </Link>
+                  Sign in to continue to ReyLUMI.
+                </p>
+
+                {message ? (
+                  <p
+                    className={[
+                      styles.authNotice,
+                      "rounded-2xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-800",
+                    ].join(" ")}
+                  >
+                    {message}
+                  </p>
+                ) : null}
+                {error ? (
+                  <p
+                    className={[
+                      styles.authNotice,
+                      "rounded-2xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-800",
+                    ].join(" ")}
+                  >
+                    {error}
+                  </p>
+                ) : null}
+
+                <LoginForm
+                  nextPath={nextPath}
+                  showRecoveryHelpInitially={Boolean(error)}
+                />
+
+                <div
+                  className={[
+                    styles.loginSecondary,
+                    "border-t border-divider-subtle",
+                  ].join(" ")}
+                >
+                  <p
+                    className={[
+                      styles.loginSecondaryText,
+                      "text-sm leading-6 text-text-secondary",
+                    ].join(" ")}
+                  >
+                    Discover services, save your beauty journey, and book your
+                    favorites.
+                  </p>
+                  <Link
+                    className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-2xl border border-border-subtle bg-surface-muted px-4 text-center text-sm font-extrabold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                    href={`/signup?next=${encodeURIComponent(nextPath)}`}
+                  >
+                    Create a ReyLUMI account
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      </div>
+          </section>
+        </div>
+      </main>
       <LegalFooter />
-    </main>
+    </div>
   );
 }

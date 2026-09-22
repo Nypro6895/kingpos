@@ -10,11 +10,16 @@ import {
 } from "@/app/explore/customer-explore-utility-panel";
 import { ExploreFeed } from "@/app/explore/explore-feed";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
+import { SalonOperatingStatusBadge } from "@/components/salon-operating-status-badge";
 import {
   LumiTrustMark,
   LumiTrustPopover,
   TrustFactPill,
 } from "@/components/reylumi-trust";
+import {
+  ReylumiIcon,
+  type ReylumiIconName,
+} from "@/components/reylumi-icons";
 import {
   type ExploreDiscoveryContent,
   type ExploreDiscoveryResultKind,
@@ -34,6 +39,8 @@ import {
 import {
   buildReylumiTrustSummary,
   compareReylumiTopRatedSalons,
+  compactReylumiCount,
+  formatReylumiRating,
   orderReylumiExploreResults,
   type ReylumiExploreSearchOrder,
   type ReylumiTrustSummary,
@@ -156,8 +163,8 @@ const EXPLORE_DISCOVERY_CATEGORIES = [
   { category: "All", icon: "grid", label: "All" },
   { category: "Nails", icon: "hand", label: "Nails" },
   { category: "Hair", icon: "user", label: "Hair" },
-  { category: "Spa", icon: "spa", label: "Spa" },
   { category: "Lashes", icon: "eye", label: "Lashes" },
+  { category: "Spa", icon: "spa", label: "Spa" },
   { category: "Brows", icon: "brow", label: "Brows" },
   { category: "Massage", icon: "massage", label: "Massage" },
 ] as const;
@@ -250,20 +257,6 @@ function formatDisplayLocation(value: string) {
   }
 
   return location;
-}
-
-function formatAddress(salon: ExploreSearchResult) {
-  const cityState = formatDisplayLocation(
-    [salon.city, salon.state].filter(Boolean).join(", "),
-  );
-
-  return [
-    salon.addressLine1,
-    salon.addressLine2,
-    [cityState, salon.postalCode].filter(Boolean).join(" "),
-  ]
-    .filter(Boolean)
-    .join(", ");
 }
 
 function formatDistance(distanceMiles: number | null) {
@@ -401,10 +394,12 @@ function ExploreCategoryIcon({ name }: { name: ExploreCategoryIconName }) {
 }
 
 function CategoryChips({
+  allLabel = "All",
   category,
   onChange,
   onMore,
 }: {
+  allLabel?: string;
   category: string;
   onChange: (category: string) => void;
   onMore: () => void;
@@ -421,6 +416,7 @@ function CategoryChips({
           const optionCategory = cleanCategory(option.category);
           const isActive =
             optionCategory.toLowerCase() === selectedCategory.toLowerCase();
+          const label = option.category === "All" ? allLabel : option.label;
 
           return (
             <button
@@ -436,7 +432,7 @@ function CategoryChips({
               type="button"
             >
               <ExploreCategoryIcon name={option.icon} />
-              <span>{option.label}</span>
+              <span>{label}</span>
             </button>
           );
         })}
@@ -465,6 +461,22 @@ function formatMoney(value: number) {
     maximumFractionDigits: value % 1 === 0 ? 0 : 2,
     style: "currency",
   }).format(value);
+}
+
+function formatDuration(minutes: number) {
+  const rounded = Math.max(1, Math.round(minutes));
+  const hours = Math.floor(rounded / 60);
+  const remainingMinutes = rounded % 60;
+
+  if (hours > 0 && remainingMinutes > 0) {
+    return `${hours}h ${remainingMinutes}m`;
+  }
+
+  if (hours > 0) {
+    return `${hours}h`;
+  }
+
+  return `${remainingMinutes}m`;
 }
 
 function salonInitials(name: string) {
@@ -558,214 +570,478 @@ function cardDetailLine(salon: ExploreSearchResult) {
   return [service, price].filter(Boolean).join(" / ");
 }
 
-type ExploreHeroSlide = {
-  alt: string;
-  bookingHref: string | null;
-  id: string;
-  imageUrl: string;
-  salonHref: string | null;
-  salonName: string;
-  serviceLabel: string | null;
-};
-
-function heroSlidesFromContent(content: ExploreHomeContent): ExploreHeroSlide[] {
-  const slides: ExploreHeroSlide[] = [];
-  const seenUrls = new Set<string>();
-
-  for (const item of content.inspiration.items.slice(0, 4)) {
-    if (seenUrls.has(item.imageUrl)) {
-      continue;
-    }
-
-    seenUrls.add(item.imageUrl);
-    slides.push({
-      alt: `${item.salonName} beauty inspiration`,
-      bookingHref: item.bookingHref,
-      id: `inspiration:${item.mediaId}`,
-      imageUrl: item.imageUrl,
-      salonHref: item.salonHref,
-      salonName: item.salonName,
-      serviceLabel: inspirationServiceLabel(item),
-    });
+function salonRatingLine(salon: ExploreSearchResult) {
+  if (salon.averageRating === null) {
+    return null;
   }
 
-  for (const salon of [...content.recommendedSalons, ...content.newSalons]) {
-    if (!salon.coverImageUrl || seenUrls.has(salon.coverImageUrl)) {
-      continue;
-    }
+  const reviewCount = Math.max(
+    salon.sharedExperienceCount,
+    salon.reviewCount,
+  );
+  const rating = formatReylumiRating(salon.averageRating);
 
-    seenUrls.add(salon.coverImageUrl);
-    slides.push({
-      alt: `${salon.name} salon photo`,
-      bookingHref: salon.bookingHref,
-      id: `salon:${salon.id}`,
-      imageUrl: salon.coverImageUrl,
-      salonHref:
-        UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
-          ? salonProfileHref(salon.id)
-          : null,
-      salonName: salon.name,
-      serviceLabel: cardServiceLabel(salon),
-    });
-
-    if (slides.length >= 4) {
-      break;
-    }
-  }
-
-  return slides;
+  return reviewCount > 0
+    ? `${rating} (${compactReylumiCount(reviewCount)})`
+    : rating;
 }
 
-function ExploreHero({
-  content,
-  onExploreClick,
-}: {
-  content: ExploreHomeContent;
-  onExploreClick: () => void;
-}) {
-  const slides = useMemo(() => heroSlidesFromContent(content), [content]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeIndexWithinBounds = slides.length > 0 ? activeIndex % slides.length : 0;
-  const activeSlide = slides[activeIndexWithinBounds] ?? null;
-  const hasSlides = slides.length > 0;
-
-  useEffect(() => {
-    if (slides.length <= 1) {
-      return;
-    }
-
-    const interval = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % slides.length);
-    }, 5200);
-
-    return () => window.clearInterval(interval);
-  }, [slides.length]);
-
-  function move(delta: number) {
-    if (slides.length <= 1) {
-      return;
-    }
-
-    setActiveIndex((current) => (current + delta + slides.length) % slides.length);
+function salonAvailabilityLine(salon: ExploreSearchResult) {
+  if (salon.nextAvailabilityLabel) {
+    return salon.nextAvailabilityLabel;
   }
 
-  const heroTitle =
-    activeSlide?.serviceLabel ?? activeSlide?.salonName ?? "Discover beauty around you";
-  const heroContext = activeSlide
-    ? [activeSlide.salonName, activeSlide.serviceLabel]
-        .filter((value, index, all) => Boolean(value) && all.indexOf(value) === index)
-        .join(" · ")
-    : "Public looks and salon updates";
-  const heroHref = activeSlide?.bookingHref ?? activeSlide?.salonHref ?? null;
-  const heroActionLabel = activeSlide?.bookingHref
-    ? "Book"
-    : activeSlide?.salonHref
-      ? "View salon"
-      : "Search Explore";
+  if (salon.operatingStatus.isOpen) {
+    return salon.operatingStatus.closesAtLocal
+      ? `Open until ${salon.operatingStatus.closesAtLocal}`
+      : "Open now";
+  }
+
+  return salon.operatingStatus.nextOpensLabel ?? null;
+}
+
+function inspirationDetailHref(item: ExploreInspirationItem) {
+  return item.salonHref
+    ? `${item.salonHref}#${item.contentType}-${item.contentId}`
+    : item.bookingHref ?? "/explore";
+}
+
+function shortcutIconName(shortcut: ExploreDiscoveryShortcut): ReylumiIconName {
+  if (shortcut.id === "available-today") {
+    return "calendar";
+  }
+
+  if (shortcut.id === "near-you") {
+    return "map-pin";
+  }
+
+  if (shortcut.id === "top-rated") {
+    return "star";
+  }
+
+  if (shortcut.id === "under-60") {
+    return "dollar";
+  }
+
+  if (shortcut.id === "trending") {
+    return "flame";
+  }
+
+  return "sparkle";
+}
+
+function shortcutToneClass(shortcut: ExploreDiscoveryShortcut) {
+  if (shortcut.id === "available-today" || shortcut.id === "near-you") {
+    return "bg-sky-50 text-sky-600 ring-sky-100";
+  }
+
+  if (shortcut.id === "top-rated") {
+    return "bg-amber-50 text-amber-600 ring-amber-100";
+  }
+
+  if (shortcut.id === "under-60") {
+    return "bg-violet-50 text-violet-600 ring-violet-100";
+  }
+
+  if (shortcut.id === "trending") {
+    return "bg-rose-50 text-rose-600 ring-rose-100";
+  }
+
+  return "bg-emerald-50 text-emerald-600 ring-emerald-100";
+}
+
+function DesktopShortcutCard({
+  activeResultKind,
+  onSelect,
+  shortcut,
+}: {
+  activeResultKind: ExploreDiscoveryResultKind | null;
+  onSelect: (shortcut: ExploreDiscoveryShortcut) => void;
+  shortcut: ExploreDiscoveryShortcut;
+}) {
+  const active =
+    shortcut.action.type === "result" &&
+    shortcut.action.resultKind === activeResultKind;
+  const className = [
+    "group grid min-h-[5.75rem] content-center rounded-[0.8rem] bg-white p-3 text-left shadow-[0_8px_18px_rgba(35,25,22,0.035)] ring-1 transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+    active ? "ring-brand-orange/35" : "ring-divider-subtle/75",
+  ].join(" ");
+  const content = (
+    <span className="flex min-w-0 items-center gap-3">
+      <span
+        className={`grid h-10 w-10 shrink-0 place-items-center rounded-[0.75rem] ring-1 ${shortcutToneClass(
+          shortcut,
+        )}`}
+      >
+        <ReylumiIcon className="h-5 w-5" name={shortcutIconName(shortcut)} />
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-semibold text-text-primary">
+          {shortcut.label}
+        </span>
+        <span className="mt-0.5 block truncate text-xs font-semibold text-text-secondary">
+          {shortcut.actionLabel}
+        </span>
+        {shortcut.context ? (
+          <span className="mt-0.5 block truncate text-[11px] text-text-muted">
+            {shortcut.context}
+          </span>
+        ) : null}
+      </span>
+    </span>
+  );
+
+  if (shortcut.action.type === "href") {
+    return (
+      <Link className={className} href={shortcut.action.href}>
+        {content}
+      </Link>
+    );
+  }
 
   return (
-    <section
-      className="relative min-h-[7.25rem] overflow-hidden rounded-[0.95rem] bg-white shadow-[0_8px_22px_rgba(35,25,22,0.035)] ring-1 ring-divider-subtle/65"
-      data-testid="explore-hero"
+    <button
+      aria-pressed={active}
+      className={className}
+      onClick={() => onSelect(shortcut)}
+      type="button"
     >
-      {activeSlide ? (
-        <Image
-          alt={activeSlide.alt}
-          className="object-cover object-[72%_center] transition-opacity duration-500"
-          fill
-          priority
-          sizes="(max-width: 768px) 100vw, 40rem"
-          src={activeSlide.imageUrl}
+      {content}
+    </button>
+  );
+}
+
+function DesktopShortcutGrid({
+  activeResultKind,
+  onSelect,
+  shortcuts,
+}: {
+  activeResultKind: ExploreDiscoveryResultKind | null;
+  onSelect: (shortcut: ExploreDiscoveryShortcut) => void;
+  shortcuts: ExploreDiscoveryShortcut[];
+}) {
+  if (shortcuts.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+      {shortcuts.slice(0, 5).map((shortcut) => (
+        <DesktopShortcutCard
+          activeResultKind={activeResultKind}
+          key={shortcut.id}
+          onSelect={onSelect}
+          shortcut={shortcut}
         />
-      ) : (
-        <div className="absolute inset-0 grid place-items-center bg-brand-orange-soft px-10 text-center">
-          <Image
-            alt="Reylumi"
-            className="h-auto w-56 max-w-[70%] object-contain opacity-90"
-            height={452}
-            priority
-            src="/brand/reylumi-logo-tagline.png"
-            width={1313}
+      ))}
+    </div>
+  );
+}
+
+function inspirationPriceLabel(item: ExploreInspirationItem) {
+  return item.bookingMeta.price !== null
+    ? `${formatMoney(item.bookingMeta.price)}+`
+    : null;
+}
+
+function inspirationDurationLabel(item: ExploreInspirationItem) {
+  return item.bookingMeta.durationMinutes !== null
+    ? formatDuration(item.bookingMeta.durationMinutes)
+    : null;
+}
+
+function inspirationDistanceLabel(item: ExploreInspirationItem) {
+  const distance = item.bookingMeta.distanceMiles;
+
+  if (distance === null) {
+    return null;
+  }
+
+  return distance < 10 ? `${distance.toFixed(1)} mi` : `${Math.round(distance)} mi`;
+}
+
+function inspirationRatingLabel(item: ExploreInspirationItem) {
+  const rating = item.trust.averageRating;
+  const reviews = item.trust.sharedExperienceCount;
+
+  if (rating === null || rating === undefined) {
+    return null;
+  }
+
+  return `${rating.toFixed(1)} (${reviews})`;
+}
+
+function inspirationAvailabilityLabel(item: ExploreInspirationItem) {
+  return (
+    item.bookingMeta.availabilityLabel ??
+    (item.operatingStatus.isOpen
+      ? "Available today"
+      : item.operatingStatus.nextOpensLabel)
+  );
+}
+
+function DesktopSocialProof({ content }: { content: ExploreHomeContent }) {
+  const proofImages = content.inspiration.items.slice(0, 5);
+
+  return (
+    <div className="flex min-w-0 items-center gap-3 rounded-[0.9rem] bg-white/82 px-3 py-2 ring-1 ring-divider-subtle/70">
+      <div className="flex -space-x-2">
+        {proofImages.map((item, index) => (
+          <span
+            className="relative block h-9 w-9 overflow-hidden rounded-full bg-surface-muted ring-2 ring-white"
+            key={`${item.mediaId}:${index}`}
+          >
+            <Image
+              alt=""
+              className="object-cover"
+              fill
+              loading="lazy"
+              sizes="36px"
+              src={item.salonLogoImageUrl ?? item.imageUrl}
+            />
+          </span>
+        ))}
+        {proofImages.length === 0 ? (
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-orange text-xs font-black text-white ring-2 ring-white">
+            R
+          </span>
+        ) : null}
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold text-text-primary">
+          Loved by 50,000+ beauty lovers
+        </p>
+        <p className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-text-secondary">
+          <span className="text-amber-500">★★★★★</span>
+          <span>4.9 (12K+ reviews)</span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function DesktopInspiredCard({
+  item,
+  priority = false,
+}: {
+  item: ExploreInspirationItem;
+  priority?: boolean;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const href = inspirationDetailHref(item);
+  const service = inspirationServiceLabel(item) ?? "Featured look";
+  const price = inspirationPriceLabel(item);
+  const duration = inspirationDurationLabel(item);
+  const distance = inspirationDistanceLabel(item);
+  const rating = inspirationRatingLabel(item);
+  const availability = inspirationAvailabilityLabel(item);
+
+  return (
+    <article className="overflow-hidden rounded-[0.85rem] bg-white shadow-[0_12px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(35,25,22,0.08)]">
+      <div className="relative p-2 pb-0">
+        <Link
+          aria-label={`Open ${service} from ${item.salonName}`}
+          className="group block overflow-hidden rounded-[0.75rem] bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          href={href}
+        >
+          <span className="relative block aspect-[4/3]">
+            {imageFailed ? (
+              <span className="grid h-full w-full place-items-center bg-brand-orange-soft text-lg font-semibold text-brand-orange">
+                {salonInitials(item.salonName)}
+              </span>
+            ) : (
+              <Image
+                alt={`${service} from ${item.salonName}`}
+                className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                fill
+                loading={priority ? "eager" : "lazy"}
+                onError={() => setImageFailed(true)}
+                priority={priority}
+                sizes="(max-width: 1280px) 22vw, 280px"
+                src={item.imageUrl}
+              />
+            )}
+          </span>
+        </Link>
+        {availability ? (
+          <span className="absolute left-4 top-4 rounded-full bg-emerald-50/95 px-2.5 py-1 text-[10px] font-bold text-emerald-700 shadow-sm ring-1 ring-emerald-100">
+            {availability}
+          </span>
+        ) : null}
+        {item.saveTarget ? (
+          <SavePostButton
+            className="absolute right-4 top-4"
+            initialSaved={item.saveTarget.saved}
+            saveCount={item.saveTarget.saveCount}
+            size="compact"
+            target={item.saveTarget}
           />
-        </div>
-      )}
-      <div
-        aria-hidden
-        className={[
-          "absolute inset-0",
-          hasSlides
-            ? "bg-[linear-gradient(90deg,rgba(255,247,241,0.96)_0%,rgba(255,247,241,0.78)_45%,rgba(255,247,241,0.12)_100%)]"
-            : "bg-white/18",
-        ].join(" ")}
-      />
-      <div className="relative z-10 grid min-h-[7.25rem] content-center gap-2 px-4 py-3.5 sm:px-5 lg:max-w-[66%]">
-        <div>
-          <p className="text-[11px] font-semibold uppercase text-brand-orange">
-            Featured now
-          </p>
-          <h2 className="mt-1 line-clamp-2 max-w-sm text-lg font-semibold leading-tight text-text-primary">
-            {heroTitle}
-          </h2>
-          <p className="mt-1 line-clamp-1 max-w-sm text-xs font-semibold text-brand-teal">
-            {heroContext}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {heroHref ? (
+        ) : (
+          <span className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-white/92 text-text-secondary shadow-sm ring-1 ring-white/80">
+            <ReylumiIcon className="h-4 w-4" name="bookmark" />
+          </span>
+        )}
+      </div>
+      <div className="grid gap-2 p-3">
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="min-w-0">
             <Link
-              className="inline-flex min-h-8 items-center rounded-full bg-brand-orange px-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={heroHref}
+              className="inline-flex max-w-full items-center gap-1.5 rounded-md text-sm font-semibold text-text-primary transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              href={item.salonHref ?? href}
             >
-              {heroActionLabel}
+              <span className="truncate">{item.salonName}</span>
+              <ReylumiIcon
+                className="h-3.5 w-3.5 shrink-0 text-sky-500"
+                name="verified"
+              />
             </Link>
-          ) : (
-            <button
-              className="inline-flex min-h-8 items-center rounded-full bg-brand-orange px-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              onClick={onExploreClick}
-              type="button"
+            <p className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1 text-[11px] font-semibold text-text-secondary">
+              {rating ? (
+                <>
+                  <span className="text-amber-500">★</span>
+                  <span>{rating}</span>
+                </>
+              ) : null}
+              {distance ? (
+                <>
+                  <span className="text-text-muted/60">·</span>
+                  <span>{distance}</span>
+                </>
+              ) : null}
+            </p>
+          </div>
+          {item.bookingHref ? (
+            <Link
+              className="inline-flex h-8 shrink-0 items-center justify-center rounded-[0.55rem] bg-brand-orange px-3 text-xs font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              href={item.bookingHref}
             >
-              {heroActionLabel}
-            </button>
-          )}
+              Book
+            </Link>
+          ) : null}
+        </div>
+        <div className="grid gap-1">
+          <p className="truncate text-sm font-semibold text-text-primary">
+            {service}
+          </p>
+          <p className="flex flex-wrap gap-x-2 gap-y-1 text-xs font-semibold text-text-secondary">
+            {price ? <span className="text-text-primary">{price}</span> : null}
+            {duration ? <span>{duration}</span> : null}
+          </p>
         </div>
       </div>
-      {slides.length > 1 ? (
-        <>
-          <button
-            aria-label="Previous inspiration"
-            className="absolute left-2 top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-text-secondary shadow-sm ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            onClick={() => move(-1)}
-            type="button"
-          >
-            <span aria-hidden>&lsaquo;</span>
-          </button>
-          <button
-            aria-label="Next inspiration"
-            className="absolute right-2 top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-text-secondary shadow-sm ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            onClick={() => move(1)}
-            type="button"
-          >
-            <span aria-hidden>&rsaquo;</span>
-          </button>
-          <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-2">
-            {slides.map((slide, index) => (
-              <button
-                aria-label={`Show inspiration ${index + 1}`}
-                className={[
-                  "h-2 rounded-full transition",
-                  index === activeIndexWithinBounds
-                    ? "w-5 bg-brand-orange"
-                    : "w-2 bg-white/85",
-                ].join(" ")}
-                key={slide.id}
-                onClick={() => setActiveIndex(index)}
-                type="button"
-              />
-            ))}
-          </div>
-        </>
-      ) : null}
+    </article>
+  );
+}
+
+function DesktopInspiredGrid({ content }: { content: ExploreHomeContent }) {
+  const items = content.inspiration.items.slice(0, 4);
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="grid gap-3" data-testid="desktop-inspired-style">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-base font-semibold text-text-primary">
+            Inspired by your style
+          </h2>
+          <p className="mt-0.5 text-xs font-medium text-text-secondary">
+            Real work, prices, time, distance, and open booking context.
+          </p>
+        </div>
+        <Link
+          className="text-xs font-semibold text-brand-orange transition hover:text-brand-orange-hover"
+          href="/explore?category=Nails"
+        >
+          View all
+        </Link>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {items.map((item, index) => (
+          <DesktopInspiredCard
+            item={item}
+            key={item.mediaId}
+            priority={index === 0}
+          />
+        ))}
+      </div>
     </section>
+  );
+}
+
+function DesktopExploreLanding({
+  activeDiscoveryResult,
+  content,
+  discoveryShortcuts,
+  onExploreClick,
+  onSelectCategory,
+  onSelectDiscoveryShortcut,
+  selectedCategory,
+}: {
+  activeDiscoveryResult: ExploreDiscoveryResultKind | null;
+  content: ExploreHomeContent;
+  discoveryShortcuts: ExploreDiscoveryShortcut[];
+  onExploreClick: () => void;
+  onSelectCategory: (category: string) => void;
+  onSelectDiscoveryShortcut: (shortcut: ExploreDiscoveryShortcut) => void;
+  selectedCategory: string;
+}) {
+  const bookableCount = mergeHomeSalons(
+    content.recommendedSalons,
+    content.newSalons,
+  ).filter((salon) => salon.bookingEnabled).length;
+
+  return (
+    <div className="hidden bg-[linear-gradient(180deg,#fffaf7_0%,#ffffff_85%)] px-8 pb-6 pt-4 xl:block">
+      <div className="mx-auto grid w-full max-w-[92rem] overflow-hidden rounded-[1rem] bg-white shadow-[0_18px_50px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/75">
+        <div className="grid gap-5 px-7 py-7">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-center">
+            <div className="min-w-0">
+              <h1 className="max-w-xl text-3xl font-semibold leading-tight text-text-primary">
+                Discover local beauty pros. See real work.{" "}
+                <span className="text-brand-orange">Book instantly.</span>
+              </h1>
+              <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold text-text-secondary">
+                <span className="inline-flex items-center gap-1.5">
+                  <ReylumiIcon className="h-4 w-4 text-amber-500" name="star" />
+                  Real reviews
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ReylumiIcon className="h-4 w-4 text-sky-500" name="verified" />
+                  Verified pros
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ReylumiIcon className="h-4 w-4 text-brand-teal" name="calendar" />
+                  Instant booking
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ReylumiIcon className="h-4 w-4 text-text-muted" name="check" />
+                  Secure payments
+                </span>
+              </div>
+            </div>
+            <DesktopSocialProof content={content} />
+          </div>
+          <CategoryChips
+            category={selectedCategory}
+            onChange={onSelectCategory}
+            onMore={onExploreClick}
+          />
+          <DesktopShortcutGrid
+            activeResultKind={activeDiscoveryResult}
+            onSelect={onSelectDiscoveryShortcut}
+            shortcuts={discoveryShortcuts}
+          />
+          <DesktopInspiredGrid content={content} />
+          <p className="sr-only">
+            Explore shows {content.inspiration.items.length} public looks and{" "}
+            {bookableCount} bookable shops.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -866,6 +1142,91 @@ function topRatedSalons(
     .slice(0, 8);
 }
 
+function mergeExploreResults(
+  ...groups: ExploreSearchResult[][]
+): ExploreSearchResult[] {
+  const byId = new Map<string, ExploreSearchResult>();
+
+  for (const group of groups) {
+    for (const salon of group) {
+      if (!byId.has(salon.id)) {
+        byId.set(salon.id, salon);
+      }
+    }
+  }
+
+  return [...byId.values()];
+}
+
+function availableTodayResults({
+  content,
+  nearYouSalons,
+  searchResults,
+}: {
+  content: ExploreHomeContent;
+  nearYouSalons: ExploreHomeSalon[];
+  searchResults: ExploreSearchResult[];
+}) {
+  return mergeExploreResults(
+    nearYouSalons,
+    content.recommendedSalons,
+    content.newSalons,
+    searchResults,
+  )
+    .filter(
+      (salon) =>
+        Boolean(salon.nextAvailabilityLabel) || salon.operatingStatus.isOpen,
+    )
+    .sort((left, right) => {
+      const leftTime = left.nextAvailableAt
+        ? new Date(left.nextAvailableAt).getTime()
+        : Number.POSITIVE_INFINITY;
+      const rightTime = right.nextAvailableAt
+        ? new Date(right.nextAvailableAt).getTime()
+        : Number.POSITIVE_INFINITY;
+
+      if (leftTime !== rightTime) {
+        return leftTime - rightTime;
+      }
+
+      return (
+        Number(right.operatingStatus.isOpen) -
+        Number(left.operatingStatus.isOpen)
+      );
+    })
+    .slice(0, 12);
+}
+
+function underBudgetResults({
+  budget,
+  content,
+  nearYouSalons,
+  searchResults,
+}: {
+  budget: number;
+  content: ExploreHomeContent;
+  nearYouSalons: ExploreHomeSalon[];
+  searchResults: ExploreSearchResult[];
+}) {
+  return mergeExploreResults(
+    nearYouSalons,
+    content.recommendedSalons,
+    content.newSalons,
+    searchResults,
+  )
+    .filter(
+      (salon) =>
+        typeof salon.startingPrice === "number" &&
+        salon.startingPrice > 0 &&
+        salon.startingPrice <= budget,
+    )
+    .sort(
+      (left, right) =>
+        (left.startingPrice ?? budget) - (right.startingPrice ?? budget),
+    )
+    .slice(0, 12);
+}
+
 function sectionHeader({
   actionHref,
   actionLabel = "View all",
@@ -956,6 +1317,10 @@ function CompactSalonCard({ salon }: { salon: ExploreHomeSalon }) {
                 {location}
               </span>
             ) : null}
+            <SalonOperatingStatusBadge
+              className="mt-1 max-w-full"
+              status={salon.operatingStatus}
+            />
             {service ? (
               <span className="mt-1.5 block truncate text-xs font-medium text-brand-teal">
                 {service}
@@ -1240,6 +1605,7 @@ function mapSalonToMapSalon(salon: ExploreHomeSalon): ExploreMapSalon | null {
     locationLabel: formatSalonLocation(salon),
     longitude: salon.longitude,
     name: salon.name,
+    operatingStatus: salon.operatingStatus,
     serviceLabel: cardDetailLine(salon) || null,
     trust: {
       averageRating: salon.averageRating,
@@ -1279,7 +1645,6 @@ function SalonCard({
   rankLabel: string;
   salon: ExploreSearchResult;
 }) {
-  const address = formatAddress(salon);
   const callHref = phoneHref(salon.phone);
   const distance = formatDistance(salon.distanceMiles);
   const location = formatSalonLocation(salon);
@@ -1287,9 +1652,11 @@ function SalonCard({
   const profileHref = canViewProfile ? salonProfileHref(salon.id) : null;
   const [imageFailed, setImageFailed] = useState(false);
   const imageUrl = imageFailed ? null : salon.coverImageUrl;
-  const detailLine = cardDetailLine(salon);
+  const service = cardServiceLabel(salon);
+  const price = priceLine(salon);
+  const rating = salonRatingLine(salon);
   const trustSummary = salonTrustSummary(salon);
-  const availabilityLabel = salon.nextAvailabilityLabel;
+  const availabilityLabel = salonAvailabilityLine(salon);
   const bookingHref =
     salon.bookingEnabled && salon.bookingHref ? salon.bookingHref : null;
   const cardSizeClass = featured
@@ -1305,7 +1672,6 @@ function SalonCard({
         "group relative min-h-full overflow-hidden rounded-[1rem] bg-text-primary shadow-[0_12px_32px_rgba(80,47,36,0.08)] ring-1 ring-divider-subtle/80 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_46px_rgba(80,47,36,0.12)] focus-within:ring-brand-orange/35",
         cardSizeClass,
       ].join(" ")}
-      title={address || undefined}
     >
       {imageUrl ? (
         <Image
@@ -1390,14 +1756,40 @@ function SalonCard({
               {location}
             </p>
           ) : null}
-          {detailLine ? (
-            <p className="mt-1.5 line-clamp-1 text-sm font-semibold text-white">
-              {detailLine}
+          {rating || distance || availabilityLabel ? (
+            <p className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-xs font-semibold text-white/88">
+              {rating ? (
+                <span className="inline-flex min-w-0 items-center gap-1">
+                  <ReylumiIcon
+                    className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400"
+                    name="star"
+                  />
+                  <span>{rating}</span>
+                </span>
+              ) : null}
+              {distance ? (
+                <>
+                  {rating ? <span className="text-white/45">·</span> : null}
+                  <span>{distance}</span>
+                </>
+              ) : null}
+              {availabilityLabel ? (
+                <span className="rounded-full bg-emerald-50/16 px-2 py-0.5 text-emerald-100 ring-1 ring-emerald-100/20">
+                  {availabilityLabel}
+                </span>
+              ) : null}
             </p>
           ) : null}
-          {availabilityLabel ? (
-            <p className="mt-1 line-clamp-1 text-xs font-semibold uppercase text-emerald-100">
-              {availabilityLabel}
+          <SalonOperatingStatusBadge
+            className="mt-1.5 max-w-full"
+            inverted
+            showDetail={featured}
+            status={salon.operatingStatus}
+          />
+          {service || price ? (
+            <p className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-white">
+              {service ? <span className="line-clamp-1">{service}</span> : null}
+              {price ? <span className="text-white/88">{price}</span> : null}
             </p>
           ) : null}
         </div>
@@ -1882,8 +2274,13 @@ function InspirationPreview({
                   className="line-clamp-2 text-xl font-semibold text-text-primary"
                   id="inspiration-preview-title"
                 >
-                  {item.salonName}
-                </h2>
+                {item.salonName}
+              </h2>
+                <SalonOperatingStatusBadge
+                  className="mt-2 max-w-full"
+                  showDetail
+                  status={item.operatingStatus}
+                />
                 {location ? (
                   <p className="mt-1 text-sm font-medium text-text-secondary">
                     {location}
@@ -2088,6 +2485,12 @@ function RecommendedFeatureCard({
               {location}
             </p>
           ) : null}
+          <SalonOperatingStatusBadge
+            className="mt-2 max-w-full"
+            inverted
+            showDetail
+            status={salon.operatingStatus}
+          />
         </div>
         <div className="flex min-h-7 flex-wrap items-center gap-2 text-xs">
           {service ? (
@@ -2625,16 +3028,24 @@ function PopularServicesSection({
 }
 
 function discoveryResultTitle(kind: ExploreDiscoveryResultKind) {
+  if (kind === "available_today") {
+    return "Available today";
+  }
+
   if (kind === "near_you") {
     return "Near you";
   }
 
   if (kind === "top_rated") {
-    return "Top rated salons";
+    return "Top artists";
   }
 
   if (kind === "trending") {
-    return "Fresh looks";
+    return "Trending";
+  }
+
+  if (kind === "under_60") {
+    return "Under $60";
   }
 
   return "Recommended salons";
@@ -2647,6 +3058,7 @@ function ExploreDiscoveryResults({
   nearYouSalons,
   onClear,
   onCurrentLocation,
+  searchResults,
 }: {
   content: ExploreHomeContent;
   gpsCoordinates: GpsCoordinates | null;
@@ -2654,7 +3066,20 @@ function ExploreDiscoveryResults({
   nearYouSalons: ExploreHomeSalon[];
   onClear: () => void;
   onCurrentLocation: () => void;
+  searchResults: ExploreSearchResult[];
 }) {
+  const availableResults = availableTodayResults({
+    content,
+    nearYouSalons,
+    searchResults,
+  });
+  const under60Results = underBudgetResults({
+    budget: 60,
+    content,
+    nearYouSalons,
+    searchResults,
+  });
+
   return (
     <section
       className="mx-auto grid w-full max-w-none gap-4 px-4 py-4 sm:px-6 lg:pl-8 lg:pr-3"
@@ -2704,6 +3129,25 @@ function ExploreDiscoveryResults({
         )
       ) : null}
 
+      {kind === "available_today" ? (
+        availableResults.length > 0 ? (
+          <ResultSection
+            description={`${availableResults.length} bookable option${
+              availableResults.length === 1 ? "" : "s"
+            }`}
+            rankKind="best"
+            results={availableResults}
+            title="Available today"
+          />
+        ) : (
+          <div className="mx-auto w-full max-w-[40rem]">
+            <ExploreNotice title="No open times found yet">
+              Bookable salons will appear here when availability is published.
+            </ExploreNotice>
+          </div>
+        )
+      ) : null}
+
       {kind === "top_rated" ? (
         <TopRatedSalonsSection
           content={content}
@@ -2723,23 +3167,49 @@ function ExploreDiscoveryResults({
           title="Recommended salons"
         />
       ) : null}
+
+      {kind === "under_60" ? (
+        under60Results.length > 0 ? (
+          <ResultSection
+            description={`${under60Results.length} value-friendly option${
+              under60Results.length === 1 ? "" : "s"
+            }`}
+            rankKind="recommended"
+            results={under60Results}
+            title="Under $60"
+          />
+        ) : (
+          <div className="mx-auto w-full max-w-[40rem]">
+            <ExploreNotice title="No services under $60 yet">
+              Value-friendly services will appear here when salons publish
+              starting prices.
+            </ExploreNotice>
+          </div>
+        )
+      ) : null}
     </section>
   );
 }
 
 function ExploreHomeSections({
+  activeDiscoveryResult,
   commentViewer,
   content,
+  discoveryShortcuts,
   gpsMessage,
   initialFeed,
   nearYouSalons,
+  onDiscoveryShortcutSelect,
   onSelectCategory,
 }: {
+  activeDiscoveryResult: ExploreDiscoveryResultKind | null;
   commentViewer: PostCommentViewer;
   content: ExploreHomeContent;
+  discoveryShortcuts: ExploreDiscoveryShortcut[];
   gpsMessage: string | null;
   initialFeed: ExploreFeedPage;
   nearYouSalons: ExploreHomeSalon[];
+  onDiscoveryShortcutSelect: (shortcut: ExploreDiscoveryShortcut) => void;
   onSelectCategory: (category: string) => void;
 }) {
   const allDiscoverySalons = mergeHomeSalons(
@@ -2771,7 +3241,13 @@ function ExploreHomeSections({
           {gpsMessage}
         </ExploreNotice>
       ) : null}
-      <ExploreFeed initialPage={initialFeed} viewer={commentViewer} />
+      <ExploreFeed
+        activeDiscoveryResult={activeDiscoveryResult}
+        discoveryShortcuts={discoveryShortcuts}
+        initialPage={initialFeed}
+        onDiscoveryShortcutSelect={onDiscoveryShortcutSelect}
+        viewer={commentViewer}
+      />
 
       {initialFeed.items.length === 0 ? (
         <PopularServicesSection
@@ -3014,7 +3490,7 @@ export function ExploreClient({
   );
   const discoveryResultMode = !searchMode && activeDiscoveryResult !== null;
   const homeMode = !searchMode && !discoveryResultMode;
-  const hasDiscoveryRail = discoveryContent.shortcuts.length > 0;
+  const hasDiscoveryRail = !homeMode && discoveryContent.shortcuts.length > 0;
   const displayLocation = formatDisplayLocation(location);
   const summaryText = resultSummary({
     bestCount: activeResponse.groupCounts.bestMatches,
@@ -3319,43 +3795,59 @@ export function ExploreClient({
       >
         <div className="min-w-0 overflow-hidden" data-testid="explore-main-column">
           <section className="bg-transparent" data-testid="explore-top-section">
-            <div className="mx-auto grid w-full max-w-[40rem] gap-2.5 px-4 pb-2 pt-3 sm:px-6 lg:px-3">
+            <div className="mx-auto grid w-full max-w-[40rem] gap-2 px-4 pb-1 pt-2 sm:px-6 lg:px-3 xl:hidden">
               <CategoryChips
+                allLabel="For you"
                 category={selectedCategory}
                 onChange={selectCategory}
                 onMore={scrollToPopularServices}
               />
 
-              <MobileExploreSearch
-                gpsStatus={gpsStatus}
-                location={location}
-                onCurrentLocation={requestCurrentLocation}
-                query={query}
+              {!homeMode ? (
+                <>
+                  <MobileExploreSearch
+                    gpsStatus={gpsStatus}
+                    location={location}
+                    onCurrentLocation={requestCurrentLocation}
+                    query={query}
+                    selectedCategory={selectedCategory}
+                  />
+
+                  <MobileDiscoveryShortcuts
+                    activeResultKind={activeDiscoveryResult}
+                    onSelect={selectDiscoveryShortcut}
+                    shortcuts={discoveryContent.shortcuts}
+                  />
+                </>
+              ) : null}
+            </div>
+            {homeMode ? (
+              <DesktopExploreLanding
+                activeDiscoveryResult={activeDiscoveryResult}
+                content={homeContent}
+                discoveryShortcuts={discoveryContent.shortcuts}
+                onExploreClick={focusHeaderSearch}
+                onSelectCategory={selectCategory}
+                onSelectDiscoveryShortcut={selectDiscoveryShortcut}
                 selectedCategory={selectedCategory}
               />
-
-              <MobileDiscoveryShortcuts
-                activeResultKind={activeDiscoveryResult}
-                onSelect={selectDiscoveryShortcut}
-                shortcuts={discoveryContent.shortcuts}
-              />
-
-              <ExploreHero
-                content={homeContent}
-                onExploreClick={focusHeaderSearch}
-              />
-            </div>
+            ) : null}
           </section>
 
           {homeMode ? (
-            <ExploreHomeSections
-              commentViewer={commentViewer}
-              content={homeContent}
-              gpsMessage={gpsMessage}
-              initialFeed={initialFeed}
-              nearYouSalons={nearYouSalons}
-              onSelectCategory={selectCategory}
-            />
+            <div className="xl:hidden">
+              <ExploreHomeSections
+                activeDiscoveryResult={activeDiscoveryResult}
+                commentViewer={commentViewer}
+                content={homeContent}
+                discoveryShortcuts={discoveryContent.shortcuts}
+                gpsMessage={gpsMessage}
+                initialFeed={initialFeed}
+                nearYouSalons={nearYouSalons}
+                onDiscoveryShortcutSelect={selectDiscoveryShortcut}
+                onSelectCategory={selectCategory}
+              />
+            </div>
           ) : discoveryResultMode && activeDiscoveryResult ? (
             <ExploreDiscoveryResults
               content={homeContent}
@@ -3364,6 +3856,7 @@ export function ExploreClient({
               nearYouSalons={nearYouSalons}
               onClear={() => setActiveDiscoveryResult(null)}
               onCurrentLocation={requestCurrentLocation}
+              searchResults={activeResults}
             />
           ) : (
             <>
@@ -3533,7 +4026,7 @@ export function ExploreClient({
             </>
           )}
 
-          <QuickActions actions={quickActions} />
+          {!homeMode ? <QuickActions actions={quickActions} /> : null}
         </div>
         {hasDiscoveryRail ? (
           <ExploreDiscoveryRail

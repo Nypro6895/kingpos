@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { logoutPortablePosAction } from "@/app/pos/portable/actions";
+import { PosWorkspaceRealtimeRefresh } from "@/app/pos/pos-workspace-realtime-refresh";
 import {
   isPortablePosRoute,
   type PortablePosRouteLink,
@@ -11,6 +12,7 @@ import {
 
 type PortableWorkspaceTabsProps = {
   items: PortablePosRouteLink[];
+  salonId: string;
   salonName: string;
 };
 
@@ -24,6 +26,7 @@ type IdleWindow = Window & {
 
 export function PortableWorkspaceTabs({
   items,
+  salonId,
   salonName,
 }: PortableWorkspaceTabsProps) {
   const pathname = usePathname();
@@ -53,6 +56,7 @@ export function PortableWorkspaceTabs({
       className="relative z-30 shrink-0 border-b border-zinc-200 bg-white/95 px-[max(0.75rem,env(safe-area-inset-left))] pt-[env(safe-area-inset-top)] shadow-sm backdrop-blur"
       data-pos-workspace-shell
     >
+      <PosWorkspaceRealtimeRefresh salonId={salonId} />
       <div className="mx-auto flex h-14 w-full max-w-[1600px] items-center gap-2">
         <p className="hidden min-w-0 max-w-48 truncate text-sm font-semibold text-zinc-700 lg:block">
           {salonName}

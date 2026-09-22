@@ -63,18 +63,36 @@ test("credential auth forms post natively and routes keep JSON fetch behavior", 
   const loginForm = read("app/login/login-form.tsx");
   const signupForm = read("app/signup/signup-form.tsx");
   const loginRoute = read("app/(app)/api/auth/login/route.ts");
+  const mfaVerifyRoute = read("app/(app)/api/auth/mfa/verify/route.ts");
   const signupRoute = read("app/(app)/api/auth/signup/route.ts");
 
   assert.match(loginForm, /action="\/api\/auth\/login"/);
   assert.match(loginForm, /method="post"/);
   assert.match(loginForm, /Accept: "application\/json"/);
+  assert.match(loginForm, /name="remember_me"/);
+  assert.match(loginForm, /Remember me/);
+  assert.match(loginForm, /Two-factor verification/);
+  assert.match(loginForm, /showRecoveryHelpInitially = false/);
+  assert.match(loginForm, /setShowRecoveryHelp\(true\)/);
+  assert.match(loginForm, /fetch\("\/api\/auth\/mfa\/verify"/);
   assert.match(signupForm, /action="\/api\/auth\/signup"/);
   assert.match(signupForm, /method="post"/);
   assert.match(signupForm, /Accept: "application\/json"/);
 
   assert.match(loginRoute, /function wantsJsonResponse\(request: Request\)/);
   assert.match(loginRoute, /function loginErrorResponse/);
+  assert.match(loginRoute, /formData\.get\("remember_me"\) === "on"/);
+  assert.match(loginRoute, /createLoginMfaChallenge/);
+  assert.match(loginRoute, /setPendingMfaSessionCookieWriter/);
+  assert.match(loginRoute, /factor\.factor_type === "phone"/);
+  assert.match(loginRoute, /channel: "sms"/);
+  assert.match(loginRoute, /rememberLogin \? data\.session\.expires_in : undefined/);
+  assert.match(loginRoute, /rememberLogin\s*\?\s*REMEMBERED_LOGIN_MAX_AGE_SECONDS\s*:\s*undefined/);
   assert.match(loginRoute, /NextResponse\.redirect\(new URL\(path, request\.url\), 303\)/);
+  assert.match(mfaVerifyRoute, /createPendingMfaSupabaseAuthSessionServerClient/);
+  assert.match(mfaVerifyRoute, /auth\.mfa\.verify/);
+  assert.match(mfaVerifyRoute, /recordAccountLoginForSession/);
+  assert.match(mfaVerifyRoute, /clearPendingMfaSessionCookieWriter/);
   assert.match(signupRoute, /function wantsJsonResponse\(request: Request\)/);
   assert.match(signupRoute, /function signupErrorResponse/);
   assert.match(signupRoute, /NextResponse\.redirect\(new URL\(path, request\.url\), 303\)/);

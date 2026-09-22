@@ -1,4 +1,5 @@
 import type { BeautyPostBookingPresentation } from "@/lib/beauty-booking-verification";
+import type { SalonOperatingStatus } from "@/types/salon-operating-status";
 import type { AccountSavedPostStateTarget } from "@/types/saved-post";
 
 export const EXPLORE_CATEGORY_OPTIONS = [
@@ -61,6 +62,7 @@ export type ExploreSearchResult = {
   name: string;
   nextAvailabilityLabel: string | null;
   nextAvailableAt: string | null;
+  operatingStatus: SalonOperatingStatus;
   phone: string | null;
   postalCode: string | null;
   profileCompleteness: number;
@@ -108,6 +110,7 @@ export type ExploreInspirationItem = {
   authorDisplayName: string | null;
   authorIsAnonymous: boolean;
   bookableServiceId: string | null;
+  bookingMeta: ExploreBookingDecisionMeta;
   bookingEnabled: boolean;
   bookingHref: string | null;
   bookingLabel: string;
@@ -129,6 +132,7 @@ export type ExploreInspirationItem = {
   salonLogoImageUrl: string | null;
   salonName: string;
   salonState: string | null;
+  operatingStatus: SalonOperatingStatus;
   serviceCategory: string | null;
   serviceName: string | null;
   trust: ExploreFeedTrustSignals;
@@ -196,6 +200,7 @@ export type ExploreFeedSalonContext = {
   id: string;
   logoImageUrl: string | null;
   name: string;
+  operatingStatus: SalonOperatingStatus;
   state: string | null;
   trust: ExploreFeedTrustSignals;
 };
@@ -203,6 +208,13 @@ export type ExploreFeedSalonContext = {
 export type ExploreFeedBooking = BeautyPostBookingPresentation & {
   readiness: string | null;
   serviceId: string | null;
+};
+
+export type ExploreBookingDecisionMeta = {
+  availabilityLabel: string | null;
+  distanceMiles: number | null;
+  durationMinutes: number | null;
+  price: number | null;
 };
 
 export type ExploreFeedPersonalContext = {
@@ -223,6 +235,7 @@ export type ExploreFeedVerification = {
 export type ExploreFeedItem = {
   author: ExploreFeedAuthor;
   booking: ExploreFeedBooking | null;
+  bookingMeta: ExploreBookingDecisionMeta;
   caption: string | null;
   candidateClass: ExploreFeedCandidateClass;
   contentId: string;
@@ -307,10 +320,12 @@ export type ExploreUtilityContent = {
 };
 
 export type ExploreDiscoveryResultKind =
+  | "available_today"
   | "near_you"
   | "recommended"
   | "top_rated"
-  | "trending";
+  | "trending"
+  | "under_60";
 
 export type ExploreDiscoveryShortcutAction =
   | {
@@ -335,11 +350,13 @@ export type ExploreDiscoveryPreview = {
 };
 
 export type ExploreDiscoveryModuleKind =
+  | "availability"
   | "booking"
   | "category"
   | "nearby"
   | "recommended"
   | "top_rated"
+  | "value"
   | "visual";
 
 export type ExploreDiscoveryShortcut = {
@@ -371,6 +388,7 @@ export type ExploreMapSalon = {
   locationLabel: string | null;
   longitude: number;
   name: string;
+  operatingStatus: SalonOperatingStatus;
   serviceLabel: string | null;
   trust: ExploreFeedTrustSignals;
 };

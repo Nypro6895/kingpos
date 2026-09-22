@@ -1,15 +1,28 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Session } from "@supabase/supabase-js";
+import {
+  ACCOUNT_LOGIN_SESSION_COOKIE,
+  isAccountLoginSessionId,
+} from "@/lib/account-security-shared";
 import { isDeniedKingUserStatus } from "@/lib/users/account-status";
 import type { KingUserStatus } from "@/types/user";
 import { cookies, headers } from "next/headers";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
 export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
+export const PENDING_MFA_ACCESS_TOKEN_COOKIE = "sb-pending-mfa-access-token";
+export const PENDING_MFA_REFRESH_TOKEN_COOKIE = "sb-pending-mfa-refresh-token";
+export const PENDING_MFA_REMEMBER_COOKIE = "sb-pending-mfa-remember";
+
+const PENDING_MFA_MAX_AGE_SECONDS = 60 * 10;
 
 type SupabaseSessionTokens = {
   accessToken: string;
   refreshToken: string;
+};
+
+type PendingMfaSessionTokens = SupabaseSessionTokens & {
+  rememberLogin: boolean;
 };
 
 type SupabaseEnvStatus = {
@@ -26,8 +39,20 @@ type PublicUserStatusRow = {
   status: KingUserStatus;
 };
 
+type AccountLoginSessionStatusRow = {
+  revoked_at: string | null;
+};
+
 type SupabaseCookieWriter = {
   delete: (name: string) => unknown;
+};
+
+type SupabaseCookieSessionWriter = SupabaseCookieWriter & {
+  set: (
+    name: string,
+    value: string,
+    options: ReturnType<typeof getSupabaseCookieOptions>,
+  ) => unknown;
 };
 
 export function getSupabaseCookieOptions(maxAge?: number) {
@@ -53,10 +78,34 @@ export function clearSupabaseSessionCookieWriter(
 ) {
   cookieStore.delete(ACCESS_TOKEN_COOKIE);
   cookieStore.delete(REFRESH_TOKEN_COOKIE);
+  clearPendingMfaSessionCookieWriter(cookieStore);
 
   for (const name of cookieNames.filter(isSupabaseAuthTokenCookieName)) {
     cookieStore.delete(name);
   }
+}
+
+export function clearPendingMfaSessionCookieWriter(
+  cookieStore: SupabaseCookieWriter,
+) {
+  cookieStore.delete(PENDING_MFA_ACCESS_TOKEN_COOKIE);
+  cookieStore.delete(PENDING_MFA_REFRESH_TOKEN_COOKIE);
+  cookieStore.delete(PENDING_MFA_REMEMBER_COOKIE);
+}
+
+export function setPendingMfaSessionCookieWriter(
+  cookieStore: SupabaseCookieSessionWriter,
+  input: PendingMfaSessionTokens,
+) {
+  const options = getSupabaseCookieOptions(PENDING_MFA_MAX_AGE_SECONDS);
+
+  cookieStore.set(PENDING_MFA_ACCESS_TOKEN_COOKIE, input.accessToken, options);
+  cookieStore.set(PENDING_MFA_REFRESH_TOKEN_COOKIE, input.refreshToken, options);
+  cookieStore.set(
+    PENDING_MFA_REMEMBER_COOKIE,
+    input.rememberLogin ? "1" : "0",
+    options,
+  );
 }
 
 export function getSupabaseConfig(): SupabaseConfig | null {
@@ -182,6 +231,37 @@ export async function createAuthenticatedSupabaseAuthSessionServerClient() {
   return supabase;
 }
 
+export async function createPendingMfaSupabaseAuthSessionServerClient() {
+  const config = getSupabaseConfig();
+  const sessionTokens = await getPendingMfaSessionTokensFromRequest();
+
+  if (!config || !sessionTokens) {
+    return null;
+  }
+
+  const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+
+  const { data, error } = await supabase.auth.setSession({
+    access_token: sessionTokens.accessToken,
+    refresh_token: sessionTokens.refreshToken,
+  });
+
+  if (error || !data.session || !data.user) {
+    return null;
+  }
+
+  return {
+    rememberLogin: sessionTokens.rememberLogin,
+    supabase,
+  };
+}
+
 async function isAccessTokenAllowedForAppSession(
   config: SupabaseConfig,
   accessToken: string,
@@ -225,7 +305,11 @@ async function isAccessTokenAllowedForAppSession(
   }
 
   if (userStatus?.status) {
-    return !isDeniedKingUserStatus(userStatus.status);
+    if (isDeniedKingUserStatus(userStatus.status)) {
+      return false;
+    }
+
+    return isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id);
   }
 
   const { data: authIdentityDeleted, error: authIdentityDeletedError } =
@@ -247,10 +331,77 @@ async function isAccessTokenAllowedForAppSession(
       });
     }
 
+    return isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id);
+  }
+
+  if (authIdentityDeleted === true) {
+    return false;
+  }
+
+  return isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id);
+}
+
+function isAccountLoginSecuritySchemaMissing(error: {
+  code?: string | null;
+  message?: string | null;
+} | null | undefined) {
+  const message = error?.message ?? "";
+
+  return (
+    error?.code === "42P01" ||
+    error?.code === "42703" ||
+    error?.code === "PGRST202" ||
+    (error?.code === "PGRST205" && /account_login_sessions/i.test(message))
+  );
+}
+
+async function isAppLoginSessionCookieAllowed(
+  config: SupabaseConfig,
+  accessToken: string,
+  authUserId: string,
+) {
+  const loginSessionId = (await cookies()).get(
+    ACCOUNT_LOGIN_SESSION_COOKIE,
+  )?.value;
+
+  if (!isAccountLoginSessionId(loginSessionId)) {
     return true;
   }
 
-  return authIdentityDeleted !== true;
+  const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  });
+  const { data, error } = await supabase
+    .from("account_login_sessions")
+    .select("revoked_at")
+    .eq("id", loginSessionId)
+    .eq("auth_user_id", authUserId)
+    .maybeSingle<AccountLoginSessionStatusRow>();
+
+  if (error) {
+    if (isAccountLoginSecuritySchemaMissing(error)) {
+      return true;
+    }
+
+    console.error("Unable to verify app login session", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+    });
+    return false;
+  }
+
+  return data?.revoked_at ? false : true;
 }
 
 export async function getAccessTokenFromRequest() {
@@ -286,6 +437,22 @@ export async function getSupabaseSessionTokensFromRequest(): Promise<SupabaseSes
   }
 
   return null;
+}
+
+export async function getPendingMfaSessionTokensFromRequest(): Promise<PendingMfaSessionTokens | null> {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get(PENDING_MFA_ACCESS_TOKEN_COOKIE)?.value;
+  const refreshToken = cookieStore.get(PENDING_MFA_REFRESH_TOKEN_COOKIE)?.value;
+
+  if (!accessToken || !refreshToken) {
+    return null;
+  }
+
+  return {
+    accessToken,
+    refreshToken,
+    rememberLogin: cookieStore.get(PENDING_MFA_REMEMBER_COOKIE)?.value === "1",
+  };
 }
 
 export async function setSupabaseSessionCookies(session: Session) {

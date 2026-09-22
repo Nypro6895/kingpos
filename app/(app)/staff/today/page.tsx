@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PosOwnerWorkspaceTabs } from "@/app/pos/pos-owner-workspace-tabs";
 
 import { QuickAccessPanel } from "@/app/staff/today/quick-access-editor";
 import {
@@ -1677,6 +1678,7 @@ export default async function StaffTodayPage({
       data-today-dashboard="owner-manager"
     >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
+        <PosOwnerWorkspaceTabs salonId={context.currentSalon.id} />
         <header>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">

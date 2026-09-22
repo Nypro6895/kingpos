@@ -1,6 +1,6 @@
 "use client";
 
-import { readAuthResponse } from "@/lib/auth-response";
+import { readAuthResponse, type AuthResponse } from "@/lib/auth-response";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -55,16 +55,39 @@ function PasswordVisibilityIcon({ isVisible }: { isVisible: boolean }) {
   );
 }
 
-export function LoginForm({ nextPath = "/explore" }: { nextPath?: string }) {
+function maskPhone(value: string | null | undefined) {
+  const digits = (value ?? "").replace(/\D/g, "");
+
+  if (digits.length < 4) {
+    return "your profile phone";
+  }
+
+  return `*** *** ${digits.slice(-4)}`;
+}
+
+export function LoginForm({
+  nextPath = "/explore",
+  showRecoveryHelpInitially = false,
+}: {
+  nextPath?: string;
+  showRecoveryHelpInitially?: boolean;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [showRecoveryHelp, setShowRecoveryHelp] = useState(
+    showRecoveryHelpInitially,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mfaChallenge, setMfaChallenge] = useState<AuthResponse["mfa"] | null>(
+    null,
+  );
   const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setIsSubmitting(true);
+    setMfaChallenge(null);
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -78,6 +101,13 @@ export function LoginForm({ nextPath = "/explore" }: { nextPath?: string }) {
 
       if (!response.ok || result.error) {
         setError(result.error ?? "Unable to log in.");
+        setShowRecoveryHelp(true);
+        return;
+      }
+
+      if (result.mfa) {
+        setShowRecoveryHelp(false);
+        setMfaChallenge(result.mfa);
         return;
       }
 
@@ -85,6 +115,52 @@ export function LoginForm({ nextPath = "/explore" }: { nextPath?: string }) {
       router.refresh();
     } catch {
       setError("Unable to log in. Please check your connection and try again.");
+      setShowRecoveryHelp(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleMfaSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!mfaChallenge) {
+      setError("Two-factor verification expired. Log in again.");
+      return;
+    }
+
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData(event.currentTarget);
+      formData.set("factor_id", mfaChallenge.factorId);
+      formData.set("challenge_id", mfaChallenge.challengeId);
+      formData.set("next", nextPath);
+
+      const response = await fetch("/api/auth/mfa/verify", {
+        headers: {
+          Accept: "application/json",
+        },
+        method: "POST",
+        body: formData,
+      });
+      const result = await readAuthResponse(
+        response,
+        "Unable to verify two-factor code.",
+      );
+
+      if (!response.ok || result.error) {
+        setError(result.error ?? "Unable to verify two-factor code.");
+        setShowRecoveryHelp(true);
+        return;
+      }
+
+      router.push(result.redirectTo ?? "/explore");
+      router.refresh();
+    } catch {
+      setError("Unable to verify code. Please check your connection and try again.");
+      setShowRecoveryHelp(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -102,7 +178,73 @@ export function LoginForm({ nextPath = "/explore" }: { nextPath?: string }) {
         </p>
       ) : null}
 
-      <form
+      {mfaChallenge ? (
+        <form
+          aria-describedby={error ? "login-form-error" : undefined}
+          className="relative z-10 mt-6 space-y-5"
+          onSubmit={handleMfaSubmit}
+        >
+          <div>
+            <p className="text-xs font-extrabold uppercase text-brand-orange">
+              Two-factor verification
+            </p>
+            <h3 className="mt-2 text-xl font-semibold tracking-normal text-text-primary">
+              Enter your security code
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-text-secondary">
+              {mfaChallenge.factorType === "phone"
+                ? `We sent an SMS code to ${maskPhone(mfaChallenge.phone)}.`
+                : "Use the 6-digit code from your authenticator app."}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-extrabold text-text-primary" htmlFor="mfa_code">
+              Security code
+            </label>
+            <input
+              aria-invalid={Boolean(error)}
+              autoComplete="one-time-code"
+              className={fieldClassName(Boolean(error))}
+              id="mfa_code"
+              inputMode="numeric"
+              maxLength={8}
+              name="code"
+              required
+              type="text"
+            />
+          </div>
+
+          <button
+            aria-busy={isSubmitting}
+            className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-brand-orange px-5 text-sm font-extrabold text-white shadow-[0_14px_32px_rgba(242,111,61,0.24)] transition hover:bg-brand-orange-hover active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-70 motion-reduce:transform-none motion-reduce:transition-none"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            <span
+              aria-hidden={!isSubmitting}
+              className={[
+                "h-4 w-4 rounded-full border-2 border-white/40 border-t-white",
+                isSubmitting ? "animate-spin motion-reduce:animate-none" : "hidden",
+              ].join(" ")}
+            />
+            {isSubmitting ? "Verifying..." : "Verify and log in"}
+          </button>
+
+          <button
+            className="inline-flex w-full justify-center text-sm font-extrabold text-text-secondary underline-offset-4 transition hover:text-text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
+            onClick={() => {
+              setError(null);
+              setMfaChallenge(null);
+              setShowRecoveryHelp(false);
+            }}
+            type="button"
+          >
+            Use a different account
+          </button>
+        </form>
+      ) : (
+        <form
         action="/api/auth/login"
         aria-describedby={error ? "login-form-error" : undefined}
         className="relative z-10 mt-6 space-y-5"
@@ -158,6 +300,15 @@ export function LoginForm({ nextPath = "/explore" }: { nextPath?: string }) {
           </div>
         </div>
 
+        <label className="flex min-h-8 items-center gap-3 text-sm font-bold text-text-secondary">
+          <input
+            className="size-4 shrink-0 accent-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+            name="remember_me"
+            type="checkbox"
+          />
+          <span>Remember me</span>
+        </label>
+
         <button
           aria-busy={isSubmitting}
           className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-brand-orange px-5 text-sm font-extrabold text-white shadow-[0_14px_32px_rgba(242,111,61,0.24)] transition hover:bg-brand-orange-hover active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-70 motion-reduce:transform-none motion-reduce:transition-none"
@@ -173,7 +324,17 @@ export function LoginForm({ nextPath = "/explore" }: { nextPath?: string }) {
           />
           {isSubmitting ? "Logging in..." : "Log in"}
         </button>
-      </form>
+        </form>
+      )}
+
+      {showRecoveryHelp ? (
+        <Link
+          className="mt-5 inline-flex w-full justify-center text-sm font-extrabold text-text-secondary underline-offset-4 transition hover:text-text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
+          href={`/account-recovery?next=${encodeURIComponent(nextPath)}`}
+        >
+          Lost access or recovery code?
+        </Link>
+      ) : null}
     </>
   );
 }

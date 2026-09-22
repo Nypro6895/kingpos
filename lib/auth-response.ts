@@ -1,6 +1,13 @@
 ﻿export type AuthResponse = {
   error?: string;
   message?: string;
+  mfa?: {
+    challengeId: string;
+    expiresAt: number | null;
+    factorId: string;
+    factorType: "phone" | "totp";
+    phone: string | null;
+  };
   redirectTo?: string;
 };
 

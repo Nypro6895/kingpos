@@ -27,6 +27,7 @@ import {
   STAFF_PERMISSIONS,
   createStaff as createStaffRecord,
 } from "@/lib/staff";
+import { broadcastPosStaffChange } from "@/lib/pos-staff-realtime-server";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   BookingConfirmationMode,
@@ -415,6 +416,7 @@ export async function createQuickSetupStaffAction(
     }
 
     revalidateBookingSetupChange(context.data.salon.id);
+    await broadcastPosStaffChange(context.data.salon.id, "staff");
     return {
       message:
         serviceIds.length > 0
@@ -485,6 +487,7 @@ export async function updateQuickSetupServiceOnlineAction(
     }
 
     revalidateBookingSetupChange(context.data.salon.id);
+    await broadcastPosStaffChange(context.data.salon.id, "booking");
     return success(
       input.onlineBookingEnabled
         ? "Service is bookable online."
@@ -552,6 +555,7 @@ export async function updateQuickSetupStaffOnlineAction(
     }
 
     revalidateBookingSetupChange(context.data.salon.id);
+    await broadcastPosStaffChange(context.data.salon.id, "booking");
     return success(
       input.onlineBookingEnabled
         ? "Professional is available online."
@@ -667,6 +671,7 @@ export async function updateQuickSetupAssignmentAction(
     }
 
     revalidateBookingSetupChange(context.data.salon.id);
+    await broadcastPosStaffChange(context.data.salon.id, "booking");
     return success(
       input.selected
         ? "Professional can take this service online."
@@ -726,6 +731,7 @@ async function convertBookingToTicketWithContext(
   revalidatePath("/pos");
   revalidatePath("/pos-tickets");
   revalidatePath(`/pos-tickets/${data}`);
+  await broadcastPosStaffChange(context.salon.id, "booking");
 
   return success("POS ticket is ready.", bookingId, data);
 }
@@ -954,6 +960,7 @@ export async function createOwnerAppointmentAction(
     }
 
     revalidatePath("/bookings");
+    await broadcastPosStaffChange(context.data.salon.id, "booking");
     return success("Appointment created.", createResult.data.bookingId);
   } catch (error) {
     return failure(
@@ -1033,6 +1040,7 @@ export async function runBookingStatusAction(
   }
 
   revalidateBookingChange(bookingId);
+  await broadcastPosStaffChange(context.data.salon.id, "booking");
 
   if (input.command === "check_in" || input.command === "start_service") {
     const settings = await loadBookingSettings(context.data);
@@ -1144,6 +1152,7 @@ export async function rescheduleOwnerBookingAction(
       changeType: "rescheduled",
     });
     revalidateBookingChange(bookingId);
+    await broadcastPosStaffChange(context.data.salon.id, "booking");
     return success("Appointment rescheduled.", bookingId);
   } catch (error) {
     return failure(
@@ -1207,6 +1216,7 @@ export async function reassignOwnerBookingAction(
     oldStaffIds,
   });
   revalidateBookingChange(bookingId);
+  await broadcastPosStaffChange(context.data.salon.id, "booking");
   return success("Appointment professional adjusted.", bookingId);
 }
 
@@ -1387,6 +1397,7 @@ export async function replaceOwnerBookingServicesAction(
       oldStaffIds,
     });
     revalidateBookingChange(bookingId);
+    await broadcastPosStaffChange(context.data.salon.id, "booking");
     return success("Appointment services adjusted.", bookingId);
   } catch (error) {
     return failure(
@@ -1576,6 +1587,7 @@ export async function updateBookingSettingsAction(
     }
 
     revalidatePath("/bookings");
+    await broadcastPosStaffChange(context.data.salon.id, "booking");
     return success("Booking settings saved.");
   } catch (error) {
     return failure(

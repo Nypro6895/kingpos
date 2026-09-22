@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const migration = read("supabase/migrations/202608280001_unified_post_comments.sql");
+const baseMigration = read("supabase/migrations/202608280001_unified_post_comments.sql");
+const realtimeMigration = read("supabase/migrations/202608300002_post_comments_realtime_threading.sql");
+const migration = `${baseMigration}\n${realtimeMigration}`;
 const service = read("lib/post-comments.ts");
 const actions = read("app/post-comments/actions.ts");
 const thread = read("app/post-comments/post-comment-thread.tsx");
+const navigationShell = read("app/navigation-shell.tsx");
 const salonProfile = read("app/salon-profile/salon-profile-view.tsx");
 const beautyProfile = read("app/beauty/beauty-profile-client.tsx");
 const exploreFeed = read("app/explore/explore-feed.tsx");
@@ -32,7 +35,12 @@ test("unified post comments migration extends Salon comments across every public
   assert.match(migration, /p_offset integer default 0/);
   assert.match(migration, /p_limit integer default 12/);
   assert.match(migration, /limit clean_limit/);
-  assert.match(migration, /Replies can only be one level deep/);
+  assert.match(realtimeMigration, /add column if not exists root_comment_id uuid references public\.salon_profile_comments/);
+  assert.match(realtimeMigration, /add column if not exists reply_depth integer not null default 0/);
+  assert.match(realtimeMigration, /salon_profile_comments_thread_shape_check/);
+  assert.match(realtimeMigration, /create index if not exists salon_profile_comments_root_thread_idx/);
+  assert.match(realtimeMigration, /Reply thread is too deep/);
+  assert.doesNotMatch(realtimeMigration, /Replies can only be one level deep/);
 });
 
 test("post comment notifications avoid self-notifications and duplicate recipients", () => {
@@ -46,6 +54,9 @@ test("post comment notifications avoid self-notifications and duplicate recipien
   assert.match(migration, /'post_comment_created:'/);
   assert.match(migration, /\/explore\/salons\//);
   assert.match(migration, /\/explore\/beauty\//);
+  assert.match(realtimeMigration, /alter publication supabase_realtime add table public\.salon_profile_comments/);
+  assert.match(realtimeMigration, /alter publication supabase_realtime add table public\.app_notifications/);
+  assert.match(realtimeMigration, /replica identity full/);
 });
 
 test("server comment domain centralizes auth, pagination, mutation, and cache invalidation", () => {
@@ -57,6 +68,9 @@ test("server comment domain centralizes auth, pagination, mutation, and cache in
   assert.match(service, /export async function createPostComment/);
   assert.match(service, /\.from\("salon_profile_comments"\)[\s\S]*\.insert/);
   assert.match(service, /parent_comment_id: parentCommentId/);
+  assert.match(service, /root_comment_id, reply_depth/);
+  assert.match(service, /rootCommentId: row\.root_comment_id/);
+  assert.match(service, /replyDepth: readCount\(row\.reply_depth\)/);
   assert.match(service, /export async function updatePostComment/);
   assert.match(service, /Only the author can edit this comment/);
   assert.match(service, /export async function deletePostComment/);
@@ -70,8 +84,15 @@ test("server comment domain centralizes auth, pagination, mutation, and cache in
 
 test("shared comment thread supports fast Facebook-like interaction states", () => {
   assert.match(thread, /PostCommentThreadContent/);
+  assert.match(thread, /createSupabaseBrowserClient/);
+  assert.match(thread, /\.channel\(`post-comments:\$\{target\.sourceType\}:\$\{target\.sourceId\}`\)/);
+  assert.match(thread, /postgres_changes/);
+  assert.match(thread, /optimisticMatchesRealtimeComment/);
   assert.match(thread, /createOptimisticComment/);
   assert.match(thread, /optimistic-/);
+  assert.match(thread, /rootCommentId: input\.parentComment/);
+  assert.match(thread, /replyDepth: input\.parentComment/);
+  assert.match(thread, /rootIdForComment/);
   assert.match(thread, /setTotalCount\(\(current\) => current \+ 1\)/);
   assert.match(thread, /setTotalCount\(\(current\) => Math\.max\(0, current - 1\)\)/);
   assert.match(thread, /Load more/);
@@ -81,6 +102,11 @@ test("shared comment thread supports fast Facebook-like interaction states", () 
   assert.match(thread, /onDelete/);
   assert.match(thread, /onHide/);
   assert.match(thread, /window\.addEventListener\("focus", refreshOnFocus\)/);
+  assert.match(thread, /comment\.replyDepth < 8/);
+  assert.match(navigationShell, /AppNotificationInvalidation/);
+  assert.match(navigationShell, /app-notifications:\$\{userId\}/);
+  assert.match(navigationShell, /recipient_user_id=eq\.\$\{userId\}/);
+  assert.match(navigationShell, /window\.setInterval/);
 });
 
 test("comment thread is wired through profile, staff-authored, beauty, and explore surfaces", () => {

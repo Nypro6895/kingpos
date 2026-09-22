@@ -9,6 +9,20 @@ function read(path) {
   return readFileSync(join(root, path), "utf8");
 }
 
+function readFirst(paths) {
+  for (const path of paths) {
+    try {
+      return read(path);
+    } catch (error) {
+      if (error?.code !== "ENOENT") {
+        throw error;
+      }
+    }
+  }
+
+  return read(paths[0]);
+}
+
 function routePrefixesFor(source, kind) {
   const match = source.match(
     new RegExp(`${kind}: \\{[\\s\\S]*?routePrefixes: \\[([\\s\\S]*?)\\]`),
@@ -220,7 +234,7 @@ test("personal account routes are still classified before broader workspace rout
 
 test("shared routes use the selected workspace shell and More content", () => {
   const navigationShell = read("app/navigation-shell.tsx");
-  const morePage = read("app/more/page.tsx");
+  const morePage = readFirst(["app/(app)/more/page.tsx", "app/more/page.tsx"]);
 
   assert.ok(
     !navigationShell.includes("roleAwareRouteWorkspaceKind"),
@@ -253,7 +267,7 @@ test("shared routes use the selected workspace shell and More content", () => {
 
 test("More menus expose My Place and My Place omits quick access", () => {
   const myPlaceClient = read("app/my-place/my-place-client.tsx");
-  const morePage = read("app/more/page.tsx");
+  const morePage = readFirst(["app/(app)/more/page.tsx", "app/more/page.tsx"]);
   const roleNavigation = read("app/role-navigation.ts");
 
   for (const [id, role] of [
@@ -313,33 +327,33 @@ test("main app surfaces omit compacted page chrome titles", () => {
       ["My Place", "Your salons, workplaces, and account spaces."],
     ],
     [
-      "app/activity/page.tsx",
+      "app/(app)/activity/page.tsx",
       [
         "Salon visits, purchases, and appointments connected to your ReyLUMI",
       ],
       [/<h1[^>]*>\s*Activity\s*<\/h1>/],
     ],
     [
-      "app/more/page.tsx",
+      "app/(app)/more/page.tsx",
       ["Saved posts, favorite profiles, memberships, and account support."],
       [/<h1[^>]*>\s*\{more\.title\}\s*<\/h1>/],
     ],
     [
-      "app/customers/page.tsx",
+      "app/(app)/customers/page.tsx",
       ["Manage your salon customers."],
       [/<h1[^>]*>\s*Customers\s*<\/h1>/],
     ],
     [
-      "app/staff/page.tsx",
+      "app/(app)/staff/page.tsx",
       ["Manage staff profiles, account connection, booking setup, and POS access."],
     ],
     [
-      "app/payroll/page.tsx",
+      "app/(app)/payroll/page.tsx",
       [],
       [/<h1[^>]*>\s*Payroll V1\s*<\/h1>/],
     ],
     [
-      "app/pos-tickets/page.tsx",
+      "app/(app)/pos-tickets/page.tsx",
       ["Daily POS Work Log", "Staff income history, customer visit history"],
     ],
   ]) {
@@ -365,7 +379,10 @@ test("main app surfaces omit compacted page chrome titles", () => {
 test("salon profile transformation queue keeps salon route semantics", () => {
   const navigationShell = read("app/navigation-shell.tsx");
   const roleNavigation = read("app/role-navigation.ts");
-  const reviewPage = read("app/salon-profile/client-transformations/page.tsx");
+  const reviewPage = readFirst([
+    "app/(app)/salon-profile/client-transformations/page.tsx",
+    "app/salon-profile/client-transformations/page.tsx",
+  ]);
   const personalPrefixes = routePrefixesFor(roleNavigation, "personal");
   const ownerPrefixes = routePrefixesFor(roleNavigation, "owner");
 
@@ -432,5 +449,37 @@ test("app notifications resolve Beauty salon requests through owner workspace co
     notificationActions,
     /option\.id === input\.workspaceId[\s\S]*option\.type === "salon"[\s\S]*option\.salonMode === "manage"/,
     "Notification opener must validate the workspace before setting salon context.",
+  );
+});
+
+test("viewing notifications marks app notifications read", () => {
+  const navigationShell = read("app/navigation-shell.tsx");
+  const notificationList = read("app/notifications/notification-list.tsx");
+  const notificationsPage = read("app/(app)/notifications/page.tsx");
+
+  assert.match(
+    navigationShell,
+    /onToggle=\{\(event\) => \{[\s\S]*event\.currentTarget\.open[\s\S]*markViewed\(\)/,
+    "Opening the notification dropdown should mark visible app notifications read.",
+  );
+  assert.match(
+    navigationShell,
+    /viewedAppNotificationSummary/,
+    "Dropdown should optimistically render viewed app notifications as read.",
+  );
+  assert.match(
+    notificationList,
+    /markAppNotificationsReadOnView/,
+    "Notification feed list should support marking app notifications read when viewed.",
+  );
+  assert.match(
+    notificationList,
+    /markAllAppNotificationsReadAction\(\)/,
+    "Notification feed list should persist viewed app notifications through the mark-all-read action.",
+  );
+  assert.match(
+    notificationsPage,
+    /<NotificationFeedList items=\{group\.items\} markAppNotificationsReadOnView \/>/,
+    "The full notifications page should mark app notifications read on view.",
   );
 });

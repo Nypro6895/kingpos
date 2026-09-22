@@ -1,7 +1,10 @@
 import {
+  createCurrentSalonSpecialHoursAction,
+  deleteCurrentSalonSpecialHoursAction,
   refreshSalonMapLocation,
   updateSalonSettings,
 } from "@/app/salon-settings/actions";
+import { SalonOperatingStatusBadge } from "@/components/salon-operating-status-badge";
 import { MapLocationPreview } from "@/app/salon-settings/map-location-preview";
 import { SalonOwnershipSection } from "@/app/salon-settings/ownership-section";
 import {
@@ -26,10 +29,16 @@ import {
   getCurrentSalonSetting,
   type SalonDiscoveryReadiness,
 } from "@/lib/salon-settings";
+import { getCurrentSalonOperatingHoursSettings } from "@/lib/salon-operating-status";
 import {
   getCurrentSalonStaffDirectory,
   type StaffDirectoryMember,
 } from "@/lib/staff";
+import type {
+  SalonOperatingHoursSettings,
+  SalonOperatingHoursWindow,
+  SalonSpecialHours,
+} from "@/types/salon-operating-status";
 import type { SalonSetting } from "@/types/salon-setting";
 import Link from "next/link";
 
@@ -38,6 +47,7 @@ type SalonSettingsPageProps = {
     error?: string;
     lifecycle_error?: string;
     notice?: string;
+    operating_notice?: string;
   }>;
 };
 
@@ -46,6 +56,27 @@ type NavItem = {
   label: string;
   tone?: "danger" | "neutral";
 };
+
+const OPERATING_WEEK_DAYS = [
+  { dayOfWeek: 1, label: "Monday" },
+  { dayOfWeek: 2, label: "Tuesday" },
+  { dayOfWeek: 3, label: "Wednesday" },
+  { dayOfWeek: 4, label: "Thursday" },
+  { dayOfWeek: 5, label: "Friday" },
+  { dayOfWeek: 6, label: "Saturday" },
+  { dayOfWeek: 0, label: "Sunday" },
+] as const;
+
+const OPERATING_TIMEZONE_OPTIONS = [
+  { label: "Central", value: "America/Chicago" },
+  { label: "Eastern", value: "America/New_York" },
+  { label: "Mountain", value: "America/Denver" },
+  { label: "Pacific", value: "America/Los_Angeles" },
+  { label: "Arizona", value: "America/Phoenix" },
+  { label: "Alaska", value: "America/Anchorage" },
+  { label: "Hawaii", value: "Pacific/Honolulu" },
+  { label: "UTC", value: "UTC" },
+] as const;
 
 function Field({
   label,
@@ -166,10 +197,12 @@ function PublicTeamSettingsSection({
 function MapLocationSection({
   canManageSettings,
   mapLocation,
+  operatingStatus,
   salonName,
 }: {
   canManageSettings: boolean;
   mapLocation: SalonMapLocationState;
+  operatingStatus: SalonOperatingHoursSettings["status"];
   salonName: string;
 }) {
   const publicMapConfigured = Boolean(
@@ -227,6 +260,7 @@ function MapLocationSection({
           <MapLocationPreview
             coordinates={mapLocation.coordinates}
             locationLabel={mapLocation.address.cityStateLabel || null}
+            operatingStatus={operatingStatus}
             salonName={salonName}
           />
         </div>
@@ -245,17 +279,295 @@ function MapLocationSection({
   );
 }
 
+function weeklyWindowByDay(weeklyHours: SalonOperatingHoursWindow[]) {
+  const byDay = new Map<number, SalonOperatingHoursWindow>();
+
+  for (const window of weeklyHours) {
+    if (!byDay.has(window.dayOfWeek)) {
+      byDay.set(window.dayOfWeek, window);
+    }
+  }
+
+  return byDay;
+}
+
+function formatSpecialHoursDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    weekday: "short",
+    year: "numeric",
+  }).format(new Date(Date.UTC(year, month - 1, day, 12)));
+}
+
+function formatSpecialHoursSummary(special: SalonSpecialHours) {
+  if (special.status === "closed") {
+    return special.reason ? `Closed - ${special.reason}` : "Closed";
+  }
+
+  const timeRange =
+    special.opensAtLocal && special.closesAtLocal
+      ? `${special.opensAtLocal} - ${special.closesAtLocal}`
+      : "Custom hours";
+
+  return special.reason ? `${timeRange} - ${special.reason}` : timeRange;
+}
+
+function OperatingHoursSection({
+  canManageSettings,
+  operatingSettings,
+}: {
+  canManageSettings: boolean;
+  operatingSettings: SalonOperatingHoursSettings;
+}) {
+  const byDay = weeklyWindowByDay(operatingSettings.weeklyHours);
+  const currentTimezoneKnown = OPERATING_TIMEZONE_OPTIONS.some(
+    (option) => option.value === operatingSettings.timeZone,
+  );
+
+  return (
+    <section className="scroll-mt-6">
+      <SectionHeader
+        description="Set the customer-facing open or closed status shown on the profile, Explore, and search cards."
+        id="operating-hours"
+        title="Operating status"
+      />
+      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+        <div className="flex flex-col gap-3 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-zinc-950">
+              Customer status preview
+            </h3>
+            <p className="mt-1 text-sm leading-6 text-zinc-500">
+              Permanent closure is managed from Salon status below.
+            </p>
+          </div>
+          <SalonOperatingStatusBadge
+            className="max-w-full"
+            showDetail
+            status={operatingSettings.status}
+          />
+        </div>
+
+        <div className="grid gap-4 px-4 py-4">
+          <label className="grid gap-1.5 sm:max-w-xs">
+            <span className="text-sm font-semibold text-zinc-700">
+              Salon timezone
+            </span>
+            <select
+              className="min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
+              defaultValue={operatingSettings.timeZone}
+              disabled={!canManageSettings}
+              name="operating_timezone_iana"
+            >
+              {!currentTimezoneKnown ? (
+                <option value={operatingSettings.timeZone}>
+                  {operatingSettings.timeZone}
+                </option>
+              ) : null}
+              {OPERATING_TIMEZONE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label} - {option.value}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="overflow-hidden rounded-lg border border-zinc-200">
+            {OPERATING_WEEK_DAYS.map((day) => {
+              const window = byDay.get(day.dayOfWeek);
+
+              return (
+                <div
+                  className="grid gap-3 border-b border-zinc-100 px-3 py-3 last:border-b-0 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-center"
+                  key={day.dayOfWeek}
+                >
+                  <label className="flex min-w-0 items-center gap-2 text-sm font-semibold text-zinc-950">
+                    <input
+                      className="size-4 rounded border-zinc-300 disabled:cursor-not-allowed disabled:opacity-60"
+                      defaultChecked={Boolean(window)}
+                      disabled={!canManageSettings}
+                      name={`operating_day_${day.dayOfWeek}_enabled`}
+                      type="checkbox"
+                    />
+                    <span>{day.label}</span>
+                  </label>
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
+                    <input
+                      aria-label={`${day.label} opening time`}
+                      className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
+                      defaultValue={window?.opensAtLocal ?? "09:00"}
+                      disabled={!canManageSettings}
+                      name={`operating_day_${day.dayOfWeek}_opens`}
+                      type="time"
+                    />
+                    <span
+                      aria-hidden
+                      className="hidden text-sm font-semibold text-zinc-400 sm:block"
+                    >
+                      -
+                    </span>
+                    <input
+                      aria-label={`${day.label} closing time`}
+                      className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
+                      defaultValue={window?.closesAtLocal ?? "17:00"}
+                      disabled={!canManageSettings}
+                      name={`operating_day_${day.dayOfWeek}_closes`}
+                      type="time"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="text-xs font-medium leading-5 text-zinc-500">
+            Closing after midnight is supported. Leave a day unchecked when the
+            salon is closed all day.
+          </p>
+        </div>
+
+        <div className="border-t border-zinc-100 px-4 py-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-950">
+                Special dates
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-zinc-500">
+                Holiday closures and one-day custom hours override the weekly
+                schedule.
+              </p>
+            </div>
+            <StatusPill
+              className="bg-zinc-100 text-zinc-600 ring-zinc-200"
+              label={`${operatingSettings.specialHours.length} active`}
+            />
+          </div>
+
+          <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200">
+            {operatingSettings.specialHours.length > 0 ? (
+              operatingSettings.specialHours.map((special) => (
+                <div
+                  className="flex min-h-14 flex-col gap-2 border-b border-zinc-100 px-3 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
+                  key={special.id}
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-zinc-950">
+                      {formatSpecialHoursDate(special.localDate)}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs font-medium text-zinc-500">
+                      {formatSpecialHoursSummary(special)}
+                    </p>
+                  </div>
+                  <button
+                    className="w-fit rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={!canManageSettings}
+                    formAction={deleteCurrentSalonSpecialHoursAction}
+                    name="special_hours_id"
+                    type="submit"
+                    value={special.id}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="px-3 py-4 text-sm text-zinc-500">
+                No special dates are scheduled.
+              </p>
+            )}
+          </div>
+
+          <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.35fr)_auto] lg:items-end">
+            <label className="grid gap-1.5">
+              <span className="text-xs font-semibold text-zinc-600">Date</span>
+              <input
+                className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={!canManageSettings}
+                name="special_local_date"
+                type="date"
+              />
+            </label>
+            <label className="grid gap-1.5">
+              <span className="text-xs font-semibold text-zinc-600">
+                Override
+              </span>
+              <select
+                className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
+                defaultValue="closed"
+                disabled={!canManageSettings}
+                name="special_status"
+              >
+                <option value="closed">Closed all day</option>
+                <option value="custom_hours">Custom hours</option>
+              </select>
+            </label>
+            <label className="grid gap-1.5">
+              <span className="text-xs font-semibold text-zinc-600">Open</span>
+              <input
+                className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
+                defaultValue="09:00"
+                disabled={!canManageSettings}
+                name="special_opens_at_local"
+                type="time"
+              />
+            </label>
+            <label className="grid gap-1.5">
+              <span className="text-xs font-semibold text-zinc-600">
+                Close / reason
+              </span>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <input
+                  aria-label="Special date closing time"
+                  className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  defaultValue="17:00"
+                  disabled={!canManageSettings}
+                  name="special_closes_at_local"
+                  type="time"
+                />
+                <input
+                  aria-label="Special date reason"
+                  className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={!canManageSettings}
+                  name="special_reason"
+                  placeholder="Holiday"
+                  type="text"
+                />
+              </div>
+            </label>
+            <button
+              className="min-h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+              disabled={!canManageSettings}
+              formAction={createCurrentSalonSpecialHoursAction}
+              type="submit"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SalonSettingsForm({
   canManageSettings,
   discoveryReadiness,
   error,
   mapLocation,
+  notice,
+  operatingSettings,
   setting,
 }: {
   canManageSettings: boolean;
   discoveryReadiness: SalonDiscoveryReadiness;
   error?: string;
   mapLocation: SalonMapLocationState;
+  notice?: string;
+  operatingSettings: SalonOperatingHoursSettings;
   setting: SalonSetting;
 }) {
   const canToggleDiscovery =
@@ -285,6 +597,12 @@ function SalonSettingsForm({
         </p>
       ) : null}
 
+      {notice ? (
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          {notice}
+        </p>
+      ) : null}
+
       {!canManageSettings ? (
         <p className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
           You do not have permission to manage salon settings.
@@ -301,7 +619,7 @@ function SalonSettingsForm({
           <div className="grid gap-4 px-4 py-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Field
-                autoComplete="organization"
+                autoComplete="organization-title"
                 defaultValue={setting.business_name}
                 label="Business name"
                 name="business_name"
@@ -466,6 +784,7 @@ function SalonSettingsForm({
           <MapLocationSection
             canManageSettings={canManageSettings}
             mapLocation={mapLocation}
+            operatingStatus={operatingSettings.status}
             salonName={setting.business_name}
           />
 
@@ -489,10 +808,15 @@ function SalonSettingsForm({
         </div>
       </section>
 
+      <OperatingHoursSection
+        canManageSettings={canManageSettings}
+        operatingSettings={operatingSettings}
+      />
+
       <div className="sticky bottom-0 z-20 rounded-lg border border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-zinc-600">
-            Saves business info, discovery, map visibility, and staff application settings.
+            Saves business info, discovery, operating hours, map visibility, and staff application settings.
           </p>
           <button
             className="min-h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
@@ -510,7 +834,15 @@ function SalonSettingsForm({
 export default async function SalonSettingsPage({
   searchParams,
 }: SalonSettingsPageProps) {
-  const [{ error, lifecycle_error: lifecycleError, notice }, context] =
+  const [
+    {
+      error,
+      lifecycle_error: lifecycleError,
+      notice,
+      operating_notice: operatingNotice,
+    },
+    context,
+  ] =
     await Promise.all([
       searchParams,
       requireSalonManagePageContext("/salon-settings"),
@@ -528,12 +860,19 @@ export default async function SalonSettingsPage({
     );
   }
 
-  const [{ setting }, canManageSettings, canViewStaff, lifecycle] =
+  const [
+    { setting },
+    canManageSettings,
+    canViewStaff,
+    lifecycle,
+    operatingSettings,
+  ] =
     await Promise.all([
       getCurrentSalonSetting(),
       hasPermission("salon_settings.manage", context),
       hasPermission("staff.view", context),
       getSalonLifecycle(context.currentSalon.id),
+      getCurrentSalonOperatingHoursSettings(context),
     ]);
 
   if (!setting || !lifecycle) {
@@ -568,6 +907,7 @@ export default async function SalonSettingsPage({
   const navItems: NavItem[] = [
     { href: "#business-information", label: "Business info" },
     { href: "#public-profile-discovery", label: "Public profile" },
+    { href: "#operating-hours", label: "Operating status" },
     { href: "#ownership-admins", label: "Ownership" },
     { href: "#salon-status", label: "Salon status", tone: "danger" },
     ...(canViewStaff ? [{ href: "#public-team", label: "Public team" }] : []),
@@ -637,6 +977,8 @@ export default async function SalonSettingsPage({
             discoveryReadiness={discoveryReadiness}
             error={error}
             mapLocation={mapLocation}
+            notice={operatingNotice}
+            operatingSettings={operatingSettings}
             setting={setting}
           />
 

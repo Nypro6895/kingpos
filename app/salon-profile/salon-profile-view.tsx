@@ -14,7 +14,9 @@ import {
 } from "@/app/salon-profile/actions";
 import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
+import { AuthIntentPrompt } from "@/components/auth-intent-prompt";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
+import { SalonOperatingStatusBadge } from "@/components/salon-operating-status-badge";
 import {
   LumiTrustPopover,
   LumiTrustSpark,
@@ -80,6 +82,8 @@ type TabId =
   | "gallery"
   | "services"
   | "team";
+
+type AuthPromptIntent = "follow" | "save";
 type ComposerType = "auto" | "look" | "opening" | "update";
 type SalonProfileUploadableKind = Extract<
   SalonProfileMediaKind,
@@ -210,6 +214,10 @@ const mediaConfig: Record<
     targetBytes: 1.5 * 1024 * 1024,
   },
 };
+
+function isAuthIntentMessage(message: string | null | undefined) {
+  return /sign in/i.test(message ?? "");
+}
 
 function postCommentViewer(
   capabilities: SalonProfileViewerCapabilities,
@@ -3886,6 +3894,8 @@ export function SalonProfileView({
   const [isFollowing, setFollowing] = useState(profile.isFollowing);
   const [followerCount, setFollowerCount] = useState(profile.followerCount);
   const [statusMessage, setStatusMessage] = useState("");
+  const [authPromptIntent, setAuthPromptIntent] =
+    useState<AuthPromptIntent | null>(null);
   const [surpriseIndex, setSurpriseIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
   function bookingHref(context: BookingContext) {
@@ -4229,6 +4239,11 @@ export function SalonProfileView({
       const result = await toggleSalonLookSaveAction(look.id, profile.salonId);
 
       if (result.error) {
+        if (isAuthIntentMessage(result.error)) {
+          setAuthPromptIntent("save");
+          return;
+        }
+
         setStatusMessage(result.error);
         return;
       }
@@ -4243,6 +4258,11 @@ export function SalonProfileView({
       const result = await toggleSalonFollowAction(profile.salonId);
 
       if (result.error) {
+        if (isAuthIntentMessage(result.error)) {
+          setAuthPromptIntent("follow");
+          return;
+        }
+
         setStatusMessage(result.error);
         return;
       }
@@ -4861,6 +4881,11 @@ export function SalonProfileView({
                       size="md"
                       summary={trustSummary}
                     />
+                    <SalonOperatingStatusBadge
+                      className="max-w-full"
+                      showDetail
+                      status={profile.operatingStatus}
+                    />
                   </div>
                   {profile.description ? (
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
@@ -5089,6 +5114,22 @@ export function SalonProfileView({
       <p aria-live="polite" className="sr-only">
         {statusMessage}
       </p>
+
+      {authPromptIntent ? (
+        <AuthIntentPrompt
+          kicker={authPromptIntent === "follow" ? "Follow intent" : "Save intent"}
+          onClose={() => setAuthPromptIntent(null)}
+          title={
+            authPromptIntent === "follow"
+              ? `Follow ${profile.name}?`
+              : "Save this look?"
+          }
+        >
+          {authPromptIntent === "follow"
+            ? "Create a free ReyLUMI account to follow this shop and find it again from your discovery hub."
+            : "Create a free ReyLUMI account to keep this look, follow the shop, and return when you are ready to book."}
+        </AuthIntentPrompt>
+      ) : null}
 
       {composerType ? (
         <ComposerModal

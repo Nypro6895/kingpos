@@ -13,6 +13,7 @@ export type SalonSetting = {
   country: string | null;
   business_description: string | null;
   allow_staff_applications: boolean;
+  operating_timezone_iana: string;
   public_discovery_enabled: boolean;
   public_discovery_published_at: string | null;
   created_at: string;
@@ -32,5 +33,6 @@ export type UpdateSalonSettingInput = {
   country?: string | null;
   business_description?: string | null;
   allow_staff_applications?: boolean;
+  operating_timezone_iana?: string | null;
   public_discovery_enabled?: boolean;
 };

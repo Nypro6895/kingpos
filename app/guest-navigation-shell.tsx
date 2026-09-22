@@ -84,6 +84,8 @@ export function GuestNavigationShell({ children }: { children: ReactNode }) {
     pathname === "/explore"
       ? searchParams.get("q") ?? ""
       : "";
+  const isExploreBrowsePage =
+    pathname === "/explore" || pathname.startsWith("/explore/");
   const isLoginPage = pathname === "/login";
   const isSignupPage = pathname === "/signup";
 
@@ -125,24 +127,26 @@ export function GuestNavigationShell({ children }: { children: ReactNode }) {
               </button>
             </form>
           </div>
-          <div className="flex shrink-0 items-center justify-end gap-2 lg:self-auto">
-            {!isLoginPage ? (
-              <Link
-                className="inline-flex min-h-10 items-center justify-center rounded-full border border-border-subtle bg-white px-4 text-sm font-semibold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={`/login?next=${encodeURIComponent(nextPath)}`}
-              >
-                Login
-              </Link>
-            ) : null}
-            {!isSignupPage ? (
-              <Link
-                className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={`/signup?next=${encodeURIComponent(nextPath)}`}
-              >
-                Create account
-              </Link>
-            ) : null}
-          </div>
+          {!isExploreBrowsePage ? (
+            <div className="flex shrink-0 items-center justify-end gap-2 lg:self-auto">
+              {!isLoginPage ? (
+                <Link
+                  className="inline-flex min-h-10 items-center justify-center rounded-full border border-border-subtle bg-white px-4 text-sm font-semibold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                  href={`/login?next=${encodeURIComponent(nextPath)}`}
+                >
+                  Login
+                </Link>
+              ) : null}
+              {!isSignupPage ? (
+                <Link
+                  className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+                  href={`/signup?next=${encodeURIComponent(nextPath)}`}
+                >
+                  Create account
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </header>
       {children}

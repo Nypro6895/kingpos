@@ -1,6 +1,7 @@
 "use client";
 
 import { toggleBeautyProfileFollowAction } from "@/app/explore/actions";
+import { AuthIntentPrompt } from "@/components/auth-intent-prompt";
 import { useState, useTransition } from "react";
 
 type BeautyFollowButtonProps = {
@@ -13,6 +14,10 @@ function countLabel(count: number) {
   return `${count} ${count === 1 ? "follower" : "followers"}`;
 }
 
+function isAuthIntentMessage(message: string | null | undefined) {
+  return /sign in/i.test(message ?? "");
+}
+
 export function BeautyFollowButton({
   followerCount,
   initialFollowing,
@@ -21,6 +26,7 @@ export function BeautyFollowButton({
   const [isFollowing, setFollowing] = useState(initialFollowing);
   const [count, setCount] = useState(Math.max(0, followerCount));
   const [message, setMessage] = useState("");
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function toggleFollow() {
@@ -34,6 +40,11 @@ export function BeautyFollowButton({
       const result = await toggleBeautyProfileFollowAction(profileId);
 
       if (result.error) {
+        if (isAuthIntentMessage(result.error)) {
+          setAuthPromptOpen(true);
+          return;
+        }
+
         setMessage(result.error);
         return;
       }
@@ -70,6 +81,16 @@ export function BeautyFollowButton({
       <span aria-live="polite" className="sr-only">
         {message}
       </span>
+      {authPromptOpen ? (
+        <AuthIntentPrompt
+          kicker="Follow intent"
+          onClose={() => setAuthPromptOpen(false)}
+          title="Follow this artist?"
+        >
+          Create a free ReyLUMI account to follow this artist, keep their work
+          in your discovery hub, and come back when you are ready to book.
+        </AuthIntentPrompt>
+      ) : null}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
 } from "@/lib/beauty-relationship";
 import { BeautyFollowButton } from "@/app/explore/beauty/beauty-follow-button";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
+import { ReylumiIcon } from "@/components/reylumi-icons";
 import type { ExplorePersonalPostItem } from "@/types/explore";
 import type { AccountSavedPostStateTarget } from "@/types/saved-post";
 import type { Metadata } from "next";
@@ -240,6 +241,51 @@ function PostCard({
   );
 }
 
+function ProfileStat({
+  label,
+  value,
+}: {
+  label: string;
+  value: number | string;
+}) {
+  return (
+    <div className="grid justify-items-center gap-1">
+      <span className="text-base font-semibold text-text-primary">{value}</span>
+      <span className="text-[11px] font-semibold text-text-muted">{label}</span>
+    </div>
+  );
+}
+
+function ProfileActionRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: "bookmark" | "calendar" | "heart" | "star" | "user";
+  label: string;
+  value?: string;
+}) {
+  return (
+    <button
+      className="flex min-h-12 w-full items-center gap-3 border-t border-divider-subtle/70 px-1 text-left transition hover:text-brand-orange"
+      type="button"
+    >
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface-muted text-text-secondary">
+        <ReylumiIcon className="h-4 w-4" name={icon} />
+      </span>
+      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-text-primary">
+        {label}
+      </span>
+      {value ? (
+        <span className="text-xs font-semibold text-text-muted">{value}</span>
+      ) : null}
+      <span aria-hidden className="text-text-muted">
+        &rsaquo;
+      </span>
+    </button>
+  );
+}
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -286,6 +332,14 @@ export default async function PublicBeautyProfilePage({
 
   const posts = postsForPage(page);
   const profile = page.profile;
+  const savedLookCount = posts.reduce(
+    (total, post) => total + (post.saveTarget?.saveCount ?? 0),
+    0,
+  );
+  const reviewActivityCount = posts.reduce(
+    (total, post) => total + post.commentCount,
+    0,
+  );
 
   if (page.access === "private_relationship") {
     return (
@@ -323,70 +377,102 @@ export default async function PublicBeautyProfilePage({
   }
 
   return (
-    <main className="min-h-screen bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
-      <div className="mx-auto grid w-full max-w-5xl gap-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link
-            className="rounded-full bg-surface px-4 py-2 text-sm font-semibold text-text-primary shadow-sm ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            href="/explore"
-          >
-            Explore
-          </Link>
-        </div>
-
-        <section className="overflow-hidden rounded-[1.5rem] bg-surface shadow-[0_18px_48px_rgba(35,25,22,0.06)] ring-1 ring-divider-subtle">
-          <div className="relative h-36 bg-brand-orange-soft sm:h-48">
+    <main className="min-h-screen bg-[#fffaf7] px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto grid w-full max-w-6xl gap-5">
+        <section className="overflow-hidden rounded-[1.1rem] bg-white shadow-[0_18px_48px_rgba(35,25,22,0.06)] ring-1 ring-divider-subtle/80">
+          <div className="relative h-32 bg-brand-orange-soft sm:h-44 lg:h-52">
             {profile.coverImageUrl ? (
               <Image
                 alt={`${profile.displayName} Beauty cover`}
                 className="object-cover"
                 fill
                 priority
-                sizes="(max-width: 768px) 100vw, 1024px"
+                sizes="(max-width: 768px) 100vw, 1120px"
                 src={profile.coverImageUrl}
+              />
+            ) : posts[0]?.media[0] ? (
+              <Image
+                alt={`${profile.displayName} Beauty cover`}
+                className="object-cover"
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 1120px"
+                src={posts[0].media[0].url}
               />
             ) : (
               <div className="h-full w-full bg-[linear-gradient(135deg,var(--brand-orange-soft),var(--surface-muted))]" />
             )}
+            <Link
+              aria-label="Back to Explore"
+              className="absolute left-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/92 text-text-primary shadow-sm ring-1 ring-white/80 backdrop-blur transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              href={{ pathname: "/explore" }}
+            >
+              <ReylumiIcon className="h-4 w-4" name="chevron-left" />
+            </Link>
           </div>
           <div className="grid gap-4 px-4 pb-5 sm:px-6">
-            <div className="-mt-10 flex flex-wrap items-end justify-between gap-4">
-              <span className="grid h-24 w-24 place-items-center overflow-hidden rounded-full border-4 border-white bg-brand-orange-soft text-2xl font-extrabold text-brand-orange shadow-sm">
+            <div className="-mt-10 grid justify-items-center gap-3 text-center sm:-mt-12">
+              <span className="relative grid h-24 w-24 place-items-center overflow-hidden rounded-full border-4 border-white bg-brand-orange-soft text-2xl font-semibold text-brand-orange shadow-sm">
                 {profile.avatarUrl ? (
                   <Image
                     alt={`${profile.displayName} profile`}
                     className="object-cover"
-                    fill={false}
-                    height={96}
+                    fill
+                    sizes="96px"
                     src={profile.avatarUrl}
-                    width={96}
                   />
                 ) : (
                   initialsFor(profile.displayName)
                 )}
               </span>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-brand-teal-soft px-3 py-1 text-xs font-extrabold text-brand-teal">
-                  Public Beauty profile
-                </span>
-                {!profile.isSelf ? (
-                  <BeautyFollowButton
-                    followerCount={profile.followerCount}
-                    initialFollowing={profile.isFollowing}
-                    profileId={profile.id}
-                  />
-                ) : null}
-              </div>
-            </div>
-            <div className="max-w-2xl">
-              <h1 className="text-3xl font-extrabold tracking-normal text-text-primary sm:text-4xl">
-                {profile.displayName}
-              </h1>
-              {profile.bio ? (
-                <p className="mt-2 text-sm leading-6 text-text-secondary sm:text-base">
-                  {profile.bio}
+              <div className="min-w-0">
+                <h1 className="truncate text-2xl font-semibold tracking-normal text-text-primary sm:text-3xl">
+                  {profile.displayName}
+                </h1>
+                <p className="mt-1 text-sm font-medium text-text-secondary">
+                  Milwaukee, WI
                 </p>
+              </div>
+              <div className="grid w-full max-w-md grid-cols-4 gap-3 rounded-[1rem] bg-white px-2 py-3 ring-1 ring-divider-subtle/70">
+                <ProfileStat label="Looks" value={posts.length} />
+                <ProfileStat label="Saved" value={savedLookCount} />
+                <ProfileStat label="Reviews" value={reviewActivityCount} />
+                <ProfileStat label="Followers" value={profile.followerCount} />
+              </div>
+              {!profile.isSelf ? (
+                <BeautyFollowButton
+                  followerCount={profile.followerCount}
+                  initialFollowing={profile.isFollowing}
+                  profileId={profile.id}
+                />
               ) : null}
+            </div>
+            {profile.bio ? (
+              <p className="mx-auto max-w-xl text-center text-sm leading-6 text-text-secondary">
+                {profile.bio}
+              </p>
+            ) : null}
+            <div className="mx-auto grid w-full max-w-md">
+              <ProfileActionRow
+                icon="calendar"
+                label="Upcoming bookings"
+                value="Browse"
+              />
+              <ProfileActionRow
+                icon="bookmark"
+                label="Saved looks"
+                value={String(savedLookCount)}
+              />
+              <ProfileActionRow
+                icon="star"
+                label="Reviews"
+                value={String(reviewActivityCount)}
+              />
+              <ProfileActionRow
+                icon="heart"
+                label="Followers"
+                value={String(profile.followerCount)}
+              />
             </div>
           </div>
         </section>
@@ -398,8 +484,8 @@ export default async function PublicBeautyProfilePage({
             ))}
           </section>
         ) : (
-          <section className="rounded-2xl border border-dashed border-divider-subtle bg-surface p-8 text-center">
-            <p className="text-sm font-extrabold text-text-primary">
+          <section className="rounded-[1rem] border border-dashed border-divider-subtle bg-white p-8 text-center">
+            <p className="text-sm font-semibold text-text-primary">
               No Beauty posts yet
             </p>
             <p className="mt-1 text-sm text-text-secondary">

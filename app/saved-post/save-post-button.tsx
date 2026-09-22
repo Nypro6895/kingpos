@@ -4,11 +4,11 @@ import {
   getAccountSavedPostStatesAction,
   setAccountSavedPostAction,
 } from "@/app/saved-post/actions";
+import { AuthIntentPrompt } from "@/components/auth-intent-prompt";
 import {
   savedPostKey,
   type AccountSavedPostTarget,
 } from "@/types/saved-post";
-import { useRouter } from "next/navigation";
 import {
   useEffect,
   useId,
@@ -28,6 +28,7 @@ type SavePostButtonProps = {
   initialSaved?: boolean;
   onSavedChange?: (saved: boolean) => void;
   saveCount?: number | null;
+  showTooltip?: boolean;
   size?: "compact" | "default" | "toolbar";
   target: AccountSavedPostTarget | null | undefined;
 };
@@ -125,42 +126,41 @@ function normalizedSaveCount(value: number | null | undefined) {
     : 0;
 }
 
-function loginHrefForCurrentPage() {
-  const returnPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-
-  return `/login?next=${encodeURIComponent(returnPath || "/explore")}`;
-}
-
 function SavePostButtonInner({
   className = "",
   initialSaved,
   onSavedChange,
   saveCount,
+  showTooltip = false,
   size = "default",
   stableTarget,
   stateKey,
 }: SavePostButtonInnerProps) {
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const router = useRouter();
   const tooltipId = useId();
   const [isPending, startTransition] = useTransition();
   const stateCheckVersionRef = useRef(0);
   const mutationPendingRef = useRef(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savePermission, setSavePermission] = useState<SavePermission>(
-    initialSaved ? "allowed" : "unknown",
+    initialSaved !== undefined ? "allowed" : "unknown",
   );
   const [saved, setSaved] = useState(initialSaved ?? false);
   const [displaySaveCount, setDisplaySaveCount] = useState(() =>
     normalizedSaveCount(saveCount),
   );
   const [message, setMessage] = useState("");
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const stableSalonId = stableTarget.salonId;
   const stableSourceId = stableTarget.sourceId;
   const stableSourceType = stableTarget.sourceType;
   const isToolbar = size === "toolbar";
 
   useEffect(() => {
+    if (initialSaved !== undefined) {
+      return;
+    }
+
     let active = true;
     const checkVersion = stateCheckVersionRef.current;
     const targetForRequest = {
@@ -191,6 +191,7 @@ function SavePostButtonInner({
       active = false;
     };
   }, [
+    initialSaved,
     stableSalonId,
     stableSourceId,
     stableSourceType,
@@ -230,7 +231,7 @@ function SavePostButtonInner({
 
     if (savePermission === "blocked") {
       setMessage("Sign in to save posts.");
-      router.push(loginHrefForCurrentPage());
+      setAuthPromptOpen(true);
       return;
     }
 
@@ -271,7 +272,7 @@ function SavePostButtonInner({
         }
         if (result.authRequired) {
           setSavePermission("blocked");
-          router.push(loginHrefForCurrentPage());
+          setAuthPromptOpen(true);
         }
         setMessage(result.error);
         mutationPendingRef.current = false;
@@ -329,7 +330,7 @@ function SavePostButtonInner({
         ].join(" ")}
       >
         <button
-          aria-describedby={tooltipId}
+          aria-describedby={showTooltip ? tooltipId : undefined}
           aria-label={saveAriaLabel}
           aria-pressed={saved}
           className={[
@@ -348,7 +349,6 @@ function SavePostButtonInner({
           data-saving={isSaving || isPending ? "true" : undefined}
           onClick={toggle}
           ref={buttonRef}
-          title={saveTooltip}
           type="button"
         >
           <svg
@@ -382,17 +382,29 @@ function SavePostButtonInner({
             +{displaySaveCount}
           </span>
         ) : null}
-        <span
-          className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 hidden whitespace-nowrap rounded-lg bg-zinc-950 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-lg group-hover/save:block group-focus-within/save:block"
-          id={tooltipId}
-          role="tooltip"
-        >
-          {saveTooltip}
-        </span>
+        {showTooltip ? (
+          <span
+            className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 hidden whitespace-nowrap rounded-lg bg-zinc-950 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-lg group-hover/save:block group-focus-within/save:block"
+            id={tooltipId}
+            role="tooltip"
+          >
+            {saveTooltip}
+          </span>
+        ) : null}
       </span>
       <span aria-live="polite" className="sr-only">
         {message}
       </span>
+      {authPromptOpen ? (
+        <AuthIntentPrompt
+          kicker="Save intent"
+          onClose={() => setAuthPromptOpen(false)}
+          title="Save this look?"
+        >
+          Create a free ReyLUMI account to keep your inspiration, follow the
+          artist or shop, and come back when you are ready to book.
+        </AuthIntentPrompt>
+      ) : null}
     </span>
   );
 }
@@ -402,6 +414,7 @@ export function SavePostButton({
   initialSaved,
   onSavedChange,
   saveCount,
+  showTooltip,
   size = "default",
   target,
 }: SavePostButtonProps) {
@@ -425,6 +438,7 @@ export function SavePostButton({
       key={stateKey}
       onSavedChange={onSavedChange}
       saveCount={saveCount}
+      showTooltip={showTooltip}
       size={size}
       stableTarget={stableTarget}
       stateKey={stateKey}

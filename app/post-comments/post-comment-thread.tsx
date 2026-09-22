@@ -7,11 +7,13 @@ import {
   loadPostCommentsAction,
   updatePostCommentAction,
 } from "@/app/post-comments/actions";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type {
   PostComment,
   PostCommentTarget,
   PostCommentViewer,
 } from "@/types/post-comments";
+import { useRouter } from "next/navigation";
 import {
   useEffect,
   useMemo,
@@ -34,6 +36,17 @@ type PostCommentThreadProps = {
 
 type DraftComment = PostComment & {
   optimistic?: boolean;
+};
+
+type RealtimeCommentPayload = {
+  eventType?: string;
+  new?: Record<string, unknown>;
+  old?: Record<string, unknown>;
+};
+
+type TargetRealtimeFilter = {
+  column: "beauty_post_id" | "look_id" | "update_id";
+  value: string;
 };
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -101,14 +114,174 @@ function commentMatchesTarget(comment: PostComment, target: PostCommentTarget) {
   return comment.targetType === target.sourceType && comment.targetId === target.sourceId;
 }
 
+function targetRealtimeFilter(
+  target: PostCommentTarget,
+): TargetRealtimeFilter | null {
+  if (target.sourceType === "beauty_post") {
+    return { column: "beauty_post_id", value: target.sourceId };
+  }
+
+  if (target.sourceType === "salon_profile_update") {
+    return { column: "update_id", value: target.sourceId };
+  }
+
+  if (target.sourceType === "salon_profile_look") {
+    return { column: "look_id", value: target.sourceId };
+  }
+
+  return null;
+}
+
+function readText(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function readBoolean(value: unknown) {
+  return value === true;
+}
+
+function readInteger(value: unknown) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number.parseInt(value, 10);
+
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+  }
+
+  return 0;
+}
+
+function visibleRealtimeComment(row: Record<string, unknown>) {
+  const status = readText(row.status);
+
+  return status === "published" || status === "visible";
+}
+
+function realtimeTargetType(
+  row: Record<string, unknown>,
+): PostComment["targetType"] | null {
+  if (readText(row.beauty_post_id)) {
+    return "beauty_post";
+  }
+
+  if (readText(row.update_id)) {
+    return "salon_profile_update";
+  }
+
+  if (readText(row.look_id)) {
+    return "salon_profile_look";
+  }
+
+  return null;
+}
+
+function realtimeTargetId(row: Record<string, unknown>) {
+  return (
+    readText(row.beauty_post_id) ??
+    readText(row.update_id) ??
+    readText(row.look_id) ??
+    ""
+  );
+}
+
+function mapRealtimeComment(
+  row: Record<string, unknown>,
+  target: PostCommentTarget,
+): PostComment | null {
+  const id = readText(row.id);
+  const body = readText(row.body);
+  const targetType = realtimeTargetType(row);
+  const targetId = realtimeTargetId(row);
+
+  if (!id || !body || !targetType || targetId !== target.sourceId) {
+    return null;
+  }
+
+  return {
+    authorDisplayName: readText(row.author_display_name) ?? "Reylumi customer",
+    authorUserId: readText(row.author_user_id),
+    beautyPostId: readText(row.beauty_post_id),
+    body,
+    createdAt: readText(row.created_at) ?? nowIso(),
+    editedAt: readText(row.edited_at),
+    id,
+    isSalonReply: readBoolean(row.is_salon_reply),
+    lookId: readText(row.look_id),
+    parentCommentId: readText(row.parent_comment_id),
+    replyDepth: readInteger(row.reply_depth),
+    rootCommentId: readText(row.root_comment_id),
+    salonId: readText(row.salon_id),
+    targetId,
+    targetType,
+    updatedAt: readText(row.updated_at) ?? nowIso(),
+    updateId: readText(row.update_id),
+  };
+}
+
+function optimisticMatchesRealtimeComment(
+  draft: DraftComment,
+  incoming: PostComment,
+) {
+  return (
+    draft.optimistic === true &&
+    draft.authorUserId === incoming.authorUserId &&
+    draft.body === incoming.body &&
+    draft.parentCommentId === incoming.parentCommentId &&
+    draft.targetId === incoming.targetId &&
+    draft.targetType === incoming.targetType
+  );
+}
+
+function removeCommentBranch(
+  current: DraftComment[],
+  commentId: string,
+) {
+  const target = current.find((comment) => comment.id === commentId);
+
+  if (!target || target.parentCommentId) {
+    return current.filter((comment) => comment.id !== commentId);
+  }
+
+  return current.filter(
+    (comment) => comment.id !== commentId && comment.rootCommentId !== commentId,
+  );
+}
+
+function rootIdForComment(
+  comment: DraftComment,
+  commentsById: Map<string, DraftComment>,
+) {
+  if (!comment.parentCommentId) {
+    return comment.id;
+  }
+
+  if (comment.rootCommentId) {
+    return comment.rootCommentId;
+  }
+
+  let current = commentsById.get(comment.parentCommentId);
+  let guard = 0;
+
+  while (current?.parentCommentId && guard < 8) {
+    current = commentsById.get(current.parentCommentId);
+    guard += 1;
+  }
+
+  return current?.id ?? comment.parentCommentId;
+}
+
 function createOptimisticComment(input: {
   asSalonReply: boolean;
   body: string;
-  parentCommentId: string | null;
+  parentComment: PostComment | null;
   target: PostCommentTarget;
   viewer: PostCommentViewer;
 }): DraftComment {
   const createdAt = nowIso();
+  const parentCommentId = input.parentComment?.id ?? null;
 
   return {
     authorDisplayName: input.asSalonReply ? "Salon" : "You",
@@ -121,7 +294,11 @@ function createOptimisticComment(input: {
     isSalonReply: input.asSalonReply,
     lookId:
       input.target.sourceType === "salon_profile_look" ? input.target.sourceId : null,
-    parentCommentId: input.parentCommentId,
+    parentCommentId,
+    replyDepth: input.parentComment ? input.parentComment.replyDepth + 1 : 0,
+    rootCommentId: input.parentComment
+      ? input.parentComment.rootCommentId ?? input.parentComment.id
+      : null,
     salonId: input.target.salonId ?? null,
     targetId: input.target.sourceId,
     targetType: input.target.sourceType,
@@ -161,6 +338,7 @@ function PostCommentThreadContent({
   target,
   viewer,
 }: PostCommentThreadProps) {
+  const router = useRouter();
   const [comments, setComments] = useState<DraftComment[]>([]);
   const [totalCount, setTotalCount] = useState(Math.max(0, initialCount));
   const [nextOffset, setNextOffset] = useState<number | null>(0);
@@ -175,6 +353,7 @@ function PostCommentThreadContent({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const highlightedCommentIdRef = useRef<string | null>(null);
   const onCountChangeRef = useRef(onCountChange);
+  const refreshTimerRef = useRef<number | null>(null);
   const key = targetKey(target);
 
   useEffect(() => {
@@ -233,11 +412,75 @@ function PostCommentThreadContent({
     function refreshOnFocus() {
       if (document.visibilityState === "visible") {
         loadPage(0, true);
+        router.refresh();
       }
     }
 
     window.addEventListener("focus", refreshOnFocus);
     return () => window.removeEventListener("focus", refreshOnFocus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    const filter = targetRealtimeFilter(target);
+
+    if (!supabase || !filter) {
+      return;
+    }
+
+    const channel = supabase
+      .channel(`post-comments:${target.sourceType}:${target.sourceId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          filter: `${filter.column}=eq.${filter.value}`,
+          schema: "public",
+          table: "salon_profile_comments",
+        },
+        (payload: RealtimeCommentPayload) => {
+          const nextRow = payload.new ?? {};
+          const oldRow = payload.old ?? {};
+          const incoming =
+            visibleRealtimeComment(nextRow) && payload.eventType !== "DELETE"
+              ? mapRealtimeComment(nextRow, target)
+              : null;
+
+          if (incoming) {
+            setComments((current) =>
+              mergeComments(
+                current.filter(
+                  (comment) => !optimisticMatchesRealtimeComment(comment, incoming),
+                ),
+                [incoming],
+              ),
+            );
+          } else {
+            const removedId = readText(oldRow.id) ?? readText(nextRow.id);
+
+            if (removedId) {
+              setComments((current) => removeCommentBranch(current, removedId));
+            }
+          }
+
+          refreshCommentsSoon();
+        },
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          refreshCommentsSoon();
+        }
+      });
+
+    return () => {
+      if (refreshTimerRef.current !== null) {
+        window.clearTimeout(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+
+      void supabase.removeChannel(channel);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
@@ -273,27 +516,50 @@ function PostCommentThreadContent({
     });
   }
 
+  function refreshCommentsSoon() {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (refreshTimerRef.current !== null) {
+      window.clearTimeout(refreshTimerRef.current);
+    }
+
+    refreshTimerRef.current = window.setTimeout(() => {
+      refreshTimerRef.current = null;
+      loadPage(0, true);
+      router.refresh();
+    }, 300);
+  }
+
   const groupedComments = useMemo(() => {
-    const roots = comments
-      .filter((comment) => !comment.parentCommentId && commentMatchesTarget(comment, target))
+    const targetComments = comments.filter((comment) =>
+      commentMatchesTarget(comment, target),
+    );
+    const commentsById = new Map(
+      targetComments.map((comment) => [comment.id, comment]),
+    );
+    const roots = targetComments
+      .filter((comment) => !comment.parentCommentId)
       .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
     const replies = new Map<string, DraftComment[]>();
 
-    for (const comment of comments) {
-      if (!comment.parentCommentId || !commentMatchesTarget(comment, target)) {
+    for (const comment of targetComments) {
+      if (!comment.parentCommentId) {
         continue;
       }
 
-      const nextReplies = replies.get(comment.parentCommentId) ?? [];
+      const rootId = rootIdForComment(comment, commentsById);
+      const nextReplies = replies.get(rootId) ?? [];
       nextReplies.push(comment);
-      replies.set(comment.parentCommentId, nextReplies);
+      replies.set(rootId, nextReplies);
     }
 
     for (const nextReplies of replies.values()) {
       nextReplies.sort((left, right) => left.createdAt.localeCompare(right.createdAt));
     }
 
-    return { replies, roots };
+    return { commentsById, replies, roots };
   }, [comments, target]);
 
   function submit(event?: FormEvent<HTMLFormElement>) {
@@ -311,12 +577,13 @@ function PostCommentThreadContent({
       return;
     }
 
-    const parentCommentId = replyTo?.id ?? null;
+    const parentComment = replyTo;
+    const parentCommentId = parentComment?.id ?? null;
     const postAsSalon = asSalonReply && viewer.canReplyAsSalon;
     const optimisticComment = createOptimisticComment({
       asSalonReply: postAsSalon,
       body: nextBody,
-      parentCommentId,
+      parentComment,
       target,
       viewer,
     });
@@ -358,6 +625,7 @@ function PostCommentThreadContent({
       );
       setTotalCount(result.totalCount);
       setStatus("Comment posted.");
+      router.refresh();
     });
   }
 
@@ -402,6 +670,7 @@ function PostCommentThreadContent({
 
       setComments((current) => mergeComments(current, [result.comment]));
       setTotalCount(result.totalCount);
+      router.refresh();
     });
   }
 
@@ -412,7 +681,7 @@ function PostCommentThreadContent({
 
     if (!comment.parentCommentId) {
       for (const item of comments) {
-        if (item.parentCommentId === comment.id) {
+        if (item.rootCommentId === comment.id || item.parentCommentId === comment.id) {
           removedIds.add(item.id);
         }
       }
@@ -436,6 +705,8 @@ function PostCommentThreadContent({
       }
 
       setTotalCount(result.totalCount);
+      loadPage(0, true);
+      router.refresh();
     });
   }
 
@@ -481,6 +752,7 @@ function PostCommentThreadContent({
           groupedComments.roots.map((comment) => (
             <CommentItem
               comment={comment}
+              commentsById={groupedComments.commentsById}
               key={comment.id}
               onDelete={(item) => removeComment(item, "delete")}
               onEdit={saveEdit}
@@ -560,19 +832,23 @@ function PostCommentThreadContent({
 
 function CommentItem({
   comment,
+  commentsById,
   onDelete,
   onEdit,
   onHide,
   onReply,
   replies,
+  replyingToName,
   viewer,
 }: {
   comment: DraftComment;
+  commentsById: Map<string, DraftComment>;
   onDelete: (comment: DraftComment) => void;
   onEdit: (comment: DraftComment, body: string) => void;
   onHide: (comment: DraftComment) => void;
   onReply: (comment: PostComment) => void;
   replies: DraftComment[];
+  replyingToName?: string | null;
   viewer: PostCommentViewer;
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -585,7 +861,8 @@ function CommentItem({
   const canEdit = Boolean(viewer.userId && comment.authorUserId === viewer.userId);
   const canDelete = canEdit;
   const canHide = viewer.canModerate && !comment.optimistic;
-  const canReply = viewer.isAuthenticated && !comment.parentCommentId && !comment.optimistic;
+  const canReply =
+    viewer.isAuthenticated && !comment.optimistic && comment.replyDepth < 8;
 
   return (
     <div className="grid gap-2" id={`comment-${comment.id}`}>
@@ -646,6 +923,11 @@ function CommentItem({
               </div>
             ) : (
               <>
+                {replyingToName ? (
+                  <p className="mt-1 text-xs font-semibold text-zinc-500">
+                    Replying to {replyingToName}
+                  </p>
+                ) : null}
                 <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-700">
                   {comment.body}
                 </p>
@@ -704,12 +986,18 @@ function CommentItem({
           {replies.map((reply) => (
             <CommentItem
               comment={reply}
+              commentsById={commentsById}
               key={reply.id}
               onDelete={onDelete}
               onEdit={onEdit}
               onHide={onHide}
               onReply={onReply}
               replies={[]}
+              replyingToName={
+                reply.parentCommentId && reply.parentCommentId !== comment.id
+                  ? commentsById.get(reply.parentCommentId)?.authorDisplayName ?? null
+                  : null
+              }
               viewer={viewer}
             />
           ))}

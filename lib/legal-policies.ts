@@ -621,7 +621,7 @@ const privacySections: LegalSection[] = [
     title: "Data Security",
     blocks: [
       paragraph(
-        "ReyLUMI uses reasonable technical and organizational safeguards designed to protect information. These may include authentication, authorization, account session controls, business-context separation, access controls, storage controls, and operational safeguards appropriate for the platform.",
+        "ReyLUMI uses reasonable technical and operational safeguards designed to protect information. These may include authentication, authorization, account session controls, business-context separation, access controls, storage controls, and operational safeguards appropriate for the platform.",
       ),
       paragraph(
         "Access to business and staff records should depend on authorization controls, not merely on what a user says their role is. Businesses should invite only authorized users, remove users who no longer need access, and review permissions after staffing or ownership changes.",

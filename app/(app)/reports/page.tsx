@@ -1,5 +1,6 @@
 import { DailyClosingForm } from "@/app/reports/daily-closing-form";
 import { OperationalReportDashboard } from "@/app/reports/operational-report-dashboard";
+import { PosOwnerWorkspaceTabs } from "@/app/pos/pos-owner-workspace-tabs";
 import {
   canApplyFinancialCorrections,
   canEditDailyPosClosing,
@@ -190,6 +191,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
 
   return (
     <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-6 text-zinc-950 sm:px-6">
+      <PosOwnerWorkspaceTabs salonId={context.currentSalon.id} />
       <OperationalReportDashboard
         report={reportOverview}
         salonName={context.currentSalon.name}

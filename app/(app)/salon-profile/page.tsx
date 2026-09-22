@@ -6,6 +6,7 @@ import {
   getSalonProfileHref,
   getSalonProfileMediaUrl,
 } from "@/lib/salon-profile";
+import { getCurrentSalonOperatingStatus } from "@/lib/salon-operating-status";
 import { isPublicSalonProfileTeamEligible } from "@/lib/salon-profile-team";
 import { isSalonManageContext } from "@/lib/current-context";
 import { requireSalonWorkspacePageContext } from "@/lib/route-context-guards";
@@ -32,6 +33,7 @@ type SalonProfilePageProps = {
 function buildPreviewData(input: {
   accountId: string;
   looks: SalonProfileLook[];
+  operatingStatus: PublicSalonProfileData["profile"]["operatingStatus"];
   services: Service[];
   setting: SalonProfileSetting;
   staff: Staff[];
@@ -156,6 +158,7 @@ function buildPreviewData(input: {
     isFollowing: false,
     logoImageUrl: getSalonProfileMediaUrl(input.setting.public_profile_logo_path),
     name: input.setting.business_name,
+    operatingStatus: input.operatingStatus,
     accountId: input.accountId,
     phone: input.setting.phone,
     postalCode: input.setting.postal_code,
@@ -307,9 +310,11 @@ export default async function SalonProfilePage({
     );
   }
 
+  const operatingStatus = await getCurrentSalonOperatingStatus(context);
   const previewData = buildPreviewData({
     ...data,
     accountId: data.context.currentAccount?.id ?? data.context.accountId ?? "",
+    operatingStatus,
   });
   const publicData = await getPublicSalonProfileData(data.setting.salon_id);
   const managedSalonName =

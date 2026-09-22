@@ -5,6 +5,7 @@ import "./explore-map.css";
 import {
   LumiTrustPopover,
 } from "@/components/reylumi-trust";
+import { SalonOperatingStatusBadge } from "@/components/salon-operating-status-badge";
 import { buildReylumiTrustSummary } from "@/lib/reylumi-trust";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -276,6 +277,10 @@ export function ExploreMap({
               .filter(Boolean)
               .join(" \u00b7 ")}
           </p>
+          <SalonOperatingStatusBadge
+            className="mt-2 max-w-full"
+            status={selectedSalon.operatingStatus}
+          />
         </div>
       ) : null}
     </div>

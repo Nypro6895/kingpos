@@ -15,6 +15,10 @@ import {
   getPostCommentCount,
   getPostCommentCounts,
 } from "@/lib/post-comments";
+import {
+  getPublicSalonOperatingStatusesBySalonId,
+  operatingStatusFromMap,
+} from "@/lib/salon-operating-status";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import {
   createSupabaseServerClient,
@@ -345,6 +349,7 @@ function mapPersonalPostRow(
   row: ExplorePersonalPostRow,
   supabaseUrl: string,
   trustSignals?: ExploreDecisionSignals,
+  operatingStatus?: NonNullable<ExplorePersonalPostItem["salon"]>["operatingStatus"],
   fallbackSalonLogoPath?: string | null,
 ): ExplorePersonalPostItem | null {
   const postId = cleanString(row.post_id);
@@ -399,6 +404,12 @@ function mapPersonalPostRow(
           serviceId: null,
         }
       : null,
+    bookingMeta: {
+      availabilityLabel: trustSignals?.nextAvailabilityLabel ?? null,
+      distanceMiles: null,
+      durationMinutes: null,
+      price: null,
+    },
     caption: cleanString(row.caption_excerpt),
     candidateClass: "organic",
     commentCount: 0,
@@ -438,6 +449,7 @@ function mapPersonalPostRow(
               row.salon_logo_path ?? fallbackSalonLogoPath,
             ),
             name: salonName,
+            operatingStatus: operatingStatus ?? operatingStatusFromMap(new Map(), salonId),
             state: cleanString(row.salon_state),
             trust: exploreFeedTrustFromDecisionSignals(trustSignals),
           }
@@ -575,19 +587,20 @@ export async function getExplorePersonalPostPage(input: {
           }
         : null;
     const seenPostIds = new Set<string>();
-    const signalMap = await getExploreDecisionSignalsBySalonId(
-      rpc,
-      visibleRows
-        .map((row) => cleanString(row.salon_id))
-        .filter((salonId): salonId is string => Boolean(salonId)),
-    );
-    const logoPathMap = await loadPublicSalonLogoPaths({
-      rpc,
-      salonIds: visibleRows
-        .filter((row) => !cleanString(row.salon_logo_path))
-        .map((row) => cleanString(row.salon_id))
-        .filter((salonId): salonId is string => Boolean(salonId)),
-    });
+    const salonIds = visibleRows
+      .map((row) => cleanString(row.salon_id))
+      .filter((salonId): salonId is string => Boolean(salonId));
+    const [signalMap, logoPathMap, operatingStatusMap] = await Promise.all([
+      getExploreDecisionSignalsBySalonId(rpc, salonIds),
+      loadPublicSalonLogoPaths({
+        rpc,
+        salonIds: visibleRows
+          .filter((row) => !cleanString(row.salon_logo_path))
+          .map((row) => cleanString(row.salon_id))
+          .filter((salonId): salonId is string => Boolean(salonId)),
+      }),
+      getPublicSalonOperatingStatusesBySalonId(salonIds),
+    ]);
     const items = visibleRows
       .map((row) => {
         const salonId = cleanString(row.salon_id);
@@ -596,6 +609,7 @@ export async function getExplorePersonalPostPage(input: {
           row,
           config.supabaseUrl,
           salonId ? signalMap.get(salonId) : undefined,
+          salonId ? operatingStatusFromMap(operatingStatusMap, salonId) : undefined,
           salonId ? logoPathMap.get(salonId) : null,
         );
       })

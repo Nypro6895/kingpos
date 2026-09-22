@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import type { ExploreMapSalon } from "@/types/explore";
 import type { Coordinates } from "@/types/location";
+import type { SalonOperatingStatus } from "@/types/salon-operating-status";
 
 const ExploreMap = dynamic(
   () => import("@/app/explore/explore-map").then((mod) => mod.ExploreMap),
@@ -21,10 +22,12 @@ const MAPTILER_BROWSER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim() ?? "";
 export function MapLocationPreview({
   coordinates,
   locationLabel,
+  operatingStatus,
   salonName,
 }: {
   coordinates: Coordinates;
   locationLabel: string | null;
+  operatingStatus: SalonOperatingStatus;
   salonName: string;
 }) {
   if (!MAPTILER_BROWSER_KEY) {
@@ -40,6 +43,7 @@ export function MapLocationPreview({
     locationLabel,
     longitude: coordinates.longitude,
     name: salonName,
+    operatingStatus,
     serviceLabel: null,
     trust: {
       averageRating: null,

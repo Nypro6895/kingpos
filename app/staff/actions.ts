@@ -35,6 +35,7 @@ import {
   getSupabaseConfig,
 } from "@/lib/supabase/server";
 import { getSalonProfileHref } from "@/lib/salon-profile";
+import { broadcastPosStaffChange } from "@/lib/pos-staff-realtime-server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type {
@@ -440,6 +441,7 @@ export async function updateStaffDirectoryBatchFormAction(formData: FormData) {
   if (context.currentSalon) {
     revalidatePath(`/book/${context.currentSalon.id}`);
     revalidatePath(getSalonProfileHref(context.currentSalon.id));
+    await broadcastPosStaffChange(context.currentSalon.id, "staff");
   }
 
   redirect(
@@ -729,6 +731,7 @@ export async function updateStaffPublicProfileAction(
   if (context.currentSalon) {
     revalidatePath(`/book/${context.currentSalon.id}`);
     revalidatePath(getSalonProfileHref(context.currentSalon.id));
+    await broadcastPosStaffChange(context.currentSalon.id, "staff");
   }
 
   return { error: null };

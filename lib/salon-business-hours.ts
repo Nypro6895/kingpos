@@ -1,5 +1,11 @@
 import "server-only";
 
+import {
+  DATE_PATTERN,
+  dayOfWeek,
+  localTimeText,
+  parseLocalTimeToMinutes,
+} from "@/lib/salon-operating-status-core";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 
@@ -52,45 +58,6 @@ type AvailabilityRuleRow = {
   ends_at_local: string;
   starts_at_local: string;
 };
-
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-function pad(value: number) {
-  return value.toString().padStart(2, "0");
-}
-
-function dayOfWeek(date: string) {
-  return new Date(`${date}T12:00:00.000Z`).getUTCDay();
-}
-
-function parseLocalTimeToMinutes(value: string) {
-  const match = value.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-
-  if (!match) {
-    return null;
-  }
-
-  const hour = Number(match[1]);
-  const minute = Number(match[2]);
-
-  if (
-    !Number.isInteger(hour) ||
-    !Number.isInteger(minute) ||
-    hour < 0 ||
-    hour > 23 ||
-    minute < 0 ||
-    minute > 59
-  ) {
-    return null;
-  }
-
-  return hour * 60 + minute;
-}
-
-function localTimeText(minutes: number) {
-  const normalized = ((minutes % 1440) + 1440) % 1440;
-  return `${pad(Math.floor(normalized / 60))}:${pad(normalized % 60)}`;
-}
 
 export function salonBusinessHourLabel(hour: number) {
   const normalized = ((hour % 24) + 24) % 24;

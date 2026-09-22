@@ -3133,7 +3133,12 @@ export function PosDeskClient({
         </div>
       ) : null}
 
-      <div className={rootClass} style={rootStyle}>
+      <div
+        className={rootClass}
+        data-pos-desk-root
+        data-pos-desk-surface={surface}
+        style={rootStyle}
+      >
       <section className={panelClass} data-pos-receipt-panel>
         <div
           className={

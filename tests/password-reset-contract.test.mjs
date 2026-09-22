@@ -24,6 +24,23 @@ test("login exposes forgot password without losing the return path", () => {
   assert.match(forgotForm, /Back to login/);
 });
 
+test("login shows account recovery help only after an auth failure", () => {
+  const loginPage = read("app/(app)/login/page.tsx");
+  const loginForm = read("app/login/login-form.tsx");
+
+  assert.match(loginForm, /Lost access or recovery code\?/);
+  assert.match(
+    loginForm,
+    /href=\{`\/account-recovery\?next=\$\{encodeURIComponent\(nextPath\)\}`\}/,
+  );
+  assert.match(loginPage, /showRecoveryHelpInitially=\{Boolean\(error\)\}/);
+  assert.match(loginForm, /showRecoveryHelpInitially = false/);
+  assert.match(loginForm, /const \[showRecoveryHelp, setShowRecoveryHelp\]/);
+  assert.match(loginForm, /setShowRecoveryHelp\(true\)/);
+  assert.match(loginForm, /setShowRecoveryHelp\(false\)/);
+  assert.match(loginForm, /\{showRecoveryHelp \? \(/);
+});
+
 test("forgot password API sends a non-enumerating reset email", () => {
   const route = read("app/(app)/api/auth/forgot-password/route.ts");
 
@@ -52,8 +69,10 @@ test("forgot and reset password routes are treated as auth surfaces", () => {
   const authRouting = read("lib/auth-routing.ts");
   const navigationShell = read("app/navigation-shell.tsx");
 
+  assert.match(authRouting, /"\/account-recovery"/);
   assert.match(authRouting, /"\/forgot-password"/);
   assert.match(authRouting, /"\/reset-password"/);
+  assert.match(navigationShell, /pathname === "\/account-recovery"/);
   assert.match(navigationShell, /pathname === "\/forgot-password"/);
   assert.match(navigationShell, /pathname === "\/reset-password"/);
 });

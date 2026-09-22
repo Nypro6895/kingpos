@@ -32,6 +32,8 @@ export type PostComment = {
   isSalonReply: boolean;
   lookId: string | null;
   parentCommentId: string | null;
+  replyDepth: number;
+  rootCommentId: string | null;
   salonId: string | null;
   targetId: string;
   targetType: PostCommentTargetType;

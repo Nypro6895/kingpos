@@ -83,6 +83,7 @@ export default async function PortablePosLayout({
     >
       <PortableWorkspaceTabs
         items={workspaceLinks}
+        salonId={session.salon_id}
         salonName={session.salon_name}
       />
       <div className="min-h-0 flex-1 overflow-hidden">{children}</div>

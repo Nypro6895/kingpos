@@ -6,6 +6,10 @@ import {
 } from "@/lib/current-context";
 import { syncCurrentSalonMapLocationAddressState } from "@/lib/location/salon-map-location";
 import { requirePermission } from "@/lib/permissions";
+import {
+  DEFAULT_SALON_OPERATING_TIMEZONE,
+  normalizeOperatingTimeZone,
+} from "@/lib/salon-operating-status-core";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type {
@@ -14,7 +18,7 @@ import type {
 } from "@/types/salon-setting";
 
 export const SALON_SETTING_SELECT =
-  "id, salon_id, business_name, phone, email, website, address_line1, address_line2, city, state, postal_code, country, business_description, allow_staff_applications, public_discovery_enabled, public_discovery_published_at, created_at, updated_at";
+  "id, salon_id, business_name, phone, email, website, address_line1, address_line2, city, state, postal_code, country, business_description, allow_staff_applications, operating_timezone_iana, public_discovery_enabled, public_discovery_published_at, created_at, updated_at";
 
 export const SALON_SETTING_PERMISSIONS = {
   view: "salon_settings.view",
@@ -242,6 +246,7 @@ export async function getCurrentSalonSetting() {
       postal_code: salon.postal_code,
       country: salon.country,
       allow_staff_applications: false,
+      operating_timezone_iana: DEFAULT_SALON_OPERATING_TIMEZONE,
       public_discovery_enabled: false,
     })
     .select(SALON_SETTING_SELECT)
@@ -342,6 +347,13 @@ export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput) 
       country: input.country,
       business_description: input.business_description,
       allow_staff_applications: input.allow_staff_applications ?? false,
+      ...(input.operating_timezone_iana !== undefined
+        ? {
+            operating_timezone_iana: normalizeOperatingTimeZone(
+              input.operating_timezone_iana,
+            ),
+          }
+        : {}),
       public_discovery_enabled: publicDiscoveryEnabled,
     })
     .eq("salon_id", salon.id)

@@ -29,16 +29,16 @@ export const PORTABLE_POS_ROUTE_LINKS: PortablePosRouteLink[] = [
     label: "Ticket",
   },
   {
-    href: PORTABLE_POS_ROUTES.checkIn,
-    icon: "check",
-    id: "checkIn",
-    label: "Check-in",
-  },
-  {
     href: PORTABLE_POS_ROUTES.book,
     icon: "book",
     id: "book",
     label: "Book",
+  },
+  {
+    href: PORTABLE_POS_ROUTES.checkIn,
+    icon: "check",
+    id: "checkIn",
+    label: "Check In",
   },
   {
     href: PORTABLE_POS_ROUTES.report,

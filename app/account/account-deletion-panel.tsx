@@ -442,8 +442,8 @@ export function AccountDeletionPanel({
                     type="checkbox"
                   />
                   <span>
-                    Continue without transfer and permanently close my
-                    last-owner salons.
+                    Continue without transfer and permanently close my last-owner
+                    salons.
                   </span>
                 </label>
               ) : null}

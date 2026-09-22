@@ -10,6 +10,10 @@ import {
   type ExploreDecisionSignals,
 } from "@/lib/explore-decision-signals";
 import { loadPublicSalonLogoPaths } from "@/lib/explore-salon-logos";
+import {
+  getPublicSalonOperatingStatusesBySalonId,
+  operatingStatusFromMap,
+} from "@/lib/salon-operating-status";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -154,6 +158,7 @@ function normalizeResultGroup(value: string | null | undefined): ExploreResultGr
 function mapExploreRow(
   row: ExploreRpcRow,
   signals: ExploreDecisionSignals | undefined,
+  operatingStatus: ExploreSearchResult["operatingStatus"],
   fallbackLogoPath?: string | null,
 ): ExploreSearchResult {
   const decisionSignals = signals ?? EMPTY_EXPLORE_DECISION_SIGNALS;
@@ -188,6 +193,7 @@ function mapExploreRow(
     name: row.salon_name,
     nextAvailabilityLabel: decisionSignals.nextAvailabilityLabel,
     nextAvailableAt: decisionSignals.nextAvailableAt,
+    operatingStatus,
     phone: row.phone,
     postalCode: row.postal_code,
     profileCompleteness: row.profile_completeness ?? 0,
@@ -329,20 +335,22 @@ export async function searchExploreSalons(
       }
     }
 
-    const signalMap = await getExploreDecisionSignalsBySalonId(
-      rpc,
-      rows.map((row) => row.salon_id),
-    );
-    const logoPathMap = await loadPublicSalonLogoPaths({
-      rpc,
-      salonIds: rows
-        .filter((row) => !(row.logo_image_path ?? row.logo_path))
-        .map((row) => row.salon_id),
-    });
+    const salonIds = rows.map((row) => row.salon_id);
+    const [signalMap, logoPathMap, operatingStatusMap] = await Promise.all([
+      getExploreDecisionSignalsBySalonId(rpc, salonIds),
+      loadPublicSalonLogoPaths({
+        rpc,
+        salonIds: rows
+          .filter((row) => !(row.logo_image_path ?? row.logo_path))
+          .map((row) => row.salon_id),
+      }),
+      getPublicSalonOperatingStatusesBySalonId(salonIds),
+    ]);
     const results = rows.map((row) =>
       mapExploreRow(
         row,
         signalMap.get(row.salon_id),
+        operatingStatusFromMap(operatingStatusMap, row.salon_id),
         logoPathMap.get(row.salon_id),
       ),
     );

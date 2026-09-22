@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { PosWorkspaceRealtimeRefresh } from "@/app/pos/pos-workspace-realtime-refresh";
 
 const OWNER_POS_TABS = [
   { href: "/pos", id: "ticket", label: "Ticket" },
@@ -24,7 +25,13 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function PosOwnerWorkspaceTabs() {
+export function PosOwnerWorkspaceTabs({
+  className,
+  salonId,
+}: {
+  className?: string;
+  salonId?: string | null;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -46,30 +53,38 @@ export function PosOwnerWorkspaceTabs() {
   }, [pathname, router]);
 
   return (
-    <nav
-      aria-label="POS workspace"
-      className="grid grid-cols-4 gap-1 rounded-2xl bg-zinc-200/70 p-1"
-      data-pos-owner-workspace-tabs
-    >
-      {OWNER_POS_TABS.map((tab) => {
-        const active = isActive(pathname, tab.href);
-        return (
-          <Link
-            aria-current={active ? "page" : undefined}
-            className={[
-              "flex min-h-11 min-w-0 items-center justify-center rounded-xl px-2 text-center text-xs font-bold transition sm:text-sm",
-              active
-                ? "bg-white text-zinc-950 shadow-sm ring-1 ring-zinc-200"
-                : "text-zinc-600 hover:bg-white/70 hover:text-zinc-950",
-            ].join(" ")}
-            href={tab.href}
-            key={tab.id}
-            prefetch
-          >
-            <span className="truncate">{tab.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
+    <>
+      <PosWorkspaceRealtimeRefresh salonId={salonId} />
+      <nav
+        aria-label="POS workspace"
+        className={[
+          "grid grid-cols-4 gap-1 rounded-2xl bg-zinc-200/70 p-1",
+          className,
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        data-pos-owner-workspace-tabs
+      >
+        {OWNER_POS_TABS.map((tab) => {
+          const active = isActive(pathname, tab.href);
+          return (
+            <Link
+              aria-current={active ? "page" : undefined}
+              className={[
+                "flex min-h-11 min-w-0 items-center justify-center rounded-xl px-2 text-center text-xs font-bold transition sm:text-sm",
+                active
+                  ? "bg-white text-zinc-950 shadow-sm ring-1 ring-zinc-200"
+                  : "text-zinc-600 hover:bg-white/70 hover:text-zinc-950",
+              ].join(" ")}
+              href={tab.href}
+              key={tab.id}
+              prefetch
+            >
+              <span className="truncate">{tab.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 }

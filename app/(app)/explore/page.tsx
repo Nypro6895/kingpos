@@ -10,6 +10,7 @@ import {
 } from "@/lib/explore-search";
 import { getExploreFeedPage } from "@/lib/explore-feed";
 import { getExploreHomeContent } from "@/lib/explore-home";
+import { enrichExploreShowcaseContent } from "@/lib/explore-showcase-content";
 import { compareReylumiTopRatedSalons } from "@/lib/reylumi-trust";
 import { routes } from "@/lib/routes";
 import { searchTextMatches } from "@/lib/search-normalization";
@@ -77,26 +78,7 @@ async function buildQuickActions(
   context: ExploreContext,
 ): Promise<ExploreQuickAction[]> {
   if (!context.user) {
-    return [
-      {
-        description: "Create an account to connect with salons.",
-        href: "/signup?next=/explore",
-        label: "Create account",
-        tone: "dark",
-      },
-      {
-        description: "Sign in to open your Reylumi workspace.",
-        href: "/login?next=/explore",
-        label: "Sign in",
-        tone: "light",
-      },
-      {
-        description: "Preview your future account hub.",
-        href: "/my-place",
-        label: "Open My Place",
-        tone: "light",
-      },
-    ];
+    return [];
   }
 
   const actions: ExploreQuickAction[] = [];
@@ -450,6 +432,48 @@ function topRatedDiscoverySalons(content: ExploreHomeContent) {
     .sort(compareReylumiTopRatedSalons);
 }
 
+function availableTodayDiscoverySalons(...groups: ExploreSearchResult[][]) {
+  return dedupeSearchResults(...groups)
+    .filter(
+      (salon) =>
+        Boolean(salon.nextAvailabilityLabel) || salon.operatingStatus.isOpen,
+    )
+    .sort((left, right) => {
+      const leftTime = left.nextAvailableAt
+        ? new Date(left.nextAvailableAt).getTime()
+        : Number.POSITIVE_INFINITY;
+      const rightTime = right.nextAvailableAt
+        ? new Date(right.nextAvailableAt).getTime()
+        : Number.POSITIVE_INFINITY;
+
+      if (leftTime !== rightTime) {
+        return leftTime - rightTime;
+      }
+
+      return (
+        Number(right.operatingStatus.isOpen) -
+        Number(left.operatingStatus.isOpen)
+      );
+    });
+}
+
+function underBudgetDiscoverySalons(
+  budget: number,
+  ...groups: ExploreSearchResult[][]
+) {
+  return dedupeSearchResults(...groups)
+    .filter(
+      (salon) =>
+        typeof salon.startingPrice === "number" &&
+        salon.startingPrice > 0 &&
+        salon.startingPrice <= budget,
+    )
+    .sort(
+      (left, right) =>
+        (left.startingPrice ?? budget) - (right.startingPrice ?? budget),
+    );
+}
+
 function exploreSearchHref(input: { category?: string; location?: string }) {
   const params = new URLSearchParams();
 
@@ -725,11 +749,11 @@ function bookingStartLabel(booking: ExploreUpcomingBooking) {
 function discoveryShortcutPriority(
   shortcut: ExploreDiscoveryContent["shortcuts"][number],
 ) {
-  if (shortcut.id === "trending") {
+  if (shortcut.id === "available-today") {
     return 0;
   }
 
-  if (shortcut.id === "upcoming-booking") {
+  if (shortcut.id === "trending") {
     return 1;
   }
 
@@ -741,11 +765,19 @@ function discoveryShortcutPriority(
     return 3;
   }
 
-  if (shortcut.id === "recommended") {
+  if (shortcut.id === "under-60") {
     return 4;
   }
 
-  return 5;
+  if (shortcut.id === "recommended") {
+    return 5;
+  }
+
+  if (shortcut.id === "upcoming-booking") {
+    return 6;
+  }
+
+  return 7;
 }
 
 function buildExploreDiscoveryContent(input: {
@@ -770,9 +802,51 @@ function buildExploreDiscoveryContent(input: {
     input.homeContent.recommendedSalons,
     input.homeContent.newSalons,
   );
+  const availableTodaySalons = availableTodayDiscoverySalons(
+    searchSalons,
+    allHomeSalons,
+  );
+  const under60Salons = underBudgetDiscoverySalons(
+    60,
+    searchSalons,
+    allHomeSalons,
+  );
   const trendingCount = input.homeContent.inspiration.items.length;
   const topRatedCount = topRatedDiscoverySalons(input.homeContent).length;
   const recommendedCount = input.homeContent.recommendedSalons.length;
+
+  if (availableTodaySalons.length > 0) {
+    const selectedPreviews = selectDiscoveryPreviewCandidates({
+      avoid: feedAvoid,
+      candidates: availableTodaySalons
+        .map((salon) => salonPreviewCandidate(salon, "available-today"))
+        .filter(
+          (candidate): candidate is DiscoveryPreviewCandidate =>
+            Boolean(candidate),
+        ),
+      hardAvoid: railAvoid,
+      max: 3,
+    });
+
+    if (selectedPreviews.length > 0) {
+      shortcuts.push({
+        action: {
+          resultKind: "available_today",
+          type: "result",
+        },
+        actionLabel: "See times",
+        context: locationName
+          ? `Open spots near ${locationName}`
+          : "Open booking times",
+        detail: countLabel(availableTodaySalons.length, "bookable option"),
+        id: "available-today",
+        label: "Available today",
+        moduleKind: "availability",
+        previews: discoveryPreviews(selectedPreviews),
+      });
+      trackDiscoveryPreviewCandidates(selectedPreviews, railAvoid);
+    }
+  }
 
   if (trendingCount > 0) {
     const selectedPreviews = selectDiscoveryPreviewCandidates({
@@ -794,7 +868,7 @@ function buildExploreDiscoveryContent(input: {
         context: "Latest public inspiration",
         detail: countLabel(trendingCount, "public look"),
         id: "trending",
-        label: "Fresh looks",
+        label: "Trending",
         moduleKind: "visual",
         previews: discoveryPreviews(selectedPreviews),
       });
@@ -859,8 +933,39 @@ function buildExploreDiscoveryContent(input: {
         context: "Sorted by customer rating with ReyLUMI activity context",
         detail: countLabel(topRatedCount, "salon"),
         id: "top-rated",
-        label: "Top rated salons",
+        label: "Top artists",
         moduleKind: "top_rated",
+        previews: discoveryPreviews(selectedPreviews),
+      });
+      trackDiscoveryPreviewCandidates(selectedPreviews, railAvoid);
+    }
+  }
+
+  if (under60Salons.length > 0) {
+    const selectedPreviews = selectDiscoveryPreviewCandidates({
+      avoid: feedAvoid,
+      candidates: under60Salons
+        .map((salon) => salonPreviewCandidate(salon, "under-60"))
+        .filter(
+          (candidate): candidate is DiscoveryPreviewCandidate =>
+            Boolean(candidate),
+        ),
+      hardAvoid: railAvoid,
+      max: 3,
+    });
+
+    if (selectedPreviews.length > 0) {
+      shortcuts.push({
+        action: {
+          resultKind: "under_60",
+          type: "result",
+        },
+        actionLabel: "See value picks",
+        context: "Value-friendly services",
+        detail: countLabel(under60Salons.length, "option"),
+        id: "under-60",
+        label: "Under $60",
+        moduleKind: "value",
         previews: discoveryPreviews(selectedPreviews),
       });
       trackDiscoveryPreviewCandidates(selectedPreviews, railAvoid);
@@ -1059,6 +1164,12 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     utilityContent,
     workspaceLocation,
   });
+  const showcaseContent = enrichExploreShowcaseContent({
+    discoveryContent,
+    homeContent,
+    initialFeed,
+    searchResponse,
+  });
   const commentViewer = {
     canModerate: false,
     canReplyAsSalon: false,
@@ -1069,22 +1180,22 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   return (
     <ExploreClient
       key={[
-        searchResponse.query,
-        searchResponse.location,
-        searchResponse.category,
-        searchResponse.page,
-        searchResponse.totalCount,
+        showcaseContent.searchResponse.query,
+        showcaseContent.searchResponse.location,
+        showcaseContent.searchResponse.category,
+        showcaseContent.searchResponse.page,
+        showcaseContent.searchResponse.totalCount,
         locationSource,
         hasExplicitSearchParams ? "search" : "home",
       ].join(":")}
       commentViewer={commentViewer}
       initialSearchMode={hasExplicitSearchParams}
       initialLocationSource={locationSource}
-      initialResponse={searchResponse}
-      discoveryContent={discoveryContent}
-      homeContent={homeContent}
+      initialResponse={showcaseContent.searchResponse}
+      discoveryContent={showcaseContent.discoveryContent}
+      homeContent={showcaseContent.homeContent}
       hasUrlLocation={Boolean(requestedLocation || queryLocation)}
-      initialFeed={initialFeed}
+      initialFeed={showcaseContent.initialFeed}
       quickActions={quickActions}
       workspaceLocation={workspaceLocation}
     />

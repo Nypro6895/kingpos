@@ -1,14 +1,33 @@
-import { openAppNotificationAction } from "@/app/notifications/actions";
+"use client";
+
+import {
+  markAllAppNotificationsReadAction,
+  openAppNotificationAction,
+} from "@/app/notifications/actions";
 import {
   acceptStaffInviteByRequestFormAction,
   cancelStaffSalonApplicationFormAction,
   declineStaffInviteByRequestFormAction,
 } from "@/app/staff/actions";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useTransition } from "react";
 import type {
   NotificationFeedAction,
   NotificationFeedItem,
 } from "@/types/notifications";
+
+function readAppNotificationItem(item: NotificationFeedItem): NotificationFeedItem {
+  if (item.source !== "app" || !item.unread) {
+    return item;
+  }
+
+  return {
+    ...item,
+    status: item.status === "unread" ? "read" : item.status,
+    unread: false,
+  };
+}
 
 function sourceTone(source: NotificationFeedItem["source"]) {
   if (source === "staff") {
@@ -224,11 +243,34 @@ export function NotificationFeedList({
   compact = false,
   emptyLabel = "No notifications yet.",
   items,
+  markAppNotificationsReadOnView = false,
 }: {
   compact?: boolean;
   emptyLabel?: string;
   items: NotificationFeedItem[];
+  markAppNotificationsReadOnView?: boolean;
 }) {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const unreadAppItemKey = items
+    .filter((item) => item.source === "app" && item.unread)
+    .map((item) => item.id)
+    .join("|");
+  const visibleItems = markAppNotificationsReadOnView
+    ? items.map(readAppNotificationItem)
+    : items;
+
+  useEffect(() => {
+    if (!markAppNotificationsReadOnView || !unreadAppItemKey) {
+      return;
+    }
+
+    startTransition(async () => {
+      await markAllAppNotificationsReadAction();
+      router.refresh();
+    });
+  }, [markAppNotificationsReadOnView, router, startTransition, unreadAppItemKey]);
+
   if (items.length === 0) {
     return (
       <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-6 text-sm font-medium text-zinc-600">
@@ -239,7 +281,7 @@ export function NotificationFeedList({
 
   return (
     <div className="divide-y divide-zinc-100 overflow-hidden rounded-md bg-white">
-      {items.map((item) => (
+      {visibleItems.map((item) => (
         <NotificationRow compact={compact} item={item} key={item.id} />
       ))}
     </div>

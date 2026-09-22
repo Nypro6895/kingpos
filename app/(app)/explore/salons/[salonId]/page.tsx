@@ -48,7 +48,7 @@ export default async function PublicSalonProfilePage({
     <main>
       <SalonProfileView
         capabilities={{
-          canBook: true,
+          canBook: data.profile.operatingStatus.kind !== "permanently_closed",
           canCreateContent: false,
           canEditProfile: false,
           canFollow: true,

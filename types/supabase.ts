@@ -988,6 +988,83 @@ export type Database = {
           },
         ]
       }
+      customer_visit_experiences: {
+        Row: {
+          author_user_id: string
+          body: string | null
+          counts_toward_reputation: boolean
+          created_at: string
+          customer_id: string | null
+          edited_at: string | null
+          feedback_state: string
+          id: string
+          issue_status: string
+          salon_id: string
+          source: string
+          ticket_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_user_id: string
+          body?: string | null
+          counts_toward_reputation?: boolean
+          created_at?: string
+          customer_id?: string | null
+          edited_at?: string | null
+          feedback_state: string
+          id?: string
+          issue_status?: string
+          salon_id: string
+          source?: string
+          ticket_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_user_id?: string
+          body?: string | null
+          counts_toward_reputation?: boolean
+          created_at?: string
+          customer_id?: string | null
+          edited_at?: string | null
+          feedback_state?: string
+          id?: string
+          issue_status?: string
+          salon_id?: string
+          source?: string
+          ticket_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_visit_experiences_author_user_id_fkey"
+            columns: ["author_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_visit_experiences_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_visit_experiences_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_visit_experiences_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "pos_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           account_id: string
@@ -3390,6 +3467,8 @@ export type Database = {
           is_salon_reply: boolean
           look_id: string | null
           parent_comment_id: string | null
+          reply_depth: number
+          root_comment_id: string | null
           salon_id: string | null
           status: string
           update_id: string | null
@@ -3406,6 +3485,8 @@ export type Database = {
           is_salon_reply?: boolean
           look_id?: string | null
           parent_comment_id?: string | null
+          reply_depth?: number
+          root_comment_id?: string | null
           salon_id?: string | null
           status?: string
           update_id?: string | null
@@ -3422,6 +3503,8 @@ export type Database = {
           is_salon_reply?: boolean
           look_id?: string | null
           parent_comment_id?: string | null
+          reply_depth?: number
+          root_comment_id?: string | null
           salon_id?: string | null
           status?: string
           update_id?: string | null
@@ -3452,6 +3535,13 @@ export type Database = {
           {
             foreignKeyName: "salon_profile_comments_parent_comment_id_fkey"
             columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "salon_profile_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_profile_comments_root_comment_id_fkey"
+            columns: ["root_comment_id"]
             isOneToOne: false
             referencedRelation: "salon_profile_comments"
             referencedColumns: ["id"]
@@ -4555,6 +4645,70 @@ export type Database = {
           },
         ]
       }
+      salon_operating_hours: {
+        Row: {
+          closes_at_local: string
+          created_at: string
+          created_by_user_id: string | null
+          day_of_week: number
+          id: string
+          is_active: boolean
+          opens_at_local: string
+          salon_id: string
+          sort_order: number
+          updated_at: string
+          updated_by_user_id: string | null
+        }
+        Insert: {
+          closes_at_local: string
+          created_at?: string
+          created_by_user_id?: string | null
+          day_of_week: number
+          id?: string
+          is_active?: boolean
+          opens_at_local: string
+          salon_id: string
+          sort_order?: number
+          updated_at?: string
+          updated_by_user_id?: string | null
+        }
+        Update: {
+          closes_at_local?: string
+          created_at?: string
+          created_by_user_id?: string | null
+          day_of_week?: number
+          id?: string
+          is_active?: boolean
+          opens_at_local?: string
+          salon_id?: string
+          sort_order?: number
+          updated_at?: string
+          updated_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_operating_hours_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_operating_hours_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_operating_hours_updated_by_user_id_fkey"
+            columns: ["updated_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       salon_settings: {
         Row: {
           address_line1: string | null
@@ -4567,6 +4721,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          operating_timezone_iana: string
           phone: string | null
           postal_code: string | null
           public_discovery_enabled: boolean
@@ -4591,6 +4746,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          operating_timezone_iana?: string
           phone?: string | null
           postal_code?: string | null
           public_discovery_enabled?: boolean
@@ -4615,6 +4771,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          operating_timezone_iana?: string
           phone?: string | null
           postal_code?: string | null
           public_discovery_enabled?: boolean
@@ -4634,6 +4791,73 @@ export type Database = {
             columns: ["salon_id"]
             isOneToOne: true
             referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salon_special_hours: {
+        Row: {
+          closes_at_local: string | null
+          created_at: string
+          created_by_user_id: string | null
+          id: string
+          is_active: boolean
+          local_date: string
+          opens_at_local: string | null
+          reason: string | null
+          salon_id: string
+          status: string
+          updated_at: string
+          updated_by_user_id: string | null
+        }
+        Insert: {
+          closes_at_local?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          is_active?: boolean
+          local_date: string
+          opens_at_local?: string | null
+          reason?: string | null
+          salon_id: string
+          status: string
+          updated_at?: string
+          updated_by_user_id?: string | null
+        }
+        Update: {
+          closes_at_local?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          is_active?: boolean
+          local_date?: string
+          opens_at_local?: string | null
+          reason?: string | null
+          salon_id?: string
+          status?: string
+          updated_at?: string
+          updated_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salon_special_hours_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_special_hours_salon_id_fkey"
+            columns: ["salon_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "salon_special_hours_updated_by_user_id_fkey"
+            columns: ["updated_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -5880,6 +6104,22 @@ export type Database = {
         Args: { p_target_id: string; p_target_type: string }
         Returns: number
       }
+      record_customer_visit_experience: {
+        Args: {
+          p_body?: string | null
+          p_feedback_state: string
+          p_ticket_id: string
+        }
+        Returns: Json
+      }
+      get_customer_activity: {
+        Args: { p_limit?: number }
+        Returns: Json
+      }
+      get_customer_activity_receipt: {
+        Args: { p_ticket_id: string }
+        Returns: Json
+      }
       get_public_post_comments: {
         Args: {
           p_limit?: number
@@ -5898,6 +6138,8 @@ export type Database = {
           is_salon_reply: boolean
           look_id: string | null
           parent_comment_id: string | null
+          reply_depth: number
+          root_comment_id: string | null
           root_count: number
           salon_id: string | null
           total_count: number
@@ -5918,9 +6160,35 @@ export type Database = {
           is_salon_reply: boolean
           look_id: string | null
           parent_comment_id: string | null
+          reply_depth: number
+          root_comment_id: string | null
           salon_id: string | null
           update_id: string | null
           updated_at: string
+        }[]
+      }
+      get_public_salon_profile_experiences: {
+        Args: { target_salon_id: string }
+        Returns: {
+          author_display_name: string
+          author_user_id: string
+          body: string | null
+          created_at: string
+          edited_at: string | null
+          feedback_state: string | null
+          id: string
+          issue_status: string | null
+          rating: number | null
+          reply_body: string | null
+          reply_created_at: string | null
+          reply_id: string | null
+          salon_id: string
+          source: string
+          ticket_id: string | null
+          title: string | null
+          updated_at: string
+          verification_status: string
+          verified_booking_id: string | null
         }[]
       }
       get_public_salon_profile_looks: {
@@ -5954,6 +6222,26 @@ export type Database = {
           why_love_it: string
         }[]
       }
+      get_public_salon_profile_reputation_summary: {
+        Args: { target_salon_id: string }
+        Returns: {
+          average_rating: number | null
+          experience_count: number
+          issue_count: number
+          legacy_review_count: number
+          no_issue_count: number
+          no_issue_rate: number | null
+          rating_1_count: number
+          rating_2_count: number
+          rating_3_count: number
+          rating_4_count: number
+          rating_5_count: number
+          review_count: number
+          unique_customer_count: number
+          verified_count: number
+          verified_visit_count: number
+        }[]
+      }
       get_public_salon_profile_review_summary: {
         Args: { target_salon_id: string }
         Returns: {
@@ -5985,6 +6273,16 @@ export type Database = {
           updated_at: string
           verification_status: string
           verified_booking_id: string
+        }[]
+      }
+      get_public_salon_operating_status_inputs: {
+        Args: { target_salon_ids: string[] }
+        Returns: {
+          lifecycle_status: string
+          salon_id: string
+          special_hours: Json
+          timezone_iana: string
+          weekly_hours: Json
         }[]
       }
       get_public_salon_profile_services: {

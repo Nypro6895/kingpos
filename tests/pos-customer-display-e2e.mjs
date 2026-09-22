@@ -2254,7 +2254,7 @@ async function assertPortableShell(page) {
   );
   assert.deepEqual(
     metrics.workspaceLinks.map((link) => link.text),
-    ["Ticket", "Check-in", "Book", "Report"],
+    ["Ticket", "Book", "Check In", "Report"],
     "Portable POS should expose the persistent four-tab workspace.",
   );
   assert.equal(
@@ -2279,14 +2279,14 @@ async function assertPortableShell(page) {
 
   for (const route of [
     {
-      label: "Check-in",
-      marker: null,
-      path: "/pos/portable/check-in",
-    },
-    {
       label: "Book",
       marker: "book",
       path: "/pos/portable/book",
+    },
+    {
+      label: "Check In",
+      marker: null,
+      path: "/pos/portable/check-in",
     },
     {
       label: "Report",

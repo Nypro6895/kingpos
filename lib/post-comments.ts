@@ -36,6 +36,8 @@ type CommentRow = {
   is_salon_reply: boolean | null;
   look_id: string | null;
   parent_comment_id: string | null;
+  reply_depth?: number | string | null;
+  root_comment_id?: string | null;
   root_count?: number | string | null;
   salon_id: string | null;
   total_count?: number | string | null;
@@ -173,6 +175,8 @@ function mapCommentRow(row: CommentRow): PostComment {
     isSalonReply: row.is_salon_reply === true,
     lookId: row.look_id,
     parentCommentId: row.parent_comment_id,
+    replyDepth: readCount(row.reply_depth),
+    rootCommentId: row.root_comment_id ?? null,
     salonId: row.salon_id,
     targetId: rowTargetId(row),
     targetType,
@@ -313,7 +317,7 @@ async function ensureCommentBelongsToTarget(input: {
   const columns = commentTargetColumns(input.target);
   let query = input.supabase
     .from("salon_profile_comments")
-    .select("id, author_user_id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id")
+    .select("id, author_user_id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth")
     .eq("id", input.commentId);
 
   if (columns.look_id) {
@@ -334,6 +338,8 @@ async function ensureCommentBelongsToTarget(input: {
     id: string;
     look_id: string | null;
     parent_comment_id: string | null;
+    reply_depth?: number | string | null;
+    root_comment_id?: string | null;
     salon_id: string | null;
     update_id: string | null;
   }>();
@@ -387,7 +393,7 @@ export async function createPostComment(input: {
     .from("salon_profile_comments")
     .insert(insertPayload)
     .select(
-      "id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, author_user_id, author_display_name, body, is_salon_reply, created_at, updated_at, edited_at",
+      "id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, created_at, updated_at, edited_at",
     )
     .single<CommentRow>();
 
@@ -450,7 +456,7 @@ export async function updatePostComment(input: {
     .update({ body })
     .eq("id", commentId)
     .select(
-      "id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, author_user_id, author_display_name, body, is_salon_reply, created_at, updated_at, edited_at",
+      "id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, created_at, updated_at, edited_at",
     )
     .single<CommentRow>();
 

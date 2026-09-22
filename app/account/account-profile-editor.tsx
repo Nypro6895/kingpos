@@ -47,6 +47,7 @@ type VerificationPhoneClaimState = Extract<
 
 type ProfileFieldProps = {
   label: string;
+  onEdit?: () => void;
   value: string | null | undefined;
 };
 
@@ -226,14 +227,28 @@ function uploadToSupabase(input: {
   });
 }
 
-function ProfileField({ label, value }: ProfileFieldProps) {
+function ProfileField({ label, onEdit, value }: ProfileFieldProps) {
+  const display = displayValue(value);
+
   return (
     <div className="grid gap-1 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <dt className="text-xs font-semibold uppercase text-zinc-500">
         {label}
       </dt>
-      <dd className="min-h-6 break-words text-sm font-semibold text-zinc-950">
-        {displayValue(value)}
+      <dd className="min-w-0">
+        {onEdit ? (
+          <button
+            className="flex min-h-11 w-full items-center rounded-md px-0 text-left text-sm font-semibold text-zinc-950 transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+            onClick={onEdit}
+            type="button"
+          >
+            <span className="break-words">{display}</span>
+          </button>
+        ) : (
+          <span className="flex min-h-6 items-center break-words text-sm font-semibold text-zinc-950">
+            {display}
+          </span>
+        )}
       </dd>
     </div>
   );
@@ -829,24 +844,12 @@ export function AccountProfileEditor({
       id="profile-contact"
       onKeyDown={onEditorKeyDown}
     >
-      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-2">
         <div>
           <h2 className="text-base font-semibold text-zinc-950">
             Profile & contact
           </h2>
-          <p className="mt-1 text-sm leading-6 text-zinc-500">
-            Name, avatar, email, phone, language, and timezone.
-          </p>
         </div>
-        {!editing ? (
-          <button
-            className="min-h-10 rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-            onClick={beginEdit}
-            type="button"
-          >
-            Edit profile
-          </button>
-        ) : null}
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border-subtle bg-white">
@@ -864,7 +867,7 @@ export function AccountProfileEditor({
                 initialsFor(currentName)
               )}
             </span>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="truncate text-xl font-semibold text-zinc-950">
                 {currentName}
               </p>
@@ -874,7 +877,15 @@ export function AccountProfileEditor({
             </div>
           </div>
 
-          {editing ? (
+          {!editing ? (
+            <button
+              className="min-h-9 shrink-0 rounded-md px-2 text-sm font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+              onClick={beginEdit}
+              type="button"
+            >
+              Edit profile
+            </button>
+          ) : (
             <div className="flex flex-wrap gap-2">
               <input
                 accept={ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES.join(",")}
@@ -904,7 +915,7 @@ export function AccountProfileEditor({
                 </button>
               ) : null}
             </div>
-          ) : null}
+          )}
         </div>
 
         {editing ? (
@@ -977,13 +988,37 @@ export function AccountProfileEditor({
           </>
         ) : (
           <dl>
-            <ProfileField label="Display name" value={currentName} />
+            <ProfileField
+              label="Display name"
+              onEdit={beginEdit}
+              value={currentName}
+            />
             <ProfileField label="Email" value={user.email} />
-            <ProfileField label="Phone" value={values.phone} />
-            <ProfileField label="First name" value={values.first_name} />
-            <ProfileField label="Last name" value={values.last_name} />
-            <ProfileField label="Language" value={values.language} />
-            <ProfileField label="Timezone" value={values.timezone} />
+            <ProfileField
+              label="Phone"
+              onEdit={beginEdit}
+              value={values.phone}
+            />
+            <ProfileField
+              label="First name"
+              onEdit={beginEdit}
+              value={values.first_name}
+            />
+            <ProfileField
+              label="Last name"
+              onEdit={beginEdit}
+              value={values.last_name}
+            />
+            <ProfileField
+              label="Language"
+              onEdit={beginEdit}
+              value={values.language}
+            />
+            <ProfileField
+              label="Timezone"
+              onEdit={beginEdit}
+              value={values.timezone}
+            />
             <ProfileField label="Status" value={user.status} />
             <ProfileField label="Created" value={createdAtLabel} />
           </dl>

@@ -29,6 +29,8 @@ export const SALON_PROFILE_UPDATE_TYPES = [
   "seasonal_offer",
 ] as const;
 
+import type { SalonOperatingStatus } from "@/types/salon-operating-status";
+
 export type SalonProfileLookStatus = "archived" | "draft" | "published";
 
 export type SalonProfileUpdateType =
@@ -73,6 +75,7 @@ export type SalonProfileSetting = {
   country: string | null;
   business_description: string | null;
   allow_staff_applications: boolean;
+  operating_timezone_iana: string;
   public_discovery_enabled: boolean;
   public_discovery_published_at: string | null;
   public_profile_tagline: string | null;
@@ -163,6 +166,7 @@ export type PublicSalonProfile = {
   tagline: string | null;
   website: string | null;
   name: string;
+  operatingStatus: SalonOperatingStatus;
 };
 
 export type PublicSalonProfileService = {

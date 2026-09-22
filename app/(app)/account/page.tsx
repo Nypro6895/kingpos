@@ -2,6 +2,7 @@ import { AccountDeletionPanel } from "@/app/account/account-deletion-panel";
 import { AccountProfileEditor } from "@/app/account/account-profile-editor";
 import { analyzeAccountDeletionImpact } from "@/lib/account-deletion";
 import type { AccountDeletionImpact } from "@/lib/account-deletion";
+import { getCurrentPlatformAdminContext } from "@/lib/platform-admin/auth";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import Link from "next/link";
 
@@ -46,6 +47,7 @@ export default async function AccountPage() {
     );
   }
 
+  const platformAdminContext = await getCurrentPlatformAdminContext();
   let deletionImpact: AccountDeletionImpact | null = null;
   let deletionImpactError: string | undefined;
 
@@ -100,6 +102,14 @@ export default async function AccountPage() {
           >
             All settings
           </Link>
+          {platformAdminContext ? (
+            <Link
+              className="mt-2 flex min-h-10 items-center rounded-md bg-zinc-950 px-2.5 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800"
+              href="/admin"
+            >
+              Admin
+            </Link>
+          ) : null}
         </aside>
 
         <div className="grid gap-5">

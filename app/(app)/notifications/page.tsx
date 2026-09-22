@@ -82,7 +82,7 @@ function NotificationGroupSection({
           v
         </span>
       </summary>
-      <NotificationFeedList items={group.items} />
+      <NotificationFeedList items={group.items} markAppNotificationsReadOnView />
     </details>
   );
 }

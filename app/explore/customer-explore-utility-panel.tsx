@@ -70,6 +70,10 @@ function shortcutIcon(shortcut: ExploreDiscoveryShortcut): DiscoveryIconName {
     return "calendar";
   }
 
+  if (shortcut.id === "available-today") {
+    return "calendar";
+  }
+
   if (shortcut.id === "trending") {
     return "sparkle";
   }
@@ -84,6 +88,10 @@ function shortcutIcon(shortcut: ExploreDiscoveryShortcut): DiscoveryIconName {
 
   if (shortcut.id === "recommended") {
     return "sparkle";
+  }
+
+  if (shortcut.id === "under-60") {
+    return "flame";
   }
 
   return "compass";

@@ -10,6 +10,10 @@ import {
   getExploreDecisionSignalsBySalonId,
 } from "@/lib/explore-decision-signals";
 import { loadPublicSalonLogoPaths } from "@/lib/explore-salon-logos";
+import {
+  getPublicSalonOperatingStatusesBySalonId,
+  operatingStatusFromMap,
+} from "@/lib/salon-operating-status";
 import { normalizePublicBookingHref } from "@/lib/public-booking-routes";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -157,6 +161,7 @@ function layoutVariantFromRatio(
 
 function mapInspirationRow(
   row: ExploreInspirationRow,
+  operatingStatus: ExploreInspirationItem["operatingStatus"],
 ): ExploreInspirationItem | null {
   const imageUrl = getSalonProfileMediaUrl(row.media_path);
   const salonName = cleanString(row.salon_name);
@@ -182,6 +187,12 @@ function mapInspirationRow(
     bookableServiceId: UUID_PATTERN.test(row.bookable_service_id ?? "")
       ? row.bookable_service_id
       : null,
+    bookingMeta: {
+      availabilityLabel: null,
+      distanceMiles: null,
+      durationMinutes: null,
+      price: null,
+    },
     bookingEnabled: row.booking_enabled === true,
     bookingHref:
       row.booking_enabled === true
@@ -214,6 +225,7 @@ function mapInspirationRow(
     salonLogoImageUrl: getSalonProfileMediaUrl(row.salon_logo_path),
     salonName,
     salonState: cleanString(row.salon_state),
+    operatingStatus,
     serviceCategory: cleanString(row.service_category),
     serviceName: cleanString(row.service_name),
     trust: exploreFeedTrustFromDecisionSignals(null),
@@ -320,8 +332,16 @@ export async function getExploreInspirationPage(input: {
           }
         : null;
     const seenMediaIds = new Set<string>();
+    const operatingStatusMap = await getPublicSalonOperatingStatusesBySalonId(
+      visibleRows.map((row) => row.salon_id),
+    );
     const items = visibleRows
-      .map(mapInspirationRow)
+      .map((row) =>
+        mapInspirationRow(
+          row,
+          operatingStatusFromMap(operatingStatusMap, row.salon_id),
+        ),
+      )
       .filter((item): item is ExploreInspirationItem => Boolean(item))
       .filter((item) => {
         if (seenMediaIds.has(item.mediaId)) {
@@ -331,12 +351,19 @@ export async function getExploreInspirationPage(input: {
         seenMediaIds.add(item.mediaId);
         return true;
       });
-    const logoPathMap = await loadPublicSalonLogoPaths({
-      rpc,
-      salonIds: items
-        .filter((item) => !item.salonLogoImageUrl)
-        .map((item) => item.salonId),
-    });
+    const [logoPathMap, contentOptions, signalMap] = await Promise.all([
+      loadPublicSalonLogoPaths({
+        rpc,
+        salonIds: items
+          .filter((item) => !item.salonLogoImageUrl)
+          .map((item) => item.salonId),
+      }),
+      loadPublicContentBookingOptions(items.map((item) => item.salonId)),
+      getExploreDecisionSignalsBySalonId(
+        rpc,
+        items.map((item) => item.salonId),
+      ),
+    ]);
     const itemsWithLogos = items.map((item) =>
       item.salonLogoImageUrl
         ? item
@@ -346,9 +373,6 @@ export async function getExploreInspirationPage(input: {
               logoPathMap.get(item.salonId),
             ),
           },
-    );
-    const contentOptions = await loadPublicContentBookingOptions(
-      itemsWithLogos.map((item) => item.salonId),
     );
     const optionsByContent = new Map(
       contentOptions.map((option) => [
@@ -377,6 +401,11 @@ export async function getExploreInspirationPage(input: {
       return {
         ...item,
         bookableServiceId: option.primaryServiceId,
+        bookingMeta: {
+          ...item.bookingMeta,
+          durationMinutes: option.primaryServiceDurationMinutes,
+          price: option.primaryServiceBasePrice,
+        },
         bookingEnabled: option.bookingEnabled,
         bookingHref: option.bookingHref,
         bookingLabel: option.ctaLabel,
@@ -384,14 +413,18 @@ export async function getExploreInspirationPage(input: {
         serviceName: option.primaryServiceName ?? item.serviceName,
       };
     });
-    const signalMap = await getExploreDecisionSignalsBySalonId(
-      rpc,
-      itemsWithBooking.map((item) => item.salonId),
-    );
-    const itemsWithTrust = itemsWithBooking.map((item) => ({
-      ...item,
-      trust: exploreFeedTrustFromDecisionSignals(signalMap.get(item.salonId)),
-    }));
+    const itemsWithTrust = itemsWithBooking.map((item) => {
+      const signals = signalMap.get(item.salonId);
+
+      return {
+        ...item,
+        bookingMeta: {
+          ...item.bookingMeta,
+          availabilityLabel: signals?.nextAvailabilityLabel ?? null,
+        },
+        trust: exploreFeedTrustFromDecisionSignals(signals),
+      };
+    });
     const itemsWithSaveStates =
       await attachInspirationSaveStates(itemsWithTrust);
 

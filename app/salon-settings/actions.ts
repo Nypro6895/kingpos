@@ -16,6 +16,11 @@ import {
   updateCurrentSalonSetting,
 } from "@/lib/salon-settings";
 import {
+  createCurrentSalonSpecialHours,
+  deleteCurrentSalonSpecialHours,
+  updateCurrentSalonOperatingHours,
+} from "@/lib/salon-operating-status";
+import {
   getCurrentBusinessContext,
   isOwnerMembership,
   isSalonManageContext,
@@ -46,6 +51,12 @@ function redirectWithError(message: string): never {
   redirect(`/salon-settings?error=${encodeURIComponent(message)}`);
 }
 
+function redirectWithOperatingHoursError(message: string): never {
+  redirect(
+    `/salon-settings?error=${encodeURIComponent(message)}#operating-hours`,
+  );
+}
+
 function redirectWithLifecycleError(message: string): never {
   redirect(
     `/salon-settings?lifecycle_error=${encodeURIComponent(message)}#salon-status`,
@@ -54,6 +65,12 @@ function redirectWithLifecycleError(message: string): never {
 
 function redirectWithNotice(message: string): never {
   redirect(`/salon-settings?notice=${encodeURIComponent(message)}#salon-status`);
+}
+
+function redirectWithOperatingHoursNotice(message: string): never {
+  redirect(
+    `/salon-settings?operating_notice=${encodeURIComponent(message)}#operating-hours`,
+  );
 }
 
 function redirectWithPosAccessError(message: string): never {
@@ -176,6 +193,38 @@ function requireChecked(formData: FormData, key: string, message: string) {
   }
 }
 
+function readWeeklyOperatingHours(formData: FormData) {
+  return Array.from({ length: 7 }, (_, dayOfWeek) => {
+    const enabled = formData.get(`operating_day_${dayOfWeek}_enabled`) === "on";
+
+    if (!enabled) {
+      return null;
+    }
+
+    return {
+      closesAtLocal: readRequiredString(
+        formData,
+        `operating_day_${dayOfWeek}_closes`,
+      ),
+      dayOfWeek,
+      opensAtLocal: readRequiredString(
+        formData,
+        `operating_day_${dayOfWeek}_opens`,
+      ),
+      sortOrder: 0,
+    };
+  }).filter(
+    (
+      window,
+    ): window is {
+      closesAtLocal: string;
+      dayOfWeek: number;
+      opensAtLocal: string;
+      sortOrder: number;
+    } => Boolean(window),
+  );
+}
+
 export type SalonBackupActionResult =
   | {
       error: null;
@@ -192,6 +241,10 @@ export type SalonBackupActionResult =
 
 export async function updateSalonSettings(formData: FormData) {
   const businessName = readRequiredString(formData, "business_name");
+  const operatingTimeZone =
+    readRequiredString(formData, "operating_timezone_iana") ||
+    "America/Chicago";
+  const weeklyHours = readWeeklyOperatingHours(formData);
 
   if (!businessName) {
     redirectWithError("Business Name is required.");
@@ -212,8 +265,13 @@ export async function updateSalonSettings(formData: FormData) {
       business_description: readOptionalString(formData, "business_description"),
       allow_staff_applications:
         formData.get("allow_staff_applications") === "on",
+      operating_timezone_iana: operatingTimeZone,
       public_discovery_enabled:
         formData.get("public_discovery_enabled") === "on",
+    });
+    await updateCurrentSalonOperatingHours({
+      timeZone: operatingTimeZone,
+      weeklyHours,
     });
   } catch (error) {
     redirectWithError(
@@ -224,6 +282,47 @@ export async function updateSalonSettings(formData: FormData) {
   revalidatePath("/salon-settings");
   revalidatePath("/explore");
   redirect("/salon-settings");
+}
+
+export async function createCurrentSalonSpecialHoursAction(formData: FormData) {
+  try {
+    await createCurrentSalonSpecialHours({
+      closesAtLocal: readOptionalString(formData, "special_closes_at_local"),
+      localDate: readRequiredString(formData, "special_local_date"),
+      opensAtLocal: readOptionalString(formData, "special_opens_at_local"),
+      reason: readOptionalString(formData, "special_reason"),
+      status:
+        readRequiredString(formData, "special_status") === "custom_hours"
+          ? "custom_hours"
+          : "closed",
+    });
+  } catch (error) {
+    redirectWithOperatingHoursError(
+      error instanceof Error ? error.message : "Special hours could not be saved.",
+    );
+  }
+
+  revalidatePath("/salon-settings");
+  revalidatePath("/explore");
+  redirectWithOperatingHoursNotice("Special hours saved.");
+}
+
+export async function deleteCurrentSalonSpecialHoursAction(formData: FormData) {
+  try {
+    await deleteCurrentSalonSpecialHours(
+      readRequiredString(formData, "special_hours_id"),
+    );
+  } catch (error) {
+    redirectWithOperatingHoursError(
+      error instanceof Error
+        ? error.message
+        : "Special hours could not be removed.",
+    );
+  }
+
+  revalidatePath("/salon-settings");
+  revalidatePath("/explore");
+  redirectWithOperatingHoursNotice("Special hours removed.");
 }
 
 export async function disableCurrentSalonAction(formData: FormData) {

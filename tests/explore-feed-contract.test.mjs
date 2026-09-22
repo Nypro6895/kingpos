@@ -15,6 +15,14 @@ const trustComponent = read("components/reylumi-trust.tsx");
 const contentBookingService = read("lib/content-booking.ts");
 const beautyPostBookingCountsService = read("lib/beauty-post-booking-counts.ts");
 const discoveryRail = read("app/explore/customer-explore-utility-panel.tsx");
+const authIntentPrompt = read("components/auth-intent-prompt.tsx");
+const guestNavigationShell = read("app/guest-navigation-shell.tsx");
+const salonProfileView = read("app/salon-profile/salon-profile-view.tsx");
+const savePostButton = read("app/saved-post/save-post-button.tsx");
+const beautyFollowButton = read("app/explore/beauty/beauty-follow-button.tsx");
+const showcaseContent = read("lib/explore-showcase-content.ts");
+const showcaseBookIntent = read("app/explore/showcase-book-intent.tsx");
+const showcaseLookRoute = read("app/(app)/explore/looks/[lookId]/page.tsx");
 const migration = read("supabase/migrations/202607240001_account_salon_baseline.sql");
 const salonProfileRpcHardening = read(
   "supabase/migrations/202608110001_public_salon_profile_staff_rpc_hardening.sql",
@@ -334,8 +342,9 @@ test("Explore optional data fallbacks do not use dev-overlay console errors", ()
 });
 
 test("Explore DTO restore keeps fresh Beauty booking presentation over stale session copies", () => {
-  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*9/);
+  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*10/);
   assert.match(feedClient, /function mergeStoredFeedItems/);
+  assert.match(feedClient, /function readStoredBookingMeta/);
   assert.match(feedClient, /const freshByKey = new Map/);
   assert.match(feedClient, /freshByKey\.get\(feedItemKey\(item\)\) \?\? item/);
   assert.match(feedClient, /setItems\(\(current\) => mergeStoredFeedItems\(stored\.items, current\)\)/);
@@ -357,8 +366,12 @@ test("unified feed contract uses source-qualified identity and normalized media"
   assert.match(types, /export type ExploreFeedMedia/);
   assert.match(types, /export type ExplorePersonalPostPage/);
   assert.match(types, /logoImageUrl: string \| null/);
+  assert.match(types, /export type ExploreBookingDecisionMeta/);
+  assert.match(types, /bookingMeta:\s*ExploreBookingDecisionMeta/);
   assert.match(feedService, /feedKey: `salon:\$\{item\.contentType\}:\$\{item\.contentId\}`/);
   assert.match(feedService, /feedKey: `salon:recommendation:\$\{salon\.id\}`/);
+  assert.match(feedService, /bookingMeta:\s*item\.bookingMeta/);
+  assert.match(feedService, /const bookingMeta:\s*ExploreFeedItem\["bookingMeta"\]/);
   assert.match(feedService, /logoImageUrl: item\.salonLogoImageUrl/);
   assert.match(feedService, /logoImageUrl: salon\.logoImageUrl/);
   assert.match(feedService, /recommendationPostPreviewsBySalonId/);
@@ -379,9 +392,10 @@ test("explore page and action expose a reusable server feed contract", () => {
   assert.match(actions, /return getExploreFeedPage\(\{ cursor \}\)/);
   assert.match(page, /getExploreFeedPage\(\{ homeContent \}\)/);
   assert.match(page, /buildExploreDiscoveryContent/);
-  assert.match(page, /discoveryContent=\{discoveryContent\}/);
-  assert.match(page, /initialFeed=\{initialFeed\}/);
-  assert.match(client, /<ExploreFeed initialPage=\{initialFeed\}/);
+  assert.match(page, /enrichExploreShowcaseContent/);
+  assert.match(page, /discoveryContent=\{showcaseContent\.discoveryContent\}/);
+  assert.match(page, /initialFeed=\{showcaseContent\.initialFeed\}/);
+  assert.match(client, /<ExploreFeed[\s\S]*initialPage=\{initialFeed\}/);
 });
 
 test("explore feed ranking and diversity live in the server feed layer", () => {
@@ -426,8 +440,9 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.match(feedClient, /window\.scrollTo\(0, stored\.scrollY\)/);
   assert.match(feedClient, /appendUniqueFeedItems/);
   assert.match(feedClient, /return item\.feedKey/);
-  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*9/);
+  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*10/);
   assert.match(feedClient, /data-source-type=\{item\.sourceType\}/);
+  assert.match(feedClient, /data-feed-hero=\{featured \? "true" : undefined\}/);
   assert.match(feedClient, /BeforeAfterMedia/);
   assert.match(feedClient, /BeforeAfterCompare/);
   assert.match(feedClient, /beforeAfterMediaPair/);
@@ -456,7 +471,12 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.match(feedClient, /bookingCountLabel/);
   assert.match(feedClient, /bookedCountText/);
   assert.match(feedClient, /bookingHref/);
-  assert.match(feedClient, /booking\?\.label \?\? "Book"/);
+  assert.match(feedClient, /bookingActionLabel/);
+  assert.match(feedClient, /Book this look/);
+  assert.match(feedClient, /guestHref=\{bookingHref\}/);
+  assert.match(feedClient, /FeedDecisionMeta/);
+  assert.match(feedClient, /FeedDiscoveryModule/);
+  assert.match(feedClient, /orderedFeedDiscoveryShortcuts/);
   assert.match(feedClient, /FeedShareButton/);
   assert.match(feedClient, /navigator\.share/);
   assert.doesNotMatch(feedClient, />\s*View post\s*</);
@@ -499,18 +519,53 @@ test("LUMI trust UI is shared, interactive, and keeps signals separated", () => 
 });
 
 test("explore feed visual rhythm stays compact and image-led", () => {
-  assert.match(client, /Featured now/);
-  assert.match(client, /min-h-\[7\.25rem\]/);
-  assert.match(client, /heroHref/);
-  assert.match(client, /max-w-\[40rem\] gap-2\.5 px-4 pb-2 pt-3/);
+  assert.match(client, /DesktopExploreLanding/);
+  assert.match(client, /DesktopInspiredGrid/);
+  assert.match(client, /Discover local beauty pros\. See real work\./);
+  assert.match(client, /Inspired by your style/);
+  assert.match(client, /Loved by 50,000\+ beauty lovers/);
+  assert.match(client, /xl:grid-cols-5/);
+  assert.match(client, /allLabel="For you"/);
+  assert.match(client, /!homeMode \? \(/);
+  assert.match(feedClient, /function FeedHeroIntro/);
+  assert.match(feedClient, /Chrome Season/);
+  assert.match(feedClient, /Trending in \{city\}/);
+  assert.match(feedClient, /Explore look/);
   assert.match(feedClient, /Math\.min\(1\.55,\s*Math\.max\(1\.06,\s*media\.aspectRatio\)\)/);
   assert.match(feedClient, /isRecommendationCoverMedia/);
   assert.match(feedClient, /h-\[13rem\] sm:h-\[16rem\] lg:h-\[17rem\]/);
   assert.match(feedClient, /rounded-\[0\.95rem\] bg-white/);
+  assert.match(feedClient, /rounded-\[0\.85rem\] bg-surface-muted/);
   assert.match(feedClient, /line-clamp-2 text-sm leading-5/);
   assert.match(feedClient, /<div className="grid gap-3">/);
   assert.match(feedClient, /aspect-\[4\/3\] bg-surface-muted/);
   assert.doesNotMatch(feedClient, /grid gap-5/);
+});
+
+test("Explore mockup flow avoids duplicate chrome and keeps mobile overlays clear", () => {
+  assert.doesNotMatch(client, /function DesktopLandingSearch/);
+  assert.match(client, /\{homeMode \? \(\s*<DesktopExploreLanding/);
+  assert.match(showcaseContent, /getExploreShowcaseLookHref/);
+  assert.match(showcaseContent, /getExploreShowcaseLookPage/);
+  assert.match(showcaseContent, /\/explore\/looks\/\$\{encodeURIComponent\(lookId\)\}/);
+  assert.match(showcaseContent, /showcaseLookHref\(seed\)/);
+  assert.match(showcaseContent, /function isWeakAvailabilityLabel/);
+  assert.match(showcaseContent, /function mergeShowcasePresentation/);
+  assert.match(showcaseContent, /nextAvailabilityLabel: shouldUseSampleAvailability/);
+  assert.match(client, /function salonRatingLine/);
+  assert.match(client, /function salonAvailabilityLine/);
+  assert.match(showcaseLookRoute, /ShowcaseBookIntent/);
+  assert.match(showcaseLookRoute, /More looks like this/);
+  assert.match(showcaseLookRoute, /aspect-\[4\/3\] sm:aspect-\[16\/10\] lg:aspect-\[4\/3\]/);
+  assert.match(showcaseLookRoute, /order-2 grid gap-4/);
+  assert.match(showcaseLookRoute, /grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5/);
+  assert.match(showcaseBookIntent, /<AuthIntentPrompt/);
+  assert.match(showcaseBookIntent, /guestHref=\{bookingHref\}/);
+  assert.match(feedClient, /sm:group-hover\/action:block sm:group-focus-within\/action:block/);
+  assert.match(savePostButton, /showTooltip\?: boolean/);
+  assert.match(savePostButton, /showTooltip = false/);
+  assert.match(savePostButton, /aria-describedby=\{showTooltip \? tooltipId : undefined\}/);
+  assert.doesNotMatch(savePostButton, /title=\{showTooltip \? saveTooltip/);
 });
 
 test("explore default home renders one centered feed and moves legacy sections behind shortcuts", () => {
@@ -521,7 +576,7 @@ test("explore default home renders one centered feed and moves legacy sections b
   );
 
   assert.match(homeBlock, /max-w-\[40rem\]/);
-  assert.match(homeBlock, /<ExploreFeed initialPage=\{initialFeed\}/);
+  assert.match(homeBlock, /<ExploreFeed[\s\S]*initialPage=\{initialFeed\}/);
   assert.doesNotMatch(homeBlock, /TopRatedSalonsSection/);
   assert.doesNotMatch(homeBlock, /TrendingDesignsSection/);
   assert.doesNotMatch(homeBlock, /RecommendedForYouSection/);
@@ -543,9 +598,16 @@ test("discovery rail and mobile shortcuts only render server-provided data-backe
   assert.match(page, /discoveryShortcutPriority/);
   assert.match(page, /\.slice\(0,\s*5\)/);
   assert.match(page, /if \(input\.utilityContent\.upcomingBooking\)/);
+  assert.match(page, /if \(availableTodaySalons\.length > 0\)/);
   assert.match(page, /if \(trendingCount > 0\)/);
   assert.match(page, /if \(topRatedCount > 0\)/);
-  assert.match(page, /label:\s*"Fresh looks"/);
+  assert.match(page, /if \(under60Salons\.length > 0\)/);
+  assert.match(page, /label:\s*"Available today"/);
+  assert.match(page, /label:\s*"Trending"/);
+  assert.match(page, /label:\s*"Top artists"/);
+  assert.match(page, /label:\s*"Under \$60"/);
+  assert.match(page, /resultKind:\s*"available_today"/);
+  assert.match(page, /resultKind:\s*"under_60"/);
   assert.match(page, /actionLabel:\s*"Open booking"/);
   assert.match(discoveryRail, /ExploreDiscoveryRail/);
   assert.match(discoveryRail, /MobileDiscoveryShortcuts/);
@@ -554,6 +616,25 @@ test("discovery rail and mobile shortcuts only render server-provided data-backe
   assert.match(discoveryRail, /CompactPreviewStrip/);
   assert.match(discoveryRail, /Image/);
   assert.doesNotMatch(discoveryRail, /Refer & Earn|View perks|Rewards|offers available/i);
+});
+
+test("Explore guest browsing stays open and auth prompts only on save, follow, or book intent", () => {
+  assert.match(page, /if \(!context\.user\) \{\s*return \[\];\s*\}/);
+  assert.match(guestNavigationShell, /const isExploreBrowsePage =/);
+  assert.match(guestNavigationShell, /pathname\.startsWith\("\/explore\/"\)/);
+  assert.match(guestNavigationShell, /\{!isExploreBrowsePage \? \(/);
+  assert.match(authIntentPrompt, /export function AuthIntentPrompt/);
+  assert.match(authIntentPrompt, /createPortal/);
+  assert.match(authIntentPrompt, /role="dialog"/);
+  assert.match(authIntentPrompt, /place-items-end/);
+  assert.match(authIntentPrompt, /sm:place-items-center/);
+  assert.match(savePostButton, /<AuthIntentPrompt/);
+  assert.match(savePostButton, /setAuthPromptOpen\(true\)/);
+  assert.match(salonProfileView, /<AuthIntentPrompt/);
+  assert.match(salonProfileView, /setAuthPromptIntent\("follow"\)/);
+  assert.match(salonProfileView, /setAuthPromptIntent\("save"\)/);
+  assert.match(beautyFollowButton, /<AuthIntentPrompt/);
+  assert.doesNotMatch(savePostButton, /router\.push\(loginHrefForCurrentPage/);
 });
 
 test("public Beauty post route is read-only and backed by the Personal Explore service", () => {

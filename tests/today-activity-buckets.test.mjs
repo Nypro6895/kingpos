@@ -6,43 +6,56 @@ import test from "node:test";
 import ts from "typescript";
 
 const root = process.cwd();
-const source = readFileSync(join(root, "lib/salon-business-hours.ts"), "utf8");
-const transpiled = ts.transpileModule(source, {
-  compilerOptions: {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES2020,
-  },
-}).outputText;
-const moduleContext = {
-  exports: {},
-  module: { exports: {} },
-  require(specifier) {
-    if (
-      specifier === "server-only" ||
-      specifier === "@/lib/supabase/server"
-    ) {
-      return {};
-    }
+function loadTsModule(path, requireImpl = () => ({})) {
+  const source = readFileSync(join(root, path), "utf8");
+  const transpiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2020,
+    },
+  }).outputText;
+  const moduleContext = {
+    exports: {},
+    module: { exports: {} },
+    require: requireImpl,
+    console,
+    Date,
+    Intl,
+    Map,
+    Math,
+    Number,
+    RegExp,
+    Set,
+  };
 
-    throw new Error(`Unexpected require: ${specifier}`);
-  },
-  console,
-  Date,
-  Intl,
-  Math,
-  Number,
-  RegExp,
-  Set,
-};
+  moduleContext.exports = moduleContext.module.exports;
+  vm.runInNewContext(transpiled, moduleContext);
+  return moduleContext.module.exports;
+}
 
-moduleContext.exports = moduleContext.module.exports;
-vm.runInNewContext(transpiled, moduleContext);
+const operatingStatusCore = loadTsModule("lib/salon-operating-status-core.ts", (specifier) => {
+  throw new Error(`Unexpected require: ${specifier}`);
+});
+const moduleExports = loadTsModule("lib/salon-business-hours.ts", (specifier) => {
+  if (
+    specifier === "server-only" ||
+    specifier === "@/lib/supabase/server"
+  ) {
+    return {};
+  }
+
+  if (specifier === "@/lib/salon-operating-status-core") {
+    return operatingStatusCore;
+  }
+
+  throw new Error(`Unexpected require: ${specifier}`);
+});
 
 const {
   buildSalonActivityBuckets,
   buildSalonBusinessHourBuckets,
   getLocalDateHour,
-} = moduleContext.module.exports;
+} = moduleExports;
 
 function plain(value) {
   return JSON.parse(JSON.stringify(value));

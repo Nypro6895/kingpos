@@ -75,6 +75,7 @@ if (deploymentId) {
 }
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["*.trycloudflare.com"],
   images: {
     remotePatterns: supabaseImagePatterns(),
   },

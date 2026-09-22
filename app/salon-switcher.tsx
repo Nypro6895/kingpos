@@ -235,6 +235,7 @@ export async function SalonSwitcher({
         context.salonMode === "manage" ? (context.currentSalon?.name ?? null) : null
       }
       currentAccountName={context.accountName}
+      currentUserId={context.user.id}
       currentStaffSalonId={
         context.salonMode === "staff" ? (context.currentSalon?.id ?? null) : null
       }

@@ -105,6 +105,7 @@ type FeedCandidateSources = Record<ExploreFeedInternalSource, FeedCandidate[]>;
 type FeedSourceCounts = Record<ExploreFeedInternalSource, number>;
 type RecommendationPostPreview = {
   booking: ExploreFeedItem["booking"];
+  bookingMeta: ExploreFeedItem["bookingMeta"];
   caption: string | null;
   dedupeKey: string;
   destination: ExploreFeedItem["destination"];
@@ -114,6 +115,7 @@ type RecommendationPostPreview = {
   serviceCategory: string | null;
   serviceName: string | null;
   sourceSortId: string;
+  operatingStatus: NonNullable<ExploreFeedItem["salon"]>["operatingStatus"];
   trust: ExploreFeedTrustSignals | null;
 };
 
@@ -639,6 +641,7 @@ function recommendationPreviewFromSalonPost(
       salonName: item.salonName,
       serviceId: item.bookableServiceId,
     },
+    bookingMeta: item.bookingMeta,
     caption: item.captionExcerpt,
     dedupeKey: recommendationPreviewKeyFromSalonPost(item),
     destination: {
@@ -659,6 +662,7 @@ function recommendationPreviewFromSalonPost(
     serviceCategory: item.serviceCategory,
     serviceName: item.serviceName,
     sourceSortId: item.mediaId,
+    operatingStatus: item.operatingStatus,
     trust: item.trust,
   };
 }
@@ -739,6 +743,7 @@ function mapSalonFeedItem(item: ExploreInspirationItem): ExploreFeedItem {
       salonName: item.salonName,
       serviceId: item.bookableServiceId,
     },
+    bookingMeta: item.bookingMeta,
     candidateClass: "organic",
     caption: item.captionExcerpt,
     commentCount: 0,
@@ -769,6 +774,7 @@ function mapSalonFeedItem(item: ExploreInspirationItem): ExploreFeedItem {
       id: item.salonId,
       logoImageUrl: item.salonLogoImageUrl,
       name: item.salonName,
+      operatingStatus: item.operatingStatus,
       state: item.salonState,
       trust: item.trust,
     },
@@ -860,19 +866,28 @@ function mapRecommendationFeedItem(
     salonName: salon.name,
     serviceId: salon.bookableServiceId,
   };
+  const bookingMeta: ExploreFeedItem["bookingMeta"] = {
+    availabilityLabel:
+      featuredPost?.bookingMeta.availabilityLabel ??
+      salon.nextAvailabilityLabel,
+    distanceMiles: salon.distanceMiles,
+    durationMinutes: featuredPost?.bookingMeta.durationMinutes ?? null,
+    price: featuredPost?.bookingMeta.price ?? salon.startingPrice,
+  };
 
   if (!publishedAt || !profileHref || !media) {
     return null;
   }
 
   return {
-      author: {
-        avatarUrl: salon.logoImageUrl,
-        id: salon.id,
-        kind: "salon",
-        name: salon.name,
+    author: {
+      avatarUrl: salon.logoImageUrl,
+      id: salon.id,
+      kind: "salon",
+      name: salon.name,
     },
     booking: featuredPost?.booking?.eligible ? featuredPost.booking : salonBooking,
+    bookingMeta,
     candidateClass: "organic",
     caption: featuredPost?.caption ?? recommendationCaption(salon),
     commentCount: 0,
@@ -886,13 +901,14 @@ function mapRecommendationFeedItem(
     publishedAt,
     rankingSignals: rankingSignalsForRecommendation(salon, publishedAt),
     saveTarget: featuredPost?.saveTarget ?? null,
-      salon: {
-        city: salon.city,
-        href: profileHref,
-        id: salon.id,
-        logoImageUrl: salon.logoImageUrl,
-        name: salon.name,
-        state: salon.state,
+    salon: {
+      city: salon.city,
+      href: profileHref,
+      id: salon.id,
+      logoImageUrl: salon.logoImageUrl,
+      name: salon.name,
+      operatingStatus: featuredPost?.operatingStatus ?? salon.operatingStatus,
+      state: salon.state,
       trust: featuredPost?.trust ?? trustSignalsFromSalon(salon),
     },
     serviceCategory:

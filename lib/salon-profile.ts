@@ -19,6 +19,11 @@ import {
   parseSalonProfileMediaPath,
   type SalonProfileMediaKind,
 } from "@/lib/salon-profile-media";
+import {
+  getPublicSalonOperatingStatusesBySalonId,
+  operatingStatusFromMap,
+} from "@/lib/salon-operating-status";
+import { DEFAULT_SALON_OPERATING_TIMEZONE } from "@/lib/salon-operating-status-core";
 import { SERVICE_SELECT } from "@/lib/services";
 import { resolveStaffAccountForSalon } from "@/lib/staff-account";
 import {
@@ -69,7 +74,7 @@ export const SALON_PROFILE_PERMISSIONS = {
 } as const;
 
 export const SALON_PROFILE_SETTING_SELECT =
-  "id, salon_id, business_name, phone, email, website, address_line1, address_line2, city, state, postal_code, country, business_description, allow_staff_applications, public_discovery_enabled, public_discovery_published_at, public_profile_tagline, public_profile_story, public_profile_logo_path, public_profile_cover_path, created_at, updated_at";
+  "id, salon_id, business_name, phone, email, website, address_line1, address_line2, city, state, postal_code, country, business_description, allow_staff_applications, operating_timezone_iana, public_discovery_enabled, public_discovery_published_at, public_profile_tagline, public_profile_story, public_profile_logo_path, public_profile_cover_path, created_at, updated_at";
 
 export const SALON_PROFILE_LOOK_SELECT =
   "id, salon_id, author_user_id, created_by_user_id, author_staff_id, author_display_name, author_avatar_path, service_id, recommended_staff_id, title, caption, emotional_description, why_love_it, mood, duration_minutes, starting_price, palette, badge, media_path, booking_note, is_pinned, status, published_at, created_at, updated_at";
@@ -711,6 +716,7 @@ function fallbackSetting(context: CurrentBusinessContext): SalonProfileSetting {
     created_at: now,
     email: null,
     id: "",
+    operating_timezone_iana: DEFAULT_SALON_OPERATING_TIMEZONE,
     phone: salon.phone,
     postal_code: salon.postal_code,
     public_discovery_enabled: false,
@@ -1132,7 +1138,10 @@ async function getPublicProfileClient() {
   return (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 }
 
-function mapPublicProfile(row: PublicProfileRow): PublicSalonProfile {
+function mapPublicProfile(
+  row: PublicProfileRow,
+  operatingStatus: PublicSalonProfile["operatingStatus"],
+): PublicSalonProfile {
   return {
     activeServiceCount: readCount(row.active_service_count),
     addressLine1: row.address_line1,
@@ -1146,6 +1155,7 @@ function mapPublicProfile(row: PublicProfileRow): PublicSalonProfile {
     isFollowing: row.is_following ?? false,
     logoImageUrl: getSalonProfileMediaUrl(row.logo_path),
     name: row.salon_name,
+    operatingStatus,
     accountId: row.account_id ?? "",
     phone: row.phone,
     postalCode: row.postal_code,
@@ -1634,7 +1644,13 @@ export async function getPublicSalonProfileData(
     experienceRows.length > 0
       ? experienceRows.map(mapPublicExperience)
       : reviews.map(mapReviewToExperience);
-  const mappedProfile = mapPublicProfile(profile);
+  const operatingStatuses = await getPublicSalonOperatingStatusesBySalonId([
+    profile.salon_id,
+  ]);
+  const mappedProfile = mapPublicProfile(
+    profile,
+    operatingStatusFromMap(operatingStatuses, profile.salon_id),
+  );
   const looks = lookRows.map(mapPublicLook);
   const updates = updateRows.map(mapPublicUpdate);
   const beautyPosts = beautyPostRows.map((row) =>

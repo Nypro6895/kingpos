@@ -309,6 +309,12 @@ export default async function MorePage() {
             </section>
           ))}
         </div>
+        <Link
+          className="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-border-subtle bg-surface px-4 text-sm font-extrabold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          href="/settings"
+        >
+          View all settings
+        </Link>
       </div>
     </main>
   );

@@ -24,6 +24,7 @@ export type PostAuthRouteDecision = {
 const INTERNAL_URL_ORIGIN = "https://reylumi.local";
 
 const AUTH_FORM_PATHS = [
+  "/account-recovery",
   "/forgot-password",
   "/login",
   "/reset-password",

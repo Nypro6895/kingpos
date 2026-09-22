@@ -10,6 +10,7 @@ import { markAllAppNotificationsReadAction } from "@/app/notifications/actions";
 import { NotificationFeedList } from "@/app/notifications/notification-list";
 import { QuickWorkspacePanel } from "@/app/quick-workspace-panel";
 import { safeAccountAvatarUrl } from "@/lib/account-avatar";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   ROLE_NAVIGATION,
   ROLE_MORE_ITEMS,
@@ -74,6 +75,7 @@ type NavigationShellProps = {
   currentManageSalonId: string | null;
   currentManageSalonName: string | null;
   currentAccountName: string | null;
+  currentUserId: string | null;
   currentStaffSalonId: string | null;
   currentStaffSalonName: string | null;
   currentWorkspace: CurrentWorkspaceOption | null;
@@ -283,6 +285,100 @@ function notificationBadgeLabel(total: number) {
     : `${total} unread notification${total === 1 ? "" : "s"}`;
 }
 
+function appNotificationUnreadKey(summary: NotificationSummary) {
+  const previewIds = summary.previewItems
+    .filter((item) => item.source === "app" && item.unread)
+    .map((item) => item.id)
+    .join("|");
+
+  return summary.bookingNotifications > 0 || previewIds
+    ? `${summary.bookingNotifications}:${previewIds}`
+    : "";
+}
+
+function viewedAppNotificationItem(
+  item: NotificationSummary["previewItems"][number],
+) {
+  if (item.source !== "app" || !item.unread) {
+    return item;
+  }
+
+  return {
+    ...item,
+    status: item.status === "unread" ? "read" : item.status,
+    unread: false,
+  };
+}
+
+function viewedAppNotificationSummary(
+  summary: NotificationSummary,
+): NotificationSummary {
+  if (
+    summary.bookingNotifications <= 0 &&
+    !summary.previewItems.some((item) => item.source === "app" && item.unread)
+  ) {
+    return summary;
+  }
+
+  return {
+    ...summary,
+    bookingNotifications: 0,
+    items: summary.items.filter((item) => item.id !== "booking-notifications"),
+    previewItems: summary.previewItems.map(viewedAppNotificationItem),
+    total: Math.max(0, summary.total - summary.bookingNotifications),
+  };
+}
+
+function AppNotificationInvalidation({ userId }: { userId: string | null }) {
+  const router = useRouter();
+  const refreshTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
+    function refreshSoon(delay = 0) {
+      if (refreshTimerRef.current !== null) {
+        window.clearTimeout(refreshTimerRef.current);
+      }
+
+      refreshTimerRef.current = window.setTimeout(() => {
+        refreshTimerRef.current = null;
+        router.refresh();
+      }, delay);
+    }
+
+    const supabase = createSupabaseBrowserClient();
+    const channel = supabase
+      ?.channel(`app-notifications:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          filter: `recipient_user_id=eq.${userId}`,
+          schema: "public",
+          table: "app_notifications",
+        },
+        () => refreshSoon(),
+      )
+      .subscribe();
+
+    return () => {
+      if (refreshTimerRef.current !== null) {
+        window.clearTimeout(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+
+      if (supabase && channel) {
+        void supabase.removeChannel(channel);
+      }
+    };
+  }, [router, userId]);
+
+  return null;
+}
+
 function isMoreLink(link: NavigationLink) {
   return link.href === "/more";
 }
@@ -315,6 +411,9 @@ function matchesPath(pathname: string, path: string) {
 function isShelllessPath(pathname: string) {
   return (
     pathname === "/forgot-password" ||
+    pathname === "/account-recovery" ||
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
     pathname === "/login" ||
     pathname === "/reset-password" ||
     pathname === "/signup" ||
@@ -1091,7 +1190,7 @@ function CustomerContextSheet({
               onClick={closeAndFocus}
             >
               <Icon name="gear" />
-              <span>Settings</span>
+              <span>All Settings</span>
             </Link>
             <LogoutButton className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60">
               <Icon name="log-out" />
@@ -1268,6 +1367,17 @@ function RoleMorePanel({
             </Link>
           );
         })}
+      </div>
+      <div className="border-t border-border-subtle p-2">
+        <Link
+          className="grid min-h-11 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-sm font-bold text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          href="/settings"
+        >
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-orange-soft text-brand-orange">
+            <Icon name="gear" />
+          </span>
+          <span>View all settings</span>
+        </Link>
       </div>
     </div>
   );
@@ -1714,7 +1824,7 @@ function CustomerDesktopWorkspaceSwitcher({
               href="/settings"
             >
               <Icon name="gear" />
-              <span>Settings</span>
+              <span>All Settings</span>
             </Link>
             <LogoutButton className="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-sm font-medium text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60">
               <Icon name="log-out" />
@@ -1880,21 +1990,50 @@ function NotificationDropdown({
   notificationSummary: NotificationSummary;
   triggerClassName: string;
 }) {
+  const router = useRouter();
   const detailsRef = useDismissibleDetails();
-  const previewItems = notificationSummary.previewItems;
-  const hasUnreadAppNotifications = notificationSummary.bookingNotifications > 0;
+  const [, startTransition] = useTransition();
+  const [viewedUnreadKey, setViewedUnreadKey] = useState<string | null>(null);
+  const unreadKey = appNotificationUnreadKey(notificationSummary);
+  const displaySummary =
+    unreadKey && viewedUnreadKey === unreadKey
+      ? viewedAppNotificationSummary(notificationSummary)
+      : notificationSummary;
+  const previewItems = displaySummary.previewItems;
+  const hasUnreadAppNotifications = displaySummary.bookingNotifications > 0;
+
+  const markViewed = useCallback(() => {
+    if (!unreadKey || viewedUnreadKey === unreadKey) {
+      return;
+    }
+
+    setViewedUnreadKey(unreadKey);
+
+    startTransition(async () => {
+      await markAllAppNotificationsReadAction();
+      router.refresh();
+    });
+  }, [router, startTransition, unreadKey, viewedUnreadKey]);
 
   return (
-    <details className="relative" ref={detailsRef}>
+    <details
+      className="relative"
+      onToggle={(event) => {
+        if (event.currentTarget.open) {
+          markViewed();
+        }
+      }}
+      ref={detailsRef}
+    >
       <summary
         aria-label="Notifications"
         className={[triggerClassName, "cursor-pointer list-none"].join(" ")}
       >
         <span className="relative">
           <Icon name="bell" />
-          {notificationSummary.total > 0 ? (
+          {displaySummary.total > 0 ? (
             <span className="absolute -right-2 -top-2 grid min-h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-black leading-none text-white">
-              {notificationSummary.total > 9 ? "9+" : notificationSummary.total}
+              {displaySummary.total > 9 ? "9+" : displaySummary.total}
             </span>
           ) : null}
         </span>
@@ -2044,9 +2183,9 @@ function CustomerDesktopHeader({
             <Icon name="message" />
           </Link>
           <Link
-            aria-label="Account settings"
+            aria-label="All settings"
             className="grid min-h-12 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-full bg-surface-elevated py-1 pl-1.5 pr-4 text-left shadow-[0_10px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/85 transition hover:ring-brand-orange/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            href="/account"
+            href="/settings"
           >
             <AccountAvatar
               avatarUrl={accountAvatarUrl}
@@ -2488,10 +2627,10 @@ function AppRail({
         </button>
       </nav>
       <Link
-        aria-label="Account Settings"
+        aria-label="All Settings"
         className="mx-auto mb-3 mt-auto grid h-10 w-10 place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-        href="/account"
-        title="Account Settings"
+        href="/settings"
+        title="All Settings"
       >
         <AccountAvatar
           avatarUrl={accountAvatarUrl}
@@ -2587,9 +2726,9 @@ function ProfileMenu({
         </span>
       </summary>
       <div className="absolute bottom-full left-0 z-50 mb-2 grid w-full gap-1 rounded-xl border border-zinc-200 bg-white p-2 shadow-xl">
-        <Link className={sidebarLinkClass(false)} href="/account">
+        <Link className={sidebarLinkClass(false)} href="/settings">
           <Icon name="user" />
-          Account Settings
+          All Settings
         </Link>
         <LogoutButton />
       </div>
@@ -2715,15 +2854,15 @@ function MobileHeader({
               searchParams={searchParams}
               workspaceSections={workspaceSections}
             />
-            <Link className={sidebarLinkClass(false)} href="/account">
+            <Link className={sidebarLinkClass(false)} href="/settings">
               <Icon name="user" />
-              Account Settings
+              All Settings
             </Link>
           </div>
         </details>
         <Link
           className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange"
-          href="/account"
+          href="/settings"
         >
           <AccountAvatar
             avatarUrl={accountAvatarUrl}
@@ -2878,6 +3017,7 @@ export function NavigationShell({
   accountLabel,
   children,
   currentAccountName,
+  currentUserId,
   currentWorkspace,
   notificationSummary,
   salonMode,
@@ -2953,6 +3093,7 @@ export function NavigationShell({
 
   return (
     <>
+      <AppNotificationInvalidation userId={currentUserId} />
       <CustomerShellContextProvider
         isCustomerShell={false}
         notificationSummary={notificationSummary}
