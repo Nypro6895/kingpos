@@ -106,7 +106,7 @@ test("shared comment thread supports fast Facebook-like interaction states", () 
   assert.match(navigationShell, /AppNotificationInvalidation/);
   assert.match(navigationShell, /app-notifications:\$\{userId\}/);
   assert.match(navigationShell, /recipient_user_id=eq\.\$\{userId\}/);
-  assert.match(navigationShell, /window\.setInterval/);
+  assert.doesNotMatch(navigationShell, /window\.setInterval/);
 });
 
 test("comment thread is wired through profile, staff-authored, beauty, and explore surfaces", () => {

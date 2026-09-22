@@ -8,10 +8,7 @@ import {
   getPostCommentCounts,
   type PostCommentTarget,
 } from "@/lib/post-comments";
-import {
-  getAccountSavedPostCounts,
-  getAccountSavedPostStateKeys,
-} from "@/lib/account-social";
+import { getAccountSavedPostCounts } from "@/lib/account-social";
 import { Buffer } from "node:buffer";
 import type {
   ExploreFeedCursor,
@@ -650,15 +647,7 @@ function recommendationPreviewFromSalonPost(
     },
     media: mapSalonMedia(item),
     publishedAt: item.publishedAt,
-    saveTarget: {
-      salonId: item.salonId,
-      saved: false,
-      sourceId: item.contentId,
-      sourceType:
-        item.contentType === "update"
-          ? "salon_profile_update"
-          : "salon_profile_look",
-    },
+    saveTarget: item.saveTarget,
     serviceCategory: item.serviceCategory,
     serviceName: item.serviceName,
     sourceSortId: item.mediaId,
@@ -1254,7 +1243,7 @@ function rankedFeedCandidate(input: {
   };
 }
 
-async function attachFeedSaveStates(items: ExploreFeedItem[]) {
+async function attachFeedSaveCounts(items: ExploreFeedItem[]) {
   const targets = items
     .map((item) => item.saveTarget)
     .filter((target): target is AccountSavedPostStateTarget => Boolean(target));
@@ -1264,10 +1253,7 @@ async function attachFeedSaveStates(items: ExploreFeedItem[]) {
   }
 
   try {
-    const [savedKeys, saveCounts] = await Promise.all([
-      getAccountSavedPostStateKeys(targets),
-      getAccountSavedPostCounts(targets).catch(() => new Map<string, number>()),
-    ]);
+    const saveCounts = await getAccountSavedPostCounts(targets);
 
     return items.map((item) =>
       item.saveTarget
@@ -1276,7 +1262,6 @@ async function attachFeedSaveStates(items: ExploreFeedItem[]) {
             saveTarget: {
               ...item.saveTarget,
               saveCount: saveCounts.get(savedPostKey(item.saveTarget)) ?? 0,
-              saved: savedKeys.has(savedPostKey(item.saveTarget)),
             },
           }
         : item,
@@ -1302,6 +1287,7 @@ function feedCommentTarget(item: ExploreFeedItem): PostCommentTarget | null {
 
 async function attachFeedCommentCounts(items: ExploreFeedItem[]) {
   const targets = items
+    .filter((item) => item.sourceType !== "personal")
     .map(feedCommentTarget)
     .filter((target): target is PostCommentTarget => Boolean(target));
 
@@ -1481,8 +1467,8 @@ export async function getExploreFeedPage(input: {
     : null;
 
   const visibleItems = selected.map((candidate) => candidate.item);
-  const itemsWithSaveStates = await attachFeedSaveStates(visibleItems);
-  const itemsWithCommentCounts = await attachFeedCommentCounts(itemsWithSaveStates);
+  const itemsWithSaveCounts = await attachFeedSaveCounts(visibleItems);
+  const itemsWithCommentCounts = await attachFeedCommentCounts(itemsWithSaveCounts);
 
   return {
     error: null,

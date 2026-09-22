@@ -1129,14 +1129,16 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const hasExplicitSearchParams = Boolean(
     rawQuery || requestedLocation || category || page > 1,
   );
-  const context = await getCurrentBusinessContext();
-  const [workspaceLocation, quickActions, homeContent, utilityContent] =
-    await Promise.all([
-      getExploreWorkspaceLocation(context),
-      buildQuickActions(context),
-      getExploreHomeContent(),
-      getExploreUtilityContent(context),
-    ]);
+  const contextPromise = getCurrentBusinessContext();
+  const homeContentPromise = getExploreHomeContent();
+  const context = await contextPromise;
+  const workspaceLocationPromise = getExploreWorkspaceLocation(context);
+  const quickActionsPromise = buildQuickActions(context);
+  const utilityContentPromise = getExploreUtilityContent(context);
+  const [workspaceLocation, homeContent] = await Promise.all([
+    workspaceLocationPromise,
+    homeContentPromise,
+  ]);
   const searchIntent = requestedLocation
     ? { location: "", query: rawQuery }
     : searchIntentFromGlobalQuery(rawQuery, workspaceLocation.label);
@@ -1147,16 +1149,19 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const locationSource: ExploreLocationSource = requestedLocation || queryLocation
     ? "manual"
     : workspaceLocation.source;
-  const [searchResponse, initialFeed] = await Promise.all([
-    searchExploreSalons({
-      category,
-      location: effectiveLocation,
-      page,
-      pageSize: EXPLORE_PAGE_SIZE,
-      query,
-    }),
-    getExploreFeedPage({ homeContent }),
-  ]);
+  const [searchResponse, initialFeed, quickActions, utilityContent] =
+    await Promise.all([
+      searchExploreSalons({
+        category,
+        location: effectiveLocation,
+        page,
+        pageSize: EXPLORE_PAGE_SIZE,
+        query,
+      }),
+      getExploreFeedPage({ homeContent }),
+      quickActionsPromise,
+      utilityContentPromise,
+    ]);
   const discoveryContent = buildExploreDiscoveryContent({
     homeContent,
     initialFeed,

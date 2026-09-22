@@ -1189,9 +1189,9 @@ function FeedHeroIntro({
           alt={imageAlt(item)}
           className="object-cover"
           fill
+          loading="eager"
           onError={() => setImageFailed(true)}
-          priority
-          sizes="100vw"
+          sizes="(max-width: 639px) calc(100vw - 1.5rem), 0px"
           src={firstMedia.imageUrl}
         />
       ) : (
