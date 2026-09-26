@@ -674,6 +674,10 @@
   width: 100%;
 }
 
+[data-booking-surface="public"] .public-booking-mobile-action-bar {
+  display: none;
+}
+
 [data-booking-surface="manage"] .manage-booking-shell {
   display: grid;
   gap: 24px;
@@ -700,21 +704,87 @@
 
 @media (max-width: 900px) {
   [data-booking-surface="public"].public-booking-root {
-    padding-top: 12px;
+    padding-bottom: 96px;
+    padding-top: 10px;
   }
 
   [data-booking-surface="public"] .public-booking-shell {
+    gap: 18px;
     grid-template-columns: 1fr;
-    width: calc(100% - 28px);
+    width: calc(100% - 20px);
   }
 
-  [data-booking-surface="public"] .public-booking-summary,
+  [data-booking-surface="public"] .public-booking-summary {
+    display: none;
+  }
+
   [data-booking-surface="manage"] .public-booking-summary {
     position: static;
+  }
+
+  [data-booking-surface="public"] .public-booking-mobile-action-bar {
+    background: rgba(251, 249, 247, 0.94);
+    bottom: 0;
+    display: block;
+    left: 0;
+    padding: 10px max(10px, env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-right));
+    position: fixed;
+    right: 0;
+    z-index: 40;
+  }
+
+  [data-booking-surface="public"] .public-booking-mobile-action-bar::before {
+    background: var(--booking-border);
+    content: "";
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
   }
 }
 
 @media (max-width: 640px) {
+  [data-booking-surface="public"] .public-booking-heading {
+    margin-bottom: 18px;
+  }
+
+  [data-booking-surface="public"] .public-booking-title {
+    font-size: 30px;
+    line-height: 1.05;
+  }
+
+  [data-booking-surface="public"] .public-booking-copy {
+    font-size: 14px;
+    line-height: 1.45;
+    margin-top: 8px;
+  }
+
+  [data-booking-surface="public"] .public-booking-quick-book-strip {
+    justify-content: flex-start;
+    margin-bottom: 0;
+    min-height: 40px;
+    padding: 9px 12px;
+  }
+
+  [data-booking-surface="public"] .public-booking-progress {
+    margin-bottom: 0;
+    max-width: 320px;
+  }
+
+  [data-booking-surface="public"] .public-booking-progress-step {
+    gap: 0;
+  }
+
+  [data-booking-surface="public"] .public-booking-progress-step > span:last-child {
+    display: none;
+  }
+
+  [data-booking-surface="public"] .public-booking-pill {
+    min-height: 42px;
+    padding: 0 16px;
+  }
+
   [data-booking-surface="public"] .public-booking-professional-grid {
     grid-template-columns: 1fr;
   }
@@ -769,5 +839,16 @@
   [data-booking-surface="public"] .public-booking-progress-circle {
     height: 30px;
     width: 30px;
+  }
+
+  [data-booking-surface="public"] .public-booking-service-card {
+    gap: 12px;
+    min-height: 88px;
+    padding: 14px;
+  }
+
+  [data-booking-surface="public"] .public-booking-addon-panel {
+    margin-top: 14px;
+    padding: 12px;
   }
 }
