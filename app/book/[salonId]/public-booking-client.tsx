@@ -62,11 +62,11 @@ type SummaryLine = {
 type AvailabilityHintMap = Record<string, PublicBookingAvailabilityHint | undefined>;
 
 const STEPS = [
-  "Services",
-  "Professional",
-  "Date & time",
-  "Your details",
-  "Review",
+  "Service",
+  "Pro",
+  "Time",
+  "Details",
+  "Confirm",
 ] as const;
 
 const styles = {
@@ -120,6 +120,7 @@ const styles = {
   publicMain: "public-booking-content",
   publicRoot: "public-booking-root",
   publicShell: "public-booking-shell",
+  mobileActionBar: "public-booking-mobile-action-bar",
   publicTitle: "public-booking-title",
   secondaryButton: "public-booking-secondary-button",
   select: "public-booking-select",
@@ -612,27 +613,33 @@ function BookingInspirationCard({
             {inspiration.caption}
           </p>
         ) : null}
-        {!compact ? (
-          <div className="mt-3 flex flex-wrap gap-2">
+        {onChangeService || onChangeProfessional || onRemove ? (
+          <div className={classNames("flex flex-wrap gap-2", compact ? "mt-2" : "mt-3")}>
             {onChangeService ? (
               <button
-                className={classNames(styles.secondaryButton, "px-3 py-2 text-sm")}
+                className={classNames(
+                  compact ? "px-1 py-1 text-xs font-extrabold text-[#642a56]" : styles.secondaryButton,
+                  !compact && "px-3 py-2 text-sm",
+                )}
                 onClick={onChangeService}
                 type="button"
               >
-                {inspiration.serviceId ? "Change service" : "Choose service"}
+                {compact ? "Edit service" : inspiration.serviceId ? "Change service" : "Choose service"}
               </button>
             ) : null}
             {onChangeProfessional ? (
               <button
-                className={classNames(styles.secondaryButton, "px-3 py-2 text-sm")}
+                className={classNames(
+                  compact ? "px-1 py-1 text-xs font-extrabold text-[#642a56]" : styles.secondaryButton,
+                  !compact && "px-3 py-2 text-sm",
+                )}
                 onClick={onChangeProfessional}
                 type="button"
               >
-                Change professional
+                {compact ? "Edit pro" : "Change professional"}
               </button>
             ) : null}
-            {onRemove ? (
+            {!compact && onRemove ? (
               <button
                 className="px-2 py-2 text-sm font-extrabold text-[#642a56]"
                 onClick={onRemove}
@@ -1670,7 +1677,9 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             className={styles.quickBookStrip}
             data-testid="public-booking-quick-book"
           >
-            Choose a time for this look
+            {activeInspiration?.contentType === "update"
+              ? "Post ready · choose a time"
+              : "Look ready · choose a time"}
           </div>
         ) : (
         <nav
@@ -1724,6 +1733,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
 
           {activeInspiration ? (
             <BookingInspirationCard
+              compact={isQuickBook}
               currentServiceName={currentBookingServiceName}
               currentStaffName={currentBookingStaffName}
               inspiration={activeInspiration}
@@ -1743,7 +1753,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                 <p className={styles.eyebrow}>Build your visit</p>
                 <h1 className={styles.publicTitle}>Choose your services</h1>
                 <p className={styles.publicCopy}>
-                  Select one or more services and any linked add-ons. We will only show professionals and times that can accommodate your visit.
+                  Pick what you need. We will only show professionals and times that work.
                 </p>
               </div>
               <div className={classNames(styles.pillRow, "mb-7")}>
@@ -2065,7 +2075,11 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             <section>
               <div className={styles.publicHeading}>
                 <p className={styles.eyebrow}>
-                  {isQuickBook ? "Book this look" : "Date & time"}
+                  {isQuickBook
+                    ? activeInspiration?.contentType === "update"
+                      ? "Book from post"
+                      : "Book this look"
+                    : "Date & time"}
                 </p>
                 <h1 className={styles.publicTitle}>
                   {isQuickBook ? "Choose a time" : "Find a time"}
@@ -2549,6 +2563,20 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             </div>
           ) : null}
         </div>
+
+        {step < STEP_DONE ? (
+          <div className={styles.mobileActionBar}>
+            <button
+              className={classNames(styles.primaryButton, "w-full")}
+              data-testid="public-booking-mobile-primary-action"
+              disabled={primaryActionDisabled}
+              onClick={activatePrimaryAction}
+              type="button"
+            >
+              {primaryActionLabel}
+            </button>
+          </div>
+        ) : null}
 
         <aside
           className={classNames(styles.publicCard, styles.summary)}
