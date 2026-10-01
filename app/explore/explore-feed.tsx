@@ -1,6 +1,8 @@
 "use client";
 
 import { loadExploreFeedAction } from "@/app/explore/actions";
+import { withRequestTimeout } from "@/lib/request-timeout";
+import { savedPostKey } from "@/types/saved-post";
 import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
@@ -34,6 +36,7 @@ import {
   Fragment,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -44,7 +47,7 @@ import {
 } from "react";
 
 const EXPLORE_FEED_SESSION_KEY = "kingpos-explore-continuous-feed";
-const EXPLORE_FEED_SESSION_VERSION = 10;
+const EXPLORE_FEED_SESSION_VERSION = 11;
 const EXPLORE_FEED_SESSION_TTL_MS = 30 * 60 * 1000;
 const EXPLORE_FEED_SESSION_ITEM_LIMIT = 120;
 
@@ -53,6 +56,7 @@ type StoredExploreFeedState = {
   hasMore: boolean;
   items: ExploreFeedItem[];
   route: string;
+  viewerId: string | null;
   savedAt: number;
   scrollY: number;
   version: typeof EXPLORE_FEED_SESSION_VERSION;
@@ -148,6 +152,7 @@ function normalizeStoredFeedItem(item: ExploreFeedItem): ExploreFeedItem {
 function readStoredFeedState(
   route: string,
   expectedFirstKey: string | null,
+  viewerId: string | null,
 ): StoredExploreFeedState | null {
   try {
     const parsed = JSON.parse(
@@ -158,6 +163,7 @@ function readStoredFeedState(
       !parsed ||
       parsed.version !== EXPLORE_FEED_SESSION_VERSION ||
       parsed.route !== route ||
+      parsed.viewerId !== viewerId ||
       typeof parsed.savedAt !== "number" ||
       Date.now() - parsed.savedAt > EXPLORE_FEED_SESSION_TTL_MS ||
       !Array.isArray(parsed.items)
@@ -180,6 +186,7 @@ function readStoredFeedState(
       hasMore: parsed.hasMore === true,
       items,
       route,
+      viewerId,
       savedAt: parsed.savedAt,
       scrollY:
         typeof parsed.scrollY === "number" && Number.isFinite(parsed.scrollY)
@@ -196,13 +203,19 @@ function writeStoredFeedState(input: {
   cursor: ExploreFeedCursor | null;
   hasMore: boolean;
   items: ExploreFeedItem[];
+  viewerId: string | null;
+  route: string;
 }) {
   try {
+    // Keep the last complete page boundary, never pair a truncated list with
+    // a cursor pointing beyond items that have not been stored.
+    if (input.items.length > EXPLORE_FEED_SESSION_ITEM_LIMIT) return;
     const state: StoredExploreFeedState = {
       cursor: input.cursor,
       hasMore: input.hasMore,
       items: input.items.slice(0, EXPLORE_FEED_SESSION_ITEM_LIMIT),
-      route: `${window.location.pathname}${window.location.search}`,
+      route: input.route,
+      viewerId: input.viewerId,
       savedAt: Date.now(),
       scrollY: window.scrollY,
       version: EXPLORE_FEED_SESSION_VERSION,
@@ -213,8 +226,12 @@ function writeStoredFeedState(input: {
       JSON.stringify(state),
     );
   } catch {
-    window.sessionStorage.removeItem(EXPLORE_FEED_SESSION_KEY);
+    clearStoredFeedState();
   }
+}
+
+function clearStoredFeedState() {
+  try { window.sessionStorage.removeItem(EXPLORE_FEED_SESSION_KEY); } catch { /* Optional cache. */ }
 }
 
 function shouldRestoreStoredFeedState() {
@@ -223,6 +240,22 @@ function shouldRestoreStoredFeedState() {
     | undefined;
 
   return navigation?.type !== "reload";
+}
+
+function applySavedPostChange(items: ExploreFeedItem[], detail: { key?: unknown; saved?: unknown; saveCount?: unknown } | null | undefined) {
+  if (!detail || typeof detail.key !== "string" || typeof detail.saved !== "boolean") return items;
+  const saved = detail.saved;
+  const count = typeof detail.saveCount === "number" && Number.isFinite(detail.saveCount)
+    ? Math.max(0, Math.trunc(detail.saveCount)) : undefined;
+  let changed = false;
+  const next = items.map((item) => {
+    const target = item.saveTarget;
+    if (!target || savedPostKey(target) !== detail.key ||
+        (target.saved === saved && (count === undefined || target.saveCount === count))) return item;
+    changed = true;
+    return { ...item, saveTarget: { ...target, saved, ...(count === undefined ? {} : { saveCount: count }) } };
+  });
+  return changed ? next : items;
 }
 
 function appendUniqueFeedItems(
@@ -1140,7 +1173,7 @@ function FeedMediaFrame({
 }
 
 function exploreCommentTarget(item: ExploreFeedItem): PostCommentTarget | null {
-  if (!item.saveTarget) {
+  if (!item.saveTarget || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.saveTarget.sourceId)) {
     return null;
   }
 
@@ -1156,9 +1189,11 @@ function exploreCommentTarget(item: ExploreFeedItem): PostCommentTarget | null {
 function FeedHeroIntro({
   item,
   service,
+  viewer,
 }: {
   item: ExploreFeedItem;
   service: string | null;
+  viewer: PostCommentViewer;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
   const salonName = item.salon?.name ?? item.author.name;
@@ -1206,10 +1241,11 @@ function FeedHeroIntro({
       <div className="absolute left-3 top-3 rounded-full bg-white/18 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur">
         Only {city}
       </div>
-      {item.saveTarget ? (
+      {item.saveTarget && exploreCommentTarget(item) ? (
         <SavePostButton
           className="absolute right-3 top-3"
           initialSaved={item.saveTarget.saved}
+          isAuthenticated={viewer.isAuthenticated}
           saveCount={item.saveTarget.saveCount}
           size="compact"
           target={item.saveTarget}
@@ -1548,10 +1584,6 @@ function ExploreFeedCard({
   const isSalonRecommendation = item.contentType === "salon_recommendation";
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [bookPromptOpen, setBookPromptOpen] = useState(false);
-  const [commentCountState, setCommentCountState] = useState(() => ({
-    count: item.commentCount,
-    feedKey: item.feedKey,
-  }));
   const booking = item.booking?.eligible ? item.booking : null;
   const bookingHref = booking?.href ?? null;
   const bookedCount = booking?.bookedCount ?? null;
@@ -1574,10 +1606,7 @@ function ExploreFeedCard({
       ? `/explore/beauty/${encodeURIComponent(item.personal.profileId)}`
       : actionHref ?? item.salon?.href ?? "/explore";
   const commentTarget = exploreCommentTarget(item);
-  const commentCount =
-    commentCountState.feedKey === item.feedKey
-      ? commentCountState.count
-      : item.commentCount;
+  const commentCount = item.commentCount;
   const bookingActionLabel = featured ? "Book this look" : "Book";
   const bookingPromptDetails = [
     service,
@@ -1587,7 +1616,6 @@ function ExploreFeedCard({
   ].filter(Boolean);
 
   function updateCommentCount(count: number) {
-    setCommentCountState({ count, feedKey: item.feedKey });
     onCommentCountChange(item.feedKey, count);
   }
 
@@ -1613,7 +1641,7 @@ function ExploreFeedCard({
       data-source-type={item.sourceType}
       data-testid="explore-feed-card"
     >
-      {featured ? <FeedHeroIntro item={item} service={service} /> : null}
+      {featured ? <FeedHeroIntro item={item} service={service} viewer={viewer} /> : null}
       <div
         className={[
           "min-w-0 items-center justify-between gap-2.5 px-3 py-2.5",
@@ -1722,13 +1750,14 @@ function ExploreFeedCard({
                 </ActionTooltip>
               ) : null}
             </div>
-            {item.saveTarget ? (
+            {item.saveTarget && commentTarget ? (
               <SavePostButton
                 className={[
                   "ml-auto shrink-0",
                   featured ? "hidden sm:inline-grid" : "",
                 ].join(" ")}
                 initialSaved={item.saveTarget.saved}
+                isAuthenticated={viewer.isAuthenticated}
                 saveCount={item.saveTarget.saveCount}
                 size="compact"
                 target={item.saveTarget}
@@ -1801,19 +1830,36 @@ function ExploreFeedSkeleton() {
   );
 }
 
-export function ExploreFeed({
-  activeDiscoveryResult = null,
-  discoveryShortcuts = [],
-  initialPage,
-  onDiscoveryShortcutSelect,
-  viewer,
-}: {
+type ExploreFeedProps = {
   activeDiscoveryResult?: ExploreDiscoveryResultKind | null;
   discoveryShortcuts?: ExploreDiscoveryShortcut[];
   initialPage: ExploreFeedPage;
   onDiscoveryShortcutSelect?: (shortcut: ExploreDiscoveryShortcut) => void;
   viewer: PostCommentViewer;
-}) {
+};
+
+export function ExploreFeed(props: ExploreFeedProps) {
+  const [snapshot, setSnapshot] = useState({
+    page: props.initialPage,
+    viewerId: props.viewer.userId,
+    revision: 0,
+  });
+  // A new server payload starts a new pagination session. React discards this
+  // render and retries before committing children, so old pages cannot mix in.
+  if (snapshot.page !== props.initialPage || snapshot.viewerId !== props.viewer.userId) {
+    setSnapshot({ page: props.initialPage, viewerId: props.viewer.userId, revision: snapshot.revision + 1 });
+  }
+  return <ExploreFeedContent key={snapshot.revision} {...props} restoreSession={snapshot.revision === 0} />;
+}
+
+function ExploreFeedContent({
+  activeDiscoveryResult = null,
+  discoveryShortcuts = [],
+  initialPage,
+  onDiscoveryShortcutSelect,
+  viewer,
+  restoreSession,
+}: ExploreFeedProps & { restoreSession: boolean }) {
   const [items, setItems] = useState(initialPage.items);
   const [cursor, setCursor] = useState<ExploreFeedCursor | null>(
     initialPage.nextCursor,
@@ -1825,6 +1871,7 @@ export function ExploreFeed({
   const loadingMoreRef = useRef(false);
   const mountedRef = useRef(false);
   const restoredRef = useRef(false);
+  const pendingScrollRef = useRef<number | null>(null);
   const requestedCursorsRef = useRef(new Set<string>());
   const firstKey = initialPage.items[0]
     ? feedItemKey(initialPage.items[0])
@@ -1851,6 +1898,16 @@ export function ExploreFeed({
     });
   }, []);
 
+  useEffect(() => {
+    function onSaveChange(event: Event) {
+      if (event instanceof CustomEvent) {
+        setItems((current) => applySavedPostChange(current, event.detail));
+      }
+    }
+    window.addEventListener("reylumi:saved-post-state-change", onSaveChange);
+    return () => window.removeEventListener("reylumi:saved-post-state-change", onSaveChange);
+  }, []);
+
   const loadNextPage = useCallback(
     async (options: { retry?: boolean } = {}) => {
       if (
@@ -1872,7 +1929,7 @@ export function ExploreFeed({
       setPaginationError("");
 
       try {
-        const page = await loadExploreFeedAction(cursor);
+        const page = await withRequestTimeout(loadExploreFeedAction(cursor));
 
         if (!mountedRef.current) {
           return;
@@ -1902,7 +1959,7 @@ export function ExploreFeed({
     [cursor, hasMore, paginationError],
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     mountedRef.current = true;
 
     return () => {
@@ -1917,13 +1974,13 @@ export function ExploreFeed({
 
     restoredRef.current = true;
 
-    if (!shouldRestoreStoredFeedState()) {
-      window.sessionStorage.removeItem(EXPLORE_FEED_SESSION_KEY);
+    if (!restoreSession || !shouldRestoreStoredFeedState()) {
+      clearStoredFeedState();
       return;
     }
 
     const route = `${window.location.pathname}${window.location.search}`;
-    const stored = readStoredFeedState(route, firstKey);
+    const stored = readStoredFeedState(route, firstKey, viewer.userId);
 
     if (!stored || stored.items.length === 0) {
       return;
@@ -1935,22 +1992,43 @@ export function ExploreFeed({
       }
 
       setItems((current) => mergeStoredFeedItems(stored.items, current));
+      pendingScrollRef.current = stored.scrollY;
       setCursor(stored.cursor);
       setHasMore(stored.hasMore);
       setPaginationError("");
-      window.scrollTo(0, stored.scrollY);
     });
 
     return () => window.cancelAnimationFrame(restoreFrame);
-  }, [firstKey]);
+  }, [firstKey, viewer.userId, restoreSession]);
+
+  useLayoutEffect(() => {
+    if (pendingScrollRef.current !== null) {
+      window.scrollTo(0, pendingScrollRef.current);
+      pendingScrollRef.current = null;
+    }
+  }, [items]);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      writeStoredFeedState({ cursor, hasMore, items });
-    }, 250);
-
-    return () => window.clearTimeout(timeout);
-  }, [cursor, hasMore, items]);
+    const route = `${window.location.pathname}${window.location.search}`;
+    const save = () => writeStoredFeedState({ cursor, hasMore, items, viewerId: viewer.userId, route });
+    let timeout = window.setTimeout(save, 250);
+    const onScroll = () => {
+      window.clearTimeout(timeout);
+      timeout = window.setTimeout(save, 150);
+    };
+    const onNavigate = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest("a[href]")) save();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("pagehide", save);
+    document.addEventListener("click", onNavigate, true);
+    return () => {
+      window.clearTimeout(timeout);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("pagehide", save);
+      document.removeEventListener("click", onNavigate, true);
+    };
+  }, [cursor, hasMore, items, viewer.userId]);
 
   useEffect(() => {
     const node = sentinelRef.current;

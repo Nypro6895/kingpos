@@ -1,12 +1,17 @@
 "use client";
+import { posUserMessage } from "@/lib/pos-user-messages";
+import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
+import { listPortableOperations, PORTABLE_OPERATIONS_CHANGED } from "@/lib/portable-operations";
+import { portableDeviceStorage } from "@/lib/portable-device-storage";
 
 import {
   savePortableReportClosing,
   type PortableReportData,
 } from "@/app/pos/portable/actions";
-import { useRouter } from "next/navigation";
 import type { KeyboardEvent } from "react";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+
+import { usePortableWorkspaceState } from "@/app/pos/portable/portable-workspace-state";
 
 type ClosingValues = {
   cashAmount: string;
@@ -29,7 +34,7 @@ function formatMoney(value: number) {
 }
 
 function formatInputMoney(value: number) {
-  return value.toFixed(2);
+  return value === 0 ? "" : value.toFixed(2);
 }
 
 function parseInputCents(value: string) {
@@ -99,11 +104,25 @@ function statusClass(status: keyof typeof RECONCILIATION_LABELS) {
 }
 
 export function PortableReportClosingForm({
-  data,
+  data: initialData,
 }: {
   data: PortableReportData;
 }) {
-  const router = useRouter();
+  const workspace = usePortableWorkspaceState();
+  const [data,setData]=useState(initialData);
+  const [baseline,setBaseline]=useState(initialData.closingInputs);
+  const [pendingCount,setPendingCount]=useState(0);
+  const closingChanged=JSON.stringify(baseline)!==JSON.stringify(data.closingInputs);
+  usePosResourceRefresh(workspace?.scope.split(':')[0],'report',async()=>{
+    const response=await fetch('/api/pos/portable/workspace?resource=report&date='+encodeURIComponent(initialData.reportDate),{cache:'no-store',signal:AbortSignal.timeout(10000)});
+    if(response.ok){const next=await response.json();if(next.reportDate===initialData.reportDate)setData(next);}
+  });
+  useEffect(()=>{
+    if(!workspace)return;let active=true;
+    const refresh=()=>{void listPortableOperations(workspace.scope).then(rows=>{if(active)setPendingCount(rows.filter(row=>row.kind==='receipt'&&row.state!=='synced'&&row.state!=='cancelled').length);});};
+    refresh();window.addEventListener(PORTABLE_OPERATIONS_CHANGED,refresh);return()=>{active=false;window.removeEventListener(PORTABLE_OPERATIONS_CHANGED,refresh);};
+  },[workspace?.scope]);
+  const storageKey = workspace ? `kingpos:report-inputs:${workspace.scope}:${data.reportDate}` : null;
   const [isPending, startTransition] = useTransition();
   const [values, setValues] = useState(() => getInitialValues(data));
   const [savedSnapshot, setSavedSnapshot] = useState(() =>
@@ -134,13 +153,36 @@ export function PortableReportClosingForm({
         ? `Missing ${formatMoney(Math.abs(fromCents(differenceCents)))}`
         : `Over ${formatMoney(fromCents(differenceCents))}`;
 
+  useEffect(() => {
+    if (!storageKey || isReadOnly) return;
+    const timer = setTimeout(() => {
+      try {
+        const saved = JSON.parse(portableDeviceStorage.getItem(storageKey) ?? "null");
+        const entries=saved?.values??saved;
+        if (entries && ["cashAmount", "creditCardAmount", "otherAmount", "note"].every(key => typeof entries[key] === "string")) {setValues(entries);if(saved.baseline)setBaseline(saved.baseline);}
+      } catch { /* Keep server values if the device draft is unavailable. */ }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [storageKey, isReadOnly]);
+
   function updateValue(key: keyof ClosingValues, value: string) {
-    setValues((current) => ({ ...current, [key]: value }));
+    const next = { ...values, [key]: value };
+    if (storageKey) {
+      try { portableDeviceStorage.setItem(storageKey, JSON.stringify({values:next,baseline})); }
+      catch { setErrorMessage("Unable to save on this device. Keep this window open.");setValues(next);return; }
+    }
+    setValues(next);
     setSaveState("idle");
     setErrorMessage(null);
   }
 
   function save(force = false) {
+    if(closingChanged){setErrorMessage('Closing amounts changed on another screen. Choose which amounts to keep below.');return;}
+    if (!navigator.onLine) {
+      setSaveState("error");
+      setErrorMessage("Entries saved on this device. Connect to finalize the report.");
+      return;
+    }
     if (isReadOnly || isPending) {
       return;
     }
@@ -153,12 +195,13 @@ export function PortableReportClosingForm({
 
     if (hasInvalidAmount) {
       setSaveState("error");
-      setErrorMessage("Amounts must be valid non-negative currency values.");
+      setErrorMessage("Enter an amount of 0 or more, with up to 2 decimal places.");
       return;
     }
 
     startTransition(async () => {
       const result = await savePortableReportClosing({
+        expectedClosing: baseline,
         cashAmount: values.cashAmount,
         creditCardAmount: values.creditCardAmount,
         note: values.note,
@@ -168,17 +211,18 @@ export function PortableReportClosingForm({
 
       if (!result.ok) {
         setSaveState("error");
-        setErrorMessage(result.error);
+        setErrorMessage(posUserMessage(result.error));
         return;
       }
 
+      if (storageKey) portableDeviceStorage.removeItem(storageKey);
+      setData(result.data);setBaseline(result.data.closingInputs);
       const savedValues = getInitialValues(result.data);
 
       setValues(savedValues);
       setSavedSnapshot(getSnapshot(savedValues));
       setSaveState("saved");
       setErrorMessage(null);
-      router.refresh();
     });
   }
 
@@ -194,6 +238,8 @@ export function PortableReportClosingForm({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+      {pendingCount>0?<p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 lg:col-span-2">{pendingCount} ticket(s) on this device are not uploaded yet. Report totals will update after they are uploaded. Check the sync icon for details.</p>:null}
+      {closingChanged?<div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm lg:col-span-2"><p className="font-semibold">Closing amounts changed on another screen.</p><p className="mt-1">Your entries have been kept. Latest saved total: {formatMoney(data.closingInputs.cashAmount+data.closingInputs.creditCardAmount+data.closingInputs.otherAmount)}.</p><div className="mt-3 flex flex-wrap gap-2"><button className="min-h-11 rounded-lg border bg-white px-4" onClick={()=>{setValues(getInitialValues(data));setSavedSnapshot(getSnapshot(getInitialValues(data)));setBaseline(data.closingInputs);}}>Use saved amounts</button><button className="min-h-11 rounded-lg border bg-white px-4" onClick={()=>{setBaseline(data.closingInputs);setErrorMessage(null);}}>Keep my entries for review</button></div></div>:null}
       <section className="rounded-lg border border-zinc-200 bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -231,9 +277,17 @@ export function PortableReportClosingForm({
                 className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
                 disabled={isReadOnly}
                 inputMode="decimal"
+                placeholder="0.00"
+                onFocus={(event) => {
+                  if (Number(event.currentTarget.value) === 0) {
+                    const key = event.currentTarget.dataset.amount as keyof ClosingValues;
+                    updateValue(key, "");
+                  } else event.currentTarget.select();
+                }}
                 onBlur={() => save()}
                 onChange={(event) => updateValue("cashAmount", event.target.value)}
                 onKeyDown={handleEnter}
+                data-amount="cashAmount"
                 value={values.cashAmount}
               />
             </label>
@@ -245,11 +299,19 @@ export function PortableReportClosingForm({
                 className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
                 disabled={isReadOnly}
                 inputMode="decimal"
+                placeholder="0.00"
+                onFocus={(event) => {
+                  if (Number(event.currentTarget.value) === 0) {
+                    const key = event.currentTarget.dataset.amount as keyof ClosingValues;
+                    updateValue(key, "");
+                  } else event.currentTarget.select();
+                }}
                 onBlur={() => save()}
                 onChange={(event) =>
                   updateValue("creditCardAmount", event.target.value)
                 }
                 onKeyDown={handleEnter}
+                data-amount="creditCardAmount"
                 value={values.creditCardAmount}
               />
             </label>
@@ -261,11 +323,19 @@ export function PortableReportClosingForm({
                 className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
                 disabled={isReadOnly}
                 inputMode="decimal"
+                placeholder="0.00"
+                onFocus={(event) => {
+                  if (Number(event.currentTarget.value) === 0) {
+                    const key = event.currentTarget.dataset.amount as keyof ClosingValues;
+                    updateValue(key, "");
+                  } else event.currentTarget.select();
+                }}
                 onBlur={() => save()}
                 onChange={(event) =>
                   updateValue("otherAmount", event.target.value)
                 }
                 onKeyDown={handleEnter}
+                data-amount="otherAmount"
                 value={values.otherAmount}
               />
             </label>
@@ -354,7 +424,7 @@ export function PortableReportClosingForm({
               : RECONCILIATION_LABELS[reconciliationStatus]}
           </p>
           <p className="mt-2 text-sm">
-            {hasInvalidAmount ? "Fix amount fields before saving." : missingOrOverText}
+            {hasInvalidAmount ? "Check the amounts before saving." : missingOrOverText}
           </p>
         </div>
       </section>

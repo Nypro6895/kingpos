@@ -1977,7 +1977,7 @@ function CustomerDesktopSidebar({
         searchParams={searchParams}
       />
       <div className="mt-auto">
-        <CustomerDesktopMembershipCard />
+        {currentWorkspace?.salonMode !== "staff" && <CustomerDesktopMembershipCard />}
       </div>
     </aside>
   );
@@ -2114,6 +2114,8 @@ function CustomerDesktopHeader({
   pathname: string;
   searchParams: SearchParamsReader;
 }) {
+  const staffWorkspace = currentWorkspace?.salonMode === "staff";
+  const compactStaffHeader = staffWorkspace && pathname !== "/explore";
   const exploreQuery =
     pathname === "/explore"
       ? searchParams.get("q") ?? ""
@@ -2135,11 +2137,12 @@ function CustomerDesktopHeader({
 
   return (
     <header
-      className="sticky top-0 z-30 bg-white/92 px-7 py-4 backdrop-blur-sm"
+      className={compactStaffHeader ? "sticky top-0 z-30 border-b border-zinc-100 bg-white/95 px-6 py-3 backdrop-blur-sm" : "sticky top-0 z-30 bg-white/92 px-7 py-4 backdrop-blur-sm"}
       data-testid="customer-desktop-header"
     >
-      <div className="grid grid-cols-[minmax(24rem,1fr)_auto] items-center gap-5">
-        <form action="/explore" className="relative" role="search">
+      <div className={compactStaffHeader ? "flex items-center justify-between gap-4" : "grid grid-cols-[minmax(24rem,1fr)_auto] items-center gap-5"}>
+        {compactStaffHeader ? <span className="text-sm text-zinc-500">Staff workspace</span> : null}
+        {!compactStaffHeader && <form action="/explore" className="relative" role="search">
           <label className="sr-only" htmlFor="customer-desktop-search">
             Search salons, services, or locations
           </label>
@@ -2169,8 +2172,9 @@ function CustomerDesktopHeader({
           >
             Search
           </button>
-        </form>
+        </form>}
         <div className="flex items-center gap-3">
+          {compactStaffHeader && <Link href="/explore" aria-label="Search salons and services" className={customerDesktopSoftButtonClass()}><Icon name="search" /></Link>}
           <NotificationDropdown
             notificationSummary={notificationSummary}
             triggerClassName={customerDesktopSoftButtonClass()}
@@ -2183,9 +2187,9 @@ function CustomerDesktopHeader({
             <Icon name="message" />
           </Link>
           <Link
-            aria-label="All settings"
+            aria-label={staffWorkspace ? "Open Staff Profile" : "All settings"}
             className="grid min-h-12 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-full bg-surface-elevated py-1 pl-1.5 pr-4 text-left shadow-[0_10px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/85 transition hover:ring-brand-orange/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            href="/settings"
+            href={staffWorkspace ? "/staff/my-work?profile=1" : "/settings"}
           >
             <AccountAvatar
               avatarUrl={accountAvatarUrl}
@@ -2237,7 +2241,9 @@ function CustomerDesktopShell({
   return (
     <div
       className={[
-        "hidden min-h-screen grid-cols-[16.25rem_minmax(0,1fr)] bg-white text-text-primary 2xl:grid-cols-[18rem_minmax(0,1fr)]",
+        currentWorkspace?.salonMode === "staff"
+          ? "hidden min-h-screen grid-cols-[14rem_minmax(0,1fr)] bg-white text-text-primary 2xl:grid-cols-[15rem_minmax(0,1fr)]"
+          : "hidden min-h-screen grid-cols-[16.25rem_minmax(0,1fr)] bg-white text-text-primary 2xl:grid-cols-[18rem_minmax(0,1fr)]",
         displayClass,
       ].join(" ")}
       data-testid="customer-desktop-shell"
@@ -3099,6 +3105,7 @@ export function NavigationShell({
         notificationSummary={notificationSummary}
       >
         <div
+          data-owner-pos-shell={pathname === "/pos" ? "true" : undefined}
           className={[
             "min-h-screen bg-white",
             baseShellPaddingClass,

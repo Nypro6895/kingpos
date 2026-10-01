@@ -318,7 +318,7 @@ async function safeList<T>(input: {
     return {
       data: input.fallback,
       warning:
-        "Login security back-office storage is not ready. Apply the latest migration.",
+        "Recovery support is temporarily unavailable. Please try again later.",
     };
   }
 
@@ -342,7 +342,7 @@ export async function loadRecoveryBackOfficeOverview(): Promise<RecoveryBackOffi
   if (!supabase) {
     return {
       authorized: false,
-      reason: "Authentication storage is not configured.",
+      reason: "Account security is temporarily unavailable. Please try again later.",
     };
   }
 

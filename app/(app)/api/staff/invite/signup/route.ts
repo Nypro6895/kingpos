@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   const password = readString(formData, "password");
 
   if (!supabase) {
-    return jsonError("Supabase environment variables are missing.", 500);
+    return jsonError("This feature is temporarily unavailable. Please try again later.", 500);
   }
 
   if (!token || !email || !password) {
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
   );
 
   if (!userScopedSupabase) {
-    return jsonError("Supabase environment variables are missing.", 500);
+    return jsonError("This feature is temporarily unavailable. Please try again later.", 500);
   }
 
   const { data: acceptData, error: acceptError } = await userScopedSupabase.rpc(

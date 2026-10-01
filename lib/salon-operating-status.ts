@@ -343,7 +343,7 @@ export async function getCurrentSalonOperatingHoursSettings(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const timeZone = await loadOperatingTimezone({ salonId: salon.id, supabase });
@@ -422,7 +422,7 @@ export async function updateCurrentSalonOperatingHours(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const timeZone = normalizeOperatingTimeZone(input.timeZone);
@@ -529,7 +529,7 @@ export async function createCurrentSalonSpecialHours(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const timeZone = await loadOperatingTimezone({ salonId: salon.id, supabase });
@@ -604,7 +604,7 @@ export async function deleteCurrentSalonSpecialHours(specialHoursId: string) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { error } = await supabase

@@ -145,7 +145,7 @@ function normalizeRecoveryEmail(value: string | null) {
 function schemaUnavailableResult(): LoginSecurityActionResult {
   return {
     error:
-      "Login security storage is not ready. Apply the latest database migration and try again.",
+      "Security settings are temporarily unavailable. Please try again later or contact support.",
   };
 }
 
@@ -374,7 +374,7 @@ function twoFactorSetupError(message: string | null | undefined) {
     normalized.includes("phone") ||
     normalized.includes("provider")
   ) {
-    return "Phone 2FA is not configured in Supabase Auth.";
+    return "Text-message verification is temporarily unavailable. Please try again later.";
   }
 
   return message || "Two-factor authentication setup could not be started.";
@@ -483,7 +483,7 @@ export async function changeAccountPasswordAction(
   const publicSupabase = createSupabaseServerClient();
 
   if (!publicSupabase) {
-    return { error: "Authentication is not configured." };
+    return { error: "Sign-in is temporarily unavailable. Please try again later." };
   }
 
   const { error: verifyError } = await publicSupabase.auth.signInWithPassword({
@@ -1085,7 +1085,7 @@ export async function generateRecoveryCodesAction(): Promise<RecoveryCodesAction
 
   if (revokeResult.error) {
     if (isLoginSecuritySchemaMissing(revokeResult.error)) {
-      return { error: schemaUnavailableResult().error ?? "Login security storage is not ready." };
+      return { error: schemaUnavailableResult().error ?? "Security settings are temporarily unavailable. Please try again later." };
     }
 
     logSupabaseError(
@@ -1108,7 +1108,7 @@ export async function generateRecoveryCodesAction(): Promise<RecoveryCodesAction
 
   if (insertResult.error) {
     if (isLoginSecuritySchemaMissing(insertResult.error)) {
-      return { error: schemaUnavailableResult().error ?? "Login security storage is not ready." };
+      return { error: schemaUnavailableResult().error ?? "Security settings are temporarily unavailable. Please try again later." };
     }
 
     logSupabaseError(

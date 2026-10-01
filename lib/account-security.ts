@@ -631,7 +631,7 @@ export async function loadLoginSecurityOverview(): Promise<LoginSecurityOverview
       activity: [],
       currentRequest,
       currentSessionId,
-      dataUnavailableReason: "Authentication storage is not configured.",
+      dataUnavailableReason: "Account security is temporarily unavailable. Please try again later.",
       mfa: await loadMfaOverview(),
       preferences: fallbackPreferences(user),
       recoveryCodes: defaultRecoveryCodes,
@@ -755,7 +755,7 @@ export async function loadLoginSecurityOverview(): Promise<LoginSecurityOverview
     currentRequest,
     currentSessionId,
     dataUnavailableReason: schemaMissing
-      ? "Login security storage is not ready. Apply the latest database migration to save sessions, trusted devices, recovery codes, and recovery requests."
+      ? "Security settings are temporarily unavailable. Please try again later or contact support."
       : null,
     mfa,
     preferences,

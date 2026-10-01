@@ -64,7 +64,7 @@ export async function getCurrentRolePermissionCodes(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data: rolePermissions, error: rolePermissionsError } = await supabase
@@ -162,7 +162,7 @@ export async function getAccountPermissionSet(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data: permissions, error: permissionsError } = await supabase

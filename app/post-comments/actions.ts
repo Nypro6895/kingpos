@@ -18,8 +18,6 @@ type CommentMutationResult<T extends object = object> =
   | { error: string };
 
 function revalidatePostCommentTarget(target: PostCommentTarget) {
-  revalidatePath("/", "layout");
-  revalidatePath("/explore");
   revalidatePath("/notifications");
 
   if (target.salonId) {
@@ -46,6 +44,7 @@ export async function loadPostCommentsAction(input: {
 }
 
 export async function createPostCommentAction(input: {
+  requestId?: string;
   asSalonReply?: boolean;
   body: string;
   parentCommentId?: string | null;

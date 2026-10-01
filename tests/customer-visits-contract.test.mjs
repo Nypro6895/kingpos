@@ -413,7 +413,7 @@ test("POS amount entries remain separate canonical lines before finalization", (
   assert.match(posClient, /activeLine && hasPositiveAmount\(activeLine\)[\s\S]*createStaffLine/);
   assert.match(posClient, /staffLines\.filter\(hasPositiveAmount\)/);
   assert.match(posClient, /positiveLines\.map\(\(line, index\) => \(\{/);
-  assert.match(posActions, /for \(const line of input\.lines\)/);
+  assert.match(posActions, /Promise\.all\(input\.lines\.map\(async \(line\) =>/);
   assert.match(posActions, /from\("pos_ticket_items"\)[\s\S]*unit_price: line\.total/);
   assert.match(posActions, /const totals = calculateTicketTotals\(\{[\s\S]*items: insertedItems/);
   assert.doesNotMatch(posActions, /reduce\([^)]*amountParts[^)]*\)\s*\+\s*line\.total/);

@@ -136,7 +136,7 @@ test("SMS login alerts default to profile phone and never block login", () => {
   assert.match(accountSecurity, /\.catch\(\(smsError: unknown\) =>/);
   assert.match(loginSecurityActions, /sms_login_alerts_enabled: context\.user\.phone/);
   assert.match(loginSmsAlerts, /TWILIO_ACCOUNT_SID/);
-  assert.match(loginSmsAlerts, /SMS login alerts are not configured/);
+  assert.match(loginSmsAlerts, /Text-message login alerts are temporarily unavailable/);
 });
 
 test("Login and logout routes wire app-owned session tracking", () => {

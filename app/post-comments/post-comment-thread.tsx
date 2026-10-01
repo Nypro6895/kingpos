@@ -13,7 +13,8 @@ import type {
   PostCommentTarget,
   PostCommentViewer,
 } from "@/types/post-comments";
-import { useRouter } from "next/navigation";
+import { completeCommentRequest, prepareCommentRequest } from "@/lib/comment-request";
+import { withRequestTimeout } from "@/lib/request-timeout";
 import {
   useEffect,
   useMemo,
@@ -325,7 +326,7 @@ function buttonClass(tone: "danger" | "primary" | "subtle" = "subtle") {
 }
 
 export function PostCommentThread(props: PostCommentThreadProps) {
-  return <PostCommentThreadContent {...props} key={targetKey(props.target)} />;
+  return <PostCommentThreadContent {...props} key={`${props.viewer.userId ?? "guest"}:${targetKey(props.target)}`} />;
 }
 
 function PostCommentThreadContent({
@@ -338,7 +339,6 @@ function PostCommentThreadContent({
   target,
   viewer,
 }: PostCommentThreadProps) {
-  const router = useRouter();
   const [comments, setComments] = useState<DraftComment[]>([]);
   const [totalCount, setTotalCount] = useState(Math.max(0, initialCount));
   const [nextOffset, setNextOffset] = useState<number | null>(0);
@@ -354,7 +354,24 @@ function PostCommentThreadContent({
   const highlightedCommentIdRef = useRef<string | null>(null);
   const onCountChangeRef = useRef(onCountChange);
   const refreshTimerRef = useRef<number | null>(null);
+  const submitPendingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const loadVersionRef = useRef(0);
+  const loadPendingRef = useRef(false);
+  const refreshQueuedRef = useRef(false);
+  const loadedThroughRef = useRef(0);
+  const draftVersionRef = useRef(0);
+  const [loadError, setLoadError] = useState(false);
   const key = targetKey(target);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      loadVersionRef.current += 1;
+      if (refreshTimerRef.current !== null) window.clearTimeout(refreshTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     onCountChangeRef.current = onCountChange;
@@ -411,8 +428,7 @@ function PostCommentThreadContent({
   useEffect(() => {
     function refreshOnFocus() {
       if (document.visibilityState === "visible") {
-        loadPage(0, true);
-        router.refresh();
+        refreshCommentsSoon();
       }
     }
 
@@ -440,6 +456,11 @@ function PostCommentThreadContent({
           table: "salon_profile_comments",
         },
         (payload: RealtimeCommentPayload) => {
+          loadVersionRef.current += 1;
+          if (submitPendingRef.current) {
+            refreshQueuedRef.current = true;
+            return;
+          }
           const nextRow = payload.new ?? {};
           const oldRow = payload.old ?? {};
           const incoming =
@@ -485,34 +506,46 @@ function PostCommentThreadContent({
   }, [key]);
 
   function loadPage(offset: number, replace = false) {
+    if (submitPendingRef.current || loadPendingRef.current) {
+      if (replace) refreshQueuedRef.current = true;
+      return;
+    }
+    loadPendingRef.current = true;
+    const version = ++loadVersionRef.current;
+    const through = replace ? Math.max(pageSize, loadedThroughRef.current) : offset + pageSize;
     startLoadTransition(async () => {
-      const page = await loadPostCommentsAction({
-        offset,
-        pageSize,
-        target,
-      });
-
-      if (page.error) {
-        setStatus(page.error);
+      try {
+        let next = offset;
+        let incoming: PostComment[] = [];
+        let page;
+        do {
+          page = await withRequestTimeout(loadPostCommentsAction({ offset: next, pageSize, target }));
+          if (!mountedRef.current || version !== loadVersionRef.current) return;
+          if (page.error) throw new Error(page.error);
+          incoming = mergeComments(incoming, page.items);
+          if (!page.hasMore || page.nextOffset === null || page.nextOffset <= next) break;
+          next = page.nextOffset;
+        } while (replace && next < through);
+        setComments((current) => mergeComments(replace ? [] : current, incoming));
+        loadedThroughRef.current = page.nextOffset ?? through;
+        setTotalCount(page.totalCount);
+        setHasMore(page.hasMore);
+        setNextOffset(page.nextOffset);
         setLoaded(true);
-        return;
+        setLoadError(false);
+      } catch (error) {
+        if (mountedRef.current && version === loadVersionRef.current) {
+          setStatus(error instanceof Error ? error.message : "Comments could not be loaded. Please try again.");
+          setLoaded(true);
+          setLoadError(true);
+        }
+      } finally {
+        loadPendingRef.current = false;
+        if (mountedRef.current && refreshQueuedRef.current && !submitPendingRef.current) {
+          refreshQueuedRef.current = false;
+          refreshCommentsSoon();
+        }
       }
-
-      const optimisticComments = comments.filter((comment) => comment.optimistic);
-
-      setComments((current) =>
-        replace
-          ? mergeComments(optimisticComments, page.items)
-          : mergeComments(
-              current.filter((comment) => !comment.optimistic),
-              page.items,
-            ),
-      );
-      setTotalCount(page.totalCount + optimisticComments.length);
-      setHasMore(page.hasMore);
-      setNextOffset(page.nextOffset);
-      setLoaded(true);
-      setStatus("");
     });
   }
 
@@ -528,7 +561,6 @@ function PostCommentThreadContent({
     refreshTimerRef.current = window.setTimeout(() => {
       refreshTimerRef.current = null;
       loadPage(0, true);
-      router.refresh();
     }, 300);
   }
 
@@ -565,6 +597,8 @@ function PostCommentThreadContent({
   function submit(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
 
+    if (submitPendingRef.current) return;
+
     if (!viewer.isAuthenticated) {
       setStatus("Sign in to comment.");
       return;
@@ -580,6 +614,14 @@ function PostCommentThreadContent({
     const parentComment = replyTo;
     const parentCommentId = parentComment?.id ?? null;
     const postAsSalon = asSalonReply && viewer.canReplyAsSalon;
+    let storage: Storage | null = null;
+    try { storage = window.sessionStorage; } catch { /* Storage is optional. */ }
+    const request = prepareCommentRequest(
+      `${viewer.userId}:${key}`,
+      { body: nextBody, parentCommentId, asSalonReply: postAsSalon },
+      storage,
+      () => crypto.randomUUID(),
+    );
     const optimisticComment = createOptimisticComment({
       asSalonReply: postAsSalon,
       body: nextBody,
@@ -589,6 +631,10 @@ function PostCommentThreadContent({
     });
     const previousBody = body;
     const previousReply = replyTo;
+    const draftVersion = draftVersionRef.current;
+
+    submitPendingRef.current = true;
+    loadVersionRef.current += 1;
 
     setComments((current) =>
       parentCommentId ? [...current, optimisticComment] : [optimisticComment, ...current],
@@ -599,20 +645,28 @@ function PostCommentThreadContent({
     setStatus("");
 
     startPostTransition(async () => {
-      const result = await createPostCommentAction({
+      const result = await withRequestTimeout(createPostCommentAction({
+        requestId: request.id,
         asSalonReply: postAsSalon,
         body: nextBody,
         parentCommentId,
         target,
-      });
+      })).catch(() => ({ error: "Connection interrupted. Refresh to check whether your comment was posted before trying again." }));
+
+      submitPendingRef.current = false;
+      if (result.error === null) completeCommentRequest(request.key, storage);
+      if (!mountedRef.current) return;
+      refreshCommentsSoon();
 
       if (result.error !== null) {
         setComments((current) =>
           current.filter((comment) => comment.id !== optimisticComment.id),
         );
         setTotalCount((current) => Math.max(0, current - 1));
-        setBody(previousBody);
-        setReplyTo(previousReply);
+        if (draftVersionRef.current === draftVersion) {
+          setBody(previousBody);
+          setReplyTo(previousReply);
+        }
         setStatus(result.error);
         return;
       }
@@ -625,11 +679,11 @@ function PostCommentThreadContent({
       );
       setTotalCount(result.totalCount);
       setStatus("Comment posted.");
-      router.refresh();
     });
   }
 
   function beginReply(comment: PostComment) {
+    draftVersionRef.current += 1;
     setReplyTo(comment);
     setAsSalonReply(viewer.canReplyAsSalon);
 
@@ -639,13 +693,15 @@ function PostCommentThreadContent({
   }
 
   function saveEdit(comment: DraftComment, nextBody: string) {
+    if (submitPendingRef.current) return;
     const cleanBody = nextBody.trim();
 
     if (!cleanBody || cleanBody === comment.body) {
       return;
     }
 
-    const previous = comments;
+    submitPendingRef.current = true;
+    loadVersionRef.current += 1;
     setComments((current) =>
       current.map((item) =>
         item.id === comment.id
@@ -660,21 +716,27 @@ function PostCommentThreadContent({
         body: cleanBody,
         commentId: comment.id,
         target,
-      });
+      }).catch(() => ({ error: "Connection interrupted. Refresh to check whether your comment was saved." }));
+
+      submitPendingRef.current = false;
+      if (!mountedRef.current) return;
+      refreshCommentsSoon();
 
       if (result.error !== null) {
-        setComments(previous);
+        setComments((current) => current.map((item) => item.id === comment.id ? comment : item));
         setStatus(result.error);
         return;
       }
 
       setComments((current) => mergeComments(current, [result.comment]));
       setTotalCount(result.totalCount);
-      router.refresh();
     });
   }
 
   function removeComment(comment: DraftComment, mode: "delete" | "hide") {
+    if (submitPendingRef.current) return;
+    submitPendingRef.current = true;
+    loadVersionRef.current += 1;
     const previous = comments;
     const previousTotalCount = totalCount;
     const removedIds = new Set<string>([comment.id]);
@@ -694,19 +756,21 @@ function PostCommentThreadContent({
     startPostTransition(async () => {
       const result =
         mode === "hide"
-          ? await hidePostCommentAction({ commentId: comment.id, target })
-          : await deletePostCommentAction({ commentId: comment.id, target });
+          ? await hidePostCommentAction({ commentId: comment.id, target }).catch(() => ({ error: "Connection interrupted. Refresh to check the comment status." }))
+          : await deletePostCommentAction({ commentId: comment.id, target }).catch(() => ({ error: "Connection interrupted. Refresh to check the comment status." }));
+
+      submitPendingRef.current = false;
+      if (!mountedRef.current) return;
+      refreshCommentsSoon();
 
       if (result.error !== null) {
-        setComments(previous);
+        setComments((current) => mergeComments(current, previous.filter((item) => removedIds.has(item.id))));
         setTotalCount(previousTotalCount);
         setStatus(result.error);
         return;
       }
 
       setTotalCount(result.totalCount);
-      loadPage(0, true);
-      router.refresh();
     });
   }
 
@@ -739,6 +803,10 @@ function PostCommentThreadContent({
           <p className="rounded-lg bg-white px-3 py-2.5 text-sm text-zinc-600">
             Loading comments...
           </p>
+        ) : loadError ? (
+          <button type="button" className={buttonClass()} onClick={() => loadPage(0, true)} disabled={loading}>
+            Retry loading comments
+          </button>
         ) : groupedComments.roots.length === 0 ? (
           <p
             className={[
@@ -795,7 +863,10 @@ function PostCommentThreadContent({
           ].join(" ")}
           disabled={!viewer.isAuthenticated}
           maxLength={1000}
-          onChange={(event) => setBody(event.currentTarget.value)}
+          onChange={(event) => {
+            draftVersionRef.current += 1;
+            setBody(event.currentTarget.value);
+          }}
           placeholder={
             viewer.isAuthenticated
               ? replyTo

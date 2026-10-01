@@ -1,4 +1,9 @@
-﻿import {
+import {
+  RequestsWorkspace,
+  RequestAccountSearch,
+  RequestForm,
+} from "@/app/staff/requests-workspace";
+import {
   createSalonStaffInviteFormAction,
   createStaff,
   resendSalonStaffInviteFormAction,
@@ -21,7 +26,6 @@ import { StaffSlideOver } from "@/app/staff/staff-slide-over";
 import { safeAccountAvatarUrl } from "@/lib/account-avatar";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
-import { searchTextMatches } from "@/lib/search-normalization";
 import {
   getCurrentSalonStaffDirectory,
   STAFF_PERMISSIONS,
@@ -66,11 +70,7 @@ type AccountStatusKind =
   | "not_connected"
   | "ready_to_invite";
 type BookingStatusKind =
-  | "disabled"
-  | "enabled"
-  | "missing_schedule"
-  | "missing_services"
-  | "ready";
+  "disabled" | "enabled" | "missing_schedule" | "missing_services" | "ready";
 type PosStatusKind = "disabled" | "enabled" | "limited_access" | "pin_missing";
 
 function stringParam(value: string | string[] | undefined) {
@@ -162,7 +162,11 @@ function getAccountStatus(
   }
 
   if (isEmploymentActive(member)) {
-    return { kind: "ready_to_invite", label: "Ready to Invite", tone: "warning" };
+    return {
+      kind: "ready_to_invite",
+      label: "Ready to Invite",
+      tone: "warning",
+    };
   }
 
   return { kind: "not_connected", label: "Not Connected", tone: "neutral" };
@@ -188,8 +192,14 @@ function getBookingStatus(
     return { kind: "ready", label: "Ready", tone: "success" };
   }
 
-  if (readiness.reasons.some((reason) => reason.code === "no_assigned_services")) {
-    return { kind: "missing_services", label: "Needs Services", tone: "warning" };
+  if (
+    readiness.reasons.some((reason) => reason.code === "no_assigned_services")
+  ) {
+    return {
+      kind: "missing_services",
+      label: "Needs Services",
+      tone: "warning",
+    };
   }
 
   if (readiness.reasons.some((reason) => reason.code === "no_working_hours")) {
@@ -221,26 +231,8 @@ function getPosStatus(member: StaffDirectoryMember): {
   return { kind: "enabled", label: "Enabled", tone: "success" };
 }
 
-function memberMatchesSearch(member: StaffDirectoryMember, query: string) {
-  return searchTextMatches([
-    member.display_name,
-    member.first_name,
-    member.last_name,
-    member.email,
-    member.phone,
-    member.job_title,
-    member.connected_user?.display_name,
-    member.connected_user?.email,
-    member.connected_user?.phone,
-  ], query);
-}
-
 function getInitials(value: string) {
-  const parts = value
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
+  const parts = value.trim().split(/\s+/).filter(Boolean).slice(0, 2);
 
   if (parts.length === 0) {
     return "ST";
@@ -480,37 +472,49 @@ function AddStaffConnectionPanel({
         </p>
       </div>
 
-      {lookupError ? <NoticeBanner tone="danger">{lookupError}</NoticeBanner> : null}
+      {lookupError ? (
+        <NoticeBanner tone="danger">{lookupError}</NoticeBanner>
+      ) : null}
 
-      <form action="/staff" className="grid gap-3 sm:grid-cols-2" method="get">
-        {searchAddsDrawer ? <input name="add" type="hidden" value="1" /> : null}
-        <label className="block">
-          <span className="text-sm font-medium text-zinc-700">Email</span>
-          <input
-            className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-            defaultValue={inviteEmail}
-            name="invite_email"
-            type="email"
-          />
-        </label>
-        <label className="block">
-          <span className="text-sm font-medium text-zinc-700">Phone</span>
-          <input
-            className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-            defaultValue={invitePhone}
-            name="invite_phone"
-            type="tel"
-          />
-        </label>
-        <div className="sm:col-span-2">
-          <button
-            className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-            type="submit"
-          >
-            Search account
-          </button>
-        </div>
-      </form>
+      {!searchAddsDrawer ? (
+        <RequestAccountSearch email={inviteEmail} phone={invitePhone} />
+      ) : (
+        <form
+          action="/staff"
+          className="grid gap-3 sm:grid-cols-2"
+          method="get"
+        >
+          {searchAddsDrawer ? (
+            <input name="add" type="hidden" value="1" />
+          ) : null}
+          <label className="block">
+            <span className="text-sm font-medium text-zinc-700">Email</span>
+            <input
+              className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
+              defaultValue={inviteEmail}
+              name="invite_email"
+              type="email"
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-zinc-700">Phone</span>
+            <input
+              className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
+              defaultValue={invitePhone}
+              name="invite_phone"
+              type="tel"
+            />
+          </label>
+          <div className="sm:col-span-2">
+            <button
+              className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+              type="submit"
+            >
+              Search account
+            </button>
+          </div>
+        </form>
+      )}
 
       {searched && lookupResult?.status === "ambiguous" ? (
         <NoticeBanner tone="danger">
@@ -519,7 +523,7 @@ function AddStaffConnectionPanel({
       ) : null}
 
       {searched && lookupResult?.status === "found" ? (
-        <form
+        <RequestForm
           action={createSalonStaffInviteFormAction}
           className="grid gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4"
         >
@@ -542,7 +546,10 @@ function AddStaffConnectionPanel({
                 {lookupResult.account.display_name ?? "Existing account"}
               </p>
               <p className="text-sm text-zinc-500">
-                {[lookupResult.account.masked_email, lookupResult.account.masked_phone]
+                {[
+                  lookupResult.account.masked_email,
+                  lookupResult.account.masked_phone,
+                ]
                   .filter(Boolean)
                   .join(" / ") || "Matched account"}
               </p>
@@ -585,11 +592,11 @@ function AddStaffConnectionPanel({
           >
             Send invite
           </button>
-        </form>
+        </RequestForm>
       ) : null}
 
       {searched && lookupResult?.status === "not_found" ? (
-        <form
+        <RequestForm
           action={createSalonStaffInviteFormAction}
           className="grid gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4"
         >
@@ -617,47 +624,9 @@ function AddStaffConnectionPanel({
           >
             Create staff and invite
           </button>
-        </form>
+        </RequestForm>
       ) : null}
     </section>
-  );
-}
-
-function StaffSearch({ query }: { query: string }) {
-  return (
-    <form
-      action="/staff"
-      className="flex w-full flex-col gap-3 sm:flex-row sm:items-center"
-      method="get"
-    >
-      <label className="sr-only" htmlFor="staff-search">
-        Search staff
-      </label>
-      <input
-        className="min-h-10 flex-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
-        defaultValue={query}
-        id="staff-search"
-        name="q"
-        placeholder="Search staff..."
-        type="search"
-      />
-      <div className="flex gap-2">
-        <button
-          className="min-h-10 rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-          type="submit"
-        >
-          Search
-        </button>
-        {query ? (
-          <Link
-            className="inline-flex min-h-10 items-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
-            href="/staff"
-          >
-            Clear
-          </Link>
-        ) : null}
-      </div>
-    </form>
   );
 }
 
@@ -936,7 +905,9 @@ function StaffDirectoryTableSection({
                       member={member}
                     />
                     <AccessCheckbox
-                      checked={member.is_active && member.online_booking_enabled}
+                      checked={
+                        member.is_active && member.online_booking_enabled
+                      }
                       disabled={!canManageStaff}
                       field="online_booking_enabled"
                       label="Online booking"
@@ -971,7 +942,8 @@ function StaffDirectoryEmptyState({
   hasAnyStaff: boolean;
   title?: string;
 }) {
-  const resolvedTitle = title ?? (hasAnyStaff ? "No matching staff" : "No staff yet");
+  const resolvedTitle =
+    title ?? (hasAnyStaff ? "No matching staff" : "No staff yet");
   const resolvedDescription =
     description ??
     (hasAnyStaff
@@ -1082,13 +1054,7 @@ function StaffDirectoryManager({
   );
 }
 
-function DetailField({
-  label,
-  value,
-}: {
-  label: string;
-  value: ReactNode;
-}) {
+function DetailField({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="grid gap-1">
       <dt className="text-xs font-medium uppercase text-zinc-500">{label}</dt>
@@ -1146,15 +1112,25 @@ function DetailActions({
       {accountStatus === "invite_sent" ? (
         <>
           <form action={resendSalonStaffInviteFormAction}>
-            <input name="request_id" type="hidden" value={pendingInvite?.id ?? ""} />
+            <input
+              name="request_id"
+              type="hidden"
+              value={pendingInvite?.id ?? ""}
+            />
             <input name="staff_id" type="hidden" value={member.id} />
             <SubmitActionButton disabled={!pendingInvite}>
               Resend Invite
             </SubmitActionButton>
           </form>
           <form action={revokeSalonStaffInviteFormAction}>
-            <input name="request_id" type="hidden" value={pendingInvite?.id ?? ""} />
-            <SubmitActionButton disabled={!pendingInvite}>Cancel</SubmitActionButton>
+            <input
+              name="request_id"
+              type="hidden"
+              value={pendingInvite?.id ?? ""}
+            />
+            <SubmitActionButton disabled={!pendingInvite}>
+              Cancel
+            </SubmitActionButton>
           </form>
           {currentInviteToken ? (
             <InviteLinkTools value={getInviteHref(currentInviteToken)} />
@@ -1257,9 +1233,7 @@ function StaffDetailDrawer({
 
       <section className="rounded-lg border border-zinc-200 bg-white p-4">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-950">
-            Staff Profile
-          </h3>
+          <h3 className="text-sm font-semibold text-zinc-950">Staff Profile</h3>
           <p className="mt-1 text-sm text-zinc-600">
             This salon-specific profile controls the identity customers see in
             booking and on Salon Profile.
@@ -1306,7 +1280,9 @@ function StaffDetailDrawer({
         />
         <DetailField
           label="Configure"
-          value={<ActionButton href="/services">Services and hours</ActionButton>}
+          value={
+            <ActionButton href="/services">Services and hours</ActionButton>
+          }
         />
       </DetailSection>
 
@@ -1369,9 +1345,7 @@ function StaffDetailDrawer({
           label="Shortcuts"
           value={
             <div className="flex flex-wrap gap-2">
-              <ActionButton href="/services">
-                Booking staff
-              </ActionButton>
+              <ActionButton href="/services">Booking staff</ActionButton>
               <ActionButton disabled>POS Setup</ActionButton>
               <ActionButton
                 disabled={!canManagePayroll}
@@ -1443,7 +1417,11 @@ function connectionStatusTone(status: string): BadgeTone {
 }
 
 function requestApplicantName(request: SalonStaffConnectionRequestWithDetails) {
-  return request.account?.display_name ?? request.account?.masked_email ?? "Applicant";
+  return (
+    request.account?.display_name ??
+    request.account?.masked_email ??
+    "Applicant"
+  );
 }
 
 function requestStaffName(request: SalonStaffConnectionRequestWithDetails) {
@@ -1451,16 +1429,15 @@ function requestStaffName(request: SalonStaffConnectionRequestWithDetails) {
 }
 
 function requestContact(request: SalonStaffConnectionRequestWithDetails) {
-  const values = [
-    request.account?.masked_email,
-    request.account?.masked_phone,
-    request.target_email_normalized,
-    request.target_phone_e164,
-    request.staff?.email,
-    request.staff?.phone,
-  ].filter(Boolean);
-
-  return values.join(" / ") || "No contact";
+  const email =
+    request.account?.masked_email ||
+    request.target_email_normalized ||
+    request.staff?.email;
+  const phone =
+    request.account?.masked_phone ||
+    request.target_phone_e164 ||
+    request.staff?.phone;
+  return [email, phone].filter(Boolean).join(" / ") || "No contact";
 }
 
 function EmptyConnectionState({ children }: { children: ReactNode }) {
@@ -1477,7 +1454,9 @@ function IncomingApplicationsSection({
   requests: SalonStaffConnectionRequestWithDetails[];
 }) {
   if (requests.length === 0) {
-    return <EmptyConnectionState>No incoming applications.</EmptyConnectionState>;
+    return (
+      <EmptyConnectionState>No incoming applications.</EmptyConnectionState>
+    );
   }
 
   return (
@@ -1496,7 +1475,8 @@ function IncomingApplicationsSection({
                 {requestContact(request)}
               </p>
               <p className="mt-1 text-sm text-zinc-600">
-                Requested title: {request.requested_job_title ?? "Not specified"}
+                Requested title:{" "}
+                {request.requested_job_title ?? "Not specified"}
               </p>
               {request.message ? (
                 <p className="mt-2 rounded-md bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
@@ -1504,11 +1484,13 @@ function IncomingApplicationsSection({
                 </p>
               ) : null}
             </div>
-            <Badge tone="warning">Submitted {formatDateTime(request.created_at)}</Badge>
+            <Badge tone="warning">
+              Submitted {formatDateTime(request.created_at)}
+            </Badge>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <form action={reviewStaffSalonApplicationFormAction}>
+            <RequestForm action={reviewStaffSalonApplicationFormAction}>
               <input name="request_id" type="hidden" value={request.id} />
               <input name="decision" type="hidden" value="accepted" />
               <button
@@ -1517,9 +1499,9 @@ function IncomingApplicationsSection({
               >
                 Accept
               </button>
-            </form>
+            </RequestForm>
 
-            <form action={reviewStaffSalonApplicationFormAction}>
+            <RequestForm action={reviewStaffSalonApplicationFormAction}>
               <input name="request_id" type="hidden" value={request.id} />
               <input name="decision" type="hidden" value="declined" />
               <button
@@ -1528,7 +1510,7 @@ function IncomingApplicationsSection({
               >
                 Decline
               </button>
-            </form>
+            </RequestForm>
           </div>
         </article>
       ))}
@@ -1567,15 +1549,21 @@ function OutgoingInvitationsSection({
   requests: SalonStaffConnectionRequestWithDetails[];
 }) {
   if (requests.length === 0) {
-    return <EmptyConnectionState>No outgoing invitations.</EmptyConnectionState>;
+    return (
+      <EmptyConnectionState>No outgoing invitations.</EmptyConnectionState>
+    );
   }
 
   return (
     <div className="grid gap-3">
       {requests.map((request) => {
-        const canMutate = request.status === "pending" || request.status === "expired";
-        const currentToken = inviteRequestId === request.id ? inviteToken : null;
-        const currentInviteHref = currentToken ? getInviteHref(currentToken) : null;
+        const canMutate =
+          request.status === "pending" || request.status === "expired";
+        const currentToken =
+          inviteRequestId === request.id ? inviteToken : null;
+        const currentInviteHref = currentToken
+          ? getInviteHref(currentToken)
+          : null;
 
         return (
           <article
@@ -1609,7 +1597,7 @@ function OutgoingInvitationsSection({
             ) : null}
 
             <div className="flex flex-wrap gap-2">
-              <form action={resendSalonStaffInviteFormAction}>
+              <RequestForm action={resendSalonStaffInviteFormAction}>
                 <input name="request_id" type="hidden" value={request.id} />
                 <button
                   className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
@@ -1618,13 +1606,13 @@ function OutgoingInvitationsSection({
                 >
                   Resend
                 </button>
-              </form>
+              </RequestForm>
               {currentInviteHref ? (
                 <InviteLinkTools value={currentInviteHref} />
               ) : (
                 <InviteLinkToolsUnavailable />
               )}
-              <form action={revokeSalonStaffInviteFormAction}>
+              <RequestForm action={revokeSalonStaffInviteFormAction}>
                 <input name="request_id" type="hidden" value={request.id} />
                 <button
                   className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
@@ -1633,7 +1621,7 @@ function OutgoingInvitationsSection({
                 >
                   Cancel
                 </button>
-              </form>
+              </RequestForm>
             </div>
             {!currentToken ? (
               <p className="text-xs text-zinc-500">
@@ -1653,11 +1641,13 @@ function ConnectionHistorySection({
   requests: SalonStaffConnectionRequestWithDetails[];
 }) {
   if (requests.length === 0) {
-    return <EmptyConnectionState>No connection history yet.</EmptyConnectionState>;
+    return (
+      <EmptyConnectionState>No connection history yet.</EmptyConnectionState>
+    );
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-3">
       {requests.map((request) => (
         <article
           className="rounded-lg border border-zinc-200 bg-white p-4"
@@ -1670,7 +1660,9 @@ function ConnectionHistorySection({
                   ? requestApplicantName(request)
                   : requestStaffName(request)}
               </p>
-              <p className="mt-1 text-sm text-zinc-500">{requestContact(request)}</p>
+              <p className="mt-1 text-sm text-zinc-500">
+                {requestContact(request)}
+              </p>
             </div>
             <Badge tone={connectionStatusTone(request.status)}>
               {request.status}
@@ -1689,6 +1681,7 @@ function ConnectionHistorySection({
 }
 
 function StaffConnectionRequestsSection({
+  feedback,
   inviteEmail,
   invitePhone,
   inviteRequestId,
@@ -1698,6 +1691,7 @@ function StaffConnectionRequestsSection({
   requests,
   staff,
 }: {
+  feedback?: ReactNode;
   inviteEmail: string;
   invitePhone: string;
   inviteRequestId?: string;
@@ -1722,51 +1716,68 @@ function StaffConnectionRequestsSection({
       !(request.direction === "salon_invite" && request.status === "expired"),
   );
 
+  const entries = [
+    ...incomingApplications.map((request) => ({
+      id: request.id,
+      group: "applications" as const,
+      name: requestApplicantName(request),
+      contact: requestContact(request),
+      status: request.status,
+      kind: "Application",
+      date: formatDateTime(request.created_at),
+      detail: <IncomingApplicationsSection requests={[request]} />,
+    })),
+    ...outgoingInvitations.map((request) => ({
+      id: request.id,
+      group: "invitations" as const,
+      name: requestStaffName(request),
+      contact: requestContact(request),
+      status: request.status,
+      kind: "Invitation",
+      date: formatDateTime(request.updated_at),
+      detail: (
+        <OutgoingInvitationsSection
+          requests={[request]}
+          inviteRequestId={inviteRequestId}
+          inviteToken={inviteToken}
+        />
+      ),
+    })),
+    ...history.map((request) => ({
+      id: request.id,
+      group: "history" as const,
+      name:
+        request.direction === "staff_application"
+          ? requestApplicantName(request)
+          : requestStaffName(request),
+      contact: requestContact(request),
+      status: request.status,
+      kind:
+        request.direction === "staff_application"
+          ? "Application"
+          : "Invitation",
+      date: formatDateTime(request.updated_at),
+      detail: <ConnectionHistorySection requests={[request]} />,
+    })),
+  ];
   return (
-    <section className="grid gap-5">
-      <div>
-        <h2 className="text-xl font-semibold text-zinc-950">Requests</h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          Review applications and manage staff invitations for this salon.
-        </p>
-      </div>
-
-      <AddStaffConnectionPanel
-        inviteEmail={inviteEmail}
-        invitePhone={invitePhone}
-        lookupError={lookupError}
-        lookupResult={lookupResult}
-        searchAddsDrawer={false}
-        staff={staff}
-      />
-
-      <div className="grid gap-5 lg:grid-cols-2">
-        <section className="grid gap-3">
-          <h3 className="text-base font-semibold text-zinc-950">
-            Incoming Applications
-          </h3>
-          <IncomingApplicationsSection
-            requests={incomingApplications}
-          />
-        </section>
-
-        <section className="grid gap-3">
-          <h3 className="text-base font-semibold text-zinc-950">
-            Outgoing Invitations
-          </h3>
-          <OutgoingInvitationsSection
-            inviteRequestId={inviteRequestId}
-            inviteToken={inviteToken}
-            requests={outgoingInvitations}
-          />
-        </section>
-      </div>
-
-      <section className="grid gap-3">
-        <h3 className="text-base font-semibold text-zinc-950">History</h3>
-        <ConnectionHistorySection requests={history} />
-      </section>
-    </section>
+    <RequestsWorkspace
+      key={`${inviteEmail}:${invitePhone}:${inviteToken ?? ""}`}
+      feedback={feedback}
+      entries={entries}
+      initialInvite={Boolean(inviteEmail || invitePhone)}
+      initialRequest={inviteToken ? inviteRequestId : undefined}
+      invite={
+        <AddStaffConnectionPanel
+          inviteEmail={inviteEmail}
+          invitePhone={invitePhone}
+          lookupError={lookupError}
+          lookupResult={lookupResult}
+          searchAddsDrawer={false}
+          staff={staff}
+        />
+      }
+    />
   );
 }
 
@@ -1798,12 +1809,13 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     );
   }
 
-  const [directory, bookingSetup, canManageStaff, canManagePayroll] = await Promise.all([
-    getCurrentSalonStaffDirectory(context),
-    getCurrentSalonBookingSetup(context),
-    hasPermission(STAFF_PERMISSIONS.manage, context),
-    hasPermission("payroll.manage", context),
-  ]);
+  const [directory, bookingSetup, canManageStaff, canManagePayroll] =
+    await Promise.all([
+      getCurrentSalonStaffDirectory(context),
+      getCurrentSalonBookingSetup(context),
+      hasPermission(STAFF_PERMISSIONS.manage, context),
+      hasPermission("payroll.manage", context),
+    ]);
   const connectionRequests = canManageStaff
     ? (await getSalonStaffConnectionRequests()).requests
     : [];
@@ -1824,11 +1836,11 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     }
   }
 
-  const matchingStaff = directory.staff.filter((member) =>
-    memberMatchesSearch(member, query),
-  );
+  const matchingStaff = directory.staff;
   const activeStaff = matchingStaff.filter(isEmploymentActive);
-  const hiddenStaff = matchingStaff.filter((member) => !isEmploymentActive(member));
+  const hiddenStaff = matchingStaff.filter(
+    (member) => !isEmploymentActive(member),
+  );
   const statusByStaffId = Object.fromEntries(
     matchingStaff.map((member) => {
       const bookingStatus = getBookingStatus(
@@ -1846,7 +1858,9 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
         payroll = { label: "", tone: "success" };
       } else {
         payroll = {
-          href: canManagePayroll ? `/payroll?tab=settings&editStaff=${member.id}` : null,
+          href: canManagePayroll
+            ? `/payroll?tab=settings&editStaff=${member.id}`
+            : null,
           label: "Payroll Missing Setup",
           tone: "warning",
         };
@@ -1899,9 +1913,6 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
         ) : null}
 
         <section>
-          <div className="flex flex-col gap-4">
-            <StaffSearch query={query} />
-          </div>
           <StaffDirectoryEditor
             activeStaff={activeStaff}
             addHref={addStaffHref}
@@ -1916,6 +1927,13 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
 
         {canManageStaff ? (
           <StaffConnectionRequestsSection
+            feedback={
+              connectionError ? (
+                <NoticeBanner tone="danger">{connectionError}</NoticeBanner>
+              ) : connectionNotice ? (
+                <NoticeBanner>{connectionNotice}</NoticeBanner>
+              ) : null
+            }
             inviteEmail={inviteEmail}
             invitePhone={invitePhone}
             inviteRequestId={inviteRequestId}

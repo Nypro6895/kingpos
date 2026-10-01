@@ -1,3 +1,4 @@
+import { backlogTone, waitingAssessment } from "@/lib/today-metric-assessment";
 import "server-only";
 
 import { getCurrentAppNotifications } from "@/lib/app-notifications";
@@ -34,7 +35,7 @@ import {
   type StaffWithTodayWorkday,
 } from "@/lib/staff-workdays";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
-import { getCustomerVisitQueueForSalonOrEmpty } from "@/lib/customer-visits";
+import { getCustomerVisitQueueForSalon } from "@/lib/customer-visits";
 import {
   getTodayQuickAccessConfiguration,
   type TodayQuickAccessConfiguration,
@@ -52,6 +53,7 @@ export type TodayClientPresence = {
   appointmentAt?: string;
   appointmentId?: string;
   assignedStaff: TodayStaffReference | null;
+  checkedInAt: string;
   customerId?: string;
   displayName: string;
   href: string | null;
@@ -116,7 +118,8 @@ export type TodayMetric = {
   href: string | null;
   label: string;
   restricted?: boolean;
-  tone?: "default" | "good" | "warning";
+  tone?: "default" | "good" | "warning" | "danger";
+  assessment?: string;
   trend?: TodayMetricTrend | null;
   value: string;
 };
@@ -171,7 +174,8 @@ export type TodayAttentionItem = {
   href: string | null;
   id: string;
   label: string;
-  tone: "good" | "notice" | "warning";
+  tone: "good" | "notice" | "warning" | "danger";
+  count?: number;
 };
 
 export type TodayTeamMember = {
@@ -291,7 +295,10 @@ function emptyQuickAccessConfiguration(): TodayQuickAccessConfiguration {
   };
 }
 
-function canUsePermission(context: CurrentBusinessContext, permissionCode: string) {
+function canUsePermission(
+  context: CurrentBusinessContext,
+  permissionCode: string,
+) {
   if (isOwnerMembership(context.currentMembership)) {
     return true;
   }
@@ -312,7 +319,9 @@ function canUseAnyPermission(
 }
 
 function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Unable to load this section.";
+  return error instanceof Error
+    ? error.message
+    : "Unable to load this section.";
 }
 
 function pad(value: number) {
@@ -496,7 +505,9 @@ async function loadTodayBookings(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error(
+      "This feature is temporarily unavailable. Please try again later.",
+    );
   }
 
   const bounds = getDayBounds(input.date, input.timezone);
@@ -736,7 +747,9 @@ function bookingServiceLabel(booking: TodayBookingRow) {
   return serviceNames.length > 0 ? serviceNames.join(", ") : null;
 }
 
-function bookingStaffReference(booking: TodayBookingRow): TodayStaffReference | null {
+function bookingStaffReference(
+  booking: TodayBookingRow,
+): TodayStaffReference | null {
   if (booking.staff) {
     return {
       id: booking.staff.id,
@@ -778,7 +791,7 @@ function mapWaitingVisits(
   visits: CustomerVisitQueueItem[],
   date: string,
 ): TodayClientPresence[] {
-  return visits.slice(0, 5).map((visit) => ({
+  return visits.map((visit) => ({
     appointmentAt: visit.appointmentStartAt ?? undefined,
     appointmentId: visit.appointmentId ?? undefined,
     assignedStaff: visit.assignedStaffId
@@ -787,6 +800,7 @@ function mapWaitingVisits(
           name: visit.assignedStaffName ?? "Assigned staff",
         }
       : null,
+    checkedInAt: visit.checkedInAt,
     customerId: visit.customerId,
     displayName: visit.customerName,
     href: visit.appointmentId ? bookingHref(visit.appointmentId, date) : null,
@@ -1129,7 +1143,12 @@ function buildSalesMetric(input: {
       date: input.report.reportDate,
     }).toString()}`,
     label: input.isCurrentDate ? "Sales Today" : "Sales",
-    tone: input.report.totals.expectedTotal > 0 ? "good" : "default",
+    tone:
+      input.financialData?.salesComparison?.direction === "up"
+        ? "good"
+        : input.financialData?.salesComparison?.direction === "down"
+          ? "warning"
+          : "default",
     trend: visibleSalesTrend(input.financialData?.salesComparison ?? null),
     value: formatCompactMoney(input.report.totals.expectedTotal),
   };
@@ -1138,13 +1157,8 @@ function buildSalesMetric(input: {
 function visibleSalesTrend(
   comparison: DailyPosSalesComparison | null,
 ): TodayMetricTrend | null {
-  if (
-    !comparison ||
-    comparison.status === "insufficient_history" ||
-    comparison.status === "zero_baseline"
-  ) {
-    return null;
-  }
+  if (!comparison)
+    return { direction: "flat", label: "Comparison unavailable" };
 
   return {
     direction: comparison.direction,
@@ -1178,6 +1192,22 @@ function buildCustomerMetric(input: {
         range: "day",
       }).toString()}`,
       label: "Appointments",
+      tone:
+        input.bookingSummary.pending > 0
+          ? backlogTone(input.bookingSummary.pending)
+          : appointmentCount > 0 &&
+              input.bookingSummary.completed === appointmentCount
+            ? "good"
+            : "default",
+      assessment:
+        input.bookingSummary.pending > 0
+          ? `${input.bookingSummary.pending} awaiting review`
+          : appointmentCount > 0 &&
+              input.bookingSummary.completed === appointmentCount
+            ? "All appointments completed"
+            : appointmentCount > 0
+              ? "Appointments in progress or scheduled"
+              : "No appointments to assess",
       value: `${appointmentCount}`,
     } satisfies TodayMetric;
   }
@@ -1225,6 +1255,7 @@ function buildCustomerMetric(input: {
 }
 
 function buildStaffMetric(input: {
+  waitingCount: number;
   chart: TodayMetricChart | null;
   isCurrentDate: boolean;
   team: TodayTeamMember[];
@@ -1247,12 +1278,30 @@ function buildStaffMetric(input: {
           : "No staff check-ins recorded",
     href: "/staff",
     label: input.isCurrentDate ? "Staff Working" : "Staff Worked",
-    tone: count > 0 ? "good" : "default",
+    tone: !input.isCurrentDate
+      ? "default"
+      : input.waitingCount > 0 && count === 0
+        ? "danger"
+        : input.waitingCount > count
+          ? "warning"
+          : count > 0
+            ? "good"
+            : "default",
+    assessment: !input.isCurrentDate
+      ? "Recorded check-ins"
+      : input.waitingCount > 0 && count === 0
+        ? "Clients waiting, no staff checked in"
+        : input.waitingCount > count
+          ? "Queue exceeds checked-in staff"
+          : count > 0
+            ? "Staff checked in"
+            : "No staffing activity",
     value: `${count}`,
   } satisfies TodayMetric;
 }
 
 function buildWaitingMetric(input: {
+  nowIso: string;
   canViewBookings: boolean;
   isCurrentDate: boolean;
   waitingClients: TodayClientPresence[];
@@ -1286,8 +1335,15 @@ function buildWaitingMetric(input: {
         : "No clients waiting right now",
     href: "/bookings",
     label: "Waiting",
-    tone: input.waitingClients.length > 0 ? "warning" : "default",
-    value: `${input.waitingClients.length}`,
+    tone: waitingAssessment(
+      input.waitingClients.map((client) => client.checkedInAt),
+      input.nowIso,
+    ).tone,
+    assessment: waitingAssessment(
+      input.waitingClients.map((client) => client.checkedInAt),
+      input.nowIso,
+    ).label,
+    value: `${input.waitingClients.length}${input.waitingClients.length >= 25 ? "+" : ""}`,
   } satisfies TodayMetric;
 }
 
@@ -1305,9 +1361,11 @@ function buildAttention(input: {
   if (input.isCurrentDate && input.waitingClients.length > 0) {
     items.push({
       actionLabel: "Review",
-      detail: "Appointment arrivals are marked checked in and have not started service.",
+      detail:
+        "Appointment arrivals are marked checked in and have not started service.",
       href: "/bookings",
       id: "waiting-clients",
+      count: input.waitingClients.length,
       label: `${input.waitingClients.length} waiting client${
         input.waitingClients.length === 1 ? "" : "s"
       }`,
@@ -1327,6 +1385,7 @@ function buildAttention(input: {
         status: "pending",
       }).toString()}`,
       id: "pending-bookings",
+      count: input.bookingSummary.pending,
       label: `${input.bookingSummary.pending} booking${
         input.bookingSummary.pending === 1 ? "" : "s"
       } need review`,
@@ -1346,6 +1405,7 @@ function buildAttention(input: {
           }).toString()}`
         : null,
       id: "open-pos-tickets",
+      count: input.report.metadata.excludedOpenTicketCount,
       label: `${input.report.metadata.excludedOpenTicketCount} open POS ticket${
         input.report.metadata.excludedOpenTicketCount === 1 ? "" : "s"
       }`,
@@ -1397,7 +1457,9 @@ function buildPerformance(input: {
     .slice(0, MONEY_PERFORMANCE_LIMIT);
   const sales = input.report
     ? {
-        comparison: visibleSalesTrend(input.financialData?.salesComparison ?? null),
+        comparison: visibleSalesTrend(
+          input.financialData?.salesComparison ?? null,
+        ),
         discount: input.report.totals.totalDiscount,
         service: input.report.totals.totalStaffEarned,
         ticketCount: input.report.metadata.finalizedTicketCount,
@@ -1422,10 +1484,10 @@ function buildPerformance(input: {
     })) ?? [];
   const hasSalesActivity = Boolean(
     sales &&
-      (sales.ticketCount > 0 ||
-        sales.total > 0 ||
-        sales.service > 0 ||
-        sales.tip > 0),
+    (sales.ticketCount > 0 ||
+      sales.total > 0 ||
+      sales.service > 0 ||
+      sales.tip > 0),
   );
   const emptyLabel =
     !hasSalesActivity && staffBars.length === 0
@@ -1470,7 +1532,8 @@ function emptyDashboard(input: {
   return {
     attention: [
       {
-        detail: "Today requires staff view permission for this salon workspace.",
+        detail:
+          "Today requires staff view permission for this salon workspace.",
         href: null,
         id: "restricted",
         label: "Permission required",
@@ -1558,7 +1621,10 @@ export async function getTodayDashboard(
   const permissions: TodayDashboardPermissions = {
     canViewBookings: canUsePermission(context, "booking.view"),
     canViewDashboard: canUsePermission(context, "staff.view"),
-    canViewReports: canUsePermission(context, DAILY_POS_REPORT_PERMISSIONS.view),
+    canViewReports: canUsePermission(
+      context,
+      DAILY_POS_REPORT_PERMISSIONS.view,
+    ),
     canViewStaffFinancials: canUseAnyPermission(context, [
       "payroll.view",
       "payroll.manage",
@@ -1566,7 +1632,10 @@ export async function getTodayDashboard(
       "tickets.view",
       "tickets.manage",
     ]),
-    canViewTickets: canUseAnyPermission(context, ["tickets.view", "tickets.manage"]),
+    canViewTickets: canUseAnyPermission(context, [
+      "tickets.view",
+      "tickets.manage",
+    ]),
   };
   const unavailableBusinessHours = unavailableSalonBusinessHours({
     date: clock.date,
@@ -1606,74 +1675,74 @@ export async function getTodayDashboard(
     notificationsResult,
     quickAccessResult,
   ] = await Promise.all([
-      loadStaffDashboardData({
-        canViewFinancials: permissions.canViewStaffFinancials,
-        context,
-        date: clock.date,
-      }),
-      permissions.canViewBookings
-        ? loadBookingDashboardData({
-            context,
-            date: clock.date,
-            timezone: clock.timezone,
-          })
-        : Promise.resolve({ data: [] as TodayBookingRow[], error: null }),
-      permissions.canViewBookings && dayView.isCurrentDate && waitingSalonId
-        ? (async () => {
-            const supabase = await createAuthenticatedSupabaseServerClient();
+    loadStaffDashboardData({
+      canViewFinancials: permissions.canViewStaffFinancials,
+      context,
+      date: clock.date,
+    }),
+    permissions.canViewBookings
+      ? loadBookingDashboardData({
+          context,
+          date: clock.date,
+          timezone: clock.timezone,
+        })
+      : Promise.resolve({ data: [] as TodayBookingRow[], error: null }),
+    permissions.canViewBookings && dayView.isCurrentDate && waitingSalonId
+      ? (async () => {
+          const supabase = await createAuthenticatedSupabaseServerClient();
 
-            if (!supabase) {
-              return {
-                data: [] as CustomerVisitQueueItem[],
-                error: {
-                  area: "waiting" as const,
-                  message: "Waiting clients could not be loaded.",
-                },
-              };
-            }
+          if (!supabase) {
+            return {
+              data: [] as CustomerVisitQueueItem[],
+              error: {
+                area: "waiting" as const,
+                message: "Waiting clients could not be loaded.",
+              },
+            };
+          }
 
-            try {
-              return {
-                data: await getCustomerVisitQueueForSalonOrEmpty({
-                  limit: 25,
-                  salonId: waitingSalonId,
-                  supabase,
-                }),
-                error: null,
-              };
-            } catch (error) {
-              return {
-                data: [] as CustomerVisitQueueItem[],
-                error: {
-                  area: "waiting" as const,
-                  message:
-                    error instanceof Error
-                      ? error.message
-                      : "Waiting clients could not be loaded.",
-                },
-              };
-            }
-          })()
-        : Promise.resolve({
-            data: [] as CustomerVisitQueueItem[],
-            error: null,
-          }),
-      permissions.canViewReports
-        ? loadReportDashboardData({ context, date: clock.date })
-        : Promise.resolve({ data: null, error: null }),
-      permissions.canViewStaffFinancials
-        ? loadFinancialDashboardData({
-            businessHours,
-            context,
-            date: clock.date,
-            timezone: clock.timezone,
-          })
-        : Promise.resolve({ data: null, error: null }),
-      dayView.isCurrentDate
-        ? loadNotificationAttentionItems(context)
-        : Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
-      loadQuickAccessDashboardData(context),
-    ]);
+          try {
+            return {
+              data: await getCustomerVisitQueueForSalon({
+                limit: 25,
+                salonId: waitingSalonId,
+                supabase,
+              }),
+              error: null,
+            };
+          } catch (error) {
+            return {
+              data: [] as CustomerVisitQueueItem[],
+              error: {
+                area: "waiting" as const,
+                message:
+                  error instanceof Error
+                    ? error.message
+                    : "Waiting clients could not be loaded.",
+              },
+            };
+          }
+        })()
+      : Promise.resolve({
+          data: [] as CustomerVisitQueueItem[],
+          error: null,
+        }),
+    permissions.canViewReports
+      ? loadReportDashboardData({ context, date: clock.date })
+      : Promise.resolve({ data: null, error: null }),
+    permissions.canViewStaffFinancials
+      ? loadFinancialDashboardData({
+          businessHours,
+          context,
+          date: clock.date,
+          timezone: clock.timezone,
+        })
+      : Promise.resolve({ data: null, error: null }),
+    dayView.isCurrentDate
+      ? loadNotificationAttentionItems(context)
+      : Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
+    loadQuickAccessDashboardData(context),
+  ]);
   const loadErrors = [
     businessHoursResult.error,
     staffResult.error,
@@ -1712,9 +1781,10 @@ export async function getTodayDashboard(
     team,
     timeZone: clock.timezone,
   });
-  const waitingClients = permissions.canViewBookings && dayView.isCurrentDate
-    ? mapWaitingVisits(waitingVisitsResult.data ?? [], clock.date)
-    : [];
+  const waitingClients =
+    permissions.canViewBookings && dayView.isCurrentDate
+      ? mapWaitingVisits(waitingVisitsResult.data ?? [], clock.date)
+      : [];
   const upcomingBookings = permissions.canViewBookings
     ? mapUpcomingBookings({
         bookings,
@@ -1726,7 +1796,7 @@ export async function getTodayDashboard(
   const report = reportResult.data;
   const notificationAttention = notificationsResult.data ?? [];
 
-  return {
+  const dashboard: TodayDashboard = {
     attention: buildAttention({
       bookingSummary,
       canViewTickets: permissions.canViewTickets,
@@ -1760,7 +1830,7 @@ export async function getTodayDashboard(
           }).toString()}`
         : null,
       upcomingBookings,
-      waitingClients,
+      waitingClients: waitingClients.slice(0, 5),
     },
     salonName: context.currentSalon?.name ?? "Current salon",
     summary: {
@@ -1779,11 +1849,13 @@ export async function getTodayDashboard(
         report,
       }),
       staff: buildStaffMetric({
+        waitingCount: waitingClients.length,
         chart: staffChart,
         isCurrentDate: dayView.isCurrentDate,
         team,
       }),
       waiting: buildWaitingMetric({
+        nowIso,
         canViewBookings: permissions.canViewBookings,
         isCurrentDate: dayView.isCurrentDate,
         waitingClients,
@@ -1792,4 +1864,39 @@ export async function getTodayDashboard(
     team,
     timezone: clock.timezone,
   };
+  const unavailable = (metric: TodayMetric): TodayMetric => ({
+    ...metric,
+    value: "--",
+    tone: "default",
+    chart: null,
+    trend: null,
+    detail: "Data temporarily unavailable",
+    assessment: undefined,
+  });
+  if (bookingsResult.error)
+    dashboard.summary.customers = unavailable(dashboard.summary.customers);
+  if (waitingVisitsResult.error)
+    dashboard.summary.waiting = unavailable(dashboard.summary.waiting);
+  if (staffResult.error)
+    dashboard.summary.staff = unavailable(dashboard.summary.staff);
+  if (reportResult.error)
+    dashboard.summary.sales = unavailable(dashboard.summary.sales);
+  if (
+    loadErrors.some((error) =>
+      ["bookings", "waiting", "reports", "notifications"].includes(error.area),
+    )
+  ) {
+    dashboard.attention = dashboard.attention.filter(
+      (item) => item.id !== "all-good",
+    );
+    dashboard.attention.push({
+      id: "incomplete-attention",
+      label: "Some checks unavailable",
+      detail: "Refresh to check all items needing attention.",
+      href: null,
+      tone: "notice",
+      count: 0,
+    });
+  }
+  return dashboard;
 }

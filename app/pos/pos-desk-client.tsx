@@ -1,4 +1,7 @@
 "use client";
+import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
+import { PORTABLE_BOOKING_TICKET, type BookingTicketRequest } from "@/lib/portable-booking-ticket";
+import { CustomerName } from "@/components/customer-name";
 
 import {
   useCallback,
@@ -27,6 +30,21 @@ import {
   POS_STAFF_BROADCAST_EVENT,
   type PosStaffBroadcastPayload,
 } from "@/lib/pos-staff-realtime";
+import { connectLocalReceipt, type LocalReceiptPreview } from "@/lib/pos-local-display";
+import { savePortableOperation, listPortableOperations, PORTABLE_OPERATIONS_CHANGED } from "@/lib/portable-operations";
+import { mergePortableStaff, usePortableWorkspaceState } from "@/app/pos/portable/portable-workspace-state";
+import { PortableCustomerAction } from "@/app/pos/portable/portable-customer-action";
+import { PortableDraftControls } from "@/app/pos/portable/portable-draft-controls";
+import { usePortableCloseGuard } from "@/app/pos/portable/use-portable-close-guard";
+import { portableBusinessDate } from "@/lib/portable-business-day";
+import { CustomServiceDialog } from "./custom-service-dialog";
+import { CompactCheckoutAdjustments } from "./compact-checkout-adjustments";
+import { WAITING_CHANGED } from "@/lib/portable-waiting";
+import { isPosConnectionError, posUserMessage } from "@/lib/pos-user-messages";
+import { usePortableDraft } from "@/app/pos/portable/use-portable-draft";
+import { StaffAvatar } from "@/app/pos/portable/staff-avatar";
+import { desktopDevice } from "@/lib/portable-device-storage";
+import { subscribeLocalDisplay } from "@/lib/pos-local-display";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
   cancelWaitingVisitForPos,
@@ -61,10 +79,13 @@ type PosDeskDefaults = {
 };
 
 type DraftState = {
+  sourceBookingId?: string | null;
+  sourceBookingUpdatedAt?: string | null;
   amountInput: string;
   customerId: string | null;
   customerLookup: string;
   customerName: string;
+  newCustomer?: { name: string; phone: string; email: string };
   customerVisitId: string | null;
   discountInput: string;
   discountType: "fixed_amount" | "percentage";
@@ -72,6 +93,7 @@ type DraftState = {
   giftCardInput: string;
   note: string;
   selectedServiceId: string | null;
+  customServiceName?: string;
   selectedStaffId: string | null;
   tipInput: string;
 };
@@ -457,19 +479,21 @@ function liveLineToSessionLine(
 export function PosDeskClient({
   actions,
   activeSession,
-  defaults,
+  defaults: initialDefaults,
+  offlineDraftSyncEnabled = false,
   liveDraft,
   salonLogoUrl,
   salonName,
-  services,
+  services: initialServices,
   surface = "standard",
-  staff,
+  staff: serverStaff,
   today,
   waitingVisits = [],
 }: {
   actions?: Partial<PosDeskClientActions>;
   activeSession: PosDeskSessionView | null;
   defaults: PosDeskDefaults;
+  offlineDraftSyncEnabled?: boolean;
   liveDraft: PosLiveDraftView | null;
   salonLogoUrl?: string | null;
   salonName: string;
@@ -479,6 +503,20 @@ export function PosDeskClient({
   today?: string;
   waitingVisits?: CustomerVisitQueueItem[];
 }) {
+  const portableWorkspaceState = usePortableWorkspaceState();
+  const [services,setServices]=useState(initialServices);
+  const [defaults,setDefaults]=useState(initialDefaults);
+  const staff = useMemo(() => mergePortableStaff(serverStaff, portableWorkspaceState, today, defaults.staffCheckInEnabled), [serverStaff, portableWorkspaceState, today, defaults.staffCheckInEnabled]);
+  useEffect(() => {
+    if (!portableWorkspaceState || today !== portableWorkspaceState.businessDate) return;
+    for (const member of serverStaff) {
+      const attendance = portableWorkspaceState.attendanceByStaffId[member.id];
+      if (attendance && member.today_status === attendance.status &&
+          member.turns.queueTurns >= (attendance.queueTurnCount ?? 0)) {
+        portableWorkspaceState.setAttendance(member.id, null);
+      }
+    }
+  }, [serverStaff, portableWorkspaceState, today]);
   const adjustStaffTurnAction = actions?.adjustStaffTurn;
   const cancelWaitingVisitAction =
     actions?.cancelWaitingVisitForPos ?? cancelWaitingVisitForPos;
@@ -537,6 +575,8 @@ export function PosDeskClient({
   const [keypadMode, setKeypadMode] = useState<KeypadMode>("amount");
   const [serviceSearch, setServiceSearch] = useState("");
   const [showCustomerCreateModal, setShowCustomerCreateModal] = useState(false);
+  const [showCustomService, setShowCustomService] = useState(false);
+  const [parkedVisitIds, setParkedVisitIds] = useState<string[]>([]);
   const [showServicePicker, setShowServicePicker] = useState(false);
   const [turnAdjustStaff, setTurnAdjustStaff] = useState<PosDeskStaff | null>(
     null,
@@ -565,7 +605,7 @@ export function PosDeskClient({
   const [openWaitingVisitMenuId, setOpenWaitingVisitMenuId] = useState<
     string | null
   >(null);
-  const [draftRestored, setDraftRestored] = useState(false);
+
   const [toast, setToast] = useState<PosToast | null>(null);
   const [customerClaim, setCustomerClaim] =
     useState<SubmittedCustomerClaim | null>(null);
@@ -604,12 +644,74 @@ export function PosDeskClient({
       ? "Receipt is resetting. Please wait."
       : "Receipt is locked.";
   const liveDraftToken = liveDraft?.token;
+  useEffect(() => {
+    const desktop = desktopDevice();
+    if (!desktop?.display || !liveDraftToken || !portableWorkspaceState?.scope) return;
+    let active = true;
+    void desktop.display.pair(liveDraftToken);
+    const prepare = async () => {
+      if (desktop.offline || !navigator.onLine || !("serviceWorker" in navigator)) return;
+      const registration = await navigator.serviceWorker.ready;
+      if (active) registration.active?.postMessage({ kind: "portable-prepare", scope: portableWorkspaceState.scope,
+        displayPath: "/pos/customer-display?token=" + encodeURIComponent(liveDraftToken) });
+    };
+    void prepare().catch(() => {});
+    window.addEventListener("online", prepare);
+    return () => { active = false; window.removeEventListener("online", prepare); };
+  }, [liveDraftToken, portableWorkspaceState?.scope]);
   const staffRealtimeSalonId = liveDraft?.salon_id ?? activeSession?.salon_id ?? null;
   const isPortableSurface = surface === "portable";
+  const localFirstDraft = isPortableSurface && offlineDraftSyncEnabled;
+  const waitingScope = portableWorkspaceState?.scope;
+  const [currentWaitingVisits, setCurrentWaitingVisits] = useState(waitingVisits);
+  const [editingVisit, setEditingVisit] = useState<CustomerVisitQueueItem | null>(null);
+  const [visitEditName, setVisitEditName] = useState("");
+  const [visitEditPhone, setVisitEditPhone] = useState("");
+  const refreshWaiting = useCallback(async () => {
+    if (!localFirstDraft || !navigator.onLine) return;
+    try {
+      const response = await fetch("/api/pos/portable/waiting", { cache: "no-store", signal: AbortSignal.timeout(5000) });
+      if (!response.ok) return;
+      const result = await response.json();
+      if (result.ok && Array.isArray(result.data)) {
+        let rows: CustomerVisitQueueItem[] = result.data;
+        if (waitingScope) {
+          for (const operation of await listPortableOperations(waitingScope)) {
+            if (operation.kind !== "visit" || operation.state === "synced") continue;
+            const payload = operation.payload;
+            rows = payload.action === "edit" ? rows.map(row => row.id === payload.visitId ? { ...row, customerName: String(payload.name), customerPhone: String(payload.phone) } : row)
+              : rows.filter(row => row.id !== payload.visitId);
+          }
+        }
+        setCurrentWaitingVisits(rows);
+        try { localStorage.setItem(`kingpos:waiting:${waitingScope}`, JSON.stringify({ at: Date.now(), rows })); } catch { /* Queue cache is optional; receipt durability is checked separately. */ }
+      }
+    } catch { /* Keep the last queue while offline. */ }
+  }, [localFirstDraft, waitingScope]);
+  useEffect(() => {
+    if (!localFirstDraft) return;
+    try {
+      const cached = JSON.parse(localStorage.getItem(`kingpos:waiting:${waitingScope}`) ?? "null");
+      if (cached && Date.now() - cached.at < 86400000 && Array.isArray(cached.rows)) queueMicrotask(() => setCurrentWaitingVisits(cached.rows));
+    } catch { /* Fetch a fresh queue when connected. */ }
+    if (waitingScope) void listPortableOperations(waitingScope).then(operations => {
+      setCurrentWaitingVisits(current => operations.filter(op => op.kind === "visit" && op.state !== "synced").reduce((rows, op) =>
+        op.payload.action === "edit" ? rows.map(row => row.id === op.payload.visitId ? { ...row, customerName: String(op.payload.name), customerPhone: String(op.payload.phone) } : row)
+          : rows.filter(row => row.id !== op.payload.visitId), current));
+    }).catch(() => {});
+    queueMicrotask(() => { void refreshWaiting(); });
+    const channel = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel(WAITING_CHANGED);
+    const refresh = () => { void refreshWaiting(); };
+    if (channel) channel.onmessage = refresh;
+    window.addEventListener("online", refresh); window.addEventListener(WAITING_CHANGED, refresh);
+    window.addEventListener(PORTABLE_OPERATIONS_CHANGED, refresh);
+    const timer = setInterval(refresh, 5000);
+    return () => { channel?.close(); clearInterval(timer); window.removeEventListener("online", refresh); window.removeEventListener(WAITING_CHANGED, refresh); window.removeEventListener(PORTABLE_OPERATIONS_CHANGED, refresh); };
+  }, [localFirstDraft, refreshWaiting, waitingScope]);
   const selectedWaitingVisitId = draft.customerVisitId;
   const visitQueue = useMemo(
-    () => waitingVisits.filter((visit) => !removedWaitingVisitIds.has(visit.id)),
-    [removedWaitingVisitIds, waitingVisits],
+    () => (localFirstDraft ? currentWaitingVisits : waitingVisits).filter((visit) => !removedWaitingVisitIds.has(visit.id) && visit.id !== selectedWaitingVisitId && !parkedVisitIds.includes(visit.id)),
+    [removedWaitingVisitIds, waitingVisits, currentWaitingVisits, localFirstDraft, selectedWaitingVisitId, parkedVisitIds],
   );
   const updateWaitingDrawerPlacement = useCallback(() => {
     if (typeof window === "undefined") {
@@ -655,11 +757,40 @@ export function PosDeskClient({
     defaults.tipSuggestions.length > 0
       ? defaults.tipSuggestions.slice(0, 4)
       : [5, 10, 15, 20];
-  const sortedStaff = staff;
+  const sortedStaff = useMemo(
+    () =>
+      isPortableSurface
+        ? staff.map((member) => {
+            const attendance =
+              portableWorkspaceState?.attendanceByStaffId[member.id];
+
+            if (!attendance) return member;
+
+            return {
+              ...member,
+              check_in_at: attendance.checkInAt ?? member.check_in_at,
+              check_in_sequence:
+                attendance.checkInSequence ?? member.check_in_sequence,
+              today_status: attendance.status as PosDeskStaff["today_status"],
+              turns: {
+                ...member.turns,
+                queueTurns:
+                  attendance.queueTurnCount ?? member.turns.queueTurns,
+              },
+            };
+          }).sort((left, right) =>
+            (left.turns.queueTurns ?? left.turns.largeTurns) - (right.turns.queueTurns ?? right.turns.largeTurns) ||
+            (left.check_in_sequence ?? Number.MAX_SAFE_INTEGER) - (right.check_in_sequence ?? Number.MAX_SAFE_INTEGER) ||
+            left.display_name.localeCompare(right.display_name))
+        : staff,
+    [isPortableSurface, portableWorkspaceState, staff],
+  );
   const staffTurnToneCounts = useMemo(
     () =>
-      staff.map((member) => member.turns.queueTurns ?? member.turns.largeTurns),
-    [staff],
+      sortedStaff.map(
+        (member) => member.turns.queueTurns ?? member.turns.largeTurns,
+      ),
+    [sortedStaff],
   );
   const customerClaimUrl = useMemo(() => {
     if (!customerClaim) {
@@ -774,6 +905,7 @@ export function PosDeskClient({
   const liveDraftPayloadKey = useMemo(
     () =>
       JSON.stringify({
+        ...(localFirstDraft ? { customer: liveCustomer } : {}),
         discount: totals.discount_amount,
         selectedStaffId: draft.selectedStaffId,
         staffLines: liveStaffLines,
@@ -785,6 +917,8 @@ export function PosDeskClient({
         totalBeforeTip: liveTotalBeforeTip,
       }),
     [
+      localFirstDraft,
+      liveCustomer,
       draft.selectedStaffId,
       liveDraftToken,
       liveStaffLines,
@@ -808,7 +942,7 @@ export function PosDeskClient({
       Boolean(draft.giftCardInput.trim()) ||
       Boolean(draft.note.trim()) ||
       Boolean(draft.tipInput.trim()) ||
-      Boolean(draft.selectedServiceId) ||
+      Boolean(draft.selectedServiceId) || Boolean(draft.customServiceName) ||
       Boolean(draft.selectedStaffId),
     [
       draft.customerId,
@@ -819,12 +953,152 @@ export function PosDeskClient({
       draft.giftCardInput,
       draft.note,
       draft.selectedServiceId,
+      draft.customServiceName,
       draft.selectedStaffId,
       draft.tipInput,
       selectedCustomer,
       staffLines.length,
     ],
   );
+  usePortableCloseGuard(localFirstDraft && hasUnsavedDraftWork);
+  useEffect(()=>{
+    if(surface!=='portable'||!staffRealtimeSalonId)return;
+    let active=true;queueMicrotask(()=>{if(!active)return;try{const saved=JSON.parse(localStorage.getItem('kingpos:catalog:'+staffRealtimeSalonId)??'null');if(Array.isArray(saved))setServices(saved);}catch{/* The initial catalog remains usable. */}});return()=>{active=false;};
+  },[surface,staffRealtimeSalonId]);
+  usePosResourceRefresh(surface==='portable'?staffRealtimeSalonId:null,'catalog',async()=>{
+    const response=await fetch('/api/pos/portable/workspace?resource=catalog',{cache:'no-store',signal:AbortSignal.timeout(8000)});
+    if(!response.ok)return;const data=await response.json();if(!Array.isArray(data.services))return;
+    setServices(data.services);try{localStorage.setItem('kingpos:catalog:'+staffRealtimeSalonId,JSON.stringify(data.services));}catch{/* Ticket persistence uses its separate durable store. */}
+  });
+  usePosResourceRefresh(staffRealtimeSalonId,'waiting',async()=>{await refreshWaiting();});
+  useEffect(()=>{
+    if(hasUnsavedDraftWork)return;const next=portableWorkspaceState?.settings;if(!next)return;
+    let active=true;queueMicrotask(()=>{if(active)setDefaults(current=>({...current,largeTurnThreshold:Number(next.large_turn_threshold??current.largeTurnThreshold),staffCheckInEnabled:typeof next.staff_check_in_enabled==='boolean'?next.staff_check_in_enabled:current.staffCheckInEnabled,tipSuggestions:Array.isArray(next.tip_suggestions)?next.tip_suggestions as number[]:current.tipSuggestions}));});return()=>{active=false;};
+  },[hasUnsavedDraftWork,portableWorkspaceState?.settings]);
+  const recovery = useMemo(() => ({
+    draft: { ...draft, giftCardInput: "", note: "" },
+    lines: draftStaffLines, customer: liveCustomer,
+  }), [draft, draftStaffLines, liveCustomer]);
+  const restorePortableDraft = useCallback((saved: typeof recovery) => {
+    if (!saved?.draft || !Array.isArray(saved.lines) || saved.lines.length > 200) return;
+    setDraft({ ...emptyDraft, ...saved.draft, giftCardInput: "", note: "" });
+    setDraftStaffLines(saved.lines);
+    setLiveCustomer(saved.customer ?? null);
+
+  }, []);
+  const onPortableVersion = useCallback((version: number) => {
+    liveDraftVersionRef.current = Math.max(liveDraftVersionRef.current, version);
+  }, []);
+  const { ready: portableDraftReady, enqueue: enqueuePortableDraft,
+    flush: flushPortableDraft, observeVersion: observePortableVersion,
+    persistLocal: persistLocalPortableDraft, checkpoint: checkpointPortableDraft, recoveryKey: portableRecoveryKey } = usePortableDraft({
+    scope: localFirstDraft && liveDraftToken ? `${staffRealtimeSalonId}:${liveDraftToken}` : null,
+    operationScope: portableWorkspaceState?.scope,
+    busy: hasUnsavedDraftWork,
+    version: liveDraft?.version ?? 0,
+    recovery, emptyRecovery: { draft: { ...emptyDraft, giftCardInput: "", note: "" }, lines: [], customer: null },
+    restore: restorePortableDraft, onVersion: onPortableVersion,
+  });
+  const pendingLocalTip = useRef<number | null>(null);
+  useEffect(() => {
+    if (!isPortableSurface) return;
+    const receive = (event: Event) => {
+      const { appointment, respond } = (event as CustomEvent<BookingTicketRequest>).detail;
+      if (receiptLocked || (localFirstDraft && !portableDraftReady)) { respond("POS is busy. Try again when the current operation finishes."); return; }
+      if (draft.sourceBookingId === appointment.id) {
+        respond(draft.sourceBookingUpdatedAt === appointment.updatedAt ? undefined : "This appointment changed. Save or reset the current POS draft before opening its updated services."); return;
+      }
+      if (hasUnsavedDraftWork) { respond("POS has an unfinished ticket. Save it for later or finish it before opening this appointment."); return; }
+      if (!appointment.customerId || !appointment.lines?.length || appointment.lines.some(line => !line.staffId || !line.serviceId)) { respond("Assign a professional to every service before creating a ticket."); return; }
+      const lines: PosDeskSessionLine[] = appointment.lines.map((line, index) => ({
+        id: crypto.randomUUID(), service_id: line.serviceId, service_label: line.serviceName,
+        staff_id: line.staffId, staff_name: staff.find(member => member.id === line.staffId)?.display_name ?? appointment.staffName ?? null,
+        amount: Number(line.price), amount_input: String(line.price), amount_parts: [Number(line.price)],
+        sort_order: index, turn_large_count: 0, turn_small_count: 0,
+      }));
+      const first = lines[0];
+      const customer = { id: appointment.customerId, name: appointment.customerName ?? "", phone: appointment.customerPhone };
+      const nextDraft: DraftState = { ...emptyDraft, sourceBookingId: appointment.id, sourceBookingUpdatedAt: appointment.updatedAt,
+        customerId: appointment.customerId, customerLookup: appointment.customerPhone ?? "", customerName: appointment.customerName ?? "",
+        selectedStaffId: first.staff_id, selectedServiceId: first.service_id, editingLineId: first.id, amountInput: first.amount_input };
+      const nextRecovery = { draft: nextDraft, lines, customer };
+      const subtotal = lines.reduce((sum, line) => sum + line.amount, 0);
+      const payload = { ...JSON.parse(liveDraftPayloadKey), customer, selectedStaffId: first.staff_id,
+        staffLines: lines.map(line => ({id:line.id,staffId:line.staff_id,staffName:line.staff_name ?? "Assigned staff",serviceId:line.service_id,
+          label:line.service_label,amount:line.amount,amountInput:line.amount_input,amountParts:line.amount_parts,sortOrder:line.sort_order})),
+        discount:0,tax:0,tip:0,subtotal,total:subtotal,totalBeforeTip:subtotal };
+      if (localFirstDraft && !persistLocalPortableDraft(payload, nextRecovery)) { respond("Unable to save this ticket on the device. Nothing was replaced."); return; }
+      restorePortableDraft(nextRecovery);
+      setKeypadMode("amount");
+      respond();
+    };
+    window.addEventListener(PORTABLE_BOOKING_TICKET, receive);
+    return () => window.removeEventListener(PORTABLE_BOOKING_TICKET, receive);
+  }, [isPortableSurface, receiptLocked, localFirstDraft, portableDraftReady, draft.sourceBookingId, draft.sourceBookingUpdatedAt, hasUnsavedDraftWork, staff, persistLocalPortableDraft, liveDraftPayloadKey, restorePortableDraft]);
+  const localCartId = useRef<string | null>(null);
+  const completedLocalReceipt = useRef<LocalReceiptPreview | null>(null);
+  const localDisplaySeenAt = useRef(0);
+  const localRecovery = useRef(recovery);
+  useEffect(() => { localRecovery.current = recovery; }, [recovery]);
+  const lastQueuedPortablePayload = useRef(liveDraftPayloadKey);
+  const currentPortablePayload = useRef(liveDraftPayloadKey);
+  useEffect(() => { currentPortablePayload.current = liveDraftPayloadKey; }, [liveDraftPayloadKey]);
+  useEffect(() => {
+    if (!localFirstDraft || !portableDraftReady || !liveDraftToken || isResetting || isSubmitting) return;
+    if (holdCompletedDisplayRef.current && !hasUnsavedDraftWork) {
+      lastQueuedPortablePayload.current = liveDraftPayloadKey;
+      return;
+    }
+    if (lastQueuedPortablePayload.current === liveDraftPayloadKey) return;
+    holdCompletedDisplayRef.current = false;
+    completedLocalReceipt.current = null;
+    lastQueuedPortablePayload.current = liveDraftPayloadKey;
+    enqueuePortableDraft(JSON.parse(liveDraftPayloadKey));
+  }, [enqueuePortableDraft, hasUnsavedDraftWork, localFirstDraft, isResetting, isSubmitting,
+    liveDraftPayloadKey, liveDraftToken, portableDraftReady]);
+
+  useEffect(() => {
+    if (!localFirstDraft || !portableDraftReady || !liveDraftToken) return;
+    localCartId.current ??= crypto.randomUUID();
+    const connection = connectLocalReceipt(liveDraftToken, { displayPresent: () => { localDisplaySeenAt.current = Date.now(); }, dismissCompleted: cartId => {
+      if (completedLocalReceipt.current?.cartId === cartId) completedLocalReceipt.current = null;
+    }, customer: request => {
+      if (request.cartId !== localCartId.current) return undefined;
+      if (submitLockedRef.current || resetInFlightRef.current || request.revision !== currentPortablePayload.current) return false;
+      const customer = request.customer;
+      const nextPayload = { ...JSON.parse(currentPortablePayload.current), customer };
+      const nextRecovery = { ...localRecovery.current, customer, draft: { ...localRecovery.current.draft,
+        customerId: customer.id, customerName: customer.name, customerLookup: customer.phone ?? "", customerVisitId: customer.visitId ?? null } };
+      if (!persistLocalPortableDraft(nextPayload, nextRecovery)) return false;
+      currentPortablePayload.current = JSON.stringify(nextPayload);
+      localRecovery.current = nextRecovery;
+      setLiveCustomer(customer);
+      setDraft(nextRecovery.draft);
+      return true;
+    }, tip: request => {
+      if (request.cartId !== localCartId.current) return undefined;
+      if (submitLockedRef.current || resetInFlightRef.current || request.revision !== currentPortablePayload.current) return false;
+      const payload = JSON.parse(currentPortablePayload.current);
+      const nextPayload = { ...payload, tip: request.amount, total: payload.totalBeforeTip + request.amount };
+      const nextRecovery = { ...localRecovery.current, draft: { ...localRecovery.current.draft, tipInput: String(request.amount) } };
+      if (!persistLocalPortableDraft(nextPayload, nextRecovery)) return false;
+      pendingLocalTip.current = request.amount;
+      currentPortablePayload.current = JSON.stringify(nextPayload);
+      localRecovery.current = nextRecovery;
+      setDraft(current => ({ ...current, tipInput: String(request.amount) }));
+      return true;
+    } });
+    const publish = () => {
+      if (!submitLockedRef.current && !resetInFlightRef.current && localCartId.current) {
+        const completed = completedLocalReceipt.current;
+        if (completed && Date.parse(completed.resetAt!) > Date.now()) connection.publish(completed);
+        else connection.publish({ cartId: localCartId.current, revision: currentPortablePayload.current, payload: JSON.parse(currentPortablePayload.current) });
+      }
+    };
+    publish(); const timer = setInterval(publish, 100);
+    return () => { clearInterval(timer); connection.close(); };
+  }, [localFirstDraft, portableDraftReady, liveDraftToken, persistLocalPortableDraft]);
+
   const idleResetKey = useMemo(
     () =>
       JSON.stringify({
@@ -843,6 +1117,7 @@ export function PosDeskClient({
         })),
         note: draft.note,
         selectedServiceId: draft.selectedServiceId,
+        customServiceName: draft.customServiceName,
         selectedStaffId: draft.selectedStaffId,
         tipInput: draft.tipInput,
       }),
@@ -856,6 +1131,7 @@ export function PosDeskClient({
       draft.giftCardInput,
       draft.note,
       draft.selectedServiceId,
+      draft.customServiceName,
       draft.selectedStaffId,
       draft.tipInput,
       staffLines,
@@ -875,13 +1151,15 @@ export function PosDeskClient({
   }, []);
 
   const showError = useCallback((message: string) => {
-    setError(message);
+    if (localFirstDraft && isPosConnectionError(message)) return;
+    const detail = posUserMessage(message);
+    setError(detail);
     showToast({
-      detail: message,
-      title: "POS action needs attention",
+      detail,
+      title: "Please check",
       tone: "error",
     });
-  }, [showToast]);
+  }, [showToast, localFirstDraft]);
 
   useEffect(() => {
     if (!toast) {
@@ -945,6 +1223,7 @@ export function PosDeskClient({
     setPosActivityTick((current) => current + 1);
 
     if (
+      localFirstDraft ||
       !liveDraftToken ||
       !holdCompletedDisplayRef.current ||
       resetInFlightRef.current ||
@@ -978,7 +1257,7 @@ export function PosDeskClient({
       showError(result.error);
       setLastAction("Display activity sync failed");
     });
-  }, [liveDraftToken, showError, touchLiveDraftActivityAction]);
+  }, [localFirstDraft, liveDraftToken, showError, touchLiveDraftActivityAction]);
 
   const focusReceiptMoneyInput = useCallback((mode: "discount" | "tip") => {
     setKeypadMode(mode);
@@ -1061,6 +1340,8 @@ export function PosDeskClient({
 
       setLiveCustomer(customer);
 
+      if (localFirstDraft) return;
+
       if (!liveDraftToken) {
         return;
       }
@@ -1070,6 +1351,10 @@ export function PosDeskClient({
           return;
         }
 
+        if (localFirstDraft && !(await flushPortableDraft())) {
+          showError("Customer is selected locally. Reconnect and sync the receipt before continuing.");
+          return;
+        }
         const result = await updateLiveDraftCustomerAction({
           customer,
           token: liveDraftToken,
@@ -1086,9 +1371,10 @@ export function PosDeskClient({
         }
 
         liveDraftVersionRef.current = result.data.version;
+        observePortableVersion(result.data.version);
       });
     },
-    [liveDraftToken, showError, startTransition, updateLiveDraftCustomerAction],
+    [flushPortableDraft, localFirstDraft, liveDraftToken, observePortableVersion, showError, startTransition, updateLiveDraftCustomerAction],
   );
 
   const saveCustomerToSession = useCallback(
@@ -1116,6 +1402,7 @@ export function PosDeskClient({
       if (customer) {
         updateDraft({
           customerId: customer.id,
+          newCustomer: undefined,
           customerLookup: customer.phone ?? customer.email ?? customer.name,
           customerName: customer.name,
           customerVisitId: null,
@@ -1141,7 +1428,7 @@ export function PosDeskClient({
   );
 
   useEffect(() => {
-    if (!liveDraftToken || isResetting || isSubmitting) {
+    if (localFirstDraft || !liveDraftToken || isResetting || isSubmitting) {
       return;
     }
 
@@ -1201,6 +1488,7 @@ export function PosDeskClient({
     isResetting,
     isSubmitting,
     liveDraftSyncNonce,
+    localFirstDraft,
     liveDraftPayloadKey,
     liveDraftToken,
     liveStaffLines,
@@ -1215,7 +1503,7 @@ export function PosDeskClient({
   ]);
 
   useEffect(() => {
-    if (!liveDraftToken || !hasUnsavedDraftWork || isResetting || isSubmitting) {
+    if (localFirstDraft || !liveDraftToken || !hasUnsavedDraftWork || isResetting || isSubmitting) {
       return;
     }
 
@@ -1252,6 +1540,7 @@ export function PosDeskClient({
 
     return () => window.clearInterval(intervalId);
   }, [
+    localFirstDraft,
     draft.selectedStaffId,
     hasUnsavedDraftWork,
     isResetting,
@@ -1284,7 +1573,20 @@ export function PosDeskClient({
     const timeoutId = window.setTimeout(() => {
       startTransition(async () => {
         try {
-          const results = await searchCustomersAction(lookup);
+          const cacheKey = localFirstDraft && portableWorkspaceState ? `kingpos:customer-cache:${portableWorkspaceState.scope}` : null;
+          let cached: PosDeskCustomer[] = [];
+          if (cacheKey) {
+            try { cached = JSON.parse(localStorage.getItem(cacheKey) ?? "[]"); } catch {}
+            const matches = cached.filter(customer => [customer.name, customer.phone, customer.email].some(value => value?.toLowerCase().includes(lookup.toLowerCase())));
+            if (matches.length && !cancelled) { setCustomerResults(matches); setCustomerSearchComplete(true); }
+          }
+          const results = localFirstDraft && !navigator.onLine
+            ? cached.filter(customer => [customer.name, customer.phone, customer.email].some(value => value?.toLowerCase().includes(lookup.toLowerCase())))
+            : await searchCustomersAction(lookup);
+          if (cacheKey && results.length) {
+            const merged = new Map([...cached, ...results].map(customer => [customer.id, customer]));
+            try { localStorage.setItem(cacheKey, JSON.stringify([...merged.values()].slice(-1000))); } catch {}
+          }
 
           if (cancelled) {
             return;
@@ -1318,6 +1620,8 @@ export function PosDeskClient({
     };
   }, [
     draft.customerLookup,
+    localFirstDraft,
+    portableWorkspaceState,
     receiptLocked,
     searchCustomersAction,
     selectedCustomer,
@@ -1326,11 +1630,29 @@ export function PosDeskClient({
 
   const applyCustomerDisplaySnapshot = useCallback(
     (snapshot: PosLiveDraftView) => {
+      // The paired display exchanges identity and tip directly with this cart.
+      // A delayed cloud draft must not resurrect the previous customer or tip.
+      if (localFirstDraft && Date.now() - localDisplaySeenAt.current < 2000) return;
       if (snapshot.version <= liveDraftVersionRef.current) {
         return;
       }
 
       liveDraftVersionRef.current = snapshot.version;
+      const local = JSON.parse(currentPortablePayload.current);
+      const linesKey = (lines: PosLiveDraftView["staff_lines"]) => JSON.stringify(
+        lines.map((line) => [line.staffId, line.serviceId ?? null, line.amount]),
+      );
+      const compatible = !localFirstDraft || (
+        (snapshot.status !== "closed" || submitLockedRef.current || holdCompletedDisplayRef.current) &&
+        snapshot.subtotal === local.subtotal && snapshot.discount === local.discount &&
+        snapshot.tax === local.tax && linesKey(snapshot.staff_lines) === linesKey(local.staffLines)
+      );
+      observePortableVersion(snapshot.version, compatible);
+      if (!compatible) return;
+      if (pendingLocalTip.current !== null) {
+        if (snapshot.tip !== pendingLocalTip.current) return;
+        pendingLocalTip.current = null;
+      }
 
       if (snapshot.status === "closed") {
         setLastAction("Customer display showing final receipt");
@@ -1374,8 +1696,12 @@ export function PosDeskClient({
       });
       setLastAction("Customer display synced");
     },
-    [serviceIdSet],
+    [localFirstDraft, observePortableVersion, serviceIdSet],
   );
+
+  useEffect(() => liveDraftToken
+    ? subscribeLocalDisplay(liveDraftToken, applyCustomerDisplaySnapshot)
+    : undefined, [liveDraftToken, applyCustomerDisplaySnapshot]);
 
   useEffect(() => {
     if (!liveDraftToken) {
@@ -1437,7 +1763,7 @@ export function PosDeskClient({
   ]);
 
   useEffect(() => {
-    if (!staffRealtimeSalonId) {
+    if (!staffRealtimeSalonId || localFirstDraft) {
       return;
     }
 
@@ -1453,7 +1779,10 @@ export function PosDeskClient({
         "broadcast",
         { event: POS_STAFF_BROADCAST_EVENT },
         ({ payload }: { payload: PosStaffBroadcastPayload }) => {
-          if (payload.salonId === staffRealtimeSalonId) {
+          if (
+            payload.salonId === staffRealtimeSalonId &&
+            !(isPortableSurface && payload.source === "attendance")
+          ) {
             router.refresh();
           }
         },
@@ -1463,12 +1792,13 @@ export function PosDeskClient({
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [router, staffRealtimeSalonId]);
+  }, [isPortableSurface, localFirstDraft, router, staffRealtimeSalonId]);
 
   function createStaffLine(
     staffId: string,
     sortOrder: number,
     serviceId: string | null = null,
+    customName = "",
   ): PosDeskSessionLine {
     const staffMember = staff.find((member) => member.id === staffId);
     const service = services.find((item) => item.id === serviceId);
@@ -1479,7 +1809,7 @@ export function PosDeskClient({
       amount_parts: [],
       id: `local-${crypto.randomUUID()}`,
       service_id: serviceId,
-      service_label: service?.name ?? `Service ${sortOrder}`,
+      service_label: service?.name ?? (customName || `Service ${sortOrder}`),
       sort_order: sortOrder,
       staff_id: staffId,
       staff_name: staffMember?.display_name ?? null,
@@ -1535,6 +1865,7 @@ export function PosDeskClient({
       amountInput: line.amount_input,
       editingLineId: line.id,
       selectedServiceId: line.service_id,
+      customServiceName: line.service_id ? "" : line.service_label,
       selectedStaffId: line.staff_id,
     }));
     setKeypadMode("amount");
@@ -1735,6 +2066,7 @@ export function PosDeskClient({
             staffId,
             staffLines.length + 1,
             draft.selectedServiceId,
+            draft.customServiceName,
           );
     setDraftStaffLines((current) => [...current, nextLine]);
     focusLine(nextLine);
@@ -1747,6 +2079,7 @@ export function PosDeskClient({
       amountInput: line.amount_input,
       editingLineId: line.id,
       selectedServiceId: line.service_id,
+      customServiceName: line.service_id ? "" : line.service_label,
       selectedStaffId: line.staff_id,
     });
     setKeypadMode("amount");
@@ -1829,13 +2162,13 @@ export function PosDeskClient({
     setLastAction("Line amount synced");
   }
 
-  function selectService(serviceId: string | null) {
+  function selectService(serviceId: string | null, customName = "") {
     releaseCompletedDisplayHold();
 
     const service = services.find((item) => item.id === serviceId);
 
     if (!draft.editingLineId && !draft.selectedStaffId) {
-      updateDraft({ selectedServiceId: serviceId });
+      updateDraft({ selectedServiceId: serviceId, customServiceName: customName });
       setShowServicePicker(false);
       setServiceSearch("");
       setKeypadMode("amount");
@@ -1848,7 +2181,7 @@ export function PosDeskClient({
       const staffId = activeLine.staff_id ?? draft.selectedStaffId;
 
       if (!staffId) {
-        updateDraft({ selectedServiceId: serviceId });
+        updateDraft({ selectedServiceId: serviceId, customServiceName: customName });
         setShowServicePicker(false);
         setServiceSearch("");
         setKeypadMode("amount");
@@ -1859,6 +2192,7 @@ export function PosDeskClient({
         staffId,
         staffLines.length + 1,
         serviceId,
+        customName,
       );
 
       setDraftStaffLines((current) => [...current, nextLine]);
@@ -1873,7 +2207,7 @@ export function PosDeskClient({
     const lineToUpdate =
       activeLine ??
       (draft.selectedStaffId
-        ? createStaffLine(draft.selectedStaffId, staffLines.length + 1, serviceId)
+        ? createStaffLine(draft.selectedStaffId, staffLines.length + 1, serviceId, customName)
         : null);
 
     if (!lineToUpdate) {
@@ -1883,7 +2217,7 @@ export function PosDeskClient({
     const updatedLine = {
       ...lineToUpdate,
       service_id: serviceId,
-      service_label: service?.name ?? `Service ${lineToUpdate.sort_order}`,
+      service_label: service?.name ?? (customName || `Service ${lineToUpdate.sort_order}`),
     };
 
     setDraftStaffLines((current) => {
@@ -1899,6 +2233,7 @@ export function PosDeskClient({
       amountInput: updatedLine.amount_input,
       editingLineId: updatedLine.id,
       selectedServiceId: serviceId,
+      customServiceName: customName,
       selectedStaffId: updatedLine.staff_id,
     });
     setShowServicePicker(false);
@@ -2026,7 +2361,7 @@ export function PosDeskClient({
     setDraft(emptyDraft);
     setDraftStaffLines([]);
     setLiveCustomer(null);
-    setDraftRestored(false);
+
     setError(null);
     setCustomerClaim(null);
     setCustomerResults([]);
@@ -2070,7 +2405,8 @@ export function PosDeskClient({
     }
 
     liveDraftVersionRef.current = draftResult.data.version;
-  }, [liveDraftToken, updateActiveDraftAction, updateLiveDraftCustomerAction]);
+    observePortableVersion(draftResult.data.version);
+  }, [liveDraftToken, observePortableVersion, updateActiveDraftAction, updateLiveDraftCustomerAction]);
 
   const resetReceipt = useCallback(
     async (reason: "idle" | "manual" | "submitted" = "manual") => {
@@ -2084,9 +2420,13 @@ export function PosDeskClient({
       setError(null);
 
       try {
-        await syncEmptyLiveDraft();
+        if (!localFirstDraft) await syncEmptyLiveDraft();
+        if (localFirstDraft) {
+          localCartId.current = crypto.randomUUID();
+          completedLocalReceipt.current = null;
+          pendingLocalTip.current = null;
+        }
         clearDraft();
-        router.refresh();
 
         if (reason === "idle") {
           setLastAction("Idle reset");
@@ -2106,11 +2446,11 @@ export function PosDeskClient({
         setIsResetting(false);
       }
     },
-    [clearDraft, router, showError, syncEmptyLiveDraft],
+    [clearDraft, localFirstDraft, showError, syncEmptyLiveDraft],
   );
 
   useEffect(() => {
-    if (!hasUnsavedDraftWork || isResetting || isSubmitting) {
+    if (isPortableSurface || !hasUnsavedDraftWork || isResetting || isSubmitting) {
       return;
     }
 
@@ -2122,6 +2462,7 @@ export function PosDeskClient({
   }, [
     hasUnsavedDraftWork,
     idleResetKey,
+    isPortableSurface,
     isResetting,
     isSubmitting,
     posActivityTick,
@@ -2129,6 +2470,10 @@ export function PosDeskClient({
   ]);
 
   function submitReceipt() {
+    if (localFirstDraft && !portableDraftReady) return;
+    if (portableWorkspaceState && portableWorkspaceState.businessDate !== portableBusinessDate(portableWorkspaceState.timezone)) {
+      showError("A new day has started. Please check in before creating a ticket."); return;
+    }
     if (submitLockedRef.current) {
       showError("Receipt is already submitting. Please wait.");
       setLastAction("Submit already running");
@@ -2142,6 +2487,12 @@ export function PosDeskClient({
     }
 
     const positiveLines = staffLines.filter(hasPositiveAmount);
+    if (draft.sourceBookingId && positiveLines.length !== staffLines.length) {
+      showError("Enter an amount for each appointment service before submitting the ticket."); return;
+    }
+    if (localFirstDraft && positiveLines.some(line => !staff.some(member => member.id === line.staff_id))) {
+      showError("A staff member is no longer working. Choose an available staff member before submitting."); return;
+    }
 
     if (positiveLines.length === 0) {
       setDraftStaffLines([]);
@@ -2189,7 +2540,9 @@ export function PosDeskClient({
     startTransition(async () => {
       try {
         setError(null);
-        const result = await submitReceiptAction({
+        const input = {
+          sourceBookingId: draft.sourceBookingId,
+          sourceBookingUpdatedAt: draft.sourceBookingUpdatedAt,
           customerId: draft.customerId ?? selectedCustomer?.id,
           customerLookup: draft.customerLookup || selectedCustomer?.phone,
           customerName: draft.customerName || selectedCustomer?.name,
@@ -2201,7 +2554,39 @@ export function PosDeskClient({
           liveDraftToken,
           note: draft.note,
           tipAmount: totals.tip_value,
-        });
+        };
+        if (localFirstDraft && portableWorkspaceState) {
+          // Commit the business command before clearing the form. Network and
+          // display-draft conflicts must never prevent saving the next ticket.
+          const staffAttendance: Record<string, { status: string; queueTurnCount: number }> = {};
+          for (const line of submitLines) {
+            const member = staff.find(row => row.id === line.staffId);
+            if (!member) continue;
+            const previous = staffAttendance[line.staffId]?.queueTurnCount ?? member.turns.queueTurns;
+            staffAttendance[line.staffId] = { status: member.today_status,
+              queueTurnCount: previous + line.amountParts.filter(amount => amount >= defaults.largeTurnThreshold).length };
+          }
+          await savePortableOperation(portableWorkspaceState.scope, "receipt", {
+            ...input, staffAttendance, staffTurnDeltas:Object.fromEntries(Object.entries(staffAttendance).map(([id,value])=>[id,value.queueTurnCount-(staff.find(s=>s.id===id)?.turns.queueTurns??0)])),
+            newCustomer: draft.newCustomer && draft.newCustomer.name === draft.customerName &&
+              (draft.newCustomer.phone || draft.newCustomer.email) === draft.customerLookup ? draft.newCustomer : undefined,
+            liveDraftToken: undefined, localDraftKey: portableRecoveryKey.current,
+          });
+          if (draft.customerVisitId) setRemovedWaitingVisitIds(current => new Set([...current, draft.customerVisitId!]));
+          pendingLocalTip.current = null;
+          completedLocalReceipt.current = { cartId: localCartId.current!, revision: currentPortablePayload.current,
+            payload: JSON.parse(currentPortablePayload.current), completedAt: new Date().toISOString(),
+            resetAt: new Date(Date.now() + 30_000).toISOString() };
+          localCartId.current = crypto.randomUUID();
+          checkpointPortableDraft({ draft: { ...emptyDraft, giftCardInput: "", note: "" }, lines: [], customer: null });
+          holdCompletedDisplayRef.current = true;
+          clearDraft();
+          showToast({ amount: formatMoney(submittedTotal), detail: submittedCustomerName,
+            title: "Ticket saved", tone: "success" });
+          setLastAction("Receipt saved");
+          return;
+        }
+        const result = await submitReceiptAction(input);
 
         if (!result.ok) {
           showError(result.error);
@@ -2210,6 +2595,12 @@ export function PosDeskClient({
         }
 
         holdCompletedDisplayRef.current = true;
+        if (localFirstDraft && liveDraftToken) {
+          try {
+            const latest = await getLiveDraftAction(liveDraftToken);
+            if (latest.ok && latest.data) observePortableVersion(latest.data.version);
+          } catch { /* A read failure must not report a completed sale as failed. */ }
+        }
         clearDraft();
         showToast({
           amount: formatMoney(submittedTotal),
@@ -2326,6 +2717,18 @@ export function PosDeskClient({
       return;
     }
 
+    if (localFirstDraft) {
+      const customer = { id: visit.customerId, name: visit.customerName, phone: visit.customerPhone,
+        requestedServices: visit.requestedServices, visitId: visit.id };
+      const nextDraft = { ...draft, customerId: visit.customerId, customerLookup: visit.customerPhone ?? "",
+        customerName: visit.customerName, customerVisitId: visit.id,
+        selectedServiceId: visit.requestedServices.find(service => serviceIdSet.has(service.id))?.id ?? draft.selectedServiceId };
+      const nextRecovery = { ...recovery, draft: nextDraft, customer };
+      if (!persistLocalPortableDraft({ ...JSON.parse(liveDraftPayloadKey), customer }, nextRecovery)) {
+        showError("Unable to save on this device. Try again."); return;
+      }
+      restorePortableDraft(nextRecovery); setWaitingDrawerOpen(false); return;
+    }
     setWaitingVisitBusyId(visit.id);
     startTransition(async () => {
       try {
@@ -2366,7 +2769,6 @@ export function PosDeskClient({
         setLastAction("Waiting client selected");
         setOpenWaitingVisitMenuId(null);
         setWaitingDrawerOpen(false);
-        router.refresh();
       } catch (error) {
         showError(
           error instanceof Error
@@ -2380,7 +2782,20 @@ export function PosDeskClient({
     });
   }
 
+  async function changeLocalVisit(visit: CustomerVisitQueueItem, action: "remove" | "left" | "edit") {
+    if (!portableWorkspaceState) return;
+    const name = visitEditName.trim(); const phone = visitEditPhone.replace(/\D/g, "");
+    if (action === "edit" && (!name || phone.length < 10 || phone.length > 15)) { showError("Enter a name and valid phone number."); return; }
+    try {
+      await savePortableOperation(portableWorkspaceState.scope, "visit", { visitId: visit.id, action, ...(action === "edit" ? { name, phone } : {}) });
+      if (action === "edit") {
+        setCurrentWaitingVisits(rows => rows.map(row => row.id === visit.id ? { ...row, customerName: name, customerPhone: phone } : row));
+        setEditingVisit(null);
+      } else setRemovedWaitingVisitIds(current => new Set([...current, visit.id]));
+    } catch { showError("Unable to save on this device. Try again."); }
+  }
   function removeWaitingVisit(visit: CustomerVisitQueueItem) {
+    if (localFirstDraft) { void changeLocalVisit(visit, "remove"); return; }
     setWaitingVisitBusyId(visit.id);
     startTransition(async () => {
       try {
@@ -2419,7 +2834,6 @@ export function PosDeskClient({
         });
         setLastAction("Waiting client removed");
         setOpenWaitingVisitMenuId(null);
-        router.refresh();
       } catch (error) {
         showError(
           error instanceof Error
@@ -2452,6 +2866,14 @@ export function PosDeskClient({
       return;
     }
 
+    if (localFirstDraft) {
+      const customer = { name, phone: customerCreateDraft.phone, email: customerCreateDraft.email };
+      updateDraft({ customerId: null, customerName: name, customerLookup: customer.phone || customer.email,
+        customerVisitId: null, newCustomer: customer });
+      publishCustomerToLiveDraft({ id: null, name, phone: customer.phone || null });
+      setShowCustomerCreateModal(false); setCustomerCreateDraft(emptyCustomerCreateDraft);
+      return;
+    }
     startTransition(async () => {
       const result = await createCustomerAction({
         email: customerCreateDraft.email,
@@ -2609,7 +3031,7 @@ export function PosDeskClient({
     (totals.discount_amount > 0 ||
       totals.tax_amount !== 0 ||
       totals.tip_amount > 0);
-  const waitingDrawerTitle = `Waiting ${visitQueue.length}`;
+  const waitingDrawerTitle = visitQueue.length ? `${visitQueue.length} customer${visitQueue.length === 1 ? "" : "s"} waiting` : "No customer waiting";
   const waitingRows = (
     <div className="grid gap-2">
       {visitQueue.map((visit) => {
@@ -2621,7 +3043,7 @@ export function PosDeskClient({
         return (
           <div
             className={[
-              "grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md border p-1.5",
+              "grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-zinc-100 p-1.5",
               selected
                 ? "border-emerald-400 bg-emerald-50"
                 : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50",
@@ -2633,7 +3055,7 @@ export function PosDeskClient({
               aria-label={`Select ${visit.customerName} from waiting`}
               className="grid min-h-14 min-w-0 rounded px-2 py-1 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-wait disabled:opacity-60"
               data-pos-waiting-row-select
-              disabled={isPending || receiptLocked || !liveDraftToken || busy}
+              disabled={(!localFirstDraft && isPending) || receiptLocked || !liveDraftToken || busy}
               onClick={() => selectWaitingVisit(visit)}
               type="button"
             >
@@ -2654,11 +3076,15 @@ export function PosDeskClient({
                   ) : null}
                 </div>
                 <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-zinc-600">
-                  {meta.join(" / ")}
+                  {[visit.customerPhone ? `•••• ${visit.customerPhone.replace(/\D/g, "").slice(-4)}` : null, ...meta].filter(Boolean).join(" / ")}
                 </p>
               </div>
             </button>
-            <div className="relative">
+            {localFirstDraft ? <div className="flex gap-1">
+              <PortableCustomerAction action="edit" name={visit.customerName} onClick={() => { setEditingVisit(visit); setVisitEditName(visit.customerName); setVisitEditPhone(visit.customerPhone ?? ""); }} />
+              <PortableCustomerAction action="left" name={visit.customerName} onClick={() => void changeLocalVisit(visit, "left")} />
+              <PortableCustomerAction action="remove" name={visit.customerName} onClick={() => removeWaitingVisit(visit)} />
+            </div> :             <div className="relative">
               <button
                 aria-expanded={menuOpen}
                 aria-label={`More actions for ${visit.customerName}`}
@@ -2685,7 +3111,7 @@ export function PosDeskClient({
                   </button>
                 </div>
               ) : null}
-            </div>
+            </div>}
           </div>
         );
       })}
@@ -2710,8 +3136,8 @@ export function PosDeskClient({
       ref={waitingButtonRef}
       type="button"
     >
-      <span>Waiting</span>
-      {visitQueue.length > 0 ? (
+      {isPortableSurface ? <><svg aria-hidden="true" className="h-5 w-5 shrink-0 text-teal-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2m1-16a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 5v2"/></svg><span className="min-w-0"><span className="block text-sm font-semibold">Customers</span><span className="mt-1 block text-xs font-normal text-zinc-500">{visitQueue.length ? `${visitQueue.length} waiting` : "No customer waiting"}</span></span></> : <span>Waiting</span>}
+      {!isPortableSurface && visitQueue.length > 0 ? (
         <span
           className="rounded-full bg-zinc-950 px-2 py-0.5 text-xs font-semibold text-white"
           data-pos-waiting-count
@@ -2728,7 +3154,7 @@ export function PosDeskClient({
     >
       <div
         aria-hidden="true"
-        className="absolute inset-0 pointer-events-auto bg-transparent"
+        className={isPortableSurface ? "absolute inset-0 pointer-events-auto bg-black/20" : "absolute inset-0 pointer-events-auto bg-transparent"}
         onClick={() => {
           setWaitingDrawerOpen(false);
           setOpenWaitingVisitMenuId(null);
@@ -2747,7 +3173,7 @@ export function PosDeskClient({
         }
         role="dialog"
         style={
-          waitingDrawerPlacement ?? {
+          isPortableSurface ? { left: 16, top: 88, bottom: 16, width: "min(560px, calc(100vw - 32px))" } : waitingDrawerPlacement ?? {
             left: WAITING_DRAWER_MARGIN,
             maxHeight: WAITING_DRAWER_MAX_HEIGHT,
             top: WAITING_DRAWER_MARGIN,
@@ -2792,7 +3218,7 @@ export function PosDeskClient({
             className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700"
             onClick={() => {
               setOpenWaitingVisitMenuId(null);
-              router.refresh();
+              if (localFirstDraft) void refreshWaiting(); else router.refresh();
             }}
             type="button"
           >
@@ -2803,12 +3229,20 @@ export function PosDeskClient({
     </div>
   ) : null;
   const waitingDrawerLayer =
-    waitingDrawer && typeof document !== "undefined"
+    waitingDrawer && (!isPortableSurface || pathname === "/pos/portable") && typeof document !== "undefined"
       ? createPortal(waitingDrawer, document.body)
       : null;
 
   return (
     <>
+      {editingVisit && <div className="fixed inset-0 z-[80] grid place-items-center bg-black/30" role="dialog" aria-label="Edit waiting customer" aria-modal="true">
+        <form className="grid gap-3 rounded-xl bg-white p-6 shadow-xl" autoComplete="off" onSubmit={event => { event.preventDefault(); void changeLocalVisit(editingVisit, "edit"); }}>
+          <h2 className="font-semibold">Edit customer</h2>
+          <label>Name<input className="block border p-2" value={visitEditName} onChange={event => setVisitEditName(event.target.value)} autoComplete="off" maxLength={120} /></label>
+          <label>Phone<input className="block border p-2" value={visitEditPhone} onChange={event => setVisitEditPhone(event.target.value)} autoComplete="off" inputMode="tel" /></label>
+          <div className="flex justify-end gap-4"><button type="button" onClick={() => setEditingVisit(null)}>Cancel</button><button type="submit">Save</button></div>
+        </form>
+      </div>}
       {toast ? (
         <div
           aria-live="polite"
@@ -2855,6 +3289,7 @@ export function PosDeskClient({
           </div>
         </div>
       ) : null}
+      {showCustomService && <CustomServiceDialog onCancel={() => setShowCustomService(false)} onDone={name => { selectService(null, name); setShowCustomService(false); }} />}
       {waitingDrawerLayer}
       {showCustomerCreateModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4">
@@ -2929,7 +3364,7 @@ export function PosDeskClient({
               </button>
               <button
                 className="rounded bg-zinc-950 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                disabled={isPending || isResetting || isSubmitting}
+                disabled={(!localFirstDraft && isPending) || isResetting || isSubmitting || (localFirstDraft && !portableDraftReady)}
                 onClick={createCustomerFromModal}
                 type="button"
               >
@@ -3087,7 +3522,11 @@ export function PosDeskClient({
                 onChange={(event) =>
                   setTurnAdjustOperatorPasscode(event.target.value)
                 }
-                type="password"
+                type="text"
+                style={{ WebkitTextSecurity: "disc" } as React.CSSProperties}
+                name="staff-approval-code"
+                data-lpignore="true"
+                data-1p-ignore
                 value={turnAdjustOperatorPasscode}
               />
             </label>
@@ -3143,7 +3582,7 @@ export function PosDeskClient({
         <div
           className={
             isPortableSurface
-              ? "shrink-0 border-b border-zinc-200 pb-2"
+              ? "hidden"
               : "shrink-0 border-b border-zinc-200 pb-3"
           }
           data-pos-receipt-header
@@ -3200,17 +3639,30 @@ export function PosDeskClient({
               : "shrink-0 space-y-3 border-b border-zinc-200 py-3"
           }
         >
-          <div className="flex items-center justify-between gap-2">
-            <label className="block text-sm font-medium">Customer</label>
+          {!(isPortableSurface && localFirstDraft && portableWorkspaceState) && <div className="flex items-center justify-between gap-2">
+            {!isPortableSurface && <label className="block text-sm font-medium">Customer</label>}
             <div className="relative shrink-0">
               {waitingButton}
             </div>
-          </div>
+          </div>}
+          {localFirstDraft && portableWorkspaceState && <PortableDraftControls
+            idleMinutes={portableWorkspaceState.preferences.idleMinutes} warningSeconds={portableWorkspaceState.preferences.idleWarningSeconds}
+            onSavedChange={values => setParkedVisitIds(values.map(item => item.draft.customerVisitId).filter((id): id is string => Boolean(id)))}
+            leading={isPortableSurface ? waitingButton : undefined}
+            scope={portableWorkspaceState.scope} active={hasUnsavedDraftWork && !isSubmitting && !isResetting}
+            activity={`${idleResetKey}:${posActivityTick}`} value={recovery}
+            label={`${selectedCustomer?.name ?? "Ticket"} · $${totals.total.toFixed(2)}`}
+            reset={() => resetReceipt("idle")}
+            restore={saved => {
+              if (!persistLocalPortableDraft(JSON.parse(liveDraftPayloadKey), saved)) return false;
+              localCartId.current = crypto.randomUUID(); completedLocalReceipt.current = null;
+              restorePortableDraft(saved); return true;
+            }} />}
           {selectedCustomer ? (
             <div className="flex items-center justify-between gap-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5">
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-zinc-950">
-                  {selectedCustomer.name}
+                  <CustomerName name={selectedCustomer.name} />
                 </p>
                 {selectedCustomer.phone ? (
                   <p className="truncate text-xs text-zinc-600">
@@ -3242,6 +3694,11 @@ export function PosDeskClient({
                 }}
                 onFocus={() => setKeypadMode("customer_search")}
                 placeholder="Phone, email, account, name"
+                type="search"
+                name="pos-customer-query"
+                autoComplete="off"
+                data-lpignore="true"
+                data-1p-ignore
                 value={draft.customerLookup}
               />
               {draft.customerLookup.trim().length >= 2 ? (
@@ -3254,7 +3711,7 @@ export function PosDeskClient({
                         onClick={() => saveCustomerToSession(customer)}
                         type="button"
                       >
-                        <span className="block font-medium">{customer.name}</span>
+                        <span className="block font-medium"><CustomerName name={customer.name} /></span>
                         {customer.phone ? (
                           <span className="block text-xs text-zinc-500">
                             {customer.phone}
@@ -3688,9 +4145,7 @@ export function PosDeskClient({
                 title={`${member.display_name}: ${staffTurnCount} large turns, ${member.turns.smallTurns} small turns. ${staffStatusLabel}`}
               >
                 {member.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt=""
+                  <StaffAvatar
                     className="absolute inset-0 h-full w-full object-cover opacity-20"
                     src={member.avatar_url}
                   />
@@ -3731,15 +4186,16 @@ export function PosDeskClient({
               className="min-h-8 shrink-0 rounded-lg border border-zinc-200 bg-white/70 px-2.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
               disabled={receiptLocked}
               onClick={() => {
-                setShowServicePicker(true);
+                setShowCustomService(true);
                 setKeypadMode("amount");
               }}
               type="button"
             >
-              {hasHiddenServiceTiles ? "More" : "Catalog"}
+              Custom services
             </button>
           </div>
 
+          {draft.customServiceName && <p className="mb-2 text-sm font-medium text-orange-800">{draft.customServiceName}</p>}
           {visibleServiceTiles.length > 0 ? (
             <div
               className="grid max-h-40 grid-cols-[repeat(auto-fill,minmax(96px,112px))] content-start justify-start gap-2 overflow-hidden"
@@ -3824,12 +4280,7 @@ export function PosDeskClient({
         data-pos-keypad-mode={keypadMode}
         data-pos-amount-panel
       >
-        <div className="min-h-0 flex-1 overflow-auto pr-1">
-          {draftRestored ? (
-            <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50/90 px-3 py-2 text-sm font-medium text-amber-900">
-              Unsaved POS draft saved on this device.
-            </p>
-          ) : null}
+        <div className="min-h-0 flex-1 overflow-auto pr-1" data-pos-amount-scroll>
           {customerClaim && customerClaimUrl ? (
             <div className="mb-3 grid justify-items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-4 text-center shadow-sm">
               <div>
@@ -3894,6 +4345,8 @@ export function PosDeskClient({
                 </button>
               ),
             )}
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-2" data-pos-keypad-edit>
             <button
               className="min-h-12 rounded-lg border border-zinc-200 bg-white/75 font-semibold text-zinc-700 shadow-sm transition hover:bg-white active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
               disabled={receiptLocked}
@@ -3913,7 +4366,8 @@ export function PosDeskClient({
             </button>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3" data-pos-adjustments>
+          <div className="grid grid-cols-2 gap-3">
             <button
               className={[
                 "min-h-11 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2",
@@ -3942,7 +4396,7 @@ export function PosDeskClient({
             </button>
           </div>
 
-          <div className="mt-3 grid grid-cols-[auto_1fr] gap-3">
+          <div className="mt-2 grid grid-cols-2 gap-3">
             <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-zinc-200 bg-white/75 text-sm shadow-sm">
               <button
                 className={`px-3 py-2 font-semibold transition ${
@@ -3973,7 +4427,7 @@ export function PosDeskClient({
                 %
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-1.5">
+            <div className="grid grid-cols-2 gap-1.5">
               {tipSuggestions.map((amount, index) => (
                 <button
                   className="rounded-lg border border-zinc-200 bg-white/75 px-2 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition hover:bg-white active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
@@ -3992,8 +4446,10 @@ export function PosDeskClient({
             </div>
           </div>
 
+          </div>
           <button
             className="mt-3 min-h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50/80 px-3 py-2 text-left text-sm font-medium text-zinc-500 shadow-inner"
+            data-pos-gift-card-placeholder
             disabled
             onFocus={() => setKeypadMode("gift_card")}
             type="button"
@@ -4001,10 +4457,29 @@ export function PosDeskClient({
             Gift card
           </button>
 
-          <div className="mt-4 grid grid-cols-[0.85fr_1.15fr] gap-2">
+        </div>
+        <div className="shrink-0 border-t border-zinc-100 pt-2" data-pos-checkout-footer>
+          {isPortableSurface && <CompactCheckoutAdjustments
+            disabled={receiptLocked}
+            discountInput={draft.discountInput}
+            discountType={draft.discountType}
+            tipInput={draft.tipInput}
+            tipSuggestions={tipSuggestions}
+            onApply={(mode, value, discountType) => {
+              if (receiptLocked) return;
+              if (mode === "tip") {
+                updateDraft({ tipInput: value });
+                saveTipToSession(value);
+              } else {
+                updateDraft({ discountInput: value, discountType });
+              }
+              setKeypadMode("amount");
+            }}
+          />}
+          <div className="grid grid-cols-[1fr_2fr] gap-2" data-pos-checkout-actions>
             <button
               className="rounded-lg border border-zinc-200 bg-white/80 px-3 py-3 font-semibold text-zinc-700 shadow-sm transition hover:bg-white active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
-              disabled={isPending || isResetting || isSubmitting}
+              disabled={(!localFirstDraft && isPending) || isResetting || isSubmitting || (localFirstDraft && !portableDraftReady)}
               onClick={cancelActiveSession}
               type="button"
             >
@@ -4012,7 +4487,7 @@ export function PosDeskClient({
             </button>
             <button
               className="rounded-lg border border-brand-orange bg-gradient-to-b from-brand-orange via-[#ef5d28] to-brand-orange-hover px-3 py-3 font-bold text-white shadow-[0_16px_30px_rgba(242,111,61,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(242,111,61,0.34)] active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2"
-              disabled={isPending || isResetting || isSubmitting}
+              disabled={(!localFirstDraft && isPending) || isResetting || isSubmitting || (localFirstDraft && !portableDraftReady)}
               onClick={submitReceipt}
               type="button"
             >

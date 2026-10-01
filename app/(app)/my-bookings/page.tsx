@@ -339,12 +339,6 @@ export default async function MyBookingsPage({
   return (
     <main className={classNames(styles.bookingSurface, "min-h-screen overflow-x-hidden bg-[#fbf9f7] px-4 py-6 sm:px-6 lg:px-8")}>
       <div className="mx-auto grid w-full max-w-6xl gap-5">
-        <div className="flex justify-end">
-          <Link className={classNames(styles.secondaryButton, "w-fit px-4")} href="/explore">
-            Explore salons
-          </Link>
-        </div>
-
         {message ? (
           <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
             {message}

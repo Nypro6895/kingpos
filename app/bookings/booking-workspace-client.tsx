@@ -7,6 +7,7 @@ import {
   reassignOwnerBookingAction,
   rescheduleOwnerBookingAction,
   runBookingStatusAction,
+  saveOwnerWorkspaceBookingAction,
   replaceOwnerBookingServicesAction,
   updateBookingSettingsAction,
   updateQuickSetupAssignmentAction,
@@ -384,6 +385,10 @@ function settingsToInput(
 ): UpdateBookingSettingsInput {
   return {
     anyProfessionalEnabled: settings.any_professional_enabled,
+    autoAssignEnabled: settings.auto_assign_enabled !== false,
+    reminderEnabled: settings.reminder_enabled !== false,
+    confirmationEmailEnabled: settings.confirmation_email_enabled !== false,
+    confirmationSmsEnabled: settings.confirmation_sms_enabled !== false,
     bookingEnabled: settings.booking_enabled,
     cancellationWindowMinutes: settings.cancellation_window_minutes,
     confirmationMode: settings.confirmation_mode,
@@ -2399,6 +2404,10 @@ function BookingRulesQuickSetupDrawer({
           />
         </section>
         <section className="grid gap-3 rounded-xl border border-[#f0e6df] bg-white p-4 sm:grid-cols-2">
+          <Toggle checked={state.reminderEnabled} disabled={!canManage} label="Send a reminder within 24 hours of the appointment" onChange={(value) => setBoolean("reminderEnabled", value)} />
+          <Toggle checked={state.autoAssignEnabled} disabled={!canManage} label="Auto assign available professionals fairly (Portable)" onChange={(value) => setBoolean("autoAssignEnabled", value)} />
+          <Toggle checked={state.confirmationEmailEnabled} disabled={!canManage} label="Email booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationEmailEnabled", value)} />
+          <Toggle checked={state.confirmationSmsEnabled} disabled={!canManage} label="SMS booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationSmsEnabled", value)} />
           <Toggle
             checked={state.anyProfessionalEnabled}
             disabled={!canManage}
@@ -3642,7 +3651,7 @@ function quickStatusActions(status: string) {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function AppointmentRowEditDialog({
-  booking,
+  booking: serverBooking,
   mode,
   onClose,
   options,
@@ -3654,6 +3663,7 @@ function AppointmentRowEditDialog({
   options: BookingWorkspaceClientProps["options"];
   timezone: string;
 }) {
+  const [booking]=useState(serverBooking);
   const router = useRouter();
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -3701,6 +3711,7 @@ function AppointmentRowEditDialog({
 
     if (response.ok) {
       router.refresh();
+      onClose();
     }
   }
 
@@ -3710,6 +3721,7 @@ function AppointmentRowEditDialog({
     startTransition(async () => {
       const response = await runBookingStatusAction({
         bookingId: booking.id,
+        expectedUpdatedAt: booking.updated_at,
         command: statusCommand,
         reason: statusReason,
       });
@@ -3723,6 +3735,7 @@ function AppointmentRowEditDialog({
     startTransition(async () => {
       const response = await rescheduleOwnerBookingAction({
         bookingId: booking.id,
+        expectedUpdatedAt: booking.updated_at,
         endLocal,
         overbookingOverrideReason: overrideReason,
         startLocal,
@@ -3737,6 +3750,7 @@ function AppointmentRowEditDialog({
     startTransition(async () => {
       const response = await replaceOwnerBookingServicesAction({
         bookingId: booking.id,
+        expectedUpdatedAt: booking.updated_at,
         overbookingOverrideReason: overrideReason,
         serviceIds,
       });
@@ -3750,6 +3764,7 @@ function AppointmentRowEditDialog({
     startTransition(async () => {
       const response = await reassignOwnerBookingAction({
         bookingId: booking.id,
+        expectedUpdatedAt: booking.updated_at,
         lineAssignments: lineAssignments.map((assignment) => ({
           bookingLineId: assignment.bookingLineId,
           staffId: assignment.staffId || null,
@@ -4566,7 +4581,7 @@ function AppointmentRowInlinePopover({
 }
 
 function AppointmentTableRow({
-  booking,
+  booking: serverBooking,
   canManage,
   onOpen,
   options,
@@ -4580,6 +4595,7 @@ function AppointmentTableRow({
   showDate: boolean;
   timezone: string;
 }) {
+  const [booking,setBooking]=useState(serverBooking);
   const router = useRouter();
   const timeAnchorRef = useRef<HTMLButtonElement | null>(null);
   const servicesAnchorRef = useRef<HTMLButtonElement | null>(null);
@@ -4628,6 +4644,9 @@ function AppointmentTableRow({
     statusChanged ? "status" : null,
   ].filter((label): label is string => Boolean(label));
 
+  if(booking!==serverBooking&&!hasDraftChanges&&!popover&&!isPending){
+    setBooking(serverBooking);setDraft(appointmentRowDraftFromBooking(serverBooking,timezone));
+  }
   function updateDraft(nextDraft: AppointmentRowDraft) {
     setDraft(nextDraft);
     setResult(null);
@@ -4673,59 +4692,13 @@ function AppointmentTableRow({
 
     setResult(null);
     startTransition(async () => {
-      let response: BookingActionResult | null = null;
-
-      if (timeChanged) {
-        response = await rescheduleOwnerBookingAction({
-          bookingId: booking.id,
-          endLocal: draft.endLocal,
-          startLocal: draft.startLocal,
-        });
-
-        if (!response.ok) {
-          setResult(response);
-          return;
-        }
-      }
-
-      if (servicesChanged) {
-        response = await replaceOwnerBookingServicesAction({
-          bookingId: booking.id,
-          serviceIds: draft.serviceIds,
-          staffIds: draft.staffIds.map((staffId) => staffId || null),
-        });
-
-        if (!response.ok) {
-          setResult(response);
-          return;
-        }
-      } else if (staffChanged) {
-        response = await reassignOwnerBookingAction({
-          bookingId: booking.id,
-          lineAssignments: appointmentEditableLines(booking).map((line, index) => ({
-            bookingLineId: line.id,
-            staffId: draft.staffIds[index] || null,
-          })),
-        });
-
-        if (!response.ok) {
-          setResult(response);
-          return;
-        }
-      }
-
-      if (draft.statusCommand) {
-        response = await runBookingStatusAction({
-          bookingId: booking.id,
-          command: draft.statusCommand,
-          reason: draft.statusReason,
-        });
-
-        if (!response.ok) {
-          setResult(response);
-          return;
-        }
-      }
+      const response=await saveOwnerWorkspaceBookingAction({
+        bookingId:booking.id,expectedUpdatedAt:booking.updated_at,
+        ...(timeChanged?{startLocal:draft.startLocal,endLocal:draft.endLocal}:{}),
+        ...(servicesChanged?{serviceIds:draft.serviceIds,staffIds:draft.staffIds.map(id=>id||null)}:staffChanged?{lineAssignments:appointmentEditableLines(booking).map((line,index)=>({bookingLineId:line.id,staffId:draft.staffIds[index]||null}))}:{}),
+        ...(draft.statusCommand?{command:draft.statusCommand,reason:draft.statusReason}:{}),
+      });
+      if(!response.ok){setResult(response);return;}
 
       setResult({
         bookingId: booking.id,
@@ -4733,6 +4706,7 @@ function AppointmentTableRow({
         ok: true,
         ticketId: response?.ticketId,
       });
+      setDraft(originalDraft);
       setPopover(null);
       router.refresh();
     });
@@ -5103,7 +5077,7 @@ function CalendarView({
             <AppointmentTableRow
               booking={booking}
               canManage={canManage}
-              key={`${booking.id}-${booking.updated_at}`}
+              key={booking.id}
               onOpen={onOpen}
               options={options}
               showDate={filters.dateRange !== "day"}
@@ -5188,7 +5162,7 @@ function CustomerInspirationSection({
 }
 
 function DetailDrawer({
-  booking,
+  booking: serverBooking,
   canManage,
   onClose,
   options,
@@ -5202,6 +5176,7 @@ function DetailDrawer({
   settings: BookingWorkspaceClientProps["settings"];
   timezone: string;
 }) {
+  const [booking]=useState(serverBooking);
   const router = useRouter();
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -5233,6 +5208,7 @@ function DetailDrawer({
     startTransition(async () => {
       const response = await runBookingStatusAction({
         bookingId: booking.id,
+        expectedUpdatedAt: booking.updated_at,
         command,
         reason,
       });
@@ -5240,6 +5216,7 @@ function DetailDrawer({
 
       if (response.ok) {
         router.refresh();
+        onClose();
       }
     });
   }
@@ -5250,6 +5227,7 @@ function DetailDrawer({
     startTransition(async () => {
       const response = await rescheduleOwnerBookingAction({
         bookingId: booking.id,
+        expectedUpdatedAt: booking.updated_at,
         endLocal: rescheduleEnd,
         overbookingOverrideReason: overrideReason,
         startLocal: rescheduleStart,
@@ -5258,6 +5236,7 @@ function DetailDrawer({
 
       if (response.ok) {
         router.refresh();
+        onClose();
       }
     });
   }
@@ -5268,6 +5247,7 @@ function DetailDrawer({
     startTransition(async () => {
       const response = await reassignOwnerBookingAction({
         bookingId: booking.id,
+        expectedUpdatedAt: booking.updated_at,
         lineAssignments: lineAssignments.map((assignment) => ({
           bookingLineId: assignment.bookingLineId,
           staffId: assignment.staffId || null,
@@ -5278,6 +5258,7 @@ function DetailDrawer({
 
       if (response.ok) {
         router.refresh();
+        onClose();
       }
     });
   }
@@ -5292,6 +5273,7 @@ function DetailDrawer({
 
       if (response.ok) {
         router.refresh();
+        onClose();
       }
     });
   }
@@ -6702,6 +6684,10 @@ function SettingsPanel({
   const [isPending, startTransition] = useTransition();
   const [state, setState] = useState<UpdateBookingSettingsInput>({
     anyProfessionalEnabled: settings.any_professional_enabled,
+    autoAssignEnabled: settings.auto_assign_enabled !== false,
+    reminderEnabled: settings.reminder_enabled !== false,
+    confirmationEmailEnabled: settings.confirmation_email_enabled !== false,
+    confirmationSmsEnabled: settings.confirmation_sms_enabled !== false,
     bookingEnabled: settings.booking_enabled,
     cancellationWindowMinutes: settings.cancellation_window_minutes,
     confirmationMode: settings.confirmation_mode,
@@ -6833,9 +6819,13 @@ function SettingsPanel({
         <Toggle
           checked={state.sameDayBookingEnabled}
           disabled={!canManage}
-          label="Same-day booking"
+          label="Allow same-day booking (future times only)"
           onChange={(value) => setBoolean("sameDayBookingEnabled", value)}
         />
+        <Toggle checked={state.reminderEnabled} disabled={!canManage} label="Send a reminder within 24 hours of the appointment" onChange={(value) => setBoolean("reminderEnabled", value)} />
+          <Toggle checked={state.autoAssignEnabled} disabled={!canManage} label="Auto assign available professionals fairly (Portable)" onChange={(value) => setBoolean("autoAssignEnabled", value)} />
+        <Toggle checked={state.confirmationEmailEnabled} disabled={!canManage} label="Email booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationEmailEnabled", value)} />
+        <Toggle checked={state.confirmationSmsEnabled} disabled={!canManage} label="SMS booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationSmsEnabled", value)} />
         <Toggle
           checked={state.anyProfessionalEnabled}
           disabled={!canManage}
@@ -7220,6 +7210,10 @@ function OwnerSettingsPanel({
   const [isPending, startTransition] = useTransition();
   const [state, setState] = useState<UpdateBookingSettingsInput>({
     anyProfessionalEnabled: settings.any_professional_enabled,
+    autoAssignEnabled: settings.auto_assign_enabled !== false,
+    reminderEnabled: settings.reminder_enabled !== false,
+    confirmationEmailEnabled: settings.confirmation_email_enabled !== false,
+    confirmationSmsEnabled: settings.confirmation_sms_enabled !== false,
     bookingEnabled: settings.booking_enabled,
     cancellationWindowMinutes: settings.cancellation_window_minutes,
     confirmationMode: settings.confirmation_mode,
@@ -7281,7 +7275,7 @@ function OwnerSettingsPanel({
         <Toggle
           checked={state.sameDayBookingEnabled}
           disabled={!canManage}
-          label="Same-day booking"
+          label="Allow same-day booking (future times only)"
           onChange={(value) => setBoolean("sameDayBookingEnabled", value)}
         />
       </section>
@@ -7383,6 +7377,10 @@ function OwnerSettingsPanel({
           <p className={styles.eyebrow}>Professional assignment</p>
           <h2 className="mt-2 text-xl font-extrabold text-[#211c24]">Customer choice</h2>
         </div>
+        <Toggle checked={state.reminderEnabled} disabled={!canManage} label="Send a reminder within 24 hours of the appointment" onChange={(value) => setBoolean("reminderEnabled", value)} />
+          <Toggle checked={state.autoAssignEnabled} disabled={!canManage} label="Auto assign available professionals fairly (Portable)" onChange={(value) => setBoolean("autoAssignEnabled", value)} />
+        <Toggle checked={state.confirmationEmailEnabled} disabled={!canManage} label="Email booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationEmailEnabled", value)} />
+        <Toggle checked={state.confirmationSmsEnabled} disabled={!canManage} label="SMS booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationSmsEnabled", value)} />
         <Toggle
           checked={state.anyProfessionalEnabled}
           disabled={!canManage}
@@ -7700,6 +7698,7 @@ export function BookingWorkspaceClient({
 
       {selectedBooking ? (
         <DetailDrawer
+          key={selectedBooking.id}
           booking={selectedBooking}
           canManage={canManageBookings}
           onClose={closeBooking}

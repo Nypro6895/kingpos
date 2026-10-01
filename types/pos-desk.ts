@@ -34,7 +34,7 @@ export type PosDeskCustomer = Pick<
 export type PosDeskService = Pick<
   Service,
   "id" | "name" | "category" | "base_price"
->;
+> & { duration_minutes?: number };
 
 export type PosDeskSubmitLine = {
   amountInput: string;
@@ -46,6 +46,8 @@ export type PosDeskSubmitLine = {
 };
 
 export type PosDeskSubmitInput = {
+  sourceBookingId?: string | null;
+  sourceBookingUpdatedAt?: string | null;
   customerId?: string | null;
   customerLookup?: string | null;
   customerName?: string | null;

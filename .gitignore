@@ -2,6 +2,10 @@
 
 # dependencies
 /node_modules
+/desktop/node_modules/
+/desktop/dist/
+/desktop/dist-*/
+/desktop/build/
 /.pnp
 .pnp.*
 .yarn/*
@@ -60,3 +64,9 @@ supabase/.temp/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local desktop update feed (installers and generated manifest)
+/public/desktop-updates/
+
+# Local scratch builds and diagnostic logs
+/work/

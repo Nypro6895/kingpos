@@ -965,7 +965,15 @@ async function waitForPosReceiptLines(page, expectedCount) {
 }
 
 async function waitForPosToast(page, expectations) {
-  const toast = page.locator("[data-pos-toast]");
+  let toast = page.locator("[data-pos-toast]");
+
+  if (expectations.title) {
+    toast = toast.filter({ hasText: expectations.title });
+  }
+
+  if (expectations.detail) {
+    toast = toast.filter({ hasText: expectations.detail });
+  }
 
   await toast.waitFor({ timeout: 12000 });
 

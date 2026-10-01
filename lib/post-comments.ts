@@ -264,9 +264,12 @@ export async function loadPostCommentsPage(input: {
   };
 }
 
-async function countForTarget(target: PostCommentTarget) {
+async function countForTarget(
+  target: PostCommentTarget,
+  client?: Awaited<ReturnType<typeof getReadableSupabaseClient>>,
+) {
   const normalized = normalizePostCommentTarget(target);
-  const supabase = await getReadableSupabaseClient();
+  const supabase = client === undefined ? await getReadableSupabaseClient() : client;
 
   if (!normalized || !supabase) {
     return 0;
@@ -292,10 +295,12 @@ export async function getPostCommentCounts(targets: PostCommentTarget[]) {
     new Map(normalizedTargets.map((target) => [commentTargetKey(target), target])).values(),
   );
   const counts = new Map<string, number>();
+  if (uniqueTargets.length === 0) return counts;
+  const client = await getReadableSupabaseClient();
 
   await Promise.all(
     uniqueTargets.map(async (target) => {
-      counts.set(commentTargetKey(target), await countForTarget(target));
+      counts.set(commentTargetKey(target), await countForTarget(target, client));
     }),
   );
 
@@ -352,6 +357,7 @@ async function ensureCommentBelongsToTarget(input: {
 }
 
 export async function createPostComment(input: {
+  requestId?: string;
   asSalonReply?: boolean;
   body: string;
   parentCommentId?: string | null;
@@ -378,7 +384,10 @@ export async function createPostComment(input: {
   }
 
   const parentCommentId = cleanUuid(input.parentCommentId ?? null);
+  const requestId = input.requestId ? cleanUuid(input.requestId) : null;
+  if (input.requestId && !requestId) throw new Error("Comment request is not valid.");
   const insertPayload = {
+    ...(requestId ? { id: requestId } : {}),
     author_display_name: displayNameForUser(user),
     author_user_id: user.id,
     body,
@@ -396,6 +405,22 @@ export async function createPostComment(input: {
       "id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, created_at, updated_at, edited_at",
     )
     .single<CommentRow>();
+
+  if (error?.code === "23505" && requestId) {
+    const { data: existing, error: readError } = await supabase
+      .from("salon_profile_comments")
+      .select("id, salon_id, look_id, update_id, beauty_post_id, parent_comment_id, root_comment_id, reply_depth, author_user_id, author_display_name, body, is_salon_reply, created_at, updated_at, edited_at")
+      .eq("id", requestId)
+      .eq("author_user_id", user.id)
+      .maybeSingle<CommentRow>();
+    if (!readError && existing && rowTargetType(existing) === target.sourceType &&
+        rowTargetId(existing) === target.sourceId && existing.body === body &&
+        existing.parent_comment_id === parentCommentId &&
+        Boolean(existing.is_salon_reply) === (input.asSalonReply === true)) {
+      return { comment: mapCommentRow(existing), totalCount: await countForTarget(target) };
+    }
+    throw new Error("This comment request has already been used. Refresh the thread before continuing.");
+  }
 
   if (error || !data) {
     console.error("Supabase create post comment failed", {

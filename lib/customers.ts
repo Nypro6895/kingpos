@@ -401,7 +401,7 @@ export async function getCurrentSalonCustomerList(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const trimmedSearch = input.search?.trim();
@@ -860,7 +860,7 @@ export async function getCurrentSalonCustomer(customerId: string) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase
@@ -901,7 +901,7 @@ export async function getCurrentSalonCustomerDetail(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const baseCustomer = base.customer;

@@ -1,0 +1,25 @@
+{
+  "name": "kingpos-desktop",
+  "productName": "KingPOS Portable",
+  "version": "0.6.4",
+  "private": true,
+  "description": "KingPOS Portable for Windows â€” single checkout",
+  "author": "KingPOS",
+  "main": "main.cjs",
+  "scripts": {
+    "postinstall": "node node_modules/electron/install.js",
+    "start": "electron .",
+    "test": "node --test tests/*.test.cjs",
+    "dist:test": "node build.cjs test",
+    "dist:release": "node build.cjs release",
+    "publish:local": "node publish-local.cjs"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.9"
+  },
+  "devDependencies": {
+    "electron": "44.4.5",
+    "electron-builder": "26.15.3",
+    "js-yaml": "4.3.2"
+  }
+}

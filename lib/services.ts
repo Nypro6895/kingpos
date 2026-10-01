@@ -65,7 +65,7 @@ export async function getCurrentSalonServicesWorkspace(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const [servicesResult, linksResult, assignmentsResult, staffResult, canManage] =
@@ -179,7 +179,7 @@ export async function saveServiceConfigurations(inputs: ServiceConfigInput[]) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   if (inputs.length === 0 || inputs.length > 100) {

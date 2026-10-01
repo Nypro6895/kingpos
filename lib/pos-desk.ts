@@ -131,10 +131,11 @@ export async function getCurrentSalonPosDeskData() {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
-  const today = getTodayDate(context.user.timezone);
+  const { data: businessDate } = await supabase.rpc("get_salon_business_date", { p_salon_id: salon.id });
+  const today = typeof businessDate === "string" ? businessDate : getTodayDate(context.user.timezone);
   const [
     settings,
     customersResult,

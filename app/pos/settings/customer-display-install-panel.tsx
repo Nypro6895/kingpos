@@ -123,18 +123,16 @@ export function CustomerDisplayInstallPanel({
 
   return (
     <section
-      className="rounded-lg border border-zinc-200 bg-white p-5"
+      className="settings-section-body settings-display-setup"
       id="customer-display-install"
     >
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div>
           <h2 className="text-lg font-semibold text-zinc-950">
-            Customer Display App
+            Connect a display
           </h2>
           <p className="mt-1 text-sm leading-6 text-zinc-600">
-            Install or pair an iPad kiosk using the same POS ID and passcode
-            managed above. The setup URL does not include the live checkout
-            token.
+            Open here, or scan the QR code on another device and sign in with a POS ID.
           </p>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -173,7 +171,7 @@ export function CustomerDisplayInstallPanel({
 
           {!schemaReady ? (
             <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
-              Apply the Portable POS access migration before pairing a display.
+              Display pairing is temporarily unavailable. Please try again later or contact support.
             </p>
           ) : activeAccessKeyCount === 0 ? (
             <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
@@ -193,7 +191,7 @@ export function CustomerDisplayInstallPanel({
           ) : null}
         </div>
 
-        <div className="grid justify-items-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 p-4 text-center">
+        <div className="settings-qr grid justify-items-center gap-2 text-center">
           <SetupQr valueToEncode={setupUrl} />
           <p className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
             Setup QR

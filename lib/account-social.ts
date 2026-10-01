@@ -337,7 +337,7 @@ async function requireAccountSocialClient() {
   }
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   return { supabase, user: context.user };

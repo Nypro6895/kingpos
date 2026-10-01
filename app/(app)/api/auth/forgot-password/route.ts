@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase environment variables are missing." },
+      { error: "This feature is temporarily unavailable. Please try again later." },
       { status: 500 },
     );
   }

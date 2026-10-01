@@ -294,7 +294,7 @@ export async function getSalonBusinessHoursForDate(input: {
   if (!supabase) {
     return unavailableSalonBusinessHours({
       date: input.date,
-      fallbackReason: "Supabase environment variables are missing.",
+      fallbackReason: "This feature is temporarily unavailable. Please try again later.",
       timeZone: input.timeZone,
     });
   }

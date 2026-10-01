@@ -1,3 +1,4 @@
+import {OwnerLiveTickets} from '@/app/pos-tickets/owner-live-tickets';
 import { DailyPosTicketCard } from "@/app/pos-tickets/closed-ticket-correction-form";
 import {
   canApplyFinancialCorrections,
@@ -484,11 +485,9 @@ export default async function PosTicketsPage({
         </p>
       ) : null}
 
-      <DailyWorkLog
+      <OwnerLiveTickets key={selectedDate+searchQuery} salonId={context.currentSalon.id} initialTickets={tickets} bounds={getUtcBoundsForLocalDate(selectedDate,timeZone)} searchQuery={searchQuery}
         canApplyFinancialCorrection={canApplyFinancialCorrection}
         canEdit={canEditDailyTickets}
-        dailyNumbers={dailyNumbers}
-        groups={groups}
         isBusinessDateLocked={isSelectedDateLocked}
         returnTo={returnTo}
         selectedDateCompactLabel={selectedDateCompactLabel}

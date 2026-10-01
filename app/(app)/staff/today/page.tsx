@@ -1,5 +1,6 @@
+import { backlogTone, type MetricTone } from "@/lib/today-metric-assessment";
 import Link from "next/link";
-import { PosOwnerWorkspaceTabs } from "@/app/pos/pos-owner-workspace-tabs";
+import { PosWorkspaceRealtimeRefresh } from "@/app/pos/pos-workspace-realtime-refresh";
 
 import { QuickAccessPanel } from "@/app/staff/today/quick-access-editor";
 import {
@@ -284,13 +285,12 @@ function StaffAvatar({
 }
 
 function MetricIcon({ label }: { label: string }) {
-  const path =
-    label.startsWith("Sales")
-      ? "M7 20V4m10 16V4M4 8h16M4 16h16"
-      : label === "Appointments"
-        ? "M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm3 10h.01M12 14h.01M16 14h.01"
-        : label === "Tickets"
-          ? "M6 2h12v20l-3-2-3 2-3-2-3 2V2Zm3 7h6m-6 4h6"
+  const path = label.startsWith("Sales")
+    ? "M7 20V4m10 16V4M4 8h16M4 16h16"
+    : label === "Appointments"
+      ? "M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm3 10h.01M12 14h.01M16 14h.01"
+      : label === "Tickets"
+        ? "M6 2h12v20l-3-2-3 2-3-2-3 2V2Zm3 7h6m-6 4h6"
         : label === "Waiting"
           ? "M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z"
           : "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75";
@@ -361,19 +361,19 @@ function MiniMetricChart({ chart }: { chart: TodayMetricChart | null }) {
 
               return `Q${previousX.toFixed(1)} ${previousY.toFixed(1)} ${midX.toFixed(1)} ${midY.toFixed(1)}`;
             })
-            .join(" ")} T${coordinates[coordinates.length - 1][0].toFixed(1)} ${coordinates[coordinates.length - 1][1].toFixed(1)}`;
+            .join(
+              " ",
+            )} T${coordinates[coordinates.length - 1][0].toFixed(1)} ${coordinates[coordinates.length - 1][1].toFixed(1)}`;
 
     return (
       <svg
         aria-label={chart.ariaLabel}
-        className="h-9 w-full text-amber-500"
+        className="h-9 w-full"
         role="img"
         viewBox={`0 0 ${width} ${height}`}
       >
         <desc>
-          {points
-            .map((point) => `${point.label}: ${point.value}`)
-            .join(", ")}
+          {points.map((point) => `${point.label}: ${point.value}`).join(", ")}
         </desc>
         {!hasSignal ? (
           <path
@@ -385,7 +385,7 @@ function MiniMetricChart({ chart }: { chart: TodayMetricChart | null }) {
           />
         ) : null}
         <path
-          className={hasSignal ? "stroke-amber-500" : "stroke-zinc-200"}
+          className={hasSignal ? "stroke-current" : "stroke-zinc-200"}
           d={path}
           fill="none"
           strokeLinecap="round"
@@ -397,19 +397,20 @@ function MiniMetricChart({ chart }: { chart: TodayMetricChart | null }) {
   }
 
   const gap = 3;
-  const barWidth = Math.max(4, (width - gap * (points.length - 1)) / points.length);
+  const barWidth = Math.max(
+    4,
+    (width - gap * (points.length - 1)) / points.length,
+  );
 
   return (
     <svg
       aria-label={chart.ariaLabel}
-      className="mt-3 h-8 w-full text-amber-500"
+      className="mt-3 h-8 w-full"
       role="img"
       viewBox={`0 0 ${width} ${height}`}
     >
       <desc>
-        {points
-          .map((point) => `${point.label}: ${point.value}`)
-          .join(", ")}
+        {points.map((point) => `${point.label}: ${point.value}`).join(", ")}
       </desc>
       {points.map((point, index) => {
         const barHeight = Math.max(
@@ -423,9 +424,9 @@ function MiniMetricChart({ chart }: { chart: TodayMetricChart | null }) {
           <rect
             className={
               point.afterHours
-                ? "fill-orange-300"
+                ? "fill-current opacity-40"
                 : point.highlight
-                  ? "fill-amber-500"
+                  ? "fill-current"
                   : "fill-zinc-300"
             }
             height={barHeight}
@@ -456,7 +457,7 @@ function TrendPill({ trend }: { trend: TodayMetric["trend"] }) {
   return (
     <p
       className={classNames(
-        "mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full px-2 py-1 text-xs font-semibold",
+        "mt-2 inline-flex max-w-full items-start gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold",
         trend.direction === "up"
           ? "bg-teal-50 text-teal-700"
           : trend.direction === "down"
@@ -464,7 +465,7 @@ function TrendPill({ trend }: { trend: TodayMetric["trend"] }) {
             : "bg-zinc-100 text-zinc-600",
       )}
     >
-      <span className="min-w-0 truncate">{trend.label}</span>
+      <span className="min-w-0 break-words leading-5">{trend.label}</span>
       <svg
         aria-hidden="true"
         className="h-3.5 w-3.5 shrink-0"
@@ -530,16 +531,24 @@ function SectionIcon({
   );
 }
 
+function metricIconTone(tone?: MetricTone) {
+  return tone === "good"
+    ? "bg-emerald-50 text-emerald-700"
+    : tone === "danger"
+      ? "bg-red-50 text-red-700"
+      : tone === "warning"
+        ? "bg-orange-50 text-orange-700"
+        : "bg-zinc-100 text-zinc-500";
+}
 function metricToneClass(metric: TodayMetric) {
-  if (metric.restricted) {
-    return "border-zinc-200 bg-zinc-50 text-zinc-500";
-  }
-
-  if (metric.tone === "warning") {
-    return "border-amber-200 bg-white text-amber-800";
-  }
-
-  return "border-zinc-200 bg-white text-zinc-700";
+  if (metric.restricted) return "border-zinc-200 bg-zinc-50 text-zinc-500";
+  return metric.tone === "good"
+    ? "border-emerald-200 bg-white text-emerald-600"
+    : metric.tone === "danger"
+      ? "border-red-200 bg-white text-red-600"
+      : metric.tone === "warning"
+        ? "border-orange-200 bg-white text-orange-600"
+        : "border-zinc-200 bg-white text-zinc-500";
 }
 
 function statusToneClass(status: StaffWorkdayStatus | "not_checked_in") {
@@ -590,12 +599,36 @@ function displayStaffStatus(status: StaffWorkdayStatus | "not_checked_in") {
   return "Inactive";
 }
 
-function attentionToneClass(tone: TodayAttentionItem["tone"]) {
-  if (tone === "good") {
-    return "bg-emerald-500";
+function getWaitingMinutes(checkedInAt: string, generatedAt: string) {
+  const checkedInTime = new Date(checkedInAt).getTime();
+  const generatedTime = new Date(generatedAt).getTime();
+
+  if (
+    !Number.isFinite(checkedInTime) ||
+    !Number.isFinite(generatedTime) ||
+    generatedTime < checkedInTime
+  ) {
+    return 0;
   }
 
-  return tone === "warning" ? "bg-amber-500" : "bg-orange-400";
+  return Math.floor((generatedTime - checkedInTime) / 60000);
+}
+
+function formatWaitingDuration(minutes: number) {
+  const safeMinutes = Math.max(0, Math.floor(minutes));
+
+  if (safeMinutes < 1) {
+    return "<1m";
+  }
+
+  if (safeMinutes < 60) {
+    return `${safeMinutes}m`;
+  }
+
+  const hours = Math.floor(safeMinutes / 60);
+  const remainingMinutes = safeMinutes % 60;
+
+  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
 }
 
 function bookingStatusLabel(status: TodayUpcomingBooking["status"]) {
@@ -633,11 +666,13 @@ function rightNowStatusToneClass(
 }
 
 function Card({
+  iconTone,
   action,
   children,
   icon,
   title,
 }: {
+  iconTone?: MetricTone;
   action?: React.ReactNode;
   children: React.ReactNode;
   icon?: "alert" | "calendar" | "chart" | "clock" | "team";
@@ -648,11 +683,16 @@ function Card({
       <div className="flex items-center justify-between gap-4 border-b border-zinc-100 px-4 py-3.5 sm:px-5">
         <div className="flex min-w-0 items-center gap-2">
           {icon ? (
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-amber-50 text-amber-700">
+            <span
+              className={classNames(
+                "grid h-8 w-8 shrink-0 place-items-center rounded-lg",
+                metricIconTone(iconTone),
+              )}
+            >
               <SectionIcon name={icon} />
             </span>
           ) : null}
-          <h2 className="truncate text-base font-semibold text-zinc-950">
+          <h2 className="text-base font-semibold text-zinc-950">
             {title}
           </h2>
         </div>
@@ -684,11 +724,16 @@ function MetricCard({ metric }: { metric: TodayMetric }) {
         metric.href ? "hover:-translate-y-0.5 hover:shadow-md" : null,
       )}
     >
-      <div className="flex items-center gap-2">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-amber-50 text-amber-700">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+        <span
+          className={classNames(
+            "grid h-8 w-8 shrink-0 place-items-center rounded-lg",
+            metricIconTone(metric.restricted ? "default" : metric.tone),
+          )}
+        >
           <MetricIcon label={metric.label} />
         </span>
-        <p className="min-w-0 truncate text-sm font-semibold text-zinc-600">
+        <p className="min-w-0 text-sm font-semibold leading-5 text-zinc-600">
           {metric.label}
         </p>
       </div>
@@ -697,7 +742,6 @@ function MetricCard({ metric }: { metric: TodayMetric }) {
           <p className="text-2xl font-semibold leading-none text-zinc-950 sm:text-3xl">
             {metric.value}
           </p>
-          <TrendPill trend={metric.trend} />
           {metric.detail ? (
             <p className="mt-2 text-xs leading-5 text-zinc-600 sm:text-sm">
               {metric.detail}
@@ -708,6 +752,12 @@ function MetricCard({ metric }: { metric: TodayMetric }) {
           <MiniMetricChart chart={metric.chart} />
         </div>
       </div>
+      <TrendPill trend={metric.trend} />
+      {metric.assessment ? (
+        <p className="mt-2 text-xs font-medium leading-5">
+          {metric.assessment}
+        </p>
+      ) : null}
     </div>
   );
 
@@ -774,11 +824,16 @@ function CompactEmptyState({
 
 function WaitingClientRow({
   client,
+  generatedAt,
   timeZone,
 }: {
   client: TodayClientPresence;
+  generatedAt: string;
   timeZone: string;
 }) {
+  const waitingDuration = formatWaitingDuration(
+    getWaitingMinutes(client.checkedInAt, generatedAt),
+  );
   const sourceLabel =
     client.source === "appointment"
       ? "appointment"
@@ -812,7 +867,7 @@ function WaitingClientRow({
           rightNowStatusToneClass(client.status),
         )}
       >
-        {clientPresenceStatusLabel(client.status)}
+        {clientPresenceStatusLabel(client.status)} {waitingDuration}
       </span>
     </div>
   );
@@ -852,7 +907,11 @@ function UpcomingBookingRow({
         </p>
         <p
           className="min-w-0 truncate text-xs font-medium text-zinc-500"
-          title={booking.assignedStaff ? `Assigned staff: ${booking.assignedStaff.name}` : undefined}
+          title={
+            booking.assignedStaff
+              ? `Assigned staff: ${booking.assignedStaff.name}`
+              : undefined
+          }
         >
           {booking.serviceLabel ?? "Service not selected"}
         </p>
@@ -895,7 +954,7 @@ function RightNowSection({
     <div className="min-w-0 rounded-xl border border-zinc-100 bg-zinc-50/35 p-3 sm:p-4">
       <div className="mb-2 flex min-h-9 items-center justify-between gap-3">
         <div className="flex min-w-0 items-baseline gap-2">
-          <h2 className="truncate text-base font-semibold text-zinc-950">
+          <h2 className="text-base font-semibold text-zinc-950">
             {title}
           </h2>
           <span className="text-xs font-medium text-zinc-500">{count}</span>
@@ -919,18 +978,18 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
   return (
     <section className="rounded-xl border border-zinc-200 bg-white shadow-[0_10px_30px_rgba(24,24,27,0.04)]">
       <div className="px-4 py-4 sm:px-5">
-      {!canViewBookings ? (
-        <CompactEmptyState
-          detail="Booking access is required to show waiting clients and upcoming appointments."
-          title="Schedule unavailable"
-        />
-      ) : !isCurrentDate ? (
-        hasUpcoming ? (
-          <RightNowSection
-            action={scheduleAction}
-            count={dashboard.rightNow.upcomingBookings.length}
-            title="Appointments"
-          >
+        {!canViewBookings ? (
+          <CompactEmptyState
+            detail="Booking access is required to show waiting clients and upcoming appointments."
+            title="Schedule unavailable"
+          />
+        ) : !isCurrentDate ? (
+          hasUpcoming ? (
+            <RightNowSection
+              action={scheduleAction}
+              count={dashboard.rightNow.upcomingBookings.length}
+              title="Appointments"
+            >
               {dashboard.rightNow.upcomingBookings.map((booking) => (
                 <UpcomingBookingRow
                   booking={booking}
@@ -938,49 +997,50 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
                   timeZone={dashboard.timezone}
                 />
               ))}
-          </RightNowSection>
-        ) : (
+            </RightNowSection>
+          ) : (
+            <CompactEmptyState
+              detail="This date has no scheduled appointments."
+              title="No appointments recorded"
+            />
+          )
+        ) : !hasWaiting && !hasUpcoming ? (
           <CompactEmptyState
-            detail="This date has no scheduled appointments."
-            title="No appointments recorded"
+            detail="No clients waiting or upcoming appointments remaining today."
+            title="Quiet right now"
           />
-        )
-      ) : !hasWaiting && !hasUpcoming ? (
-        <CompactEmptyState
-          detail="No clients waiting or upcoming appointments remaining today."
-          title="Quiet right now"
-        />
-      ) : (
-        <div
-          className={classNames(
-            "grid gap-5",
-            hasWaiting && hasUpcoming ? "xl:grid-cols-2" : null,
-          )}
-        >
-          {hasWaiting ? (
-            <RightNowSection
-              action={!hasUpcoming ? scheduleAction : undefined}
-              count={dashboard.rightNow.waitingClients.length}
-              title="Waiting"
-            >
+        ) : (
+          <div
+            className={classNames(
+              "grid gap-5",
+              hasWaiting && hasUpcoming ? "xl:grid-cols-2" : null,
+            )}
+          >
+            {hasWaiting ? (
+              <RightNowSection
+                action={!hasUpcoming ? scheduleAction : undefined}
+                count={dashboard.rightNow.waitingClients.length}
+                title="Waiting"
+              >
                 {dashboard.rightNow.waitingClients.map((client) => (
                   <WaitingClientRow
                     client={client}
+                    generatedAt={dashboard.generatedAt}
                     key={client.id}
                     timeZone={dashboard.timezone}
                   />
                 ))}
-            </RightNowSection>
-          ) : (
-            <EmptyLine label="No clients waiting right now." />
-          )}
+              </RightNowSection>
+            ) : (
+              <EmptyLine label="No clients waiting right now." />
+            )}
 
-          {hasUpcoming ? (
-            <RightNowSection
-              action={scheduleAction}
-              count={dashboard.rightNow.upcomingBookings.length}
-              title="Upcoming"
-            >
+            {hasUpcoming ? (
+              <RightNowSection
+                action={scheduleAction}
+                count={dashboard.rightNow.upcomingBookings.length}
+                title="Upcoming"
+              >
                 {dashboard.rightNow.upcomingBookings.map((booking) => (
                   <UpcomingBookingRow
                     booking={booking}
@@ -988,20 +1048,44 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
                     timeZone={dashboard.timezone}
                   />
                 ))}
-            </RightNowSection>
-          ) : (
-            <EmptyLine label="No upcoming appointments remaining today." />
-          )}
-        </div>
-      )}
+              </RightNowSection>
+            ) : (
+              <EmptyLine label="No upcoming appointments remaining today." />
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
 function AttentionPanel({ items }: { items: TodayAttentionItem[] }) {
+  const count = items.reduce(
+    (sum, item) => sum + (item.tone === "good" ? 0 : (item.count ?? 1)),
+    0,
+  );
+  const incomplete = items.some((item) => item.id === "incomplete-attention");
+  const tone = count === 0 && incomplete ? "default" : backlogTone(count);
   return (
-    <Card icon="alert" title="Needs Attention">
+    <Card
+      icon="alert"
+      iconTone={tone}
+      title="Needs Attention"
+      action={
+        <span
+          className={classNames(
+            "rounded-full px-2 py-1 text-xs font-semibold",
+            metricIconTone(tone),
+          )}
+        >
+          {count
+            ? `${count} to review`
+            : incomplete
+              ? "Check unavailable"
+              : "All clear"}
+        </span>
+      }
+    >
       <div className="divide-y divide-zinc-100">
         {items.map((item) => {
           const content = (
@@ -1009,7 +1093,11 @@ function AttentionPanel({ items }: { items: TodayAttentionItem[] }) {
               <span
                 className={classNames(
                   "mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full",
-                  attentionToneClass(item.tone),
+                  item.tone === "good"
+                    ? "bg-emerald-500"
+                    : (item.count ?? 1) >= 5
+                      ? "bg-red-500"
+                      : "bg-orange-500",
                 )}
               />
               <div className="min-w-0 flex-1">
@@ -1059,7 +1147,10 @@ function StaffStatusBadge({
     >
       <span
         aria-hidden="true"
-        className={classNames("h-1.5 w-1.5 rounded-full", statusDotClass(status))}
+        className={classNames(
+          "h-1.5 w-1.5 rounded-full",
+          statusDotClass(status),
+        )}
       />
       {displayStaffStatus(status)}
     </span>
@@ -1267,16 +1358,18 @@ function TeamPanel({ dashboard }: { dashboard: TodayDashboard }) {
 function hasSalesActivity(performance: TodayPerformance) {
   return Boolean(
     performance.sales &&
-      (performance.sales.ticketCount > 0 ||
-        performance.sales.total > 0 ||
-        performance.sales.service > 0 ||
-        performance.sales.tip > 0),
+    (performance.sales.ticketCount > 0 ||
+      performance.sales.total > 0 ||
+      performance.sales.service > 0 ||
+      performance.sales.tip > 0),
   );
 }
 
 function SalesSummary({ performance }: { performance: TodayPerformance }) {
   if (!performance.sales) {
-    return <EmptyLine label="Reports access is required to show sales totals." />;
+    return (
+      <EmptyLine label="Reports access is required to show sales totals." />
+    );
   }
 
   const rows = [
@@ -1378,7 +1471,10 @@ function SalesActivityChart({
   const barWidth = Math.min(22, Math.max(4, slotWidth * 0.42));
   const labelStep = Math.max(1, Math.ceil(points.length / 12));
   const ticks = hasSignal ? [max, max / 2, 0] : [0];
-  const ticketCount = points.reduce((total, point) => total + point.ticketCount, 0);
+  const ticketCount = points.reduce(
+    (total, point) => total + point.ticketCount,
+    0,
+  );
 
   return (
     <div className="min-w-0">
@@ -1442,9 +1538,9 @@ function SalesActivityChart({
               <rect
                 className={
                   point.afterHours
-                    ? "fill-orange-300"
+                    ? "fill-current opacity-40"
                     : point.latest
-                      ? "fill-amber-500"
+                      ? "fill-current"
                       : "fill-amber-300"
                 }
                 height={barHeight}
@@ -1514,7 +1610,11 @@ function StaffBars({
   );
 }
 
-function BookingStatusCounts({ performance }: { performance: TodayPerformance }) {
+function BookingStatusCounts({
+  performance,
+}: {
+  performance: TodayPerformance;
+}) {
   const total =
     performance.bookingStatus.active +
     performance.bookingStatus.completed +
@@ -1610,7 +1710,11 @@ function PerformancePanel({ dashboard }: { dashboard: TodayDashboard }) {
   );
 }
 
-function LoadErrorsBanner({ errors }: { errors: TodayDashboard["loadErrors"] }) {
+function LoadErrorsBanner({
+  errors,
+}: {
+  errors: TodayDashboard["loadErrors"];
+}) {
   if (errors.length === 0) {
     return null;
   }
@@ -1678,7 +1782,7 @@ export default async function StaffTodayPage({
       data-today-dashboard="owner-manager"
     >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
-        <PosOwnerWorkspaceTabs salonId={context.currentSalon.id} />
+        <PosWorkspaceRealtimeRefresh salonId={context.currentSalon.id} />
         <header>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">

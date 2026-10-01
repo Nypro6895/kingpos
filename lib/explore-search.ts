@@ -278,7 +278,7 @@ export async function searchExploreSalons(
   if (!supabase) {
     return emptyResponse({
       category,
-      error: "Explore search is unavailable because Supabase is not configured.",
+      error: "Salon search is temporarily unavailable. Please try again later.",
       location,
       page,
       pageSize,
@@ -308,7 +308,7 @@ export async function searchExploreSalons(
 
       return emptyResponse({
         category,
-        error: "Explore search is not ready yet. Apply the public discovery migration and try again.",
+        error: "Salon search is temporarily unavailable. Please try again later.",
         location,
         page,
         pageSize,

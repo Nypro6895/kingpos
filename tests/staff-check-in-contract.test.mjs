@@ -20,6 +20,10 @@ const posStaffRealtime = readFileSync("lib/pos-staff-realtime.ts", "utf8");
 const posSettingsActions = readFileSync("app/pos/settings/actions.ts", "utf8");
 const posSettingsPage = readFileSync("app/(app)/pos/settings/page.tsx", "utf8");
 const portableActions = readFileSync("app/pos/portable/actions.ts", "utf8");
+const portableCheckInClient = readFileSync(
+  "app/pos/portable/check-in/portable-check-in-client.tsx",
+  "utf8",
+);
 const bookingActions = readFileSync("app/bookings/actions.ts", "utf8");
 const staffActions = readFileSync("app/staff/actions.ts", "utf8");
 const portableCapabilities = readFileSync(
@@ -290,6 +294,31 @@ test("POS workspace mutations broadcast realtime invalidations after commits", (
     "booking workspace changes publish POS workspace invalidations",
   );
   assert.match(staffActions, /broadcastPosStaffChange\(context\.currentSalon\.id, "staff"\)/);
+});
+
+test("latency-sensitive check-in and POS submits do not await refresh broadcasts", () => {
+  const attendanceAction = portableActions.slice(
+    portableActions.indexOf("export async function portableSubmitAttendanceEvent"),
+    portableActions.indexOf("export async function correctPortableClosedPosTicketInline"),
+  );
+
+  assert.match(attendanceAction, /after\(\(\) => broadcastPosStaffChange/);
+  assert.doesNotMatch(attendanceAction, /data: await getPortableCheckInData\(\)/);
+  assert.doesNotMatch(attendanceAction, /revalidatePath\("\/pos\/portable"\)/);
+  assert.doesNotMatch(attendanceAction, /revalidatePath\("\/pos\/portable\/ticket"\)/);
+  assert.match(attendanceAction, /revalidatePath\("\/pos\/portable\/check-in"\)/);
+  assert.match(portableCheckInClient, /staff: source\.staff\.map/);
+  assert.match(portableCheckInClient, /workspaceState\?\.setAttendance/);
+  assert.match(posDeskClient, /portableWorkspaceState\?\.attendanceByStaffId/);
+  assert.match(
+    posDeskClient,
+    /isPortableSurface && payload\.source === "attendance"/,
+  );
+  assert.match(portableActions, /after\(\(\) => broadcastPosLiveDraftSnapshot\(liveDraft, "pos"\)\)/);
+  assert.match(posActions, /after\(\(\) => broadcastWaitingChangeByLiveDraftToken\(input\.token\)\)/);
+  assert.match(posActions, /Promise\.all\(input\.lines\.map\(async \(line\) =>/);
+  assert.match(posActions, /const queueDeltasByStaff = new Map<string, number>\(\)/);
+  assert.doesNotMatch(bookingActions, /await broadcastPosStaffChange/);
 });
 
 test("portable POS staff-card long press has cancellation and keyboard contracts", () => {

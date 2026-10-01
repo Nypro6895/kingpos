@@ -501,13 +501,13 @@ function parseSettings(value: unknown): PublicBookingSettings | null {
     guestBookingEnabled: booleanValue(row.guest_booking_enabled, false),
     maximumAdvanceWindowDays: Math.max(
       1,
-      Math.round(numberValue(row.maximum_advance_window_days, 30)),
+      Math.round(numberValue(row.maximum_advance_window_days, 60)),
     ),
     minimumLeadTimeMinutes: Math.max(
       0,
       Math.round(numberValue(row.minimum_lead_time_minutes, 120)),
     ),
-    sameDayBookingEnabled: booleanValue(row.same_day_booking_enabled, true),
+    sameDayBookingEnabled: booleanValue(row.same_day_booking_enabled, false),
     slotIntervalMinutes: Math.max(
       5,
       Math.round(numberValue(row.slot_interval_minutes, 15)),
@@ -711,7 +711,7 @@ async function loadRawContext(salonId: string) {
   const supabase = createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const now = new Date();
@@ -1130,6 +1130,16 @@ function buildSlotPlan(
       candidates = visitStaffCandidates;
     }
 
+    if (mode !== "specific" && !(mode === "split" && cleanUuid(lineStaffIds[index]))) {
+      const date = timeZoneParts(new Date(cursorMs), settings.timezoneIana).date;
+      const load = (id: string) => context.busyLines.filter(busy => busy.staffId === id && timeZoneParts(new Date(busy.startsAt), settings.timezoneIana).date === date);
+      candidates = [...candidates].sort((a, b) => {
+        const left = load(a), right = load(b);
+        return new Set(left.map(row => row.bookingId)).size - new Set(right.map(row => row.bookingId)).size
+          || Math.max(0, ...left.map(row => Date.parse(row.startsAt))) - Math.max(0, ...right.map(row => Date.parse(row.startsAt)))
+          || a.localeCompare(b);
+      });
+    }
     const chosen = candidates.find((staffId) => {
       if (!serviceAssignment(context, line.service.id, staffId)) {
         return false;
@@ -2072,7 +2082,7 @@ export async function createPublicBooking(
   const supabase = authenticatedSupabase ?? createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const customerFirstName = input.customerFirstName?.trim() || null;
@@ -2351,7 +2361,7 @@ export async function getGuestManageBooking(tokenInput: string): Promise<GuestMa
     (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase.rpc("get_public_booking_by_manage_token", {
@@ -2493,7 +2503,7 @@ export async function rescheduleGuestBooking(input: {
     (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase.rpc("reschedule_public_booking_by_manage_token", {
@@ -2532,7 +2542,7 @@ export async function cancelGuestBooking(input: {
     (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase.rpc("cancel_public_booking_by_manage_token", {
@@ -2547,7 +2557,7 @@ export async function cancelGuestBooking(input: {
   const result = asRecord(data);
 
   if (!booleanValue(result.ok, false)) {
-    return publicBookingFailure("Booking could not be cancelled.", nonEmptyString(result.code) ?? "failed");
+    return publicBookingFailure(nonEmptyString(result.message) ?? "Booking could not be cancelled.", nonEmptyString(result.code) ?? "failed");
   }
 
   return {

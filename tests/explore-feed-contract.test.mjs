@@ -342,7 +342,7 @@ test("Explore optional data fallbacks do not use dev-overlay console errors", ()
 });
 
 test("Explore DTO restore keeps fresh Beauty booking presentation over stale session copies", () => {
-  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*10/);
+  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*11/);
   assert.match(feedClient, /function mergeStoredFeedItems/);
   assert.match(feedClient, /function readStoredBookingMeta/);
   assert.match(feedClient, /const freshByKey = new Map/);
@@ -437,10 +437,11 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.match(feedClient, /shouldRestoreStoredFeedState/);
   assert.match(feedClient, /navigation\?\.type !== "reload"/);
   assert.match(feedClient, /sessionStorage\.removeItem\(EXPLORE_FEED_SESSION_KEY\)/);
-  assert.match(feedClient, /window\.scrollTo\(0, stored\.scrollY\)/);
+  assert.match(feedClient, /window\.scrollTo\(0, pendingScrollRef\.current\)/);
+  assert.match(feedClient, /useLayoutEffect/);
   assert.match(feedClient, /appendUniqueFeedItems/);
   assert.match(feedClient, /return item\.feedKey/);
-  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*10/);
+  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*11/);
   assert.match(feedClient, /data-source-type=\{item\.sourceType\}/);
   assert.match(feedClient, /data-feed-hero=\{featured \? "true" : undefined\}/);
   assert.match(feedClient, /BeforeAfterMedia/);
@@ -523,7 +524,8 @@ test("explore feed visual rhythm stays compact and image-led", () => {
   assert.match(client, /DesktopInspiredGrid/);
   assert.match(client, /Discover local beauty pros\. See real work\./);
   assert.match(client, /Inspired by your style/);
-  assert.match(client, /Loved by 50,000\+ beauty lovers/);
+  assert.doesNotMatch(client, /Loved by 50,000\+ beauty lovers|12K\+ reviews/);
+  assert.match(client, /Discover work from local beauty professionals/);
   assert.match(client, /xl:grid-cols-5/);
   assert.match(client, /allLabel="For you"/);
   assert.match(client, /!homeMode \? \(/);

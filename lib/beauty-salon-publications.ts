@@ -255,7 +255,7 @@ export async function listBeautySalonPublicationRequests(
   const config = getSupabaseConfig();
 
   if (!supabase || !config || !salon || !user) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase
@@ -343,7 +343,7 @@ export async function respondToBeautySalonPublicationRequest(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase.rpc(

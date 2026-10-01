@@ -27,6 +27,7 @@ import {
   isSalonStaffContext,
 } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
+import { getMyPlaceWorkspaceContext } from "@/lib/my-place-context";
 import {
   SALON_PROFILE_MEDIA_BUCKET,
   buildSalonProfileMediaPath,
@@ -173,9 +174,10 @@ function revalidateSalonProfile(salonId?: string | null) {
 export async function getSalonProfileMediaUploadSessionAction(
   intent: MediaUploadIntent,
   kind: Extract<SalonProfileMediaKind, "cover" | "logo" | "look" | "update">,
+  workspaceId?: string,
 ): Promise<SalonProfileUploadSession> {
   const [context, accessToken] = await Promise.all([
-    getCurrentBusinessContext(),
+    workspaceId ? getMyPlaceWorkspaceContext(workspaceId) : getCurrentBusinessContext(),
     getAccessTokenFromRequest(),
   ]);
   const config = getSupabaseConfig();
@@ -217,7 +219,7 @@ export async function getSalonProfileMediaUploadSessionAction(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { error } = await supabase.from("salon_profile_media_assets").insert({

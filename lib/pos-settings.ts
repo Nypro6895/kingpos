@@ -86,7 +86,7 @@ export type PosDeskDefaults = {
   tipSuggestions: number[];
 };
 
-export type PosSettingsView = PosDeskDefaults & PosCustomerDisplaySettings;
+export type PosSettingsView = PosDeskDefaults & PosCustomerDisplaySettings & { touchKeyboardEnabled: boolean };
 
 type PosSettingsRow = {
   app_download_url: string | null;
@@ -106,11 +106,12 @@ type PosSettingsRow = {
   large_turn_threshold: number | null;
   salon_id: string;
   staff_check_in_enabled?: boolean | null;
+  touch_keyboard_enabled?: boolean | null;
   tip_suggestions: number[] | null;
 };
 
 const POS_SETTINGS_SELECT =
-  "salon_id, large_turn_threshold, staff_check_in_enabled, tip_suggestions, customer_background_image_path, customer_left_ad_image_path, customer_right_ad_image_path, customer_left_ad_text, customer_right_ad_text, customer_promo_title, customer_promo_body, customer_show_customer_name, customer_show_receipt_status, customer_show_salon_name, customer_show_service_name, customer_show_staff_name, customer_show_barcode, app_download_url";
+  "salon_id, touch_keyboard_enabled, large_turn_threshold, staff_check_in_enabled, tip_suggestions, customer_background_image_path, customer_left_ad_image_path, customer_right_ad_image_path, customer_left_ad_text, customer_right_ad_text, customer_promo_title, customer_promo_body, customer_show_customer_name, customer_show_receipt_status, customer_show_salon_name, customer_show_service_name, customer_show_staff_name, customer_show_barcode, app_download_url";
 const POS_SETTINGS_LEGACY_SELECT =
   "salon_id, large_turn_threshold, tip_suggestions, customer_background_image_path, customer_left_ad_image_path, customer_right_ad_image_path, customer_left_ad_text, customer_right_ad_text, customer_promo_title, customer_promo_body, customer_show_customer_name, customer_show_receipt_status, customer_show_salon_name, customer_show_service_name, customer_show_staff_name, customer_show_barcode, app_download_url";
 
@@ -187,6 +188,7 @@ export function normalizePosSettingsPayload(value: unknown): PosSettingsView {
 
   return {
     ...POS_SETTING_DEFAULTS,
+    touchKeyboardEnabled: typeof payload.touchKeyboardEnabled === "boolean" ? payload.touchKeyboardEnabled : true,
     appDownloadUrl: cleanText(payload.appDownloadUrl, POS_SETTING_DEFAULTS.appDownloadUrl),
     customerBackgroundImagePath: backgroundPath,
     customerBackgroundImageUrl: getPosDisplayMediaUrl(backgroundPath),
@@ -272,6 +274,7 @@ function rowToPosSettings(row: PosSettingsRow | null): PosSettingsView {
     customerShowStaffName: row.customer_show_staff_name,
     largeTurnThreshold: row.large_turn_threshold,
     staffCheckInEnabled: row.staff_check_in_enabled,
+    touchKeyboardEnabled: row.touch_keyboard_enabled,
     tipSuggestions: row.tip_suggestions,
   });
 }
@@ -314,7 +317,7 @@ export async function getCurrentSalonPosSettings(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   let { data, error } = await supabase

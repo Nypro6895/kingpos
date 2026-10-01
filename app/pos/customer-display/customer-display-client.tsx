@@ -1,4 +1,6 @@
 "use client";
+import { notifyWaitingChanged } from "@/lib/portable-waiting";
+import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -6,6 +8,8 @@ import type { CSSProperties, KeyboardEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   confirmCustomerDisplayLiveDraftTip,
+  findLiveDraftCustomerByPhone,
+  createLiveDraftCustomer,
   getCustomerDisplayLiveDraftTipOptions,
   getPosLiveDraft,
   resetCustomerDisplayCompletedDraft,
@@ -16,6 +20,7 @@ import {
   type CustomerDisplayTipOption,
 } from "@/app/pos/actions";
 import { QrCodeTile } from "@/components/qr-code-tile";
+import { connectLocalReceipt, requestLocalReceiptTip, requestLocalReceiptCustomer, dismissLocalReceipt, localReceiptSnapshot, type LocalReceiptPreview, publishLocalDisplaySnapshot, subscribeLocalDisplay } from "@/lib/pos-local-display";
 import {
   getPosLiveDraftRealtimeChannel,
   POS_LIVE_DRAFT_BROADCAST_EVENT,
@@ -347,21 +352,17 @@ function FullscreenButton({
   hidden: boolean;
   onClick: () => void;
 }) {
-  if (hidden) {
-    return null;
-  }
-
   return (
     <button
-      aria-label="Enter full view"
-      className="absolute right-4 top-4 z-40 grid h-12 w-12 place-items-center rounded-lg border border-white/40 bg-white/90 text-zinc-800 shadow-lg backdrop-blur transition hover:bg-white"
+      aria-label={hidden ? "Exit full view" : "Enter full view"}
+      className="absolute right-4 top-4 z-40 grid h-12 w-12 place-items-center rounded-lg border border-white/40 bg-white/90 text-zinc-800 opacity-40 shadow-lg backdrop-blur transition hover:bg-white hover:opacity-100 focus-visible:opacity-100"
       data-customer-display-fullscreen-button
       onClick={(event) => {
         event.stopPropagation();
         onClick();
       }}
       onPointerDown={(event) => event.stopPropagation()}
-      title="Full view"
+      title={hidden ? "Exit full view" : "Enter full view"}
       type="button"
     >
       <FullscreenIcon />
@@ -1760,7 +1761,7 @@ function ServiceSelectionPanel({
 
 export function CustomerDisplayClient({
   serviceCatalog,
-  settings,
+  settings:initialSettings,
   token,
 }: {
   serviceCatalog: CustomerDisplayService[];
@@ -1768,6 +1769,11 @@ export function CustomerDisplayClient({
   token: string;
 }) {
   const [liveDraft, setLiveDraft] = useState<PosLiveDraftView | null>(null);
+  const [settings,setSettings]=useState(initialSettings);
+  usePosResourceRefresh(liveDraft?.salon_id,'settings',async()=>{
+    const response=await fetch('/api/pos/customer-display/settings?token='+encodeURIComponent(token),{cache:'no-store',signal:AbortSignal.timeout(8000)});
+    if(response.ok){const next=await response.json();if(next.salonName)setSettings(next);}
+  });
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("connecting");
   const [error, setError] = useState<string | null>(null);
@@ -1801,6 +1807,8 @@ export function CustomerDisplayClient({
     null,
   );
   const lastSubmittedPhoneRef = useRef("");
+  const [localPreviewMode, setLocalPreviewMode] = useState(false);
+  const localPreview = useRef<{ value: LocalReceiptPreview; receivedAt: number } | null>(null);
   const liveDraftRef = useRef<PosLiveDraftView | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const serverOffsetRef = useRef(0);
@@ -1892,8 +1900,7 @@ export function CustomerDisplayClient({
     }
 
     if (
-      !token &&
-      (!liveDraft || isEmptyDraft(liveDraft)) &&
+      (!liveDraft || isEmptyDraft(liveDraft) || (liveDraft.status === "closed" && !completedResetActive)) &&
       !customerInteractionInProgress
     ) {
       return "attract";
@@ -1917,10 +1924,10 @@ export function CustomerDisplayClient({
     () => getTipOptions(settings, liveDraft),
     [liveDraft, settings],
   );
-  const tipOptions = serverTipOptions ?? fallbackTipOptions;
+  const tipOptions = localPreviewMode ? fallbackTipOptions : serverTipOptions ?? fallbackTipOptions;
   const rootClass = [
     "customer-display-kiosk-surface relative h-dvh w-dvw touch-manipulation overflow-hidden overscroll-none text-zinc-950",
-    isFullscreen ? "cursor-none" : "",
+    "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -1931,6 +1938,7 @@ export function CustomerDisplayClient({
   }, []);
 
   const applySnapshot = useCallback((snapshot: PosLiveDraftView) => {
+    if (localPreview.current && Date.now() - localPreview.current.receivedAt < 2000) return;
     if (
       versionRef.current !== null &&
       snapshot.version < versionRef.current
@@ -1943,13 +1951,14 @@ export function CustomerDisplayClient({
 
     serverOffsetRef.current = nextServerOffsetMs;
     setServerOffsetMs(nextServerOffsetMs);
+    const previousSnapshot = liveDraftRef.current;
     liveDraftRef.current = snapshot;
     setLiveDraft(snapshot);
     setConnectionState("connected");
 
     if (
       snapshot.status === "closed" ||
-      (snapshot.status === "draft" && !snapshot.customer && !hasMeaningfulReceipt(snapshot))
+      (snapshot.status === "draft" && !snapshot.customer && !hasMeaningfulReceipt(snapshot) && hasMeaningfulReceipt(previousSnapshot))
     ) {
       setPhoneInput("");
       setConfirmedPhone(null);
@@ -1986,6 +1995,7 @@ export function CustomerDisplayClient({
     }
 
     const result = await getPosLiveDraft(token);
+    if (localPreview.current && Date.now() - localPreview.current.receivedAt < 2000) return;
 
     if (!result.ok) {
       setError(result.error);
@@ -2003,6 +2013,39 @@ export function CustomerDisplayClient({
 
     setError(null);
   }, [applySnapshot, token]);
+
+  useEffect(() => subscribeLocalDisplay(token, applySnapshot), [token, applySnapshot]);
+  useEffect(() => {
+    const connection = connectLocalReceipt(token, { preview: value => {
+      const baseline = liveDraftRef.current;
+      const previous = localPreview.current;
+      localPreview.current = { value, receivedAt: Date.now() };
+      setLocalPreviewMode(true);
+      setConnectionState("connected");
+      if (!previous) setError(null);
+      if (previous?.value.cartId === value.cartId && previous.value.revision === value.revision && previous.value.completedAt === value.completedAt) return;
+      const snapshot = localReceiptSnapshot(baseline, value);
+      serverOffsetRef.current = 0; setServerOffsetMs(0);
+      liveDraftRef.current = snapshot;
+      setLiveDraft(snapshot);
+      setServerTipOptions(null);
+      if (value.completedAt || (previous && previous.value.cartId !== value.cartId)) {
+        setGuestConfirmed(false); setCustomTipInput(""); setCustomTipMode(false);
+        setPhoneInput(""); setConfirmedPhone(null); setIsChangingCustomer(false);
+        setCreateCustomerMode(false); setCustomerNameInput(""); setCustomerResults([]);
+        setCheckInState(null); setServiceSelectionState(null); setSelectedServiceIds([]);
+        setCustomerStatus(null); lastSubmittedPhoneRef.current = "";
+      }
+    } });
+    const timer = setInterval(() => {
+      if (localPreview.current && Date.now() - localPreview.current.receivedAt >= 2000) {
+        localPreview.current = null; setLocalPreviewMode(false);
+        if (navigator.onLine) void loadLatestSnapshot().catch(() => {});
+      }
+    }, 1000);
+    return () => { clearInterval(timer); connection.close(); localPreview.current = null; };
+  }, [token, loadLatestSnapshot]);
+
 
   const handlePhoneInput = useCallback(
     (value: string) => {
@@ -2048,11 +2091,24 @@ export function CustomerDisplayClient({
         setNewCustomerKey(
           options?.newCustomer ? localPhoneKey(phone) : null,
         );
-        applySnapshot(result.snapshot);
+        const preview = localPreview.current;
+        if (preview && Date.now() - preview.receivedAt < 2000 && result.snapshot.customer) {
+          const customer = result.snapshot.customer;
+          void requestLocalReceiptCustomer(token, preview.value, customer).then(accepted => {
+            if (!accepted) { setCustomerStatus("The ticket changed. Please enter your phone again."); return; }
+            // Customer identity comes from the authorized lookup; receipt amounts remain local.
+            if (localPreview.current?.value.cartId !== preview.value.cartId) return;
+            const value = { ...preview.value, payload: { ...preview.value.payload, customer } };
+            localPreview.current = { value, receivedAt: Date.now() };
+            const snapshot = localReceiptSnapshot(result.snapshot, value);
+            liveDraftRef.current = snapshot; setLiveDraft(snapshot);
+          });
+        } else applySnapshot(result.snapshot);
         setCustomerStatus("Customer confirmed.");
         return;
       }
 
+      notifyWaitingChanged();
       if (serviceCatalog.length > 0) {
         const nextSelectedIds = result.visit.requestedServices
           .map((service) => service.id)
@@ -2071,8 +2127,24 @@ export function CustomerDisplayClient({
       setCustomerStatus(null);
       lastSubmittedPhoneRef.current = "";
     },
-    [applySnapshot, selectableServiceIds, serviceCatalog.length],
+    [applySnapshot, selectableServiceIds, serviceCatalog.length, token],
   );
+
+  const submitDisplayPhone = useCallback(async (input: { phone: string; name?: string }): Promise<Awaited<ReturnType<typeof submitCustomerDisplayPhone>>> => {
+    const preview = localPreview.current;
+    const baseline = liveDraftRef.current;
+    if (preview && baseline && !preview.value.completedAt && Date.now() - preview.receivedAt < 2000 && hasMeaningfulReceipt(baseline)) {
+      const result = input.name
+        ? await createLiveDraftCustomer({ ...input, name: input.name, token })
+        : await findLiveDraftCustomerByPhone({ phone: input.phone, token });
+      if (!result.ok) return result;
+      if (!result.data) return { ok: false, code: "profile_required", error: "Enter your name to continue." };
+      return { ok: true, data: { mode: "checkout", visit: null,
+        snapshot: { ...baseline, customer: result.data } } };
+    }
+    return submitCustomerDisplayPhone({ ...input, requestId: getRequestId(), token,
+      checkInOnly: !!preview && Date.now() - preview.receivedAt < 2000 && !hasMeaningfulReceipt(baseline) });
+  }, [token]);
 
   const submitPhoneLookup = useCallback(
     async (value = phoneInput) => {
@@ -2093,10 +2165,8 @@ export function CustomerDisplayClient({
 
       setConfirmedPhone(nextDigits);
       setIsCustomerPending(true);
-      const result = await submitCustomerDisplayPhone({
+      const result = await submitDisplayPhone({
         phone: nextDigits,
-        requestId: getRequestId(),
-        token,
       });
       setIsCustomerPending(false);
 
@@ -2123,17 +2193,15 @@ export function CustomerDisplayClient({
       liveDraftStatus,
       markCustomerInteraction,
       phoneInput,
+      submitDisplayPhone,
       token,
     ],
   );
   const enterFullscreen = useCallback(() => {
-    const target = rootRef.current;
-
-    if (!target || document.fullscreenElement) {
-      return;
-    }
-
-    void target.requestFullscreen?.().catch(() => undefined);
+    const native = (window as Window & { kingposDisplay?: { fullscreen(toggle?: boolean): Promise<boolean>; getFullscreen?(): Promise<boolean> } }).kingposDisplay;
+    if (native) { void native.fullscreen(true).then(setIsFullscreen).catch(() => {}); return; }
+    if (document.fullscreenElement) { void document.exitFullscreen().catch(() => {}); return; }
+    void rootRef.current?.requestFullscreen?.().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -2167,13 +2235,17 @@ export function CustomerDisplayClient({
 
   useEffect(() => {
     function handleFullscreenChange() {
-      setIsFullscreen(Boolean(document.fullscreenElement));
+      const native = (window as Window & { kingposDisplay?: { fullscreen(toggle?: boolean): Promise<boolean>; getFullscreen?(): Promise<boolean> } }).kingposDisplay;
+      if (native?.getFullscreen) { void native.getFullscreen().then(setIsFullscreen).catch(() => {}); }
+      else setIsFullscreen(Boolean(document.fullscreenElement));
     }
 
+    const timer = window.setInterval(handleFullscreenChange, 1000);
     handleFullscreenChange();
     document.addEventListener("fullscreenchange", handleFullscreenChange);
 
     return () => {
+      clearInterval(timer);
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
@@ -2435,11 +2507,7 @@ export function CustomerDisplayClient({
     setIsCustomerPending(true);
     setError(null);
 
-    const result = await submitCustomerDisplayPhone({
-      phone,
-      requestId: getRequestId(),
-      token,
-    });
+    const result = await submitDisplayPhone({ phone });
 
     setIsCustomerPending(false);
 
@@ -2473,12 +2541,7 @@ export function CustomerDisplayClient({
     setIsCustomerPending(true);
     setError(null);
 
-    const result = await submitCustomerDisplayPhone({
-      name,
-      phone,
-      requestId: getRequestId(),
-      token,
-    });
+    const result = await submitDisplayPhone({ name, phone });
 
     setIsCustomerPending(false);
 
@@ -2506,22 +2569,28 @@ export function CustomerDisplayClient({
     setIsTipPending(true);
     setError(null);
 
-    const result = await confirmCustomerDisplayLiveDraftTip({
-      requestId: getRequestId(),
-      tipAmount,
-      token,
-    });
-
-    setIsTipPending(false);
-
-    if (!result.ok) {
-      setError(result.error);
-      return;
+    try {
+      const preview = localPreview.current;
+      if (preview && Date.now() - preview.receivedAt < 2000) {
+        const accepted = await requestLocalReceiptTip(token, preview.value, tipAmount);
+        if (!accepted) { setError("The receipt changed. Please select your tip again."); return; }
+        setCustomTipInput(""); setCustomTipMode(false);
+        return;
+      }
+      if (!navigator.onLine) { setError("Connect to the POS to confirm your tip."); return; }
+      const result = await confirmCustomerDisplayLiveDraftTip({
+        requestId: getRequestId(), tipAmount, token,
+      });
+      if (!result.ok) { setError(result.error); return; }
+      setCustomTipInput("");
+      setCustomTipMode(false);
+      applySnapshot(result.data);
+      publishLocalDisplaySnapshot(result.data);
+    } catch {
+      setError("Tip confirmation could not be verified. Reconnect and check the displayed amount.");
+    } finally {
+      setIsTipPending(false);
     }
-
-    setCustomTipInput("");
-    setCustomTipMode(false);
-    applySnapshot(result.data);
   }
 
   function beginFromAttract() {
@@ -2529,7 +2598,7 @@ export function CustomerDisplayClient({
     setCheckInState(null);
     setServiceSelectionState(null);
     setSelectedServiceIds([]);
-    setIsChangingCustomer(false);
+    setIsChangingCustomer(true);
   }
 
   function changeCustomer() {
@@ -2626,10 +2695,16 @@ export function CustomerDisplayClient({
     setServiceSelectionState(null);
     setSelectedServiceIds([]);
     setCheckInState(result.data);
+    notifyWaitingChanged();
     setCustomerStatus(null);
   }
 
   async function resetCompletedNow() {
+    const preview = localPreview.current;
+    if (preview?.value.completedAt && Date.now() - preview.receivedAt < 2000) {
+      dismissLocalReceipt(token, preview.value.cartId);
+      return;
+    }
     if (
       completedResetInFlightRef.current ||
       !token ||

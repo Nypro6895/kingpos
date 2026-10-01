@@ -173,7 +173,7 @@ export async function getSalonLifecycle(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase
@@ -270,7 +270,7 @@ export async function getSalonClosureReview(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const salonId = salon?.id ?? input.salonId ?? context.currentSalon?.id;
@@ -385,7 +385,7 @@ export async function generateSalonLifecycleBackup(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const salonId = salon?.id ?? input.salonId ?? context.currentSalon?.id;
@@ -488,7 +488,7 @@ async function callSalonLifecycleRpc(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase.rpc(input.rpcName, {
@@ -566,7 +566,7 @@ export async function recoverPermanentlyClosedSalon(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase.rpc(

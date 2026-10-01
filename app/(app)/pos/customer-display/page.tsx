@@ -69,7 +69,7 @@ export default async function CustomerDisplayPage({
   ]);
 
   return (
-    <main className="h-dvh overflow-hidden bg-zinc-950 text-white">
+    <main data-customer-display-shell className="h-dvh overflow-hidden bg-zinc-950 text-white">
       <CustomerDisplayClient
         serviceCatalog={serviceCatalog}
         settings={settings}

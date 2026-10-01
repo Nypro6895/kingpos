@@ -2,7 +2,7 @@
   ExploreClient,
   type ExploreQuickAction,
 } from "@/app/explore/explore-client";
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import { getRequestBusinessContext as getCurrentBusinessContext } from "@/lib/request-business-context";
 import {
   EXPLORE_PAGE_SIZE,
   getExploreWorkspaceLocation,

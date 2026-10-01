@@ -1,6 +1,9 @@
 import { PosDeskClient } from "@/app/pos/pos-desk-client";
 import { PosRapidMobileBridge } from "@/app/pos/pos-rapid-mobile-bridge";
 import styles from "@/app/pos/pos-rapid-mobile.module.css";
+import { cookies } from "next/headers";
+import { PrepareWorkspaceDevice } from '@/app/pos/portable/prepare-workspace-device';
+import { SingleWorkspaceWindow } from '@/app/pos/single-workspace-window';
 import {
   getPortablePosDeskData,
   portableCreatePosDeskCustomer,
@@ -15,6 +18,7 @@ import {
 } from "@/app/pos/portable/actions";
 
 export default async function PortablePosPage() {
+  if (!(await cookies()).get('kingpos-workspace-device')?.value) return <PrepareWorkspaceDevice/>;
   let data: Awaited<ReturnType<typeof getPortablePosDeskData>>;
 
   try {
@@ -36,12 +40,13 @@ export default async function PortablePosPage() {
   }
 
   return (
+    <SingleWorkspaceWindow id="portable-pos">
     <section
       className="h-full min-h-0 overflow-hidden p-2 max-md:p-0"
       data-portable-pos-page="pos"
     >
       <div className={styles.rapidHost} data-pos-rapid-host>
-        <PosRapidMobileBridge services={data.services} staff={data.staff} />
+        <PosRapidMobileBridge staffCheckInEnabled={data.defaults.staffCheckInEnabled} services={data.services} staff={data.staff} />
         <div className={styles.engine} data-pos-rapid-engine>
           <PosDeskClient
             actions={{
@@ -57,6 +62,7 @@ export default async function PortablePosPage() {
             }}
             activeSession={null}
             defaults={data.defaults}
+            offlineDraftSyncEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"}
             liveDraft={data.liveDraft}
             salonLogoUrl={data.salonLogoUrl}
             salonName={data.salonName}
@@ -68,6 +74,6 @@ export default async function PortablePosPage() {
           />
         </div>
       </div>
-    </section>
+    </section></SingleWorkspaceWindow>
   );
 }

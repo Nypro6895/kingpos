@@ -1,5 +1,8 @@
 export const SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE =
-  "Authentication is temporarily unavailable because Supabase cannot be reached. Check the Supabase connection and try again.";
+  "Unable to connect. Please check your internet connection and try again.";
+
+export const AUTH_OFFLINE_MESSAGE =
+  "No internet connection. Please reconnect and try again.";
 
 type ErrorLike = {
   code?: unknown;

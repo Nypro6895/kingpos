@@ -1,4 +1,5 @@
 "use client";
+import { mergePortableStaff, usePortableWorkspaceState } from "@/app/pos/portable/portable-workspace-state";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PosDeskService, PosDeskStaff } from "@/types/pos-desk";
@@ -19,6 +20,7 @@ type ReceiptLineView = {
 };
 
 type Props = {
+  staffCheckInEnabled?: boolean;
   services: PosDeskService[];
   staff: PosDeskStaff[];
 };
@@ -51,7 +53,9 @@ function numericInput(value: string) {
   return source.replace(/[^0-9./]/g, "");
 }
 
-export function PosRapidMobileBridge({ services, staff }: Props) {
+export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckInEnabled = true }: Props) {
+  const workspace = usePortableWorkspaceState();
+  const staff = useMemo(() => mergePortableStaff(serverStaff, workspace, undefined, staffCheckInEnabled), [serverStaff, workspace, staffCheckInEnabled]);
   const bridgeRef = useRef<HTMLDivElement | null>(null);
   const allowServiceClickRef = useRef(false);
   const [isMobile, setIsMobile] = useState(false);

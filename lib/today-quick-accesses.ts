@@ -311,7 +311,7 @@ async function readStoredQuickAccessIds(input: {
 
   if (!supabase) {
     return {
-      error: "Saved shortcuts are unavailable because Supabase is not configured.",
+      error: "Saved shortcuts are temporarily unavailable. Please try again later.",
       exists: false,
       ids: [],
     };
@@ -413,7 +413,7 @@ async function persistTodayQuickAccessIds(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { error } = await supabase.from("today_quick_access_preferences").upsert(

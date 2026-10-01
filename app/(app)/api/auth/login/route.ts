@@ -226,7 +226,7 @@ export async function POST(request: Request) {
   if (!supabase) {
     return loginErrorResponse(
       request,
-      "Supabase environment variables are missing.",
+      "This feature is temporarily unavailable. Please try again later.",
       500,
       nextPath,
     );

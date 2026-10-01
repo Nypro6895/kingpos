@@ -5,6 +5,7 @@ import {
   updateStaffDirectoryBatchFormAction,
 } from "@/app/staff/actions";
 import Link from "next/link";
+import { searchTextMatches } from "@/lib/search-normalization";
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { StaffDirectoryMember } from "@/lib/staff";
@@ -61,11 +62,7 @@ function clean(value: string | null | undefined) {
 }
 
 function getInitials(value: string) {
-  const parts = value
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
+  const parts = value.trim().split(/\s+/).filter(Boolean).slice(0, 2);
 
   return parts.map((part) => part[0]?.toUpperCase()).join("") || "ST";
 }
@@ -199,7 +196,8 @@ function EmptyState({
   hasAnyStaff: boolean;
   title?: string;
 }) {
-  const resolvedTitle = title ?? (hasAnyStaff ? "No matching staff" : "No staff yet");
+  const resolvedTitle =
+    title ?? (hasAnyStaff ? "No matching staff" : "No staff yet");
   const resolvedDescription =
     description ??
     (hasAnyStaff
@@ -273,7 +271,11 @@ function HiddenInputs({ rows }: { rows: RowState[] }) {
             />
           ) : null}
           {row.posEnabled ? (
-            <input name={fieldName("pos_enabled", row.id)} readOnly value="on" />
+            <input
+              name={fieldName("pos_enabled", row.id)}
+              readOnly
+              value="on"
+            />
           ) : null}
           {row.postingEnabled ? (
             <input
@@ -346,11 +348,18 @@ function StaffRow({
               tone: "warning" as const,
             }
           : null,
-      ].filter((item): item is StaffDirectoryStatusBadge => Boolean(item?.label))
+      ].filter((item): item is StaffDirectoryStatusBadge =>
+        Boolean(item?.label),
+      )
     : [];
 
   return (
-    <tr className={classNames(!row.isActive && "bg-zinc-50/70", dirty && "bg-sky-50/50")}>
+    <tr
+      className={classNames(
+        !row.isActive && "bg-zinc-50/70",
+        dirty && "bg-sky-50/50",
+      )}
+    >
       <td className="px-4 py-4 align-top">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
@@ -370,7 +379,9 @@ function StaffRow({
               <input
                 autoComplete="nickname"
                 className="w-full rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-sm font-semibold text-zinc-950 outline-none focus:border-zinc-300 focus:bg-white"
-                onChange={(event) => onUpdate({ displayName: event.target.value })}
+                onChange={(event) =>
+                  onUpdate({ displayName: event.target.value })
+                }
                 value={row.displayName}
               />
             ) : (
@@ -383,14 +394,18 @@ function StaffRow({
                 <input
                   autoComplete="given-name"
                   className="min-h-8 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-600 outline-none focus:border-zinc-300 focus:bg-white"
-                  onChange={(event) => onUpdate({ firstName: event.target.value })}
+                  onChange={(event) =>
+                    onUpdate({ firstName: event.target.value })
+                  }
                   placeholder="First name"
                   value={row.firstName}
                 />
                 <input
                   autoComplete="family-name"
                   className="min-h-8 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-600 outline-none focus:border-zinc-300 focus:bg-white"
-                  onChange={(event) => onUpdate({ lastName: event.target.value })}
+                  onChange={(event) =>
+                    onUpdate({ lastName: event.target.value })
+                  }
                   placeholder="Last name"
                   value={row.lastName}
                 />
@@ -436,14 +451,18 @@ function StaffRow({
             <input
               autoComplete="address-line1"
               className="min-h-8 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-500 outline-none focus:border-zinc-300 focus:bg-white"
-              onChange={(event) => onUpdate({ addressLine1: event.target.value })}
+              onChange={(event) =>
+                onUpdate({ addressLine1: event.target.value })
+              }
               placeholder="Address line 1"
               value={row.addressLine1}
             />
             <input
               autoComplete="address-line2"
               className="min-h-8 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-500 outline-none focus:border-zinc-300 focus:bg-white"
-              onChange={(event) => onUpdate({ addressLine2: event.target.value })}
+              onChange={(event) =>
+                onUpdate({ addressLine2: event.target.value })
+              }
               placeholder="Address line 2"
               value={row.addressLine2}
             />
@@ -465,7 +484,9 @@ function StaffRow({
               <input
                 autoComplete="postal-code"
                 className="min-h-8 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-500 outline-none focus:border-zinc-300 focus:bg-white"
-                onChange={(event) => onUpdate({ postalCode: event.target.value })}
+                onChange={(event) =>
+                  onUpdate({ postalCode: event.target.value })
+                }
                 placeholder="ZIP"
                 value={row.postalCode}
               />
@@ -627,7 +648,9 @@ function StaffTable({
               key={row.id}
               onToggleEditing={() => onToggleEditing(row.id)}
               onUpdate={(patch) => onUpdate(row.id, patch)}
-              profileHref={canManageStaff ? profileHrefByStaffId[row.id] : undefined}
+              profileHref={
+                canManageStaff ? profileHrefByStaffId[row.id] : undefined
+              }
               row={row}
               status={
                 statusByStaffId[row.id] ?? {
@@ -667,15 +690,48 @@ export function StaffDirectoryEditor({
   );
   const [rows, setRows] = useState(initialRows);
   const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
-  const activeRows = rows.filter((row) => !row.initiallyHidden);
-  const hiddenRows = rows.filter((row) => row.initiallyHidden);
+  const [search, setSearch] = useState(query);
+  const matchingIds = new Set(
+    [...activeStaff, ...hiddenStaff]
+      .filter((member) =>
+        searchTextMatches(
+          [
+            member.display_name,
+            member.first_name,
+            member.last_name,
+            member.email,
+            member.phone,
+            member.job_title,
+            member.connected_user?.display_name,
+            member.connected_user?.email,
+            member.connected_user?.phone,
+          ],
+          search,
+        ),
+      )
+      .map((member) => member.id),
+  );
+  const activeRows = rows.filter(
+    (row) => !row.initiallyHidden && matchingIds.has(row.id),
+  );
+  const hiddenRows = rows.filter(
+    (row) => row.initiallyHidden && matchingIds.has(row.id),
+  );
+  const searchProfileHrefs = Object.fromEntries(
+    Object.entries(profileHrefByStaffId).map(([id, href]) => {
+      const [path, queryString] = href.split("?");
+      const params = new URLSearchParams(queryString);
+      if (search.trim()) params.set("q", search.trim());
+      else params.delete("q");
+      return [id, `${path}?${params}`];
+    }),
+  );
   const dirtyIds = new Set(
     rows
       .filter((row) => rowSignature(row) !== initialSignatures.get(row.id))
       .map((row) => row.id),
   );
   const hasDirtyRows = dirtyIds.size > 0;
-  const hasVisibleRows = activeRows.length > 0 || hiddenRows.length > 0;
 
   function updateRow(staffId: string, patch: Partial<RowState>) {
     setRows((current) =>
@@ -697,93 +753,115 @@ export function StaffDirectoryEditor({
     });
   }
 
-  if (!hasVisibleRows) {
-    return (
-      <EmptyState
-        addHref={addHref}
-        canManageStaff={canManageStaff}
-        hasAnyStaff={hasAnyStaff}
-      />
-    );
-  }
-
   return (
-    <form
-      action={updateStaffDirectoryBatchFormAction}
-      className="mt-4 grid gap-4"
-    >
-      <input name="q" type="hidden" value={query} />
-      <HiddenInputs rows={rows} />
-      {activeRows.length > 0 ? (
-        <StaffTable
-          canManageStaff={canManageStaff}
-          dirtyIds={dirtyIds}
-          editingIds={editingIds}
-          onToggleEditing={toggleEditing}
-          onUpdate={updateRow}
-          profileHrefByStaffId={profileHrefByStaffId}
-          rows={activeRows}
-          statusByStaffId={statusByStaffId}
+    <>
+      <div className="flex items-center gap-3">
+        <label className="sr-only" htmlFor="staff-search">
+          Search staff
+        </label>
+        <input
+          id="staff-search"
+          type="search"
+          className="min-h-11 min-w-0 flex-1 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-teal-600"
+          placeholder="Search staff..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
         />
-      ) : (
-        <EmptyState
-          addHref={addHref}
-          canManageStaff={canManageStaff}
-          description={
-            hiddenRows.length > 0
-              ? "Open the hidden staff list below to restore staff."
-              : undefined
-          }
-          hasAnyStaff={hasAnyStaff}
-          title={hiddenRows.length > 0 ? "No enabled staff" : undefined}
-        />
-      )}
-      <details className="rounded-lg border border-zinc-200 bg-white">
-        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-zinc-950">
-          Hidden staff list ({hiddenRows.length})
-        </summary>
-        <div className="border-t border-zinc-200 p-4">
-          {hiddenRows.length > 0 ? (
-            <StaffTable
-              canManageStaff={canManageStaff}
-              dirtyIds={dirtyIds}
-              editingIds={editingIds}
-              onToggleEditing={toggleEditing}
-              onUpdate={updateRow}
-              profileHrefByStaffId={profileHrefByStaffId}
-              rows={hiddenRows}
-              statusByStaffId={statusByStaffId}
-            />
-          ) : (
-            <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
-              No hidden staff.
-            </p>
-          )}
-        </div>
-      </details>
-      {canManageStaff ? (
-        <div className="flex items-center justify-end gap-3">
-          {hasDirtyRows ? (
-            <span className="text-xs font-medium text-sky-700">
-              Unsaved changes
-            </span>
-          ) : (
-            <span className="text-xs text-zinc-500">Saved</span>
-          )}
+        {search ? (
           <button
-            className={classNames(
-              "inline-flex min-h-10 items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition",
-              hasDirtyRows
-                ? "bg-zinc-950 text-white"
-                : "border border-zinc-300 bg-white text-zinc-500",
-            )}
-            disabled={!hasDirtyRows}
-            type="submit"
+            type="button"
+            className="min-h-11 text-sm font-medium text-teal-700 hover:underline"
+            onClick={() => setSearch("")}
           >
-            Save staff changes
+            Clear
           </button>
-        </div>
+        ) : null}
+      </div>
+      {search ? (
+        <p role="status" className="mt-2 text-xs text-zinc-500">
+          {matchingIds.size} matching staff
+        </p>
       ) : null}
-    </form>
+      <form
+        action={updateStaffDirectoryBatchFormAction}
+        className="mt-4 grid gap-4"
+      >
+        <input name="q" type="hidden" value={search} />
+        <HiddenInputs rows={rows} />
+        {activeRows.length > 0 ? (
+          <StaffTable
+            canManageStaff={canManageStaff}
+            dirtyIds={dirtyIds}
+            editingIds={editingIds}
+            onToggleEditing={toggleEditing}
+            onUpdate={updateRow}
+            profileHrefByStaffId={searchProfileHrefs}
+            rows={activeRows}
+            statusByStaffId={statusByStaffId}
+          />
+        ) : (
+          <EmptyState
+            addHref={addHref}
+            canManageStaff={canManageStaff}
+            description={
+              hiddenRows.length > 0
+                ? "Open the hidden staff list below to restore staff."
+                : undefined
+            }
+            hasAnyStaff={hasAnyStaff}
+            title={hiddenRows.length > 0 ? "No enabled staff" : undefined}
+          />
+        )}
+        <details
+          open={search.trim() ? true : undefined}
+          className="rounded-lg border border-zinc-200 bg-white"
+        >
+          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-zinc-950">
+            Hidden staff list ({hiddenRows.length})
+          </summary>
+          <div className="border-t border-zinc-200 p-4">
+            {hiddenRows.length > 0 ? (
+              <StaffTable
+                canManageStaff={canManageStaff}
+                dirtyIds={dirtyIds}
+                editingIds={editingIds}
+                onToggleEditing={toggleEditing}
+                onUpdate={updateRow}
+                profileHrefByStaffId={searchProfileHrefs}
+                rows={hiddenRows}
+                statusByStaffId={statusByStaffId}
+              />
+            ) : (
+              <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
+                No hidden staff.
+              </p>
+            )}
+          </div>
+        </details>
+        {canManageStaff ? (
+          <div className="flex items-center justify-end gap-3">
+            {hasDirtyRows ? (
+              <span className="text-xs font-medium text-sky-700">
+                Unsaved changes
+              </span>
+            ) : (
+              <span className="text-xs text-zinc-500">Saved</span>
+            )}
+            <button
+              className={classNames(
+                "inline-flex min-h-10 items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition",
+                hasDirtyRows
+                  ? "bg-zinc-950 text-white"
+                  : "border border-zinc-300 bg-white text-zinc-500",
+              )}
+              disabled={!hasDirtyRows}
+              type="submit"
+            >
+              Save staff changes
+            </button>
+          </div>
+        ) : null}
+      </form>
+    </>
   );
 }

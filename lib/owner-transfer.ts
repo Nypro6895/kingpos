@@ -138,7 +138,7 @@ export async function acceptOwnerTransferInvite(token: string) {
   const cleanedToken = token.trim();
 
   if (!cleanedToken) {
-    throw new Error("Owner invitation token is required.");
+    throw new Error("This ownership invitation link is incomplete. Please open the full link from your invitation.");
   }
 
   const { data, error } = await supabase.rpc(

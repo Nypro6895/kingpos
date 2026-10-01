@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { desktopDevice } from "@/lib/portable-device-storage";
 
 function FullscreenIcon() {
   return (
@@ -21,13 +22,15 @@ export function PortableFullscreenButton() {
   const [isSupported, setIsSupported] = useState(false);
 
   useEffect(() => {
+    const native = desktopDevice()?.windowControls;
+    const unsubscribe = native?.onFullscreen(setIsFullscreen);
     function handleFullscreenChange() {
       setIsFullscreen(Boolean(document.fullscreenElement));
     }
 
     const readyTimer = window.setTimeout(() => {
-      setIsSupported(Boolean(document.documentElement.requestFullscreen));
-      handleFullscreenChange();
+      setIsSupported(Boolean(native || document.documentElement.requestFullscreen));
+      if (native) void native.fullscreen().then(setIsFullscreen); else handleFullscreenChange();
     }, 0);
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -35,32 +38,37 @@ export function PortableFullscreenButton() {
     return () => {
       window.clearTimeout(readyTimer);
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      unsubscribe?.();
     };
   }, []);
 
   const enterFullscreen = useCallback(() => {
+    const native = desktopDevice()?.windowControls;
+    if (native) { void native.fullscreen(true).then(setIsFullscreen); return; }
     const target =
       document.querySelector<HTMLElement>("[data-portable-pos-shell]") ??
       document.documentElement;
 
     if (document.fullscreenElement) {
+      void document.exitFullscreen();
       return;
     }
 
     void target.requestFullscreen?.().catch(() => undefined);
   }, []);
 
-  if (!isSupported || isFullscreen) {
+  if (!isSupported) {
     return null;
   }
 
   return (
     <button
-      aria-label="Enter full view"
-      className="fixed bottom-4 right-4 z-30 grid h-12 w-12 place-items-center rounded-full border border-zinc-950/15 bg-white/88 text-zinc-950 shadow-[0_14px_36px_rgba(15,23,42,0.22)] backdrop-blur-md transition hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-500/25"
+      aria-label={isFullscreen ? "Exit full view" : "Enter full view"}
+      aria-pressed={isFullscreen}
+      className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 active:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-emerald-700"
       data-portable-fullscreen-button
       onClick={enterFullscreen}
-      title="Full view"
+      title={isFullscreen ? "Exit full view" : "Full view"}
       type="button"
     >
       <FullscreenIcon />

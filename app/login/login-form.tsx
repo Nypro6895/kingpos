@@ -1,6 +1,8 @@
 "use client";
 
 import { readAuthResponse, type AuthResponse } from "@/lib/auth-response";
+import { PortableTouchKeyboard } from "@/app/pos/portable/touch-keyboard";
+import { AUTH_OFFLINE_MESSAGE, SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE } from "@/lib/supabase/auth-errors";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -85,6 +87,10 @@ export function LoginForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!navigator.onLine) {
+      setError(AUTH_OFFLINE_MESSAGE);
+      return;
+    }
     setError(null);
     setIsSubmitting(true);
     setMfaChallenge(null);
@@ -114,7 +120,7 @@ export function LoginForm({
       router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
-      setError("Unable to log in. Please check your connection and try again.");
+      setError(navigator.onLine ? SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE : AUTH_OFFLINE_MESSAGE);
       setShowRecoveryHelp(true);
     } finally {
       setIsSubmitting(false);
@@ -123,6 +129,10 @@ export function LoginForm({
 
   async function handleMfaSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!navigator.onLine) {
+      setError(AUTH_OFFLINE_MESSAGE);
+      return;
+    }
 
     if (!mfaChallenge) {
       setError("Two-factor verification expired. Log in again.");
@@ -159,7 +169,7 @@ export function LoginForm({
       router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
-      setError("Unable to verify code. Please check your connection and try again.");
+      setError(navigator.onLine ? SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE : AUTH_OFFLINE_MESSAGE);
       setShowRecoveryHelp(true);
     } finally {
       setIsSubmitting(false);
@@ -167,7 +177,8 @@ export function LoginForm({
   }
 
   return (
-    <>
+    <div data-login-touch-shell>
+      <PortableTouchKeyboard enabled desktopOnly scopeSelector="[data-login-touch-shell]" />
       {error ? (
         <p
           className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"
@@ -180,6 +191,7 @@ export function LoginForm({
 
       {mfaChallenge ? (
         <form
+          key="mfa"
           aria-describedby={error ? "login-form-error" : undefined}
           className="relative z-10 mt-6 space-y-5"
           onSubmit={handleMfaSubmit}
@@ -245,6 +257,7 @@ export function LoginForm({
         </form>
       ) : (
         <form
+        key="login"
         action="/api/auth/login"
         aria-describedby={error ? "login-form-error" : undefined}
         className="relative z-10 mt-6 space-y-5"
@@ -335,6 +348,6 @@ export function LoginForm({
           Lost access or recovery code?
         </Link>
       ) : null}
-    </>
+    </div>
   );
 }

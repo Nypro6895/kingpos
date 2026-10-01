@@ -78,7 +78,9 @@ test("server comment domain centralizes auth, pagination, mutation, and cache in
   assert.match(service, /export async function hidePostComment/);
   assert.match(service, /status: "hidden"/);
   assert.match(actions, /revalidatePath\("\/notifications"\)/);
-  assert.match(actions, /revalidatePath\("\/explore"\)/);
+  assert.doesNotMatch(actions, /revalidatePath\("\/explore"\)/);
+  assert.doesNotMatch(actions, /revalidatePath\("\/", "layout"\)/);
+  assert.doesNotMatch(thread, /router\.refresh\(/);
   assert.match(actions, /revalidatePath\("\/beauty"\)/);
 });
 

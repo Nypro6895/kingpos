@@ -127,7 +127,7 @@ async function requirePortablePosAccessMutationContext() {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    redirectWithPosAccessError("Supabase environment variables are missing.");
+    redirectWithPosAccessError("This feature is temporarily unavailable. Please try again later.");
   }
 
   return {
@@ -621,7 +621,7 @@ export async function updateStaffPublicTeamBatchAction(
 
   if (!supabase) {
     return {
-      error: "Supabase environment variables are missing.",
+      error: "This feature is temporarily unavailable. Please try again later.",
       updatedCount: 0,
     };
   }

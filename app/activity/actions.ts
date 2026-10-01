@@ -52,7 +52,7 @@ export async function recordVisitExperienceAction(input: {
       error.message.includes("record_customer_visit_experience")
     ) {
       return {
-        error: "Experience capture is ready in the app; the reputation backend still needs to be enabled.",
+        error: "Sharing your experience is temporarily unavailable. Please try again later.",
       };
     }
 

@@ -8,7 +8,7 @@ import {
   getPostCommentCounts,
   type PostCommentTarget,
 } from "@/lib/post-comments";
-import { getAccountSavedPostCounts } from "@/lib/account-social";
+import { getAccountSavedPostCounts, getAccountSavedPostStateKeys } from "@/lib/account-social";
 import { Buffer } from "node:buffer";
 import type {
   ExploreFeedCursor,
@@ -1253,7 +1253,10 @@ async function attachFeedSaveCounts(items: ExploreFeedItem[]) {
   }
 
   try {
-    const saveCounts = await getAccountSavedPostCounts(targets);
+    const [saveCounts, savedKeys] = await Promise.all([
+      getAccountSavedPostCounts(targets),
+      getAccountSavedPostStateKeys(targets),
+    ]);
 
     return items.map((item) =>
       item.saveTarget
@@ -1261,6 +1264,7 @@ async function attachFeedSaveCounts(items: ExploreFeedItem[]) {
             ...item,
             saveTarget: {
               ...item.saveTarget,
+              saved: savedKeys.has(savedPostKey(item.saveTarget)),
               saveCount: saveCounts.get(savedPostKey(item.saveTarget)) ?? 0,
             },
           }
@@ -1298,6 +1302,8 @@ async function attachFeedCommentCounts(items: ExploreFeedItem[]) {
   const counts = await getPostCommentCounts(targets);
 
   return items.map((item) => {
+    // Personal posts already carry their count from the personal feed query.
+    if (item.sourceType === "personal") return item;
     const target = feedCommentTarget(item);
 
     return target
@@ -1467,13 +1473,19 @@ export async function getExploreFeedPage(input: {
     : null;
 
   const visibleItems = selected.map((candidate) => candidate.item);
-  const itemsWithSaveCounts = await attachFeedSaveCounts(visibleItems);
-  const itemsWithCommentCounts = await attachFeedCommentCounts(itemsWithSaveCounts);
+  const [itemsWithSaveCounts, itemsWithCommentCounts] = await Promise.all([
+    attachFeedSaveCounts(visibleItems),
+    attachFeedCommentCounts(visibleItems),
+  ]);
+  const enrichedItems = itemsWithSaveCounts.map((item, index) => ({
+    ...item,
+    commentCount: itemsWithCommentCounts[index].commentCount,
+  }));
 
   return {
     error: null,
     hasMore: Boolean(nextCursor),
-    items: itemsWithCommentCounts,
+    items: enrichedItems,
     nextCursor,
   };
 }

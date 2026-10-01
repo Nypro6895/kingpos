@@ -1,5 +1,4 @@
-import { BookingWorkspaceClient } from "@/app/bookings/booking-workspace-client";
-import { PosOwnerWorkspaceTabs } from "@/app/pos/pos-owner-workspace-tabs";
+import { OwnerLiveBookingWorkspace } from "@/app/bookings/owner-live-booking-workspace";
 import {
   BOOKING_PERMISSIONS,
   getCurrentSalonBookingWorkspace,
@@ -33,12 +32,8 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
 
   return (
     <>
-      <div className="bg-[#fbfaf8] px-4 pt-4 sm:px-6">
-        <div className="mx-auto w-full max-w-7xl">
-          <PosOwnerWorkspaceTabs salonId={context.currentSalon.id} />
-        </div>
-      </div>
-      <BookingWorkspaceClient
+      <OwnerLiveBookingWorkspace
+        salonId={context.currentSalon.id}
         bookings={workspace.bookings}
         canManageBookings={workspace.canManageBookings}
         canViewBookings={workspace.canViewBookings}

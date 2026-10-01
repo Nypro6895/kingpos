@@ -10,10 +10,12 @@ import {
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type PosWorkspaceRealtimeRefreshProps = {
+  ignoredSources?: readonly PosStaffBroadcastPayload["source"][];
   salonId?: string | null;
 };
 
 export function PosWorkspaceRealtimeRefresh({
+  ignoredSources = [],
   salonId,
 }: PosWorkspaceRealtimeRefreshProps) {
   const router = useRouter();
@@ -31,6 +33,7 @@ export function PosWorkspaceRealtimeRefresh({
     }
 
     function refreshSoon() {
+      if (!navigator.onLine) return;
       if (refreshTimerRef.current !== null) {
         window.clearTimeout(refreshTimerRef.current);
       }
@@ -47,7 +50,10 @@ export function PosWorkspaceRealtimeRefresh({
         "broadcast",
         { event: POS_STAFF_BROADCAST_EVENT },
         ({ payload }: { payload: PosStaffBroadcastPayload }) => {
-          if (payload.salonId === salonId) {
+          if (
+            payload.salonId === salonId &&
+            !ignoredSources.includes(payload.source)
+          ) {
             refreshSoon();
           }
         },
@@ -62,7 +68,7 @@ export function PosWorkspaceRealtimeRefresh({
 
       void supabase.removeChannel(channel);
     };
-  }, [router, salonId]);
+  }, [ignoredSources, router, salonId]);
 
   return null;
 }

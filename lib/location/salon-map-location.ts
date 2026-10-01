@@ -124,32 +124,32 @@ function statusCopy(status: SalonMapLocationStatus) {
     case "failed":
       return {
         description:
-          "The last controlled geocoding attempt failed. The salon remains searchable by city, state, and ZIP.",
+          "We could not update the map location. Your salon can still be found by city, state, and ZIP.",
         label: "Needs refresh",
       };
     case "mapped":
       return {
         description:
-          "This salon has stored coordinates and can participate in real distance sorting.",
+          "Your salon is located on the map and can appear in nearby search results.",
         label: "Mapped",
       };
     case "pending":
       return {
         description:
-          "A server-side geocoding provider is configured; refresh the map location after confirming the address.",
-        label: "Ready to geocode",
+          "Confirm the salon address, then refresh its map location.",
+        label: "Ready to locate",
       };
     case "stale":
       return {
         description:
-          "The public address changed after coordinates were stored. Existing coordinates are preserved until refreshed.",
+          "The salon address has changed. Refresh the map location to update its pin.",
         label: "Refresh needed",
       };
     case "provider_unavailable":
       return {
         description:
-          "No server-side geocoding provider is configured, so KITY will not create coordinates or map markers.",
-        label: "Map provider not configured",
+          "Map location lookup is temporarily unavailable. Your salon can still be found by city, state, and ZIP.",
+        label: "Map lookup unavailable",
       };
   }
 }

@@ -346,7 +346,7 @@ export async function getCurrentStaffAppointments(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const staff = await loadCurrentStaff(context);

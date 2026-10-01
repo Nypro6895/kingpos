@@ -38,7 +38,7 @@ export type PortablePosAccessState = {
 };
 
 export const PORTABLE_POS_ACCESS_SETUP_MESSAGE =
-  "Portable POS database setup is not applied yet. Apply the Portable POS access migrations through 202607250001_portable_shell_views.sql before creating POS IDs.";
+  "Portable access is temporarily unavailable. Please try again later or contact support.";
 
 function isMissingPortablePosAccessSchemaError(error: {
   code?: string | null;
@@ -103,7 +103,7 @@ export async function getCurrentSalonPortablePosAccessState(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase

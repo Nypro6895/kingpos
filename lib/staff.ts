@@ -101,7 +101,7 @@ export async function getCurrentSalonStaff() {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase
@@ -146,7 +146,7 @@ export async function getCurrentSalonStaffDirectory(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const payrollPermissionResults = await Promise.all(
@@ -375,7 +375,7 @@ export async function createStaff(input: CreateStaffInput) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const displayName = input.display_name.trim();
@@ -481,7 +481,7 @@ export async function updateStaffDirectoryBatch(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const changes = Array.from(
@@ -642,7 +642,7 @@ async function verifyStaffAvatarPath(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { folder, name } = getStorageParent(normalizedPath);
@@ -683,7 +683,7 @@ export async function updateStaffPublicProfile(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const [canManageStaff, staffResolution] = await Promise.all([

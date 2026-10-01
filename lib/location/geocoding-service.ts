@@ -51,7 +51,7 @@ export async function geocodePublicSalonAddress(
   if (!providerStatus.configured) {
     return {
       error: {
-        message: "No server-side geocoding provider is configured.",
+        message: "Map location lookup is temporarily unavailable. Please try again later.",
         type: "provider_unavailable",
       },
       result: null,

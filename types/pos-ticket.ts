@@ -32,6 +32,7 @@ export type PosTicket = {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  workspace_revision?: number;
 };
 
 export type PosTicketWithRelations = PosTicket & {

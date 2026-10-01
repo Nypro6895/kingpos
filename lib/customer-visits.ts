@@ -267,6 +267,7 @@ export async function getCustomerVisitQueueForSalonOrEmpty(input: {
 }
 
 export async function resolveCustomerDisplaySubmission(input: {
+  checkInOnly?: boolean;
   customerName?: string | null;
   phone: string;
   requestId?: string | null;
@@ -274,7 +275,7 @@ export async function resolveCustomerDisplaySubmission(input: {
   token: string;
 }): Promise<CustomerDisplaySubmissionResult> {
   const { data, error } = await input.supabase.rpc(
-    "resolve_customer_display_submission",
+    input.checkInOnly ? "resolve_customer_display_check_in" : "resolve_customer_display_submission",
     {
       p_customer_name: input.customerName ?? null,
       p_phone: input.phone,

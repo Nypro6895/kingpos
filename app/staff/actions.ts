@@ -508,7 +508,7 @@ export async function resetStaffPasscodeFormAction(formData: FormData) {
       getStaffDirectoryRedirectHref(
         formData,
         "connection_error",
-        "Supabase environment variables are missing.",
+        "This feature is temporarily unavailable. Please try again later.",
       ),
     );
   }
@@ -603,7 +603,7 @@ async function assertCanMutateStaffPublicProfile(staffId: string) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const [canManageStaff, staffResolution] = await Promise.all([
@@ -766,7 +766,7 @@ export async function updateOwnStaffPasscodeAction(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    return { error: "Supabase environment variables are missing." };
+    return { error: "This feature is temporarily unavailable. Please try again later." };
   }
 
   const staffResolution = await resolveStaffAccountForSalon({

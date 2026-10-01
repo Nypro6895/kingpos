@@ -78,7 +78,7 @@ async function getActionContext() {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   if (isSalonStaffContext(context)) {

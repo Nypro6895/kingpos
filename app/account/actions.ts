@@ -585,7 +585,7 @@ export async function sendAccountPhoneVerificationOtpAction(
       error:
         sendResult.code === "send_throttled"
           ? sendResult.message
-          : "Phone verification is not configured.",
+          : "Phone verification is temporarily unavailable. Please try again later.",
       normalizedPhone: challenge.data.normalizedPhone,
     };
   }

@@ -84,7 +84,7 @@ export async function sendLoginSmsAlert(
   if (!config) {
     return {
       code: "not_configured",
-      message: "SMS login alerts are not configured in this environment.",
+      message: "Text-message login alerts are temporarily unavailable.",
       ok: false,
     };
   }

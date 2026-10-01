@@ -97,7 +97,7 @@ export function ResetPasswordForm({ nextPath = "/explore" }: { nextPath?: string
 
       if (!supabase) {
         if (isMounted) {
-          setError("Authentication is not configured. Please contact support.");
+          setError("Sign-in is temporarily unavailable. Please try again later or contact support.");
           setIsInitializing(false);
         }
         return;
@@ -157,7 +157,7 @@ export function ResetPasswordForm({ nextPath = "/explore" }: { nextPath?: string
     const supabase = createSupabaseBrowserClient();
 
     if (!supabase) {
-      setError("Authentication is not configured. Please contact support.");
+      setError("Sign-in is temporarily unavailable. Please try again later or contact support.");
       return;
     }
 

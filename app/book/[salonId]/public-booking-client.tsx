@@ -62,11 +62,11 @@ type SummaryLine = {
 type AvailabilityHintMap = Record<string, PublicBookingAvailabilityHint | undefined>;
 
 const STEPS = [
-  "Services",
-  "Professional",
-  "Date & time",
-  "Your details",
-  "Review",
+  "Service",
+  "Pro",
+  "Time",
+  "Details",
+  "Confirm",
 ] as const;
 
 const styles = {
@@ -123,6 +123,7 @@ const styles = {
   publicMain: "public-booking-content",
   publicRoot: "public-booking-root",
   publicShell: "public-booking-shell",
+  mobileActionBar: "public-booking-mobile-action-bar",
   publicTitle: "public-booking-title",
   secondaryButton: "public-booking-secondary-button",
   select: "public-booking-select",
@@ -719,29 +720,35 @@ function BookingInspirationCard({
             {inspiration.caption}
           </p>
         ) : null}
-        {!compact ? (
-          <div className="mt-3 flex flex-wrap gap-2">
+        {onChangeService || onChangeProfessional || onRemove ? (
+          <div className={classNames("flex flex-wrap gap-2", compact ? "mt-2" : "mt-3")}>
             {onChangeService ? (
               <button
-                className={classNames(styles.secondaryButton, "px-3 py-2 text-sm")}
+                className={classNames(
+                  compact ? "public-booking-inspiration-edit" : styles.secondaryButton,
+                  !compact && "px-3 py-2 text-sm",
+                )}
                 onClick={onChangeService}
                 type="button"
               >
-                {inspiration.serviceId ? "Change service" : "Choose service"}
+                {compact ? "Edit service" : inspiration.serviceId ? "Change service" : "Choose service"}
               </button>
             ) : null}
             {onChangeProfessional ? (
               <button
-                className={classNames(styles.secondaryButton, "px-3 py-2 text-sm")}
+                className={classNames(
+                  compact ? "public-booking-inspiration-edit" : styles.secondaryButton,
+                  !compact && "px-3 py-2 text-sm",
+                )}
                 onClick={onChangeProfessional}
                 type="button"
               >
-                Change professional
+                {compact ? "Edit pro" : "Change professional"}
               </button>
             ) : null}
             {onRemove ? (
               <button
-                className="px-2 py-2 text-sm font-extrabold text-[#f26f3d]"
+                className={compact ? "public-booking-inspiration-edit" : "px-2 py-2 text-sm font-extrabold text-[#f26f3d]"}
                 onClick={onRemove}
                 type="button"
               >
@@ -841,6 +848,11 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     Math.min(STEP_REVIEW, Math.max(STEP_SERVICES, data.initialSelection.initialStep)),
   );
   const [category, setCategory] = useState(initialCategory);
+  useEffect(() => {
+    if (step === STEP_DONE) {
+      document.getElementById("public-booking-confirmation-title")?.focus();
+    }
+  }, [step]);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(
     initialServiceIds,
   );
@@ -1125,8 +1137,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     return scopes;
   }, [data, eligibleStaff, lineStaffIds, settings, summaryLines]);
   const availabilityScopeSignature = useMemo(
-    () => JSON.stringify(availabilityScopes),
-    [availabilityScopes],
+    () => JSON.stringify({ scopes: availabilityScopes, serviceIds: selectedServiceIds, addOnSelections: selectedAddOnSelections }),
+    [availabilityScopes, selectedServiceIds, selectedAddOnSelections],
   );
   const availabilityHints =
     availabilityResult.signature === availabilityScopeSignature
@@ -1475,9 +1487,6 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         : "/explore";
   const signInHref = `/login?next=${encodeURIComponent(authReturnPath)}`;
   const signupHref = `/signup?next=${encodeURIComponent(authReturnPath)}`;
-  const salonProfileHref = data.salon?.publicProfileEnabled
-    ? `/explore/salons/${data.salon.salonId}`
-    : "/explore";
 
   function setCustomerField(key: keyof CustomerDraft, value: string) {
     setCustomer((current) => ({
@@ -1683,8 +1692,11 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         : staffMode === "specific" && staffId
           ? data.staff.find((staff) => staff.id === staffId)?.displayName ?? null
           : null;
+  const bookingConfirmed = result?.confirmationStatus
+    ? result.confirmationStatus === "confirmed"
+    : result?.status === "confirmed";
   const confirmationTitle =
-    result?.ok && result.status === "confirmed"
+    result?.ok && bookingConfirmed
       ? "Booking confirmed"
       : result?.ok
         ? "Request received"
@@ -1738,6 +1750,25 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
               : "ready_to_submit";
 
   function activatePrimaryAction() {
+    if (step === STEP_PROFESSIONAL) {
+      // Use only a hint for the exact current selection, including split staff.
+      const scope = availabilityScopes.find((candidate) =>
+        candidate.staffMode === staffMode &&
+        (staffMode === "specific" ? candidate.staffId === staffId :
+          staffMode === "split" ? JSON.stringify(candidate.lineStaffIds) === JSON.stringify(lineStaffIds) : true),
+      );
+      const nextStartAt = scope ? availabilityHints[scope.key]?.startAt : null;
+      if (nextStartAt && settings) {
+        const nextStart = new Date(nextStartAt);
+        if (!Number.isNaN(nextStart.getTime())) {
+          setDate(zonedDateKey(nextStart, settings.timezoneIana));
+          setSelectedSlotStart(nextStartAt);
+        }
+      }
+      setStep(STEP_TIME);
+      return;
+    }
+
     if (step === STEP_REVIEW) {
       if (!detailsCanContinue) {
         openDetailsSheet("submit");
@@ -1773,20 +1804,37 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     <main
       className={classNames(styles.bookingSurface, styles.publicRoot)}
       data-booking-surface="public"
+      data-booking-complete={step === STEP_DONE ? "true" : undefined}
       data-booking-flow-state={bookingFlowState}
       data-testid="public-booking-root"
     >
       <section className={styles.publicShell} data-testid="public-booking-shell">
+        {step < STEP_DONE ? (
+          <header className="public-booking-mobile-header">
+            {step > STEP_SERVICES ? (
+              <button className={styles.secondaryButton} aria-label="Back to previous step" onClick={() => setStep((current) => Math.max(STEP_SERVICES, current - 1))} type="button">←</button>
+            ) : (
+              <a className={styles.secondaryButton} aria-label="Back to Explore" href="/explore">←</a>
+            )}
+            <div>
+              <p className="public-booking-mobile-brand">Booking with Reylumi</p>
+              <p className="font-extrabold">{data.salon.name}</p>
+              <p className="public-booking-mobile-selection">{currentBookingServiceName ?? "Build your visit"}{currentBookingStaffName ? ` · ${currentBookingStaffName}` : ""}</p>
+            </div>
+          </header>
+        ) : null}
         <div className={styles.brandBar}>
           <ReylumiExploreLink />
         </div>
 
-        {isQuickBook ? (
+        {step === STEP_DONE ? null : isQuickBook ? (
           <div
             className={styles.quickBookStrip}
             data-testid="public-booking-quick-book"
           >
-            Choose a time for this look
+            {activeInspiration?.contentType === "update"
+              ? "Post ready · choose a time"
+              : "Look ready · choose a time"}
           </div>
         ) : (
         <nav
@@ -1801,6 +1849,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             return (
               <button
                 aria-current={active ? "step" : undefined}
+                aria-label={`${index + 1}. ${label}`}
                 className={classNames(
                   styles.progressStep,
                   active && styles.progressActive,
@@ -1811,7 +1860,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                 onClick={() => setStep(index)}
                 type="button"
               >
-                <span className={styles.progressCircle}>{done ? "OK" : index + 1}</span>
+                <span className={styles.progressCircle}>{done ? "✓" : index + 1}</span>
                 <span>{label}</span>
               </button>
             );
@@ -1838,8 +1887,9 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             </p>
           ) : null}
 
-          {activeInspiration ? (
+          {activeInspiration && step !== STEP_DONE ? (
             <BookingInspirationCard
+              compact={isQuickBook}
               currentServiceName={currentBookingServiceName}
               currentStaffName={currentBookingStaffName}
               inspiration={activeInspiration}
@@ -1859,7 +1909,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                 <p className={styles.eyebrow}>Build your visit</p>
                 <h1 className={styles.publicTitle}>Choose your services</h1>
                 <p className={styles.publicCopy}>
-                  Select one or more services and any linked add-ons. We will only show professionals and times that can accommodate your visit.
+                  Pick what you need. We will only show professionals and times that work.
                 </p>
               </div>
               <div className={classNames(styles.pillRow, "mb-7")}>
@@ -2181,14 +2231,18 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             <section>
               <div className={styles.publicHeading}>
                 <p className={styles.eyebrow}>
-                  {isQuickBook ? "Book this look" : "Date & time"}
+                  {isQuickBook
+                    ? activeInspiration?.contentType === "update"
+                      ? "Book from post"
+                      : "Book this look"
+                    : "Date & time"}
                 </p>
                 <h1 className={styles.publicTitle}>
                   {isQuickBook ? "Choose a time" : "Find a time"}
                 </h1>
                 <p className={styles.publicCopy}>Times are shown in {settings.timezoneIana}.</p>
               </div>
-              <div className={classNames(styles.pillRow, "mb-5")}>
+              <div className={classNames(styles.pillRow, "public-booking-date-strip mb-5")} aria-label="Choose a date">
                 {dateStrip.map((day) => (
                   <button
                     className={classNames(
@@ -2196,15 +2250,21 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                       date === day.value && styles.pillActive,
                     )}
                     key={day.value}
+                    aria-label={day.label}
+                    aria-pressed={date === day.value}
                     onClick={() => setDate(day.value)}
                     type="button"
                   >
-                    {day.label}
+                    <span className="public-booking-date-full">{day.label}</span>
+                    <span className="public-booking-date-short" aria-hidden="true">
+                      <span>{new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "UTC" }).format(new Date(`${day.value}T12:00:00Z`))}</span>
+                      <strong>{Number(day.value.slice(-2))}</strong>
+                    </span>
                   </button>
                 ))}
               </div>
-              <label className="mb-5 block max-w-xs">
-                <span className="text-sm font-extrabold text-[#211c24]">Date</span>
+              <label className="public-booking-date-picker mb-5 block max-w-xs">
+                <span className="text-sm font-extrabold text-[#211c24]">Choose another date</span>
                 <input
                   className={classNames(styles.field, "mt-2 w-full")}
                   onChange={(event) => setDate(event.target.value)}
@@ -2232,7 +2292,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                     <h2 className="mb-3 text-sm font-extrabold uppercase tracking-[0.08em] text-[#786d78]">
                       {group}
                     </h2>
-                    <div className="grid gap-2 sm:grid-cols-3">
+                    <div className="public-booking-time-grid grid gap-2 sm:grid-cols-3">
                       {groupSlots.map((slot) => (
                         <button
                           className={classNames(
@@ -2242,6 +2302,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                               : "border-[#f0e6df] bg-white text-[#211c24] hover:border-[#ffd6c4]",
                           )}
                           data-testid="public-booking-slot"
+                          aria-pressed={slot.startAt === selectedSlotStart}
                           key={slot.startAt}
                           onClick={() => setSelectedSlotStart(slot.startAt)}
                           type="button"
@@ -2260,7 +2321,10 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
               ) : null}
               {!slotsLoading && slots.length === 0 ? (
                 <p className={classNames(styles.publicCard, "p-5 text-sm text-[#786d78]")}>
-                  No public slots match this selection for the selected date.
+                  No available times for this selection on this date.
+                  <span className="mt-2 block font-semibold text-[#211c24]">
+                    Please select the next day or another date above to check availability.
+                  </span>
                 </p>
               ) : null}
             </section>
@@ -2550,6 +2614,29 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                     inspiration={activeInspiration}
                   />
                 ) : null}
+                <div className="public-booking-mobile-review text-sm" data-testid="public-booking-mobile-review">
+                  <p className="font-extrabold">{data.salon.name}</p>
+                  {summaryServices.map((service, index) => {
+                    const slotLine = selectedSlot?.lines[index];
+
+                    return (
+                      <div className="flex justify-between gap-4" key={`${service.id}-${index}`}>
+                        <span>{service.name}</span>
+                        <span className="shrink-0 font-extrabold">
+                          {money(slotLine?.unitPrice ?? service.basePrice)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className="flex justify-between gap-4 border-t border-[#f0e6df] pt-3">
+                    <span>Estimated duration</span>
+                    <span>{minutes(totalMinutes)}</span>
+                  </div>
+                  <div className="flex justify-between gap-4 font-extrabold">
+                    <span>Subtotal</span>
+                    <span>{money(total)}</span>
+                  </div>
+                </div>
                 <dl className="grid gap-3 text-sm">
                   <div className="flex justify-between gap-4">
                     <dt className="text-[#786d78]">When</dt>
@@ -2583,12 +2670,46 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
           ) : null}
 
           {step === STEP_DONE && result?.ok && result.bookingId ? (
-            <section className={classNames(styles.publicCard, "p-6")}>
-              <p className={styles.eyebrow}>Confirmation</p>
-              <h1 className={classNames(styles.publicTitle, "mt-3")}>{confirmationTitle}</h1>
-              <p className="mt-4 text-sm leading-6 text-[#786d78]">
-                {result?.message ?? "Your booking request has been processed."}
+            <section className={classNames(styles.publicCard, "public-booking-confirmation")} data-testid="public-booking-confirmation">
+              <p className={styles.eyebrow}>{bookingConfirmed ? "Confirmed" : "Awaiting salon confirmation"}</p>
+              <h1 className={classNames(styles.publicTitle, "mt-3")} id="public-booking-confirmation-title" tabIndex={-1}>{confirmationTitle}</h1>
+              <p className="mt-3 text-sm leading-6 text-[#786d78]" role="status">
+                {bookingConfirmed
+                  ? "Your appointment is confirmed. You can review or manage it below."
+                  : "Your request has been sent to the salon. Your appointment is not confirmed yet. Check its status using Manage this booking."}
               </p>
+              <div className="public-booking-confirmation-details">
+                <div>
+                  <h2 className="text-lg font-extrabold">{data.salon.name}</h2>
+                  {data.salon.addressLine1 || salonLocation ? (
+                    <p className="mt-1 text-sm text-[#786d78]">{[data.salon.addressLine1, salonLocation].filter(Boolean).join(", ")}</p>
+                  ) : null}
+                </div>
+                <dl className="grid gap-3 text-sm">
+                  <div className="public-booking-confirmation-row">
+                    <dt>When</dt>
+                    <dd className="font-extrabold">{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : "See booking details"}<span className="block text-xs font-normal text-[#786d78]">{settings.timezoneIana}</span></dd>
+                  </div>
+                  {summaryServices.map((service, index) => {
+                    const line = selectedSlot?.lines[index];
+                    return (
+                      <div className="public-booking-confirmation-row" key={`${service.id}-${index}`}>
+                        <dt>{service.name}<span className="block text-xs text-[#786d78]">{line?.staffName ?? selectedStaffLabel}</span></dt>
+                        <dd className="font-extrabold">{money(line?.unitPrice ?? service.basePrice)}</dd>
+                      </div>
+                    );
+                  })}
+                  <div className="public-booking-confirmation-row">
+                    <dt>Estimated duration</dt><dd>{minutes(totalMinutes)}</dd>
+                  </div>
+                  <div className="public-booking-confirmation-row font-extrabold">
+                    <dt>Subtotal</dt><dd>{money(total)}</dd>
+                  </div>
+                  <div className="public-booking-confirmation-row text-xs text-[#786d78]">
+                    <dt>Booking reference</dt><dd>{result.bookingId}</dd>
+                  </div>
+                </dl>
+              </div>
               {activeInspiration ? (
                 <div className="mt-5">
                   <BookingInspirationSummaryRow
@@ -2602,36 +2723,11 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                   This booking is saved to your Reylumi account.
                 </p>
               ) : null}
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="public-booking-confirmation-actions">
                 {manageHref ? (
                   <a className={classNames(styles.primaryButton, "px-5")} href={manageHref}>
-                    {result?.accountLinked ? "Manage appointment" : "Manage this booking"}
+                    Manage this booking
                   </a>
-                ) : null}
-                {result?.ok && !result.accountLinked ? (
-                  <>
-                    <p className="basis-full text-sm leading-6 text-[#786d78]">
-                      Already have an account? Sign in for faster future bookings.
-                    </p>
-                    <a
-                      className={classNames(styles.secondaryButton, "px-5")}
-                      href={signInHref}
-                    >
-                      Sign in
-                    </a>
-                    <a
-                      className={classNames(styles.secondaryButton, "px-5")}
-                      href={signupHref}
-                    >
-                      Create account
-                    </a>
-                    <a
-                      className={classNames(styles.secondaryButton, "px-5")}
-                      href={salonProfileHref}
-                    >
-                      Continue without account
-                    </a>
-                  </>
                 ) : null}
                 {data.salon.phone ? (
                   <a
@@ -2649,11 +2745,16 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
                   </a>
                 ) : null}
               </div>
+              {!result.accountLinked ? (
+                <p className="mt-5 text-sm leading-6 text-[#786d78]">
+                  For faster future bookings, <a className="font-bold text-[#f26f3d] underline" href={signInHref}>sign in</a> or <a className="font-bold text-[#f26f3d] underline" href={signupHref}>create an account</a>.
+                </p>
+              ) : null}
             </section>
           ) : null}
 
           {step < STEP_REVIEW ? (
-            <div className="mt-6 flex items-center justify-between gap-3">
+            <div className="public-booking-back-row mt-6 flex items-center justify-between gap-3">
               <button
                 className={classNames(styles.secondaryButton, "px-5")}
                 disabled={step === STEP_SERVICES}
@@ -2665,6 +2766,24 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
             </div>
           ) : null}
         </div>
+
+        {step < STEP_DONE ? (
+          <div className={styles.mobileActionBar}>
+            <div className="public-booking-mobile-action-summary" aria-live="polite">
+              <span>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : step === STEP_TIME ? "Choose an available time" : `${selectedServiceIds.length} service${selectedServiceIds.length === 1 ? "" : "s"} selected`}</span>
+              <strong>{money(total)} <small>· {minutes(totalMinutes)}</small></strong>
+            </div>
+            <button
+              className={classNames(styles.primaryButton, "w-full")}
+              data-testid="public-booking-mobile-primary-action"
+              disabled={primaryActionDisabled}
+              onClick={activatePrimaryAction}
+              type="button"
+            >
+              {primaryActionLabel}
+            </button>
+          </div>
+        ) : null}
 
         <aside
           className={classNames(styles.publicCard, styles.summary)}

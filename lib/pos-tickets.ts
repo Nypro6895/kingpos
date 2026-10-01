@@ -22,7 +22,7 @@ import type {
 } from "@/types/staff-workday";
 
 export const POS_TICKET_SELECT =
-  "id, salon_id, source_booking_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at";
+  "id, salon_id, workspace_revision, source_booking_id, ticket_number, ticket_sequence, customer_id, opened_at, closed_at, status, discount_type, discount_value, tax_rate, tip_type, tip_value, notes, created_at, updated_at";
 
 export const POS_TICKET_ITEM_SELECT =
   "id, salon_id, pos_ticket_id, service_id, assigned_staff_id, performed_by_staff_id, source_booking_id, source_booking_line_id, source_kind, service_name_snapshot, service_category_snapshot, booked_unit_price_snapshot, quantity, unit_price, line_total, notes, is_removed, removed_at, removed_by, removal_reason, created_at, updated_at";
@@ -119,6 +119,7 @@ function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
 }
 
 export type PosTicketListFilters = {
+  ids?: string[];
   openedFrom?: string;
   openedTo?: string;
 };
@@ -581,13 +582,15 @@ export async function getCurrentSalonPosTickets(filters: PosTicketListFilters = 
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   let query = supabase
     .from("pos_tickets")
     .select(POS_TICKET_WITH_RELATIONS_SELECT)
     .eq("salon_id", salon.id);
+
+  if(filters.ids?.length)query=query.in('id',filters.ids);
 
   if (filters.openedFrom) {
     query = query.gte("opened_at", filters.openedFrom);
@@ -667,7 +670,7 @@ export async function getCurrentSalonPosTicket(ticketId: string) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase
@@ -747,7 +750,7 @@ export async function getCurrentSalonPosTicketOptions(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const today = getTodayDate(context.user?.timezone);

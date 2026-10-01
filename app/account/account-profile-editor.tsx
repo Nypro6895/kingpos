@@ -14,6 +14,7 @@ import {
   safeAccountAvatarUrl,
 } from "@/lib/account-avatar";
 import type { KingUser } from "@/types/user";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
@@ -38,6 +39,8 @@ type PhoneClaimState = NonNullable<AccountProfileActionResult["phoneClaim"]>;
 type AccountProfileEditorProps = {
   createdAtLabel: string;
   user: KingUser;
+  compact?: boolean;
+  phoneVerified?: boolean;
 };
 
 type VerificationPhoneClaimState = Extract<
@@ -454,6 +457,8 @@ function PhoneVerificationDialog({
 export function AccountProfileEditor({
   createdAtLabel,
   user,
+  compact = false,
+  phoneVerified = false,
 }: AccountProfileEditorProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -844,12 +849,13 @@ export function AccountProfileEditor({
       id="profile-contact"
       onKeyDown={onEditorKeyDown}
     >
-      <div className="mb-2">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-base font-semibold text-zinc-950">
-            Profile & contact
+            {compact ? "Personal" : "Profile & contact"}
           </h2>
         </div>
+        {compact ? <nav aria-label="Personal settings" className="flex gap-4 text-xs font-medium text-zinc-500"><Link className="hover:text-[#d65c2b] hover:underline" href="/account">Account settings</Link><Link className="hover:text-[#d65c2b] hover:underline" href="/settings/login-security">Security</Link></nav> : null}
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border-subtle bg-white">
@@ -874,6 +880,11 @@ export function AccountProfileEditor({
               <p className="mt-1 truncate text-sm font-semibold text-zinc-500">
                 {user.email ?? "Personal account"}
               </p>
+              {compact && !editing ? <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+                <span>{values.phone || "No phone number"}</span>
+                {values.phone && ((phoneVerified && values.phone === user.phone) || (phoneClaim?.status === "connected" && phoneClaim.normalizedPhone === values.phone)) ? <span className="rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700">Verified ✓</span>
+                  : <button className="min-h-8 text-xs font-semibold text-[#d65c2b] hover:underline disabled:opacity-50" disabled={busy} type="button" onClick={values.phone ? saveProfile : beginEdit}>{busy ? "Checking…" : values.phone ? "Verify phone" : "Add phone"}</button>}
+              </div> : null}
             </div>
           </div>
 
@@ -883,7 +894,7 @@ export function AccountProfileEditor({
               onClick={beginEdit}
               type="button"
             >
-              Edit profile
+              {compact ? "Edit info" : "Edit profile"}
             </button>
           ) : (
             <div className="flex flex-wrap gap-2">
@@ -986,7 +997,7 @@ export function AccountProfileEditor({
               </div>
             </div>
           </>
-        ) : (
+        ) : !compact ? (
           <dl>
             <ProfileField
               label="Display name"
@@ -1022,7 +1033,7 @@ export function AccountProfileEditor({
             <ProfileField label="Status" value={user.status} />
             <ProfileField label="Created" value={createdAtLabel} />
           </dl>
-        )}
+        ) : null}
       </div>
 
       {error ? (

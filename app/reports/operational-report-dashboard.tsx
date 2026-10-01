@@ -1,21 +1,15 @@
+import { CustomerName } from "@/components/customer-name";
 import type {
   OperationalReportBookingMetrics,
   OperationalReportComparisonMetric,
   OperationalReportData,
   OperationalReportPaymentRow,
-  OperationalReportPreset,
   OperationalReportServiceRow,
   OperationalReportStaffRow,
   OperationalReportTicketRow,
   OperationalReportTrendPoint,
 } from "@/lib/operational-report";
-import Link from "next/link";
-
-const PRESETS: Array<{ label: string; value: OperationalReportPreset }> = [
-  { label: "Today", value: "today" },
-  { label: "This Week", value: "this_week" },
-  { label: "This Month", value: "this_month" },
-];
+import { ReportRangeFilter } from "./report-controls";
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -70,35 +64,6 @@ function methodLabel(method: string) {
     .join(" ");
 }
 
-function getReportsHref(input: {
-  date?: string;
-  end?: string;
-  preset?: OperationalReportPreset;
-  start?: string;
-}) {
-  const params = new URLSearchParams();
-
-  if (input.preset) {
-    params.set("preset", input.preset);
-  }
-
-  if (input.start) {
-    params.set("start", input.start);
-  }
-
-  if (input.end) {
-    params.set("end", input.end);
-  }
-
-  if (input.date) {
-    params.set("date", input.date);
-  }
-
-  const query = params.toString();
-
-  return query ? `/reports?${query}` : "/reports";
-}
-
 function ComparisonBadge({
   metric,
 }: {
@@ -138,98 +103,24 @@ function MetricCard({
   value: string;
 }) {
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <section className="rounded-2xl border border-zinc-200 bg-white p-4">
       <p className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
         {label}
       </p>
       <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
-      <div className="mt-3 min-h-6">
-        {comparison ? <ComparisonBadge metric={comparison} /> : null}
-      </div>
-      {detail ? <p className="mt-2 text-sm text-zinc-600">{detail}</p> : null}
-    </section>
-  );
-}
-
-function RangeSelector({
-  report,
-  selectedClosingDate,
-}: {
-  report: OperationalReportData;
-  selectedClosingDate: string;
-}) {
-  return (
-    <section className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-zinc-950">Date Range</h2>
-          <p className="mt-1 text-sm text-zinc-600">
-            {formatDate(report.range.startDate)} to{" "}
-            {formatDate(report.range.endDate)} in {report.range.timeZone}
-          </p>
+      {comparison ? (
+        <div className="mt-3">
+          <ComparisonBadge metric={comparison} />
         </div>
-        <div className="flex flex-wrap gap-2">
-          {PRESETS.map((preset) => {
-            const active = report.range.preset === preset.value;
-
-            return (
-              <Link
-                className={[
-                  "inline-flex min-h-10 items-center rounded-md border px-3 text-sm font-semibold transition",
-                  active
-                    ? "border-zinc-950 bg-zinc-950 text-white"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50",
-                ].join(" ")}
-                href={getReportsHref({
-                  date: selectedClosingDate,
-                  preset: preset.value,
-                })}
-                key={preset.value}
-              >
-                {preset.label}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      <form
-        action="/reports"
-        className="grid gap-3 border-t border-zinc-100 pt-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
-        method="get"
-      >
-        <input name="preset" type="hidden" value="custom" />
-        <input name="date" type="hidden" value={selectedClosingDate} />
-        <label className="block">
-          <span className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
-            Start
-          </span>
-          <input
-            className="mt-1 h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-            defaultValue={report.range.startDate}
-            name="start"
-            type="date"
-          />
-        </label>
-        <label className="block">
-          <span className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
-            End
-          </span>
-          <input
-            className="mt-1 h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-            defaultValue={report.range.endDate}
-            max={report.range.businessDate}
-            name="end"
-            type="date"
-          />
-        </label>
-        <button
-          className="min-h-11 self-end rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white"
-          type="submit"
-        >
-          Apply
-        </button>
-      </form>
+      ) : null}
+      {detail ? (
+        <details className="mt-2 text-xs text-zinc-500">
+          <summary className="w-fit cursor-pointer py-1 text-teal-700">
+            About this metric
+          </summary>
+          <p className="mt-1 leading-5">{detail}</p>
+        </details>
+      ) : null}
     </section>
   );
 }
@@ -254,7 +145,7 @@ function EmptyState({ report }: { report: OperationalReportData }) {
 
 function SummaryCards({ report }: { report: OperationalReportData }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
       <MetricCard
         comparison={report.comparison.grossSales}
         detail="POS item subtotal before discounts, tax, and tip."
@@ -285,69 +176,145 @@ function SummaryCards({ report }: { report: OperationalReportData }) {
 
 function MoneyBreakdownCards({ report }: { report: OperationalReportData }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <MetricCard
-        detail={`${formatMoney(report.totals.dueTotal)} remaining`}
-        label="Collected"
-        value={formatMoney(report.totals.collectedTotal)}
-      />
-      <MetricCard label="Tips" value={formatMoney(report.totals.tipTotal)} />
-      <MetricCard label="Tax" value={formatMoney(report.totals.taxTotal)} />
-      <MetricCard
-        label="Discounts"
-        value={formatMoney(report.totals.discountTotal)}
-      />
-    </div>
+    <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-2xl bg-zinc-50 px-5 py-4 sm:grid-cols-4">
+      {[
+        ["Collected", report.totals.collectedTotal],
+        ["Tips", report.totals.tipTotal],
+        ["Tax", report.totals.taxTotal],
+        ["Discounts", report.totals.discountTotal],
+      ].map(([label, value]) => (
+        <div key={label}>
+          <dt className="text-xs text-zinc-500">{label}</dt>
+          <dd className="mt-1 text-lg font-semibold tabular-nums">
+            {formatMoney(Number(value))}
+          </dd>
+          {label === "Collected" ? (
+            <p className="mt-1 text-xs text-zinc-500">
+              {formatMoney(report.totals.dueTotal)} remaining
+            </p>
+          ) : null}
+        </div>
+      ))}
+    </dl>
   );
 }
 
 function TrendChart({ points }: { points: OperationalReportTrendPoint[] }) {
-  const max = Math.max(1, ...points.map((point) => point.totalRevenue));
-
+  const high = Math.max(1, ...points.map((point) => point.totalRevenue));
+  const low = Math.min(0, ...points.map((point) => point.totalRevenue));
+  const width = Math.max(320, points.length * 42 + 66);
+  const y = (value: number) => 20 + ((high - value) / (high - low)) * 160;
+  const baseline = y(0);
+  const step = (width - 66) / Math.max(1, points.length);
   return (
-    <section className="grid gap-4">
-      <div>
-        <h2 className="text-lg font-semibold text-zinc-950">Daily Trend</h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          Closed-ticket revenue by business date.
-        </p>
-      </div>
-      <div className="overflow-x-auto">
-        <div
-          className="grid min-w-[42rem] items-end gap-2"
-          style={{
-            gridTemplateColumns: `repeat(${points.length}, minmax(2.5rem, 1fr))`,
-          }}
+    <section className="min-w-0 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5">
+      <h2 className="text-lg font-semibold text-zinc-950">Daily revenue</h2>
+      <p className="mt-1 text-sm text-zinc-500">
+        Closed-ticket revenue by business date.
+      </p>
+      <div
+        className="mt-4 overflow-x-auto"
+        tabIndex={0}
+        role="region"
+        aria-label="Daily revenue chart; scroll horizontally for more dates"
+      >
+        <svg
+          width={width}
+          height="224"
+          viewBox={`0 0 ${width} 224`}
+          role="img"
+          aria-label="Daily revenue in USD. Exact values are available in the data table below."
+          className="w-full"
+          style={{ minWidth: width }}
         >
-          {points.map((point) => {
-            const height = Math.max(
-              8,
-              Math.round((point.totalRevenue / max) * 150),
-            );
-
-            return (
-              <div className="grid gap-2" key={point.date}>
-                <div className="flex h-40 items-end rounded-md bg-zinc-100 px-1">
-                  <div
-                    aria-label={`${point.label}: ${formatExactMoney(point.totalRevenue)}`}
-                    className="w-full rounded bg-zinc-950"
-                    style={{ height }}
-                    title={`${point.label}: ${formatExactMoney(point.totalRevenue)}`}
-                  />
-                </div>
-                <div className="text-center">
-                  <p className="truncate text-xs font-semibold text-zinc-700">
-                    {point.label}
-                  </p>
-                  <p className="text-[11px] text-zinc-500">
-                    {point.ticketCount} tickets
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+          {[high, (high + low) / 2, low].map((value, index) => (
+            <g key={index}>
+              <line
+                x1="58"
+                x2={width}
+                y1={y(value)}
+                y2={y(value)}
+                stroke="#e4e4e7"
+                strokeDasharray="3 4"
+              />
+              <text
+                x="52"
+                y={y(value) + 4}
+                textAnchor="end"
+                fontSize="10"
+                fill="#71717a"
+              >
+                {formatMoney(value)}
+              </text>
+            </g>
+          ))}
+          <line
+            x1="58"
+            x2={width}
+            y1={baseline}
+            y2={baseline}
+            stroke="#a1a1aa"
+          />
+          {points.map((point, index) => (
+            <g key={point.date}>
+              <title>
+                {point.label}: {formatExactMoney(point.totalRevenue)},{" "}
+                {point.ticketCount} tickets
+              </title>
+              <rect
+                x={62 + index * step}
+                y={Math.min(y(point.totalRevenue), baseline)}
+                width={Math.max(1, step - 10)}
+                height={Math.abs(y(point.totalRevenue) - baseline)}
+                rx="2"
+                fill={point.totalRevenue < 0 ? "#be123c" : "#0f766e"}
+              />
+              <text
+                x={62 + index * step + (step - 10) / 2}
+                y="202"
+                textAnchor="middle"
+                fontSize="10"
+                fill="#71717a"
+              >
+                {point.date.slice(5)}
+              </text>
+            </g>
+          ))}
+        </svg>
       </div>
+      <p className="text-xs text-zinc-500">
+        {points[0]?.label} to {points.at(-1)?.label} / USD
+      </p>
+      <details className="mt-3 text-sm">
+        <summary className="w-fit cursor-pointer py-2 font-medium text-teal-700">
+          View daily values
+        </summary>
+        <div className="max-h-72 overflow-auto">
+          <table className="w-full text-left text-xs">
+            <caption className="sr-only">
+              Daily revenue and closed tickets
+            </caption>
+            <thead>
+              <tr className="border-b">
+                <th className="py-2">Date</th>
+                <th className="text-right">Revenue</th>
+                <th className="text-right">Tickets</th>
+              </tr>
+            </thead>
+            <tbody>
+              {points.map((point) => (
+                <tr key={point.date} className="border-b border-zinc-100">
+                  <th className="py-2 font-normal">{point.label}</th>
+                  <td className="text-right tabular-nums">
+                    {formatExactMoney(point.totalRevenue)}
+                  </td>
+                  <td className="text-right">{point.ticketCount}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
     </section>
   );
 }
@@ -369,7 +336,7 @@ function PaymentBreakdown({ rows }: { rows: OperationalReportPaymentRow[] }) {
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {rows.map((row) => (
             <section
-              className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
+              className="rounded-2xl border border-zinc-200 bg-white p-4"
               key={row.method}
             >
               <p className="text-sm font-semibold text-zinc-950">
@@ -420,7 +387,9 @@ function ServiceBreakdown({ rows }: { rows: OperationalReportServiceRow[] }) {
                   <p className="truncate font-semibold text-zinc-950">
                     {row.serviceName}
                   </p>
-                  <p className="truncate text-xs text-zinc-500">{row.category}</p>
+                  <p className="truncate text-xs text-zinc-500">
+                    {row.category}
+                  </p>
                 </div>
                 <div className="col-span-2 text-right text-zinc-700">
                   {formatNumber(row.itemCount)}
@@ -440,7 +409,10 @@ function ServiceBreakdown({ rows }: { rows: OperationalReportServiceRow[] }) {
   );
 }
 
-function StaffPerformance({ rows, source }: {
+function StaffPerformance({
+  rows,
+  source,
+}: {
   rows: OperationalReportStaffRow[];
   source: OperationalReportData["staffAttributionSource"];
 }) {
@@ -459,40 +431,67 @@ function StaffPerformance({ rows, source }: {
           No staff-attributed sales found for this range.
         </p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-          <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-semibold uppercase tracking-normal text-zinc-500">
-            <div className="col-span-5">Staff</div>
-            <div className="col-span-3 text-right">Service Sales</div>
-            <div className="hidden text-right lg:col-span-2 lg:block">Tips</div>
-            <div className="col-span-2 text-right">Turns</div>
-            <div className="col-span-2 text-right">Tickets</div>
-          </div>
-          <ul className="divide-y divide-zinc-200">
+        <div>
+          <ul className="divide-y divide-zinc-100 rounded-xl border border-zinc-200 sm:hidden">
             {rows.map((row) => (
-              <li className="grid grid-cols-12 gap-2 px-4 py-3 text-sm" key={row.staffId}>
-                <div className="col-span-5 min-w-0">
-                  <p className="truncate font-semibold text-zinc-950">
-                    {row.staffName}
-                  </p>
-                  <p className="truncate text-xs text-zinc-500">
-                    {formatMoney(row.averageTicket)} avg ticket
-                  </p>
-                </div>
-                <div className="col-span-3 text-right font-semibold text-zinc-950">
-                  {formatMoney(row.serviceSales)}
-                </div>
-                <div className="hidden text-right text-zinc-700 lg:col-span-2 lg:block">
-                  {formatMoney(row.tips)}
-                </div>
-                <div className="col-span-2 text-right text-zinc-700">
-                  {formatNumber(row.totalTurns)}
-                </div>
-                <div className="col-span-2 text-right text-zinc-700">
-                  {formatNumber(row.ticketCount)}
-                </div>
+              <li key={row.staffId} className="p-4">
+                <p className="break-words font-semibold">{row.staffName}</p>
+                <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  {[
+                    ["Service sales", formatMoney(row.serviceSales)],
+                    ["Tips", formatMoney(row.tips)],
+                    ["Turns", formatNumber(row.totalTurns)],
+                    ["Tickets", formatNumber(row.ticketCount)],
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <dt className="text-xs text-zinc-500">{label}</dt>
+                      <dd className="mt-1 font-medium">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
               </li>
             ))}
           </ul>
+          <div className="hidden overflow-hidden rounded-lg border border-zinc-200 bg-white sm:block">
+            <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-semibold uppercase tracking-normal text-zinc-500">
+              <div className="col-span-5 lg:col-span-3">Staff</div>
+              <div className="col-span-3 text-right">Service Sales</div>
+              <div className="hidden text-right lg:col-span-2 lg:block">
+                Tips
+              </div>
+              <div className="col-span-2 text-right">Turns</div>
+              <div className="col-span-2 text-right">Tickets</div>
+            </div>
+            <ul className="divide-y divide-zinc-200">
+              {rows.map((row) => (
+                <li
+                  className="grid grid-cols-12 gap-2 px-4 py-3 text-sm"
+                  key={row.staffId}
+                >
+                  <div className="col-span-5 lg:col-span-3 min-w-0">
+                    <p className="truncate font-semibold text-zinc-950">
+                      {row.staffName}
+                    </p>
+                    <p className="truncate text-xs text-zinc-500">
+                      {formatMoney(row.averageTicket)} avg ticket
+                    </p>
+                  </div>
+                  <div className="col-span-3 text-right font-semibold text-zinc-950">
+                    {formatMoney(row.serviceSales)}
+                  </div>
+                  <div className="hidden text-right text-zinc-700 lg:col-span-2 lg:block">
+                    {formatMoney(row.tips)}
+                  </div>
+                  <div className="col-span-2 text-right text-zinc-700">
+                    {formatNumber(row.totalTurns)}
+                  </div>
+                  <div className="col-span-2 text-right text-zinc-700">
+                    {formatNumber(row.ticketCount)}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
     </section>
@@ -505,7 +504,11 @@ function BookingStatusBar({
   metrics: OperationalReportBookingMetrics;
 }) {
   const parts = [
-    { className: "bg-emerald-500", label: "Completed", value: metrics.completed },
+    {
+      className: "bg-emerald-500",
+      label: "Completed",
+      value: metrics.completed,
+    },
     {
       className: "bg-zinc-900",
       label: "Active",
@@ -518,7 +521,10 @@ function BookingStatusBar({
       value: metrics.cancelled + metrics.noShow,
     },
   ];
-  const total = Math.max(1, parts.reduce((sum, part) => sum + part.value, 0));
+  const total = Math.max(
+    1,
+    parts.reduce((sum, part) => sum + part.value, 0),
+  );
 
   return (
     <div className="grid gap-3">
@@ -575,7 +581,7 @@ function BookingCustomerSection({ report }: { report: OperationalReportData }) {
               value={formatPercent(report.bookingMetrics.completionRate)}
             />
           </div>
-          <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+          <section className="rounded-2xl border border-zinc-200 bg-white p-4">
             <BookingStatusBar metrics={report.bookingMetrics} />
           </section>
         </div>
@@ -607,7 +613,9 @@ function RecentTickets({
   return (
     <section className="grid gap-4">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-950">Ticket Drill-Down</h2>
+        <h2 className="text-lg font-semibold text-zinc-950">
+          Ticket Drill-Down
+        </h2>
         <p className="mt-1 text-sm text-zinc-600">
           Most recent closed POS tickets in the selected range.
         </p>
@@ -626,7 +634,10 @@ function RecentTickets({
           </div>
           <ul className="divide-y divide-zinc-200">
             {rows.map((row) => (
-              <li className="grid grid-cols-12 gap-2 px-4 py-3 text-sm" key={row.id}>
+              <li
+                className="grid grid-cols-12 gap-2 px-4 py-3 text-sm"
+                key={row.id}
+              >
                 <div className="col-span-4 min-w-0">
                   <p className="truncate font-semibold text-zinc-950">
                     #{row.ticketNumber}
@@ -636,7 +647,7 @@ function RecentTickets({
                   </p>
                 </div>
                 <div className="hidden min-w-0 text-zinc-700 sm:col-span-3 sm:block">
-                  <p className="truncate">{row.customerName ?? "Walk-in"}</p>
+                  <p className="truncate"><CustomerName name={row.customerName} fallback="Walk-in" /></p>
                 </div>
                 <div className="col-span-4 text-right font-semibold text-zinc-950 sm:col-span-3">
                   {formatMoney(row.totals.totalRevenue)}
@@ -682,28 +693,30 @@ export function OperationalReportDashboard({
   selectedClosingDate: string;
 }) {
   return (
-    <section className="grid gap-8">
-      <header className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(21rem,0.44fr)] lg:items-end">
+    <section className="grid gap-5">
+      <header className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div>
           <p className="text-xs font-semibold uppercase tracking-normal text-zinc-500">
             Owner Report
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal text-zinc-950">
-            Operational Reporting
+            Reports
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
-            Sales, staff, booking, customer, and payment metrics for {salonName}.
-            Figures are generated server-side from salon-scoped POS and booking
-            data.
+            Sales and business performance for {salonName}.
           </p>
         </div>
-        <RangeSelector
+        <ReportRangeFilter
           report={report}
           selectedClosingDate={selectedClosingDate}
         />
       </header>
 
       <EmptyState report={report} />
+      <p className="text-xs text-zinc-500">
+        Compared with {formatDate(report.range.previousStartDate)} to{" "}
+        {formatDate(report.range.previousEndDate)} (same number of days).
+      </p>
       <SummaryCards report={report} />
       <MoneyBreakdownCards report={report} />
       <TrendChart points={report.trend} />

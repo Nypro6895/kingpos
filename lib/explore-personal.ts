@@ -658,7 +658,7 @@ export async function getPublicExploreBeautyPost(input: {
   });
 
   if (page.error) {
-    return null;
+    throw new Error("This post could not be loaded. Please try again.");
   }
 
   return page.items[0] ?? null;

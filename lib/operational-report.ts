@@ -428,7 +428,7 @@ async function requireOperationalReportContext(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   return {
@@ -586,7 +586,7 @@ function resolveReportRange(
 
   if (days > MAX_REPORT_DAYS) {
     endDate = addDays(startDate, MAX_REPORT_DAYS - 1);
-    dataGaps.push(`Custom ranges are capped at ${MAX_REPORT_DAYS} days for this MVP.`);
+    dataGaps.push(`Choose a date range of up to ${MAX_REPORT_DAYS} days.`);
   }
 
   const finalDayCount = dayCount(startDate, endDate);
@@ -1418,23 +1418,23 @@ async function loadReportFacts(input: {
         : "none";
 
   if (!input.permissions.canViewBookings) {
-    dataGaps.push("Booking metrics require booking.view permission.");
+    dataGaps.push("You do not have access to appointment statistics. Ask a salon owner if you need access.");
   }
 
   if (!input.permissions.canViewCustomers) {
-    dataGaps.push("New and returning customer metrics require customers.view permission.");
+    dataGaps.push("You do not have access to customer statistics. Ask a salon owner if you need access.");
   }
 
   if (!input.permissions.canViewStaffFinancials) {
     dataGaps.push("Staff financial performance requires reports, payroll, or ticket access.");
   } else if (staffAttributionSource === "pos_ticket_items") {
     dataGaps.push(
-      "Staff performance is using POS item assignment fallback because staff earning rows were not available for this range.",
+      "Staff performance is based on assigned ticket items because earnings records are unavailable for these dates.",
     );
   }
 
   if (tickets.length >= RESULT_LIMIT || bookings.length >= RESULT_LIMIT) {
-    dataGaps.push("Large result sets may be truncated by the current report limit.");
+    dataGaps.push("This report may not include every record. Choose a shorter date range to see more detail.");
   }
 
   return {

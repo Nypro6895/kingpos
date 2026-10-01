@@ -1,0 +1,83 @@
+-- Transactional fixtures only. No real salon rows are modified.
+do $test$
+declare a uuid:=gen_random_uuid();s uuid:=gen_random_uuid();u uuid:=gen_random_uuid();pub uuid:=gen_random_uuid();k uuid:=gen_random_uuid();staff uuid:=gen_random_uuid();
+ op uuid:=gen_random_uuid();sig text;payload jsonb;result jsonb;again jsonb;snapshot jsonb;customer uuid:=gen_random_uuid();visit uuid:=gen_random_uuid();n int;t timestamptz:=now();device uuid:=gen_random_uuid();day date;booking uuid:=gen_random_uuid();version timestamptz;
+begin
+ insert into auth.users(id,email)values(u,'pos-sync-'||u::text||'@example.invalid');
+ insert into public.users(id,auth_user_id,email,display_name)values(pub,u,'pos-sync-'||u::text||'@example.invalid','POS sync fixture');
+ insert into accounts(id,name,status)values(a,'POS sync fixture','active');
+ insert into locations(id,account_id,name,status,country)values(s,a,'POS sync fixture','active','US');
+ insert into roles(account_id,name,code,is_system)values(a,'Owner','OWNER',true) on conflict(account_id,code)do nothing;
+ insert into account_memberships(account_id,user_id,role_id,status)values(a,pub,(select id from roles where code='OWNER' and account_id=a limit 1),'active');
+ insert into pos_settings(salon_id,staff_check_in_enabled)values(s,false);
+ insert into staff(id,salon_id,display_name,is_active,pos_enabled)values(staff,s,'Test staff',true,true);
+ insert into pos_portable_access_keys(id,salon_id,access_id,passcode_salt,passcode_digest,is_active)values(k,s,'sync-'||k::text,'salt','digest',true);
+ sig:=pos_portable_access_signature(k,'digest');
+ payload:=jsonb_build_object('lines',jsonb_build_array(jsonb_build_object('staffId',null,'serviceLabel','Quick sale','total',50,'amountInput','50','amountParts',jsonb_build_array(50))));
+ begin perform replay_pos_owner_operation(s,op,t,payload);raise exception 'Unauthenticated write accepted';exception when others then if SQLERRM='Unauthenticated write accepted' then raise;end if;end;
+ perform set_config('request.jwt.claim.sub',u::text,true);
+ result:=replay_pos_owner_operation(s,op,t,payload);again:=replay_pos_owner_operation(s,op,t,payload);
+ if result is distinct from again then raise exception 'Retry created another ticket';end if;
+ if (select count(*) from pos_tickets where salon_id=s)<>1 then raise exception 'Receipt was duplicated';end if;
+ if (select count(*) from pos_payments where salon_id=s)<>1 then raise exception 'Payment record was duplicated';end if;
+ if exists(select 1 from pos_ticket_item_turn_parts where salon_id=s) then raise exception 'Unassigned sale created staff turns';end if;
+ begin perform replay_pos_owner_operation(s,op,t,payload||'{"tipAmount":5}');raise exception 'Changed payload accepted';exception when others then if SQLERRM='Changed payload accepted' then raise;end if;end;
+ begin perform replay_pos_owner_operation(s,gen_random_uuid(),t,jsonb_set(payload,'{lines,0,total}','51'));raise exception 'Mismatched parts accepted';exception when others then if SQLERRM='Mismatched parts accepted' then raise;end if;end;
+ select to_jsonb(p) into snapshot from pos_settings p where salon_id=s;
+ perform save_pos_workspace_settings(s,snapshot,'{"staff_check_in_enabled":true}');
+ -- Independent settings groups do not overwrite one another.
+ perform save_pos_workspace_settings(s,snapshot,'{"tip_suggestions":[1,2,3,4]}');
+ begin perform save_pos_workspace_settings(s,snapshot,'{"staff_check_in_enabled":false}');raise exception 'Stale settings overwrote newer settings';exception when others then if SQLERRM='Stale settings overwrote newer settings' then raise;end if;end;
+ begin perform replay_pos_owner_operation(s,gen_random_uuid(),t,payload);raise exception 'Check-in rule bypassed';exception when others then if SQLERRM='Check-in rule bypassed' then raise;end if;end;
+ update pos_settings set staff_check_in_enabled=false where salon_id=s;
+ insert into customers(id,location_id,name,status)values(customer,s,'Test customer','active');
+ insert into customer_visits(id,salon_id,customer_id,source,status,checked_in_at)values(visit,s,customer,'walk_in','waiting',now());
+ payload:=payload||jsonb_build_object('customerId',customer,'customerVisitId',visit);
+ result:=replay_pos_owner_operation(s,gen_random_uuid(),t,payload);
+ select count(*) into n from pos_tickets where salon_id=s;
+ begin perform replay_pos_owner_operation(s,gen_random_uuid(),t,payload);raise exception 'Same visit sold twice';exception when others then if SQLERRM='Same visit sold twice' then raise;end if;end;
+ if(select count(*) from pos_tickets where salon_id=s)<>n then raise exception 'Rejected duplicate left partial ticket';end if;
+ -- Same date + different operation IDs are distinct sales, never merged by amount.
+ payload:=payload-'customerVisitId';
+ perform replay_pos_owner_operation(s,gen_random_uuid(),t,payload);
+ if(select count(*) from pos_tickets where salon_id=s)<>n+1 then raise exception 'Legitimate same-amount sale merged';end if;
+ if(select count(distinct ticket_sequence) from pos_tickets where salon_id=s)<>n+1 then raise exception 'Ticket numbers collide';end if;
+ result:=get_pos_workspace_draft(k,sig,device);
+ again:=get_pos_workspace_draft(k,sig,device);
+ if result->>'token' is distinct from again->>'token' then raise exception 'Same device lost its display draft';end if;
+ again:=get_pos_workspace_draft(k,sig,gen_random_uuid());
+ if result->>'token'=again->>'token' then raise exception 'Two devices share a mutable receipt';end if;
+ day:=get_salon_business_date(s);
+ snapshot:=get_pos_portable_report_data(k,sig,day)->'closingInputs';
+ perform save_pos_workspace_report_closing(k,sig,day,10,0,0,null,snapshot);
+ begin perform save_pos_workspace_report_closing(k,sig,day,20,0,0,null,snapshot);raise exception 'Stale closing overwrote another device';exception when others then if SQLERRM='Stale closing overwrote another device' then raise;end if;end;
+ if(select cash_amount from pos_daily_closings where salon_id=s and report_date=day)<>10 then raise exception 'Rejected closing modified cash';end if;
+ insert into pos_portable_operations(key_id,operation_id,kind,payload_hash,occurred_at,result)values(k,op,'receipt','fixture',now(),'{}');
+ result:=get_pos_workspace_staff(k,sig,array[staff]);
+ if not (result->'acknowledgedOperationIds' ? op::text) then raise exception 'Committed operation absent from staff snapshot';end if;
+ if jsonb_array_length(result->'staff')<>1 then raise exception 'Unclocked staff missing from roster';end if;
+ insert into staff_attendance_events(salon_id,staff_id,work_date,event_type,old_status,new_status,created_at)values(s,staff,day,'CHECK_OUT','working','checked_out',now());
+ begin perform replay_pos_portable_attendance_event(k,sig,staff,'1234','CHECK_IN',now()-interval '1 minute');raise exception 'Late attendance overwrote newer status';exception when others then if SQLERRM='Late attendance overwrote newer status' or SQLERRM not like 'This staff member changed%' then raise;end if;end;
+ -- Corrections from Owner and Portable share a locked revision and transaction.
+ payload:=jsonb_build_object('lines',jsonb_build_array(jsonb_build_object('staffId',staff,'serviceLabel','Correction test','total',40,'amountInput','40','amountParts',jsonb_build_array(40))));
+ result:=replay_pos_owner_operation(s,gen_random_uuid(),t,payload);
+ select workspace_revision into n from pos_tickets where id=(result->>'ticketId')::uuid;
+ select jsonb_agg(jsonb_build_object('item_id',id,'parts',jsonb_build_array(40))) into snapshot from pos_ticket_items where pos_ticket_id=(result->>'ticketId')::uuid and not is_removed;
+ perform correct_pos_workspace_ticket(null,null,s,(result->>'ticketId')::uuid,n,'[]',snapshot,'[]','[]',5,'Owner tip correction');
+ begin perform correct_pos_workspace_ticket(k,sig,null,(result->>'ticketId')::uuid,n,'[]',snapshot,'[]','[]',8,'Stale Portable correction');raise exception 'Stale ticket overwrote money';exception when others then if SQLERRM not like 'This ticket changed on another screen%' then raise;end if;end;
+ if(select tip_value from pos_tickets where id=(result->>'ticketId')::uuid)<>5 then raise exception 'Stale ticket changed money';end if;
+ if not exists(select 1 from pos_ticket_adjustments where ticket_id=(result->>'ticketId')::uuid and created_by=pub) then raise exception 'Owner correction missing audit author';end if;
+ select workspace_revision into n from pos_tickets where id=(result->>'ticketId')::uuid;
+ begin perform correct_pos_workspace_ticket(null,null,s,(result->>'ticketId')::uuid,n,'[]',snapshot,'[]','[]',-1,'Invalid correction');raise exception 'Invalid correction accepted';exception when others then if SQLERRM='Invalid correction accepted' then raise;end if;end;
+ if(select workspace_revision from pos_tickets where id=(result->>'ticketId')::uuid)<>n then raise exception 'Failed correction left partial changes';end if;
+ -- A multi-field booking edit rolls back as one unit; stale versions cannot win.
+ insert into bookings(id,salon_id,customer_id,start_at,end_at,status,source,updated_at)values(booking,s,customer,now()+interval '1 day',now()+interval '1 day 1 hour','confirmed','owner',now()-interval '1 hour');
+ select updated_at into version from bookings where id=booking;
+ perform save_pos_workspace_booking(booking,version,jsonb_build_object('start_at',now()+interval '2 days','end_at',now()+interval '2 days 1 hour','command','check_in'));
+ begin perform save_pos_workspace_booking(booking,version,'{"command":"cancel"}');raise exception 'Stale booking edit accepted';exception when others then if SQLERRM not like 'This appointment changed on another screen%' then raise;end if;end;
+ select updated_at into version from bookings where id=booking;
+ begin perform save_pos_workspace_booking(booking,version,jsonb_build_object('start_at',now()+interval '3 days','end_at',now()+interval '3 days 1 hour','command','confirm'));raise exception 'Invalid status accepted';exception when others then if SQLERRM='Invalid status accepted' then raise;end if;end;
+ if(select start_at from bookings where id=booking)<>now()+interval '2 days' then raise exception 'Failed multi-field booking left a partial time change';end if;
+ if(select status from bookings where id=booking)<>'checked_in' then raise exception 'Failed booking edit altered status';end if;
+ raise notice 'POS workspace transaction tests passed';
+end;$test$;

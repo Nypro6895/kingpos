@@ -17,11 +17,43 @@ import {
   type PortablePosCapability,
 } from "@/lib/pos-portable-capabilities";
 import { POS_DISPLAY_MEDIA_BUCKET, POS_SETTING_DEFAULTS } from "@/lib/pos-settings";
+import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
 import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
 import { POS_TICKET_PERMISSIONS } from "@/lib/pos-tickets";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 
 const POS_DISPLAY_IMAGE_LIMIT = 15 * 1024 * 1024;
+
+export async function savePosSettingsGroup(formData: FormData): Promise<{ok:boolean;error?:string;snapshot?:Record<string,unknown>;conflict?:Record<string,unknown>}> {
+  const {salon,supabase}=await requirePosSettingsMutationContext("settings");
+  try {
+    const group=String(formData.get('group'));let values:Record<string,unknown>={};
+    const expected=JSON.parse(String(formData.get('expected')??'{}'));
+    if(group==='staff') values={large_turn_threshold:Math.max(1,readNumber(formData,'large_turn_threshold',25)),staff_check_in_enabled:readBoolean(formData,'staff_check_in_enabled')};
+    else if(group==='checkout') values={tip_suggestions:readTipSuggestions(formData),touch_keyboard_enabled:readBoolean(formData,'touch_keyboard_enabled'),workspace_preferences:normalizeWorkspacePreferences({
+      ...Object.fromEntries(['showStaff','showServices','showCustomer','showTip','showDiscount'].map(k=>[k,readBoolean(formData,k)])),idleMinutes:readNumber(formData,'idleMinutes',3),idleWarningSeconds:readNumber(formData,'idleWarningSeconds',60)})};
+    else if(group==='display') {
+      const [background,left,right]=await Promise.all([
+        uploadPosDisplayImage({file:getUploadedFile(formData,'customer_background_image_file'),kind:'background',salonId:salon.id,supabase}),
+        uploadPosDisplayImage({file:getUploadedFile(formData,'customer_left_ad_image_file'),kind:'left-ad',salonId:salon.id,supabase}),
+        uploadPosDisplayImage({file:getUploadedFile(formData,'customer_right_ad_image_file'),kind:'right-ad',salonId:salon.id,supabase}),
+      ]);
+      for(const name of ['app_download_url','customer_left_ad_text','customer_right_ad_text','customer_promo_title','customer_promo_body'])values[name]=readOptionalString(formData,name);
+      const url=values.app_download_url;if(url&& !/^https?:\/\//i.test(String(url)))throw Error('Use an http or https customer app link.');
+      for(const name of ['customer_show_salon_name','customer_show_customer_name','customer_show_receipt_status','customer_show_service_name','customer_show_staff_name','customer_show_barcode'])values[name]=readBoolean(formData,name);
+      for(const [name,uploaded] of [['customer_background_image',background],['customer_left_ad_image',left],['customer_right_ad_image',right]] as const)values[name+'_path']=getNextImagePath({currentPath:readOptionalString(formData,'current_'+name+'_path'),remove:readBoolean(formData,'remove_'+name),uploadedPath:uploaded});
+    } else throw Error('Unknown settings group.');
+    const {data,error}=await supabase.rpc('save_pos_workspace_settings',{p_salon:salon.id,p_expected:expected,p_values:values});
+    if(error){
+      if(error.message.startsWith('These settings changed')){
+        const latest=await supabase.from('pos_settings').select('*').eq('salon_id',salon.id).single();
+        if(latest.data)return {ok:false,error:'These settings were changed on another screen. Review the saved values before continuing.',conflict:latest.data};
+      }
+      throw Error(error.message);
+    }
+    return {ok:true,snapshot:data};
+  }catch(error){return {ok:false,error:error instanceof Error?error.message:'Unable to save. Your changes have been kept.'};}
+}
 const POS_DISPLAY_IMAGE_TYPES = new Map([
   ["image/jpeg", "jpg"],
   ["image/png", "png"],
@@ -141,7 +173,7 @@ async function requirePosSettingsMutationContext(errorTarget: "access" | "settin
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    redirectWithError("Supabase environment variables are missing.");
+    redirectWithError("This feature is temporarily unavailable. Please try again later.");
   }
 
   return {
@@ -469,6 +501,7 @@ export async function updatePosSettingsAction(formData: FormData) {
       ),
       salon_id: salon.id,
       staff_check_in_enabled: readBoolean(formData, "staff_check_in_enabled"),
+      touch_keyboard_enabled: readBoolean(formData, "touch_keyboard_enabled"),
       tip_suggestions: readTipSuggestions(formData),
     };
 
@@ -482,7 +515,7 @@ export async function updatePosSettingsAction(formData: FormData) {
       settingsPayload.staff_check_in_enabled
     ) {
       throw new Error(
-        "Staff check-in cannot be enabled until the staff check-in database migration is applied.",
+        "Staff check-in is temporarily unavailable. Please try again later or contact support.",
       );
     }
 

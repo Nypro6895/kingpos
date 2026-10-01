@@ -926,7 +926,7 @@ async function getExistingSalonProfileSetting(context: CurrentBusinessContext) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase
@@ -963,7 +963,7 @@ async function getOrCreateSalonProfileSetting(context: CurrentBusinessContext) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase
@@ -1053,7 +1053,7 @@ export async function getCurrentSalonProfileManageData(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const [
@@ -1837,7 +1837,7 @@ async function assertTrustedSalonProfileMediaPath(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { folder, name } = getStorageParent(normalizedPath);
@@ -1974,7 +1974,7 @@ export async function updateCurrentSalonProfileIdentity(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { error } = await supabase
@@ -2081,8 +2081,8 @@ export async function updateCurrentSalonProfileIdentityMedia(input: {
   kind: "cover" | "logo";
   path: string | null;
   remove?: boolean;
-}) {
-  const context = await getCurrentBusinessContext();
+}, targetContext?: CurrentBusinessContext) {
+  const context = targetContext ?? await getCurrentBusinessContext();
 
   if (!context.user) {
     throw new Error("You must be logged in to update salon profile media.");
@@ -2100,7 +2100,7 @@ export async function updateCurrentSalonProfileIdentityMedia(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const column =
@@ -2186,7 +2186,7 @@ export async function setCurrentSalonProfilePublication(enabled: boolean) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { error } = await supabase
@@ -2228,7 +2228,7 @@ export async function createCurrentSalonProfileLook(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const postingStaff = await requireSalonProfileContentCreatePermission({
@@ -2422,7 +2422,7 @@ export async function createCurrentSalonProfileUpdate(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const postingStaff = await requireSalonProfileContentCreatePermission({
@@ -2644,7 +2644,7 @@ export async function setCurrentSalonProfileLookStatus(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   if (input.isPinned) {
@@ -2698,7 +2698,7 @@ export async function deleteCurrentSalonProfileLook(lookId: string) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data: look, error: loadError } = await supabase
@@ -2843,7 +2843,7 @@ export async function createPublicSalonProfileComment(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { error } = await supabase.from("salon_profile_comments").insert({
@@ -2887,7 +2887,7 @@ export async function setPublicSalonProfileCommentStatus(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { error } = await supabase
@@ -2937,7 +2937,7 @@ export async function createPublicSalonProfileReview(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { error } = await supabase.from("salon_profile_reviews").insert({
@@ -3004,7 +3004,7 @@ export async function createPublicSalonProfileReviewReply(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { error } = await supabase.from("salon_profile_review_replies").insert({
@@ -3077,7 +3077,7 @@ export async function createPublicSalonProfileBookingRequest(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase
@@ -3142,7 +3142,7 @@ export async function togglePublicSalonLookSave(lookId: string) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data: existing, error: loadError } = await supabase
@@ -3192,7 +3192,7 @@ export async function togglePublicSalonFollow(salonId: string) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data: existing, error: loadError } = await supabase

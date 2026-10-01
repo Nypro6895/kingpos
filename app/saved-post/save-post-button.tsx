@@ -10,13 +10,25 @@ import {
   type AccountSavedPostTarget,
 } from "@/types/saved-post";
 import {
+  createContext,
+  useContext,
   useEffect,
   useId,
   useRef,
   useState,
   useTransition,
   type MouseEvent,
+  type ReactNode,
 } from "react";
+
+const SavePostAuthContext = createContext<boolean | undefined>(undefined);
+
+export function SavePostAuthProvider({ isAuthenticated, children }: {
+  isAuthenticated: boolean;
+  children: ReactNode;
+}) {
+  return <SavePostAuthContext.Provider value={isAuthenticated}>{children}</SavePostAuthContext.Provider>;
+}
 
 const SAVED_POST_STATE_EVENT = "reylumi:saved-post-state-change";
 const SAVED_POST_ORANGE = "var(--brand-orange, #f26f3d)";
@@ -26,6 +38,7 @@ type SavePermission = "allowed" | "blocked" | "unknown";
 type SavePostButtonProps = {
   className?: string;
   initialSaved?: boolean;
+  isAuthenticated?: boolean;
   onSavedChange?: (saved: boolean) => void;
   saveCount?: number | null;
   showTooltip?: boolean;
@@ -45,10 +58,10 @@ function targetSelector() {
   );
 }
 
-function dispatchSavedPostStateChange(key: string, saved: boolean) {
+function dispatchSavedPostStateChange(key: string, saved: boolean, saveCount?: number) {
   window.dispatchEvent(
     new CustomEvent(SAVED_POST_STATE_EVENT, {
-      detail: { key, saved },
+      detail: { key, saved, saveCount },
     }),
   );
 }
@@ -129,6 +142,7 @@ function normalizedSaveCount(value: number | null | undefined) {
 function SavePostButtonInner({
   className = "",
   initialSaved,
+  isAuthenticated,
   onSavedChange,
   saveCount,
   showTooltip = false,
@@ -143,7 +157,7 @@ function SavePostButtonInner({
   const mutationPendingRef = useRef(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savePermission, setSavePermission] = useState<SavePermission>(
-    initialSaved !== undefined ? "allowed" : "unknown",
+    isAuthenticated === false ? "blocked" : initialSaved !== undefined ? "allowed" : "unknown",
   );
   const [saved, setSaved] = useState(initialSaved ?? false);
   const [displaySaveCount, setDisplaySaveCount] = useState(() =>
@@ -170,21 +184,25 @@ function SavePostButtonInner({
     };
 
     startTransition(async () => {
-      const result = await getAccountSavedPostStatesAction([targetForRequest]);
+      try {
+        const result = await getAccountSavedPostStatesAction([targetForRequest]);
 
-      if (!active || result.error || checkVersion !== stateCheckVersionRef.current) {
-        return;
+        if (!active || result.error || checkVersion !== stateCheckVersionRef.current) {
+          return;
+        }
+
+        const serverSaved = result.savedKeys.includes(stateKey);
+        const serverSaveCount = result.saveCountsByKey[stateKey];
+
+        setSavePermission(result.canSave ? "allowed" : "blocked");
+        setSaved(serverSaved);
+        if (typeof serverSaveCount === "number") {
+          setDisplaySaveCount(normalizedSaveCount(serverSaveCount));
+        }
+        dispatchSavedPostStateChange(stateKey, serverSaved, serverSaveCount);
+      } catch {
+        if (active) setMessage("Saved post status could not be loaded.");
       }
-
-      const serverSaved = result.savedKeys.includes(stateKey);
-      const serverSaveCount = result.saveCountsByKey[stateKey];
-
-      setSavePermission(result.canSave ? "allowed" : "blocked");
-      setSaved(serverSaved);
-      if (typeof serverSaveCount === "number") {
-        setDisplaySaveCount(normalizedSaveCount(serverSaveCount));
-      }
-      dispatchSavedPostStateChange(stateKey, serverSaved);
     });
 
     return () => {
@@ -205,12 +223,16 @@ function SavePostButtonInner({
       }
 
       const detail = event.detail as
-        | { key?: unknown; saved?: unknown }
+        | { key?: unknown; saved?: unknown; saveCount?: unknown }
         | null
         | undefined;
 
       if (detail?.key === stateKey && typeof detail.saved === "boolean") {
+        stateCheckVersionRef.current += 1;
         setSaved(detail.saved);
+        if (typeof detail.saveCount === "number" && Number.isFinite(detail.saveCount)) {
+          setDisplaySaveCount(normalizedSaveCount(detail.saveCount));
+        }
       }
     }
 
@@ -251,7 +273,7 @@ function SavePostButtonInner({
         Math.max(0, current + (nextSaved ? 1 : -1)),
       );
       onSavedChange?.(nextSaved);
-      dispatchSavedPostStateChange(stateKey, nextSaved);
+      dispatchSavedPostStateChange(stateKey, nextSaved, Math.max(0, previousSaveCount + (nextSaved ? 1 : -1)));
 
       if (nextSaved) {
         animateSavedHeart(buttonRef.current);
@@ -261,42 +283,53 @@ function SavePostButtonInner({
     }
 
     startTransition(async () => {
-      const result = await setAccountSavedPostAction(stableTarget, nextSaved);
+      try {
+        const result = await setAccountSavedPostAction(stableTarget, nextSaved);
 
-      if (result.error) {
+        if (result.error) {
+          if (canOptimisticallyUpdate) {
+            setSaved(previousSaved);
+            setDisplaySaveCount(previousSaveCount);
+            onSavedChange?.(previousSaved);
+            dispatchSavedPostStateChange(stateKey, previousSaved, previousSaveCount);
+          }
+          if (result.authRequired) {
+            setSavePermission("blocked");
+            setAuthPromptOpen(true);
+          }
+          setMessage(result.error);
+          return;
+        }
+
+        setSavePermission("allowed");
+        setSaved(result.active);
+        if (typeof result.saveCount === "number") {
+          setDisplaySaveCount(normalizedSaveCount(result.saveCount));
+        } else if (!canOptimisticallyUpdate) {
+          setDisplaySaveCount((current) =>
+            Math.max(0, current + (result.active ? 1 : -1)),
+          );
+        }
+        onSavedChange?.(result.active);
+        dispatchSavedPostStateChange(stateKey, result.active,
+          typeof result.saveCount === "number" ? result.saveCount :
+            Math.max(0, previousSaveCount + (result.active === previousSaved ? 0 : result.active ? 1 : -1)));
+        if (!canOptimisticallyUpdate && result.active) {
+          animateSavedHeart(buttonRef.current);
+        }
+        setMessage(result.active ? "Post saved." : "Post removed.");
+      } catch {
         if (canOptimisticallyUpdate) {
           setSaved(previousSaved);
           setDisplaySaveCount(previousSaveCount);
           onSavedChange?.(previousSaved);
-          dispatchSavedPostStateChange(stateKey, previousSaved);
+          dispatchSavedPostStateChange(stateKey, previousSaved, previousSaveCount);
         }
-        if (result.authRequired) {
-          setSavePermission("blocked");
-          setAuthPromptOpen(true);
-        }
-        setMessage(result.error);
+        setMessage("Connection interrupted. Refresh to check whether the post was saved.");
+      } finally {
         mutationPendingRef.current = false;
         setIsSaving(false);
-        return;
       }
-
-      setSavePermission("allowed");
-      setSaved(result.active);
-      if (typeof result.saveCount === "number") {
-        setDisplaySaveCount(normalizedSaveCount(result.saveCount));
-      } else if (!canOptimisticallyUpdate) {
-        setDisplaySaveCount((current) =>
-          Math.max(0, current + (result.active ? 1 : -1)),
-        );
-      }
-      onSavedChange?.(result.active);
-      dispatchSavedPostStateChange(stateKey, result.active);
-      if (!canOptimisticallyUpdate && result.active) {
-        animateSavedHeart(buttonRef.current);
-      }
-      setMessage(result.active ? "Post saved." : "Post removed.");
-      mutationPendingRef.current = false;
-      setIsSaving(false);
     });
   }
 
@@ -412,15 +445,18 @@ function SavePostButtonInner({
 export function SavePostButton({
   className = "",
   initialSaved,
+  isAuthenticated,
   onSavedChange,
   saveCount,
   showTooltip,
   size = "default",
   target,
 }: SavePostButtonProps) {
+  const inheritedAuth = useContext(SavePostAuthContext);
+  const authenticated = isAuthenticated ?? inheritedAuth;
   const sourceId = target?.sourceId.trim();
 
-  if (!target || !sourceId) {
+  if (!target || !sourceId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sourceId)) {
     return null;
   }
 
@@ -435,7 +471,8 @@ export function SavePostButton({
     <SavePostButtonInner
       className={className}
       initialSaved={initialSaved}
-      key={stateKey}
+      isAuthenticated={authenticated}
+      key={`${stateKey}:${authenticated ?? "unknown"}`}
       onSavedChange={onSavedChange}
       saveCount={saveCount}
       showTooltip={showTooltip}

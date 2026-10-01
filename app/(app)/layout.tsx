@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import { SalonSwitcher } from "@/app/salon-switcher";
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import { getRequestBusinessContext as getCurrentBusinessContext } from "@/lib/request-business-context";
 import { REYLUMI_METADATA_BASE } from "@/lib/reylumi-config";
+import { isSalonManageContext } from "@/lib/current-context";
+import { OwnerQueueRuntime } from "@/app/pos/owner-queue-runtime";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -62,6 +64,7 @@ export default async function RootLayout({
       lang="en"
     >
       <body className="min-h-full bg-white text-zinc-950">
+        <OwnerQueueRuntime scope={isSalonManageContext(context)&&context.currentSalon&&context.user?`owner:${context.currentSalon.id}:${context.user.id}`:null}/>
         <SalonSwitcher context={context}>{children}</SalonSwitcher>
       </body>
     </html>

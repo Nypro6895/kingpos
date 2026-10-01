@@ -152,7 +152,7 @@ async function countActiveServicesForSalon(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { count, error } = await supabase
@@ -207,7 +207,7 @@ export async function getCurrentSalonSetting() {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data: existingSetting, error: loadError } = await supabase
@@ -293,7 +293,7 @@ export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput) 
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const businessName = input.business_name.trim();

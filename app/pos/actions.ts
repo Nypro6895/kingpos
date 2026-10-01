@@ -3,6 +3,7 @@
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import {
   getCurrentBusinessContext,
   getRouteForInvalidSalonContext,
@@ -1039,13 +1040,15 @@ async function createTicketFromSubmitInput(
   try {
     const { context, salon, supabase, user } =
       await requirePosDeskMutationContext();
-    const settings = await getCurrentSalonPosSettings(context);
     validateSubmitLines(input.lines);
-    const workDate = await getSalonBusinessDate({
-      fallbackTimezone: context.user?.timezone,
-      salonId: salon.id,
-      supabase,
-    });
+    const [settings, workDate] = await Promise.all([
+      getCurrentSalonPosSettings(context),
+      getSalonBusinessDate({
+        fallbackTimezone: context.user?.timezone,
+        salonId: salon.id,
+        supabase,
+      }),
+    ]);
     await validateSubmitLineScope({
       lines: input.lines,
       requireWorkingStaff: settings.staffCheckInEnabled,
@@ -1092,9 +1095,7 @@ async function createTicketFromSubmitInput(
       throw new Error(ticketError.message);
     }
 
-    const insertedItems: PosTicketItemWithRelations[] = [];
-
-    for (const line of input.lines) {
+    const insertedLineResults = await Promise.all(input.lines.map(async (line) => {
       const { data: item, error: itemError } = await supabase
         .from("pos_ticket_items")
         .insert({
@@ -1112,8 +1113,6 @@ async function createTicketFromSubmitInput(
       if (itemError) {
         throw new Error(itemError.message);
       }
-
-      insertedItems.push(item);
 
       const turnRows = line.amountParts.map((amount, partIndex) => ({
         amount,
@@ -1134,17 +1133,32 @@ async function createTicketFromSubmitInput(
         throw new Error(turnError.message);
       }
 
-      const largeTurnDelta = turnRows.filter(
-        (row) => row.turn_type === "large",
-      ).length;
+      return {
+        item,
+        largeTurnDelta: turnRows.filter((row) => row.turn_type === "large").length,
+        staffId: line.staffId,
+      };
+    }));
+    const insertedItems = insertedLineResults.map((result) => result.item);
+    const queueDeltasByStaff = new Map<string, number>();
 
-      if (largeTurnDelta > 0) {
+    for (const result of insertedLineResults) {
+      if (result.largeTurnDelta > 0) {
+        queueDeltasByStaff.set(
+          result.staffId,
+          (queueDeltasByStaff.get(result.staffId) ?? 0) + result.largeTurnDelta,
+        );
+      }
+    }
+
+    await Promise.all(
+      [...queueDeltasByStaff].map(async ([staffId, delta]) => {
         const { error: queueError } = await supabase.rpc(
           "increment_staff_queue_turns",
           {
-            p_delta: largeTurnDelta,
+            p_delta: delta,
             p_salon_id: salon.id,
-            p_staff_id: line.staffId,
+            p_staff_id: staffId,
             p_work_date: workDate,
           },
         );
@@ -1152,8 +1166,8 @@ async function createTicketFromSubmitInput(
         if (queueError) {
           throw new Error(queueError.message);
         }
-      }
-    }
+      }),
+    );
 
     if (discountValue > 0 || discountType !== "fixed_amount") {
       const { error: discountError } = await supabase
@@ -1223,25 +1237,24 @@ async function createTicketFromSubmitInput(
       totals: finalTotals,
     });
 
-    const { error: closeError } = await supabase
-      .from("pos_tickets")
-      .update({ closed_at: new Date().toISOString(), status: "closed" })
-      .eq("id", ticket.id)
-      .eq("salon_id", salon.id);
-
-    if (closeError) {
-      throw new Error(closeError.message);
-    }
-
-    const { error: auditError } = await supabase
-      .from("pos_ticket_audit_logs")
-      .insert({
+    const [{ error: closeError }, { error: auditError }] = await Promise.all([
+      supabase
+        .from("pos_tickets")
+        .update({ closed_at: new Date().toISOString(), status: "closed" })
+        .eq("id", ticket.id)
+        .eq("salon_id", salon.id),
+      supabase.from("pos_ticket_audit_logs").insert({
         action: "ticket_checked_out",
         created_by: user.id,
         note: "Ticket checked out from POS Desk.",
         salon_id: salon.id,
         ticket_id: ticket.id,
-      });
+      }),
+    ]);
+
+    if (closeError) {
+      throw new Error(closeError.message);
+    }
 
     if (auditError) {
       throw new Error(auditError.message);
@@ -1295,7 +1308,7 @@ async function createTicketFromSubmitInput(
         token: input.liveDraftToken,
       });
       if (finalizedDraft) {
-        await broadcastPosLiveDraftSnapshot(finalizedDraft, "pos");
+        after(() => broadcastPosLiveDraftSnapshot(finalizedDraft, "pos"));
       }
     } catch (draftError) {
       console.error("Unable to finalize POS live draft after submit", {
@@ -1304,8 +1317,21 @@ async function createTicketFromSubmitInput(
       });
     }
 
-    await recalculateStaffEarningsForDate(salon.id, workDate);
-    await broadcastPosStaffChange(salon.id, "pos");
+    after(async () => {
+      try {
+        await recalculateStaffEarningsForDate(salon.id, workDate);
+      } catch (earningsError) {
+        console.error("Unable to refresh staff earnings after POS submit", {
+          error:
+            earningsError instanceof Error
+              ? earningsError.message
+              : earningsError,
+          salonId: salon.id,
+          workDate,
+        });
+      }
+      await broadcastPosStaffChange(salon.id, "pos");
+    });
 
     const customerClaim = await maybeIssueCustomerClaimOffer({
       customerId: customer.id,
@@ -1468,7 +1494,7 @@ export async function getPosLiveDraft(
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc("get_pos_live_draft_by_token", {
@@ -1529,7 +1555,7 @@ export async function saveCustomerDisplayRequestedServices(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const result = await updateCustomerVisitRequestedServices({
@@ -1555,7 +1581,7 @@ export async function saveCustomerDisplayRequestedServices(input: {
     revalidatePath("/pos");
     revalidatePath("/pos/portable");
     revalidatePath("/staff/today");
-    await broadcastWaitingChangeByLiveDraftToken(input.token);
+    after(() => broadcastWaitingChangeByLiveDraftToken(input.token));
 
     return {
       data: {
@@ -1583,7 +1609,7 @@ export async function resetCustomerDisplayCompletedDraft(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc(
@@ -1602,7 +1628,7 @@ export async function resetCustomerDisplayCompletedDraft(input: {
     }
 
     const snapshot = toLiveDraftView(data as RawLiveDraft);
-    await broadcastPosLiveDraftSnapshot(snapshot, "customer_display");
+    after(() => broadcastPosLiveDraftSnapshot(snapshot, "customer_display"));
 
     return { data: snapshot, ok: true };
   } catch (error) {
@@ -1624,7 +1650,7 @@ export async function touchCustomerDisplayLiveDraftActivity(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc("touch_pos_live_draft_activity", {
@@ -1641,7 +1667,7 @@ export async function touchCustomerDisplayLiveDraftActivity(input: {
     }
 
     const snapshot = toLiveDraftView(data as RawLiveDraft);
-    await broadcastPosLiveDraftSnapshot(snapshot, "system");
+    after(() => broadcastPosLiveDraftSnapshot(snapshot, "system"));
 
     return { data: snapshot, ok: true };
   } catch (error) {
@@ -1727,7 +1753,7 @@ export async function updatePosActiveDraft(input: {
     }
 
     const snapshot = toLiveDraftView(data);
-    await broadcastPosLiveDraftSnapshot(snapshot, "pos");
+    after(() => broadcastPosLiveDraftSnapshot(snapshot, "pos"));
 
     return { data: snapshot, ok: true };
   } catch (error) {
@@ -1796,7 +1822,7 @@ export async function updatePosLiveDraftCustomer(input: {
     }
 
     const snapshot = toLiveDraftView(data);
-    await broadcastPosLiveDraftSnapshot(snapshot, "pos");
+    after(() => broadcastPosLiveDraftSnapshot(snapshot, "pos"));
 
     return { data: snapshot, ok: true };
   } catch (error) {
@@ -1867,7 +1893,7 @@ export async function updateLiveDraftCustomerByPhone(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc(
@@ -1899,7 +1925,7 @@ export async function findLiveDraftCustomerByPhone(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc(
@@ -1936,7 +1962,7 @@ export async function createLiveDraftCustomer(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc(
@@ -1969,7 +1995,7 @@ export async function searchCustomerDisplayLiveDraftCustomers(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc(
@@ -2023,6 +2049,7 @@ export async function getCustomerDisplayLiveDraftTipOptions(input: {
 }
 
 export async function submitCustomerDisplayPhone(input: {
+  checkInOnly?: boolean;
   name?: string | null;
   phone: string;
   requestId?: string | null;
@@ -2032,10 +2059,11 @@ export async function submitCustomerDisplayPhone(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const result = await resolveCustomerDisplaySubmission({
+      checkInOnly: input.checkInOnly,
       customerName: cleanOptional(input.name),
       phone: input.phone,
       requestId: cleanOptional(input.requestId),
@@ -2059,7 +2087,7 @@ export async function submitCustomerDisplayPhone(input: {
 
       const snapshot = toLiveDraftView(result.snapshot as RawLiveDraft);
       await broadcastPosLiveDraftSnapshot(snapshot, "customer_display");
-      await broadcastPosStaffChange(snapshot.salon_id, "waiting");
+      after(() => broadcastPosStaffChange(snapshot.salon_id, "waiting"));
       revalidatePath("/pos");
       revalidatePath("/pos/portable");
       revalidatePath("/staff/today");
@@ -2082,7 +2110,7 @@ export async function submitCustomerDisplayPhone(input: {
     revalidatePath("/pos/portable");
     revalidatePath("/staff/today");
     revalidatePath("/bookings");
-    await broadcastWaitingChangeByLiveDraftToken(input.token);
+    after(() => broadcastWaitingChangeByLiveDraftToken(input.token));
 
     return {
       data: {
@@ -2127,8 +2155,12 @@ export async function selectWaitingVisitForPos(input: {
     }
 
     const snapshot = toLiveDraftView(result.snapshot as RawLiveDraft);
-    await broadcastPosLiveDraftSnapshot(snapshot, "pos");
-    await broadcastPosStaffChange(salon.id, "waiting");
+    after(async () => {
+      await Promise.all([
+        broadcastPosLiveDraftSnapshot(snapshot, "pos"),
+        broadcastPosStaffChange(salon.id, "waiting"),
+      ]);
+    });
 
     revalidatePath("/pos");
     revalidatePath("/pos/portable");
@@ -2174,7 +2206,7 @@ export async function cancelWaitingVisitForPos(input: {
     revalidatePath("/pos");
     revalidatePath("/pos/portable");
     revalidatePath("/staff/today");
-    await broadcastPosStaffChange(salon.id, "waiting");
+    after(() => broadcastPosStaffChange(salon.id, "waiting"));
 
     return {
       data: {
@@ -2201,7 +2233,7 @@ export async function confirmCustomerDisplayLiveDraftCustomer(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc(
@@ -2244,7 +2276,7 @@ export async function createCustomerDisplayLiveDraftCustomer(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { error } = await supabase.rpc(
@@ -2292,7 +2324,7 @@ export async function confirmCustomerDisplayLiveDraftTip(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     if (!Number.isFinite(input.tipAmount) || input.tipAmount < 0) {
@@ -2939,8 +2971,21 @@ export async function submitSessionToTicket(
       .eq("token", session.customer_display_token)
       .eq("salon_id", salon.id);
 
-    await recalculateStaffEarningsForDate(salon.id, workDate);
-    await broadcastPosStaffChange(salon.id, "pos");
+    after(async () => {
+      try {
+        await recalculateStaffEarningsForDate(salon.id, workDate);
+      } catch (earningsError) {
+        console.error("Unable to refresh staff earnings after session submit", {
+          error:
+            earningsError instanceof Error
+              ? earningsError.message
+              : earningsError,
+          salonId: salon.id,
+          workDate,
+        });
+      }
+      await broadcastPosStaffChange(salon.id, "pos");
+    });
 
     const customerClaim = await maybeIssueCustomerClaimOffer({
       customerId: customer.id,
@@ -3162,7 +3207,7 @@ export async function getCustomerDisplayChannel(
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc("get_pos_display_channel_by_token", {
@@ -3191,7 +3236,7 @@ export async function confirmCustomerTip(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc("confirm_pos_display_channel_tip", {
@@ -3330,7 +3375,7 @@ export async function getCustomerDisplaySession(
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc("get_pos_desk_session_by_token", {
@@ -3359,7 +3404,7 @@ export async function updateCustomerDisplayLookup(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc(
@@ -3392,7 +3437,7 @@ export async function createCustomerDisplayCustomer(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc(
@@ -3430,7 +3475,7 @@ export async function updateCustomerDisplayTip(input: {
     const supabase = createSupabaseServerClient();
 
     if (!supabase) {
-      throw new Error("Supabase environment variables are missing.");
+      throw new Error("This feature is temporarily unavailable. Please try again later.");
     }
 
     const { data, error } = await supabase.rpc(

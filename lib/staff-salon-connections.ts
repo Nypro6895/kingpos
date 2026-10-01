@@ -406,7 +406,7 @@ function requirePublicSupabaseClient() {
   if (!supabase) {
     throw new StaffSalonConnectionError(
       "SUPABASE_NOT_CONFIGURED",
-      "Supabase environment variables are missing.",
+      "This feature is temporarily unavailable. Please try again later.",
     );
   }
 
@@ -419,7 +419,7 @@ async function requireAuthenticatedSupabaseClient() {
   if (!supabase) {
     throw new StaffSalonConnectionError(
       "SUPABASE_NOT_CONFIGURED",
-      "Supabase environment variables are missing.",
+      "This feature is temporarily unavailable. Please try again later.",
     );
   }
 
@@ -461,7 +461,7 @@ async function getStaffConnectionAuthContext(): Promise<StaffConnectionAuthConte
   if (!supabase) {
     throw new StaffSalonConnectionError(
       "SUPABASE_NOT_CONFIGURED",
-      "Supabase environment variables are missing.",
+      "This feature is temporarily unavailable. Please try again later.",
     );
   }
 
@@ -1459,7 +1459,7 @@ export async function getSalonStaffConnectionRequests() {
   if (!supabase) {
     throw new StaffSalonConnectionError(
       "SUPABASE_NOT_CONFIGURED",
-      "Supabase environment variables are missing.",
+      "This feature is temporarily unavailable. Please try again later.",
     );
   }
 

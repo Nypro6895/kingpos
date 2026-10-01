@@ -1,4 +1,5 @@
 "use client";
+import { CustomerName } from "@/components/customer-name";
 
 import { useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -55,6 +56,7 @@ export type TicketCorrectionStaffOption = {
 };
 
 export type EditablePosTicket = {
+  workspace_revision?: number;
   adjustments?: Array<{
     action: "item_corrected" | "item_removed" | "item_replaced";
     after_snapshot: unknown;
@@ -108,6 +110,7 @@ export type EditablePosTicket = {
       name: string;
     } | null;
     service_id: string | null;
+    service_name_snapshot?: string | null;
     turn_parts?: Array<{
       amount: number;
       created_at?: string;
@@ -1027,9 +1030,11 @@ export function DailyPosTicketCard({
   returnTo,
   services,
   staff,
-  ticket,
+  ticket: serverTicket,
   timeZone,
 }: DailyPosTicketCardProps) {
+  const [editSnapshot,setEditSnapshot]=useState<EditablePosTicket|null>(null);
+  const ticket=editSnapshot??serverTicket;
   const correctionActions = actions ?? OWNER_TICKET_CORRECTION_ACTIONS;
   const lockedCorrectionAction =
     correctionActions.submitLockedStaffFinancialCorrection ??
@@ -1329,6 +1334,7 @@ export function DailyPosTicketCard({
   }
 
   function resetEdit() {
+    setEditSnapshot(null);
     setLines(initialLines);
     setTipTotal(formatNumber(initialTotals.tip_amount));
     setStaffTipDrafts({});
@@ -1341,7 +1347,10 @@ export function DailyPosTicketCard({
   }
 
   function startEdit() {
+    setLines(getInitialLines(serverTicket));
+    setTipTotal(formatNumber(initialTotals.tip_amount));
     if (!isBusinessDateLocked) {
+      setEditSnapshot(serverTicket);
       setIsCorrectionMode(false);
       setIsEditing(true);
       return;
@@ -1351,6 +1360,7 @@ export function DailyPosTicketCard({
   }
 
   function continueLockedCorrection() {
+    setEditSnapshot(serverTicket);
     setShowLockedConfirmation(false);
     setIsCorrectionMode(true);
     setIsEditing(true);
@@ -1396,6 +1406,7 @@ export function DailyPosTicketCard({
     return (
       servicesById.get(line.serviceId)?.name ??
       originalItemByKey.get(line.key)?.service?.name ??
+      originalItemByKey.get(line.key)?.service_name_snapshot ??
       "Select service"
     );
   }
@@ -1749,6 +1760,7 @@ export function DailyPosTicketCard({
           <>
             <input name="ticket_id" type="hidden" value={ticket.id} />
             <input name="return_to" type="hidden" value={returnTo} />
+            <input name="expected_revision" type="hidden" value={ticket.workspace_revision??0} />
             <input name="tip_total" type="hidden" value={normalizeMoneyInput(tipTotal)} />
             <input name="item_updates" type="hidden" value={JSON.stringify(editedItems)} />
             <input name="item_parts" type="hidden" value={JSON.stringify(itemPartsPayload)} />
@@ -1776,7 +1788,7 @@ export function DailyPosTicketCard({
             {formatTime(ticket.opened_at, timeZone)}
           </span>
           <span className="min-w-0 truncate font-medium text-zinc-950">
-            {ticket.customer?.name ?? "Walk-in Customer"}
+            <CustomerName name={ticket.customer?.name} />
             {ticket.source_booking_id ? (
               <span className="ml-2 rounded border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-800">
                 From appointment

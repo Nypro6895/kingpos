@@ -126,6 +126,14 @@ export function GuestNavigationShell({ children }: { children: ReactNode }) {
                 Search
               </button>
             </form>
+            {isExploreBrowsePage ? (
+              <Link
+                className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-brand-orange px-3 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:px-5"
+                href={`/login?next=${encodeURIComponent(nextPath)}`}
+              >
+                Login
+              </Link>
+            ) : null}
           </div>
           {!isExploreBrowsePage ? (
             <div className="flex shrink-0 items-center justify-end gap-2 lg:self-auto">

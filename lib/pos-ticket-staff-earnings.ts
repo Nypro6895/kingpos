@@ -504,15 +504,17 @@ async function requireEarningContext() {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
-  return {
-    context,
-    salon: context.currentSalon,
-    supabase,
-    timeZone: context.user.timezone,
-  };
+  const { data: timeZone, error: timezoneError } = await supabase.rpc(
+    "get_salon_business_timezone", { p_salon_id: context.currentSalon.id },
+  );
+  if (timezoneError || typeof timeZone !== "string" || !timeZone) {
+    throw new Error("Salon business timezone could not be loaded for staff earnings.");
+  }
+
+  return { context, salon: context.currentSalon, supabase, timeZone };
 }
 
 async function loadTicketsForDate(input: {

@@ -109,7 +109,7 @@ export async function redeemRecoveryCodeAction(
   const supabase = createSupabaseServerClient();
 
   if (!supabase) {
-    return { error: "Account recovery is not configured." };
+    return { error: "Account recovery is temporarily unavailable. Please try again later." };
   }
 
   const { error } = await supabase.rpc("redeem_account_recovery_code", {
@@ -124,7 +124,7 @@ export async function redeemRecoveryCodeAction(
     if (schemaMissing(error)) {
       return {
         error:
-          "Account recovery storage is not ready. Apply the latest database migration and try again.",
+          "Account recovery is temporarily unavailable. Please try again later or contact support.",
       };
     }
 

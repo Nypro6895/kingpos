@@ -55,7 +55,7 @@ export const BOOKING_STAFF_OPTION_SELECT =
 export const BOOKING_SERVICE_OPTION_SELECT =
   "id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 export const BOOKING_SETTINGS_SELECT =
-  "id, salon_id, booking_enabled, online_booking_visible, confirmation_mode, minimum_lead_time_minutes, maximum_advance_window_days, slot_interval_minutes, default_cleanup_buffer_minutes, same_day_booking_enabled, cancellation_window_minutes, late_cancellation_policy, no_show_policy, any_professional_enabled, split_staff_appointment_enabled, guest_booking_enabled, timezone_iana, ticket_creation_mode, payment_required_enabled, deposit_required_enabled, deposit_policy, created_at, updated_at";
+  "id, salon_id, booking_enabled, online_booking_visible, confirmation_mode, minimum_lead_time_minutes, maximum_advance_window_days, slot_interval_minutes, default_cleanup_buffer_minutes, same_day_booking_enabled, cancellation_window_minutes, late_cancellation_policy, no_show_policy, auto_assign_enabled, reminder_enabled, confirmation_email_enabled, confirmation_sms_enabled, any_professional_enabled, split_staff_appointment_enabled, guest_booking_enabled, timezone_iana, ticket_creation_mode, payment_required_enabled, deposit_required_enabled, deposit_policy, created_at, updated_at";
 export const BOOKING_LINE_SELECT =
   "id, salon_id, booking_id, parent_booking_line_id, line_type, service_id, service_name_snapshot, service_category_snapshot, service_description_snapshot, unit_price, quantity, line_total, duration_minutes, cleanup_buffer_minutes, display_order, assigned_staff_id, scheduled_start_at, scheduled_end_at, line_status, started_at, completed_at, performed_by_staff_id, service_note, internal_staff_note, line_status_updated_at, line_status_updated_by_user_id, overbooking_override_reason, overbooking_override_by_user_id, overbooking_override_at, created_at, updated_at";
 export const BOOKING_STATUS_EVENT_SELECT =
@@ -463,12 +463,12 @@ function defaultBookingSettings(input: {
     guest_booking_enabled: false,
     id: "",
     late_cancellation_policy: {},
-    maximum_advance_window_days: 30,
-    minimum_lead_time_minutes: 0,
+    maximum_advance_window_days: 60,
+    minimum_lead_time_minutes: 120,
     no_show_policy: {},
     online_booking_visible: false,
     payment_required_enabled: false,
-    same_day_booking_enabled: true,
+    same_day_booking_enabled: false,
     salon_id: input.salonId,
     slot_interval_minutes: 15,
     split_staff_appointment_enabled: true,
@@ -930,7 +930,7 @@ export async function getCurrentSalonBookingWorkspace(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const [
@@ -1238,7 +1238,7 @@ export async function getCurrentSalonBookings() {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase
@@ -1271,7 +1271,7 @@ export async function getCurrentSalonBookingOptions(context: CurrentBusinessCont
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const [customersResult, staffResult] = await Promise.all([
@@ -1349,7 +1349,7 @@ export async function deriveBookingCreationSchedule(input: {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const uniqueServiceIds = [...new Set(input.serviceIds)];
@@ -1370,6 +1370,10 @@ export async function deriveBookingCreationSchedule(input: {
     throw error;
   }
 
+  const { data: assignments, error: assignmentError } = await supabase.from("staff_service_assignments")
+    .select("staff_id,service_id,custom_duration_minutes,custom_price")
+    .eq("salon_id", input.salonId).eq("is_active", true).in("service_id", uniqueServiceIds);
+  if (assignmentError) throw assignmentError;
   const servicesById = new Map((services ?? []).map((service) => [service.id, service]));
   let cursorMs = new Date(input.startAt).getTime();
   let subtotal = 0;
@@ -1387,12 +1391,13 @@ export async function deriveBookingCreationSchedule(input: {
     }
 
     const scheduledStartAt = new Date(cursorMs).toISOString();
-    const durationMinutes = service.duration_minutes;
+    const assignment = assignments?.find(row => row.service_id === serviceId && row.staff_id === input.staffIds[index]);
+    const durationMinutes = assignment?.custom_duration_minutes ?? service.duration_minutes;
     const scheduledEndMs =
       cursorMs + (durationMinutes + input.cleanupBufferMinutes) * 60000;
     const scheduledEndAt = new Date(scheduledEndMs).toISOString();
 
-    subtotal += Number(service.base_price ?? 0);
+    subtotal += Number(assignment?.custom_price ?? service.base_price ?? 0);
     lines.push({
       cleanupBufferMinutes: input.cleanupBufferMinutes,
       durationMinutes,

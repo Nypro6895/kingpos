@@ -239,6 +239,10 @@ export type BookingStatusEvent = {
 };
 
 export type BookingSettings = {
+  auto_assign_enabled?: boolean;
+  reminder_enabled?: boolean;
+  confirmation_email_enabled?: boolean;
+  confirmation_sms_enabled?: boolean;
   id: string;
   salon_id: string;
   booking_enabled: boolean;

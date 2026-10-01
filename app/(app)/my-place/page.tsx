@@ -1,6 +1,7 @@
 import { MyPlaceClient } from "@/app/my-place/my-place-client";
 import { getCurrentBusinessContext } from "@/lib/current-context";
-import { getWorkspacePendingSummary } from "@/lib/workspace-pending";
+import { getPlaceRequests } from "@/app/my-place/actions";
+import { inspectProfilePhoneClaim } from "@/lib/customer-identity-claims";
 import { redirect } from "next/navigation";
 
 type MyPlacePageProps = {
@@ -19,13 +20,26 @@ export default async function MyPlacePage({ searchParams }: MyPlacePageProps) {
     redirect("/login?next=/my-place");
   }
 
-  const pendingSummary = await getWorkspacePendingSummary(context);
+  const [requests, phoneClaim] = await Promise.all([
+    getPlaceRequests(),
+    context.user.phone
+      ? inspectProfilePhoneClaim(context.user.phone)
+      : Promise.resolve(null),
+  ]);
 
   return (
     <MyPlaceClient
       currentWorkspace={context.currentWorkspace}
+      user={context.user}
+      phoneVerified={
+        phoneClaim?.ok === true && phoneClaim.data.verifiedByCurrentUser
+      }
       error={resolvedSearchParams.error}
-      pendingSummary={pendingSummary}
+      requests={requests}
+      salons={[
+        ...context.availableManageSalons,
+        ...context.availableStaffSalons,
+      ]}
       workspaceOptions={context.workspaceOptions}
     />
   );

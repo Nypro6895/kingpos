@@ -91,8 +91,8 @@ export function getPhoneOtpProviderStatus(): PhoneOtpProviderStatus {
     configured: Boolean(provider),
     provider: provider ?? process.env.REYLUMI_PHONE_OTP_PROVIDER?.trim() ?? null,
     reason: provider
-      ? "Supabase Auth phone OTP is configured for transactional phone verification."
-      : "No transactional phone OTP provider is configured in this workspace.",
+      ? "Phone verification is available."
+      : "Phone verification is temporarily unavailable. Please try again later.",
     resendCooldownSeconds: PHONE_OTP_RESEND_COOLDOWN_SECONDS,
   };
 }
@@ -106,7 +106,7 @@ function phoneOtpMessage(code: PhoneOtpErrorCode) {
     case "phone_change_not_created":
       return "Phone verification could not be started.";
     case "provider_not_configured":
-      return "Phone verification is not configured.";
+      return "Phone verification is temporarily unavailable. Please try again later.";
     case "send_throttled":
       return "Please wait before requesting another code.";
     case "session_expired":

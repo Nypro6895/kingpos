@@ -1,11 +1,14 @@
-import Link from "next/link";
+import { OwnerPosTabs } from "@/app/pos/owner-pos-tabs";
+import { SettingsGroupForm } from "@/app/pos/settings/settings-group-form";
+import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
+import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+import { DesktopDownloadPanel } from "@/app/pos/settings/desktop-download-panel";
 /* eslint-disable @next/next/no-img-element */
 import { CustomerDisplayInstallPanel } from "@/app/pos/settings/customer-display-install-panel";
 import {
   createPortablePosAccessAction,
   updatePortablePosAccessCapabilitiesAction,
   updatePortablePosAccessStatusAction,
-  updatePosSettingsAction,
 } from "@/app/pos/settings/actions";
 import { SettingsSaveBroadcast } from "@/app/pos/settings/settings-save-broadcast";
 import { SettingsSubmitButton } from "@/app/pos/settings/settings-submit-button";
@@ -103,7 +106,7 @@ function Checkbox({
   name: string;
 }) {
   return (
-    <label className="flex items-start gap-3 rounded-md border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-700">
+    <label className="settings-toggle">
       <input
         className="mt-1 h-4 w-4 rounded border-zinc-300"
         defaultChecked={defaultChecked}
@@ -123,7 +126,7 @@ function CapabilityCheckbox({
   option: (typeof PORTABLE_POS_CAPABILITY_OPTIONS)[number];
 }) {
   return (
-    <label className="flex min-h-20 items-start gap-3 rounded-md border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-700">
+    <label className="settings-toggle">
       <input
         className="mt-1 h-4 w-4 rounded border-zinc-300"
         defaultChecked={defaultChecked}
@@ -135,7 +138,7 @@ function CapabilityCheckbox({
         <span className="block font-semibold text-zinc-950">
           {option.label}
         </span>
-        <span className="mt-1 block text-xs leading-5 text-zinc-500">
+        <span className="settings-capability-help">
           {option.description}
         </span>
       </span>
@@ -185,7 +188,7 @@ function ImageUploadField({
   const previewUrl = currentUrl ?? fallbackUrl;
 
   return (
-    <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3">
+    <div className="settings-image">
       <label className="block">
         <span className="text-sm font-medium text-zinc-700">{label}</span>
         <input
@@ -200,13 +203,13 @@ function ImageUploadField({
       ) : null}
       <input name={`current_${name}_path`} type="hidden" value={currentPath ?? ""} />
       {previewUrl ? (
-        <div className="mt-3 overflow-hidden rounded-md border border-zinc-200 bg-white">
-          <div className="border-b border-zinc-200 px-3 py-2 text-xs font-semibold text-zinc-500">
+        <div className="mt-2 overflow-hidden rounded-md bg-zinc-50">
+          <div className="px-2 py-1 text-xs text-zinc-500">
             {currentUrl ? "Current custom image" : "Default image"}
           </div>
           <img
             alt=""
-            className="h-32 w-full bg-white object-contain"
+            className="h-20 w-full bg-white object-contain"
             src={previewUrl}
           />
         </div>
@@ -214,7 +217,7 @@ function ImageUploadField({
       {currentPath ? (
         <label className="mt-3 flex items-center gap-2 text-sm text-zinc-600">
           <input name={`remove_${name}`} type="checkbox" />
-          Remove custom image and use default
+          Use default image
         </label>
       ) : null}
     </div>
@@ -258,36 +261,7 @@ function getAccessSessionState(key: PortablePosAccessKey) {
   };
 }
 
-function OwnerPosMenu() {
-  return (
-    <nav
-      aria-label="Owner POS tools"
-      className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm"
-    >
-      <Link
-        className="rounded-md border border-zinc-300 px-3 py-2 font-semibold text-zinc-800 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-        href="/pos"
-      >
-        POS
-      </Link>
-      <Link
-        className="rounded-md border border-zinc-300 px-3 py-2 font-semibold text-zinc-800 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-        href="/pos/portable"
-      >
-        Portable POS
-      </Link>
-      <Link
-        className="rounded-md border border-zinc-300 px-3 py-2 font-semibold text-zinc-800 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-        href="/pos/customer-display"
-      >
-        Customer POS
-      </Link>
-      <span className="rounded-md bg-zinc-950 px-3 py-2 font-semibold text-white">
-        POS Setting
-      </span>
-    </nav>
-  );
-}
+function OwnerPosMenu() { return <OwnerPosTabs active="settings"/>; }
 
 function PortableAccessSection({
   accessKeys,
@@ -305,19 +279,19 @@ function PortableAccessSection({
   const canCreateAccess = canManageSettings && schemaReady;
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-5" id="portable-access">
+    <section className="settings-section-body" id="portable-access">
       <div>
         <h2 className="text-lg font-semibold text-zinc-950">
-          Portable POS Access
+          Staff access
         </h2>
         <p className="mt-1 text-sm leading-6 text-zinc-600">
-          Create standalone POS IDs and track which device or station last logged in.
+          Staff sign in with a POS ID, without your Owner account.
         </p>
       </div>
 
       <form
         action={createPortablePosAccessAction}
-        className="mt-4 grid gap-4 rounded-md border border-zinc-200 bg-zinc-50 p-4 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end"
+        className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end"
       >
         {setupMessage ? (
           <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 sm:col-span-4">
@@ -340,35 +314,25 @@ function PortableAccessSection({
         >
           Create
         </SettingsSubmitButton>
-        <div className="grid gap-2 sm:col-span-4">
-          <p className="text-sm font-semibold text-zinc-950">
-            Default device capabilities
-          </p>
-          <CapabilityGrid />
-        </div>
+        <details className="settings-permissions sm:col-span-4"><summary>Allowed actions</summary><CapabilityGrid /></details>
       </form>
 
       <div className="mt-4 grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-zinc-950">
-              Portable POS IDs
+              Devices
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600">
-              Disable an ID to revoke portable access immediately.
+              Disable an ID to stop new access.
             </p>
           </div>
-          <Link
-            className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50"
-            href="/pos/portable"
-          >
-            Open Portable POS
-          </Link>
+
         </div>
 
         {accessKeys.length === 0 ? (
           <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-5 text-sm text-zinc-600">
-            No Portable POS ID has been created yet.
+            No POS IDs yet.
           </p>
         ) : (
           <div className="grid gap-2">
@@ -397,13 +361,8 @@ function PortableAccessSection({
                       </span>
                     </div>
                     <p className="mt-1 truncate text-sm text-zinc-600">
-                      {key.label || "No device / position label"}
+                      {key.label || "Unnamed device"}
                     </p>
-                    {key.last_user_agent ? (
-                      <p className="mt-1 truncate text-xs text-zinc-500">
-                        {key.last_user_agent}
-                      </p>
-                    ) : null}
                   </div>
                   <div className="grid gap-1 text-xs text-zinc-500">
                     <span
@@ -432,25 +391,27 @@ function PortableAccessSection({
                       {key.is_active ? "Disable" : "Enable"}
                     </SettingsSubmitButton>
                   </form>
+                  <details className="settings-permissions lg:col-span-3"><summary>Edit permissions</summary>
                   <form
                     action={updatePortablePosAccessCapabilitiesAction}
-                    className="grid gap-3 rounded-md bg-zinc-50 p-3 lg:col-span-3"
+                    className="grid gap-3 pt-3"
                   >
                     <input name="key_id" type="hidden" value={key.id} />
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-zinc-950">
-                        Device capabilities
+                        Permissions
                       </p>
                       <SettingsSubmitButton
                         className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
                         disabled={!canCreateAccess}
                         saved={saved === `portable-capabilities-${key.id}`}
                       >
-                        Save capabilities
+                        Save permissions
                       </SettingsSubmitButton>
                     </div>
                     <CapabilityGrid capabilities={key.capabilities} />
                   </form>
+                  </details>
                 </article>
               );
             })}
@@ -462,79 +423,27 @@ function PortableAccessSection({
 }
 
 function CustomerDisplaySettingsSection({
-  canManageSettings,
-  saved,
-  settings,
+  settings, snapshot,
 }: {
-  canManageSettings: boolean;
-  saved?: boolean;
-  settings: PosSettingsView;
+  settings: PosSettingsView; snapshot: Record<string, unknown>;
 }) {
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-5">
+    <section className="settings-section-body">
       <div>
         <h2 className="text-lg font-semibold text-zinc-950">
-          Customer POS Display
+          Appearance
         </h2>
         <p className="mt-1 text-sm leading-6 text-zinc-600">
-          Configure the full-screen customer display, ads, barcode, and tip options.
+          Customize what customers see.
         </p>
       </div>
 
-      <form
-        action={updatePosSettingsAction}
-        className="mt-4 grid gap-6"
-      >
-        <div className="grid gap-4 rounded-md border border-zinc-200 bg-zinc-50 p-4 md:grid-cols-5">
-          <Field
-            defaultValue={settings.largeTurnThreshold}
-            label="Large turn amount"
-            min={1}
-            name="large_turn_threshold"
-            step="0.01"
-            type="number"
-          />
-          {settings.tipSuggestions.map((amount, index) => (
-            <Field
-              defaultValue={amount}
-              key={index}
-              label={`Tip option ${index + 1}`}
-              min={0}
-              name={`tip_suggestion_${index + 1}`}
-              step="0.01"
-              type="number"
-            />
-          ))}
-        </div>
-
-        <div className="grid gap-3 rounded-md border border-amber-200 bg-amber-50 p-4">
-          <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
-            <Checkbox
-              defaultChecked={settings.staffCheckInEnabled}
-              label="Enable staff check-in"
-              name="staff_check_in_enabled"
-            />
-            <SettingsSubmitButton
-              className="min-h-11 rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-              disabled={!canManageSettings}
-              saved={saved}
-            >
-              Save staff check-in
-            </SettingsSubmitButton>
-          </div>
-          <p className="text-sm leading-6 text-amber-900">
-            When enabled, Portable POS only shows staff who are checked in and
-            working for the current salon day. Turning this on mid-day can hide
-            staff from new assignments until they check in; existing receipt
-            lines and totals are not recalculated.
-          </p>
-        </div>
-
-        <div className="grid gap-4 rounded-md border border-zinc-200 bg-zinc-50 p-4 lg:grid-cols-2">
+      <SettingsGroupForm group="display" snapshot={snapshot}>
+        <div className="grid gap-3 sm:grid-cols-2">
           <ImageUploadField
             currentPath={settings.customerBackgroundImagePath}
             currentUrl={settings.customerBackgroundImageUrl}
-            description="Used behind the receipt, phone, tip, and thank-you screens. Removing a custom image restores the light salon default."
+            description="Checkout and thank-you screens."
             fallbackUrl={DEFAULT_CUSTOMER_DISPLAY_RECEIPT_BACKGROUND_URL}
             label="Receipt background image"
             name="customer_background_image"
@@ -542,7 +451,7 @@ function CustomerDisplaySettingsSection({
           <ImageUploadField
             currentPath={settings.customerLeftAdImagePath}
             currentUrl={settings.customerLeftAdImageUrl}
-            description="Used on the idle slideshow. Removing a custom image restores the default Reylumi app promo."
+            description="Shown while the display is idle."
             fallbackUrl={DEFAULT_CUSTOMER_DISPLAY_PROMO_SLIDE_URL}
             label="Reylumi promotional slide"
             name="customer_left_ad_image"
@@ -562,7 +471,7 @@ function CustomerDisplaySettingsSection({
           />
           <Field
             defaultValue={settings.appDownloadUrl}
-            label="App download URL"
+            label="Customer app link (QR code)"
             name="app_download_url"
           />
           <TextArea
@@ -616,16 +525,7 @@ function CustomerDisplaySettingsSection({
           />
         </div>
 
-        <div className="flex justify-end">
-          <SettingsSubmitButton
-            className="min-h-11 rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-            disabled={!canManageSettings}
-            saved={saved}
-          >
-            Save POS Settings
-          </SettingsSubmitButton>
-        </div>
-      </form>
+      </SettingsGroupForm>
     </section>
   );
 }
@@ -658,10 +558,14 @@ export default async function PosSettingsPage({
     getCurrentSalonPosSettings(context),
   ]);
 
+  const supabase=await createAuthenticatedSupabaseServerClient();
+  const {data:raw}=await supabase!.from('pos_settings').select('*').eq('salon_id',context.currentSalon!.id).maybeSingle();
+  const snapshot=raw??{};
+  const preferences=normalizeWorkspacePreferences(raw?.workspace_preferences);
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-8">
+    <main className="pos-settings mx-auto w-full max-w-5xl px-3 py-4 sm:px-6 sm:py-6">
       <SettingsSaveBroadcast saved={saved} />
-      <OwnerPosMenu />
+      <div className="settings-heading"><div><h1>POS settings</h1><p>Checkout, staff and devices</p></div><OwnerPosMenu /></div>
 
       {error ? (
         <p className="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
@@ -669,27 +573,25 @@ export default async function PosSettingsPage({
         </p>
       ) : null}
 
-      <div className="mt-6 grid gap-6">
-        <PortableAccessSection
-          accessKeys={portableAccessState.keys}
-          canManageSettings={canManageSettings}
-          saved={saved}
-          schemaReady={portableAccessState.schemaReady}
-          setupMessage={portableAccessState.setupMessage}
-        />
-        <CustomerDisplayInstallPanel
-          activeAccessKeyCount={
-            portableAccessState.keys.filter((key) => key.is_active).length
-          }
-          displayPath="/pos/customer-display"
-          schemaReady={portableAccessState.schemaReady}
-          setupPath="/pos/customer-display/setup"
-        />
-        <CustomerDisplaySettingsSection
-          canManageSettings={canManageSettings}
-          saved={saved === "pos-settings"}
-          settings={settings}
-        />
+
+<div className="settings-sections">
+        <details open><summary>Windows app &amp; devices</summary><DesktopDownloadPanel/></details>
+        <details id="access"><summary>POS login &amp; permissions</summary><PortableAccessSection accessKeys={portableAccessState.keys} canManageSettings={canManageSettings} saved={saved} schemaReady={portableAccessState.schemaReady} setupMessage={portableAccessState.setupMessage}/></details>
+        <details><summary>Staff &amp; turns</summary><SettingsGroupForm group="staff" snapshot={snapshot}>
+          <Checkbox defaultChecked={settings.staffCheckInEnabled} label="Require staff check-in" name="staff_check_in_enabled"/>
+          <Field defaultValue={settings.largeTurnThreshold} label="Large turn amount" min={1} step="0.01" type="number" name="large_turn_threshold"/>
+          <p className="text-sm leading-6 text-zinc-500">Staff check in each day. Late arrivals and returning staff follow your turn rules.</p>
+        </SettingsGroupForm></details>
+        <details><summary>Checkout &amp; saved tickets</summary><SettingsGroupForm group="checkout" snapshot={snapshot}>
+          <p className="text-sm font-semibold">Checkout options</p><div className="grid gap-2 sm:grid-cols-2">{([['showStaff','Staff'],['showServices','Services'],['showCustomer','Customer'],['showTip','Tip'],['showDiscount','Discount']] as const).map(([key,label])=><Checkbox key={key} name={key} label={label} defaultChecked={preferences[key]}/>)}</div>
+          <p className="text-sm text-zinc-500">Staff is required when check-in is on.</p>
+          <div className="grid gap-3 sm:grid-cols-4">{settings.tipSuggestions.map((amount,index)=><Field key={index} name={`tip_suggestion_${index+1}`} label={`Tip option ${index+1}`} defaultValue={amount} min={0} type="number" step="0.01"/>)}</div>
+          <Checkbox defaultChecked={settings.touchKeyboardEnabled} label="Portable on-screen keyboard" name="touch_keyboard_enabled"/>
+          <div className="grid gap-3 sm:grid-cols-2"><Field name="idleMinutes" label="Idle reminder (minutes)" defaultValue={preferences.idleMinutes} min={1} type="number"/><Field name="idleWarningSeconds" label="Response time (seconds)" defaultValue={preferences.idleWarningSeconds} min={15} type="number"/></div>
+          <p className="text-sm text-zinc-500">Unfinished entries clear after the countdown. Saved and submitted tickets stay.</p>
+        </SettingsGroupForm></details>
+        <details><summary>Customer Display</summary><CustomerDisplayInstallPanel activeAccessKeyCount={portableAccessState.keys.filter(key=>key.is_active).length} displayPath="/pos/customer-display" schemaReady={portableAccessState.schemaReady} setupPath="/pos/customer-display/setup"/><CustomerDisplaySettingsSection settings={settings} snapshot={snapshot}/></details>
+        <details><summary>Data &amp; sync</summary><div className="mt-3 space-y-3 text-sm leading-6 text-zinc-600"><p>Tickets save on the device and upload when connected. Check the sync icon for progress.</p><p>Reports update after each device reconnects.</p><p>Closing the app keeps saved tickets. Do not clear app or browser data before upload finishes.</p>{portableAccessState.keys.map(key=><div key={key.id} className="flex justify-between gap-4 border-t py-3"><strong>{key.label||key.access_id}</strong><span>Last contact: {formatAccessDate(key.last_used_at)}</span></div>)}</div></details>
       </div>
     </main>
   );
