@@ -1,9 +1,11 @@
 import "server-only";
 
+import { BEAUTY_POST_BOOKING_SOURCE_TYPE } from "@/lib/beauty-booking-verification";
 import { formatDateInTimeZone, zonedDateTimeToUtcIso } from "@/lib/bookings";
 import { mapBookingInspiration } from "@/lib/booking-inspirations";
 import { loadPublicContentBookingOptions } from "@/lib/content-booking";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
+import { getStaffProfileAvatarUrl } from "@/lib/staff-profile";
 import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
@@ -54,6 +56,7 @@ export type PublicBookingSalon = {
   logoUrl: string | null;
   name: string;
   phone: string | null;
+  publicProfileEnabled: boolean;
   salonId: string;
   state: string | null;
   tagline: string | null;
@@ -115,7 +118,7 @@ export type PublicBookingInspirationStatus =
 export type PublicBookingInspiration = {
   bookingNote: string | null;
   caption: string | null;
-  contentType: "look" | "update";
+  contentType: PublicContentBookingOption["contentType"];
   id: string;
   imageUrl: string | null;
   message: string | null;
@@ -498,13 +501,13 @@ function parseSettings(value: unknown): PublicBookingSettings | null {
     guestBookingEnabled: booleanValue(row.guest_booking_enabled, false),
     maximumAdvanceWindowDays: Math.max(
       1,
-      Math.round(numberValue(row.maximum_advance_window_days, 30)),
+      Math.round(numberValue(row.maximum_advance_window_days, 60)),
     ),
     minimumLeadTimeMinutes: Math.max(
       0,
       Math.round(numberValue(row.minimum_lead_time_minutes, 120)),
     ),
-    sameDayBookingEnabled: booleanValue(row.same_day_booking_enabled, true),
+    sameDayBookingEnabled: booleanValue(row.same_day_booking_enabled, false),
     slotIntervalMinutes: Math.max(
       5,
       Math.round(numberValue(row.slot_interval_minutes, 15)),
@@ -551,7 +554,6 @@ function parseContextPayload(payload: unknown): RawContext {
 
     if (parent && addOnId && addOn && !parent.addOnIds.includes(addOnId)) {
       parent.addOnIds.push(addOnId);
-      addOn.isAddOnOnly = true;
     }
   }
 
@@ -642,6 +644,10 @@ function parseContextPayload(payload: unknown): RawContext {
           logoUrl: getSalonProfileMediaUrl(nonEmptyString(profileRow.logo_path)),
           name: nonEmptyString(profileRow.name) ?? "Salon",
           phone: nonEmptyString(profileRow.phone),
+          publicProfileEnabled: booleanValue(
+            profileRow.public_discovery_enabled,
+            false,
+          ),
           salonId: cleanUuid(profileRow.salon_id) ?? "",
           state: nonEmptyString(profileRow.state),
           tagline: nonEmptyString(profileRow.tagline),
@@ -661,7 +667,10 @@ function parseContextPayload(payload: unknown): RawContext {
         }
 
         return {
-          avatarUrl: getSalonProfileMediaUrl(nonEmptyString(staff.avatar_path)),
+          avatarUrl: getStaffProfileAvatarUrl({
+            accountAvatarUrl: nonEmptyString(staff.account_avatar_url),
+            staffProfilePhotoPath: nonEmptyString(staff.avatar_path),
+          }),
           bio: nonEmptyString(staff.bio),
           displayName: nonEmptyString(staff.display_name) ?? "Professional",
           id,
@@ -702,7 +711,7 @@ async function loadRawContext(salonId: string) {
   const supabase = createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const now = new Date();
@@ -821,6 +830,19 @@ function serviceAssignment(context: RawContext, serviceId: string, staffId: stri
   );
 }
 
+function availabilityRulesForStaff(
+  context: RawContext,
+  staffId: string,
+  ruleType: AvailabilityRuleRow["ruleType"],
+) {
+  const rules = context.availabilityRules.filter((rule) => rule.ruleType === ruleType);
+  const staffRules = rules.filter((rule) => rule.staffId === staffId);
+
+  return staffRules.length > 0
+    ? staffRules
+    : rules.filter((rule) => !rule.staffId);
+}
+
 function eligibleStaffIds(context: RawContext, serviceId: string) {
   const staffIds = staffByService(context)[serviceId] ?? [];
   return staffIds.filter((staffId) => context.staff.some((staff) => staff.id === staffId));
@@ -908,6 +930,7 @@ function normalizedAddOnSelections(
       !parent ||
       !addOn ||
       !primaryIds.has(parentServiceId) ||
+      primaryIds.has(addOnServiceId) ||
       !parent.addOnIds.includes(addOnServiceId) ||
       selections.some(
         (item) =>
@@ -992,12 +1015,14 @@ function lineAvailable(input: {
   const localDay = dayOfWeek(localStart.date);
   const matchesRuleScope = (rule: AvailabilityRuleRow) =>
     rule.dayOfWeek === localDay &&
-    (!rule.staffId || rule.staffId === input.staffId) &&
     (!rule.effectiveStartDate || rule.effectiveStartDate <= localStart.date) &&
     (!rule.effectiveEndDate || rule.effectiveEndDate >= localStart.date);
-  const isWorking = input.context.availabilityRules.some(
+  const isWorking = availabilityRulesForStaff(
+    input.context,
+    input.staffId,
+    "working",
+  ).some(
     (rule) =>
-      rule.ruleType === "working" &&
       matchesRuleScope(rule) &&
       timeToMinutes(rule.startsAtLocal) <= localStart.minutes &&
       timeToMinutes(rule.endsAtLocal) >= localEnd.minutes,
@@ -1007,9 +1032,12 @@ function lineAvailable(input: {
     return false;
   }
 
-  const hasBreak = input.context.availabilityRules.some(
+  const hasBreak = availabilityRulesForStaff(
+    input.context,
+    input.staffId,
+    "break",
+  ).some(
     (rule) =>
-      rule.ruleType === "break" &&
       matchesRuleScope(rule) &&
       timeToMinutes(rule.startsAtLocal) < localEnd.minutes &&
       timeToMinutes(rule.endsAtLocal) > localStart.minutes,
@@ -1102,6 +1130,16 @@ function buildSlotPlan(
       candidates = visitStaffCandidates;
     }
 
+    if (mode !== "specific" && !(mode === "split" && cleanUuid(lineStaffIds[index]))) {
+      const date = timeZoneParts(new Date(cursorMs), settings.timezoneIana).date;
+      const load = (id: string) => context.busyLines.filter(busy => busy.staffId === id && timeZoneParts(new Date(busy.startsAt), settings.timezoneIana).date === date);
+      candidates = [...candidates].sort((a, b) => {
+        const left = load(a), right = load(b);
+        return new Set(left.map(row => row.bookingId)).size - new Set(right.map(row => row.bookingId)).size
+          || Math.max(0, ...left.map(row => Date.parse(row.startsAt))) - Math.max(0, ...right.map(row => Date.parse(row.startsAt)))
+          || a.localeCompare(b);
+      });
+    }
     const chosen = candidates.find((staffId) => {
       if (!serviceAssignment(context, line.service.id, staffId)) {
         return false;
@@ -1194,38 +1232,38 @@ function candidateStartsForDate(
   const localDay = dayOfWeek(date);
   const starts = new Set<number>();
 
-  for (const rule of context.availabilityRules) {
-    if (
-      rule.ruleType !== "working" ||
-      rule.dayOfWeek !== localDay ||
-      (rule.staffId && !firstLineStaffIds.includes(rule.staffId)) ||
-      (rule.effectiveStartDate && rule.effectiveStartDate > date) ||
-      (rule.effectiveEndDate && rule.effectiveEndDate < date)
-    ) {
-      continue;
-    }
+  for (const staffId of firstLineStaffIds) {
+    for (const rule of availabilityRulesForStaff(context, staffId, "working")) {
+      if (
+        rule.dayOfWeek !== localDay ||
+        (rule.effectiveStartDate && rule.effectiveStartDate > date) ||
+        (rule.effectiveEndDate && rule.effectiveEndDate < date)
+      ) {
+        continue;
+      }
 
-    const startIso = zonedDateTimeToUtcIso({
-      date,
-      time: rule.startsAtLocal.slice(0, 5),
-      timeZone: settings.timezoneIana,
-    });
-    const endIso = zonedDateTimeToUtcIso({
-      date,
-      time: rule.endsAtLocal.slice(0, 5),
-      timeZone: settings.timezoneIana,
-    });
+      const startIso = zonedDateTimeToUtcIso({
+        date,
+        time: rule.startsAtLocal.slice(0, 5),
+        timeZone: settings.timezoneIana,
+      });
+      const endIso = zonedDateTimeToUtcIso({
+        date,
+        time: rule.endsAtLocal.slice(0, 5),
+        timeZone: settings.timezoneIana,
+      });
 
-    if (!startIso || !endIso) {
-      continue;
-    }
+      if (!startIso || !endIso) {
+        continue;
+      }
 
-    const endMs = new Date(endIso).getTime();
-    let cursorMs = new Date(startIso).getTime();
+      const endMs = new Date(endIso).getTime();
+      let cursorMs = new Date(startIso).getTime();
 
-    while (cursorMs < endMs) {
-      starts.add(cursorMs);
-      cursorMs += settings.slotIntervalMinutes * 60_000;
+      while (cursorMs < endMs) {
+        starts.add(cursorMs);
+        cursorMs += settings.slotIntervalMinutes * 60_000;
+      }
     }
   }
 
@@ -1719,13 +1757,17 @@ export async function getPublicBookingPageData(
     staff: context.staff,
     staffByService: byService,
   };
+  const unavailableBase = {
+    ...base,
+    readiness: [] as PublicBookingReadinessItem[],
+  };
 
   if (context.state === "not_found") {
     return unavailablePage(
       "not_found",
       "Salon not found",
       "This booking link does not match an active salon.",
-      base,
+      unavailableBase,
     );
   }
 
@@ -1734,7 +1776,7 @@ export async function getPublicBookingPageData(
       "not_public",
       "This salon is not public yet",
       "Online booking opens after the salon publishes a public profile.",
-      base,
+      unavailableBase,
     );
   }
 
@@ -1743,7 +1785,7 @@ export async function getPublicBookingPageData(
       "booking_disabled",
       "Online booking is not open yet",
       "This salon has not enabled public online booking.",
-      base,
+      unavailableBase,
     );
   }
 
@@ -1751,8 +1793,8 @@ export async function getPublicBookingPageData(
     return unavailablePage(
       "incomplete",
       "Online booking is not ready",
-      "This salon still needs services, professionals, and availability before public booking can open.",
-      base,
+      "This booking page is not available yet. Please contact the salon directly or check their profile for updates.",
+      unavailableBase,
     );
   }
 
@@ -1953,6 +1995,39 @@ function phoneLooksValid(value: string | null) {
   return (value ?? "").replace(/\D+/g, "").length >= 7;
 }
 
+async function claimCurrentUserBookingByManageToken(input: {
+  manageToken: string;
+  supabase: NonNullable<
+    Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+  >;
+}) {
+  const { data, error } = await input.supabase.rpc(
+    "claim_guest_booking_by_manage_token",
+    { raw_token: input.manageToken },
+  );
+
+  if (error) {
+    console.error("Public booking account link failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+    });
+    return false;
+  }
+
+  const result = asRecord(data);
+
+  if (booleanValue(result.ok, false)) {
+    return true;
+  }
+
+  console.error("Public booking account link rejected", {
+    code: nonEmptyString(result.code),
+  });
+  return false;
+}
+
 export async function createPublicBooking(
   input: PublicBookingCreateInput,
 ): Promise<PublicBookingActionResult> {
@@ -2007,7 +2082,7 @@ export async function createPublicBooking(
   const supabase = authenticatedSupabase ?? createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const customerFirstName = input.customerFirstName?.trim() || null;
@@ -2046,7 +2121,9 @@ export async function createPublicBooking(
 
   const inspirationId = cleanUuid(input.inspirationId) ?? cleanUuid(input.lookId);
   const sourceReferenceType =
-    input.sourceReferenceType === "salon_profile_update"
+    input.sourceReferenceType === BEAUTY_POST_BOOKING_SOURCE_TYPE
+      ? BEAUTY_POST_BOOKING_SOURCE_TYPE
+      : input.sourceReferenceType === "salon_profile_update"
       ? "salon_profile_update"
       : input.sourceReferenceType === "salon_profile_look" || inspirationId
         ? "salon_profile_look"
@@ -2103,11 +2180,19 @@ export async function createPublicBooking(
     );
   }
 
+  const accountLinked =
+    Boolean(currentUser) && manageToken && authenticatedSupabase
+      ? await claimCurrentUserBookingByManageToken({
+          manageToken,
+          supabase: authenticatedSupabase,
+        })
+      : Boolean(currentUser);
+
   return {
     bookingId,
     code: booleanValue(result.duplicate, false) ? "duplicate" : undefined,
     confirmationStatus: nonEmptyString(result.confirmation_status) ?? undefined,
-    accountLinked: Boolean(currentUser),
+    accountLinked,
     manageToken,
     message: booleanValue(result.duplicate, false)
       ? "This booking request was already submitted."
@@ -2140,7 +2225,6 @@ function parseBookingInspirationPayload(value: unknown) {
     credited_staff_name_snapshot: nonEmptyString(row.credited_staff_name_snapshot),
     id,
     metadata: asRecord(row.metadata),
-    organization_id: cleanUuid(row.organization_id) ?? "",
     salon_id: cleanUuid(row.salon_id) ?? sourceSalonId,
     salon_name_snapshot: nonEmptyString(row.salon_name_snapshot),
     service_id: cleanUuid(row.service_id),
@@ -2277,7 +2361,7 @@ export async function getGuestManageBooking(tokenInput: string): Promise<GuestMa
     (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase.rpc("get_public_booking_by_manage_token", {
@@ -2419,7 +2503,7 @@ export async function rescheduleGuestBooking(input: {
     (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase.rpc("reschedule_public_booking_by_manage_token", {
@@ -2458,7 +2542,7 @@ export async function cancelGuestBooking(input: {
     (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { data, error } = await supabase.rpc("cancel_public_booking_by_manage_token", {
@@ -2473,7 +2557,7 @@ export async function cancelGuestBooking(input: {
   const result = asRecord(data);
 
   if (!booleanValue(result.ok, false)) {
-    return publicBookingFailure("Booking could not be cancelled.", nonEmptyString(result.code) ?? "failed");
+    return publicBookingFailure(nonEmptyString(result.message) ?? "Booking could not be cancelled.", nonEmptyString(result.code) ?? "failed");
   }
 
   return {

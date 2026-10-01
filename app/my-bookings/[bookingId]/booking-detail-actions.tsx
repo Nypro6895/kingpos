@@ -252,7 +252,7 @@ function EmptySlotState({
   const links = contactLinks(booking);
 
   return (
-    <div className="rounded-xl bg-[#f7f2f7] p-4 text-sm text-[#642a56]">
+    <div className="rounded-xl bg-[#fff0e8] p-4 text-sm text-[#f26f3d]">
       <p className="font-extrabold">{message}</p>
       {links.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-2">
@@ -376,8 +376,8 @@ function RescheduleModal({
           </button>
         </div>
 
-        <div className="rounded-xl border border-[#e7dfe5] p-4">
-          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#8f4a7b]">
+        <div className="rounded-xl border border-[#f0e6df] p-4">
+          <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#e85f2b]">
             Current appointment
           </p>
           <p className="mt-2 font-extrabold text-[#211c24]">
@@ -426,8 +426,8 @@ function RescheduleModal({
                   className={classNames(
                     "min-h-11 rounded-xl border px-3 text-sm font-extrabold transition",
                     selectedStartAt === slot.startAt
-                      ? "border-[#642a56] bg-[#642a56] text-white"
-                      : "border-[#d7c8d3] bg-white text-[#211c24] hover:border-[#8f4a7b]",
+                      ? "border-[#f26f3d] bg-[#f26f3d] text-white"
+                      : "border-[#ffd6c4] bg-white text-[#211c24] hover:border-[#e85f2b]",
                   )}
                   data-slot-start={slot.startAt}
                   key={slot.startAt}
@@ -442,8 +442,8 @@ function RescheduleModal({
         ) : null}
 
         {selectedSlot ? (
-          <div className="rounded-xl bg-[#f7f2f7] p-4 text-sm">
-            <p className="font-extrabold text-[#642a56]">New appointment</p>
+          <div className="rounded-xl bg-[#fff0e8] p-4 text-sm">
+            <p className="font-extrabold text-[#f26f3d]">New appointment</p>
             <p className="mt-1 text-[#211c24]">
               {formatDate(selectedSlot.startAt, timezone)},{" "}
               {formatTimeRange(selectedSlot.startAt, selectedSlot.endAt, timezone)}
@@ -541,7 +541,7 @@ function CancelModal({
           </button>
         </div>
 
-        <div className="rounded-xl border border-[#e7dfe5] p-4">
+        <div className="rounded-xl border border-[#f0e6df] p-4">
           <p className="font-extrabold text-[#211c24]">
             {formatDate(booking.start_at, timezone)}
           </p>
@@ -553,7 +553,7 @@ function CancelModal({
         <label className="grid gap-2">
           <span className="text-sm font-extrabold text-[#211c24]">Reason optional</span>
           <textarea
-            className="min-h-24 rounded-xl border border-[#e7dfe5] px-3 py-2 text-sm text-[#211c24] outline-none focus:border-[#8f4a7b] focus:ring-4 focus:ring-[#642a56]/10"
+            className="min-h-24 rounded-xl border border-[#f0e6df] px-3 py-2 text-sm text-[#211c24] outline-none focus:border-[#e85f2b] focus:ring-4 focus:ring-[#f26f3d]/10"
             onChange={(event) => setReason(event.target.value)}
             value={reason}
           />
@@ -602,7 +602,7 @@ export function BookingDetailActions({
   return (
     <>
       <aside className="lg:sticky lg:top-6">
-        <div className="rounded-2xl border border-[#e7dfe5] bg-white p-4 shadow-[0_1px_0_rgba(33,28,36,0.03)]">
+        <div className="rounded-2xl border border-[#f0e6df] bg-white p-4 shadow-[0_1px_0_rgba(33,28,36,0.03)]">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-extrabold text-[#211c24]">
@@ -646,10 +646,10 @@ export function BookingDetailActions({
             ) : null}
 
             {contactOpen ? (
-              <div className="grid gap-2 rounded-xl bg-[#f7f2f7] p-2">
+              <div className="grid gap-2 rounded-xl bg-[#fff0e8] p-2">
                 {contactOptions.map((link) => (
                   <a
-                    className="rounded-lg px-3 py-2 text-sm font-extrabold text-[#642a56] hover:bg-white"
+                    className="rounded-lg px-3 py-2 text-sm font-extrabold text-[#f26f3d] hover:bg-white"
                     href={link.href}
                     key={link.label}
                     rel={link.target ? "noreferrer" : undefined}
@@ -661,7 +661,7 @@ export function BookingDetailActions({
               </div>
             ) : null}
 
-            {!upcoming && canViewSalon ? (
+            {canViewSalon ? (
               <Link
                 className={classNames(styles.secondaryButton, "w-full px-4")}
                 href={`/explore/salons/${booking.salon_id}`}

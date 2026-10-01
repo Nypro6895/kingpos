@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionDialog } from "@/app/action-dialog";
 import { switchWorkspaceDestination } from "@/app/salons/actions";
 import {
   CurrentWorkspaceCard,
@@ -21,6 +22,7 @@ import type {
   CurrentWorkspaceAction,
   CurrentWorkspaceOption,
 } from "@/lib/current-context";
+import { normalizeSearchText } from "@/lib/search-normalization";
 import type { WorkspacePendingSummary } from "@/lib/workspace-pending";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -59,7 +61,7 @@ export function QuickWorkspacePanel({
   const panelRef = useRef<HTMLElement | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
 
-  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedQuery = normalizeSearchText(query);
   const isFiltering = normalizedQuery.length > 0;
   const currentWorkspaceId = currentWorkspace?.id ?? null;
 
@@ -78,8 +80,8 @@ export function QuickWorkspacePanel({
       workspace.salonMode === "staff" &&
       matchesWorkspace(workspace),
   );
-  const organizationWorkspaces = workspaceOptions.filter(
-    (workspace) => workspace.type === "organization" && matchesWorkspace(workspace),
+  const accountWorkspaces = workspaceOptions.filter(
+    (workspace) => workspace.type === "account" && matchesWorkspace(workspace),
   );
   const quickAccess = buildWorkspaceShortcuts({
     currentWorkspace,
@@ -96,17 +98,17 @@ export function QuickWorkspacePanel({
         "review",
         ...notificationSummary.items.map((item) => item.label),
       ]
+        .map((value) => normalizeSearchText(value))
         .join(" ")
-        .toLowerCase()
         .includes(normalizedQuery));
   const showQuickAccess = quickAccess.length > 0;
   const showManageGroup = !isFiltering || manageWorkspaces.length > 0;
   const showStaffGroup = !isFiltering || staffWorkspaces.length > 0;
-  const showOrganizationGroup = !isFiltering || organizationWorkspaces.length > 0;
+  const showAccountGroup = !isFiltering || accountWorkspaces.length > 0;
   const hasDirectoryResults =
     manageWorkspaces.length > 0 ||
     staffWorkspaces.length > 0 ||
-    organizationWorkspaces.length > 0 ||
+    accountWorkspaces.length > 0 ||
     quickAccess.length > 0 ||
     pendingMatches;
   const pendingSeparator = " " + String.fromCharCode(183) + " ";
@@ -264,11 +266,6 @@ export function QuickWorkspacePanel({
               variant="panel"
             />
           </div>
-          {error ? (
-            <p className="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-              {error}
-            </p>
-          ) : null}
         </div>
 
         <div className="grid min-w-0 flex-1 content-start gap-4 overflow-y-auto overflow-x-hidden px-3 py-4">
@@ -305,13 +302,13 @@ export function QuickWorkspacePanel({
             <WorkspaceGroup
               count={manageWorkspaces.length}
               icon="store"
-              title="Manage Salons"
+              title="Owner Salons"
               variant="panel"
             >
               {manageWorkspaces.length === 0 ? (
                 <WorkspaceGroupEmpty
                   icon="store"
-                  title="No managed salons found."
+                  title="No owner salons found."
                   variant="panel"
                 />
               ) : (
@@ -359,22 +356,22 @@ export function QuickWorkspacePanel({
             </WorkspaceGroup>
           ) : null}
 
-          {showOrganizationGroup ? (
+          {showAccountGroup ? (
             <WorkspaceGroup
-              count={organizationWorkspaces.length}
+              count={accountWorkspaces.length}
               icon="building"
-              title="Organizations"
+              title="Accounts"
               variant="panel"
             >
-              {organizationWorkspaces.length === 0 ? (
+              {accountWorkspaces.length === 0 ? (
                 <WorkspaceGroupEmpty
                   icon="building"
-                  title="No organizations found."
+                  title="No Accounts found."
                   variant="panel"
                 />
               ) : (
                 <div className="divide-y divide-zinc-100">
-                  {organizationWorkspaces.map((workspace) => (
+                  {accountWorkspaces.map((workspace) => (
                     <WorkspaceListItem
                       density="panel"
                       key={workspace.id}
@@ -442,6 +439,17 @@ export function QuickWorkspacePanel({
           </Link>
         </div>
       </aside>
+      <ActionDialog
+        description={error ?? ""}
+        onClose={() => setError(null)}
+        open={Boolean(error)}
+        primaryAction={{
+          label: "Review workspaces",
+          onClick: () => setError(null),
+        }}
+        secondaryAction={{ href: "/explore", label: "Explore" }}
+        title="Workspace action needed"
+      />
     </div>
   );
 }

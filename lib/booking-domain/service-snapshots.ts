@@ -14,7 +14,7 @@ import type {
 import type { Service } from "@/types/service";
 
 const SERVICE_SELECT =
-  "id, organization_id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
+  "id, salon_id, name, category, base_price, duration_minutes, description, is_active, online_booking_enabled, created_at, updated_at";
 
 function uniqueValues(values: (string | null | undefined)[]) {
   return [...new Set(values.filter((value): value is string => Boolean(value)))];
@@ -22,7 +22,6 @@ function uniqueValues(values: (string | null | undefined)[]) {
 
 export async function deriveBookingLineSnapshots(input: {
   lines: BookingDomainLineInput[];
-  organizationId: string;
   salonId: string;
   supabase: SupabaseClient;
 }): Promise<BookingDomainResult<CanonicalBookingRpcLine[]>> {
@@ -42,7 +41,6 @@ export async function deriveBookingLineSnapshots(input: {
       const { data, error } = await input.supabase
         .from("services")
         .select(SERVICE_SELECT)
-        .eq("organization_id", input.organizationId)
         .eq("salon_id", input.salonId)
         .eq("is_active", true)
         .in("id", serviceIds)

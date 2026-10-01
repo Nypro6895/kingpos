@@ -1,9 +1,15 @@
-import { createSupabaseServerClient, getSupabaseAuthUser } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  createUserScopedSupabaseServerClient,
+  getAccessTokenFromRequest,
+  getSupabaseAuthUser,
+} from "@/lib/supabase/server";
+import { isDeniedKingUserStatus } from "@/lib/users/account-status";
 import type { KingUser } from "@/types/user";
 import type { User as SupabaseAuthUser } from "@supabase/supabase-js";
 
 const USER_SELECT =
-  "id, auth_user_id, email, phone, first_name, last_name, display_name, avatar_url, status, language, timezone, last_login_at, created_at, updated_at";
+  "id, auth_user_id, email, phone, first_name, last_name, display_name, avatar_url, status, language, timezone, deletion_requested_at, deletion_scheduled_for, deleted_at, anonymized_at, deletion_finalization_started_at, deletion_finalized_at, deletion_finalization_attempts, deletion_finalization_failed_at, deletion_finalization_error, last_login_at, created_at, updated_at";
 
 function readMetadataString(metadata: SupabaseAuthUser["user_metadata"], key: string) {
   const value = metadata[key];
@@ -16,8 +22,13 @@ function readMetadataString(metadata: SupabaseAuthUser["user_metadata"], key: st
   return trimmedValue || null;
 }
 
-async function createMissingKingUser(authUser: SupabaseAuthUser) {
-  const supabase = createSupabaseServerClient();
+async function createMissingKingUser(
+  authUser: SupabaseAuthUser,
+  accessToken?: string | null,
+) {
+  const supabase = accessToken
+    ? createUserScopedSupabaseServerClient(accessToken)
+    : createSupabaseServerClient();
 
   if (!supabase) {
     return null;
@@ -55,13 +66,19 @@ async function createMissingKingUser(authUser: SupabaseAuthUser) {
     return data;
   }
 
-  console.error("Unable to create missing public.users record", {
-    authUserId: authUser.id,
-    code: error.code,
-    message: error.message,
-    details: error.details,
-    hint: error.hint,
-  });
+  if (error.code === "23505") {
+    console.log("Missing public.users record was created concurrently", {
+      authUserId: authUser.id,
+    });
+  } else {
+    console.error("Unable to create missing public.users record", {
+      authUserId: authUser.id,
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+  }
 
   const { data: existingUser, error: existingUserError } = await supabase
     .from("users")
@@ -83,11 +100,40 @@ async function createMissingKingUser(authUser: SupabaseAuthUser) {
   return existingUser;
 }
 
-export async function getCurrentKingUser() {
-  const supabase = createSupabaseServerClient();
-  const authUser = await getSupabaseAuthUser();
+async function authIdentityWasFinalized(
+  supabase: NonNullable<ReturnType<typeof createSupabaseServerClient>>,
+  authUser: SupabaseAuthUser,
+) {
+  const { data, error } = await supabase.rpc("auth_identity_is_deleted", {
+    p_auth_user_id: authUser.id,
+  });
 
-  if (!supabase || !authUser) {
+  if (error) {
+    if (error.code !== "42883" && error.code !== "42P01") {
+      console.error("Unable to check deleted auth identity tombstone", {
+        authUserId: authUser.id,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        message: error.message,
+      });
+    }
+
+    return false;
+  }
+
+  return data === true;
+}
+
+export async function getKingUserForAuthUser(
+  authUser: SupabaseAuthUser,
+  accessToken?: string | null,
+) {
+  const supabase = accessToken
+    ? createUserScopedSupabaseServerClient(accessToken)
+    : createSupabaseServerClient();
+
+  if (!supabase) {
     return null;
   }
 
@@ -108,11 +154,37 @@ export async function getCurrentKingUser() {
     return null;
   }
 
+  if (!data && (await authIdentityWasFinalized(supabase, authUser))) {
+    console.log("Deleted auth identity tombstone blocked public user fallback", {
+      authUserId: authUser.id,
+    });
+    return null;
+  }
+
   if (!data) {
     console.log("No public.users record found for auth user; creating fallback record", {
       authUserId: authUser.id,
     });
   }
 
-  return data ?? createMissingKingUser(authUser);
+  return data ?? createMissingKingUser(authUser, accessToken);
+}
+
+export async function getCurrentKingUser() {
+  const [authUser, accessToken] = await Promise.all([
+    getSupabaseAuthUser(),
+    getAccessTokenFromRequest(),
+  ]);
+
+  if (!authUser) {
+    return null;
+  }
+
+  const user = await getKingUserForAuthUser(authUser, accessToken);
+
+  if (!user || isDeniedKingUserStatus(user.status)) {
+    return null;
+  }
+
+  return user;
 }

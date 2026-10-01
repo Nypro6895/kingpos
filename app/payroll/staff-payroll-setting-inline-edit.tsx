@@ -71,6 +71,39 @@ function formatYesNo(value: boolean) {
   return value ? "Yes" : "No";
 }
 
+function staffInitials(value: string) {
+  const parts = value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  return parts.map((part) => part[0]?.toUpperCase()).join("") || "ST";
+}
+
+function StaffProfileAvatar({
+  displayName,
+  imageUrl,
+}: {
+  displayName: string;
+  imageUrl: string | null;
+}) {
+  return (
+    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
+      {imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          alt=""
+          className="h-full w-full rounded-full object-cover"
+          src={imageUrl}
+        />
+      ) : (
+        staffInitials(displayName)
+      )}
+    </span>
+  );
+}
+
 function SettingGroup({
   children,
   title,
@@ -321,11 +354,15 @@ export function StaffPayrollSettingInlineEdit({
   returnPath,
   setting,
   staff,
+  staffProfileAvatarUrl,
+  staffProfileDisplayName,
 }: {
   period: PayrollPeriod;
   returnPath: string;
   setting: StaffPayrollSetting | null;
   staff: Staff;
+  staffProfileAvatarUrl: string | null;
+  staffProfileDisplayName: string;
 }) {
   const currentEffectiveFrom = setting?.effective_from ?? period.startDate;
   const [activeField, setActiveField] = useState<ActiveField>(null);
@@ -393,29 +430,35 @@ export function StaffPayrollSettingInlineEdit({
       />
 
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="truncate text-base font-semibold text-zinc-950">
-            {staff.display_name}
-          </h3>
-          {legalName ? (
-            <p className="mt-0.5 truncate text-xs text-zinc-500">
-              Legal name: {legalName}
-            </p>
-          ) : null}
-          <div className="mt-1">
-            <EditableSetting
-              active={activeField === "effectiveFrom"}
-              label="Effective from"
-              onClick={() => setActiveField("effectiveFrom")}
-              value={formatDateLabel(effectiveFrom)}
-            >
-              <InlineDateInput
-                autoFocus
-                onChange={setEffectiveFrom}
-                onDone={closeField}
-                value={effectiveFrom}
-              />
-            </EditableSetting>
+        <div className="flex min-w-0 items-start gap-3">
+          <StaffProfileAvatar
+            displayName={staffProfileDisplayName}
+            imageUrl={staffProfileAvatarUrl}
+          />
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-semibold text-zinc-950">
+              {staffProfileDisplayName}
+            </h3>
+            {legalName ? (
+              <p className="mt-0.5 truncate text-xs text-zinc-500">
+                Legal name: {legalName}
+              </p>
+            ) : null}
+            <div className="mt-1">
+              <EditableSetting
+                active={activeField === "effectiveFrom"}
+                label="Effective from"
+                onClick={() => setActiveField("effectiveFrom")}
+                value={formatDateLabel(effectiveFrom)}
+              >
+                <InlineDateInput
+                  autoFocus
+                  onChange={setEffectiveFrom}
+                  onDone={closeField}
+                  value={effectiveFrom}
+                />
+              </EditableSetting>
+            </div>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">

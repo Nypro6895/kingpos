@@ -5,7 +5,7 @@ import type { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/ser
 import type { Staff } from "@/types/staff";
 
 export const STAFF_ACCOUNT_SELECT =
-  "id, organization_id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, job_title, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
+  "id, salon_id, account_user_id, user_id, display_name, first_name, last_name, phone, email, address_line1, address_line2, city, state, postal_code, job_title, pos_enabled, public_profile_photo_path, public_bio, public_profile_visible, owner_public_enabled, staff_public_consent_status, online_booking_enabled, profile_display_order, salon_profile_content_posting_enabled, specialties, is_active, created_at, updated_at";
 
 export const CURRENT_STAFF_NOT_FOUND_MESSAGE =
   "No active staff profile is linked to your account for this salon.";
@@ -44,7 +44,6 @@ type ResolveStaffAccountForSalonInput = {
 
 async function resolveByField(input: {
   field: "account_user_id" | "user_id";
-  organizationId: string;
   salonId: string;
   supabase: SupabaseServerClient;
   value: string;
@@ -52,7 +51,6 @@ async function resolveByField(input: {
   const { data, error } = await input.supabase
     .from("staff")
     .select(STAFF_ACCOUNT_SELECT)
-    .eq("organization_id", input.organizationId)
     .eq("salon_id", input.salonId)
     .eq("is_active", true)
     .eq(input.field, input.value)
@@ -66,7 +64,6 @@ async function resolveByField(input: {
       field: input.field,
       hint: error.hint,
       message: error.message,
-      organizationId: input.organizationId,
       salonId: input.salonId,
     });
     throw new Error(error.message);
@@ -79,16 +76,14 @@ export async function resolveStaffAccountForSalon({
   context,
   supabase,
 }: ResolveStaffAccountForSalonInput): Promise<StaffAccountResolution> {
-  if (!context.user || !context.currentOrganization || !context.currentSalon) {
+  if (!context.user || !context.currentSalon) {
     return { source: null, staff: null, status: "not_found" };
   }
 
-  const organizationId = context.currentOrganization.id;
   const salonId = context.currentSalon.id;
 
   const accountMatches = await resolveByField({
     field: "account_user_id",
-    organizationId,
     salonId,
     supabase,
     value: context.user.id,
@@ -117,7 +112,6 @@ export async function resolveStaffAccountForSalon({
 
   const legacyMatches = await resolveByField({
     field: "user_id",
-    organizationId,
     salonId,
     supabase,
     value: context.user.auth_user_id,

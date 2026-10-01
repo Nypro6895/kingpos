@@ -11,6 +11,8 @@ import {
   STAFF_ACCOUNT_SELECT,
 } from "@/lib/staff-account";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
+import { getStaffPortalIdentity } from "@/lib/staff-portal-identity";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Staff } from "@/types/staff";
 import type {
@@ -19,9 +21,20 @@ import type {
 } from "@/types/staff-workday";
 
 export const STAFF_WORKDAY_SELECT =
-  "id, organization_id, salon_id, staff_id, work_date, status, check_in_at, check_out_at, created_at, updated_at, staff:staff(id, display_name, job_title)";
+  "id, salon_id, staff_id, work_date, status, check_in_at, check_out_at, check_in_sequence, queue_turn_count, last_leave_at, leave_baseline_turn_count, leave_cohort_staff_ids, auto_checked_out_at, created_at, updated_at, staff:staff(id, display_name, job_title)";
+export const STAFF_WORKDAY_LEGACY_SELECT =
+  "id, salon_id, staff_id, work_date, status, check_in_at, check_out_at, created_at, updated_at, staff:staff(id, display_name, job_title)";
+const STAFF_WORKDAY_SCHEMA_UPGRADE_COLUMNS = [
+  "auto_checked_out_at",
+  "check_in_sequence",
+  "last_leave_at",
+  "leave_baseline_turn_count",
+  "leave_cohort_staff_ids",
+  "queue_turn_count",
+] as const;
 
 export const STAFF_WORKDAY_STATUS_LABELS = {
+  auto_checked_out: "Auto checked out",
   break: "On break",
   checked_in: "Checked in",
   checked_out: "Checked out",
@@ -46,8 +59,12 @@ export type StaffDailyActivitySummary = {
 };
 
 type StaffResolutionOptions = {
+  workDate?: string;
   allowEmailFallback?: boolean;
 };
+type StaffWorkdaysSupabaseClient = NonNullable<
+  Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>
+>;
 
 export type StaffAssignedWorkServiceLine = {
   id: string;
@@ -97,6 +114,67 @@ function normalizeText(value: string | null | undefined) {
   return trimmed ? trimmed : null;
 }
 
+function isStaffWorkdaySchemaUpgradeError(error: unknown) {
+  return STAFF_WORKDAY_SCHEMA_UPGRADE_COLUMNS.some((column) =>
+    isMissingSupabaseColumnError(error, column),
+  );
+}
+
+async function loadStaffWorkdayForStaffDate(
+  supabase: StaffWorkdaysSupabaseClient,
+  input: {
+    salonId: string;
+    staffId: string;
+    workDate: string;
+  },
+) {
+  let result = await supabase
+    .from("staff_workdays")
+    .select(STAFF_WORKDAY_SELECT)
+    .eq("staff_id", input.staffId)
+    .eq("salon_id", input.salonId)
+    .eq("work_date", input.workDate)
+    .maybeSingle<StaffWorkdayWithStaff>();
+
+  if (result.error && isStaffWorkdaySchemaUpgradeError(result.error)) {
+    result = await supabase
+      .from("staff_workdays")
+      .select(STAFF_WORKDAY_LEGACY_SELECT)
+      .eq("staff_id", input.staffId)
+      .eq("salon_id", input.salonId)
+      .eq("work_date", input.workDate)
+      .maybeSingle<StaffWorkdayWithStaff>();
+  }
+
+  return result;
+}
+
+async function loadStaffWorkdaysForSalonDate(
+  supabase: StaffWorkdaysSupabaseClient,
+  input: {
+    salonId: string;
+    workDate: string;
+  },
+) {
+  let result = await supabase
+    .from("staff_workdays")
+    .select(STAFF_WORKDAY_SELECT)
+    .eq("salon_id", input.salonId)
+    .eq("work_date", input.workDate)
+    .returns<StaffWorkdayWithStaff[]>();
+
+  if (result.error && isStaffWorkdaySchemaUpgradeError(result.error)) {
+    result = await supabase
+      .from("staff_workdays")
+      .select(STAFF_WORKDAY_LEGACY_SELECT)
+      .eq("salon_id", input.salonId)
+      .eq("work_date", input.workDate)
+      .returns<StaffWorkdayWithStaff[]>();
+  }
+
+  return result;
+}
+
 function getTicketSortTime(ticket: StaffAssignedWorkTicket) {
   return ticket.openedAt ?? ticket.firstActivityAt ?? ticket.closedAt ?? "";
 }
@@ -119,9 +197,9 @@ export function getTodayDate(timeZone = "America/Chicago") {
   return `${year}-${month}-${day}`;
 }
 
-function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
-  if (!context.currentOrganization) {
-    throw new Error("Create an organization before using My Work Today.");
+function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
+  if (!context.currentAccount) {
+    throw new Error("Choose a salon workspace before using My Work Today.");
   }
 
   if (!context.currentSalon) {
@@ -129,7 +207,7 @@ function requireCurrentOrganizationAndSalon(context: CurrentBusinessContext) {
   }
 
   return {
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
   };
 }
@@ -142,11 +220,11 @@ export async function getCurrentStaffForSalon(
     throw new Error("You must be logged in to use My Work Today.");
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(context);
+  const { Account, salon } = requireCurrentAccountAndSalon(context);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const resolution = await resolveStaffAccountForSalon({
@@ -163,7 +241,7 @@ export async function getCurrentStaffForSalon(
       source: resolution.source,
       staffIds: resolution.matches.map((member) => member.id),
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: context.user.id,
     });
     throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);
@@ -175,7 +253,6 @@ export async function getCurrentStaffForSalon(
     const { data, error } = await supabase
       .from("staff")
       .select(STAFF_ACCOUNT_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
       .ilike("email", context.user.email)
@@ -189,7 +266,7 @@ export async function getCurrentStaffForSalon(
         details: error.details,
         hint: error.hint,
         salonId: salon.id,
-        organizationId: organization.id,
+        accountId: Account.id,
         userId: context.user.id,
       });
       throw new Error(error.message);
@@ -199,7 +276,7 @@ export async function getCurrentStaffForSalon(
       console.error("Multiple legacy email staff matches found", {
         staffIds: (data ?? []).map((member) => member.id),
         salonId: salon.id,
-        organizationId: organization.id,
+        accountId: Account.id,
         userId: context.user.id,
       });
       throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);
@@ -219,22 +296,23 @@ export async function getTodaysStaffWorkday(
   context?: CurrentBusinessContext,
   options: StaffResolutionOptions = {},
 ) {
-  const resolvedContext = context ?? (await getCurrentStaffBusinessContext());
-  const today = getTodayDate(resolvedContext.user?.timezone);
+  const identity = !context && options.allowEmailFallback === false ? await getStaffPortalIdentity() : null;
+  const resolvedContext = context ?? identity?.context ?? (await getCurrentStaffBusinessContext());
+  const today = options.workDate ?? getTodayDate(resolvedContext.user?.timezone);
 
   if (!resolvedContext.user) {
     return { context: resolvedContext, staff: null, today, workday: null };
   }
 
-  if (!resolvedContext.currentOrganization || !resolvedContext.currentSalon) {
+  if (!resolvedContext.currentAccount || !resolvedContext.currentSalon) {
     return { context: resolvedContext, staff: null, today, workday: null };
   }
 
-  const { salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { salon } = requireCurrentAccountAndSalon(resolvedContext);
   let staff: Staff;
 
   try {
-    staff = await getCurrentStaffForSalon(resolvedContext, options);
+    staff = identity?.staff ?? await getCurrentStaffForSalon(resolvedContext, options);
   } catch (error) {
     if (
       error instanceof Error &&
@@ -246,19 +324,20 @@ export async function getTodaysStaffWorkday(
     throw error;
   }
 
-  const supabase = await createAuthenticatedSupabaseServerClient();
+  const supabase = identity?.supabase ?? await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
-  const { data: workday, error } = await supabase
-    .from("staff_workdays")
-    .select(STAFF_WORKDAY_SELECT)
-    .eq("staff_id", staff.id)
-    .eq("salon_id", salon.id)
-    .eq("work_date", today)
-    .maybeSingle<StaffWorkdayWithStaff>();
+  const { data: workday, error } = await loadStaffWorkdayForStaffDate(
+    supabase,
+    {
+      salonId: salon.id,
+      staffId: staff.id,
+      workDate: today,
+    },
+  );
 
   if (error) {
     console.error("Supabase load today's staff workday failed", {
@@ -283,37 +362,34 @@ export async function getTodaysStaffWorkday(
 
 export async function getCurrentSalonStaffTodayBoard(
   context?: CurrentBusinessContext,
+  options: { workDate?: string } = {},
 ) {
   const resolvedContext = context ?? (await getCurrentBusinessContext());
-  const today = getTodayDate(resolvedContext.user?.timezone);
+  const today = options.workDate ?? getTodayDate(resolvedContext.user?.timezone);
 
   if (!resolvedContext.user) {
     return { context: resolvedContext, staff: [], today };
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { Account, salon } = requireCurrentAccountAndSalon(resolvedContext);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const [staffResult, workdaysResult] = await Promise.all([
     supabase
       .from("staff")
       .select(STAFF_ACCOUNT_SELECT)
-      .eq("organization_id", organization.id)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
       .order("display_name", { ascending: true })
       .returns<Staff[]>(),
-    supabase
-      .from("staff_workdays")
-      .select(STAFF_WORKDAY_SELECT)
-      .eq("organization_id", organization.id)
-      .eq("salon_id", salon.id)
-      .eq("work_date", today)
-      .returns<StaffWorkdayWithStaff[]>(),
+    loadStaffWorkdaysForSalonDate(supabase, {
+      salonId: salon.id,
+      workDate: today,
+    }),
   ]);
 
   if (staffResult.error) {
@@ -323,7 +399,7 @@ export async function getCurrentSalonStaffTodayBoard(
       details: staffResult.error.details,
       hint: staffResult.error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(staffResult.error.message);
@@ -336,7 +412,7 @@ export async function getCurrentSalonStaffTodayBoard(
       details: workdaysResult.error.details,
       hint: workdaysResult.error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(workdaysResult.error.message);
@@ -361,6 +437,7 @@ export async function getCurrentSalonStaffTodayBoard(
 export async function getCurrentSalonStaffActivitySummaries(
   staffIds: string[],
   context?: CurrentBusinessContext,
+  options: { workDate?: string } = {},
 ) {
   const resolvedContext = context ?? (await getCurrentBusinessContext());
   const summaryByStaffId = new Map<string, StaffDailyActivitySummary>();
@@ -381,20 +458,19 @@ export async function getCurrentSalonStaffActivitySummaries(
     return summaryByStaffId;
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { Account, salon } = requireCurrentAccountAndSalon(resolvedContext);
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
-  const today = getTodayDate(resolvedContext.user.timezone);
+  const today = options.workDate ?? getTodayDate(resolvedContext.user.timezone);
   const { data, error } = await supabase
     .from("pos_ticket_staff_earnings")
     .select(
       "staff_id, service_total, tip_amount, total_earning, big_turn_count, small_turn_count, ticket:pos_tickets!inner(status)",
     )
-    .eq("organization_id", organization.id)
     .eq("salon_id", salon.id)
     .eq("work_date", today)
     .in("staff_id", staffIds)
@@ -418,7 +494,7 @@ export async function getCurrentSalonStaffActivitySummaries(
       details: error.details,
       hint: error.hint,
       salonId: salon.id,
-      organizationId: organization.id,
+      accountId: Account.id,
       userId: resolvedContext.user.id,
     });
     throw new Error(error.message);
@@ -449,8 +525,9 @@ export async function getCurrentSalonStaffActivitySummaries(
 export async function getCurrentStaffAssignedWork(
   context?: CurrentBusinessContext,
 ) {
-  const resolvedContext = context ?? (await getCurrentStaffBusinessContext());
-  const today = getTodayDate(resolvedContext.user?.timezone);
+  const identity = context ? null : await getStaffPortalIdentity();
+  const resolvedContext = context ?? identity!.context;
+  let today = getTodayDate(resolvedContext.user?.timezone);
 
   if (!resolvedContext.user) {
     return {
@@ -462,7 +539,7 @@ export async function getCurrentStaffAssignedWork(
     };
   }
 
-  if (!resolvedContext.currentOrganization || !resolvedContext.currentSalon) {
+  if (!resolvedContext.currentAccount || !resolvedContext.currentSalon) {
     return {
       context: resolvedContext,
       excludedTicketCount: 0,
@@ -472,11 +549,11 @@ export async function getCurrentStaffAssignedWork(
     };
   }
 
-  const { organization, salon } = requireCurrentOrganizationAndSalon(resolvedContext);
+  const { salon } = requireCurrentAccountAndSalon(resolvedContext);
   let staff: Staff;
 
   try {
-    staff = await getCurrentStaffForSalon(resolvedContext, {
+    staff = identity?.staff ?? await getCurrentStaffForSalon(resolvedContext, {
       allowEmailFallback: false,
     });
   } catch (error) {
@@ -496,25 +573,21 @@ export async function getCurrentStaffAssignedWork(
     throw error;
   }
 
-  const supabase = await createAuthenticatedSupabaseServerClient();
+  const supabase = identity?.supabase ?? await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
-  const dayStart = `${today}T00:00:00`;
-  const dayEnd = `${today}T23:59:59.999`;
-  const { data: earningRows, error: earningsError } = await supabase
-    .from("pos_ticket_staff_earnings")
-    .select(
-      "id, ticket_id, staff_id, service_total, tip_amount, total_earning, big_turn_count, small_turn_count, ticket:pos_tickets!inner(id, ticket_number, status, opened_at, closed_at, customer:customers(id, name, phone, email))",
-    )
-    .eq("organization_id", organization.id)
-    .eq("salon_id", salon.id)
-    .eq("staff_id", staff.id)
-    .eq("work_date", today)
-    .returns<
-      Array<{
+  const { data: snapshot, error: snapshotError } = await supabase.rpc(
+    "get_my_staff_daily_snapshot", { p_salon_id: salon.id },
+  );
+  if (snapshotError) throw new Error(snapshotError.message);
+  if (!snapshot || snapshot.staff_id !== staff.id || !/^\d{4}-\d{2}-\d{2}$/.test(snapshot.date)) {
+    throw new Error("Staff daily snapshot could not be verified.");
+  }
+  today = snapshot.date;
+  const earningRows = snapshot.earnings as Array<{
         id: string;
         big_turn_count: number;
         service_total: number;
@@ -536,36 +609,8 @@ export async function getCurrentStaffAssignedWork(
         } | null;
         tip_amount: number;
         total_earning: number;
-      }>
-    >();
-
-  if (earningsError) {
-    console.error("Supabase load current staff earnings failed", {
-      code: earningsError.code,
-      message: earningsError.message,
-      details: earningsError.details,
-      hint: earningsError.hint,
-      staffId: staff.id,
-      salonId: salon.id,
-      organizationId: organization.id,
-      userId: resolvedContext.user.id,
-    });
-    throw new Error(earningsError.message);
-  }
-
-  const { data: todaysItemRows, error: todaysItemsError } = await supabase
-    .from("pos_ticket_items")
-    .select(
-      "id, pos_ticket_id, assigned_staff_id, unit_price, line_total, quantity, created_at, service:services(id, name), ticket:pos_tickets!inner(id, ticket_number, status, opened_at, closed_at, customer:customers(id, name, phone, email))",
-    )
-    .eq("organization_id", organization.id)
-    .eq("salon_id", salon.id)
-    .eq("assigned_staff_id", staff.id)
-    .eq("is_removed", false)
-    .gte("created_at", dayStart)
-    .lte("created_at", dayEnd)
-    .returns<
-      Array<{
+      }>;
+  const itemRows = snapshot.items as Array<{
         id: string;
         assigned_staff_id: string | null;
         created_at: string;
@@ -587,90 +632,7 @@ export async function getCurrentStaffAssignedWork(
             phone: string | null;
           } | null;
         } | null;
-      }>
-    >();
-
-  if (todaysItemsError) {
-    console.error("Supabase load current staff assigned work items failed", {
-      code: todaysItemsError.code,
-      message: todaysItemsError.message,
-      details: todaysItemsError.details,
-      hint: todaysItemsError.hint,
-      staffId: staff.id,
-      salonId: salon.id,
-      organizationId: organization.id,
-      userId: resolvedContext.user.id,
-    });
-    throw new Error(todaysItemsError.message);
-  }
-
-  const ticketIds = new Set<string>();
-
-  for (const earning of earningRows ?? []) {
-    if (earning.ticket_id) {
-      ticketIds.add(earning.ticket_id);
-    }
-  }
-
-  for (const item of todaysItemRows ?? []) {
-    if (item.pos_ticket_id) {
-      ticketIds.add(item.pos_ticket_id);
-    }
-  }
-
-  const { data: itemRows, error: itemsError } =
-    ticketIds.size > 0
-      ? await supabase
-          .from("pos_ticket_items")
-          .select(
-            "id, pos_ticket_id, assigned_staff_id, unit_price, line_total, quantity, created_at, service:services(id, name), ticket:pos_tickets!inner(id, ticket_number, status, opened_at, closed_at, customer:customers(id, name, phone, email))",
-          )
-          .eq("organization_id", organization.id)
-          .eq("salon_id", salon.id)
-          .eq("assigned_staff_id", staff.id)
-          .eq("is_removed", false)
-          .in("pos_ticket_id", [...ticketIds])
-          .order("created_at", { ascending: true })
-          .returns<
-            Array<{
-              id: string;
-              assigned_staff_id: string | null;
-              created_at: string;
-              line_total: number;
-              pos_ticket_id: string;
-              quantity: number;
-              service: { id: string; name: string } | null;
-              unit_price: number;
-              ticket: {
-                id: string;
-                ticket_number: string | null;
-                status: string | null;
-                opened_at: string | null;
-                closed_at: string | null;
-                customer: {
-                  id: string;
-                  email: string | null;
-                  name: string | null;
-                  phone: string | null;
-                } | null;
-              } | null;
-            }>
-          >()
-      : { data: [], error: null };
-
-  if (itemsError) {
-    console.error("Supabase load current staff ticket service lines failed", {
-      code: itemsError.code,
-      message: itemsError.message,
-      details: itemsError.details,
-      hint: itemsError.hint,
-      staffId: staff.id,
-      salonId: salon.id,
-      organizationId: organization.id,
-      userId: resolvedContext.user.id,
-    });
-    throw new Error(itemsError.message);
-  }
+      }>;
 
   const excludedTicketIds = new Set<string>();
   const ticketById = new Map<string, StaffAssignedWorkTicket>();

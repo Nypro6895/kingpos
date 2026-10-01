@@ -2,18 +2,18 @@
   --booking-canvas: #fbf9f7;
   --booking-owner-bg: #f7f7f8;
   --booking-surface: #ffffff;
-  --booking-soft: #f7f2f7;
-  --booking-lilac: #efe8f3;
-  --booking-plum: #642a56;
-  --booking-plum-dark: #4d1d42;
-  --booking-plum-light: #8f4a7b;
+  --booking-soft: #fff0e8;
+  --booking-orange-soft: #fff0e8;
+  --booking-orange: #f26f3d;
+  --booking-orange-hover: #e85f2b;
+  --booking-orange-light: #ff9b72;
   --booking-ink: #211c24;
   --booking-muted: #786d78;
-  --booking-border: #e7dfe5;
-  --booking-strong-border: #d7c8d3;
+  --booking-border: #f0e6df;
+  --booking-strong-border: #ffd6c4;
   --booking-green: #2f8a57;
   --booking-amber: #d79519;
-  --booking-shadow: 0 18px 45px rgba(57, 37, 52, 0.09);
+  --booking-shadow: 0 18px 45px rgba(242, 111, 61, 0.09);
   color: var(--booking-ink);
   font-family: var(--font-booking-sans), Arial, Helvetica, sans-serif;
   letter-spacing: 0;
@@ -43,7 +43,7 @@
 }
 
 .eyebrow {
-  color: var(--booking-plum-dark);
+  color: var(--booking-orange-hover);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -84,15 +84,15 @@
 }
 
 .primaryButton {
-  background: var(--booking-plum);
-  border: 1px solid var(--booking-plum);
+  background: var(--booking-orange);
+  border: 1px solid var(--booking-orange);
   color: #fff;
-  box-shadow: 0 14px 28px rgba(100, 42, 86, 0.18);
+  box-shadow: 0 14px 28px rgba(242, 111, 61, 0.18);
 }
 
 .primaryButton:hover {
-  background: var(--booking-plum-dark);
-  border-color: var(--booking-plum-dark);
+  background: var(--booking-orange-hover);
+  border-color: var(--booking-orange-hover);
 }
 
 .secondaryButton {
@@ -102,8 +102,8 @@
 }
 
 .secondaryButton:hover {
-  border-color: var(--booking-plum-light);
-  color: var(--booking-plum-dark);
+  border-color: var(--booking-orange-light);
+  color: var(--booking-orange-hover);
 }
 
 .ghostButton {
@@ -114,7 +114,7 @@
 
 .ghostButton:hover {
   background: var(--booking-soft);
-  color: var(--booking-plum-dark);
+  color: var(--booking-orange-hover);
 }
 
 .iconButton {
@@ -142,14 +142,14 @@
 }
 
 .tabActive {
-  border-bottom-color: var(--booking-plum);
-  color: var(--booking-plum-dark);
+  border-bottom-color: var(--booking-orange);
+  color: var(--booking-orange-hover);
 }
 
 .tabCount {
-  background: var(--booking-lilac);
+  background: var(--booking-orange-soft);
   border-radius: 999px;
-  color: var(--booking-plum);
+  color: var(--booking-orange);
   font-size: 11px;
   margin-left: 6px;
   padding: 2px 7px;
@@ -254,8 +254,8 @@
 .searchInput:focus,
 .field:focus,
 .select:focus {
-  border-color: var(--booking-plum-light);
-  box-shadow: 0 0 0 3px rgba(100, 42, 86, 0.12);
+  border-color: var(--booking-orange-light);
+  box-shadow: 0 0 0 3px rgba(242, 111, 61, 0.12);
 }
 
 .filterDetails {
@@ -298,8 +298,8 @@
 }
 
 .statusChipActive {
-  background: var(--booking-lilac);
-  color: var(--booking-plum);
+  background: var(--booking-orange-soft);
+  color: var(--booking-orange);
 }
 
 .table {
@@ -314,7 +314,7 @@
 }
 
 .tableHeader {
-  background: #fbfafb;
+  background: #fffaf7;
   border-top: 1px solid var(--booking-border);
   color: var(--booking-muted);
   font-size: 10px;
@@ -343,9 +343,9 @@
 .avatar,
 .avatarSmall {
   align-items: center;
-  background: var(--booking-lilac);
+  background: var(--booking-orange-soft);
   border-radius: 999px;
-  color: var(--booking-plum);
+  color: var(--booking-orange);
   display: inline-flex;
   flex: 0 0 auto;
   font-weight: 800;
@@ -395,12 +395,12 @@
 }
 
 .statusInService {
-  background: var(--booking-lilac);
-  color: var(--booking-plum);
+  background: var(--booking-orange-soft);
+  color: var(--booking-orange);
 }
 
 .statusMuted {
-  background: #f0edf1;
+  background: #fff0e8;
   color: var(--booking-muted);
 }
 
@@ -463,7 +463,7 @@
 
 .progressCircle {
   align-items: center;
-  background: #f0edf1;
+  background: #fff0e8;
   border-radius: 999px;
   color: var(--booking-muted);
   display: inline-flex;
@@ -476,20 +476,20 @@
 }
 
 .progressActive .progressCircle {
-  background: var(--booking-plum);
+  background: var(--booking-orange);
   color: #fff;
 }
 
 .progressDone .progressCircle {
-  background: var(--booking-lilac);
-  color: var(--booking-plum);
+  background: var(--booking-orange-soft);
+  color: var(--booking-orange);
 }
 
 .editorialImage {
   aspect-ratio: 0.64;
   background:
-    radial-gradient(circle at 70% 20%, rgba(239, 232, 243, 0.9), transparent 34%),
-    linear-gradient(155deg, #f5ebe3, #e8dfe9 52%, #d8c4d3);
+    radial-gradient(circle at 70% 20%, rgba(255, 240, 232, 0.95), transparent 34%),
+    linear-gradient(155deg, #f5ebe3, #ffe0d1 52%, #ffb48d);
   border-radius: 18px;
   overflow: hidden;
   width: 100%;
@@ -543,8 +543,8 @@
 }
 
 .pillActive {
-  background: var(--booking-plum);
-  border-color: var(--booking-plum);
+  background: var(--booking-orange);
+  border-color: var(--booking-orange);
   color: #fff;
 }
 
@@ -561,15 +561,15 @@
 }
 
 .serviceCardSelected {
-  background: rgba(100, 42, 86, 0.035);
-  border-color: var(--booking-plum);
+  background: rgba(242, 111, 61, 0.045);
+  border-color: var(--booking-orange);
 }
 
 .serviceIcon {
   align-items: center;
-  background: var(--booking-lilac);
+  background: var(--booking-orange-soft);
   border-radius: 999px;
-  color: var(--booking-plum);
+  color: var(--booking-orange);
   display: inline-flex;
   height: 54px;
   justify-content: center;
@@ -583,9 +583,9 @@
 }
 
 .addButton {
-  border: 1px solid var(--booking-plum);
+  border: 1px solid var(--booking-orange);
   border-radius: 12px;
-  color: var(--booking-plum);
+  color: var(--booking-orange);
   font-size: 14px;
   font-weight: 800;
   min-height: 48px;
@@ -593,7 +593,7 @@
 }
 
 .addButtonSelected {
-  background: var(--booking-plum);
+  background: var(--booking-orange);
   color: #fff;
 }
 

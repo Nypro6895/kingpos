@@ -34,7 +34,7 @@ export async function listOwnerBookings(): Promise<
       return {
         error: {
           code: "invalid_context",
-          message: "Open bookings from a Manage Salon workspace.",
+          message: "Open bookings from a Business workspace.",
         },
         ok: false,
       };
@@ -48,7 +48,7 @@ export async function listOwnerBookings(): Promise<
       return {
         error: {
           code: "database_error",
-          message: "Supabase environment variables are missing.",
+          message: "This feature is temporarily unavailable. Please try again later.",
         },
         ok: false,
       };
@@ -99,7 +99,7 @@ export async function listStaffScopedBookings(): Promise<
       return {
         error: {
           code: "database_error",
-          message: "Supabase environment variables are missing.",
+          message: "This feature is temporarily unavailable. Please try again later.",
         },
         ok: false,
       };
@@ -134,7 +134,7 @@ export async function getBookingDetail(
       return {
         error: {
           code: "database_error",
-          message: "Supabase environment variables are missing.",
+          message: "This feature is temporarily unavailable. Please try again later.",
         },
         ok: false,
       };

@@ -1,4 +1,4 @@
-export const SYSTEM_ROLE_CODES = [
+﻿export const SYSTEM_ROLE_CODES = [
   "OWNER",
   "MANAGER",
   "FRONT_DESK",
@@ -11,7 +11,7 @@ export type SystemRoleCode = (typeof SYSTEM_ROLE_CODES)[number];
 
 export type Role = {
   id: string;
-  organization_id: string;
+  account_id?: string;
   name: string;
   code: string;
   description: string | null;

@@ -1,0 +1,22 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+test('local attendance matches established late arrival, recheck-in and leave cohort rules', {skip:!process.env.ESBUILD_MODULE_PATH}, async()=>{
+  const {transform}=await import(pathToFileURL(process.env.ESBUILD_MODULE_PATH).href);
+  const {code}=await transform(readFileSync('lib/portable-attendance.ts','utf8'),{loader:'ts',format:'esm'});
+  const {nextPortableAttendance:n}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+  const row=(id,turn,status='working')=>({id,queueTurnCount:turn,status,checkInAt:null,checkInSequence:1});
+  const a=row('a',0,'not_checked_in');
+  assert.equal(n(a,[a,row('b',8),row('c',8)],'CHECK_IN').queueTurnCount,7);
+  assert.equal(n(a,[a,row('b',8),row('c',10)],'CHECK_IN').queueTurnCount,8);
+  assert.equal(n(a,[a],'CHECK_IN').queueTurnCount,0);
+  assert.equal(n({...a,queueTurnCount:12},[a,row('b',8)],'CHECK_IN').queueTurnCount,12);
+  const leave=n(row('a',4),[row('a',4),row('b',4),row('c',6)],'LEAVE_OUT');
+  assert.deepEqual(leave.leaveCohortStaffIds,['b','c']);
+  const returning={id:'a',...leave};
+  assert.equal(n(returning,[returning,row('b',8),row('c',9),row('new',0)],'RETURN_TO_WORK').queueTurnCount,8);
+  assert.equal(n(returning,[returning,row('b',8,'break'),row('c',9,'checked_out'),row('new',0)],'RETURN_TO_WORK').queueTurnCount,4);
+  assert.throws(()=>n({...a,status:'break'},[a],'RETURN_TO_WORK'),/refresh/);
+  const start='2026-09-23T12:00:00Z';assert.equal(n({...a,checkInAt:start},[a],'CHECK_IN').checkInAt,start);
+});

@@ -1,8 +1,9 @@
 export type ContentBookingSourceType =
+  | "beauty_post"
   | "salon_profile_look"
   | "salon_profile_update";
 
-export type ContentBookingContentType = "look" | "update";
+export type ContentBookingContentType = "beauty_post" | "look" | "update";
 
 export type ContentBookingReadinessState =
   | "quick_ready"
@@ -37,7 +38,6 @@ export type PublicContentBookingOption = {
   ctaLabel: string;
   imageUrl: string | null;
   mediaPath: string | null;
-  organizationId: string;
   primaryServiceBasePrice: number | null;
   primaryServiceDurationMinutes: number | null;
   primaryServiceId: string | null;

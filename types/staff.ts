@@ -1,6 +1,5 @@
 export type Staff = {
   id: string;
-  organization_id: string;
   salon_id: string;
   account_user_id: string | null;
   user_id: string | null;
@@ -9,7 +8,13 @@ export type Staff = {
   last_name: string | null;
   phone: string | null;
   email: string | null;
+  address_line1: string | null;
+  address_line2: string | null;
+  city: string | null;
   job_title: string | null;
+  postal_code: string | null;
+  passcode_is_default?: boolean;
+  pos_enabled: boolean;
   public_profile_photo_path: string | null;
   public_bio: string | null;
   public_profile_visible: boolean;
@@ -19,6 +24,7 @@ export type Staff = {
   profile_display_order: number;
   salon_profile_content_posting_enabled: boolean;
   specialties: string[];
+  state: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -26,19 +32,46 @@ export type Staff = {
 
 export type CreateStaffInput = {
   display_name: string;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
   first_name?: string | null;
   last_name?: string | null;
   phone?: string | null;
   email?: string | null;
   job_title?: string | null;
+  postal_code?: string | null;
+  passcode_is_default?: boolean;
+  pos_enabled?: boolean;
   public_bio?: string | null;
   public_profile_photo_path?: string | null;
-  public_profile_visible?: boolean;
-  owner_public_enabled?: boolean;
-  staff_public_consent_status?: "granted" | "not_requested" | "opted_out";
   online_booking_enabled?: boolean;
   profile_display_order?: number;
   salon_profile_content_posting_enabled?: boolean;
   specialties?: string[];
+  state?: string | null;
   is_active?: boolean;
+};
+
+export type UpdateStaffDirectoryBatchChange = {
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  display_name: string;
+  email?: string | null;
+  first_name?: string | null;
+  is_active: boolean;
+  job_title?: string | null;
+  last_name?: string | null;
+  online_booking_enabled: boolean;
+  phone?: string | null;
+  postal_code?: string | null;
+  pos_enabled: boolean;
+  salon_profile_content_posting_enabled: boolean;
+  staff_id: string;
+  state?: string | null;
+};
+
+export type UpdateStaffDirectoryBatchInput = {
+  changes: UpdateStaffDirectoryBatchChange[];
 };

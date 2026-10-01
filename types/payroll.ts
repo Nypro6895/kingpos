@@ -50,7 +50,6 @@ export type SalonPayrollSetting = {
   created_at: string;
   cycle_type: Exclude<PayrollCycleType, "custom">;
   id: string;
-  organization_id: string;
   salon_id: string;
   updated_at: string;
 };
@@ -67,7 +66,6 @@ export type StaffPayrollSetting = {
   fixed_pay_amount: number;
   id: string;
   legal_name: string | null;
-  organization_id: string;
   pay_type: StaffPayType;
   salon_id: string;
   staff_id: string;
@@ -86,7 +84,6 @@ export type PayrollPeriodStaffInput = {
   cycle_type: PayrollCycleType;
   id: string;
   note: string | null;
-  organization_id: string;
   period_end: string;
   period_start: string;
   salon_id: string;
@@ -103,7 +100,6 @@ export type PayrollPeriodStaffInputHistory = {
   field_changes: Record<string, { current: unknown; previous: unknown }>;
   id: string;
   new_value_json: Record<string, unknown>;
-  organization_id: string;
   payroll_run_id: string | null;
   period_end: string;
   period_staff_input_id: string | null;
@@ -121,7 +117,6 @@ export type PayrollRun = {
   id: string;
   locked_at: string | null;
   locked_by: string | null;
-  organization_id: string;
   paid_at: string | null;
   paid_by: string | null;
   period_end: string;
@@ -161,7 +156,6 @@ export type PayrollStaffLine = {
   id: string;
   is_mixed_rate: boolean;
   note: string | null;
-  organization_id: string;
   pay_type_used: StaffPayType;
   payroll_run_id: string;
   period_staff_input_snapshot: unknown;
@@ -199,7 +193,6 @@ export type PayrollStaffDailyTotal = {
   gross_sales: number;
   id: string;
   note: string | null;
-  organization_id: string;
   pay_type_used: StaffPayType | null;
   payroll_run_id: string;
   salon_id: string;
@@ -217,7 +210,6 @@ export type PayrollPaystub = {
   id: string;
   mime_type: string | null;
   note: string | null;
-  organization_id: string;
   payroll_run_id: string;
   salon_id: string;
   size_bytes: number | null;
@@ -360,6 +352,8 @@ export type StaffPayrollSettingWithStaff = {
   history: StaffPayrollSetting[];
   setting: StaffPayrollSetting | null;
   staff: Staff;
+  staffProfileAvatarUrl: string | null;
+  staffProfileDisplayName: string;
 };
 
 export type PayrollPeriodOption = {

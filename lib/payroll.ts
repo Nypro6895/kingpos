@@ -2,13 +2,17 @@ import "server-only";
 
 import {
   getCurrentBusinessContext,
-  getCurrentStaffBusinessContext,
+
   isSalonManageContext,
 } from "@/lib/current-context";
 import { getUtcBoundsForLocalDate, isDateInputValue } from "@/lib/daily-pos-report";
 import { hasPermission } from "@/lib/permissions";
 import { calculateTaxCompanyReporting } from "@/lib/payroll-tax-company";
 import { STAFF_SELECT } from "@/lib/staff";
+import { staffPeriodHistory, staffComparisonPeriods, staffPublishedPeriodHistory, staffPeriodKey } from "@/lib/staff-payroll-period";
+import { cleanupPaystubFile } from "@/lib/paystub-files";
+import { getStaffPortalIdentity } from "@/lib/staff-portal-identity";
+import { getStaffPresentationsByStaffId } from "@/lib/staff-profile";
 import {
   CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE,
   resolveStaffAccountForSalon,
@@ -52,21 +56,21 @@ export const PAYROLL_PERMISSIONS = {
 } as const;
 
 export const SALON_PAYROLL_SETTING_SELECT =
-  "id, organization_id, salon_id, cycle_type, biweekly_anchor_date, created_at, updated_at";
+  "id, salon_id, cycle_type, biweekly_anchor_date, created_at, updated_at";
 export const STAFF_PAYROLL_SETTING_SELECT =
-  "id, organization_id, salon_id, staff_id, legal_name, pay_type, commission_rate, fixed_pay_amount, check_rate, tax_rate, apply_tax_to_fixed_pay, tax_tips, tax_bonus, tax_company_enabled, cash_to_tax_company, tip_payout_method, bonus_payout_method, effective_from, effective_to, created_at, updated_at";
+  "id, salon_id, staff_id, legal_name, pay_type, commission_rate, fixed_pay_amount, check_rate, tax_rate, apply_tax_to_fixed_pay, tax_tips, tax_bonus, tax_company_enabled, cash_to_tax_company, tip_payout_method, bonus_payout_method, effective_from, effective_to, created_at, updated_at";
 export const PAYROLL_PERIOD_STAFF_INPUT_SELECT =
-  "id, organization_id, salon_id, staff_id, period_start, period_end, cycle_type, check_number, bonus_amount, note, updated_by, created_at, updated_at";
+  "id, salon_id, staff_id, period_start, period_end, cycle_type, check_number, bonus_amount, note, updated_by, created_at, updated_at";
 export const PAYROLL_PERIOD_STAFF_INPUT_HISTORY_SELECT =
-  "id, organization_id, salon_id, staff_id, period_staff_input_id, payroll_run_id, period_start, period_end, cycle_type, change_type, field_changes, previous_value_json, new_value_json, created_by, created_at";
+  "id, salon_id, staff_id, period_staff_input_id, payroll_run_id, period_start, period_end, cycle_type, change_type, field_changes, previous_value_json, new_value_json, created_by, created_at";
 export const PAYROLL_RUN_SELECT =
-  "id, organization_id, salon_id, period_start, period_end, cycle_type, status, version, settings_snapshot, correction_snapshot, generated_at, printed_at, printed_by, locked_at, locked_by, paid_at, paid_by, created_at, updated_at";
+  "id, salon_id, period_start, period_end, cycle_type, status, version, settings_snapshot, correction_snapshot, generated_at, printed_at, printed_by, locked_at, locked_by, paid_at, paid_by, created_at, updated_at";
 export const PAYROLL_STAFF_LINE_SELECT =
-  "id, payroll_run_id, organization_id, salon_id, staff_id, staff_display_name_snapshot, staff_legal_name_snapshot, gross_sales, pay_type_used, commission_rate_used, fixed_pay_amount_used, staff_commission_gross, shop_share, check_rate_used, base_check_amount, base_cash_amount, cash_amount, check_gross, tax_rate_used, tax_withheld, check_net, check_number, tip_amount, tip_check_amount, tip_cash_amount, tip_payout_method_snapshot, tip_allocation_method, bonus_amount, bonus_check_amount, bonus_cash_amount, bonus_payout_method_snapshot, earned_amount, final_check_amount, final_cash_amount, final_staff_income, tax_bonus_snapshot, tax_tips_snapshot, tax_company_reported_wage_gross, tax_company_taxable_gross, tax_company_enabled_snapshot, cash_to_tax_company_snapshot, tax_company_check_amount, tax_company_cash_amount, is_mixed_rate, settings_used_snapshot, period_staff_input_snapshot, note, created_at, updated_at";
+  "id, payroll_run_id, salon_id, staff_id, staff_display_name_snapshot, staff_legal_name_snapshot, gross_sales, pay_type_used, commission_rate_used, fixed_pay_amount_used, staff_commission_gross, shop_share, check_rate_used, base_check_amount, base_cash_amount, cash_amount, check_gross, tax_rate_used, tax_withheld, check_net, check_number, tip_amount, tip_check_amount, tip_cash_amount, tip_payout_method_snapshot, tip_allocation_method, bonus_amount, bonus_check_amount, bonus_cash_amount, bonus_payout_method_snapshot, earned_amount, final_check_amount, final_cash_amount, final_staff_income, tax_bonus_snapshot, tax_tips_snapshot, tax_company_reported_wage_gross, tax_company_taxable_gross, tax_company_enabled_snapshot, cash_to_tax_company_snapshot, tax_company_check_amount, tax_company_cash_amount, is_mixed_rate, settings_used_snapshot, period_staff_input_snapshot, note, created_at, updated_at";
 export const PAYROLL_STAFF_DAILY_TOTAL_SELECT =
-  "id, payroll_run_id, organization_id, salon_id, staff_id, business_date, gross_sales, tip_amount, correction_delta, pay_type_used, commission_rate_used, fixed_pay_amount_used, check_rate_used, tax_rate_used, settings_used_snapshot, note, created_at, updated_at";
+  "id, payroll_run_id, salon_id, staff_id, business_date, gross_sales, tip_amount, correction_delta, pay_type_used, commission_rate_used, fixed_pay_amount_used, check_rate_used, tax_rate_used, settings_used_snapshot, note, created_at, updated_at";
 export const PAYROLL_PAYSTUB_SELECT =
-  "id, payroll_run_id, organization_id, salon_id, staff_id, uploaded_by, file_url_or_path, file_name, mime_type, size_bytes, note, created_at, updated_at";
+  "id, payroll_run_id, salon_id, staff_id, uploaded_by, file_url_or_path, file_name, mime_type, size_bytes, note, created_at, updated_at";
 
 const DEFAULT_COMMISSION_RATE = 60;
 const DEFAULT_CHECK_RATE = 60;
@@ -90,7 +94,7 @@ type PayrollAccess = {
 type PayrollAuthContext = {
   access: PayrollAccess;
   context: CurrentBusinessContext;
-  organization: NonNullable<CurrentBusinessContext["currentOrganization"]>;
+  Account: NonNullable<CurrentBusinessContext["currentAccount"]>;
   salon: NonNullable<CurrentBusinessContext["currentSalon"]>;
   supabase: SupabaseClient;
   user: NonNullable<CurrentBusinessContext["user"]>;
@@ -105,6 +109,7 @@ export type StaffPayrollPortalDailyRow = {
 };
 
 export type StaffPayrollPortalData = {
+  settings: StaffPayrollSetting[];
   context: CurrentBusinessContext;
   dailyRows: StaffPayrollPortalDailyRow[];
   latestStatement: PayrollStatementSnapshot | null;
@@ -135,6 +140,7 @@ export type StaffAnalysisPortalServiceRow = {
 };
 
 export type StaffAnalysisPortalWorkPerformance = {
+  dailyActivity: Array<{ businessDate: string; serviceTotal: number; tipAmount: number; turns: number; tickets: number }>;
   averageTicket: number;
   bigTurns: number;
   serviceTotal: number;
@@ -246,25 +252,6 @@ type ServiceAnalyticsTicketItemRow = {
   service: { id: string; name: string } | null;
   service_id: string;
   ticket: { id: string; opened_at: string; status: string } | null;
-};
-
-type StaffAnalysisEarningRow = {
-  big_turn_count: number;
-  service_total: number;
-  small_turn_count: number;
-  ticket: { id: string; status: string } | null;
-  ticket_id: string;
-  tip_amount: number;
-};
-
-type StaffAnalysisTicketItemRow = {
-  id: string;
-  line_total: number;
-  pos_ticket_id: string;
-  quantity: number;
-  service: { id: string; name: string } | null;
-  service_id: string;
-  ticket: { id: string; status: string } | null;
 };
 
 type DailyEarningAccumulator = {
@@ -508,7 +495,7 @@ function hasValidDateRange(startDate: string | null | undefined, endDate: string
 }
 
 function getDefaultSalonPayrollSetting(
-  organizationId: string,
+  accountId: string,
   salonId: string,
 ): SalonPayrollSetting {
   const now = new Date().toISOString();
@@ -518,7 +505,6 @@ function getDefaultSalonPayrollSetting(
     created_at: now,
     cycle_type: "monthly",
     id: "",
-    organization_id: organizationId,
     salon_id: salonId,
     updated_at: now,
   };
@@ -692,7 +678,7 @@ function getLegalName(setting: StaffPayrollSetting | null) {
 }
 
 function getDefaultStaffPayrollSetting(input: {
-  organizationId: string;
+  accountId: string;
   salonId: string;
   staff?: Staff;
   staffId: string;
@@ -711,7 +697,6 @@ function getDefaultStaffPayrollSetting(input: {
     fixed_pay_amount: 0,
     id: "",
     legal_name: null,
-    organization_id: input.organizationId,
     pay_type: "commission",
     salon_id: input.salonId,
     staff_id: input.staffId,
@@ -786,7 +771,7 @@ function settingOverlapsPeriod(setting: StaffPayrollSetting, period: PayrollPeri
 
 function pickEffectiveSetting(input: {
   businessDate: string;
-  organizationId: string;
+  accountId: string;
   salonId: string;
   settingsByStaffId: Map<string, StaffPayrollSetting[]>;
   staff?: Staff;
@@ -802,7 +787,7 @@ function pickEffectiveSetting(input: {
   return (
     match ??
     getDefaultStaffPayrollSetting({
-      organizationId: input.organizationId,
+      accountId: input.accountId,
       salonId: input.salonId,
       staff: input.staff,
       staffId: input.staffId,
@@ -811,7 +796,7 @@ function pickEffectiveSetting(input: {
 }
 
 function latestSettingForPeriod(input: {
-  organizationId: string;
+  accountId: string;
   period: PayrollPeriod;
   salonId: string;
   settingsByStaffId: Map<string, StaffPayrollSetting[]>;
@@ -820,7 +805,7 @@ function latestSettingForPeriod(input: {
 }) {
   return pickEffectiveSetting({
     businessDate: input.period.endDate,
-    organizationId: input.organizationId,
+    accountId: input.accountId,
     salonId: input.salonId,
     settingsByStaffId: input.settingsByStaffId,
     staff: input.staff,
@@ -899,7 +884,7 @@ async function getLinkedCurrentStaffId(
   context: CurrentBusinessContext,
   supabase: SupabaseClient,
 ) {
-  if (!context.user || !context.currentOrganization || !context.currentSalon) {
+  if (!context.user || !context.currentAccount || !context.currentSalon) {
     return null;
   }
 
@@ -917,7 +902,7 @@ async function getLinkedCurrentStaffId(
       source: resolution.source,
       staffIds: resolution.matches.map((member) => member.id),
       salonId: context.currentSalon.id,
-      organizationId: context.currentOrganization.id,
+      accountId: context.currentAccount.id,
       userId: context.user.id,
     });
     throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);
@@ -936,11 +921,11 @@ async function requirePayrollContext(
   }
 
   if (!isSalonManageContext(context)) {
-    throw new Error("Open payroll from a Manage Salon workspace.");
+    throw new Error("Open payroll from a Business workspace.");
   }
 
-  if (!context.currentOrganization) {
-    throw new Error("Create an organization before using payroll.");
+  if (!context.currentAccount) {
+    throw new Error("Choose a salon workspace before using payroll.");
   }
 
   if (!context.currentSalon) {
@@ -950,7 +935,7 @@ async function requirePayrollContext(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const [canManagePayroll, canViewPayroll, canViewTaxCompany, linkedStaffId] =
@@ -977,75 +962,31 @@ async function requirePayrollContext(
       linkedStaffId,
     },
     context,
-    organization: context.currentOrganization,
+    Account: context.currentAccount,
     salon: context.currentSalon,
     supabase,
     user: context.user,
   };
 }
 
-async function resolveCurrentStaffForPayrollPortal(
-  context: CurrentBusinessContext,
-  supabase: SupabaseClient,
-) {
-  if (!context.user || !context.currentOrganization || !context.currentSalon) {
-    return null;
-  }
-
-  const { data, error } = await supabase
-    .from("staff")
-    .select(STAFF_SELECT)
-    .eq("organization_id", context.currentOrganization.id)
-    .eq("salon_id", context.currentSalon.id)
-    .eq("account_user_id", context.user.id)
-    .eq("is_active", true)
-    .limit(2)
-    .returns<Staff[]>();
-
-  if (error) {
-    console.error("Supabase resolve current staff payroll portal failed", {
-      code: error.code,
-      details: error.details,
-      hint: error.hint,
-      message: error.message,
-      organizationId: context.currentOrganization.id,
-      salonId: context.currentSalon.id,
-      userId: context.user.id,
-    });
-    throw new Error(error.message);
-  }
-
-  if ((data ?? []).length > 1) {
-    console.error("Multiple payroll portal staff account matches found", {
-      staffIds: (data ?? []).map((member) => member.id),
-      salonId: context.currentSalon.id,
-      organizationId: context.currentOrganization.id,
-      userId: context.user.id,
-    });
-    throw new Error(CURRENT_STAFF_MULTIPLE_MATCHES_MESSAGE);
-  }
-
-  return data?.[0] ?? null;
-}
-
 async function getCurrentStaffPayrollPortalAuthContext() {
-  const context = await getCurrentStaffBusinessContext();
+  const { context, staff, supabase } = await getStaffPortalIdentity();
 
   if (!context.user) {
     return { auth: null, context, staff: null };
   }
 
-  if (!context.currentOrganization || !context.currentSalon) {
+  if (!context.currentAccount || !context.currentSalon) {
     return { auth: null, context, staff: null };
   }
 
-  const supabase = await createAuthenticatedSupabaseServerClient();
+
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
-  const staff = await resolveCurrentStaffForPayrollPortal(context, supabase);
+
 
   if (!staff) {
     return { auth: null, context, staff: null };
@@ -1060,7 +1001,7 @@ async function getCurrentStaffPayrollPortalAuthContext() {
         linkedStaffId: staff.id,
       },
       context,
-      organization: context.currentOrganization,
+      Account: context.currentAccount,
       salon: context.currentSalon,
       supabase,
       user: context.user,
@@ -1084,7 +1025,6 @@ async function loadSalonPayrollSetting(auth: PayrollAuthContext) {
   const { data, error } = await auth.supabase
     .from("salon_payroll_settings")
     .select(SALON_PAYROLL_SETTING_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .maybeSingle<SalonPayrollSetting>();
 
@@ -1092,14 +1032,13 @@ async function loadSalonPayrollSetting(auth: PayrollAuthContext) {
     throw new Error(error.message);
   }
 
-  return data ?? getDefaultSalonPayrollSetting(auth.organization.id, auth.salon.id);
+  return data ?? getDefaultSalonPayrollSetting(auth.Account.id, auth.salon.id);
 }
 
 async function loadStaffRows(auth: PayrollAuthContext) {
   let query = auth.supabase
     .from("staff")
     .select(STAFF_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .order("display_name", { ascending: true });
 
@@ -1124,7 +1063,6 @@ async function loadStaffPayrollSettings(auth: PayrollAuthContext) {
   let query = auth.supabase
     .from("staff_payroll_settings")
     .select(STAFF_PAYROLL_SETTING_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .order("effective_from", { ascending: false });
 
@@ -1152,7 +1090,6 @@ async function loadPayrollPeriodStaffInputs(
   let query = auth.supabase
     .from("payroll_period_staff_inputs")
     .select(PAYROLL_PERIOD_STAFF_INPUT_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("period_start", period.startDate)
     .eq("period_end", period.endDate);
@@ -1203,7 +1140,6 @@ async function loadPayrollPeriodStaffInputHistory(
   let query = auth.supabase
     .from("payroll_period_staff_input_history")
     .select(PAYROLL_PERIOD_STAFF_INPUT_HISTORY_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("period_start", period.startDate)
     .eq("period_end", period.endDate)
@@ -1229,6 +1165,7 @@ async function loadPayrollPeriodStaffInputHistory(
 function latestSettingsWithStaff(
   staffRows: Staff[],
   settings: StaffPayrollSetting[],
+  staffPresentations: Awaited<ReturnType<typeof getStaffPresentationsByStaffId>>,
 ): StaffPayrollSettingWithStaff[] {
   const settingMap = settingsByStaffId(settings);
 
@@ -1236,6 +1173,9 @@ function latestSettingsWithStaff(
     history: settingMap.get(staff.id) ?? [],
     setting: settingMap.get(staff.id)?.[0] ?? null,
     staff,
+    staffProfileAvatarUrl: staffPresentations.get(staff.id)?.avatarUrl ?? null,
+    staffProfileDisplayName:
+      staffPresentations.get(staff.id)?.displayName ?? staff.display_name,
   }));
 }
 
@@ -1248,7 +1188,6 @@ async function loadStaffEarningsForPeriod(
     .select(
       "ticket_id, staff_id, work_date, service_total, tip_amount, tip_is_manual, manual_tip_amount",
     )
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .gte("work_date", period.startDate)
     .lte("work_date", period.endDate);
@@ -1277,7 +1216,6 @@ async function loadFinancialAdjustmentDeltasByStaffDate(
   let query = auth.supabase
     .from("pos_financial_adjustments")
     .select("business_date, staff_id, service_delta, tip_delta")
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .gte("business_date", period.startDate)
     .lte("business_date", period.endDate)
@@ -1458,7 +1396,6 @@ async function loadTicketAdjustmentsForPeriod(
   const { data: tickets, error: ticketsError } = await auth.supabase
     .from("pos_tickets")
     .select("id, ticket_number, opened_at")
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .gte("opened_at", startBounds.openedFrom)
     .lte("opened_at", endBounds.openedTo)
@@ -1480,7 +1417,6 @@ async function loadTicketAdjustmentsForPeriod(
     .select(
       "id, ticket_id, action, reason, before_snapshot, after_snapshot, created_by, created_at",
     )
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .in(
       "ticket_id",
@@ -1535,7 +1471,6 @@ async function loadPayrollCorrections(
       .select(
         "id, business_date, target_type, target_id, correction_type, old_value_json, requested_value_json, money_delta, reason, admin_note, status, requested_by, requested_at",
       )
-      .eq("organization_id", auth.organization.id)
       .eq("salon_id", auth.salon.id)
       .gte("business_date", period.startDate)
       .lte("business_date", period.endDate)
@@ -1545,7 +1480,6 @@ async function loadPayrollCorrections(
       .select(
         "id, business_date, correction_request_id, target_type, target_id, staff_id, ticket_id, service_delta, tip_delta, expected_total_delta, actual_total_delta, note, created_by, created_at",
       )
-      .eq("organization_id", auth.organization.id)
       .eq("salon_id", auth.salon.id)
       .gte("business_date", period.startDate)
       .lte("business_date", period.endDate)
@@ -1638,7 +1572,7 @@ function calculateDailyPayroll(input: {
   correctionDelta: number;
   earning: DailyEarningAccumulator | undefined;
   fixedDailyAmount: number;
-  organizationId: string;
+  accountId: string;
   payrollRunId: string;
   salonId: string;
   setting: StaffPayrollSetting;
@@ -1715,7 +1649,6 @@ function calculateDailyPayroll(input: {
       gross_sales: grossSales,
       id: `live-${input.staffId}-${input.businessDate}`,
       note: null,
-      organization_id: input.organizationId,
       pay_type_used: input.setting.pay_type,
       payroll_run_id: input.payrollRunId,
       salon_id: input.salonId,
@@ -1874,7 +1807,6 @@ async function loadDailyClosingRows(auth: PayrollAuthContext, period: PayrollPer
     .select(
       "report_date, cash_amount, credit_card_amount, other_amount, status, closed_at, locked_at",
     )
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .gte("report_date", period.startDate)
     .lte("report_date", period.endDate)
@@ -1910,7 +1842,6 @@ async function loadPayrollServiceAnalytics(
     .select(
       "id, pos_ticket_id, service_id, quantity, line_total, service:services(id, name), ticket:pos_tickets!inner(id, opened_at, status)",
     )
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("is_removed", false)
     .eq("ticket.status", "closed")
@@ -2217,6 +2148,7 @@ function buildShopSummary(rows: PayrollShopDailyRow[]) {
 async function calculateLivePayrollForAuth(
   auth: PayrollAuthContext,
   period: PayrollPeriod,
+  seed: { staffRows?: Staff[]; staffSettings?: StaffPayrollSetting[] } = {},
 ): Promise<PayrollLiveSnapshot> {
   const [
     staffRows,
@@ -2227,8 +2159,8 @@ async function calculateLivePayrollForAuth(
     inputHistory,
   ] =
     await Promise.all([
-      loadStaffRows(auth),
-      loadStaffPayrollSettings(auth),
+      seed.staffRows ?? loadStaffRows(auth),
+      seed.staffSettings ?? loadStaffPayrollSettings(auth),
       loadStaffEarningsForPeriod(auth, period),
       loadFinancialAdjustmentDeltasByStaffDate(auth, period),
       loadPayrollPeriodStaffInputs(auth, period),
@@ -2289,7 +2221,7 @@ async function calculateLivePayrollForAuth(
 
   for (const staff of staffRows) {
     const latestSetting = latestSettingForPeriod({
-      organizationId: auth.organization.id,
+      accountId: auth.Account.id,
       period,
       salonId: auth.salon.id,
       settingsByStaffId: settingMap,
@@ -2325,7 +2257,7 @@ async function calculateLivePayrollForAuth(
     const staff = staffById.get(staffId);
     const input = inputByStaffId.get(staffId) ?? null;
     const latestSetting = latestSettingForPeriod({
-      organizationId: auth.organization.id,
+      accountId: auth.Account.id,
       period,
       salonId: auth.salon.id,
       settingsByStaffId: settingMap,
@@ -2358,7 +2290,7 @@ async function calculateLivePayrollForAuth(
     for (const businessDate of periodDates) {
       const setting = pickEffectiveSetting({
         businessDate,
-        organizationId: auth.organization.id,
+        accountId: auth.Account.id,
         salonId: auth.salon.id,
         settingsByStaffId: settingMap,
         staff,
@@ -2385,7 +2317,7 @@ async function calculateLivePayrollForAuth(
         correctionDelta,
         earning,
         fixedDailyAmount,
-        organizationId: auth.organization.id,
+        accountId: auth.Account.id,
         payrollRunId: "",
         salonId: auth.salon.id,
         setting,
@@ -2563,7 +2495,6 @@ async function calculateLivePayrollForAuth(
       inputHistory: inputHistoryByStaffId.get(staffId) ?? [],
       is_mixed_rate: isMixedRate,
       note: input?.note?.trim() || null,
-      organization_id: auth.organization.id,
       pay_type_used: payTypeUsed,
       payroll_run_id: "",
       paystub: null,
@@ -2631,7 +2562,6 @@ async function loadPayrollRunById(auth: PayrollAuthContext, payrollRunId: string
     .from("payroll_runs")
     .select(PAYROLL_RUN_SELECT)
     .eq("id", payrollRunId)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .maybeSingle<PayrollRun>();
 
@@ -2650,7 +2580,6 @@ async function loadLatestPayrollRun(auth: PayrollAuthContext, period: PayrollPer
   const { data, error } = await auth.supabase
     .from("payroll_runs")
     .select(PAYROLL_RUN_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("period_start", period.startDate)
     .eq("period_end", period.endDate)
@@ -2674,7 +2603,6 @@ async function loadPayrollLines(
   let query = auth.supabase
     .from("payroll_staff_lines")
     .select(PAYROLL_STAFF_LINE_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("payroll_run_id", run.id)
     .order("staff_display_name_snapshot", { ascending: true });
@@ -2739,7 +2667,6 @@ async function loadPayrollDailyTotals(
   const { data, error } = await auth.supabase
     .from("payroll_staff_daily_totals")
     .select(PAYROLL_STAFF_DAILY_TOTAL_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("payroll_run_id", run.id)
     .in("staff_id", staffIds)
@@ -2784,7 +2711,6 @@ async function loadPayrollPaystubs(
   const { data, error } = await auth.supabase
     .from("payroll_paystubs")
     .select(PAYROLL_PAYSTUB_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("payroll_run_id", run.id)
     .in("staff_id", staffIds)
@@ -3736,7 +3662,6 @@ export async function savePayrollStatementFromLivePayroll(input: {
   const { data: latestRun, error: latestRunError } = await auth.supabase
     .from("payroll_runs")
     .select("version")
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("period_start", period.startDate)
     .eq("period_end", period.endDate)
@@ -3756,7 +3681,6 @@ export async function savePayrollStatementFromLivePayroll(input: {
       correction_snapshot: live.corrections,
       cycle_type: period.cycleType,
       generated_at: now,
-      organization_id: auth.organization.id,
       period_end: period.endDate,
       period_start: period.startDate,
       printed_at: now,
@@ -3795,7 +3719,6 @@ export async function savePayrollStatementFromLivePayroll(input: {
     gross_sales: line.gross_sales,
     is_mixed_rate: line.is_mixed_rate,
     note: line.note,
-    organization_id: auth.organization.id,
     pay_type_used: line.pay_type_used,
     payroll_run_id: run.id,
     period_staff_input_snapshot: line.period_staff_input_snapshot,
@@ -3830,7 +3753,6 @@ export async function savePayrollStatementFromLivePayroll(input: {
       fixed_pay_amount_used: dailyTotal.fixed_pay_amount_used,
       gross_sales: dailyTotal.gross_sales,
       note: dailyTotal.note,
-      organization_id: auth.organization.id,
       pay_type_used: dailyTotal.pay_type_used,
       payroll_run_id: run.id,
       salon_id: auth.salon.id,
@@ -3885,7 +3807,6 @@ export async function markPayrollStatementPaid(payrollRunId: string) {
       status: "paid",
     })
     .eq("id", run.id)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .select(PAYROLL_RUN_SELECT)
     .single<PayrollRun>();
@@ -3936,7 +3857,6 @@ export async function uploadPayrollPaystub(input: {
   const { data: line, error: lineError } = await auth.supabase
     .from("payroll_staff_lines")
     .select("id")
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("payroll_run_id", run.id)
     .eq("staff_id", input.staffId)
@@ -3951,12 +3871,17 @@ export async function uploadPayrollPaystub(input: {
   }
 
   const fileName = sanitizeStorageFileName(input.file.name);
+  const { data: previousPaystub, error: previousPaystubError } = await auth.supabase
+    .from("payroll_paystubs").select("file_url_or_path")
+    .eq("salon_id", auth.salon.id).eq("payroll_run_id", run.id)
+    .eq("staff_id", input.staffId).maybeSingle<{ file_url_or_path: string }>();
+  if (previousPaystubError) throw new Error(previousPaystubError.message);
   const storagePath = [
-    auth.organization.id,
+    auth.Account.id,
     auth.salon.id,
     run.id,
     input.staffId,
-    `${Date.now()}-${fileName}`,
+    `${crypto.randomUUID()}-${fileName}`,
   ].join("/");
   const { error: uploadError } = await auth.supabase.storage
     .from(PAYROLL_PAYSTUB_BUCKET)
@@ -3969,29 +3894,30 @@ export async function uploadPayrollPaystub(input: {
     throw new Error(uploadError.message);
   }
 
-  const { data, error } = await auth.supabase
-    .from("payroll_paystubs")
-    .upsert(
-      {
-        file_name: input.file.name || fileName,
-        file_url_or_path: storagePath,
-        mime_type: input.file.type || null,
-        organization_id: auth.organization.id,
-        payroll_run_id: run.id,
-        salon_id: auth.salon.id,
-        size_bytes: input.file.size,
-        staff_id: input.staffId,
-        uploaded_by: auth.user.id,
-      },
-      { onConflict: "payroll_run_id,staff_id" },
-    )
-    .select(PAYROLL_PAYSTUB_SELECT)
-    .single<PayrollPaystub>();
-
-  if (error) {
-    throw new Error(error.message);
+  const payload = {
+    file_name: input.file.name || fileName,
+    file_url_or_path: storagePath,
+    mime_type: input.file.type || null,
+    payroll_run_id: run.id,
+    salon_id: auth.salon.id,
+    size_bytes: input.file.size,
+    staff_id: input.staffId,
+    uploaded_by: auth.user.id,
+  };
+  // Compare-and-swap prevents overlapping replacements from abandoning a file.
+  const write = previousPaystub
+    ? auth.supabase.from("payroll_paystubs").update(payload)
+        .eq("salon_id", auth.salon.id).eq("payroll_run_id", run.id).eq("staff_id", input.staffId)
+        .eq("file_url_or_path", previousPaystub.file_url_or_path)
+    : auth.supabase.from("payroll_paystubs").insert(payload);
+  const { data, error } = await write.select(PAYROLL_PAYSTUB_SELECT).maybeSingle<PayrollPaystub>();
+  if (error || !data) {
+    await cleanupPaystubFile(storagePath, path => auth.supabase.storage.from(PAYROLL_PAYSTUB_BUCKET).remove([path]));
+    throw new Error(error?.code === "23505" || !data && !error
+      ? "This paystub was changed by another upload. Refresh and try again."
+      : error?.message ?? "Paystub could not be saved.");
   }
-
+  await cleanupPaystubFile(previousPaystub?.file_url_or_path, path => auth.supabase.storage.from(PAYROLL_PAYSTUB_BUCKET).remove([path]));
   return {
     ...data,
     view_url: await createPaystubViewUrl(auth, data.file_url_or_path),
@@ -4051,7 +3977,6 @@ async function loadLatestProtectedPayrollRun(
   const { data, error } = await auth.supabase
     .from("payroll_runs")
     .select(PAYROLL_RUN_SELECT)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("period_start", period.startDate)
     .eq("period_end", period.endDate)
@@ -4092,7 +4017,6 @@ async function createPayrollPeriodStaffInputHistory(input: {
       cycle_type: input.period.cycleType,
       field_changes: fieldChanges,
       new_value_json: current,
-      organization_id: input.auth.organization.id,
       payroll_run_id: input.protectedRun?.id ?? null,
       period_end: input.period.endDate,
       period_staff_input_id: input.currentInput.id,
@@ -4127,7 +4051,6 @@ export async function updatePayrollPeriodStaffInput(input: {
     .from("staff")
     .select("id")
     .eq("id", input.staffId)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .maybeSingle<{ id: string }>();
 
@@ -4144,7 +4067,6 @@ export async function updatePayrollPeriodStaffInput(input: {
     auth.supabase
       .from("payroll_period_staff_inputs")
       .select(PAYROLL_PERIOD_STAFF_INPUT_SELECT)
-      .eq("organization_id", auth.organization.id)
       .eq("salon_id", auth.salon.id)
       .eq("staff_id", input.staffId)
       .eq("period_start", period.startDate)
@@ -4171,7 +4093,6 @@ export async function updatePayrollPeriodStaffInput(input: {
         check_number: input.checkNumber?.trim() || null,
         cycle_type: period.cycleType,
         note: input.note?.trim() || null,
-        organization_id: auth.organization.id,
         period_end: period.endDate,
         period_start: period.startDate,
         salon_id: auth.salon.id,
@@ -4233,7 +4154,6 @@ export async function updateSalonPayrollSetting(input: {
         biweekly_anchor_date:
           input.cycleType === "biweekly" ? input.biweeklyAnchorDate : null,
         cycle_type: input.cycleType,
-        organization_id: auth.organization.id,
         salon_id: auth.salon.id,
       },
       { onConflict: "salon_id" },
@@ -4307,7 +4227,6 @@ export async function updateStaffPayrollSetting(input: {
     .from("staff")
     .select("id")
     .eq("id", input.staffId)
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .maybeSingle<{ id: string }>();
 
@@ -4322,7 +4241,6 @@ export async function updateStaffPayrollSetting(input: {
   const { data: existingSetting, error: existingSettingError } = await auth.supabase
     .from("staff_payroll_settings")
     .select("id")
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("staff_id", input.staffId)
     .eq("effective_from", input.effectiveFrom)
@@ -4353,7 +4271,6 @@ export async function updateStaffPayrollSetting(input: {
       .from("staff_payroll_settings")
       .update(settingPayload)
       .eq("id", existingSetting.id)
-      .eq("organization_id", auth.organization.id)
       .eq("salon_id", auth.salon.id)
       .eq("staff_id", input.staffId)
       .select(STAFF_PAYROLL_SETTING_SELECT)
@@ -4370,7 +4287,6 @@ export async function updateStaffPayrollSetting(input: {
   const { error: closePreviousError } = await auth.supabase
     .from("staff_payroll_settings")
     .update({ effective_to: previousEffectiveTo })
-    .eq("organization_id", auth.organization.id)
     .eq("salon_id", auth.salon.id)
     .eq("staff_id", input.staffId)
     .lt("effective_from", input.effectiveFrom)
@@ -4386,7 +4302,6 @@ export async function updateStaffPayrollSetting(input: {
       ...settingPayload,
       effective_from: input.effectiveFrom,
       effective_to: null,
-      organization_id: auth.organization.id,
       salon_id: auth.salon.id,
       staff_id: input.staffId,
     })
@@ -4412,7 +4327,7 @@ export async function getPayrollPageData(input: {
   const auth = await requirePayrollContext();
   const salonPayrollSetting = auth.access.canViewAllPayroll
     ? await loadSalonPayrollSetting(auth)
-    : getDefaultSalonPayrollSetting(auth.organization.id, auth.salon.id);
+    : getDefaultSalonPayrollSetting(auth.Account.id, auth.salon.id);
   const period = resolvePayrollPeriod({
     cycleType: input.cycleType,
     endDate: input.endDate,
@@ -4442,6 +4357,10 @@ export async function getPayrollPageData(input: {
     live,
     period,
   });
+  const staffPresentations = await getStaffPresentationsByStaffId({
+    staff: staffRows,
+    supabase: auth.supabase,
+  });
 
   return {
     access: auth.access,
@@ -4454,375 +4373,102 @@ export async function getPayrollPageData(input: {
     scheduleSetup: getPayrollScheduleSetup(salonPayrollSetting),
     salonPayrollSetting,
     serviceAnalytics,
-    staffPayrollSettings: latestSettingsWithStaff(staffRows, staffSettings),
+    staffPayrollSettings: latestSettingsWithStaff(
+      staffRows,
+      staffSettings,
+      staffPresentations,
+    ),
     status: getPayrollStatusView(latestStatement, difference),
     taxCompany,
   };
 }
 
-export async function getCurrentStaffPayrollPortalData(input: {
-  cycleType?: string | null;
-  endDate?: string | null;
-  month?: string | null;
-  payPeriodStart?: string | null;
-  preset?: string | null;
-  segment?: string | null;
-  startDate?: string | null;
-}): Promise<StaffPayrollPortalData> {
-  const { auth, context, staff } = await getCurrentStaffPayrollPortalAuthContext();
-  const emptyStatus: PayrollStatusView = {
-    kind: "live",
-    label: "Live",
-    statementVersion: null,
-  };
+type StaffPeriodInput = { payPeriodStart?: string | null };
 
-  if (!auth || !staff) {
-    return {
-      context,
-      dailyRows: [],
-      latestStatement: null,
-      line: null,
-      paystub: null,
-      period: null,
-      periodOptions: [],
-      salonPayrollSetting: null,
-      staff,
-      status: emptyStatus,
-    };
-  }
-
-  const salonPayrollSetting = await loadSalonPayrollSetting(auth);
-  const period = resolvePayrollPeriod({
-    cycleType: input.cycleType,
-    endDate: input.endDate,
-    month: input.month,
-    payPeriodStart: input.payPeriodStart,
-    preset: input.preset,
-    segment: input.segment,
-    salonSetting: salonPayrollSetting,
-    startDate: input.startDate,
-  });
-  const [live, latestStatement] = await Promise.all([
-    calculateLivePayrollForAuth(auth, period),
-    loadLatestPayrollSnapshot(auth, period),
+async function loadStaffPortalPeriod(auth: PayrollAuthContext, input: StaffPeriodInput, publishedRuns?: PayrollRun[]) {
+  const [salonPayrollSetting, dateResult] = await Promise.all([
+    loadSalonPayrollSetting(auth),
+    auth.supabase.rpc("get_salon_business_date", { p_salon_id: auth.salon.id }),
   ]);
-  const liveLine =
-    attachStatementPaystubsToLines({
-      latestStatement,
-      lines: live.lines,
-    }).find((line) => line.staff_id === staff.id) ?? null;
-  const statementLine =
-    latestStatement?.lines.find((line) => line.staff_id === staff.id) ?? null;
-  const line = liveLine ?? statementLine;
-  const dailyRows = (line?.dailyTotals ?? []).map<StaffPayrollPortalDailyRow>(
-    (dailyTotal) => ({
-      businessDate: dailyTotal.business_date,
-      commissionGross: dailyStaffPay(dailyTotal),
-      id: dailyTotal.id,
-      shopGross: numberValue(dailyTotal.gross_sales),
-      tipAmount: numberValue(dailyTotal.tip_amount),
-    }),
-  );
-  const status: PayrollStatusView = latestStatement
-    ? {
-        kind: latestStatement.run.status === "paid" ? "paid" : "printed",
-        label: latestStatement.run.status === "paid" ? "Paid" : "Printed",
-        statementVersion: latestStatement.run.version,
-      }
-    : emptyStatus;
+  if (dateResult.error || typeof dateResult.data !== "string" || !isDateInputValue(dateResult.data)) {
+    throw new Error("Salon business date is unavailable.");
+  }
+  const today = dateResult.data;
+  const scheduled = staffPeriodHistory(salonPayrollSetting, today);
+  const periods = publishedRuns ? staffPublishedPeriodHistory(scheduled[0], publishedRuns) : scheduled;
+  const period = periods.find(item => staffPeriodKey(item) === input.payPeriodStart)
+    ?? periods.find(item => item.startDate === input.payPeriodStart) ?? periods[0];
+  const periodOptions: PayrollPeriodOption[] = periods.map(item => ({
+    startDate: item.startDate, endDate: item.endDate, label: item.label, value: staffPeriodKey(item),
+  }));
+  return { salonPayrollSetting, today, period, periodOptions };
+}
 
-  return {
-    context,
-    dailyRows,
-    latestStatement,
-    line,
-    paystub: line?.paystub ?? null,
-    period,
-    periodOptions: getPayrollPeriodOptions({ salonSetting: salonPayrollSetting }),
-    salonPayrollSetting,
-    staff,
-    status,
-  };
+export async function getCurrentStaffPayrollPortalData(input: StaffPeriodInput): Promise<StaffPayrollPortalData> {
+  const { auth, context, staff } = await getCurrentStaffPayrollPortalAuthContext();
+  const emptyStatus: PayrollStatusView = { kind: "live", label: "In progress", statementVersion: null };
+  if (!auth || !staff) return { context, staff, settings: [], dailyRows: [], latestStatement: null, line: null, paystub: null, period: null, periodOptions: [], salonPayrollSetting: null, status: emptyStatus };
+  const { data: runData, error: runsError } = await auth.supabase.rpc("get_my_staff_payroll_runs", { p_salon_id: auth.salon.id });
+  if (runsError) throw new Error(runsError.message);
+  const publishedRuns = (runData ?? []) as PayrollRun[];
+  const { salonPayrollSetting, today, period, periodOptions } = await loadStaffPortalPeriod(auth, input, publishedRuns);
+  // RPC headers contain only this staff's published runs; do not query manager-only run rows.
+  const publishedRun = publishedRuns.find(run => run.period_start === period.startDate && run.period_end === period.endDate);
+  const [latestStatement, allSettings] = await Promise.all([
+    publishedRun ? loadPayrollSnapshot(auth, publishedRun) : Promise.resolve(null), loadStaffPayrollSettings(auth),
+  ]);
+  const finalized = latestStatement && ["locked", "printed", "paid", "needs_review"].includes(latestStatement.run.status);
+  // Published statements must never show live recalculations under a Paid label.
+  const line = finalized
+    ? latestStatement.lines.find(item => item.staff_id === staff.id) ?? null
+    : (await calculateLivePayrollForAuth(auth, period, { staffRows: [staff], staffSettings: allSettings })).lines.find(item => item.staff_id === staff.id) ?? null;
+  const settings = allSettings.filter(setting => setting.staff_id === staff.id && setting.effective_from <= (today < period.endDate ? today : period.endDate) && (!setting.effective_to || setting.effective_to >= period.startDate));
+  const dailyRows = (line?.dailyTotals ?? []).map<StaffPayrollPortalDailyRow>(day => ({
+    businessDate: day.business_date, commissionGross: dailyStaffPay(day), id: day.id,
+    shopGross: numberValue(day.gross_sales), tipAmount: numberValue(day.tip_amount),
+  }));
+  const status: PayrollStatusView = finalized ? {
+    kind: latestStatement.run.status === "paid" ? "paid" : "printed",
+    label: latestStatement.run.status === "paid" ? "Paid" : latestStatement.run.status === "needs_review" ? "Under review" : "Finalized",
+    statementVersion: latestStatement.run.version,
+  } : emptyStatus;
+  return { context, staff, settings, dailyRows, latestStatement: finalized ? latestStatement : null,
+    line, paystub: line?.paystub ?? null, period, periodOptions, salonPayrollSetting, status };
 }
 
 function emptyStaffAnalysisWorkPerformance(): StaffAnalysisPortalWorkPerformance {
-  return {
-    averageTicket: 0,
-    bigTurns: 0,
-    serviceTotal: 0,
-    smallTurns: 0,
-    ticketCount: 0,
-    tipAmount: 0,
-    topServices: [],
-    totalTurns: 0,
-  };
+  return { averageTicket: 0, bigTurns: 0, serviceTotal: 0, smallTurns: 0, ticketCount: 0,
+    tipAmount: 0, topServices: [], totalTurns: 0, dailyActivity: [] };
 }
 
-function getPreviousComparablePeriod(period: PayrollPeriod): PayrollPeriod {
-  const durationDays =
-    Math.round(
-      (dateFromDateOnly(period.endDate).getTime() -
-        dateFromDateOnly(period.startDate).getTime()) /
-        DAY_MS,
-    ) + 1;
-  const previousEndDate = addDays(period.startDate, -1);
-  const previousStartDate = addDays(period.startDate, -Math.max(1, durationDays));
-
-  return {
-    cycleType: period.cycleType,
-    endDate: previousEndDate,
-    label: formatPeriodLabel(previousStartDate, previousEndDate),
-    preset: "custom",
-    startDate: previousStartDate,
-  };
-}
-
-function buildStaffAnalysisIncomeTrend(
-  line: PayrollStaffLineWithDailyTotals | null,
-): StaffAnalysisPortalTrendPoint[] {
-  return (line?.dailyTotals ?? [])
-    .map((dailyTotal) => {
-      const staffPay = dailyStaffPay(dailyTotal);
-      const tax = dailyTaxBreakdown(dailyTotal);
-      const checkRate = numberValue(dailyTotal.check_rate_used);
-      const regularNet = roundMoney(staffPay - tax.payTaxWithheld);
-      const checkNet = roundMoney((regularNet * checkRate) / 100);
-      const cashNet = roundMoney(regularNet - checkNet);
-
-      return {
-        bonusAmount: 0,
-        businessDate: dailyTotal.business_date,
-        cashNet,
-        checkNet,
-        income: roundMoney(
-          staffPay +
-            numberValue(dailyTotal.tip_amount) -
-            numberValue(tax.totalTaxWithheld),
-        ),
-        taxAmount: tax.totalTaxWithheld,
-      };
-    })
-    .sort((left, right) => left.businessDate.localeCompare(right.businessDate));
-}
-
-function buildStaffAnalysisComparison(input: {
-  currentLine: PayrollStaffLineWithDailyTotals | null;
-  currentPeriod: PayrollPeriod;
-  previousLine: PayrollStaffLineWithDailyTotals | null;
-  previousPeriod: PayrollPeriod;
-}): StaffAnalysisPortalComparison {
-  const currentIncome = numberValue(input.currentLine?.final_staff_income);
-  const previousIncome = numberValue(input.previousLine?.final_staff_income);
-  const deltaAmount = roundMoney(currentIncome - previousIncome);
-
-  return {
-    currentIncome,
-    currentLabel: input.currentPeriod.label,
-    deltaAmount,
-    deltaPercent:
-      previousIncome === 0
-        ? null
-        : roundMoney((deltaAmount / Math.abs(previousIncome)) * 100),
-    previousIncome,
-    previousLabel: input.previousPeriod.label,
-  };
-}
-
-async function loadStaffAnalysisWorkPerformance(input: {
-  auth: PayrollAuthContext;
-  period: PayrollPeriod;
-  staffId: string;
-}): Promise<StaffAnalysisPortalWorkPerformance> {
-  const { auth, period, staffId } = input;
-  const { data: earningRows, error: earningsError } = await auth.supabase
-    .from("pos_ticket_staff_earnings")
-    .select(
-      "ticket_id, service_total, tip_amount, big_turn_count, small_turn_count, ticket:pos_tickets!inner(id, status)",
-    )
-    .eq("organization_id", auth.organization.id)
-    .eq("salon_id", auth.salon.id)
-    .eq("staff_id", staffId)
-    .gte("work_date", period.startDate)
-    .lte("work_date", period.endDate)
-    .in("ticket.status", ["open", "closed"])
-    .returns<StaffAnalysisEarningRow[]>();
-
-  if (earningsError) {
-    throw new Error(earningsError.message);
-  }
-
-  const ticketIds = new Set<string>();
-  let serviceTotal = 0;
-  let tipAmount = 0;
-  let bigTurns = 0;
-  let smallTurns = 0;
-
-  for (const earning of earningRows ?? []) {
-    const ticketId = earning.ticket?.id ?? earning.ticket_id;
-
-    if (ticketId) {
-      ticketIds.add(ticketId);
-    }
-
-    serviceTotal = roundMoney(serviceTotal + numberValue(earning.service_total));
-    tipAmount = roundMoney(tipAmount + numberValue(earning.tip_amount));
-    bigTurns = roundMoney(bigTurns + numberValue(earning.big_turn_count));
-    smallTurns = roundMoney(smallTurns + numberValue(earning.small_turn_count));
-  }
-
-  if (ticketIds.size === 0) {
-    return {
-      ...emptyStaffAnalysisWorkPerformance(),
-      bigTurns,
-      serviceTotal,
-      smallTurns,
-      tipAmount,
-      totalTurns: roundMoney(bigTurns + smallTurns),
-    };
-  }
-
-  const { data: itemRows, error: itemsError } = await auth.supabase
-    .from("pos_ticket_items")
-    .select(
-      "id, pos_ticket_id, service_id, quantity, line_total, service:services(id, name), ticket:pos_tickets!inner(id, status)",
-    )
-    .eq("organization_id", auth.organization.id)
-    .eq("salon_id", auth.salon.id)
-    .eq("assigned_staff_id", staffId)
-    .eq("is_removed", false)
-    .in("pos_ticket_id", [...ticketIds])
-    .in("ticket.status", ["open", "closed"])
-    .returns<StaffAnalysisTicketItemRow[]>();
-
-  if (itemsError) {
-    throw new Error(itemsError.message);
-  }
-
-  const servicesById = new Map<
-    string,
-    {
-      count: number;
-      revenue: number;
-      serviceId: string;
-      serviceName: string;
-      ticketIds: Set<string>;
-    }
-  >();
-
-  for (const item of itemRows ?? []) {
-    const serviceId = item.service?.id ?? item.service_id;
-    const ticketId = item.ticket?.id ?? item.pos_ticket_id;
-    const entry =
-      servicesById.get(serviceId) ??
-      {
-        count: 0,
-        revenue: 0,
-        serviceId,
-        serviceName: item.service?.name ?? "Unknown service",
-        ticketIds: new Set<string>(),
-      };
-
-    entry.count = roundMoney(entry.count + numberValue(item.quantity));
-    entry.revenue = roundMoney(entry.revenue + numberValue(item.line_total));
-    entry.ticketIds.add(ticketId);
-    servicesById.set(serviceId, entry);
-  }
-
-  const totalTurns = roundMoney(bigTurns + smallTurns);
-
-  return {
-    averageTicket:
-      ticketIds.size === 0 ? 0 : roundMoney(serviceTotal / ticketIds.size),
-    bigTurns,
-    serviceTotal,
-    smallTurns,
-    ticketCount: ticketIds.size,
-    tipAmount,
-    topServices: [...servicesById.values()]
-      .map((service) => ({
-        count: service.count,
-        revenue: service.revenue,
-        serviceId: service.serviceId,
-        serviceName: service.serviceName,
-        ticketCount: service.ticketIds.size,
-      }))
-      .sort(
-        (left, right) =>
-          numberValue(right.revenue) - numberValue(left.revenue) ||
-          left.serviceName.localeCompare(right.serviceName),
-      )
-      .slice(0, 5),
-    totalTurns,
-  };
-}
-
-export async function getCurrentStaffAnalysisPortalData(input: {
-  cycleType?: string | null;
-  endDate?: string | null;
-  month?: string | null;
-  payPeriodStart?: string | null;
-  preset?: string | null;
-  segment?: string | null;
-  startDate?: string | null;
-}): Promise<StaffAnalysisPortalData> {
-  const { auth, context, staff } = await getCurrentStaffPayrollPortalAuthContext();
-
-  if (!auth || !staff) {
-    return {
-      comparison: null,
-      context,
-      incomeLine: null,
-      incomeTrend: [],
-      period: null,
-      periodOptions: [],
-      previousIncomeLine: null,
-      previousPeriod: null,
-      salonPayrollSetting: null,
-      staff,
-      workPerformance: emptyStaffAnalysisWorkPerformance(),
-    };
-  }
-
-  const salonPayrollSetting = await loadSalonPayrollSetting(auth);
-  const period = resolvePayrollPeriod({
-    cycleType: input.cycleType,
-    endDate: input.endDate,
-    month: input.month,
-    payPeriodStart: input.payPeriodStart,
-    preset: input.preset,
-    segment: input.segment,
-    salonSetting: salonPayrollSetting,
-    startDate: input.startDate,
+async function loadStaffAnalysisWorkPerformance({ auth, period, staffId }: { auth: PayrollAuthContext; period: PayrollPeriod; staffId: string }): Promise<StaffAnalysisPortalWorkPerformance> {
+  const { data, error } = await auth.supabase.rpc("get_my_staff_analysis_snapshot", {
+    p_salon_id: auth.salon.id, p_start_date: period.startDate, p_end_date: period.endDate,
   });
-  const previousPeriod = getPreviousComparablePeriod(period);
-  const [currentLive, previousLive, workPerformance] = await Promise.all([
-    calculateLivePayrollForAuth(auth, period),
-    calculateLivePayrollForAuth(auth, previousPeriod),
-    loadStaffAnalysisWorkPerformance({ auth, period, staffId: staff.id }),
-  ]);
-  const incomeLine =
-    currentLive.lines.find((line) => line.staff_id === staff.id) ?? null;
-  const previousIncomeLine =
-    previousLive.lines.find((line) => line.staff_id === staff.id) ?? null;
+  if (error) throw new Error(error.message);
+  if (!data || data.staffId !== staffId || !Array.isArray(data.dailyActivity) || !Array.isArray(data.topServices)) throw new Error("Staff analysis is unavailable.");
+  return data as StaffAnalysisPortalWorkPerformance;
+}
 
-  return {
-    comparison: buildStaffAnalysisComparison({
-      currentLine: incomeLine,
-      currentPeriod: period,
-      previousLine: previousIncomeLine,
-      previousPeriod,
-    }),
-    context,
-    incomeLine,
-    incomeTrend: buildStaffAnalysisIncomeTrend(incomeLine),
-    period,
-    periodOptions: getPayrollPeriodOptions({ salonSetting: salonPayrollSetting }),
-    previousIncomeLine,
-    previousPeriod,
-    salonPayrollSetting,
-    staff,
-    workPerformance,
-  };
+export async function getCurrentStaffAnalysisPortalData(input: StaffPeriodInput): Promise<StaffAnalysisPortalData> {
+  const { auth, context, staff } = await getCurrentStaffPayrollPortalAuthContext();
+  if (!auth || !staff) return { comparison: null, context, incomeLine: null, incomeTrend: [], period: null,
+    periodOptions: [], previousIncomeLine: null, previousPeriod: null, salonPayrollSetting: null, staff, workPerformance: emptyStaffAnalysisWorkPerformance() };
+  const { salonPayrollSetting, today, period, periodOptions } = await loadStaffPortalPeriod(auth, input);
+  const comparable = staffComparisonPeriods(salonPayrollSetting, period, today);
+  const through = { ...period, endDate: period.endDate < today ? period.endDate : today };
+  const performancePromise = loadStaffAnalysisWorkPerformance({ auth, period: through, staffId: staff.id });
+  const [workPerformance, previous, current] = await Promise.all([
+    performancePromise,
+    loadStaffAnalysisWorkPerformance({ auth, period: comparable.previous, staffId: staff.id }),
+    through.endDate === comparable.current.endDate ? performancePromise : loadStaffAnalysisWorkPerformance({ auth, period: comparable.current, staffId: staff.id }),
+  ]);
+  const deltaAmount = roundMoney(current.serviceTotal - previous.serviceTotal);
+  return { context, staff, salonPayrollSetting, period, periodOptions, workPerformance,
+    incomeLine: null, incomeTrend: [], previousIncomeLine: null, previousPeriod: comparable.previous,
+    comparison: { currentIncome: current.serviceTotal, previousIncome: previous.serviceTotal,
+      currentLabel: comparable.current.label, previousLabel: comparable.previous.label, deltaAmount,
+      deltaPercent: previous.serviceTotal > 0 ? roundMoney(deltaAmount / previous.serviceTotal * 100) : null } };
 }
 
 export async function getPayrollTaxCompanyData(input: {

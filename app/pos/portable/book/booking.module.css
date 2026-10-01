@@ -1,0 +1,236 @@
+.workspace { height: 100%; overflow: auto; background: #fbfaf8; color: #18181b; padding: 12px; }
+.panel { background: white; border: 1px solid #eadfd9; border-radius: 8px; }
+.toolbar { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid #eadfd9; }
+.toolbar button, .toolbar input, .toolbar select, .filter summary { min-height: 36px; border: 1px solid #e4d8d1; border-radius: 6px; background: white; font-size: 13px; padding: 6px 10px; }
+.toolbar button, .filter summary { cursor: pointer; font-weight: 600; }
+.dateControls { display: flex; gap: 4px; align-items: center; }
+.toolbar .search { flex: 1; min-width: 160px; }
+.lookup { position: relative; min-width: 0; }
+.lookup input { width: 100%; min-width: 0; }
+.customerPopover { position: absolute; top: calc(100% + 4px); left: 0; width: max(100%, 280px); max-width: calc(100vw - 48px); z-index: 40; border: 1px solid #e4d8d1; border-radius: 8px; background: white; color: #18181b; box-shadow: 0 8px 28px #18181b26; font-size: 13px; font-weight: 400; }
+.customerPopoverHeading { padding: 8px 10px; border-bottom: 1px solid #eee8e3; color: #71717a; font-size: 11px; }
+.customerPopover ul { list-style: none; padding: 0; margin: 0; max-height: 220px; overflow-y: auto; }
+.customerPopover li { cursor: pointer; padding: 9px 10px; border-bottom: 1px solid #f4f0ed; }
+.customerPopover li[aria-selected="true"] { background: #fff0e9; }
+.customerPopover li strong, .customerPopover li span { display: block; overflow-wrap: anywhere; }
+.customerPopover li span { color: #71717a; font-size: 12px; margin-top: 3px; }
+.customerPopover p { padding: 10px; color: #71717a; font-size: 12px; }
+.customerField { display: grid; gap: 4px; min-width: 0; font-size: 14px; font-weight: 600; }
+.customerField input { height: 44px; border: 1px solid #e4d8d1; border-radius: 6px; padding: 0 12px; font-weight: 400; }
+.views { display: flex; gap: 2px; }
+.toolbar button[aria-pressed="true"] { background: #fff0e9; color: #a44424; border-color: #dfa58e; }
+.toolbar .create { background: #c85b32; border-color: #c85b32; color: white; white-space: nowrap; }
+.filter { position: relative; }
+.filter summary { display: flex; align-items: center; gap: 6px; list-style: none; }
+.filter summary::-webkit-details-marker { display: none; }
+.filter summary[data-active="true"] { background: #fff0e9; color: #a44424; border-color: #dfa58e; }
+.filter summary svg { width: 16px; height: 16px; }
+.filterPanel { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; width: 220px; padding: 12px; background: white; border: 1px solid #eadfd9; border-radius: 8px; box-shadow: 0 8px 28px #18181b20; }
+.filterPanel label { display: grid; gap: 6px; margin-bottom: 10px; font-size: 12px; font-weight: 600; }
+.filterPanel select { width: 100%; }
+.tableScroll { min-width: 0; container: booking-list / inline-size; border-radius: 0 0 8px 8px; }
+.table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 0; }
+.table th { background: #faf8f6; color: #66615e; font-size: 11px; letter-spacing: .035em; text-transform: uppercase; padding: 10px 12px; font-weight: 600; }
+.table td { border-top: 1px solid #eee8e3; padding: 8px 12px; max-width: 280px; overflow-wrap: anywhere; }
+.table tr:hover td { background: #fdfaf7; }
+.table small { display: block; color: #71717a; font-size: 11px; margin-top: 2px; }
+.time { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.status { display: inline-block; border-radius: 5px; padding: 3px 7px; font-size: 11px; font-weight: 600; white-space: nowrap; background: #f4f4f5; color: #52525b; }
+.status[data-status="confirmed"], .status[data-status="scheduled"] { background: #eef4ff; color: #345b92; }
+.status[data-status="pending"] { background: #fff5db; color: #805d13; }
+.status[data-status="checked_in"] { background: #e9f6ed; color: #286540; }
+.status[data-status="in_service"] { background: #f2ecfc; color: #70509b; }
+.detailsButton { padding: 6px 10px; border: 1px solid #e4d8d1; border-radius: 5px; font-weight: 600; cursor: pointer; }
+.table .empty { padding: 28px 12px; text-align: center; color: #71717a; }
+.calendarScroll { max-height: calc(100dvh - 220px); min-height: 260px; overflow: auto; border-radius: 0 0 8px 8px; }
+.calendar { display: grid; position: relative; }
+.timeHeading, .staffHeading { position: sticky; top: 0; z-index: 12; background: #faf8f6; border-bottom: 1px solid #e4d8d1; padding: 10px 8px; font-size: 12px; font-weight: 600; }
+.staffHeading { border-left: 1px solid #e4d8d1; text-align: center; }
+.timeHeading { left: 0; z-index: 14; }
+.timeScale { position: sticky; left: 0; z-index: 10; background: white; }
+.timeScale span { position: absolute; right: 8px; font-size: 10px; color: #71717a; font-variant-numeric: tabular-nums; }
+.staffColumn { position: relative; border-left: 1px solid #e4d8d1; background: repeating-linear-gradient(to bottom, transparent 0, transparent 35px, #f0ece8 35px, #f0ece8 36px, transparent 36px, transparent 71px, #e4d8d1 71px, #e4d8d1 72px); }
+.appointment { position: absolute; overflow: hidden; border-radius: 5px; border: 1px solid #c8d8ed; border-left: 3px solid #6185b1; background: #edf3fc; padding: 0 6px; text-align: left; color: #294766; cursor: pointer; font-size: 11px; line-height: 16px; }
+.appointment strong, .appointment span { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.appointment[data-status="pending"] { background: #fff6de; border-color: #e5c576; color: #785812; }
+.appointment[data-status="checked_in"] { background: #eaf7ee; border-color: #89bd98; color: #2d6440; }
+.appointment[data-status="in_service"] { background: #f2edfc; border-color: #ae96d0; color: #6b4698; }
+.appointment:focus-visible { z-index: 9; outline: 2px solid #9a4527; outline-offset: 1px; }
+.nowLine { position: absolute; left: 0; right: 0; border-top: 2px solid #f26f3d; z-index: 11; pointer-events: none; }
+.nowLine::before { content: ""; position: absolute; top: -4px; left: -3px; width: 6px; height: 6px; border-radius: 50%; background: #f26f3d; }
+.nowLabel {position:absolute;right:100%;top:-10px;margin-right:5px;padding:2px 3px;border-radius:3px;background:#fff4ed;color:#a63d16;font-size:10px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dialog { margin: auto; width: min(480px, calc(100vw - 32px)); border: 1px solid #eadfd9; padding: 20px; border-radius: 10px; color: #18181b; background: white; box-shadow: 0 20px 60px #18181b33; }
+.dialog::backdrop { background: #18181b66; }
+.dialogHeading { display: flex; justify-content: space-between; align-items: center; gap: 16px; font-size: 18px; font-weight: 600; }
+.dialogHeading button { padding: 4px 12px; border: 1px solid #e4d8d1; border-radius: 5px; cursor: pointer; }
+.details { display: grid; grid-template-columns: 80px 1fr; gap: 12px; margin-top: 20px; font-size: 14px; overflow-wrap: anywhere; }
+.details dt { color: #71717a; }
+.workspace :is(button, input, select, summary):focus-visible { outline: 2px solid #9a4527; outline-offset: 2px; }
+@media (max-width: 640px) {
+  .workspace { padding: 6px; }
+  .toolbar { gap: 6px; padding: 8px; }
+  .dateControls { flex: 1; }
+  .dateControls input { min-width: 0; width: 100%; }
+  .toolbar .search { flex-basis: 100%; order: 5; }
+  .filter { position: static; }
+  .filterPanel { left: 8px; right: 8px; width: auto; }
+  .calendarScroll { max-height: calc(100dvh - 270px); }
+}
+
+/* Owner-style rows: text remains interactive without framing every value. */
+.table {font-size:14px}
+.table td {padding:10px 8px;vertical-align:middle}
+.table th {padding:10px 8px;background:#fffaf7;color:#777483;overflow-wrap:anywhere}
+.table td strong {font-weight:500}
+.person {display:flex;align-items:center;gap:8px;min-height:36px;min-width:0}
+.person > :not(.avatar) {min-width:0;overflow-wrap:anywhere}
+.avatar {display:inline-grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:50%;background:#fff0e8;color:#dc6744;font-size:12px;font-weight:600}
+.textButton,.customerLink {appearance:none;background:transparent;border:0;border-radius:0;padding:5px 0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.textButton:hover {color:#c45f3a;text-decoration:underline;text-underline-offset:4px}
+.textButton:focus-visible,.customerLink:focus-visible {outline:2px solid #db6b42;outline-offset:4px;border-radius:4px}
+.customerLink {color:#d65e36;font-size:12px}
+.ticketButton {display:inline-grid;place-items:center;flex-shrink:0;width:44px;height:44px;background:#fff8f3;color:#b34d29;border:1px solid #ffd0be;border-radius:8px;cursor:pointer}
+.ticketButton:hover {background:#ffede2}
+.editButton {display:inline-grid;place-items:center;flex-shrink:0;background:transparent;color:#66615e;border:1px solid #e8e2dd;border-radius:8px;width:44px;height:44px;cursor:pointer}
+.editButton:hover {background:#fff0e8}
+.status {border-radius:999px;padding:7px 13px;font-size:12px;white-space:nowrap}
+.listTimeColumn {width:116px}
+.listStaffColumn {width:17%}
+.listCustomerColumn {width:24%}
+.listTotalColumn {width:82px}
+.listActionsColumn {width:108px}
+.table .time {white-space:normal}
+.table .time time {white-space:nowrap}
+.table .textButton {max-width:100%;overflow-wrap:anywhere}
+.table .avatar {flex-basis:28px;width:28px;height:28px}
+.listTotal {font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.rowStatus {margin-top:2px}
+.rowStatus .status {padding:3px 7px;font-size:11px;white-space:normal;overflow-wrap:anywhere}
+.statusButton {display:flex;align-items:center;min-height:40px;max-width:100%;border:0;padding:0;background:transparent;cursor:pointer}
+.statusButton:hover .status {box-shadow:0 0 0 1px currentColor}
+.rowActions {display:flex;align-items:center;justify-content:flex-end;gap:4px}
+.ticketCreated {display:inline-grid;place-items:center;width:44px;height:44px;color:#237b64}
+
+/* Narrow list panes (including beside the editor) become vertical cards. */
+@container booking-list (max-width: 700px) {
+  .table, .table tbody {display:block;width:100%}
+  .table colgroup {display:none}
+  .table thead {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .table tbody tr {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"time customer" "professional services" "total actions";gap:8px 12px;padding:12px;border-top:1px solid #eee8e3}
+  .table td {display:block;min-width:0;max-width:none;padding:0;border:0}
+  .table td::before {content:attr(data-label);display:block;margin-bottom:4px;color:#777483;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.035em}
+  .table td:nth-child(1) {grid-area:time}
+  .table td:nth-child(2) {grid-area:professional}
+  .table td:nth-child(3) {grid-area:services}
+  .table td:nth-child(4) {grid-area:customer}
+  .table td:nth-child(5) {grid-area:total;align-self:end}
+  .table td:nth-child(6) {grid-area:actions;text-align:right}
+  .table .empty {grid-area:auto;grid-column:1/-1}
+}
+.assignmentRow {display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,1fr);align-items:center;gap:12px;border-bottom:1px solid #eee7e3;padding:8px 0;font-size:14px}
+.assignmentSelect {min-height:44px;background:white;border:0;border-bottom:1px solid #d9cec7;border-radius:0;padding:8px 4px;font-weight:400;width:100%}
+.slotButton {border:0;border-radius:999px;padding:8px 13px;background:#f8f4f1;cursor:pointer}
+.slotButton[aria-pressed=true] {background:#e1f2ed;color:#165d4b;box-shadow:inset 0 0 0 1px #64a08e}
+.planPreview {list-style:none;margin:12px 0;padding:0}
+.planPreview li {display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;border-bottom:1px solid #eee7e3;padding:8px 0;font-size:13px}
+.planPreview li small {color:#77717d}
+
+/* Front desk: calendar/list stays visible beside a single, keyboard-aware editor. */
+.bookingBody {display:grid;grid-template-columns:minmax(0,1fr);position:relative}
+.bookingBody[data-editing=true] {grid-template-columns:minmax(0,1fr) 430px;height:calc(100dvh - 190px - var(--portable-keyboard-height,0px));min-height:240px}
+.bookingContent {min-width:0;min-height:0;overflow:auto}
+.editor {display:flex;flex-direction:column;position:relative;min-height:0;min-width:0;background:#fff;border-left:1px solid #e9e3dd;color:#24262b;box-shadow:-3px 0 18px #00000004}
+.editor button {cursor:pointer}
+.editorHeading {padding:16px 20px 12px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-shrink:0}
+.editorHeading h2 {font-size:19px;font-weight:600;margin:0}
+.editorHeading small,.editor small {display:block;font-size:12px;color:#777883}
+.editorHeading button {height:40px;width:40px;border:0;background:transparent;font-size:24px}
+.editorBody {flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 20px 14px;scrollbar-width:thin}
+.editorLabel {display:flex;justify-content:space-between;gap:8px;color:#777883;text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:600;margin:14px 0 6px}
+.editorCustomer,.editorWhen {width:100%;display:flex;align-items:center;gap:10px;padding:9px 0;border:0;background:transparent;text-align:left;min-height:48px}
+.editorCustomer>span:nth-child(2) {flex:1}
+.editorCustomer>span:last-child {color:#777883}
+.editorCustomer strong {font-size:16px;font-weight:600}
+.editorWhen {justify-content:space-between;border-bottom:1px solid #e9e3dd;padding-bottom:14px}
+.editorWhen strong {font-size:13px;font-weight:600}
+.editorWhen span {min-width:0}
+.editorService {display:grid;grid-template-columns:57px minmax(0,1fr) 32px;align-items:start;gap:7px;padding:12px 0;border-bottom:1px solid #eee7e1}
+.serviceClock {padding-top:7px;font-size:11px;color:#737782;white-space:nowrap;font-variant-numeric:tabular-nums}
+.serviceClock small {font-size:11px}
+.editorService button {border:0;background:transparent;text-align:left;min-height:36px}
+.editorService>button {text-align:center;color:#777883;font-size:19px}
+.serviceTitle {display:flex;gap:12px;justify-content:space-between;align-items:center;width:100%;padding:4px 0;font-size:14px}
+.serviceTitle strong {font-weight:600}
+.serviceTitle span {font-size:12px;color:#777883}
+.serviceMember {display:flex;align-items:center;gap:6px;padding:3px 0;font-size:13px;color:#626b76}
+.serviceMember em {font-style:normal;font-size:11px;color:#237b64}
+.serviceMember:hover,.serviceTitle:hover {color:#a75632;text-decoration:underline;text-underline-offset:3px}
+.addService {border:0;background:transparent;color:#ab5c3b;padding:12px 0 6px;font-weight:600;min-height:44px}
+.assignmentTools {display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.assignmentTools button {border:0;background:transparent;color:#ab5c3b;font-size:12px;min-height:38px;padding:4px 0}
+.availabilityHint {font-size:12px;color:#787580;margin:8px 0}
+.availabilityHint[data-ready=true] {color:#217861}
+.noteToggle {border:0;background:transparent;display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px 0;min-height:40px;font-size:13px;text-align:left;color:#737580}
+.editor textarea {width:100%;min-height:72px;resize:vertical;border:1px solid #e4dcd5;border-radius:6px;padding:10px;font-size:14px}
+.editorFooter {padding:12px 20px 14px;border-top:1px solid #e9e3dd;flex-shrink:0;background:#fff;position:relative;z-index:2}
+.editorTotal {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;font-size:12px}
+.editorTotal strong {font-size:18px;font-weight:600;white-space:nowrap}
+.editorSave {display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.editorSave button {border:0;min-height:44px;font-size:13px}
+.editorSave button:first-child {border-radius:30px;background:#edf3fc;color:#335c91;padding:7px 12px;text-transform:capitalize}
+.editorSave button:last-child {flex:1;border-radius:8px;background:#ac5b37;color:white;font-weight:600;padding:10px 14px}
+.editor button:disabled {opacity:.48;cursor:default}
+.editorError {color:#a22d24;background:#fff0ed;border-radius:6px;padding:8px 10px;font-size:13px;max-height:92px;overflow:auto;margin:0 0 8px}
+.editorPicker {position:absolute;inset:64px 10px 142px;z-index:5;display:flex;flex-direction:column;min-height:0;border:1px solid #e3dcd6;border-radius:10px;box-shadow:0 10px 28px #26232a1f;background:white;padding:12px}
+.editorPicker>header {display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+.editorPicker h3 {font-size:15px;font-weight:600;margin:0}
+.editorPicker>header button {background:transparent;color:#a75632;border:0;padding:8px 4px;min-height:40px}
+.editorPicker>input {flex-shrink:0;margin:8px 0;padding:10px;border:1px solid #e4dcd5;border-radius:6px;min-width:0;width:100%;font-size:16px;min-height:44px}
+.pickerResults {overflow:auto;min-height:0;flex:1;overscroll-behavior:contain;scrollbar-width:thin}
+.pickerOption {display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:58px;width:100%;border:0;border-bottom:1px solid #eee7e1;background:transparent;padding:10px 6px;text-align:left;font-size:14px}
+.pickerOption:hover {background:#fbf6f2}
+.pickerOption>span:last-child {color:#767783;font-size:12px;white-space:nowrap}
+.pickerOption strong {font-size:14px;font-weight:500;color:#24262b}
+.pickerOption small {margin-top:3px;white-space:normal}
+.pickerResults>small,.pickerResults>p {margin:10px 4px;font-size:12px}
+.categoryTabs,.searchModes {display:flex;gap:5px;flex-wrap:wrap;padding:6px 0}
+.categoryTabs button,.searchModes button {min-height:36px;border:0;background:transparent;border-radius:24px;padding:7px 11px;font-size:12px}
+.categoryTabs button[aria-pressed=true],.searchModes button[aria-pressed=true] {background:#faede4;color:#9d4f2e}
+.editorContact {display:grid;gap:5px;margin:12px 0;font-size:13px;font-weight:500}
+.editorContact input,.editorPicker .lookup input {width:100%;min-width:0;min-height:44px;font-size:16px;font-weight:400;border:1px solid #e4dcd5;border-radius:6px;padding:9px 10px;background:white}
+.editorPicker .customerPopover {position:static;max-width:100%;width:100%;margin-top:6px;box-shadow:none}
+.editorPicker .customerPopover li {min-height:52px}
+.editorPicker .customerPopover ul {max-height:none;overflow:visible}
+.editorSlots {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.editorSlots button {min-height:48px;border:1px solid #e8e1db;border-radius:24px;padding:7px 10px;background:white;font-size:13px}
+.editorSlots button[aria-pressed=true] {background:#faede4;color:#9d4f2e;border-color:#ad6444}
+.slotMessage {font-size:13px;color:#727681}
+.discardPrompt {position:absolute;inset:64px 12px auto;z-index:8;background:white;border:1px solid #e4dcd5;border-radius:10px;box-shadow:0 10px 35px #2223;padding:20px}
+.discardPrompt h3 {font-weight:600;margin-bottom:8px}
+.discardPrompt p {font-size:13px;color:#727681;margin-bottom:12px}
+.discardPrompt button {padding:10px;min-height:44px;border:1px solid #e4dcd5;border-radius:6px;margin-right:8px}
+.calendarTools {display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid #e9e3dd;font-size:12px;color:#737783}
+.staffSearch {display:flex;align-items:center;gap:8px;flex:1;min-width:190px}
+.staffSearch input {width:100%;min-width:100px;border:0;border-radius:7px;background:#f7f5f2;padding:10px;font-size:14px;min-height:40px;color:#24262b}
+.openingHours {max-width:320px;font-size:12px}
+.openingHours small {display:block;color:#a5612d}
+.zoomControl {display:flex;gap:8px;align-items:center;margin-left:auto}
+.zoomControl input {width:90px;accent-color:#ab5c3b}
+.zoomControl output {min-width:34px}
+.scaleHandle {display:block;border:0;background:#faede4;color:#9d4f2e;border-radius:6px;width:36px;height:28px;touch-action:none;cursor:ns-resize;font-size:18px;margin-top:4px}
+.staffColumn {background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--booking-hour-height)/2 - 1px),#eee9e4 calc(var(--booking-hour-height)/2 - 1px),#eee9e4 calc(var(--booking-hour-height)/2))}
+.closedHours {position:absolute;left:0;right:0;background:repeating-linear-gradient(135deg,#efeeeb88 0,#efeeeb88 4px,#e8e6e388 4px,#e8e6e388 5px);pointer-events:none}
+.calendarScroll {max-height:calc(100dvh - 250px - var(--portable-keyboard-height,0px));min-height:160px}
+.bookingBody[data-editing=true] .calendarScroll {max-height:calc(100dvh - 270px - var(--portable-keyboard-height,0px))}
+.appointment {padding:5px 7px;font-size:12px;line-height:17px;display:flex;flex-direction:column;gap:2px;min-height:0}
+.appointment[data-compact=true] {padding:1px 5px}
+.appointment strong {font-weight:600;flex-shrink:0}
+.appointment span {flex-shrink:0}
+.calendarPreview {position:fixed;z-index:49;width:min(320px,calc(100vw - 16px));max-height:320px;overflow:auto;pointer-events:none;border:1px solid #e4dcd5;border-radius:10px;background:white;box-shadow:0 12px 32px #2223;padding:16px;color:#24262b;font-size:13px}
+.calendarPreview strong {font-size:16px;font-weight:600}
+.calendarPreview small {display:block;font-size:12px;color:#737783}
+.calendarPreview p {margin:9px 0}
+.emptyCalendar {padding:36px 16px;color:#737783;text-align:center}
+@media(max-width:1100px){.bookingBody[data-editing=true]{grid-template-columns:minmax(0,1fr) 390px}.editorBody{padding-left:16px;padding-right:16px}.editorHeading,.editorFooter{padding-left:16px;padding-right:16px}}
+@media(max-width:960px){.bookingBody[data-editing=true]{grid-template-columns:minmax(0,1fr);height:auto}.editor{position:fixed;right:0;top:76px;bottom:var(--portable-keyboard-height,0px);width:min(440px,100vw);z-index:45;box-shadow:-12px 0 36px #2222}.editorPicker{inset:64px 8px 142px}.editorBody{padding-bottom:12px}}
+@media(pointer:coarse){.editor button{min-height:44px}.editorService{grid-template-columns:57px minmax(0,1fr) 44px}.editor input,.editor textarea{font-size:16px}.categoryTabs button{min-height:44px}.scaleHandle{height:40px}}

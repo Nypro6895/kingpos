@@ -5,8 +5,13 @@ import {
   getExploreDecisionSignalsBySalonId,
   type ExploreDecisionSignals,
 } from "@/lib/explore-decision-signals";
+import { loadPublicSalonLogoPaths } from "@/lib/explore-salon-logos";
 import { getExploreInspirationPage } from "@/lib/explore-inspiration";
 import { searchExploreSalons } from "@/lib/explore-search";
+import {
+  getPublicSalonOperatingStatusesBySalonId,
+  operatingStatusFromMap,
+} from "@/lib/salon-operating-status";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
@@ -51,6 +56,8 @@ type ExploreHomeSalonRow = {
   is_new: boolean | null;
   latitude: number | null;
   latest_media_created_at?: string | null;
+  logo_image_path?: string | null;
+  logo_path?: string | null;
   longitude: number | null;
   phone: string | null;
   postal_code: string | null;
@@ -131,6 +138,8 @@ function normalizeHomeSection(
 function mapHomeSalonRow(
   row: ExploreHomeSalonRow,
   signals: ExploreDecisionSignals | undefined,
+  operatingStatus: ExploreSearchResult["operatingStatus"],
+  fallbackLogoPath?: string | null,
 ): ExploreHomeSalon {
   const homeSection = normalizeHomeSection(row.section);
   const decisionSignals = signals ?? EMPTY_EXPLORE_DECISION_SIGNALS;
@@ -159,24 +168,32 @@ function mapHomeSalonRow(
     isNew: row.is_new ?? false,
     latitude: row.latitude,
     latestMediaCreatedAt: row.latest_media_created_at ?? null,
+    logoImageUrl: getSalonProfileMediaUrl(
+      row.logo_image_path ?? row.logo_path ?? fallbackLogoPath,
+    ),
     longitude: row.longitude,
     matchTier: 10,
     matchType: homeSection,
     name: row.salon_name,
     nextAvailabilityLabel: decisionSignals.nextAvailabilityLabel,
     nextAvailableAt: decisionSignals.nextAvailableAt,
+    operatingStatus,
     phone: row.phone,
     postalCode: row.postal_code,
     profileCompleteness: row.profile_completeness ?? 0,
     publicDiscoveryPublishedAt: row.public_discovery_published_at,
+    reputationNoIssueRate: decisionSignals.noIssueRate,
     relevanceScore: readCount(row.home_rank),
     resultGroup: "recommended",
+    sharedExperienceCount: decisionSignals.experienceCount,
     reviewCount: decisionSignals.reviewCount,
     serviceCategories: toStringArray(row.service_categories),
     serviceNames: toStringArray(row.service_names),
     startingPrice: readMoney(row.starting_price),
     state: row.state,
+    uniqueCustomerCount: decisionSignals.uniqueCustomerCount,
     updatedAt: row.updated_at,
+    verifiedVisitCount: decisionSignals.verifiedVisitCount,
   };
 }
 
@@ -258,12 +275,12 @@ export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
       rpc("get_public_explore_popular_services", {
         p_limit: HOME_POPULAR_SERVICE_LIMIT,
       }),
-      getExploreInspirationPage(),
+      getExploreInspirationPage({ diversify: false }),
     ]);
     let error: string | null = null;
 
     if (salonsResponse.error) {
-      console.error("Explore home salon content failed", {
+      console.warn("Explore home salon content unavailable", {
         code: salonsResponse.error.code,
         details: salonsResponse.error.details,
         hint: salonsResponse.error.hint,
@@ -273,7 +290,7 @@ export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
     }
 
     if (servicesResponse.error) {
-      console.error("Explore popular service content failed", {
+      console.warn("Explore popular service content unavailable", {
         code: servicesResponse.error.code,
         details: servicesResponse.error.details,
         hint: servicesResponse.error.hint,
@@ -288,16 +305,32 @@ export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
     const serviceRows = Array.isArray(servicesResponse.data)
       ? (servicesResponse.data as ExplorePopularServiceRow[])
       : [];
-    const signalMap = salonsResponse.error
-      ? new Map<string, ExploreDecisionSignals>()
-      : await getExploreDecisionSignalsBySalonId(
-          rpc,
-          salonRows.map((row) => row.salon_id),
-        );
+    const salonIds = salonRows.map((row) => row.salon_id);
+    const [signalMap, logoPathMap, operatingStatusMap] = salonsResponse.error
+      ? [
+          new Map<string, ExploreDecisionSignals>(),
+          new Map<string, string>(),
+          new Map<string, ExploreSearchResult["operatingStatus"]>(),
+        ]
+      : await Promise.all([
+          getExploreDecisionSignalsBySalonId(rpc, salonIds),
+          loadPublicSalonLogoPaths({
+            rpc,
+            salonIds: salonRows
+              .filter((row) => !(row.logo_image_path ?? row.logo_path))
+              .map((row) => row.salon_id),
+          }),
+          getPublicSalonOperatingStatusesBySalonId(salonIds),
+        ]);
     const salons = salonsResponse.error
       ? []
       : salonRows.map((row) =>
-          mapHomeSalonRow(row, signalMap.get(row.salon_id)),
+          mapHomeSalonRow(
+            row,
+            signalMap.get(row.salon_id),
+            operatingStatusFromMap(operatingStatusMap, row.salon_id),
+            logoPathMap.get(row.salon_id),
+          ),
         );
 
     return {
@@ -316,7 +349,7 @@ export async function getExploreHomeContent(): Promise<ExploreHomeContent> {
       ),
     };
   } catch (error) {
-    console.error("Explore home content crashed", {
+    console.warn("Explore home content unavailable", {
       message: error instanceof Error ? error.message : "Unknown error",
     });
 

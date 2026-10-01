@@ -36,7 +36,6 @@ export type PosDailyClosing = {
   locked_by: string | null;
   note: string | null;
   note_snapshot: string | null;
-  organization_id: string;
   other_amount: number;
   other_amount_snapshot: number | null;
   report_date: string;

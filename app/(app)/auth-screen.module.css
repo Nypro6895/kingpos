@@ -1,0 +1,416 @@
+.authViewport {
+  display: flex;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: linear-gradient(135deg, #fffaf5 0%, #ffffff 48%, #eef8f6 100%);
+  color: var(--text-primary);
+}
+
+.authViewport > footer {
+  flex: 0 0 auto;
+  padding-block: clamp(0.35rem, 0.8dvh, 0.85rem)
+    calc(env(safe-area-inset-bottom) + clamp(0.35rem, 0.8dvh, 0.85rem));
+  padding-inline: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.authViewport > footer > div {
+  gap: clamp(0.2rem, 0.75dvh, 0.75rem);
+  line-height: 1.2;
+}
+
+.authViewport > footer nav {
+  column-gap: clamp(0.55rem, 1.2vw, 1rem);
+  row-gap: 0.15rem;
+}
+
+.authViewport > footer a {
+  padding-block: 0.1rem;
+}
+
+.authMain {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding-block: clamp(0.75rem, 2dvh, 2rem);
+  padding-inline: clamp(1rem, 2.5vw, 3rem);
+  pointer-events: auto;
+}
+
+.authGrid {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  align-items: center;
+  gap: clamp(1rem, 2.5vw, 3rem);
+  margin: auto;
+}
+
+.loginGrid {
+  max-width: 92rem;
+}
+
+.signupGrid {
+  max-width: 76rem;
+}
+
+.authPanel {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.authPanelInner {
+  width: 100%;
+  max-width: 28rem;
+  max-height: 100%;
+  min-height: 0;
+}
+
+.signupPanelInner {
+  max-width: 30rem;
+}
+
+.authCard {
+  max-height: 100%;
+  overflow: hidden;
+  padding: clamp(1rem, 2.45dvh, 1.75rem);
+}
+
+.authCard :is(h1, h2) {
+  font-size: clamp(1.75rem, 4.5dvh, 1.875rem);
+  line-height: 1.1;
+}
+
+.authIntro {
+  margin-top: 0.5rem;
+}
+
+.authCard form {
+  margin-top: clamp(0.875rem, 2dvh, 1.5rem);
+}
+
+.authCard form > :not([hidden]) ~ :not([hidden]) {
+  margin-top: clamp(0.75rem, 1.8dvh, 1.25rem);
+  margin-bottom: 0;
+}
+
+.authCard input:not([type="hidden"]):not([type="checkbox"]) {
+  min-height: clamp(2.65rem, 6.8dvh, 3.25rem);
+}
+
+.authCard button[type="submit"] {
+  min-height: clamp(2.7rem, 6.8dvh, 3.25rem);
+}
+
+.loginSecondary {
+  margin-top: clamp(0.875rem, 2dvh, 1.5rem);
+  padding-top: clamp(0.75rem, 1.8dvh, 1.25rem);
+}
+
+.loginSecondary a {
+  min-height: clamp(2.55rem, 6.4dvh, 3rem);
+  margin-top: clamp(0.5rem, 1.2dvh, 0.75rem);
+}
+
+.authSwitch {
+  margin-top: clamp(0.875rem, 2dvh, 1.5rem);
+  padding-top: clamp(0.75rem, 1.8dvh, 1.25rem);
+}
+
+.authNotice {
+  margin-top: clamp(0.75rem, 1.7dvh, 1.25rem);
+  padding-block: clamp(0.55rem, 1.5dvh, 0.75rem);
+}
+
+.mobileHeader {
+  display: block;
+  margin-bottom: clamp(0.75rem, 2dvh, 1.25rem);
+}
+
+.authLogo img {
+  width: clamp(8rem, 18dvh, 12rem);
+}
+
+.mobileBrandVisual {
+  position: relative;
+  display: block;
+  margin-top: clamp(0.75rem, 2dvh, 1.25rem);
+  overflow: hidden;
+}
+
+.mobileVisualImage {
+  position: relative;
+  height: clamp(4.75rem, 16dvh, 7rem);
+}
+
+.brandExperience,
+.signupBrandExperience {
+  display: none;
+}
+
+.brandCopy {
+  margin-top: clamp(1.25rem, 5.5dvh, 3.5rem);
+}
+
+.brandHeadline {
+  margin-top: 0;
+  font-size: clamp(2.6rem, 7.4dvh, 4.35rem);
+  line-height: 1.02;
+}
+
+.brandBody {
+  margin-top: clamp(0.75rem, 2dvh, 1.25rem);
+}
+
+.brandVisual {
+  position: relative;
+  z-index: 10;
+  min-height: 0;
+  flex: 1 1 auto;
+  margin-top: clamp(1.25rem, 4dvh, 3rem);
+}
+
+.brandImagePanel {
+  top: clamp(0.75rem, 2.4dvh, 2rem);
+}
+
+.categoryPills {
+  max-width: calc(100% - 3rem);
+}
+
+.signupBenefits {
+  margin-top: clamp(1rem, 4dvh, 2.5rem);
+}
+
+.signupBenefitRow {
+  padding-block: clamp(0.6rem, 1.8dvh, 1rem);
+}
+
+.signupPills {
+  margin-top: auto;
+  padding-top: clamp(0.75rem, 2dvh, 2rem);
+}
+
+@media (min-width: 1024px) {
+  .loginGrid {
+    grid-template-columns: minmax(0, 1.28fr) minmax(23rem, 0.92fr);
+  }
+
+  .signupGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(24rem, 30rem);
+  }
+
+  .brandExperience,
+  .signupBrandExperience {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .mobileHeader,
+  .mobileBrandVisual {
+    display: none;
+    margin-bottom: 0;
+  }
+
+  .signupBrandExperience h2 {
+    margin-top: clamp(1rem, 2.6dvh, 1.25rem);
+    font-size: clamp(2.35rem, 6.5dvh, 3rem);
+    line-height: 1.04;
+  }
+}
+
+@media (max-width: 1023px) {
+  .authMain {
+    align-items: center;
+    justify-content: center;
+    padding-inline: clamp(1rem, 4vw, 1.5rem);
+  }
+
+  .authGrid {
+    max-width: 30rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-height: 720px) {
+  .authMain {
+    padding-block: clamp(0.45rem, 1.2dvh, 0.75rem);
+  }
+
+  .authCard {
+    padding-block: clamp(0.8rem, 2dvh, 1rem);
+  }
+
+  .authCard :is(h1, h2) {
+    font-size: 1.65rem;
+  }
+
+  .authIntro,
+  .loginSecondaryText,
+  .mobileBrandVisual,
+  .visualCard,
+  .brandBadge,
+  .brandBody,
+  .categoryPills,
+  .signupBenefitBody {
+    display: none;
+  }
+
+  .authCard form {
+    margin-top: 0.75rem;
+  }
+
+  .authCard form > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.65rem;
+  }
+
+  .authCard input:not([type="hidden"]):not([type="checkbox"]) {
+    min-height: 2.5rem;
+  }
+
+  .authCard button[type="submit"] {
+    min-height: 2.55rem;
+  }
+
+  .loginSecondary {
+    margin-top: 0.7rem;
+    padding-top: 0.65rem;
+  }
+
+  .authSwitch {
+    margin-top: 0.7rem;
+    padding-top: 0.65rem;
+  }
+
+  .authNotice {
+    margin-top: 0.55rem;
+    padding-block: 0.45rem;
+  }
+
+  .authViewport > footer {
+    padding-block: 0.2rem calc(env(safe-area-inset-bottom) + 0.2rem);
+  }
+
+  .authViewport > footer > div {
+    gap: 0.1rem;
+    font-size: 0.65rem;
+  }
+
+  .authViewport > footer a {
+    padding-block: 0;
+  }
+
+  .brandExperience,
+  .signupBrandExperience {
+    padding: clamp(0.9rem, 2.2dvh, 1.5rem);
+  }
+
+  .brandCopy {
+    margin-top: clamp(0.75rem, 2.4dvh, 1.5rem);
+  }
+
+  .brandHeadline,
+  .signupBrandExperience h2 {
+    font-size: clamp(2rem, 6.5dvh, 3rem);
+  }
+
+  .signupBenefits {
+    margin-top: 0.75rem;
+  }
+
+  .signupBenefitRow {
+    padding-block: 0.55rem;
+  }
+}
+
+@media (max-height: 620px) {
+  .mobileHeader {
+    display: none;
+    margin-bottom: 0;
+  }
+
+  .authViewport > footer p {
+    display: none;
+  }
+
+  .authViewport > footer nav {
+    row-gap: 0;
+  }
+
+  .authMain {
+    padding-block: 0.4rem;
+  }
+
+  .authCard {
+    padding-block: 0.75rem;
+  }
+
+  .authCard :is(h1, h2) {
+    font-size: 1.52rem;
+  }
+
+  .authCard label,
+  .authCard form p {
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+  }
+}
+
+@media (max-height: 540px) {
+  .authViewport {
+    height: auto;
+    max-height: none;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .authMain {
+    min-height: 100dvh;
+    flex: 0 0 auto;
+    align-items: flex-start;
+    overflow: visible;
+    padding-block: 0.75rem;
+  }
+
+  .authGrid {
+    height: auto;
+    max-width: 30rem;
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: visible;
+  }
+
+  .authPanel {
+    height: auto;
+    align-items: flex-start;
+    overflow: visible;
+  }
+
+  .authPanelInner,
+  .authCard {
+    max-height: none;
+  }
+
+  .authCard {
+    overflow: visible;
+  }
+
+  .brandExperience,
+  .signupBrandExperience,
+  .mobileHeader,
+  .authViewport > footer {
+    display: none;
+  }
+}

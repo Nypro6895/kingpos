@@ -1,5 +1,10 @@
+import type { BeautyPostBookingPresentation } from "@/lib/beauty-booking-verification";
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
+import type {
+  BeautyPostType,
+  BeautyVerificationState,
+} from "@/types/beauty";
 
 export const SALON_PROFILE_MOOD_OPTIONS = [
   "Soft & clean",
@@ -23,6 +28,8 @@ export const SALON_PROFILE_UPDATE_TYPES = [
   "new_artist",
   "seasonal_offer",
 ] as const;
+
+import type { SalonOperatingStatus } from "@/types/salon-operating-status";
 
 export type SalonProfileLookStatus = "archived" | "draft" | "published";
 
@@ -55,7 +62,6 @@ export type SalonProfileReadiness = {
 
 export type SalonProfileSetting = {
   id: string;
-  organization_id: string;
   salon_id: string;
   business_name: string;
   phone: string | null;
@@ -69,6 +75,7 @@ export type SalonProfileSetting = {
   country: string | null;
   business_description: string | null;
   allow_staff_applications: boolean;
+  operating_timezone_iana: string;
   public_discovery_enabled: boolean;
   public_discovery_published_at: string | null;
   public_profile_tagline: string | null;
@@ -81,7 +88,6 @@ export type SalonProfileSetting = {
 
 export type SalonProfileLook = {
   id: string;
-  organization_id: string;
   salon_id: string;
   author_user_id: string | null;
   author_avatar_path: string | null;
@@ -112,7 +118,6 @@ export type SalonProfileLook = {
 
 export type SalonProfileUpdate = {
   id: string;
-  organization_id: string;
   salon_id: string;
   author_user_id: string | null;
   author_avatar_path: string | null;
@@ -149,7 +154,7 @@ export type PublicSalonProfile = {
   followerCount: number;
   isFollowing: boolean;
   logoImageUrl: string | null;
-  organizationId: string;
+  accountId: string;
   phone: string | null;
   postalCode: string | null;
   publishedAt: string | null;
@@ -161,6 +166,7 @@ export type PublicSalonProfile = {
   tagline: string | null;
   website: string | null;
   name: string;
+  operatingStatus: SalonOperatingStatus;
 };
 
 export type PublicSalonProfileService = {
@@ -233,16 +239,45 @@ export type PublicSalonProfileUpdate = {
   type: SalonProfileUpdateType;
 };
 
+export type PublicSalonProfileBeautyPostMedia = {
+  displayOrder: number;
+  height: number | null;
+  id: string;
+  role: "after" | "before" | "image";
+  url: string | null;
+  width: number | null;
+};
+
+export type PublicSalonProfileBeautyPost = {
+  approvedAt: string | null;
+  authorAvatarUrl: string | null;
+  authorDisplayName: string;
+  booking: BeautyPostBookingPresentation | null;
+  caption: string | null;
+  commentCount: number;
+  id: string;
+  media: PublicSalonProfileBeautyPostMedia[];
+  postHref: string;
+  postType: BeautyPostType;
+  profileId: string;
+  publishedAt: string;
+  staffId: string | null;
+  staffName: string | null;
+  verificationState: BeautyVerificationState | null;
+};
+
 export type PublicSalonProfileComment = {
   authorDisplayName: string;
   authorUserId: string | null;
+  beautyPostId: string | null;
   body: string;
   createdAt: string;
+  editedAt: string | null;
   id: string;
   isSalonReply: boolean;
   lookId: string | null;
   parentCommentId: string | null;
-  salonId: string;
+  salonId: string | null;
   updatedAt: string;
   updateId: string | null;
 };
@@ -253,6 +288,25 @@ export type PublicSalonProfileReviewSummary = {
   reviewCount: number;
   verifiedCount: number;
 };
+
+export type PublicSalonProfileReputationSummary = {
+  averageRating: number | null;
+  experienceCount: number;
+  issueCount: number;
+  legacyReviewCount: number;
+  noIssueCount: number;
+  noIssueRate: number | null;
+  ratingCounts: Record<1 | 2 | 3 | 4 | 5, number>;
+  uniqueCustomerCount: number;
+  verifiedVisitCount: number;
+};
+
+export type PublicSalonProfileExperienceState = "good" | "issue" | "legacy";
+
+export type PublicSalonProfileExperienceIssueStatus =
+  | "acknowledged"
+  | "open"
+  | "resolved";
 
 export type PublicSalonProfileReview = {
   authorDisplayName: string;
@@ -266,6 +320,28 @@ export type PublicSalonProfileReview = {
   replyCreatedAt: string | null;
   replyId: string | null;
   salonId: string;
+  title: string | null;
+  updatedAt: string;
+  verificationStatus: "unverified" | "verified";
+  verifiedBookingId: string | null;
+};
+
+export type PublicSalonProfileExperience = {
+  authorDisplayName: string;
+  authorUserId: string;
+  body: string | null;
+  createdAt: string;
+  editedAt: string | null;
+  feedbackState: PublicSalonProfileExperienceState;
+  id: string;
+  issueStatus: PublicSalonProfileExperienceIssueStatus | null;
+  rating: number | null;
+  replyBody: string | null;
+  replyCreatedAt: string | null;
+  replyId: string | null;
+  salonId: string;
+  source: "experience" | "legacy_review";
+  ticketId: string | null;
   title: string | null;
   updatedAt: string;
   verificationStatus: "unverified" | "verified";
@@ -331,6 +407,7 @@ export type SalonProfileViewerCapabilities = {
   canPublish: boolean;
   canReplyAsSalon: boolean;
   canViewDraftContent: boolean;
+  currentUserId: string | null;
   isAuthenticated: boolean;
   isOwnSalon: boolean;
 };
@@ -348,10 +425,13 @@ export type PublicSalonProfileBookingRequest = {
 };
 
 export type PublicSalonProfileData = {
+  beautyPosts: PublicSalonProfileBeautyPost[];
   comments: PublicSalonProfileComment[];
+  experiences: PublicSalonProfileExperience[];
   feed: ProfileFeedItem[];
   looks: PublicSalonProfileLook[];
   profile: PublicSalonProfile;
+  reputationSummary: PublicSalonProfileReputationSummary;
   reviewSummary: PublicSalonProfileReviewSummary;
   reviews: PublicSalonProfileReview[];
   services: PublicSalonProfileService[];

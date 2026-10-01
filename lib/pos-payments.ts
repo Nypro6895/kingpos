@@ -3,7 +3,7 @@ import "server-only";
 import type { PosPaymentMethod } from "@/types/pos-payment";
 
 export const POS_PAYMENT_SELECT =
-  "id, organization_id, salon_id, ticket_id, payment_method, amount, note, created_by, created_at";
+  "id, salon_id, ticket_id, payment_method, amount, note, created_by, created_at";
 
 export const POS_PAYMENT_METHOD_LABELS: Record<PosPaymentMethod, string> = {
   cash: "Cash",

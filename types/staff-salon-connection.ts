@@ -29,7 +29,6 @@ export type StaffSalonConnectionRequest = {
   id: string;
   initiated_by_user_id: string;
   message: string | null;
-  organization_id: string;
   requested_job_title: string | null;
   reviewed_by_user_id: string | null;
   revoked_at: string | null;
@@ -90,9 +89,26 @@ export type CreateSalonStaffInviteInput =
   | CreateSalonStaffInviteNewAccountInput;
 
 export type CreateSalonStaffInviteResult = {
+  email_delivery: StaffInviteEmailDelivery;
   invite_token: string;
   request: StaffSalonConnectionRequest;
 };
+
+export type StaffInviteEmailDelivery =
+  | {
+      recipient: string;
+      status: "sent";
+    }
+  | {
+      reason: string;
+      recipient?: string | null;
+      status: "skipped";
+    }
+  | {
+      reason: string;
+      recipient: string;
+      status: "failed";
+    };
 
 export type StaffConnectionInviteTokenDetails = {
   expires_at: string | null;
@@ -123,11 +139,27 @@ export type StaffConnectionInviteTokenDetails = {
   };
 };
 
+export type StaffInviteEmailVerificationResult = {
+  email_matches: boolean;
+  reason?: string;
+  request_id?: string;
+  requires_existing_account?: boolean;
+  status: StaffSalonConnectionStatus | "invalid";
+};
+
 export type StaffConnectionRpcResult = {
   request_id: string;
   salon_id?: string;
   staff_id?: string | null;
   status: StaffSalonConnectionStatus;
+};
+
+export type ResendSalonStaffInviteResult = {
+  email_delivery: StaffInviteEmailDelivery;
+  invite_token: string;
+  result: StaffConnectionRpcResult & {
+    expires_at?: string | null;
+  };
 };
 
 export type PublicStaffApplicationSalon = {

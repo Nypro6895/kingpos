@@ -1,14 +1,21 @@
 import "server-only";
 
+import { normalizePublicBookingHref } from "@/lib/public-booking-routes";
+import type { ExploreFeedTrustSignals } from "@/types/explore";
+
 export type ExploreDecisionSignals = {
   averageRating: number | null;
   bookableServiceId: string | null;
   bookableServiceName: string | null;
   bookingEnabled: boolean;
   bookingHref: string | null;
+  experienceCount: number;
   nextAvailabilityLabel: string | null;
   nextAvailableAt: string | null;
+  noIssueRate: number | null;
   reviewCount: number;
+  uniqueCustomerCount: number;
+  verifiedVisitCount: number;
 };
 
 export const EMPTY_EXPLORE_DECISION_SIGNALS: ExploreDecisionSignals = {
@@ -17,22 +24,45 @@ export const EMPTY_EXPLORE_DECISION_SIGNALS: ExploreDecisionSignals = {
   bookableServiceName: null,
   bookingEnabled: false,
   bookingHref: null,
+  experienceCount: 0,
   nextAvailabilityLabel: null,
   nextAvailableAt: null,
+  noIssueRate: null,
   reviewCount: 0,
+  uniqueCustomerCount: 0,
+  verifiedVisitCount: 0,
 };
 
+export function exploreFeedTrustFromDecisionSignals(
+  signals: ExploreDecisionSignals | null | undefined,
+): ExploreFeedTrustSignals {
+  const decisionSignals = signals ?? EMPTY_EXPLORE_DECISION_SIGNALS;
+
+  return {
+    averageRating: decisionSignals.averageRating,
+    noIssueRate: decisionSignals.noIssueRate,
+    sharedExperienceCount: decisionSignals.experienceCount,
+    uniqueCustomerCount: decisionSignals.uniqueCustomerCount,
+    verifiedVisitCount: decisionSignals.verifiedVisitCount,
+  };
+}
+
 type RpcError = {
-  code?: string;
-  details?: string;
-  hint?: string;
-  message: string;
+  code?: unknown;
+  details?: unknown;
+  hint?: unknown;
+  message?: unknown;
 };
 
 type RpcRunner = (
   functionName: string,
   args: Record<string, unknown>,
-) => Promise<{ data: unknown; error: RpcError | null }>;
+) => Promise<{
+  data: unknown;
+  error: RpcError | null;
+  status?: number;
+  statusText?: string;
+}>;
 
 type ExploreDecisionSignalsRow = {
   average_rating: number | string | null;
@@ -40,10 +70,14 @@ type ExploreDecisionSignalsRow = {
   bookable_service_name: string | null;
   booking_enabled: boolean | null;
   booking_href: string | null;
+  experience_count?: number | string | null;
   next_availability_label: string | null;
   next_available_at: string | null;
+  no_issue_rate?: number | string | null;
   review_count: number | string | null;
   salon_id: string;
+  unique_customer_count?: number | string | null;
+  verified_visit_count?: number | string | null;
 };
 
 function readCount(value: number | string | null | undefined) {
@@ -74,19 +108,24 @@ function readRating(value: number | string | null | undefined) {
   return parsed >= 1 && parsed <= 5 ? parsed : null;
 }
 
-function cleanString(value: string | null | undefined) {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : null;
-}
+function readRatio(value: number | string | null | undefined) {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number.parseFloat(value)
+        : null;
 
-function safeBookingHref(value: string | null | undefined) {
-  const href = cleanString(value);
-
-  if (!href) {
+  if (parsed === null || !Number.isFinite(parsed)) {
     return null;
   }
 
-  return href.startsWith("/") ? href : null;
+  return Math.max(0, Math.min(1, parsed));
+}
+
+function cleanString(value: string | null | undefined) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
 }
 
 function mapDecisionSignalsRow(
@@ -99,12 +138,18 @@ function mapDecisionSignalsRow(
     bookableServiceId: cleanString(row.bookable_service_id),
     bookableServiceName: cleanString(row.bookable_service_name),
     bookingEnabled,
-    bookingHref: bookingEnabled ? safeBookingHref(row.booking_href) : null,
+    bookingHref: bookingEnabled
+      ? normalizePublicBookingHref(row.booking_href)
+      : null,
+    experienceCount: readCount(row.experience_count ?? row.review_count),
     nextAvailabilityLabel: bookingEnabled
       ? cleanString(row.next_availability_label)
       : null,
     nextAvailableAt: bookingEnabled ? cleanString(row.next_available_at) : null,
+    noIssueRate: readRatio(row.no_issue_rate),
     reviewCount: readCount(row.review_count),
+    uniqueCustomerCount: readCount(row.unique_customer_count),
+    verifiedVisitCount: readCount(row.verified_visit_count),
   };
 }
 
@@ -125,7 +170,7 @@ export async function getExploreDecisionSignalsBySalonId(
   });
 
   if (error) {
-    console.error("Explore decision signals failed", {
+    console.warn("Explore decision signals unavailable", {
       code: error.code,
       details: error.details,
       hint: error.hint,

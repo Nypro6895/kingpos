@@ -39,6 +39,12 @@ export async function createPublicBookingAction(
 
   if (result.ok) {
     revalidatePath(`/book/${input.salonId}`);
+    revalidatePath("/bookings");
+    revalidatePath("/my-bookings");
+    revalidatePath("/notifications");
+    if (result.bookingId) {
+      revalidatePath(`/my-bookings/${result.bookingId}`);
+    }
   }
 
   return result;

@@ -44,7 +44,7 @@ type ClosingFormValues = {
 const RECONCILIATION_LABELS: Record<DailyPosReconciliationStatus, string> = {
   balanced: "\u0110\u1ee7 / Balanced",
   over: "D\u01b0 / Over",
-  short: "Thi\u1ebfu / Short",
+  short: "Short",
 };
 
 const CORRECTION_FIELD_LABELS: Record<DailyClosingCorrectionField, string> = {
@@ -384,6 +384,8 @@ export function DailyClosingForm({
   const [isSavePending, startSaveTransition] = useTransition();
   const [isCorrectionPending, startCorrectionTransition] = useTransition();
   const [values, setValues] = useState(() => getInitialValues(closingInputs));
+  const [baseline,setBaseline]=useState(closingInputs);
+  const closingChanged=JSON.stringify(baseline)!==JSON.stringify(closingInputs);
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState(() =>
     getSnapshot(getInitialValues(closingInputs)),
   );
@@ -427,6 +429,7 @@ export function DailyClosingForm({
   }
 
   function saveIfNeeded(force = false) {
+    if(closingChanged){setErrorMessage('Closing amounts changed on another screen. Review the saved amounts below.');return;}
     if (!canEdit || isSavePending) {
       return;
     }
@@ -439,12 +442,13 @@ export function DailyClosingForm({
 
     if (hasInvalidAmount) {
       setSaveState("error");
-      setErrorMessage("Amounts must be valid non-negative currency values.");
+      setErrorMessage("Enter an amount of 0 or more, with up to 2 decimal places.");
       return;
     }
 
     startSaveTransition(async () => {
       const result = await saveDailyPosClosing({
+        expectedClosing:baseline,
         cashAmount: values.cashAmount,
         creditCardAmount: values.creditCardAmount,
         note: values.note,
@@ -461,6 +465,7 @@ export function DailyClosingForm({
       const savedValues = getInitialValues(result.closingInputs);
 
       setValues(savedValues);
+      setBaseline(result.closingInputs);
       setLastSavedSnapshot(getSnapshot(savedValues));
       setSaveState("saved");
       setErrorMessage(null);
@@ -567,6 +572,7 @@ export function DailyClosingForm({
               saveIfNeeded(true);
             }}
           >
+            {closingChanged?<div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm"><p>Closing amounts were updated on another screen. Your entries have been kept.</p><p className="mt-2">Saved: Cash {formatMoney(closingInputs.cashAmount)} · Card {formatMoney(closingInputs.creditCardAmount)} · Other {formatMoney(closingInputs.otherAmount)}</p><div className="mt-3 flex gap-2"><button type="button" className="min-h-11 rounded-lg border bg-white px-3" onClick={()=>{setValues(getInitialValues(closingInputs));setBaseline(closingInputs);}}>Use saved amounts</button><button type="button" className="min-h-11 rounded-lg border bg-white px-3" onClick={()=>setBaseline(closingInputs)}>Keep my entries for review</button></div></div>:null}
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="block">
                 <span className="text-xs font-medium uppercase text-zinc-500">

@@ -27,6 +27,7 @@ import {
   isSalonStaffContext,
 } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
+import { getMyPlaceWorkspaceContext } from "@/lib/my-place-context";
 import {
   SALON_PROFILE_MEDIA_BUCKET,
   buildSalonProfileMediaPath,
@@ -161,6 +162,7 @@ function redirectWithNotice(message: string): never {
 }
 
 function revalidateSalonProfile(salonId?: string | null) {
+  revalidatePath("/", "layout");
   revalidatePath("/salon-profile");
   revalidatePath("/explore");
 
@@ -172,9 +174,10 @@ function revalidateSalonProfile(salonId?: string | null) {
 export async function getSalonProfileMediaUploadSessionAction(
   intent: MediaUploadIntent,
   kind: Extract<SalonProfileMediaKind, "cover" | "logo" | "look" | "update">,
+  workspaceId?: string,
 ): Promise<SalonProfileUploadSession> {
   const [context, accessToken] = await Promise.all([
-    getCurrentBusinessContext(),
+    workspaceId ? getMyPlaceWorkspaceContext(workspaceId) : getCurrentBusinessContext(),
     getAccessTokenFromRequest(),
   ]);
   const config = getSupabaseConfig();
@@ -185,12 +188,10 @@ export async function getSalonProfileMediaUploadSessionAction(
 
   const isSalonWorkspace =
     (isSalonManageContext(context) || isSalonStaffContext(context)) &&
-    context.currentOrganization &&
     context.currentSalon;
-  const organization = context.currentOrganization;
   const salon = context.currentSalon;
 
-  if (!isSalonWorkspace || !organization || !salon) {
+  if (!isSalonWorkspace || !salon) {
     throw new Error("Choose a salon workspace before uploading media.");
   }
 
@@ -218,13 +219,12 @@ export async function getSalonProfileMediaUploadSessionAction(
   const supabase = await createAuthenticatedSupabaseServerClient();
 
   if (!supabase) {
-    throw new Error("Supabase environment variables are missing.");
+    throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
   const { error } = await supabase.from("salon_profile_media_assets").insert({
     bucket: SALON_PROFILE_MEDIA_BUCKET,
     object_path: path,
-    organization_id: organization.id,
     purpose: kind,
     salon_id: salon.id,
     status: "pending",

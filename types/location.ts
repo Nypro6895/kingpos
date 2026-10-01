@@ -1,10 +1,15 @@
-export const LOCATION_STATUSES = ["active", "inactive"] as const;
+export const LOCATION_STATUSES = [
+  "active",
+  "disabled",
+  "inactive",
+  "permanently_closed",
+] as const;
 
 export type LocationStatus = (typeof LOCATION_STATUSES)[number];
 
 export type Location = {
   id: string;
-  organization_id: string;
+  account_id?: string;
   name: string;
   phone: string | null;
   address_line1: string | null;
@@ -21,6 +26,15 @@ export type Location = {
   geocoding_place_id?: string | null;
   geocoding_provider?: string | null;
   geocoding_status?: StoredGeocodingStatus | null;
+  disabled_at?: string | null;
+  disabled_by?: string | null;
+  disabled_reason?: string | null;
+  reactivated_at?: string | null;
+  reactivated_by?: string | null;
+  reactivation_reason?: string | null;
+  closed_at?: string | null;
+  closed_by?: string | null;
+  closure_reason?: string | null;
   status: LocationStatus;
   created_at: string;
   updated_at: string;

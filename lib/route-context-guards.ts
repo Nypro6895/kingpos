@@ -3,11 +3,12 @@ import "server-only";
 import {
   getCurrentBusinessContext,
   getRouteForInvalidSalonContext,
-  isOrganizationContext,
+  isAccountContext,
   isSalonManageContext,
   isSalonStaffContext,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
+import { loginHrefForReturnPath } from "@/lib/auth-routing";
 import { redirect } from "next/navigation";
 
 type AuthenticatedBusinessContext = CurrentBusinessContext & {
@@ -15,16 +16,20 @@ type AuthenticatedBusinessContext = CurrentBusinessContext & {
 };
 
 export type SalonManagePageContext = AuthenticatedBusinessContext & {
-  currentOrganization: NonNullable<CurrentBusinessContext["currentOrganization"]>;
+  currentBusiness: NonNullable<CurrentBusinessContext["currentBusiness"]>;
+  currentAccount: NonNullable<CurrentBusinessContext["currentAccount"]>;
   currentSalon: NonNullable<CurrentBusinessContext["currentSalon"]>;
+  businessMode: "manage";
   salonMode: "manage";
   workspaceType: "salon";
 };
 
 export type SalonStaffPageContext = AuthenticatedBusinessContext & {
-  currentOrganization: NonNullable<CurrentBusinessContext["currentOrganization"]>;
+  currentBusiness: NonNullable<CurrentBusinessContext["currentBusiness"]>;
+  currentAccount: NonNullable<CurrentBusinessContext["currentAccount"]>;
   currentSalon: NonNullable<CurrentBusinessContext["currentSalon"]>;
   currentStaffSalon: NonNullable<CurrentBusinessContext["currentStaffSalon"]>;
+  businessMode: "staff";
   salonMode: "staff";
   workspaceType: "salon";
 };
@@ -33,14 +38,14 @@ export type SalonWorkspacePageContext =
   | SalonManagePageContext
   | SalonStaffPageContext;
 
-export type OrganizationPageContext = AuthenticatedBusinessContext & {
+export type AccountPageContext = AuthenticatedBusinessContext & {
   currentMembership: NonNullable<CurrentBusinessContext["currentMembership"]>;
-  currentOrganization: NonNullable<CurrentBusinessContext["currentOrganization"]>;
-  workspaceType: "organization";
+  currentAccount: NonNullable<CurrentBusinessContext["currentAccount"]>;
+  workspaceType: "account" | "salon";
 };
 
 function loginRedirect(nextPath: string) {
-  return `/login?next=${encodeURIComponent(nextPath)}`;
+  return loginHrefForReturnPath(nextPath);
 }
 
 export async function requireSalonManagePageContext(
@@ -54,7 +59,8 @@ export async function requireSalonManagePageContext(
 
   if (
     !isSalonManageContext(context) ||
-    !context.currentOrganization ||
+    !context.currentBusiness ||
+    !context.currentAccount ||
     !context.currentSalon
   ) {
     redirect(getRouteForInvalidSalonContext(context));
@@ -74,7 +80,8 @@ export async function requireSalonStaffPageContext(
 
   if (
     !isSalonStaffContext(context) ||
-    !context.currentOrganization ||
+    !context.currentBusiness ||
+    !context.currentAccount ||
     !context.currentSalon ||
     !context.currentStaffSalon
   ) {
@@ -95,11 +102,13 @@ export async function requireSalonWorkspacePageContext(
 
   const isValidManageContext =
     isSalonManageContext(context) &&
-    Boolean(context.currentOrganization) &&
+    Boolean(context.currentBusiness) &&
+    Boolean(context.currentAccount) &&
     Boolean(context.currentSalon);
   const isValidStaffContext =
     isSalonStaffContext(context) &&
-    Boolean(context.currentOrganization) &&
+    Boolean(context.currentBusiness) &&
+    Boolean(context.currentAccount) &&
     Boolean(context.currentSalon) &&
     Boolean(context.currentStaffSalon);
 
@@ -110,9 +119,9 @@ export async function requireSalonWorkspacePageContext(
   return context as SalonWorkspacePageContext;
 }
 
-export async function requireOrganizationPageContext(
+export async function requireAccountPageContext(
   nextPath: string,
-): Promise<OrganizationPageContext> {
+): Promise<AccountPageContext> {
   const context = await getCurrentBusinessContext();
 
   if (!context.user) {
@@ -120,12 +129,12 @@ export async function requireOrganizationPageContext(
   }
 
   if (
-    !isOrganizationContext(context) ||
-    !context.currentOrganization ||
+    !(isAccountContext(context) || isSalonManageContext(context)) ||
+    !context.currentAccount ||
     !context.currentMembership
   ) {
-    redirect("/my-place?error=Choose%20an%20organization%20workspace%20first.");
+    redirect("/my-place?error=Choose%20an%20account%20workspace%20first.");
   }
 
-  return context as OrganizationPageContext;
+  return context as AccountPageContext;
 }
