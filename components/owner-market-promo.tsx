@@ -11,7 +11,7 @@ export function OwnerMarketPromo() {
       <div className="flex min-w-0 items-start gap-4 sm:items-center">
         <Image src="/market/reylumi-features.webp" alt="" width={210} height={140} className="h-auto w-24 shrink-0 sm:w-40" />
         <div className="min-w-0">
-          <p className="text-[10px] font-extrabold tracking-[0.16em] text-brand-teal">REYLUMI MARKET <span className="ml-2 font-medium tracking-normal text-text-secondary">Sample preview</span></p>
+          <p className="text-[10px] font-extrabold tracking-[0.16em] text-brand-teal">REYLUMI MARKET</p>
           <h2 className="mt-1 text-base font-extrabold text-text-primary sm:text-lg">Add more features to Reylumi</h2>
           <p className="mt-1 text-xs leading-6 text-text-secondary sm:text-sm">SMS, rewards, payroll and more—in your Reylumi workspace. No separate app download.</p>
         </div>

@@ -254,7 +254,7 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   ],
   owner: [
     {
-      description: "Add messaging, payroll, rewards, and more to Reylumi. Preview features.",
+      description: "Add messaging, payroll, rewards, and more to Reylumi.",
       href: "/market",
       icon: "store",
       id: "owner-market",
