@@ -41,6 +41,10 @@ test(
           setup(b) {
             b.onLoad({filter:/staff[\\/]today[\\/]page\.tsx$/},args=>({loader:'tsx',contents:readFileSync(args.path,'utf8').replace('function MetricCard(', 'export function MetricCard(').replace('function AttentionPanel(', 'export function AttentionPanel(')}));
             b.onResolve({filter:/^next\/link$/},()=>({path:'link',namespace:'mock'}));
+            b.onResolve({filter:/owner-market-promo$/},()=>({path:'market',namespace:'mock'}));
+            b.onLoad({filter:/^market$/,namespace:'mock'},()=>({contents:`export const OwnerMarketPromo=()=>null;`}));
+            b.onResolve({filter:/current-context$/},()=>({path:'context',namespace:'mock'}));
+            b.onLoad({filter:/^context$/,namespace:'mock'},()=>({contents:`export const isOwnerMembership=()=>false;`}));
             b.onResolve({filter:/(today-dashboard|route-context-guards|quick-access-editor|pos-workspace-realtime-refresh)$/},()=>({path:'server',namespace:'mock'}));
             b.onLoad({filter:/.*/,namespace:'mock'},({path})=>({resolveDir:repo,contents:path==='link'?`import React from 'react'; export default function Link({children,...p}){return React.createElement('a',p,children)}`:`export const getTodayDashboard=()=>{}; export const requireSalonManagePageContext=()=>{}; export const QuickAccessPanel=()=>null; export const PosWorkspaceRealtimeRefresh=()=>null;`}));
           },
