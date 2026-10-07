@@ -1,4 +1,7 @@
 .page{padding:32px 24px 70px;color:var(--text-primary);background:var(--surface)}
+.heroIllustration{min-width:0;align-self:center}.heroIllustration img{display:block;width:100%;height:auto;filter:drop-shadow(0 10px 16px #7353370a)}
+.insideReylumi{background:var(--brand-teal-soft);border-radius:9px;padding:12px 14px;color:var(--brand-teal)!important;font-weight:600;font-size:12px!important}
+@media(max-width:560px){.heroIllustration{max-width:300px;justify-self:center;width:100%;margin-top:-8px}}
 .logo svg{width:32px;height:34px}.logo{box-shadow:inset 0 1px 0 #fff8,0 3px 8px #241b1f08}
 .conceptLabel{font-size:9px;font-weight:500;padding:3px 6px;background:var(--surface-muted);border-radius:4px;color:var(--text-muted);margin-left:6px;display:inline-block;vertical-align:middle}
 .cardBenefits{display:grid;gap:7px;font-size:10px;color:var(--text-secondary);margin-bottom:20px}
