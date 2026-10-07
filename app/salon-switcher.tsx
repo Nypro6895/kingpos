@@ -134,10 +134,11 @@ function buildAccountNavigation(context: CurrentBusinessContext) {
 }
 
 async function PendingNotificationSummary({context}:{context:CurrentBusinessContext}) {
+  let summary: Awaited<ReturnType<typeof getWorkspacePendingSummary>>;
   try {
-    const summary=await getWorkspacePendingSummary(context);
-    return <WorkspaceSummarySeed summary={summary} scope={`${context.user?.id}:${context.currentWorkspace?.id ?? "personal"}`}/>;
+    summary=await getWorkspacePendingSummary(context);
   } catch { return null; }
+  return <WorkspaceSummarySeed summary={summary} scope={`${context.user?.id}:${context.currentWorkspace?.id ?? "personal"}`}/>;
 }
 
 export async function SalonSwitcher({
