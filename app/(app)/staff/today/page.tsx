@@ -1,4 +1,6 @@
 import { backlogTone, type MetricTone } from "@/lib/today-metric-assessment";
+import { OwnerMarketPromo } from "@/components/owner-market-promo";
+import { isOwnerMembership } from "@/lib/current-context";
 import Link from "next/link";
 import { PosWorkspaceRealtimeRefresh } from "@/app/pos/pos-workspace-realtime-refresh";
 
@@ -1824,6 +1826,7 @@ export default async function StaffTodayPage({
             .map((shortcut) => shortcut.id)
             .join(":")}
         />
+        {isOwnerMembership(context.currentMembership) ? <OwnerMarketPromo /> : null}
       </div>
     </main>
   );

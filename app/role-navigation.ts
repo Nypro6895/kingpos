@@ -254,7 +254,7 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   ],
   owner: [
     {
-      description: "Discover sample apps and integrations for your salon.",
+      description: "Apps for messaging, payroll, rewards, retail, and more. Preview Market.",
       href: "/market",
       icon: "store",
       id: "owner-market",
