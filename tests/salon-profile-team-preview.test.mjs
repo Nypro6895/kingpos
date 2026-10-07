@@ -116,7 +116,7 @@ test("public team eligibility follows disable and re-enable state", () => {
 
 test("managed salon profile merges preview staff when the public RPC is stale", () => {
   const source = readFileSync(
-    join(process.cwd(), "app/salon-profile/page.tsx"),
+    join(process.cwd(), "app/(app)/salon-profile/page.tsx"),
     "utf8",
   );
 

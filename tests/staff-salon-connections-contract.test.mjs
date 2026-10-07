@@ -194,7 +194,7 @@ test("staff-linked salon and account rows are readable only for active linked st
 test("staff-linked accounts remain available after staff salon hydration", () => {
   const contextBlock = sourceBlock(
     currentContext,
-    "export async function getCurrentBusinessContext",
+    "async function loadCurrentBusinessContext",
     "async function setPersistentCookie",
   );
   const staffLoadIndex = contextBlock.indexOf(

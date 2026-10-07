@@ -29,15 +29,25 @@ function select(campaigns: Campaign[], kind: Campaign["kind"]) {
   return selected;
 }
 function ImageAd({ campaign }: { campaign: Campaign }) {
+  const Tag = campaign.href ? "a" : "div";
   return (
-    <a
+    <Tag
       className={styles.imageLink}
-      href={campaign.href}
+      {...(campaign.href ? { href: campaign.href } : {})}
       aria-label={campaign.name}
+      style={{ background: campaign.background, color: campaign.color }}
     >
-      <img src={campaign.imageUrl} alt={campaign.name} />
+      {campaign.imageUrl ? (
+        <img src={campaign.imageUrl} alt={campaign.name} />
+      ) : null}
+      {campaign.text || !campaign.imageUrl ? (
+        <div className={styles.message}>
+          <strong>{campaign.name}</strong>
+          {campaign.text ? <p>{campaign.text}</p> : null}
+        </div>
+      ) : null}
       <span className={styles.sponsored}>Sponsored</span>
-    </a>
+    </Tag>
   );
 }
 export function ExploreAdSlot({ desktop = false }: { desktop?: boolean }) {
@@ -184,7 +194,11 @@ export function ExploreAdvertising({ children }: { children: ReactNode }) {
     <Context.Provider value={active ? placement : null}>
       <div
         className={
-          active && ticker?.position === "top" ? styles.topReserve : undefined
+          active && ticker
+            ? ticker.position === "top"
+              ? styles.topReserve
+              : styles.bottomReserve
+            : undefined
         }
       >
         {children}
@@ -195,12 +209,21 @@ export function ExploreAdvertising({ children }: { children: ReactNode }) {
               className={`${styles.ticker} ${ticker.position === "top" ? styles.top : styles.bottom}`}
               style={{ background: ticker.background, color: ticker.color }}
             >
-              <a
-                href={ticker.href}
-                style={{ animationDuration: `${ticker.speedSeconds}s` }}
-              >
-                {ticker.text}
-              </a>
+              {ticker.href ? (
+                <a
+                  href={ticker.href}
+                  style={{ animationDuration: `${ticker.speedSeconds}s` }}
+                >
+                  {ticker.text || ticker.name}
+                </a>
+              ) : (
+                <span
+                  className={styles.tickerText}
+                  style={{ animationDuration: `${ticker.speedSeconds}s` }}
+                >
+                  {ticker.text || ticker.name}
+                </span>
+              )}
               {ticker.closeButton ? (
                 <button
                   aria-label="Close announcement"

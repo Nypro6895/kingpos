@@ -207,12 +207,12 @@ test("account phone-change OTP uses a Supabase Auth session client", () => {
 });
 
 test("account profile UI uses the personal shell and a modal phone OTP flow", () => {
-  const page = read("app/account/page.tsx");
+  const page = read("app/(app)/account/page.tsx");
   const editor = read("app/account/account-profile-editor.tsx");
   const navigation = read("app/navigation-shell.tsx");
   const switcher = read("app/salon-switcher.tsx");
   const editableFieldsIndex = editor.indexOf("EditableField");
-  const saveActionIndex = editor.indexOf('{saving ? "Saving..." : "Save"}');
+  const saveActionIndex = editor.indexOf('{saving ? "Saving..." : "Save profile"}');
 
   for (const fragment of [
     "Reylumi Account",

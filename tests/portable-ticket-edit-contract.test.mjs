@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const portableTicketPage = readFileSync(
-  "app/(app)/pos/portable/ticket/page.tsx",
+  "app/pos/portable/ticket/portable-ticket-client.tsx",
   "utf8",
 );
 const portableActions = readFileSync("app/pos/portable/actions.ts", "utf8");
@@ -51,7 +51,8 @@ test("portable correction action uses portable auth capabilities and RPC mutatio
   assert.match(portableActions, /export async function correctPortableClosedPosTicketInline/);
   assert.match(portableActions, /PORTABLE_POS_CAPABILITIES\.posUse/);
   assert.match(portableActions, /PORTABLE_POS_CAPABILITIES\.todayView/);
-  assert.match(portableActions, /correct_pos_portable_closed_ticket/);
+  assert.match(portableActions, /correct_pos_workspace_ticket/);
+  assert.match(portableActions, /p_expected: readString\(formData,"expected_revision"\)/);
   assert.match(portableActions, /revalidatePath\("\/pos\/portable\/ticket"\)/);
   assert.match(portableActions, /broadcastPosStaffChange\(portableSession\.salon_id, "pos"\)/);
 });
@@ -99,10 +100,11 @@ test("owner closed-ticket inline edits persist recalculated line_total values", 
   assert.notEqual(inlineStart, -1);
 
   const inlineAction = ownerTicketActions.slice(inlineStart);
-  const lineTotalWrites = inlineAction.match(/line_total: lineTotal/g) ?? [];
-
-  assert.ok(
-    lineTotalWrites.length >= 4,
-    "replacement, update, unchanged refresh, and added branches should write line_total",
-  );
+  assert.match(inlineAction, /supabase\.rpc\("correct_pos_workspace_ticket"/);
+  assert.match(inlineAction, /p_expected:/);
+  assert.match(inlineAction, /p_item_updates:/);
+  assert.match(inlineAction, /p_item_parts:/);
+  assert.match(inlineAction, /p_added_items:/);
+  assert.match(portableTicketEditMigration, /line_total/);
+  assert.match(readFileSync("supabase/migrations/202609240010_pos_workspace_corrections.sql", "utf8"), /correct_pos_workspace_ticket_core/);
 });

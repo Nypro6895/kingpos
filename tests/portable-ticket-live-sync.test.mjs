@@ -17,8 +17,10 @@ test('Portable Ticket follows the business day, receives remote tickets and pres
   b.onResolve({filter:/portable\/actions$/},()=>({path:'actions',namespace:'fixture'}));
   b.onResolve({filter:/closed-ticket-correction-form$/},()=>({path:'card',namespace:'fixture'}));
   b.onResolve({filter:/^next\/link$/},()=>({path:'link',namespace:'fixture'}));
+  b.onResolve({filter:/^next\/navigation$/},()=>({path:'navigation',namespace:'fixture'}));
   b.onLoad({filter:/.*/,namespace:'fixture'},({path})=>({loader:'tsx',resolveDir:root,contents:({
    sync:`export function subscribePosChanges(id,fn){window.remote=fn;return()=>{};}`,
+   navigation:`export function usePathname(){return '/pos/portable/ticket';}`,
    workspace:`export function usePortableWorkspaceState(){return{scope:'salon:key',businessDate:window.day??'2026-09-25'};}`,
    ops:`export const PORTABLE_OPERATIONS_CHANGED='operations';`,
    local:`export function PortableLocalTickets(){return null;}`,

@@ -11,11 +11,11 @@ function read(path) {
 
 test("owner more menu exposes salon customers and customer list supports scoped duplicate merge", () => {
   const navigation = read("app/role-navigation.ts");
-  const morePage = read("app/more/page.tsx");
-  const customerPage = read("app/customers/page.tsx");
+  const morePage = read("app/(app)/more/page.tsx");
+  const customerPage = read("app/(app)/customers/page.tsx");
   const customerActions = read("app/customers/actions.ts");
   const customerLoader = read("lib/customers.ts");
-  const customerDetail = read("app/customers/[customerId]/page.tsx");
+  const customerDetail = read("app/(app)/customers/[customerId]/page.tsx");
 
   assert.match(navigation, /id: "owner-customers"/);
   assert.match(navigation, /href: "\/customers"/);

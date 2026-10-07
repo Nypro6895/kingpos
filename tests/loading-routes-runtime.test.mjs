@@ -31,6 +31,7 @@ test('owner, staff and personal shells render page content once with both naviga
     '@/app/quick-workspace-panel':{QuickWorkspacePanel:()=>null},'@/lib/account-avatar':{safeAccountAvatarUrl:()=>null},
     '@/lib/supabase/browser':{createSupabaseBrowserClient:()=>null},'@/app/role-navigation':role,
     '@/app/salons/actions':{},'@/lib/routes':routes,
+    '@/components/explore-advertising':{ExploreAdSlot:()=>null},
     '@/lib/notification-client':{useNotificationSummary:initial=>initial},
     'next/navigation':{usePathname:()=>pathname,useSearchParams:()=>new URLSearchParams(),useRouter:()=>({})},
     'next/link':{__esModule:true,default:({children,href,prefetch,...props})=>React.createElement('a',{href,...props},children)},

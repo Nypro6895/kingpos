@@ -60,7 +60,7 @@ test("public booking confirmation links authenticated customers and notifies sal
   assert.match(notifications, /PUBLIC_BOOKING_CREATED_TYPE = "public_booking_created"/);
   assert.match(
     notifications,
-    /notification\.notification_type === PUBLIC_BOOKING_CREATED_TYPE[\s\S]*matchesPath\(href, PUBLIC_BOOKING_HREF\)/,
+    /notification\.recipient_kind === "owner_manager"[\s\S]*matchesPath\(href, "\/bookings"\)/,
     "Owner booking notifications should switch to the salon manage workspace.",
   );
 

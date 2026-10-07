@@ -2,7 +2,10 @@
 import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
 import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
 import { advertisingClient } from "@/lib/explore-advertising";
-import { parseCampaign } from "@/lib/explore-advertising-rules";
+import {
+  parseCampaign,
+  CampaignValidationError,
+} from "@/lib/explore-advertising-rules";
 import { revalidatePath } from "next/cache";
 export async function campaignImageUploadAction(mime: string, size: number) {
   await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.businessesUpdate);
@@ -72,6 +75,7 @@ export async function saveCampaignAction(
       message:
         error instanceof Error ? error.message : "Unable to save campaign.",
       id: _previous.id,
+      errors: error instanceof CampaignValidationError ? error.fields : {},
     };
   }
 }

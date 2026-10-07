@@ -1,273 +1,285 @@
-/* eslint-disable @next/next/no-img-element -- Preserve uploaded GIF animation and intrinsic campaign dimensions. */
+/* eslint-disable @next/next/no-img-element -- Preserve uploaded GIF animations. */
 "use client";
-import { useActionState, useState } from "react";
-import {
-  saveCampaignAction,
-  deleteCampaignAction,
-  campaignImageUploadAction,
-} from "./actions";
+import { useState, type FormEvent } from "react";
+import { saveCampaignAction, campaignImageUploadAction } from "./actions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import {
+  parseCampaign,
+  CampaignValidationError,
+  campaignStatus,
+} from "@/lib/explore-advertising-rules";
 import type { Campaign } from "@/types/explore-advertising";
-const input = "w-full rounded-xl border border-zinc-200 bg-white p-3 text-sm";
-export function CampaignForm({ campaign }: { campaign?: Campaign }) {
-  const [state, action, pending] = useActionState(
-    async (
-      previous: { ok: boolean; message: string; id?: string },
-      form: FormData,
-    ) => {
-      try {
-        const file = form.get("image");
-        if (file instanceof File && file.size) {
-          const upload = await campaignImageUploadAction(file.type, file.size);
-          const client = createSupabaseBrowserClient();
-          if (!client) throw new Error("Image upload is unavailable.");
-          const { error } = await client.storage
-            .from("explore-advertising")
-            .uploadToSignedUrl(upload.path, upload.token, file, {
-              contentType: file.type,
-            });
-          if (error) throw new Error("Image upload failed. Please try again.");
-          form.set("imageUrl", upload.url);
-          form.delete("image");
-        }
-        return await saveCampaignAction(previous, form);
-      } catch (error) {
-        return {
-          ok: false,
-          message:
-            error instanceof Error ? error.message : "Unable to save campaign.",
-          id: previous.id,
-        };
-      }
-    },
-    { ok: false, message: "", id: campaign?.id ?? "" },
-  );
-  const [kind, setKind] = useState(campaign?.kind ?? "popup");
-  const [image, setImage] = useState(campaign?.imageUrl ?? "");
+import styles from "./advertising.module.css";
+
+export function CampaignForm({
+  campaign,
+  onSaved,
+  onCancel,
+}: {
+  campaign?: Campaign;
+  onSaved: (campaign: Campaign) => void;
+  onCancel: () => void;
+}) {
   const date = (value?: string | null) =>
     value ? new Date(value).toISOString().slice(0, 16) : "";
+  const [values, setValues] = useState<Record<string, string>>(() => ({
+    id: campaign?.id ?? "",
+    name: campaign?.name ?? "",
+    kind: campaign?.kind ?? "popup",
+    status: campaign ? campaignStatus(campaign) : "draft",
+    imageUrl: campaign?.imageUrl ?? "",
+    href: campaign?.href ?? "",
+    text: campaign?.text ?? "",
+    startsAt: date(campaign?.startsAt),
+    endsAt: date(campaign?.endsAt),
+    delaySeconds: String(campaign?.delaySeconds ?? 5),
+    durationSeconds: String(campaign?.durationSeconds ?? 15),
+    repeat: campaign?.repeat ?? "daily",
+    position: campaign?.position ?? "top",
+    background: campaign?.background ?? "#fff0e8",
+    color: campaign?.color ?? "#302326",
+    speedSeconds: String(campaign?.speedSeconds ?? 25),
+  }));
+  const [closeButton, setCloseButton] = useState(campaign?.closeButton ?? true);
+  const [file, setFile] = useState<File | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState("");
+  const [pending, setPending] = useState(false);
+  const change = (key: string, value: string) => {
+    setValues((current) => ({ ...current, [key]: value }));
+    setErrors((current) => ({ ...current, [key]: "" }));
+  };
+  const control = (
+    key: string,
+    label: string,
+    type = "text",
+    options?: [string, string][],
+  ) => (
+    <label className={styles.field}>
+      {label}
+      {options ? (
+        <select
+          aria-label={label}
+          name={key}
+          value={values[key]}
+          onChange={(e) => change(key, e.target.value)}
+          aria-invalid={Boolean(errors[key])}
+          aria-describedby={errors[key] ? `${key}-error` : undefined}
+        >
+          {options.map(([value, text]) => (
+            <option key={value} value={value}>
+              {text}
+            </option>
+          ))}
+        </select>
+      ) : type === "textarea" ? (
+        <textarea
+          aria-label={label}
+          name={key}
+          value={values[key]}
+          onChange={(e) => change(key, e.target.value)}
+          aria-invalid={Boolean(errors[key])}
+          aria-describedby={errors[key] ? `${key}-error` : undefined}
+        />
+      ) : (
+        <input
+          aria-label={label}
+          name={key}
+          type={type}
+          value={values[key]}
+          onChange={(e) => change(key, e.target.value)}
+          aria-invalid={Boolean(errors[key])}
+          aria-describedby={errors[key] ? `${key}-error` : undefined}
+        />
+      )}{" "}
+      {errors[key] ? (
+        <span id={`${key}-error`} className={styles.error}>
+          {errors[key]}
+        </span>
+      ) : null}
+    </label>
+  );
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    setPending(true);
+    setErrors({});
+    setMessage("");
+    const data = new FormData();
+    for (const [key, value] of Object.entries(values)) data.set(key, value);
+    if (!values.id) {
+      const id = crypto.randomUUID();
+      data.set("id", id);
+      change("id", id);
+    }
+    if (closeButton) data.set("closeButton", "on");
+    if (values.kind === "ticker") data.set("imageUrl", "");
+    else if (file) data.set("imageUrl", "/advertising-upload-pending");
+    try {
+      // Validate before uploading; never reset inputs after a failed action.
+      parseCampaign(data);
+      if (file && values.kind !== "ticker") {
+        if (
+          !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(
+            file.type,
+          ) ||
+          file.size > 10485760 ||
+          !file.size
+        )
+          throw new CampaignValidationError({
+            image: "Choose a JPG, PNG, WebP or GIF under 10 MB.",
+          });
+        const upload = await campaignImageUploadAction(file.type, file.size);
+        const client = createSupabaseBrowserClient();
+        if (!client) throw new Error("Image upload is unavailable.");
+        const { error } = await client.storage
+          .from("explore-advertising")
+          .uploadToSignedUrl(upload.path, upload.token, file, {
+            contentType: file.type,
+          });
+        if (error) throw new Error("Image upload failed. Please try again.");
+        data.set("imageUrl", upload.url);
+        change("imageUrl", upload.url);
+        setFile(null);
+      }
+      const result = await saveCampaignAction(
+        { ok: false, message: "", id: values.id },
+        data,
+      );
+      if (!result.ok) {
+        setErrors(result.errors ?? {});
+        setMessage(result.message);
+        return;
+      }
+      data.set("id", result.id!);
+      onSaved(parseCampaign(data));
+    } catch (error) {
+      if (error instanceof CampaignValidationError) setErrors(error.fields);
+      setMessage(
+        error instanceof Error ? error.message : "Unable to save campaign.",
+      );
+      if (error instanceof CampaignValidationError) {
+        const key = Object.keys(error.fields)[0];
+        (element.elements.namedItem(key) as HTMLElement | null)?.focus();
+      }
+    } finally {
+      setPending(false);
+    }
+  }
   return (
-    <details className="rounded-2xl border bg-white p-5" open={!campaign}>
-      <summary className="cursor-pointer font-semibold">
-        {campaign
-          ? `${campaign.name} · ${campaign.kind} · ${campaign.enabled ? "On" : "Off"}`
-          : "Create campaign"}
-      </summary>
-      <form action={action} className="mt-4 grid gap-4 sm:grid-cols-2">
-        <input type="hidden" name="id" value={campaign?.id ?? state.id ?? ""} />
-        <label>
-          Name
-          <input
-            className={input}
-            name="name"
-            required
-            defaultValue={campaign?.name}
-          />
-        </label>
-        <label>
-          Format
-          <select
-            className={input}
-            name="kind"
-            value={kind}
-            onChange={(event) =>
-              setKind(event.target.value as Campaign["kind"])
-            }
-          >
-            <option value="popup">Popup</option>
-            <option value="placement">Desktop sidebar / mobile feed</option>
-            <option value="ticker">Scrolling announcement</option>
-          </select>
-        </label>
-        <label className="sm:col-span-2">
-          Click destination
-          <input
-            className={input}
-            name="href"
-            required
-            placeholder="https://… or /explore/…"
-            defaultValue={campaign?.href}
-          />
-        </label>
-        <label className={kind === "ticker" ? "hidden" : ""}>
-          Image URL
-          <input
-            className={input}
-            name="imageUrl"
-            value={image}
-            onChange={(event) => setImage(event.target.value)}
-            placeholder="https://…"
-          />
-        </label>
-        <label className={kind === "ticker" ? "hidden" : ""}>
-          Upload image / animated GIF
-          <input
-            className={input}
-            name="image"
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-          />
-          <span className="text-xs text-zinc-500">
-            Up to 10 MB. Uploaded image replaces the URL.
-          </span>
-        </label>
-        {image &&
-        image !== "/advertising-upload-pending" &&
-        kind !== "ticker" ? (
-          <div className="sm:col-span-2">
-            <img
-              src={image}
-              alt="Campaign preview"
-              className="max-h-60 rounded-xl object-contain"
-            />
-          </div>
-        ) : null}
-        <label className={kind === "ticker" ? "sm:col-span-2" : "hidden"}>
-          Announcement
-          <textarea
-            className={input}
-            name="text"
-            maxLength={1000}
-            defaultValue={campaign?.text}
-          />
-        </label>
-        <label>
-          Start (UTC)
-          <input
-            className={input}
-            name="startsAt"
-            type="datetime-local"
-            defaultValue={date(campaign?.startsAt)}
-          />
-        </label>
-        <label>
-          End (UTC)
-          <input
-            className={input}
-            name="endsAt"
-            type="datetime-local"
-            defaultValue={date(campaign?.endsAt)}
-          />
-        </label>
-        <label>
-          Delay after arrival (seconds)
-          <input
-            className={input}
-            name="delaySeconds"
-            type="number"
-            min={0}
-            max={3600}
-            defaultValue={campaign?.delaySeconds ?? 5}
-          />
-        </label>
-        <label>
-          Visible duration (seconds; 0 = until closed / page exit)
-          <input
-            className={input}
-            name="durationSeconds"
-            type="number"
-            min={0}
-            max={3600}
-            defaultValue={campaign?.durationSeconds ?? 15}
-          />
-        </label>
-        <label>
-          Popup frequency per IP
-          <select
-            className={input}
-            name="repeat"
-            defaultValue={campaign?.repeat ?? "daily"}
-          >
-            <option value="always">Every visit</option>
-            <option value="once">Only once</option>
-            <option value="daily">Again tomorrow (Chicago time)</option>
-          </select>
-        </label>
-        <label>
-          Announcement position
-          <select
-            className={input}
-            name="position"
-            defaultValue={campaign?.position ?? "top"}
-          >
-            <option value="top">Top</option>
-            <option value="bottom">Bottom</option>
-          </select>
-        </label>
-        <label>
-          Background
-          <input
-            className={input}
-            name="background"
-            type="color"
-            defaultValue={campaign?.background ?? "#fff0e8"}
-          />
-        </label>
-        <label>
-          Text color
-          <input
-            className={input}
-            name="color"
-            type="color"
-            defaultValue={campaign?.color ?? "#302326"}
-          />
-        </label>
-        <label>
-          Scroll cycle (seconds; higher = slower)
-          <input
-            className={input}
-            name="speedSeconds"
-            type="number"
-            min={5}
-            max={300}
-            defaultValue={campaign?.speedSeconds ?? 25}
-          />
-        </label>
-        <div className="flex items-center gap-5">
-          <label>
-            <input
-              type="checkbox"
-              name="enabled"
-              defaultChecked={campaign?.enabled ?? false}
-            />{" "}
-            Run campaign
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              name="closeButton"
-              defaultChecked={campaign?.closeButton ?? true}
-            />{" "}
-            Show close button
-          </label>
+    <section className={styles.editor}>
+      <div className={styles.editorHeading}>
+        <div>
+          <h2>{campaign ? "Edit campaign" : "Create campaign"}</h2>
+          <p>Images and links are optional. Use text, an image, or both.</p>
         </div>
-        <div className="sm:col-span-2 flex items-center gap-3">
-          <button
-            disabled={pending}
-            className="rounded-xl bg-zinc-950 px-5 py-3 text-white disabled:opacity-50"
-          >
+        <button type="button" onClick={onCancel} disabled={pending}>
+          Back to list
+        </button>
+      </div>
+      <form onSubmit={submit} noValidate className={styles.form}>
+        <fieldset disabled={pending} className={styles.fields}>
+          {control("name", "Campaign name")}
+          {control("kind", "Format", "select", [
+            ["popup", "Popup"],
+            ["placement", "Desktop sidebar / mobile feed"],
+            ["ticker", "Scrolling announcement"],
+          ])}
+          {control("status", "Status", "select", [
+            ["draft", "Saved draft"],
+            ["running", "Running"],
+            ["stopped", "Stopped"],
+          ])}
+          {control("href", "Click destination (optional)")}
+          {values.kind !== "ticker" ? (
+            <>
+              {control("imageUrl", "Image URL (optional)")}
+              <label className={styles.field}>
+                Upload image / GIF (optional)
+                <input
+                  name="image"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                />
+                <span>JPG, PNG, WebP or GIF, up to 10 MB. {file?.name}</span>
+                {errors.image ? (
+                  <span className={styles.error}>{errors.image}</span>
+                ) : null}
+              </label>
+            </>
+          ) : null}
+          <div className={styles.full}>
+            {control(
+              "text",
+              values.kind === "ticker"
+                ? "Announcement text"
+                : "Message (optional)",
+              "textarea",
+            )}
+          </div>
+          {values.imageUrl && values.kind !== "ticker" ? (
+            <img
+              src={values.imageUrl}
+              alt="Campaign preview"
+              className={styles.preview}
+            />
+          ) : null}
+          {control("startsAt", "Start (UTC)", "datetime-local")}
+          {control("endsAt", "End (UTC)", "datetime-local")}
+          {control("delaySeconds", "Delay after arrival (seconds)", "number")}
+          {control(
+            "durationSeconds",
+            "Visible duration (seconds; 0 = unlimited)",
+            "number",
+          )}
+          {values.kind === "popup"
+            ? control("repeat", "Frequency per IP", "select", [
+                ["always", "Every visit"],
+                ["once", "Only once"],
+                ["daily", "Again tomorrow (Chicago time)"],
+              ])
+            : null}
+          {values.kind === "ticker" ? (
+            <>
+              {control("position", "Position", "select", [
+                ["top", "Top"],
+                ["bottom", "Bottom"],
+              ])}
+              {control(
+                "speedSeconds",
+                "Scroll cycle (seconds; higher = slower)",
+                "number",
+              )}
+            </>
+          ) : null}
+          {control("background", "Background", "color")}
+          {control("color", "Text color", "color")}
+          {values.kind !== "placement" ? (
+            <label className={styles.checkbox}>
+              <input
+                type="checkbox"
+                checked={closeButton}
+                onChange={(e) => setCloseButton(e.target.checked)}
+              />
+              Show close button
+            </label>
+          ) : null}
+        </fieldset>
+        {message ? (
+          <p role="alert" className={styles.error}>
+            {message}
+          </p>
+        ) : null}
+        <div className={styles.footer}>
+          <button className={styles.primary} disabled={pending}>
             {pending ? "Saving…" : "Save campaign"}
           </button>
-          <span
-            role="status"
-            className={state.ok ? "text-green-700" : "text-red-700"}
-          >
-            {state.message}
-          </span>
+          <button type="button" disabled={pending} onClick={onCancel}>
+            Cancel
+          </button>
         </div>
       </form>
-      {campaign ? (
-        <form
-          action={deleteCampaignAction}
-          className="mt-4"
-          onSubmit={(event) => {
-            if (!confirm("Delete this campaign?")) event.preventDefault();
-          }}
-        >
-          <input type="hidden" name="id" value={campaign.id} />
-          <button className="text-sm text-red-700">Delete campaign</button>
-        </form>
-      ) : null}
-    </details>
+    </section>
   );
 }

@@ -44,6 +44,7 @@ function harness(props, saveAction, inheritedAuth, bus = eventBus()) {
       if (name.includes("saved-post/actions")) return { setAccountSavedPostAction: saveAction };
       if (name.includes("types/saved-post")) return { savedPostKey: target => target.sourceId };
       if (name.includes("auth-intent-prompt")) return { AuthIntentPrompt: "AuthIntentPrompt" };
+      if (name.includes("explore-account-actions")) return { ExploreReferenceLove: "ExploreReferenceLove", rememberExploreIntent() {}, clearExploreIntent() {} };
       throw new Error(name);
     },
     window: bus,
@@ -53,7 +54,7 @@ function harness(props, saveAction, inheritedAuth, bus = eventBus()) {
     stateIndex = 0; refIndex = 0; effectIndex = 0;
     const outer = exports.SavePostButton({ target: { sourceId: "11111111-1111-4111-8111-111111111111", sourceType: "beauty_post" }, ...props });
     if (!outer) return null;
-    return outer.type(outer.props);
+    return typeof outer.type === "function" ? outer.type(outer.props) : outer;
   }
   function nodes(node) {
     if (!node || typeof node !== "object") return [];

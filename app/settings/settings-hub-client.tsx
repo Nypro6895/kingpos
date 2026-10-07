@@ -11,6 +11,7 @@ import { DirectSettingsPanel } from "./direct-settings-panel";
 import type { DirectSettingsKind } from "./direct-settings-actions";
 import { loadSettingsHub, type SettingsHubIndex } from "./settings-hub-actions";
 import { TwilioSettingsForm } from "@/app/(app)/admin/settings/twilio/settings-form";
+import Link from "next/link";
 
 const manageItems: {kind:DirectSettingsKind;label:string;permission?:string;owner?:boolean}[]=[
  {kind:"salon-profile",label:"Salon information, opening hours & map",permission:"salon_settings.view"},
@@ -50,6 +51,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
  if(index.accounts.some(a=>a.canCreate))groups.push({id:"create",label:"Add salon",items:[{id:"create-salon",label:"Add salon",content:<SalonListPanel initialCreate createOnly onChanged={reload}/>} ]});
  if(index.support)groups.push({id:"support",label:"Account recovery",items:[{id:"recovery-back-office",label:"Support · account recovery",content:<DirectSettingsPanel kind="recovery-back-office"/>}]});
  if(index.twilio)groups.push({id:"admin",label:"Platform administration",items:[{id:"messaging",label:"Messaging",content:<TwilioSettingsForm settings={index.twilio}/>} ]});
+ groups.push({id:"legal",label:"Legal & Privacy",items:[{id:"legal-policies",label:"Policies & terms",content:<nav aria-label="Legal policies" className="grid gap-3 text-sm"><Link href="/terms">Terms of Service</Link><Link href="/privacy">Privacy Policy</Link><Link href="/community">Community Standards</Link>{index.hasBusinessWorkspace?<Link href="/business-terms">Business & Salon Terms</Link>:null}</nav>}]});
  const all=groups.flatMap(g=>g.items);
  const initialId=initialSection==="profile"?"personal-profile":initialSection==="staff-connections"?"connections":all.find(i=>i.id===initialSection||i.id.endsWith(`-${initialSection}`)||initialSection==="staff-workspace"&&i.id.startsWith("staff-")&&i.id.endsWith("-profile")||initialSection==="staff-schedule"&&i.id.endsWith("-schedule"))?.id;
  const activeId=all.some(i=>i.id===selection)?selection:initialId||"personal-profile";
@@ -67,7 +69,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
     {groupButton(groups[0])}
     <div><p className="mb-2 px-3 text-xs font-medium uppercase tracking-wider text-zinc-400">Salons I own or manage</p>{groups.filter(g=>g.id.startsWith("salon-")).map(groupButton)}{!index.managed.length?<p className="px-3 text-sm text-zinc-500">No linked salons</p>:null}{groups.filter(g=>g.id==="create").map(groupButton)}</div>
     {index.staff.length?<div><p className="mb-2 px-3 text-xs font-medium uppercase tracking-wider text-zinc-400">Salons where I work</p>{groups.filter(g=>g.id.startsWith("staff-")).map(groupButton)}</div>:null}
-    {groups.filter(g=>["support","admin"].includes(g.id)).map(groupButton)}
+    {groups.filter(g=>["support","admin","legal"].includes(g.id)).map(groupButton)}
    </nav>
    <main className="min-w-0">
     <header className="mb-5"><h2 className="text-xl font-semibold tracking-tight">{activeGroup.label}</h2>{activeGroup.description?<p className="mt-1 text-sm text-zinc-500">{activeGroup.description}</p>:null}{activeGroup.owners?<div className="mt-3 space-y-1 text-sm text-zinc-600">{activeGroup.owners}</div>:null}</header>

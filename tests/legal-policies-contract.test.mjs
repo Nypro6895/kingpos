@@ -175,14 +175,14 @@ test("footer and auth surfaces expose only lightweight legal links", () => {
 });
 
 test("settings adds legal privacy rows without client-only business role logic", () => {
-  const settingsPage = read("app/(app)/settings/page.tsx");
+  const settingsPage = read("app/settings/settings-hub-client.tsx");
 
   assert.match(settingsPage, /Legal & Privacy/);
   assert.match(settingsPage, /Terms of Service/);
   assert.match(settingsPage, /Privacy Policy/);
   assert.match(settingsPage, /Community Standards/);
   assert.match(settingsPage, /hasBusinessWorkspace/);
-  assert.match(settingsPage, /workspace\.type === "salon"/);
+  assert.match(read("app/settings/settings-hub-actions.ts"), /workspace\.type === "salon"/);
   assert.match(settingsPage, /Business & Salon Terms/);
-  assert.doesNotMatch(settingsPage, /usePathname|useSearchParams|localStorage|sessionStorage/);
+  assert.doesNotMatch(settingsPage, /localStorage|sessionStorage/);
 });

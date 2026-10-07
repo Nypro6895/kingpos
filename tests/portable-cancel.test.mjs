@@ -11,6 +11,7 @@ test('rejected ticket cancellation: confirmation, persistence, no replay, isolat
  const bundle=await build({stdin:{resolveDir:root,loader:'tsx',contents:`import React from 'react';import{createRoot}from'react-dom/client';import*as ops from '${root}/lib/portable-operations';import{PortableSyncIndicator}from'${root}/app/pos/portable/portable-sync-indicator';window.ops=ops;createRoot(document.getElementById('root')).render(<PortableSyncIndicator scope="test"/>);`},jsx:'automatic',bundle:true,write:false,platform:'browser'});
  const requests=[];
  const server=createServer(async(req,res)=>{
+  if(req.url==='/api/pos/connection'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({available:true}));return;}
   if(req.url==='/api/pos/portable/operations'){
    let body='';for await(const chunk of req)body+=chunk;const op=JSON.parse(body);requests.push(op.id);
    res.setHeader('Content-Type','application/json');res.end(JSON.stringify(op.payload.reject?{kind:'blocked',message:'Assigned staff must be checked in and working.'}:{kind:'ok',data:{ticketId:op.id}}));return;

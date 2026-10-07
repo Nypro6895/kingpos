@@ -78,16 +78,16 @@ test("client-side filters use shared normalized matching", () => {
   const posClient = read("app/pos/pos-desk-client.tsx");
   const servicesManager = read("app/services/services-manager.tsx");
   const bookingsClient = read("app/bookings/booking-workspace-client.tsx");
-  const staffPage = read("app/(app)/staff/page.tsx");
+  const staffPage = read("app/(app)/staff/page.tsx") + read("app/staff/staff-directory-editor.tsx");
   const ticketPage = read("app/(app)/pos-tickets/page.tsx");
-  const portableTicketPage = read("app/(app)/pos/portable/ticket/page.tsx");
+  const portableTicketPage = read("app/pos/portable/ticket/portable-ticket-client.tsx");
 
   assert.match(helper, /normalize\("NFD"\)/);
   assert.match(helper, /searchTextMatches/);
   assert.match(posClient, /searchTextMatches\(\[service\.name, service\.category\], serviceSearch\)/);
   assert.match(servicesManager, /searchTextMatches\(\s*\[config\.name, config\.category, config\.description\]/s);
   assert.match(bookingsClient, /searchTextMatches\(\[service\.name, service\.category\], query\)/);
-  assert.match(staffPage, /return searchTextMatches\(\[/);
+  assert.match(staffPage, /searchTextMatches\(\s*\[/);
   assert.match(ticketPage, /return searchTextMatches\(searchableValues, query\)/);
   assert.match(portableTicketPage, /return searchTextMatches\(searchableValues, query\)/);
 });

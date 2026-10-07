@@ -75,7 +75,8 @@
 .bottom {
   bottom: 0;
 }
-.ticker a {
+.ticker a,
+.tickerText {
   white-space: nowrap;
   display: block;
   min-width: 100%;
@@ -86,8 +87,23 @@
   color: inherit;
 }
 .ticker:hover a,
-.ticker:focus-within a {
+.ticker:focus-within a,
+.ticker:hover .tickerText {
   animation-play-state: paused;
+}
+.message {
+  padding: 32px 24px 44px;
+  white-space: pre-wrap;
+}
+.bottomReserve {
+  padding-bottom: 48px;
+}
+.message strong {
+  font-size: 22px;
+}
+.message p {
+  margin-top: 12px;
+  font-size: 15px;
 }
 .ticker button {
   position: absolute;

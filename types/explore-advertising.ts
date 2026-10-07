@@ -4,6 +4,7 @@ export type Campaign = {
   name: string;
   kind: CampaignKind;
   enabled: boolean;
+  status?: "draft" | "running" | "stopped";
   imageUrl: string;
   href: string;
   text: string;

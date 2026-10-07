@@ -67,8 +67,9 @@ test("recovery back office reuses support admin controls and exposes secure acti
   assert.ok(existsSync("app/settings/recovery-back-office/recovery-back-office-panel.tsx"));
   assert.ok(existsSync("app/settings/recovery-back-office/actions.ts"));
 
-  assert.match(settingsPage, /currentUserCanAccessRecoveryBackOffice/);
-  assert.match(settingsPage, /href: "\/settings\/recovery-back-office"/);
+  assert.match(settingsPage, /loadSettingsHub/);
+  assert.match(read("app/settings/settings-hub-actions.ts"), /currentUserCanAccessRecoveryBackOffice/);
+  assert.match(read("app/settings/settings-hub-client.tsx"), /if\(index\.support\).*kind="recovery-back-office"/);
   assert.match(accountSecurityBackOffice, /lifecycle_current_user_is_support_admin/);
   assert.match(accountSecurityBackOffice, /PLATFORM_ADMIN_PERMISSIONS\.recoveryRead/);
   assert.match(accountSecurityBackOffice, /PLATFORM_ADMIN_PERMISSIONS\.recoveryManage/);

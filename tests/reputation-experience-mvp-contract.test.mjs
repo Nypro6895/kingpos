@@ -21,12 +21,12 @@ function readFirst(paths) {
 }
 
 const activityAction = read("app/activity/actions.ts");
-const activityPage = readFirst(["app/(app)/activity/page.tsx", "app/activity/page.tsx"]);
+const activityPage = readFirst(["app/(app)/activity/page.tsx", "app/(app)/activity/page.tsx"]);
 const activityPrompt = read("app/activity/visit-experience-prompt.tsx");
 const exploreClient = read("app/explore/explore-client.tsx");
 const exploreFeed = read("lib/explore-feed.ts");
 const exploreFeedClient = read("app/explore/explore-feed.tsx");
-const explorePage = readFirst(["app/(app)/explore/page.tsx", "app/explore/page.tsx"]);
+const explorePage = readFirst(["app/(app)/explore/page.tsx", "app/(app)/explore/page.tsx"]);
 const trustComponent = read("components/reylumi-trust.tsx");
 const reylumiTrust = read("lib/reylumi-trust.ts");
 const salonProfile = read("app/salon-profile/salon-profile-view.tsx");
@@ -62,7 +62,7 @@ test("post-visit UX is lightweight and voluntary", () => {
   assert.match(activityPrompt, /Had an issue/);
   assert.match(activityPrompt, /Optional details/);
   assert.match(activityAction, /record_customer_visit_experience/);
-  assert.match(activityAction, /reputation backend still needs to be enabled/);
+  assert.match(activityAction, /Sharing your experience is temporarily unavailable/);
   assert.match(customerActivity, /CustomerActivityVerifiedVisit/);
 });
 

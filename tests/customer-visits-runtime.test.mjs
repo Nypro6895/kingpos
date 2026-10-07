@@ -379,6 +379,15 @@ function setupFixture() {
       (${sqlUuid(DRAFT_CHECKOUT_ID)}, ${sqlUuid(SALON_ID)}, ${sqlString(TOKEN_CHECKOUT)}, '[]'::jsonb, 0, 0, 0, 0, 0, 0, 'draft', null),
       (${sqlUuid(DRAFT_SELECT_ID)}, ${sqlUuid(SALON_ID)}, ${sqlString(TOKEN_SELECT)}, '[]'::jsonb, 0, 0, 0, 0, 0, 0, 'draft', null);
 
+    insert into public.booking_settings (salon_id, same_day_booking_enabled, minimum_lead_time_minutes, timezone_iana)
+    values (${sqlUuid(SALON_ID)}, true, 0, 'America/Chicago');
+
+    insert into public.staff_service_assignments (salon_id, staff_id, service_id, is_active)
+    values (${sqlUuid(SALON_ID)}, ${sqlUuid(STAFF_ID)}, ${sqlUuid(SERVICE_ID)}, true);
+    insert into public.staff_availability_rules (salon_id, staff_id, rule_type, day_of_week, starts_at_local, ends_at_local, is_active)
+    select ${sqlUuid(SALON_ID)}, ${sqlUuid(STAFF_ID)}, 'working', day, '00:00'::time, '23:59'::time, true
+    from generate_series(0, 6) day;
+
     insert into public.bookings (
       id,
       salon_id,

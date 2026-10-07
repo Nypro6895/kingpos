@@ -108,7 +108,7 @@ test(
                     : path === "actions"
                       ? actions
                       : path === "navigation"
-                        ? `export const useRouter=()=>({refresh:()=>window.dispatchEvent(new Event('fixture-refresh')),push:href=>window.calls.push({name:'navigate',args:href})});`
+                        ? `export const usePathname=()=>'/my-place';export const useRouter=()=>({refresh:()=>window.dispatchEvent(new Event('fixture-refresh')),push:href=>window.calls.push({name:'navigate',args:href})});`
                         : path === "workspace"
                           ? `export async function switchWorkspaceDestination(args){window.calls.push({name:'switch',args});return {ok:true,href:args.destinationHref};}`
                           : `export async function getSalonProfileMediaUploadSessionAction(intent,kind,id){window.calls.push({name:'uploadSession',args:{intent,kind,id}});return {supabaseUrl:location.origin,accessToken:'fixture',anonKey:'fixture',bucket:'logos',path:'salon-a/test.webp'};}`,

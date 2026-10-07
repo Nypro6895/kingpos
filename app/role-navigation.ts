@@ -78,6 +78,7 @@ export const SHARED_CONTEXT_ROUTE_PREFIXES = [
   "/account",
   "/explore",
   "/more",
+  "/market",
   "/my-place",
   "/notifications",
   "/settings",
@@ -252,6 +253,14 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
     },
   ],
   owner: [
+    {
+      description: "Discover sample apps and integrations for your salon.",
+      href: "/market",
+      icon: "store",
+      id: "owner-market",
+      label: "Market",
+      navigationIcon: "store",
+    },
     {
       description: "Switch salons, staff workplaces, accounts, and Personal mode.",
       href: "/my-place",

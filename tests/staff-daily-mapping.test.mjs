@@ -37,6 +37,7 @@ test('Staff Daily maps a single salon snapshot and excludes cancelled/voided ear
   ] };
   const supabase = { rpc: async (...args) => { calls.push(args); return { data: snapshot, error: null }; } };
   const mocks = {
+    '@/lib/salon-business-clock': { getContextBusinessDate: async () => '2026-09-24' },
     'server-only': {}, '@/lib/current-context': {},
     '@/lib/staff-account': { resolveStaffAccountForSalon: async () => ({ status: 'found', staff: { id: 'staff' } }) },
     '@/lib/supabase/server': { createAuthenticatedSupabaseServerClient: async () => supabase },

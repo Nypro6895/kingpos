@@ -37,7 +37,7 @@ test("account Following combines followed shops and Beauty profiles", () => {
   assert.match(moreRoute, /const FOLLOWING_PAGE_SIZE = 10/);
   assert.match(moreRoute, /const FOLLOWING_FILTERS/);
   assert.match(moreRoute, /action="\/more\/following"/);
-  assert.match(moreRoute, /placeholder="Search following"/);
+  assert.match(moreRoute, /placeholder="Search people and shops"/);
   assert.match(moreRoute, /function FollowingPagination/);
   assert.match(moreRoute, /getAccountFollowing\(\{/);
   assert.match(moreRoute, /section === "favorite-shop" \|\| section === "favorite-customer"/);

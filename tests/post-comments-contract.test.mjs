@@ -87,7 +87,7 @@ test("server comment domain centralizes auth, pagination, mutation, and cache in
 test("shared comment thread supports fast Facebook-like interaction states", () => {
   assert.match(thread, /PostCommentThreadContent/);
   assert.match(thread, /createSupabaseBrowserClient/);
-  assert.match(thread, /\.channel\(`post-comments:\$\{target\.sourceType\}:\$\{target\.sourceId\}`\)/);
+  assert.match(thread, /\.channel\(`post-comments:\$\{target\.sourceType\}:\$\{target\.sourceId\}:\$\{crypto\.randomUUID\(\)\}`\)/);
   assert.match(thread, /postgres_changes/);
   assert.match(thread, /optimisticMatchesRealtimeComment/);
   assert.match(thread, /createOptimisticComment/);

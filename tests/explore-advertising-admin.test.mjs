@@ -86,6 +86,19 @@ test(
     form.set("id", result.id);
     await saveCampaignAction(result, form);
     assert.equal(globalThis.adRows[1].id, result.id);
+    form.delete("id");
+    form.set("name", "Second offer");
+    const second = await saveCampaignAction({ ok: false, message: "" }, form);
+    assert.equal(second.ok, true);
+    assert.notEqual(second.id, result.id);
+    assert.equal(globalThis.adRows[0].config.name, "Offer");
+    form.set("href", "javascript:alert(1)");
+    form.set("delaySeconds", "-1");
+    const invalid = await saveCampaignAction({ ok: false, message: "" }, form);
+    assert.equal(invalid.ok, false);
+    assert.ok(invalid.errors.href);
+    assert.ok(invalid.errors.delaySeconds);
+    assert.equal(globalThis.adRows.length, 3);
   },
 );
 test(

@@ -83,3 +83,30 @@ test("campaign destinations reject active content and protocol-relative URLs", (
     "https://example.com/a.gif",
   );
 });
+test("images and links are optional and saved/stopped states stay distinct", () => {
+  const draft = parseCampaign(
+    form({ imageUrl: "", href: "", text: "Welcome", status: "draft" }),
+  );
+  assert.equal(draft.enabled, false);
+  assert.equal(draft.status, "draft");
+  const stopped = parseCampaign(form({ status: "stopped" }));
+  assert.equal(stopped.enabled, false);
+  assert.equal(stopped.status, "stopped");
+});
+test("validation identifies every invalid field", () => {
+  assert.throws(
+    () =>
+      parseCampaign(
+        form({
+          href: "javascript:alert(1)",
+          delaySeconds: "-1",
+          endsAt: "2026-10-06",
+          startsAt: "2026-10-07",
+        }),
+      ),
+    (error) =>
+      Boolean(
+        error.fields.href && error.fields.delaySeconds && error.fields.endsAt,
+      ),
+  );
+});

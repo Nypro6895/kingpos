@@ -19,7 +19,7 @@ function sourceBetween(start, end) {
 }
 
 test("salon discover is a single chronological timeline with customer shares inline", () => {
-  const discover = sourceBetween("function renderDiscover()", "function renderGallery()");
+  const discover = sourceBetween("function renderDiscover(", "function renderGallery(");
 
   assert.match(source, /function buildTimelineItems/);
   assert.match(source, /input\.feedItems\.map/);

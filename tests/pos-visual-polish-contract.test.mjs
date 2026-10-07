@@ -102,7 +102,7 @@ test("Waiting drawer uses a viewport portal with clamped placement and internal 
   assert.match(posClient, /window\.addEventListener\("keydown", closeWaitingOnEscape\)/);
   assert.match(posClient, /className="fixed inset-0 z-\[45\] pointer-events-none"/);
   assert.match(posClient, /className="fixed z-10 pointer-events-auto flex min-w-0 flex-col overflow-hidden/);
-  assert.match(posClient, /style=\{\s*waitingDrawerPlacement \?\? \{/);
+  assert.match(posClient, /style=\{\s*isPortableSurface \?[^\n]+: waitingDrawerPlacement \?\? \{/);
   assert.match(posClient, /data-pos-waiting-drawer-scroll/);
 });
 

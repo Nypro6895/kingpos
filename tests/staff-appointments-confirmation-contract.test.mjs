@@ -103,7 +103,8 @@ test("staff schedule keeps salon-facing UX and staff booking controls", () => {
   assert.match(actions, /rpc\("confirm_assigned_booking"/);
   assert.doesNotMatch(actions, /updateStaffOnlineBookingAction/);
   assert.doesNotMatch(actions, /set_own_staff_online_booking/);
-  assert.match(actions, /revalidatePath\("\/", "layout"\)/);
+  assert.match(actions, /revalidatePath\("\/staff\/appointments"\)/);
+  assert.match(actions, /revalidatePath\("\/bookings"\)/);
   assert.match(actions, /revalidatePath\("\/notifications"\)/);
 
   assert.match(settingsClient, /Booking settings/);

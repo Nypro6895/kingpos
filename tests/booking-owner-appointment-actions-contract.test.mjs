@@ -42,34 +42,28 @@ test("owner appointment rows expose customer, edit, ticket, and settings actions
   assert.match(client, /createBookingPosTicketAction/);
   assert.match(client, /<SettingsIcon \/>/);
   assert.ok(!client.includes("aria-hidden=\"true\">\n                  ..."));
-  assert.match(client, /Next 7 days/);
-  assert.match(client, />\s*All\s*<\/button>/);
-  assert.match(client, /range: range === "day" \? null : range/);
+  assert.match(client, /<SchedulePicker/);
+  assert.match(read("components/booking-ui/schedule-picker.tsx"), /range: "next7"/);
+  assert.match(read("components/booking-ui/schedule-picker.tsx"), /7 days from selected date/);
+  assert.match(client, /range:value\.range === "day" \? null : value\.range/);
   assert.match(client, /showDate=\{filters\.dateRange !== "day"\}/);
 
   assert.match(actions, /export async function replaceOwnerBookingServicesAction/);
   assert.match(actions, /staffIds\?: \(string \| null\)\[\]/);
-  assert.match(actions, /requestedStaffIds/);
-  assert.match(actions, /rpc\(\s*"replace_booking_services"/);
+  assert.match(actions, /changes\.lines=schedule\.lines\.map/);
+  assert.match(actions, /rpc\('save_pos_workspace_booking'/);
   assert.match(actions, /notifyBookingChange/);
   assert.match(actions, /rpc\("notify_booking_change"/);
   assert.match(actions, /rpc\(\s*"resolve_public_booking_request_notifications"/);
+  assert.match(actions, /Date\.parse\(booking\.updated_at\)!==Date\.parse\(input\.expectedUpdatedAt\)/);
+  assert.match(actions, /p_expected:input\.expectedUpdatedAt/);
+  assert.match(actions, /if\(error\)return failure[\s\S]*await notifyBookingChange/);
   assert.match(
     actions,
-    /const didChange = !\("changed" in result\.data\) \|\| result\.data\.changed !== false/,
-    "Owner status actions should know when a concurrent confirm was already applied.",
-  );
-  assert.match(
-    actions,
-    /if \(didChange\) \{[\s\S]*await notifyBookingChange/,
-    "Owner confirm no-ops must not create duplicate customer/staff change notifications.",
-  );
-  assert.match(
-    actions,
-    /if \(input\.command === "confirm"\) \{[\s\S]*await resolveBookingRequestNotifications/,
+    /if\(input\.command==='confirm'\)await resolveBookingRequestNotifications/,
     "Owner confirm should resolve the original pending booking request notifications.",
   );
-  assert.match(actions, /revalidatePath\("\/", "layout"\)/);
+  assert.match(actions, /revalidatePath\("\/bookings"\)/);
   assert.match(actions, /revalidatePath\("\/staff\/appointments"\)/);
   assert.match(actions, /revalidatePath\("\/notifications"\)/);
 

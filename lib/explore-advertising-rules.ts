@@ -1,4 +1,17 @@
 import type { Campaign } from "@/types/explore-advertising";
+export class CampaignValidationError extends Error {
+  constructor(public fields: Record<string, string>) {
+    super("Please correct the highlighted fields.");
+  }
+}
+
+export function campaignStatus(campaign: Campaign) {
+  return campaign.enabled
+    ? "running"
+    : campaign.status === "stopped"
+      ? "stopped"
+      : "draft";
+}
 
 export function safeCampaignUrl(value: string, image = false) {
   if (!value) return "";
@@ -34,36 +47,56 @@ export function chooseCampaign<T extends { id: string }>(
     : null;
 }
 export function parseCampaign(form: FormData): Campaign {
+  const errors: Record<string, string> = {};
   const field = (key: string) => String(form.get(key) ?? "").trim();
   const number = (key: string, min: number, max: number) => {
     const value = Number(field(key));
     if (!Number.isFinite(value) || value < min || value > max)
-      throw new Error(`Invalid ${key}.`);
+      errors[key] = `Enter a number between ${min} and ${max}.`;
     return value;
   };
   const date = (key: string) => {
-    const value = field(key);
+    const raw = field(key);
+    const value = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(raw)
+      ? `${raw}Z`
+      : raw;
     if (!value) return null;
-    if (!Number.isFinite(Date.parse(value)))
-      throw new Error("Invalid schedule.");
+    if (!Number.isFinite(Date.parse(value))) {
+      errors[key] = "Choose a valid date and time.";
+      return null;
+    }
     return new Date(value).toISOString();
   };
   const kind = field("kind"),
     repeat = field("repeat"),
     position = field("position");
-  if (
-    !["popup", "placement", "ticker"].includes(kind) ||
-    !["always", "once", "daily"].includes(repeat) ||
-    !["top", "bottom"].includes(position)
-  )
-    throw new Error("Invalid campaign settings.");
+  for (const [key, value, options] of [
+    ["kind", kind, ["popup", "placement", "ticker"]],
+    ["repeat", repeat, ["always", "once", "daily"]],
+    ["position", position, ["top", "bottom"]],
+  ] as const) {
+    if (!(options as readonly string[]).includes(value))
+      errors[key] = "Choose a valid option.";
+  }
+  const url = (key: string, image = false) => {
+    try {
+      return safeCampaignUrl(field(key), image);
+    } catch (error) {
+      errors[key] = (error as Error).message;
+      return "";
+    }
+  };
+  const status = field("status") || (form.has("enabled") ? "running" : "draft");
+  if (!["draft", "running", "stopped"].includes(status))
+    errors.status = "Choose a valid status.";
   const campaign: Campaign = {
     id: field("id") || crypto.randomUUID(),
     name: field("name").slice(0, 120),
     kind: kind as Campaign["kind"],
-    enabled: form.has("enabled"),
-    imageUrl: safeCampaignUrl(field("imageUrl"), true),
-    href: safeCampaignUrl(field("href")),
+    enabled: status === "running",
+    status: status as Campaign["status"],
+    imageUrl: url("imageUrl", true),
+    href: url("href"),
     text: field("text").slice(0, 1000),
     background: field("background"),
     color: field("color"),
@@ -76,32 +109,25 @@ export function parseCampaign(form: FormData): Campaign {
     startsAt: date("startsAt"),
     endsAt: date("endsAt"),
   };
-  if (
-    !/^[0-9a-f-]{36}$/i.test(campaign.id) ||
-    !campaign.name ||
-    !campaign.href ||
-    (kind === "ticker" ? !campaign.text : !campaign.imageUrl)
-  )
-    throw new Error("Add a name, link, and image or announcement text.");
-  if (
-    ![campaign.background, campaign.color].every((color) =>
-      /^#[0-9a-f]{6}$/i.test(color),
-    )
-  )
-    throw new Error("Use valid colors.");
+  if (!/^[0-9a-f-]{36}$/i.test(campaign.id))
+    errors.id = "Invalid campaign identifier. Reopen the editor.";
+  if (!campaign.name) errors.name = "Enter a campaign name.";
+  for (const key of ["background", "color"] as const)
+    if (!/^#[0-9a-f]{6}$/i.test(campaign[key]))
+      errors[key] = "Choose a valid color.";
   if (
     campaign.startsAt &&
     campaign.endsAt &&
     campaign.startsAt >= campaign.endsAt
   )
-    throw new Error("End must be after start.");
+    errors.endsAt = "End must be after start.";
   if (
     kind === "popup" &&
     !campaign.closeButton &&
     campaign.durationSeconds === 0
   )
-    throw new Error(
-      "A popup needs a close button or an automatic close duration.",
-    );
+    errors.durationSeconds =
+      "A popup needs a close button or an automatic close duration.";
+  if (Object.keys(errors).length) throw new CampaignValidationError(errors);
   return campaign;
 }

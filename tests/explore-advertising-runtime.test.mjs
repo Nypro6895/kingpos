@@ -150,7 +150,9 @@ test(
         .first()
         .getAttribute("aria-label");
       assert.equal(
-        await page.getByText("A lovely first visit").isVisible(),
+        await page
+          .getByRole("link", { name: "A lovely first visit", exact: true })
+          .isVisible(),
         true,
       );
       await page.setViewportSize({ width: 1440, height: 900 });

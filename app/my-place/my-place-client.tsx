@@ -6,6 +6,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AccountProfileEditor } from "@/app/account/account-profile-editor";
+import { QueryErrorDialog } from "@/app/query-error-dialog";
 import { switchWorkspaceDestination } from "@/app/salons/actions";
 import type {
   CurrentWorkspaceAction,
@@ -335,7 +336,7 @@ export function MyPlaceClient({
           timeZone: "UTC",
         })}
       />
-      {notice ? <Notice error={notice.error}>{notice.text}</Notice> : null}
+      {notice?.error ? <QueryErrorDialog key={notice.text} message={notice.text} title="Could not complete this action" primaryLabel="Got it" /> : notice ? <Notice>{notice.text}</Notice> : null}
       {!requests.ok ? (
         <Notice error>
           Requests could not be loaded. {requests.message}{" "}

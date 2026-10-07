@@ -324,7 +324,7 @@ function buildUrl(input: {
   if (input.location.trim()) {
     params.set("location", input.location.trim());
   } else {
-    params.delete("location");
+    params.set("location", "");
   }
 
   if (category) {
@@ -1093,9 +1093,16 @@ function MobileExploreSearch({
           type="search"
         />
       </label>
-      {location.trim() ? (
-        <input name="location" type="hidden" value={location.trim()} />
-      ) : null}
+      <label className="grid gap-0.5 rounded-[0.8rem] bg-surface-muted px-3 py-1.5">
+        <span className="text-[11px] font-medium text-text-muted">Location (optional)</span>
+        <input
+          className="min-w-0 bg-transparent text-sm text-text-primary outline-none"
+          defaultValue={location}
+          name="location"
+          placeholder="Any location"
+          type="search"
+        />
+      </label>
       {normalizedCategory ? (
         <input name="category" type="hidden" value={normalizedCategory} />
       ) : null}
@@ -2111,8 +2118,8 @@ function SalonCard({
   const bookingHref =
     salon.bookingEnabled && salon.bookingHref ? salon.bookingHref : null;
   const cardSizeClass = featured
-    ? "aspect-[4/3] sm:aspect-[3/2] xl:aspect-[16/9]"
-    : "aspect-[4/3] sm:aspect-[1/1]";
+    ? "aspect-[4/3] md:aspect-[16/9]"
+    : "aspect-[4/3]";
   const imageSizes = featured
     ? "(max-width: 768px) 100vw, (max-width: 1280px) 66vw, 42vw"
     : "(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 24vw";
@@ -2120,10 +2127,10 @@ function SalonCard({
   return (
     <article
       className={[
-        "group relative min-h-full overflow-hidden rounded-[1rem] bg-text-primary shadow-[0_12px_32px_rgba(80,47,36,0.08)] ring-1 ring-divider-subtle/80 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_46px_rgba(80,47,36,0.12)] focus-within:ring-brand-orange/35",
-        cardSizeClass,
+        "group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl bg-white shadow-[0_12px_32px_rgba(80,47,36,0.06)] ring-1 ring-divider-subtle/80 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_46px_rgba(80,47,36,0.12)] focus-within:ring-brand-orange/35",
       ].join(" ")}
     >
+      <div className={`relative shrink-0 overflow-hidden bg-surface-muted ${cardSizeClass}`}>
       {mediaHref ? (
         <Link
           aria-label={isDefaultNailImage(imageUrl) ? `Open profile of ${salon.name}` : `Open featured work from ${salon.name}`}
@@ -2151,12 +2158,7 @@ function SalonCard({
         </div>
       )}
 
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(31,23,27,0.10),rgba(31,23,27,0.03)_36%,rgba(31,23,27,0.76))]"
-      />
-
-      <NailIllustrationCredit imageUrl={imageUrl} className="absolute right-3 top-14 z-20" />
+      <NailIllustrationCredit imageUrl={imageUrl} className="absolute right-3 bottom-3 z-20" />
       <div className="pointer-events-none absolute left-2.5 right-2.5 top-2.5 z-10 flex items-start justify-between gap-2">
         <span
           aria-label={rankAriaLabel}
@@ -2171,17 +2173,18 @@ function SalonCard({
         ) : null}
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-10 p-3.5 text-white sm:p-4">
+      </div>
+      <div className="flex flex-1 flex-col gap-4 p-4 text-text-primary sm:p-5">
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-1.5">
             {profileHref ? (
               <Link
-                className="min-w-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="min-w-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
                 href={profileHref}
               >
                 <h3
                   className={[
-                    "line-clamp-2 font-semibold leading-tight transition hover:text-brand-orange",
+                    "break-words font-semibold leading-snug transition hover:text-brand-orange",
                     featured ? "text-xl sm:text-2xl" : "text-lg",
                   ].join(" ")}
                 >
@@ -2191,7 +2194,7 @@ function SalonCard({
             ) : (
               <h3
                 className={[
-                  "min-w-0 line-clamp-2 font-semibold leading-tight",
+                  "min-w-0 break-words font-semibold leading-snug",
                   featured ? "text-xl sm:text-2xl" : "text-lg",
                 ].join(" ")}
               >
@@ -2201,32 +2204,28 @@ function SalonCard({
             <SalonVerifiedBadge verified={salon.identityVerified}/>
           </div>
           {availabilityLabel?<span className="sr-only">{availabilityLabel}</span>:null}
-          <SalonTrustLine signals={salon} href={profileHref} name={salon.name} distance={distance} className="text-white/85"/>
-          {location?<p className="truncate text-[11px] leading-5 text-white/70">{location}</p>:null}
+          <SalonTrustLine signals={salon} href={profileHref} name={salon.name} distance={distance} className="text-text-secondary"/>
+          {location?<p className="mt-1 text-sm leading-5 text-text-secondary">{location}</p>:null}
           {service || price ? (
-            <p className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs font-semibold text-white">
+            <p className="mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-semibold text-text-primary">
               {service ? <span className="line-clamp-1">{service}</span> : null}
-              {price ? <span className="text-white/88">{price}</span> : null}
+              {price ? <span className="text-text-primary">{price}</span> : null}
             </p>
           ) : null}          <SalonOperatingStatusBadge
-            className="mt-0.5 max-w-full"
-            inverted
+            className="mt-2 max-w-full"
             showDetail={featured}
             status={salon.operatingStatus}
           />
 
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-divider-subtle pt-4">
           <ExploreBookButton href={bookingHref} name={salon.name} contactHref={profileHref} phoneHref={callHref} />
           <ExploreSalonLove salonId={salon.id} name={salon.name} />
           {profileHref ? (
             <Link
               className={[
-                "inline-flex min-h-8 items-center rounded-full px-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-                bookingHref
-                  ? "bg-white/15 text-white ring-1 ring-white/25 hover:bg-white/20"
-                  : "bg-white text-text-primary hover:bg-brand-orange-soft",
+                "inline-flex min-h-10 items-center rounded-full bg-surface-muted px-4 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
               ].join(" ")}
               href={profileHref}
             >
@@ -2236,7 +2235,7 @@ function SalonCard({
           {callHref && !bookingHref && !canViewProfile ? (
             <a
               aria-label={`Call ${salon.name}`}
-              className="inline-flex min-h-8 items-center rounded-full bg-white/15 px-3 text-sm font-semibold text-white ring-1 ring-white/25 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-flex min-h-10 items-center rounded-full bg-surface-muted px-4 text-sm font-semibold text-text-primary ring-1 ring-divider-subtle transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               href={callHref}
             >
               Call
@@ -2457,7 +2456,7 @@ function ResultSection({
   }
 
   return (
-    <section className="grid gap-2.5">
+    <section className="grid gap-4">
       <div>
         <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
         {description ? (
@@ -2466,14 +2465,14 @@ function ResultSection({
           </p>
         ) : null}
       </div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-12">
         {results.map((salon, index) => {
           const featured = index === 0 && results.length >= 3;
           const rank = searchRankBadge(rankKind, index);
 
           return (
             <div
-              className={featured ? "md:col-span-2 xl:col-span-2" : ""}
+              className={featured ? "min-w-0 xl:col-span-7" : index === 1 && results.length >= 3 ? "min-w-0 xl:col-span-5" : "min-w-0 xl:col-span-4"}
               key={`${salon.resultGroup}:${salon.id}`}
             >
               <SalonCard
@@ -4164,7 +4163,6 @@ function DesktopDiscoveryMarketplace({
   onCurrentLocation,
   onSelectCategory,
   selectedCategory,
-  workspaceLocation,
   strictLocation,
 }: {
   activeResults: ExploreSearchResult[];
@@ -4184,7 +4182,7 @@ function DesktopDiscoveryMarketplace({
   workspaceLocation: ExploreInitialLocation;
   strictLocation: boolean;
 }) {
-  const defaultLocation = formatDisplayLocation(location || workspaceLocation.label);
+  const defaultLocation = formatDisplayLocation(location);
   const [filters, setFilters] = useState<DesktopDiscoveryFilterState>(() => ({
     availability: "any",
     date: "any",
@@ -4914,10 +4912,11 @@ export function ExploreClient({
     setGpsMessage(null);
     setExplicitSearchMode(false);
     setActiveDiscoveryResult(null);
-    setLocationSource(workspaceLocation.label ? "workspace" : "none");
+    setLocationSource("none");
+    try { window.localStorage.removeItem(SAVED_LOCATION_KEY); } catch { /* Storage may be unavailable. */ }
 
     startTransition(() => {
-      router.push(pathname, { scroll: false });
+      router.push(`${pathname}?location=`, { scroll: false });
     });
   }
 
@@ -4944,7 +4943,8 @@ export function ExploreClient({
           query,
           searchParams: new URLSearchParams(searchParams.toString()),
         })
-      : pathname;
+      : buildUrl({ category: value, location, page: 1, pathname, query,
+          searchParams: new URLSearchParams(searchParams.toString()) });
 
     startTransition(() => {
       router.push(url, { scroll: false });

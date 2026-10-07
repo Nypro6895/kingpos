@@ -11,7 +11,9 @@ const tabs = fs.readFileSync(
   "utf8",
 );
 const portableRoutes = fs.readFileSync("lib/pos-portable-routes.ts", "utf8");
-const ownerPage = fs.readFileSync("app/(app)/pos/page.tsx", "utf8");
+const ownerLayout = fs.readFileSync("app/(app)/pos/(workspace)/layout.tsx", "utf8");
+const ownerFrame = fs.readFileSync("app/pos/owner-workspace-frame.tsx", "utf8");
+const ownerClient = fs.readFileSync("app/pos/owner-pos-client.tsx", "utf8");
 const portablePage = fs.readFileSync(
   "app/(app)/pos/portable/page.tsx",
   "utf8",
@@ -94,19 +96,21 @@ test("workspace tabs prefetch sibling views for app-like switching", () => {
   assert.match(tabs, /onInvalidate/);
   assert.match(tabs, /PORTABLE_IGNORED_REFRESH_SOURCES = \["attendance"\]/);
   assert.match(tabs, /ignoredSources=\{PORTABLE_IGNORED_REFRESH_SOURCES\}/);
-  assert.match(portableShellRefresh, /MIN_REFRESH_INTERVAL_MS = 30_000/);
-  assert.match(portableShellRefresh, /refresh\(true\)/);
+  assert.doesNotMatch(portableShellRefresh, /router\.refresh|setInterval/);
+  assert.match(fs.readFileSync("lib/pos-workspace-sync.ts", "utf8"), /subscribePosChanges/);
   assert.match(workspaceRefresh, /POS_STAFF_BROADCAST_EVENT/);
   assert.match(workspaceRefresh, /router\.refresh\(\)/);
   assert.match(workspaceRefresh, /!ignoredSources\.includes\(payload\.source\)/);
 });
 
-test("owner pages omit portable-style workspace tabs and keep realtime refresh", () => {
-  for (const page of [ownerPage, bookingsPage, staffTodayPage, reportsPage]) {
+test("owner pages share a persistent checkout and keep realtime refresh", () => {
+  for (const page of [bookingsPage, staffTodayPage, reportsPage]) {
     assert.doesNotMatch(page, /PosOwnerWorkspaceTabs/);
-    assert.match(page, /PosWorkspaceRealtimeRefresh/);
   }
-  assert.match(ownerPage, /PosWorkspaceRealtimeRefresh salonId=\{salonId\}/);
+  assert.match(ownerLayout, /requireSalonManagePageContext\('\/pos'\)/);
+  assert.match(ownerLayout, /OwnerWorkspaceFrame/);
+  assert.match(ownerFrame, /hidden=\{active!=='pos'\}/);
+  assert.match(ownerClient, /usePosResourceRefresh/);
 });
 
 test("workspace shell keeps capability enforcement in the server layout", () => {
@@ -116,21 +120,14 @@ test("workspace shell keeps capability enforcement in the server layout", () => 
   assert.match(layout, /PORTABLE_POS_CAPABILITIES\.reportView/);
 });
 
-test("owner ticket restores desktop controls while keeping rapid mobile mounted", () => {
-  assert.match(ownerPage, /PosRapidMobileBridge/);
-  assert.match(ownerPage, /data-pos-owner-page/);
-  assert.match(ownerPage, /data-pos-rapid-host/);
-  assert.match(ownerPage, /data-pos-rapid-engine/);
-  assert.match(ownerPage, /Point of Sale/);
-  assert.match(ownerPage, /Ticket history/);
-  assert.match(ownerPage, /POS settings/);
-  assert.match(ownerPage, /Devices/);
-  assert.match(ownerPage, /Portable POS/);
-  assert.match(ownerPage, /Customer Display/);
-  assert.match(ownerPage, /target="_blank"/);
-  assert.doesNotMatch(ownerPage, /Customer POS/);
-  assert.doesNotMatch(ownerPage, /PosOwnerWorkspaceTabs/);
-  assert.doesNotMatch(ownerPage, /surface="portable"/);
+test("owner checkout keeps isolated drafts and maps sibling navigation into the workspace", () => {
+  assert.match(ownerLayout, /scope=\{`owner:\$\{salon\.id\}:\$\{user\.id\}`\}/);
+  assert.match(ownerLayout, /includeCustomers:false/);
+  assert.match(ownerFrame, /data-owner-workspace/);
+  assert.match(ownerFrame, /\/pos\/ticket/);
+  assert.match(ownerFrame, /\/pos\/book/);
+  assert.match(ownerFrame, /\/pos\/report/);
+  assert.match(ownerFrame, /router\.push/);
   assert.match(posDeskClient, /data-pos-desk-root/);
   assert.match(posDeskClient, /data-pos-desk-surface=\{surface\}/);
 });

@@ -48,7 +48,7 @@ const posStaffTurnTone = readFileSync("lib/pos-staff-turn-tone.ts", "utf8");
 const portableActions = readFileSync("app/pos/portable/actions.ts", "utf8");
 const portablePage = readFirst([
   "app/(app)/pos/portable/page.tsx",
-  "app/pos/portable/page.tsx",
+  "app/(app)/pos/portable/page.tsx",
 ]);
 const posStaffRealtime = readFileSync("lib/pos-staff-realtime.ts", "utf8");
 const customerDisplayClient = readFileSync(
@@ -58,7 +58,7 @@ const customerDisplayClient = readFileSync(
 const todayDashboard = readFileSync("lib/today-dashboard.ts", "utf8");
 const todayPage = readFirst([
   "app/(app)/staff/today/page.tsx",
-  "app/staff/today/page.tsx",
+  "app/(app)/staff/today/page.tsx",
 ]);
 const posDeskData = readFileSync("lib/pos-desk.ts", "utf8");
 
@@ -255,7 +255,8 @@ test("POS and portable waiting data share the canonical queue rows", () => {
   assert.match(portableActions, /waitingVisits: normalizePortableWaitingVisits/);
   assert.match(portablePage, /waitingVisits=\{data\.waitingVisits\}/);
   assert.match(posDeskData, /getCustomerVisitQueueForSalonOrEmpty/);
-  assert.match(todayDashboard, /getCustomerVisitQueueForSalonOrEmpty/);
+  assert.match(todayDashboard, /getCustomerVisitQueueForSalon\(/);
+  assert.match(todayDashboard, /waitingVisitsResult\.error/);
 });
 
 test("portable waiting mutations use portable-authorized canonical RPC wrappers", () => {
@@ -296,7 +297,8 @@ test("waiting refresh reuses the existing POS broadcast channel", () => {
   assert.match(posActions, /broadcastWaitingChangeByLiveDraftToken\(input\.token\)/);
   assert.match(posActions, /broadcastPosStaffChange\(salon\.id, "waiting"\)/);
   assert.match(portableActions, /broadcastPosStaffChange\(portableSession\.salon_id, "waiting"\)/);
-  assert.doesNotMatch(posClient, /!\s*isPortableSurface[\s\S]*POS_STAFF_BROADCAST_EVENT/);
+  assert.match(posClient, /event: POS_STAFF_BROADCAST_EVENT/);
+  assert.match(posClient, /!\(isPortableSurface && payload\.source === "attendance"\)/);
 });
 
 test("ticket completion closes active visits and preserves payment math", () => {

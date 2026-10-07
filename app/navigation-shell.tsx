@@ -2088,6 +2088,7 @@ function CustomerDesktopHeader({
       <div className={compactStaffHeader ? "flex items-center justify-between gap-4" : "grid grid-cols-[minmax(24rem,1fr)_auto] items-center gap-5"}>
         {compactStaffHeader ? <span className="text-sm text-zinc-500">Staff workspace</span> : null}
         {!compactStaffHeader && <form action="/explore" className="relative" role="search">
+          <div className="relative">
           <label className="sr-only" htmlFor="customer-desktop-search">
             Search salons, services, or locations
           </label>
@@ -2098,6 +2099,7 @@ function CustomerDesktopHeader({
             className="h-14 w-full rounded-full bg-surface-elevated pl-12 pr-56 text-sm font-normal text-text-primary shadow-[0_12px_30px_rgba(35,25,22,0.045)] outline-none ring-1 ring-divider-subtle/85 transition placeholder:font-normal placeholder:text-text-secondary/80 focus:ring-4 focus:ring-brand-orange/15"
             defaultValue={exploreQuery}
             id="customer-desktop-search"
+            key={exploreQuery}
             name="q"
             placeholder="Search salons, services, designs, city, or ZIP..."
             type="search"
@@ -2117,6 +2119,19 @@ function CustomerDesktopHeader({
           >
             Search
           </button>
+          </div>
+          <label className="mt-2 flex items-center gap-2 px-4 text-xs text-text-secondary" htmlFor="customer-desktop-location">
+            <span className="shrink-0">Location (optional)</span>
+            <input
+              className="min-w-0 flex-1 rounded-full bg-surface-elevated px-3 py-2 text-sm text-text-primary outline-none focus:ring-2 focus:ring-brand-orange/20"
+              defaultValue={pathname === "/explore" ? searchParams.get("location") ?? "" : ""}
+              id="customer-desktop-location"
+              key={`${pathname}:${searchParams.get("location") ?? ""}`}
+              name="location"
+              placeholder="Any location"
+              type="search"
+            />
+          </label>
         </form>}
         <div className="flex items-center gap-3">
           {compactStaffHeader && <Link href="/explore" aria-label="Search salons and services" className={customerDesktopSoftButtonClass()}><Icon name="search" /></Link>}

@@ -380,7 +380,7 @@ test("salon publication review actions do not serialize framework redirects", ()
     /try \{([\s\S]*?)\n\s*\} catch \(error\) \{/,
   );
   const actionCatchBlock = salonPublicationReviewActions.match(
-    /\} catch \(error\) \{([\s\S]*?)\n\s*\}\n\n  revalidateBeautySalonPublicationPaths/,
+    /\} catch \(error\) \{([\s\S]*?)\r?\n\s*\}\s+revalidateBeautySalonPublicationPaths/,
   );
 
   assert.ok(actionTryBlock, "Review action should isolate mutation errors.");

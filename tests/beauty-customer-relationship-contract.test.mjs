@@ -72,7 +72,7 @@ test("beauty customer relationship resolver enforces salon-customer authorizatio
 });
 
 test("customer detail and booking workspace separate CRM customer from Beauty profile", () => {
-  const customerDetail = read("app/customers/[customerId]/page.tsx");
+  const customerDetail = read("app/(app)/customers/[customerId]/page.tsx");
   const bookings = read("lib/bookings.ts");
   const bookingClient = read("app/bookings/booking-workspace-client.tsx");
 
@@ -101,7 +101,7 @@ test("relationship state model covers privacy, missing profiles, and tampered UR
     "supabase/migrations/202608140004_beauty_customer_profile_state.sql",
   );
   const service = read("lib/beauty-relationship.ts");
-  const route = read("app/explore/beauty/[profileId]/page.tsx");
+  const route = read("app/(app)/explore/beauty/[profileId]/page.tsx");
 
   assert.match(migration, /'state', 'public'/);
   assert.match(migration, /'state', 'private'/);
@@ -123,7 +123,7 @@ test("relationship state model covers privacy, missing profiles, and tampered UR
 test("Beauty visibility and profile route preserve privacy semantics", () => {
   const actions = read("app/beauty/actions.ts");
   const client = read("app/beauty/beauty-profile-client.tsx");
-  const route = read("app/explore/beauty/[profileId]/page.tsx");
+  const route = read("app/(app)/explore/beauty/[profileId]/page.tsx");
 
   assert.match(actions, /visibility\?: BeautyProfileVisibility/);
   assert.doesNotMatch(actions, /visibility: "public"/);
@@ -140,11 +140,11 @@ test("Beauty visibility and profile route preserve privacy semantics", () => {
 });
 
 test("personal My Book links booking detail to public salon profile", () => {
-  const detailPage = read("app/my-bookings/[bookingId]/page.tsx");
+  const detailPage = read("app/(app)/my-bookings/[bookingId]/page.tsx");
   const detailActions = read("app/my-bookings/[bookingId]/booking-detail-actions.tsx");
 
-  assert.match(detailPage, /salonProfileHref/);
-  assert.match(detailPage, /\/explore\/salons\/\$\{booking\.salon_id\}/);
+  assert.match(detailPage, /details: booking\.id/);
+  assert.match(detailPage, /redirect\(`\/my-bookings\?\$\{query\.toString\(\)\}`\)/);
   assert.match(detailActions, /canViewSalon \? \(/);
   assert.match(detailActions, /href=\{`\/explore\/salons\/\$\{booking\.salon_id\}`\}/);
 });

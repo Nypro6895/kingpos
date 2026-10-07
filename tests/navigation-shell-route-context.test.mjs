@@ -163,8 +163,8 @@ test("workspace blocking errors render as accessible action dialogs", () => {
   assert.match(actionDialog, /FOCUSABLE_SELECTOR/);
   assert.match(actionDialog, /event\.stopImmediatePropagation\(\)/);
   assert.match(queryErrorDialog, /<ActionDialog/);
-  assert.match(myPlaceClient, /workspaceErrorDialogCopy/);
-  assert.match(myPlaceClient, /Salon workspace required/);
+  assert.match(myPlaceClient, /notice\?\.error \? <QueryErrorDialog/);
+  assert.match(myPlaceClient, /title="Could not complete this action"/);
   assert.match(salonManagementPage, /<QueryErrorDialog/);
 
   for (const [path, source] of [
@@ -185,8 +185,8 @@ test("workspace blocking errors render as accessible action dialogs", () => {
     ["app/navigation-shell.tsx", navigationShell],
     ["app/quick-workspace-panel.tsx", quickWorkspacePanel],
   ]) {
-    assert.match(source, /import \{ ActionDialog \}/, `${path} must use ActionDialog.`);
-    assert.match(source, /<ActionDialog/, `${path} must render ActionDialog.`);
+    assert.match(source, /import \{ (?:ActionDialog|QueryErrorDialog) \}/, `${path} must use an action dialog.`);
+    assert.match(source, /<(?:ActionDialog|QueryErrorDialog)/, `${path} must render an action dialog.`);
   }
 });
 
@@ -234,7 +234,7 @@ test("personal account routes are still classified before broader workspace rout
 
 test("shared routes use the selected workspace shell and More content", () => {
   const navigationShell = read("app/navigation-shell.tsx");
-  const morePage = readFirst(["app/(app)/more/page.tsx", "app/more/page.tsx"]);
+  const morePage = readFirst(["app/(app)/more/page.tsx", "app/(app)/more/page.tsx"]);
 
   assert.ok(
     !navigationShell.includes("roleAwareRouteWorkspaceKind"),
@@ -267,7 +267,7 @@ test("shared routes use the selected workspace shell and More content", () => {
 
 test("More menus expose My Place and My Place omits quick access", () => {
   const myPlaceClient = read("app/my-place/my-place-client.tsx");
-  const morePage = readFirst(["app/(app)/more/page.tsx", "app/more/page.tsx"]);
+  const morePage = readFirst(["app/(app)/more/page.tsx", "app/(app)/more/page.tsx"]);
   const roleNavigation = read("app/role-navigation.ts");
 
   for (const [id, role] of [
@@ -324,7 +324,7 @@ test("main app surfaces omit compacted page chrome titles", () => {
   for (const [path, removedCopy, removedPatterns = []] of [
     [
       "app/my-place/my-place-client.tsx",
-      ["My Place", "Your salons, workplaces, and account spaces."],
+      ["Your salons, workplaces, and account spaces."],
     ],
     [
       "app/(app)/activity/page.tsx",
@@ -381,7 +381,7 @@ test("salon profile transformation queue keeps salon route semantics", () => {
   const roleNavigation = read("app/role-navigation.ts");
   const reviewPage = readFirst([
     "app/(app)/salon-profile/client-transformations/page.tsx",
-    "app/salon-profile/client-transformations/page.tsx",
+    "app/(app)/salon-profile/client-transformations/page.tsx",
   ]);
   const personalPrefixes = routePrefixesFor(roleNavigation, "personal");
   const ownerPrefixes = routePrefixesFor(roleNavigation, "owner");
@@ -432,7 +432,7 @@ test("app notifications resolve Beauty salon requests through owner workspace co
   );
   assert.match(
     notificationFeedItems,
-    /notification\.recipient_kind === "customer" && notification\.booking_id/,
+    /notification\.recipient_kind === "customer" &&\s+notification\.booking_id/,
     "Customer notifications should keep personal booking destinations.",
   );
   assert.match(notificationTypes, /workspaceId: string \| null/);

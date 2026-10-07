@@ -34,10 +34,12 @@ test("operational report queries remain salon scoped", () => {
 
 test("reports route keeps daily closing and adds operational range controls", () => {
   const page = read("app/(app)/reports/page.tsx");
+  const liveReports = read("app/reports/owner-live-reports.tsx");
   const dashboard = read("app/reports/operational-report-dashboard.tsx");
 
-  assert.match(page, /<DailyClosingForm/);
-  assert.match(page, /<OperationalReportDashboard/);
+  assert.match(page, /OwnerLiveReports/);
+  assert.match(liveReports, /<DailyClosingForm/);
+  assert.match(liveReports, /<OperationalReportDashboard/);
   const controls = read("app/reports/report-controls.tsx");
   assert.match(controls, /This week/);
   assert.match(controls, /This month/);

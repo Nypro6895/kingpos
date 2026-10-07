@@ -37,10 +37,11 @@ const migration = read(
 );
 const supabaseConfig = read("supabase/config.toml");
 
-test("All Settings opens the dedicated Login Security route", () => {
+test("All Settings loads the security panel while retaining its dedicated route", () => {
   assert.ok(existsSync("app/(app)/settings/login-security/page.tsx"));
-  assert.match(settingsPage, /href: "\/settings\/login-security"/);
-  assert.match(settingsPage, /status: "Security center"/);
+  assert.match(settingsPage, /SettingsHubClient/);
+  assert.match(read("app/settings/settings-hub-client.tsx"), /id:"login-security".*DeferredPersonalSection kind="security"/);
+  assert.match(read("app/settings/deferred-personal-section.tsx"), /LoginSecurityPanel/);
   assert.match(loginSecurityPage, /loadLoginSecurityOverview/);
   assert.match(loginSecurityPage, /redirect\("\/login\?next=\/settings\/login-security"\)/);
   assert.match(loginSecurityPage, /<LoginSecurityPanel overview=\{overview\} \/>/);

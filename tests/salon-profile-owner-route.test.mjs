@@ -12,6 +12,7 @@ test("own salon public link restores management route; staff, guests and other s
       if (name === "next/navigation") return { redirect(path) { throw new Error(`redirect:${path}`); }, notFound() { throw new Error("notFound"); } };
       if (name.includes("current-context")) return { getCurrentBusinessContext: async () => ({ user, currentSalon: {id:salon}, salonMode:mode }), isSalonManageContext: context => context.salonMode === "manage" };
       if (name.includes("salon-profile-view")) return { SalonProfileView: () => null };
+      if (name.includes("explore-account-actions")) return { ExploreAccountActionsProvider: ({children}) => children };
       if (name.includes("lib/salon-profile")) return { getPublicSalonProfileData: async () => ({profile:{operatingStatus:{kind:"open"}}}) };
       return createRequire(import.meta.url)(name);
     };
@@ -19,8 +20,9 @@ test("own salon public link restores management route; staff, guests and other s
     if (redirects) await assert.rejects(exports.default({params:Promise.resolve({salonId:"salon"})}), /redirect:\/salon-profile/);
     else {
       const result = await exports.default({params:Promise.resolve({salonId:"salon"})});
-      assert.equal(result.props.children.props.capabilities.canCreateContent, false);
-      assert.equal(result.props.children.props.capabilities.canEditProfile, false);
+      const profile = result.props.children.find(child => child?.props?.capabilities);
+      assert.equal(profile.props.capabilities.canCreateContent, false);
+      assert.equal(profile.props.capabilities.canEditProfile, false);
     }
   }
 });

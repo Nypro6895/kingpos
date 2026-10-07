@@ -1124,6 +1124,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const params = (await searchParams) ?? {};
   const rawQuery = clean(stringParam(params.q));
   const requestedLocation = clean(stringParam(params.location));
+  const hasLocationParam = params.location !== undefined;
   const category = clean(stringParam(params.category));
   const page = parsePage(clean(stringParam(params.page)));
   const hasExplicitSearchParams = Boolean(
@@ -1144,10 +1145,13 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const queryLocation = searchIntent.location;
   const query = searchIntent.query;
   const effectiveLocation =
-    requestedLocation || queryLocation || workspaceLocation.label;
+    requestedLocation || queryLocation ||
+    (hasLocationParam || hasExplicitSearchParams || params.q !== undefined
+      ? ""
+      : workspaceLocation.label);
   const locationSource: ExploreLocationSource = requestedLocation || queryLocation
     ? "manual"
-    : workspaceLocation.source;
+    : effectiveLocation ? workspaceLocation.source : "none";
   const [searchResponse, initialFeed, quickActions, utilityContent, homeContent] =
     await Promise.all([
       searchExploreSalons({
@@ -1203,7 +1207,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
       initialResponse={showcaseContent.searchResponse}
       discoveryContent={showcaseContent.discoveryContent}
       homeContent={showcaseContent.homeContent}
-      hasUrlLocation={Boolean(requestedLocation || queryLocation)}
+      hasUrlLocation={hasLocationParam || Boolean(queryLocation) || params.q !== undefined}
       initialFeed={showcaseContent.initialFeed}
       quickActions={quickActions}
       workspaceLocation={workspaceLocation}

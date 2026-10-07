@@ -299,7 +299,7 @@ test("Beauty post booking count and inspiration attribution stay server-owned", 
   assert.match(publicExploreBeautyPosts, /'\?inspiration=' \|\| posts\.id::text \|\| '&source=public_profile'/);
   assert.match(personalService, /loadBeautyPostVerifiedBookingCounts/);
   assert.match(personalPostRoute, /bookingCountLabel/);
-  assert.match(feedClient, /bookingCountLabel/);
+  assert.match(feedClient, /const booking = item\.booking\?\.eligible \? item\.booking : null/);
 });
 
 test("Beauty booking CTA does not depend on booking-count RPC success", () => {
@@ -461,7 +461,7 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.match(trustLine, /#lumi-trust/);
   assert.match(feedClient, /authorHref/);
   assert.match(feedClient, /\/explore\/beauty\/\$\{encodeURIComponent\(item\.personal\.profileId\)\}/);
-  assert.match(feedClient, /bookedCount > 0/);
+  assert.match(feedClient, /bookingHref && item\.contentType !== "salon_recommendation"/);
   assert.match(feedClient, /router\.push\(href\)/);
   assert.match(feedClient, /pointerMovedRef/);
   assert.match(feedClient, /isComparatorControl/);
@@ -470,12 +470,10 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.doesNotMatch(feedClient, /Linked salon/);
   assert.match(feedClient, /salon_recommendation/);
   assert.doesNotMatch(feedClient, /function verificationLabel/);
-  assert.match(feedClient, /bookingCountLabel/);
-  assert.match(feedClient, /bookedCountText/);
+  assert.match(feedClient, /InspirationAvailability href=\{bookingHref\}/);
   assert.match(feedClient, /bookingHref/);
-  assert.match(feedClient, /bookingActionLabel/);
-  assert.match(feedClient, /Book this look/);
-  assert.match(feedClient, /guestHref=\{bookingHref\}/);
+  assert.match(feedClient, /<ExploreBookButton href=\{bookingHref\}/);
+  assert.match(read("components/explore-account-actions.tsx"), /rememberExploreIntent\(\{ kind: "book"/);
   assert.match(feedClient, /FeedDecisionMeta/);
   assert.match(feedClient, /FeedDiscoveryModule/);
   assert.match(feedClient, /orderedFeedDiscoveryShortcuts/);
@@ -486,7 +484,7 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.doesNotMatch(feedClient, /TrustFactPill/);
   assert.doesNotMatch(feedClient, /Fresh inspiration/i);
   assert.doesNotMatch(feedClient, /Beauty stories/i);
-  assert.match(feedClient, /loadExploreFeedAction\(cursor\)/);
+  assert.match(feedClient, /withRequestTimeout\(loadExploreFeedAction\(cursor, discovery\)\)/);
   assert.doesNotMatch(
     feedClient,
     /storage\/v1\/object|supabase\.co|SALON_PROFILE_MEDIA_BUCKET|BEAUTY_MEDIA_BUCKET/,
@@ -562,7 +560,7 @@ test("Explore mockup flow avoids duplicate chrome and keeps mobile overlays clea
   assert.match(showcaseLookRoute, /aspect-\[4\/3\] sm:aspect-\[16\/10\] lg:aspect-\[4\/3\]/);
   assert.match(showcaseLookRoute, /order-2 grid gap-4/);
   assert.match(showcaseLookRoute, /grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5/);
-  assert.match(showcaseBookIntent, /openQuickBooking\(bookingHref\)/);
+  assert.match(showcaseBookIntent, /<ExploreBookButton href=\{bookingHref\}/);
   assert.match(read("app/(app)/layout.tsx"), /<QuickBooking\s*\/>/);
   assert.match(feedClient, /sm:group-hover\/action:block sm:group-focus-within\/action:block/);
   assert.match(savePostButton, /showTooltip\?: boolean/);
@@ -629,8 +627,8 @@ test("Explore guest browsing stays open and auth prompts only on save, follow, o
   assert.match(authIntentPrompt, /export function AuthIntentPrompt/);
   assert.match(authIntentPrompt, /createPortal/);
   assert.match(authIntentPrompt, /role="dialog"/);
-  assert.match(authIntentPrompt, /place-items-end/);
-  assert.match(authIntentPrompt, /sm:place-items-center/);
+  assert.match(read("components/auth-intent-prompt.module.css"), /place-items: end center/);
+  assert.match(read("components/auth-intent-prompt.module.css"), /place-items: center/);
   assert.match(savePostButton, /<AuthIntentPrompt/);
   assert.match(savePostButton, /setAuthPromptOpen\(true\)/);
   assert.match(salonProfileView, /<AuthIntentPrompt/);
@@ -649,7 +647,7 @@ test("public Beauty post route is read-only and backed by the Personal Explore s
   assert.match(personalPostRoute, /Verified visit/);
   assert.match(personalPostRoute, /bookingHref/);
   assert.match(personalPostRoute, /item\.booking\?\.eligible/);
-  assert.match(personalPostRoute, /booking\?\.label \?\? "Book"/);
+  assert.match(personalPostRoute, /<ExploreBookButton href=\{bookingHref\}/);
   assert.match(personalPostRoute, /booking\?\.bookedCount/);
   assert.match(personalPostRoute, /bookingCountLabel/);
   assert.match(personalPostRoute, /PostHeaderTitle/);

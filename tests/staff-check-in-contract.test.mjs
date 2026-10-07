@@ -232,11 +232,11 @@ test("standard POS rejects non-working staff when check-in is enabled", () => {
 });
 
 test("POS settings exposes a dedicated staff check-in save path", () => {
-  assert.match(posSettingsPage, /Save staff check-in/);
+  assert.match(posSettingsPage, /label="Require staff check-in"/);
   assert.match(posSettingsPage, /name="staff_check_in_enabled"/);
   assert.match(
     posSettingsActions,
-    /settingsPayload\.staff_check_in_enabled[\s\S]*Staff check-in cannot be enabled until the staff check-in database migration is applied/,
+    /settingsPayload\.staff_check_in_enabled[\s\S]*Staff check-in is temporarily unavailable/,
   );
 });
 
@@ -288,11 +288,11 @@ test("POS workspace mutations broadcast realtime invalidations after commits", (
   assert.match(workspaceRefresh, /router\.refresh\(\)/);
   assert.match(posStaffRealtime, /\| "booking"/);
   assert.match(posStaffRealtime, /\| "staff"/);
-  assert.ok(
-    (bookingActions.match(/broadcastPosStaffChange\([^;\n]+, "booking"\)/g) ??
-      []).length >= 8,
-    "booking workspace changes publish POS workspace invalidations",
-  );
+  const saveAction = bookingActions.slice(bookingActions.indexOf("export async function saveOwnerWorkspaceBookingAction"), bookingActions.indexOf("export async function updateBookingSettingsAction"));
+  assert.match(saveAction, /save_pos_workspace_booking/);
+  assert.match(saveAction, /if\(error\)return failure/);
+  assert.match(saveAction, /after\(\(\)=>broadcastPosStaffChange\(context\.data\.salon\.id,'booking'\)\)/);
+  assert.match(bookingActions, /replaceOwnerBookingServicesAction[^\n]+return saveOwnerWorkspaceBookingAction/);
   assert.match(staffActions, /broadcastPosStaffChange\(context\.currentSalon\.id, "staff"\)/);
 });
 

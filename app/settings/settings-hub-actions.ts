@@ -30,6 +30,7 @@ export async function loadSettingsHub() {
   }));
   const staff = context.availableStaffSalons.map(s=>({id:s.id,accountId:s.account_id,...identity(s.id,s.name),status:s.status}));
   const [support,admin] = await Promise.all([currentUserCanAccessRecoveryBackOffice(),getCurrentPlatformAdminContext()]);
-  return {managed,staff,accounts:context.availableAccounts.map(a=>({id:a.id,name:a.name,canCreate:context.accountMemberships.some(m=>m.account_id===a.id && m.status==="active" && isOwnerMembership(m))})),support,twilio:admin?.roleSlug==="platform_owner"?publicTwilioSettings(await getTwilioSettings()):null};
+  const hasBusinessWorkspace = context.workspaceOptions.some(workspace => workspace.type === "salon");
+  return {managed,staff,hasBusinessWorkspace,accounts:context.availableAccounts.map(a=>({id:a.id,name:a.name,canCreate:context.accountMemberships.some(m=>m.account_id===a.id && m.status==="active" && isOwnerMembership(m))})),support,twilio:admin?.roleSlug==="platform_owner"?publicTwilioSettings(await getTwilioSettings()):null};
 }
 export type SettingsHubIndex = Awaited<ReturnType<typeof loadSettingsHub>>;

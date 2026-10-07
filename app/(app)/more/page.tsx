@@ -195,6 +195,7 @@ function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {
             "owner-report",
             "owner-payroll",
             "owner-setting",
+            "owner-market",
           ]),
           summary: "Review performance, payroll, and salon configuration.",
           title: "Business",
