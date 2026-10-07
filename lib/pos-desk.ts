@@ -1,8 +1,10 @@
+import { getContextBusinessDate } from "@/lib/salon-business-clock";
 import "server-only";
 
 import {
   getCurrentBusinessContext,
   isSalonManageContext,
+  type CurrentBusinessContext,
 } from "@/lib/current-context";
 import { getCustomerVisitQueueForSalonOrEmpty } from "@/lib/customer-visits";
 import { requirePermission } from "@/lib/permissions";
@@ -23,7 +25,6 @@ import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
 import { isMissingSupabaseColumnError } from "@/lib/supabase/postgrest-errors";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { getTodayDate } from "@/lib/staff-workdays";
-import type { CurrentBusinessContext } from "@/lib/current-context";
 import type {
   PosDeskCustomer,
   PosDeskService,
@@ -110,8 +111,8 @@ function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   };
 }
 
-export async function getCurrentSalonPosDeskData() {
-  const context = await getCurrentBusinessContext();
+export async function getCurrentSalonPosDeskData({includeCustomers=true,context:providedContext}:{includeCustomers?:boolean;context?:CurrentBusinessContext} = {}) {
+  const context = providedContext ?? await getCurrentBusinessContext();
 
   if (!context.user) {
     return {
@@ -135,7 +136,7 @@ export async function getCurrentSalonPosDeskData() {
   }
 
   const { data: businessDate } = await supabase.rpc("get_salon_business_date", { p_salon_id: salon.id });
-  const today = typeof businessDate === "string" ? businessDate : getTodayDate(context.user.timezone);
+  const today = typeof businessDate === "string" ? businessDate : await getContextBusinessDate(context);
   const [
     settings,
     customersResult,
@@ -146,14 +147,14 @@ export async function getCurrentSalonPosDeskData() {
     turnsResult,
   ] = await Promise.all([
       getCurrentSalonPosSettings(context),
-      supabase
+      includeCustomers ? supabase
         .from("customers")
         .select("id, name, phone, email")
         .eq("location_id", salon.id)
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(25)
-        .returns<PosDeskCustomer[]>(),
+        .returns<PosDeskCustomer[]>() : Promise.resolve({data:[] as PosDeskCustomer[],error:null}),
       supabase
         .from("services")
         .select("id, name, category, base_price")

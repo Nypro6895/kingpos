@@ -1,3 +1,4 @@
+import { getContextBusinessTimezone, getContextBusinessDate } from "@/lib/salon-business-clock";
 import { zonedDateTimeToUtcIso } from "@/lib/bookings";
 import {
   recentComparisonDates,
@@ -367,15 +368,15 @@ export function getUtcBoundsForLocalDate(dateString: string, timeZone: string) {
   };
 }
 
-export function getCurrentBusinessDate(context: CurrentBusinessContext) {
-  return getTodayDate(context.user?.timezone);
+export async function getCurrentBusinessDate(context: CurrentBusinessContext) {
+  return getContextBusinessDate(context);
 }
 
-export function getDefaultReportDate(context: CurrentBusinessContext) {
+export async function getDefaultReportDate(context: CurrentBusinessContext) {
   return getCurrentBusinessDate(context);
 }
 
-export function normalizeReportDate(
+export async function normalizeReportDate(
   reportDate: string | null | undefined,
   context: CurrentBusinessContext,
 ) {
@@ -1030,7 +1031,7 @@ async function loadLiveDailyPosReport(
   const { Account, salon, supabase, user } = auth;
   const bounds = getUtcBoundsForLocalDate(
     reportDate,
-    options.timeZone ?? user.timezone,
+    options.timeZone ?? await getContextBusinessTimezone(auth.context),
   );
 
   const [
@@ -1166,7 +1167,7 @@ async function loadLiveDailyPosReport(
             businessHours: options.businessHours,
             reportDate,
             tickets: finalizedTickets,
-            timeZone: options.timeZone ?? user.timezone,
+            timeZone: options.timeZone ?? await getContextBusinessTimezone(auth.context),
           }),
     allTickets,
     closing: closing ?? null,
@@ -1201,13 +1202,13 @@ async function loadLiveDailyPosReport(
   };
 }
 
-function getLockInfo(
+async function getLockInfo(
   reportDate: string,
   context: CurrentBusinessContext,
   closing: PosDailyClosing | null,
   liveTotalsDifferFromSnapshot = false,
-): DailyClosingLockInfo {
-  const currentBusinessDate = getCurrentBusinessDate(context);
+): Promise<DailyClosingLockInfo> {
+  const currentBusinessDate = await getCurrentBusinessDate(context);
   const status = closing?.status ?? "draft";
   const isPastDate = reportDate < currentBusinessDate;
 
@@ -1495,7 +1496,7 @@ async function ensureDailyClosingSnapshotFromCore(
   auth: ReportAuthContext,
   core: DailyReportCore,
 ) {
-  const currentBusinessDate = getCurrentBusinessDate(auth.context);
+  const currentBusinessDate = await getCurrentBusinessDate(auth.context);
 
   if (core.reportDate >= currentBusinessDate) {
     return core.closing;
@@ -1947,7 +1948,7 @@ export async function getDailyClosingEffectiveTotals(
   const ensuredClosing = await ensureDailyClosingSnapshotFromCore(auth, core);
   const snapshot = getSnapshotTotalsFromClosing(ensuredClosing);
   const rows = await loadDailyClosingCorrectionRows(auth, reportDateInput);
-  const lock = getLockInfo(
+  const lock = await getLockInfo(
     reportDateInput,
     auth.context,
     ensuredClosing,
@@ -1983,7 +1984,7 @@ export async function isDailyClosingLocked(
     throw new Error(error.message);
   }
 
-  return getLockInfo(reportDateInput, auth.context, closing ?? null).isLocked;
+  return (await getLockInfo(reportDateInput, auth.context, closing ?? null)).isLocked;
 }
 
 export async function assertFinancialDateMutable(
@@ -2091,7 +2092,7 @@ export async function assertTicketFinancialDateMutable(
 
   const businessDate = getTicketBusinessDate(
     ticket.opened_at,
-    auth.user.timezone,
+    await getContextBusinessTimezone(auth.context),
   );
 
   await assertFinancialDateMutable(businessDate, auth.context, {
@@ -2111,12 +2112,12 @@ export async function getDailyPosReport(
   );
   const reportDate = isDateInputValue(reportDateInput)
     ? reportDateInput
-    : getTodayDate(auth.user.timezone);
+    : getTodayDate(await getContextBusinessTimezone(auth.context));
   const core = await loadLiveDailyPosReport(reportDate, auth);
   const ensuredClosing = await ensureDailyClosingSnapshotFromCore(auth, core);
   const correctionRows = await loadDailyClosingCorrectionRows(auth, reportDate);
   const snapshot = getSnapshotTotalsFromClosing(ensuredClosing);
-  const lock = getLockInfo(
+  const lock = await getLockInfo(
     reportDate,
     auth.context,
     ensuredClosing,

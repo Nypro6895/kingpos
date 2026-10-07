@@ -11,13 +11,16 @@ test('native shell survives restart and long offline periods; failed preparation
   const fetch = async request => {
     if (offline) throw Error('offline');
     if (request.url.includes('/_next/')) return new Response('window.loaded=true', {status:broken ? 503 : 200,headers:{'content-type':'text/javascript'}});
-    return new Response('<main data-portable-pos-shell>Ready</main><script src="/_next/static/app.js"></script>', {headers:{'content-type':'text/html'}});
+    return new Response(`<main data-portable-pos-shell>Ready</main><script src="/_next/static/${broken ? 'new-app.js' : 'app.js'}"></script>`, {headers:{'content-type':'text/html'}});
   };
   let shell = new OfflineShell(directory,codec,'https://pos.test',fetch);
   const request = path => new Request('https://pos.test'+path,{headers:{accept:'text/html'}});
   try {
     await shell.prepare('salon:key');
-    broken = true; await assert.rejects(shell.prepare('salon:key'));
+    broken = true;
+    const originalNow=Date.now;Date.now=()=>originalNow()+300001;
+    try {await assert.rejects(shell.prepare('salon:key'));}
+    finally {Date.now=originalNow;}
     shell.close(); shell = new OfflineShell(directory,codec,'https://pos.test',fetch);
     offline = true;
     const now = Date.now; Date.now = () => now() + 400*86400000;

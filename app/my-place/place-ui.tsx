@@ -103,7 +103,7 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#eae3dd] bg-white">
+    <section className="content-surface overflow-hidden border-[#eae3dd] bg-white rounded-none border-y shadow-none">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f1ebe6] px-4 py-3 sm:px-5">
         <h2 className="flex items-center gap-2.5 text-base font-bold text-[#302a28]">
           {title}

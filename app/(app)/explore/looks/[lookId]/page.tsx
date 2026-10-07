@@ -1,3 +1,4 @@
+import {ExploreReferenceLove} from "@/components/explore-account-actions";
 import { ShowcaseBookIntent } from "@/app/explore/showcase-book-intent";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import {
@@ -127,11 +128,7 @@ function RelatedLookCard({ item }: { item: ExploreShowcaseRelatedLook }) {
             {item.salonName}
           </span>
           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-text-secondary">
-            <ReylumiIcon
-              className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
-              name="star"
-            />
-            {item.rating.toFixed(1)}
+            Preview
           </span>
         </span>
         <span className="truncate text-xs font-semibold text-text-primary">
@@ -190,13 +187,7 @@ function LookMediaStage({ look }: { look: ExploreShowcaseLookPage }) {
           <ReylumiIcon className="h-4 w-4" name="chevron-left" />
         </Link>
         <div className="absolute right-3 top-3 flex items-center gap-2">
-          <button
-            aria-label="Save look"
-            className="grid h-10 w-10 place-items-center rounded-full bg-white/92 text-text-primary shadow-sm ring-1 ring-white/80 backdrop-blur transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            type="button"
-          >
-            <ReylumiIcon className="h-5 w-5" name="heart" />
-          </button>
+          <ExploreReferenceLove itemKey={`look:${look.id}`} name={look.service}/>
           <button
             aria-label="Share look"
             className="grid h-10 w-10 place-items-center rounded-full bg-white/92 text-text-primary shadow-sm ring-1 ring-white/80 backdrop-blur transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
@@ -241,14 +232,9 @@ export default async function ShowcaseLookPage({
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 text-base font-bold text-text-primary">
                   <span className="truncate">{look.salonName}</span>
-                  <ReylumiIcon
-                    className="h-4 w-4 shrink-0 text-sky-500"
-                    name="verified"
-                  />
                 </p>
                 <p className="mt-0.5 text-xs font-semibold text-text-secondary">
-                  <span className="text-amber-500">★</span>{" "}
-                  {look.rating.toFixed(1)} ({look.reviews}) · Milwaukee, WI ·{" "}
+                  Preview · Milwaukee, WI ·{" "}
                   {distance}
                 </p>
               </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { SubmitButton } from "@/components/submit-button";
+
 import { saveStaffPayrollSettingWithEffectiveDateAction } from "@/app/payroll/actions";
 import type {
   PayrollPayoutMethod,
@@ -468,9 +470,9 @@ export function StaffPayrollSettingInlineEdit({
           >
             Cancel
           </Link>
-          <button className="rounded bg-zinc-950 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800">
+          <SubmitButton className="rounded bg-zinc-950 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800">
             Save
-          </button>
+          </SubmitButton>
         </div>
       </div>
 

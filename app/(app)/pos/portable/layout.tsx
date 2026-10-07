@@ -96,7 +96,10 @@ export default async function PortablePosLayout({
     report: <PreparedPanel render={() => PortableReportPage({ searchParams: Promise.resolve({}) })} />,
   };
   const panels: Record<string, React.ReactNode> = {};
-  for (const link of workspaceLinks) {
+  // Offline reload must carry every permitted panel in its HTML snapshot.
+  // Online-only sessions load a panel on first visit and retain it thereafter.
+  const offlineEnabled = process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1";
+  for (const link of offlineEnabled ? workspaceLinks : []) {
     panels[link.href] = <Suspense fallback={<p role="status" className="p-6">Loading {link.label}…</p>}>
       {panelPages[link.id]}
     </Suspense>;
@@ -121,7 +124,7 @@ export default async function PortablePosLayout({
           salonTimezone={session.salon_timezone}
         />
         <div className="min-h-0 flex-1 overflow-hidden">
-          <PortablePanels panels={panels}>{children}</PortablePanels>
+          <PortablePanels panels={panels} allowedPaths={workspaceLinks.map(link=>link.href)}>{children}</PortablePanels>
         </div>
         <PortableOfflineShell />
         <PortableShellRefresh />

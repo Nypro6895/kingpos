@@ -194,8 +194,8 @@ export async function getCurrentSalonDiscoveryReadiness(
   });
 }
 
-export async function getCurrentSalonSetting() {
-  const context = await getCurrentBusinessContext();
+export async function getCurrentSalonSetting(targetContext?: CurrentBusinessContext) {
+  const context = targetContext ?? await getCurrentBusinessContext();
 
   if (!context.user) {
     return { context, setting: null };
@@ -280,8 +280,8 @@ export async function getCurrentSalonSetting() {
   throw new Error(createError.message);
 }
 
-export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput) {
-  const context = await getCurrentBusinessContext();
+export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput, targetContext?: CurrentBusinessContext) {
+  const context = targetContext ?? await getCurrentBusinessContext();
 
   if (!context.user) {
     throw new Error("You must be logged in to update salon settings.");
@@ -302,7 +302,7 @@ export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput) 
     throw new Error("Business Name is required.");
   }
 
-  await getCurrentSalonSetting();
+  const { setting: previous } = await getCurrentSalonSetting(context);
 
   const publicDiscoveryEnabled = input.public_discovery_enabled ?? false;
 
@@ -332,9 +332,7 @@ export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput) 
     }
   }
 
-  const { data, error } = await supabase
-    .from("salon_settings")
-    .update({
+  const values = {
       business_name: businessName,
       phone: input.phone,
       email: input.email,
@@ -355,7 +353,12 @@ export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput) 
           }
         : {}),
       public_discovery_enabled: publicDiscoveryEnabled,
-    })
+  };
+  const changes = Object.fromEntries(Object.entries(values).filter(([key, value]) => value !== undefined && value !== previous?.[key as keyof SalonSetting]));
+  if (previous && Object.keys(changes).length === 0) return previous;
+  const { data, error } = await supabase
+    .from("salon_settings")
+    .update(changes)
     .eq("salon_id", salon.id)
     .select(SALON_SETTING_SELECT)
     .single<SalonSetting>();
@@ -373,10 +376,9 @@ export async function updateCurrentSalonSetting(input: UpdateSalonSettingInput) 
     throw new Error(error.message);
   }
 
-  await syncCurrentSalonMapLocationAddressState({
-    context,
-    setting: data,
-  });
+  if (["address_line1", "address_line2", "city", "state", "postal_code", "country"].some(key => key in changes)) {
+    await syncCurrentSalonMapLocationAddressState({ context, setting: data });
+  }
 
   return data;
 }

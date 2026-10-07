@@ -1,7 +1,7 @@
-﻿"use server";
+"use server";
+import { getContextBusinessDate } from "@/lib/salon-business-clock";
 
 import {
-  getTodayDate,
   getCurrentStaffForSalon,
   STAFF_WORKDAY_SELECT,
 } from "@/lib/staff-workdays";
@@ -42,7 +42,7 @@ async function requireWorkdayMutationContext() {
     salon: context.currentSalon,
     staff,
     supabase,
-    today: getTodayDate(context.user.timezone),
+    today: await getContextBusinessDate(context),
   };
 }
 

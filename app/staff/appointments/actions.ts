@@ -120,10 +120,27 @@ export async function confirmStaffBookingAction(formData: FormData) {
     return;
   }
 
-  revalidatePath("/", "layout");
   revalidatePath("/staff/appointments");
   revalidatePath("/bookings");
   revalidatePath("/my-bookings");
   revalidatePath(`/my-bookings/${bookingId}`);
   revalidatePath("/notifications");
+}
+
+export async function confirmStaffBookingWithReviewAction(input: {bookingId: string; acknowledgeNoShow?: boolean}): Promise<{ok:boolean;timings?:{auth:number;rpc:number};message?:string;noShowHistory?:import("@/lib/booking-no-show").NoShowHistoryItem[]}> {
+  const started = performance.now();
+  const supabase = await createAuthenticatedSupabaseServerClient();
+  const authenticated = performance.now();
+  if (!supabase) return {ok:false,message:"Sign in required."};
+  const {data,error}=await supabase.rpc("confirm_assigned_booking_with_review",{p_booking_id:input.bookingId,p_acknowledge_no_show:input.acknowledgeNoShow===true});
+  const timings = { auth: authenticated - started, rpc: performance.now() - authenticated };
+  if(error)return {ok:false,message:error.message,timings};
+  const result=data as {ok:boolean;code?:string;message?:string;noShowHistory?:import("@/lib/booking-no-show").NoShowHistoryItem[]};
+  if(!result?.ok)return {ok:false,message:result?.message ?? "Unable to confirm this appointment.",noShowHistory:result?.noShowHistory,timings};
+  revalidatePath("/staff/appointments");
+  revalidatePath("/bookings");
+  revalidatePath("/my-bookings");
+  revalidatePath(`/my-bookings/${input.bookingId}`);
+  revalidatePath("/notifications");
+  return {ok:true,timings};
 }

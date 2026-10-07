@@ -1,3 +1,6 @@
+
+import Form from "next/form";
+import { SubmitButton as PendingSubmitButton } from "@/components/submit-button";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -19,6 +22,10 @@ type AdminNavItem = {
 };
 
 const ADMIN_NAV_ITEMS: AdminNavItem[] = [
+  {href: "/admin/advertising", label: "Advertising", permission: PLATFORM_ADMIN_PERMISSIONS.businessesUpdate},
+  {href: "/admin/settings/twilio", label: "Twilio settings", permission: PLATFORM_ADMIN_PERMISSIONS.teamManage},
+  {href: "/admin/claims", label: "Business claims", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead},
+  {href: "/admin/verification", label: "Salon verification", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead},
   {
     href: "/admin",
     label: "Dashboard",
@@ -83,7 +90,7 @@ export function hasAdminPermission(
 
 export function AdminShell({ children, context }: AdminShellProps) {
   const navItems = ADMIN_NAV_ITEMS.filter((item) =>
-    hasAdminPermission(context, item.permission),
+    hasAdminPermission(context, item.permission) && (item.href!=="/admin/settings/twilio" || context.roleSlug==="platform_owner"),
   );
 
   return (
@@ -397,12 +404,12 @@ export function SelectInput({
 
 export function SubmitButton({ children }: { children: ReactNode }) {
   return (
-    <button
+    <PendingSubmitButton pendingLabel="Processing…"
       className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
       type="submit"
     >
       {children}
-    </button>
+    </PendingSubmitButton>
   );
 }
 
@@ -437,7 +444,7 @@ export function SearchForm({
   const filterContent = children ?? filters;
 
   return (
-    <form className="mt-5 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <Form action="" className="mt-5 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <label className="block">
           <span className="text-sm font-semibold text-zinc-700">Search</span>
@@ -461,7 +468,7 @@ export function SearchForm({
           {filterContent}
         </div>
       ) : null}
-    </form>
+    </Form>
   );
 }
 

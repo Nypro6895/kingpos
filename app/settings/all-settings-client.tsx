@@ -1,12 +1,18 @@
 "use client";
+import { ConnectionsPanel } from "@/app/settings/connections-panel";
+import { SalonListPanel } from "@/app/settings/salon-list-panel";
+import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 
+import { DirectSettingsPanel } from "@/app/settings/direct-settings-panel";
 import { AccountDeletionPanel } from "@/app/account/account-deletion-panel";
 import { AccountProfileEditor } from "@/app/account/account-profile-editor";
-import { LoginSecurityQuickEditor } from "@/app/settings/login-security/login-security-quick-editor";
+import { LoginSecurityPanel } from "@/app/settings/login-security/login-security-panel";
 import type { LoginSecurityOverview } from "@/lib/account-security";
 import type { AccountDeletionImpact } from "@/lib/account-deletion";
 import type { KingUser } from "@/types/user";
-import Link from "next/link";
+
+import { NotificationPreferencesPanel } from "@/app/settings/notification-preferences-panel";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import {
   useCallback,
@@ -81,15 +87,6 @@ export type SettingSummaryItem = {
   value: string;
 };
 
-type SettingQuickItem = {
-  actionLabel?: string;
-  description: string;
-  href?: string;
-  label: string;
-  status?: string;
-  tone?: SettingTone;
-};
-
 export type AllSettingsRow = {
   action: string;
   description: string;
@@ -144,7 +141,7 @@ const SCOPE_TABS: Array<{
     value: "account",
   },
   {
-    description: "Account-level salon list, roles, and permissions.",
+    description: "Your business account and salon list.",
     label: "Business & Salons",
     value: "business",
   },
@@ -506,350 +503,12 @@ function SettingSectionView({
           {section.rows.length} {section.rows.length === 1 ? "item" : "items"}
         </span>
       </div>
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+      <div className="content-surface overflow-hidden border-zinc-200 bg-white rounded-none border-y shadow-none">
         {section.rows.map((row) => (
           <SettingRowButton key={row.id} onOpen={onOpen} row={row} />
         ))}
       </div>
     </section>
-  );
-}
-
-function SummaryList({ items }: { items: SettingSummaryItem[] }) {
-  if (items.length === 0) {
-    return null;
-  }
-
-  return (
-    <dl className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-      {items.map((item) => (
-        <div
-          className="grid gap-1 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center"
-          key={`${item.label}-${item.value}`}
-        >
-          <dt className="text-xs font-semibold uppercase text-zinc-500">
-            {item.label}
-          </dt>
-          <dd className="min-w-0">
-            <StatusBadge tone={item.tone}>{item.value}</StatusBadge>
-          </dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-function summaryValue(row: AllSettingsRow, label: string) {
-  return row.summaryItems?.find((item) => item.label === label)?.value;
-}
-
-function settingQuickItems(row: AllSettingsRow): SettingQuickItem[] {
-  const setupItem = (
-    label: string,
-    description: string,
-    actionLabel = "Open",
-    tone: SettingTone = "neutral",
-  ): SettingQuickItem => ({
-    actionLabel,
-    description,
-    href: row.href,
-    label,
-    status: row.status,
-    tone,
-  });
-
-  switch (row.detailKind) {
-    case "connections":
-    case "staff-connections":
-      return [
-        setupItem(
-          "Invites and applications",
-          "Review salon invites, staff applications, and connection status.",
-        ),
-        setupItem(
-          "Connected salons",
-          "Check which salons this account owns or works with.",
-          "Manage",
-          row.tone ?? "neutral",
-        ),
-      ];
-    case "notifications":
-      return [
-        setupItem(
-          "Notification inbox",
-          "Read account alerts and pending activity.",
-        ),
-        setupItem(
-          "Unread activity",
-          "Open the inbox when there is anything that needs attention.",
-          "View",
-          row.tone ?? "success",
-        ),
-      ];
-    case "recovery-back-office":
-      return [
-        setupItem(
-          "Recovery queue",
-          "Review recent access recovery requests.",
-          "Review",
-          "warning",
-        ),
-        setupItem(
-          "Security actions",
-          "Lock accounts, add support notes, and complete recovery reviews.",
-          "Open",
-          "warning",
-        ),
-      ];
-    case "salon-list":
-      return [
-        setupItem(
-          "Salon list",
-          "Manage all salons attached to this business account.",
-          "Open",
-          row.tone ?? "neutral",
-        ),
-        {
-          description: "Owner workspaces available to this account.",
-          label: "Owner salons",
-          status: summaryValue(row, "Owner salons") ?? row.status,
-          tone: row.tone ?? "neutral",
-        },
-        {
-          description: "Staff workspaces connected to this account.",
-          label: "Staff salons",
-          status: summaryValue(row, "Staff salons") ?? "-",
-        },
-      ];
-    case "create-salon":
-      return [
-        setupItem(
-          "Create salon",
-          "Add a salon, then return here for its profile, booking, staff, and POS settings.",
-          "Create",
-        ),
-      ];
-    case "roles":
-      return [
-        setupItem(
-          "Role members",
-          "Manage owner, admin, manager, and staff role records.",
-          "Open",
-          "warning",
-        ),
-        setupItem(
-          "Role access",
-          "Use role-level access when a setting should not be visible to everyone.",
-          "Manage",
-          "warning",
-        ),
-      ];
-    case "permissions":
-      return [
-        setupItem(
-          "Permission catalog",
-          "Review access for staff, booking, POS, payroll, reports, and customers.",
-          "Open",
-        ),
-        setupItem(
-          "Staff rules",
-          "Adjust which settings each role can see and edit.",
-          "Manage",
-        ),
-      ];
-    case "salon-profile":
-      return [
-        setupItem(
-          "Business information",
-          "Edit salon name, phone, website, and short description.",
-          "Edit",
-          "success",
-        ),
-        setupItem(
-          "Address and map",
-          "Update the location details customers see.",
-          "Edit",
-        ),
-      ];
-    case "public-profile":
-      return [
-        setupItem(
-          "Explore visibility",
-          "Control public discovery and customer-facing profile readiness.",
-          "Edit",
-        ),
-        setupItem(
-          "Staff applications",
-          "Manage whether new staff can apply from the public profile.",
-          "Manage",
-        ),
-      ];
-    case "services":
-      return [
-        setupItem("Service catalog", "Edit services, categories, and descriptions.", "Open"),
-        setupItem("Pricing and duration", "Adjust price, time, and booking availability.", "Edit"),
-      ];
-    case "booking":
-      return [
-        setupItem("Booking rules", "Edit lead time, cancellation rules, and booking mode.", "Edit"),
-        setupItem("Calendar setup", "Tune availability and staff booking behavior.", "Open"),
-      ];
-    case "staff-team":
-      return [
-        setupItem("Staff directory", "Manage staff profiles and connection status.", "Open"),
-        setupItem("Invites and roles", "Invite staff and review role access.", "Manage"),
-      ];
-    case "payroll":
-      return [
-        setupItem("Pay cycle", "Review payroll schedule and payout settings.", "Open"),
-        setupItem("Commission and tax", "Edit commission, fixed pay, tax, tips, and adjustments.", "Manage"),
-      ];
-    case "pos-display":
-      return [
-        setupItem("POS access", "Manage passcodes and device-facing settings.", "Open"),
-        setupItem("Display and tips", "Tune customer display, tips, and check-in behavior.", "Edit"),
-      ];
-    case "ownership":
-      return [
-        setupItem("Admins and co-owners", "Review owner-only access and admin links.", "Open", "warning"),
-        setupItem("Ownership transfer", "Start transfer only when the salon owner is changing.", "Manage", "warning"),
-      ];
-    case "staff-workspace":
-      return [
-        setupItem("My staff tools", "Open today, profile, payroll view, and staff actions.", "Open", "success"),
-        setupItem("Selected salon", "Stay scoped to the current staff salon.", "View", "success"),
-      ];
-    case "staff-schedule":
-      return [
-        setupItem("Appointments", "Review personal staff appointments.", "Open"),
-        setupItem("Availability", "Tune booking availability for this staff workspace.", "Manage"),
-      ];
-    case "close-salon":
-      return [
-        setupItem("Salon status", "Disable or reactivate the selected salon.", "Open", "danger"),
-        setupItem("Backup and closure", "Review impact before permanent closure.", "Review", "danger"),
-      ];
-    default:
-      return row.href
-        ? [
-            setupItem(
-              row.action,
-              row.description,
-              row.action.startsWith("Open") ? "Open" : "Manage",
-              row.tone ?? "neutral",
-            ),
-          ]
-        : [];
-  }
-}
-
-function SettingQuickList({ items }: { items: SettingQuickItem[] }) {
-  if (items.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-      {items.map((item) => {
-        const content = (
-          <>
-            <span className="min-w-0">
-              <span className="flex min-w-0 flex-wrap items-center gap-2">
-                <span className="text-sm font-semibold text-zinc-950">
-                  {item.label}
-                </span>
-                {item.status ? (
-                  <StatusBadge tone={item.tone}>{item.status}</StatusBadge>
-                ) : null}
-              </span>
-              <span className="mt-1 block text-sm leading-6 text-zinc-500">
-                {item.description}
-              </span>
-            </span>
-            {item.href ? (
-              <span className="inline-flex min-h-9 items-center rounded-md px-2 text-sm font-semibold text-brand-orange transition group-hover:bg-brand-orange-soft">
-                {item.actionLabel ?? "Open"}
-              </span>
-            ) : null}
-          </>
-        );
-
-        if (item.href) {
-          return (
-            <Link
-              className="group grid min-h-14 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-zinc-100 px-4 py-3 text-left transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950 last:border-b-0"
-              href={item.href}
-              key={`${item.label}-${item.description}`}
-            >
-              {content}
-            </Link>
-          );
-        }
-
-        return (
-          <div
-            className="grid min-h-14 gap-1 border-b border-zinc-100 px-4 py-3 last:border-b-0"
-            key={`${item.label}-${item.description}`}
-          >
-            {content}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function SettingOverviewDetail({ row }: { row: AllSettingsRow }) {
-  const quickItems = settingQuickItems(row);
-
-  return (
-    <div className="grid gap-4">
-      <SummaryList items={row.summaryItems ?? []} />
-      {row.unavailableReason ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
-          {row.unavailableReason}
-        </p>
-      ) : null}
-      <SettingQuickList items={quickItems} />
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-        <div className="grid min-h-14 gap-1 border-b border-zinc-100 px-4 py-3 last:border-b-0">
-          <p className="text-sm font-semibold text-zinc-950">About</p>
-          <p className="text-sm leading-6 text-zinc-500">{row.description}</p>
-        </div>
-        {row.href ? (
-          <Link
-            className="grid min-h-14 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 text-left transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-950"
-            href={row.href}
-          >
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold text-zinc-950">
-                Open full setup
-              </span>
-              <span className="mt-0.5 block text-xs leading-5 text-zinc-500">
-                {row.action}
-              </span>
-            </span>
-            <span className="grid h-9 w-9 place-items-center rounded-md text-zinc-400">
-              <Icon name="external" />
-            </span>
-          </Link>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function LoginSecurityQuickPanel({
-  overview,
-}: {
-  overview: LoginSecurityOverview | null;
-}) {
-  return (
-    <LoginSecurityQuickEditor
-      detailHref="/settings/login-security"
-      overview={overview}
-      variant="drawer"
-    />
   );
 }
 
@@ -868,12 +527,18 @@ function DetailContent({
   row: AllSettingsRow;
   user: KingUser;
 }) {
+  if (row.detailKind === "connections" || row.detailKind === "staff-connections") return <ConnectionsPanel />;
+  if (row.detailKind === "salon-list") return <SalonListPanel />;
+  if (row.detailKind === "create-salon") return <SalonListPanel initialCreate />;
+
+  if (row.detailKind === "notifications") return <NotificationPreferencesPanel />;
+
   if (row.detailKind === "profile") {
     return <AccountProfileEditor createdAtLabel={createdAtLabel} user={user} />;
   }
 
   if (row.detailKind === "login-security") {
-    return <LoginSecurityQuickPanel overview={loginSecurityOverview} />;
+    return loginSecurityOverview ? <LoginSecurityPanel overview={loginSecurityOverview} contactEditor={<AccountProfileEditor createdAtLabel={createdAtLabel} user={user} />} /> : <p className="text-sm text-zinc-500">Security settings could not be loaded. Reload Settings to try again.</p>;
   }
 
   if (row.detailKind === "delete-account") {
@@ -885,7 +550,7 @@ function DetailContent({
     );
   }
 
-  return <SettingOverviewDetail row={row} />;
+  return <DirectSettingsPanel key={row.detailKind} kind={row.detailKind} />;
 }
 
 function SettingsDetailDrawer({
@@ -905,6 +570,7 @@ function SettingsDetailDrawer({
   row: AllSettingsRow | null;
   user: KingUser;
 }) {
+  useCloseOnNavigation(onClose, Boolean(row));
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
 
@@ -923,10 +589,12 @@ function SettingsDetailDrawer({
     function focusableElements() {
       return Array.from(
         drawerRef.current?.querySelectorAll<HTMLElement>(DRAWER_FOCUSABLE) ?? [],
-      ).filter((element) => !element.hasAttribute("disabled"));
+      ).filter((element) => !element.hasAttribute("disabled") && element.getClientRects().length > 0);
     }
 
     function onKeyDown(event: KeyboardEvent) {
+      // Native modal dialogs manage their own Escape and keyboard focus.
+      if (event.defaultPrevented || drawerRef.current?.querySelector("dialog[open]")) return;
       if (event.key === "Escape") {
         event.preventDefault();
         onClose();
@@ -968,6 +636,7 @@ function SettingsDetailDrawer({
     return null;
   }
 
+
   return (
     <div
       className="fixed inset-0 z-[90] bg-zinc-950/30 backdrop-blur-[2px]"
@@ -978,7 +647,6 @@ function SettingsDetailDrawer({
       }}
     >
       <aside
-        aria-describedby="settings-detail-description"
         aria-labelledby="settings-detail-title"
         aria-modal="true"
         className="fixed inset-0 flex h-[100dvh] w-full flex-col overflow-hidden bg-surface text-zinc-950 shadow-2xl outline-none md:inset-y-0 md:left-auto md:right-0 md:w-[min(48rem,calc(100vw-2rem))] md:rounded-l-2xl"
@@ -1007,14 +675,7 @@ function SettingsDetailDrawer({
                 >
                   {row.label}
                 </h2>
-                <StatusBadge tone={row.tone}>{row.status}</StatusBadge>
               </div>
-              <p
-                className="mt-1 text-sm leading-6 text-zinc-500"
-                id="settings-detail-description"
-              >
-                {row.description}
-              </p>
             </div>
             <button
               aria-label="Close settings detail"
@@ -1059,7 +720,15 @@ export function AllSettingsClient({
   const router = useRouter();
   const [activeScope, setActiveScope] = useState<AllSettingsScope>(initialScope);
   const [query, setQuery] = useState(initialQuery);
-  const [openRowId, setOpenRowId] = useState<string | null>(null);
+  const params = useSearchParams();
+  const requestedSection = params.get("section");
+  const [lastRequestedSection, setLastRequestedSection] = useState(requestedSection);
+  const [openRowId, setOpenRowId] = useState<string | null>(requestedSection === "notifications" ? "account-notifications" : requestedSection === "salon-profile" ? "salon-profile" : null);
+  if (lastRequestedSection !== requestedSection) {
+    setLastRequestedSection(requestedSection);
+    if (requestedSection === "notifications") setOpenRowId("account-notifications");
+    if (requestedSection === "salon-profile") setOpenRowId("salon-profile");
+  }
   const lastFocusRef = useRef<HTMLElement | null>(null);
   const preloadedScopeValues = useMemo<ReadonlySet<AllSettingsScope>>(
     () => new Set(SCOPE_TABS.map((tab) => tab.value)),
@@ -1101,6 +770,11 @@ export function AllSettingsClient({
 
   const closeDrawer = useCallback(() => {
     setOpenRowId(null);
+    const url = new URL(window.location.href);
+    if (["notifications", "salon-profile"].includes(url.searchParams.get("section") ?? "")) {
+      url.searchParams.delete("section");
+      window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    }
     window.setTimeout(() => {
       lastFocusRef.current?.focus({ preventScroll: true });
       lastFocusRef.current = null;
@@ -1122,7 +796,7 @@ export function AllSettingsClient({
   return (
     <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-6xl gap-5">
-        <header className="rounded-lg border border-border-subtle bg-white px-4 py-4 sm:px-5">
+        <header className="content-surface border-border-subtle bg-white px-4 py-4 sm:px-5 rounded-none border-y shadow-none">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
@@ -1213,7 +887,7 @@ export function AllSettingsClient({
             </div>
           </>
         ) : (
-          <section className="rounded-lg border border-dashed border-zinc-300 bg-white px-5 py-8">
+          <section className="content-surface border-zinc-300 bg-white px-5 py-8 rounded-none border-y shadow-none">
             <h2 className="text-base font-semibold text-zinc-950">
               No settings found
             </h2>

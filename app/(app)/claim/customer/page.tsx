@@ -1,3 +1,5 @@
+
+import { SubmitButton } from "@/components/submit-button";
 import { connectCustomerHistory } from "@/app/claim/customer/actions";
 import { getCustomerClaimPreview } from "@/lib/customer-identity-claims";
 import { getCurrentKingUser } from "@/lib/users/current-user";
@@ -197,12 +199,12 @@ export default async function CustomerClaimPage({
 
         <form action={connectCustomerHistory} className="grid gap-3">
           <input name="token" type="hidden" value={token} />
-          <button
+          <SubmitButton pendingLabel="Processing…"
             className="min-h-12 rounded-full bg-brand-orange px-5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-orange-hover"
             type="submit"
           >
             Connect history
-          </button>
+          </SubmitButton>
           <Link
             className="inline-flex min-h-11 items-center justify-center rounded-full border border-border-subtle px-4 text-sm font-bold text-text-primary transition hover:border-brand-orange/50"
             href="/activity"

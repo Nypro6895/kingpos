@@ -4,9 +4,12 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import ts from 'typescript';
 const require = createRequire(import.meta.url);
-function load(path) {
+function load(path, overrides = {}) {
   const exports = {};
   const localRequire = name => {
+    if (name in overrides) return overrides[name];
+    if (name === './staff-pay-period-picker') return load('app/staff/my-work/staff-pay-period-picker.tsx');
+    if (name === 'next/navigation') return { useRouter: () => ({ push() {} }) };
     if (name === 'next/link') return { __esModule: true, default: ({ children, ...props }) => require('react').createElement('a', props, children) };
     if (name.endsWith('.module.css')) return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
     if (name.startsWith('@/lib/')) return load(name.replace('@/', '') + '.ts');
@@ -88,4 +91,47 @@ test('paystub cleanup skips external links and survives storage failure',async()
   await cleanupPaystubFile('account/salon/run/staff/old.pdf',remove);
   assert.deepEqual(removed,['account/salon/run/staff/old.pdf']);
   await assert.doesNotReject(()=>cleanupPaystubFile('unused.pdf',async()=>{throw Error('offline');}));
+});
+
+test('My Pay defaults to previous period until five days remain; unprinted periods stay selectable',()=>{
+ const {staffPayPeriodChoices}=load('lib/staff-payroll-period.ts');
+ for(const [cycle,day,start] of [
+ ['monthly','2026-10-01','2026-09-01'],['monthly','2026-10-25','2026-09-01'],['monthly','2026-10-26','2026-10-01'],
+ ['semi_monthly','2026-10-01','2026-09-16'],['semi_monthly','2026-10-09','2026-09-16'],['semi_monthly','2026-10-10','2026-10-01'],
+ ['semi_monthly','2026-10-16','2026-10-01'],['semi_monthly','2026-10-26','2026-10-16'],
+ ['monthly','2027-01-01','2026-12-01'],['monthly','2028-02-24','2028-02-01']]) {
+ const result=staffPayPeriodChoices({cycle_type:cycle},day,[]);
+ assert.equal(result.defaultPeriod.startDate,start,day+cycle);
+ assert.ok(result.periods.some(p=>p.startDate===start));
+ assert.ok(result.periods.every(p=>p.startDate<=day));
+ }
+ const old={period_start:'2024-09-01',period_end:'2024-09-30',cycle_type:'monthly'};
+ const history=staffPayPeriodChoices({cycle_type:'semi_monthly'},'2026-10-01',[old]);
+ assert.ok(history.periods.some(p=>p.startDate===old.period_start));
+ assert.ok(history.periods.some(p=>p.startDate==='2026-09-16'));
+});
+
+test('My Pay picker renders month and distinct periods for mobile native selection',()=>{
+ const {StaffPayPeriodPicker}=load('app/staff/my-work/staff-pay-period-picker.tsx');
+ const options=[{startDate:'2026-09-01',endDate:'2026-09-15',label:'Sep 1–15',value:'2026-09-01:2026-09-15'},
+ {startDate:'2026-09-16',endDate:'2026-09-30',label:'Sep 16–30',value:'2026-09-16:2026-09-30'}];
+ const html=renderToStaticMarkup(React.createElement(StaffPayPeriodPicker,{options,selected:options[1].value}));
+ assert.ok(html.includes('Pay month'));assert.ok(html.includes('Pay period'));assert.ok(html.includes('September 2026'));
+ assert.match(html,/value="2026-09-16:2026-09-30" selected/);
+ const monthly=renderToStaticMarkup(React.createElement(StaffPayPeriodPicker,{options:[options[0]],selected:options[0].value}));
+ assert.ok(!monthly.includes('aria-label="Pay period"'));
+});
+
+test('Analysis period selection stays on Analysis and preserves the exact date range',()=>{
+ const navigated=[];
+ const {StaffPayPeriodPicker}=load('app/staff/my-work/staff-pay-period-picker.tsx',{
+  'react':{useTransition:()=>[false,fn=>fn()]},
+  'next/navigation':{useRouter:()=>({push:(url)=>navigated.push(url)})},
+ });
+ const options=[{startDate:'2026-10-01',endDate:'2026-10-31',label:'October',value:'2026-10-01:2026-10-31'},
+ {startDate:'2026-09-01',endDate:'2026-09-30',label:'September',value:'2026-09-01:2026-09-30'}];
+ const tree=StaffPayPeriodPicker({options,selected:options[0].value,tab:'analysis'});
+ const select=tree.props.children[0].props.children[1];
+ select.props.onChange({target:{value:'2026-09'}});
+ assert.deepEqual(navigated,['/staff/my-work?tab=analysis&payPeriodStart=2026-09-01%3A2026-09-30']);
 });

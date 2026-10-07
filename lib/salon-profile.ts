@@ -1,4 +1,13 @@
+import { getSalonIdentityById } from "@/lib/salon-identity-data";
+import { resolveNailCoverImage } from "@/lib/default-nail-images";
+import { getPublicSalonDirectoryListing } from "@/lib/salon-directory";
+import { EMPTY_SALON_IDENTITY } from "@/lib/salon-identity";
 import "server-only";
+import { cache } from "react";
+import { claimedSalonContent, visibleSalonPosts } from "@/lib/salon-profile-content";
+import { getLumiTrustEvidenceBySalonId } from "@/lib/lumi-trust-data";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { readSalonProfilePreferences } from "@/lib/salon-profile-preferences-server";
 
 import { beautyPostBookingPresentation } from "@/lib/beauty-booking-verification";
 import { loadBeautyPostVerifiedBookingCounts } from "@/lib/beauty-post-booking-counts";
@@ -6,6 +15,7 @@ import { getBeautyMediaPublicUrl } from "@/lib/beauty-media";
 import {
   getCurrentBusinessContext,
   isSalonManageContext,
+  isOwnerMembership,
   isSalonStaffContext,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
@@ -20,10 +30,9 @@ import {
   type SalonProfileMediaKind,
 } from "@/lib/salon-profile-media";
 import {
-  getPublicSalonOperatingStatusesBySalonId,
-  operatingStatusFromMap,
+  getPublicSalonOperatingHours,
 } from "@/lib/salon-operating-status";
-import { DEFAULT_SALON_OPERATING_TIMEZONE } from "@/lib/salon-operating-status-core";
+import { defaultSalonOperatingStatus, DEFAULT_SALON_OPERATING_TIMEZONE } from "@/lib/salon-operating-status-core";
 import { SERVICE_SELECT } from "@/lib/services";
 import { resolveStaffAccountForSalon } from "@/lib/staff-account";
 import {
@@ -651,7 +660,8 @@ async function resolveStaffContentPostingProfile(input: {
     input.context,
   );
 
-  return canManageContent || resolution.staff.salon_profile_content_posting_enabled
+  const preferences = await readSalonProfilePreferences(input.supabase as SupabaseClient, input.context.currentSalon!.id);
+  return preferences.allow_staff_posts && (canManageContent || resolution.staff.salon_profile_content_posting_enabled)
     ? resolution.staff
     : null;
 }
@@ -659,7 +669,7 @@ async function resolveStaffContentPostingProfile(input: {
 export async function canCreateSalonProfileContent(
   context: CurrentBusinessContext,
 ) {
-  if (await hasPermission(SALON_PROFILE_PERMISSIONS.contentManage, context)) {
+  if (!isSalonStaffContext(context) && await hasPermission(SALON_PROFILE_PERMISSIONS.contentManage, context)) {
     return true;
   }
 
@@ -999,6 +1009,12 @@ async function getOrCreateSalonProfileSetting(context: CurrentBusinessContext) {
   return data;
 }
 
+export async function getCurrentSalonProfileIdentitySettings(context?: CurrentBusinessContext) {
+  const target = context ?? await getCurrentBusinessContext();
+  await requirePermission(SALON_PROFILE_PERMISSIONS.view, target);
+  return getOrCreateSalonProfileSetting(target);
+}
+
 export function getSalonProfileHref(salonId: string) {
   return `/explore/salons/${encodeURIComponent(salonId)}`;
 }
@@ -1023,7 +1039,9 @@ export async function getCurrentSalonProfileManageData(
     resolvedContext,
   );
   const canCreateContent =
-    canManageContent || (await canCreateSalonProfileContent(resolvedContext));
+    isSalonStaffContext(resolvedContext)
+      ? await canCreateSalonProfileContent(resolvedContext)
+      : canManageContent || (await canCreateSalonProfileContent(resolvedContext));
 
   if (!canViewProfile) {
     const setting = fallbackSetting(resolvedContext);
@@ -1148,7 +1166,7 @@ function mapPublicProfile(
     addressLine2: row.address_line2,
     city: row.city,
     country: row.country,
-    coverImageUrl: getSalonProfileMediaUrl(row.cover_path),
+    coverImageUrl: resolveNailCoverImage({ id: row.salon_id, name: row.salon_name, categories: toStringArray(row.service_categories), coverImageUrl: getSalonProfileMediaUrl(row.cover_path) }),
     description: row.description,
     email: row.email,
     followerCount: readCount(row.follower_count),
@@ -1526,9 +1544,9 @@ export function buildSalonProfileFeed(input: {
   });
 }
 
-export async function getPublicSalonProfileData(
-  salonId: string,
-): Promise<PublicSalonProfileData | null> {
+export const getPublicSalonProfileData = cache(loadPublicSalonProfileData);
+
+async function loadPublicSalonProfileData(salonId: string): Promise<PublicSalonProfileData | null> {
   if (!isValidSalonProfileId(salonId)) {
     return null;
   }
@@ -1551,6 +1569,12 @@ export async function getPublicSalonProfileData(
     experiencesResult,
     reviewSummaryResult,
     reviewsResult,
+    profilePreferences,
+    operatingHours,
+    websiteFeatureResult,
+    trustEvidenceBySalon,
+    identityBySalon,
+    directoryListing,
   ] = await Promise.all([
     rpc("get_public_salon_profile", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_services", { target_salon_id: salonId }),
@@ -1565,6 +1589,12 @@ export async function getPublicSalonProfileData(
     rpc("get_public_salon_profile_experiences", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_review_summary", { target_salon_id: salonId }),
     rpc("get_public_salon_profile_reviews", { target_salon_id: salonId }),
+    readSalonProfilePreferences(supabase as SupabaseClient, salonId),
+    getPublicSalonOperatingHours(salonId).catch(() => null),
+    rpc("get_public_salon_website_featured_look", {target_salon_id:salonId}),
+    getLumiTrustEvidenceBySalonId(rpc, [salonId]),
+    getSalonIdentityById(rpc, [salonId]),
+    getPublicSalonDirectoryListing(salonId),
   ]);
 
   for (const result of [
@@ -1644,15 +1674,13 @@ export async function getPublicSalonProfileData(
     experienceRows.length > 0
       ? experienceRows.map(mapPublicExperience)
       : reviews.map(mapReviewToExperience);
-  const operatingStatuses = await getPublicSalonOperatingStatusesBySalonId([
-    profile.salon_id,
-  ]);
-  const mappedProfile = mapPublicProfile(
-    profile,
-    operatingStatusFromMap(operatingStatuses, profile.salon_id),
-  );
+  const operatingStatus = operatingHours?.status ?? defaultSalonOperatingStatus();
+  const displayOperatingStatus = directoryListing?.claimState === "unclaimed" && !operatingHours?.weeklyHours.length
+    ? { ...operatingStatus, kind: "hours_unset" as const, label: "Hours not confirmed", detail: "Call to confirm", tone: "muted" as const, source: "unset" as const }
+    : operatingStatus;
+  const mappedProfile = claimedSalonContent(mapPublicProfile(profile, displayOperatingStatus), directoryListing, updateRows.find(row => row.id === directoryListing?.referencePostId)?.caption);
   const looks = lookRows.map(mapPublicLook);
-  const updates = updateRows.map(mapPublicUpdate);
+  const updates = visibleSalonPosts(updateRows.map(mapPublicUpdate), directoryListing);
   const beautyPosts = beautyPostRows.map((row) =>
     mapPublicBeautyPost(row, {
       id: mappedProfile.salonId,
@@ -1701,9 +1729,15 @@ export async function getPublicSalonProfileData(
     }),
     looks,
     profile: mappedProfile,
-    reputationSummary: mapReputationSummary(
-      reputationSummaryRows[0] ?? reviewSummaryRows[0] ?? null,
-    ),
+    directoryListing,
+    preferences: profilePreferences,
+    operatingHours: operatingHours ? { ...operatingHours, status: displayOperatingStatus } : operatingHours,
+    websiteFeaturedLookId: typeof websiteFeatureResult.data === "string" ? websiteFeatureResult.data : null,
+    reputationSummary: {
+      ...mapReputationSummary(reputationSummaryRows[0] ?? reviewSummaryRows[0] ?? null),
+      ...(identityBySalon.get(salonId) ?? EMPTY_SALON_IDENTITY),
+      trustEvidence: trustEvidenceBySalon.get(salonId) ?? null,
+    },
     reviewSummary: mapReviewSummary(reviewSummaryRows[0] ?? null),
     reviews,
     experiences,
@@ -1925,6 +1959,7 @@ async function removeTrustedSalonProfileMediaPath(input: {
 }
 
 export async function updateCurrentSalonProfileIdentity(input: {
+  salonId?: string | null;
   addressLine1?: string | null;
   addressLine2?: string | null;
   businessName: string;
@@ -1952,6 +1987,7 @@ export async function updateCurrentSalonProfileIdentity(input: {
   await requirePermission(SALON_PROFILE_PERMISSIONS.manage, context);
 
   const { Account, salon } = requireCurrentAccountAndSalon(context);
+  if (input.salonId && input.salonId !== salon.id) throw new Error("Your selected salon changed. Reopen this profile before saving.");
   const setting = await getOrCreateSalonProfileSetting(context);
   const [logoPath, coverPath] = await Promise.all([
     assertTrustedSalonProfileMediaPath({
@@ -2003,7 +2039,9 @@ export async function updateCurrentSalonProfileIdentity(input: {
       state: optionalText(input.state) ?? setting.state,
       website: optionalText(input.website),
     })
-    .eq("salon_id", salon.id);
+    .eq("salon_id", salon.id)
+    .select("salon_id")
+    .single();
 
   if (error) {
     console.error("Supabase update salon profile identity failed", {
@@ -2272,17 +2310,17 @@ export async function createCurrentSalonProfileLook(input: {
   const recommendedStaffId = isSalonStaffContext(context)
     ? author.staffId
     : input.recommendedStaffId ?? author.staffId;
-  let serviceDefaults: Pick<Service, "base_price" | "duration_minutes" | "id"> | null =
+  let serviceDefaults: Pick<Service, "base_price" | "duration_minutes" | "id" | "name"> | null =
     null;
 
   if (input.serviceId) {
     const { data: service, error: serviceError } = await supabase
       .from("services")
-      .select("id, base_price, duration_minutes")
+      .select("id, name, base_price, duration_minutes")
       .eq("id", input.serviceId)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
-      .maybeSingle<Pick<Service, "base_price" | "duration_minutes" | "id">>();
+      .maybeSingle<Pick<Service, "base_price" | "duration_minutes" | "id" | "name">>();
 
     if (serviceError || !service) {
       await removeTrustedSalonProfileMediaPath({ context, path: mediaPath });
@@ -2292,26 +2330,26 @@ export async function createCurrentSalonProfileLook(input: {
     serviceDefaults = service;
   }
 
+  let recommendedStaffName: string | null = null;
   if (recommendedStaffId) {
     const { data: staffMember, error: staffError } = await supabase
       .from("staff")
-      .select("id")
+      .select("id, display_name")
       .eq("id", recommendedStaffId)
       .eq("salon_id", salon.id)
       .eq("is_active", true)
-      .maybeSingle<{ id: string }>();
+      .maybeSingle<{ id: string; display_name: string }>();
 
     if (staffError || !staffMember) {
       await removeTrustedSalonProfileMediaPath({ context, path: mediaPath });
       throw new Error("Choose an active artist from the current salon.");
     }
+    recommendedStaffName = staffMember.display_name;
   }
 
-  if (input.isPinned) {
-    await supabase
-      .from("salon_profile_looks")
-      .update({ is_pinned: false })
-      .eq("salon_id", salon.id);
+  if (input.isPinned && (!isOwnerMembership(context.currentMembership) || !input.publishNow)) {
+    await removeTrustedSalonProfileMediaPath({context,path:mediaPath});
+    throw new Error("Only the owner can feature their own published photo.");
   }
 
   const { data, error } = await supabase
@@ -2328,7 +2366,7 @@ export async function createCurrentSalonProfileLook(input: {
       duration_minutes:
         input.durationMinutes ?? serviceDefaults?.duration_minutes ?? null,
       emotional_description: optionalText(input.emotionalDescription),
-      is_pinned: input.isPinned,
+      is_pinned: false,
       media_path: mediaPath,
       mood: optionalText(input.mood),
       palette: input.palette,
@@ -2341,8 +2379,8 @@ export async function createCurrentSalonProfileLook(input: {
       title,
       why_love_it: optionalText(input.whyLoveIt),
     })
-    .select("id")
-    .single<{ id: string }>();
+    .select(SALON_PROFILE_LOOK_SELECT)
+    .single<SalonProfileLook>();
 
   if (error) {
     console.error("Supabase create salon profile look failed", {
@@ -2395,7 +2433,17 @@ export async function createCurrentSalonProfileLook(input: {
     throw postError;
   }
 
-  return data.id;
+  if (input.isPinned) {
+    const rpc = supabase.rpc.bind(supabase) as unknown as RpcRunner;
+    const result=await rpc("set_owned_salon_featured_look",{target_salon_id:salon.id,target_look_id:data.id,pinned:true});
+    if(result.error) throw new Error(result.error.message);
+    data.is_pinned=true;
+  }
+  const look = mapPublicLook({ ...data, comment_count: 0, is_saved: false, save_count: 0,
+    service_name: serviceDefaults?.name ?? null, recommended_staff_name: recommendedStaffName,
+    hashtags: extractHashtags(caption), });
+  return { look, post: buildSalonProfileFeed({ looks: [look], updates: [], salonId: salon.id, profileName: salon.name })[0] };
+
 }
 
 export async function createCurrentSalonProfileUpdate(input: {
@@ -2561,6 +2609,7 @@ export async function createCurrentSalonProfileUpdate(input: {
       created_by_user_id: context.user.id,
       cta_label: ctaLabel,
       media_path: mediaPath,
+      published_at: input.publishNow ? new Date().toISOString() : null,
       salon_id: salon.id,
       service_id: input.serviceId,
       staff_id: selectedStaffId,
@@ -2570,8 +2619,8 @@ export async function createCurrentSalonProfileUpdate(input: {
       title,
       update_type: input.type,
     })
-    .select("id")
-    .single<{ id: string }>();
+    .select(SALON_PROFILE_UPDATE_SELECT)
+    .single<SalonProfileUpdate>();
 
   if (error) {
     console.error("Supabase create salon profile update failed", {
@@ -2624,7 +2673,10 @@ export async function createCurrentSalonProfileUpdate(input: {
     throw postError;
   }
 
-  return data.id;
+  const update = mapPublicUpdate({ ...data, comment_count: 0, service_name: service?.name ?? null,
+    staff_name: staffMember?.display_name ?? null, hashtags: extractHashtags(caption), });
+  return { look: null, post: buildSalonProfileFeed({ looks: [], updates: [update], salonId: salon.id, profileName: salon.name })[0] };
+
 }
 
 export async function setCurrentSalonProfileLookStatus(input: {
@@ -2647,15 +2699,10 @@ export async function setCurrentSalonProfileLookStatus(input: {
     throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
-  if (input.isPinned) {
-    const { error: clearError } = await supabase
-      .from("salon_profile_looks")
-      .update({ is_pinned: false })
-      .eq("salon_id", salon.id);
-
-    if (clearError) {
-      throw new Error(clearError.message);
-    }
+  if (typeof input.isPinned === "boolean") {
+    const rpc = supabase.rpc.bind(supabase) as unknown as RpcRunner;
+    const result = await rpc("set_owned_salon_featured_look", {target_salon_id:salon.id,target_look_id:input.lookId,pinned:input.isPinned});
+    if (result.error) throw new Error(result.error.message);
   }
 
   const patch: Record<string, unknown> = {};
@@ -2666,9 +2713,6 @@ export async function setCurrentSalonProfileLookStatus(input: {
       input.status === "published" ? new Date().toISOString() : null;
   }
 
-  if (typeof input.isPinned === "boolean") {
-    patch.is_pinned = input.isPinned;
-  }
 
   if (Object.keys(patch).length === 0) {
     return;
@@ -2757,7 +2801,7 @@ export async function createCurrentSalonProfileSocialPost(input: {
   }
 
   if (contentType === "look") {
-    await createCurrentSalonProfileLook({
+    return createCurrentSalonProfileLook({
       badge: null,
       bookingCtaEnabled: input.bookingCtaEnabled,
       bookingNote: null,
@@ -2776,10 +2820,9 @@ export async function createCurrentSalonProfileSocialPost(input: {
       title: input.title ?? "",
       whyLoveIt: null,
     });
-    return;
   }
 
-  await createCurrentSalonProfileUpdate({
+  return createCurrentSalonProfileUpdate({
     additionalServiceIds: input.additionalServiceIds,
     bookingCtaEnabled: input.bookingCtaEnabled,
     caption,

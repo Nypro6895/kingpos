@@ -26,6 +26,7 @@ export function BeautyFollowButton({
   const [isFollowing, setFollowing] = useState(initialFollowing);
   const [count, setCount] = useState(Math.max(0, followerCount));
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -35,9 +36,16 @@ export function BeautyFollowButton({
     }
 
     setMessage("");
+    setError("");
 
     startTransition(async () => {
-      const result = await toggleBeautyProfileFollowAction(profileId);
+      let result: Awaited<ReturnType<typeof toggleBeautyProfileFollowAction>>;
+      try {
+        result = await toggleBeautyProfileFollowAction(profileId);
+      } catch {
+        setError("Connection interrupted. Please try again.");
+        return;
+      }
 
       if (result.error) {
         if (isAuthIntentMessage(result.error)) {
@@ -45,7 +53,7 @@ export function BeautyFollowButton({
           return;
         }
 
-        setMessage(result.error);
+        setError(result.error);
         return;
       }
 
@@ -78,8 +86,8 @@ export function BeautyFollowButton({
       <span className="text-xs font-bold text-text-secondary">
         {countLabel(count)}
       </span>
-      <span aria-live="polite" className="sr-only">
-        {message}
+      <span aria-live="polite" className={error ? "text-xs text-red-600" : "sr-only"} role={error ? "alert" : undefined}>
+        {error || message}
       </span>
       {authPromptOpen ? (
         <AuthIntentPrompt

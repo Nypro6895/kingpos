@@ -1,4 +1,6 @@
 "use server";
+import { withSettingsTarget } from "@/lib/settings-target-context";
+
 
 import { createHash, randomBytes } from "crypto";
 import {
@@ -7,7 +9,7 @@ import {
   updateStaffDirectoryBatch as updateStaffDirectoryBatchInService,
   updateStaffPublicProfile,
 } from "@/lib/staff";
-import { getCurrentBusinessContext } from "@/lib/current-context";
+import { getCurrentBusinessContext, isOwnerMembership } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
 import {
   SALON_PROFILE_MEDIA_BUCKET,
@@ -331,7 +333,7 @@ export async function createStaff(formData: FormData) {
   }
 
   revalidatePath("/staff");
-  redirect("/staff");
+  redirect("/staff?connection_notice=Staff%20created%20successfully.");
 }
 
 function readBatchOptionalString(
@@ -632,8 +634,9 @@ async function assertCanMutateStaffPublicProfile(staffId: string) {
 }
 
 export async function getStaffProfileAvatarUploadSessionAction(
-  staffId: string,
+  staffId: string, expectedSalonId?: string
 ): Promise<StaffAvatarUploadSession> {
+ return withSettingsTarget(expectedSalonId, async () => {
   const [accessToken, permissionContext] = await Promise.all([
     getAccessTokenFromRequest(),
     assertCanMutateStaffPublicProfile(staffId),
@@ -680,11 +683,14 @@ export async function getStaffProfileAvatarUploadSessionAction(
     salonId: permissionContext.context.currentSalon!.id,
     supabaseUrl: config.supabaseUrl,
   };
+
+ }, "auto");
 }
 
 export async function updateStaffPublicProfileAction(
-  input: ActionInput,
+  input: ActionInput, expectedSalonId?: string
 ): Promise<{ error: string | null }> {
+ return withSettingsTarget(expectedSalonId, async () => {
   const staffId = readActionString(input, "staff_id");
 
   if (!staffId) {
@@ -735,11 +741,14 @@ export async function updateStaffPublicProfileAction(
   }
 
   return { error: null };
+
+ }, "auto");
 }
 
 export async function updateOwnStaffPasscodeAction(
-  input: ActionInput,
+  input: ActionInput, expectedSalonId?: string
 ): Promise<{ error: string | null }> {
+ return withSettingsTarget(expectedSalonId, async () => {
   const currentPasscode = readActionString(input, "current_passcode");
   const newPasscode = readActionString(input, "new_passcode");
   const confirmPasscode = readActionString(input, "confirm_passcode");
@@ -830,6 +839,8 @@ export async function updateOwnStaffPasscodeAction(
   revalidatePath("/pos/portable/check-in");
 
   return { error: null };
+
+ }, "staff");
 }
 
 export async function searchStaffAccountExactAction(
@@ -1173,4 +1184,21 @@ export async function listSalonStaffConnectionRequestsAction(): Promise<
   } catch (error) {
     return getConnectionActionError(error);
   }
+}
+
+export async function becomeOwnerStaffAction() {
+  const context = await getCurrentBusinessContext();
+  const salonId = context.currentSalon?.id;
+  if (!context.user || !salonId || !isOwnerMembership(context.currentMembership)) {
+    redirect("/staff?connection_error=Only%20the%20current%20salon%20Owner%20can%20become%20staff.");
+  }
+  const supabase = await createAuthenticatedSupabaseServerClient();
+  if (!supabase) redirect("/login");
+  const { error } = await supabase.rpc("become_salon_owner_staff", { p_salon_id: salonId });
+  if (error) {
+    console.error("Owner staff creation failed", error);
+    redirect("/staff?connection_error=Unable%20to%20create%20your%20staff%20profile.%20Please%20try%20again.");
+  }
+  revalidatePath("/", "layout");
+  redirect("/staff?connection_notice=Your%20staff%20profile%20is%20ready.");
 }

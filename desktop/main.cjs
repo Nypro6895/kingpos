@@ -239,7 +239,7 @@ function setupUpdater() {
 }
 async function checkUpdate(manual) {
   if (!updater) {
-    if (manual) await dialog.showMessageBox(win, { message: 'Updates are not available for this test version.', detail: 'Install the next test version using its installer. Your saved tickets will be kept.' });
+    if (manual) await dialog.showMessageBox(win, { message: 'Automatic updates are unavailable for this edition.', detail: 'Download the latest Windows installer from ' + config.origin + '/download/windows. Your saved tickets will be kept.' });
     return;
   }
   if (checkingUpdate || updateReady || installing) return;

@@ -7,6 +7,7 @@ import type { Permission } from "@/types/permission";
 import type { Role } from "@/types/role";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SHOW_ROLE_PERMISSION_CATALOGS } from "@/lib/role-catalog-visibility";
 
 const CATEGORY_ORDER = [
   "Account",
@@ -176,6 +177,7 @@ function RolePermissionList({
 }
 
 export default async function PermissionsPage() {
+  if (!SHOW_ROLE_PERMISSION_CATALOGS) redirect("/settings");
   const context = await requireAccountPageContext("/permissions");
 
   if (!context.user) {

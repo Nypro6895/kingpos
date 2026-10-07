@@ -1,5 +1,8 @@
 "use client";
 
+import { SubmitButton } from "@/components/submit-button";
+import { useCloseOnNavigation } from "@/components/overlay-dismissal";
+
 import {
   createSalonProfileLookAction,
   createSalonProfileUpdateAction,
@@ -403,6 +406,7 @@ function Drawer({
   onClose: () => void;
   title: string;
 }) {
+  useCloseOnNavigation(onClose);
   const closeRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
@@ -466,18 +470,19 @@ function SubmitFooter({
       >
         Cancel
       </button>
-      <button
+      <SubmitButton
         className="min-h-10 w-full rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300 sm:w-auto"
         disabled={disabled}
         type="submit"
       >
         {submitLabel}
-      </button>
+      </SubmitButton>
     </div>
   );
 }
 
-function SalonMediaUploader({
+export function SalonMediaUploader({
+  expectedSalonId,
   currentPath,
   currentUrl,
   disabled,
@@ -488,6 +493,7 @@ function SalonMediaUploader({
   onUploadStateChange,
   onUploaded,
 }: {
+  expectedSalonId?: string;
   currentPath: string | null;
   currentUrl: string | null;
   disabled?: boolean;
@@ -589,7 +595,7 @@ function SalonMediaUploader({
     setError(null);
 
     try {
-      const session = await getSalonProfileMediaUploadSessionAction(intent, kind);
+      const session = await getSalonProfileMediaUploadSessionAction(intent, kind, undefined, expectedSalonId);
       const path = session.path;
 
       await uploadToSupabase({
@@ -616,7 +622,7 @@ function SalonMediaUploader({
   async function removeUploaded() {
     if (uploadedPath) {
       try {
-        await deleteSalonProfileMediaAction(uploadedPath);
+        await deleteSalonProfileMediaAction(uploadedPath, expectedSalonId);
       } catch {
         // The server validates ownership again; a failed cleanup should not
         // leave the form blocked.
@@ -1503,13 +1509,13 @@ export function SalonProfileStudio({
                           type="hidden"
                           value={look.status === "published" ? "archived" : "published"}
                         />
-                        <button
+                        <SubmitButton
                           className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950"
                           disabled={!canManageContent}
                           type="submit"
                         >
                           {look.status === "published" ? "Archive" : "Publish"}
-                        </button>
+                        </SubmitButton>
                       </form>
                       <form action={pinSalonProfileLookAction}>
                         <input name="salon_id" type="hidden" value={setting.salon_id} />
@@ -1519,13 +1525,13 @@ export function SalonProfileStudio({
                           type="hidden"
                           value={look.is_pinned ? "false" : "true"}
                         />
-                        <button
+                        <SubmitButton
                           className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950"
                           disabled={!canManageContent}
                           type="submit"
                         >
                           {look.is_pinned ? "Unpin" : "Pin"}
-                        </button>
+                        </SubmitButton>
                       </form>
                       <form
                         action={deleteSalonProfileLookAction}
@@ -1537,13 +1543,13 @@ export function SalonProfileStudio({
                       >
                         <input name="salon_id" type="hidden" value={setting.salon_id} />
                         <input name="look_id" type="hidden" value={look.id} />
-                        <button
+                        <SubmitButton
                           className="rounded-md border border-red-200 px-3 py-2 text-sm font-semibold text-red-700"
                           disabled={!canManageContent}
                           type="submit"
                         >
                           Delete
-                        </button>
+                        </SubmitButton>
                       </form>
                     </div>
                   </div>

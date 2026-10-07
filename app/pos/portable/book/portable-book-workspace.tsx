@@ -1,4 +1,7 @@
 "use client";
+import { useBookingClock } from "@/components/booking-ui/use-booking-clock";
+import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
+import { bookingStatusLabel } from "@/lib/booking-no-show";
 import { subscribePosChanges } from "@/lib/pos-workspace-sync";
 import { posUserMessage } from "@/lib/pos-user-messages";
 import { mergeBookingSnapshots, reconcileBookingOperations } from "@/lib/portable-booking-state";
@@ -38,7 +41,7 @@ type Props = {
   data: PortableBookData;
   searchCustomersAction?: BookingCustomerSearch;
   slotsAction?: (input: { serviceId: string; serviceIds?: string[]; staffIds?: (string | null)[]; staffId: string; date: string; bookingId?: string }) => Promise<PortableBookingSlot[]>;
-  manageAction?: (input: { bookingId: string; action: "read" | "edit" | "confirm" | "cancel" | "ticket"; payload?: Record<string, unknown> }) => Promise<Result>;
+  manageAction?: (input: { bookingId: string; action: "read" | "edit" | "confirm" | "cancel" | "ticket" | "mark_no_show" | "mark_no_show_excused"; payload?: Record<string, unknown> }) => Promise<Result>;
 };
 
 type Range = "all" | "day" | "next7";
@@ -52,6 +55,7 @@ function addDays(value: string, days: number) {
 
 export function PortableBookWorkspace({ action, data, searchCustomersAction, slotsAction, manageAction, hoursAction, staffOptionsAction, refreshAction }: Props) {
   const rootRef = useRef<HTMLElement>(null);
+  const noShowClock = useBookingClock();
   const workspace = usePortableWorkspaceState();
   const [appointments, setAppointments] = useState(data.appointments);
   const [serverSnapshot, setServerSnapshot] = useState(data.appointments);
@@ -191,7 +195,7 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
         const next = result.data;
         replaceAppointment(next);
         if (mode === "ticket") { openBookingInPortablePos(next); return; }
-        if (mode === "status") { setStatusTarget(next); setCancelReason(""); return; }
+        if (mode === "status") { setStatusTarget(next); setCancelReason(next.noShowNote ?? ""); return; }
         if (next.ticketId || !["pending", "scheduled", "confirmed"].includes(next.status)) {
           setError("This appointment has changed and can no longer be edited here. Its latest status is now shown."); return;
         }
@@ -207,12 +211,17 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
     });
   }
 
-  function changeStatus(next: "confirm" | "cancel") {
+  function changeStatus(next: "confirm" | "cancel" | "mark_no_show" | "mark_no_show_excused") {
     if (!manageAction || !latestStatusTarget) return;
     setError("");
     startTransition(async () => {
       try {
-        const result = await manageAction({bookingId: latestStatusTarget.id, action: next, payload: { updatedAt: latestStatusTarget.updatedAt, reason: cancelReason }});
+        const input = {bookingId: latestStatusTarget.id, action: next, payload: { updatedAt: latestStatusTarget.updatedAt, reason: cancelReason }};
+        let result = await manageAction(input);
+        if(result.ok && result.data.requiresNoShowReview){
+          if(!await confirmNoShowHistory(result.data.noShowHistory ?? [])) return;
+          result = await manageAction({...input,payload:{...input.payload,acknowledgeNoShow:true}});
+        }
         if (!result.ok) { setError(result.error); return; }
         replaceAppointment(result.data); setStatusTarget(null);
         if(editing?.id===result.data.id) {setEditing(result.data);if(next==="cancel") setShowCreate(false);}
@@ -275,6 +284,8 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
         status === "all" ||
         (status === "confirmed" &&
           ["confirmed", "scheduled"].includes(appointment.status)) ||
+        (status === "no_show_unexcused" && appointment.status === "no_show" && appointment.noShowKind === "unexcused") ||
+        (status === "no_show_excused" && appointment.status === "no_show" && appointment.noShowKind === "excused") ||
         appointment.status === status;
       const searchMatches =
         !normalizedQuery ||
@@ -350,14 +361,14 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
             search={searchCustomersAction} onSelect={customer => {
               setQuery(""); openCreate(customer);
             }} /> : <input className={styles.search} type="search" aria-label="Search appointments" placeholder="Search customer, service or staff" value={query} onChange={event => setQuery(event.target.value)} />}
-          <details className={styles.filter} ref={filterRef}>
+          <details data-dismissible-popover className={styles.filter} ref={filterRef}>
             <summary data-active={status !== "all" || (view === "list" && range !== "day")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
               Filter{status !== "all" || (view === "list" && range !== "day") ? " •" : ""}
             </summary>
             <div className={styles.filterPanel}>
               <label>Status<select aria-label="Status" value={status} onChange={event => setStatus(event.target.value)}>
-                <option value="all">All statuses</option><option value="confirmed">Confirmed</option><option value="pending">Pending</option><option value="checked_in">Arrived</option><option value="in_service">In service</option>
+                <option value="all">All statuses</option><option value="confirmed">Confirmed</option><option value="pending">Pending</option><option value="checked_in">Arrived</option><option value="in_service">In service</option><option value="no_show_unexcused">No-show</option><option value="no_show_excused">No-show with reason</option><option value="no_show">All no-shows</option>
               </select></label>
               {view === "list" && <label>Date range<select aria-label="Date range" value={range} onChange={event => setRange(event.target.value as Range)}>
                 <option value="day">Selected day</option><option value="next7">Next 7 days</option><option value="all">All loaded appointments</option>
@@ -387,7 +398,7 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
         </div>
       </section>
 
-      {latestStatusTarget && <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4" style={{bottom:"var(--portable-keyboard-height, 0px)"}} role="dialog" aria-modal="true" aria-label="Appointment status"><div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl"><h2 className="text-lg font-semibold">{latestStatusTarget.customerName} · {latestStatusTarget.status}</h2><label className="mt-3 grid gap-1 text-sm">Cancellation reason (optional)<input className="h-11 rounded border px-3" value={cancelReason} onChange={e => setCancelReason(e.target.value)} /></label>{error && <p role="alert" className="mt-3 text-red-700">{error}</p>}<div className="mt-4 flex flex-wrap gap-2">{data.canCreate && !latestStatusTarget.ticketId && latestStatusTarget.status === "pending" && <button type="button" className="rounded bg-teal-700 px-4 py-3 text-white" disabled={isPending} onClick={() => changeStatus("confirm")}>Confirm appointment</button>}{data.canCancel && !latestStatusTarget.ticketId && ["pending","scheduled","confirmed","checked_in"].includes(latestStatusTarget.status) && <button type="button" className="rounded border border-red-300 px-4 py-3 text-red-700" disabled={isPending} onClick={() => changeStatus("cancel")}>Cancel appointment</button>}<button type="button" className="rounded border px-4 py-3" disabled={isPending} onClick={() => {setStatusTarget(null);setError("");}}>Close</button></div></div></div>}
+      {latestStatusTarget && <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4" style={{bottom:"var(--portable-keyboard-height, 0px)"}} role="dialog" aria-modal="true" aria-label="Appointment status"><div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl"><h2 className="text-lg font-semibold">{latestStatusTarget.customerName} · {bookingStatusLabel(latestStatusTarget.status, latestStatusTarget.noShowKind)}</h2><label className="mt-3 grid gap-1 text-sm">Note (optional)<input className="h-11 rounded border px-3" value={cancelReason} onChange={e => setCancelReason(e.target.value)} /></label>{error && <p role="alert" className="mt-3 text-red-700">{error}</p>}<div className="mt-4 flex flex-wrap gap-2">{data.canCreate && !latestStatusTarget.ticketId && latestStatusTarget.status === "pending" && <button type="button" className="rounded bg-teal-700 px-4 py-3 text-white" disabled={isPending} onClick={() => changeStatus("confirm")}>Confirm appointment</button>}{data.canCancel && !latestStatusTarget.ticketId && ["pending","scheduled","confirmed","checked_in"].includes(latestStatusTarget.status) && <button type="button" className="rounded border border-red-300 px-4 py-3 text-red-700" disabled={isPending} onClick={() => changeStatus("cancel")}>Cancel appointment</button>}{data.canCancel && !latestStatusTarget.ticketId && ["scheduled","confirmed","no_show"].includes(latestStatusTarget.status) && (latestStatusTarget.status === "no_show" || Date.parse(latestStatusTarget.startAt) <= noShowClock) && <><button type="button" className="min-h-11 rounded border border-orange-300 px-4 py-3 text-orange-800" disabled={isPending} onClick={() => changeStatus("mark_no_show")}>No-show</button><button type="button" className="min-h-11 rounded border px-4 py-3" disabled={isPending} onClick={() => changeStatus("mark_no_show_excused")}>No-show with reason</button></>}<button type="button" className="rounded border px-4 py-3" disabled={isPending} onClick={() => {setStatusTarget(null);setError("");}}>Close</button></div></div></div>}
 
     </section>
   );

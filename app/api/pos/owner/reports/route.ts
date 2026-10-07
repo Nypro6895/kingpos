@@ -7,6 +7,15 @@ export async function GET(request:Request){
  const context=await getCurrentBusinessContext();
  if(!context.user||!context.currentSalon||!isSalonManageContext(context)||!await hasPermission('reports.view',context))return new NextResponse(null,{status:401});
  const params=Object.fromEntries(new URL(request.url).searchParams);
- const [report,reportOverview,canEditPermission,canApplyCorrection]=await Promise.all([getDailyPosReport(params.date,context),getOperationalReport(params,context),canEditDailyPosClosing(context),canApplyFinancialCorrections(context)]);
- return NextResponse.json({salonId:context.currentSalon.id,report,reportOverview,canEdit:canEditPermission&&!report.lock.isLocked,canApplyCorrection},{headers:{'Cache-Control':'no-store'}});
+ const view=params.view;
+ const [report,reportOverview,canEditPermission,canApplyCorrection]=await Promise.all([
+   view==='overview'?Promise.resolve(null):getDailyPosReport(params.date,context),
+   view==='closing'?Promise.resolve(null):getOperationalReport(params,context),
+   view==='overview'?Promise.resolve(null):canEditDailyPosClosing(context),
+   view==='overview'?Promise.resolve(null):canApplyFinancialCorrections(context),
+ ]);
+ return NextResponse.json({salonId:context.currentSalon.id,
+   ...(report?{report,canEdit:canEditPermission&&!report.lock.isLocked,canApplyCorrection}:{}),
+   ...(reportOverview?{reportOverview}:{}),
+ },{headers:{'Cache-Control':'no-store'}});
 }

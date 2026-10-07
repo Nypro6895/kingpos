@@ -12,7 +12,14 @@ import {
   updateBeautyPostCaptionAction,
   updateBeautyProfileAction,
 } from "@/app/beauty/actions";
+import Link from "next/link";
+import NextImage from "next/image";
+import { ReylumiIcon } from "@/components/reylumi-icons";
+import "./beauty-profile.css";
+import { BeautyLibrary } from "./beauty-library";
 import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
+import { getAccountSavedPostStatesAction } from "@/app/saved-post/actions";
+import type { AccountSavedPostTarget } from "@/types/saved-post";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
 import {
@@ -44,11 +51,13 @@ import {
   useState,
   useSyncExternalStore,
   useTransition,
+  type ReactNode,
   type ChangeEvent,
   type FormEvent,
 } from "react";
 
 type BeautyProfileClientProps = {
+  appointment?: ReactNode;
   commentViewer: PostCommentViewer;
   initialTimeline: BeautyTimelinePage;
   profile: BeautyProfileSummary;
@@ -266,7 +275,8 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
       <span className="group relative inline-flex">
         <button
           aria-describedby={hintId}
-          className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-extrabold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+          aria-label="Share post"
+          className="beauty-action"
           onClick={() => {
             setStatus("");
             setOpen(true);
@@ -274,7 +284,7 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
           ref={shareButtonRef}
           type="button"
         >
-          Share
+          <ReylumiIcon name="share" />
         </button>
         <span
           className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 hidden w-64 rounded-2xl bg-text-primary px-3 py-2 text-left text-xs font-semibold leading-5 text-white shadow-lg group-hover:block group-focus-within:block"
@@ -775,6 +785,8 @@ function PostMedia({ post }: { post: BeautyTimelinePost }) {
 }
 
 function PostCard({
+  savedState,
+  onSavedChange,
   canManage,
   commentViewer,
   onCaptionUpdated,
@@ -782,6 +794,8 @@ function PostCard({
   onDeleted,
   post,
 }: {
+  savedState?: { saved: boolean; count?: number };
+  onSavedChange: (postId: string, saved: boolean) => void;
   canManage: boolean;
   commentViewer: PostCommentViewer;
   onCaptionUpdated: (postId: string, caption: string | null) => void;
@@ -792,6 +806,12 @@ function PostCard({
   const [editing, setEditing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
+  const commentsDialogRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (commentsOpen) commentsDialogRef.current?.showModal();
+    else commentsDialogRef.current?.close();
+  }, [commentsOpen]);
   const [commentCountState, setCommentCountState] = useState(() => ({
     count: post.commentCount,
     postId: post.id,
@@ -852,7 +872,7 @@ function PostCard({
   }
 
   return (
-    <article className="grid gap-3 rounded-[1.35rem] bg-surface p-3 shadow-[0_18px_52px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80 sm:p-4">
+    <article data-continuous-surface className="beauty-post grid gap-3 rounded-[1.35rem] bg-surface p-3 shadow-[0_18px_52px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80 sm:p-4">
       <div className="flex items-start justify-between gap-3 px-1">
         <div className="flex min-w-0 items-center gap-3">
           <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-orange-soft text-xs font-extrabold text-brand-orange ring-1 ring-brand-orange/10">
@@ -868,38 +888,40 @@ function PostCard({
             )}
           </span>
           <div className="min-w-0">
-            <p className="truncate text-sm font-extrabold text-text-primary">
-              {post.author.displayName}
-            </p>
+            <Link href={`/explore/beauty/${post.author.profileId}`} className="truncate text-sm font-semibold text-text-primary hover:text-brand-orange">{post.author.displayName}</Link>
             <p className="text-xs font-bold text-text-muted">
               {formatDate(post.createdAt)}
             </p>
           </div>
         </div>
-        <VerificationBadge verification={post.verification} />
+        <div className="flex items-center gap-1"><VerificationBadge verification={post.verification} />{canManage && !editing ? (            <details data-dismissible-popover className="relative">
+              <summary
+                aria-label="More post actions"
+                className="grid min-h-10 min-w-10 cursor-pointer list-none place-items-center bg-transparent px-2 text-text-secondary transition marker:hidden hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+              >
+                <ReylumiIcon name="more" className="h-5 w-5" />
+              </summary>
+              <div className="absolute right-0 top-12 z-20 grid min-w-32 gap-1 rounded-2xl bg-surface p-2 shadow-xl ring-1 ring-divider-subtle">
+                <button type="button" className="min-h-10 px-3 text-left text-sm" disabled={pending} onClick={() => setEditing(true)}>Edit caption</button>
+                <button
+                  className="min-h-10 rounded-xl px-3 text-left text-sm font-bold text-red-700 transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-wait disabled:opacity-60"
+                  disabled={pending}
+                  onClick={() => setConfirmingDelete(true)}
+                  type="button"
+                >
+                  Delete
+                </button>
+              </div>
+            </details>) : null}</div>
       </div>
 
-      {post.visibility === "public" && post.media.length > 0 ? (
-        <div className="relative">
-          <PostMedia post={post} />
-          <SavePostButton
-            className="absolute bottom-3 right-3"
-            target={{
-              sourceId: post.id,
-              sourceType: "beauty_post",
-            }}
-          />
-        </div>
-      ) : (
-        <PostMedia post={post} />
-      )}
+      <PostMedia post={post} />
 
       <div className="grid gap-3 px-1 pb-1">
         {attribution ? (
-          <div className="grid gap-1 text-sm">
-            <p className="font-extrabold text-text-primary">
-              {attribution.salonName}
-            </p>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+            <Link href={`/explore/salons/${attribution.salonId}`} className="font-semibold text-text-primary hover:text-brand-orange">{attribution.salonName}</Link>
+            {post.salonPublication ? <span className="text-[11px] text-text-muted">Salon publication: {post.salonPublication.status}</span> : null}
             {attribution.staffName ? (
               <p className="font-semibold text-text-secondary">
                 with {attribution.staffName}
@@ -955,68 +977,19 @@ function PostCard({
         ) : null}
 
         {post.visibility === "public" ? (
-          <div className="grid gap-3 border-t border-divider-subtle pt-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold">
-              <button
-                aria-expanded={commentsOpen}
-                className="rounded-full bg-surface-muted px-4 py-2 text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                onClick={() => setCommentsOpen((current) => !current)}
-                type="button"
-              >
-                {commentCount} comment{commentCount === 1 ? "" : "s"}
-              </button>
-              <a
-                className="rounded-full px-3 py-2 text-text-secondary transition hover:bg-surface-muted hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={publicBeautyPostHref(post)}
-              >
-                Open post
-              </a>
-            </div>
-            {commentsOpen ? (
-              <PostCommentThread
-                compact
-                initialCount={commentCount}
-                onCountChange={handleCommentCountChange}
-                target={commentTarget}
-                viewer={commentViewer}
-              />
-            ) : null}
+          <div className="beauty-post-actions">
+            {savedState ? <SavePostButton size="toolbar" initialSaved={savedState.saved} saveCount={savedState.count} onSavedChange={saved => onSavedChange(post.id, saved)} isAuthenticated={commentViewer.isAuthenticated} target={{ sourceId: post.id, sourceType: "beauty_post" }} /> : <span className="beauty-action text-text-muted" aria-label="Loading Love status"><ReylumiIcon name="heart" /></span>}
+            <button type="button" className="beauty-action" aria-label={`Comments (${commentCount})`} aria-haspopup="dialog" aria-expanded={commentsOpen} onClick={() => { setCommentsLoaded(true); setCommentsOpen(true); }}><ReylumiIcon name="message" /><span className="text-xs">{commentCount || ""}</span></button>
+            <SharePostAction post={post} />
+            {post.bookingAction ? <Link className="beauty-action text-brand-teal" href={canManage ? `/book/${post.bookingAction.salonId}` : post.bookingAction.href}>{canManage ? "Book again" : "Book"}</Link> : null}
           </div>
         ) : null}
+        <dialog ref={commentsDialogRef} onClose={() => setCommentsOpen(false)} onClick={event => { if (event.target === event.currentTarget) setCommentsOpen(false); }} className="beauty-comments-dialog" aria-labelledby={`comments-title-${post.id}`}>
+          <header className="flex items-center justify-between border-b border-border-subtle p-3"><h2 id={`comments-title-${post.id}`} className="font-semibold">Comments</h2><button type="button" className="beauty-action" aria-label="Close comments" onClick={() => setCommentsOpen(false)}><ReylumiIcon name="close" /></button></header>
+          <div className="p-4">{commentsLoaded ? <PostCommentThread compact initialCount={commentCount} onCountChange={handleCommentCountChange} target={commentTarget} viewer={commentViewer} /> : null}</div>
+        </dialog>
 
-        {canManage && !editing ? (
-          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-divider-subtle pt-3">
-            {post.visibility === "public" ? (
-              <SharePostAction post={post} />
-            ) : null}
-            <button
-              className="min-h-10 rounded-full bg-surface-muted px-4 text-sm font-bold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
-              disabled={pending}
-              onClick={() => setEditing(true)}
-              type="button"
-            >
-              Edit
-            </button>
-            <details className="relative">
-              <summary
-                aria-label="More post actions"
-                className="grid min-h-10 min-w-10 cursor-pointer list-none place-items-center rounded-full bg-surface-muted px-3 text-sm font-extrabold text-text-primary ring-1 ring-divider-subtle transition marker:hidden hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              >
-                ...
-              </summary>
-              <div className="absolute right-0 top-12 z-20 grid min-w-32 gap-1 rounded-2xl bg-surface p-2 shadow-xl ring-1 ring-divider-subtle">
-                <button
-                  className="min-h-10 rounded-xl px-3 text-left text-sm font-bold text-red-700 transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-wait disabled:opacity-60"
-                  disabled={pending}
-                  onClick={() => setConfirmingDelete(true)}
-                  type="button"
-                >
-                  Delete
-                </button>
-              </div>
-            </details>
-          </div>
-        ) : null}
+
       </div>
 
       {confirmingDelete ? (
@@ -1069,11 +1042,17 @@ function PostCard({
 }
 
 export function BeautyProfileClient({
+  appointment,
   commentViewer,
   initialTimeline,
   profile: initialProfile,
   visitCandidates,
 }: BeautyProfileClientProps) {
+  const [section, setSection] = useState<"overview" | "posts" | "library">("overview");
+  const [overviewContinuation, setOverviewContinuation] = useState(false);
+  const [savedStates, setSavedStates] = useState<Record<string, { saved: boolean; count?: number }>>({});
+  const [savedLoadError, setSavedLoadError] = useState(false);
+  const [savedRetry, setSavedRetry] = useState(0);
   const normalFileInputRef = useRef<HTMLInputElement | null>(null);
   const beforeInputRef = useRef<HTMLInputElement | null>(null);
   const afterInputRef = useRef<HTMLInputElement | null>(null);
@@ -1106,6 +1085,21 @@ export function BeautyProfileClient({
   const [removeCover, setRemoveCover] = useState(false);
   const [removeAvatar, setRemoveAvatar] = useState(false);
   const [posts, setPosts] = useState(initialTimeline.items);
+  const savedTargetsKey = JSON.stringify(posts.filter(post => post.visibility === "public").map(post => ({ sourceId: post.id, sourceType: "beauty_post" })));
+  useEffect(() => {
+    let active = true;
+    const targets = JSON.parse(savedTargetsKey) as AccountSavedPostTarget[];
+    if (!targets.length) return;
+    getAccountSavedPostStatesAction(targets).then(result => {
+      if (!active) return;
+      if (result.error) { setSavedLoadError(true); return; }
+      setSavedLoadError(false);
+      const keys = new Set(result.savedKeys);
+      setSavedStates(current => ({ ...current, ...Object.fromEntries(targets.map(target => [target.sourceId, { saved: keys.has(`beauty_post:${target.sourceId}`), count: result.saveCountsByKey[`beauty_post:${target.sourceId}`] }])) }));
+    }).catch(() => { if (active) setSavedLoadError(true); });
+    return () => { active = false; };
+  }, [savedTargetsKey, savedRetry]);
+
   const [activeFilter, setActiveFilter] = useState<TimelineFilter>("all");
   const [cursor, setCursor] = useState<BeautyTimelineCursor | null>(
     initialTimeline.nextCursor,
@@ -1277,24 +1271,32 @@ export function BeautyProfileClient({
   useEffect(() => {
     const node = sentinelRef.current;
 
-    if (!node || !hasMore || loadingMore) {
+    if (!node || loadingMore || section === "library" ||
+        (section === "posts" && !hasMore) ||
+        (section === "overview" && (posts.length === 0 || (posts.length < 2 && !hasMore)))) {
       return;
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          void loadMorePosts();
+          if (section === "overview") {
+            setOverviewContinuation(true);
+            setActiveFilter("all");
+            setSection("posts");
+          } else {
+            void loadMorePosts();
+          }
         }
       },
       {
-        rootMargin: "480px",
+        rootMargin: section === "overview" ? "0px" : "480px",
       },
     );
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [hasMore, loadMorePosts, loadingMore]);
+  }, [hasMore, loadMorePosts, loadingMore, section, posts.length]);
 
   const selectedStaffOptions = useMemo(
     () => attribution?.staffOptions ?? [],
@@ -1904,108 +1906,20 @@ export function BeautyProfileClient({
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-surface-muted px-3 py-4 sm:px-6 lg:px-8">
+    <main className="beauty-profile-page min-h-screen overflow-x-hidden bg-surface-muted px-3 py-4 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-3xl gap-4">
-        <section className="overflow-hidden rounded-[1.35rem] bg-surface shadow-[0_16px_44px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/80">
-          <div className="relative min-h-[13.5rem] overflow-hidden bg-[linear-gradient(135deg,var(--brand-orange),var(--brand-teal))] sm:min-h-[15.5rem]">
-            {profile.coverImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                alt={`${profile.displayName} Beauty cover`}
-                className="absolute inset-0 h-full w-full object-cover"
-                src={profile.coverImageUrl}
-              />
-            ) : (
-              <div className="absolute inset-0 bg-[linear-gradient(135deg,var(--brand-orange),var(--brand-teal))]" />
-            )}
-            <div
-              aria-hidden
-              className="absolute inset-0 bg-[linear-gradient(to_top,rgba(23,19,22,0.74),rgba(23,19,22,0.32)_48%,rgba(23,19,22,0.04))]"
-            />
-            {profile.isSelf ? (
-              <button
-                aria-label="Edit Beauty profile"
-                className="absolute right-3 top-3 z-20 min-h-9 rounded-full bg-white/90 px-3 text-xs font-extrabold text-text-primary shadow-sm ring-1 ring-white/65 backdrop-blur transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                onClick={openProfileEditor}
-                ref={profileEditButtonRef}
-                type="button"
-              >
-                Edit
-              </button>
-            ) : null}
-            <div className="absolute inset-x-0 bottom-0 z-10 flex items-end gap-3 px-4 pb-4 sm:gap-4 sm:px-5 sm:pb-5">
-              <ProfileAvatar
-                className="h-20 w-20 border-4 border-white text-lg shadow-[0_18px_38px_rgba(23,19,22,0.26)] sm:h-24 sm:w-24"
-                profile={profile}
-              />
-              <div className="min-w-0 pb-1">
-                <h1 className="truncate text-2xl font-extrabold text-white drop-shadow-sm">
-                  {profile.displayName}
-                </h1>
-                {profile.bio ? (
-                  <p className="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-white/88 drop-shadow-sm">
-                    {profile.bio}
-                  </p>
-                ) : profile.isSelf ? (
-                  <p className="mt-1 text-sm font-semibold text-white/78 drop-shadow-sm">
-                    Add a Beauty bio
-                  </p>
-                ) : null}
-              </div>
-            </div>
+        <section className="beauty-identity">
+          <div className="beauty-cover">{profile.coverImageUrl ? <NextImage alt={`${profile.displayName} Beauty cover`} src={profile.coverImageUrl} fill sizes="(min-width: 1024px) 960px, 100vw" /> : null}
+            {profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="beauty-settings" ref={profileEditButtonRef} onClick={openProfileEditor}><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 3 2 3-1 2 2 3-2 1-3 3-1v-4l-3-1-1-3h-4Z"/><circle cx="12" cy="12" r="3"/></svg></button> : null}
           </div>
+          <div className="beauty-person"><ProfileAvatar className="beauty-profile-avatar" profile={profile} /><div><h1 className="text-2xl font-semibold">{profile.displayName}</h1>{profile.bio ? <p className="mt-1 text-sm text-text-secondary">{profile.bio}</p> : null}<p className="mt-1 text-xs text-text-secondary">{profile.visibility === "public" ? "Public profile" : "Private profile"}</p></div></div>
         </section>
+        <nav className="beauty-sections" aria-label="Beauty sections">{(["overview", "posts", "library"] as const).map(id => <button key={id} type="button" aria-pressed={section === id} onClick={() => { setOverviewContinuation(false); setSection(id); }}>{id === "overview" ? "Overview" : id === "posts" ? "My posts" : "Library"}</button>)}</nav>
+        {(section === "overview" || (section === "posts" && overviewContinuation)) && profile.isSelf ? appointment : null}
+        {section !== "library" && profile.isSelf ? <button type="button" className="beauty-composer" onClick={() => openComposer("regular")}><ProfileAvatar profile={profile} /><span className="flex-1 text-left text-sm text-text-secondary">Share a beauty moment…</span><ReylumiIcon name="image" /></button> : null}
+        {section === "library" ? <section aria-label="Your photo library"><BeautyLibrary posts={posts} />{hasMore ? <button type="button" className="beauty-action mt-3" disabled={loadingMore} onClick={() => void loadMorePosts()}>{loadingMore ? "Loading…" : "Load more photos"}</button> : null}{timelineError ? <p role="alert" className="text-sm text-red-700">{timelineError}</p> : null}</section> : null}
 
-        {profile.isSelf ? (
-          <section className="overflow-hidden rounded-[1.25rem] bg-surface shadow-[0_14px_36px_rgba(35,25,22,0.04)] ring-1 ring-divider-subtle/75">
-            <button
-              className="grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 px-4 py-3 text-left transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-brand-orange sm:px-5"
-              onClick={() => openComposer("regular")}
-              type="button"
-            >
-              <span className="grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-brand-orange-soft text-sm font-extrabold text-brand-orange ring-1 ring-brand-orange/10">
-                {profile.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt={`${profile.displayName} profile`}
-                    className="h-full w-full object-cover"
-                    src={profile.avatarUrl}
-                  />
-                ) : (
-                  profile.initials
-                )}
-              </span>
-              <span>
-                <span className="block text-base font-extrabold text-text-primary">
-                  Share a beauty moment...
-                </span>
-                <span className="mt-0.5 block text-xs font-semibold text-text-secondary">
-                  Photos, captions, or a real salon transformation.
-                </span>
-              </span>
-            </button>
-            <div className="grid grid-cols-2 border-t border-divider-subtle/70">
-              <button
-                className="min-h-12 text-sm font-extrabold text-text-primary transition hover:bg-brand-orange-soft hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-brand-orange"
-                onClick={() => openComposer("regular")}
-                type="button"
-              >
-                Photo
-              </button>
-              <button
-                className="min-h-12 border-l border-divider-subtle/70 bg-brand-teal-soft/70 text-sm font-extrabold text-brand-teal transition hover:bg-brand-teal-soft focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-brand-teal"
-                onClick={() => openComposer("before_after")}
-                type="button"
-              >
-                <span className="block">Before & After</span>
-                <span className="block text-[11px] font-bold text-brand-teal/80">
-                  Transformation
-                </span>
-              </button>
-            </div>
-          </section>
-        ) : null}
-
+        {savedLoadError ? <button type="button" className="beauty-action" onClick={() => setSavedRetry(value => value + 1)}>Could not load Love status. Retry</button> : null}
         {successNotice ? (
           <p
             aria-live="polite"
@@ -2015,14 +1929,14 @@ export function BeautyProfileClient({
           </p>
         ) : null}
 
-        <section className="grid gap-4" aria-label="Beauty timeline">
+        <section className="grid gap-4" aria-label="Beauty timeline" data-continuation={overviewContinuation} hidden={section === "library"}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-extrabold text-text-primary">
-                Moments & Transformations
+                {section === "overview" ? "Latest post" : "Moments & Transformations"}
               </h2>
             </div>
-            {posts.length > 0 ? (
+            {posts.length > 0 && section === "posts" && !overviewContinuation ? (
               <div
                 aria-label="Filter Beauty posts"
                 className="grid grid-cols-2 gap-1 rounded-full bg-surface p-1 shadow-sm ring-1 ring-divider-subtle/70"
@@ -2084,7 +1998,7 @@ export function BeautyProfileClient({
                 </div>
               ) : null}
             </div>
-          ) : visiblePosts.length === 0 ? (
+          ) : section === "posts" && visiblePosts.length === 0 ? (
             <div className="rounded-[1.35rem] bg-surface p-5 text-center shadow-sm ring-1 ring-divider-subtle/80">
               <h3 className="text-lg font-extrabold text-text-primary">
                 No Before & After posts yet
@@ -2095,8 +2009,10 @@ export function BeautyProfileClient({
             </div>
           ) : (
             <div className="grid gap-4">
-              {visiblePosts.map((post) => (
+              {(section === "overview" ? posts.slice(0, 1) : visiblePosts).map((post) => (
                 <PostCard
+                  savedState={savedStates[post.id]}
+                  onSavedChange={(postId, saved) => setSavedStates(current => ({ ...current, [postId]: { ...current[postId], saved } }))}
                   canManage={profile.isSelf && post.profileId === profile.id}
                   commentViewer={commentViewer}
                   key={post.id}
@@ -2129,9 +2045,9 @@ export function BeautyProfileClient({
             </div>
           ) : null}
 
-          <div ref={sentinelRef} />
+          <div ref={sentinelRef} className="h-px" hidden={section === "library"} />
 
-          {!hasMore && posts.length > 0 ? (
+          {section === "posts" && !hasMore && posts.length > 0 ? (
             <p className="py-4 text-center text-sm font-bold text-text-muted">
               You are all caught up
             </p>
@@ -2440,6 +2356,7 @@ export function BeautyProfileClient({
 
             <div className="min-h-0 flex-1 overscroll-contain overflow-auto px-4 py-4 sm:px-5">
               <div className="grid gap-5">
+                <div className="flex gap-2" aria-label="Post type"><button type="button" className="beauty-action" aria-pressed={composerMode === "regular"} disabled={composerBusy} onClick={() => setComposerMode("regular")}>Photo</button><button type="button" className="beauty-action" aria-pressed={composerMode === "before_after"} disabled={composerBusy} onClick={() => setComposerMode("before_after")}>Before &amp; After</button></div>
                 {composerMode === "regular" ? (
                   <>
                     <label className="grid gap-1.5">

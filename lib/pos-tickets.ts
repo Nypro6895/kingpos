@@ -1,3 +1,4 @@
+import { getContextBusinessDate } from "@/lib/salon-business-clock";
 import "server-only";
 
 import {
@@ -7,7 +8,6 @@ import {
 import { hasPermission, requirePermission } from "@/lib/permissions";
 import { POS_PAYMENT_SELECT } from "@/lib/pos-payments";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
-import { getTodayDate } from "@/lib/staff-workdays";
 import type { CurrentBusinessContext } from "@/lib/current-context";
 import type { Customer } from "@/types/customer";
 import type { BookingStatus } from "@/types/booking";
@@ -753,7 +753,7 @@ export async function getCurrentSalonPosTicketOptions(
     throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
-  const today = getTodayDate(context.user?.timezone);
+  const today = await getContextBusinessDate(context);
   const [customersResult, servicesResult, staffResult, workdaysResult] =
     await Promise.all([
     supabase

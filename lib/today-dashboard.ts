@@ -1,3 +1,4 @@
+import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import { backlogTone, waitingAssessment } from "@/lib/today-metric-assessment";
 import "server-only";
 
@@ -408,7 +409,7 @@ function getDayBounds(date: string, timeZone: string) {
 async function loadBusinessClock(
   context: CurrentBusinessContext,
 ): Promise<BusinessClock> {
-  const fallbackTimezone = context.user?.timezone || "America/Chicago";
+  const fallbackTimezone = await getContextBusinessTimezone(context);
   const fallback: BusinessClock = {
     date: fallbackDateInTimeZone(fallbackTimezone),
     timezone: fallbackTimezone,

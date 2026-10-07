@@ -452,34 +452,17 @@ test("app notifications resolve Beauty salon requests through owner workspace co
   );
 });
 
-test("viewing notifications marks app notifications read", () => {
-  const navigationShell = read("app/navigation-shell.tsx");
-  const notificationList = read("app/notifications/notification-list.tsx");
-  const notificationsPage = read("app/(app)/notifications/page.tsx");
-
-  assert.match(
-    navigationShell,
-    /onToggle=\{\(event\) => \{[\s\S]*event\.currentTarget\.open[\s\S]*markViewed\(\)/,
-    "Opening the notification dropdown should mark visible app notifications read.",
-  );
-  assert.match(
-    navigationShell,
-    /viewedAppNotificationSummary/,
-    "Dropdown should optimistically render viewed app notifications as read.",
-  );
-  assert.match(
-    notificationList,
-    /markAppNotificationsReadOnView/,
-    "Notification feed list should support marking app notifications read when viewed.",
-  );
-  assert.match(
-    notificationList,
-    /markAllAppNotificationsReadAction\(\)/,
-    "Notification feed list should persist viewed app notifications through the mark-all-read action.",
-  );
-  assert.match(
-    notificationsPage,
-    /<NotificationFeedList items=\{group\.items\} markAppNotificationsReadOnView \/>/,
-    "The full notifications page should mark app notifications read on view.",
-  );
+test("notification surfaces mark only visible rows and open compact bottom panel", () => {
+  const shell = read("app/navigation-shell.tsx");
+  const list = read("app/notifications/notification-list.tsx");
+  const page = read("app/(app)/notifications/page.tsx");
+  assert.doesNotMatch(shell, /markViewed|viewedAppNotificationSummary/);
+  assert.doesNotMatch(list, /markAllAppNotificationsReadAction|router.refresh|markAppNotificationsReadOnView/);
+  assert.doesNotMatch(page, /markAppNotificationsReadOnView/);
+  assert.match(shell, /markAllCenterViewed/);
+  assert.match(list, /IntersectionObserver/);
+  assert.match(list, /queueViewedNotification/);
+  assert.match(list, /<form action=\{openAppNotificationAction\}>/);
+  const mobile = shell.slice(shell.indexOf("function MobileBottomNav("));
+  assert.match(mobile, /link.href === "\/notifications"[\s\S]*<NotificationDropdown/);
 });

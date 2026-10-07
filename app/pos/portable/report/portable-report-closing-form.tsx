@@ -1,4 +1,5 @@
 "use client";
+import { usePathname } from "next/navigation";
 import { posUserMessage } from "@/lib/pos-user-messages";
 import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
 import { listPortableOperations, PORTABLE_OPERATIONS_CHANGED } from "@/lib/portable-operations";
@@ -108,6 +109,7 @@ export function PortableReportClosingForm({
 }: {
   data: PortableReportData;
 }) {
+  const pathname=usePathname();
   const workspace = usePortableWorkspaceState();
   const [data,setData]=useState(initialData);
   const [baseline,setBaseline]=useState(initialData.closingInputs);
@@ -116,7 +118,7 @@ export function PortableReportClosingForm({
   usePosResourceRefresh(workspace?.scope.split(':')[0],'report',async()=>{
     const response=await fetch('/api/pos/portable/workspace?resource=report&date='+encodeURIComponent(initialData.reportDate),{cache:'no-store',signal:AbortSignal.timeout(10000)});
     if(response.ok){const next=await response.json();if(next.reportDate===initialData.reportDate)setData(next);}
-  });
+  },{enabled:pathname==="/pos/portable/report"});
   useEffect(()=>{
     if(!workspace)return;let active=true;
     const refresh=()=>{void listPortableOperations(workspace.scope).then(rows=>{if(active)setPendingCount(rows.filter(row=>row.kind==='receipt'&&row.state!=='synced'&&row.state!=='cancelled').length);});};

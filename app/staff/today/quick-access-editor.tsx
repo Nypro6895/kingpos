@@ -398,7 +398,7 @@ export function QuickAccessPanel({
 
               <div className="flex flex-wrap items-center justify-between gap-3">
                 {canAdd ? (
-                  <details className="relative">
+                  <details data-dismissible-popover className="relative">
                     <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 text-sm font-semibold text-amber-900 transition hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
                       <UtilityIcon name="plus" />
                       <span>Add shortcut</span>

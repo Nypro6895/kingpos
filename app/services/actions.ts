@@ -1,4 +1,8 @@
 "use server";
+import { after } from "next/server";
+import { broadcastPosStaffChange } from "@/lib/pos-staff-realtime-server";
+import { withSettingsTarget } from "@/lib/settings-target-context";
+
 
 import { validateServiceConfig } from "@/lib/service-contract";
 import { saveServiceConfigurations } from "@/lib/services";
@@ -7,6 +11,7 @@ import type {
   ServiceConfigInput,
 } from "@/types/service";
 import { revalidatePath } from "next/cache";
+import { getCurrentBusinessContext } from "@/lib/current-context";
 
 function failedServiceResult(
   inputs: ServiceConfigInput[],
@@ -27,6 +32,7 @@ function failedServiceResult(
 }
 
 function revalidateServiceConsumers(salonId: string) {
+  after(()=>broadcastPosStaffChange(salonId,"catalog"));
   revalidatePath("/services");
   revalidatePath("/bookings");
   revalidatePath("/salon-profile");
@@ -36,7 +42,9 @@ function revalidateServiceConsumers(salonId: string) {
 
 export async function saveServiceConfigsAction(
   inputs: ServiceConfigInput[],
+  expectedSalonId?: string,
 ): Promise<SaveServiceConfigsResult> {
+ return withSettingsTarget(expectedSalonId, async () => {
   if (!Array.isArray(inputs) || inputs.length === 0 || inputs.length > 100) {
     return {
       message: "Choose between 1 and 100 service drafts to save.",
@@ -57,6 +65,7 @@ export async function saveServiceConfigsAction(
   }
 
   try {
+    if (expectedSalonId && (await getCurrentBusinessContext()).salonId !== expectedSalonId) throw new Error("The selected salon changed. Reload services before saving.");
     const result = await saveServiceConfigurations(inputs);
     revalidateServiceConsumers(result.salonId);
 
@@ -74,10 +83,13 @@ export async function saveServiceConfigsAction(
       error instanceof Error ? error.message : "Services could not be saved.",
     );
   }
+
+ }, "manage");
 }
 
 export async function createServiceAction(
   input: Omit<ServiceConfigInput, "serviceId">,
+  expectedSalonId?: string,
 ): Promise<SaveServiceConfigsResult> {
   return saveServiceConfigsAction([
     {
@@ -86,5 +98,5 @@ export async function createServiceAction(
         input.isActive && input.onlineBookingEnabled,
       serviceId: null,
     },
-  ]);
+  ], expectedSalonId);
 }

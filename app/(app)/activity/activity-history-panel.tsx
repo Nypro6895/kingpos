@@ -1,8 +1,9 @@
 "use client";
+import { bookingStatusLabel } from "@/lib/booking-no-show";
 
-import { VisitExperiencePrompt } from "@/app/activity/visit-experience-prompt";
+import { HistoryDetailsDrawer } from "@/app/activity/history-details-drawer";
 import Link from "next/link";
-import { Fragment, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type {
   CustomerActivity,
   CustomerActivitySalon,
@@ -16,6 +17,7 @@ type ActivityStatusFilter = "all" | CustomerActivity["status"];
 
 type ActivityHistoryPanelProps = {
   activities: CustomerActivity[];
+  initialSelectedBookingId?: string;
 };
 
 function classNames(...classes: Array<false | null | string | undefined>) {
@@ -91,15 +93,11 @@ function monthKey(value: string, timezone?: string) {
 }
 
 function statusLabel(status: CustomerActivity["status"]) {
-  return status === "no_show" ? "No-show" : status.replaceAll("_", " ");
+  return status === "completed" ? "Visited" : status === "past_appointment" ? "Past" : status === "no_show" ? "No-show" : status === "checked_in" ? "Checked in" : status === "in_service" ? "In service" : status === "upcoming" ? "Upcoming" : "Cancelled";
 }
 
-function statusClass(status: CustomerActivity["status"]) {
-  if (status === "completed") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-800";
-  }
-
-  return "border-zinc-300 bg-zinc-100 text-zinc-700";
+function rowStatus(activity: CustomerActivity) {
+  return activity.type === "booking" && activity.status === "no_show" && activity.noShowKind === "excused" ? "No-show · Reason" : statusLabel(activity.status);
 }
 
 function initialsFor(value: string | null | undefined) {
@@ -117,7 +115,7 @@ function initialsFor(value: string | null | undefined) {
 
 function SalonLogo({ salon }: { salon: CustomerActivitySalon }) {
   return (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-orange-soft text-xs font-extrabold text-brand-orange ring-1 ring-border-subtle">
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand-orange-soft text-[10px] font-extrabold text-brand-orange ring-1 ring-border-subtle md:h-8 md:w-8 md:rounded-xl md:text-xs">
       {salon.imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -133,11 +131,40 @@ function SalonLogo({ salon }: { salon: CustomerActivitySalon }) {
 }
 
 function activityTimezone(activity: CustomerActivity) {
-  return activity.type === "booking" ? activity.timezone : undefined;
+  return activity.timezone;
 }
 
 function activityTypeLabel(activity: CustomerActivity) {
-  return activity.type === "purchase" ? "Purchase" : "Booking";
+  return activity.type === "purchase" ? (activity.bookingId ? "Booking · Visit" : "Visit") : activity.type === "visit" ? "Check-in" : "Booking";
+}
+
+function SalonIdentity({ activity }: { activity: CustomerActivity }) {
+  return <div className="flex min-w-0 items-center gap-2">
+    <SalonLogo salon={activity.salon} />
+    <div className="min-w-0">
+      <p className="truncate text-sm">{activity.salon.name}</p>
+      <p className="mt-0.5 text-[11px] text-text-secondary md:mt-1 md:text-xs">{activityTypeLabel(activity)}</p>
+    </div>
+  </div>;
+}
+
+function ActivityDate({ activity, compact = false }: { activity: CustomerActivity; compact?: boolean }) {
+  const value = activity.type === "booking" ? activity.startAt : activity.type === "purchase" && activity.appointmentStartAt ? activity.appointmentStartAt : activity.occurredAt;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return <span className="text-xs text-text-secondary">Date unavailable</span>;
+  const timezone = activityTimezone(activity);
+  const parts = new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit", weekday: "short", year: "numeric", timeZone: timezone }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value;
+  return <time dateTime={value} aria-label={activityDateText(activity)} className={compact ? "grid justify-items-start gap-1" : "flex items-center gap-2.5"}>
+    <span aria-hidden="true" className="grid h-10 w-9 shrink-0 content-center rounded-lg bg-brand-orange-soft text-center text-brand-orange md:h-14 md:w-12 md:rounded-xl">
+      <span className="text-[9px] font-semibold uppercase tracking-wider md:text-[10px]">{part("month")}</span>
+      <span className="text-lg font-semibold leading-tight md:text-[23px]">{part("day")}</span>
+    </span>
+    <span aria-hidden="true" className={compact ? "grid gap-0.5 text-[10px] text-text-secondary" : "grid gap-1 text-xs text-text-secondary"}>
+      <span>{part("weekday")} · {part("year")}</span>
+      <span className="text-text-primary">{formatTime(value, timezone)}</span>
+    </span>
+  </time>;
 }
 
 function serviceNames(activity: CustomerActivity) {
@@ -164,12 +191,12 @@ function activityDateText(activity: CustomerActivity) {
     return `${date}, ${formatTime(activity.startAt, timezone)}`;
   }
 
-  return date;
+  return activity.type === "purchase" && activity.appointmentStartAt ? `${formatDate(activity.appointmentStartAt, timezone)}, ${formatTime(activity.appointmentStartAt, timezone)}` : `${date}, ${formatTime(activity.occurredAt, timezone)}`;
 }
 
 function activityAmountText(activity: CustomerActivity) {
   if (activity.type === "purchase" || activity.total > 0) {
-    return formatMoney(activity.total, activity.currency);
+    return `${activity.type === "booking" ? "Est. " : ""}${formatMoney(activity.total, activity.currency)}`;
   }
 
   return "-";
@@ -184,13 +211,14 @@ function activitySearchText(activity: CustomerActivity) {
   const ids =
     activity.type === "purchase"
       ? [activity.ticketNumber]
-      : [activity.bookingId];
+      : activity.type === "booking" ? [activity.bookingId] : [activity.id];
 
   return [
     activity.salon.name,
+    activity.salon.location,
     activity.title,
     activityTypeLabel(activity),
-    statusLabel(activity.status),
+    (activity.type === "booking" && activity.status === "no_show" ? bookingStatusLabel(activity.status, activity.noShowKind) : statusLabel(activity.status)),
     formatDate(activity.occurredAt, timezone),
     formatMonth(activity.occurredAt, timezone),
     activity.occurredAt.slice(0, 10),
@@ -206,170 +234,46 @@ function activityMatchesQuery(activity: CustomerActivity, query: string) {
   return searchTextMatches([activitySearchText(activity)], query);
 }
 
-function verifiedVisitPrompt(activity: CustomerActivity) {
-  if (
-    activity.type !== "purchase" ||
-    !activity.verifiedVisit ||
-    activity.verifiedVisit.experienceState
-  ) {
-    return null;
-  }
-
-  return (
-    <VisitExperiencePrompt
-      compact
-      countsTowardReputation={activity.verifiedVisit.countsTowardReputation}
-      initialBody={activity.verifiedVisit.experienceBody}
-      initialState={activity.verifiedVisit.experienceState}
-      salonName={activity.salon.name}
-      ticketId={activity.ticketId}
-      windowDays={activity.verifiedVisit.windowDays}
-    />
-  );
-}
-
 function selectClassName() {
   return "h-11 rounded-xl border border-border-subtle bg-white px-3 text-sm font-bold text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10";
 }
 
-function ActivityMobileRow({ activity }: { activity: CustomerActivity }) {
-  const prompt = verifiedVisitPrompt(activity);
+type HistoryRowProps = { activity: CustomerActivity; onDetails: (activity: CustomerActivity) => void };
 
-  return (
-    <article className="grid gap-3 border-b border-divider-subtle px-4 py-4 last:border-b-0">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-3">
-          <SalonLogo salon={activity.salon} />
-          <div className="min-w-0">
-            <Link
-              className="truncate text-sm font-extrabold text-text-primary hover:text-brand-orange"
-              href={activity.href}
-            >
-              {activity.salon.name}
-            </Link>
-            <p className="mt-1 text-xs font-bold uppercase text-brand-orange">
-              {activityTypeLabel(activity)}
-            </p>
-          </div>
-        </div>
-        <span
-          className={classNames(
-            "shrink-0 rounded-full border px-2 py-1 text-[11px] font-extrabold capitalize",
-            statusClass(activity.status),
-          )}
-        >
-          {statusLabel(activity.status)}
-        </span>
-      </div>
-      <div className="grid gap-1 text-sm">
-        <p className="font-bold text-text-primary">{servicesLabel(activity)}</p>
-        <p className="font-semibold text-text-secondary">
-          {activityDateText(activity)}
-        </p>
-        {activity.type === "booking" && activity.staffName ? (
-          <p className="font-semibold text-text-secondary">
-            {activity.staffName}
-          </p>
-        ) : null}
-      </div>
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-extrabold text-text-primary">
-          {activityAmountText(activity)}
-        </p>
-        <Link
-          className="inline-flex min-h-9 items-center justify-center rounded-full border border-border-subtle px-3 text-sm font-bold text-text-primary transition hover:border-brand-orange/50 hover:text-brand-orange"
-          href={activity.href}
-        >
-          {activity.type === "purchase" ? "Receipt" : "Details"}
-        </Link>
-      </div>
-      {activity.type === "purchase" && activity.verifiedVisit ? (
-        <div className="flex flex-wrap gap-2">
-          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold text-emerald-800">
-            Verified Visit
-          </span>
-        </div>
-      ) : null}
-      {prompt}
-    </article>
-  );
+function DetailsButton({ activity, onDetails }: HistoryRowProps) {
+  return <button type="button" onClick={() => onDetails(activity)} className="inline-flex min-h-8 items-center justify-center rounded-lg border border-border-subtle px-2.5 text-xs transition hover:border-brand-orange/50 hover:text-brand-orange md:min-h-9 md:px-3 md:text-sm">Details</button>;
 }
 
-function ActivityDesktopRow({ activity }: { activity: CustomerActivity }) {
-  const prompt = verifiedVisitPrompt(activity);
-
-  return (
-    <Fragment>
-      <tr className="transition hover:bg-surface-muted/70">
-        <td className="px-4 py-3 align-middle">
-          <div className="flex min-w-0 items-center gap-3">
-            <SalonLogo salon={activity.salon} />
-            <div className="min-w-0">
-              <Link
-                className="block truncate font-extrabold text-text-primary hover:text-brand-orange"
-                href={activity.href}
-              >
-                {activity.salon.name}
-              </Link>
-              <p className="mt-0.5 text-xs font-bold uppercase text-brand-orange">
-                {activityTypeLabel(activity)}
-              </p>
-            </div>
-          </div>
-        </td>
-        <td className="px-4 py-3 align-middle">
-          <span
-            className={classNames(
-              "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-extrabold capitalize",
-              statusClass(activity.status),
-            )}
-          >
-            {statusLabel(activity.status)}
-          </span>
-          {activity.type === "purchase" && activity.verifiedVisit ? (
-            <span className="mt-1 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold text-emerald-800">
-              Verified Visit
-            </span>
-          ) : null}
-        </td>
-        <td className="px-4 py-3 align-middle text-sm font-semibold text-text-secondary">
-          {activityDateText(activity)}
-        </td>
-        <td className="max-w-[18rem] px-4 py-3 align-middle">
-          <p className="line-clamp-2 text-sm font-bold leading-5 text-text-primary">
-            {servicesLabel(activity)}
-          </p>
-          {activity.type === "booking" && activity.staffName ? (
-            <p className="mt-1 truncate text-xs font-semibold text-text-secondary">
-              {activity.staffName}
-            </p>
-          ) : null}
-        </td>
-        <td className="px-4 py-3 text-right align-middle text-sm font-extrabold text-text-primary">
-          {activityAmountText(activity)}
-        </td>
-        <td className="px-4 py-3 text-right align-middle">
-          <Link
-            className="inline-flex min-h-9 items-center justify-center rounded-full border border-border-subtle px-3 text-sm font-bold text-text-primary transition hover:border-brand-orange/50 hover:text-brand-orange"
-            href={activity.href}
-          >
-            {activity.type === "purchase" ? "Receipt" : "Details"}
-          </Link>
-        </td>
-      </tr>
-      {prompt ? (
-        <tr>
-          <td className="bg-surface-muted/40 px-4 pb-4" colSpan={6}>
-            {prompt}
-          </td>
-        </tr>
-      ) : null}
-    </Fragment>
-  );
+function ActivityMobileRow({ activity, onDetails }: HistoryRowProps) {
+  return <article className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-2 border-b border-divider-subtle px-3 py-3 last:border-b-0">
+    <ActivityDate activity={activity} compact />
+    <div className="grid min-w-0 gap-2">
+      <SalonIdentity activity={activity} />
+      <p className="line-clamp-2 text-sm" title={servicesLabel(activity)}>{servicesLabel(activity)}</p>
+    </div>
+    <div className="grid max-w-24 justify-items-end gap-1.5 text-right">
+      <p className="text-xs">{activityAmountText(activity)}</p>
+      <span className="text-xs text-text-secondary">{rowStatus(activity)}</span>
+      <DetailsButton activity={activity} onDetails={onDetails} />
+    </div>
+  </article>;
 }
 
-export function ActivityHistoryPanel({ activities }: ActivityHistoryPanelProps) {
+function ActivityDesktopRow({ activity, onDetails }: HistoryRowProps) {
+  return <tr className="transition hover:bg-surface-muted/70">
+    <td className="px-4 py-3 align-middle"><ActivityDate activity={activity} /></td>
+    <td className="px-4 py-3 align-middle"><SalonIdentity activity={activity} /></td>
+    <td className="px-4 py-3 align-middle"><p className="line-clamp-2 text-sm">{servicesLabel(activity)}</p>{activity.type === "booking" && activity.staffName ? <p className="mt-1 text-xs text-text-secondary">{activity.staffName}</p> : null}</td>
+    <td className="px-4 py-3 align-middle text-xs text-text-secondary">{rowStatus(activity)}</td>
+    <td className="px-4 py-3 text-right align-middle text-sm whitespace-nowrap">{activityAmountText(activity)}</td>
+    <td className="px-4 py-3 text-right align-middle"><DetailsButton activity={activity} onDetails={onDetails} /></td>
+  </tr>;
+}
+
+export function ActivityHistoryPanel({ activities, initialSelectedBookingId }: ActivityHistoryPanelProps) {
+  const [selectedActivity, setSelectedActivity] = useState<CustomerActivity | null>(() => initialSelectedBookingId ? activities.find(activity => activity.type !== "visit" && activity.bookingId === initialSelectedBookingId) ?? null : null);
   const [query, setQuery] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<ActivityTypeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<ActivityStatusFilter>("all");
   const [monthFilter, setMonthFilter] = useState("all");
@@ -451,12 +355,12 @@ export function ActivityHistoryPanel({ activities }: ActivityHistoryPanelProps) 
       </div>
 
       {activities.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-border-subtle bg-surface px-4 py-5 text-sm font-semibold text-text-secondary">
+        <p className="content-surface border-border-subtle bg-surface px-4 py-5 text-sm font-semibold text-text-secondary rounded-none border-y shadow-none">
           Completed visits and past appointments will appear here.
         </p>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-sm">
-          <div className="grid gap-3 border-b border-divider-subtle bg-surface px-4 py-4 lg:grid-cols-[minmax(18rem,1fr)_auto] lg:items-end">
+        <div className="content-surface overflow-hidden border-border-subtle bg-surface rounded-none border-y shadow-none">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 border-b border-divider-subtle bg-surface px-4 py-3 sm:grid-cols-1 sm:gap-3 sm:py-4 lg:grid-cols-[minmax(18rem,1fr)_auto] lg:items-end">
             <label className="grid gap-1.5">
               <span className="text-xs font-bold uppercase text-text-muted">
                 Search history
@@ -472,7 +376,8 @@ export function ActivityHistoryPanel({ activities }: ActivityHistoryPanelProps) 
                 value={query}
               />
             </label>
-            <div className="grid gap-2 sm:grid-cols-4">
+            <button type="button" aria-expanded={filtersOpen} onClick={() => setFiltersOpen(!filtersOpen)} className="min-h-11 px-1 text-xs font-bold text-brand-teal sm:hidden">Filters</button>
+            <div className={classNames(filtersOpen ? "grid" : "hidden", "col-span-2 grid-cols-2 gap-2 sm:col-span-1 sm:grid sm:grid-cols-3")}>
               <label className="grid gap-1.5">
                 <span className="text-xs font-bold uppercase text-text-muted">
                   Type
@@ -486,7 +391,8 @@ export function ActivityHistoryPanel({ activities }: ActivityHistoryPanelProps) 
                   value={typeFilter}
                 >
                   <option value="all">All activity</option>
-                  <option value="purchase">Purchases</option>
+                  <option value="purchase">Salon visits</option>
+                  <option value="visit">Check-ins</option>
                   <option value="booking">Bookings</option>
                 </select>
               </label>
@@ -505,7 +411,10 @@ export function ActivityHistoryPanel({ activities }: ActivityHistoryPanelProps) 
                   value={statusFilter}
                 >
                   <option value="all">All statuses</option>
-                  <option value="completed">Completed</option>
+                  <option value="completed">Visited</option>
+                  <option value="past_appointment">Past</option>
+                  <option value="checked_in">Checked in</option>
+                  <option value="in_service">In service</option>
                   <option value="cancelled">Cancelled</option>
                   <option value="no_show">No-show</option>
                 </select>
@@ -530,18 +439,7 @@ export function ActivityHistoryPanel({ activities }: ActivityHistoryPanelProps) 
                   ))}
                 </select>
               </label>
-              <label className="grid gap-1.5">
-                <span className="text-xs font-bold uppercase text-text-muted">
-                  Rows
-                </span>
-                <select
-                  className={selectClassName()}
-                  defaultValue={PAGE_SIZE}
-                  disabled
-                >
-                  <option value={PAGE_SIZE}>10 per page</option>
-                </select>
-              </label>
+
             </div>
           </div>
 
@@ -549,17 +447,17 @@ export function ActivityHistoryPanel({ activities }: ActivityHistoryPanelProps) 
             <table className="min-w-[880px] w-full table-fixed text-left text-sm">
               <thead className="bg-surface-muted text-xs font-bold uppercase text-text-muted">
                 <tr>
-                  <th className="w-[22%] px-4 py-3">Salon</th>
-                  <th className="w-[13%] px-4 py-3">Status</th>
-                  <th className="w-[17%] px-4 py-3">Date</th>
+                  <th className="w-[21%] px-4 py-3">Date & time</th>
+                  <th className="w-[20%] px-4 py-3">Salon</th>
                   <th className="w-[25%] px-4 py-3">Services</th>
-                  <th className="w-[11%] px-4 py-3 text-right">Total</th>
-                  <th className="w-[12%] px-4 py-3 text-right">Action</th>
+                  <th className="w-[12%] px-4 py-3">Status</th>
+                  <th className="w-[12%] px-4 py-3 text-right">Amount</th>
+                  <th className="w-[10%] px-4 py-3 text-right"><span className="sr-only">Details</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-divider-subtle">
                 {visibleActivities.map((activity) => (
-                  <ActivityDesktopRow activity={activity} key={activity.id} />
+                  <ActivityDesktopRow activity={activity} onDetails={setSelectedActivity} key={activity.id} />
                 ))}
               </tbody>
             </table>
@@ -567,7 +465,7 @@ export function ActivityHistoryPanel({ activities }: ActivityHistoryPanelProps) 
 
           <div className="md:hidden">
             {visibleActivities.map((activity) => (
-              <ActivityMobileRow activity={activity} key={activity.id} />
+              <ActivityMobileRow activity={activity} onDetails={setSelectedActivity} key={activity.id} />
             ))}
           </div>
 
@@ -630,6 +528,7 @@ export function ActivityHistoryPanel({ activities }: ActivityHistoryPanelProps) 
           </div>
         </div>
       )}
+      {selectedActivity ? <HistoryDetailsDrawer key={selectedActivity.id} activity={selectedActivity} onClose={() => setSelectedActivity(null)} /> : null}
     </section>
   );
 }

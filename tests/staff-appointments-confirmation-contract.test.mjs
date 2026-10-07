@@ -10,7 +10,7 @@ function read(path) {
 }
 
 test("staff schedule keeps salon-facing UX and staff booking controls", () => {
-  const page = read("app/staff/appointments/page.tsx");
+  const page = read("app/(app)/staff/appointments/page.tsx");
   const css = read("app/staff/appointments/staff-appointments.css");
   const actions = read("app/staff/appointments/actions.ts");
   const loader = read("lib/staff-appointments.ts");
@@ -24,23 +24,16 @@ test("staff schedule keeps salon-facing UX and staff booking controls", () => {
     "supabase/migrations/202608180009_unified_staff_profile_public_presentation.sql",
   );
 
-  assert.match(
-    page,
-    /const salonName =[\s\S]*currentStaffSalon\?\.name[\s\S]*data\.context\.salonName/,
-    "Staff schedule title should show the staff salon name.",
-  );
-  assert.match(
-    page,
-    /staff-appointments-titlebar[\s\S]*<h1>\{salonName\}<\/h1>/,
-    "The salon name should be the primary heading, not a small label.",
-  );
+  assert.match(page, /staff-schedule-date-line/);
+  assert.match(page, /data.upcomingCount/);
+  assert.match(page, /<details name="staff-appointment" className=/);
   assert.doesNotMatch(
     page,
     /currentAccount\?\.name|accountName\} \/|Account \/ /,
     "Staff schedule should not show the personal account name in the page title.",
   );
-  assert.match(page, /staff-appointments-toolbar[\s\S]*staff-appointments-toolbar-actions/);
-  assert.match(page, /staff-appointments-toolbar-actions[\s\S]*staff-appointments-toolbar-tabs/);
+  assert.match(page, /staff-schedule-tabs/);
+  assert.match(page, /StaffScheduleCalendar/);
   assert.match(page, /variant="toolbar"/);
   assert.doesNotMatch(
     page,
@@ -52,7 +45,10 @@ test("staff schedule keeps salon-facing UX and staff booking controls", () => {
   assert.match(page, /staff-appointments-day-card-list/);
   assert.match(page, /function QuickAppointmentPopover/);
   assert.match(page, /quickId: appointment\.bookingId/);
-  assert.match(page, /href=\{buildHref\(params, \{ bookingId: appointment\.bookingId \}\)\}/);
+  assert.match(page, /<AppointmentExpanded appointment=\{appointment\} \/>/);
+  assert.doesNotMatch(page, />Appointment details<|>Start service<|>Complete service</);
+  assert.match(page, /formatPrice\(appointment.price\)/);
+  assert.match(page, /StaffNoShowButton/);
   assert.match(page, /appointmentDisplayStatus\(appointment\)/);
   assert.match(page, /appointmentRequiresConfirmation\(appointment\)/);
   assert.match(
@@ -75,13 +71,10 @@ test("staff schedule keeps salon-facing UX and staff booking controls", () => {
   assert.match(page, /<StaffBookingSettings/);
   assert.match(page, /salonBookingStatus=\{data\.salonBookingStatus\}/);
   assert.match(page, /staff-appointments-detail-head/);
-  assert.match(page, /staff-appointments-detail-body/);
-  assert.match(page, /staff-appointments-detail-actions/);
-  assert.doesNotMatch(
-    page,
-    /<dt>\s*Service note\s*<\/dt>/,
-    "Appointment detail should not show a duplicate read-only service note above the editor.",
-  );
+  assert.match(page, /staff-schedule-contact/);
+  assert.match(page, /staff-schedule-row-actions/);
+  assert.match(page, /<dt>Service note<\/dt>/);
+  assert.doesNotMatch(page, /formAction=\{completeStaffAppointmentLineAction\}|action=\{startStaffAppointmentLineAction\}/);
 
   assert.match(css, /--staff-booking-plum: var\(--brand-orange/);
   assert.match(css, /--staff-booking-teal/);

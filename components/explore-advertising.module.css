@@ -1,0 +1,151 @@
+.imageLink {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #fff0e8;
+  box-shadow: 0 8px 24px #30232612;
+}
+.imageLink img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+}
+.sponsored {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  border-radius: 20px;
+  padding: 3px 8px;
+  background: #ffffffdf;
+  font-size: 10px;
+  color: #66545b;
+}
+.feed {
+  margin: 8px 0;
+}
+.desktop {
+  margin: 16px 10px;
+  animation: slide 0.5s ease-out;
+}
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #21171f80;
+  backdrop-filter: blur(5px);
+}
+.popup {
+  position: relative;
+  width: min(480px, 100%);
+  outline: none;
+  animation: slide 0.3s ease-out;
+}
+.close {
+  position: absolute;
+  right: -10px;
+  top: -12px;
+  border: 0;
+  border-radius: 50%;
+  height: 40px;
+  width: 40px;
+  background: white;
+  color: #302326;
+  font-size: 25px;
+  box-shadow: 0 4px 16px #0003;
+}
+.ticker {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 85;
+  height: 38px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.top {
+  top: 0;
+}
+.bottom {
+  bottom: 0;
+}
+.ticker a {
+  white-space: nowrap;
+  display: block;
+  min-width: 100%;
+  padding-left: 100%;
+  animation: marquee linear infinite;
+  font-size: 14px;
+  font-weight: 600;
+  color: inherit;
+}
+.ticker:hover a,
+.ticker:focus-within a {
+  animation-play-state: paused;
+}
+.ticker button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 38px;
+  width: 38px;
+  background: inherit;
+  font-size: 23px;
+  color: inherit;
+}
+.ticker a:focus-visible {
+  animation: none;
+  padding-left: 12px;
+  white-space: normal;
+}
+.feed:empty {
+  display: none;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes slide {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (min-width: 1280px) {
+  .feed {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker a {
+    animation: none;
+    padding-left: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .popup,
+  .desktop {
+    animation: none;
+  }
+}
+.desktop img {
+  max-height: 340px;
+}
+.topReserve {
+  padding-top: 38px;
+}
+.topReserve :global([data-testid="guest-navigation-shell"]),
+.topReserve :global([data-testid="customer-desktop-header"]) {
+  top: 38px;
+}

@@ -55,118 +55,88 @@ function build(input, context) {
   );
 }
 
-test("resolver maps canonical public signals into five LUMI Trust levels", () => {
-  assert.equal(build({}).level, "empty");
-  assert.equal(
-    build({
-      averageRating: 5,
-      sharedExperienceCount: 1,
-      uniqueCustomerCount: 1,
-    }).level,
-    "level_1",
-  );
-  assert.equal(
-    build({
-      averageRating: 4.5,
-      noIssueRate: 0.92,
-      sharedExperienceCount: 18,
-      uniqueCustomerCount: 12,
-      verifiedVisitCount: 25,
-    }).level,
-    "level_2",
-  );
-  assert.equal(
-    build({
-      averageRating: null,
-      noIssueRate: 0.94,
-      sharedExperienceCount: 0,
-      uniqueCustomerCount: 40,
-      verifiedVisitCount: 180,
-    }).level,
-    "level_3",
-  );
-  assert.equal(
-    build({
-      averageRating: 4.7,
-      noIssueRate: 0.96,
-      sharedExperienceCount: 160,
-      uniqueCustomerCount: 90,
-      verifiedVisitCount: 240,
-    }).level,
-    "full",
-  );
+function evidence(overrides = {}) {
+  return {
+    ruleVersion: "lumi-trust-v2", asOf: "2026-10-05T00:00:00Z",
+    feedbackDays: 180, returnDays: 90, cohortDays: 180,
+    verifiedVisitCount: 240, uniqueVisitorCount: 100,
+    feedbackCustomerCount: 100, goodFeedbackCount: 98, issueFeedbackCount: 2,
+    eligibleReturnCustomerCount: 100, returningCustomerCount: 70,
+    ...overrides,
+  };
+}
+function withEvidence(overrides) { return build({ trustEvidence: evidence(overrides) }); }
+
+test("resolver maps eligible evidence into five levels", () => {
+  assert.equal(withEvidence({ verifiedVisitCount: 0, uniqueVisitorCount: 0, feedbackCustomerCount: 0, goodFeedbackCount: 0, issueFeedbackCount: 0, eligibleReturnCustomerCount: 0, returningCustomerCount: 0 }).level, "empty");
+  assert.equal(withEvidence({ uniqueVisitorCount: 1, feedbackCustomerCount: 1, goodFeedbackCount: 1, issueFeedbackCount: 0, eligibleReturnCustomerCount: 0, returningCustomerCount: 0 }).level, "level_1");
+  assert.equal(withEvidence({ feedbackCustomerCount: 10, goodFeedbackCount: 10, issueFeedbackCount: 0, eligibleReturnCustomerCount: 10, returningCustomerCount: 6 }).level, "level_2");
+  assert.equal(withEvidence({ feedbackCustomerCount: 30, goodFeedbackCount: 29, issueFeedbackCount: 1, eligibleReturnCustomerCount: 30, returningCustomerCount: 20 }).level, "level_3");
+  assert.equal(withEvidence().level, "full");
 });
-
-test("resolver separates insufficient evidence from negative reputation", () => {
-  const empty = build({});
-  const negativeInput = {
-    averageRating: 2.8,
-    noIssueRate: 0.65,
-    sharedExperienceCount: 80,
-    uniqueCustomerCount: 50,
-    verifiedVisitCount: 120,
-  };
-  const fullInput = {
-    averageRating: 4.7,
-    noIssueRate: 0.96,
-    sharedExperienceCount: 160,
-    uniqueCustomerCount: 90,
-    verifiedVisitCount: 240,
-  };
-  const negative = build(negativeInput);
-
-  assert.equal(empty.level, "empty");
-  assert.equal(empty.hasSufficientEvidence, false);
-  assert.equal(empty.evidenceRows.length, 0);
-  assert.match(empty.mark.detail, /does not have enough evidence yet/);
-
+test("visits alone never confer quality, including long-established salons", () => {
+  const a = withEvidence({ verifiedVisitCount: 10, uniqueVisitorCount: 10, feedbackCustomerCount: 0, goodFeedbackCount: 0, issueFeedbackCount: 0, eligibleReturnCustomerCount: 0, returningCustomerCount: 0 });
+  const b = withEvidence({ verifiedVisitCount: 100000, feedbackCustomerCount: 0, goodFeedbackCount: 0, issueFeedbackCount: 0, eligibleReturnCustomerCount: 0, returningCustomerCount: 0 });
+  assert.equal(a.level, "level_1"); assert.equal(b.level, a.level);
+  assert.equal(a.qualityScore, null); assert.equal(b.qualityScore, null);
+});
+test("returning customers without feedback contribute, without fabricating good feedback", () => {
+  const result = withEvidence({ feedbackCustomerCount: 0, goodFeedbackCount: 0, issueFeedbackCount: 0 });
+  assert.equal(result.level, "level_3");
+  assert.ok(result.evidence.returning); assert.equal(result.evidence.reputation, undefined);
+});
+test("missing return observation does not punish young salons and cannot yield Diamond", () => {
+  const result = withEvidence({ eligibleReturnCustomerCount: 0, returningCustomerCount: 0 });
+  assert.equal(result.level, "level_3");
+  assert.match(result.evidence.returning.detail, /full 90 days/);
+});
+test("negative feedback cannot be erased by returning or resolved issues", () => {
+  const negative = withEvidence({ goodFeedbackCount: 30, issueFeedbackCount: 70, returningCustomerCount: 100 });
   assert.equal(negative.level, "level_1");
-  assert.equal(negative.hasSufficientEvidence, true);
-  assert.ok(negative.evidence.reputation);
-  assert.ok(
-    trust.reylumiTrustScore(negativeInput) < trust.reylumiTrustScore(fullInput),
-  );
+  assert.match(negative.evidence.reputation.detail, /Resolved issues remain issues/);
+  assert.equal(withEvidence({ goodFeedbackCount: 80, issueFeedbackCount: 20, returningCustomerCount: 100 }).level, "level_2");
+});
+test("volume, rating, followers and admin verification do not increase Trust", () => {
+  const first = build({ averageRating: 1, trustEvidence: evidence() });
+  const second = build({ averageRating: 5, trustEvidence: evidence({ verifiedVisitCount: 100000 }) }, { verifiedVisitState: true, isNew: false });
+  assert.equal(first.qualityScore, second.qualityScore); assert.equal(first.level, second.level);
+  assert.equal(first.evidence.recognition, undefined);
+  assert.ok(!first.facts.some((fact) => fact.kind === "rating"));
+});
+test("Wilson adjusts confidence for small independent samples", () => {
+  assert.ok(Math.abs(trust.lumiTrustWilsonLower(5, 5) - 0.6488) < 0.001);
+  assert.ok(trust.lumiTrustWilsonLower(5, 5) < trust.lumiTrustWilsonLower(98, 100));
+  assert.equal(trust.lumiTrustWilsonLower(0, 0), null);
+  assert.equal(trust.lumiTrustWilsonLower(6, 5), null);
+});
+test("malformed/unknown evidence does not create a quality score", () => {
+  for (const invalid of [{ ruleVersion: "future" }, { returningCustomerCount: 101 }, { goodFeedbackCount: 120 }, { feedbackCustomerCount: NaN }]) {
+    assert.equal(withEvidence(invalid).qualityScore, null);
+    assert.notEqual(withEvidence(invalid).level, "full");
+  }
+});
+test("RPC failure is unknown, not an invented zero rate or quality tier", () => {
+  const result = build({ trustEvidence: null, verifiedVisitCount: 500 });
+  assert.equal(result.level, "empty"); assert.equal(result.qualityScore, null);
+  assert.equal(result.mark.label, "Trust temporarily unavailable");
+});
+test("sorting follows resolved trust tiers and does not reward raw visit volume", () => {
+  const a = { averageRating: null, trustEvidence: evidence() };
+  const b = { averageRating: null, trustEvidence: evidence({ verifiedVisitCount: 100000 }) };
+  assert.equal(trust.reylumiTrustScore(a), trust.reylumiTrustScore(b));
 });
 
-test("resolver caps small high ratings and does not fabricate recognition", () => {
-  const tinyPerfectRating = build({
-    averageRating: 5,
-    sharedExperienceCount: 1,
-    uniqueCustomerCount: 1,
-  });
-  const broadNoRank = build({
-    averageRating: 4.7,
-    noIssueRate: 0.96,
-    sharedExperienceCount: 160,
-    uniqueCustomerCount: 90,
-    verifiedVisitCount: 240,
-  });
-
-  assert.equal(tinyPerfectRating.level, "level_1");
-  assert.notEqual(tinyPerfectRating.level, "full");
-  assert.equal(broadNoRank.evidence.recognition, undefined);
-  assert.doesNotMatch(trustSource, /#\d+|Top 10|Signature|Top salon/);
-  assert.doesNotMatch(trustSource, /hasPublicProfile|isLinked|isRecommended/);
-});
-
-test("Lumi Spark visual contract uses one orange four-point SVG with five fill states", () => {
+test("Lumi Spark uses Common, Silver, Gold and Diamond materials with no empty mark", () => {
   assert.match(trustComponent, /export function LumiTrustSpark/);
-  assert.match(trustComponent, /type LumiTrustSparkSize = "lg" \| "md" \| "sm" \| "xs"/);
-  assert.match(trustComponent, /empty:\s*0/);
-  assert.match(trustComponent, /level_1:\s*0\.28/);
-  assert.match(trustComponent, /level_2:\s*0\.52/);
-  assert.match(trustComponent, /level_3:\s*0\.76/);
-  assert.match(trustComponent, /full:\s*1/);
-  assert.match(trustComponent, /const LUMI_SPARK_PATH/);
-  assert.match(trustComponent, /clipPath/);
-  assert.match(trustComponent, /createPortal/);
-  assert.match(trustComponent, /fixed z-\[90\]/);
-  assert.match(trustComponent, /data-lumi-trust-level/);
-  assert.match(trustComponent, /fill="currentColor"/);
-  assert.match(trustComponent, /stroke="currentColor"/);
-  assert.match(trustComponent, /text-brand-orange/);
-  assert.doesNotMatch(trustComponent, /(?<!&)#[0-9a-fA-F]{3,8}/);
-  assert.doesNotMatch(trustComponent, /Shield|CheckCircle|BadgeCheck/);
+  for (const name of ["Common", "Silver", "Gold", "Diamond"]) {
+    assert.ok(trustComponent.includes(`name: "${name}"`));
+  }
+  assert.match(trustComponent, /if \(level === "empty"\) return null/);
+  assert.equal((trustComponent.match(/if \(summary.level === "empty"\) return null/g) ?? []).length, 2);
+  assert.match(trustComponent, /linearGradient/);
+  assert.match(trustComponent, /radialGradient/);
+  assert.match(trustComponent, /data-lumi-trust-material/);
+  assert.doesNotMatch(trustComponent, /LUMI_TRUST_FILL_RATIO/);
 });
 
 test("presentation keeps trust compact and removes old badge semantics", () => {
@@ -179,14 +149,49 @@ test("presentation keeps trust compact and removes old badge semantics", () => {
     salonProfile,
   ].join("\n\n");
 
-  assert.match(exploreClient, /LumiTrustPopover/);
-  assert.match(exploreFeed, /LumiTrustPopover/);
-  assert.match(exploreMap, /LumiTrustPopover/);
-  assert.match(salonProfile, /actionHref="#lumi-trust"/);
+  assert.match(exploreClient, /SalonTrustLine/);
+  assert.match(exploreFeed, /SalonTrustLine/);
+  assert.match(exploreMap, /SalonTrustLine/);
+  assert.match(salonProfile, /SalonTrustLine/);
   assert.match(salonProfile, /id="lumi-trust"/);
   assert.match(salonProfile, /value === "lumi-trust"/);
   assert.match(salonProfile, /Current trust evidence/);
   assert.doesNotMatch(salonProfile, /ExperienceSignalStrip|Details below|Profile signal/);
   assert.doesNotMatch(combined, /LUMI PROFILE|LUMI VISIT|LUMI LINKED|Linked public salon|Booking connected/);
   assert.doesNotMatch(legalPolicies, /public profile state/);
+});
+
+test("rule configuration remains ordered and normalized for future edits", () => {
+  const r = trust.LUMI_TRUST_RULES;
+  assert.equal(r.feedbackWeight + r.returnWeight, 1);
+  assert.ok(r.returnBenchmark > 0 && r.returnBenchmark <= 1);
+  assert.ok(r.silverScore < r.goldScore && r.goldScore < r.diamondScore);
+  assert.ok(r.bothSamples.silver < r.bothSamples.gold && r.bothSamples.gold < r.bothSamples.diamond);
+  assert.ok(r.singleSamples.silver >= r.bothSamples.silver);
+  assert.ok(r.singleSamples.gold >= r.bothSamples.gold);
+});
+test("an empty valid source still exposes zero visits and unknown return observation", () => {
+  const result = withEvidence({ verifiedVisitCount: 0, uniqueVisitorCount: 0, feedbackCustomerCount: 0, goodFeedbackCount: 0, issueFeedbackCount: 0, eligibleReturnCustomerCount: 0, returningCustomerCount: 0 });
+  assert.equal(result.level, "empty");
+  assert.equal(result.evidence.verification.value, "0");
+  assert.equal(result.evidence.returning.value, "Building evidence");
+});
+
+test("a first positive feedback does not collapse a mature return-only tier", () => {
+  const before = withEvidence({ feedbackCustomerCount: 0, goodFeedbackCount: 0, issueFeedbackCount: 0 });
+  const after = withEvidence({ feedbackCustomerCount: 1, goodFeedbackCount: 1, issueFeedbackCount: 0 });
+  assert.equal(before.level, "level_3"); assert.equal(after.level, before.level);
+});
+test("a single newly matured customer does not dominate established feedback", () => {
+  const before = withEvidence({ eligibleReturnCustomerCount: 0, returningCustomerCount: 0 });
+  const after = withEvidence({ eligibleReturnCustomerCount: 1, returningCustomerCount: 0 });
+  assert.equal(after.level, before.level);
+  assert.notEqual(after.level, "full");
+});
+
+test("Next-facing Trust source and rule documentation remain valid UTF-8", () => {
+  const decoder = new TextDecoder("utf-8", { fatal: true });
+  for (const path of ["lib/reylumi-trust.ts", "lib/lumi-trust-data.ts", "docs/lumi-trust-rules.md"]) {
+    assert.doesNotThrow(() => decoder.decode(readFileSync(path)), path);
+  }
 });

@@ -232,7 +232,7 @@ export function PortableWorkspaceTabs({
       className="relative z-30 shrink-0 border-b border-zinc-200 bg-white/95 px-[max(0.75rem,env(safe-area-inset-left))] pt-[env(safe-area-inset-top)] shadow-[0_1px_3px_rgba(24,24,27,0.06)] backdrop-blur"
       data-pos-workspace-shell
     >
-      {!workspace?.offlineEnabled ? <PosWorkspaceRealtimeRefresh
+      {!localPanels && !workspace?.offlineEnabled ? <PosWorkspaceRealtimeRefresh
         ignoredSources={PORTABLE_IGNORED_REFRESH_SOURCES}
         salonId={salonId}
       /> : null}

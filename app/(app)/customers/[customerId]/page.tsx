@@ -1,3 +1,4 @@
+import { bookingStatusLabel } from "@/lib/booking-no-show";
 import {
   getCurrentSalonCustomerDetail,
   type CustomerBookingSummary,
@@ -74,7 +75,7 @@ function Section({
   title: string;
 }) {
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white">
+    <section className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-5 py-4">
         <h2 className="text-lg font-semibold text-zinc-950">{title}</h2>
         {action}
@@ -107,7 +108,7 @@ function ReylumiProfileCard({
 }) {
   if (!linked) {
     return (
-      <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 p-4">
+      <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
         <p className="text-sm font-semibold text-zinc-950">
           No ReyLUMI profile linked
         </p>
@@ -120,7 +121,7 @@ function ReylumiProfileCard({
 
   if (result?.ok && result.state === "unlinked") {
     return (
-      <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 p-4">
+      <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
         <p className="text-sm font-semibold text-zinc-950">
           No ReyLUMI profile linked
         </p>
@@ -133,7 +134,7 @@ function ReylumiProfileCard({
 
   if (result?.ok && result.state === "profile_not_created") {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+      <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
         <p className="text-sm font-semibold text-zinc-950">
           ReyLUMI account linked
         </p>
@@ -146,7 +147,7 @@ function ReylumiProfileCard({
 
   if (!result?.ok || !result.profile) {
     return (
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+      <div className="content-surface border-amber-200 bg-amber-50 p-4 rounded-none border-y shadow-none">
         <p className="text-sm font-semibold text-amber-950">
           ReyLUMI account linked
         </p>
@@ -161,7 +162,7 @@ function ReylumiProfileCard({
   const isPrivate = profile.state === "private";
 
   return (
-    <div className="grid gap-4 rounded-lg border border-orange-100 bg-gradient-to-br from-white to-orange-50/60 p-4">
+    <div className="content-surface grid gap-4 border-orange-100 bg-gradient-to-br from-white to-orange-50/60 p-4 rounded-none border-y shadow-none">
       <div className="flex min-w-0 items-center gap-3">
         <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-orange-100 text-sm font-extrabold text-orange-700 ring-1 ring-orange-200">
           {profile.avatarUrl ? (
@@ -214,7 +215,7 @@ function BookingList({
 }) {
   if (items.length === 0) {
     return (
-      <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+      <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
         {empty}
       </p>
     );
@@ -238,7 +239,7 @@ function BookingList({
           </div>
           <div className="flex flex-wrap gap-2 sm:justify-end">
             <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold capitalize text-zinc-700">
-              {booking.normalizedStatus.replace(/_/g, " ")}
+              {bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)}
             </span>
             <span className="rounded-md bg-zinc-950 px-2 py-1 text-xs font-semibold text-white">
               {formatMoney(booking.subtotal)}
@@ -253,7 +254,7 @@ function BookingList({
 function TicketList({ items }: { items: CustomerTicketSummary[] }) {
   if (items.length === 0) {
     return (
-      <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+      <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
         No linked POS tickets yet.
       </p>
     );
@@ -292,7 +293,7 @@ function TicketList({ items }: { items: CustomerTicketSummary[] }) {
 function Timeline({ items }: { items: CustomerTimelineItem[] }) {
   if (items.length === 0) {
     return (
-      <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+      <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
         No timeline activity yet.
       </p>
     );
@@ -303,7 +304,7 @@ function Timeline({ items }: { items: CustomerTimelineItem[] }) {
       {items.map((item) => (
         <li className="relative pb-5 pl-5" key={item.id}>
           <span className="absolute -left-1.5 top-1.5 h-3 w-3 rounded-full border border-zinc-300 bg-white" />
-          <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <div className="content-surface border-zinc-200 bg-white p-4 rounded-none border-y shadow-none">
             <div className="flex flex-wrap items-center justify-between gap-3">
               {item.href ? (
                 <Link className="text-sm font-semibold capitalize text-zinc-950 underline" href={item.href}>
@@ -406,19 +407,19 @@ export default async function CustomerDetailPage({
       </div>
 
       {merged ? (
-        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+        <p className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none">
           Merged {merged} duplicate customer record{merged === "1" ? "" : "s"}.
         </p>
       ) : null}
 
       {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+        <p className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 rounded-none border-y shadow-none">
           {error}
         </p>
       ) : null}
 
       {data.duplicateCandidates.length > 0 ? (
-        <section className="rounded-lg border border-amber-200 bg-amber-50 px-5 py-4">
+        <section className="content-surface border-amber-200 bg-amber-50 px-5 py-4 rounded-none border-y shadow-none">
           <h2 className="text-base font-semibold text-amber-950">
             {data.isWalkingGroup ? "Walking group" : "Possible duplicate customer"}
           </h2>

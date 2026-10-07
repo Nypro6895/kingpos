@@ -1,9 +1,14 @@
+import type { SalonIdentity } from "@/lib/salon-identity";
+import type { LumiTrustCanonicalEvidence } from "@/lib/reylumi-trust";
 import type { BeautyPostBookingPresentation } from "@/lib/beauty-booking-verification";
 import type { SalonOperatingStatus } from "@/types/salon-operating-status";
 import type { AccountSavedPostStateTarget } from "@/types/saved-post";
 
 export const EXPLORE_CATEGORY_OPTIONS = [
   "All",
+  "Nails",
+  "Hair",
+  "Massage",
   "Manicure",
   "Pedicure",
   "Gel",
@@ -34,7 +39,8 @@ export type ExploreSearchInput = {
   query?: string;
 };
 
-export type ExploreSearchResult = {
+export type ExploreSearchResult = Partial<SalonIdentity> & {
+  trustEvidence?: LumiTrustCanonicalEvidence | null;
   activeServiceCount: number;
   addressLine1: string | null;
   addressLine2: string | null;
@@ -45,6 +51,7 @@ export type ExploreSearchResult = {
   averageRating: number | null;
   bookableServiceId: string | null;
   bookableServiceName: string | null;
+  bookableServicePrice?: number | null;
   bookingEnabled: boolean;
   bookingHref: string | null;
   coverImageUrl: string | null;
@@ -186,7 +193,8 @@ export type ExploreFeedDestination = {
   type: "personal-post" | "salon-post" | "salon-profile";
 };
 
-export type ExploreFeedTrustSignals = {
+export type ExploreFeedTrustSignals = Partial<SalonIdentity> & {
+  trustEvidence?: LumiTrustCanonicalEvidence | null;
   averageRating: number | null;
   noIssueRate: number | null;
   sharedExperienceCount: number;
@@ -233,6 +241,9 @@ export type ExploreFeedVerification = {
 };
 
 export type ExploreFeedItem = {
+  publishedAtKnown?: boolean;
+  discoverySalon?: ExploreHomeSalon;
+  discoveryScope?: "local" | "wider";
   author: ExploreFeedAuthor;
   booking: ExploreFeedBooking | null;
   bookingMeta: ExploreBookingDecisionMeta;
@@ -380,6 +391,8 @@ export type ExploreNearYouResponse = {
 };
 
 export type ExploreMapSalon = {
+  bookingHref?:string|null;
+  phoneHref?:string|null;
   coverImageUrl: string | null;
   distanceMiles: number | null;
   href: string | null;

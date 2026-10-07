@@ -1,0 +1,66 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import {chromium} from 'playwright-core';
+
+test('compact availability uses local disclosure, protects drafts and saves without a second refresh', {skip:!process.env.ESBUILD_MODULE_PATH,timeout:90000},async()=>{
+ const {build}=await import(pathToFileURL(process.env.ESBUILD_MODULE_PATH).href);
+ const result=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`import React from 'react';import{createRoot}from'react-dom/client';import{StaffAvailabilityEditor}from'./app/booking-setup/booking-setup-editors';window.calls=[];window.nav=[];window.refreshes=0;const root=createRoot(document.getElementById('root'));const staff=['Tracy','David'].map(name=>({id:name,display_name:name,is_active:true,online_booking_enabled:true}));const rules=[1,2,3,4,5].map(day=>({id:String(day),staff_id:'Tracy',day_of_week:day,rule_type:'working',starts_at_local:'09:00',ends_at_local:'17:00',is_active:true}));window.render=(canManage=true)=>root.render(<StaffAvailabilityEditor initiallyCollapsed staff={staff} availabilityRules={rules} timeBlocks={[]} readinessByStaffId={{}} timezone="America/Chicago" canManage={canManage}/>);window.render();`},bundle:true,write:false,outdir:'fixture',jsx:'automatic',plugins:[{name:'stub',setup(b){
+ b.onResolve({filter:/next\/navigation$/},()=>({path:'nav',namespace:'stub'}));
+ b.onResolve({filter:/\/actions$/},()=>({path:'actions',namespace:'stub'}));
+ b.onLoad({filter:/.*/,namespace:'stub'},a=>({contents:a.path==='nav'?`export const useRouter=()=>({replace:url=>window.nav.push(url),refresh:()=>window.refreshes++});`:`export async function saveStaffWeeklyAvailabilityAction(input){window.calls.push({name:'week',input});if(window.hold)await new Promise(resolve=>window.release=resolve);if(window.fail)throw Error('network');return {ok:true}};export async function createStaffTimeBlockAction(input){window.calls.push({name:'off',input});return {ok:false,error:'Existing appointment conflict',conflicts:[{id:'conflict'}]}};export async function cancelStaffTimeBlockAction(input){window.calls.push({name:'cancel',input});return {ok:true}};`}));}}]});
+ const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH,headless:true});
+ try{for(const width of [375,1280]){
+  const page=await browser.newPage({viewport:{width,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.addInitScript(()=>{window.process={env:{}};});
+  await page.route('http://localhost/',r=>r.fulfill({contentType:'text/html',body:'<style>body{margin:0;font-family:Arial}*{box-sizing:border-box}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}'+readFileSync('app/booking-setup/booking-setup.css','utf8')+'</style><div id="root"></div><script src="/app.js"></script>'}));
+  await page.route('**/app.js',r=>r.fulfill({contentType:'text/javascript',body:result.outputFiles.find(f=>f.path.endsWith('.js')).text}));
+  await page.goto('http://localhost/');
+  await page.getByText(/Mon–Fri/).waitFor();
+  await page.screenshot({path:`work/availability-overview-${width}.png`});
+  await page.locator('.availability-person-toggle').first().click();
+  await page.screenshot({path:`work/availability-week-${width}.png`});
+  assert.equal(await page.locator('input[type=time]').count(),0);
+  assert.equal(await page.evaluate(()=>window.nav.length),0);
+  await page.locator('.availability-day-toggle').first().click();
+  await page.locator('input[type=time]').first().fill('10:00');
+  await page.evaluate(()=>{window.fail=true});
+  await page.getByRole('button',{name:'Save changes',exact:true}).click();
+  await page.getByText(/Your changes are still here/).waitFor();
+  assert.equal(await page.locator('input[type=time]').first().inputValue(),'10:00');
+  await page.evaluate(()=>{window.fail=false;window.hold=true});
+  await page.getByRole('button',{name:'Save changes',exact:true}).click();
+  await page.waitForFunction(()=>!!window.release);
+  assert.equal(await page.getByRole('button',{name:'Saving…',exact:true}).isDisabled(),true);
+  await page.evaluate(()=>window.release());
+  await page.getByRole('button',{name:'Save changes',exact:true}).waitFor({state:'hidden'});
+  assert.equal(await page.evaluate(()=>window.refreshes),0);
+  const saved=await page.evaluate(()=>window.calls.filter(c=>c.name==='week').at(-1).input);
+  assert.equal(saved.staffId,'Tracy');assert.equal(saved.rules.find(r=>r.dayOfWeek===1).startsAtLocal,'10:00');assert.equal(saved.rules.length,5);
+  await page.getByRole('button',{name:'Copy hours',exact:true}).click();
+  await page.getByLabel('Tue',{exact:true}).check();
+  await page.getByRole('button',{name:'Apply to selected days'}).click();
+  assert.match(await page.locator('.availability-day-toggle').nth(1).innerText(),/10 AM/);
+  page.once('dialog',dialog=>dialog.dismiss());
+  await page.locator('.availability-person-toggle').nth(1).click();
+  assert.equal(await page.locator('.availability-person-toggle').first().getAttribute('aria-expanded'),'true');
+  await page.getByRole('button',{name:'Discard',exact:true}).click();
+  assert.match(await page.locator('.availability-day-toggle').nth(1).innerText(),/9 AM/);
+  await page.getByRole('button',{name:'+ Add',exact:true}).click();
+  await page.getByLabel('From',{exact:true}).fill('2026-12-12');
+  await page.getByLabel('To',{exact:true}).fill('2026-12-14');
+  await page.getByRole('button',{name:'Add time off',exact:true}).click();
+  await page.getByRole('button',{name:'Save time off with override'}).waitFor();
+  assert.equal(await page.getByLabel('To',{exact:true}).inputValue(),'2026-12-14');
+  assert.equal(await page.evaluate(()=>window.calls.find(c=>c.name==='off').input.overrideConflicts),false);
+  await page.locator('.availability-person-toggle').nth(1).click();
+  assert.equal(await page.locator('.availability-person-editor').count(),1);
+  await page.evaluate(()=>window.render(false));
+  await page.locator('.availability-day-toggle').first().click();
+  assert.equal(await page.getByRole('button',{name:/add hours/i}).isDisabled(),true);
+  assert.equal(await page.getByRole('button',{name:'+ Add',exact:true}).count(),0);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  assert.deepEqual(errors,[]);await page.close();
+ }}finally{await browser.close()}
+});

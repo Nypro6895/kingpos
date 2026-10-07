@@ -1,3 +1,6 @@
+
+import Form from "next/form";
+import { SubmitButton } from "@/components/submit-button";
 import {
   getAccountFollowing,
   getAccountSavedPosts,
@@ -13,6 +16,7 @@ import type {
   AccountSavedPostFilter,
   AccountSavedPostSourceType,
 } from "@/types/saved-post";
+import styles from "./saved-posts.module.css";
 import { revalidatePath } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
@@ -228,7 +232,7 @@ function EmptyState({
   description,
 }: MoreSection) {
   return (
-    <section className="grid gap-4 rounded-2xl border border-dashed border-border-subtle bg-surface px-5 py-8 text-center shadow-sm">
+    <section className="content-surface grid gap-4 border-border-subtle bg-surface px-5 py-8 text-center rounded-none border-y shadow-none">
       <p className="mx-auto max-w-md text-sm leading-6 text-text-secondary">
         {description}
       </p>
@@ -242,63 +246,45 @@ function EmptyState({
   );
 }
 
-function RemoveButton({ children }: { children: string }) {
-  return (
-    <button
-      className="inline-flex min-h-10 items-center justify-center rounded-full border border-border-subtle px-4 text-sm font-bold text-text-primary transition hover:border-brand-orange/40 hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-      type="submit"
-    >
-      {children}
-    </button>
-  );
-}
 
-function SavedPostCard({ post }: { post: AccountSavedPost }) {
+function SavedPostCard({ post, index }: { post: AccountSavedPost; index: number }) {
   return (
-    <article className="grid gap-3 rounded-2xl border border-border-subtle bg-surface p-3 shadow-sm sm:grid-cols-[7.5rem_minmax(0,1fr)]">
-      <Link
-        className="relative block aspect-[4/3] overflow-hidden rounded-xl bg-surface-muted"
-        href={post.href}
-      >
-        {post.imageUrl ? (
-          <Image
-            alt=""
-            className="object-cover"
-            fill
-            sizes="(min-width: 640px) 7.5rem, calc(100vw - 2.5rem)"
-            src={post.imageUrl}
-          />
-        ) : null}
-      </Link>
-      <div className="grid min-w-0 content-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-xs font-bold uppercase text-brand-orange">
-            {[post.contentLabel, post.salonName].filter(Boolean).join(" / ")}
-          </p>
-          <h2 className="mt-1 line-clamp-2 text-lg font-extrabold text-text-primary">
-            {post.title}
-          </h2>
-          {post.caption ? (
-            <p className="mt-1 line-clamp-2 text-sm font-semibold text-text-secondary">
-              {post.caption}
-            </p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-bold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-            href={post.href}
-          >
-            View
-          </Link>
-          <form action={removeSavedPostAction}>
-            <input name="source_type" type="hidden" value={post.sourceType} />
-            <input name="source_id" type="hidden" value={post.sourceId} />
-            <input name="salon_id" type="hidden" value={post.salonId ?? ""} />
-            <RemoveButton>Remove</RemoveButton>
-          </form>
-        </div>
+    <article className={styles.card}>
+      <div className={styles.media}>
+        <Link
+          className={styles.thumbnail}
+          style={{ aspectRatio: ["4 / 5", "1 / 1", "3 / 4"][index % 3] }}
+          href={post.href}
+          aria-label={`View ${post.title}`}
+        >
+          {post.imageUrl ? (
+            <Image
+              alt={post.title}
+              className={styles.image}
+              fill
+              sizes="(min-width: 768px) 280px, 50vw"
+              src={post.imageUrl}
+            />
+          ) : (
+            <span className={styles.fallback}>{post.title}</span>
+          )}
+          <span className={styles.badge}>{post.contentLabel}</span>
+        </Link>
+        <form action={removeSavedPostAction} className={styles.removeForm}>
+          <input name="source_type" type="hidden" value={post.sourceType} />
+          <input name="source_id" type="hidden" value={post.sourceId} />
+          <input name="salon_id" type="hidden" value={post.salonId ?? ""} />
+          <SubmitButton pendingLabel="Processing…" type="submit" className={styles.remove} aria-label={`Remove ${post.title} from saved posts`} title="Remove from saved posts">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5">
+              <path d="M6 4h12v17l-6-4-6 4V4Z" strokeLinejoin="round" />
+            </svg>
+          </SubmitButton>
+        </form>
       </div>
+      <Link href={post.href} className={styles.caption}>
+        <h2>{post.title}</h2>
+        {post.salonName ? <p>{post.salonName}</p> : null}
+      </Link>
     </article>
   );
 }
@@ -309,100 +295,49 @@ function followingTypeLabel(item: AccountFollowingItem) {
 
 function FollowingRow({ item }: { item: AccountFollowingItem }) {
   return (
-    <article className="grid min-h-[84px] gap-3 rounded-2xl border border-border-subtle bg-surface p-3 shadow-sm sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
-      <Link
-        className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-2xl bg-surface-muted text-sm font-extrabold text-brand-orange ring-1 ring-divider-subtle"
-        href={item.href}
-      >
-        {item.imageUrl ? (
-          <Image
-            alt=""
-            className="object-cover"
-            fill
-            sizes="56px"
-            src={item.imageUrl}
-          />
-        ) : (
-          followingTypeLabel(item).slice(0, 1)
-        )}
+    <article className={styles.followingRow}>
+      <Link className={styles.followingProfile} href={item.href}>
+        <span className={styles.avatar}>
+          {item.imageUrl ? (
+            <Image alt="" className="object-cover" fill sizes="52px" src={item.imageUrl} />
+          ) : item.name.slice(0, 1)}
+        </span>
+        <div className={styles.profileInfo}>
+          <h2>{item.name}</h2>
+          <span className={styles.profileType}>{followingTypeLabel(item)}</span>
+          {item.secondaryLabel ? <span className={styles.profileDetail}>{item.secondaryLabel}</span> : null}
+        </div>
       </Link>
-      <div className="min-w-0">
-        <p className="text-xs font-bold uppercase text-brand-orange">
-          {followingTypeLabel(item)}
-        </p>
-        <h2 className="mt-1 truncate text-base font-extrabold text-text-primary sm:text-lg">
-          {item.name}
-        </h2>
-        {item.secondaryLabel ? (
-          <p className="mt-1 truncate text-sm font-semibold text-text-secondary">
-            {item.secondaryLabel}
-          </p>
-        ) : null}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Link
-          className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-bold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          href={item.href}
-        >
-          View
-        </Link>
-        <form action={removeFollowingAction}>
-          <input name="target_type" type="hidden" value={item.targetType} />
-          <input name="target_id" type="hidden" value={item.targetId} />
-          <RemoveButton>Unfollow</RemoveButton>
-        </form>
-      </div>
+      <form action={removeFollowingAction}>
+        <input name="target_type" type="hidden" value={item.targetType} />
+        <input name="target_id" type="hidden" value={item.targetId} />
+        <SubmitButton pendingLabel="Processing…" type="submit" className={styles.unfollow} aria-label={`Unfollow ${item.name}`}>Unfollow</SubmitButton>
+      </form>
     </article>
   );
 }
 
-function SavedPostControls({
-  filter,
-  query,
-}: {
-  filter: AccountSavedPostFilter;
-  query: string;
-}) {
+function SavedPostControls({ filter, query }: { filter: AccountSavedPostFilter; query: string }) {
   return (
-    <form
-      action="/more/saved-post"
-      className="grid gap-3 rounded-2xl border border-border-subtle bg-surface p-3 shadow-sm sm:grid-cols-[minmax(0,1fr)_12rem_auto]"
-    >
-      <label className="grid gap-1.5">
-        <span className="text-xs font-bold uppercase text-text-secondary">
-          Search
-        </span>
-        <input
-          className="min-h-11 rounded-xl border border-border-subtle bg-surface-muted px-3 text-sm font-semibold text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
-          defaultValue={query}
-          name="q"
-          placeholder="Search saved posts"
-          type="search"
-        />
-      </label>
-      <label className="grid gap-1.5">
-        <span className="text-xs font-bold uppercase text-text-secondary">
-          Filter
-        </span>
-        <select
-          className="min-h-11 rounded-xl border border-border-subtle bg-surface-muted px-3 text-sm font-semibold text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
-          defaultValue={filter}
-          name="filter"
-        >
-          {SAVED_POST_FILTERS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <button
-        className="min-h-11 self-end rounded-full bg-brand-orange px-5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-        type="submit"
-      >
-        Search
-      </button>
-    </form>
+    <div className={styles.controls}>
+      <Form action="/more/saved-post" className={styles.search} role="search">
+        <label className="sr-only" htmlFor="saved-post-search">Search saved posts</label>
+        <input id="saved-post-search" defaultValue={query} name="q" placeholder="Search your saved posts" type="search" />
+        <input type="hidden" name="filter" value={filter} />
+        <SubmitButton pendingLabel="Processing…" type="submit" aria-label="Search saved posts">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" />
+          </svg>
+        </SubmitButton>
+      </Form>
+      <nav className={styles.filters} aria-label="Saved post filters">
+        {SAVED_POST_FILTERS.map((option) => (
+          <Link key={option.value} href={savedPostHref({ filter: option.value, page: 1, query })} className={styles.filter} aria-current={filter === option.value ? "page" : undefined}>
+            {option.label}
+          </Link>
+        ))}
+      </nav>
+    </div>
   );
 }
 
@@ -424,7 +359,7 @@ function SavedPostPagination({
   return (
     <nav
       aria-label="Saved posts pages"
-      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-surface p-3 text-sm font-bold text-text-secondary shadow-sm ring-1 ring-border-subtle"
+      className="flex flex-wrap items-center justify-between gap-3 border-y border-border-subtle bg-surface p-3 text-sm font-bold text-text-secondary"
     >
       <Link
         aria-disabled={page <= 1}
@@ -488,9 +423,9 @@ function SavedPostsSection({
   return (
     <div className="grid gap-3">
       <SavedPostControls filter={filter} query={query} />
-      <section className="grid gap-3" aria-label="Saved posts">
-        {posts.map((post) => (
-          <SavedPostCard key={post.id} post={post} />
+      <section className={styles.gallery} aria-label="Saved posts">
+        {posts.map((post, index) => (
+          <SavedPostCard key={post.id} post={post} index={index} />
         ))}
       </section>
       <SavedPostPagination
@@ -503,53 +438,27 @@ function SavedPostsSection({
   );
 }
 
-function FollowingControls({
-  filter,
-  query,
-}: {
-  filter: AccountFollowingFilter;
-  query: string;
-}) {
+function FollowingControls({ filter, query }: { filter: AccountFollowingFilter; query: string }) {
   return (
-    <form
-      action="/more/following"
-      className="grid gap-3 rounded-2xl border border-border-subtle bg-surface p-3 shadow-sm sm:grid-cols-[minmax(0,1fr)_12rem_auto]"
-    >
-      <label className="grid gap-1.5">
-        <span className="text-xs font-bold uppercase text-text-secondary">
-          Search
-        </span>
-        <input
-          className="min-h-11 rounded-xl border border-border-subtle bg-surface-muted px-3 text-sm font-semibold text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
-          defaultValue={query}
-          name="q"
-          placeholder="Search following"
-          type="search"
-        />
-      </label>
-      <label className="grid gap-1.5">
-        <span className="text-xs font-bold uppercase text-text-secondary">
-          Filter
-        </span>
-        <select
-          className="min-h-11 rounded-xl border border-border-subtle bg-surface-muted px-3 text-sm font-semibold text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
-          defaultValue={filter}
-          name="filter"
-        >
-          {FOLLOWING_FILTERS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <button
-        className="min-h-11 self-end rounded-full bg-brand-orange px-5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-        type="submit"
-      >
-        Search
-      </button>
-    </form>
+    <div className={styles.controls}>
+      <Form action="/more/following" className={styles.search} role="search">
+        <label className="sr-only" htmlFor="following-search">Search following</label>
+        <input id="following-search" defaultValue={query} name="q" placeholder="Search people and shops" type="search" />
+        <input type="hidden" name="filter" value={filter} />
+        <SubmitButton pendingLabel="Processing…" type="submit" aria-label="Search following">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" />
+          </svg>
+        </SubmitButton>
+      </Form>
+      <nav className={styles.filters} aria-label="Following filters">
+        {FOLLOWING_FILTERS.map((option) => (
+          <Link key={option.value} href={followingHref({ filter: option.value, page: 1, query })} className={styles.filter} aria-current={filter === option.value ? "page" : undefined}>
+            {option.label}
+          </Link>
+        ))}
+      </nav>
+    </div>
   );
 }
 
@@ -571,7 +480,7 @@ function FollowingPagination({
   return (
     <nav
       aria-label="Following pages"
-      className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-surface p-3 text-sm font-bold text-text-secondary shadow-sm ring-1 ring-border-subtle"
+      className="flex flex-wrap items-center justify-between gap-3 border-y border-border-subtle bg-surface p-3 text-sm font-bold text-text-secondary"
     >
       <Link
         aria-disabled={page <= 1}
@@ -637,7 +546,7 @@ function FollowingSection({
   return (
     <div className="grid gap-3">
       <FollowingControls filter={filter} query={query} />
-      <section className="grid gap-3" aria-label="Following">
+      <section className={styles.followingList} aria-label="Following">
         {items.map((item) => (
           <FollowingRow item={item} key={item.id} />
         ))}

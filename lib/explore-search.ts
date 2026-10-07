@@ -1,4 +1,5 @@
 import "server-only";
+import { resolveNailCoverImage } from "@/lib/default-nail-images";
 
 import {
   getCurrentBusinessContext,
@@ -170,11 +171,12 @@ function mapExploreRow(
     averageRating: decisionSignals.averageRating,
     bookableServiceId: decisionSignals.bookableServiceId,
     bookableServiceName: decisionSignals.bookableServiceName,
+    bookableServicePrice: decisionSignals.bookableServicePrice ?? null,
     bookingEnabled: decisionSignals.bookingEnabled,
     bookingHref: decisionSignals.bookingHref,
     city: row.city,
     country: row.country,
-    coverImageUrl: getSalonProfileMediaUrl(row.cover_image_path),
+    coverImageUrl: resolveNailCoverImage({ id: row.salon_id, name: row.salon_name, categories: toStringArray(row.service_categories), coverImageUrl: getSalonProfileMediaUrl(row.cover_image_path) }),
     description: row.description,
     distanceMiles: row.distance_miles,
     featuredServiceCategory: row.featured_service_category ?? null,
@@ -197,6 +199,12 @@ function mapExploreRow(
     phone: row.phone,
     postalCode: row.postal_code,
     profileCompleteness: row.profile_completeness ?? 0,
+          identityVerified: decisionSignals.identityVerified,
+      popularServiceName: decisionSignals.popularServiceName,
+      popularServiceMinimumPrice: decisionSignals.popularServiceMinimumPrice,
+      popularServiceMaximumPrice: decisionSignals.popularServiceMaximumPrice,
+      completedBookingCount: decisionSignals.completedBookingCount,
+      trustEvidence: decisionSignals.trustEvidence ?? null,
     reputationNoIssueRate: decisionSignals.noIssueRate,
     relevanceScore: row.relevance_score ?? 0,
     resultGroup: normalizeResultGroup(row.result_group),

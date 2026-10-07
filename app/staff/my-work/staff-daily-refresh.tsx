@@ -30,19 +30,13 @@ export function StaffDailyRefresh({ salonId, refreshedAt, viewKey }: { salonId: 
     const unsubscribe = subscribePosChanges(salonId, change => {
       if (["staff", "tickets", "settings", "report", "catalog"].includes(change.resource)) queue.request();
     });
-    const wake = () => queue.request();
-    // Repairs missed broadcasts, midnight rollover, expired connections and
-    // cached back-navigation without fetching while hidden/offline.
-    const timer = setInterval(wake, viewKey.startsWith("daily:") ? 30000 : 60000);
-    window.addEventListener("focus", wake);
-    window.addEventListener("online", wake);
+    // The workspace broker owns polling, reconnect and foreground recovery.
+    // Keep pageshow for browser back/forward cache restoration only.
+    const wake = (event: PageTransitionEvent) => { if (event.persisted) queue.request(); };
     window.addEventListener("pageshow", wake);
-    document.addEventListener("visibilitychange", wake);
-    queue.request();
     return () => {
-      queue.dispose(); completion.current?.(); unsubscribe(); clearInterval(timer);
-      window.removeEventListener("focus", wake); window.removeEventListener("online", wake);
-      window.removeEventListener("pageshow", wake); document.removeEventListener("visibilitychange", wake);
+      queue.dispose(); completion.current?.(); unsubscribe();
+      window.removeEventListener("pageshow", wake);
     };
   }, [salonId, router, viewKey]);
   return online ? null : <p role="status" className="mb-2 text-xs text-amber-800">Offline · showing the last loaded data. Reconnect to update.</p>;

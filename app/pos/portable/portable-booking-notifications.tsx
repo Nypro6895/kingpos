@@ -1,4 +1,5 @@
 "use client";
+import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { portableBookingNotifications, portableManageBooking, type PortableBookAppointment } from "./actions";
@@ -52,7 +53,7 @@ export function PortableBookingNotifications({ salonId, timezone, canConfirm }: 
   useEffect(() => {
     if (!open) return;
     closeButton.current?.focus();
-    const outside = (event: PointerEvent) => { if (!root.current?.contains(event.target as Node)) setOpen(false); };
+    const outside = (event: PointerEvent) => { if (!confirming.current && !root.current?.contains(event.target as Node)) setOpen(false); };
     document.addEventListener("pointerdown", outside);
     return () => document.removeEventListener("pointerdown", outside);
   }, [open]);
@@ -66,7 +67,12 @@ export function PortableBookingNotifications({ salonId, timezone, canConfirm }: 
     setBusy(item.id);
     setError("");
     try {
-      const result = await portableManageBooking({ bookingId: item.id, action: "confirm", payload: { updatedAt: item.updatedAt } });
+      const input = { bookingId: item.id, action: "confirm" as const, payload: { updatedAt: item.updatedAt } };
+      let result = await portableManageBooking(input);
+      if(result.ok && result.data.requiresNoShowReview){
+        if(!await confirmNoShowHistory(result.data.noShowHistory ?? [])) { closeButton.current?.focus(); return; }
+        result = await portableManageBooking({...input,payload:{...input.payload,acknowledgeNoShow:true}});
+      }
       if (!alive.current) return;
       if (!result.ok) { setError(result.error); return; }
       setRows(current => current.filter(row => row.id !== item.id));
@@ -88,7 +94,7 @@ export function PortableBookingNotifications({ salonId, timezone, canConfirm }: 
   }
 
   return <div className={styles.root} ref={root} onBlur={event => {
-    if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget as Node)) setOpen(false);
+    if (!confirming.current && event.relatedTarget && !event.currentTarget.contains(event.relatedTarget as Node)) setOpen(false);
   }} onKeyDown={event => {
     if (!open) return;
     if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); close(); }
@@ -119,6 +125,7 @@ export function PortableBookingNotifications({ salonId, timezone, canConfirm }: 
         return <li className={styles.item} key={item.id}>
           <div className={styles.details}>
           <strong>{item.customerName || "Walk-in customer"}</strong>
+          {Boolean(item.noShowCount) && <p className="text-xs font-semibold text-orange-800">{item.noShowCount} previous no-show{item.noShowCount === 1 ? "" : "s"}</p>}
           <p><time dateTime={item.startAt}>{new Intl.DateTimeFormat("en-US", { timeZone: timezone, dateStyle: "medium", timeStyle: "short" }).format(new Date(item.startAt))}</time></p>
           <p>{item.serviceNames.join(", ") || item.notes || "Appointment"}</p>
           <p className={styles.staff}><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span>Staff: {staffLabel}</span></p>

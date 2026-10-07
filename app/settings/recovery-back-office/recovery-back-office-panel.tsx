@@ -14,6 +14,7 @@ import { useState, type FormEvent } from "react";
 
 type RecoveryBackOfficePanelProps = {
   overview: Extract<RecoveryBackOfficeOverview, { authorized: true }>;
+  onSaved?: () => void | Promise<void>;
 };
 
 type PendingKey =
@@ -108,7 +109,7 @@ function CaseList({
 }) {
   if (items.length === 0) {
     return (
-      <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
+      <p className="content-surface border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-600 rounded-none border-y shadow-none">
         {empty}
       </p>
     );
@@ -131,7 +132,7 @@ function RecoveryCaseCard({
   recoveryCase: RecoveryBackOfficeCase;
 }) {
   return (
-    <article className="rounded-lg border border-zinc-200 bg-white">
+    <article className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
       <div className="grid gap-3 border-b border-zinc-100 px-4 py-4 lg:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -164,7 +165,7 @@ function RecoveryCaseCard({
 
       <div className="grid gap-4 px-4 py-4 lg:grid-cols-2">
         <div className="grid gap-3">
-          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3">
+          <div className="content-surface border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
             <h3 className="text-sm font-semibold text-zinc-950">Account</h3>
             <dl className="mt-2 grid gap-1 text-sm text-zinc-600">
               <div>Email: {recoveryCase.user?.email ?? "-"}</div>
@@ -188,7 +189,7 @@ function RecoveryCaseCard({
             </dl>
           </div>
 
-          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3">
+          <div className="content-surface border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
             <h3 className="text-sm font-semibold text-zinc-950">
               Request details
             </h3>
@@ -203,7 +204,7 @@ function RecoveryCaseCard({
         </div>
 
         <div className="grid gap-3">
-          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3">
+          <div className="content-surface border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
             <h3 className="text-sm font-semibold text-zinc-950">
               Recent sessions
             </h3>
@@ -230,7 +231,7 @@ function RecoveryCaseCard({
             />
           </div>
 
-          <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3">
+          <div className="content-surface border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
             <h3 className="text-sm font-semibold text-zinc-950">
               Recent activity
             </h3>
@@ -410,6 +411,7 @@ function RecoveryCaseCard({
 
 export function RecoveryBackOfficePanel({
   overview,
+  onSaved,
 }: RecoveryBackOfficePanelProps) {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -433,7 +435,7 @@ export function RecoveryBackOfficePanel({
       }
 
       setMessage(result.message ?? "Saved.");
-      router.refresh();
+      if (onSaved) await onSaved(); else router.refresh();
     } catch {
       setError("Recovery back-office action could not be completed.");
     } finally {
@@ -471,13 +473,13 @@ export function RecoveryBackOfficePanel({
   return (
     <div className="grid gap-5">
       {overview.loadWarning ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+        <p className="content-surface border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 rounded-none border-y shadow-none">
           {overview.loadWarning}
         </p>
       ) : null}
       {error ? (
         <p
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"
+          className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 rounded-none border-y shadow-none"
           role="alert"
         >
           {error}
@@ -485,27 +487,27 @@ export function RecoveryBackOfficePanel({
       ) : null}
       {message ? (
         <p
-          className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800"
+          className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none"
           role="status"
         >
           {message}
         </p>
       ) : null}
 
-      <section className="grid gap-3 rounded-lg border border-border-subtle bg-white p-4 sm:grid-cols-4">
-        <div className="rounded-md border border-zinc-200 p-3">
+      <section className="content-surface grid gap-3 border-border-subtle bg-white p-4 sm:grid-cols-4 rounded-none border-y shadow-none">
+        <div className="content-surface border-zinc-200 p-3 rounded-none border-y shadow-none">
           <p className="text-xs font-semibold uppercase text-zinc-500">Total</p>
           <p className="mt-2 text-2xl font-semibold text-zinc-950">
             {overview.stats.total}
           </p>
         </div>
-        <div className="rounded-md border border-zinc-200 p-3">
+        <div className="content-surface border-zinc-200 p-3 rounded-none border-y shadow-none">
           <p className="text-xs font-semibold uppercase text-zinc-500">Open</p>
           <p className="mt-2 text-2xl font-semibold text-zinc-950">
             {overview.stats.open}
           </p>
         </div>
-        <div className="rounded-md border border-zinc-200 p-3">
+        <div className="content-surface border-zinc-200 p-3 rounded-none border-y shadow-none">
           <p className="text-xs font-semibold uppercase text-zinc-500">
             Reviewing
           </p>
@@ -513,7 +515,7 @@ export function RecoveryBackOfficePanel({
             {overview.stats.reviewing}
           </p>
         </div>
-        <div className="rounded-md border border-zinc-200 p-3">
+        <div className="content-surface border-zinc-200 p-3 rounded-none border-y shadow-none">
           <p className="text-xs font-semibold uppercase text-zinc-500">
             High risk
           </p>
@@ -541,7 +543,7 @@ export function RecoveryBackOfficePanel({
           ))}
         </div>
       ) : (
-        <p className="rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-6 text-sm font-semibold text-zinc-600">
+        <p className="content-surface border-zinc-300 bg-white px-4 py-6 text-sm font-semibold text-zinc-600 rounded-none border-y shadow-none">
           No recovery cases are waiting for review.
         </p>
       )}

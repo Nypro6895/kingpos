@@ -9,7 +9,7 @@ import {
 import { getCurrentSalonOperatingStatus } from "@/lib/salon-operating-status";
 import { defaultSalonOperatingStatus } from "@/lib/salon-operating-status-core";
 import { isPublicSalonProfileTeamEligible } from "@/lib/salon-profile-team";
-import { isSalonManageContext } from "@/lib/current-context";
+import { isSalonManageContext, isOwnerMembership } from "@/lib/current-context";
 import { requireSalonWorkspacePageContext } from "@/lib/route-context-guards";
 import type {
   PublicSalonProfileData,
@@ -311,15 +311,15 @@ export default async function SalonProfilePage({
     );
   }
 
-  const operatingStatus = await getCurrentSalonOperatingStatus(context).catch(
-    () => defaultSalonOperatingStatus(),
-  );
+  const [operatingStatus, publicData] = await Promise.all([
+    getCurrentSalonOperatingStatus(context).catch(() => defaultSalonOperatingStatus()),
+    getPublicSalonProfileData(data.setting.salon_id),
+  ]);
   const previewData = buildPreviewData({
     ...data,
     accountId: data.context.currentAccount?.id ?? data.context.accountId ?? "",
     operatingStatus,
   });
-  const publicData = await getPublicSalonProfileData(data.setting.salon_id);
   const managedSalonName =
     data.context.currentSalon?.name ?? previewData.profile.name;
   const viewData = publicData
@@ -329,11 +329,12 @@ export default async function SalonProfilePage({
       )
     : previewData;
   const capabilities: SalonProfileViewerCapabilities = {
-    canBook: false,
+    canBook: Boolean(publicData) && viewData.profile.operatingStatus.kind !== "permanently_closed",
     canCreateContent: data.canCreateContent,
     canEditProfile: data.canManageIdentity,
     canFollow: false,
     canManageContent: data.canManageContent,
+    canFeatureOwnContent: isOwnerMembership(context.currentMembership),
     canModerateComments: data.canManageContent,
     canPublish: data.canManageIdentity,
     canReplyAsSalon: data.canManageContent,
@@ -350,6 +351,7 @@ export default async function SalonProfilePage({
         data={viewData}
         error={error}
         manageData={{
+          ownedLookIds: data.looks.filter(look => (look.created_by_user_id ?? look.author_user_id) === context.user?.id).map(look=>look.id),
           publicHref: getSalonProfileHref(data.setting.salon_id),
           readiness: data.readiness,
           setting: data.setting,

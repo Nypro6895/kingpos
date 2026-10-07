@@ -1,10 +1,10 @@
 "use client";
+import "@/components/booking-ui/public-booking.css";
 
 import {
   createPublicBookingAction,
-  loadPublicBookingAvailabilityHintsAction,
-  loadPublicBookingSlotsAction,
-} from "@/app/book/actions";
+} from "@/lib/public-booking-submit-client";
+import { loadPublicBookingAvailabilityHintsAction, loadPublicBookingSlotsAction } from "@/lib/public-booking-availability-client";
 import type {
   PublicBookingAddOnSelection,
   PublicBookingAvailabilityHint,
@@ -13,10 +13,17 @@ import type {
   PublicBookingSlot,
   PublicBookingStaffMode,
 } from "@/lib/public-booking";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+
+import { useRouter } from "next/navigation";
+import { ReylumiIcon } from "@/components/reylumi-icons";
+import compact from "./booking-wizard.module.css";
 
 type PublicBookingClientProps = {
   data: PublicBookingPageData;
+  embedded?: boolean;
+  onClose?: () => void;
+  onBusyChange?: (busy: boolean) => void;
 };
 
 type CustomerDraft = {
@@ -61,13 +68,7 @@ type SummaryLine = {
 
 type AvailabilityHintMap = Record<string, PublicBookingAvailabilityHint | undefined>;
 
-const STEPS = [
-  "Service",
-  "Pro",
-  "Time",
-  "Details",
-  "Confirm",
-] as const;
+const STEPS = ["Services", "Staff", "Time", "Confirm"] as const;
 
 const styles = {
   addButton: "public-booking-add-button",
@@ -142,9 +143,8 @@ const styles = {
 const STEP_SERVICES = 0;
 const STEP_PROFESSIONAL = 1;
 const STEP_TIME = 2;
-const STEP_DETAILS = 3;
-const STEP_REVIEW = 4;
-const STEP_DONE = 5;
+const STEP_REVIEW = 3;
+const STEP_DONE = 4;
 const PUBLIC_BOOKING_DRAFT_VERSION = 2;
 
 function classNames(...classes: (false | null | string | undefined)[]) {
@@ -211,7 +211,7 @@ function clearStoredBookingDraft(salonId: string | null | undefined) {
   const key = draftStorageKey(salonId);
 
   if (key && typeof window !== "undefined") {
-    window.sessionStorage.removeItem(key);
+    try { window.sessionStorage.removeItem(key); } catch { /* Draft storage is optional. */ }
   }
 }
 
@@ -348,19 +348,19 @@ function nextAvailabilityText(input: {
   const time = formatTime(input.hint.startAt, input.timezone);
 
   if (slotDate === today) {
-    return `Next available: Today, ${time}`;
+    return `Next: Today, ${time}`;
   }
 
   if (slotDate === tomorrow) {
-    return `Next available: Tomorrow, ${time}`;
+    return `Next: Tomorrow, ${time}`;
   }
 
-  return `Next available: ${new Intl.DateTimeFormat("en-US", {
+  return `Next: ${new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
     timeZone: input.timezone,
     weekday: "short",
-  }).format(start)}`;
+  }).format(start)}, ${time}`;
 }
 
 function splitHintKey(lineKey: string, staffId: string | null) {
@@ -388,85 +388,6 @@ function uniqueStrings(values: string[]) {
 
 function addOnKey(selection: PublicBookingAddOnSelection) {
   return `${selection.parentServiceId}:${selection.serviceId}`;
-}
-
-function StaffAvatar({
-  className,
-  staff,
-}: {
-  className?: string;
-  staff: PublicBookingPageData["staff"][number];
-}) {
-  return (
-    <span className={classNames(styles.professionalAvatar, className)}>
-      {staff.avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img alt="" src={staff.avatarUrl} />
-      ) : (
-        initialsFor(staff.displayName)
-      )}
-    </span>
-  );
-}
-
-function ProfessionalRadioOption({
-  availabilityText,
-  checked,
-  className,
-  description,
-  isLoading,
-  name,
-  onChange,
-  staff,
-  title,
-  value,
-}: {
-  availabilityText: string;
-  checked: boolean;
-  className?: string;
-  description?: string | null;
-  isLoading: boolean;
-  name: string;
-  onChange: () => void;
-  staff?: PublicBookingPageData["staff"][number];
-  title: string;
-  value: string;
-}) {
-  return (
-    <label
-      className={classNames(
-        styles.professionalOption,
-        !staff && styles.professionalOptionAuto,
-        checked && styles.professionalOptionSelected,
-        className,
-      )}
-    >
-      <input
-        checked={checked}
-        className={styles.professionalRadio}
-        name={name}
-        onChange={onChange}
-        type="radio"
-        value={value}
-      />
-      {staff ? <StaffAvatar staff={staff} /> : null}
-      <span className={styles.professionalMeta}>
-        <span className={styles.professionalName}>{title}</span>
-        {description ? (
-          <span className={styles.professionalRole}>{description}</span>
-        ) : null}
-        <span
-          className={classNames(
-            styles.professionalNext,
-            isLoading && styles.professionalNextLoading,
-          )}
-        >
-          {availabilityText}
-        </span>
-      </span>
-      <span className={styles.professionalRadioVisual} aria-hidden="true" />
-    </label>
-  );
 }
 
 function staffEligibleForServices(data: PublicBookingPageData, serviceIds: string[]) {
@@ -622,192 +543,8 @@ function slotHour(slot: PublicBookingSlot, timezone: string) {
   );
 }
 
-function BookingInspirationCard({
-  compact = false,
-  currentServiceName,
-  currentStaffName,
-  inspiration,
-  onChangeProfessional,
-  onChangeService,
-  onRemove,
-}: {
-  compact?: boolean;
-  currentServiceName?: string | null;
-  currentStaffName?: string | null;
-  inspiration: NonNullable<PublicBookingPageData["initialSelection"]["inspiration"]>;
-  onChangeProfessional?: () => void;
-  onChangeService?: () => void;
-  onRemove?: () => void;
-}) {
-  const contentLabel =
-    inspiration.contentType === "beauty_post"
-      ? "transformation"
-      : inspiration.contentType === "update"
-        ? "post"
-        : "look";
-  const label =
-    currentServiceName && inspiration.contentType === "look"
-      ? "BOOK THIS LOOK"
-      : inspiration.contentType === "beauty_post"
-        ? "BOOK THIS TRANSFORMATION"
-      : "BOOK WITH THIS INSPIRATION";
-  const serviceLabel = currentServiceName
-    ? `You're booking ${currentServiceName}${
-        currentStaffName ? ` with ${currentStaffName}` : ""
-      } for this ${contentLabel}.`
-    : inspiration.message ??
-      "Choose services and a professional. We'll keep this inspiration attached.";
-  const originalContext = inspiration.originalServiceName
-    ? `Original: ${inspiration.originalServiceName}${
-        inspiration.originalStaffName ? ` with ${inspiration.originalStaffName}` : ""
-      }`
-    : null;
-  const thumbClass = classNames(
-    "overflow-hidden rounded-lg bg-[#fff0e8]",
-    compact ? "h-16 w-16" : "h-20 w-20 sm:h-24 sm:w-24",
-  );
-
-  return (
-    <section
-      className={classNames(
-        compact
-          ? "grid grid-cols-[64px_1fr] gap-3 rounded-lg bg-[#fff0e8] p-3"
-          : classNames(styles.publicCard, "mb-5 grid gap-4 p-4 sm:grid-cols-[96px_1fr]"),
-      )}
-      data-testid="booking-inspiration-card"
-    >
-      {inspiration.imageUrl ? (
-        <a
-          aria-label="Open inspiration image"
-          className={thumbClass}
-          href={inspiration.imageUrl}
-          rel="noreferrer"
-          target="_blank"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            alt={`${inspiration.title} inspiration`}
-            className="h-full w-full object-cover"
-            src={inspiration.imageUrl}
-          />
-        </a>
-      ) : (
-        <div className={thumbClass}>
-          <span className="grid h-full w-full place-items-center px-2 text-center text-xs font-extrabold text-[#f26f3d]">
-            Inspiration
-          </span>
-        </div>
-      )}
-      <div className="min-w-0">
-        <p className={styles.eyebrow}>{label}</p>
-        <h2 className="mt-1 line-clamp-2 text-base font-extrabold text-[#211c24]">
-          {inspiration.title}
-        </h2>
-        <p className="mt-1 text-sm font-extrabold text-[#f26f3d]">
-          {serviceLabel}
-        </p>
-        {!currentServiceName && originalContext ? (
-          <p className="mt-2 text-xs font-semibold text-[#786d78]">
-            {originalContext}
-          </p>
-        ) : null}
-        {inspiration.message && currentServiceName ? (
-          <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
-            {inspiration.message}
-          </p>
-        ) : inspiration.caption ? (
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#786d78]">
-            {inspiration.caption}
-          </p>
-        ) : null}
-        {onChangeService || onChangeProfessional || onRemove ? (
-          <div className={classNames("flex flex-wrap gap-2", compact ? "mt-2" : "mt-3")}>
-            {onChangeService ? (
-              <button
-                className={classNames(
-                  compact ? "public-booking-inspiration-edit" : styles.secondaryButton,
-                  !compact && "px-3 py-2 text-sm",
-                )}
-                onClick={onChangeService}
-                type="button"
-              >
-                {compact ? "Edit service" : inspiration.serviceId ? "Change service" : "Choose service"}
-              </button>
-            ) : null}
-            {onChangeProfessional ? (
-              <button
-                className={classNames(
-                  compact ? "public-booking-inspiration-edit" : styles.secondaryButton,
-                  !compact && "px-3 py-2 text-sm",
-                )}
-                onClick={onChangeProfessional}
-                type="button"
-              >
-                {compact ? "Edit pro" : "Change professional"}
-              </button>
-            ) : null}
-            {onRemove ? (
-              <button
-                className={compact ? "public-booking-inspiration-edit" : "px-2 py-2 text-sm font-extrabold text-[#f26f3d]"}
-                onClick={onRemove}
-                type="button"
-              >
-                Remove
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-    </section>
-  );
-}
-
-function BookingInspirationSummaryRow({
-  currentServiceName,
-  inspiration,
-}: {
-  currentServiceName?: string | null;
-  inspiration: NonNullable<PublicBookingPageData["initialSelection"]["inspiration"]>;
-}) {
-  const bookedAs = currentServiceName
-    ? `Booking as ${currentServiceName}`
-    : "Choose a service to continue.";
-  const label =
-    inspiration.contentType === "beauty_post"
-      ? "Inspired by this transformation"
-      : inspiration.contentType === "update"
-      ? "Inspired by this post"
-      : "Inspired by this look";
-
-  return (
-    <div className="grid grid-cols-[52px_1fr] items-center gap-3">
-      <div className="h-[52px] w-[52px] overflow-hidden rounded-lg bg-[#fff0e8]">
-        {inspiration.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            alt=""
-            className="h-full w-full object-cover"
-            src={inspiration.imageUrl}
-          />
-        ) : (
-          <span className="grid h-full w-full place-items-center text-[10px] font-extrabold text-[#f26f3d]">
-            IMG
-          </span>
-        )}
-      </div>
-      <div className="min-w-0">
-        <p className="text-sm font-extrabold text-[#211c24]">
-          {label}
-        </p>
-        <p className="truncate text-xs font-semibold text-[#786d78]">
-          {bookedAs}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-export function PublicBookingClient({ data }: PublicBookingClientProps) {
+export function PublicBookingClient({ data, embedded = false, onClose, onBusyChange }: PublicBookingClientProps) {
+  const router = useRouter();
   const settings = data.settings;
   const mainServices = useMemo(
     () => data.services.filter((service) => !service.isAddOnOnly),
@@ -818,7 +555,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     data.initialSelection.serviceId &&
     mainServices.some((service) => service.id === data.initialSelection.serviceId)
       ? data.initialSelection.serviceId
-      : hasInitialInspiration
+      : hasInitialInspiration || data.initialSelection.staffId
         ? ""
       : (mainServices[0]?.id ?? "");
   const initialServiceIds =
@@ -833,10 +570,6 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     () => [...new Set(mainServices.map((service) => service.category ?? "Services"))],
     [mainServices],
   );
-  const initialCategory =
-    mainServices.find((service) => service.id === initialServiceId)?.category ??
-    categoryNames[0] ??
-    "Services";
   const initialCustomerName = splitDisplayName(
     data.currentUser?.displayName ??
       [data.currentUser?.firstName, data.currentUser?.lastName]
@@ -847,7 +580,22 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
   const [step, setStep] = useState(
     Math.min(STEP_REVIEW, Math.max(STEP_SERVICES, data.initialSelection.initialStep)),
   );
-  const [category, setCategory] = useState(initialCategory);
+  const [category, setCategory] = useState("All");
+  const [search, setSearch] = useState("");
+  const [editDetails, setEditDetails] = useState(false);
+  const [accountSessionChanged, setAccountSessionChanged] = useState(false);
+  const [keepInitialStaff, setKeepInitialStaff] = useState(true);
+  const [optionsServiceId, setOptionsServiceId] = useState<string | null>(null);
+  const optionsDialog = useRef<HTMLDialogElement>(null);
+  const timesRail = useRef<HTMLDivElement>(null);
+  const timeDrag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
+  useEffect(() => {
+    if (!optionsServiceId) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    optionsDialog.current?.showModal();
+    return () => { document.body.style.overflow = previous; };
+  }, [optionsServiceId]);
   useEffect(() => {
     if (step === STEP_DONE) {
       document.getElementById("public-booking-confirmation-title")?.focus();
@@ -881,7 +629,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     signature: "",
     slots: data.slots,
   });
-  const [selectedSlotStart, setSelectedSlotStart] = useState(data.slots[0]?.startAt ?? "");
+  const [selectedSlotStart, setSelectedSlotStart] = useState(data.initialSelection.startAt ?? data.slots[0]?.startAt ?? "");
   const [availabilityResult, setAvailabilityResult] = useState<{
     hints: AvailabilityHintMap;
     signature: string;
@@ -889,7 +637,6 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     hints: {},
     signature: "",
   });
-  const [showAllProfessionals, setShowAllProfessionals] = useState(false);
   const [customer, setCustomer] = useState<CustomerDraft>({
     email: data.currentUser?.email ?? "",
     firstName: data.currentUser?.firstName ?? initialCustomerName.firstName,
@@ -909,17 +656,20 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     ok: boolean;
     status?: string;
   } | null>(null);
-  const [detailsSheetIntent, setDetailsSheetIntent] = useState<"review" | "submit">(
-    "review",
-  );
-  const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<CustomerFieldErrors>({});
   const [idempotencyKey, setIdempotencyKey] = useState(newIdempotencyKey);
   const [inspirationRemoved, setInspirationRemoved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(data.initialSelection.requestedTimeUnavailable ? "That time is no longer available. Choose another time." : null);
   const [isPending, startTransition] = useTransition();
-  const [isAvailabilityPending, startAvailabilityTransition] = useTransition();
-  const [isSlotPending, startSlotTransition] = useTransition();
+  useEffect(() => { onBusyChange?.(isPending); }, [isPending, onBusyChange]);
+  const hintCache = useRef(new Map<string, { expires: number; controller?:AbortController; settled?:boolean; promise: Promise<PublicBookingAvailabilityHint[]> }>());
+  const initialSlotsLoaded = useRef(false);
+  const slotCache = useRef(new Map<string, { expires: number; controller?:AbortController; settled?:boolean; promise: Promise<PublicBookingSlot[]> }>());
+  const manualDate = useRef(Boolean(data.initialSelection.dateExplicit || data.initialSelection.startAt));
+  const searchedSelection = useRef("");
+  const [availabilityError, setAvailabilityError] = useState(false);
+  const [slotError, setSlotError] = useState(false);
+  const [availabilityRetry, setAvailabilityRetry] = useState(0);
   const activeInspiration =
     data.initialSelection.inspiration && !inspirationRemoved
       ? data.initialSelection.inspiration
@@ -1018,28 +768,11 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
   const slotsLoading =
     data.state === "ready" &&
     selectedServiceIds.length > 0 &&
-    (isSlotPending || slotResult.signature !== slotRequestSignature);
+    (slotResult.signature !== slotRequestSignature && !slotError);
   const eligibleStaff = useMemo(
     () => staffEligibleForServices(data, summaryServices.map((service) => service.id)),
     [data, summaryServices],
   );
-  const visibleEligibleStaff = useMemo(() => {
-    if (showAllProfessionals || eligibleStaff.length <= 6) {
-      return eligibleStaff;
-    }
-
-    const firstStaff = eligibleStaff.slice(0, 6);
-    const selectedStaff = eligibleStaff.find((staff) => staff.id === staffId);
-
-    if (
-      selectedStaff &&
-      !firstStaff.some((staff) => staff.id === selectedStaff.id)
-    ) {
-      return [...firstStaff.slice(0, 5), selectedStaff];
-    }
-
-    return firstStaff;
-  }, [eligibleStaff, showAllProfessionals, staffId]);
   const selectedSlot = slots.find((slot) => slot.startAt === selectedSlotStart) ?? null;
   const professionalOnlyStaffId =
     activeInspiration?.readinessState === "professional_ready" &&
@@ -1047,7 +780,8 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       ? staffId
       : "";
   const visibleServices = mainServices
-    .filter((service) => (service.category ?? "Services") === category)
+    .filter((service) => category === "All" || (service.category ?? "Services") === category)
+    .filter(service => `${service.name} ${service.description ?? ""}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
     .sort((left, right) => {
       if (!professionalOnlyStaffId) {
         return 0;
@@ -1082,7 +816,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         const selectedLineStaffId = lineStaffIds[index];
 
         return (
-          !selectedLineStaffId ||
+          (!selectedLineStaffId && settings.anyProfessionalEnabled) ||
           serviceStaffNames(data, line.service.id).some(
             (staff) => staff.id === selectedLineStaffId,
           )
@@ -1147,8 +881,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
   const availabilityStatus =
     availabilityScopes.length === 0
       ? "idle"
-      : isAvailabilityPending ||
-          availabilityResult.signature !== availabilityScopeSignature
+      : availabilityResult.signature !== availabilityScopeSignature
         ? "loading"
         : "ready";
   function chooseService(serviceId: string) {
@@ -1172,7 +905,18 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     setSelectedSlotStart("");
     setError(null);
 
+    // Keep the selected professional per service before switching to split staff.
+    const preferredStaffId = staffMode === "specific" ? staffId : null;
+    if (preferredStaffId) {
+      setLineStaffByKey(current => ({ ...current, ...Object.fromEntries(
+        nextSelectedServiceIds
+          .filter(id => (data.staffByService[id] ?? []).includes(preferredStaffId))
+          .map(id => [`service:${id}`, current[`service:${id}`] || preferredStaffId]),
+      ) }));
+    }
+
     if (nextSelectedServiceIds.length === 0) {
+      if (data.initialSelection.staffId) return;
       setStaffId("");
       setStaffMode(settings?.anyProfessionalEnabled ? "any" : "specific");
       return;
@@ -1207,7 +951,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     const key = draftStorageKey(data.salon?.salonId);
 
     if (!key || typeof window === "undefined") {
-      return;
+      return false;
     }
 
     const draft: StoredBookingDraft = {
@@ -1226,11 +970,16 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       version: PUBLIC_BOOKING_DRAFT_VERSION,
     };
 
-    window.sessionStorage.setItem(key, JSON.stringify(draft));
+    try {
+      window.sessionStorage.setItem(key, JSON.stringify(draft));
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   useEffect(() => {
-    if (data.state !== "ready" || !data.salon) {
+    if (embedded || data.state !== "ready" || !data.salon) {
       return;
     }
 
@@ -1271,6 +1020,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       setStaffMode(draft.staffMode);
       setStaffId(draft.staffId);
       setLineStaffByKey(draft.lineStaffByKey);
+      manualDate.current = true;
       setDate(draft.date);
       setSelectedSlotStart(draft.selectedSlotStart);
       setInspirationRemoved(
@@ -1279,19 +1029,19 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
           draft.inspirationRemoved === true,
       );
       setCustomer((current) => ({
-        email: data.currentUser?.email ?? draft.customer.email ?? current.email,
+        email: nonEmpty(data.currentUser?.email) ?? draft.customer.email ?? current.email,
         firstName:
-          data.currentUser?.firstName ??
-          initialCustomerName.firstName ??
+          nonEmpty(data.currentUser?.firstName) ??
+          nonEmpty(initialCustomerName.firstName) ??
           draft.customer.firstName ??
           current.firstName,
         lastName:
-          data.currentUser?.lastName ??
-          initialCustomerName.lastName ??
+          nonEmpty(data.currentUser?.lastName) ??
+          nonEmpty(initialCustomerName.lastName) ??
           draft.customer.lastName ??
           current.lastName,
         notes: draft.customer.notes ?? current.notes,
-        phone: data.currentUser?.phone ?? draft.customer.phone ?? current.phone,
+        phone: nonEmpty(data.currentUser?.phone) ?? draft.customer.phone ?? current.phone,
       }));
       setIdentityMode(data.currentUser ? "choice" : draft.identityMode ?? "choice");
       setCategory(firstService?.category ?? categoryNames[0] ?? "Services");
@@ -1312,47 +1062,37 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     initialCustomerName.firstName,
     initialCustomerName.lastName,
     mainServices,
+    embedded,
   ]);
 
   useEffect(() => {
-    if (data.state !== "ready" || !data.salon || availabilityScopes.length === 0) {
-      return;
-    }
-
+    if (data.state !== "ready" || !data.salon || availabilityScopes.length === 0 || (embedded && step >= STEP_TIME)) return;
     let active = true;
+    let ownedController:AbortController|undefined;
     const signature = availabilityScopeSignature;
-    startAvailabilityTransition(async () => {
-      const hints = await loadPublicBookingAvailabilityHintsAction({
-        salonId: data.salon?.salonId ?? "",
-        scopes: availabilityScopes,
-        selection: {
-          addOnSelections: selectedAddOnSelections,
-          serviceId: selectedServiceIds[0] ?? null,
-          serviceIds: selectedServiceIds,
-        },
-      });
-
-      if (!active) {
-        return;
+    const timer = setTimeout(async () => {
+      setAvailabilityError(false);
+      let entry = hintCache.current.get(signature);
+      if (!entry || entry.expires < Date.now()) {
+        if (hintCache.current.size >= 24) hintCache.current.delete(hintCache.current.keys().next().value!);
+        ownedController=new AbortController();
+        entry = { expires: Date.now() + 30000, controller:ownedController, promise: loadPublicBookingAvailabilityHintsAction({ salonId: data.salon!.salonId, scopes: availabilityScopes, selection: { addOnSelections: selectedAddOnSelections, serviceId: selectedServiceIds[0] ?? null, serviceIds: selectedServiceIds } },ownedController.signal) };
+        hintCache.current.set(signature, entry);
       }
-
-      setAvailabilityResult({
-        hints: Object.fromEntries(hints.map((hint) => [hint.key, hint])),
-        signature,
-      });
-    });
-
+      try {
+        const hints = await entry.promise;
+        entry.settled=true;
+        if (active) setAvailabilityResult({ hints: Object.fromEntries(hints.map(hint => [hint.key, hint])), signature });
+      } catch { if(hintCache.current.get(signature)===entry)hintCache.current.delete(signature); if (active) setAvailabilityError(true); }
+    }, hintCache.current.has(signature) ? 0 : 180);
     return () => {
-      active = false;
+      active = false; clearTimeout(timer);
+      const entry=hintCache.current.get(signature);
+      if(ownedController && entry?.controller===ownedController && !entry.settled){
+        ownedController.abort();hintCache.current.delete(signature);
+      }
     };
-  }, [
-    availabilityScopeSignature,
-    availabilityScopes,
-    data.salon,
-    data.state,
-    selectedAddOnSelections,
-    selectedServiceIds,
-  ]);
+  }, [availabilityScopeSignature, availabilityScopes, data.salon, data.state, selectedAddOnSelections, selectedServiceIds, availabilityRetry, embedded, step]);
 
   useEffect(() => {
     if (selectedServiceIds.length === 0 || staffMode !== "specific" || !staffId) {
@@ -1370,55 +1110,53 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     });
   }, [eligibleStaff, selectedServiceIds.length, settings, staffId, staffMode]);
 
+  const slotReadDelay = step >= STEP_TIME ? 0 : 120;
   useEffect(() => {
-    if (data.state !== "ready" || selectedServiceIds.length === 0) {
-      return;
-    }
-
+    if (data.state !== "ready" || selectedServiceIds.length === 0) return;
     let active = true;
+    let ownedController:AbortController|undefined;
     const signature = slotRequestSignature;
-    startSlotTransition(async () => {
-      const nextSlots = await loadPublicBookingSlotsAction({
-        salonId: data.salon?.salonId ?? "",
-        selection: {
-          addOnSelections: selectedAddOnSelections,
-          date,
-          lineStaffIds,
-          serviceId: selectedServiceIds[0] ?? null,
-          serviceIds: selectedServiceIds,
-          staffId,
-          staffMode,
-        },
-      });
-
-      if (!active) {
-        return;
+    const selectionSignature = JSON.stringify({ selectedServiceIds, selectedAddOnSelections, lineStaffIds, staffId, staffMode });
+    const findEarliest = !manualDate.current && searchedSelection.current !== selectionSignature;
+    if (!initialSlotsLoaded.current) {
+      initialSlotsLoaded.current = true;
+      if ((data.availabilityResolved || data.slots.length > 0) && data.initialSelection.staffMode !== "split") slotCache.current.set(signature, { expires: Date.now() + 30000, promise: Promise.resolve(data.slots) });
+    }
+    const timer = setTimeout(async () => {
+      setSlotError(false);
+      let entry = slotCache.current.get(signature);
+      if (!entry || entry.expires < Date.now()) {
+        if (slotCache.current.size >= 32) slotCache.current.delete(slotCache.current.keys().next().value!);
+        ownedController=new AbortController();
+        entry = { expires: Date.now() + 30000, controller:ownedController, promise: loadPublicBookingSlotsAction({ salonId: data.salon?.salonId ?? "", selection: { findEarliest, addOnSelections: selectedAddOnSelections, date, lineStaffIds, serviceId: selectedServiceIds[0] ?? null, serviceIds: selectedServiceIds, staffId, staffMode } },ownedController.signal) };
+        slotCache.current.set(signature, entry);
       }
-
-      setSlotResult({ signature, slots: nextSlots });
-      setSelectedSlotStart((current) =>
-        nextSlots.some((slot) => slot.startAt === current)
-          ? current
-          : nextSlots[0]?.startAt ?? "",
-      );
-    });
-
+      try {
+        const nextSlots = await entry.promise;
+        entry.settled=true;
+        if (!active) return;
+        searchedSelection.current = selectionSignature;
+        const nextDate = findEarliest && nextSlots[0] && settings ? zonedDateKey(new Date(nextSlots[0].startAt), settings.timezoneIana) : date;
+        const nextSignature = nextDate === date ? signature : JSON.stringify({ ...JSON.parse(signature), date: nextDate });
+        if (nextDate !== date) {
+          slotCache.current.set(nextSignature, { expires: Date.now() + 30000, promise: Promise.resolve(nextSlots) });
+          setDate(nextDate);
+        }
+        setSlotResult({ signature: nextSignature, slots: nextSlots });
+        setSelectedSlotStart(current => nextSlots.some(slot => slot.startAt === current) ? current : nextSlots[0]?.startAt ?? "");
+      } catch { if(slotCache.current.get(signature)===entry)slotCache.current.delete(signature); if (active) setSlotError(true); }
+    }, slotCache.current.has(signature) ? 0 : slotReadDelay);
     return () => {
-      active = false;
+      active = false; clearTimeout(timer);
+      const entry=slotCache.current.get(signature);
+      if(ownedController && entry?.controller===ownedController && !entry.settled){
+        ownedController.abort();slotCache.current.delete(signature);
+      }
     };
-  }, [
-    data.salon?.salonId,
-    data.state,
-    date,
-    lineStaffIds,
-    selectedAddOnSelections,
-    selectedServiceIds,
-    slotRequestSignature,
-    staffId,
-    staffMode,
-  ]);
+  }, [data.salon?.salonId, data.state, data.slots, data.availabilityResolved, data.initialSelection.staffMode, date, lineStaffIds, selectedAddOnSelections, selectedServiceIds, slotRequestSignature, staffId, staffMode, availabilityRetry, settings, slotReadDelay]);
 
   if (data.state !== "ready" || !settings || !data.salon) {
+    if (embedded) return <div className={compact.unavailable}><button className={compact.icon} onClick={onClose} aria-label="Close booking">&times;</button><h2>{data.title}</h2><p className={compact.muted}>{data.message}</p></div>;
     return <UnavailableState data={data} />;
   }
 
@@ -1456,18 +1194,16 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     step === STEP_SERVICES
       ? selectedServiceIds.length > 0
       : step === STEP_PROFESSIONAL
-        ? staffMode === "any" ||
+        ? (staffMode === "any" && settings?.anyProfessionalEnabled) ||
           (staffMode === "specific" &&
             eligibleStaff.some((staff) => staff.id === staffId)) ||
           (staffMode === "split" && splitSelectionValid)
         : step === STEP_TIME
           ? Boolean(selectedSlot)
-          : step === STEP_DETAILS
-            ? detailsCanContinue
-            : true;
+          : true;
   const accountManageHref =
     result?.ok && result.accountLinked && result.bookingId
-      ? `/my-bookings/${result.bookingId}`
+      ? "/my-bookings"
       : null;
   const guestManageHref =
     result?.manageToken && typeof window !== "undefined"
@@ -1533,30 +1269,6 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     return Object.keys(nextErrors).length === 0;
   }
 
-  function openDetailsSheet(intent: "review" | "submit" = "review") {
-    setDetailsSheetIntent(intent);
-    setDetailsSheetOpen(true);
-    setError(null);
-  }
-
-  function continueFromDetailsSheet() {
-    if (!validateCustomerDetails()) {
-      return;
-    }
-
-    setDetailsSheetOpen(false);
-    if (!signedIn) {
-      setIdentityMode("guest");
-    }
-
-    if (detailsSheetIntent === "submit") {
-      submitBooking();
-      return;
-    }
-
-    setStep(STEP_REVIEW);
-  }
-
   function submitBooking() {
     if (!selectedSlot) {
       setError("Choose an available time.");
@@ -1571,7 +1283,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     }
 
     if (!validateCustomerDetails()) {
-      openDetailsSheet("submit");
+      setStep(STEP_REVIEW);
       return;
     }
 
@@ -1579,6 +1291,7 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     startTransition(async () => {
       try {
         const response = await createPublicBookingAction({
+          expectedAccountId: data.currentUser?.id ?? null,
           addOnSelections: selectedAddOnSelections,
           customerEmail: customer.email,
           customerFirstName: customer.firstName,
@@ -1611,6 +1324,12 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
         });
 
         if (response.ok && response.bookingId) {
+          if (response.accountLinked && !embedded) {
+            setResult(response);
+            setStep(STEP_DONE);
+            router.replace(`/my-bookings?created=${encodeURIComponent(response.bookingId)}&message=Booking%20created%20successfully.`);
+            return;
+          }
           setResult(response);
           setStep(STEP_DONE);
           setIdempotencyKey(newIdempotencyKey());
@@ -1619,7 +1338,19 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
 
         setResult(null);
 
+        if (response.code === "account_session_changed") {
+          const draftSaved = storeDraftForAuth();
+          setAccountSessionChanged(true);
+          setError(draftSaved ? response.message : "Please sign in again to confirm this booking. You may need to choose your services and time again.");
+          setStep(STEP_REVIEW);
+          return;
+        }
+
         if (response.code === "unavailable_slot") {
+          slotCache.current.delete(slotRequestSignature);
+          hintCache.current.clear();
+          setSlotResult({ signature: "", slots: [] });
+          setAvailabilityRetry(value => value + 1);
           setSelectedSlotStart("");
           setError("That time is no longer available. Choose another time.");
           setStep(STEP_TIME);
@@ -1631,9 +1362,10 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
           response.code === "invalid_customer_email" ||
           response.code === "invalid_customer_phone"
         ) {
+          setEditDetails(true);
           validateCustomerDetails();
           setError(response.message);
-          openDetailsSheet("submit");
+          setStep(STEP_REVIEW);
           return;
         }
 
@@ -1661,37 +1393,6 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     };
   });
   const salonLocation = [data.salon.city, data.salon.state].filter(Boolean).join(", ");
-  const selectedStaffLabel =
-    selectedSlot
-      ? [...new Set(selectedSlot.lines.map((line) => line.staffName))].join(", ")
-      : staffMode === "any"
-        ? "Any professional"
-        : staffMode === "split"
-          ? summaryLines
-              .map((line, index) => {
-                const selectedLineStaffId = lineStaffIds[index];
-                const staff = selectedLineStaffId
-                  ? data.staff.find((member) => member.id === selectedLineStaffId)
-                  : null;
-
-                return `${line.service.name}: ${staff?.displayName ?? "Best available"}`;
-              })
-              .join(", ")
-          : staffId
-            ? data.staff.find((staff) => staff.id === staffId)?.displayName ?? "Selected"
-            : "Choose professional";
-  const currentBookingServiceName =
-    summaryServices.length > 0
-      ? summaryServices.map((service) => service.name).join(", ")
-      : null;
-  const currentBookingStaffName =
-    selectedServiceIds.length === 0
-      ? null
-      : selectedSlot
-        ? [...new Set(selectedSlot.lines.map((line) => line.staffName))].join(", ")
-        : staffMode === "specific" && staffId
-          ? data.staff.find((staff) => staff.id === staffId)?.displayName ?? null
-          : null;
   const bookingConfirmed = result?.confirmationStatus
     ? result.confirmationStatus === "confirmed"
     : result?.status === "confirmed";
@@ -1701,39 +1402,10 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       : result?.ok
         ? "Request received"
         : "Booking not submitted";
-  const isQuickBook =
-    activeInspiration?.readinessState === "quick_ready" &&
-    activeInspiration.status === "ready";
-  const nextLabel =
-    step === STEP_SERVICES && selectedServiceIds.length === 0
-      ? "Choose a service to continue"
-      : step === STEP_SERVICES
-        ? "Next: Choose professional"
-      : step === STEP_PROFESSIONAL
-        ? "Next: Date & time"
-        : step === STEP_TIME
-          ? !detailsCanContinue && selectedSlot
-            ? "Enter your details"
-            : isQuickBook && signedIn && signedInDetailsComplete
-            ? "Next: Review"
-            : "Next: Your details"
-          : step === STEP_DETAILS && !detailsCanContinue
-            ? "Enter your details"
-          : "Next: Review";
-  const primaryActionLabel =
-    step === STEP_REVIEW
-      ? isPending
-        ? "Submitting..."
-        : error
-          ? "Retry"
-        : settings.confirmationMode === "instant_booking"
-          ? "Confirm booking"
-          : "Request appointment"
-      : nextLabel;
-  const primaryActionDisabled =
-    step === STEP_REVIEW
-      ? isPending || !selectedSlot || selectedServiceIds.length === 0
-      : !canContinue && !(step === STEP_TIME && selectedSlot && !detailsCanContinue);
+  const primaryActionLabel = step === STEP_REVIEW
+    ? isPending ? "Submitting..." : settings.confirmationMode === "instant_booking" ? "Confirm booking" : "Request appointment"
+    : embedded ? "Continue" : ["Next: Choose staff", "Next: Choose time", "Next: Review & confirm"][step];
+  const primaryActionDisabled = isPending || (step === STEP_REVIEW ? accountSessionChanged || !selectedSlot || (!signedIn && !settings.guestBookingEnabled) : !canContinue);
 
   const bookingFlowState = isPending
     ? "submitting"
@@ -1769,27 +1441,19 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
       return;
     }
 
-    if (step === STEP_REVIEW) {
-      if (!detailsCanContinue) {
-        openDetailsSheet("submit");
-        return;
-      }
-
-      submitBooking();
-      return;
+    if (step === STEP_REVIEW) { submitBooking(); return; }
+    if (step === STEP_TIME) { setStep(STEP_REVIEW); return; }
+    if (step === STEP_SERVICES && staffMode === "specific" && staffId && summaryLines.every(line => serviceStaffNames(data, line.service.id).some(staff => staff.id === staffId))) { setStep(STEP_TIME); return; }
+    if (step === STEP_SERVICES && settings?.splitStaffAppointmentEnabled && summaryLines.length > 1) {
+      const preferredStaffId = (staffMode === "specific" ? staffId : null) || data.initialSelection.staffId;
+      setLineStaffByKey(current => Object.fromEntries(summaryLines.map(line => {
+        const eligible = serviceStaffNames(data, line.service.id);
+        const previous = current[line.key];
+        return [line.key, previous && eligible.some(staff => staff.id === previous) ? previous : preferredStaffId && eligible.some(staff => staff.id === preferredStaffId) ? preferredStaffId : ""];
+      })));
+      setStaffMode("split");
     }
-
-    if (step === STEP_TIME && selectedSlot && !detailsCanContinue) {
-      openDetailsSheet("review");
-      return;
-    }
-
-    if (step === STEP_TIME && detailsCanContinue) {
-      setStep(STEP_REVIEW);
-      return;
-    }
-
-    setStep((current) => Math.min(STEP_REVIEW, current + 1));
+    setStep(current => Math.min(STEP_REVIEW, current + 1));
   }
 
   function removeInspiration() {
@@ -1800,1265 +1464,123 @@ export function PublicBookingClient({ data }: PublicBookingClientProps) {
     }
   }
 
-  return (
-    <main
-      className={classNames(styles.bookingSurface, styles.publicRoot)}
-      data-booking-surface="public"
-      data-booking-complete={step === STEP_DONE ? "true" : undefined}
-      data-booking-flow-state={bookingFlowState}
-      data-testid="public-booking-root"
-    >
-      <section className={styles.publicShell} data-testid="public-booking-shell">
-        {step < STEP_DONE ? (
-          <header className="public-booking-mobile-header">
-            {step > STEP_SERVICES ? (
-              <button className={styles.secondaryButton} aria-label="Back to previous step" onClick={() => setStep((current) => Math.max(STEP_SERVICES, current - 1))} type="button">←</button>
-            ) : (
-              <a className={styles.secondaryButton} aria-label="Back to Explore" href="/explore">←</a>
-            )}
-            <div>
-              <p className="public-booking-mobile-brand">Booking with Reylumi</p>
-              <p className="font-extrabold">{data.salon.name}</p>
-              <p className="public-booking-mobile-selection">{currentBookingServiceName ?? "Build your visit"}{currentBookingStaffName ? ` · ${currentBookingStaffName}` : ""}</p>
-            </div>
-          </header>
-        ) : null}
-        <div className={styles.brandBar}>
-          <ReylumiExploreLink />
-        </div>
+  const splitStaff = settings.splitStaffAppointmentEnabled && summaryLines.length > 1;
+  const staffGroups = splitStaff ? summaryLines : [{ key: "all", service: { name: summaryServices.map(service => service.name).join(" + "), durationMinutes: totalMinutes } }];
+  const optionsParent = selectedServices.find(service => service.id === optionsServiceId);
+  const chooseStaff = (lineKey: string, value: string) => {
+    setSelectedSlotStart("");
+    setError(null);
+    if (splitStaff) {
+      setStaffMode("split");
+      setLineStaffByKey(current => ({ ...current, [lineKey]: value }));
+    } else { setStaffMode(value ? "specific" : "any"); setStaffId(value); }
+  };
+  const goBack = () => { setError(null); setStep(current => Math.max(STEP_SERVICES, current - 1)); };
+  const isReview = step === STEP_REVIEW || (embedded && step === STEP_DONE);
+  const selectedServiceNames = summaryLines.map(line => line.service.name).join(" + ");
+  const addMoreButton = <button type="button" className={compact.textLink} disabled={isPending} onClick={() => { setKeepInitialStaff(false); setCategory("All"); setSearch(""); setError(null); setStep(STEP_SERVICES); }}>+ Add more</button>;
 
-        {step === STEP_DONE ? null : isQuickBook ? (
-          <div
-            className={styles.quickBookStrip}
-            data-testid="public-booking-quick-book"
-          >
-            {activeInspiration?.contentType === "update"
-              ? "Post ready · choose a time"
-              : "Look ready · choose a time"}
-          </div>
-        ) : (
-        <nav
-          className={styles.progress}
-          aria-label="Booking progress"
-          data-testid="public-booking-stepper"
-        >
-          {STEPS.map((label, index) => {
-            const active = step === index;
-            const done = step > index;
-
-            return (
-              <button
-                aria-current={active ? "step" : undefined}
-                aria-label={`${index + 1}. ${label}`}
-                className={classNames(
-                  styles.progressStep,
-                  active && styles.progressActive,
-                  done && styles.progressDone,
-                )}
-                disabled={index > step || step === STEP_DONE}
-                key={label}
-                onClick={() => setStep(index)}
-                type="button"
-              >
-                <span className={styles.progressCircle}>{done ? "✓" : index + 1}</span>
-                <span>{label}</span>
-              </button>
-            );
+  return <main className={`${compact.root} ${embedded ? compact.embedded : ""}`} data-booking-surface="public" data-booking-complete={step === STEP_DONE ? "true" : undefined} data-booking-flow-state={bookingFlowState} data-testid="public-booking-root">
+    <section className={compact.shell} data-testid="public-booking-shell">
+      {embedded ? <header className={compact.quickHeader}><strong>{step === STEP_SERVICES ? "Choose services" : step === STEP_PROFESSIONAL ? "Choose staff" : step === STEP_TIME ? "Choose a time" : step === STEP_REVIEW ? "Confirm booking" : confirmationTitle}</strong><button className={compact.icon} onClick={onClose} aria-label="Close booking" type="button">&times;</button></header> : <header className={compact.header}>
+        {step > STEP_SERVICES && step < STEP_DONE ? <button className={compact.icon} type="button" aria-label="Back to previous step" onClick={goBack}>&larr;</button> : <a className={compact.icon} aria-label="Back to Explore" href="/explore">&larr;</a>}
+        <div className={compact.salon}>{data.salon.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className={compact.logo} src={data.salon.logoUrl} alt="" />
+        ) : null}<span>{data.salon.name}</span></div>
+        <a className={compact.icon} href="/explore" aria-label="Close booking">&times;</a>
+      </header>}
+      {!embedded && step < STEP_DONE ? <nav className={compact.progress} aria-label="Booking progress" data-testid="public-booking-stepper">
+        {STEPS.map((label, index) => <span key={label} className="inline-flex items-center gap-3"><button aria-current={step === index ? "step" : undefined} disabled={index > step || isPending} onClick={() => setStep(index)} type="button">{label}</button>{index < STEPS.length - 1 ? <span aria-hidden="true">&rsaquo;</span> : null}</span>)}
+      </nav> : null}
+      <div className={compact.content} data-testid="public-booking-content">
+        {error ? <div className={compact.error} role="alert"><p>{error}</p>{accountSessionChanged ? <a className={`${compact.textLink} mt-1 inline-block text-sm font-medium underline underline-offset-2`} href={signInHref} onClick={storeDraftForAuth}>sign in</a> : null}</div> : null}
+        {!error && activeInspiration?.message && (activeInspiration.status === "service_unavailable" || activeInspiration.status === "staff_unavailable") ? <p className={compact.error} role="status">{activeInspiration.message}</p> : null}
+        {step === STEP_SERVICES ? <section>
+          <h1>Choose services</h1>{embedded ? <p className={`${compact.muted} mb-3`}>{keepInitialStaff && data.initialSelection.staffId ? `With ${data.staff.find(staff => staff.id === data.initialSelection.staffId)?.displayName ?? "your selected staff"} \u00b7 ` : ""}{data.salon.name}</p> : null}
+          <input className={compact.field} value={search} onChange={event => setSearch(event.target.value)} placeholder="Search services..." aria-label="Search services" type="search" />
+          <div className={compact.tabs} aria-label="Service categories">{["All", ...categoryNames.filter(name => name !== "All")].map(name => <button key={name} type="button" aria-pressed={category === name} onClick={() => setCategory(name)}>{name}</button>)}</div>
+          <div className={compact.list}>{visibleServices.map(service => {
+            const selected = selectedServiceIds.includes(service.id);
+            const options = service.addOnIds.filter(id => data.services.some(item => item.id === id && !selectedServiceIds.includes(id)));
+            const extras = selectedAddOnSelections.filter(item => item.parentServiceId === service.id).length;
+            return <div className={compact.service} key={service.id}>
+              <label><span><strong>{service.name}</strong><small className={compact.muted}>{service.description || service.category}{service.description || service.category ? " \u00b7 " : ""}{minutes(service.durationMinutes)}</small></span><span className="font-semibold">{money(service.basePrice)}</span><input aria-label={service.name} className={compact.check} type="checkbox" checked={selected} onChange={() => { chooseService(service.id); if (!selected && options.length > 0) setOptionsServiceId(service.id); }} /></label>
+              {selected && options.length > 0 ? <button className={compact.textLink} type="button" onClick={() => setOptionsServiceId(service.id)}>Options{extras ? ` \u00b7 ${extras} selected` : ""} &rsaquo;</button> : null}
+            </div>;
+          })}</div>
+          {visibleServices.length === 0 ? <p className={compact.muted}>No matching services.</p> : null}
+        </section> : null}
+        {step === STEP_PROFESSIONAL ? <section><h1>Choose staff</h1>{embedded ? <p className={compact.muted}>{data.salon.name}</p> : null}
+          {staffGroups.map(line => {
+            const options = splitStaff ? serviceStaffNames(data, (line as SummaryLine).service.id) : eligibleStaff;
+            const value = splitStaff ? staffMode === "specific" ? staffId : lineStaffByKey[line.key] ?? "" : staffMode === "specific" ? staffId : "";
+            const hintKey = (id: string) => splitStaff ? splitHintKey(line.key, id || null) : id ? staffHintKey(id) : "any";
+            return <fieldset className={compact.staffGroup} key={line.key}><legend>{line.service.name} <span className={compact.muted}>&middot; {minutes(line.service.durationMinutes)}</span></legend>
+              {[...(settings.anyProfessionalEnabled ? [{ id: "", displayName: "Any available", avatarUrl: null }] : []), ...options].map(staff => <label className={compact.staff} key={staff.id || "any"}>
+                {staff.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img className={compact.avatar} src={staff.avatarUrl} alt="" />
+                ) : <span className={compact.avatar}>{staff.id ? initialsFor(staff.displayName) : "AA"}</span>}
+                <span className={compact.staffMeta}><strong>{staff.displayName}</strong><small>{availabilityStatus === "loading" ? "Checking times..." : availabilityError ? "Choose a time next" : nextAvailabilityText({ hint: availabilityHints[hintKey(staff.id)], timezone: settings.timezoneIana })}</small></span>
+                <input className={compact.check} type="radio" name={`staff-${line.key}`} aria-label={`${line.service.name}: ${staff.displayName}`} checked={value === staff.id && (staffMode !== "specific" || Boolean(staffId))} onChange={() => chooseStaff(line.key, staff.id)} />
+              </label>)}
+              {options.length === 0 ? <p className={compact.muted}>No eligible staff for this selection.</p> : null}
+            </fieldset>;
           })}
-        </nav>
-        )}
-
-        <aside className={styles.editorialRail} data-testid="public-booking-editorial">
-          <div className={styles.editorialImage}>
-            {data.salon.coverUrl || data.salon.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img alt="" src={data.salon.coverUrl ?? data.salon.logoUrl ?? ""} />
-            ) : null}
+          <p className={`${compact.muted} mt-4`}>Times shown are suggestions. Choose a start time next.</p>
+        </section> : null}
+        {step === STEP_TIME ? <section><h1>Choose start time</h1>{embedded ? <div className={compact.quickSelection}>{activeInspiration?.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={activeInspiration.imageUrl} alt="" />) : null}<div><div className={compact.selectionTitle}><strong>{selectedServiceNames}</strong>{addMoreButton}</div><p className={compact.muted}>{data.staff.find(staff => staff.id === staffId)?.displayName ?? "Any available"} &middot; {data.salon.name}</p><p className={compact.muted}>{minutes(totalMinutes)} &middot; Est. {money(total)}</p></div></div> : null}
+          <div className={compact.dates} aria-label="Choose a date">{dateStrip.map(day => <button key={day.value} type="button" aria-label={day.label} aria-pressed={day.value === date} onClick={() => { manualDate.current = true; setSelectedSlotStart(""); setDate(day.value); }}><span>{embedded && day.value === zonedDateKey(new Date(), settings.timezoneIana) ? "Today" : embedded && day.value === addDaysKey(zonedDateKey(new Date(), settings.timezoneIana), 1) ? "Tomorrow" : day.label.split(",")[0].split(" ")[0]}</span><strong>{embedded ? new Intl.DateTimeFormat("en-US", {month:"short",day:"numeric",timeZone:"UTC"}).format(new Date(`${day.value}T12:00:00Z`)) : Number(day.value.slice(-2))}</strong></button>)}</div>
+          <div className="flex items-center justify-between gap-3"><label className={compact.textLink}>Choose date<input className="max-w-[9rem] text-xs text-text-secondary" type="date" aria-label="Choose another date" value={date} min={zonedDateKey(new Date(), settings.timezoneIana)} max={addDaysKey(zonedDateKey(new Date(), settings.timezoneIana), settings.maximumAdvanceWindowDays)} onChange={event => { if (event.target.value) { manualDate.current = true; setSelectedSlotStart(""); setDate(event.target.value); } }} /></label></div>
+          <div className={compact.timePicker}>
+            <button className={compact.icon} aria-label="Earlier times" type="button" onClick={() => timesRail.current?.scrollBy({ left: -240, behavior: "smooth" })}>&lsaquo;</button>
+            <div className={compact.times} ref={timesRail}
+              onPointerDown={event => { if (event.pointerType === "mouse") timeDrag.current = { x: event.clientX, left: event.currentTarget.scrollLeft, moved: false }; }}
+              onPointerMove={event => { const drag = timeDrag.current; if (!drag || event.buttons !== 1) return; const delta = event.clientX - drag.x; if (Math.abs(delta) > 8) { drag.moved = true; event.currentTarget.setPointerCapture(event.pointerId); event.currentTarget.scrollLeft = drag.left - delta; } }}
+              onPointerUp={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); if (!timeDrag.current?.moved) timeDrag.current = null; }}
+              onPointerCancel={() => { timeDrag.current = null; }}
+              onClickCapture={event => { if (timeDrag.current?.moved) { event.preventDefault(); event.stopPropagation(); } timeDrag.current = null; }} role="group" aria-label="Available start times">{slots.map(slot => <button key={slot.startAt} data-testid="public-booking-slot" type="button" aria-pressed={slot.startAt === selectedSlotStart} onClick={() => setSelectedSlotStart(slot.startAt)}>{slot.label}</button>)}</div>
+            <button className={compact.icon} aria-label="Later times" type="button" onClick={() => timesRail.current?.scrollBy({ left: 240, behavior: "smooth" })}>&rsaquo;</button>
           </div>
-          <p className="mt-4 text-sm leading-6 text-[#786d78]">
-            {data.salon.tagline ?? "Clean tools, thoughtful care, beautiful results."}
-          </p>
-        </aside>
-
-        <div className={styles.publicMain} data-testid="public-booking-content">
-          {error ? (
-            <p className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              {error}
-            </p>
-          ) : null}
-
-          {activeInspiration && step !== STEP_DONE ? (
-            <BookingInspirationCard
-              compact={isQuickBook}
-              currentServiceName={currentBookingServiceName}
-              currentStaffName={currentBookingStaffName}
-              inspiration={activeInspiration}
-              onChangeProfessional={
-                step === STEP_PROFESSIONAL || selectedServiceIds.length === 0
-                  ? undefined
-                  : () => setStep(STEP_PROFESSIONAL)
-              }
-              onChangeService={() => setStep(STEP_SERVICES)}
-              onRemove={removeInspiration}
-            />
-          ) : null}
-
-          {step === STEP_SERVICES ? (
-            <section>
-              <div className={styles.publicHeading}>
-                <p className={styles.eyebrow}>Build your visit</p>
-                <h1 className={styles.publicTitle}>Choose your services</h1>
-                <p className={styles.publicCopy}>
-                  Pick what you need. We will only show professionals and times that work.
-                </p>
-              </div>
-              <div className={classNames(styles.pillRow, "mb-7")}>
-                {categoryNames.map((name) => (
-                  <button
-                    className={classNames(
-                      styles.pill,
-                      category === name && styles.pillActive,
-                    )}
-                    key={name}
-                    onClick={() => setCategory(name)}
-                    type="button"
-                  >
-                    {name}
-                  </button>
-                ))}
-                {addOnOptions.length > 0 ? (
-                  <button className={styles.pill} type="button">
-                    Add-ons {selectedAddOnSelections.length}
-                  </button>
-                ) : null}
-              </div>
-              <div className="grid gap-4">
-                {mainServices.length === 0 ? (
-                  <p className={classNames(styles.publicCard, "p-5 text-sm text-[#786d78]")}>
-                    No primary services are available for online booking yet.
-                  </p>
-                ) : null}
-                {visibleServices.map((service) => {
-                  const isSelected = selectedServiceIds.includes(service.id);
-                  const isBookable = (data.staffByService[service.id] ?? []).length > 0;
-
-                  return (
-                    <button
-                      className={classNames(
-                        styles.serviceCard,
-                        isSelected && styles.serviceCardSelected,
-                        !isBookable && "opacity-60",
-                      )}
-                      data-testid="public-booking-service-card"
-                      disabled={!isBookable}
-                      key={service.id}
-                      onClick={() => chooseService(service.id)}
-                      type="button"
-                    >
-                      <span className={styles.serviceIcon} aria-hidden="true">
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24">
-                          <path d="M12 3v18M3 12h18M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-                        </svg>
-                      </span>
-                      <span className="min-w-0 text-left">
-                        <span className="block text-lg font-extrabold text-[#211c24]">
-                          {service.name}
-                        </span>
-                        <span className="mt-1 block text-sm leading-6 text-[#786d78]">
-                          {service.description || service.category || "Personalized salon service."}
-                        </span>
-                      </span>
-                      <span className={styles.priceColumn}>
-                        <span className="block text-xl font-extrabold text-[#211c24]">
-                          {money(service.basePrice)}
-                        </span>
-                        <span className="mt-1 block text-sm italic text-[#f26f3d]">
-                          {minutes(service.durationMinutes)}
-                        </span>
-                      </span>
-                      <span
-                        className={classNames(
-                          styles.addButton,
-                          isSelected && styles.addButtonSelected,
-                        )}
-                      >
-                        {isSelected ? "✓" : "+ Add"}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <section className={styles.addonPanel} data-testid="public-booking-addon-panel">
-                <p className="text-sm font-extrabold text-[#f26f3d]">Make it yours</p>
-                <p className="mt-1 text-sm text-[#786d78]">
-                  Add linked extras for selected services.
-                </p>
-                {addOnOptions.length > 0 ? (
-                  <div className={styles.addonGrid}>
-                    {addOnOptions.map(({ parent, service }) => {
-                      const selection = {
-                        parentServiceId: parent.id,
-                        serviceId: service.id,
-                      };
-                      const selected = selectedAddOnSelections.some(
-                        (item) => addOnKey(item) === addOnKey(selection),
-                      );
-
-                      return (
-                        <label
-                          className={classNames(
-                            styles.addonCard,
-                            selected && styles.addonCardSelected,
-                          )}
-                          key={`${parent.id}:${service.id}`}
-                        >
-                          <span>
-                            <span className="mb-1 block text-xs font-extrabold uppercase tracking-[0.08em] text-[#f26f3d]">
-                              {parent.name}
-                            </span>
-                            <span className="block font-extrabold text-[#211c24]">
-                              {service.name}
-                            </span>
-                            <span className="mt-1 block text-sm text-[#786d78]">
-                              {service.description || `Adds ${minutes(service.durationMinutes)}`}
-                            </span>
-                          </span>
-                          <span className="text-right">
-                            <span className="block font-extrabold text-[#211c24]">
-                              {money(service.basePrice)}
-                            </span>
-                            <input
-                              checked={selected}
-                              className={styles.checkboxInput}
-                              onChange={(event) =>
-                                setSelectedAddOnSelections((current) => {
-                                  if (event.target.checked) {
-                                    return current.some(
-                                      (item) => addOnKey(item) === addOnKey(selection),
-                                    )
-                                      ? current
-                                      : [...current, selection];
-                                  }
-
-                                  return current.filter(
-                                    (item) => addOnKey(item) !== addOnKey(selection),
-                                  );
-                                })
-                              }
-                              type="checkbox"
-                            />
-                            <span className={styles.checkboxVisual} aria-hidden="true">
-                              ✓
-                            </span>
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </section>
-            </section>
-          ) : null}
-
-          {step === STEP_PROFESSIONAL ? (
-            <section>
-              <div className={styles.publicHeading}>
-                <p className={styles.eyebrow}>Professional</p>
-                <h1 className={styles.publicTitle}>Choose your professional</h1>
-                <p className={styles.publicCopy}>
-                  Pick a specific professional or let the salon match you with the best available fit.
-                </p>
-              </div>
-              <div className={styles.professionalList}>
-                <div
-                  aria-label="Choose professional"
-                  className={styles.professionalList}
-                  role="radiogroup"
-                >
-                  {settings.anyProfessionalEnabled ? (
-                    <ProfessionalRadioOption
-                      availabilityText={nextAvailabilityText({
-                        hint: availabilityHints.any,
-                        timezone: settings.timezoneIana,
-                      })}
-                      checked={staffMode === "any"}
-                      className={styles.professionalOptionCompact}
-                      description="We will show times with eligible staff."
-                      isLoading={availabilityStatus === "loading"}
-                      name="public-booking-professional"
-                      onChange={() => {
-                        setStaffMode("any");
-                        setStaffId("");
-                      }}
-                      title="Any professional"
-                      value="any"
-                    />
-                  ) : null}
-                  {eligibleStaff.length === 0 ? (
-                    <p className={classNames(styles.publicCard, "p-5 text-sm text-[#786d78]")}>
-                      No professionals can perform every selected service yet.
-                    </p>
-                  ) : null}
-                  <div className={styles.professionalGrid}>
-                    {visibleEligibleStaff.map((staff) => (
-                      <ProfessionalRadioOption
-                        availabilityText={nextAvailabilityText({
-                          hint: availabilityHints[staffHintKey(staff.id)],
-                          timezone: settings.timezoneIana,
-                        })}
-                        checked={staffMode === "specific" && staff.id === staffId}
-                        description={staff.jobTitle}
-                        isLoading={availabilityStatus === "loading"}
-                        key={staff.id}
-                        name="public-booking-professional"
-                        onChange={() => {
-                          setStaffMode("specific");
-                          setStaffId(staff.id);
-                        }}
-                        staff={staff}
-                        title={staff.displayName}
-                        value={staff.id}
-                      />
-                    ))}
-                  </div>
-                  {eligibleStaff.length > 6 ? (
-                    <button
-                      className={styles.professionalShowMore}
-                      onClick={() => setShowAllProfessionals((current) => !current)}
-                      type="button"
-                    >
-                      {showAllProfessionals
-                        ? "Show fewer professionals"
-                        : `Show ${eligibleStaff.length - visibleEligibleStaff.length} more`}
-                    </button>
-                  ) : null}
-                </div>
-
-                {settings.splitStaffAppointmentEnabled && summaryLines.length > 1 ? (
-                  <section
-                    aria-labelledby="public-booking-split-heading"
-                    className={styles.professionalSplitPanel}
-                  >
-                    <div className={styles.professionalSplitHeader}>
-                      <h2 id="public-booking-split-heading">Split by service</h2>
-                      <span>Optional per service</span>
-                    </div>
-                    {summaryLines.map((line, index) => {
-                      const selectedLineStaffId = lineStaffIds[index] ?? "";
-                      const staffOptions = serviceStaffNames(data, line.service.id);
-                      const groupName = `public-booking-split-${line.key}`;
-
-                      return (
-                        <fieldset
-                          className={styles.professionalSplitSection}
-                          key={line.key}
-                        >
-                          <legend>
-                            <span>{line.service.name}</span>
-                            {line.parentName ? (
-                              <small>Add-on for {line.parentName}</small>
-                            ) : null}
-                          </legend>
-                          <div
-                            className={classNames(
-                              styles.professionalGrid,
-                              styles.professionalGridScroll,
-                            )}
-                          >
-                            <ProfessionalRadioOption
-                              availabilityText={nextAvailabilityText({
-                                hint: availabilityHints[splitHintKey(line.key, null)],
-                                timezone: settings.timezoneIana,
-                              })}
-                              checked={
-                                staffMode === "split" && selectedLineStaffId === ""
-                              }
-                              className={styles.professionalOptionCompact}
-                              description={`For ${line.service.name}`}
-                              isLoading={availabilityStatus === "loading"}
-                              name={groupName}
-                              onChange={() => {
-                                setStaffMode("split");
-                                setLineStaffByKey((current) => {
-                                  const next = { ...current };
-                                  delete next[line.key];
-                                  return next;
-                                });
-                              }}
-                              title="Best available"
-                              value=""
-                            />
-                            {staffOptions.map((staff) => (
-                              <ProfessionalRadioOption
-                                availabilityText={nextAvailabilityText({
-                                  hint:
-                                    availabilityHints[
-                                      splitHintKey(line.key, staff.id)
-                                    ],
-                                  timezone: settings.timezoneIana,
-                                })}
-                                checked={
-                                  staffMode === "split" &&
-                                  selectedLineStaffId === staff.id
-                                }
-                                description={staff.jobTitle}
-                                isLoading={availabilityStatus === "loading"}
-                                key={staff.id}
-                                name={groupName}
-                                onChange={() => {
-                                  setStaffMode("split");
-                                  setLineStaffByKey((current) => ({
-                                    ...current,
-                                    [line.key]: staff.id,
-                                  }));
-                                }}
-                                staff={staff}
-                                title={staff.displayName}
-                                value={staff.id}
-                              />
-                            ))}
-                          </div>
-                        </fieldset>
-                      );
-                    })}
-                  </section>
-                ) : null}
-              </div>
-            </section>
-          ) : null}
-
-          {step === STEP_TIME ? (
-            <section>
-              <div className={styles.publicHeading}>
-                <p className={styles.eyebrow}>
-                  {isQuickBook
-                    ? activeInspiration?.contentType === "update"
-                      ? "Book from post"
-                      : "Book this look"
-                    : "Date & time"}
-                </p>
-                <h1 className={styles.publicTitle}>
-                  {isQuickBook ? "Choose a time" : "Find a time"}
-                </h1>
-                <p className={styles.publicCopy}>Times are shown in {settings.timezoneIana}.</p>
-              </div>
-              <div className={classNames(styles.pillRow, "public-booking-date-strip mb-5")} aria-label="Choose a date">
-                {dateStrip.map((day) => (
-                  <button
-                    className={classNames(
-                      styles.pill,
-                      date === day.value && styles.pillActive,
-                    )}
-                    key={day.value}
-                    aria-label={day.label}
-                    aria-pressed={date === day.value}
-                    onClick={() => setDate(day.value)}
-                    type="button"
-                  >
-                    <span className="public-booking-date-full">{day.label}</span>
-                    <span className="public-booking-date-short" aria-hidden="true">
-                      <span>{new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "UTC" }).format(new Date(`${day.value}T12:00:00Z`))}</span>
-                      <strong>{Number(day.value.slice(-2))}</strong>
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <label className="public-booking-date-picker mb-5 block max-w-xs">
-                <span className="text-sm font-extrabold text-[#211c24]">Choose another date</span>
-                <input
-                  className={classNames(styles.field, "mt-2 w-full")}
-                  onChange={(event) => setDate(event.target.value)}
-                  type="date"
-                  value={date}
-                />
-              </label>
-              {(["Morning", "Afternoon", "Evening"] as const).map((group) => {
-                const groupSlots = slots.filter((slot) => {
-                  const hour = slotHour(slot, settings.timezoneIana);
-
-                  return group === "Morning"
-                    ? hour < 12
-                    : group === "Afternoon"
-                      ? hour >= 12 && hour < 17
-                      : hour >= 17;
-                });
-
-                if (groupSlots.length === 0) {
-                  return null;
-                }
-
-                return (
-                  <section className="mb-5" key={group}>
-                    <h2 className="mb-3 text-sm font-extrabold uppercase tracking-[0.08em] text-[#786d78]">
-                      {group}
-                    </h2>
-                    <div className="public-booking-time-grid grid gap-2 sm:grid-cols-3">
-                      {groupSlots.map((slot) => (
-                        <button
-                          className={classNames(
-                            "min-h-12 rounded-xl border px-3 text-sm font-extrabold",
-                            slot.startAt === selectedSlotStart
-                              ? "border-[#f26f3d] bg-[#f26f3d] text-white"
-                              : "border-[#f0e6df] bg-white text-[#211c24] hover:border-[#ffd6c4]",
-                          )}
-                          data-testid="public-booking-slot"
-                          aria-pressed={slot.startAt === selectedSlotStart}
-                          key={slot.startAt}
-                          onClick={() => setSelectedSlotStart(slot.startAt)}
-                          type="button"
-                        >
-                          {slot.label}
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                );
-              })}
-              {slotsLoading && slots.length === 0 ? (
-                <p className={classNames(styles.publicCard, "p-5 text-sm text-[#786d78]")}>
-                  Checking available times...
-                </p>
-              ) : null}
-              {!slotsLoading && slots.length === 0 ? (
-                <p className={classNames(styles.publicCard, "p-5 text-sm text-[#786d78]")}>
-                  No available times for this selection on this date.
-                  <span className="mt-2 block font-semibold text-[#211c24]">
-                    Please select the next day or another date above to check availability.
-                  </span>
-                </p>
-              ) : null}
-            </section>
-          ) : null}
-
-          {step === STEP_DETAILS ? (
-            <section>
-              <div className={styles.publicHeading}>
-                <p className={styles.eyebrow}>Your details</p>
-                <h1 className={styles.publicTitle}>Tell us who is coming</h1>
-                <p className={styles.publicCopy}>
-                  The salon will use this information for appointment updates.
-                </p>
-              </div>
-
-              {signedIn ? (
-                <div className="grid gap-5">
-                  <div className={classNames(styles.publicCard, "grid gap-4 p-5")}>
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fff0e8] text-base font-extrabold text-[#f26f3d]">
-                        {data.currentUser?.avatarUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            alt=""
-                            className="h-full w-full object-cover"
-                            src={data.currentUser.avatarUrl}
-                          />
-                        ) : (
-                          initialsFor(accountDisplayName)
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <h2 className="truncate text-lg font-extrabold text-[#211c24]">
-                          {accountDisplayName}
-                        </h2>
-                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-[#786d78]">
-                          {accountMaskedEmail ? <span>{accountMaskedEmail}</span> : null}
-                          {accountMaskedPhone ? <span>{accountMaskedPhone}</span> : null}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="rounded-xl bg-[#fff0e8] px-4 py-3 text-sm font-extrabold text-[#f26f3d]">
-                      This booking will be saved to your account.
-                    </p>
-                  </div>
-
-                  {signedInNeedsName || signedInNeedsPhone || signedInNeedsEmail ? (
-                    <div className={classNames(styles.publicCard, "grid gap-4 p-5 sm:grid-cols-2")}>
-                      <div className="sm:col-span-2">
-                        <h2 className="text-lg font-extrabold text-[#211c24]">
-                          Add missing booking info
-                        </h2>
-                        <p className="mt-1 text-sm leading-6 text-[#786d78]">
-                          These details are used for this appointment.
-                        </p>
-                      </div>
-                      {signedInNeedsName ? (
-                        <>
-                          <label className="grid gap-2">
-                            <span className="text-sm font-extrabold text-[#211c24]">
-                              First name
-                            </span>
-                            <input
-                              className={styles.field}
-                              id="public-booking-first-name"
-                              onChange={(event) =>
-                                setCustomer((current) => ({
-                                  ...current,
-                                  firstName: event.target.value,
-                                }))
-                              }
-                              type="text"
-                              value={customer.firstName}
-                            />
-                          </label>
-                          <label className="grid gap-2">
-                            <span className="text-sm font-extrabold text-[#211c24]">
-                              Last name
-                            </span>
-                            <input
-                              className={styles.field}
-                              id="public-booking-last-name"
-                              onChange={(event) =>
-                                setCustomer((current) => ({
-                                  ...current,
-                                  lastName: event.target.value,
-                                }))
-                              }
-                              type="text"
-                              value={customer.lastName}
-                            />
-                          </label>
-                        </>
-                      ) : null}
-                      {signedInNeedsPhone ? (
-                        <label className="grid gap-2">
-                          <span className="text-sm font-extrabold text-[#211c24]">
-                            Phone
-                          </span>
-                          <input
-                            className={styles.field}
-                            id="public-booking-phone"
-                            onChange={(event) =>
-                              setCustomer((current) => ({
-                                ...current,
-                                phone: event.target.value,
-                              }))
-                            }
-                            type="tel"
-                            value={customer.phone}
-                          />
-                        </label>
-                      ) : null}
-                      {signedInNeedsEmail ? (
-                        <label className="grid gap-2">
-                          <span className="text-sm font-extrabold text-[#211c24]">
-                            Email
-                          </span>
-                          <input
-                            className={styles.field}
-                            id="public-booking-email"
-                            onChange={(event) =>
-                              setCustomer((current) => ({
-                                ...current,
-                                email: event.target.value,
-                              }))
-                            }
-                            type="email"
-                            value={customer.email}
-                          />
-                        </label>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  <div className={classNames(styles.publicCard, "grid gap-4 p-5")}>
-                    <label className="grid gap-2">
-                      <span className="text-sm font-extrabold text-[#211c24]">
-                        Notes for the salon
-                      </span>
-                      <textarea
-                        className="min-h-20 rounded-xl border border-[#f0e6df] px-3 py-2 text-sm outline-none focus:border-[#e85f2b] focus:ring-4 focus:ring-[#f26f3d]/10"
-                        onChange={(event) =>
-                          setCustomer((current) => ({
-                            ...current,
-                            notes: event.target.value,
-                          }))
-                        }
-                        value={customer.notes}
-                      />
-                    </label>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid gap-5">
-                  <div className={classNames(styles.publicCard, "grid gap-4 p-5")}>
-                    <div>
-                      <h2 className="text-lg font-extrabold text-[#211c24]">
-                        How would you like to continue?
-                      </h2>
-                      <p className="mt-2 text-sm leading-6 text-[#786d78]">
-                        Already have an account? Sign in to save and manage your
-                        bookings.
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                    <a
-                      className={classNames(styles.primaryButton, "px-4")}
-                      href={signInHref}
-                      onClick={storeDraftForAuth}
-                    >
-                      Sign in
-                    </a>
-                    <a
-                      className={classNames(styles.secondaryButton, "px-4")}
-                      href={signupHref}
-                      onClick={storeDraftForAuth}
-                    >
-                      Create account
-                    </a>
-                    <button
-                      className="px-1 py-2 text-left text-sm font-extrabold text-[#f26f3d] sm:px-3"
-                      onClick={() => setIdentityMode("guest")}
-                      type="button"
-                    >
-                      Continue as guest
-                    </button>
-                  </div>
-                  </div>
-
-                  {identityMode === "guest" ? (
-                    <div
-                      className={classNames(
-                        styles.publicCard,
-                        "grid gap-4 p-5 sm:grid-cols-2",
-                      )}
-                    >
-                      <div className="sm:col-span-2">
-                        <h2 className="text-lg font-extrabold text-[#211c24]">
-                          Continue as guest
-                        </h2>
-                        <p className="mt-1 text-sm leading-6 text-[#786d78]">
-                          Enter contact details for this appointment only.
-                        </p>
-                      </div>
-                      {[
-                        ["First name", "firstName"],
-                        ["Last name", "lastName"],
-                        ["Phone", "phone"],
-                        ["Email", "email"],
-                      ].map(([label, key]) => (
-                        <label className="grid gap-2" key={key}>
-                          <span className="text-sm font-extrabold text-[#211c24]">
-                            {label}
-                          </span>
-                          <input
-                            className={styles.field}
-                            id={`public-booking-${key.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`}
-                            onChange={(event) =>
-                              setCustomer((current) => ({
-                                ...current,
-                                [key]: event.target.value,
-                              }))
-                            }
-                            type={
-                              key === "email"
-                                ? "email"
-                                : key === "phone"
-                                  ? "tel"
-                                  : "text"
-                            }
-                            value={customer[key as keyof CustomerDraft]}
-                          />
-                        </label>
-                      ))}
-                      <label className="grid gap-2 sm:col-span-2">
-                        <span className="text-sm font-extrabold text-[#211c24]">
-                          Notes for the salon
-                        </span>
-                        <textarea
-                          className="min-h-20 rounded-xl border border-[#f0e6df] px-3 py-2 text-sm outline-none focus:border-[#e85f2b] focus:ring-4 focus:ring-[#f26f3d]/10"
-                          onChange={(event) =>
-                            setCustomer((current) => ({
-                              ...current,
-                              notes: event.target.value,
-                            }))
-                          }
-                          value={customer.notes}
-                        />
-                      </label>
-                      <div className="sm:col-span-2">
-                        <button
-                          className="text-sm font-extrabold text-[#f26f3d]"
-                          onClick={() => setIdentityMode("choice")}
-                          type="button"
-                        >
-                          Back to account options
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              )}
-
-              <label className="hidden">
-                Company
-                <input
-                  autoComplete="off"
-                  onChange={(event) => setHoneypot(event.target.value)}
-                  tabIndex={-1}
-                  value={honeypot}
-                />
-              </label>
-            </section>
-          ) : null}
-
-          {step === STEP_REVIEW ? (
-            <section>
-              <div className={styles.publicHeading}>
-                <p className={styles.eyebrow}>Review</p>
-                <h1 className={styles.publicTitle}>Review your visit</h1>
-              </div>
-              <div className={classNames(styles.publicCard, "grid gap-4 p-5")}>
-                {activeInspiration ? (
-                  <BookingInspirationSummaryRow
-                    currentServiceName={currentBookingServiceName}
-                    inspiration={activeInspiration}
-                  />
-                ) : null}
-                <div className="public-booking-mobile-review text-sm" data-testid="public-booking-mobile-review">
-                  <p className="font-extrabold">{data.salon.name}</p>
-                  {summaryServices.map((service, index) => {
-                    const slotLine = selectedSlot?.lines[index];
-
-                    return (
-                      <div className="flex justify-between gap-4" key={`${service.id}-${index}`}>
-                        <span>{service.name}</span>
-                        <span className="shrink-0 font-extrabold">
-                          {money(slotLine?.unitPrice ?? service.basePrice)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                  <div className="flex justify-between gap-4 border-t border-[#f0e6df] pt-3">
-                    <span>Estimated duration</span>
-                    <span>{minutes(totalMinutes)}</span>
-                  </div>
-                  <div className="flex justify-between gap-4 font-extrabold">
-                    <span>Subtotal</span>
-                    <span>{money(total)}</span>
-                  </div>
-                </div>
-                <dl className="grid gap-3 text-sm">
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-[#786d78]">When</dt>
-                    <dd className="font-extrabold text-[#211c24]">
-                      {selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : "-"}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-[#786d78]">Professional</dt>
-                    <dd className="font-extrabold text-[#211c24]">{selectedStaffLabel}</dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-[#786d78]">Customer</dt>
-                    <dd className="font-extrabold text-[#211c24]">
-                      {signedIn
-                        ? accountDisplayName
-                        : `${customer.firstName} ${customer.lastName}`.trim()}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-[#786d78]">Confirmation</dt>
-                    <dd className="font-extrabold text-[#211c24]">
-                      {settings.confirmationMode === "instant_booking"
-                        ? "Instant booking"
-                        : "Request confirmation"}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            </section>
-          ) : null}
-
-          {step === STEP_DONE && result?.ok && result.bookingId ? (
-            <section className={classNames(styles.publicCard, "public-booking-confirmation")} data-testid="public-booking-confirmation">
-              <p className={styles.eyebrow}>{bookingConfirmed ? "Confirmed" : "Awaiting salon confirmation"}</p>
-              <h1 className={classNames(styles.publicTitle, "mt-3")} id="public-booking-confirmation-title" tabIndex={-1}>{confirmationTitle}</h1>
-              <p className="mt-3 text-sm leading-6 text-[#786d78]" role="status">
-                {bookingConfirmed
-                  ? "Your appointment is confirmed. You can review or manage it below."
-                  : "Your request has been sent to the salon. Your appointment is not confirmed yet. Check its status using Manage this booking."}
-              </p>
-              <div className="public-booking-confirmation-details">
-                <div>
-                  <h2 className="text-lg font-extrabold">{data.salon.name}</h2>
-                  {data.salon.addressLine1 || salonLocation ? (
-                    <p className="mt-1 text-sm text-[#786d78]">{[data.salon.addressLine1, salonLocation].filter(Boolean).join(", ")}</p>
-                  ) : null}
-                </div>
-                <dl className="grid gap-3 text-sm">
-                  <div className="public-booking-confirmation-row">
-                    <dt>When</dt>
-                    <dd className="font-extrabold">{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : "See booking details"}<span className="block text-xs font-normal text-[#786d78]">{settings.timezoneIana}</span></dd>
-                  </div>
-                  {summaryServices.map((service, index) => {
-                    const line = selectedSlot?.lines[index];
-                    return (
-                      <div className="public-booking-confirmation-row" key={`${service.id}-${index}`}>
-                        <dt>{service.name}<span className="block text-xs text-[#786d78]">{line?.staffName ?? selectedStaffLabel}</span></dt>
-                        <dd className="font-extrabold">{money(line?.unitPrice ?? service.basePrice)}</dd>
-                      </div>
-                    );
-                  })}
-                  <div className="public-booking-confirmation-row">
-                    <dt>Estimated duration</dt><dd>{minutes(totalMinutes)}</dd>
-                  </div>
-                  <div className="public-booking-confirmation-row font-extrabold">
-                    <dt>Subtotal</dt><dd>{money(total)}</dd>
-                  </div>
-                  <div className="public-booking-confirmation-row text-xs text-[#786d78]">
-                    <dt>Booking reference</dt><dd>{result.bookingId}</dd>
-                  </div>
-                </dl>
-              </div>
-              {activeInspiration ? (
-                <div className="mt-5">
-                  <BookingInspirationSummaryRow
-                    currentServiceName={currentBookingServiceName}
-                    inspiration={activeInspiration}
-                  />
-                </div>
-              ) : null}
-              {result?.ok && result.accountLinked ? (
-                <p className="mt-4 rounded-xl bg-[#fff0e8] px-4 py-3 text-sm font-extrabold text-[#f26f3d]">
-                  This booking is saved to your Reylumi account.
-                </p>
-              ) : null}
-              <div className="public-booking-confirmation-actions">
-                {manageHref ? (
-                  <a className={classNames(styles.primaryButton, "px-5")} href={manageHref}>
-                    Manage this booking
-                  </a>
-                ) : null}
-                {data.salon.phone ? (
-                  <a
-                    className={classNames(styles.secondaryButton, "px-5")}
-                    href={`tel:${data.salon.phone}`}
-                  >
-                    Contact salon
-                  </a>
-                ) : data.salon.email ? (
-                  <a
-                    className={classNames(styles.secondaryButton, "px-5")}
-                    href={`mailto:${data.salon.email}`}
-                  >
-                    Contact salon
-                  </a>
-                ) : null}
-              </div>
-              {!result.accountLinked ? (
-                <p className="mt-5 text-sm leading-6 text-[#786d78]">
-                  For faster future bookings, <a className="font-bold text-[#f26f3d] underline" href={signInHref}>sign in</a> or <a className="font-bold text-[#f26f3d] underline" href={signupHref}>create an account</a>.
-                </p>
-              ) : null}
-            </section>
-          ) : null}
-
-          {step < STEP_REVIEW ? (
-            <div className="public-booking-back-row mt-6 flex items-center justify-between gap-3">
-              <button
-                className={classNames(styles.secondaryButton, "px-5")}
-                disabled={step === STEP_SERVICES}
-                onClick={() => setStep((current) => Math.max(STEP_SERVICES, current - 1))}
-                type="button"
-              >
-                Back
-              </button>
-            </div>
-          ) : null}
-        </div>
-
-        {step < STEP_DONE ? (
-          <div className={styles.mobileActionBar}>
-            <div className="public-booking-mobile-action-summary" aria-live="polite">
-              <span>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : step === STEP_TIME ? "Choose an available time" : `${selectedServiceIds.length} service${selectedServiceIds.length === 1 ? "" : "s"} selected`}</span>
-              <strong>{money(total)} <small>· {minutes(totalMinutes)}</small></strong>
-            </div>
-            <button
-              className={classNames(styles.primaryButton, "w-full")}
-              data-testid="public-booking-mobile-primary-action"
-              disabled={primaryActionDisabled}
-              onClick={activatePrimaryAction}
-              type="button"
-            >
-              {primaryActionLabel}
-            </button>
+          {slotsLoading ? <p role="status" className={compact.muted}>Checking available times...</p> : slotError ? <p role="alert" className={compact.error}>Times could not be loaded. <button className={compact.textLink} type="button" onClick={() => setAvailabilityRetry(value => value + 1)}>Try again</button></p> : slots.length === 0 ? <p className={compact.muted}>No available times for this selection.</p> : <p className={compact.muted}>Available slots follow salon hours.</p>}
+          {selectedSlot ? <div className={compact.selectedTime}><div><strong>{formatTime(selectedSlot.startAt, settings.timezoneIana)}&ndash;{formatTime(selectedSlot.endAt, settings.timezoneIana)}</strong><p className={compact.muted}>{[...new Set(selectedSlot.lines.map(line => line.staffName))].join(" + ")}</p></div><span className={compact.muted}>{minutes(totalMinutes)} &middot; {slotHour(selectedSlot, settings.timezoneIana) < 12 ? "Morning" : "Afternoon"}</span></div> : null}
+        </section> : null}
+        {isReview ? <section><h1>Review &amp; confirm</h1>
+          <div className={compact.receipt}>
+            <div className={compact.receiptHeader}>{embedded ? <ReylumiIcon className="h-5 w-5 shrink-0" name="calendar" /> : null}<div><strong>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : "Choose a time"}{selectedSlot ? `\u2013${formatTime(selectedSlot.endAt, settings.timezoneIana)}` : ""}</strong><p className={compact.muted}>{data.salon.name} &middot; {salonLocation}</p></div></div>
+            {embedded && step < STEP_DONE ? <div className={compact.selectionTitle}><strong>Services</strong>{addMoreButton}</div> : null}
+            {summaryLines.map((line,index) => <div className={compact.receiptRow} key={line.key}><div><strong>{line.service.name}</strong><p className={compact.muted}>{selectedSlot?.lines[index]?.staffName ?? "Any available"} &middot; {minutes(selectedSlot?.lines[index]?.durationMinutes ?? line.service.durationMinutes)}{line.parentName ? ` \u00b7 Add-on for ${line.parentName}` : ""}</p></div><strong>{money(selectedSlot?.lines[index]?.unitPrice ?? line.service.basePrice)}</strong></div>)}
+          {activeInspiration ? <details className={compact.notes}><summary>{embedded ? "Inspiration (optional)" : "Booked look & notes"}</summary><div className="flex gap-3">{activeInspiration.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="h-20 w-20 rounded-lg object-cover" src={activeInspiration.imageUrl} alt="Booked look" />
+          ) : null}<div><strong>{activeInspiration.title}</strong><p className={compact.muted}>{activeInspiration.caption ?? activeInspiration.message}</p><button type="button" className={compact.textLink} onClick={removeInspiration}>Remove look</button></div></div></details> : null}
+            <div className={compact.total}><div>Estimated total<p className={compact.muted}>{minutes(totalMinutes)}</p></div><span>{money(total)}</span></div>
           </div>
-        ) : null}
-
-        <aside
-          className={classNames(styles.publicCard, styles.summary)}
-          data-testid="public-booking-summary"
-        >
-          <div className="flex items-start gap-3">
-            <div className={styles.summaryMedia}>
-              {data.salon.logoUrl || data.salon.coverUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  alt=""
-                  className="h-full w-full object-cover"
-                  src={data.salon.logoUrl ?? data.salon.coverUrl ?? ""}
-                />
-              ) : (
-                initialsFor(data.salon.name)
-              )}
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-xl font-extrabold text-[#211c24]">Your booking</h2>
-              <p className="mt-2 truncate font-extrabold text-[#211c24]">{data.salon.name}</p>
-              {salonLocation ? <p className="mt-1 text-sm text-[#786d78]">{salonLocation}</p> : null}
-            </div>
-          </div>
-          <div className={styles.summaryDivider} />
-          {activeInspiration && step !== STEP_DONE ? (
-            <>
-              <BookingInspirationSummaryRow
-                currentServiceName={currentBookingServiceName}
-                inspiration={activeInspiration}
-              />
-              <div className={styles.summaryDivider} />
-            </>
-          ) : null}
-          <div className="grid gap-4 text-sm">
-            {summaryServices.length === 0 ? (
-              <p className="text-[#786d78]">Choose a service to start.</p>
-            ) : (
-              summaryServices.map((service, index) => {
-                const slotLine = selectedSlot?.lines[index];
-
-                return (
-                  <div
-                    className="flex justify-between gap-4"
-                    key={`${service.id}-${index}`}
-                  >
-                    <span>
-                      <span className="block font-extrabold text-[#211c24]">
-                        {service.name}
-                      </span>
-                      <span className="text-xs text-[#786d78]">
-                        {minutes(slotLine?.durationMinutes ?? service.durationMinutes)}
-                      </span>
-                    </span>
-                    <span className="font-extrabold text-[#211c24]">
-                      {money(slotLine?.unitPrice ?? service.basePrice)}
-                    </span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-          {selectedSlot ? (
-            <p className="mt-5 rounded-xl bg-[#fff0e8] px-3 py-3 text-sm font-extrabold text-[#f26f3d]">
-              {formatDateTime(selectedSlot.startAt, settings.timezoneIana)}
-            </p>
-          ) : null}
-          <div className={styles.summaryDivider} />
-          <div className="grid gap-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-[#786d78]">Estimated duration</span>
-              <span className="font-extrabold text-[#211c24]">{minutes(totalMinutes)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#786d78]">Subtotal</span>
-              <span className="text-2xl font-extrabold text-[#211c24]">{money(total)}</span>
-            </div>
-            <p className="mt-4 text-xs leading-5 text-[#786d78]">
-              Lead time: {minutes(settings.minimumLeadTimeMinutes)}. Advance booking: {settings.maximumAdvanceWindowDays} days.
-            </p>
-          </div>
-          {step < STEP_DONE ? (
-            <button
-              className={classNames(styles.primaryButton, styles.summaryPrimary)}
-              data-testid="public-booking-primary-action"
-              disabled={primaryActionDisabled}
-              onClick={activatePrimaryAction}
-              type="button"
-            >
-              {primaryActionLabel}
-            </button>
-          ) : null}
-        </aside>
-        {detailsSheetOpen ? (
-          <div
-            className="fixed inset-0 z-50 grid place-items-end bg-black/45 p-0 sm:place-items-center sm:p-6"
-            data-testid="public-booking-details-sheet"
-            role="presentation"
-          >
-            <section
-              aria-labelledby="public-booking-details-sheet-title"
-              aria-modal="true"
-              className="max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:max-w-xl sm:rounded-2xl sm:p-6"
-              role="dialog"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className={styles.eyebrow}>
-                    {signedIn ? "Your details" : "Guest details"}
-                  </p>
-                  <h2
-                    className="mt-2 text-2xl font-extrabold text-[#211c24]"
-                    id="public-booking-details-sheet-title"
-                  >
-                    Enter your details
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-[#786d78]">
-                    We will keep your selected service, professional, time, and
-                    inspiration attached.
-                  </p>
-                </div>
-                <button
-                  aria-label="Close details"
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#f0e6df] text-lg font-extrabold text-[#f26f3d]"
-                  onClick={() => setDetailsSheetOpen(false)}
-                  type="button"
-                >
-                  x
-                </button>
-              </div>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                {(!signedIn || signedInNeedsName) ? (
-                  <>
-                    <label className="grid gap-2">
-                      <span className="text-sm font-extrabold text-[#211c24]">
-                        First name
-                      </span>
-                      <input
-                        aria-invalid={Boolean(fieldErrors.firstName)}
-                        className={styles.field}
-                        data-testid="public-booking-guest-first-name"
-                        onChange={(event) =>
-                          setCustomerField("firstName", event.target.value)
-                        }
-                        type="text"
-                        value={customer.firstName}
-                      />
-                      {fieldErrors.firstName ? (
-                        <span
-                          className="text-xs font-semibold text-red-700"
-                          data-testid="public-booking-field-error"
-                        >
-                          {fieldErrors.firstName}
-                        </span>
-                      ) : null}
-                    </label>
-                    <label className="grid gap-2">
-                      <span className="text-sm font-extrabold text-[#211c24]">
-                        Last name
-                      </span>
-                      <input
-                        aria-invalid={Boolean(fieldErrors.lastName)}
-                        className={styles.field}
-                        data-testid="public-booking-guest-last-name"
-                        onChange={(event) =>
-                          setCustomerField("lastName", event.target.value)
-                        }
-                        type="text"
-                        value={customer.lastName}
-                      />
-                      {fieldErrors.lastName ? (
-                        <span
-                          className="text-xs font-semibold text-red-700"
-                          data-testid="public-booking-field-error"
-                        >
-                          {fieldErrors.lastName}
-                        </span>
-                      ) : null}
-                    </label>
-                  </>
-                ) : null}
-                {(!signedIn || signedInNeedsPhone) ? (
-                  <label className="grid gap-2">
-                    <span className="text-sm font-extrabold text-[#211c24]">
-                      Phone
-                    </span>
-                    <input
-                      aria-invalid={Boolean(fieldErrors.phone)}
-                      className={styles.field}
-                      data-testid="public-booking-guest-phone"
-                      onChange={(event) =>
-                        setCustomerField("phone", event.target.value)
-                      }
-                      type="tel"
-                      value={customer.phone}
-                    />
-                    {fieldErrors.phone ? (
-                      <span
-                        className="text-xs font-semibold text-red-700"
-                        data-testid="public-booking-field-error"
-                      >
-                        {fieldErrors.phone}
-                      </span>
-                    ) : null}
-                  </label>
-                ) : null}
-                {(!signedIn || signedInNeedsEmail) ? (
-                  <label className="grid gap-2">
-                    <span className="text-sm font-extrabold text-[#211c24]">
-                      Email
-                    </span>
-                    <input
-                      aria-invalid={Boolean(fieldErrors.email)}
-                      className={styles.field}
-                      data-testid="public-booking-guest-email"
-                      onChange={(event) =>
-                        setCustomerField("email", event.target.value)
-                      }
-                      type="email"
-                      value={customer.email}
-                    />
-                    {fieldErrors.email ? (
-                      <span
-                        className="text-xs font-semibold text-red-700"
-                        data-testid="public-booking-field-error"
-                      >
-                        {fieldErrors.email}
-                      </span>
-                    ) : null}
-                  </label>
-                ) : null}
-                <label className="grid gap-2 sm:col-span-2">
-                  <span className="text-sm font-extrabold text-[#211c24]">
-                    Notes for the salon
-                  </span>
-                  <textarea
-                    className="min-h-20 rounded-xl border border-[#f0e6df] px-3 py-2 text-sm outline-none focus:border-[#e85f2b] focus:ring-4 focus:ring-[#f26f3d]/10"
-                    data-testid="public-booking-guest-notes"
-                    onChange={(event) =>
-                      setCustomerField("notes", event.target.value)
-                    }
-                    value={customer.notes}
-                  />
-                </label>
-              </div>
-              {error ? (
-                <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-                  {error}
-                </p>
-              ) : null}
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-                <button
-                  className={classNames(styles.secondaryButton, "px-5")}
-                  onClick={() => setDetailsSheetOpen(false)}
-                  type="button"
-                >
-                  Back to booking
-                </button>
-                <button
-                  className={classNames(styles.primaryButton, "px-5")}
-                  disabled={isPending}
-                  onClick={continueFromDetailsSheet}
-                  type="button"
-                >
-                  {detailsSheetIntent === "submit"
-                    ? settings.confirmationMode === "instant_booking"
-                      ? "Confirm booking"
-                      : "Request appointment"
-                    : "Continue to review"}
-                </button>
-              </div>
-            </section>
-          </div>
-        ) : null}
-      </section>
-    </main>
-  );
+          {signedIn && embedded ? <div className={compact.auth}>{data.currentUser?.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className={compact.avatar} src={data.currentUser.avatarUrl} alt="" />) : <span className={compact.avatar}>{initialsFor(accountDisplayName)}</span>}<span className="flex-1"><strong>{accountDisplayName}</strong><small>Contact details saved</small></span><button type="button" className={compact.textLink} onClick={() => setEditDetails(value => !value)}>{editDetails ? "Done" : "Edit"}</button></div> : signedIn ? <div className={compact.auth}><span><strong>{accountDisplayName}</strong><span className="block text-xs">{[accountMaskedEmail, accountMaskedPhone].filter(Boolean).join(" \u00b7 ")}</span></span><span>Saved to your account</span></div> : <a className={compact.auth} href={signInHref} onClick={storeDraftForAuth}><strong>Sign in to autofill</strong><span>&rsaquo;</span></a>}
+          {!signedIn && !settings.guestBookingEnabled ? <p className={compact.muted}>Sign in to book this salon. <a className={compact.textLink} href={signupHref} onClick={storeDraftForAuth}>Create an account</a></p> : <>
+            {step !== STEP_DONE && (editDetails || !signedIn || signedInNeedsName || signedInNeedsPhone || signedInNeedsEmail) ? <div className="mt-3 flex justify-between text-xs"><strong>Your details</strong><span className={compact.muted}>Required *</span></div> : null}
+            <div className={compact.fields}>{(["firstName", "lastName", "phone", "email"] as const).filter(key => editDetails || !signedIn || (key === "firstName" || key === "lastName" ? signedInNeedsName : key === "phone" ? signedInNeedsPhone : signedInNeedsEmail)).map(key => <label key={key}><span>{{ firstName: "First name", lastName: "Last name", phone: "Phone", email: "Email" }[key]} <span className="text-red-600">*</span></span><input id={`public-booking-${key}`} className={compact.field} autoComplete={{firstName:"given-name",lastName:"family-name",phone:"tel",email:"email"}[key]} type={key === "phone" ? "tel" : key === "email" ? "email" : "text"} value={customer[key]} required aria-invalid={Boolean(fieldErrors[key])} aria-describedby={fieldErrors[key] ? `error-${key}` : undefined} onChange={event => { setCustomerField(key,event.target.value); if (!signedIn) setIdentityMode("guest"); }} />{fieldErrors[key] ? <span id={`error-${key}`} className={compact.error}>{fieldErrors[key]}</span> : null}</label>)}</div>
+            <details className={compact.notes}><summary>Add a note (optional)</summary><textarea className={compact.field} aria-label="Appointment note" value={customer.notes} onChange={event => setCustomerField("notes", event.target.value)} /></details>
+          </>}
+          <input aria-hidden="true" tabIndex={-1} className="hidden" autoComplete="off" value={honeypot} onChange={event => setHoneypot(event.target.value)} />
+          <p className={`${compact.muted} mt-3`}>{embedded ? "No online payment required." : "Estimate only. The salon records the final amount."}</p>
+        </section> : null}
+        {step === STEP_DONE && !embedded && result?.ok ? <section><h1 id="public-booking-confirmation-title" tabIndex={-1}>{confirmationTitle}</h1><p className={compact.muted}>{result.message}</p><div className={`${compact.receipt} mt-4`}><strong>{data.salon.name}</strong><p>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : ""}</p><p className={compact.muted}>{summaryServices.map(service => service.name).join(" / ")}</p></div>{embedded && result.accountLinked ? <a className={`${compact.primary} mt-4`} href={`/my-bookings?details=${encodeURIComponent(result.bookingId ?? "")}`}>View booking</a> : manageHref ? <a className={`${compact.primary} mt-4`} href={manageHref}>Manage booking</a> : null}{embedded ? <button type="button" className={compact.textLink} onClick={onClose}>Continue exploring</button> : null}{!result.accountLinked ? <p className={`${compact.muted} mt-2`}>Save your secure manage link to change this appointment.</p> : null}</section> : null}
+      </div>
+      {embedded && step === STEP_DONE && result?.ok ? <div className={compact.success} role="status"><ReylumiIcon name={bookingConfirmed ? "check" : "calendar"} className="h-4 w-4 shrink-0" /><span>{bookingConfirmed ? "Your appointment is confirmed." : "Awaiting salon confirmation."}</span><a href={result.accountLinked ? `/my-bookings?details=${encodeURIComponent(result.bookingId ?? "")}` : manageHref ?? "/my-bookings"}>View booking</a></div> : null}
+      {step < STEP_DONE ? <footer className={compact.footer}><div className={compact.footerMeta} hidden={embedded && (step === STEP_TIME || step === STEP_REVIEW)}><div className={compact.footerSelection}><div className={compact.selectionTitle}><strong>{selectedServiceNames || "Choose services"}</strong>{step > STEP_SERVICES ? addMoreButton : null}</div><small>{minutes(totalMinutes)}</small></div><strong>{money(total)} est.</strong></div><button className={compact.primary} data-testid="public-booking-next" type="button" disabled={primaryActionDisabled} onClick={activatePrimaryAction}>{primaryActionLabel}</button></footer> : null}
+      {optionsServiceId && optionsParent ? <dialog className={compact.dialog} ref={optionsDialog} aria-labelledby="service-options-title" onClose={() => setOptionsServiceId(null)} onClick={event => { if (event.target === event.currentTarget) optionsDialog.current?.close(); }}><div className={compact.dialogTitle}><h2 id="service-options-title">{optionsParent.name} options</h2><button type="button" className={compact.icon} aria-label="Close service options" onClick={() => optionsDialog.current?.close()}>&times;</button></div>
+        {addOnOptions.filter(option => option.parent.id === optionsServiceId).map(({parent,service}) => {
+          const selection = {parentServiceId:parent.id, serviceId:service.id};
+          const checked = selectedAddOnSelections.some(item => addOnKey(item) === addOnKey(selection));
+          return <div className={compact.service} key={service.id}><label><span><strong>{service.name}</strong><small className={compact.muted}>Adds {minutes(service.durationMinutes)}</small></span><span>{money(service.basePrice)}</span><input type="checkbox" className={compact.check} checked={checked} disabled={!checked && selectedAddOnSelections.length >= 6} aria-label={service.name} onChange={event => { const add = event.target.checked; setSelectedSlotStart(""); setSelectedAddOnSelections(current => add ? [...current.filter(item => addOnKey(item) !== addOnKey(selection)),selection] : current.filter(item => addOnKey(item) !== addOnKey(selection))); }} /></label></div>;
+        })}{selectedAddOnSelections.length >= 6 ? <p className={compact.muted}>Up to 6 extras per booking.</p> : null}<button type="button" className={compact.primary} onClick={() => optionsDialog.current?.close()}>Done</button>
+      </dialog> : null}
+    </section>
+  </main>;
 }

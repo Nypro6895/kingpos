@@ -1,4 +1,5 @@
 "use client";
+import { usePathname } from "next/navigation";
 import { subscribePosChanges } from "@/lib/pos-workspace-sync";
 import { usePortableWorkspaceState } from "../portable-workspace-state";
 import { useEffect, useState } from "react";
@@ -423,6 +424,8 @@ function PortableDailyWorkLog({
 export function PortableTicketClient({ initialData, searchQuery, error, followToday = true }: {
   initialData: Awaited<ReturnType<typeof getPortableTicketData>>; searchQuery: string; error?: string; followToday?: boolean;
 }) {
+  const pathname=usePathname();
+  const panelVisible=pathname==="/pos/portable/ticket";
   const workspace=usePortableWorkspaceState();
   const scope=workspace?.scope;
   const [data, setData] = useState(initialData);
@@ -430,7 +433,7 @@ export function PortableTicketClient({ initialData, searchQuery, error, followTo
   useEffect(() => {
     let active = true, busy = false, again = false;
     const refresh = async () => {
-      if (!navigator.onLine || !active) return;
+      if (!navigator.onLine || !active || !panelVisible || document.visibilityState!=="visible") return;
       if (busy) { again = true; return; }
       busy = true;
       try {
@@ -443,15 +446,16 @@ export function PortableTicketClient({ initialData, searchQuery, error, followTo
       finally { busy = false; if (again && active) { again = false; void refresh(); } }
     };
     const unsubscribe=scope?subscribePosChanges(scope.split(":")[0],change=>{if(change.resource==="tickets")void refresh();}):()=>{};
-    const timer = setInterval(() => void refresh(), 30000);
+
     const onChange = () => { void refresh(); };
     window.addEventListener(PORTABLE_OPERATIONS_CHANGED, onChange);
     window.addEventListener('online', onChange);
     window.addEventListener('focus', onChange);
     window.addEventListener('pageshow', onChange);
+    document.addEventListener("visibilitychange",onChange);
     void refresh();
-    return () => { active = false; unsubscribe(); clearInterval(timer); window.removeEventListener(PORTABLE_OPERATIONS_CHANGED, onChange); window.removeEventListener('online', onChange); window.removeEventListener('focus', onChange); window.removeEventListener('pageshow', onChange); };
-  }, [selectedDate, scope]);
+    return () => { active = false; unsubscribe(); document.removeEventListener("visibilitychange",onChange); window.removeEventListener(PORTABLE_OPERATIONS_CHANGED, onChange); window.removeEventListener('online', onChange); window.removeEventListener('focus', onChange); window.removeEventListener('pageshow', onChange); };
+  }, [selectedDate, scope, panelVisible]);
   const selectedDateLabel = formatLocalDateHeader(data.date, data.timezone);
   const selectedDateCompactLabel = formatLocalDateCompact(
     data.date,

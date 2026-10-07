@@ -1,6 +1,7 @@
 "use server";
 
 import { toggleAccountBeautyProfileFollow } from "@/lib/account-social";
+import type { ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
 import { getExploreFeedPage } from "@/lib/explore-feed";
 import { getExploreInspirationPage } from "@/lib/explore-inspiration";
 import { getExploreNearYouSalons } from "@/lib/explore-home";
@@ -42,8 +43,8 @@ export async function loadExploreInspirationAction(
   return getExploreInspirationPage({ cursor });
 }
 
-export async function loadExploreFeedAction(cursor: ExploreFeedCursor | null) {
-  return getExploreFeedPage({ cursor });
+export async function loadExploreFeedAction(cursor: ExploreFeedCursor | null, discovery?: ExploreFeedDiscoveryOptions) {
+  return getExploreFeedPage({ cursor, discovery });
 }
 
 export async function toggleBeautyProfileFollowAction(

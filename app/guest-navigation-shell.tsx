@@ -1,4 +1,6 @@
 "use client";
+import { ExploreAdSlot } from "@/components/explore-advertising";
+import advertisingStyles from "./guest-navigation-shell.module.css";
 
 import { LegalFooter } from "@/components/legal-footer";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
@@ -157,7 +159,8 @@ export function GuestNavigationShell({ children }: { children: ReactNode }) {
           ) : null}
         </div>
       </header>
-      {children}
+      {isExploreBrowsePage ? <div className={advertisingStyles.sidebar}><nav className="mb-3 grid gap-2 rounded-2xl bg-orange-50 p-4 text-sm font-semibold"><Link href="/explore">Explore</Link><Link href="/explore/favorites">Your favorites ♡</Link></nav><ExploreAdSlot desktop /></div> : null}
+      <div className={isExploreBrowsePage ? advertisingStyles.content : undefined}>{children}</div>
       <LegalFooter />
     </>
   );

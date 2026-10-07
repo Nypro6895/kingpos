@@ -46,6 +46,8 @@ begin
    jsonb_build_object('staffId',staff2,'serviceId',service2,'serviceLabel','Fixture service B','total',30,'amountParts',jsonb_build_array(30))));
  result:=submit_pos_portable_receipt(key,signature,payload,get_salon_business_date(salon));
  if not exists(select 1 from bookings where id=(first->>'id')::uuid and pos_ticket_id=(result->>'ticketId')::uuid) then raise exception 'Ticket is not linked to appointment'; end if;
+ if (select status from bookings where id=(first->>'id')::uuid)<>'completed' then raise exception 'Closed booking ticket did not complete appointment'; end if;
+ if (select count(*) from booking_lines where booking_id=(first->>'id')::uuid and line_status='completed')<>2 then raise exception 'Booking services were not completed'; end if;
  if (select count(*) from pos_ticket_items where pos_ticket_id=(result->>'ticketId')::uuid and source_booking_id=(first->>'id')::uuid)<>2 then raise exception 'Ticket services lost source'; end if;
  rejected:=false;
  begin perform submit_pos_portable_receipt(key,signature,payload,get_salon_business_date(salon));

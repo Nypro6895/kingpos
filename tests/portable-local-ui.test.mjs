@@ -38,7 +38,7 @@ test("browser: mounted tabs, offline edits, durable retry, reload and local disp
       }}/><p data-status>{sync.status}</p><span data-ready>{String(sync.ready)}</span></>;
     }
     function App(){return <><nav><a href="/pos/portable">POS</a> <a href="/pos/portable/book">Book</a></nav>
-      <PortablePanels panels={{'/pos/portable':<Desk/>,'/pos/portable/book':<input aria-label="Booking note"/>}}>
+      <PortablePanels allowedPaths={['/pos/portable','/pos/portable/book']} panels={{'/pos/portable':<Desk/>,'/pos/portable/book':<input aria-label="Booking note"/>}}>
         <p>Uncached server route</p>
       </PortablePanels></>}
     createRoot(document.getElementById('root')).render(<App/>);
@@ -47,6 +47,8 @@ test("browser: mounted tabs, offline edits, durable retry, reload and local disp
     format: "iife", platform: "browser", jsx: "automatic", nodePaths: [join(repo, "node_modules")],
     define: { "process.env.NODE_ENV": '"production"' },
     plugins: [{ name: "navigation-fixture", setup(b) {
+      b.onResolve({ filter: /load-panel$/ }, () => ({ path: "load-panel", namespace: "panel-stub" }));
+      b.onLoad({filter: /.*/,namespace:"panel-stub"},()=>({contents:"export async function loadPortablePanel(){throw Error('An unprepared fixture panel was requested');}"}));
       b.onResolve({ filter: /^next\/navigation$/ }, () => ({ path: "navigation", namespace: "fixture" }));
       b.onLoad({ filter: /.*/, namespace: "fixture" }, () => ({ resolveDir: repo, contents: `
         import {useSyncExternalStore} from 'react';

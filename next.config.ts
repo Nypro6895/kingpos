@@ -40,6 +40,7 @@ function supabaseImagePatterns(): NonNullable<
 
 function deploymentIdentifier(): string | undefined {
   return [
+    process.env.VERCEL_DEPLOYMENT_ID,
     process.env.NEXT_DEPLOYMENT_ID,
     process.env.DEPLOYMENT_VERSION,
     process.env.VERCEL_GIT_COMMIT_SHA,
@@ -75,6 +76,14 @@ if (deploymentId) {
 }
 
 const nextConfig: NextConfig = {
+  // Allow an isolated production check while the development tunnel is running.
+  distDir: process.env.KINGPOS_BUILD_OUTPUT || ".next",
+  experimental: {
+    serverActions: { bodySizeLimit: "16mb" },
+    // Use the build's unique ID consistently; serverless runtime does not rerun
+    // this config to populate the NEXT_DEPLOYMENT_ID environment variable.
+    runtimeServerDeploymentId: false,
+  },
   allowedDevOrigins: ["*.trycloudflare.com"],
   images: {
     remotePatterns: supabaseImagePatterns(),

@@ -4,6 +4,8 @@ export type PosStaffBroadcastPayload = {
   changedAt: string;
   salonId: string;
   source:
+    | "catalog"
+    | "settings"
     | "attendance"
     | "booking"
     | "pos"

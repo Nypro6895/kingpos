@@ -1,7 +1,5 @@
-import { AccountDeletionPanel } from "@/app/account/account-deletion-panel";
+import { DeferredDeletionSection } from "@/app/settings/deferred-personal-section";
 import { AccountProfileEditor } from "@/app/account/account-profile-editor";
-import { analyzeAccountDeletionImpact } from "@/lib/account-deletion";
-import type { AccountDeletionImpact } from "@/lib/account-deletion";
 import { getCurrentPlatformAdminContext } from "@/lib/platform-admin/auth";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import Link from "next/link";
@@ -48,18 +46,6 @@ export default async function AccountPage() {
   }
 
   const platformAdminContext = await getCurrentPlatformAdminContext();
-  let deletionImpact: AccountDeletionImpact | null = null;
-  let deletionImpactError: string | undefined;
-
-  try {
-    deletionImpact = await analyzeAccountDeletionImpact();
-  } catch (error) {
-    deletionImpactError =
-      error instanceof Error
-        ? error.message
-        : "Account deletion status could not be loaded.";
-  }
-
   const accountStatusLabel =
     user.status === "pending_deletion" ? "Pending deletion" : "Active";
   const accountStatusClass =
@@ -113,7 +99,7 @@ export default async function AccountPage() {
         </aside>
 
         <div className="grid gap-5">
-          <header className="rounded-lg border border-border-subtle bg-white px-5 py-4">
+          <header className="content-surface border-border-subtle bg-white px-5 py-4 rounded-none border-y shadow-none">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase text-zinc-500">
@@ -143,10 +129,7 @@ export default async function AccountPage() {
             key={user.updated_at}
             user={user}
           />
-          <AccountDeletionPanel
-            impact={deletionImpact}
-            loadError={deletionImpactError}
-          />
+          <DeferredDeletionSection initialOpen={user.status === "pending_deletion"}/>
         </div>
       </div>
     </main>

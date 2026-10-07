@@ -12,6 +12,7 @@ const searchService = read("lib/explore-search.ts");
 const salonLogoService = read("lib/explore-salon-logos.ts");
 const decisionSignalsService = read("lib/explore-decision-signals.ts");
 const trustComponent = read("components/reylumi-trust.tsx");
+const trustLine = read("components/salon-trust-line.tsx");
 const contentBookingService = read("lib/content-booking.ts");
 const beautyPostBookingCountsService = read("lib/beauty-post-booking-counts.ts");
 const discoveryRail = read("app/explore/customer-explore-utility-panel.tsx");
@@ -105,7 +106,7 @@ test("explore feed service unifies Salon and Personal sources with one opaque cu
   assert.match(feedService, /sourceState\.personal/);
   assert.match(feedService, /sourceState\.recommendation/);
   assert.match(feedService, /buildNextCursor/);
-  assert.doesNotMatch(feedService, /\boffset\b/i);
+  assert.match(feedService, /searchExploreSalons/); // Organic cursors remain keyset-based; directory search is paginated.
 });
 
 test("explore feed cursor records exhausted sources so empty sources are not restarted", () => {
@@ -124,13 +125,13 @@ test("explore feed cursor records exhausted sources so empty sources are not res
 });
 
 test("explore feed keeps empty source responses distinct from source errors", () => {
-  assert.match(feedService, /if \(salonPage\.error \|\| personalPage\.error\)/);
+  assert.match(feedService, /if \(salonPage\.error \|\| personalPage\.error \|\| recommendationPage\.error\)/);
   assert.match(feedService, /emptyInspirationSourcePage\(\): ExploreInspirationPage/);
   assert.match(feedService, /emptyPersonalSourcePage\(\): ExplorePersonalPostPage/);
   assert.match(feedService, /emptyRecommendationSourcePage\(\): RecommendationSourcePage/);
   assert.match(feedService, /items:\s*\[\]/);
   assert.match(feedService, /error:\s*null/);
-  assert.match(feedService, /selected\.length > 0/);
+  assert.match(feedService, /const hasMore = hasUnconsumedCandidates \|\| hasIncompleteSource/);
 });
 
 test("explore inspiration keeps carousel diversification out of deterministic feed calls", () => {
@@ -342,7 +343,7 @@ test("Explore optional data fallbacks do not use dev-overlay console errors", ()
 });
 
 test("Explore DTO restore keeps fresh Beauty booking presentation over stale session copies", () => {
-  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*11/);
+  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*13/);
   assert.match(feedClient, /function mergeStoredFeedItems/);
   assert.match(feedClient, /function readStoredBookingMeta/);
   assert.match(feedClient, /const freshByKey = new Map/);
@@ -389,13 +390,13 @@ test("explore page and action expose a reusable server feed contract", () => {
   assert.match(types, /BeautyPostBookingPresentation/);
   assert.match(types, /export type ExploreFeedBooking = BeautyPostBookingPresentation/);
   assert.match(actions, /export async function loadExploreFeedAction/);
-  assert.match(actions, /return getExploreFeedPage\(\{ cursor \}\)/);
-  assert.match(page, /getExploreFeedPage\(\{ homeContent \}\)/);
+  assert.match(actions, /return getExploreFeedPage\(\{ cursor, discovery \}\)/);
+  assert.match(page, /getExploreFeedPage\(\{\s*homeContent,\s*discovery:/);
   assert.match(page, /buildExploreDiscoveryContent/);
   assert.match(page, /enrichExploreShowcaseContent/);
   assert.match(page, /discoveryContent=\{showcaseContent\.discoveryContent\}/);
   assert.match(page, /initialFeed=\{showcaseContent\.initialFeed\}/);
-  assert.match(client, /<ExploreFeed[\s\S]*initialPage=\{initialFeed\}/);
+  assert.match(client, /<ExploreDiscoveryFeed[\s\S]*initialPage=\{[^}]*initialFeed/);
 });
 
 test("explore feed ranking and diversity live in the server feed layer", () => {
@@ -441,7 +442,7 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.match(feedClient, /useLayoutEffect/);
   assert.match(feedClient, /appendUniqueFeedItems/);
   assert.match(feedClient, /return item\.feedKey/);
-  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*11/);
+  assert.match(feedClient, /EXPLORE_FEED_SESSION_VERSION\s*=\s*13/);
   assert.match(feedClient, /data-source-type=\{item\.sourceType\}/);
   assert.match(feedClient, /data-feed-hero=\{featured \? "true" : undefined\}/);
   assert.match(feedClient, /BeforeAfterMedia/);
@@ -453,11 +454,11 @@ test("explore feed client guards infinite scroll requests and restores route sta
   assert.match(feedClient, /FeedSalonLogo/);
   assert.match(feedClient, /item\.author\.kind === "salon" \? item\.salon\?\.logoImageUrl : null/);
   assert.match(feedClient, /logoImageUrl/);
-  assert.match(feedClient, /item\.sourceType === "personal" && Boolean\(salon\)/);
-  assert.match(feedClient, /LumiTrustPopover/);
-  assert.match(feedClient, /presentation="spark"/);
-  assert.match(feedClient, /entityName=\{item\.salon\.name\}/);
-  assert.match(feedClient, /actionHref=\{trustHref\}/);
+  assert.match(feedClient, /item\.sourceType\s*===\s*[\x27"]personal[\x27"]\s*&&\s*Boolean\(salon\)/);
+  assert.match(feedClient, /SalonTrustLine/);
+  assert.match(trustLine, /presentation="spark"/);
+  assert.match(feedClient, /signals=\{item\.salon\.trust\}/);
+  assert.match(trustLine, /#lumi-trust/);
   assert.match(feedClient, /authorHref/);
   assert.match(feedClient, /\/explore\/beauty\/\$\{encodeURIComponent\(item\.personal\.profileId\)\}/);
   assert.match(feedClient, /bookedCount > 0/);
@@ -504,7 +505,7 @@ test("LUMI trust UI is shared, interactive, and keeps signals separated", () => 
   assert.match(trustComponent, /export function LumiTrustSpark/);
   assert.match(trustComponent, /viewBox="0 0 20 20"/);
   assert.match(trustComponent, /data-lumi-trust-level=\{level\}/);
-  assert.match(trustComponent, /LUMI_TRUST_FILL_RATIO/);
+  assert.match(trustComponent, /LUMI_TRUST_MATERIAL/);
   assert.match(trustComponent, /presentation\?: "label" \| "spark"/);
   assert.match(trustComponent, /actionHref\?: string \| null/);
   assert.match(trustComponent, /actionLabel = "View trust details"/);
@@ -512,9 +513,9 @@ test("LUMI trust UI is shared, interactive, and keeps signals separated", () => 
   assert.match(trustComponent, /entityName\?: string \| null/);
   assert.doesNotMatch(trustComponent, /Verification, stars, ranking, and linked state are separate signals/);
   assert.doesNotMatch(trustComponent, /Ranking appears only when/);
-  assert.match(client, /LumiTrustPopover/);
-  assert.match(feedClient, /LumiTrustPopover/);
-  assert.match(client, /presentation="spark"/);
+  assert.match(client, /SalonTrustLine/);
+  assert.match(feedClient, /SalonTrustLine/);
+  assert.match(trustLine, /presentation="spark"/);
   assert.doesNotMatch(client, /cardTrustLabel/);
   assert.doesNotMatch(client, /cardTrustAriaLabel/);
 });
@@ -554,15 +555,15 @@ test("Explore mockup flow avoids duplicate chrome and keeps mobile overlays clea
   assert.match(showcaseContent, /function isWeakAvailabilityLabel/);
   assert.match(showcaseContent, /function mergeShowcasePresentation/);
   assert.match(showcaseContent, /nextAvailabilityLabel: shouldUseSampleAvailability/);
-  assert.match(client, /function salonRatingLine/);
+  assert.match(client, /SalonTrustLine/);
   assert.match(client, /function salonAvailabilityLine/);
   assert.match(showcaseLookRoute, /ShowcaseBookIntent/);
   assert.match(showcaseLookRoute, /More looks like this/);
   assert.match(showcaseLookRoute, /aspect-\[4\/3\] sm:aspect-\[16\/10\] lg:aspect-\[4\/3\]/);
   assert.match(showcaseLookRoute, /order-2 grid gap-4/);
   assert.match(showcaseLookRoute, /grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5/);
-  assert.match(showcaseBookIntent, /<AuthIntentPrompt/);
-  assert.match(showcaseBookIntent, /guestHref=\{bookingHref\}/);
+  assert.match(showcaseBookIntent, /openQuickBooking\(bookingHref\)/);
+  assert.match(read("app/(app)/layout.tsx"), /<QuickBooking\s*\/>/);
   assert.match(feedClient, /sm:group-hover\/action:block sm:group-focus-within\/action:block/);
   assert.match(savePostButton, /showTooltip\?: boolean/);
   assert.match(savePostButton, /showTooltip = false/);
@@ -578,7 +579,7 @@ test("explore default home renders one centered feed and moves legacy sections b
   );
 
   assert.match(homeBlock, /max-w-\[40rem\]/);
-  assert.match(homeBlock, /<ExploreFeed[\s\S]*initialPage=\{initialFeed\}/);
+  assert.match(homeBlock, /<ExploreDiscoveryFeed[\s\S]*initialPage=\{[^}]*initialFeed/);
   assert.doesNotMatch(homeBlock, /TopRatedSalonsSection/);
   assert.doesNotMatch(homeBlock, /TrendingDesignsSection/);
   assert.doesNotMatch(homeBlock, /RecommendedForYouSection/);

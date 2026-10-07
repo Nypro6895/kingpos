@@ -1,15 +1,15 @@
-import {
-  confirmStaffBookingAction,
-  completeStaffAppointmentLineAction,
-  startStaffAppointmentLineAction,
-} from "@/app/staff/appointments/actions";
+import { StaffScheduleInteractions, StaffAppointmentStatus } from "@/app/staff/appointments/staff-schedule-interactions";
+import { StaffScheduleCalendar } from "@/app/staff/appointments/staff-schedule-calendar";
+import { StaffConfirmBookingButton } from "@/app/staff/appointments/staff-confirm-booking-button";
+import { bookingStatusLabel } from "@/lib/booking-no-show";
+import { StaffNoShowButton } from "@/app/staff/appointments/staff-no-show-button";
+import { StaffCreateAppointment } from "@/app/staff/appointments/staff-create-appointment";
 import { StaffBookingSettings } from "@/app/staff/appointments/staff-booking-settings-client";
 import {
   getCurrentStaffAppointments,
   type StaffAppointmentLine,
   type StaffAppointmentsData,
   type StaffAppointmentsSearchParams,
-  type StaffAppointmentView,
 } from "@/lib/staff-appointments";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -17,12 +17,6 @@ import type { CSSProperties } from "react";
 
 type StaffAppointmentsPageProps = {
   searchParams?: Promise<StaffAppointmentsSearchParams>;
-};
-
-const VIEW_LABELS: Record<StaffAppointmentView, string> = {
-  day: "Day",
-  list: "List",
-  week: "Week",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -92,18 +86,6 @@ function formatDateTime(value: string, timeZone: string) {
   }).format(new Date(value));
 }
 
-function formatToolbarDate(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return "Today";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "long",
-    timeZone: "UTC",
-    weekday: "long",
-  }).format(new Date(`${value}T12:00:00Z`));
-}
 
 function todayInTimeZone(timeZone: string) {
   return dateParts(new Date().toISOString(), timeZone).date;
@@ -154,7 +136,7 @@ function statusTone(status: string) {
   }
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, kind }: {status:string; kind?:import("@/lib/booking-no-show").NoShowKind}) {
   return (
     <span
       className={classNames(
@@ -162,26 +144,11 @@ function StatusBadge({ status }: { status: string }) {
         statusTone(status),
       )}
     >
-      {STATUS_LABELS[status] ?? status}
+      {status === "no_show" ? bookingStatusLabel(status,kind) : STATUS_LABELS[status] ?? status}
     </span>
   );
 }
 
-function ConfirmationBadge({
-  confirmationStatus,
-}: {
-  confirmationStatus: StaffAppointmentLine["confirmationStatus"];
-}) {
-  if (confirmationStatus !== "requested") {
-    return null;
-  }
-
-  return (
-    <span className="staff-appointments-confirmation-badge">
-      Pending
-    </span>
-  );
-}
 
 function appointmentRequiresConfirmation(appointment: StaffAppointmentLine) {
   return (
@@ -245,91 +212,24 @@ function Header({
 }) {
   const selectedDate =
     firstParam(params.date) ?? data.days[0]?.date ?? todayInTimeZone(data.timezone);
-  const step = data.view === "week" ? 7 : 1;
-  const salonName =
-    data.context.currentStaffSalon?.name ??
-    data.context.salonName ??
-    "Staff schedule";
-
-  return (
-    <header className="staff-appointments-header">
-      <div className="staff-appointments-frame staff-appointments-header-frame">
-        <div className="staff-appointments-titlebar">
-          <div className="min-w-0">
-            <p className="staff-appointments-title-kicker">Staff appointments</p>
-            <h1>{salonName}</h1>
-          </div>
-          <p className="staff-appointments-title-date">
-            {formatToolbarDate(selectedDate)}
-          </p>
-        </div>
-        <div className="staff-appointments-toolbar">
-          <div className="staff-appointments-toolbar-controls">
-            <Link
-              className="staff-appointments-secondary-button"
-              href={buildHref(params, { date: todayInTimeZone(data.timezone) })}
-            >
-              Today
-            </Link>
-            <Link
-              className="staff-appointments-icon-button"
-              href={buildHref(params, { date: addDays(selectedDate, -step) })}
-            >
-              <ChevronIcon direction="left" />
-              <span className="sr-only">Previous range</span>
-            </Link>
-            <div className="staff-appointments-date-display">
-              <span>{formatToolbarDate(selectedDate)}</span>
-              <CalendarIcon />
-            </div>
-            <Link
-              className="staff-appointments-icon-button"
-              href={buildHref(params, { date: addDays(selectedDate, step) })}
-            >
-              <ChevronIcon direction="right" />
-              <span className="sr-only">Next range</span>
-            </Link>
-          </div>
-          <div className="staff-appointments-toolbar-actions">
-            <nav className="staff-appointments-view-tabs staff-appointments-toolbar-tabs">
-              {(["list", "day", "week"] as const).map((view) => (
-                <Link
-                  aria-current={data.view === view ? "page" : undefined}
-                  className={classNames(
-                    "staff-appointments-view-tab",
-                    data.view === view
-                      ? "staff-appointments-view-tab--active"
-                      : "staff-appointments-view-tab--idle",
-                  )}
-                  href={buildHref(params, { view })}
-                  key={view}
-                >
-                  {VIEW_LABELS[view]}
-                </Link>
-              ))}
-            </nav>
-            {data.staff && salonId ? (
-              <StaffBookingSettings
-                assignedServices={data.assignedServices}
-                availabilityRules={data.availabilityRules}
-                salonBookingStatus={data.salonBookingStatus}
-                staff={data.staff}
-                timeBlocks={data.timeBlocks}
-                timezone={data.timezone}
-                variant="toolbar"
-              />
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </header>
-  );
+  const today = todayInTimeZone(data.timezone);
+  const tomorrow = addDays(today, 1);
+  const prefix = selectedDate === today ? "Today, " : selectedDate === tomorrow ? "Tomorrow, " : "";
+  const label = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${selectedDate}T12:00:00Z`));
+  return <header className="staff-appointments-header"><div className="staff-appointments-frame staff-schedule-header">
+    <nav className="staff-schedule-tabs" aria-label="Schedule navigation">
+      <Link className="staff-schedule-tab" aria-current={selectedDate === today && data.view === "day" ? "page" : undefined} href={buildHref(params, {date: today, view: "day"})}><CalendarIcon /><span>Today</span></Link>
+      <Link className="staff-schedule-tab" aria-current={selectedDate === tomorrow && data.view === "day" ? "page" : undefined} href={buildHref(params, {date: tomorrow, view: "day"})}><ChevronIcon direction="right" /><span>Next day</span></Link>
+      <StaffScheduleCalendar date={selectedDate} range={firstParam(params.range) === "all" ? "all" : firstParam(params.range) === "next7" || data.view === "week" ? "next7" : "day"} status={firstParam(params.status) ?? ""} />
+      {data.staff && salonId ? <StaffBookingSettings salonId={salonId} assignedServices={data.assignedServices} availabilityRules={data.availabilityRules} salonBookingStatus={data.salonBookingStatus} staff={data.staff} timeBlocks={data.timeBlocks} timezone={data.timezone} variant="toolbar" /> : null}
+    </nav>
+    <div className="staff-schedule-date-line"><h1>{prefix}{label}</h1><div className="staff-schedule-heading-actions"><span title="Your future bookings across all dates">{data.upcomingCount} upcoming</span>{data.staff && salonId ? <StaffCreateAppointment salonId={salonId} date={selectedDate} /> : null}</div></div>
+  </div></header>;
 }
 
 function AppointmentSummary({
   appointment,
   compact = false,
-  params,
   showDate = true,
   timezone,
 }: {
@@ -340,42 +240,38 @@ function AppointmentSummary({
   timezone: string;
 }) {
   const displayStatus = appointmentDisplayStatus(appointment);
-  const isQuickOpen = firstParam(params.quickId) === appointment.bookingId;
+  const minutes = Math.max(0, Math.round((Date.parse(appointment.endAt) - Date.parse(appointment.startAt)) / 60000));
+  return <details name="staff-appointment" className={classNames("staff-schedule-appointment", compact && "staff-schedule-appointment--compact")} data-status={displayStatus}>
+    <summary className="staff-schedule-row">
+      <div className="staff-schedule-time">{showDate ? <span>{formatAppointmentDate(appointment.startAt, timezone)}</span> : null}<strong>{formatTime(appointment.startAt, timezone)}</strong></div>
+      <div className="staff-schedule-customer"><strong>{appointment.customerName}</strong><span>{appointment.serviceName} · {minutes} min · {formatPrice(appointment.price)}</span></div>
+      <StaffAppointmentStatus bookingId={appointment.bookingId}><StatusBadge status={displayStatus} kind={appointment.noShowKind} /></StaffAppointmentStatus><span className="staff-schedule-expand" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg></span>
+    </summary>
+    <AppointmentExpanded appointment={appointment} />
+  </details>;
+}
 
-  return (
-    <article
-      className={classNames(
-        "staff-appointments-card staff-appointments-appointment-card",
-        compact && "staff-appointments-appointment-card--compact",
-      )}
-      data-status={displayStatus}
-    >
-      <Link
-        className="staff-appointments-appointment-row"
-        href={buildHref(params, { quickId: appointment.bookingId })}
-      >
-        <div className="staff-appointments-appointment-primary">
-          {showDate ? (
-            <span>{formatAppointmentDate(appointment.startAt, timezone)}</span>
-          ) : null}
-          <strong>{appointmentTimeRange(appointment, timezone)}</strong>
-        </div>
-        <div className="staff-appointments-appointment-main">
-          <strong>{appointment.serviceName}</strong>
-          <span>{appointment.customerName}</span>
-        </div>
-        <div className="staff-appointments-appointment-status">
-          <StatusBadge status={displayStatus} />
-        </div>
-      </Link>
-      {isQuickOpen ? (
-        <QuickAppointmentPopover
-          appointment={appointment}
-          params={params}
-        />
-      ) : null}
-    </article>
-  );
+function formatPrice(price: number) {
+  return Number.isFinite(price) ? new Intl.NumberFormat("en-US", {style: "currency", currency: "USD", maximumFractionDigits: 2}).format(price) : "Price unavailable";
+}
+
+function AppointmentExpanded({appointment}: {appointment: StaffAppointmentLine}) {
+  const active = !["cancelled", "no_show", "completed"].includes(appointment.status);
+  const eligible = active && !appointment.ticketId && ["pending", "confirmed"].includes(appointment.status) && appointment.lineStatus === "scheduled" && appointment.noShowEligible;
+  return <div className="staff-schedule-expanded">
+    <dl className="staff-schedule-contact">
+      <div><dt>Phone</dt><dd>{appointment.customerPhone ? <a href={`tel:${appointment.customerPhone.replace(/[^+\d]/g, "")}`}>{appointment.customerPhone}</a> : "No phone provided"}</dd></div>
+      {appointment.publicNotes ? <div><dt>Customer note</dt><dd>{appointment.publicNotes}</dd></div> : null}
+      {appointment.serviceNote ? <div><dt>Service note</dt><dd>{appointment.serviceNote}</dd></div> : null}
+      {appointment.noShowCount > 0 ? <div><dt>No-show history</dt><dd>{appointment.noShowCount} previous {appointment.noShowCount === 1 ? "no-show" : "no-shows"} without a reason</dd></div> : null}
+      {appointment.noShowReason ? <div><dt>No-show note</dt><dd>{appointment.noShowReason}</dd></div> : null}
+      <AppointmentInspiration appointment={appointment} />
+    </dl>
+    <div className="staff-schedule-row-actions">
+      {active && appointmentRequiresConfirmation(appointment) ? <StaffConfirmBookingButton bookingId={appointment.bookingId} /> : null}
+      <StaffNoShowButton bookingId={appointment.bookingId} confirmed={!appointmentRequiresConfirmation(appointment)} eligible={eligible} />
+    </div>
+  </div>;
 }
 
 function NextAppointmentDays({
@@ -396,7 +292,7 @@ function NextAppointmentDays({
     <aside className="staff-appointments-day-next-panel">
       <div className="staff-appointments-day-next-head">
         <div>
-          <h3>Next appointment days</h3>
+          <h3>Next appointments</h3>
           <p>{appointments.length} upcoming this week</p>
         </div>
       </div>
@@ -437,52 +333,10 @@ function QuickAppointmentPopover({
   params: StaffAppointmentsSearchParams;
   style?: CSSProperties;
 }) {
-  const canConfirm =
-    appointmentRequiresConfirmation(appointment) &&
-    appointment.status !== "cancelled" &&
-    appointment.status !== "no_show";
-
-  return (
-    <div
-      aria-label={`Quick actions for ${appointment.customerName}`}
-      className={classNames("staff-appointments-quick-popover", className)}
-      role="dialog"
-      style={style}
-    >
-      {canConfirm ? (
-        <div className="staff-appointments-quick-actions">
-          <form action={confirmStaffBookingAction}>
-            <input name="booking_id" type="hidden" value={appointment.bookingId} />
-            <button className="staff-appointments-primary-button" type="submit">
-              Confirm
-            </button>
-          </form>
-          <Link
-            className="staff-appointments-secondary-button"
-            href={buildHref(params, { quickId: null })}
-          >
-            Cancel
-          </Link>
-        </div>
-      ) : (
-        <div className="staff-appointments-quick-state">
-          <StatusBadge status={appointmentDisplayStatus(appointment)} />
-          <Link
-            className="staff-appointments-secondary-button"
-            href={buildHref(params, { quickId: null })}
-          >
-            Close
-          </Link>
-        </div>
-      )}
-      <Link
-        className="staff-appointments-quick-detail"
-        href={buildHref(params, { bookingId: appointment.bookingId })}
-      >
-        Detail
-      </Link>
-    </div>
-  );
+  return <div aria-label={`Appointment for ${appointment.customerName}`} className={classNames("staff-appointments-quick-popover", className)} role="dialog" style={style}>
+    <AppointmentExpanded appointment={appointment} />
+    <Link className="staff-appointments-secondary-button" href={buildHref(params, {quickId: null})}>Close</Link>
+  </div>;
 }
 
 function timeToMinutes(value: string) {
@@ -667,7 +521,7 @@ function TimelineAppointmentCard({
   const itemPosition = appointmentPosition(appointment, timezone, metrics);
   const displayStatus = appointmentDisplayStatus(appointment);
   const isQuickOpen = firstParam(params.quickId) === appointment.bookingId;
-  const statusLabel = STATUS_LABELS[displayStatus] ?? displayStatus;
+  const statusLabel = displayStatus === "no_show" ? bookingStatusLabel(displayStatus,appointment.noShowKind) : STATUS_LABELS[displayStatus] ?? displayStatus;
   const timeRange = appointmentTimeRange(appointment, timezone);
   const isShortCard = itemPosition.height < 58;
   const cardLabel = `${appointment.customerName}, ${appointment.serviceName}, ${timeRange}, ${statusLabel}`;
@@ -725,14 +579,7 @@ function DayCanvas({
 
   return (
     <section className="staff-appointments-panel staff-appointments-day-board">
-      <div className="staff-appointments-section-head staff-appointments-day-head">
-        <div>
-          <h2>{data.days[0]?.label}</h2>
-          <p>{dayAppointments.length} assigned appointments</p>
-        </div>
-        <span>{data.timezone}</span>
-      </div>
-      <div className="staff-appointments-day-layout">
+      <div className="staff-schedule-day-layout">
         <div className="staff-appointments-day-card-list staff-appointments-day-card-list--compact">
           {dayAppointments.length > 0 ? (
             dayAppointments.map((appointment) => (
@@ -751,7 +598,7 @@ function DayCanvas({
             </div>
           )}
         </div>
-        <NextAppointmentDays data={data} params={params} />
+        {dayAppointments.length === 0 ? <NextAppointmentDays data={data} params={params} /> : null}
       </div>
     </section>
   );
@@ -858,24 +705,18 @@ function WeekView({
 
           return (
             <section className="staff-appointments-week-mobile-day" key={day.date}>
-              <div>
+              <div className="staff-appointments-week-mobile-heading">
                 <h2>{day.label}</h2>
-                <p>{dayAppointments.length} assigned</p>
+                <p>{dayAppointments.length ? `${dayAppointments.length} assigned` : "No appointments"}</p>
               </div>
-              {dayAppointments.length === 0 ? (
-                <p className="staff-appointments-empty p-4 text-sm">
-                  No appointments
-                </p>
-              ) : (
-                dayAppointments.map((appointment) => (
+              {dayAppointments.map((appointment) => (
                   <AppointmentSummary
                     appointment={appointment}
                     key={appointment.id}
                     params={params}
                     timezone={data.timezone}
                   />
-                ))
-              )}
+                ))}
             </section>
           );
         })}
@@ -900,7 +741,7 @@ function ListView({
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="staff-appointments-list">
       {data.appointments.map((appointment) => (
         <AppointmentSummary
           appointment={appointment}
@@ -970,7 +811,6 @@ function AppointmentInspiration({
 
 function DetailPanel({
   appointment,
-  canViewTickets,
   params,
   timezone,
 }: {
@@ -983,134 +823,14 @@ function DetailPanel({
     return null;
   }
 
-  const appointmentClosed =
-    appointment.status === "cancelled" || appointment.status === "no_show";
-  const requiresConfirmation = appointmentRequiresConfirmation(appointment);
-  const canConfirm = requiresConfirmation && !appointmentClosed;
-  const canStart =
-    appointment.lineStatus === "scheduled" &&
-    !requiresConfirmation &&
-    !appointmentClosed;
-  const canComplete =
-    (appointment.lineStatus === "scheduled" ||
-      appointment.lineStatus === "in_service") &&
-    !requiresConfirmation &&
-    !appointmentClosed;
-
-  return (
-    <div className="staff-appointments-detail-overlay">
-      <Link
-        aria-label="Close appointment detail"
-        className="staff-appointments-detail-backdrop"
-        href={buildHref(params, { bookingId: null })}
-      />
-      <aside className="staff-appointments-detail-sheet">
-        <div className="staff-appointments-detail-head">
-          <div>
-            <p className="staff-appointments-detail-kicker">
-              Appointment detail
-            </p>
-            <h2>
-              {appointment.customerName}
-            </h2>
-            <p>
-              {formatDateTime(appointment.startAt, timezone)}
-            </p>
-          </div>
-          <Link
-            aria-label="Close appointment detail"
-            className="staff-appointments-detail-close"
-            href={buildHref(params, { bookingId: null })}
-          >
-            x
-          </Link>
-        </div>
-        <div className="staff-appointments-detail-body">
-          <div className="staff-appointments-detail-badges">
-            <StatusBadge status={appointmentDisplayStatus(appointment)} />
-            <ConfirmationBadge confirmationStatus={appointment.confirmationStatus} />
-            <span className="staff-appointments-line-status">
-              Line: {appointment.lineStatus.replace(/_/g, " ")}
-            </span>
-            {appointment.ticketId && canViewTickets ? (
-              <Link
-                className="staff-appointments-ticket-link"
-                href={`/pos-tickets/${appointment.ticketId}`}
-              >
-                Open ticket
-              </Link>
-            ) : null}
-          </div>
-          <dl className="staff-appointments-detail-list">
-            <div>
-              <dt>Service</dt>
-              <dd>{appointment.serviceName}</dd>
-            </div>
-            <AppointmentInspiration appointment={appointment} />
-            <div>
-              <dt>Contact</dt>
-              <dd>{appointment.customerPhone || "No day-of phone"}</dd>
-            </div>
-            <div>
-              <dt>Customer note</dt>
-              <dd>{appointment.publicNotes || "None"}</dd>
-            </div>
-          </dl>
-          {appointmentClosed ? (
-            <p className="staff-appointments-detail-muted">
-              This appointment is no longer active.
-            </p>
-          ) : null}
-          {requiresConfirmation ? (
-            <div className="staff-appointments-warning staff-appointments-detail-warning">
-              <p>Customer booking is waiting for confirmation.</p>
-              <form action={confirmStaffBookingAction}>
-                <input name="booking_id" type="hidden" value={appointment.bookingId} />
-                <button
-                  className="staff-appointments-primary-button disabled:opacity-50"
-                  disabled={!canConfirm}
-                  type="submit"
-                >
-                  Confirm booking
-                </button>
-              </form>
-            </div>
-          ) : null}
-          <form
-            action={startStaffAppointmentLineAction}
-            className="staff-appointments-detail-form"
-          >
-            <input name="booking_line_id" type="hidden" value={appointment.id} />
-            <label>
-              <span>Service note</span>
-              <textarea
-                className="staff-appointments-field"
-                defaultValue={appointment.serviceNote ?? ""}
-                name="service_note"
-              />
-            </label>
-            <div className="staff-appointments-detail-actions">
-              <button
-                className="staff-appointments-primary-button disabled:opacity-50"
-                disabled={!canStart}
-                type="submit"
-              >
-                Start service
-              </button>
-              <button
-                className="staff-appointments-secondary-button disabled:opacity-50"
-                formAction={completeStaffAppointmentLineAction}
-                disabled={!canComplete}
-                type="submit"
-              >
-                Complete service
-              </button>
-            </div>
-          </form>
-        </div>
-      </aside>
-    </div>
-  );
+  return <div className="staff-appointments-detail-overlay">
+    <Link aria-label="Close appointment detail" className="staff-appointments-detail-backdrop" href={buildHref(params, {bookingId: null})} />
+    <aside className="staff-appointments-detail-sheet" role="dialog" aria-label="Appointment information">
+      <div className="staff-appointments-detail-head"><div><h2>{appointment.customerName}</h2><p>{formatDateTime(appointment.startAt, timezone)}</p><p>{appointment.serviceName} · {formatPrice(appointment.price)}</p></div><Link className="staff-appointments-detail-close" aria-label="Close appointment detail" href={buildHref(params, {bookingId: null})}>×</Link></div>
+      <StaffAppointmentStatus bookingId={appointment.bookingId}><StatusBadge status={appointmentDisplayStatus(appointment)} kind={appointment.noShowKind} /></StaffAppointmentStatus>
+      <AppointmentExpanded appointment={appointment} />
+    </aside>
+  </div>;
 }
 
 export default async function StaffAppointmentsPage({
@@ -1118,6 +838,11 @@ export default async function StaffAppointmentsPage({
 }: StaffAppointmentsPageProps) {
   const params = (await searchParams) ?? {};
   const data = await getCurrentStaffAppointments(params);
+  const statusFilter = firstParam(params.status);
+  if (["confirmed", "pending", "no_show"].includes(statusFilter ?? "")) {
+    data.appointments = data.appointments.filter(item => appointmentDisplayStatus(item) === statusFilter);
+    data.nextAppointmentDays.appointments = data.nextAppointmentDays.appointments.filter(item => appointmentDisplayStatus(item) === statusFilter);
+  }
   const salonId = data.context.currentStaffSalon?.id ?? data.context.salonId;
 
   if (!data.context.user) {
@@ -1125,7 +850,7 @@ export default async function StaffAppointmentsPage({
   }
 
   return (
-    <main
+    <StaffScheduleInteractions key={`${data.rangeStart}:${data.rangeEnd}:${data.appointments.map(item => `${item.id}:${item.status}:${item.confirmationStatus}`).join(",")}`}><main
       className="staff-appointments-root"
       data-staff-appointments-surface="staff"
     >
@@ -1150,6 +875,6 @@ export default async function StaffAppointmentsPage({
           timezone={data.timezone}
         />
       </section>
-    </main>
+    </main></StaffScheduleInteractions>
   );
 }

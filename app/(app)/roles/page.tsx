@@ -6,6 +6,7 @@ import type { Role } from "@/types/role";
 import type { RoleWithMemberCount } from "@/types/role";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SHOW_ROLE_PERMISSION_CATALOGS } from "@/lib/role-catalog-visibility";
 
 function RoleBadge({ isSystem }: { isSystem: boolean }) {
   return (
@@ -67,6 +68,7 @@ function RolesTable({ roles }: { roles: RoleWithMemberCount[] }) {
 }
 
 export default async function RolesPage() {
+  if (!SHOW_ROLE_PERMISSION_CATALOGS) redirect("/settings");
   const context = await requireAccountPageContext("/roles");
 
   if (!context.user) {

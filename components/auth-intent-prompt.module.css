@@ -1,0 +1,45 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: end center;
+  background: #21171f73;
+  backdrop-filter: blur(5px);
+}
+.dialog {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  width: 100%;
+  max-height: 90dvh;
+  overflow: auto;
+  padding: 26px 24px;
+  background: linear-gradient(145deg, #fff5f0, #fff 55%, #fff0f5);
+  border: 1px solid #ffe1d4;
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 24px 80px #21171f40;
+  color: #302326;
+}
+.heart {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  border-radius: 24px;
+  background: white;
+  color: #f26f3d;
+  font-size: 38px;
+  box-shadow: 0 5px 18px #f26f3d14;
+  border: 1px solid #ffe1d4;
+}
+@media (min-width: 640px) {
+  .backdrop {
+    place-items: center;
+    padding: 24px;
+  }
+  .dialog {
+    max-width: 430px;
+    border-radius: 28px;
+  }
+}

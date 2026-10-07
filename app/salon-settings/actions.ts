@@ -16,6 +16,7 @@ import {
   updateCurrentSalonSetting,
 } from "@/lib/salon-settings";
 import {
+  getCurrentSalonOperatingHoursSettings,
   createCurrentSalonSpecialHours,
   deleteCurrentSalonSpecialHours,
   updateCurrentSalonOperatingHours,
@@ -269,10 +270,11 @@ export async function updateSalonSettings(formData: FormData) {
       public_discovery_enabled:
         formData.get("public_discovery_enabled") === "on",
     });
-    await updateCurrentSalonOperatingHours({
-      timeZone: operatingTimeZone,
-      weeklyHours,
-    });
+    const previousHours = await getCurrentSalonOperatingHoursSettings();
+    const signature = (hours: Array<{dayOfWeek: number; opensAtLocal: string; closesAtLocal: string; sortOrder?: number}>) => JSON.stringify(hours.map(row => [row.dayOfWeek, row.opensAtLocal.slice(0, 5), row.closesAtLocal.slice(0, 5), row.sortOrder ?? 0]).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))));
+    if (previousHours.timeZone !== operatingTimeZone || signature(previousHours.weeklyHours) !== signature(weeklyHours)) {
+      await updateCurrentSalonOperatingHours({ timeZone: operatingTimeZone, weeklyHours });
+    }
   } catch (error) {
     redirectWithError(
       error instanceof Error ? error.message : "Salon settings could not be saved.",
@@ -281,7 +283,7 @@ export async function updateSalonSettings(formData: FormData) {
 
   revalidatePath("/salon-settings");
   revalidatePath("/explore");
-  redirect("/salon-settings");
+  redirectWithOperatingHoursNotice("Salon settings saved.");
 }
 
 export async function createCurrentSalonSpecialHoursAction(formData: FormData) {

@@ -192,12 +192,21 @@ export function mapContentBookingOptionRow(
     ? (row.readiness_state as ContentBookingReadinessState)
     : "inspiration_only";
 
+  // Older RPC versions return only the salon route for profile posts.
+  // Always retain the content identity so booking can restore its recipe.
+  const normalizedHref = normalizePublicBookingHref(row.booking_href);
+  const bookingUrl = normalizedHref ? new URL(normalizedHref, "https://booking.local") : null;
+  if (bookingUrl) {
+    bookingUrl.searchParams.set("inspiration", contentId);
+    if (!bookingUrl.searchParams.has("source")) bookingUrl.searchParams.set("source", "public_profile");
+  }
+
   return {
     addOns: parseMappedServices(row.add_ons),
     additionalServices: parseMappedServices(row.additional_services),
     bookingCtaEnabled: row.booking_cta_enabled === true,
     bookingEnabled: row.booking_enabled === true,
-    bookingHref: normalizePublicBookingHref(row.booking_href),
+    bookingHref: bookingUrl ? `${bookingUrl.pathname}${bookingUrl.search}${bookingUrl.hash}` : null,
     bookingNote: cleanText(row.booking_note),
     caption: cleanText(row.caption),
     contentId,
@@ -233,7 +242,7 @@ export function mapContentBookingOptionRow(
   };
 }
 
-export async function loadPublicContentBookingOptions(salonIds: string[]) {
+export async function loadPublicContentBookingOptions(salonIds: string[], contentId?: string | null) {
   const uniqueSalonIds = Array.from(
     new Set(
       salonIds
@@ -252,9 +261,10 @@ export async function loadPublicContentBookingOptions(salonIds: string[]) {
     return [];
   }
 
-  const { data, error } = await supabase.rpc("get_public_content_booking_options", {
+  const query = supabase.rpc("get_public_content_booking_options", {
     target_salon_ids: uniqueSalonIds,
   });
+  const { data, error } = await (contentId ? query.eq("content_id", contentId) : query);
 
   if (error) {
     console.warn("Public content booking options unavailable", {

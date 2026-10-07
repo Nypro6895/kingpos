@@ -3,7 +3,8 @@ function validConfig(config) {
   const url = new URL(config.origin);
   if (url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw Error('Expected an origin without a path or credentials');
   if (url.protocol !== 'https:' && !(config.channel === 'test' && url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname))) throw Error('HTTPS is required');
-  if (!['test', 'release'].includes(config.channel)) throw Error('Unknown channel');
+  if (!['test', 'online', 'release'].includes(config.channel)) throw Error('Unknown channel');
+  if (config.channel === 'online' && (['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) || url.hostname.endsWith('.localhost') || config.updates || config.unsignedUpdates)) throw Error('Online builds require a public HTTPS origin and manual updates');
   if (config.updates && config.channel === 'test') {
     const feed = new URL(config.updateUrl);
     if (!config.unsignedUpdates || !['localhost', '127.0.0.1'].includes(feed.hostname) ||

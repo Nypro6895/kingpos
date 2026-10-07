@@ -3,7 +3,8 @@
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import { useEffect, useId, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
+import styles from "./auth-intent-prompt.module.css";
 
 type AuthIntentPromptProps = {
   children: ReactNode;
@@ -33,16 +34,26 @@ export function AuthIntentPrompt({
   title,
 }: AuthIntentPromptProps) {
   const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const signupHref = authHrefForCurrentPage("signup");
   const loginHref = authHrefForCurrentPage("login");
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const opener = document.activeElement as HTMLElement | null;
+    dialogRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
 
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
         onClose();
+      }
+      if (event.key === 'Tab') {
+        const elements=dialogRef.current?.querySelectorAll<HTMLElement>('a,button');
+        if(!elements?.length)return;
+        const first=elements[0],last=elements[elements.length-1];
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
       }
     }
 
@@ -51,12 +62,13 @@ export function AuthIntentPrompt({
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", closeOnEscape);
+      opener?.focus();
     };
   }, [onClose]);
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[95] grid place-items-end bg-zinc-950/45 p-0 backdrop-blur-[2px] sm:place-items-center sm:p-6"
+      className={styles.backdrop}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -64,11 +76,13 @@ export function AuthIntentPrompt({
       }}
     >
       <div
+        ref={dialogRef}
         aria-labelledby={titleId}
         aria-modal="true"
-        className="grid w-full gap-4 rounded-t-[1.25rem] bg-white p-5 text-text-primary shadow-2xl ring-1 ring-divider-subtle sm:max-w-md sm:rounded-[1.25rem]"
+        className={styles.dialog}
         role="dialog"
       >
+        <div aria-hidden className="flex justify-center"><span className={styles.heart}>♡</span></div>
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[11px] font-semibold uppercase text-brand-orange">

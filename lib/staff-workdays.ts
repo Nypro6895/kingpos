@@ -1,3 +1,4 @@
+import { getContextBusinessDate } from "@/lib/salon-business-clock";
 import "server-only";
 
 import {
@@ -298,7 +299,7 @@ export async function getTodaysStaffWorkday(
 ) {
   const identity = !context && options.allowEmailFallback === false ? await getStaffPortalIdentity() : null;
   const resolvedContext = context ?? identity?.context ?? (await getCurrentStaffBusinessContext());
-  const today = options.workDate ?? getTodayDate(resolvedContext.user?.timezone);
+  const today = options.workDate ?? await getContextBusinessDate(resolvedContext);
 
   if (!resolvedContext.user) {
     return { context: resolvedContext, staff: null, today, workday: null };
@@ -365,7 +366,7 @@ export async function getCurrentSalonStaffTodayBoard(
   options: { workDate?: string } = {},
 ) {
   const resolvedContext = context ?? (await getCurrentBusinessContext());
-  const today = options.workDate ?? getTodayDate(resolvedContext.user?.timezone);
+  const today = options.workDate ?? await getContextBusinessDate(resolvedContext);
 
   if (!resolvedContext.user) {
     return { context: resolvedContext, staff: [], today };
@@ -465,7 +466,7 @@ export async function getCurrentSalonStaffActivitySummaries(
     throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
-  const today = options.workDate ?? getTodayDate(resolvedContext.user.timezone);
+  const today = options.workDate ?? await getContextBusinessDate(resolvedContext);
   const { data, error } = await supabase
     .from("pos_ticket_staff_earnings")
     .select(
@@ -527,7 +528,7 @@ export async function getCurrentStaffAssignedWork(
 ) {
   const identity = context ? null : await getStaffPortalIdentity();
   const resolvedContext = context ?? identity!.context;
-  let today = getTodayDate(resolvedContext.user?.timezone);
+  let today = await getContextBusinessDate(resolvedContext);
 
   if (!resolvedContext.user) {
     return {

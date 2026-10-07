@@ -40,6 +40,7 @@ export type PublicBookingPageState =
   | "ready";
 
 export type PublicBookingSearchParams = {
+  startAt?: string | string[];
   date?: string | string[];
   inspiration?: string | string[];
   lookId?: string | string[];
@@ -162,6 +163,9 @@ export type PublicBookingSlot = {
 };
 
 export type PublicBookingInitialSelection = {
+  dateExplicit?: boolean;
+  requestedTimeUnavailable?: boolean;
+  startAt?: string | null;
   addOnSelections: PublicBookingAddOnSelection[];
   addOnServiceIds: string[];
   date: string;
@@ -182,6 +186,7 @@ export type PublicBookingReadinessItem = {
 };
 
 export type PublicBookingPageData = {
+  availabilityResolved?: boolean;
   currentUser: PublicBookingCurrentUser | null;
   initialSelection: PublicBookingInitialSelection;
   looks: PublicBookingLook[];
@@ -208,6 +213,7 @@ export type PublicBookingCurrentUser = {
 };
 
 export type PublicBookingSlotRequest = {
+  findEarliest?: boolean;
   addOnSelections?: PublicBookingAddOnSelection[];
   addOnServiceIds?: string[];
   date?: string | null;
@@ -226,11 +232,13 @@ export type PublicBookingAvailabilityScope = Omit<
 };
 
 export type PublicBookingAvailabilityHint = {
+  timezoneIana?: string;
   key: string;
   startAt: string | null;
 };
 
 export type PublicBookingCreateInput = PublicBookingSlotRequest & {
+  expectedAccountId?: string | null;
   customerEmail?: string | null;
   customerFirstName?: string | null;
   customerLastName?: string | null;
@@ -707,7 +715,7 @@ function parseContextPayload(payload: unknown): RawContext {
   };
 }
 
-async function loadRawContext(salonId: string) {
+async function loadRawContext(salonId: string, options?: { includeContentOptions?: boolean; metadataOnly?: boolean; contentId?: string | null; rangeDate?: string | null }) {
   const supabase = createSupabaseServerClient();
 
   if (!supabase) {
@@ -715,11 +723,15 @@ async function loadRawContext(salonId: string) {
   }
 
   const now = new Date();
-  const { data, error } = await supabase.rpc("get_public_booking_context", {
-    p_range_end: addDays(now, MAX_PUBLIC_SLOT_DAYS + 1).toISOString(),
-    p_range_start: now.toISOString(),
+  // A selected salon date only needs nearby conflicts, not the whole booking window.
+  // UTC padding covers all salon offsets and conflicts crossing local midnight.
+  const rangeDate = cleanDate(options?.rangeDate);
+  const rangeAnchor = rangeDate ? new Date(`${rangeDate}T00:00:00Z`) : null;
+  const [{ data, error }, contentOptions] = await Promise.all([supabase.rpc("get_public_booking_context", {
+    p_range_end: options?.metadataOnly ? new Date(now.getTime() + 1).toISOString() : rangeAnchor ? addDays(rangeAnchor, 2).toISOString() : addDays(now, MAX_PUBLIC_SLOT_DAYS + 1).toISOString(),
+    p_range_start: rangeAnchor ? addDays(rangeAnchor, -1).toISOString() : now.toISOString(),
     target_salon_id: salonId,
-  });
+  }), options?.includeContentOptions === false ? Promise.resolve([]) : loadPublicContentBookingOptions([salonId], options?.contentId)]);
 
   if (error) {
     console.error("Public booking context RPC failed", {
@@ -734,7 +746,7 @@ async function loadRawContext(salonId: string) {
 
   const context = parseContextPayload(data);
 
-  context.contentOptions = await loadPublicContentBookingOptions([salonId]);
+  context.contentOptions = contentOptions;
 
   return context;
 }
@@ -1301,7 +1313,8 @@ export function generatePublicBookingSlots(
         {
           length: horizonDays + 1,
         },
-        (_, index) => formatDateInTimeZone(addDays(now, index), settings.timezoneIana),
+        // Calendar dates must advance by day even across 23/25-hour DST days.
+        (_, index) => new Date(Date.parse(`${today}T12:00:00Z`) + index * 86_400_000).toISOString().slice(0, 10),
       );
   const slots: PublicBookingSlot[] = [];
 
@@ -1582,6 +1595,7 @@ function normalizeInitialSelection(
     const addOnSelections = primaryService
       ? addOnSelectionsFromOption(context, serviceIds, option)
       : [];
+    const recipeIncomplete = Boolean(primaryService && (additionalServiceIds.length !== option.additionalServices.length || addOnSelections.length !== option.addOns.length));
     const staffCandidate = option.creditedStaffId;
     const selectionLinesForStaff = selectionLines(context, {
       addOnSelections,
@@ -1604,7 +1618,7 @@ function normalizeInitialSelection(
       cleanDate(singleParam(params.date)) ??
       formatDateInTimeZone(new Date(), timezone);
     const originalServiceMissing =
-      option.primaryServiceId !== null && primaryService === null;
+      (option.primaryServiceId !== null && primaryService === null) || recipeIncomplete;
     const status: PublicBookingInspirationStatus = originalServiceMissing
       ? "service_unavailable"
       : option.primaryServiceId && option.creditedStaffId && !staffEligible
@@ -1617,7 +1631,7 @@ function normalizeInitialSelection(
       additionalServiceIds,
       message:
         status === "service_unavailable"
-          ? "The original service for this look is no longer available. Choose another service to continue."
+          ? "One or more services for this look are no longer available. Review your services to continue."
           : status === "ready" || status === "inspiration_only"
           ? option.readinessState === "inspiration_only"
             ? "Choose services and a professional. We'll keep this inspiration attached to your appointment."
@@ -1634,7 +1648,7 @@ function normalizeInitialSelection(
       : settings?.anyProfessionalEnabled === false
         ? "specific"
         : "any";
-    const initialStep = serviceIds.length > 0 ? (staffId ? 2 : 1) : 0;
+    const initialStep = serviceIds.length > 0 && !recipeIncomplete ? (staffId ? 2 : 1) : 0;
 
     return {
       addOnSelections,
@@ -1666,13 +1680,13 @@ function normalizeInitialSelection(
       context.serviceMap.has(requestedServiceId) &&
       !context.serviceMap.get(requestedServiceId)?.isAddOnOnly
         ? requestedServiceId
-        : null) ?? firstBookableServiceId(context);
+        : null) ?? (requestedStaffId || requestedServiceId ? null : firstBookableServiceId(context));
   const serviceStaff = serviceId ? eligibleStaffIds(context, serviceId) : [];
   const inspirationStaffEligible = Boolean(
     look?.recommendedStaffId && serviceStaff.includes(look.recommendedStaffId),
   );
   const staffId =
-    requestedStaffId && serviceStaff.includes(requestedStaffId)
+    requestedStaffId && (serviceStaff.includes(requestedStaffId) || (!serviceId && context.staff.some(staff => staff.id === requestedStaffId)))
       ? requestedStaffId
       : look?.recommendedStaffId && inspirationStaffEligible
         ? look.recommendedStaffId
@@ -1698,7 +1712,7 @@ function normalizeInitialSelection(
       ? staffId || settings?.anyProfessionalEnabled !== false
         ? 2
         : 1
-      : 0;
+      : requestedServiceId && serviceId ? staffId ? 2 : 1 : 0;
 
   return {
     addOnSelections: [],
@@ -1718,6 +1732,7 @@ function normalizeInitialSelection(
 export async function getPublicBookingPageData(
   salonIdInput: string,
   params: PublicBookingSearchParams,
+  options?: { deferAvailability?: boolean; resolveKnownAvailability?: boolean },
 ): Promise<PublicBookingPageData> {
   const salonId = cleanUuid(salonIdInput);
 
@@ -1730,10 +1745,16 @@ export async function getPublicBookingPageData(
   }
 
   const [context, currentUser] = await Promise.all([
-    loadRawContext(salonId),
-    getCurrentKingUser(),
+    loadRawContext(salonId, { includeContentOptions: Boolean(inspirationParam(params)), metadataOnly: options?.deferAvailability && !options.resolveKnownAvailability, contentId: inspirationParam(params) }),
+    (async () => {
+      const authenticated = await createAuthenticatedSupabaseServerClient();
+      return authenticated ? getCurrentKingUser() : null;
+    })(),
   ]);
   const initialSelection = normalizeInitialSelection(context, params);
+  const requestedStart = toIso(singleParam(params.startAt));
+  initialSelection.dateExplicit = Boolean(requestedStart || cleanDate(singleParam(params.date)));
+  if (requestedStart && context.settings) initialSelection.date = formatDateInTimeZone(new Date(requestedStart), context.settings.timezoneIana);
   const readiness = readinessForContext(context);
   const byService = staffByService(context);
   const base = {
@@ -1798,17 +1819,31 @@ export async function getPublicBookingPageData(
     );
   }
 
+  if (options?.deferAvailability && !(options.resolveKnownAvailability && initialSelection.initialStep >= 2)) return { ...base, message: "Choose services, a professional, and a time.", slots: [], state: "ready", title: `Book ${context.profile?.name ?? "appointment"}` };
+
   const slots = generatePublicBookingSlots(
     context,
     {
-      date: initialSelection.date,
+      date: initialSelection.dateExplicit ? initialSelection.date : null,
       serviceId: initialSelection.serviceId,
       serviceIds: initialSelection.serviceIds,
       staffId: initialSelection.staffId,
       staffMode: initialSelection.staffMode,
+      addOnSelections: initialSelection.addOnSelections,
     },
-    { limit: 24 },
+    { limit: requestedStart ? 96 : 24 },
   );
+  if (!initialSelection.dateExplicit && slots[0]) {
+    initialSelection.date = formatDateInTimeZone(new Date(slots[0].startAt), context.settings.timezoneIana);
+    const nextDayIndex = slots.findIndex(slot => formatDateInTimeZone(new Date(slot.startAt), context.settings!.timezoneIana) !== initialSelection.date);
+    if (nextDayIndex >= 0) slots.splice(nextDayIndex);
+  }
+  if (requestedStart && initialSelection.initialStep === 2 && slots.some(slot => slot.startAt === requestedStart)) {
+    initialSelection.startAt = requestedStart;
+    initialSelection.initialStep = 3;
+  } else if (requestedStart && initialSelection.initialStep === 2) {
+    initialSelection.requestedTimeUnavailable = true;
+  }
   const probeServiceId =
     initialSelection.serviceId ?? firstBookableServiceId(context);
   const probeStaffIds = probeServiceId ? eligibleStaffIds(context, probeServiceId) : [];
@@ -1837,7 +1872,8 @@ export async function getPublicBookingPageData(
         ).length > 0
       : false);
 
-  if (!anyFutureSlots) {
+  // A scoped intent must remain editable when that service/staff has no slots.
+  if (!anyFutureSlots && !singleParam(params.serviceId) && !singleParam(params.staffId) && !inspirationParam(params)) {
     return unavailablePage(
       "no_slots",
       "No online slots are available",
@@ -1848,6 +1884,7 @@ export async function getPublicBookingPageData(
 
   return {
     ...base,
+    availabilityResolved: true,
     message: "Choose services, a professional, and a time.",
     slots,
     state: "ready",
@@ -1865,13 +1902,20 @@ export async function loadPublicBookingSlots(input: {
     return [];
   }
 
-  const context = await loadRawContext(salonId);
+  const context = await loadRawContext(salonId, { includeContentOptions: false, rangeDate: input.selection.findEarliest ? null : input.selection.date });
 
   if (context.state !== "ready") {
     return [];
   }
 
-  return generatePublicBookingSlots(context, input.selection, { limit: 36 });
+  return initialAvailableSlots(context, input.selection);
+}
+
+function initialAvailableSlots(context: RawContext, selection: PublicBookingSlotRequest, ignoreBookingId?: string) {
+  if (!selection.findEarliest || !context.settings) return generatePublicBookingSlots(context, selection, { limit: 36, ignoreBookingId });
+  const first = generatePublicBookingSlots(context, { ...selection, date: null }, { limit: 1, ignoreBookingId })[0];
+  if (!first) return [];
+  return generatePublicBookingSlots(context, { ...selection, date: formatDateInTimeZone(new Date(first.startAt), context.settings.timezoneIana) }, { limit: 36, ignoreBookingId });
 }
 
 export async function loadPublicBookingRescheduleSlots(input: {
@@ -1886,16 +1930,13 @@ export async function loadPublicBookingRescheduleSlots(input: {
     return [];
   }
 
-  const context = await loadRawContext(salonId);
+  const context = await loadRawContext(salonId, { includeContentOptions: false, rangeDate: input.selection.findEarliest ? null : input.selection.date });
 
   if (context.state !== "ready") {
     return [];
   }
 
-  return generatePublicBookingSlots(context, input.selection, {
-    ignoreBookingId: bookingId,
-    limit: 36,
-  });
+  return initialAvailableSlots(context, input.selection, bookingId);
 }
 
 export async function loadPublicBookingAvailabilityHints(input: {
@@ -1914,7 +1955,7 @@ export async function loadPublicBookingAvailabilityHints(input: {
     return fallbackHints;
   }
 
-  const context = await loadRawContext(salonId);
+  const context = await loadRawContext(salonId, { includeContentOptions: false });
 
   if (context.state !== "ready" || !context.settings) {
     return fallbackHints;
@@ -1974,6 +2015,7 @@ export async function loadPublicBookingAvailabilityHints(input: {
     hints.push({
       key,
       startAt: slots[0]?.startAt ?? null,
+      timezoneIana: context.settings.timezoneIana,
     });
   }
 
@@ -2051,7 +2093,14 @@ export async function createPublicBooking(
     return publicBookingFailure("Choose a service to continue.", "selection_incomplete");
   }
 
-  const context = await loadRawContext(salonId);
+  const [context, account] = await Promise.all([
+    loadRawContext(salonId, { includeContentOptions: false }),
+    (async () => {
+      const authenticatedSupabase = await createAuthenticatedSupabaseServerClient();
+      const currentUser = authenticatedSupabase ? await getCurrentKingUser() : null;
+      return { authenticatedSupabase, currentUser };
+    })(),
+  ]);
 
   if (context.state !== "ready" || !context.settings) {
     return publicBookingFailure("Online booking is not available for this salon.", context.state);
@@ -2077,8 +2126,11 @@ export async function createPublicBooking(
     return publicBookingFailure("That time is no longer available.", "unavailable_slot");
   }
 
-  const authenticatedSupabase = await createAuthenticatedSupabaseServerClient();
-  const currentUser = authenticatedSupabase ? await getCurrentKingUser() : null;
+  const { authenticatedSupabase, currentUser } = account;
+  // Do not silently create a guest booking when the account session changes.
+  if (input.expectedAccountId && currentUser?.id !== input.expectedAccountId) {
+    return publicBookingFailure("Please sign in again to confirm this booking. Your selection is saved.", "account_session_changed");
+  }
   const supabase = authenticatedSupabase ?? createSupabaseServerClient();
 
   if (!supabase) {
@@ -2423,12 +2475,14 @@ function selectionFromGuestBooking(booking: GuestManageBooking, date?: string | 
 
 export async function getGuestManagePageData(
   tokenInput: string,
+  options?: { deferSlots?: boolean },
 ): Promise<GuestManagePageData> {
   const loaded = await getGuestManageBooking(tokenInput);
 
   if (!loaded.ok) {
     return loaded;
   }
+  if (options?.deferSlots) return { ...loaded, slots: [] };
 
   const context = await loadRawContext(loaded.booking.booking.salonId);
   const slots = generatePublicBookingSlots(
@@ -2447,6 +2501,7 @@ export async function getGuestManagePageData(
 }
 
 export async function loadGuestManageSlots(input: {
+  findEarliest?: boolean;
   date?: string | null;
   token: string;
 }) {
@@ -2456,16 +2511,8 @@ export async function loadGuestManageSlots(input: {
     return [];
   }
 
-  const context = await loadRawContext(loaded.booking.booking.salonId);
-
-  return generatePublicBookingSlots(
-    context,
-    selectionFromGuestBooking(loaded.booking, input.date),
-    {
-      ignoreBookingId: loaded.booking.booking.id,
-      limit: 36,
-    },
-  );
+  const context = await loadRawContext(loaded.booking.booking.salonId, { includeContentOptions: false });
+  return initialAvailableSlots(context, { ...selectionFromGuestBooking(loaded.booking, input.date), findEarliest: input.findEarliest }, loaded.booking.booking.id);
 }
 
 export async function rescheduleGuestBooking(input: {

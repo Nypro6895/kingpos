@@ -115,6 +115,7 @@ export type BookingCancellationInput = {
 };
 
 export type BookingNoShowInput = {
+  kind?: Exclude<import("@/lib/booking-no-show").NoShowKind, null>;
   bookingId: string;
   reason?: string | null;
 };

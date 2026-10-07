@@ -1,3 +1,4 @@
+import { getSalonBusinessTimezone } from "@/lib/salon-business-clock";
 import "server-only";
 
 import {
@@ -9,7 +10,7 @@ import { getUtcBoundsForLocalDate, isDateInputValue } from "@/lib/daily-pos-repo
 import { hasPermission } from "@/lib/permissions";
 import { calculateTaxCompanyReporting } from "@/lib/payroll-tax-company";
 import { STAFF_SELECT } from "@/lib/staff";
-import { staffPeriodHistory, staffComparisonPeriods, staffPublishedPeriodHistory, staffPeriodKey } from "@/lib/staff-payroll-period";
+import { staffPeriodHistory, staffComparisonPeriods, staffPayPeriodChoices, staffPeriodKey } from "@/lib/staff-payroll-period";
 import { cleanupPaystubFile } from "@/lib/paystub-files";
 import { getStaffPortalIdentity } from "@/lib/staff-portal-identity";
 import { getStaffPresentationsByStaffId } from "@/lib/staff-profile";
@@ -1391,8 +1392,8 @@ async function loadTicketAdjustmentsForPeriod(
   auth: PayrollAuthContext,
   period: PayrollPeriod,
 ) {
-  const startBounds = getUtcBoundsForLocalDate(period.startDate, auth.user.timezone);
-  const endBounds = getUtcBoundsForLocalDate(period.endDate, auth.user.timezone);
+  const startBounds = getUtcBoundsForLocalDate(period.startDate, await getSalonBusinessTimezone(auth.salon.id));
+  const endBounds = getUtcBoundsForLocalDate(period.endDate, await getSalonBusinessTimezone(auth.salon.id));
   const { data: tickets, error: ticketsError } = await auth.supabase
     .from("pos_tickets")
     .select("id, ticket_number, opened_at")
@@ -1835,8 +1836,8 @@ async function loadPayrollServiceAnalytics(
   auth: PayrollAuthContext,
   period: PayrollPeriod,
 ): Promise<PayrollServiceAnalytics> {
-  const startBounds = getUtcBoundsForLocalDate(period.startDate, auth.user.timezone);
-  const endBounds = getUtcBoundsForLocalDate(period.endDate, auth.user.timezone);
+  const startBounds = getUtcBoundsForLocalDate(period.startDate, await getSalonBusinessTimezone(auth.salon.id));
+  const endBounds = getUtcBoundsForLocalDate(period.endDate, await getSalonBusinessTimezone(auth.salon.id));
   const { data, error } = await auth.supabase
     .from("pos_ticket_items")
     .select(
@@ -4315,6 +4316,15 @@ export async function updateStaffPayrollSetting(input: {
   return data;
 }
 
+export async function getPayrollSettingsWorkspace() {
+  const auth = await requirePayrollContext();
+  const [salonPayrollSetting, staffRows, staffSettings] = await Promise.all([
+    loadSalonPayrollSetting(auth), loadStaffRows(auth), loadStaffPayrollSettings(auth),
+  ]);
+  const staffPresentations = await getStaffPresentationsByStaffId({ staff: staffRows, supabase: auth.supabase });
+  return { access: auth.access, salonPayrollSetting, staffPayrollSettings: latestSettingsWithStaff(staffRows, staffSettings, staffPresentations) };
+}
+
 export async function getPayrollPageData(input: {
   cycleType?: string | null;
   endDate?: string | null;
@@ -4395,9 +4405,10 @@ async function loadStaffPortalPeriod(auth: PayrollAuthContext, input: StaffPerio
   }
   const today = dateResult.data;
   const scheduled = staffPeriodHistory(salonPayrollSetting, today);
-  const periods = publishedRuns ? staffPublishedPeriodHistory(scheduled[0], publishedRuns) : scheduled;
+  const payChoices = publishedRuns ? staffPayPeriodChoices(salonPayrollSetting, today, publishedRuns) : null;
+  const periods = payChoices?.periods ?? scheduled;
   const period = periods.find(item => staffPeriodKey(item) === input.payPeriodStart)
-    ?? periods.find(item => item.startDate === input.payPeriodStart) ?? periods[0];
+    ?? periods.find(item => item.startDate === input.payPeriodStart) ?? payChoices?.defaultPeriod ?? periods[0];
   const periodOptions: PayrollPeriodOption[] = periods.map(item => ({
     startDate: item.startDate, endDate: item.endDate, label: item.label, value: staffPeriodKey(item),
   }));
@@ -4454,7 +4465,9 @@ export async function getCurrentStaffAnalysisPortalData(input: StaffPeriodInput)
   const { auth, context, staff } = await getCurrentStaffPayrollPortalAuthContext();
   if (!auth || !staff) return { comparison: null, context, incomeLine: null, incomeTrend: [], period: null,
     periodOptions: [], previousIncomeLine: null, previousPeriod: null, salonPayrollSetting: null, staff, workPerformance: emptyStaffAnalysisWorkPerformance() };
-  const { salonPayrollSetting, today, period, periodOptions } = await loadStaffPortalPeriod(auth, input);
+  const { data: runData, error: runsError } = await auth.supabase.rpc("get_my_staff_payroll_runs", { p_salon_id: auth.salon.id });
+  if (runsError) throw new Error(runsError.message);
+  const { salonPayrollSetting, today, period, periodOptions } = await loadStaffPortalPeriod(auth, input, (runData ?? []) as PayrollRun[]);
   const comparable = staffComparisonPeriods(salonPayrollSetting, period, today);
   const through = { ...period, endDate: period.endDate < today ? period.endDate : today };
   const performancePromise = loadStaffAnalysisWorkPerformance({ auth, period: through, staffId: staff.id });

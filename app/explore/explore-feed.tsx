@@ -1,18 +1,20 @@
 "use client";
 
 import { loadExploreFeedAction } from "@/app/explore/actions";
+import { discoveryItemIdentity, matchesExploreFeedItem, type ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
 import { withRequestTimeout } from "@/lib/request-timeout";
 import { savedPostKey } from "@/types/saved-post";
 import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
-import { AuthIntentPrompt } from "@/components/auth-intent-prompt";
-import { LumiTrustPopover } from "@/components/reylumi-trust";
+import { InspirationAvailability } from "@/components/inspiration-availability";
+import { ExploreBookButton, ExploreSalonLove } from "@/components/explore-account-actions";
+import { ExploreAdSlot } from "@/components/explore-advertising";
+import { SalonTrustLine, SalonVerifiedBadge } from "@/components/salon-trust-line";
 import {
   ReylumiIcon,
   type ReylumiIconName,
 } from "@/components/reylumi-icons";
-import { SalonOperatingStatusBadge } from "@/components/salon-operating-status-badge";
 import type {
   ExploreDiscoveryResultKind,
   ExploreDiscoveryShortcut,
@@ -26,8 +28,6 @@ import type {
   PostCommentViewer,
 } from "@/types/post-comments";
 import {
-  buildReylumiTrustSummary,
-  type ReylumiTrustSummary,
 } from "@/lib/reylumi-trust";
 import Image from "next/image";
 import Link from "next/link";
@@ -47,7 +47,7 @@ import {
 } from "react";
 
 const EXPLORE_FEED_SESSION_KEY = "kingpos-explore-continuous-feed";
-const EXPLORE_FEED_SESSION_VERSION = 11;
+const EXPLORE_FEED_SESSION_VERSION = 13;
 const EXPLORE_FEED_SESSION_TTL_MS = 30 * 60 * 1000;
 const EXPLORE_FEED_SESSION_ITEM_LIMIT = 120;
 
@@ -156,7 +156,7 @@ function readStoredFeedState(
 ): StoredExploreFeedState | null {
   try {
     const parsed = JSON.parse(
-      window.sessionStorage.getItem(EXPLORE_FEED_SESSION_KEY) ?? "null",
+      window.sessionStorage.getItem(`${EXPLORE_FEED_SESSION_KEY}:${route}`) ?? "null",
     ) as Partial<StoredExploreFeedState> | null;
 
     if (
@@ -222,7 +222,7 @@ function writeStoredFeedState(input: {
     };
 
     window.sessionStorage.setItem(
-      EXPLORE_FEED_SESSION_KEY,
+      `${EXPLORE_FEED_SESSION_KEY}:${input.route}`,
       JSON.stringify(state),
     );
   } catch {
@@ -263,18 +263,29 @@ function appendUniqueFeedItems(
   incoming: ExploreFeedItem[],
 ) {
   const seen = new Set(current.map(feedItemKey));
+  const destinations = new Set(current.map(discoveryItemIdentity));
   const nextItems = incoming.filter((item) => {
     const key = feedItemKey(item);
 
-    if (seen.has(key)) {
+    const identity = discoveryItemIdentity(item);
+    if (seen.has(key) || destinations.has(identity)) {
       return false;
     }
 
     seen.add(key);
+    destinations.add(identity);
     return true;
   });
 
-  return nextItems.length > 0 ? [...current, ...nextItems] : current;
+  if (!nextItems.length) return current;
+  const ordered = [...current];
+  const remaining = [...nextItems];
+  while (remaining.length) {
+    const previousAuthor = ordered[ordered.length - 1]?.author.id;
+    const differentAuthor = remaining.findIndex(item => item.author.id !== previousAuthor);
+    ordered.push(...remaining.splice(differentAuthor < 0 ? 0 : differentAuthor, 1));
+  }
+  return ordered;
 }
 
 function mergeStoredFeedItems(
@@ -307,22 +318,6 @@ function serviceLabel(item: ExploreFeedItem) {
   );
 }
 
-function feedTrustSummary(item: ExploreFeedItem): ReylumiTrustSummary | null {
-  if (!item.salon) {
-    return null;
-  }
-
-  return buildReylumiTrustSummary(
-    item.salon.trust,
-    {
-      verifiedVisitState: item.verification?.state === "verified",
-    },
-  );
-}
-
-function bookingCountLabel(count: number) {
-  return `${count} booked`;
-}
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -374,18 +369,6 @@ function distanceLabel(item: ExploreFeedItem) {
   return distance < 10 ? `${distance.toFixed(1)} mi` : `${Math.round(distance)} mi`;
 }
 
-function ratingLabel(item: ExploreFeedItem) {
-  const rating = item.salon?.trust.averageRating;
-  const reviews = item.salon?.trust.sharedExperienceCount;
-
-  if (rating === null || rating === undefined) {
-    return null;
-  }
-
-  return typeof reviews === "number" && reviews > 0
-    ? `${rating.toFixed(1)} (${reviews})`
-    : `${rating.toFixed(1)}`;
-}
 
 function availabilityLabel(item: ExploreFeedItem) {
   if (item.bookingMeta.availabilityLabel) {
@@ -418,27 +401,6 @@ function ActionTooltip({
         {label}
       </span>
     </span>
-  );
-}
-
-function BookActionIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-4 w-4 shrink-0"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path d="M8 2v4" />
-      <path d="M16 2v4" />
-      <path d="M3.5 9h17" />
-      <path d="M5 4h14a2 2 0 0 1 2 2v13a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Z" />
-      <path d="m9 15 2 2 4-5" />
-    </svg>
   );
 }
 
@@ -641,191 +603,18 @@ function FeedSalonLogo({ item }: { item: ExploreFeedItem }) {
   );
 }
 
-function FeedHeaderTitle({
-  authorHref,
-  item,
-}: {
-  authorHref: string;
-  item: ExploreFeedItem;
-}) {
-  const salon = item.salon;
-  const authorName = displayName(item.author.name, "Reylumi");
-  const isLinkedPersonal = item.sourceType === "personal" && Boolean(salon);
-
-  if (!isLinkedPersonal || !salon) {
-    return (
-      <Link
-        className="min-w-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-        href={authorHref}
-      >
-        <span className="inline-flex max-w-full items-center gap-1.5 text-sm font-semibold text-text-primary transition hover:text-brand-orange">
-          <span className="truncate">{authorName}</span>
-          {salon ? (
-            <ReylumiIcon
-              className="h-3.5 w-3.5 shrink-0 text-sky-500"
-              name="verified"
-            />
-          ) : null}
-        </span>
-      </Link>
-    );
-  }
-
-  const summary = feedTrustSummary(item);
-  const profileHref = salon.href ?? null;
-  const trustHref = profileHref ? `${profileHref}#lumi-trust` : null;
-  const salonIdentity = (
-    <span className="inline-flex min-w-0 max-w-[13rem] items-center gap-1.5">
-      <FeedSalonLogo item={item} />
-      <span className="truncate">{salon.name}</span>
-      <ReylumiIcon
-        className="h-3.5 w-3.5 shrink-0 text-sky-500"
-        name="verified"
-      />
-    </span>
-  );
-
-  return (
-    <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold text-text-primary">
-      <Link
-        className="block min-w-0 max-w-[9rem] truncate rounded-md transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:max-w-[11rem]"
-        href={authorHref}
-      >
-        {authorName}
-      </Link>
-      <span className="shrink-0 font-medium text-text-secondary">at</span>
-      {profileHref ? (
-        <Link
-          className="min-w-0 rounded-md transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          href={profileHref}
-        >
-          {salonIdentity}
-        </Link>
-      ) : (
-        salonIdentity
-      )}
-      {summary ? (
-        <LumiTrustPopover
-          actionHref={trustHref}
-          entityName={salon.name}
-          markClassName="grid h-8 w-8 place-items-center rounded-full bg-white p-0 text-brand-orange shadow-[0_5px_14px_rgba(246,125,68,0.18)] ring-1 ring-brand-orange/25 hover:bg-brand-orange-soft"
-          panelClassName="text-zinc-700"
-          presentation="spark"
-          size="sm"
-          summary={summary}
-        />
-      ) : null}
-      <SalonOperatingStatusBadge
-        className="max-w-full"
-        status={salon.operatingStatus}
-      />
-    </span>
-  );
+function FeedHeaderTitle({authorHref,item}:{authorHref:string;item:ExploreFeedItem}) {
+ const salon=item.salon,personal=item.sourceType==='personal'&&Boolean(salon);
+ return <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold text-text-primary">
+  <Link className="min-w-0 max-w-[11rem] truncate hover:text-brand-orange" href={authorHref}>{displayName(item.author.name,"Reylumi")}</Link>
+  {personal&&salon?<><span className="font-normal text-text-secondary">at</span><Link className="inline-flex min-w-0 max-w-[13rem] items-center gap-1 truncate hover:text-brand-orange" href={salon.href??authorHref}><FeedSalonLogo item={item}/><span className="truncate">{salon.name}</span><SalonVerifiedBadge verified={salon.trust.identityVerified}/></Link></>:<SalonVerifiedBadge verified={salon?.trust.identityVerified}/>}
+ </span>;
+}
+function FeedSalonIdentityLine({item}:{item:ExploreFeedItem}) {
+ if(!item.salon)return <span className="block truncate text-xs text-text-secondary">{itemContextLabel(item)}</span>;
+ return <SalonTrustLine signals={item.salon.trust} href={item.salon.href} name={item.salon.name} distance={distanceLabel(item)} className="text-text-secondary"/>;
 }
 
-function FeedSalonIdentityLine({ item }: { item: ExploreFeedItem }) {
-  const summary = feedTrustSummary(item);
-  const location = locationLabel(item);
-  const profileHref = item.salon?.href ?? null;
-  const trustHref = profileHref ? `${profileHref}#lumi-trust` : null;
-
-  if (!item.salon) {
-    return (
-      <span className="block truncate text-xs font-medium text-text-secondary">
-        {itemContextLabel(item)}
-      </span>
-    );
-  }
-
-  if (item.sourceType === "personal") {
-    return location ? (
-      <span className="mt-0.5 block truncate text-xs font-medium text-text-secondary">
-        {location}
-      </span>
-    ) : null;
-  }
-
-  const rating = ratingLabel(item);
-  const distance = distanceLabel(item);
-
-  return (
-    <span className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-xs font-medium text-text-secondary">
-      {rating ? (
-        <>
-          <ReylumiIcon
-            className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400"
-            name="star"
-          />
-          <span className="font-semibold text-text-primary">{rating}</span>
-        </>
-      ) : null}
-      {distance ? <span>{distance}</span> : null}
-      {summary ? (
-        <LumiTrustPopover
-          actionHref={trustHref}
-          entityName={item.salon.name}
-          markClassName="grid h-8 w-8 place-items-center rounded-full bg-white p-0 text-brand-orange shadow-[0_5px_14px_rgba(246,125,68,0.18)] ring-1 ring-brand-orange/25 hover:bg-brand-orange-soft"
-          panelClassName="text-zinc-700"
-          presentation="spark"
-          size="sm"
-          summary={summary}
-        />
-      ) : null}
-      <SalonOperatingStatusBadge
-        className="max-w-full"
-        status={item.salon.operatingStatus}
-      />
-      {location ? (
-        <>
-          <span aria-hidden className="text-text-muted/60">
-            {"\u00b7"}
-          </span>
-          <span className="min-w-0 truncate">{location}</span>
-        </>
-      ) : null}
-    </span>
-  );
-}
-
-function FeedStatusLine({
-  href,
-  item,
-  service,
-  showContextBadge,
-}: {
-  href: string | null;
-  item: ExploreFeedItem;
-  service: string | null;
-  showContextBadge: boolean;
-}) {
-  const details = [
-    showContextBadge && item.contentType !== "salon_recommendation"
-      ? itemContextLabel(item)
-      : null,
-    service,
-  ].filter((detail): detail is string => Boolean(detail));
-
-  if (details.length === 0) {
-    return null;
-  }
-
-  const status = (
-    <p className="text-xs font-semibold text-text-muted">
-      {details.join(" \u00b7 ")}
-    </p>
-  );
-
-  return href ? (
-    <Link
-      className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-      href={href}
-    >
-      {status}
-    </Link>
-  ) : (
-    status
-  );
-}
 
 function shareTitle(item: ExploreFeedItem) {
   return (
@@ -1207,7 +996,7 @@ function FeedHeroIntro({
     item.feedKey.startsWith("showcase:hero:")
       ? "23 artists near you can create this look"
       : null,
-    !item.feedKey.startsWith("showcase:hero:") ? ratingLabel(item) : null,
+    null,
     !item.feedKey.startsWith("showcase:hero:")
       ? distanceLabel(item) ?? locationLabel(item)
       : null,
@@ -1283,14 +1072,12 @@ function FeedDecisionMeta({
   item: ExploreFeedItem;
   service: string | null;
 }) {
-  const distance = distanceLabel(item);
-  const area = locationLabel(item);
   const metrics = [
-    { label: "Rating", value: ratingLabel(item) },
-    { label: distance ? "Distance" : "Area", value: distance ?? area },
+
     { label: "Service", value: service },
     { label: "Price", value: priceLabel(item) },
     { label: "Duration", value: durationLabel(item) },
+    { label: "Status", value: item.salon?.operatingStatus.label ?? null },
     { label: "Availability", value: availabilityLabel(item) },
   ].filter(
     (metric): metric is { label: string; value: string } =>
@@ -1317,12 +1104,6 @@ function FeedDecisionMeta({
           <dt className="sr-only">
             {metric.label}
           </dt>
-          {metric.label === "Rating" ? (
-            <ReylumiIcon
-              className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400"
-              name="star"
-            />
-          ) : null}
           <dd className="truncate">
             {metric.value}
           </dd>
@@ -1583,22 +1364,8 @@ function ExploreFeedCard({
   const href = item.destination.href;
   const isSalonRecommendation = item.contentType === "salon_recommendation";
   const [commentsOpen, setCommentsOpen] = useState(false);
-  const [bookPromptOpen, setBookPromptOpen] = useState(false);
   const booking = item.booking?.eligible ? item.booking : null;
   const bookingHref = booking?.href ?? null;
-  const bookedCount = booking?.bookedCount ?? null;
-  const showBeautyBookedCount =
-    item.contentType === "beauty_post" &&
-    bookedCount !== null &&
-    bookedCount > 0;
-  const bookedCountText = showBeautyBookedCount
-    ? bookingCountLabel(bookedCount)
-    : null;
-  const showContextBadge =
-    !(
-      item.sourceType === "personal" &&
-      item.personal?.postType === "before_after"
-    );
   const postHref = href && !isSalonRecommendation ? href : null;
   const actionHref = postHref ?? href;
   const authorHref =
@@ -1607,25 +1374,8 @@ function ExploreFeedCard({
       : actionHref ?? item.salon?.href ?? "/explore";
   const commentTarget = exploreCommentTarget(item);
   const commentCount = item.commentCount;
-  const bookingActionLabel = featured ? "Book this look" : "Book";
-  const bookingPromptDetails = [
-    service,
-    priceLabel(item),
-    durationLabel(item),
-    availabilityLabel(item),
-  ].filter(Boolean);
-
   function updateCommentCount(count: number) {
     onCommentCountChange(item.feedKey, count);
-  }
-
-  function openGuestBookPrompt(event: MouseEvent<HTMLAnchorElement>) {
-    if (viewer.isAuthenticated) {
-      return;
-    }
-
-    event.preventDefault();
-    setBookPromptOpen(true);
   }
 
   return (
@@ -1645,7 +1395,7 @@ function ExploreFeedCard({
       <div
         className={[
           "min-w-0 items-center justify-between gap-2.5 px-3 py-2.5",
-          featured ? "hidden sm:flex" : "order-2 flex sm:order-1",
+          "order-2 flex sm:order-1",
         ].join(" ")}
       >
         <Link
@@ -1660,7 +1410,7 @@ function ExploreFeedCard({
           <FeedSalonIdentityLine item={item} />
         </div>
         <span className="shrink-0 text-[11px] font-semibold text-text-muted">
-          {timeAgo(item.publishedAt)}
+          {item.publishedAtKnown === false ? "Salon to explore" : timeAgo(item.publishedAt)}
         </span>
       </div>
 
@@ -1685,54 +1435,12 @@ function ExploreFeedCard({
             </p>
           )
         ) : null}
-        <FeedStatusLine
-          href={actionHref}
-          item={item}
-          service={service}
-          showContextBadge={showContextBadge}
-        />
         <FeedDecisionMeta item={item} service={service} />
+        {bookingHref && item.contentType !== "salon_recommendation" ? <InspirationAvailability href={bookingHref} /> : null}
         <div className="grid gap-2 pt-0.5">
           <div className="flex items-center gap-1.5">
             <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-              {bookingHref ? (
-                <ActionTooltip
-                  label={
-                    bookedCountText
-                      ? `${bookedCountText}. Book this post`
-                      : booking?.label ?? "Book"
-                  }
-                >
-                  <Link
-                    aria-label={[
-                      bookedCountText
-                        ? "Book this post"
-                        : booking?.label ?? bookingActionLabel,
-                      bookedCountText,
-                    ]
-                      .filter(Boolean)
-                      .join(", ")}
-                    className={[
-                      "inline-flex max-w-full items-center justify-center gap-1.5 bg-brand-orange text-xs font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-                      featured
-                        ? "min-h-11 rounded-[0.72rem] px-4 text-sm sm:h-8 sm:min-h-0 sm:rounded-full sm:px-2.5 sm:text-xs"
-                        : "h-8 rounded-full px-2.5",
-                    ].join(" ")}
-                    href={bookingHref}
-                    onClick={openGuestBookPrompt}
-                  >
-                    <BookActionIcon />
-                    <span className="truncate">
-                      {bookingActionLabel}
-                    </span>
-                    {bookedCountText ? (
-                      <span className="hidden rounded-full bg-white/18 px-1.5 py-0.5 text-[10px] font-bold text-white sm:inline-flex">
-                        {bookedCountText}
-                      </span>
-                    ) : null}
-                  </Link>
-                </ActionTooltip>
-              ) : null}
+              <ExploreBookButton href={bookingHref} name={item.salon?.name ?? item.author.name} contactHref={item.salon?.href ?? authorHref} />
               {actionHref ? <FeedShareButton href={actionHref} item={item} /> : null}
               {commentTarget ? (
                 <ActionTooltip label="Comment">
@@ -1750,11 +1458,11 @@ function ExploreFeedCard({
                 </ActionTooltip>
               ) : null}
             </div>
-            {item.saveTarget && commentTarget ? (
+            {item.saveTarget ? (
               <SavePostButton
                 className={[
                   "ml-auto shrink-0",
-                  featured ? "hidden sm:inline-grid" : "",
+
                 ].join(" ")}
                 initialSaved={item.saveTarget.saved}
                 isAuthenticated={viewer.isAuthenticated}
@@ -1762,7 +1470,7 @@ function ExploreFeedCard({
                 size="compact"
                 target={item.saveTarget}
               />
-            ) : null}
+            ) : item.salon ? <ExploreSalonLove salonId={item.salon.id} name={item.salon.name} className="ml-auto" /> : <SavePostButton className="ml-auto" isAuthenticated={viewer.isAuthenticated} target={{sourceId:item.id,sourceType:"beauty_post"}} size="compact"/>}
           </div>
           {commentsOpen && commentTarget ? (
             <div
@@ -1780,38 +1488,12 @@ function ExploreFeedCard({
           ) : null}
         </div>
       </div>
-      {bookPromptOpen && bookingHref ? (
-        <AuthIntentPrompt
-          guestHref={bookingHref}
-          guestLabel="Continue as guest"
-          kicker="Book this look"
-          onClose={() => setBookPromptOpen(false)}
-          showProviderOptions
-          title={item.salon?.name ?? item.author.name}
-        >
-          <div className="grid gap-3">
-            <div className="rounded-[0.9rem] bg-surface-muted p-3 ring-1 ring-divider-subtle/70">
-              <p className="text-sm font-semibold text-text-primary">
-                {service ?? itemContextLabel(item)}
-              </p>
-              {bookingPromptDetails.length > 0 ? (
-                <p className="mt-1 text-xs font-semibold text-text-secondary">
-                  {bookingPromptDetails.join(" · ")}
-                </p>
-              ) : null}
-            </div>
-            <p>
-              Create an account to save this look and book faster next time, or
-              continue as a guest to browse service times.
-            </p>
-          </div>
-        </AuthIntentPrompt>
-      ) : null}
+
     </article>
   );
 }
 
-function ExploreFeedSkeleton() {
+export function ExploreFeedSkeleton() {
   return (
     <article className="overflow-hidden rounded-[0.95rem] bg-white shadow-[0_8px_22px_rgba(35,25,22,0.035)] ring-1 ring-divider-subtle/65">
       <div className="flex items-center gap-3 px-3 py-2.5">
@@ -1834,6 +1516,10 @@ type ExploreFeedProps = {
   activeDiscoveryResult?: ExploreDiscoveryResultKind | null;
   discoveryShortcuts?: ExploreDiscoveryShortcut[];
   initialPage: ExploreFeedPage;
+  discovery?: ExploreFeedDiscoveryOptions;
+  filterItem?: (item: ExploreFeedItem) => boolean;
+  sessionKey?: string;
+  allowRestore?: boolean;
   onDiscoveryShortcutSelect?: (shortcut: ExploreDiscoveryShortcut) => void;
   viewer: PostCommentViewer;
 };
@@ -1849,7 +1535,7 @@ export function ExploreFeed(props: ExploreFeedProps) {
   if (snapshot.page !== props.initialPage || snapshot.viewerId !== props.viewer.userId) {
     setSnapshot({ page: props.initialPage, viewerId: props.viewer.userId, revision: snapshot.revision + 1 });
   }
-  return <ExploreFeedContent key={snapshot.revision} {...props} restoreSession={snapshot.revision === 0} />;
+  return <ExploreFeedContent key={snapshot.revision} {...props} restoreSession={props.allowRestore !== false && snapshot.revision === 0} />;
 }
 
 function ExploreFeedContent({
@@ -1859,6 +1545,9 @@ function ExploreFeedContent({
   onDiscoveryShortcutSelect,
   viewer,
   restoreSession,
+  discovery,
+  filterItem,
+  sessionKey = "",
 }: ExploreFeedProps & { restoreSession: boolean }) {
   const [items, setItems] = useState(initialPage.items);
   const [cursor, setCursor] = useState<ExploreFeedCursor | null>(
@@ -1876,9 +1565,9 @@ function ExploreFeedContent({
   const firstKey = initialPage.items[0]
     ? feedItemKey(initialPage.items[0])
     : null;
-  const isEmpty = items.length === 0 && !paginationError;
+  const isEmpty = items.length === 0 && !paginationError && !hasMore;
   const initialFailure = items.length === 0 && Boolean(paginationError);
-  const memoizedItems = useMemo(() => items, [items]);
+  const memoizedItems = useMemo(() => items.filter(item => matchesExploreFeedItem(item, discovery) && (!filterItem || filterItem(item))), [items, discovery, filterItem]);
   const feedDiscoveryShortcuts = useMemo(
     () => orderedFeedDiscoveryShortcuts(discoveryShortcuts),
     [discoveryShortcuts],
@@ -1929,7 +1618,7 @@ function ExploreFeedContent({
       setPaginationError("");
 
       try {
-        const page = await withRequestTimeout(loadExploreFeedAction(cursor));
+        const page = await withRequestTimeout(loadExploreFeedAction(cursor, discovery));
 
         if (!mountedRef.current) {
           return;
@@ -1956,7 +1645,7 @@ function ExploreFeedContent({
         }
       }
     },
-    [cursor, hasMore, paginationError],
+    [cursor, hasMore, paginationError, discovery],
   );
 
   useLayoutEffect(() => {
@@ -1979,7 +1668,7 @@ function ExploreFeedContent({
       return;
     }
 
-    const route = `${window.location.pathname}${window.location.search}`;
+    const route = `${window.location.pathname}${window.location.search}${sessionKey ? `#${sessionKey}` : ""}`;
     const stored = readStoredFeedState(route, firstKey, viewer.userId);
 
     if (!stored || stored.items.length === 0) {
@@ -1999,7 +1688,7 @@ function ExploreFeedContent({
     });
 
     return () => window.cancelAnimationFrame(restoreFrame);
-  }, [firstKey, viewer.userId, restoreSession]);
+  }, [firstKey, viewer.userId, restoreSession, sessionKey]);
 
   useLayoutEffect(() => {
     if (pendingScrollRef.current !== null) {
@@ -2009,8 +1698,8 @@ function ExploreFeedContent({
   }, [items]);
 
   useEffect(() => {
-    const route = `${window.location.pathname}${window.location.search}`;
-    const save = () => writeStoredFeedState({ cursor, hasMore, items, viewerId: viewer.userId, route });
+    const route = `${window.location.pathname}${window.location.search}${sessionKey ? `#${sessionKey}` : ""}`;
+    const save = () => { if (sentinelRef.current?.getClientRects().length) writeStoredFeedState({ cursor, hasMore, items, viewerId: viewer.userId, route }); };
     let timeout = window.setTimeout(save, 250);
     const onScroll = () => {
       window.clearTimeout(timeout);
@@ -2028,18 +1717,18 @@ function ExploreFeedContent({
       window.removeEventListener("pagehide", save);
       document.removeEventListener("click", onNavigate, true);
     };
-  }, [cursor, hasMore, items, viewer.userId]);
+  }, [cursor, hasMore, items, viewer.userId, sessionKey]);
 
   useEffect(() => {
     const node = sentinelRef.current;
 
-    if (!node || !hasMore || loadingMore || paginationError) {
+    if (!node || !hasMore || loadingMore || paginationError || typeof IntersectionObserver === "undefined") {
       return;
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
+        if (entries.some((entry) => entry.isIntersecting) && node.getClientRects().length > 0) {
           void loadNextPage();
         }
       },
@@ -2074,6 +1763,7 @@ function ExploreFeedContent({
       ) : null}
 
       <div className="grid gap-3">
+        {memoizedItems.length < 4 ? <ExploreAdSlot /> : null}
         {memoizedItems.map((item, index) => {
           const shortcutIndex =
             index > 0 && (index + 1) % 3 === 0
@@ -2088,12 +1778,16 @@ function ExploreFeedContent({
 
           return (
             <Fragment key={feedItemKey(item)}>
+              {item.discoveryScope === "wider" ? (
+                <p className="px-2 pt-2 text-xs font-medium text-text-muted">Beyond your area · {[item.salon?.city, item.salon?.state].filter(Boolean).join(", ")}{item.bookingMeta.distanceMiles != null ? ` · ${item.bookingMeta.distanceMiles.toFixed(1)} mi away` : ""}</p>
+              ) : null}
               <ExploreFeedCard
                 featured={index === 0}
                 item={item}
                 onCommentCountChange={updateCommentCount}
                 viewer={viewer}
               />
+              {(index + 1) % 4 === 0 ? <ExploreAdSlot /> : null}
               {shortcut ? (
                 <FeedDiscoveryModule
                   activeResultKind={activeDiscoveryResult}
@@ -2106,7 +1800,7 @@ function ExploreFeedContent({
         })}
       </div>
 
-      {paginationError && items.length > 0 ? (
+      {paginationError ? (
         <div className="grid gap-3 rounded-[1rem] bg-white p-4 text-sm text-text-secondary shadow-[0_10px_28px_rgba(35,25,22,0.035)] ring-1 ring-divider-subtle/65">
           <p>{paginationError}</p>
           <button
@@ -2127,10 +1821,14 @@ function ExploreFeedContent({
 
       <div aria-hidden className="h-4" ref={sentinelRef} />
 
-      {!hasMore && items.length > 0 ? (
-        <p className="pb-2 text-center text-sm font-medium text-text-muted">
-          You&apos;re caught up for now.
-        </p>
+      {hasMore && !loadingMore && !paginationError ? (
+        <button type="button" onClick={() => void loadNextPage()} className="mx-auto rounded-full bg-surface-muted px-5 py-3 text-sm font-semibold text-text-primary">Explore more</button>
+      ) : null}
+      {!hasMore ? (
+        <div className="grid justify-items-center gap-2 py-5 text-center text-sm text-text-muted">
+          <p>You&apos;ve explored the available results. Try another category or area.</p>
+          <a href="#explore-search" className="font-semibold text-brand-teal" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Adjust your discovery</a>
+        </div>
       ) : null}
     </section>
   );

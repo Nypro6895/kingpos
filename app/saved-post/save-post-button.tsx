@@ -5,6 +5,7 @@ import {
   setAccountSavedPostAction,
 } from "@/app/saved-post/actions";
 import { AuthIntentPrompt } from "@/components/auth-intent-prompt";
+import { ExploreReferenceLove, rememberExploreIntent, clearExploreIntent } from "@/components/explore-account-actions";
 import {
   savedPostKey,
   type AccountSavedPostTarget,
@@ -252,6 +253,7 @@ function SavePostButtonInner({
     }
 
     if (savePermission === "blocked") {
+      rememberExploreIntent({kind:"save",target:stableTarget});
       setMessage("Sign in to save posts.");
       setAuthPromptOpen(true);
       return;
@@ -294,6 +296,7 @@ function SavePostButtonInner({
             dispatchSavedPostStateChange(stateKey, previousSaved, previousSaveCount);
           }
           if (result.authRequired) {
+            rememberExploreIntent({kind:"save",target:stableTarget});
             setSavePermission("blocked");
             setAuthPromptOpen(true);
           }
@@ -369,13 +372,13 @@ function SavePostButtonInner({
           className={[
             isToolbar
               ? "inline-flex min-h-9 w-full min-w-0 items-center justify-center gap-1.5 rounded-none bg-transparent px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-orange"
-              : "grid place-items-center rounded-full bg-white/92 text-zinc-700 shadow-[0_10px_24px_rgba(24,24,27,.18)] ring-1 ring-white/80 backdrop-blur transition hover:scale-105 hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
+              : "grid place-items-center bg-transparent text-brand-orange transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
             !isToolbar && size === "compact" ? "h-8 w-8" : "",
             !isToolbar && size !== "compact" ? "h-10 w-10" : "",
             saved
               ? isToolbar
                 ? "text-brand-orange"
-                : "text-brand-orange ring-brand-orange/30"
+                : "text-brand-orange"
               : "",
             isSaving || isPending ? "cursor-wait" : "",
           ].join(" ")}
@@ -387,6 +390,7 @@ function SavePostButtonInner({
           <svg
             aria-hidden="true"
             className={[
+              "text-brand-orange",
               size === "compact" || isToolbar ? "h-4 w-4" : "h-5 w-5",
               isToolbar ? "shrink-0" : "",
             ]
@@ -431,7 +435,7 @@ function SavePostButtonInner({
       {authPromptOpen ? (
         <AuthIntentPrompt
           kicker="Save intent"
-          onClose={() => setAuthPromptOpen(false)}
+          onClose={() => {setAuthPromptOpen(false);clearExploreIntent();}}
           title="Save this look?"
         >
           Create a free ReyLUMI account to keep your inspiration, follow the
@@ -455,6 +459,10 @@ export function SavePostButton({
   const inheritedAuth = useContext(SavePostAuthContext);
   const authenticated = isAuthenticated ?? inheritedAuth;
   const sourceId = target?.sourceId.trim();
+  if(sourceId?.startsWith('showcase-')) {
+    const lookId=sourceId.replace(/^showcase-feed-/,'showcase-look-');
+    return <ExploreReferenceLove itemKey={`look:${lookId}`} name="this inspiration" className={className}/>;
+  }
 
   if (!target || !sourceId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sourceId)) {
     return null;

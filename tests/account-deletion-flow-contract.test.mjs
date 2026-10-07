@@ -72,16 +72,19 @@ test("Phase 2 migration owns transactional request and cancel semantics", () => 
 });
 
 test("Account Settings exposes backup, no-transfer, pending, and cancel UX", () => {
-  assert.match(accountPage, /analyzeAccountDeletionImpact/);
-  assert.match(accountPage, /AccountDeletionPanel/);
+  assert.match(accountPage, /DeferredDeletionSection/);
+  const deferred=readFileSync(new URL("../app/settings/deferred-personal-section.tsx", import.meta.url), "utf8");
+  const loader=readFileSync(new URL("../app/settings/load-personal-section.tsx", import.meta.url), "utf8");
+  assert.match(loader, /analyzeAccountDeletionImpact/);
+  assert.match(deferred, /AccountDeletionPanel/);
   assert.match(accountPanel, /Download backup/);
   assert.match(accountPanel, /Continue without transfer/);
   assert.match(accountPanel, /permanently close my last-owner/);
   assert.match(accountPanel, /Account deletion scheduled/);
   assert.match(accountPanel, /Cancel account deletion/);
   assert.match(accountPanel, /Type DELETE to confirm/);
-  assert.match(settingsPage, /Delete account/);
-  assert.match(settingsPage, /Account deletion scheduled/);
+  assert.match(settingsPage, /SettingsHubClient/);
+  assert.match(readFileSync(new URL("../app/settings/settings-hub-client.tsx", import.meta.url), "utf8"), /Delete personal account/);
 });
 
 test("Salon Settings exposes lifecycle actions through shared service actions", () => {

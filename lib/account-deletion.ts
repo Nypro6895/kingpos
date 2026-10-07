@@ -11,6 +11,7 @@ import {
 } from "@/lib/salon-lifecycle-rules";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { getCurrentKingUser } from "@/lib/users/current-user";
+import { getSalonOwnerRoster } from "./owner-transfer";
 import type { KingUser } from "@/types/user";
 
 export const ACCOUNT_DELETION_GRACE_DAYS = 30;
@@ -65,6 +66,8 @@ export type AccountDeletionImpactSalon = {
   closedAt: string | null;
   disabledAt: string | null;
   hasOtherOwner: boolean;
+  owners?: Awaited<ReturnType<typeof getSalonOwnerRoster>>["owners"];
+  ownersError?: string;
   id: string;
   isLastOwner: boolean;
   lifecycleStatus: SalonLifecycleStatus;
@@ -367,6 +370,7 @@ export async function analyzeAccountDeletionImpact(): Promise<AccountDeletionImp
       status: salon.status,
     };
   });
+  await Promise.all(impactSalons.map(async salon=>{try{salon.owners=(await getSalonOwnerRoster(salon.id)).owners;}catch(e){salon.ownersError=e instanceof Error?e.message:"Could not load the owners of this salon.";}}));
   const lastOwnerSalons = impactSalons.filter((salon) => salon.isLastOwner);
   const lastOwnerOperationalSalons = lastOwnerSalons.filter(
     (salon) => salon.lifecycleStatus !== "permanently_closed",

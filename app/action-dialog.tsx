@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import {
   useEffect,
   useId,
@@ -73,6 +74,7 @@ export function ActionDialog({
   secondaryAction,
   title,
 }: ActionDialogProps) {
+  useCloseOnNavigation(onClose, open);
   const titleId = useId();
   const descriptionId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);

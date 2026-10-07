@@ -31,6 +31,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 
 export type BookingActionResult = {
+  noShowHistory?: import("@/lib/booking-no-show").NoShowHistoryItem[];
   bookingId?: string;
   code?: string;
   field?: string;
@@ -72,8 +73,10 @@ export type BookingStatusActionInput = {
     | "complete"
     | "confirm"
     | "mark_no_show"
+    | "mark_no_show_excused"
     | "start_service";
   reason?: string | null;
+  acknowledgeNoShow?: boolean;
 };
 
 export type BookingRescheduleActionInput = {
@@ -747,7 +750,6 @@ function uniqueIds(ids: Array<string | null | undefined>) {
 }
 
 function revalidateBookingChange(bookingId: string) {
-  revalidatePath("/", "layout");
   revalidatePath("/bookings");
   revalidatePath("/my-bookings");
   revalidatePath(`/my-bookings/${bookingId}`);
@@ -1012,7 +1014,7 @@ export async function replaceOwnerBookingServicesAction(input: BookingServicesAc
 export async function saveOwnerWorkspaceBookingAction(input: {
   bookingId:string; expectedUpdatedAt:string; startLocal?:string; endLocal?:string;
   serviceIds?:string[];staffIds?:(string|null)[];lineAssignments?:{bookingLineId:string;staffId:string|null}[];
-  command?:BookingStatusActionInput['command'];reason?:string|null;overbookingOverrideReason?:string|null;
+  command?:BookingStatusActionInput['command'];acknowledgeNoShow?:boolean;reason?:string|null;overbookingOverrideReason?:string|null;
 }):Promise<BookingActionResult>{
   try{
     const context=await requireBookingActionContext();if(!context.ok)return context.error;
@@ -1020,6 +1022,12 @@ export async function saveOwnerWorkspaceBookingAction(input: {
     const {data:booking,error:loadError}=await context.data.supabase.from('bookings').select('id,start_at,end_at,updated_at,staff_id').eq('id',bookingId).eq('salon_id',context.data.salon.id).single();
     if(loadError||!booking)return failure('Appointment not found.');
     if(Date.parse(booking.updated_at)!==Date.parse(input.expectedUpdatedAt))return failure('This appointment changed on another screen. Your changes are still here. Review the latest appointment before saving.',{code:'conflict'});
+    if(input.command==='confirm' && !input.acknowledgeNoShow){
+      const {data:history,error:historyError}=await context.data.supabase.rpc('get_booking_no_show_history',{p_booking:bookingId});
+      if(historyError)return failure(historyError.message,{code:'database_error'});
+      const noShowHistory=history as import("@/lib/booking-no-show").NoShowHistoryItem[];
+      if(noShowHistory?.length)return {ok:false,code:'no_show_review_required',message:'Review previous no-shows before confirming.',noShowHistory};
+    }
     const settings=await loadBookingSettings(context.data),changes:Record<string,unknown>={};
     const oldStaffIds=await loadCurrentBookingStaffIds(context.data,bookingId);
     let startAt=booking.start_at;
@@ -1038,7 +1046,7 @@ export async function saveOwnerWorkspaceBookingAction(input: {
       changes.end_at=schedule.endAt;
       changes.lines=schedule.lines.map((line,index)=>({assigned_staff_id:line.staffId,cleanup_buffer_minutes:line.cleanupBufferMinutes,display_order:index,scheduled_end_at:line.scheduledEndAt,scheduled_start_at:line.scheduledStartAt,service_id:line.serviceId}));
     }else if(input.lineAssignments){changes.assignments=input.lineAssignments;}
-    if(input.command){changes.command=input.command;changes.reason=cleanString(input.reason);}
+    if(input.command){changes.command=input.command;changes.reason=cleanString(input.reason);changes.acknowledge_no_show=input.acknowledgeNoShow===true;}
     changes.override_reason=cleanString(input.overbookingOverrideReason);
     const {error}=await context.data.supabase.rpc('save_pos_workspace_booking',{p_booking:bookingId,p_expected:input.expectedUpdatedAt,p_changes:changes});
     if(error)return failure(error.message,{code:error.message.includes('changed on another screen')?'conflict':'database_error'});

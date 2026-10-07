@@ -1,3 +1,5 @@
+
+import { SubmitButton } from "@/components/submit-button";
 import {
   acceptStaffInviteByRequestFormAction,
   cancelStaffSalonApplicationFormAction,
@@ -101,7 +103,7 @@ function Notice({
 
 function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-5 text-sm text-zinc-600">
+    <p className="content-surface border-zinc-300 bg-zinc-50 p-5 text-sm text-zinc-600 rounded-none border-y shadow-none">
       {children}
     </p>
   );
@@ -116,7 +118,7 @@ function StaffInvitationCard({
   const canRespond = request.status === "pending";
 
   return (
-    <article className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
+    <article className="content-surface grid gap-4 border-zinc-200 bg-white p-5 rounded-none border-y shadow-none">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-lg font-semibold text-zinc-950">
@@ -135,21 +137,21 @@ function StaffInvitationCard({
         <div className="flex flex-wrap gap-2">
           <form action={acceptStaffInviteByRequestFormAction}>
             <input name="request_id" type="hidden" value={request.id} />
-            <button
+            <SubmitButton pendingLabel="Processing…"
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               type="submit"
             >
               Accept
-            </button>
+            </SubmitButton>
           </form>
           <form action={declineStaffInviteByRequestFormAction}>
             <input name="request_id" type="hidden" value={request.id} />
-            <button
+            <SubmitButton pendingLabel="Processing…"
               className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-950"
               type="submit"
             >
               Decline
-            </button>
+            </SubmitButton>
           </form>
         </div>
       ) : null}
@@ -165,7 +167,7 @@ function StaffApplicationCard({
   const address = formatAddress(request);
 
   return (
-    <article className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
+    <article className="content-surface grid gap-4 border-zinc-200 bg-white p-5 rounded-none border-y shadow-none">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-lg font-semibold text-zinc-950">
@@ -188,12 +190,12 @@ function StaffApplicationCard({
       {request.status === "pending" ? (
         <form action={cancelStaffSalonApplicationFormAction}>
           <input name="request_id" type="hidden" value={request.id} />
-          <button
+          <SubmitButton pendingLabel="Processing…"
             className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-950"
             type="submit"
           >
             Cancel application
-          </button>
+          </SubmitButton>
         </form>
       ) : request.status === "accepted" ? (
         <Link
@@ -217,7 +219,7 @@ function SalonResultCard({ salon }: { salon: PublicStaffApplicationSalon }) {
   });
 
   return (
-    <article className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
+    <article className="content-surface grid gap-4 border-zinc-200 bg-white p-5 rounded-none border-y shadow-none">
       <div>
         <p className="text-lg font-semibold text-zinc-950">{salon.salon_name}</p>
         {address ? <p className="mt-1 text-sm text-zinc-600">{address}</p> : null}
@@ -240,12 +242,12 @@ function SalonResultCard({ salon }: { salon: PublicStaffApplicationSalon }) {
             name="message"
           />
         </label>
-        <button
+        <SubmitButton pendingLabel="Processing…"
           className="w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
           Apply
-        </button>
+        </SubmitButton>
       </form>
     </article>
   );
@@ -339,7 +341,7 @@ export default async function StaffConnectionsPage({
 
         <form
           action="/staff/connections"
-          className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-4"
+          className="content-surface grid gap-3 border-zinc-200 bg-white p-5 sm:grid-cols-4 rounded-none border-y shadow-none"
           method="get"
         >
           <label className="block sm:col-span-2">
@@ -368,12 +370,12 @@ export default async function StaffConnectionsPage({
             />
           </label>
           <div className="sm:col-span-4">
-            <button
+            <SubmitButton pendingLabel="Processing…"
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               type="submit"
             >
               Search
-            </button>
+            </SubmitButton>
           </div>
         </form>
 

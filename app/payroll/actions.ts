@@ -146,7 +146,7 @@ export async function autosavePayrollPeriodStaffInputAction(
     };
   }
 
-  revalidatePath("/payroll");
+  // The client batches the active payroll refresh across all row saves.
   revalidatePath("/payroll/tax-company");
 
   return {

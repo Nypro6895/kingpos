@@ -1,3 +1,6 @@
+
+import Form from "next/form";
+import { SubmitButton } from "@/components/submit-button";
 import {
   getCurrentSalonCustomerList,
   type CustomerListItem,
@@ -85,7 +88,7 @@ function DuplicateMergeMenu({
   }
 
   return (
-    <details className="relative">
+    <details data-dismissible-popover className="relative">
       <summary className="inline-flex cursor-pointer list-none rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 marker:hidden">
         Duplicate?
       </summary>
@@ -99,7 +102,7 @@ function DuplicateMergeMenu({
         <div className="mt-3 grid max-h-48 gap-2 overflow-y-auto pr-1">
           {customer.duplicateCandidates.map((candidate) => (
             <div
-              className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2"
+              className="content-surface border-zinc-200 bg-zinc-50 px-3 py-2 rounded-none border-y shadow-none"
               key={candidate.id}
             >
               <p className="text-sm font-semibold text-zinc-950">
@@ -126,12 +129,12 @@ function DuplicateMergeMenu({
               value={candidate.id}
             />
           ))}
-          <button
+          <SubmitButton pendingLabel="Processing…"
             className="w-full rounded-md bg-zinc-950 px-3 py-2 text-sm font-semibold text-white"
             type="submit"
           >
             Merge all
-          </button>
+          </SubmitButton>
         </form>
         <form action={mergeDuplicateCustomers} className="mt-2 grid gap-2">
           <input name="target_customer_id" type="hidden" value={customer.id} />
@@ -151,12 +154,12 @@ function DuplicateMergeMenu({
               </label>
             ))}
           </div>
-          <button
+          <SubmitButton pendingLabel="Processing…"
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950"
             type="submit"
           >
             Merge selected
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </details>
@@ -176,7 +179,7 @@ function CustomerList({
 }) {
   if (customers.length === 0) {
     return (
-      <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-white p-6">
+      <div className="content-surface mt-4 border-zinc-300 bg-white p-6 rounded-none border-y shadow-none">
         <h2 className="text-lg font-semibold text-zinc-950">
           {query ? "No matching customers" : "No customers yet"}
         </h2>
@@ -191,7 +194,7 @@ function CustomerList({
 
   return (
     <>
-      <div className="mt-4 overflow-visible rounded-lg border border-zinc-200 bg-white">
+      <div className="content-surface mt-4 overflow-visible border-zinc-200 bg-white rounded-none border-y shadow-none">
         <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-medium uppercase text-zinc-500">
           <div className="col-span-12 sm:col-span-3">Customer</div>
           <div className="hidden sm:col-span-2 sm:block">Upcoming</div>
@@ -360,14 +363,14 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
       {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 rounded-none border-y shadow-none">
           {error}
         </p>
       ) : null}
 
       <section className="border-b border-zinc-200 py-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <form className="flex flex-col gap-3 sm:flex-row" action="/customers">
+          <Form className="flex flex-col gap-3 sm:flex-row" action="/customers">
             <input
               className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950 sm:w-[480px]"
               defaultValue={q ?? ""}
@@ -375,12 +378,12 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
               placeholder="Search name, phone, email"
               type="search"
             />
-            <button
+            <SubmitButton pendingLabel="Processing…"
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               type="submit"
             >
               Search
-            </button>
+            </SubmitButton>
             {q ? (
               <Link
                 className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
@@ -389,7 +392,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
                 Clear
               </Link>
             ) : null}
-          </form>
+          </Form>
           {canManageCustomers ? (
             <Link
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"

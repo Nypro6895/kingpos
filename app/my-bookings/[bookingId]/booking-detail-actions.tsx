@@ -20,6 +20,8 @@ import {
 } from "react";
 
 type BookingDetailActionsProps = {
+  embedded?: boolean;
+  onChanged?: (bookingId?: string) => void;
   booking: CustomerBookingDetail;
   canBookAgain: boolean;
   canChange: boolean;
@@ -277,14 +279,18 @@ function RescheduleModal({
   booking,
   onClose,
   open,
+  onSaved,
 }: {
   booking: CustomerBookingDetail;
   onClose: () => void;
   open: boolean;
+  onSaved?: (bookingId?: string) => void;
 }) {
   const router = useRouter();
   const timezone = booking.salon_timezone_snapshot || "America/Chicago";
   const [date, setDate] = useState(() => formatDateInputValue(booking.start_at, timezone));
+  const initialSearch = useRef(true);
+  const resolvedDate = useRef<string | null>(null);
   const [slotState, setSlotState] = useState<SlotState | null>(null);
   const [selectedStartAt, setSelectedStartAt] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -299,10 +305,12 @@ function RescheduleModal({
     if (!open || !date) {
       return;
     }
+    if (resolvedDate.current === date) { resolvedDate.current = null; return; }
 
     let active = true;
     startLoading(async () => {
       const result = await loadCustomerRescheduleSlotsAction({
+        findEarliest: initialSearch.current,
         bookingId: booking.id,
         date,
       });
@@ -312,6 +320,11 @@ function RescheduleModal({
       }
 
       if (result.ok) {
+        initialSearch.current = false;
+        if (result.data.date && result.data.date !== date) {
+          resolvedDate.current = result.data.date;
+          setDate(result.data.date);
+        }
         setSlotState({ ok: true, slots: result.data.slots });
         setSelectedStartAt(result.data.slots[0]?.startAt ?? null);
       } else {
@@ -344,7 +357,8 @@ function RescheduleModal({
 
       const params = new URLSearchParams({ message: result.message });
       onClose();
-      router.replace(`/my-bookings/${booking.id}?${params.toString()}`);
+      if (onSaved) onSaved(result.bookingId);
+      else router.replace(`/my-bookings/${booking.id}?${params.toString()}`);
       router.refresh();
     });
   }
@@ -393,7 +407,7 @@ function RescheduleModal({
           <input
             className={classNames(styles.field, "h-11")}
             onChange={(event) => {
-              setDate(event.target.value);
+              initialSearch.current = false; setDate(event.target.value);
               setSlotState(null);
               setSelectedStartAt(null);
               setNotice(null);
@@ -483,10 +497,12 @@ function CancelModal({
   booking,
   onClose,
   open,
+  onSaved,
 }: {
   booking: CustomerBookingDetail;
   onClose: () => void;
   open: boolean;
+  onSaved?: (bookingId?: string) => void;
 }) {
   const router = useRouter();
   const timezone = booking.salon_timezone_snapshot || "America/Chicago";
@@ -509,7 +525,8 @@ function CancelModal({
 
       const params = new URLSearchParams({ message: result.message });
       onClose();
-      router.replace(`/my-bookings/${booking.id}?${params.toString()}`);
+      if (onSaved) onSaved(result.bookingId);
+      else router.replace(`/my-bookings/${booking.id}?${params.toString()}`);
       router.refresh();
     });
   }
@@ -588,6 +605,8 @@ function CancelModal({
 }
 
 export function BookingDetailActions({
+  embedded = false,
+  onChanged,
   booking,
   canBookAgain,
   canChange,
@@ -601,9 +620,9 @@ export function BookingDetailActions({
 
   return (
     <>
-      <aside className="lg:sticky lg:top-6">
-        <div className="rounded-2xl border border-[#f0e6df] bg-white p-4 shadow-[0_1px_0_rgba(33,28,36,0.03)]">
-          <div className="flex items-center justify-between gap-3">
+      <aside className={embedded ? "" : "lg:sticky lg:top-6"}>
+        <div className={embedded ? "" : "rounded-2xl border border-[#f0e6df] bg-white p-4 shadow-[0_1px_0_rgba(33,28,36,0.03)]"}>
+          {!embedded ? <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-extrabold text-[#211c24]">
                 Manage appointment
@@ -612,12 +631,12 @@ export function BookingDetailActions({
                 {statusText(booking.status)}
               </p>
             </div>
-          </div>
+          </div> : null}
 
-          <div className="mt-4 grid gap-2">
+          <div className={embedded ? "grid grid-cols-2 gap-2" : "mt-4 grid gap-2"}>
             {upcoming ? (
               <button
-                className={classNames(styles.primaryButton, "w-full px-4")}
+                className={embedded ? "inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-brand-orange px-3 text-sm font-semibold text-white hover:bg-brand-orange-hover" : classNames(styles.primaryButton, "w-full px-4")}
                 onClick={() => setRescheduleOpen(true)}
                 type="button"
               >
@@ -627,14 +646,14 @@ export function BookingDetailActions({
 
             {canBookAgain ? (
               <Link
-                className={classNames(styles.primaryButton, "w-full px-4")}
+                className={embedded ? "inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-brand-orange px-3 text-sm font-semibold text-white hover:bg-brand-orange-hover" : classNames(styles.primaryButton, "w-full px-4")}
                 href={`/book/${booking.salon_id}`}
               >
-                Book again
+                {embedded ? "Rebook" : "Book again"}
               </Link>
             ) : null}
 
-            {contactOptions.length > 0 ? (
+            {!embedded && contactOptions.length > 0 ? (
               <button
                 aria-expanded={contactOpen}
                 className={classNames(styles.secondaryButton, "w-full px-4")}
@@ -661,7 +680,7 @@ export function BookingDetailActions({
               </div>
             ) : null}
 
-            {canViewSalon ? (
+            {!embedded && canViewSalon ? (
               <Link
                 className={classNames(styles.secondaryButton, "w-full px-4")}
                 href={`/explore/salons/${booking.salon_id}`}
@@ -672,18 +691,19 @@ export function BookingDetailActions({
 
             {upcoming ? (
               <button
-                className="mt-1 min-h-10 rounded-xl px-4 text-sm font-extrabold text-red-700 transition hover:bg-red-50"
+                aria-label="Cancel appointment"
+                className={embedded ? "min-h-10 rounded-lg border border-brand-orange px-3 text-sm font-semibold text-brand-orange hover:bg-brand-orange-soft" : "mt-1 min-h-10 rounded-xl px-4 text-sm font-extrabold text-red-700 transition hover:bg-red-50"}
                 onClick={() => setCancelOpen(true)}
                 type="button"
               >
-                Cancel appointment
+                {embedded ? "Cancel" : "Cancel appointment"}
               </button>
             ) : null}
           </div>
 
           {upcoming ? (
-            <p className="mt-4 text-xs leading-5 text-[#786d78]">
-              Changes are confirmed only after salon live availability is checked.
+            <p className={embedded ? "mt-2 text-center text-[11px] text-text-secondary" : "mt-4 text-xs leading-5 text-[#786d78]"}>
+              {embedded ? "Subject to salon availability." : "Changes are confirmed only after salon live availability is checked."}
             </p>
           ) : null}
         </div>
@@ -692,11 +712,13 @@ export function BookingDetailActions({
       <RescheduleModal
         booking={booking}
         onClose={() => setRescheduleOpen(false)}
+        onSaved={embedded ? onChanged : undefined}
         open={rescheduleOpen}
       />
       <CancelModal
         booking={booking}
         onClose={() => setCancelOpen(false)}
+        onSaved={embedded ? onChanged : undefined}
         open={cancelOpen}
       />
     </>

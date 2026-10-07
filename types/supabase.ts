@@ -14,6 +14,18 @@ export type Database = {
   }
   public: {
     Tables: {
+      notification_preferences: {
+        Row: { user_id: string; category: string; enabled: boolean; updated_at: string }
+        Insert: { user_id: string; category: string; enabled: boolean; updated_at?: string }
+        Update: { category?: string; enabled?: boolean; updated_at?: string }
+        Relationships: []
+      }
+      customer_history_links: {
+        Row: { id: string; salon_id: string; booking_id: string; ticket_id: string | null; visit_id: string | null; actor_user_id: string | null; created_at: string }
+        Insert: { id?: string; salon_id: string; booking_id: string; ticket_id?: string | null; visit_id?: string | null; actor_user_id?: string | null; created_at?: string }
+        Update: { id?: string; salon_id?: string; booking_id?: string; ticket_id?: string | null; visit_id?: string | null; actor_user_id?: string | null; created_at?: string }
+        Relationships: []
+      }
       account_favorite_customers: {
         Row: {
           created_at: string
@@ -738,6 +750,7 @@ export type Database = {
           internal_notes: string | null
           no_show_at: string | null
           no_show_by_user_id: string | null
+          no_show_kind: string | null
           no_show_reason: string | null
           notes: string | null
           payment_status: string
@@ -777,6 +790,7 @@ export type Database = {
           internal_notes?: string | null
           no_show_at?: string | null
           no_show_by_user_id?: string | null
+          no_show_kind?: string | null
           no_show_reason?: string | null
           notes?: string | null
           payment_status?: string
@@ -816,6 +830,7 @@ export type Database = {
           internal_notes?: string | null
           no_show_at?: string | null
           no_show_by_user_id?: string | null
+          no_show_kind?: string | null
           no_show_reason?: string | null
           notes?: string | null
           payment_status?: string
@@ -5658,6 +5673,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      enqueue_following_notification_digest: { Args: { p_limit?: number }; Returns: number }
+      mark_all_center_notifications: { Args: { p_kind: string; p_salon?: string | null; p_account?: string | null }; Returns: number }
+      notification_booking_action_count: { Args: { p_kind: string; p_salon?: string | null; p_account?: string | null }; Returns: number }
+      notification_feed: { Args: { p_kind?: string; p_salon?: string | null; p_account?: string | null; p_unread?: boolean; p_before?: string | null; p_before_id?: string | null; p_limit?: number }; Returns: { items: Json[]; unreadCount: number } }
+      mark_visible_notifications: { Args: { p_ids: string[] }; Returns: string[] }
+      get_notification_visit: { Args: { p_id: string }; Returns: { id: string; salonName: string; salonPhone: string | null; status: string; checkedInAt: string; bookingId: string | null; isCustomer: boolean; timezone: string } }
+      enqueue_notification_reminders: { Args: { p_limit?: number }; Returns: number }
+      get_booking_history_evidence: {
+        Args: { p_bookings: string[] }
+        Returns: Json
+      }
+      set_booking_history_link: {
+        Args: { p_booking: string; p_target: string; p_kind: string; p_unlink?: boolean }
+        Returns: undefined
+      }
       accept_staff_connection_invite: {
         Args: { p_token: string }
         Returns: Json
@@ -5748,6 +5778,26 @@ export type Database = {
           p_state?: string
         }
         Returns: Json
+      }
+      create_account_salon_with_owner_staff: {
+        Args: {
+          p_owner_is_staff: boolean
+          p_account_id: string
+          p_address_line1?: string
+          p_address_line2?: string
+          p_city?: string
+          p_country?: string
+          p_create_request_key: string
+          p_name: string
+          p_phone?: string
+          p_postal_code?: string
+          p_state?: string
+        }
+        Returns: Json
+      }
+      become_salon_owner_staff: {
+        Args: { p_salon_id: string }
+        Returns: string
       }
       create_canonical_booking: {
         Args: {

@@ -1,5 +1,8 @@
+
+import { SubmitButton } from "@/components/submit-button";
 ﻿import { createSalonAction, setCurrentSalon } from "@/app/salons/actions";
 import { CreateSalonSubmitButton } from "@/app/salons/create-salon-submit-button";
+import { ClaimSuggestions, ClearSalonCreationDraft } from "@/app/salons/claim-suggestions";
 import { QueryErrorDialog } from "@/app/query-error-dialog";
 import {
   getCreateSalonAccount,
@@ -14,6 +17,7 @@ import { randomUUID } from "node:crypto";
 type SalonManagementMode = "create" | "list";
 
 type SalonManagementSearchParams = {
+  [key: string]: string | string[] | undefined;
   created?: string | string[];
   error?: string | string[];
 };
@@ -52,11 +56,13 @@ function InputField({
   label,
   name,
   required = false,
+  defaultValue,
 }: {
   autoComplete?: string;
   label: string;
   name: string;
   required?: boolean;
+  defaultValue?: string;
 }) {
   return (
     <label className="block">
@@ -65,6 +71,7 @@ function InputField({
         autoComplete={autoComplete}
         className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
         name={name}
+        defaultValue={defaultValue}
         required={required}
         type="text"
       />
@@ -72,40 +79,53 @@ function InputField({
   );
 }
 
-function SalonForm({ createRequestKey }: { createRequestKey: string }) {
+function SalonForm({ createRequestKey, draft }: { createRequestKey: string; draft: SalonManagementSearchParams }) {
+  const value = (key: string) => firstSearchParam(draft[key]);
   return (
+    <ClaimSuggestions>
     <form
       action={createSalonAction}
       className="mt-4 grid gap-5 rounded-lg border border-zinc-200 bg-white p-5 sm:grid-cols-2"
     >
       <input name="create_request_key" type="hidden" value={createRequestKey} />
+      <input name="duplicate_acknowledged" type="hidden" defaultValue="no" />
       <div className="sm:col-span-2">
         <InputField
           autoComplete="Account"
           label="Salon name"
           name="name"
           required
+          defaultValue={value('name')}
         />
       </div>
-      <InputField autoComplete="tel" label="Phone" name="phone" />
+      <InputField autoComplete="tel" label="Phone" name="phone" defaultValue={value('phone')} />
       <InputField
         autoComplete="address-line1"
         label="Address line 1"
         name="address_line1"
+        defaultValue={value('address_line1')}
       />
       <InputField
         autoComplete="address-line2"
         label="Address line 2"
         name="address_line2"
+        defaultValue={value('address_line2')}
       />
-      <InputField autoComplete="address-level2" label="City" name="city" />
-      <InputField autoComplete="address-level1" label="State" name="state" />
+      <InputField autoComplete="address-level2" label="City" name="city" defaultValue={value('city')} />
+      <InputField autoComplete="address-level1" label="State" name="state" defaultValue={value('state')} />
       <InputField
         autoComplete="postal-code"
         label="Zip code"
         name="postal_code"
+        defaultValue={value('postal_code')}
       />
 
+      <label className="flex items-start gap-3 rounded-md border border-zinc-200 p-4 sm:col-span-2">
+        <input type="checkbox" name="owner_is_staff" value="yes" defaultChecked={value("owner_is_staff") === "yes"} className="mt-1" />
+        <span><span className="block text-sm font-medium">I also work as staff at this salon</span>
+          <span className="mt-1 block text-sm text-zinc-600">Create my staff profile using my personal name, email, and phone. I will keep my Owner access.</span>
+        </span>
+      </label>
       <div className="flex flex-wrap gap-3 sm:col-span-2">
         <CreateSalonSubmitButton />
         <Link
@@ -116,6 +136,7 @@ function SalonForm({ createRequestKey }: { createRequestKey: string }) {
         </Link>
       </div>
     </form>
+    </ClaimSuggestions>
   );
 }
 
@@ -213,12 +234,12 @@ function SalonList({
                 ) : canSwitchSalon ? (
                   <form action={setCurrentSalon}>
                     <input name="salon_id" type="hidden" value={salon.id} />
-                    <button
+                    <SubmitButton pendingLabel="Processing…"
                       className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
                       type="submit"
                     >
                       Set as Current
-                    </button>
+                    </SubmitButton>
                   </form>
                 ) : (
                   <span>-</span>
@@ -236,10 +257,11 @@ export async function SalonManagementPage({
   mode,
   searchParams,
 }: SalonManagementPageProps) {
-  const [{ created, error }, context] = await Promise.all([
+  const [query, context] = await Promise.all([
     searchParams,
     getCurrentBusinessContext(),
   ]);
+  const {created,error}=query;
 
   if (!context.user) {
     redirect(
@@ -271,7 +293,7 @@ export async function SalonManagementPage({
         />
 
         {hasCreatePermission ? (
-          <SalonForm createRequestKey={randomUUID()} />
+          <SalonForm createRequestKey={randomUUID()} draft={query} />
         ) : (
           <SalonCreationUnavailable
             description="You do not have permission to create a salon."
@@ -297,18 +319,6 @@ export async function SalonManagementPage({
           ) : null}
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-            href="/permissions"
-          >
-            Permissions
-          </Link>
-          <Link
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
-            href="/roles"
-          >
-            Roles
-          </Link>
-          <Link
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
             href="/account"
           >
             Account
@@ -324,9 +334,9 @@ export async function SalonManagementPage({
         title="Salon action needed"
       />
       {createdMessage ? (
-        <p className="mt-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+        <><ClearSalonCreationDraft /><p className="mt-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
           {createdMessage}
-        </p>
+        </p></>
       ) : null}
 
       <section className="mt-8">

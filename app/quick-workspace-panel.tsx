@@ -1,6 +1,7 @@
 "use client";
 
 import { ActionDialog } from "@/app/action-dialog";
+import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import { switchWorkspaceDestination } from "@/app/salons/actions";
 import {
   CurrentWorkspaceCard,
@@ -53,6 +54,7 @@ export function QuickWorkspacePanel({
   returnFocusRef,
   workspaceOptions,
 }: QuickWorkspacePanelProps) {
+  useCloseOnNavigation(onClose, isOpen);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
@@ -192,7 +194,6 @@ export function QuickWorkspacePanel({
       if (workspace.id === currentWorkspaceId) {
         closeAndFocus();
         router.push(action.href);
-        router.refresh();
         setPendingKey(null);
         return;
       }

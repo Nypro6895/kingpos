@@ -24,11 +24,12 @@ export function SettingsSubmitButton({
 
   return (
     <button
+      aria-busy={pending}
       className={className}
       disabled={disabled || pending}
       type="submit"
     >
-      {pending ? pendingLabel : saved ? savedLabel : children}
+      {pending ? <><span aria-hidden="true" className="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent motion-reduce:animate-none" />{pendingLabel}</> : saved ? savedLabel : children}
     </button>
   );
 }

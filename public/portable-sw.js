@@ -24,6 +24,17 @@ async function prepare(data) {
     await prepare({ ...data, displayPath: undefined });
     if (!(await (await caches.open(CACHE)).match(ROOT))) return;
   }
+  const existingCache = await caches.open(CACHE);
+  if (previous?.scope === data.scope && Date.now() - (previous.preparedPaths?.[path] ?? (path === ROOT ? previous.preparedAt : 0)) < 300000 && await existingCache.match(path)) {
+    // Cache newly visited chunks without regenerating the whole HTML snapshot.
+    await Promise.all((data.assets || []).map(async value => {
+      const url = new URL(value, self.location.origin);
+      if (url.origin !== self.location.origin || !url.pathname.startsWith('/_next/static/') || await existingCache.match(url.href)) return;
+      const asset = await fetch(url.href, {credentials:'same-origin'});
+      if (asset.ok) await existingCache.put(url.href,asset);
+    }));
+    return;
+  }
   const response = await fetch(path, { credentials: 'include', cache: 'no-store', headers: { Accept: 'text/html' } });
   if (!response.ok) return;
   const html = await response.clone().text();
@@ -36,13 +47,19 @@ async function prepare(data) {
   const cache = await caches.open(CACHE);
   // Publish the shell only after all required code has been cached.
   await Promise.all([...assets].map(async value => {
+    if (await cache.match(value)) return;
     const asset = await fetch(value, { credentials: 'same-origin' });
     if (!asset.ok) throw new Error('Asset unavailable');
     await cache.put(value, asset);
   }));
   await cache.put(path, response);
   locked = false;
-  await cache.put(META, new Response(JSON.stringify({ scope: data.scope, preparedAt: Date.now() })));
+  const latest=await metadata();
+  const at=Date.now();
+  await cache.put(META, new Response(JSON.stringify({ scope:data.scope,
+    preparedAt:path===ROOT?at:latest?.preparedAt,
+    preparedPaths:{...(latest?.preparedPaths ?? {}),[path]:at},
+  })));
 }
 self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));

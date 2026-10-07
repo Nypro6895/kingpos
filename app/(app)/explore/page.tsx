@@ -8,10 +8,10 @@ import {
   getExploreWorkspaceLocation,
   searchExploreSalons,
 } from "@/lib/explore-search";
-import { getExploreFeedPage } from "@/lib/explore-feed";
-import { getExploreHomeContent } from "@/lib/explore-home";
+import { getExploreFeedPage, emptyFeedPage } from "@/lib/explore-feed";
+import { getExploreHomeContent, emptyHomeContent } from "@/lib/explore-home";
 import { enrichExploreShowcaseContent } from "@/lib/explore-showcase-content";
-import { compareReylumiTopRatedSalons } from "@/lib/reylumi-trust";
+import { buildReylumiTrustSummary, compareReylumiTrustedSalons } from "@/lib/reylumi-trust";
 import { routes } from "@/lib/routes";
 import { searchTextMatches } from "@/lib/search-normalization";
 import {
@@ -427,9 +427,9 @@ function topRatedDiscoverySalons(content: ExploreHomeContent) {
   return dedupeHomeSalons(content.recommendedSalons, content.newSalons)
     .filter(
       (salon) =>
-        salon.averageRating !== null && salon.sharedExperienceCount > 0,
+        buildReylumiTrustSummary(salon).qualityScore !== null,
     )
-    .sort(compareReylumiTopRatedSalons);
+    .sort(compareReylumiTrustedSalons);
 }
 
 function availableTodayDiscoverySalons(...groups: ExploreSearchResult[][]) {
@@ -930,7 +930,7 @@ function buildExploreDiscoveryContent(input: {
           type: "result",
         },
         actionLabel: "View salons",
-        context: "Sorted by customer rating with ReyLUMI activity context",
+        context: "Based on LUMI Truth, customer feedback and repeat visits",
         detail: countLabel(topRatedCount, "salon"),
         id: "top-rated",
         label: "Top artists",
@@ -1130,15 +1130,14 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     rawQuery || requestedLocation || category || page > 1,
   );
   const contextPromise = getCurrentBusinessContext();
-  const homeContentPromise = getExploreHomeContent();
+  const homeContentPromise = hasExplicitSearchParams ? Promise.resolve(emptyHomeContent()) : getExploreHomeContent();
   const context = await contextPromise;
   const workspaceLocationPromise = getExploreWorkspaceLocation(context);
   const quickActionsPromise = buildQuickActions(context);
-  const utilityContentPromise = getExploreUtilityContent(context);
-  const [workspaceLocation, homeContent] = await Promise.all([
-    workspaceLocationPromise,
-    homeContentPromise,
-  ]);
+  const utilityContentPromise = hasExplicitSearchParams ? Promise.resolve<ExploreUtilityContent>({
+    bookingLoadError:false,notificationLoadError:false,notifications:[],unreadNotificationCount:0,upcomingBooking:null,
+  }) : getExploreUtilityContent(context);
+  const workspaceLocation = await workspaceLocationPromise;
   const searchIntent = requestedLocation
     ? { location: "", query: rawQuery }
     : searchIntentFromGlobalQuery(rawQuery, workspaceLocation.label);
@@ -1149,7 +1148,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const locationSource: ExploreLocationSource = requestedLocation || queryLocation
     ? "manual"
     : workspaceLocation.source;
-  const [searchResponse, initialFeed, quickActions, utilityContent] =
+  const [searchResponse, initialFeed, quickActions, utilityContent, homeContent] =
     await Promise.all([
       searchExploreSalons({
         category,
@@ -1158,9 +1157,13 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         pageSize: EXPLORE_PAGE_SIZE,
         query,
       }),
-      getExploreFeedPage({ homeContent }),
+      hasExplicitSearchParams ? Promise.resolve(emptyFeedPage()) : homeContentPromise.then(homeContent => getExploreFeedPage({
+        homeContent,
+        discovery: { category, location: effectiveLocation },
+      })),
       quickActionsPromise,
       utilityContentPromise,
+      homeContentPromise,
     ]);
   const discoveryContent = buildExploreDiscoveryContent({
     homeContent,
@@ -1183,6 +1186,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   };
 
   return (
+    <>
     <ExploreClient
       key={[
         showcaseContent.searchResponse.query,
@@ -1204,5 +1208,6 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
       quickActions={quickActions}
       workspaceLocation={workspaceLocation}
     />
+    </>
   );
 }

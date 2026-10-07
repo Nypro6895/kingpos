@@ -1,4 +1,5 @@
 "use client";
+import { bookingStatusLabel } from "@/lib/booking-no-show";
 import { CustomerName } from "@/components/customer-name";
 
 import { useEffect, useRef, useState } from "react";
@@ -29,8 +30,8 @@ function professionals(item: PortableBookAppointment) {
 }
 function Avatar({name}: {name: string | null}) { return <span className={styles.avatar} aria-hidden="true">{(name || "?").trim().slice(0,1).toUpperCase()}</span>; }
 
-function Status({ value }: { value: string }) {
-  return <span className={styles.status} data-status={value}>{statusLabel(value)}</span>;
+function Status({ value, kind }: { value: string; kind?: import("@/lib/booking-no-show").NoShowKind }) {
+  return <span className={styles.status} data-status={value}>{value === "no_show" ? bookingStatusLabel(value, kind) : statusLabel(value)}</span>;
 }
 
 type BookingActions = { edit?: (item: PortableBookAppointment, field?: BookingEditField) => void; status?: (item: PortableBookAppointment) => void; ticket?: (item: PortableBookAppointment) => void };
@@ -54,7 +55,8 @@ function AppointmentDetails({ item, timezone, close, actions }: {
       {!!item.lines?.length && <><dt>Service schedule</dt><dd><ol className={styles.planPreview}>{item.lines.map(line => <li key={line.id}><strong>{line.serviceName}</strong><span>{line.staffName || line.staffId}</span>{line.startAt && line.endAt && <small>{displayBookingTime(line.startAt,timezone)} – {displayBookingTime(line.endAt,timezone)}</small>}</li>)}</ol></dd></>}
       {item.notificationStatus && <><dt>Notifications</dt><dd>{item.notificationStatus}</dd></>}
       <dt>Duration</dt><dd>{duration(item)}</dd>
-      <dt>Status</dt><dd>{actions.status ? <button type="button" onClick={() => { close(); actions.status?.(item); }}><Status value={item.status} /> ▾</button> : <Status value={item.status} />}</dd>
+      {item.noShowNote ? <><dt>No-show note</dt><dd>{item.noShowNote}</dd></> : null}
+      <dt>Status</dt><dd>{actions.status ? <button type="button" onClick={() => { close(); actions.status?.(item); }}><Status value={item.status} kind={item.noShowKind} /> ▾</button> : <Status value={item.status} kind={item.noShowKind} />}</dd>
     </dl>
     {actions.ticket && !item.ticketId && <button type="button" className={styles.detailsButton} onClick={() => { close(); actions.ticket?.(item); }}>Create ticket → POS</button>}
   </dialog>;
@@ -83,7 +85,7 @@ export function BookingViews({ appointments, data, date, view, showDates, action
             const canEdit = !!actions.edit && !item.ticketId && ["pending","scheduled","confirmed"].includes(item.status);
             return <tr key={item.id}>
               <td data-label="Time / Status" className={styles.time}><button type="button" className={styles.textButton} aria-label={`Change time for ${item.customerName}`} onClick={()=>canEdit ? actions.edit?.(item,{kind:"time"}) : setSelected(item)}><time dateTime={item.startAt}>{displayBookingTime(item.startAt, data.timezone)}</time><small>{displayBookingTime(item.endAt, data.timezone)} · {duration(item)}</small></button>{showDates && <small>{bookingDate(item.startAt, data.timezone)}</small>}
-                <div className={styles.rowStatus}>{actions.status && !item.ticketId && ["pending","scheduled","confirmed","checked_in"].includes(item.status) ? <button type="button" className={styles.statusButton} title="Change status" aria-label={`Change status for ${item.customerName}`} onClick={() => actions.status?.(item)}><Status value={item.status} /></button> : <Status value={item.status} />}</div>
+                <div className={styles.rowStatus}>{Boolean(item.noShowCount) && <span className="mb-1 block text-[11px] font-semibold text-orange-800">{item.noShowCount} previous no-show{item.noShowCount === 1 ? "" : "s"}</span>}{actions.status && !item.ticketId && ["pending","scheduled","confirmed","checked_in","no_show"].includes(item.status) ? <button type="button" className={styles.statusButton} title="Change status" aria-label={`Change status for ${item.customerName}`} onClick={() => actions.status?.(item)}><Status value={item.status} kind={item.noShowKind} /></button> : <Status value={item.status} kind={item.noShowKind} />}</div>
               </td>
               <td data-label="Professional"><div className={styles.person}><Avatar name={professionals(item)} />{canEdit ? <button type="button" className={styles.textButton} aria-label={`Change professional for ${item.customerName}`} onClick={() => actions.edit?.(item,{kind:"staff",index:0})}>{professionals(item)}</button> : <span>{professionals(item)}</span>}</div></td>
               <td data-label="Services">{canEdit ? <button type="button" className={styles.textButton} aria-label={`Edit services for ${item.customerName}`} onClick={() => actions.edit?.(item,{kind:"service",index:0})}>{item.serviceNames.join(", ") || "Choose services"}</button> : item.serviceNames.join(", ")}{(item.lines?.length ?? 0) > 1 && item.lines?.map((line,index) => <small key={line.id}><button type="button" className={styles.textButton} onClick={()=>canEdit ? actions.edit?.(item,{kind:"service",index}) : setSelected(item)}>{line.serviceName}</button> · <button type="button" className={styles.textButton} onClick={()=>canEdit ? actions.edit?.(item,{kind:"staff",index}) : setSelected(item)}>{line.staffName || data.staff.find(staff => staff.id === line.staffId)?.display_name || "Unassigned"}</button></small>)}</td>

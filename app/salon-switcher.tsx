@@ -14,7 +14,10 @@ import {
 } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
 import { routes } from "@/lib/routes";
-import { getWorkspacePendingSummary } from "@/lib/workspace-pending";
+import { SHOW_ROLE_PERMISSION_CATALOGS } from "@/lib/role-catalog-visibility";
+import { Suspense } from "react";
+import { WorkspaceSummarySeed } from "@/app/notifications/workspace-summary-seed";
+import { getWorkspacePendingSummary, emptyPendingSummary } from "@/lib/workspace-pending";
 
 const MANAGEMENT_PERMISSION_CODES = {
   bookings: "booking.view",
@@ -109,7 +112,7 @@ function buildAccountNavigation(context: CurrentBusinessContext) {
     },
   ];
 
-  if (isOwner) {
+  if (isOwner && SHOW_ROLE_PERMISSION_CATALOGS) {
     links.push(
       { href: "/roles", icon: "people", id: "roles", label: "Members & Roles" },
       {
@@ -128,6 +131,13 @@ function buildAccountNavigation(context: CurrentBusinessContext) {
       links,
     },
   ];
+}
+
+async function PendingNotificationSummary({context}:{context:CurrentBusinessContext}) {
+  try {
+    const summary=await getWorkspacePendingSummary(context);
+    return <WorkspaceSummarySeed summary={summary} scope={`${context.user?.id}:${context.currentWorkspace?.id ?? "personal"}`}/>;
+  } catch { return null; }
 }
 
 export async function SalonSwitcher({
@@ -185,7 +195,7 @@ export async function SalonSwitcher({
         false,
         false,
       ];
-  const notifications = await getWorkspacePendingSummary(context);
+  const notifications = emptyPendingSummary();
   const workspaceSections = isSalonStaffContext(context)
     ? buildStaffNavigation()
     : isManageContext
@@ -252,6 +262,7 @@ export async function SalonSwitcher({
       salonMode={context.salonMode}
     >
       {children}
+      <Suspense fallback={null}><PendingNotificationSummary context={context}/></Suspense>
     </NavigationShell>
   );
 }

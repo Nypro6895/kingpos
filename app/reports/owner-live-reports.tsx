@@ -1,5 +1,5 @@
 "use client";
-import {useState} from 'react';
+import {useState,useEffect,useRef,useCallback} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 import {ClosingDateForm,ReportTabs} from './report-controls';
@@ -133,18 +133,49 @@ function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
 }
 
 
-type Props={salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:OperationalReportData;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
+type Props={snapshotAt?:number;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:OperationalReportData;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
 export function OwnerLiveReports(initial:Props){
- const [data,setData]=useState(initial);const params=useSearchParams();
+ const [live,setLive]=useState<{base:Props;data:Props}|null>(null);const params=useSearchParams();
+ const data=live?.base===initial?live.data:initial;
+ const generation=useRef(0);
+ useEffect(()=>{generation.current++;},[initial]);
  const {salonId,salonName,today,report,reportOverview,canEdit,canApplyCorrection,canRequestCorrection}=data;
- usePosResourceRefresh(salonId,'report',async()=>{
+ const activeView=useRef<"overview"|"closing">("overview");
+ const dirtyViews=useRef({overview:false,closing:false});
+ const running=useRef(false);
+ const queued=useRef(false);
+ const refreshView=useCallback(async()=>{
+   if(running.current){queued.current=true;return;}
+   running.current=true;
+   const view=activeView.current;
+   const snapshotGeneration=generation.current;
    const query=new URLSearchParams(params);query.set('date',initial.report.reportDate);
-   const response=await fetch('/api/pos/owner/reports?'+query.toString(),{cache:'no-store',signal:AbortSignal.timeout(15000)});
-   if(response.ok){const next=await response.json();if(next.salonId===salonId)setData(previous=>({...previous,...next}));}
- });
+   query.set('preset',initial.reportOverview.range.preset);
+   query.set('start',initial.reportOverview.range.startDate);
+   query.set('end',initial.reportOverview.range.endDate);
+   query.set('view',view);
+   try {
+     const response=await fetch('/api/pos/owner/reports?'+query.toString(),{cache:'no-store',signal:AbortSignal.timeout(15000)});
+     if(response.ok){const next=await response.json();if(next.salonId===salonId&&snapshotGeneration===generation.current){
+       setLive(previous=>({base:initial,data:{...(previous?.base===initial?previous.data:initial),...next}}));dirtyViews.current[view]=false;
+     }}
+   } finally {running.current=false;}
+ },[params,initial,salonId]);
+ const onViewChange=useCallback((view:"overview"|"closing")=>{
+   activeView.current=view;
+   if(dirtyViews.current[view])void refreshView().catch(()=>{});
+ },[refreshView]);
+ useEffect(()=>{
+   if(queued.current){queued.current=false;void refreshView().catch(()=>{});}
+ },[data,refreshView]);
+ usePosResourceRefresh(salonId,'report',async()=>{
+   dirtyViews.current.overview=true;dirtyViews.current.closing=true;
+   await refreshView();
+ },{initialReconcile:false,snapshotAt:initial.snapshotAt});
   return (
     <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-6 text-zinc-950 sm:px-6">
       <ReportTabs
+        onViewChange={onViewChange}
         overview={
           <OperationalReportDashboard
             report={reportOverview}

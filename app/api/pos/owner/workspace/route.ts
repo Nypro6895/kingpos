@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentSalonPosDeskData } from "@/lib/pos-desk";
-import { getCurrentSalonPosSettings } from "@/lib/pos-settings";
+import { getCurrentSalonPosSettings, getPosDeskDefaults } from "@/lib/pos-settings";
 import { getCurrentBusinessContext, isSalonManageContext } from "@/lib/current-context";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
@@ -25,9 +25,9 @@ export async function GET(request: Request) {
     const settings=await getCurrentSalonPosSettings(context);
     const supabase=await createAuthenticatedSupabaseServerClient();
     const {data}=await supabase!.from("pos_settings").select("workspace_preferences").eq("salon_id",context.currentSalon.id).maybeSingle();
-    return NextResponse.json({settings,preferences:normalizeWorkspacePreferences(data?.workspace_preferences)},{headers:{"Cache-Control":"no-store"}});
+    return NextResponse.json({salonId:context.currentSalon.id,settings,defaults:getPosDeskDefaults(settings),preferences:normalizeWorkspacePreferences(data?.workspace_preferences)},{headers:{"Cache-Control":"no-store"}});
   }
-  const data=await getCurrentSalonPosDeskData();
+  const data=await getCurrentSalonPosDeskData({includeCustomers:false,context});
   // Do not serialize the account/session context or the entire customer directory.
   return NextResponse.json({salonId:context.currentSalon.id,staff:data.staff,services:data.services,defaults:data.defaults,today:data.today,waitingVisits:data.waitingVisits},{headers:{"Cache-Control":"no-store"}});
 }

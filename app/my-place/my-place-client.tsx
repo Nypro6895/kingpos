@@ -1,5 +1,7 @@
 "use client";
 
+import type { PendingOwnerTransferInvite } from "@/lib/owner-transfer";
+import { respondOwnerInvite } from "./owner-invite-actions";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -42,6 +44,8 @@ type Props = {
   workspaceOptions: Workspace[];
   salons: Location[];
   requests: PlaceResult<PlaceRequest[]>;
+  ownerInvites: PendingOwnerTransferInvite[];
+  ownerInvitesError?: string;
 };
 type Panel =
   | { type: "create"; accountId?: string }
@@ -58,6 +62,8 @@ export function MyPlaceClient({
   workspaceOptions,
   salons,
   requests,
+  ownerInvites,
+  ownerInvitesError,
 }: Props) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -383,7 +389,7 @@ export function MyPlaceClient({
 
       <Section
         title="Salon / Business"
-        count={owners.length}
+        count={owners.length + ownerInvites.length}
         action={
           createAccounts.length ? (
             <button
@@ -415,6 +421,29 @@ export function MyPlaceClient({
               : "Your owned and managed salons will appear here."}
           </p>
         )}
+        {ownerInvitesError ? <Notice error>{ownerInvitesError} <button type="button" className="ml-2 underline" onClick={() => router.refresh()}>Retry</button></Notice> : null}
+        {ownerInvites.filter((invite) => !normalized || normalizeSearchText(invite.salonName).includes(normalized)).map((invite) => (
+          <div key={invite.id} className="border-t border-[#f1ebe6] px-5 py-4">
+            <p className="text-sm font-semibold">{invite.salonName}</p>
+            <p className="mt-1 text-sm text-zinc-500">{invite.mode === "transfer_ownership" ? "Ownership transfer · Needs acceptance" : "Co-owner invitation · Needs acceptance"}</p>
+            {invite.message ? <p className="mt-1 text-sm">{invite.message}</p> : null}
+            <div className="mt-3 flex gap-2">
+              {(["accept", "ignore"] as const).map((response) => (
+                <button key={response} className={response === "accept" ? primaryButton : button} disabled={busy} onClick={() => {
+                  if (lock.current) return;
+                  lock.current = true;
+                  startTransition(async () => {
+                    try {
+                      const result = await respondOwnerInvite(invite.id, response);
+                      if (result.error) setNotice({ text: result.error, error: true });
+                      else complete(response === "accept" ? "Owner invitation accepted." : "Owner invitation ignored.");
+                    } finally { lock.current = false; }
+                  });
+                }}>{response === "accept" ? "Accept" : "Ignore"}</button>
+              ))}
+            </div>
+          </div>
+        ))}
         {requestRows(salonRequests)}
         {accounts.length ? (
           <details className="border-t border-[#f1ebe6] px-5 py-2">

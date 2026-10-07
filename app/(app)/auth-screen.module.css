@@ -414,3 +414,42 @@
     display: none;
   }
 }
+
+/* Keep every auth action reachable as Safari resizes or the keyboard opens. */
+@media (max-width: 1023px) {
+  .authViewport {
+    height: auto;
+    max-height: none;
+    min-height: 100dvh;
+    overflow: visible;
+    overscroll-behavior: auto;
+  }
+
+  .authMain {
+    min-height: 0;
+    flex: 1 0 auto;
+    overflow: visible;
+  }
+
+  .authGrid {
+    height: auto;
+  }
+
+  .authPanel {
+    height: auto;
+    overflow: visible;
+  }
+
+  .authPanelInner,
+  .authCard {
+    max-height: none;
+  }
+
+  .authCard {
+    overflow: visible;
+  }
+
+  .authViewport > footer {
+    display: block;
+  }
+}

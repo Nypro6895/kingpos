@@ -449,6 +449,12 @@ async function buildSalonExportArchive(input: {
         supabase: input.supabase,
         table: "booking_status_events",
       }),
+      historyLinks: await querySalonRows({
+        salonId: input.salonId,
+        select: "id, salon_id, booking_id, ticket_id, visit_id, actor_user_id, created_at",
+        supabase: input.supabase,
+        table: "customer_history_links",
+      }),
     }),
     omittedReason: "Booking permission is required.",
     results,

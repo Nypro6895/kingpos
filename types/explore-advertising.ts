@@ -1,0 +1,20 @@
+export type CampaignKind = "popup" | "placement" | "ticker";
+export type Campaign = {
+  id: string;
+  name: string;
+  kind: CampaignKind;
+  enabled: boolean;
+  imageUrl: string;
+  href: string;
+  text: string;
+  background: string;
+  color: string;
+  delaySeconds: number;
+  durationSeconds: number;
+  closeButton: boolean;
+  repeat: "always" | "once" | "daily";
+  position: "top" | "bottom";
+  speedSeconds: number;
+  startsAt: string | null;
+  endsAt: string | null;
+};

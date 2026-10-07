@@ -1,4 +1,21 @@
 "use client";
+import "./booking-workspace.css";
+import { SchedulePicker } from "@/components/booking-ui/schedule-picker";
+import { useCloseOnNavigation } from "@/components/overlay-dismissal";
+import { HistoryLinkControl } from "@/app/activity/history-link-control";
+import { useBookingClock } from "@/components/booking-ui/use-booking-clock";
+import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
+import { bookingStatusLabel } from "@/lib/booking-no-show";
+
+async function reviewBeforeConfirm<T extends { acknowledgeNoShow?: boolean }>(action: (input: T) => Promise<BookingActionResult>, input: T) {
+  const result = await action(input);
+  if (!result.noShowHistory?.length) return result;
+  if (!await confirmNoShowHistory(result.noShowHistory)) return {ok:false,message:"Confirmation cancelled. The appointment is unchanged."};
+  return action({...input,acknowledgeNoShow:true});
+}
+const runBookingStatusAction = (input: Parameters<typeof rawRunBookingStatusAction>[0]) => reviewBeforeConfirm(rawRunBookingStatusAction, input);
+const saveOwnerWorkspaceBookingAction = (input: Parameters<typeof rawSaveOwnerWorkspaceBookingAction>[0]) => reviewBeforeConfirm(rawSaveOwnerWorkspaceBookingAction, input);
+
 
 import {
   createBookingPosTicketAction,
@@ -6,8 +23,8 @@ import {
   createOwnerAppointmentAction,
   reassignOwnerBookingAction,
   rescheduleOwnerBookingAction,
-  runBookingStatusAction,
-  saveOwnerWorkspaceBookingAction,
+  runBookingStatusAction as rawRunBookingStatusAction,
+  saveOwnerWorkspaceBookingAction as rawSaveOwnerWorkspaceBookingAction,
   replaceOwnerBookingServicesAction,
   updateBookingSettingsAction,
   updateQuickSetupAssignmentAction,
@@ -99,11 +116,7 @@ const SOURCE_LABELS: Record<BookingSource, string> = {
   walk_in: "Walk-in",
 };
 
-const VIEW_LABELS = {
-  day: "Day",
-  list: "List",
-  week: "Week",
-} as const;
+
 
 const styles = {
   avatar: "booking-avatar",
@@ -230,13 +243,7 @@ function addDays(date: string, days: number) {
   )}`;
 }
 
-function addMonths(date: string, months: number) {
-  const [year, month] = date.split("-").map(Number);
-  const utcDate = new Date(Date.UTC(year, month - 1 + months, 1));
-  const pad = (value: number) => value.toString().padStart(2, "0");
 
-  return `${utcDate.getUTCFullYear()}-${pad(utcDate.getUTCMonth() + 1)}-01`;
-}
 
 function todayInTimeZone(timeZone: string) {
   return dateParts(new Date().toISOString(), timeZone).date;
@@ -720,7 +727,7 @@ function QuickSetupCard({
 }) {
   return (
     <button
-      className="flex min-h-20 w-full items-center justify-between gap-3 rounded-xl border border-[#f0e6df] bg-white px-4 py-3 text-left transition hover:border-[#ffd6c4] hover:bg-[#fffaf7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f26f3d]"
+      className="booking-setup-row flex w-full items-center justify-between gap-3 border-b border-[#f0e6df] bg-white py-3 text-left transition hover:bg-[#fffaf7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f26f3d]"
       onClick={onOpen}
       type="button"
     >
@@ -1183,7 +1190,7 @@ function ServicesQuickSetupDrawer({
   onClose: () => void;
   options: BookingWorkspaceClientProps["options"];
 }) {
-  const router = useRouter();
+  
   const [query, setQuery] = useState("");
   const [expandedServiceId, setExpandedServiceId] = useState<string | null>(
     initialServiceId && options.services.some((service) => service.id === initialServiceId)
@@ -1226,7 +1233,7 @@ function ServicesQuickSetupDrawer({
 
       if (response.ok) {
         setServiceOverrides((current) => ({ ...current, [serviceId]: next }));
-        router.refresh();
+        
       }
     });
   }
@@ -1246,7 +1253,7 @@ function ServicesQuickSetupDrawer({
 
       if (response.ok) {
         setAssignmentOverrides((current) => ({ ...current, [key]: selected }));
-        router.refresh();
+        
       }
     });
   }
@@ -1279,7 +1286,7 @@ function ServicesQuickSetupDrawer({
               setQuery("");
               setExpandedServiceId(serviceId);
               setShowCreateForm(false);
-              router.refresh();
+              
             }}
             onResult={setResult}
             options={options}
@@ -1450,7 +1457,7 @@ function QuickTimeOffForm({
   staffId: string;
   timezone: string;
 }) {
-  const router = useRouter();
+  
   const defaultDate = addDays(todayInTimeZone(timezone), 1);
   const [startDate, setStartDate] = useState(defaultDate);
   const [endDate, setEndDate] = useState(defaultDate);
@@ -1486,7 +1493,7 @@ function QuickTimeOffForm({
 
       if (response.ok) {
         setReason("");
-        router.refresh();
+        
       }
     });
   }
@@ -1626,7 +1633,7 @@ function SimpleBookingHoursEditor({
   staffId: string;
   timezone: string;
 }) {
-  const router = useRouter();
+  
   const [editing, setEditing] = useState(false);
   const initialDraft = useMemo(
     () => simpleHoursDraftForStaff(options, staffId),
@@ -1705,7 +1712,7 @@ function SimpleBookingHoursEditor({
 
       if (response.ok) {
         setEditing(false);
-        router.refresh();
+        
       }
     });
   }
@@ -2043,7 +2050,7 @@ function ProfessionalsQuickSetupDrawer({
   options: BookingWorkspaceClientProps["options"];
   timezone: string;
 }) {
-  const router = useRouter();
+  
   const [query, setQuery] = useState("");
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(
     initialStaffId && options.staff.some((member) => member.id === initialStaffId)
@@ -2088,7 +2095,7 @@ function ProfessionalsQuickSetupDrawer({
 
       if (response.ok) {
         setStaffOverrides((current) => ({ ...current, [staffId]: next }));
-        router.refresh();
+        
       }
     });
   }
@@ -2108,7 +2115,7 @@ function ProfessionalsQuickSetupDrawer({
 
       if (response.ok) {
         setAssignmentOverrides((current) => ({ ...current, [key]: selected }));
-        router.refresh();
+        
       }
     });
   }
@@ -2146,7 +2153,7 @@ function ProfessionalsQuickSetupDrawer({
                 setQuery("");
                 setSelectedStaffId(staffId);
                 setShowCreateForm(false);
-                router.refresh();
+                
               }}
               onResult={setResult}
               options={options}
@@ -2323,7 +2330,7 @@ function BookingRulesQuickSetupDrawer({
   onClose: () => void;
   settings: BookingWorkspaceClientProps["settings"];
 }) {
-  const router = useRouter();
+  
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const [state, setState] = useState<UpdateBookingSettingsInput>(() =>
@@ -2346,7 +2353,7 @@ function BookingRulesQuickSetupDrawer({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        
       }
     });
   }
@@ -2473,19 +2480,20 @@ function OnlineBookingControlCard({
   publicBookingHref: string;
   settings: BookingWorkspaceClientProps["settings"];
 }) {
-  const router = useRouter();
+  
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
-  const isOn = settings.booking_enabled;
+  const [copyMessage, setCopyMessage] = useState("");
   const isPublished = settings.booking_enabled && settings.online_booking_visible;
   const isLive = isPublished && isReady;
 
-  function copyPublicUrl() {
-    const url =
-      typeof window === "undefined"
-        ? publicBookingHref
-        : `${window.location.origin}${publicBookingHref}`;
-    void navigator.clipboard?.writeText(url);
+  async function copyPublicUrl() {
+    try {
+      await navigator.clipboard.writeText(new URL(publicBookingHref, window.location.origin).href);
+      setCopyMessage("Link copied.");
+    } catch {
+      setCopyMessage("Could not copy. Open the booking page and copy its address.");
+    }
   }
 
   function togglePublished() {
@@ -2502,62 +2510,31 @@ function OnlineBookingControlCard({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        
       }
     });
   }
 
   return (
-    <article className={classNames(styles.panel, "grid gap-4 p-5")}>
+    <article className="booking-publish-section">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className={styles.eyebrow}>Online booking</p>
-          <h2 className="mt-2 text-lg font-extrabold text-[#211c24]">
-            {isLive ? "Live" : isPublished ? "Not live yet" : "Offline"}
-          </h2>
+          <h2 className="text-base font-semibold">Online booking</h2>
+          <p className="mt-1 text-xs text-[#786d78]">{isLive ? "Live · accepting online appointments" : isPublished ? "On · finish setup to go live" : "Off · online booking is paused"}</p>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <span
-            className={classNames(
-              styles.statusBadge,
-              isOn ? styles.statusArrived : styles.statusMuted,
-            )}
-          >
-            {isOn ? "On" : "Off"}
-          </span>
-          <span
-            className={classNames(
-              styles.statusBadge,
-              isLive ? styles.statusArrived : styles.statusPending,
-            )}
-          >
-            {isLive ? "Live" : "Not live"}
-          </span>
-        </div>
+        <button className="booking-publish-toggle" role="switch" aria-label="Online booking" aria-checked={isPublished} disabled={!canManage || isPending} onClick={togglePublished} type="button">{isPending ? "Saving…" : isPublished ? "On" : "Off"}</button>
       </div>
       <InlineActionMessage result={result} />
-      <p className="break-all rounded-xl border border-[#f0e6df] bg-[#fffaf7] px-3 py-2 text-sm text-[#211c24]">
+      <p className="booking-share-url">
         {publicBookingHref}
       </p>
       <div className="flex flex-wrap gap-2">
-        <button
-          className={classNames(styles.primaryButton, "px-4")}
-          disabled={!canManage || isPending}
-          onClick={togglePublished}
-          type="button"
-        >
-          {isPending
-            ? "Saving"
-            : isPublished
-              ? "Turn off"
-              : "Turn on"}
-        </button>
         <button
           className={classNames(styles.secondaryButton, "px-4")}
           onClick={copyPublicUrl}
           type="button"
         >
-          Copy
+          Copy link
         </button>
         <a
           className={classNames(styles.secondaryButton, "px-4")}
@@ -2568,6 +2545,8 @@ function OnlineBookingControlCard({
           Open public page
         </a>
       </div>
+      <p className="booking-share-hint">Add this booking link to your Google Maps business profile, website, or anywhere you want customers to book.</p>
+      {copyMessage ? <p role="status" className="booking-share-hint">{copyMessage}</p> : null}
     </article>
   );
 }
@@ -2599,7 +2578,7 @@ function statusTone(status: string) {
   }
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, kind }: { status: string; kind?: import("@/lib/booking-no-show").NoShowKind }) {
   return (
     <span
       className={classNames(
@@ -2607,7 +2586,7 @@ function StatusBadge({ status }: { status: string }) {
         statusTone(status),
       )}
     >
-      {STATUS_LABELS[status] ?? status}
+      {status === "no_show" ? bookingStatusLabel(status, kind) : STATUS_LABELS[status] ?? status}
     </span>
   );
 }
@@ -2643,6 +2622,7 @@ function ModalFrame({
   onClose: () => void;
   size?: "detail" | "wide";
 }) {
+  useCloseOnNavigation(onClose);
   const frameRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -2745,131 +2725,7 @@ function buildUrl(
   return query ? `${pathname}?${query}` : pathname;
 }
 
-function FilterBar({
-  filters,
-  options,
-}: {
-  filters: BookingWorkspaceFilters;
-  options: BookingWorkspaceClientProps["options"];
-}) {
-  return (
-    <form className="booking-filter-bar" method="get">
-      <input name="date" type="hidden" value={filters.date} />
-      {filters.dateRange !== "day" ? (
-        <input name="range" type="hidden" value={filters.dateRange} />
-      ) : null}
-      <input name="view" type="hidden" value={filters.view} />
-      <input name="tab" type="hidden" value={filters.tab} />
-      <label className="booking-filter-bar__search">
-        <span className="sr-only">Search appointments</span>
-        <input
-          className={styles.searchInput}
-          defaultValue={filters.query}
-          name="q"
-          placeholder="Search customer or service"
-          type="search"
-        />
-      </label>
-      <details className={styles.filterDetails}>
-        <summary className={classNames(styles.secondaryButton, "cursor-pointer gap-2 px-4")}>
-          <FunnelIcon />
-          <span>Filter</span>
-        </summary>
-        <div className={styles.filterMenu}>
-          <label className="grid gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.08em] text-[#786d78]">
-              Staff
-            </span>
-            <select
-              className={styles.select}
-              defaultValue={filters.staffId ?? ""}
-              name="staff"
-            >
-              <option value="">All staff</option>
-              {options.staff.map((staff) => (
-                <option key={staff.id} value={staff.id}>
-                  {staff.display_name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.08em] text-[#786d78]">
-              Status
-            </span>
-            <select
-              className={styles.select}
-              defaultValue={filters.status ?? ""}
-              name="status"
-            >
-              <option value="">All statuses</option>
-              {[
-                "pending",
-                "confirmed",
-                "checked_in",
-                "in_service",
-                "completed",
-                "cancelled",
-                "no_show",
-              ].map((status) => (
-                <option key={status} value={status}>
-                  {STATUS_LABELS[status]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.08em] text-[#786d78]">
-              Service
-            </span>
-            <select
-              className={styles.select}
-              defaultValue={filters.serviceId ?? ""}
-              name="service"
-            >
-              <option value="">All services</option>
-              {options.services.map((service) => (
-                <option key={service.id} value={service.id}>
-                  {service.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.08em] text-[#786d78]">
-              Source
-            </span>
-            <select
-              className={styles.select}
-              defaultValue={filters.source ?? ""}
-              name="source"
-            >
-              <option value="">All sources</option>
-              {BOOKING_SOURCES.map((source) => (
-                <option key={source} value={source}>
-                  {sourceLabel(source)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="flex justify-end gap-2">
-            <a
-              className={classNames(styles.secondaryButton, "px-4")}
-              href={`/bookings?date=${filters.date}&view=${filters.view}&tab=${filters.tab}${
-                filters.dateRange !== "day" ? `&range=${filters.dateRange}` : ""
-              }`}
-            >
-              Clear
-            </a>
-            <button className={classNames(styles.primaryButton, "px-4")} type="submit">
-              Apply
-            </button>
-          </div>
-        </div>
-      </details>
-      </form>
-  );
-}
+
 
 function ChevronIcon({ direction }: { direction: "left" | "right" }) {
   return (
@@ -2907,18 +2763,7 @@ function CalendarIcon() {
   );
 }
 
-function FunnelIcon() {
-  return (
-    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-      <path
-        d="M4 5h16l-6 7v5l-4 2v-7L4 5Z"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
+
 
 function DownChevronIcon() {
   return (
@@ -2997,153 +2842,9 @@ function formatShortDateFromDate(date: string, timezone: string) {
   }).format(new Date(`${date}T12:00:00Z`));
 }
 
-function DateNavigation({
-  filters,
-  timezone,
-}: {
-  filters: BookingWorkspaceFilters;
-  timezone: string;
-}) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const step = filters.dateRange === "next7" || filters.view === "week" ? 7 : 1;
-  const today = todayInTimeZone(timezone);
-  const todayActive = filters.dateRange === "day" && filters.date === today;
 
-  function goTo(date: string) {
-    router.push(buildUrl(pathname, searchParams, { date }), {
-      scroll: false,
-    });
-  }
 
-  function setDateRange(range: BookingWorkspaceFilters["dateRange"]) {
-    router.push(
-      buildUrl(pathname, searchParams, {
-        date: today,
-        range: range === "day" ? null : range,
-        view: "list",
-      }),
-      { scroll: false },
-    );
-  }
 
-  function goToPrevious() {
-    goTo(filters.dateRange === "all" ? addMonths(filters.date, -1) : addDays(filters.date, -step));
-  }
-
-  function goToNext() {
-    goTo(filters.dateRange === "all" ? addMonths(filters.date, 1) : addDays(filters.date, step));
-  }
-
-  return (
-    <div className={styles.toolbarDate}>
-      <button
-        className={classNames(
-          todayActive ? styles.primaryButton : styles.secondaryButton,
-          "px-4",
-        )}
-        onClick={() => setDateRange("day")}
-        type="button"
-      >
-        Today
-      </button>
-      <button
-        className={classNames(
-          filters.dateRange === "next7" ? styles.primaryButton : styles.secondaryButton,
-          "px-4",
-        )}
-        onClick={() => setDateRange("next7")}
-        type="button"
-      >
-        Next 7 days
-      </button>
-      <button
-        className={classNames(
-          filters.dateRange === "all" ? styles.primaryButton : styles.secondaryButton,
-          "px-4",
-        )}
-        onClick={() => setDateRange("all")}
-        type="button"
-      >
-        All
-      </button>
-      <button
-        aria-label={
-          filters.dateRange === "all"
-            ? "Previous month"
-            : filters.dateRange === "next7" || filters.view === "week"
-              ? "Previous week"
-              : "Previous day"
-        }
-        className={styles.iconButton}
-        onClick={goToPrevious}
-        type="button"
-      >
-        <ChevronIcon direction="left" />
-      </button>
-      <label className="booking-date-picker">
-        <span className="booking-date-picker__label">
-          {formatToolbarRange(filters, timezone)}
-        </span>
-        <CalendarIcon />
-        <input
-          aria-label="Choose appointment date"
-          className="booking-date-picker__native"
-          onChange={(event) => goTo(event.target.value)}
-          type="date"
-          value={filters.date}
-        />
-      </label>
-      <button
-        aria-label={
-          filters.dateRange === "all"
-            ? "Next month"
-            : filters.dateRange === "next7" || filters.view === "week"
-              ? "Next week"
-              : "Next day"
-        }
-        className={styles.iconButton}
-        onClick={goToNext}
-        type="button"
-      >
-        <ChevronIcon direction="right" />
-      </button>
-    </div>
-  );
-}
-
-function ViewTabs({ filters }: { filters: BookingWorkspaceFilters }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  return (
-    <details className="booking-view-menu">
-      <summary
-        className="booking-view-menu__summary"
-        data-testid="booking-owner-view-selector"
-      >
-        <span>{VIEW_LABELS[filters.view]}</span>
-        <DownChevronIcon />
-      </summary>
-      <div className="booking-view-menu__popover">
-        {(["list", "day", "week"] as const).map((view) => (
-          <a
-            aria-current={filters.view === view ? "page" : undefined}
-            className="booking-view-menu__item"
-            href={buildUrl(pathname, searchParams, {
-              range: view === "list" && filters.dateRange !== "day" ? filters.dateRange : null,
-              view,
-            })}
-            key={view}
-          >
-            {VIEW_LABELS[view]}
-          </a>
-        ))}
-      </div>
-    </details>
-  );
-}
 
 function WorkspaceTabs({
   appointmentCount,
@@ -3216,9 +2917,10 @@ function AppointmentCard({
           </p>
           <p className="mt-1 truncate text-base font-semibold text-zinc-950">
             {booking.customer?.name ?? "Unknown customer"}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>}
           </p>
         </div>
-        <StatusBadge status={booking.normalizedStatus} />
+        <StatusBadge status={booking.normalizedStatus} kind={booking.no_show_kind} />
       </div>
       <div className="grid gap-1 text-sm text-zinc-600">
         <p className="line-clamp-2">
@@ -3480,12 +3182,13 @@ function DayCalendarCanvas({
                         <span className="block truncate text-xs font-semibold">
                           {formatTime(booking.start_at, timezone)}{" "}
                           {booking.customer?.name ?? "Unknown customer"}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>}
                         </span>
                         <span className="mt-1 block truncate text-xs text-zinc-200">
                           {booking.serviceNames.join(", ") || "Appointment"}
                         </span>
                         <span className="mt-1 block truncate text-[11px] text-zinc-300">
-                          {STATUS_LABELS[booking.normalizedStatus]}
+                          {bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)}
                         </span>
                       </button>
                     );
@@ -3515,62 +3218,9 @@ function DayCalendarCanvas({
   );
 }
 
-const QUICK_STATUS_FILTERS: Array<{
-  label: string;
-  status: BookingWorkspaceFilters["status"];
-}> = [
-  { label: "All", status: null },
-  { label: "Confirmed", status: "confirmed" },
-  { label: "Pending", status: "pending" },
-  { label: "Arrived", status: "checked_in" },
-  { label: "In service", status: "in_service" },
-];
 
-function QuickStatusRow({
-  bookings,
-  filters,
-  timezone,
-}: {
-  bookings: BookingWorkspaceItem[];
-  filters: BookingWorkspaceFilters;
-  timezone: string;
-}) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const scopedBookings = rangeScopedBookings(bookings, filters, timezone).filter(activeBooking);
 
-  function count(status: BookingWorkspaceFilters["status"]) {
-    if (!status) {
-      return scopedBookings.length;
-    }
 
-    return scopedBookings.filter((booking) => booking.normalizedStatus === status).length;
-  }
-
-  return (
-    <div className={styles.statusRow} data-testid="booking-owner-status-filters">
-      {QUICK_STATUS_FILTERS.map((item) => {
-        const active = filters.status === item.status;
-
-        return (
-          <a
-            className={classNames(
-              styles.statusChip,
-              active && styles.statusChipActive,
-            )}
-            href={buildUrl(pathname, searchParams, {
-              status: item.status,
-            })}
-            key={item.label}
-          >
-            {item.label}
-            <span>{count(item.status)}</span>
-          </a>
-        );
-      })}
-    </div>
-  );
-}
 
 function staffForBookingDisplay(
   booking: BookingWorkspaceItem,
@@ -3632,7 +3282,7 @@ function serviceReplacementBlockMessage(booking: BookingWorkspaceItem) {
 
 type QuickStatusCommand = Extract<
   Parameters<typeof runBookingStatusAction>[0]["command"],
-  "cancel" | "confirm"
+  "cancel" | "confirm" | "mark_no_show" | "mark_no_show_excused"
 >;
 
 type QuickStatusAction = {
@@ -3642,7 +3292,7 @@ type QuickStatusAction = {
 
 function quickStatusActions(status: string) {
   return actionSetForStatus(status)
-    .filter((action) => action.command === "confirm" || action.command === "cancel")
+    .filter((action) => ["confirm", "cancel", "mark_no_show", "mark_no_show_excused"].includes(action.command))
     .map<QuickStatusAction>((action) => ({
       command: action.command as QuickStatusCommand,
       label: action.label,
@@ -3664,7 +3314,7 @@ function AppointmentRowEditDialog({
   timezone: string;
 }) {
   const [booking]=useState(serverBooking);
-  const router = useRouter();
+  
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const [startLocal, setStartLocal] = useState(
@@ -3710,7 +3360,7 @@ function AppointmentRowEditDialog({
     setResult(response);
 
     if (response.ok) {
-      router.refresh();
+      
       onClose();
     }
   }
@@ -3781,7 +3431,8 @@ function AppointmentRowEditDialog({
         <div className="min-w-0">
           <h2 className="truncate text-xl font-semibold text-zinc-950">{title}</h2>
           <p className="mt-1 text-sm text-zinc-500">
-            {booking.customer?.name ?? "Unknown customer"} /{" "}
+            {booking.customer?.name ?? "Unknown customer"}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>} /{" "}
             {formatDateTime(booking.start_at, timezone)}
           </p>
         </div>
@@ -4331,6 +3982,7 @@ function statusAfterDraftCommand(
     return "cancelled";
   }
 
+  if (command === "mark_no_show" || command === "mark_no_show_excused") return "no_show";
   if (command === "confirm") {
     return "confirmed";
   }
@@ -4357,6 +4009,7 @@ function AppointmentRowInlinePopover({
   const selectedDate = draft.startLocal.slice(0, 10);
   const selectedTime = draft.startLocal.slice(11, 16);
   const statusOptions = quickStatusActions(booking.normalizedStatus);
+  const noShowClock = useBookingClock();
   const canConfirm = statusOptions.some((action) => action.command === "confirm");
   const canCancel = statusOptions.some((action) => action.command === "cancel");
 
@@ -4553,6 +4206,7 @@ function AppointmentRowInlinePopover({
         value={draft.statusReason}
       />
       <div className="booking-inline-status-actions">
+        {statusOptions.filter(action => action.command === "mark_no_show" || action.command === "mark_no_show_excused").map(action => <button key={action.command} className="booking-inline-cancel-button" disabled={booking.normalizedStatus !== "no_show" && Date.parse(booking.start_at) > noShowClock} onClick={() => {onChange({...draft,statusCommand:action.command});onClose();}} type="button">{action.label}</button>)}
         <button
           className="booking-inline-confirm-button"
           disabled={!canConfirm}
@@ -4596,7 +4250,7 @@ function AppointmentTableRow({
   timezone: string;
 }) {
   const [booking,setBooking]=useState(serverBooking);
-  const router = useRouter();
+  
   const timeAnchorRef = useRef<HTMLButtonElement | null>(null);
   const servicesAnchorRef = useRef<HTMLButtonElement | null>(null);
   const professionalAnchorRef = useRef<HTMLButtonElement | null>(null);
@@ -4667,7 +4321,7 @@ function AppointmentTableRow({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        
       }
     });
   }
@@ -4708,7 +4362,7 @@ function AppointmentTableRow({
       });
       setDraft(originalDraft);
       setPopover(null);
-      router.refresh();
+      
     });
   }
 
@@ -4851,6 +4505,7 @@ function AppointmentTableRow({
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-extrabold text-[#211c24] group-hover:text-[#f26f3d] group-hover:underline group-hover:underline-offset-3">
                     {booking.customer?.name ?? "Unknown customer"}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>}
                   </span>
                 </span>
               </a>
@@ -4860,6 +4515,7 @@ function AppointmentTableRow({
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-extrabold text-[#211c24]">
                     {booking.customer?.name ?? "Unknown customer"}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>}
                   </span>
                 </span>
               </span>
@@ -4900,7 +4556,7 @@ function AppointmentTableRow({
               ref={statusAnchorRef}
               type="button"
             >
-              <StatusBadge status={draftStatus} />
+              <StatusBadge status={draftStatus} kind={draft.statusCommand === "mark_no_show_excused" ? "excused" : draft.statusCommand === "mark_no_show" ? "unexcused" : booking.no_show_kind} />
             </button>
             {popover === "status" ? (
               <AppointmentInlinePopoverPortal
@@ -5177,7 +4833,7 @@ function DetailDrawer({
   timezone: string;
 }) {
   const [booking]=useState(serverBooking);
-  const router = useRouter();
+  
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const [rescheduleStart, setRescheduleStart] = useState(
@@ -5194,6 +4850,7 @@ function DetailDrawer({
       staffId: line.assigned_staff_id ?? "",
     })),
   );
+  const noShowClock = useBookingClock();
   const validActions = actionSetForStatus(booking.normalizedStatus);
   const hasTicket = Boolean(booking.posTicket);
   const ticketConversionBlocked = bookingTicketConversionBlocked(booking);
@@ -5215,7 +4872,7 @@ function DetailDrawer({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        
         onClose();
       }
     });
@@ -5235,7 +4892,7 @@ function DetailDrawer({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        
         onClose();
       }
     });
@@ -5257,7 +4914,7 @@ function DetailDrawer({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        
         onClose();
       }
     });
@@ -5272,18 +4929,19 @@ function DetailDrawer({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        
         onClose();
       }
     });
   }
 
   return (
-    <ModalFrame label="Appointment details" onClose={onClose} size="detail">
+    <ModalFrame label={canManage ? "Manage appointment" : "Appointment details"} onClose={onClose} size="detail">
       <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
         <div className="min-w-0">
           <h2 className="truncate text-xl font-semibold text-zinc-950">
             {booking.customer?.name ?? "Unknown customer"}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>}
           </h2>
           <p className="mt-1 text-sm text-zinc-500">
             {formatDateTime(booking.start_at, timezone)}
@@ -5301,7 +4959,7 @@ function DetailDrawer({
         <Message result={result} />
         <section className="grid gap-3">
           <div className="flex flex-wrap gap-2">
-            <StatusBadge status={booking.normalizedStatus} />
+            <StatusBadge status={booking.normalizedStatus} kind={booking.no_show_kind} />
             <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600">
               {sourceLabel(booking.source)}
             </span>
@@ -5323,18 +4981,14 @@ function DetailDrawer({
                 : "Restricted"}
             </p>
             <p>
-              <span className="font-semibold text-zinc-950">Timezone: </span>
-              {booking.salon_timezone_snapshot}
-            </p>
-            <p>
               <span className="font-semibold text-zinc-950">Total: </span>
               {formatMoney(booking.subtotal)}
             </p>
           </div>
         </section>
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase text-zinc-500">Services</h3>
+        <details className="owner-manage-disclosure">
+          <summary>Services</summary>
           <div className="mt-2 divide-y divide-zinc-100 rounded-lg border border-zinc-200">
             {booking.lines.map((line) => (
               <div className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto]" key={line.id}>
@@ -5376,7 +5030,7 @@ function DetailDrawer({
               </div>
             ))}
           </div>
-        </section>
+        </details>
 
         <CustomerInspirationSection booking={booking} />
 
@@ -5396,6 +5050,7 @@ function DetailDrawer({
               {booking.cancellation_reason}
             </p>
           ) : null}
+          {canManage ? <HistoryLinkControl owner bookingId={booking.id} timezone={timezone} /> : null}
           {booking.no_show_reason ? (
             <p>
               <span className="font-semibold text-zinc-950">No-show: </span>
@@ -5520,8 +5175,8 @@ function DetailDrawer({
           ) : null}
         </section>
 
-        <section>
-          <h3 className="text-sm font-semibold uppercase text-zinc-500">Timeline</h3>
+        <details className="owner-manage-disclosure">
+          <summary>Timeline</summary>
           <div className="mt-2 grid gap-2">
             {booking.events.length === 0 ? (
               <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500">
@@ -5540,14 +5195,14 @@ function DetailDrawer({
               ))
             )}
           </div>
-        </section>
+        </details>
 
         {canManage ? (
           <section className="grid gap-4">
             <h3 className="text-sm font-semibold uppercase text-zinc-500">Actions</h3>
             <label className="grid gap-1">
               <span className="text-sm font-semibold text-zinc-700">
-                Reason or action note
+                Note (optional)
               </span>
               <input
                 className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
@@ -5559,7 +5214,7 @@ function DetailDrawer({
               {validActions.map((action) => (
                 <button
                   className="min-h-10 rounded-md bg-[#f26f3d] px-3 text-sm font-semibold text-white disabled:opacity-60"
-                  disabled={isPending}
+                  disabled={isPending || ((action.command === "mark_no_show" || action.command === "mark_no_show_excused") && booking.normalizedStatus !== "no_show" && Date.parse(booking.start_at) > noShowClock)}
                   key={action.command}
                   onClick={() => runStatus(action.command)}
                   type="button"
@@ -5569,8 +5224,8 @@ function DetailDrawer({
               ))}
             </div>
 
-            <form className="grid gap-3 rounded-lg border border-zinc-200 p-4" onSubmit={runReschedule}>
-              <h4 className="text-sm font-semibold text-zinc-950">Reschedule</h4>
+<details className="owner-manage-disclosure"><summary>Reschedule</summary>            <form className="grid gap-3 rounded-lg border border-zinc-200 p-4" onSubmit={runReschedule}>
+
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="grid gap-1">
                   <span className="text-sm font-semibold text-zinc-700">Start</span>
@@ -5608,10 +5263,10 @@ function DetailDrawer({
               >
                 Save time
               </button>
-            </form>
+            </form></details>
 
-            <form className="grid gap-3 rounded-lg border border-zinc-200 p-4" onSubmit={runReassign}>
-              <h4 className="text-sm font-semibold text-zinc-950">Assign staff</h4>
+<details className="owner-manage-disclosure"><summary>Assign staff</summary>            <form className="grid gap-3 rounded-lg border border-zinc-200 p-4" onSubmit={runReassign}>
+
               {booking.lines.map((line, index) => (
                 <label className="grid gap-1" key={line.id}>
                   <span className="text-sm font-semibold text-zinc-700">
@@ -5646,7 +5301,7 @@ function DetailDrawer({
               >
                 Save assignment
               </button>
-            </form>
+            </form></details>
           </section>
         ) : null}
       </div>
@@ -5665,7 +5320,13 @@ function actionSetForStatus(status: string) {
       return [
         { command: "check_in", label: "Check in" },
         { command: "cancel", label: "Cancel" },
-        { command: "mark_no_show", label: "Mark no-show" },
+        { command: "mark_no_show", label: "No-show" },
+        { command: "mark_no_show_excused", label: "No-show with reason" },
+      ] as const;
+    case "no_show":
+      return [
+        { command: "mark_no_show", label: "No-show" },
+        { command: "mark_no_show_excused", label: "No-show with reason" },
       ] as const;
     case "checked_in":
       return [
@@ -5832,7 +5493,7 @@ function AppointmentDrawer({
   settings: BookingWorkspaceClientProps["settings"];
   timezone: string;
 }) {
-  const router = useRouter();
+  
   const [step, setStep] = useState(0);
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -5935,7 +5596,7 @@ function AppointmentDrawer({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        
         onClose();
       }
     });
@@ -5946,7 +5607,7 @@ function AppointmentDrawer({
       <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
         <div>
           <h2 className="text-xl font-semibold text-zinc-950">New appointment</h2>
-          <p className="mt-1 text-sm text-zinc-500">{timezone}</p>
+
         </div>
         <button
           className="grid size-10 place-items-center rounded-md border border-zinc-300 text-lg font-semibold"
@@ -6267,7 +5928,7 @@ function AppointmentDrawer({
               </p>
               <p className="mt-2">
                 <span className="font-semibold text-zinc-950">Start: </span>
-                {startLocal.replace("T", " ")} {timezone}
+                {startLocal.replace("T", " ")}
               </p>
               <p className="mt-2">
                 <span className="font-semibold text-zinc-950">Subtotal: </span>
@@ -6678,7 +6339,7 @@ function SettingsPanel({
   settings: BookingWorkspaceClientProps["settings"];
   warnings: BookingWorkspaceClientProps["warnings"];
 }) {
-  const router = useRouter();
+  
   const searchParams = useSearchParams();
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -6719,7 +6380,7 @@ function SettingsPanel({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        
       }
     });
   }
@@ -6981,6 +6642,7 @@ function BookingPagePanel({
   warnings: BookingWorkspaceClientProps["warnings"];
 }) {
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [activeSetup, setActiveSetup] = useState<QuickSetupPanelId | null>(null);
   const [focusedStaffId, setFocusedStaffId] = useState<string | null>(null);
   const [focusedServiceId, setFocusedServiceId] = useState<string | null>(null);
@@ -7015,8 +6677,8 @@ function BookingPagePanel({
   }
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
-      <div className="grid content-start gap-4">
+    <section className="booking-page-settings">
+      <div className="booking-settings-main">
         <OnlineBookingControlCard
           canManage={canManage}
           isReady={isReady}
@@ -7024,19 +6686,18 @@ function BookingPagePanel({
           settings={settings}
         />
 
-        <article className={classNames(styles.panel, "p-5")}>
+        <article className="booking-setup-section">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className={styles.eyebrow}>Quick setup</p>
-              <h2 className="mt-2 text-lg font-extrabold text-[#211c24]">
-                Online booking setup
+              <h2 className="text-base font-semibold text-[#211c24]">
+                Booking setup
               </h2>
             </div>
             <span className="text-xs font-extrabold text-[#786d78]">
               {readyCount}/{readiness.length}
             </span>
           </div>
-          <div className="mt-4 grid gap-2">
+          <div className="mt-2 grid">
             <QuickSetupCard
               detail="Active services customers can choose online."
               metric={`${bookableServices.length} bookable`}
@@ -7069,7 +6730,9 @@ function BookingPagePanel({
         </article>
       </div>
 
-      <article className={classNames(styles.panel, "min-w-0 p-5")}>
+      <details className="booking-preview-section" onToggle={event => setPreviewOpen(event.currentTarget.open)}>
+        <summary>Customer preview</summary>
+        {previewOpen ? <div>
         <div className="flex flex-col gap-3 border-b border-[#f0e6df] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className={styles.eyebrow}>Customer preview</p>
@@ -7108,11 +6771,13 @@ function BookingPagePanel({
             <iframe
               className="h-[640px] w-full bg-white"
               src={publicBookingHref}
+              loading="lazy"
               title="Public booking preview"
             />
           </div>
         </div>
-      </article>
+        </div> : null}
+      </details>
       {activeSetup === "services" ? (
         <ServicesQuickSetupDrawer
           canManageAssignments={setupPermissions.canManageBooking}
@@ -7173,19 +6838,9 @@ function AvailabilityPanel({
   );
 
   return (
-    <section className={classNames(styles.panel, "p-5")}>
-      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className={styles.eyebrow}>Availability</p>
-          <h2 className="mt-2 text-2xl font-extrabold tracking-[-0.03em] text-[#211c24]">
-            Staff schedule
-          </h2>
-          <p className="mt-1 text-sm text-[#786d78]">
-            Working intervals, breaks, time off, and booking blocks.
-          </p>
-        </div>
-      </div>
+    <section className="owner-availability-settings">
       <StaffAvailabilityEditor
+        initiallyCollapsed
         availabilityRules={options.availabilityRules}
         canManage={canManage}
         readinessByStaffId={readinessByStaffId}
@@ -7205,7 +6860,7 @@ function OwnerSettingsPanel({
   canManage: boolean;
   settings: BookingWorkspaceClientProps["settings"];
 }) {
-  const router = useRouter();
+  
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const [state, setState] = useState<UpdateBookingSettingsInput>({
@@ -7245,13 +6900,13 @@ function OwnerSettingsPanel({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        
       }
     });
   }
 
   return (
-    <form className="grid gap-4 xl:grid-cols-2" onSubmit={submit}>
+    <form className="owner-booking-preferences" onSubmit={submit}>
       <div className="xl:col-span-2">
         <Message result={result} />
       </div>
@@ -7502,6 +7157,75 @@ function NumberField({
   );
 }
 
+function OwnerAgenda({bookings, filters, range, timezone, canManage, onOpen}: {
+  bookings: BookingWorkspaceItem[]; filters: BookingWorkspaceFilters; range: BookingWorkspaceClientProps["range"];
+  timezone: string; canManage: boolean; onOpen: (booking: BookingWorkspaceItem) => void;
+}) {
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function dismiss(event: PointerEvent) {
+      const target = event.target as Element;
+      if (target.closest('[role="dialog"], .owner-agenda-item')) return;
+      root.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item => {
+        if (!item.contains(target) && item.dataset.busy !== "true") item.open = false;
+      });
+    }
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, []);
+  const visible = rangeScopedBookings(bookings, filters, timezone).slice().sort((a,b)=>Date.parse(a.start_at)-Date.parse(b.start_at));
+  const groups = filters.view === "week" ? range.days : filters.dateRange === "day" ? [{date:filters.date,label:""}] :
+    [...new Set(visible.map(item=>dateParts(item.start_at,timezone).date))].map(date=>({date,label:formatDateOnly(`${date}T12:00:00Z`,timezone)}));
+  return <div className="owner-agenda" ref={root}>
+    {!visible.length && filters.view !== "week" ? <p className="owner-agenda-empty">No appointments for this selection. Choose another date or clear filters.</p> : null}
+    {groups.map(day => {
+      const items = visible.filter(item=>dateParts(item.start_at,timezone).date===day.date);
+      return <section key={day.date} className="owner-agenda-day">
+        {day.label ? <div className="owner-agenda-day-heading"><h2>{day.label}</h2><span>{items.length ? `${items.length} booked` : "No appointments"}</span></div> : null}
+        {items.map(booking=><OwnerAgendaRow key={`${booking.id}:${booking.updated_at}`} booking={booking} timezone={timezone} canManage={canManage} onOpen={onOpen}/>)}
+      </section>;
+    })}
+  </div>;
+}
+
+function OwnerAgendaRow({booking,timezone,canManage,onOpen}: {booking:BookingWorkspaceItem;timezone:string;canManage:boolean;onOpen:(booking:BookingWorkspaceItem)=>void}) {
+  
+  const [pending,startTransition]=useTransition();
+  const [result,setResult]=useState<BookingActionResult|null>(null);
+  const [confirmed,setConfirmed]=useState(false);
+  return <details className="owner-agenda-item" name="owner-appointment" data-busy={pending}>
+    <summary className="owner-agenda-row">
+      <time dateTime={booking.start_at}>{formatTime(booking.start_at,timezone)}</time>
+      <span className="owner-agenda-customer"><strong>{booking.customer?.name ?? "Unknown customer"}</strong>
+        <span>{booking.serviceNames.join(" / ") || "No services"} · {booking.durationMinutes} min · {formatMoney(booking.subtotal)}</span>
+        <small>{booking.assignedStaffNames.join(", ") || "Unassigned"}</small>
+      </span>
+      <StatusBadge status={confirmed ? "confirmed" : booking.normalizedStatus} kind={booking.no_show_kind}/><span className="owner-agenda-chevron"><DownChevronIcon/></span>
+    </summary>
+    <div className="owner-agenda-expanded">
+      <dl>
+        {canManage && booking.customer?.phone ? <div><dt>Phone</dt><dd><a href={`tel:${booking.customer.phone}`}>{booking.customer.phone}</a></dd></div>:null}
+        {canManage && booking.customer?.email ? <div><dt>Email</dt><dd><a href={`mailto:${booking.customer.email}`}>{booking.customer.email}</a></dd></div>:null}
+        {booking.public_notes || booking.notes ? <div><dt>Customer note</dt><dd>{booking.public_notes || booking.notes}</dd></div>:null}
+        {canManage && booking.internal_notes ? <div><dt>Internal note</dt><dd>{booking.internal_notes}</dd></div>:null}
+        {Boolean(booking.noShowCount) ? <div><dt>No-show history</dt><dd>{booking.noShowCount} previous no-show{booking.noShowCount===1?"":"s"}</dd></div>:null}
+        {booking.no_show_reason ? <div><dt>No-show reason</dt><dd>{booking.no_show_reason}</dd></div>:null}
+        {booking.cancellation_reason ? <div><dt>Cancellation</dt><dd>{booking.cancellation_reason}</dd></div>:null}
+      </dl>
+      <CustomerInspirationSection booking={booking}/>
+      <Message result={result}/>
+      <div className="owner-agenda-actions">
+        {canManage && !confirmed && booking.normalizedStatus === "pending" ? <button className={styles.primaryButton} disabled={pending} type="button" onClick={()=>startTransition(async()=>{
+          try {const response=await runBookingStatusAction({bookingId:booking.id,expectedUpdatedAt:booking.updated_at,command:"confirm",reason:""});setResult(response);if(response.ok){setConfirmed(true);}}
+          catch {setResult({ok:false,message:"Could not confirm. Please try again."});}
+        })}>{pending?"Confirming…":"Confirm"}</button>:null}
+        <button type="button" className={styles.secondaryButton} disabled={pending} onClick={()=>onOpen(booking)}>{canManage?"Edit / Manage":"View appointment"}</button>
+        {booking.posTicket ? <a className={styles.secondaryButton} href={`/pos-tickets/${booking.posTicket.id}`}>POS ticket</a>:null}
+      </div>
+    </div>
+  </details>;
+}
+
 export function BookingWorkspaceClient({
   bookings,
   canManageBookings,
@@ -7531,6 +7255,21 @@ export function BookingWorkspaceClient({
   );
   const [drawerPrefill, setDrawerPrefill] = useState<DraftPrefill | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [timeline, setTimeline] = useState(false);
+  const navigation = useRef<HTMLDivElement>(null);
+  useEffect(()=>{
+    function dismiss(event: PointerEvent) {navigation.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item=>{if(!item.contains(event.target as Node))item.open=false;});}
+    function escape(event: globalThis.KeyboardEvent) {if(event.key==='Escape')navigation.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item=>item.open=false);}
+    document.addEventListener('pointerdown',dismiss);document.addEventListener('keydown',escape);
+    return ()=>{document.removeEventListener('pointerdown',dismiss);document.removeEventListener('keydown',escape);};
+  },[]);
+  const today=todayInTimeZone(timezone), tomorrow=addDays(today,1);
+  function goDay(date:string) {
+    setTimeline(false);
+    router.push(buildUrl(pathname,searchParams,{date,range:null,view:"day",tab:"calendar",bookingId:null}),{scroll:false});
+    navigation.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item=>item.open=false);
+  }
+
 
   function openBooking(booking: BookingWorkspaceItem) {
     router.replace(
@@ -7571,7 +7310,7 @@ export function BookingWorkspaceClient({
     bookings,
     filters,
     timezone,
-  ).filter(activeBooking).length;
+  ).length;
   const setupIncomplete = bookingReadinessSteps({
     bookingEnabled: settings.booking_enabled,
     onlineBookingVisible: settings.online_booking_visible,
@@ -7588,30 +7327,26 @@ export function BookingWorkspaceClient({
       data-booking-surface="owner"
       data-testid="booking-owner-root"
     >
-      <section className={styles.ownerHeader}>
-        <div className={styles.ownerFrame}>
-          <div className={styles.ownerActionRow}>
-            <WorkspaceTabs
-              appointmentCount={appointmentCount}
-              filters={filters}
-              setupIncomplete={setupIncomplete}
-            />
-            {canManageBookings ? (
-              <button
-                className={classNames(styles.primaryButton, "gap-2 px-5")}
-                data-testid="booking-owner-new-appointment"
-                onClick={() => {
-                  setDrawerPrefill(null);
-                  setShowCreate(true);
-                }}
-                type="button"
-              >
-                <span aria-hidden="true" className="text-xl leading-none">+</span>
-                <span>New appointment</span>
-              </button>
-            ) : null}
-          </div>
+      <section className="booking-owner-header owner-schedule-header" ref={navigation}>
+        <nav className="owner-schedule-tabs" aria-label="Booking schedule">
+          <button type="button" aria-current={filters.tab==='calendar' && filters.date===today && filters.dateRange==='day' && filters.view!=='week'?"page":undefined} onClick={()=>goDay(today)}><CalendarIcon/><span>Today</span></button>
+          <button type="button" aria-current={filters.tab==='calendar' && filters.date===tomorrow && filters.dateRange==='day' && filters.view!=='week'?"page":undefined} onClick={()=>goDay(tomorrow)}><ChevronIcon direction="right"/><span>Next day</span></button>
+          <details data-dismissible-popover className="owner-schedule-menu"><summary><CalendarIcon/><span>Calendar</span></summary><div className="owner-schedule-popover">
+            <SchedulePicker key={filters.date} date={filters.date} range={filters.dateRange} status={filters.status ?? ""} onChange={value => {
+              setTimeline(false);
+              router.push(buildUrl(pathname, searchParams, { date:value.date, range:value.range === "day" ? null : value.range, status:value.status || null, view:"list", tab:"calendar", bookingId:null }), {scroll:false});
+              navigation.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item=>item.open=false);
+            }}/>
+          </div></details>
+          <details data-dismissible-popover className="owner-schedule-menu"><summary><SettingsIcon/><span>Settings</span></summary><div className="owner-schedule-popover owner-settings-menu">
+            <WorkspaceTabs appointmentCount={appointmentCount} filters={filters} setupIncomplete={setupIncomplete}/>
+          </div></details>
+        </nav>
+        <div className="owner-schedule-date">
+          <h1>{filters.tab==='calendar' ? `${filters.dateRange==='day' && filters.view!=='week' ? filters.date===today?'Today, ':filters.date===tomorrow?'Tomorrow, ':'' : ''}${filters.dateRange==='day' && filters.view!=='week' ? new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(`${filters.date}T12:00:00Z`)):formatToolbarRange(filters,timezone)}` : filters.tab==='booking-page'?'Booking page':filters.tab==='availability'?'Availability':'Booking settings'}</h1>
+          <div><span>{filters.tab === "availability" ? `${options.staff.length} professionals` : `${appointmentCount} booked`}</span>{canManageBookings && filters.tab !== "availability" ? <button type="button" className="owner-schedule-new" data-testid="booking-owner-new-appointment" onClick={()=>{setDrawerPrefill(null);setShowCreate(true);}}>＋ New</button>:null}</div>
         </div>
+        {filters.query || filters.staffId || filters.status || filters.serviceId || filters.source ? <div className="owner-active-filter">Filtered appointments <a href={buildUrl(pathname,searchParams,{q:null,staff:null,status:null,service:null,source:null})}>Clear filters</a></div>:null}
       </section>
 
       <section className={styles.ownerContent}>
@@ -7621,19 +7356,7 @@ export function BookingWorkspaceClient({
               className={styles.workspaceCard}
               data-testid="booking-owner-board"
             >
-              <div className={styles.toolbar} data-testid="booking-owner-toolbar">
-                <DateNavigation
-                  filters={filters}
-                  timezone={timezone}
-                />
-                <FilterBar filters={filters} options={options} />
-                <ViewTabs filters={filters} />
-              </div>
-              <QuickStatusRow
-                bookings={bookings}
-                filters={filters}
-                timezone={timezone}
-              />
+              {!timeline ? <OwnerAgenda bookings={bookings} canManage={canManageBookings} filters={filters} range={range} timezone={timezone} onOpen={openBooking}/> :
               <CalendarView
                 bookings={bookings}
                 canManage={canManageBookings}
@@ -7642,7 +7365,7 @@ export function BookingWorkspaceClient({
                 options={options}
                 range={range}
                 timezone={timezone}
-              />
+              />}
             </section>
             {requests.length > 0 ? (
               <section className={classNames(styles.panel, "p-5")}>

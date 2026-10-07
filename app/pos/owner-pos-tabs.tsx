@@ -1,5 +1,37 @@
+"use client";
+import "./owner-pos.css";
+
 import Link from "next/link";
-export function OwnerPosTabs({active}:{active:"pos"|"settings"}) {
- const settings=active==='pos';
- return <nav aria-label="Owner POS"><Link className="owner-switch" href={settings?'/pos/settings':'/pos'} aria-label={settings?'Settings':'Back to POS'} title={settings?'Settings':'Back to POS'}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">{settings?<><path d="m9 3-1 3-3 1-2 5 2 5 3 1 1 3h6l1-3 3-1 2-5-2-5-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/></>:<><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4M8 9h8m-4-2v4"/></>}</svg></Link></nav>;
+import { useRef, useState } from "react";
+import { ROLE_NAVIGATION } from "@/app/role-navigation";
+import { OwnerPosIcon, type OwnerPosIconName } from "./owner-pos-icon";
+
+const shortcuts: { id: string; href: string; label: string; icon: OwnerPosIconName }[] = [
+ {id:'pos',href:'/pos',label:'POS',icon:'pos'},
+ {id:'ticket',href:'/pos/ticket',label:'Ticket',icon:'ticket'},
+ {id:'book',href:'/pos/book',label:'Book',icon:'booking'},
+ {id:'checkIn',href:'/pos/check-in',label:'Check In',icon:'checkin'},
+ {id:'report',href:'/pos/report',label:'Report',icon:'report'},
+ {id:'settings',href:'/pos/settings',label:'Settings',icon:'settings'},
+];
+const menus = [...ROLE_NAVIGATION.owner.links, ...ROLE_NAVIGATION.owner.moreLinks,
+  { href: "/pos/settings", label: "POS Settings", id: "pos-settings" },
+  { href: "/settings", label: "Account Settings", id: "account-settings" },
+].filter((item, index, items) => items.findIndex(other => other.href === item.href) === index);
+
+export function OwnerPosTabs({ active }: { active: "pos" | "ticket" | "book" | "checkIn" | "report" | "settings" }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const [open, setOpen] = useState(false);
+  const close = () => { dialog.current?.close(); setOpen(false); };
+  if (active === "settings") return <nav aria-label="Owner POS"><Link className="owner-switch" href="/pos" aria-label="Back to POS" title="Back to POS"><OwnerPosIcon name="pos" /></Link></nav>;
+  return <>
+    <nav className="owner-top-nav" aria-label="Owner POS">
+      <button className="owner-nav-item owner-more-button" aria-label="More" aria-haspopup="dialog" aria-expanded={open} onClick={() => { dialog.current?.showModal(); setOpen(true); }}><OwnerPosIcon name="more" /><span>More</span></button>
+      {shortcuts.map(item => <Link className="owner-nav-item" href={item.href} key={item.href} aria-label={item.label} aria-current={item.id === active ? "page" : undefined}><OwnerPosIcon name={item.icon} /><span>{item.label}</span></Link>)}
+    </nav>
+    <dialog ref={dialog} className="owner-menu-dialog" aria-labelledby="owner-menu-title" onCancel={close} onClick={event => { if (event.target === event.currentTarget) { const box = event.currentTarget.getBoundingClientRect(); if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) close(); } }}>
+      <header><h2 id="owner-menu-title">All menus</h2><button onClick={close} aria-label="Close menus">×</button></header>
+      <div className="owner-menu-links">{menus.map(item => <Link key={item.id} href={item.href} onClick={close}>{item.label}<span aria-hidden="true">›</span></Link>)}</div>
+    </dialog>
+  </>;
 }

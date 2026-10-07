@@ -1,4 +1,5 @@
 ﻿import "server-only";
+import { cache } from "react";
 
 import {
   isAccountContext,
@@ -7,8 +8,7 @@ import {
   type CurrentBusinessContext,
 } from "@/lib/current-context";
 import {
-  countUnreadAppNotifications,
-  getCurrentAppNotifications,
+  type AppNotification,
   type AppNotificationQueryScope,
 } from "@/lib/app-notifications";
 import { countPendingBeautySalonPublicationRequests } from "@/lib/beauty-salon-publications";
@@ -41,7 +41,7 @@ export type WorkspacePendingSummary = {
   total: number;
 };
 
-function emptyPendingSummary(): WorkspacePendingSummary {
+export function emptyPendingSummary(): WorkspacePendingSummary {
   return {
     items: [],
     beautyPublicationRequests: 0,
@@ -77,7 +77,7 @@ function buildItems(input: {
     items.push({
       count: input.bookingNotifications,
       id: "booking-notifications",
-      label: "Booking updates",
+      label: "Unread updates",
     });
   }
 
@@ -145,7 +145,7 @@ export function getAppNotificationScopeForContext(
   };
 }
 
-export async function getWorkspacePendingSummary(
+export const getWorkspacePendingSummary = cache(async function getWorkspacePendingSummary(
   context: CurrentBusinessContext,
 ): Promise<WorkspacePendingSummary> {
   if (!context.user) {
@@ -164,16 +164,34 @@ export async function getWorkspacePendingSummary(
   let beautyPublicationRequests = 0;
   const notificationScope = getAppNotificationScopeForContext(context);
   const now = new Date();
-  const [bookingNotifications, appNotificationPreviews] = await Promise.all([
-    countUnreadAppNotifications(notificationScope),
-    getCurrentAppNotifications({ ...notificationScope, limit: 5 }),
+  const [notificationResult,dashboardResult,managerApplicationsResult,publicationCount,bookingActionResult] = await Promise.all([
+    supabase.rpc("notification_feed", {
+      p_kind:notificationScope.recipientKind as string,p_salon:notificationScope.salonId ?? null,
+      p_account:notificationScope.accountId ?? null,p_limit:5,
+    }),
+    supabase.rpc("list_my_staff_salon_connection_requests"),
+    (async()=>{
+      if (!context.currentMembership || !context.currentAccount || !isSalonManageContext(context) || !context.currentSalon || !await hasPermission("staff.manage",context)) return 0;
+      const {count,error}=await supabase.from("staff_salon_connection_requests")
+        .select("id",{count:"exact",head:true}).eq("salon_id",context.currentSalon.id)
+        .eq("direction","staff_application").eq("status","pending");
+      return error ? 0 : count ?? 0;
+    })(),
+    isSalonManageContext(context) && context.currentSalon ? countPendingBeautySalonPublicationRequests(context) : Promise.resolve(0),
+    supabase.rpc("notification_booking_action_count", {
+      p_kind:notificationScope.recipientKind as string,p_salon:notificationScope.salonId ?? null,p_account:notificationScope.accountId ?? null,
+    }),
   ]);
+  const {data:notificationFeed,error:notificationError}=notificationResult;
+  const {data:dashboardRequests,error:dashboardError}=dashboardResult;
+  managerApplications=managerApplicationsResult;
+  beautyPublicationRequests=publicationCount;
+  const actionableBookings=bookingActionResult.data;
+  const bookingNotifications = Number(notificationFeed?.unreadCount ?? 0);
+  const appNotificationPreviews = (notificationFeed?.items ?? []) as AppNotification[];
+  if (notificationError) console.error("Notification summary unavailable", { code: notificationError.code });
   const previewItems = appNotificationPreviews.map((notification) =>
     appNotificationToFeedItem(notification, now),
-  );
-
-  const { data: dashboardRequests, error: dashboardError } = await supabase.rpc(
-    "list_my_staff_salon_connection_requests",
   );
 
   let dashboardConnectionRequests: StaffConnectionDashboardRequest[] = [];
@@ -199,40 +217,22 @@ export async function getWorkspacePendingSummary(
     );
   }
 
-  const canManageStaff =
-    context.currentMembership && context.currentAccount
-      ? await hasPermission("staff.manage", context)
-      : false;
-
-  if (
-    canManageStaff &&
-    isSalonManageContext(context) &&
-    context.currentAccount &&
-    context.currentSalon
-  ) {
-    const { count, error } = await supabase
-      .from("staff_salon_connection_requests")
-      .select("id", { count: "exact", head: true })
-      .eq("salon_id", context.currentSalon.id)
-      .eq("direction", "staff_application")
-      .eq("status", "pending");
-
-    if (!error) {
-      managerApplications = count ?? 0;
-    }
-  }
-
   if (managerApplications > 0) {
     previewItems.push(
       managerApplicationsSummaryToFeedItem(managerApplications, now),
     );
   }
 
-  beautyPublicationRequests =
-    isSalonManageContext(context) && context.currentSalon
-      ? await countPendingBeautySalonPublicationRequests(context)
-      : 0;
-
+  if (Number(actionableBookings) > 0) previewItems.push({
+    id: "booking-actions", source: "manager", title: `${actionableBookings} appointment requests need confirmation`, body: "Viewed requests stay here until they are resolved.",
+    createdAt: now.toISOString(), kindLabel: "Booking requests", meta: "Needs action", status: "pending", unread: false,
+    action: { type: "link", href: notificationScope.recipientKind === "staff" ? "/staff/appointments" : "/bookings", label: "Review appointments" },
+  });
+  if (beautyPublicationRequests > 0) previewItems.push({
+    id: "beauty-actions", source: "manager", title: `${beautyPublicationRequests} client transformations need approval`, body: null,
+    createdAt: now.toISOString(), kindLabel: "Content approval", meta: "Needs action", status: "pending", unread: false,
+    action: { type: "link", href: "/salon-profile/client-transformations", label: "Review transformations" },
+  });
   const items = buildItems({
     beautyPublicationRequests,
     bookingNotifications,
@@ -246,15 +246,11 @@ export async function getWorkspacePendingSummary(
     bookingNotifications,
     items,
     managerApplications,
-    previewItems: sortNotificationFeedItems(previewItems).slice(0, 6),
+    previewItems: [...sortNotificationFeedItems(previewItems.filter(item=>item.source === "app")).slice(0,5), ...previewItems.filter(item=>item.source !== "app").map(item=>({...item,unread:false}))],
     reviewHref: "/notifications",
     staffApplications,
     staffInvites,
-    total:
-      staffInvites +
-      staffApplications +
-      managerApplications +
-      bookingNotifications +
-      beautyPublicationRequests,
+    // Badge means unread updates; operational tasks have their own counts.
+    total: bookingNotifications,
   };
-}
+});

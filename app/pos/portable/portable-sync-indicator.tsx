@@ -11,7 +11,7 @@ export function PortableSyncIndicator({ scope }: { scope: string }) {
   useEffect(() => {
     let active=true, running=false;
     const check=async()=>{
-      if(running)return;
+      if(running||document.visibilityState!=="visible")return;
       if(!navigator.onLine){if(active)setConnection('offline');return;}
       running=true;
       try{
@@ -21,7 +21,7 @@ export function PortableSyncIndicator({ scope }: { scope: string }) {
       }catch{if(active)setConnection('offline');}
       finally{running=false;}
     };
-    void check();const timer=setInterval(()=>void check(),15000);
+    void check();const timer=setInterval(()=>void check(),30000);
     window.addEventListener('online',check);window.addEventListener('focus',check);
     return()=>{active=false;clearInterval(timer);window.removeEventListener('online',check);window.removeEventListener('focus',check);};
   },[]);

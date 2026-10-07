@@ -17,7 +17,7 @@ class OfflineShell {
   decode(value) { return JSON.parse(this.codec.decryptString(Buffer.from(value))); }
   meta(key) { const row = this.db.prepare('SELECT body FROM metadata WHERE key=?').get(key); return row ? this.decode(row.body) : null; }
   setMeta(key, value) { this.db.prepare('INSERT OR REPLACE INTO metadata VALUES(?,?)').run(key, this.encode(value)); }
-  lock() { this.epoch++; this.db.exec("DELETE FROM resources; DELETE FROM metadata WHERE key='scope';"); }
+  lock() { this.epoch++; this.db.exec("DELETE FROM resources; DELETE FROM metadata;"); }
   cached(path) { const row = this.db.prepare('SELECT body FROM resources WHERE url=?').get(path); return row ? this.decode(row.body) : null; }
   response(path) { const value = this.cached(path); return value ? new Response(Buffer.from(value.body, 'base64'), { headers: value.headers }) : null; }
   prepare(scope, assets = [], displayPath) {
@@ -37,13 +37,18 @@ class OfflineShell {
       if (!this.cached(ROOT)) await this.capture(scope, assets, undefined, epoch);
       if (!this.cached(ROOT) || epoch !== this.epoch) return;
     }
-    const fetch = url => this.fetcher(new Request(new URL(url, this.origin), { headers: { Accept: url === path ? 'text/html' : '*/*' }, credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(20000) }));
-    const response = await fetch(path);
-    if (!response.ok) throw Error('Workspace unavailable');
-    const html = await response.text();
-    if (!html.includes(path === ROOT ? 'data-portable-pos-shell' : 'data-customer-display-shell')) {
-      if (path === ROOT && epoch === this.epoch) this.lock();
-      return;
+    const fetch = url => this.fetcher(new Request(new URL(url, this.origin), { headers: { Accept: url === path ? 'text/html' : '*/*' }, credentials: 'include', cache: url === path ? 'no-store' : 'default', signal: AbortSignal.timeout(20000) }));
+    const prepared=this.meta('prepared');
+    const renew=prepared?.scope!==scope || !this.cached(path) || Date.now()-(prepared?.paths?.[path] ?? 0)>=300000;
+    let response,html='';
+    if(renew){
+      response=await fetch(path);
+      if(!response.ok)throw Error('Workspace unavailable');
+      html=await response.text();
+      if(!html.includes(path===ROOT?'data-portable-pos-shell':'data-customer-display-shell')){
+        if(path===ROOT && epoch===this.epoch)this.lock();
+        return;
+      }
     }
     const urls = new Set();
     for (const value of [...(html.match(/\/_next\/static\/[^"\s<>\\]+/g) || []), ...assets]) {
@@ -51,10 +56,11 @@ class OfflineShell {
       if (url.origin === this.origin && url.pathname.startsWith('/_next/static/')) urls.add(url.pathname + url.search);
     }
     const pack = (body, headers) => ({ body: Buffer.from(body).toString('base64'), headers: { 'content-type': headers.get('content-type') || 'application/octet-stream', ...(headers.get('content-security-policy') ? { 'content-security-policy': headers.get('content-security-policy') } : {}) } });
-    const rows = [[path, pack(html, response.headers)]];
+    const rows = renew ? [[path, pack(html, response.headers)]] : [];
     // Bounded concurrency avoids starving POS traffic while preparing the app.
     const list = [...urls];
     for (let i = 0; i < list.length; i += 6) await Promise.all(list.slice(i, i + 6).map(async url => {
+      if(this.cached(url))return;
       const asset = await fetch(url);
       if (!asset.ok) throw Error('App file unavailable');
       rows.push([url, pack(await asset.arrayBuffer(), asset.headers)]);
@@ -65,6 +71,7 @@ class OfflineShell {
       const write = this.db.prepare('INSERT OR REPLACE INTO resources VALUES(?,?)');
       for (const [url, value] of rows) write.run(url, this.encode(value));
       this.setMeta('scope', scope);
+      if(renew)this.setMeta('prepared',{scope,paths:{...(prepared?.scope===scope?prepared.paths:{}),[path]:Date.now()}});
       this.db.exec('COMMIT');
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }

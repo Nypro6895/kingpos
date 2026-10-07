@@ -9,9 +9,10 @@ export function PortableOfflineShell() {
   useEffect(() => {
     if (!scope) return;
     const native = desktopDevice()?.offline;
-    let active = true;
+    let active = true, running = false;
     const prepare = async () => {
-      if (!navigator.onLine || !active) return;
+      if (!navigator.onLine || !active || running || document.visibilityState !== "visible") return;
+      running = true;
       try {
         if (native) {
           await native.prepare(scope, performance.getEntriesByType("resource").map(entry => entry.name));
@@ -24,6 +25,7 @@ export function PortableOfflineShell() {
         registration.active?.postMessage({ kind: "portable-prepare", scope,
           assets: performance.getEntriesByType("resource").map(entry => entry.name) });
       } catch { /* Local commands still work if shell caching is unavailable. */ }
+      finally { running = false; }
     };
     const lock = () => {
       active = false;

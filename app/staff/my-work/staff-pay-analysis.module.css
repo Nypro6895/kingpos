@@ -1,14 +1,25 @@
 .portal { color: #19252d; font-size: 14px; }
 .period { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 12px; color: #63717c; font-size: 12px; }
 .period > p { margin: 0; padding: 10px 0; }
+.period { flex-wrap: wrap; }
+.payPicker { display: flex; flex-wrap: wrap; gap: 8px; max-width: 100%; }
+.payPicker label { display: grid; min-width: 0; max-width: 100%; }
+.payPicker select { width: 100%; min-width: 0; max-width: 320px; min-height: 44px; border: 1px solid #e6eaee; border-radius: 8px; background: #fff; color: #19252d; padding: 8px; font: inherit; font-size: 14px; }
+.payPicker select:focus-visible { outline: 2px solid #216346; outline-offset: 2px; }
+.payPeriod { justify-content: flex-start; align-items: center; gap: 4px 12px; margin-bottom: 10px; }
+.payPeriod > p { padding: 0; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .history { position: relative; flex-shrink: 0; }
 .history summary { color: #a64726; padding: 10px 0 10px 10px; min-height: 44px; }
 .history nav { position: absolute; right: 0; top: 44px; z-index: 20; width: min(290px, calc(100vw - 48px)); max-height: 320px; overflow: auto; padding: 8px; background: #fff; border: 1px solid #e6eaee; border-radius: 10px; box-shadow: 0 6px 18px #19252d12; }
 .history a { display: block; padding: 12px 8px; border-radius: 6px; }
 .history a[aria-current=page] { background: #fff2eb; color: #a64726; }
-.hero { border: 1px solid #e6eaee; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+.hero { border-block: 1px solid #e6eaee; border-radius: 0; overflow: hidden; margin-bottom: 16px; }
 .total { display: flex; gap: 12px; justify-content: space-between; align-items: center; background: #fff2eb; padding: 16px; }
 .total p { color: #a64726; font-size: 13px; margin: 0; }
+.payHero { border-color: #cfe5d9; }
+.payHero .total { background: #edf8f1; }
+.payHero .total p, .payHero .total strong { color: #216346; }
 .total > div { min-width: 0; flex: 1; }
 .total strong { font-size: clamp(24px, 5vw, 32px); letter-spacing: -1px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .portal small { display: block; font-size: 11px; color: #63717c; margin-top: 4px; line-height: 1.5; }
@@ -43,9 +54,9 @@
 .negative { color: #a64726; }
 .chart { margin: 12px 0; }
 .bars { height: 150px; display: flex; align-items: end; gap: 3px; border-bottom: 1px solid #e6eaee; }
-.bar { flex: 1; background: #bf6445; border-radius: 3px 3px 0 0; min-width: 0; }
+.bar { flex: 1; background: #70ad8b; border-radius: 3px 3px 0 0; min-width: 0; }
 .axis { display: flex; justify-content: space-between; font-size: 11px; color: #63717c; margin: 6px 0; }
-.empty { padding: 16px; border: 1px solid #e6eaee; border-radius: 10px; color: #63717c; }
+.empty { padding: 16px; border-block: 1px solid #e6eaee; border-radius: 0; color: #63717c; }
 @media(max-width: 700px) {
   .columns { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .total { padding: 14px; gap: 8px; }

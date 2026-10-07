@@ -40,20 +40,21 @@ test(
         {
           name: "fixture",
           setup(b) {
+            b.onResolve({filter:/^next\/navigation$/},()=>({path:"navigation",namespace:"mock"}));
             b.onResolve({ filter: /^next\/link$/ }, () => ({
               path: "link",
               namespace: "mock",
             }));
-            b.onResolve({ filter: /actions$/ }, () => ({
+            b.onResolve({ filter: /actions?$/ }, () => ({
               path: "actions",
               namespace: "mock",
             }));
             b.onLoad({ filter: /.*/, namespace: "mock" }, ({ path }) => ({
               resolveDir: repo,
               contents:
-                path === "link"
+                path === "navigation" ? "export const useRouter=()=>({refresh(){}});" : path === "link"
                   ? `import React from 'react';export default function Link({children,...p}){return React.createElement('a',p,children)}`
-                  : `export async function resetStaffPasscodeFormAction(){}; export async function updateStaffDirectoryBatchFormAction(form){window.calls.push(Object.fromEntries(form));}`,
+                  : `export async function deleteUnusedRecordAction(){throw Error('Deletion is outside this fixture');}; export async function resetStaffPasscodeFormAction(){}; export async function updateStaffDirectoryBatchFormAction(form){window.calls.push(Object.fromEntries(form));}`,
             }));
           },
         },

@@ -1,5 +1,8 @@
 import "server-only";
 
+import { searchExploreSalons } from "@/lib/explore-search";
+import { matchesExploreFeedItem, normalizeExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
+import type { ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
 import { getExploreHomeContent } from "@/lib/explore-home";
 import { getExploreInspirationPage } from "@/lib/explore-inspiration";
 import { getExplorePersonalPostPage } from "@/lib/explore-personal";
@@ -54,6 +57,8 @@ const ORGANIC_RANKING_WEIGHTS = {
 type ExploreFeedRecommendationCursor = {
   rank: number;
   salonId: string;
+  directory?: boolean;
+  scope?: "local" | "wider";
 };
 
 type ExploreFeedInternalSource = "personal" | "recommendation" | "salon";
@@ -83,6 +88,9 @@ type RecommendationSourcePage = {
   error: string | null;
   hasMore: boolean;
   items: ExploreHomeSalon[];
+  baseRank?: number;
+  directory?: boolean;
+  scope?: "local" | "wider";
   nextCursor: ExploreFeedRecommendationCursor | null;
 };
 
@@ -122,7 +130,7 @@ const FEED_SOURCES: ExploreFeedInternalSource[] = [
   "recommendation",
 ];
 
-function emptyFeedPage(error: string | null = null): ExploreFeedPage {
+export function emptyFeedPage(error: string | null = null): ExploreFeedPage {
   return {
     error,
     hasMore: false,
@@ -251,7 +259,8 @@ function normalizeRecommendationCursor(
     !UUID_PATTERN.test(salonId) ||
     typeof rank !== "number" ||
     !Number.isInteger(rank) ||
-    rank < 1
+    rank < 1 ||
+    rank > 1000000
   ) {
     return null;
   }
@@ -259,6 +268,8 @@ function normalizeRecommendationCursor(
   return {
     rank,
     salonId,
+    directory: payload.directory === true,
+    scope: payload.scope === "wider" ? "wider" : "local",
   };
 }
 
@@ -701,6 +712,12 @@ function trustSignalsFromSalon(
   salon: ExploreHomeSalon,
 ): ExploreFeedTrustSignals {
   return {
+          identityVerified: salon.identityVerified,
+      popularServiceName: salon.popularServiceName,
+      popularServiceMinimumPrice: salon.popularServiceMinimumPrice,
+      popularServiceMaximumPrice: salon.popularServiceMaximumPrice,
+      completedBookingCount: salon.completedBookingCount,
+      trustEvidence: salon.trustEvidence ?? null,
     averageRating: salon.averageRating,
     noIssueRate: salon.reputationNoIssueRate,
     sharedExperienceCount: salon.sharedExperienceCount,
@@ -822,7 +839,7 @@ function mapRecommendationFeedItem(
   rank: number,
   featuredPost: RecommendationPostPreview | null = null,
 ): ExploreFeedItem | null {
-  const publishedAt = featuredPost?.publishedAt ?? recommendationPublishedAt(salon);
+  const publishedAt = featuredPost?.publishedAt ?? recommendationPublishedAt(salon) ?? "1970-01-01T00:00:00.000Z";
   const profileHref =
     UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
       ? `/explore/salons/${encodeURIComponent(salon.id)}`
@@ -869,6 +886,7 @@ function mapRecommendationFeedItem(
   }
 
   return {
+    publishedAtKnown: Boolean(featuredPost?.publishedAt ?? recommendationPublishedAt(salon)),
     author: {
       avatarUrl: salon.logoImageUrl,
       id: salon.id,
@@ -942,22 +960,52 @@ function rankRecommendationSalons(content: ExploreHomeContent) {
 async function getRecommendationSourcePage(input: {
   cursor: ExploreFeedRecommendationCursor | null;
   homeContent?: ExploreHomeContent;
+  discovery?: ExploreFeedDiscoveryOptions;
 }): Promise<RecommendationSourcePage> {
-  if (input.cursor) {
-    return emptyRecommendationSourcePage();
+  // Keep the initial editorial recommendation, then page through the public directory.
+  if (!input.cursor && !input.discovery) {
+    const content = input.homeContent ?? (await getExploreHomeContent());
+    if (content.error) return { ...emptyRecommendationSourcePage(), error: content.error };
+    const items = rankRecommendationSalons(content);
+    if (items.length) return { error: null, hasMore: true, items, nextCursor: null };
   }
-
-  const content = input.homeContent ?? (await getExploreHomeContent());
-
-  if (content.error) {
-    return emptyRecommendationSourcePage();
+  const batchSize = 24;
+  const offset = input.cursor?.directory ? input.cursor.rank : 0;
+  const scope = input.cursor?.scope ?? "local";
+  const discovery = input.discovery ?? {};
+  const response = await searchExploreSalons({
+    category: discovery.category,
+    location: scope === "wider" ? "" : discovery.location,
+    latitude: discovery.latitude,
+    longitude: discovery.longitude,
+    page: Math.floor(offset / batchSize) + 1,
+    pageSize: batchSize,
+  });
+  if (response.error) return { ...emptyRecommendationSourcePage(), error: response.error };
+  const results = response.results.slice(offset % batchSize);
+  if (!results.length && scope === "local" && discovery.location && !discovery.strictLocation) {
+    return getRecommendationSourcePage({
+      ...input,
+      cursor: { rank: 0, salonId: input.cursor?.salonId ?? "", directory: true, scope: "wider" },
+    });
   }
-
+  const items: ExploreHomeSalon[] = results.map((salon, index) => ({
+    ...salon,
+    createdAt: null,
+    updatedAt: null,
+    publicDiscoveryPublishedAt: null,
+    homeSection: "recommended",
+    homeRank: offset + index + 1,
+  }));
   return {
     error: null,
-    hasMore: false,
-    items: rankRecommendationSalons(content),
-    nextCursor: null,
+    hasMore: offset + results.length < response.totalCount ||
+      (scope === "local" && Boolean(discovery.location) && !discovery.strictLocation),
+    items,
+    baseRank: offset,
+    directory: true,
+    scope,
+    nextCursor: results.length ? { rank: offset + results.length, salonId: results[results.length - 1].id, directory: true, scope } : null,
   };
 }
 
@@ -1011,7 +1059,10 @@ function compareSessionCandidateOrder(
 }
 
 function arrangeSourceCandidates(candidates: FeedCandidate[]) {
-  return [...candidates].sort(compareSessionCandidateOrder);
+  // Consume each source in keyset order. Reordering within a source would move
+  // its cursor past unshown posts; ranking still decides how sources are mixed.
+  return [...candidates].sort((left, right) =>
+    compareNaturalCandidateOrder(left, right) || compareSessionCandidateOrder(left, right));
 }
 
 function sourceRunLength(candidates: FeedCandidate[], sourceType: string) {
@@ -1122,7 +1173,7 @@ function selectVisibleCandidates(input: {
   const selected: FeedCandidate[] = [];
 
   while (selected.length < input.pageSize) {
-    const available = FEED_SOURCES.map(
+    let available = FEED_SOURCES.map(
       (source) => input.sources[source][consumed[source]],
     ).filter((candidate): candidate is FeedCandidate => Boolean(candidate));
 
@@ -1130,7 +1181,16 @@ function selectVisibleCandidates(input: {
       break;
     }
 
-    const nextCandidate = available.reduce((best, candidate) =>
+    // Mix directory discoveries into organic content without letting them crowd out posts.
+    if (consumed.recommendation >= 3 && available.some(candidate => candidate.source !== "recommendation")) {
+      available = available.filter(candidate => candidate.source !== "recommendation");
+    }
+    const preferred = selected.length % 4 === 3 && consumed.recommendation < 3
+      ? available.find(candidate => candidate.source === "recommendation")
+      : selected.length % 4 === 1 && consumed.personal < 3
+        ? available.find(candidate => candidate.source === "personal")
+        : undefined;
+    const nextCandidate = preferred ?? available.reduce((best, candidate) =>
       compareSelectableCandidates({
         availableCount: available.length,
         left: candidate,
@@ -1168,6 +1228,10 @@ function buildNextCursor(input: {
   > = {};
 
   for (const candidate of input.visibleCandidates) {
+    if (candidate.source === "recommendation" && (candidate.cursor as ExploreFeedRecommendationCursor).directory) {
+      sourceBoundaries.recommendation = candidate;
+      continue;
+    }
     const boundary = sourceBoundaries[candidate.source];
 
     if (
@@ -1319,7 +1383,9 @@ export async function getExploreFeedPage(input: {
   cursor?: ExploreFeedCursor | null;
   homeContent?: ExploreHomeContent;
   limit?: number;
+  discovery?: ExploreFeedDiscoveryOptions;
 } = {}): Promise<ExploreFeedPage> {
+  input = { ...input, discovery: normalizeExploreFeedDiscoveryOptions(input.discovery) };
   const pageSize = normalizeLimit(input.limit);
   const decodedSourceState = decodeExploreFeedCursor(input.cursor);
   const feedSessionSeed =
@@ -1359,18 +1425,19 @@ export async function getExploreFeedPage(input: {
       : getRecommendationSourcePage({
           cursor: sourceState.recommendation,
           homeContent: input.homeContent,
+          discovery: input.discovery,
         }),
   ]);
 
-  if (salonPage.error || personalPage.error) {
-    return emptyFeedPage(salonPage.error ?? personalPage.error);
+  if (salonPage.error || personalPage.error || recommendationPage.error) {
+    return emptyFeedPage(salonPage.error ?? personalPage.error ?? recommendationPage.error);
   }
 
   const recommendationPostBySalonId = recommendationPostPreviewsBySalonId({
     salonItems: salonPage.items,
   });
   const recommendationPostKeys = new Set(
-    recommendationPage.items
+    (recommendationPage.directory ? [] : recommendationPage.items)
       .map((salon) => recommendationPostBySalonId.get(salon.id)?.dedupeKey)
       .filter((key): key is string => Boolean(key)),
   );
@@ -1403,11 +1470,11 @@ export async function getExploreFeedPage(input: {
   );
   const recommendationCandidates = recommendationPage.items
     .map((salon, index) => {
-      const rank = index + 1;
+      const rank = (recommendationPage.baseRank ?? 0) + index + 1;
       const item = mapRecommendationFeedItem(
         salon,
         rank,
-        recommendationPostBySalonId.get(salon.id) ?? null,
+        recommendationPage.directory ? null : recommendationPostBySalonId.get(salon.id) ?? null,
       );
 
       return item
@@ -1415,8 +1482,10 @@ export async function getExploreFeedPage(input: {
             cursor: {
               rank,
               salonId: salon.id,
+              directory: recommendationPage.directory,
+              scope: recommendationPage.scope,
             },
-            item,
+            item: { ...item, discoverySalon: salon, discoveryScope: recommendationPage.scope },
             sessionSeed: feedSessionSeed,
             source: "recommendation",
           })
@@ -1425,7 +1494,9 @@ export async function getExploreFeedPage(input: {
     .filter((candidate): candidate is FeedCandidate => Boolean(candidate));
   const sources: FeedCandidateSources = {
     personal: arrangeSourceCandidates(personalCandidates),
-    recommendation: arrangeSourceCandidates(recommendationCandidates),
+    recommendation: recommendationPage.directory
+      ? recommendationCandidates
+      : arrangeSourceCandidates(recommendationCandidates),
     salon: arrangeSourceCandidates(salonCandidates),
   };
   const { consumed, selected } = selectVisibleCandidates({
@@ -1440,14 +1511,15 @@ export async function getExploreFeedPage(input: {
       itemCount: personalPage.items.length,
       wasCompleted: sourceState.completed.personal,
     }),
-    recommendation: sourceCompleted({
-      consumedCount: consumed.recommendation,
-      hasMore: recommendationPage.hasMore,
-      hasUnconsumedCandidates:
-        consumed.recommendation < recommendationCandidates.length,
-      itemCount: recommendationPage.items.length,
-      wasCompleted: sourceState.completed.recommendation,
-    }),
+    recommendation: recommendationPage.directory
+      ? consumed.recommendation >= recommendationCandidates.length && !recommendationPage.hasMore
+      : sourceCompleted({
+          consumedCount: consumed.recommendation,
+          hasMore: recommendationPage.hasMore,
+          hasUnconsumedCandidates: consumed.recommendation < recommendationCandidates.length,
+          itemCount: recommendationPage.items.length,
+          wasCompleted: sourceState.completed.recommendation,
+        }),
     salon: sourceCompleted({
       consumedCount: consumed.salon,
       hasMore: salonPage.hasMore,
@@ -1460,19 +1532,18 @@ export async function getExploreFeedPage(input: {
     (source) => consumed[source] < sources[source].length,
   );
   const hasIncompleteSource = FEED_SOURCES.some((source) => !completed[source]);
-  const hasMore =
-    selected.length > 0 && (hasUnconsumedCandidates || hasIncompleteSource);
-  const nextCursor = hasMore
-    ? encodeExploreFeedCursor(
-        buildNextCursor({
-          completed,
-          current: sourceState,
-          visibleCandidates: selected,
-        }),
-      )
-    : null;
+  const nextState = buildNextCursor({ completed, current: sourceState, visibleCandidates: selected });
+  if (recommendationPage.directory && consumed.recommendation >= recommendationCandidates.length && recommendationPage.nextCursor) {
+    nextState.recommendation = recommendationPage.nextCursor;
+  }
+  const hasMore = hasUnconsumedCandidates || hasIncompleteSource;
+  const nextCursor = hasMore ? encodeExploreFeedCursor(nextState) : null;
 
-  const visibleItems = selected.map((candidate) => candidate.item);
+  const visibleItems = selected.map((candidate) => candidate.item)
+    .filter((item) => matchesExploreFeedItem(item, input.discovery))
+    .map((item) => input.discovery?.location && !matchesExploreFeedItem(item, { ...input.discovery, strictLocation: true })
+      ? { ...item, discoveryScope: "wider" as const }
+      : item);
   const [itemsWithSaveCounts, itemsWithCommentCounts] = await Promise.all([
     attachFeedSaveCounts(visibleItems),
     attachFeedCommentCounts(visibleItems),

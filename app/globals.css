@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+/* Flat content shares a continuous page canvas, including the side gutters.
+   Keep text, controls and desktop columns at their existing readable widths. */
+main:has(.content-surface),
+main:has([data-continuous-surface]),
+.beauty-profile-page {
+  background-color: var(--surface, #fff);
+}
+
+/* Border-image outsets paint into the gutter without widening the layout or
+   intercepting clicks. Nested sections stay within their existing parent. */
+@media (max-width: 767px) {
+  .content-surface:is(.bg-white, .bg-surface):not(.content-surface .content-surface):not([class*="grid-cols-"] .content-surface),
+  [data-continuous-surface] {
+    border-image: linear-gradient(to bottom,
+      var(--divider-subtle, #f4ece6) 0 1px,
+      var(--surface, #fff) 1px calc(100% - 1px),
+      var(--divider-subtle, #f4ece6) calc(100% - 1px)) fill 0 / 0 / 0 100vmax;
+  }
+}
+
 :root {
   color-scheme: light;
   --background: #ffffff;
@@ -428,3 +448,9 @@ body {
  .owner-inline-rows>div:not([data-selected=true]) .owner-inline-money{color:inherit}
  .owner-inline-rows>div:not([data-selected=true]) .owner-inline-money input{border-color:transparent}
 }
+
+/* The checkout owns the full viewport; navigation slots contain no page copy. */
+[data-testid="customer-desktop-shell"]:has(.owner-checkout){grid-template-columns:minmax(0,1fr)!important}
+[data-testid="customer-desktop-shell"]:has(.owner-checkout)>[data-desktop-sidebar-slot],
+[data-testid="customer-desktop-shell"]:has(.owner-checkout)>div>div:has(>header),
+[data-testid="customer-desktop-shell"]:has(.owner-checkout)>div>div:has(>nav){display:none!important}

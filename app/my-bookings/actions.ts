@@ -53,6 +53,7 @@ function parseDateTimeInput(value: string) {
 }
 
 export async function loadCustomerRescheduleSlotsAction(input: {
+  findEarliest?: boolean;
   bookingId: string;
   date?: string | null;
 }) {
@@ -79,6 +80,7 @@ export async function cancelCustomerBookingAction(input: {
   });
 
   revalidatePath("/my-bookings");
+  revalidatePath("/activity");
   revalidatePath(`/my-bookings/${bookingId}`);
 
   return result;
@@ -105,6 +107,7 @@ export async function rescheduleCustomerBookingAction(input: {
   const targetBookingId = result.bookingId ?? bookingId;
 
   revalidatePath("/my-bookings");
+  revalidatePath("/activity");
   revalidatePath(`/my-bookings/${targetBookingId}`);
 
   return result;
@@ -123,6 +126,7 @@ export async function cancelCustomerBookingFormAction(formData: FormData) {
   });
 
   revalidatePath("/my-bookings");
+  revalidatePath("/activity");
   revalidatePath(`/my-bookings/${bookingId}`);
   redirect(detailResultHref(bookingId, result));
 }
@@ -141,6 +145,7 @@ export async function rescheduleCustomerBookingFormAction(formData: FormData) {
   const targetBookingId = result.bookingId ?? bookingId;
 
   revalidatePath("/my-bookings");
+  revalidatePath("/activity");
   revalidatePath(`/my-bookings/${targetBookingId}`);
   redirect(detailResultHref(targetBookingId, result));
 }
@@ -150,6 +155,7 @@ export async function claimGuestBookingFormAction(formData: FormData) {
   const result = await claimGuestBooking({ token });
 
   revalidatePath("/my-bookings");
+  revalidatePath("/activity");
 
   if (result.ok && result.bookingId) {
     revalidatePath(`/my-bookings/${result.bookingId}`);

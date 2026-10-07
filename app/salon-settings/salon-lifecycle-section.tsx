@@ -1,5 +1,7 @@
 "use client";
 
+import { SubmitButton } from "@/components/submit-button";
+
 import {
   closeCurrentSalonPermanentlyAction,
   disableCurrentSalonAction,
@@ -248,13 +250,13 @@ export function SalonLifecycleSection({
               <span>I understand business activity will pause.</span>
             </label>
             <div>
-              <button
+              <SubmitButton
                 className="min-h-10 rounded-md bg-amber-700 px-4 text-sm font-semibold text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={!canManageLifecycle}
                 type="submit"
               >
                 Disable salon
-              </button>
+              </SubmitButton>
             </div>
           </form>
         ) : null}
@@ -287,13 +289,13 @@ export function SalonLifecycleSection({
               <span>Resume operational workflows for this salon.</span>
             </label>
             <div>
-              <button
+              <SubmitButton
                 className="min-h-10 rounded-md bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={!canManageLifecycle}
                 type="submit"
               >
                 Reactivate salon
-              </button>
+              </SubmitButton>
             </div>
           </form>
         ) : null}
@@ -380,13 +382,13 @@ export function SalonLifecycleSection({
                 placeholder="Reason, optional"
               />
               <div>
-                <button
+                <SubmitButton
                   className="min-h-10 rounded-md bg-red-700 px-4 text-sm font-semibold text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={!canManageLifecycle || closureReview?.canClose === false}
                   type="submit"
                 >
                   Permanently close salon
-                </button>
+                </SubmitButton>
               </div>
             </form>
           </div>

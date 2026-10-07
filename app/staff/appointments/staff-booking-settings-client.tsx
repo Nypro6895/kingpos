@@ -6,8 +6,10 @@ import {
   saveStaffWeeklyAvailabilityAction,
   type BookingSetupActionResult,
 } from "@/app/booking-setup/actions";
+import { TimeOffRangePicker } from "./time-off-range-picker";
+
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import type { SalonOnlineBookingStatus } from "@/lib/booking-status";
 import type { StaffAvailabilityRule, StaffTimeBlock } from "@/types/booking";
 
@@ -151,6 +153,17 @@ function formatDateTime(value: string, timeZone: string) {
   }).format(new Date(value));
 }
 
+function formatTimeOff(block: StaffTimeBlock, timezone: string) {
+  const localTime = (value: string) => new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(value));
+  if (localTime(block.starts_at) === "00:00" && localTime(block.ends_at) === "00:00") {
+    const formatter = new Intl.DateTimeFormat("en-US", { timeZone: timezone, month: "short", day: "numeric", year: "numeric" });
+    const first = formatter.format(new Date(block.starts_at));
+    const last = formatter.format(new Date(Date.parse(block.ends_at) - 1));
+    return first === last ? first : `${first} – ${last}`;
+  }
+  return `${formatDateTime(block.starts_at, timezone)} – ${formatDateTime(block.ends_at, timezone)}`;
+}
+
 function nextLocalDate(timeZone: string) {
   const parts = new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
@@ -262,6 +275,7 @@ function Message({ result }: { result: BookingSetupActionResult | null }) {
 }
 
 export function StaffBookingSettings({
+  salonId,
   assignedServices,
   availabilityRules,
   salonBookingStatus,
@@ -270,6 +284,7 @@ export function StaffBookingSettings({
   timezone,
   variant = "summary",
 }: {
+  salonId: string;
   assignedServices: StaffSettingsService[];
   availabilityRules: StaffAvailabilityRule[];
   salonBookingStatus: SalonOnlineBookingStatus;
@@ -280,6 +295,43 @@ export function StaffBookingSettings({
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [preferences, setPreferences] = useState<{ online: boolean; notifications: boolean } | null>(null);
+  const [preferenceError, setPreferenceError] = useState("");
+  const [preferencePending, startPreferenceTransition] = useTransition();
+  const [showTimeOffForm, setShowTimeOffForm] = useState(false);
+  const preferenceReadVersion = useRef(0);
+  async function requestPreferences(change?: { preference: "online" | "notifications"; enabled: boolean }) {
+    try {
+      const response = await fetch("/api/staff/booking-preferences", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ salonId, ...change }),
+      });
+      return await response.json() as { ok: boolean; online: boolean; notifications: boolean; error?: string };
+    } catch {
+      return { ok: false, online: false, notifications: false, error: "Unable to save preferences. Please try again." };
+    }
+  }
+  async function openSettings() {
+    setOpen(true);
+    if (preferencePending) return;
+    const readVersion = ++preferenceReadVersion.current;
+    setPreferences(null);
+    setPreferenceError("");
+    const response = await requestPreferences();
+    if (readVersion !== preferenceReadVersion.current) return;
+    if (response.ok) setPreferences(response);
+    else setPreferenceError(response.error ?? "Unable to save preferences.");
+  }
+  function togglePreference(preference: "online" | "notifications") {
+    if (!preferences) return;
+    preferenceReadVersion.current++;
+    setPreferenceError("");
+    startPreferenceTransition(async () => {
+      const response = await requestPreferences({ preference, enabled: !preferences[preference] });
+      if (response.ok) { setPreferences(response); }
+      else setPreferenceError(response.error ?? "Unable to save preferences.");
+    });
+  }
   const initialWeek = useMemo(
     () => buildWeekDraft(availabilityRules, staff.id),
     [availabilityRules, staff.id],
@@ -304,7 +356,7 @@ export function StaffBookingSettings({
   const status = statusCopy({
     assignedServices,
     salonBookingStatus,
-    staff,
+    staff: { ...staff, onlineBookingEnabled: preferences?.online ?? staff.onlineBookingEnabled },
     week,
   });
   const staffBreakRules = availabilityRules.filter(
@@ -334,6 +386,18 @@ export function StaffBookingSettings({
   }
 
   function saveWeek() {
+    const allIntervals = DAYS.flatMap(day => week[day.id].working);
+    if (!allIntervals.length) {
+      setResult({ ok: false, error: "Add a booking day, or switch online booking off to pause all days." });
+      return;
+    }
+    for (const day of DAYS) {
+      const intervals = [...week[day.id].working].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+      if (intervals.some((interval, index) => !interval.startsAt || !interval.endsAt || interval.startsAt >= interval.endsAt || (index > 0 && intervals[index - 1].endsAt > interval.startsAt))) {
+        setResult({ ok: false, error: `Check ${day.label}: each end time must follow its start, without overlapping intervals.` });
+        return;
+      }
+    }
     const rules = DAYS.flatMap((day) =>
       week[day.id].working.map((interval) => ({
         dayOfWeek: day.id,
@@ -381,7 +445,7 @@ export function StaffBookingSettings({
     startTimeOffTransition(async () => {
       const response = await createStaffTimeBlockAction({
         blockType: "time_off",
-        endLocal: `${timeOffEndDate}T23:59`,
+        endLocal: `${new Date(Date.parse(`${timeOffEndDate}T12:00:00Z`) + 86400000).toISOString().slice(0, 10)}T00:00`,
         overrideConflicts,
         reason: timeOffReason,
         staffId: staff.id,
@@ -393,6 +457,7 @@ export function StaffBookingSettings({
 
       if (response.ok) {
         setTimeOffReason("");
+        setShowTimeOffForm(false);
         router.refresh();
       }
     });
@@ -414,11 +479,11 @@ export function StaffBookingSettings({
   const trigger =
     variant === "toolbar" ? (
       <button
-        className="staff-appointments-secondary-button staff-booking-settings-trigger"
-        onClick={() => setOpen(true)}
+        className="staff-schedule-tab staff-booking-settings-trigger"
+        onClick={openSettings}
         type="button"
       >
-        Booking settings
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/></svg><span>Settings</span>
       </button>
     ) : (
       <section className="staff-booking-settings-summary">
@@ -432,7 +497,7 @@ export function StaffBookingSettings({
         </div>
         <button
           className="staff-appointments-secondary-button"
-          onClick={() => setOpen(true)}
+          onClick={openSettings}
           type="button"
         >
           Booking settings
@@ -479,17 +544,10 @@ export function StaffBookingSettings({
                   <h3>Online booking</h3>
                   <p>{status.body}</p>
                 </div>
-                <span
-                  className={classNames(
-                    "staff-booking-settings-toggle",
-                    staff.onlineBookingEnabled &&
-                      "staff-booking-settings-toggle--on",
-                  )}
-                >
-                  {staff.onlineBookingEnabled ? "On" : "Off"}
-                </span>
+                <button type="button" role="switch" aria-label="Online booking" aria-checked={preferences?.online ?? staff.onlineBookingEnabled} disabled={!preferences || preferencePending} className="staff-settings-switch" onClick={() => togglePreference("online")}><span aria-hidden="true" />{(preferences?.online ?? staff.onlineBookingEnabled) ? "On" : "Off"}</button>
               </section>
 
+              {preferenceError ? <p role="alert" className="staff-booking-settings-message staff-booking-settings-message--error">{preferenceError}</p> : null}
               <section className="staff-booking-settings-section staff-booking-settings-section--stack">
                 <div className="staff-booking-settings-section-head">
                   <div>
@@ -507,118 +565,21 @@ export function StaffBookingSettings({
                 </div>
                 <Message result={result} />
                 <div className="staff-booking-hours-list">
-                  {DAYS.map((day) => {
-                    const intervals = week[day.id].working;
-                    const enabled = intervals.length > 0;
-
-                    return (
-                      <div
-                        className={classNames(
-                          "staff-booking-hours-row",
-                          !enabled && "staff-booking-hours-row--off",
-                        )}
-                        key={day.id}
-                      >
-                        <div className="staff-booking-hours-day">
-                          <strong>{day.label}</strong>
-                          <label>
-                            <input
-                              checked={enabled}
-                              onChange={(event) =>
-                                toggleDay(day.id, event.target.checked)
-                              }
-                              type="checkbox"
-                            />
-                            <span>{enabled ? "Working" : "Off"}</span>
-                          </label>
-                        </div>
-                        <div className="staff-booking-hours-intervals">
-                          {enabled ? (
-                            <>
-                              {intervals.map((interval, index) => (
-                                <div
-                                  className="staff-booking-hours-interval"
-                                  key={`${day.id}-${index}`}
-                                >
-                                  <input
-                                    aria-label={`${day.label} start`}
-                                    className="staff-appointments-field"
-                                    onChange={(event) =>
-                                      updateDay(day.id, (current) =>
-                                        current.map((item, itemIndex) =>
-                                          itemIndex === index
-                                            ? {
-                                                ...item,
-                                                startsAt: event.target.value,
-                                              }
-                                            : item,
-                                        ),
-                                      )
-                                    }
-                                    type="time"
-                                    value={interval.startsAt}
-                                  />
-                                  <span>-</span>
-                                  <input
-                                    aria-label={`${day.label} end`}
-                                    className="staff-appointments-field"
-                                    onChange={(event) =>
-                                      updateDay(day.id, (current) =>
-                                        current.map((item, itemIndex) =>
-                                          itemIndex === index
-                                            ? {
-                                                ...item,
-                                                endsAt: event.target.value,
-                                              }
-                                            : item,
-                                        ),
-                                      )
-                                    }
-                                    type="time"
-                                    value={interval.endsAt}
-                                  />
-                                  <button
-                                    aria-label={`Remove ${day.label} interval`}
-                                    className="staff-appointments-icon-button"
-                                    onClick={() =>
-                                      updateDay(day.id, (current) =>
-                                        current.filter(
-                                          (_, itemIndex) => itemIndex !== index,
-                                        ),
-                                      )
-                                    }
-                                    type="button"
-                                  >
-                                    x
-                                  </button>
-                                </div>
-                              ))}
-                              <button
-                                className="staff-booking-settings-link"
-                                onClick={() =>
-                                  updateDay(day.id, (current) => [
-                                    ...current,
-                                    defaultWorkingInterval(),
-                                  ])
-                                }
-                                type="button"
-                              >
-                                Add interval
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              className="staff-booking-settings-link"
-                              onClick={() => toggleDay(day.id, true)}
-                              type="button"
-                            >
-                              Set hours
-                            </button>
-                          )}
-                        </div>
+                  {DAYS.filter(day => week[day.id].working.length > 0).map(day => (
+                    <div className="staff-hours-line" key={day.id}>
+                      <strong>{day.label}</strong>
+                      <div className="staff-hours-times">
+                        {week[day.id].working.map((interval, index) => <div className="staff-hours-pair" key={index}>
+                          <input aria-label={`${day.label} start ${index + 1}`} type="time" value={interval.startsAt} onChange={event => updateDay(day.id, current => current.map((item, i) => i === index ? {...item, startsAt: event.target.value} : item))} />
+                          <span>–</span>
+                          <input aria-label={`${day.label} end ${index + 1}`} type="time" value={interval.endsAt} onChange={event => updateDay(day.id, current => current.map((item, i) => i === index ? {...item, endsAt: event.target.value} : item))} />
+                          <button type="button" className="staff-small-remove" aria-label={`Remove ${day.label} interval ${index + 1}`} onClick={() => updateDay(day.id, current => current.filter((_, i) => i !== index))}>×</button>
+                        </div>)}
+                        <button type="button" className="staff-subtle-link" onClick={() => updateDay(day.id, current => [...current, defaultWorkingInterval()])}>add interval</button>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
+                  {DAYS.some(day => week[day.id].working.length === 0) ? <label className="staff-add-day"><span>Add day</span><select aria-label="Add day" value="" onChange={event => { if (event.target.value !== "") toggleDay(Number(event.target.value), true); }}><option value="" disabled>Choose day</option>{DAYS.filter(day => !week[day.id].working.length).map(day => <option key={day.id} value={day.id}>{day.label}</option>)}</select></label> : null}
                 </div>
               </section>
 
@@ -642,12 +603,11 @@ export function StaffBookingSettings({
                       Time off added here is visible to Owner and blocks public slots.
                     </p>
                   ) : (
-                    ownTimeOff.slice(0, 4).map((block) => (
+                    ownTimeOff.map((block) => (
                       <div className="staff-booking-timeoff-item" key={block.id}>
                         <div>
                           <strong>
-                            {formatDateTime(block.starts_at, timezone)} -{" "}
-                            {formatDateTime(block.ends_at, timezone)}
+                            {formatTimeOff(block, timezone)}
                           </strong>
                           {block.reason ? <p>{block.reason}</p> : null}
                         </div>
@@ -663,25 +623,10 @@ export function StaffBookingSettings({
                     ))
                   )}
                 </div>
-                <div className="staff-booking-timeoff-form">
-                  <label>
-                    <span>From</span>
-                    <input
-                      className="staff-appointments-field"
-                      onChange={(event) => setTimeOffStartDate(event.target.value)}
-                      type="date"
-                      value={timeOffStartDate}
-                    />
-                  </label>
-                  <label>
-                    <span>To</span>
-                    <input
-                      className="staff-appointments-field"
-                      onChange={(event) => setTimeOffEndDate(event.target.value)}
-                      type="date"
-                      value={timeOffEndDate}
-                    />
-                  </label>
+                <button type="button" className="staff-subtle-link" onClick={() => { setShowTimeOffForm(!showTimeOffForm); setTimeOffResult(null); }}>{showTimeOffForm ? "Cancel" : ownTimeOff.length ? "+ Add more time off" : "+ Add time off"}</button>
+                {showTimeOffForm ? <div className="staff-booking-timeoff-form">
+                  <TimeOffRangePicker start={timeOffStartDate} end={timeOffEndDate} onChange={(start, end) => { setTimeOffStartDate(start); setTimeOffEndDate(end); setTimeOffResult(null); }} />
+                  <p className="staff-booking-settings-muted">Full days off</p>
                   <label>
                     <span>Reason</span>
                     <input
@@ -699,8 +644,8 @@ export function StaffBookingSettings({
                   >
                     Add time off
                   </button>
-                </div>
-                {!timeOffResult?.ok && timeOffResult?.conflicts?.length ? (
+                </div> : null}
+                {showTimeOffForm && !timeOffResult?.ok && timeOffResult?.conflicts?.length ? (
                   <button
                     className="staff-appointments-secondary-button staff-booking-settings-override disabled:opacity-50"
                     disabled={isTimeOffPending}
@@ -712,24 +657,13 @@ export function StaffBookingSettings({
                 ) : null}
               </section>
 
-              <section className="staff-booking-settings-section">
-                <div>
-                  <h3>Bookable services</h3>
-                  <p>
-                    {assignedServices.length > 0
-                      ? `${assignedServices.length} assigned by salon`
-                      : "No services assigned by salon"}
-                  </p>
-                </div>
-                <span className="staff-booking-settings-readonly">Read-only</span>
+              <section className="staff-booking-settings-section staff-booking-settings-section--stack">
+                <div><h3>Bookable services</h3><p>Assigned by your salon · Read-only</p></div>
+                {assignedServices.filter(service => service.onlineBookable).length ? <ul className="staff-settings-service-list">{assignedServices.filter(service => service.onlineBookable).map(service => <li key={service.id}><span>{service.name}</span><span>{service.durationMinutes} min</span></li>)}</ul> : <p>No online services assigned. Ask your salon to assign services.</p>}
               </section>
-
               <section className="staff-booking-settings-section">
-                <div>
-                  <h3>Booking notifications</h3>
-                  <p>New bookings and booking changes are sent to notifications.</p>
-                </div>
-                <span className="staff-booking-settings-readonly">On</span>
+                <div><h3>Booking notifications</h3><p>New bookings and changes. Existing notifications are kept.</p></div>
+                <button type="button" role="switch" aria-label="Booking notifications" aria-checked={preferences?.notifications ?? true} disabled={!preferences || preferencePending} className="staff-settings-switch" onClick={() => togglePreference("notifications")}><span aria-hidden="true" />{preferences ? preferences.notifications ? "On" : "Off" : "…"}</button>
               </section>
             </div>
           </aside>

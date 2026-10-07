@@ -39,7 +39,7 @@ import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
 
 export const BOOKING_SELECT =
-  "id, salon_id, customer_id, customer_user_id, customer_account_linked_at, customer_account_linked_by_user_id, customer_account_link_method, customer_account_link_metadata, staff_id, start_at, end_at, notes, public_notes, internal_notes, status, source, confirmation_mode, confirmation_status, salon_timezone_snapshot, customer_cancellation_token_hash, pos_ticket_id, source_reference_type, source_reference_id, idempotency_key, cancellation_reason, cancelled_at, cancelled_by_user_id, no_show_at, no_show_by_user_id, no_show_reason, created_by_user_id, updated_by_user_id, payment_status, deposit_policy_snapshot, cancellation_policy_snapshot, created_at, updated_at";
+  "id, salon_id, customer_id, customer_user_id, customer_account_linked_at, customer_account_linked_by_user_id, customer_account_link_method, customer_account_link_metadata, staff_id, start_at, end_at, notes, public_notes, internal_notes, status, source, confirmation_mode, confirmation_status, salon_timezone_snapshot, customer_cancellation_token_hash, pos_ticket_id, source_reference_type, source_reference_id, idempotency_key, cancellation_reason, cancelled_at, cancelled_by_user_id, no_show_at, no_show_by_user_id, no_show_reason, no_show_kind, created_by_user_id, updated_by_user_id, payment_status, deposit_policy_snapshot, cancellation_policy_snapshot, created_at, updated_at";
 
 export const BOOKING_WITH_RELATIONS_SELECT = `${BOOKING_SELECT}, customer:customers(id, name, phone, email), staff:staff(id, display_name)`;
 
@@ -90,7 +90,7 @@ export type BookingWorkspaceFilters = {
   serviceId: string | null;
   source: BookingSource | null;
   staffId: string | null;
-  status: BookingStatus | null;
+  status: BookingStatus | "no_show_unexcused" | "no_show_excused" | null;
   tab: "availability" | "booking-page" | "calendar" | "settings";
   view: BookingWorkspaceView;
 };
@@ -122,6 +122,7 @@ export type BookingWorkspaceTicketSummary = {
 };
 
 export type BookingWorkspaceItem = Booking & {
+  noShowCount?: number;
   assignedStaffNames: string[];
   beautyProfile: ResolvedBeautyProfile | null;
   customer: Pick<Customer, "email" | "id" | "name" | "phone"> | null;
@@ -421,6 +422,7 @@ function normalizeTab(
 }
 
 function normalizeStatusFilter(value: string) {
+  if (value === "no_show_unexcused" || value === "no_show_excused") return value;
   if (!value) {
     return null;
   }
@@ -444,7 +446,7 @@ function normalizeSourceFilter(value: string) {
   return null;
 }
 
-function defaultBookingSettings(input: {
+export function defaultBookingSettings(input: {
   accountId: string;
   salonId: string;
   timezone: string;
@@ -683,9 +685,9 @@ function matchesBookingFilters(input: {
   const { booking, filters } = input;
 
   if (filters.status) {
-    const normalizedFilter = normalizeBookingStatus(filters.status);
-
-    if (booking.normalizedStatus !== normalizedFilter) {
+    if (filters.status === "no_show_unexcused" || filters.status === "no_show_excused") {
+      if (booking.normalizedStatus !== "no_show" || booking.no_show_kind !== (filters.status === "no_show_excused" ? "excused" : "unexcused")) return false;
+    } else if (booking.normalizedStatus !== normalizeBookingStatus(filters.status)) {
       return false;
     }
   }
@@ -923,6 +925,7 @@ function mapRequests(input: {
 export async function getCurrentSalonBookingWorkspace(
   rawSearchParams: BookingWorkspaceSearchParams,
   context: CurrentBusinessContext,
+  refresh: {detailOnly?:boolean;ids?:string[]} = {},
 ): Promise<BookingWorkspaceData> {
   await requirePermission(BOOKING_PERMISSIONS.view, context);
 
@@ -982,16 +985,18 @@ export async function getCurrentSalonBookingWorkspace(
           startIso: range.startIso,
         };
 
-  const bookingsQuery = supabase
+  const filteredBookingsQuery = supabase
     .from("bookings")
     .select(BOOKING_WITH_RELATIONS_SELECT)
     .eq("salon_id", salon.id)
     .lt("start_at", range.endIso)
-    .gt("end_at", range.startIso)
+    .gt("end_at", range.startIso);
+  if (refresh.ids?.length) filteredBookingsQuery.in("id",refresh.ids);
+  const bookingsQuery=filteredBookingsQuery
     .order("start_at", { ascending: true })
     .limit(filters.dateRange === "all" ? 500 : filters.view === "list" ? 200 : 300)
     .returns<BookingWithCustomerStaffRow[]>();
-  const customersQuery = canManageBookings
+  const customersQuery = canManageBookings && !refresh.detailOnly
     ? supabase
         .from("customers")
         .select(BOOKING_CUSTOMER_OPTION_SELECT)
@@ -1060,8 +1065,8 @@ export async function getCurrentSalonBookingWorkspace(
     customersQuery,
     staffQuery,
     servicesQuery,
-    assignmentsQuery,
-    availabilityRulesQuery,
+    refresh.detailOnly ? Promise.resolve({data:[] as StaffServiceAssignment[],error:null}) : assignmentsQuery,
+    refresh.detailOnly ? Promise.resolve({data:[] as StaffAvailabilityRule[],error:null}) : availabilityRulesQuery,
     timeBlocksQuery,
     requestsQuery,
   ]);
@@ -1176,9 +1181,15 @@ export async function getCurrentSalonBookingWorkspace(
     context,
     customerIds: mappedBookings.map((booking) => booking.customer_id),
   });
+  const { data: noShowCounts, error: noShowCountsError } = mappedBookings.length
+    ? await supabase.rpc("get_booking_no_show_counts", {p_booking_ids: mappedBookings.map(booking => booking.id)})
+    : {data: {}, error: null};
+  if (noShowCountsError) throw new Error(noShowCountsError.message);
+  const counts = noShowCounts as Record<string, number> | null;
   const bookings = mappedBookings.map((booking) => ({
     ...booking,
     beautyProfile: beautyProfilesByCustomerId.get(booking.customer_id) ?? null,
+    noShowCount: counts?.[booking.id] ?? 0,
   }));
   const options = {
     assignments: assignmentsResult.data ?? [],

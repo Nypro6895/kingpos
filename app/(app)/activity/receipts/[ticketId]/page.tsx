@@ -74,7 +74,7 @@ function addressLabel(receipt: CustomerActivityReceipt) {
 
 function paymentStatusLabel(status: CustomerActivityReceipt["paymentStatus"]) {
   if (status === "paid") {
-    return "Paid";
+    return "Paid at salon";
   }
 
   return status === "partial" ? "Partially paid" : "Unpaid";
@@ -84,7 +84,7 @@ function SalonHeader({ receipt }: { receipt: CustomerActivityReceipt }) {
   const place = addressLabel(receipt);
 
   return (
-    <section className="rounded-2xl border border-border-subtle bg-surface p-4 shadow-sm">
+    <section className="content-surface border-border-subtle bg-surface p-4 rounded-none border-y shadow-none">
       <div className="grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
         <span className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-brand-orange-soft text-lg font-extrabold text-brand-orange ring-1 ring-border-subtle">
           {receipt.salon.imageUrl ? (
@@ -104,7 +104,7 @@ function SalonHeader({ receipt }: { receipt: CustomerActivityReceipt }) {
               {receipt.salon.name}
             </h1>
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">
-              Completed
+              Paid at salon
             </span>
           </div>
           <p className="mt-1 text-sm font-semibold text-text-secondary">
@@ -116,9 +116,9 @@ function SalonHeader({ receipt }: { receipt: CustomerActivityReceipt }) {
             </p>
           ) : null}
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-surface-muted px-4 py-3 sm:text-right">
+        <div className="content-surface border-border-subtle bg-surface-muted px-4 py-3 sm:text-right rounded-none border-y shadow-none">
           <p className="text-xs font-bold uppercase text-text-muted">
-            Total paid
+            Paid at salon
           </p>
           <p className="mt-1 text-2xl font-extrabold text-text-primary">
             {formatMoney(receipt.totals.total, receipt.currency)}
@@ -219,7 +219,7 @@ export default async function ActivityReceiptPage({
         <SalonHeader receipt={receipt} />
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
-          <section className="overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-sm">
+          <section className="content-surface overflow-hidden border-border-subtle bg-surface rounded-none border-y shadow-none">
             <div className="border-b border-border-subtle px-4 py-4">
               <h2 className="text-lg font-extrabold text-text-primary">
                 Services
@@ -259,7 +259,7 @@ export default async function ActivityReceiptPage({
               />
             ) : null}
 
-            <section className="rounded-2xl border border-border-subtle bg-surface p-4 shadow-sm">
+            <section className="content-surface border-border-subtle bg-surface p-4 rounded-none border-y shadow-none">
               <h2 className="text-lg font-extrabold text-text-primary">
                 Receipt total
               </h2>
@@ -295,8 +295,8 @@ export default async function ActivityReceiptPage({
                   value={formatMoney(receipt.totals.total, receipt.currency)}
                 />
                 <TotalsRow
-                  label="Paid"
-                  value={formatMoney(receipt.totals.paid, receipt.currency)}
+                  label="Paid at salon"
+                  value={formatMoney(receipt.totals.total, receipt.currency)}
                 />
                 <TotalsRow
                   label="Status"
@@ -305,13 +305,13 @@ export default async function ActivityReceiptPage({
               </dl>
             </section>
 
-            <section className="rounded-2xl border border-border-subtle bg-surface p-4 shadow-sm">
+            <section className="content-surface border-border-subtle bg-surface p-4 rounded-none border-y shadow-none">
               <h2 className="text-lg font-extrabold text-text-primary">
-                Payments
+                Recorded payment methods
               </h2>
               {receipt.payments.length === 0 ? (
                 <p className="mt-3 text-sm font-semibold text-text-secondary">
-                  No payments recorded.
+                  Payment method was not specified.
                 </p>
               ) : (
                 <ul className="mt-3 divide-y divide-border-subtle">

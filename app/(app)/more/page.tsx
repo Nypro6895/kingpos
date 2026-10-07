@@ -237,7 +237,7 @@ function MoreItemLink({ item }: { item: MoreItem }) {
 
   return (
     <Link
-      className="group grid min-h-[88px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-border-subtle bg-surface px-4 text-left shadow-sm transition hover:border-brand-orange/40 hover:shadow-[0_16px_36px_rgba(23,19,22,0.06)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+      className="content-surface group grid min-h-[88px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-border-subtle bg-surface px-4 text-left transition hover:border-brand-orange/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
       data-saved-post-target={isSavedPostItem ? "true" : undefined}
       href={item.href}
     >

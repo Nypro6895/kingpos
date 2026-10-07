@@ -20,15 +20,14 @@ import { createPortal } from "react-dom";
 type LumiTrustSparkSize = "lg" | "md" | "sm" | "xs";
 
 const LUMI_SPARK_PATH =
-  "M10 1.8 12.08 7.92 18.2 10l-6.12 2.08L10 18.2l-2.08-6.12L1.8 10l6.12-2.08L10 1.8Z";
+  "M10 1 C10.7 6 14 9.3 19 10 C14 10.7 10.7 14 10 19 C9.3 14 6 10.7 1 10 C6 9.3 9.3 6 10 1Z";
 
-const LUMI_TRUST_FILL_RATIO: Record<LumiTrustLevel, number> = {
-  empty: 0,
-  level_1: 0.28,
-  level_2: 0.52,
-  level_3: 0.76,
-  full: 1,
-};
+const LUMI_TRUST_MATERIAL = {
+  level_1: { name: "Common", edge: "#f58232", base: "#ffb635", light: "#fff1bd" },
+  level_2: { name: "Silver", edge: "#939aaa", base: "#b6bdca", light: "#ffffff" },
+  level_3: { name: "Gold", edge: "#f29800", base: "#ffc21a", light: "#fffbc4" },
+  full: { name: "Diamond", edge: "#ff9c32", base: "#ffcb43", light: "#ffffff" },
+} as const;
 
 const LUMI_TRUST_SPARK_SIZE_CLASS: Record<LumiTrustSparkSize, string> = {
   lg: "h-8 w-8",
@@ -59,40 +58,45 @@ export function LumiTrustSpark({
   size?: LumiTrustSparkSize;
 }) {
   const reactId = useId();
-  const clipPathId = `lumi-trust-spark-${reactId.replace(/:/g, "")}`;
-  const fillRatio = LUMI_TRUST_FILL_RATIO[level];
-  const fillHeight = 20 * fillRatio;
-  const fillY = 20 - fillHeight;
+  const gradientId = `lumi-trust-material-${reactId.replace(/:/g, "")}`;
+  const glowId = `${gradientId}-glow`;
 
+  if (level === "empty") return null;
+
+  const material = LUMI_TRUST_MATERIAL[level];
   return (
     <svg
       aria-hidden
-      className={joinClasses(
-        "shrink-0 overflow-visible",
-        LUMI_TRUST_SPARK_SIZE_CLASS[size],
-        className,
-      )}
+      className={joinClasses("shrink-0 overflow-visible", LUMI_TRUST_SPARK_SIZE_CLASS[size], className)}
       data-lumi-trust-interactive={interactive ? "true" : undefined}
       data-lumi-trust-level={level}
+      data-lumi-trust-material={material.name}
       fill="none"
       viewBox="0 0 20 20"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <clipPath id={clipPathId}>
-          <rect height={fillHeight} width="20" x="0" y={fillY} />
-        </clipPath>
+        <linearGradient id={gradientId} x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stopColor={material.edge} />
+          <stop offset="0.35" stopColor={material.base} />
+          <stop offset="0.5" stopColor={material.light} />
+          <stop offset="0.65" stopColor={material.base} />
+          <stop offset="1" stopColor={material.edge} />
+        </linearGradient>
+        <radialGradient id={glowId}>
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.4" stopColor="#fffdf3" stopOpacity="0.95" />
+          <stop offset="0.75" stopColor="#ff9662" stopOpacity="0.65" />
+          <stop offset="1" stopColor="#ffd51c" stopOpacity="0" />
+        </radialGradient>
       </defs>
-      {fillRatio > 0 ? (
-        <path clipPath={`url(#${clipPathId})`} d={LUMI_SPARK_PATH} fill="currentColor" />
-      ) : null}
       <path
         d={LUMI_SPARK_PATH}
-        fill="none"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="1.65"
+        fill={level === "level_1" ? "none" : `url(#${gradientId})`}
+        stroke={level === "level_1" ? `url(#${gradientId})` : material.edge}
+        strokeWidth={level === "level_1" ? 0.65 : 0.15}
       />
+      {level === "full" ? <path d={LUMI_SPARK_PATH} fill={`url(#${glowId})`} /> : null}
     </svg>
   );
 }
@@ -108,6 +112,8 @@ export function LumiTrustMark({
   size?: LumiTrustSparkSize;
   summary: ReylumiTrustSummary;
 }) {
+  if (summary.level === "empty") return null;
+
   return (
     <span
       aria-label={summary.mark.ariaLabel}
@@ -446,6 +452,10 @@ export function LumiTrustPopover({
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={(event) => {
                   event.stopPropagation();
+                  if (actionHref.startsWith("#")) {
+                    event.preventDefault();
+                    window.location.hash = actionHref;
+                  }
                   setPinned(false);
                   setOpen(false);
                 }}
@@ -457,6 +467,8 @@ export function LumiTrustPopover({
           portalTarget,
         )
       : null;
+
+  if (summary.level === "empty") return null;
 
   return (
     <>

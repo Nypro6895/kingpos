@@ -1,4 +1,12 @@
-﻿"use client";
+"use client";
+
+import type { ExploreFeedItem } from "@/types/explore";
+import { SubmitButton } from "@/components/submit-button";
+
+import {SalonTrustLine,SalonVerifiedBadge} from "@/components/salon-trust-line";
+import {salonPopularPrice} from "@/lib/salon-identity";
+import { resolveNailCoverImage, isDefaultNailImage } from "@/lib/default-nail-images";
+import { NailIllustrationCredit } from "@/components/nail-illustration-credit";
 
 import {
   loadExploreNearYouAction,
@@ -8,15 +16,12 @@ import {
   ExploreDiscoveryRail,
   MobileDiscoveryShortcuts,
 } from "@/app/explore/customer-explore-utility-panel";
-import { ExploreFeed } from "@/app/explore/explore-feed";
+import { ExploreDiscoveryFeed } from "@/app/explore/explore-discovery-feed";
 import { withRequestTimeout } from "@/lib/request-timeout";
+import { ExploreBookButton, ExploreSalonLove } from "@/components/explore-account-actions";
+import { ExploreAdSlot } from "@/components/explore-advertising";
 import { SavePostAuthProvider, SavePostButton } from "@/app/saved-post/save-post-button";
 import { SalonOperatingStatusBadge } from "@/components/salon-operating-status-badge";
-import {
-  LumiTrustMark,
-  LumiTrustPopover,
-  TrustFactPill,
-} from "@/components/reylumi-trust";
 import {
   ReylumiIcon,
   type ReylumiIconName,
@@ -39,12 +44,9 @@ import {
 } from "@/types/explore";
 import {
   buildReylumiTrustSummary,
-  compareReylumiTopRatedSalons,
-  compactReylumiCount,
-  formatReylumiRating,
+  compareReylumiTrustedSalons,
   orderReylumiExploreResults,
   type ReylumiExploreSearchOrder,
-  type ReylumiTrustSummary,
 } from "@/lib/reylumi-trust";
 import type { PostCommentViewer } from "@/types/post-comments";
 import dynamic from "next/dynamic";
@@ -195,7 +197,7 @@ type DesktopDiscoveryFilterState = {
   location: string;
   more: string[];
   price: "any" | "under_50" | "under_75" | "under_100";
-  rating: "any" | "4_5" | "4_8";
+  trust: "any" | "silver" | "gold";
   time: "any" | "morning" | "afternoon" | "evening";
 };
 type DesktopPopularFilterChip = {
@@ -504,6 +506,22 @@ function salonInitials(name: string) {
     .join("") || "K";
 }
 
+function SalonLogoContent({ salon, size }: { salon: ExploreSearchResult; size: number }) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const logoUrl = salon.logoImageUrl;
+
+  return logoUrl && failedUrl !== logoUrl ? (
+    <Image
+      alt={`${salon.name} logo`}
+      className="object-contain bg-white"
+      fill
+      sizes={`${size}px`}
+      src={logoUrl}
+      onError={() => setFailedUrl(logoUrl)}
+    />
+  ) : salonInitials(salon.name);
+}
+
 function isTechnicalFixtureLabel(value: string) {
   return /^\[e2e\]/i.test(value.trim()) || /\b20\d{10,}\b/.test(value);
 }
@@ -573,32 +591,10 @@ function featuredServiceLine(salon: ExploreSearchResult) {
   return candidates.some(Boolean) ? "Featured service" : null;
 }
 
-function priceLine(salon: ExploreSearchResult) {
-  return salon.startingPrice ? `From ${formatMoney(salon.startingPrice)}` : null;
-}
-
 function cardDetailLine(salon: ExploreSearchResult) {
-  const service = cardServiceLabel(salon);
-  const price = priceLine(salon);
-
-  return [service, price].filter(Boolean).join(" / ");
+  return salonPopularPrice(salon) ?? cardServiceLabel(salon) ?? "";
 }
 
-function salonRatingLine(salon: ExploreSearchResult) {
-  if (salon.averageRating === null) {
-    return null;
-  }
-
-  const reviewCount = Math.max(
-    salon.sharedExperienceCount,
-    salon.reviewCount,
-  );
-  const rating = formatReylumiRating(salon.averageRating);
-
-  return reviewCount > 0
-    ? `${rating} (${compactReylumiCount(reviewCount)})`
-    : rating;
-}
 
 function salonAvailabilityLine(salon: ExploreSearchResult) {
   if (salon.nextAvailabilityLabel) {
@@ -774,24 +770,10 @@ function inspirationDistanceLabel(item: ExploreInspirationItem) {
   return distance < 10 ? `${distance.toFixed(1)} mi` : `${Math.round(distance)} mi`;
 }
 
-function inspirationRatingLabel(item: ExploreInspirationItem) {
-  const rating = item.trust.averageRating;
-  const reviews = item.trust.sharedExperienceCount;
-
-  if (rating === null || rating === undefined) {
-    return null;
-  }
-
-  return `${rating.toFixed(1)} (${reviews})`;
-}
 
 function inspirationAvailabilityLabel(item: ExploreInspirationItem) {
-  return (
-    item.bookingMeta.availabilityLabel ??
-    (item.operatingStatus.isOpen
-      ? "Available today"
-      : item.operatingStatus.nextOpensLabel)
-  );
+  const label = item.bookingMeta.availabilityLabel?.trim();
+  return label && !/^request\s+(?:a|the)\s+time$/i.test(label) ? label : null;
 }
 
 function DesktopSocialProof({ content }: { content: ExploreHomeContent }) {
@@ -848,7 +830,6 @@ function DesktopInspiredCard({
   const price = inspirationPriceLabel(item);
   const duration = inspirationDurationLabel(item);
   const distance = inspirationDistanceLabel(item);
-  const rating = inspirationRatingLabel(item);
   const availability = inspirationAvailabilityLabel(item);
 
   return (
@@ -933,34 +914,11 @@ function DesktopInspiredCard({
               href={item.salonHref ?? href}
             >
               <span className="truncate">{item.salonName}</span>
-              <ReylumiIcon
-                className="h-3.5 w-3.5 shrink-0 text-sky-500"
-                name="verified"
-              />
+              <SalonVerifiedBadge verified={item.trust.identityVerified}/>
             </Link>
-            <p className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1 text-[11px] font-semibold text-text-secondary">
-              {rating ? (
-                <>
-                  <span className="text-amber-500">★</span>
-                  <span>{rating}</span>
-                </>
-              ) : null}
-              {distance ? (
-                <>
-                  <span className="text-text-muted/60">·</span>
-                  <span>{distance}</span>
-                </>
-              ) : null}
-            </p>
+            <SalonTrustLine signals={item.trust} href={item.salonHref} name={item.salonName} distance={distance} className="text-text-secondary"/>
           </div>
-          {item.bookingHref ? (
-            <Link
-              className="inline-flex h-8 shrink-0 items-center justify-center rounded-[0.55rem] bg-brand-orange px-3 text-xs font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={item.bookingHref}
-            >
-              Book
-            </Link>
-          ) : null}
+          <ExploreBookButton href={item.bookingEnabled ? item.bookingHref : null} name={item.salonName} contactHref={item.salonHref} phoneHref={item.phoneHref} />
         </div>
         <div className="grid gap-1">
           <p className="truncate text-sm font-semibold text-text-primary">
@@ -1057,12 +1015,12 @@ function DesktopExploreLanding({
               </h1>
               <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold text-text-secondary">
                 <span className="inline-flex items-center gap-1.5">
-                  <ReylumiIcon className="h-4 w-4 text-amber-500" name="star" />
+                  <ReylumiIcon className="h-4 w-4 text-brand-orange" name="message" />
                   Real reviews
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <ReylumiIcon className="h-4 w-4 text-sky-500" name="verified" />
-                  Verified pros
+                  Identity verification
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <ReylumiIcon className="h-4 w-4 text-brand-teal" name="calendar" />
@@ -1142,12 +1100,12 @@ function MobileExploreSearch({
         <input name="category" type="hidden" value={normalizedCategory} />
       ) : null}
       <div className="grid grid-cols-2 gap-2">
-        <button
+        <SubmitButton pendingLabel="Processing…"
           className="min-h-10 rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
           type="submit"
         >
           Search
-        </button>
+        </SubmitButton>
         <button
           className="min-h-10 rounded-full bg-brand-teal-soft px-4 text-sm font-semibold text-brand-teal transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal disabled:cursor-not-allowed disabled:opacity-60"
           disabled={!canUseLocation}
@@ -1188,9 +1146,9 @@ function topRatedSalons(
   )
     .filter(
       (salon) =>
-        salon.averageRating !== null && salon.sharedExperienceCount > 0,
+        buildReylumiTrustSummary(salon).qualityScore !== null,
     )
-    .sort(compareReylumiTopRatedSalons)
+    .sort(compareReylumiTrustedSalons)
     .slice(0, 8);
 }
 
@@ -1295,13 +1253,17 @@ function desktopPriceLimit(value: DesktopDiscoveryFilterState["price"]) {
   return null;
 }
 
-function desktopRatingMinimum(value: DesktopDiscoveryFilterState["rating"]) {
-  if (value === "4_8") {
-    return 4.8;
+function trustLevelRank(signals: Parameters<typeof buildReylumiTrustSummary>[0]) {
+ return {empty:0,level_1:1,level_2:2,level_3:3,full:4}[buildReylumiTrustSummary(signals).level];
+}
+
+function desktopTrustMinimum(value: DesktopDiscoveryFilterState["trust"]) {
+  if (value === "gold") {
+    return 3;
   }
 
-  if (value === "4_5") {
-    return 4.5;
+  if (value === "silver") {
+    return 2;
   }
 
   return null;
@@ -1450,7 +1412,7 @@ function filterSalonsForDesktopDiscovery(
   selectedCategory: string,
 ) {
   const priceLimit = desktopPriceLimit(filters.price);
-  const ratingMinimum = desktopRatingMinimum(filters.rating);
+  const trustMinimum = desktopTrustMinimum(filters.trust);
 
   return salons.filter((salon) => {
     if (!salonMatchesDiscoveryCategory(salon, selectedCategory)) {
@@ -1466,9 +1428,8 @@ function filterSalonsForDesktopDiscovery(
     }
 
     if (
-      ratingMinimum !== null &&
-      (typeof salon.averageRating !== "number" ||
-        salon.averageRating < ratingMinimum)
+      trustMinimum !== null &&
+      (trustLevelRank(salon) < trustMinimum)
     ) {
       return false;
     }
@@ -1505,7 +1466,7 @@ function filterSalonsForDesktopDiscovery(
       return false;
     }
 
-    if (hasDesktopMoreFilter(filters, "verified") && salon.verifiedVisitCount <= 0) {
+    if (hasDesktopMoreFilter(filters, "verified") && salon.identityVerified !== true) {
       return false;
     }
 
@@ -1532,8 +1493,10 @@ function filterSalonsForDesktopDiscovery(
   });
 }
 
+type DiscoveryLook = Pick<ExploreInspirationItem, "serviceCategory" | "serviceName" | "salonName" | "captionExcerpt" | "bookingMeta" | "trust" | "bookingEnabled"> & { operatingStatus: Pick<ExploreInspirationItem["operatingStatus"], "isOpen"> };
+
 function lookMatchesDiscoveryCategory(
-  item: ExploreInspirationItem,
+  item: DiscoveryLook,
   category: string,
 ) {
   const normalizedCategory = cleanCategory(category);
@@ -1555,13 +1518,13 @@ function lookMatchesDiscoveryCategory(
   return haystack.includes(normalizedCategory.toLowerCase());
 }
 
-function filterLooksForDesktopDiscovery(
-  items: ExploreInspirationItem[],
+function filterLooksForDesktopDiscovery<T extends DiscoveryLook>(
+  items: T[],
   filters: DesktopDiscoveryFilterState,
   selectedCategory: string,
 ) {
   const priceLimit = desktopPriceLimit(filters.price);
-  const ratingMinimum = desktopRatingMinimum(filters.rating);
+  const trustMinimum = desktopTrustMinimum(filters.trust);
 
   return items.filter((item) => {
     if (!lookMatchesDiscoveryCategory(item, selectedCategory)) {
@@ -1577,9 +1540,8 @@ function filterLooksForDesktopDiscovery(
     }
 
     if (
-      ratingMinimum !== null &&
-      (typeof item.trust.averageRating !== "number" ||
-        item.trust.averageRating < ratingMinimum)
+      trustMinimum !== null &&
+      (trustLevelRank(item.trust) < trustMinimum)
     ) {
       return false;
     }
@@ -1637,7 +1599,7 @@ function filterLooksForDesktopDiscovery(
       return false;
     }
 
-    if (hasDesktopMoreFilter(filters, "verified") && item.trust.verifiedVisitCount <= 0) {
+    if (hasDesktopMoreFilter(filters, "verified") && item.trust.identityVerified !== true) {
       return false;
     }
 
@@ -1650,6 +1612,22 @@ function filterLooksForDesktopDiscovery(
 
     return true;
   });
+}
+
+function feedMatchesDesktopDiscovery(item: ExploreFeedItem, filters: DesktopDiscoveryFilterState, category: string) {
+  if (item.discoverySalon) return filterSalonsForDesktopDiscovery([item.discoverySalon], filters, category).length > 0;
+  if (filters.more.includes("new") || filters.more.includes("trending")) return false;
+  const trust = item.salon?.trust ?? { averageRating: null, noIssueRate: null, sharedExperienceCount: 0, uniqueCustomerCount: 0, verifiedVisitCount: 0 };
+  return filterLooksForDesktopDiscovery([{
+    serviceCategory: item.serviceCategory,
+    serviceName: item.serviceName,
+    salonName: item.salon?.name ?? "",
+    captionExcerpt: item.caption,
+    bookingMeta: item.bookingMeta,
+    trust,
+    bookingEnabled: item.booking?.eligible === true,
+    operatingStatus: item.salon?.operatingStatus ?? { isOpen: false },
+  }], filters, category).length > 0;
 }
 
 function desktopFilterChipsForCategory(
@@ -1710,7 +1688,7 @@ function desktopFilterChipsForCategory(
     ...serviceChips,
     { label: "Available today", more: "available_today" },
     { label: "Under $60", more: "under_60" },
-    { label: "4.8+", more: "rating_4_8" },
+    { label: "Gold LUMI Truth", more: "trust_gold" },
   ];
   const seen = new Set<string>();
 
@@ -1724,37 +1702,6 @@ function desktopFilterChipsForCategory(
     seen.add(key);
     return true;
   }).slice(0, 9);
-}
-
-function formatSlotLabel(value: string | null) {
-  const date = dateFromIso(value);
-
-  if (!date) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function fallbackSlots(index: number) {
-  const slotGroups = [
-    ["10:30 AM", "12:00 PM", "2:30 PM"],
-    ["11:00 AM", "1:30 PM", "4:00 PM"],
-    ["12:30 PM", "3:30 PM", "5:30 PM"],
-    ["2:00 PM", "4:30 PM", "6:00 PM"],
-  ];
-
-  return slotGroups[index % slotGroups.length];
-}
-
-function salonTimeSlots(salon: ExploreSearchResult, index: number) {
-  const firstSlot = formatSlotLabel(salon.nextAvailableAt);
-  const slots = firstSlot ? [firstSlot, ...fallbackSlots(index)] : fallbackSlots(index);
-
-  return [...new Set(slots)].slice(0, 3);
 }
 
 function sectionHeader({
@@ -1790,20 +1737,46 @@ function sectionHeader({
   );
 }
 
+function PublicSalonProfilesSection({ salons, selectedCategory = "" }: { salons: ExploreSearchResult[]; selectedCategory?: string }) {
+  const profiles = salons.filter((salon) => salon.hasPublicProfile && UUID_PATTERN.test(salon.id) && salonMatchesDiscoveryCategory(salon, selectedCategory)).slice(0, 12);
+  if (!profiles.length) return null;
+  return <section className="grid gap-3" data-testid="public-salon-profiles">
+    <div className="flex items-center justify-between gap-3">
+      <div><h2 className="text-xl font-semibold text-text-primary">Explore salons</h2><p className="mt-1 text-sm text-text-secondary">Find salon profiles, contact details and directions.</p></div>
+      <Link className="shrink-0 text-sm font-semibold text-brand-orange" href={`/explore?${new URLSearchParams({ category: cleanCategory(selectedCategory) || "All" })}`}>View all →</Link>
+    </div>
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {profiles.map((salon) => <article key={salon.id} className="grid gap-3 rounded-2xl border border-divider-subtle bg-white p-4">
+        {salon.coverImageUrl ? <Link href={salonProfileHref(salon.id)} className="relative block aspect-[3/2] overflow-hidden rounded-xl">
+          <Image src={salon.coverImageUrl} alt={isDefaultNailImage(salon.coverImageUrl) ? "AI-generated nail-service illustration" : `${salon.name} salon photo`} fill sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw" className="object-cover" />
+          <NailIllustrationCredit imageUrl={salon.coverImageUrl} className="absolute bottom-2 right-2" />
+        </Link> : null}
+        <Link href={salonProfileHref(salon.id)} className="flex items-center gap-3">
+          <span className="relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-[linear-gradient(135deg,#fff0e8,#e7f7f5)] font-semibold text-brand-orange"><SalonLogoContent salon={salon} size={48} /></span>
+          <span className="min-w-0"><span className="block font-semibold text-text-primary">{salon.name}</span><span className="block text-xs text-text-secondary">{[salon.serviceCategories.join(" · "), salon.city, salon.state].filter(Boolean).join(" · ")}</span></span>
+        </Link>
+        <p className="text-sm text-text-secondary">{[salon.addressLine1, salon.addressLine2, salon.city, salon.state, salon.postalCode].filter(Boolean).join(", ")}</p>
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+          {salon.phone ? <a href={`tel:${salon.phone}`} className="font-semibold text-text-primary">{salon.phone}</a> : null}
+          <Link className="font-medium text-brand-orange" href={salonProfileHref(salon.id)}>View profile →</Link>
+        </div>
+        <div className="flex justify-between gap-2"><ExploreSalonLove salonId={salon.id} name={salon.name}/><ExploreBookButton href={salon.bookingEnabled?salon.bookingHref:null} name={salon.name} contactHref={salonProfileHref(salon.id)} phoneHref={salon.phone?`tel:${salon.phone}`:null}/></div>
+      </article>)}
+    </div>
+  </section>;
+}
+
 function CompactSalonCard({ salon }: { salon: ExploreHomeSalon }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const imageUrl = imageFailed ? null : salon.coverImageUrl;
-  const location = displaySalonCity(salon);
+  const imageUrl = imageFailed ? resolveNailCoverImage({ id: salon.id, name: salon.name, categories: salon.serviceCategories }) : salon.coverImageUrl;
   const displayName = displaySalonName(salon.name);
   const profileHref =
     UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
       ? salonProfileHref(salon.id)
       : null;
   const href = profileHref ?? salon.bookingHref ?? "/explore";
-  const service = featuredServiceLine(salon);
-  const price = priceLine(salon);
-  const availability = salon.nextAvailabilityLabel;
-  const trustSummary = salonTrustSummary(salon);
+  const service = salonPopularPrice(salon) ? null : featuredServiceLine(salon);
+  const price = salonPopularPrice(salon);
 
   return (
     <article
@@ -1818,7 +1791,7 @@ function CompactSalonCard({ salon }: { salon: ExploreHomeSalon }) {
           <span className="relative block aspect-[16/9] overflow-hidden rounded-[0.75rem] bg-surface-muted">
             {imageUrl ? (
               <Image
-                alt={`${displayName} salon photo`}
+                alt={isDefaultNailImage(imageUrl) ? "AI-generated nail-service illustration" : `${displayName} salon photo`}
                 className="object-cover transition duration-300 group-hover:scale-[1.025]"
                 fill
                 onError={() => setImageFailed(true)}
@@ -1830,49 +1803,17 @@ function CompactSalonCard({ salon }: { salon: ExploreHomeSalon }) {
                 {salonInitials(displayName)}
               </span>
             )}
-            <LumiTrustMark
-              className="absolute left-2 top-2 grid h-5 w-5 place-items-center bg-white/95 p-0 text-brand-orange shadow-sm ring-1 ring-brand-orange/20"
-              presentation="spark"
-              summary={trustSummary}
-            />
           </span>
         </span>
-        <span className="grid min-h-[6.9rem] content-between gap-2 p-3 pt-2.5">
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold text-text-primary">
-              {displayName}
-            </span>
-            {location ? (
-              <span className="mt-1 block truncate text-xs text-text-secondary">
-                {location}
-              </span>
-            ) : null}
-            <SalonOperatingStatusBadge
-              className="mt-1 max-w-full"
-              status={salon.operatingStatus}
-            />
-            {service ? (
-              <span className="mt-1.5 block truncate text-xs font-medium text-brand-teal">
-                {service}
-              </span>
-            ) : null}
-          </span>
-          <span className="flex min-h-5 items-center justify-between gap-2 text-[11px]">
-            {price ? (
-              <span className="truncate font-semibold text-text-primary">
-                {price}
-              </span>
-            ) : (
-              <span />
-            )}
-            {availability ? (
-              <span className="truncate text-right font-medium text-text-secondary">
-                {availability}
-              </span>
-            ) : null}
-          </span>
+        <NailIllustrationCredit imageUrl={imageUrl} className="mx-3 mt-2 justify-self-start" />
+        <span className="grid gap-0.5 p-3 pt-2">
+          <span className="flex min-w-0 items-center gap-1 truncate text-sm font-semibold text-text-primary"><span className="truncate">{displayName}</span><SalonVerifiedBadge verified={salon.identityVerified}/></span>
+          <SalonTrustLine staticOnly compact signals={salon} name={displayName} className="text-text-secondary"/>
+          {price||service?<span className="truncate text-[11px] leading-5 text-text-secondary">{price??service}</span>:null}
+          <SalonOperatingStatusBadge className="max-w-full" status={salon.operatingStatus}/>
         </span>
       </Link>
+      <div className="flex items-center justify-between gap-2 px-3 pb-3"><ExploreSalonLove salonId={salon.id} name={salon.name}/><ExploreBookButton href={salon.bookingEnabled?salon.bookingHref:null} name={salon.name} contactHref={profileHref} phoneHref={salon.phone?`tel:${salon.phone}`:null}/></div>
     </article>
   );
 }
@@ -1972,7 +1913,7 @@ function TopRatedSalonsSection({
     <section className="grid gap-3" data-testid="top-rated-salons">
       {sectionHeader({
         actionHref: "/explore",
-        subtitle: "Sorted by customer rating with ReyLUMI activity context.",
+        subtitle: "Based on LUMI Truth, customer feedback and repeat visits.",
         title: "Top Rated Salons",
       })}
       <TopRatedCarousel salons={salons} />
@@ -1990,7 +1931,6 @@ function TrendingDesignTile({
   remainingLabel: string | null;
 }) {
   const salonName = displaySalonName(item.salonName);
-  const trustSummary = buildReylumiTrustSummary(item.trust);
   const tileFrameClass =
     "group relative aspect-[1.15/1] min-w-[6.75rem] max-w-[6.75rem] snap-start overflow-hidden rounded-[0.8rem] bg-surface-muted text-left shadow-[0_8px_20px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/75 transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(35,25,22,0.08)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:min-w-[7.5rem] sm:max-w-[7.5rem] lg:min-w-[8.25rem] lg:max-w-[8.25rem]";
   const tileActionClass =
@@ -2013,11 +1953,6 @@ function TrendingDesignTile({
           {remainingLabel}
         </span>
       ) : null}
-      <LumiTrustMark
-        className="absolute left-2 top-2 z-10 grid h-5 w-5 place-items-center bg-white/95 p-0 text-brand-orange shadow-sm ring-1 ring-brand-orange/20"
-        presentation="spark"
-        summary={trustSummary}
-      />
     </>
   );
 
@@ -2031,6 +1966,7 @@ function TrendingDesignTile({
       >
         {tileContent}
       </button>
+      <ExploreBookButton compact className="absolute bottom-1.5 left-1.5 z-30" href={item.bookingEnabled ? item.bookingHref : null} name={item.salonName} contactHref={item.salonHref} phoneHref={item.phoneHref} />
       <SavePostButton
         className="absolute bottom-1.5 right-1.5 z-30 origin-bottom-right scale-75 shadow-sm sm:bottom-2 sm:right-2 sm:scale-[.82]"
         initialSaved={item.saveTarget.saved}
@@ -2115,6 +2051,8 @@ function mapSalonToMapSalon(salon: ExploreSearchResult): ExploreMapSalon | null 
   }
 
   return {
+    bookingHref:salon.bookingEnabled?salon.bookingHref:null,
+    phoneHref:salon.phone?`tel:${salon.phone}`:null,
     coverImageUrl: salon.coverImageUrl,
     distanceMiles: salon.distanceMiles,
     href:
@@ -2129,6 +2067,12 @@ function mapSalonToMapSalon(salon: ExploreSearchResult): ExploreMapSalon | null 
     operatingStatus: salon.operatingStatus,
     serviceLabel: cardDetailLine(salon) || null,
     trust: {
+            identityVerified: salon.identityVerified,
+      popularServiceName: salon.popularServiceName,
+      popularServiceMinimumPrice: salon.popularServiceMinimumPrice,
+      popularServiceMaximumPrice: salon.popularServiceMaximumPrice,
+      completedBookingCount: salon.completedBookingCount,
+      trustEvidence: salon.trustEvidence ?? null,
       averageRating: salon.averageRating,
       noIssueRate: salon.reputationNoIssueRate,
       sharedExperienceCount: salon.sharedExperienceCount,
@@ -2138,22 +2082,7 @@ function mapSalonToMapSalon(salon: ExploreSearchResult): ExploreMapSalon | null 
   };
 }
 
-function salonTrustSummary(salon: ExploreSearchResult) {
-  return buildReylumiTrustSummary(salon, {
-    isNew: salon.isNew,
-  });
-}
 
-function metricTrustFacts(summary: ReylumiTrustSummary) {
-  return summary.facts
-    .filter(
-      (fact) =>
-        fact.kind === "rating" ||
-        fact.kind === "experience" ||
-        fact.kind === "verified_visit",
-    )
-    .slice(0, 3);
-}
 
 function SalonCard({
   featured = false,
@@ -2175,11 +2104,9 @@ function SalonCard({
   const profileHref = canViewProfile ? salonProfileHref(salon.id) : null;
   const mediaHref = imageHref ?? profileHref;
   const [imageFailed, setImageFailed] = useState(false);
-  const imageUrl = imageFailed ? null : salon.coverImageUrl;
-  const service = cardServiceLabel(salon);
-  const price = priceLine(salon);
-  const rating = salonRatingLine(salon);
-  const trustSummary = salonTrustSummary(salon);
+  const imageUrl = imageFailed ? resolveNailCoverImage({ id: salon.id, name: salon.name, categories: salon.serviceCategories }) : salon.coverImageUrl;
+  const service = salonPopularPrice(salon) ? null : cardServiceLabel(salon);
+  const price = salonPopularPrice(salon);
   const availabilityLabel = salonAvailabilityLine(salon);
   const bookingHref =
     salon.bookingEnabled && salon.bookingHref ? salon.bookingHref : null;
@@ -2199,14 +2126,14 @@ function SalonCard({
     >
       {mediaHref ? (
         <Link
-          aria-label={`Open featured work from ${salon.name}`}
+          aria-label={isDefaultNailImage(imageUrl) ? `Open profile of ${salon.name}` : `Open featured work from ${salon.name}`}
           className="absolute inset-0 z-[1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
           href={mediaHref}
         />
       ) : null}
       {imageUrl ? (
         <Image
-          alt={`${salon.name} salon photo`}
+          alt={isDefaultNailImage(imageUrl) ? "AI-generated nail-service illustration" : `${salon.name} salon photo`}
           className="object-cover transition duration-300 group-hover:scale-[1.02]"
           fill
           onError={() => setImageFailed(true)}
@@ -2216,8 +2143,8 @@ function SalonCard({
       ) : (
         <div className="absolute inset-0 grid place-items-center bg-text-primary px-6 text-center text-white">
           <div>
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border border-white/20 bg-white/10 text-lg font-semibold">
-              {salonInitials(salon.name)}
+            <div className="relative mx-auto grid h-16 w-16 place-items-center overflow-hidden rounded-full border border-white/20 bg-white/10 text-lg font-semibold">
+              <SalonLogoContent salon={salon} size={64} />
             </div>
             <p className="mt-4 text-sm font-semibold">Photos coming soon</p>
           </div>
@@ -2229,6 +2156,7 @@ function SalonCard({
         className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(31,23,27,0.10),rgba(31,23,27,0.03)_36%,rgba(31,23,27,0.76))]"
       />
 
+      <NailIllustrationCredit imageUrl={imageUrl} className="absolute right-3 top-14 z-20" />
       <div className="pointer-events-none absolute left-2.5 right-2.5 top-2.5 z-10 flex items-start justify-between gap-2">
         <span
           aria-label={rankAriaLabel}
@@ -2270,70 +2198,28 @@ function SalonCard({
                 {salon.name}
               </h3>
             )}
-            <LumiTrustPopover
-              actionHref={profileHref ? `${profileHref}#lumi-trust` : null}
-              align="right"
-              className="shrink-0"
-              entityName={salon.name}
-              markClassName="grid h-8 w-8 place-items-center rounded-full bg-white/92 p-0 text-brand-orange shadow-sm ring-1 ring-brand-orange/20 hover:bg-brand-orange-soft"
-              panelClassName="text-zinc-700"
-              presentation="spark"
-              size="sm"
-              summary={trustSummary}
-            />
+            <SalonVerifiedBadge verified={salon.identityVerified}/>
           </div>
-          {location ? (
-            <p className="mt-1 truncate text-sm font-medium text-white/80">
-              {location}
+          {availabilityLabel?<span className="sr-only">{availabilityLabel}</span>:null}
+          <SalonTrustLine signals={salon} href={profileHref} name={salon.name} distance={distance} className="text-white/85"/>
+          {location?<p className="truncate text-[11px] leading-5 text-white/70">{location}</p>:null}
+          {service || price ? (
+            <p className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs font-semibold text-white">
+              {service ? <span className="line-clamp-1">{service}</span> : null}
+              {price ? <span className="text-white/88">{price}</span> : null}
             </p>
-          ) : null}
-          {rating || distance || availabilityLabel ? (
-            <p className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-xs font-semibold text-white/88">
-              {rating ? (
-                <span className="inline-flex min-w-0 items-center gap-1">
-                  <ReylumiIcon
-                    className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400"
-                    name="star"
-                  />
-                  <span>{rating}</span>
-                </span>
-              ) : null}
-              {distance ? (
-                <>
-                  {rating ? <span className="text-white/45">·</span> : null}
-                  <span>{distance}</span>
-                </>
-              ) : null}
-              {availabilityLabel ? (
-                <span className="rounded-full bg-emerald-50/16 px-2 py-0.5 text-emerald-100 ring-1 ring-emerald-100/20">
-                  {availabilityLabel}
-                </span>
-              ) : null}
-            </p>
-          ) : null}
-          <SalonOperatingStatusBadge
-            className="mt-1.5 max-w-full"
+          ) : null}          <SalonOperatingStatusBadge
+            className="mt-0.5 max-w-full"
             inverted
             showDetail={featured}
             status={salon.operatingStatus}
           />
-          {service || price ? (
-            <p className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-white">
-              {service ? <span className="line-clamp-1">{service}</span> : null}
-              {price ? <span className="text-white/88">{price}</span> : null}
-            </p>
-          ) : null}
+
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {bookingHref ? (
-            <Link
-              className="inline-flex min-h-8 items-center rounded-full bg-brand-orange px-3 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              href={bookingHref}
-            >
-              Book
-            </Link>
-          ) : null}
+          <ExploreBookButton href={bookingHref} name={salon.name} contactHref={profileHref} phoneHref={callHref} />
+          <ExploreSalonLove salonId={salon.id} name={salon.name} />
           {profileHref ? (
             <Link
               className={[
@@ -2596,6 +2482,7 @@ function ResultSection({
                 rankLabel={rank.label}
                 salon={salon}
               />
+              {(index + 1) % 4 === 0 || (results.length < 4 && index === results.length - 1) ? <ExploreAdSlot /> : null}
             </div>
           );
         })}
@@ -2713,9 +2600,9 @@ function InspirationPreview({
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const location = inspirationLocation(item);
   const service = inspirationServiceLabel(item);
+  const price = inspirationPriceLabel(item);
+  const duration = inspirationDurationLabel(item);
   const publishedAt = inspirationDateLabel(item.publishedAt);
-  const trustSummary = buildReylumiTrustSummary(item.trust);
-  const trustFacts = metricTrustFacts(trustSummary);
 
   useEffect(() => {
     previousFocusRef.current =
@@ -2805,18 +2692,20 @@ function InspirationPreview({
                   className="line-clamp-2 text-xl font-semibold text-text-primary"
                   id="inspiration-preview-title"
                 >
-                {item.salonName}
+                {item.salonName} <SalonVerifiedBadge verified={item.trust.identityVerified}/>
               </h2>
-                <SalonOperatingStatusBadge
-                  className="mt-2 max-w-full"
-                  showDetail
-                  status={item.operatingStatus}
-                />
+                <SalonTrustLine signals={item.trust} href={item.salonHref} name={item.salonName} distance={inspirationDistanceLabel(item)} expanded className="text-text-secondary"/>
+                {service||price?<p className="text-xs leading-5 text-text-secondary">{[service,price,duration].filter(Boolean).join(" · ")}</p>:null}
                 {location ? (
-                  <p className="mt-1 text-sm font-medium text-text-secondary">
+                  <p className="text-[11px] leading-5 font-medium text-text-secondary">
                     {location}
                   </p>
                 ) : null}
+                <SalonOperatingStatusBadge
+                  className="mt-0.5 max-w-full"
+                  showDetail
+                  status={item.operatingStatus}
+                />
               </div>
               <button
                 aria-label="Close preview"
@@ -2829,25 +2718,6 @@ function InspirationPreview({
               </button>
             </div>
 
-            {service ? (
-              <p className="mt-4 text-sm font-semibold text-text-primary">
-                {service}
-              </p>
-            ) : null}
-            <div className="mt-4 flex flex-wrap gap-2">
-              <LumiTrustPopover
-                entityName={item.salonName}
-                markClassName="bg-surface-muted px-3 py-1 text-brand-orange ring-1 ring-divider-subtle"
-                summary={trustSummary}
-              />
-              {trustFacts.slice(0, 2).map((fact) => (
-                <TrustFactPill
-                  className="max-w-[12rem] bg-surface-muted px-3 py-1 text-text-primary ring-1 ring-divider-subtle"
-                  fact={fact}
-                  key={fact.kind}
-                />
-              ))}
-            </div>
             {item.captionExcerpt ? (
               <p className="mt-3 text-sm leading-6 text-text-secondary">
                 {item.captionExcerpt}
@@ -2866,19 +2736,12 @@ function InspirationPreview({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {item.bookingHref ? (
-              <Link
-                className="inline-flex min-h-10 items-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={item.bookingHref}
-              >
-                {item.bookingLabel}
-              </Link>
-            ) : null}
+            <ExploreBookButton href={item.bookingEnabled ? item.bookingHref : null} name={item.salonName} contactHref={item.salonHref} phoneHref={item.phoneHref} />
             {item.salonHref ? (
               <Link
                 className={[
                   "inline-flex min-h-10 items-center rounded-full px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2",
-                  item.bookingHref
+                  item.bookingEnabled && item.bookingHref
                     ? "bg-surface-muted text-text-primary ring-1 ring-divider-subtle hover:bg-brand-orange-soft focus-visible:outline-brand-orange"
                     : "bg-text-primary text-white hover:bg-brand-black focus-visible:outline-brand-orange",
                 ].join(" ")}
@@ -2916,11 +2779,11 @@ function discoveryBadgeLabel(salon: ExploreHomeSalon, fallback: string) {
   }
 
   if (salon.activeServiceCount >= 5) {
-    return "Popular";
+    return "Service variety";
   }
 
-  if (salon.averageRating !== null && salon.sharedExperienceCount > 0) {
-    return "Top Rated";
+  if (buildReylumiTrustSummary(salon).qualityScore !== null) {
+    return "LUMI Truth";
   }
 
   return fallback;
@@ -2953,15 +2816,14 @@ function RecommendedFeatureCard({
   salon: ExploreHomeSalon;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const imageUrl = imageFailed ? null : salon.coverImageUrl;
+  const imageUrl = imageFailed ? resolveNailCoverImage({ id: salon.id, name: salon.name, categories: salon.serviceCategories }) : salon.coverImageUrl;
   const location = displaySalonCity(salon);
   const displayName = displaySalonName(salon.name);
-  const service = discoveryServiceLabel(salon);
-  const price = priceLine(salon);
+  const service = salonPopularPrice(salon) ? null : discoveryServiceLabel(salon);
+  const price = salonPopularPrice(salon);
   const reason = discoveryBadgeLabel(salon, "Recommended");
-  const { primaryHref, primaryLabel, viewHref } = recommendedCardLinks(salon);
+  const { primaryHref, viewHref } = recommendedCardLinks(salon);
   const showSecondaryViewAction = viewHref !== primaryHref;
-  const trustSummary = salonTrustSummary(salon);
   const trustHref =
     UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
       ? `${salonProfileHref(salon.id)}#lumi-trust`
@@ -2977,7 +2839,7 @@ function RecommendedFeatureCard({
       />
       {imageUrl ? (
         <Image
-          alt={`${displayName} salon photo`}
+          alt={isDefaultNailImage(imageUrl) ? "AI-generated nail-service illustration" : `${displayName} salon photo`}
           className="object-cover transition duration-500 group-hover:scale-[1.02]"
           fill
           onError={() => setImageFailed(true)}
@@ -2993,35 +2855,24 @@ function RecommendedFeatureCard({
         aria-hidden
         className="absolute inset-0 bg-[linear-gradient(90deg,rgba(31,23,27,0.88),rgba(31,23,27,0.56)_42%,rgba(31,23,27,0.08)_100%)]"
       />
-      <div className="relative z-10 grid min-h-[19rem] max-w-[76%] content-end gap-3.5 p-4 text-white sm:p-5">
+      <NailIllustrationCredit imageUrl={imageUrl} className="absolute right-3 top-3 z-20" />
+      <div className="relative z-10 grid min-h-[19rem] max-w-[76%] content-end gap-2 p-4 text-white sm:p-5">
         <div>
           <div className="flex flex-wrap gap-2">
-            <LumiTrustPopover
-              actionHref={trustHref}
-              entityName={displayName}
-              markClassName="grid h-8 w-8 place-items-center rounded-full bg-white/92 p-0 text-brand-orange ring-1 ring-brand-orange/20 hover:bg-brand-orange-soft"
-              panelClassName="text-zinc-700"
-              presentation="spark"
-              size="sm"
-              summary={trustSummary}
-            />
             <span className="inline-flex w-fit rounded-full bg-white/14 px-2.5 py-1 text-[11px] font-semibold text-white ring-1 ring-white/20">
               Recommended because {reason.toLowerCase()}
             </span>
           </div>
-          <h3 className="mt-3 line-clamp-2 text-xl font-semibold leading-tight sm:text-2xl">
-            {displayName}
+          <h3 className="mt-1 line-clamp-2 text-xl font-semibold leading-tight sm:text-2xl">
+            {displayName} <SalonVerifiedBadge verified={salon.identityVerified}/>
           </h3>
-          <p className="mt-2 line-clamp-2 max-w-md text-sm leading-5 text-white/78">
-            {service
-              ? `A polished match for ${service.toLowerCase()} with public salon details and booking when available.`
-              : "A polished salon pick with public details, nearby discovery, and booking when available."}
-          </p>
+          <SalonTrustLine signals={salon} href={viewHref} name={displayName} distance={formatDistance(salon.distanceMiles)} className="text-white/85"/>
           {location ? (
             <p className="mt-2 truncate text-xs font-semibold text-white/70">
               {location}
             </p>
           ) : null}
+          {price||service?<p className="text-xs leading-5 text-white/85">{price??service}</p>:null}
           <SalonOperatingStatusBadge
             className="mt-2 max-w-full"
             inverted
@@ -3029,25 +2880,9 @@ function RecommendedFeatureCard({
             status={salon.operatingStatus}
           />
         </div>
-        <div className="flex min-h-7 flex-wrap items-center gap-2 text-xs">
-          {service ? (
-            <span className="max-w-full truncate rounded-full bg-white/16 px-2.5 py-0.5 font-semibold text-white ring-1 ring-white/18">
-              {service}
-            </span>
-          ) : null}
-          {price ? (
-            <span className="rounded-full bg-white px-2.5 py-0.5 font-semibold text-text-primary">
-              {price}
-            </span>
-          ) : null}
-        </div>
         <div className="flex flex-wrap gap-2">
-          <Link
-            className="inline-flex min-h-9 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            href={primaryHref}
-          >
-            {primaryLabel}
-          </Link>
+          <ExploreBookButton href={salon.bookingEnabled?salon.bookingHref:null} name={salon.name} contactHref={viewHref} phoneHref={salon.phone?`tel:${salon.phone}`:null}/><ExploreSalonLove salonId={salon.id} name={salon.name}/>
+
           {showSecondaryViewAction ? (
             <Link
               className="inline-flex min-h-9 items-center justify-center rounded-full bg-white/14 px-4 text-sm font-semibold text-white ring-1 ring-white/20 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
@@ -3075,10 +2910,10 @@ function RecommendedMiniTile({
 }) {
   const [imageFailed, setImageFailed] = useState(false);
   const displayName = displaySalonName(salon.name);
-  const imageUrl = imageFailed ? null : salon.coverImageUrl;
+  const imageUrl = imageFailed ? resolveNailCoverImage({ id: salon.id, name: salon.name, categories: salon.serviceCategories }) : salon.coverImageUrl;
 
   return (
-    <button
+    <div className="relative"><button
       aria-label={`Feature ${displayName}`}
       aria-pressed={active}
       className={[
@@ -3103,7 +2938,8 @@ function RecommendedMiniTile({
         </span>
       )}
       <span className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(36,27,31,0),rgba(36,27,31,0.18))]" />
-    </button>
+      <NailIllustrationCredit imageUrl={imageUrl} className="absolute bottom-1 right-1" />
+    </button><div className="absolute bottom-1 left-1 right-1 z-20 flex justify-between"><ExploreSalonLove salonId={salon.id} name={salon.name}/><ExploreBookButton compact href={salon.bookingEnabled?salon.bookingHref:null} name={salon.name} contactHref={salonProfileHref(salon.id)} phoneHref={salon.phone?`tel:${salon.phone}`:null}/></div></div>
   );
 }
 
@@ -3781,8 +3617,8 @@ function DesktopDiscoveryFilterBar({
       return;
     }
 
-    if (chip.more === "rating_4_8") {
-      update({ rating: "4_8" });
+    if (chip.more === "trust_gold") {
+      update({ trust: "gold" });
       return;
     }
 
@@ -3895,7 +3731,7 @@ function DesktopLooksNearYouSection({
     <section className="grid gap-3" data-testid="desktop-looks-near-you">
       {sectionHeader({
         subtitle:
-          "Bookable looks with salon, price, rating, distance, and availability context.",
+          "Bookable looks with salon, price, LUMI Truth, distance, and availability context.",
         title: "Looks near you",
       })}
       {looks.length > 0 ? (
@@ -3942,7 +3778,7 @@ function DesktopLooksNearYouSection({
           }
           title="No matching looks yet"
         >
-          Try a broader price, rating, or availability filter.
+          Try a broader price, LUMI Truth, or availability filter.
         </DesktopEmptyState>
       )}
       {mapAvailable && looks.length > 0 ? (
@@ -3979,7 +3815,7 @@ function DesktopTopSalonsNearYouSection({
           title: "Top salons near you",
         })}
         <DesktopEmptyState title="No top salons match these filters">
-          Customer rating, visit, and booking signals will appear here as salons
+          Customer feedback, visits, and booking signals will appear here as salons
           publish more discovery data.
         </DesktopEmptyState>
       </section>
@@ -3990,7 +3826,7 @@ function DesktopTopSalonsNearYouSection({
     <section className="grid gap-3" data-testid="top-rated-salons">
       {sectionHeader({
         actionHref: "/explore",
-        subtitle: "Sorted by rating, verified activity, availability, and service fit.",
+        subtitle: "Based on LUMI Truth, availability and service fit.",
         title: "Top salons near you",
       })}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -4014,7 +3850,6 @@ function DesktopTopSalonsNearYouSection({
 }
 
 function DesktopAvailableTodayCard({
-  index,
   postHref,
   salon,
 }: {
@@ -4024,17 +3859,9 @@ function DesktopAvailableTodayCard({
 }) {
   const [imageFailed, setImageFailed] = useState(false);
   const displayName = displaySalonName(salon.name);
-  const imageUrl = imageFailed ? null : salon.coverImageUrl;
-  const service = cardServiceLabel(salon) ?? "Beauty service";
-  const price = priceLine(salon);
-  const rating = salonRatingLine(salon);
-  const slots = salonTimeSlots(salon, index);
-  const href =
-    salon.bookingEnabled && salon.bookingHref
-      ? salon.bookingHref
-      : UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
-        ? salonProfileHref(salon.id)
-        : "/explore";
+  const imageUrl = imageFailed ? resolveNailCoverImage({ id: salon.id, name: salon.name, categories: salon.serviceCategories }) : salon.coverImageUrl;
+  const service = salon.bookableServiceName ?? cardServiceLabel(salon) ?? "Beauty service";
+  const price = salon.bookableServicePrice == null ? null : formatMoney(salon.bookableServicePrice);
   const detailHref =
     postHref ?? (UUID_PATTERN.test(salon.id) && salon.hasPublicProfile
       ? salonProfileHref(salon.id)
@@ -4048,7 +3875,7 @@ function DesktopAvailableTodayCard({
       >
         {imageUrl ? (
           <Image
-            alt={`${displayName} available today`}
+            alt={isDefaultNailImage(imageUrl) ? "AI-generated nail-service illustration" : `${displayName} available today`}
             className="object-cover transition duration-300 group-hover:scale-[1.025]"
             fill
             onError={() => setImageFailed(true)}
@@ -4063,38 +3890,25 @@ function DesktopAvailableTodayCard({
         <span className="absolute left-3 top-3 rounded-full bg-white/92 px-2.5 py-1 text-[11px] font-semibold text-brand-orange shadow-sm ring-1 ring-white/80">
           {salon.nextAvailabilityLabel ?? "Available today"}
         </span>
+        <NailIllustrationCredit imageUrl={imageUrl} className="absolute bottom-2 right-2" />
       </Link>
       <div className="grid gap-3 p-3">
         <div className="min-w-0">
           <h3 className="truncate text-base font-semibold text-text-primary">
-            {displayName}
+            {displayName} <SalonVerifiedBadge verified={salon.identityVerified}/>
           </h3>
+          <SalonTrustLine signals={salon} href={salonProfileHref(salon.id)} name={displayName} distance={formatDistance(salon.distanceMiles)} className="text-text-secondary"/>
           <p className="mt-1 truncate text-sm font-medium text-text-secondary">
             {service}
           </p>
           <p className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs font-semibold text-text-secondary">
             {price ? <span className="text-text-primary">{price}</span> : null}
-            {rating ? (
-              <>
-                <span className="text-amber-500">★</span>
-                <span>{rating}</span>
-              </>
-            ) : null}
-            {salon.distanceMiles !== null ? (
-              <span>{formatDistance(salon.distanceMiles)}</span>
-            ) : null}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {slots.map((slot) => (
-            <Link
-              className="inline-flex min-h-8 items-center justify-center rounded-full bg-brand-orange-soft px-3 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              href={href}
-              key={slot}
-            >
-              {slot}
-            </Link>
-          ))}
+          <ExploreBookButton href={salon.bookingEnabled ? salon.bookingHref : null} name={salon.name} contactHref={detailHref} phoneHref={salon.phone ? `tel:${salon.phone}` : null} />
+          <ExploreSalonLove salonId={salon.id} name={salon.name}/>
+
         </div>
       </div>
     </article>
@@ -4270,11 +4084,26 @@ type DesktopProgressiveDiscoverySection = {
 
 function DesktopProgressiveSections({
   sections,
+  sessionKey,
 }: {
   sections: DesktopProgressiveDiscoverySection[];
+  sessionKey: string;
 }) {
   const [visibleSectionCount, setVisibleSectionCount] = useState(1);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    try {
+      const count = Number(window.sessionStorage.getItem(`explore-sections:${sessionKey}`));
+      if (Number.isInteger(count) && count > 1) {
+        const frame = window.requestAnimationFrame(() => setVisibleSectionCount(Math.min(sections.length, count)));
+        return () => window.cancelAnimationFrame(frame);
+      }
+    } catch { /* Optional navigation cache. */ }
+  }, [sections.length, sessionKey]);
+  useEffect(() => {
+    try { window.sessionStorage.setItem(`explore-sections:${sessionKey}`, String(visibleSectionCount)); }
+    catch { /* Optional navigation cache. */ }
+  }, [sessionKey, visibleSectionCount]);
 
   useEffect(() => {
     const node = loadMoreRef.current;
@@ -4336,6 +4165,7 @@ function DesktopDiscoveryMarketplace({
   onSelectCategory,
   selectedCategory,
   workspaceLocation,
+  strictLocation,
 }: {
   activeResults: ExploreSearchResult[];
   commentViewer: PostCommentViewer;
@@ -4352,6 +4182,7 @@ function DesktopDiscoveryMarketplace({
   onSelectCategory: (category: string) => void;
   selectedCategory: string;
   workspaceLocation: ExploreInitialLocation;
+  strictLocation: boolean;
 }) {
   const defaultLocation = formatDisplayLocation(location || workspaceLocation.label);
   const [filters, setFilters] = useState<DesktopDiscoveryFilterState>(() => ({
@@ -4360,7 +4191,7 @@ function DesktopDiscoveryMarketplace({
     location: defaultLocation,
     more: [],
     price: "any",
-    rating: "any",
+    trust: "any",
     time: "any",
   }));
   const filterResetKey = [
@@ -4369,9 +4200,12 @@ function DesktopDiscoveryMarketplace({
     filters.location,
     filters.more.join(","),
     filters.price,
-    filters.rating,
+    filters.trust,
     filters.time,
     selectedCategory,
+    gpsCoordinates?.latitude,
+    gpsCoordinates?.longitude,
+    strictLocation,
   ].join("|");
 
   const allDiscoverySalons = useMemo(
@@ -4415,10 +4249,10 @@ function DesktopDiscoveryMarketplace({
       filteredSalons
         .filter(
           (salon) =>
-            salon.averageRating !== null || salon.sharedExperienceCount > 0,
+            buildReylumiTrustSummary(salon).qualityScore !== null,
         )
         .slice()
-        .sort(compareReylumiTopRatedSalons)
+        .sort(compareReylumiTrustedSalons)
         .slice(0, 8),
     [filteredSalons],
   );
@@ -4447,6 +4281,17 @@ function DesktopDiscoveryMarketplace({
       ),
     [content.inspiration.items],
   );
+  const feedDiscovery = useMemo(() => ({
+    category: selectedCategory,
+    location: filters.location,
+    latitude: gpsCoordinates?.latitude,
+    longitude: gpsCoordinates?.longitude,
+    strictLocation: strictLocation || filters.location !== defaultLocation,
+  }), [selectedCategory, filters.location, gpsCoordinates, defaultLocation, strictLocation]);
+  const filterFeedItem = useCallback((item: ExploreFeedItem) =>
+    feedMatchesDesktopDiscovery(item, filters, selectedCategory) &&
+    !content.inspiration.items.some(look => inspirationDetailHref(look) === item.destination.href),
+    [filters, selectedCategory, content.inspiration.items]);
   const sections = useMemo(
     () => [
       {
@@ -4510,11 +4355,25 @@ function DesktopDiscoveryMarketplace({
         ),
         title: "Personalization",
       },
+      {
+        key: "continue-discovering",
+        title: "More to discover",
+        render: () => (
+          <section className="grid gap-4" aria-label="More to discover">
+            <div><h2 className="text-xl font-semibold text-text-primary">More to discover</h2>
+              <p className="mt-1 text-sm text-text-muted">Fresh inspiration, customer looks and more places to explore.</p></div>
+            <ExploreDiscoveryFeed key={filterResetKey} sessionKey={`desktop:${filterResetKey}`} refreshToken={content} discovery={feedDiscovery} viewer={commentViewer} filterItem={filterFeedItem} />
+          </section>
+        ),
+      },
     ],
     [
+      filterResetKey,
+      feedDiscovery,
+      filterFeedItem,
+      commentViewer,
       availableTodaySalons,
-      commentViewer.isAuthenticated,
-      content.inspiration,
+      content,
       filteredLooks,
       gpsCoordinates,
       mapSalons,
@@ -4547,8 +4406,10 @@ function DesktopDiscoveryMarketplace({
           </ExploreNotice>
         ) : null}
 
+        <PublicSalonProfilesSection salons={filteredSalons} selectedCategory={selectedCategory} />
         <DesktopProgressiveSections
           key={filterResetKey}
+          sessionKey={filterResetKey}
           sections={sections}
         />
       </div>
@@ -4566,6 +4427,10 @@ function ExploreHomeSections({
   nearYouSalons,
   onDiscoveryShortcutSelect,
   onSelectCategory,
+  selectedCategory,
+  location,
+  gpsCoordinates,
+  strictLocation,
 }: {
   activeDiscoveryResult: ExploreDiscoveryResultKind | null;
   commentViewer: PostCommentViewer;
@@ -4576,7 +4441,15 @@ function ExploreHomeSections({
   nearYouSalons: ExploreHomeSalon[];
   onDiscoveryShortcutSelect: (shortcut: ExploreDiscoveryShortcut) => void;
   onSelectCategory: (category: string) => void;
+  selectedCategory: string;
+  location: string;
+  gpsCoordinates: GpsCoordinates | null;
+  strictLocation: boolean;
 }) {
+  const discovery = useMemo(() => ({ category: selectedCategory, location,
+    latitude: gpsCoordinates?.latitude, longitude: gpsCoordinates?.longitude, strictLocation,
+  }), [selectedCategory, location, gpsCoordinates, strictLocation]);
+  const feedSessionKey = `mobile:${JSON.stringify(discovery)}`;
   const allDiscoverySalons = mergeHomeSalons(
     nearYouSalons,
     content.recommendedSalons,
@@ -4606,14 +4479,8 @@ function ExploreHomeSections({
           {gpsMessage}
         </ExploreNotice>
       ) : null}
-      <ExploreFeed
-        key={commentViewer.userId ?? "guest"}
-        activeDiscoveryResult={activeDiscoveryResult}
-        discoveryShortcuts={discoveryShortcuts}
-        initialPage={initialFeed}
-        onDiscoveryShortcutSelect={onDiscoveryShortcutSelect}
-        viewer={commentViewer}
-      />
+      <PublicSalonProfilesSection salons={allDiscoverySalons} selectedCategory={selectedCategory} />
+      <ExploreDiscoveryFeed key={`${feedSessionKey}:${commentViewer.userId}`} sessionKey={feedSessionKey} discovery={discovery} initialPage={selectedCategory === "All" && !strictLocation && !gpsCoordinates ? initialFeed : undefined} viewer={commentViewer} activeDiscoveryResult={activeDiscoveryResult} discoveryShortcuts={discoveryShortcuts} onDiscoveryShortcutSelect={onDiscoveryShortcutSelect} />
 
       {initialFeed.items.length === 0 ? (
         <PopularServicesSection
@@ -5242,9 +5109,13 @@ export function ExploreClient({
                   discoveryShortcuts={discoveryContent.shortcuts}
                   gpsMessage={gpsMessage}
                   initialFeed={initialFeed}
+                  location={location}
+                  gpsCoordinates={gpsCoordinates}
+                  strictLocation={hasUrlLocation}
                   nearYouSalons={nearYouSalons}
                   onDiscoveryShortcutSelect={selectDiscoveryShortcut}
                   onSelectCategory={selectCategory}
+                  selectedCategory={selectedCategory}
                 />
               </div>
               <DesktopDiscoveryMarketplace
@@ -5259,6 +5130,7 @@ export function ExploreClient({
                 onSelectCategory={selectCategory}
                 selectedCategory={selectedCategory}
                 workspaceLocation={workspaceLocation}
+                strictLocation={hasUrlLocation}
               />
             </>
           ) : discoveryResultMode && activeDiscoveryResult ? (

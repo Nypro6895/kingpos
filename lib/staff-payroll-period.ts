@@ -46,15 +46,31 @@ export function staffPeriodAt(setting: SalonPayrollSetting | null, date: string)
   return { cycleType: cycle, startDate, endDate, preset, label: staffPeriodLabel(startDate, endDate) };
 }
 
-export function staffPeriodHistory(setting: SalonPayrollSetting | null, today: string) {
+export function staffPeriodHistory(setting: SalonPayrollSetting | null, today: string, count = 12) {
   const periods: PayrollPeriod[] = [];
   let date = today;
-  for (let index = 0; index < 12; index++) {
+  for (let index = 0; index < count; index++) {
     const period = staffPeriodAt(setting, date);
     periods.push(period);
     date = shiftStaffDate(period.startDate, -1);
   }
   return periods;
+}
+
+export function staffPayPeriodChoices(setting: SalonPayrollSetting | null, today: string, runs: PayrollRun[]) {
+  // Include unfinalized periods too: staff should not have to wait for payroll printing.
+  const scheduled = staffPeriodHistory(setting, today, setting?.cycle_type === "monthly" || !setting ? 12 : 26);
+  const saved = staffPublishedPeriodHistory(scheduled[0], runs);
+  const choices = new Map(saved.map(period => [staffPeriodKey(period), period]));
+  for (const period of scheduled) if (!choices.has(staffPeriodKey(period))) choices.set(staffPeriodKey(period), period);
+  const periods = [...choices.values()].sort((a, b) => b.startDate.localeCompare(a.startDate) || b.endDate.localeCompare(a.endDate));
+  const daysRemaining = Math.round((Date.parse(scheduled[0].endDate) - Date.parse(today)) / DAY);
+  // No separate payday is configured; use the salon's period end as the boundary.
+  const previousPublished = saved.filter(period => period.endDate < scheduled[0].startDate)
+    .sort((a, b) => b.endDate.localeCompare(a.endDate))[0];
+  const previous = previousPublished && previousPublished.endDate >= scheduled[1].endDate
+    ? previousPublished : scheduled[1];
+  return { periods, defaultPeriod: daysRemaining <= 5 ? scheduled[0] : previous };
 }
 
 export function staffComparisonPeriods(setting: SalonPayrollSetting | null, period: PayrollPeriod, today: string) {

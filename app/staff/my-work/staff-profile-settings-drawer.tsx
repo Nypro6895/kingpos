@@ -1,6 +1,7 @@
 "use client";
 
 import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-editor";
+import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Staff } from "@/types/staff";
@@ -18,6 +19,7 @@ export function StaffProfileSettingsDrawer({
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(true);
+  useCloseOnNavigation(() => setOpen(false), open);
 
   function close() {
     setOpen(false);

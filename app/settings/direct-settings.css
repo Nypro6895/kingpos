@@ -1,0 +1,9 @@
+.settings-direct-panel { min-width: 0; }
+.settings-inline-services.services-page { min-height: 0; padding: 0; background: transparent; }
+.settings-inline-services .services-page__frame { width: 100%; max-width: none; padding: 0; }
+.settings-direct-panel .booking-setup-staff { min-width: 0; }
+.settings-direct-panel input, .settings-direct-panel select, .settings-direct-panel textarea { max-width: 100%; }
+
+.settings-inline-services .service-create-inline { margin-top: 1rem; }
+.settings-inline-services .service-create-inline .service-drawer { width: 100%; height: auto; border: 1px solid #e4e4e7; box-shadow: none; }
+.settings-inline-services .service-create-inline .service-drawer__content { overflow: visible; }

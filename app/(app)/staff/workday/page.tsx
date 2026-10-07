@@ -1,3 +1,5 @@
+
+import { SubmitButton } from "@/components/submit-button";
 import {
   checkInStaffWorkday,
   checkOutStaffWorkday,
@@ -62,7 +64,7 @@ function StatusBadge({
 function MissingSalonState() {
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
-      <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600">
+      <p className="content-surface border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600 rounded-none border-y shadow-none">
         Please select a salon first.
       </p>
     </main>
@@ -86,7 +88,7 @@ export default async function StaffWorkdayPage({
   if (!staff) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
+        <p className="content-surface border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600 rounded-none border-y shadow-none">
           No active staff profile is linked to your account for this salon.
         </p>
       </main>
@@ -107,21 +109,21 @@ export default async function StaffWorkdayPage({
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
       {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 rounded-none border-y shadow-none">
           {error}
         </p>
       ) : null}
 
       <section className={error ? "mt-8" : ""}>
         <h2 className="text-lg font-semibold text-zinc-950">Today Status</h2>
-        <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-5">
+        <div className="content-surface mt-4 border-zinc-200 bg-white p-5 rounded-none border-y shadow-none">
           <StatusBadge status={status} />
         </div>
       </section>
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-zinc-950">Today Information</h2>
-        <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-2">
+        <div className="content-surface mt-4 grid gap-3 border-zinc-200 bg-white p-5 text-sm sm:grid-cols-2 rounded-none border-y shadow-none">
           <p>
             <span className="block text-zinc-500">Work Date</span>
             <span className="font-semibold text-zinc-950">
@@ -151,7 +153,7 @@ export default async function StaffWorkdayPage({
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-zinc-950">Today Summary</h2>
-        <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-4">
+        <div className="content-surface mt-4 grid gap-3 border-zinc-200 bg-white p-5 text-sm sm:grid-cols-4 rounded-none border-y shadow-none">
           <p>
             <span className="block text-zinc-500">Assigned Services Today</span>
             <span className="font-semibold text-zinc-950">
@@ -182,17 +184,17 @@ export default async function StaffWorkdayPage({
         </div>
       </section>
 
-      <section className="mt-8 rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+      <section className="content-surface mt-8 border-zinc-200 bg-zinc-50 p-5 rounded-none border-y shadow-none">
         <h2 className="text-lg font-semibold text-zinc-950">Actions</h2>
         <div className="mt-4">
           {status === "not_checked_in" ? (
             <form action={checkInStaffWorkday}>
-              <button
+              <SubmitButton pendingLabel="Processing…"
                 className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
                 type="submit"
               >
                 Check In
-              </button>
+              </SubmitButton>
             </form>
           ) : null}
 
@@ -205,22 +207,22 @@ export default async function StaffWorkdayPage({
               ].map(([nextStatus, label]) => (
                 <form action={updateStaffWorkdayStatus} key={nextStatus}>
                   <input name="status" type="hidden" value={nextStatus} />
-                  <button
+                  <SubmitButton pendingLabel="Processing…"
                     className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={status === nextStatus}
                     type="submit"
                   >
                     {label}
-                  </button>
+                  </SubmitButton>
                 </form>
               ))}
               <form action={checkOutStaffWorkday}>
-              <button
+              <SubmitButton pendingLabel="Processing…"
                 className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
                 type="submit"
               >
                 Check Out
-              </button>
+              </SubmitButton>
               </form>
             </div>
           ) : null}

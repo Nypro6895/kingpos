@@ -51,6 +51,7 @@ export async function createPublicBookingAction(
 }
 
 export async function loadGuestManageSlotsAction(input: {
+  findEarliest?: boolean;
   date?: string | null;
   token: string;
 }): Promise<PublicBookingSlot[]> {

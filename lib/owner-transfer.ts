@@ -233,3 +233,36 @@ export async function revokeOwnerTransferInvite(inviteId: string) {
 
   return data;
 }
+
+export type PendingOwnerTransferInvite = {
+  id: string;
+  salonName: string;
+  mode: OwnerTransferMode;
+  message: string | null;
+  expiresAt: string;
+};
+
+export async function listMyOwnerTransferInvites(): Promise<PendingOwnerTransferInvite[]> {
+  const { supabase } = await requireOwnerTransferAuth();
+  const { data, error } = await supabase.rpc("list_my_owner_transfer_invites");
+  if (error) throw new Error(error.message);
+  return data as PendingOwnerTransferInvite[];
+}
+
+export async function ignoreOwnerTransferInvite(inviteId: string) {
+  const { supabase } = await requireOwnerTransferAuth();
+  const { error } = await supabase.rpc("ignore_owner_transfer_invite", { p_invite_id: inviteId });
+  if (error) throw new Error(error.message);
+}
+
+export type SalonOwnerRoster = {
+  owners: { id: string; name: string | null; email: string | null; status: string; isCurrentUser: boolean }[];
+  canLeave: boolean;
+};
+
+export async function getSalonOwnerRoster(salonId: string): Promise<SalonOwnerRoster> {
+  const { supabase } = await requireOwnerTransferAuth();
+  const { data, error } = await supabase.rpc("get_salon_owner_roster", { p_salon_id: salonId });
+  if (error) throw new Error(error.message);
+  return data as SalonOwnerRoster;
+}

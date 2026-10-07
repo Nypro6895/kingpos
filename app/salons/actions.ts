@@ -98,7 +98,20 @@ export async function createSalonAction(formData: FormData) {
     redirectCreateSalonWithError("Create request key is required. Refresh and try again.");
   }
 
-  const { data, error } = await supabase.rpc("create_account_salon", {
+  if (readFormString(formData, 'duplicate_acknowledged') !== 'yes') {
+    const {data: matches, error: matchError} = await supabase.rpc('find_business_claim_matches', {
+      p_name: name, p_phone: readFormString(formData,'phone'), p_address: readFormString(formData,'address_line1'),
+      p_unit: readFormString(formData,'address_line2'), p_city: readFormString(formData,'city'), p_state: readFormString(formData,'state'),
+    });
+    if (matchError || Array.isArray(matches) && matches.length) {
+      const draft: Record<string,string> = {};
+      for (const field of ['name','phone','address_line1','address_line2','city','state','postal_code','owner_is_staff']) draft[field]=readFormString(formData,field);
+      redirect(withSearchParams(routes.salons.create(), {...draft, error: matchError ? 'Unable to check existing salons. Please try again.' : 'An existing salon may match. Review the suggestions or confirm your salon is different.'}));
+    }
+  }
+
+  const { data, error } = await supabase.rpc("create_account_salon_with_owner_staff", {
+    p_owner_is_staff: readFormString(formData, "owner_is_staff") === "yes",
     p_account_id: accountId,
     p_address_line1: readOptionalFormString(formData, "address_line1"),
     p_address_line2: readOptionalFormString(formData, "address_line2"),

@@ -738,6 +738,7 @@ export async function markBookingNoShow(
         no_show_at: new Date().toISOString(),
         no_show_by_user_id: context.user.id,
         no_show_reason: input.reason?.trim() || null,
+        no_show_kind: input.kind === "excused" ? "excused" : "unexcused",
         status: "no_show",
         updated_by_user_id: context.user.id,
       })

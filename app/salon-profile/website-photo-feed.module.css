@@ -1,0 +1,13 @@
+.feed{min-width:0;padding-top:12px;border-top:1px solid #e7e2dc}
+.heading{margin-bottom:20px}.heading h3{margin:0;font-size:22px;line-height:1.3;letter-spacing:-.025em}.heading p{margin:6px 0 0;color:#78716c;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start}
+.card{position:relative;min-width:0;overflow:hidden;border:1px solid #ece8e5;border-radius:12px;background:white}
+.open{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left;color:#292524;cursor:pointer;font:inherit}
+.open img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;background:#f0ece6}
+.open strong{display:block;padding:14px;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+.actions{position:absolute;top:10px;right:10px}
+.sentinel{display:flex;justify-content:center;padding:24px 0;min-height:92px}.sentinel button{min-height:44px;padding:10px 20px;border:1px solid #ddd5cd;border-radius:10px;background:white;color:#177f7b;font:inherit;cursor:pointer}
+.end{margin:24px 0;text-align:center;color:#78716c;font-size:13px}
+.open:focus-visible,.sentinel button:focus-visible{outline:2px solid #177f7b;outline-offset:3px}
+@media(max-width:1023px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}
+@media(max-width:599px){.grid{grid-template-columns:minmax(0,1fr)}.heading h3{font-size:20px}}

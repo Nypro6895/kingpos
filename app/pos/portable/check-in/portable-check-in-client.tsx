@@ -37,6 +37,8 @@ type ActionResult<T> =
   | { data?: never; error: string; ok: false };
 
 type PortableCheckInClientProps = {
+  workspacePath?: string;
+  staffEndpoint?: string;
   action: (
     input: PortableAttendanceEventInput,
   ) => Promise<ActionResult<PortableAttendanceEventUpdate>>;
@@ -226,6 +228,8 @@ function usePortableClock(timezone: string) {
 }
 
 export function PortableCheckInClient({
+  workspacePath="/pos/portable/check-in",
+  staffEndpoint="/api/pos/portable/staff",
   action,
   data,
 }: PortableCheckInClientProps) {
@@ -253,11 +257,11 @@ export function PortableCheckInClient({
     let loading = false;
     let again=false;
     const refresh = async (ids?: string[]) => {
-      if (!navigator.onLine) return;
+      if (!navigator.onLine || !active || pathname!==workspacePath || document.visibilityState!=="visible") return;
       if(loading){again=true;return;}
       loading = true;
       try {
-        const response = await fetch("/api/pos/portable/staff"+(ids?.length?"?ids="+encodeURIComponent(ids.join(",")):""), { cache: "no-store", signal: AbortSignal.timeout(8000) });
+        const response = await fetch(staffEndpoint+(ids?.length?"?ids="+encodeURIComponent(ids.join(",")):""), { cache: "no-store", signal: AbortSignal.timeout(8000) });
         if (!response.ok) return;
         const fresh = await response.json() as PortableCheckInData;
         if (active && fresh.salonId === data.salonId && fresh.today === portableBusinessDate(data.timezone) && Array.isArray(fresh.staff)) setLocalData(current => ({...fresh, staff: mergeStaffRoster((current ?? data).staff, fresh.staff, (current ?? data).today === fresh.today ? ids : undefined)}));
@@ -266,10 +270,10 @@ export function PortableCheckInClient({
     };
     const wake = () => { void refresh(); };
     const unsubscribe=subscribePosChanges(data.salonId,change=>{if(change.resource==="staff")void refresh(change.ids);});
-    void refresh(); const timer = setInterval(wake, 60000);
-    window.addEventListener("online", wake);
-    return () => { active = false; unsubscribe(); clearInterval(timer); window.removeEventListener("online", wake); };
-  }, [scope, data.salonId, data.today, data.timezone, businessDate]);
+    void refresh();
+    document.addEventListener("visibilitychange", wake);
+    return () => { active = false; unsubscribe(); document.removeEventListener("visibilitychange", wake); };
+  }, [scope, data.salonId, data.today, data.timezone, businessDate, pathname, workspacePath, staffEndpoint]);
   useEffect(() => {
     setStaffRoster?.(sourceData.staff.map(member => ({ id: member.id, display_name: member.displayName,
       job_title: member.jobTitle, is_active: true, avatar_url: member.avatarUrl,

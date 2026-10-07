@@ -1,4 +1,5 @@
 import "server-only";
+import { SHOW_ROLE_PERMISSION_CATALOGS } from "@/lib/role-catalog-visibility";
 
 import {
   ROLE_MORE_ITEMS,
@@ -168,7 +169,7 @@ function resolveDefinition(
 }
 
 export const TODAY_QUICK_ACCESS_DEFINITIONS: readonly TodayQuickAccessDefinition[] =
-  QUICK_ACCESS_SOURCES.map(resolveDefinition);
+  QUICK_ACCESS_SOURCES.filter((source) => SHOW_ROLE_PERMISSION_CATALOGS || (source.id !== "members_roles" && source.id !== "permissions")).map(resolveDefinition);
 
 function hasContextPermission(
   context: CurrentBusinessContext,

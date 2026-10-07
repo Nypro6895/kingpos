@@ -16,7 +16,7 @@ test('Book keeps list, calendar, details and editor consistent after stale offli
  window.refreshRows=[pending];const refresh=async()=>window.refreshRows;
  window.renderRows=rows=>root.render(<PortableBookWorkspace refreshAction={refresh} data={{appointments:rows,date:'2026-09-25',timezone:'America/Chicago',salonName:'Fixture',canCreate:true,canCancel:true,canCreateTicket:true,services:[{id:'a',name:'Manicure',duration_minutes:30,base_price:30}],staff:[{id:'alice',display_name:'Alice'}],staffServiceAssignments:[{serviceId:'a',staffId:'alice'}],setupMessage:null}} action={async()=>({ok:false,error:'unused'})} manageAction={async req=>{window.calls.push(req);if(req.action==='confirm')window.server={...window.server,status:'confirmed',updatedAt:'2026-09-24T18:00:00Z'};return{ok:true,data:window.server}}}/>);
  window.renderRows([pending]);
- `},bundle:true,write:false,outdir:'fixture',jsx:'automatic',plugins:[{name:'stubs',setup(b){
+ `},bundle:true,write:false,outdir:'fixture',define:{'process.env':'{}'},jsx:'automatic',plugins:[{name:'stubs',setup(b){
  b.onResolve({filter:/portable-workspace-state$/},()=>({path:'workspace',namespace:'stub'}));
  b.onResolve({filter:/portable-operations$/},()=>({path:'operations',namespace:'stub'}));
  b.onLoad({filter:/.*/,namespace:'stub'},args=>({contents:args.path==='workspace'?'const state={scope:"fixture",offlineEnabled:true};export const usePortableWorkspaceState=()=>state;':'export const PORTABLE_OPERATIONS_CHANGED="kingpos:operations-changed";export const listPortableOperations=async()=>window.operations;export const savePortableOperation=async()=>{};'}));
@@ -25,7 +25,7 @@ test('Book keeps list, calendar, details and editor consistent after stale offli
  const server=createServer((req,res)=>{res.setHeader('Content-Type',req.url==='/app.js'?'text/javascript':req.url==='/app.css'?'text/css':'text/html');res.end(req.url==='/app.js'?js:req.url==='/app.css'?css:'<style>body{margin:0;font-family:Arial}button{font:inherit}*{box-sizing:border-box}</style><link rel="stylesheet" href="/app.css"><div id="root"></div><script src="/app.js"></script>');});await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH,headless:true});
  try{
-  const page=await browser.newPage({viewport:{width:1100,height:800}});const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.clock.setFixedTime(new Date('2026-09-24T18:00:00Z'));await page.goto('http://127.0.0.1:'+server.address().port);
+  const page=await browser.newPage({viewport:{width:1100,height:800}});const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.clock.setFixedTime(new Date('2026-09-25T18:00:00Z'));await page.goto('http://127.0.0.1:'+server.address().port);
   const table=page.getByRole('table',{name:'Appointments'});
   await page.getByRole('button',{name:'Change status for Maya'}).click();
   assert.match(await page.getByRole('dialog',{name:'Appointment status'}).textContent(),/confirmed/);
@@ -33,7 +33,7 @@ test('Book keeps list, calendar, details and editor consistent after stale offli
   assert.match(await table.textContent(),/Confirmed/);assert.doesNotMatch(await table.textContent(),/Pending/);
   await page.getByRole('button',{name:'Close',exact:true}).click();
   await page.getByRole('button',{name:'Calendar',exact:true}).click();
-  const card=page.getByRole('button',{name:/9:00 AM, Maya, Manicure, Alice, Confirmed/});await card.hover();await page.getByRole('tooltip').waitFor();assert.match(await page.getByRole('tooltip').textContent(),/Confirmed/);
+  const card=page.getByRole('button',{name:/9:00 AM, Maya, Manicure, Alice, Confirmed/});await card.scrollIntoViewIfNeeded();await card.hover();await page.waitForTimeout(500);await page.mouse.move(0,0);await card.hover();await page.getByRole('tooltip').waitFor();assert.match(await page.getByRole('tooltip').textContent(),/Confirmed/);
   await card.click();await page.getByRole('region',{name:'Edit appointment',exact:true}).waitFor();await page.evaluate(()=>window.replay());assert.equal(await page.getByRole('button',{name:/9:00 AM, Maya, Manicure, Alice, Pending/}).count(),0);
   await page.evaluate(()=>{window.server={...window.server,status:'cancelled',updatedAt:'2026-09-24T17:00:00Z'};window.renderRows([window.server]);});
   await page.getByText('This appointment changed on another device.',{exact:false}).waitFor();assert.equal(await page.getByRole('button',{name:'Save changes'}).isDisabled(),true);

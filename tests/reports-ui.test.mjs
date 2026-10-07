@@ -40,13 +40,13 @@ test(
       plugins: [
         {
           name: "fixture",
-          setup(b) {
+          setup(b) { b.onResolve({filter:/explore-account-actions$/},()=>({path:"account",namespace:"account-stub"})); b.onLoad({filter:/.*/,namespace:"account-stub"},()=>({contents:"export const useExploreAuthenticated=()=>false;"}));
             b.onResolve({ filter: /^next\/navigation$/ }, () => ({
               path: "nav",
               namespace: "mock",
             }));
             b.onLoad({ filter: /.*/, namespace: "mock" }, () => ({
-              contents: `export const useRouter=()=>({push:(href)=>window.calls.push(href)});`,
+              contents: `export const usePathname=()=>"/reports"; export const useRouter=()=>({push:(href)=>window.calls.push(href)});`,
             }));
           },
         },

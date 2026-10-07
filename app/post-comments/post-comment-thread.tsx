@@ -4,7 +4,6 @@ import {
   createPostCommentAction,
   deletePostCommentAction,
   hidePostCommentAction,
-  loadPostCommentsAction,
   updatePostCommentAction,
 } from "@/app/post-comments/actions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -15,6 +14,7 @@ import type {
 } from "@/types/post-comments";
 import { completeCommentRequest, prepareCommentRequest } from "@/lib/comment-request";
 import { withRequestTimeout } from "@/lib/request-timeout";
+import { fetchPostCommentsPage } from "@/lib/post-comments-client";
 import {
   useEffect,
   useMemo,
@@ -360,6 +360,7 @@ function PostCommentThreadContent({
   const loadPendingRef = useRef(false);
   const refreshQueuedRef = useRef(false);
   const loadedThroughRef = useRef(0);
+  const hasRenderedPageRef = useRef(false);
   const draftVersionRef = useRef(0);
   const [loadError, setLoadError] = useState(false);
   const key = targetKey(target);
@@ -445,8 +446,10 @@ function PostCommentThreadContent({
       return;
     }
 
+    // Channel removal is asynchronous; a remount must not reuse a subscribed channel.
+    let active = true;
     const channel = supabase
-      .channel(`post-comments:${target.sourceType}:${target.sourceId}`)
+      .channel(`post-comments:${target.sourceType}:${target.sourceId}:${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         {
@@ -456,11 +459,18 @@ function PostCommentThreadContent({
           table: "salon_profile_comments",
         },
         (payload: RealtimeCommentPayload) => {
-          loadVersionRef.current += 1;
+          if (!active) return;
           if (submitPendingRef.current) {
+            loadVersionRef.current += 1;
             refreshQueuedRef.current = true;
             return;
           }
+          if (loadPendingRef.current) {
+            // Finish showing the current page, then reconcile once in the background.
+            refreshQueuedRef.current = true;
+            return;
+          }
+          loadVersionRef.current += 1;
           const nextRow = payload.new ?? {};
           const oldRow = payload.old ?? {};
           const incoming =
@@ -489,12 +499,13 @@ function PostCommentThreadContent({
         },
       )
       .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
+        if (active && status === "SUBSCRIBED") {
           refreshCommentsSoon();
         }
       });
 
     return () => {
+      active = false;
       if (refreshTimerRef.current !== null) {
         window.clearTimeout(refreshTimerRef.current);
         refreshTimerRef.current = null;
@@ -519,10 +530,18 @@ function PostCommentThreadContent({
         let incoming: PostComment[] = [];
         let page;
         do {
-          page = await withRequestTimeout(loadPostCommentsAction({ offset: next, pageSize, target }));
+          page = await fetchPostCommentsPage({ offset: next, pageSize, target });
           if (!mountedRef.current || version !== loadVersionRef.current) return;
           if (page.error) throw new Error(page.error);
           incoming = mergeComments(incoming, page.items);
+          // Render the first page immediately while restoring any later pages.
+          setComments((current) => mergeComments(current, incoming));
+          hasRenderedPageRef.current = true;
+          setTotalCount(page.totalCount);
+          setHasMore(page.hasMore);
+          setNextOffset(page.nextOffset);
+          setLoaded(true);
+          setLoadError(false);
           if (!page.hasMore || page.nextOffset === null || page.nextOffset <= next) break;
           next = page.nextOffset;
         } while (replace && next < through);
@@ -537,7 +556,7 @@ function PostCommentThreadContent({
         if (mountedRef.current && version === loadVersionRef.current) {
           setStatus(error instanceof Error ? error.message : "Comments could not be loaded. Please try again.");
           setLoaded(true);
-          setLoadError(true);
+          setLoadError(!hasRenderedPageRef.current);
         }
       } finally {
         loadPendingRef.current = false;
@@ -551,6 +570,11 @@ function PostCommentThreadContent({
 
   function refreshCommentsSoon() {
     if (typeof window === "undefined") {
+      return;
+    }
+
+    if (loadPendingRef.current || submitPendingRef.current) {
+      refreshQueuedRef.current = true;
       return;
     }
 
@@ -799,7 +823,7 @@ function PostCommentThreadContent({
           compact ? "grid max-h-80 gap-2 overflow-y-auto pr-1" : "grid gap-3"
         }
       >
-        {!loaded && loading ? (
+        {!loaded && comments.length === 0 ? (
           <p className="rounded-lg bg-white px-3 py-2.5 text-sm text-zinc-600">
             Loading comments...
           </p>

@@ -20,7 +20,6 @@ function redirectWithMessage(type: "error" | "notice", message: string): never {
 }
 
 function revalidateBeautySalonPublicationPaths(salonId: string) {
-  revalidatePath("/", "layout");
   revalidatePath("/notifications");
   revalidatePath("/salon-profile");
   revalidatePath("/salon-profile/client-transformations");

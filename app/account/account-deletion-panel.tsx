@@ -7,13 +7,13 @@ import {
   requestAccountDeletionAction,
 } from "@/app/account/actions";
 import type { AccountDeletionImpact } from "@/lib/account-deletion";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 
 type AccountDeletionPanelProps = {
   impact: AccountDeletionImpact | null;
   loadError?: string;
+  onSaved?: ()=>void | Promise<void>;
 };
 
 function formatDateTime(value: string | null) {
@@ -87,7 +87,7 @@ function SalonImpactList({
           </div>
           <p className="mt-1 text-sm leading-6 text-zinc-600">
             {salon.hasOtherOwner
-              ? "Another active Owner is present."
+              ? salon.owners?.filter(owner=>!owner.isCurrentUser).map(owner=>`${owner.email||owner.name||owner.id} co-owns ${salon.name}`).join("; ") || salon.ownersError || "Owner identities could not be loaded. Refresh this section."
               : salon.lifecycleStatus === "permanently_closed"
                 ? "Already permanently closed."
                 : "You are currently the last active Owner."}
@@ -101,6 +101,7 @@ function SalonImpactList({
 export function AccountDeletionPanel({
   impact,
   loadError,
+  onSaved,
 }: AccountDeletionPanelProps) {
   const router = useRouter();
   const [backupError, setBackupError] = useState("");
@@ -169,6 +170,7 @@ export function AccountDeletionPanel({
 
       setMessage(result.message ?? "Account deletion cancelled.");
       router.refresh();
+      await onSaved?.();
     });
   }
 
@@ -191,6 +193,7 @@ export function AccountDeletionPanel({
 
       setMessage(result.message ?? "Account deletion scheduled.");
       router.refresh();
+      await onSaved?.();
     });
   }
 
@@ -228,6 +231,7 @@ export function AccountDeletionPanel({
         [salonId]: inviteUrl,
       }));
       router.refresh();
+      await onSaved?.();
     });
   }
 
@@ -313,7 +317,6 @@ export function AccountDeletionPanel({
                     transfer and permanently close these salons.
                   </p>
                 </div>
-                <SalonImpactList salons={impact.lastOwnerOperationalSalons} />
                 <div className="mt-3 grid gap-3">
                   {impact.lastOwnerOperationalSalons.map((salon) => (
                     <div
@@ -360,22 +363,12 @@ export function AccountDeletionPanel({
                         </p>
                       ) : null}
                       {transferUrls[salon.id] ? (
-                        <a
-                          className="mt-2 block break-all text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline"
-                          href={transferUrls[salon.id]}
-                        >
-                          {transferUrls[salon.id]}
-                        </a>
+                        <label className="mt-2 grid gap-1 text-sm">Invitation link<input className="min-h-10 w-full rounded-md border px-3" readOnly value={transferUrls[salon.id]} onFocus={event=>event.currentTarget.select()}/></label>
                       ) : null}
                     </div>
                   ))}
                 </div>
-                <Link
-                  className="mt-3 inline-flex text-sm font-semibold text-red-950 underline-offset-4 hover:underline"
-                  href="/business-terms#ownership-transfer"
-                >
-                  Review ownership transfer terms
-                </Link>
+
               </div>
             ) : null}
 

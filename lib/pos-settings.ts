@@ -1,4 +1,5 @@
 import "server-only";
+import { getPublicAppOrigin, normalizePublicDownloadUrl } from "@/lib/public-app-url";
 
 import {
   getCurrentBusinessContext,
@@ -24,7 +25,7 @@ export const POS_TIP_SUGGESTION_DEFAULTS = [5, 10, 15, 20] as const;
 
 export const POS_SETTING_DEFAULTS = {
   adsFooter: "",
-  appDownloadUrl: "https://reylumi.com",
+  appDownloadUrl: getPublicAppOrigin(),
   customerBackgroundImagePath: null,
   customerBackgroundImageUrl: null,
   customerLeftAdImagePath: null,
@@ -189,7 +190,7 @@ export function normalizePosSettingsPayload(value: unknown): PosSettingsView {
   return {
     ...POS_SETTING_DEFAULTS,
     touchKeyboardEnabled: typeof payload.touchKeyboardEnabled === "boolean" ? payload.touchKeyboardEnabled : true,
-    appDownloadUrl: cleanText(payload.appDownloadUrl, POS_SETTING_DEFAULTS.appDownloadUrl),
+    appDownloadUrl: normalizePublicDownloadUrl(cleanText(payload.appDownloadUrl, POS_SETTING_DEFAULTS.appDownloadUrl)),
     customerBackgroundImagePath: backgroundPath,
     customerBackgroundImageUrl: getPosDisplayMediaUrl(backgroundPath),
     customerLeftAdImagePath: leftAdPath,

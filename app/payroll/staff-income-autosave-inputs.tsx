@@ -1,5 +1,6 @@
 "use client";
 
+import { usePayrollRefreshBatch } from "./use-payroll-refresh-batch";
 import {
   autosavePayrollPeriodStaffInputAction,
   type PayrollStaffInputAutosaveState,
@@ -72,12 +73,15 @@ export function StaffIncomeAutosaveInputs({
     autosavePayrollPeriodStaffInputAction,
     INITIAL_STATE,
   );
+  const submittedSignatureRef=useRef("");
   const formRef = useRef<HTMLFormElement>(null);
   const debounceRef = useRef<number | null>(null);
   const savedSignatureRef = useRef("");
   const [localStatus, setLocalStatus] = useState<"dirty" | "saved" | "submitted">(
     "saved",
   );
+
+  usePayrollRefreshBatch(pending || localStatus === "dirty",state.savedAt);
 
   const initialSignature = `${normalizeBonus(bonusAmount)}|${normalizeCheckNumber(
     checkNumber,
@@ -111,6 +115,7 @@ export function StaffIncomeAutosaveInputs({
       return;
     }
 
+    submittedSignatureRef.current=signature;
     setLocalStatus("submitted");
     formRef.current.requestSubmit();
   }, [canManage, pending, readSignature]);
@@ -141,9 +146,15 @@ export function StaffIncomeAutosaveInputs({
     }
 
     if (state.status === "saved") {
-      savedSignatureRef.current = readSignature();
+      savedSignatureRef.current = submittedSignatureRef.current;
+      if(readSignature()!==savedSignatureRef.current) {
+        setLocalStatus("dirty");
+        const timer=window.setTimeout(submitIfChanged,0);
+        return()=>window.clearTimeout(timer);
+      }
+      setLocalStatus("saved");
     }
-  }, [pending, readSignature, state]);
+  }, [pending, readSignature, state, submitIfChanged]);
 
   useEffect(() => {
     return () => {

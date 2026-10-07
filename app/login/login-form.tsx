@@ -70,9 +70,11 @@ function maskPhone(value: string | null | undefined) {
 export function LoginForm({
   nextPath = "/explore",
   showRecoveryHelpInitially = false,
+  onAuthenticated,
 }: {
   nextPath?: string;
   showRecoveryHelpInitially?: boolean;
+  onAuthenticated?: () => void;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -117,6 +119,11 @@ export function LoginForm({
         return;
       }
 
+      if (onAuthenticated) {
+        onAuthenticated();
+        router.refresh();
+        return;
+      }
       router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
@@ -166,6 +173,11 @@ export function LoginForm({
         return;
       }
 
+      if (onAuthenticated) {
+        onAuthenticated();
+        router.refresh();
+        return;
+      }
       router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {

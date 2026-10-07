@@ -1,3 +1,5 @@
+
+import { SubmitButton } from "@/components/submit-button";
 import {
   RequestsWorkspace,
   RequestAccountSearch,
@@ -6,6 +8,7 @@ import {
 import {
   createSalonStaffInviteFormAction,
   createStaff,
+  becomeOwnerStaffAction,
   resendSalonStaffInviteFormAction,
   reviewStaffSalonApplicationFormAction,
   revokeSalonStaffInviteFormAction,
@@ -24,6 +27,7 @@ import { InviteLinkTools } from "@/app/staff/copy-invite-link-button";
 import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-editor";
 import { StaffSlideOver } from "@/app/staff/staff-slide-over";
 import { safeAccountAvatarUrl } from "@/lib/account-avatar";
+import { isOwnerMembership } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
 import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import {
@@ -407,12 +411,12 @@ function StaffForm({
       </label>
 
       <div className="flex flex-wrap gap-3 sm:col-span-2">
-        <button
+        <SubmitButton pendingLabel="Saving…"
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
           Create Staff
-        </button>
+        </SubmitButton>
       </div>
     </form>
   );
@@ -506,12 +510,12 @@ function AddStaffConnectionPanel({
             />
           </label>
           <div className="sm:col-span-2">
-            <button
+            <SubmitButton pendingLabel="Processing…"
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               type="submit"
             >
               Search account
-            </button>
+            </SubmitButton>
           </div>
         </form>
       )}
@@ -586,12 +590,12 @@ function AddStaffConnectionPanel({
             />
             Active
           </label>
-          <button
+          <SubmitButton pendingLabel="Processing…"
             className="w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
             type="submit"
           >
             Send invite
-          </button>
+          </SubmitButton>
         </RequestForm>
       ) : null}
 
@@ -618,12 +622,12 @@ function AddStaffConnectionPanel({
             />
             Active
           </label>
-          <button
+          <SubmitButton pendingLabel="Saving…"
             className="w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
             type="submit"
           >
             Create staff and invite
-          </button>
+          </SubmitButton>
         </RequestForm>
       ) : null}
     </section>
@@ -718,13 +722,13 @@ function SubmitActionButton({
   disabled?: boolean;
 }) {
   return (
-    <button
+    <SubmitButton pendingLabel="Processing…"
       className="inline-flex min-h-9 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
       disabled={disabled}
       type="submit"
     >
       {children}
-    </button>
+    </SubmitButton>
   );
 }
 
@@ -1042,12 +1046,12 @@ function StaffDirectoryManager({
 
       {canManageStaff ? (
         <div className="flex justify-end">
-          <button
+          <SubmitButton pendingLabel="Saving…"
             className="inline-flex min-h-10 items-center justify-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
             type="submit"
           >
             Save staff changes
-          </button>
+          </SubmitButton>
         </div>
       ) : null}
     </form>
@@ -1493,23 +1497,23 @@ function IncomingApplicationsSection({
             <RequestForm action={reviewStaffSalonApplicationFormAction}>
               <input name="request_id" type="hidden" value={request.id} />
               <input name="decision" type="hidden" value="accepted" />
-              <button
+              <SubmitButton pendingLabel="Processing…"
                 className="rounded-md bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
                 type="submit"
               >
                 Accept
-              </button>
+              </SubmitButton>
             </RequestForm>
 
             <RequestForm action={reviewStaffSalonApplicationFormAction}>
               <input name="request_id" type="hidden" value={request.id} />
               <input name="decision" type="hidden" value="declined" />
-              <button
+              <SubmitButton pendingLabel="Processing…"
                 className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950"
                 type="submit"
               >
                 Decline
-              </button>
+              </SubmitButton>
             </RequestForm>
           </div>
         </article>
@@ -1599,13 +1603,13 @@ function OutgoingInvitationsSection({
             <div className="flex flex-wrap gap-2">
               <RequestForm action={resendSalonStaffInviteFormAction}>
                 <input name="request_id" type="hidden" value={request.id} />
-                <button
+                <SubmitButton pendingLabel="Processing…"
                   className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={!canMutate}
                   type="submit"
                 >
                   Resend
-                </button>
+                </SubmitButton>
               </RequestForm>
               {currentInviteHref ? (
                 <InviteLinkTools value={currentInviteHref} />
@@ -1614,13 +1618,13 @@ function OutgoingInvitationsSection({
               )}
               <RequestForm action={revokeSalonStaffInviteFormAction}>
                 <input name="request_id" type="hidden" value={request.id} />
-                <button
+                <SubmitButton pendingLabel="Processing…"
                   className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={request.status !== "pending"}
                   type="submit"
                 >
                   Cancel
-                </button>
+                </SubmitButton>
               </RequestForm>
             </div>
             {!currentToken ? (
@@ -1836,6 +1840,10 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     }
   }
 
+  const canBecomeStaff = isOwnerMembership(context.currentMembership) && !directory.staff.some(
+    (member) => member.account_user_id === context.user?.id ||
+      Boolean(context.user?.auth_user_id && member.user_id === context.user.auth_user_id),
+  );
   const matchingStaff = directory.staff;
   const activeStaff = matchingStaff.filter(isEmploymentActive);
   const hiddenStaff = matchingStaff.filter(
@@ -1895,7 +1903,10 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     <>
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
         {canManageStaff ? (
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            {canBecomeStaff ? <form action={becomeOwnerStaffAction}>
+              <SubmitButton pendingLabel="Processing…" type="submit" className="inline-flex min-h-10 items-center justify-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium">Be staff</SubmitButton>
+            </form> : null}
             <Link
               className="inline-flex min-h-10 items-center justify-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               href={addStaffHref}

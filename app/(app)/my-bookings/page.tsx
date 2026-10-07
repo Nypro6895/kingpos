@@ -1,6 +1,13 @@
+import { ActivityHistoryPanel } from "@/app/(app)/activity/activity-history-panel";
+import { getCustomerActivity } from "@/lib/customer-activity";
+import { BookingDetailsButton } from "@/app/my-bookings/booking-details-button";
+import { historyBookingLabel, historyTicketTotals } from "@/lib/booking-history";
+import { bookingStatusLabel } from "@/lib/booking-no-show";
+import listStyles from "./booking-list.module.css";
 import styles from "@/components/booking-ui/booking-theme.module.css";
 import {
   listCustomerBookings,
+  getCustomerBookingDetail,
   type CustomerBookingLine,
   type CustomerBookingListScope,
   type CustomerBookingSummary,
@@ -10,6 +17,7 @@ import { redirect } from "next/navigation";
 
 type MyBookingsPageProps = {
   searchParams: Promise<{
+    details?: string;
     error?: string;
     message?: string;
     tab?: string;
@@ -118,10 +126,6 @@ function statusClass(status: string) {
   return "border-[#ffd6c4] bg-[#fff0e8] text-[#f26f3d]";
 }
 
-function statusText(status: string) {
-  return status.replaceAll("_", " ");
-}
-
 function messageFromSearch(value: string | undefined) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
@@ -162,34 +166,6 @@ function serviceSummary(lines: CustomerBookingLine[]) {
   return addOnCount > 0 ? `${primary} with ${addOnCount} add-on${addOnCount > 1 ? "s" : ""}` : primary;
 }
 
-function staffSummary(lines: CustomerBookingLine[]) {
-  const staff = lines
-    .map((line) => line.assignedStaff)
-    .filter((member, index, all) => member && all.findIndex((item) => item?.id === member.id) === index);
-
-  if (staff.length === 0) {
-    return {
-      avatarUrl: null,
-      label: "Salon professional",
-      multiple: false,
-    };
-  }
-
-  if (staff.length === 1) {
-    return {
-      avatarUrl: staff[0]?.avatarUrl ?? null,
-      label: staff[0]?.displayName ?? "Salon professional",
-      multiple: false,
-    };
-  }
-
-  return {
-    avatarUrl: null,
-    label: `${staff.length} professionals`,
-    multiple: true,
-  };
-}
-
 function totalAmount(lines: CustomerBookingLine[]) {
   return lines.reduce((total, line) => total + Number(line.line_total ?? 0), 0);
 }
@@ -217,7 +193,7 @@ function SalonThumb({ booking }: { booking: CustomerBookingSummary }) {
     : `${salonName} salon`;
 
   return (
-    <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#fff0e8] text-sm font-extrabold text-[#f26f3d]">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#fff0e8] text-sm font-extrabold text-[#f26f3d]">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -232,91 +208,59 @@ function SalonThumb({ booking }: { booking: CustomerBookingSummary }) {
   );
 }
 
-function StaffPill({ lines }: { lines: CustomerBookingLine[] }) {
-  const staff = staffSummary(lines);
-
-  return (
-    <span className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold text-[#786d78]">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#fff0e8] text-xs font-extrabold text-[#f26f3d]">
-        {staff.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img alt={`${staff.label} profile`} className="h-full w-full object-cover" src={staff.avatarUrl} />
-        ) : (
-          initialsFor(staff.label)
-        )}
-      </span>
-      <span className="truncate">{staff.label}</span>
-    </span>
-  );
-}
-
-function BookingRow({ booking }: { booking: CustomerBookingSummary }) {
+function BookingRow({ booking, initialOpen }: { booking: CustomerBookingSummary; initialOpen: boolean }) {
   const timezone = booking.salon_timezone_snapshot || "America/Chicago";
   const dateParts = formatDateParts(booking.start_at, timezone);
   const lines = booking.lines ?? [];
   const salonName = booking.salon?.displayName ?? booking.salon?.name ?? "Reylumi salon";
   const place = locationLabel(booking);
-  const showTimezone = timezone !== "America/Chicago";
+
+  const ticket = booking.historyEvidence?.ticket;
 
   return (
-    <Link
-      className="group grid gap-4 rounded-2xl border border-[#f0e6df] bg-white p-4 transition hover:border-[#ffd6c4] hover:shadow-[0_14px_36px_rgba(242,111,61,0.08)] md:grid-cols-[auto_1fr_auto] md:items-center"
-      href={`/my-bookings/${booking.id}`}
-    >
-      <div className="flex items-center gap-3 md:block md:text-center">
-        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#fff0e8] text-[#f26f3d] md:mx-auto">
-          <span className="text-xs font-extrabold uppercase tracking-[0.12em]">
-            {dateParts.month}
+    <div className={listStyles.row}>
+      <div className={listStyles.summary}>
+        <span className={listStyles.date}>
+          <span className={listStyles.dateBadge}>
+            <span>{dateParts.month}</span>
+            <strong>{dateParts.day}</strong>
           </span>
-          <span className="-mt-1 text-2xl font-extrabold leading-none">{dateParts.day}</span>
-        </div>
-        <span className="text-sm font-extrabold text-[#211c24] md:hidden">
-          {dateParts.weekday}
+          <span className={listStyles.schedule}>
+            <strong>{dateParts.weekday}</strong>
+            <span>{formatTime(booking.start_at, timezone)} ? {formatTime(booking.end_at, timezone)}</span>
+
+          </span>
+        </span>
+        <span className={listStyles.service}>
+          <strong>{ticket ? ticket.services.map(service => service.name).join(", ") : serviceSummary(lines)}</strong>
+          <span className={classNames(listStyles.status, statusClass(booking.status))}>
+            {historyBookingLabel(booking.status, booking.start_at, booking.historyEvidence) ?? bookingStatusLabel(booking.status, booking.no_show_kind)}
+          </span>
+        </span>
+        <span className={listStyles.location}>
+          <SalonThumb booking={booking} />
+          <span className={listStyles.place}>
+            <strong>{salonName}</strong>
+            {place ? <span>{place}</span> : null}
+          </span>
+        </span>
+        <span className={listStyles.price}>{ticket ? formatMoney(historyTicketTotals(ticket).total) : `Est. ${formatMoney(totalAmount(lines))}`}</span>
+        <span className={listStyles.toggle}>
+          <BookingDetailsButton initialOpen={initialOpen} activity={{
+            type: "booking", id: `booking-${booking.id}`, bookingId: booking.id,
+            href: "/my-bookings", currency: "USD", startAt: booking.start_at,
+            endAt: booking.end_at, occurredAt: booking.start_at, timezone,
+            status: booking.status === "cancelled" || booking.status === "no_show" ? booking.status : ticket ? "completed" : "upcoming",
+            noShowKind: booking.no_show_kind, historyEvidence: booking.historyEvidence,
+            salon: { id: booking.salon_id, name: salonName, location: place,
+              imageUrl: booking.salon?.logoUrl ?? null, coverUrl: booking.salon?.coverUrl ?? null },
+            services: lines.map(line => ({ id: line.id, name: line.service_name_snapshot,
+              staffName: line.assignedStaff?.displayName ?? null, lineTotal: Number(line.line_total) })),
+            staffName: null, title: serviceSummary(lines), total: totalAmount(lines),
+          }} />
         </span>
       </div>
-
-      <div className="min-w-0">
-        <div className="flex min-w-0 items-start gap-3">
-          <SalonThumb booking={booking} />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="truncate text-base font-extrabold text-[#211c24]">
-                {salonName}
-              </h2>
-              <span className={classNames("rounded-full border px-2.5 py-1 text-[11px] font-extrabold capitalize", statusClass(booking.status))}>
-                {statusText(booking.status)}
-              </span>
-            </div>
-            {place ? (
-              <p className="mt-1 truncate text-sm font-semibold text-[#786d78]">{place}</p>
-            ) : null}
-            <p className="mt-2 text-sm font-extrabold text-[#211c24]">
-              {dateParts.weekday}, {formatTime(booking.start_at, timezone)} -{" "}
-              {formatTime(booking.end_at, timezone)}
-              {showTimezone ? ` ${timezone}` : ""}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-extrabold text-[#211c24]">
-              {serviceSummary(lines)}
-            </p>
-            <div className="mt-2">
-              <StaffPill lines={lines} />
-            </div>
-          </div>
-          <p className="text-sm font-extrabold text-[#f26f3d]">
-            {formatMoney(totalAmount(lines))}
-          </p>
-        </div>
-      </div>
-
-      <span className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#ffd6c4] px-4 text-sm font-extrabold text-[#211c24] transition group-hover:border-[#e85f2b] group-hover:text-[#f26f3d]">
-        View details
-      </span>
-    </Link>
+    </div>
   );
 }
 
@@ -332,7 +276,19 @@ export default async function MyBookingsPage({
   }
 
   const bookings = result.ok ? result.data : [];
+  if (result.ok && resolvedSearchParams.details && !bookings.some(booking => booking.id === resolvedSearchParams.details)) {
+    const selected = await getCustomerBookingDetail(resolvedSearchParams.details);
+    if (selected.ok && selected.data) bookings.push(selected.data);
+  }
   const groupedBookings = groupBookings(bookings);
+  const activityResult = scope === "past" && result.ok ? await getCustomerActivity({ limit: 50 }) : null;
+  const historyRows = activityResult?.ok ? activityResult.data.history.filter(activity => {
+    if (activity.type === "booking") return bookings.some(booking => booking.id === activity.bookingId);
+    if (activity.type === "purchase" && activity.bookingId) return bookings.some(booking => booking.id === activity.bookingId);
+    return bookings.some(booking => booking.salon_id === activity.salon.id &&
+      new Intl.DateTimeFormat("en-CA", { timeZone: booking.salon_timezone_snapshot }).format(new Date(booking.start_at)) ===
+      new Intl.DateTimeFormat("en-CA", { timeZone: booking.salon_timezone_snapshot }).format(new Date(activity.occurredAt)));
+  }) : null;
   const error = messageFromSearch(resolvedSearchParams.error);
   const message = messageFromSearch(resolvedSearchParams.message);
 
@@ -340,16 +296,17 @@ export default async function MyBookingsPage({
     <main className={classNames(styles.bookingSurface, "min-h-screen overflow-x-hidden bg-[#fbf9f7] px-4 py-6 sm:px-6 lg:px-8")}>
       <div className="mx-auto grid w-full max-w-6xl gap-5">
         {message ? (
-          <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          <p className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none">
             {message}
           </p>
         ) : null}
         {error || (!result.ok && result.message) ? (
-          <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+          <p className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 rounded-none border-y shadow-none">
             {error ?? (!result.ok ? result.message : null)}
           </p>
         ) : null}
 
+        <p className="text-xs text-text-secondary">Appointments here ? <Link className="font-bold text-brand-teal" href="/activity">All visits & receipts</Link></p>
         <nav className="flex gap-6 overflow-x-auto" aria-label="Booking filters">
           {TABS.map((tab) => {
             const active = tab.id === scope;
@@ -363,6 +320,7 @@ export default async function MyBookingsPage({
                     : "border-transparent text-[#786d78] hover:text-[#f26f3d]",
                 )}
                 href={tab.href}
+                aria-current={active ? "page" : undefined}
                 key={tab.id}
               >
                 {tab.label}
@@ -371,8 +329,8 @@ export default async function MyBookingsPage({
           })}
         </nav>
 
-        {bookings.length === 0 ? (
-          <section className="rounded-2xl border border-dashed border-[#ffd6c4] bg-white p-6">
+        {!result.ok ? null : bookings.length === 0 ? (
+          <section className="content-surface border-[#ffd6c4] bg-white p-6 rounded-none border-y shadow-none">
             <h2 className="text-lg font-extrabold text-[#211c24]">
               No {scope === "upcoming" ? "upcoming" : scope} bookings
             </h2>
@@ -386,6 +344,11 @@ export default async function MyBookingsPage({
               Find a salon
             </Link>
           </section>
+        ) : scope === "past" && historyRows ? (
+          <>
+            <ActivityHistoryPanel activities={historyRows} initialSelectedBookingId={resolvedSearchParams.details} />
+            {resolvedSearchParams.details && !historyRows.some(activity => activity.type !== "visit" && activity.bookingId === resolvedSearchParams.details) ? bookings.filter(booking => booking.id === resolvedSearchParams.details).map(booking => <BookingRow key={booking.id} booking={booking} initialOpen />) : null}
+          </>
         ) : (
           <div className="grid gap-6">
             {groupedBookings.map(([label, group]) => (
@@ -393,9 +356,10 @@ export default async function MyBookingsPage({
                 <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#e85f2b]">
                   {label}
                 </h2>
-                <div className="grid gap-3">
+                <div className="hidden grid-cols-[2fr_2fr_3fr_1fr_1fr] gap-3 px-4 text-xs font-bold text-text-secondary lg:grid"><span>Date & time</span><span>Services / status</span><span>Location</span><span>Amount</span><span>Details</span></div>
+                <div data-continuous-surface className={listStyles.list}>
                   {group.map((booking) => (
-                    <BookingRow booking={booking} key={booking.id} />
+                    <BookingRow booking={booking} initialOpen={resolvedSearchParams.details === booking.id} key={booking.id} />
                   ))}
                 </div>
               </section>

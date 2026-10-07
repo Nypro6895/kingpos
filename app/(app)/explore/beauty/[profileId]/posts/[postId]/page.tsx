@@ -1,3 +1,5 @@
+import {ExploreBookButton} from "@/components/explore-account-actions";
+import {SalonTrustLine,SalonVerifiedBadge} from "@/components/salon-trust-line";
 import { getPublicExploreBeautyPost } from "@/lib/explore-personal";
 import { getPostCommentViewer } from "@/lib/post-comments";
 import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
@@ -133,18 +135,6 @@ function bookingAvailabilityLabel(item: ExploreFeedItem) {
   );
 }
 
-function ratingLabel(item: ExploreFeedItem) {
-  const rating = item.salon?.trust.averageRating;
-  const reviews = item.salon?.trust.sharedExperienceCount;
-
-  if (rating === null || rating === undefined) {
-    return null;
-  }
-
-  return typeof reviews === "number" && reviews > 0
-    ? `${rating.toFixed(1)} (${reviews})`
-    : rating.toFixed(1);
-}
 
 function locationLabel(item: ExploreFeedItem) {
   return [item.salon?.city, item.salon?.state].filter(Boolean).join(", ") || null;
@@ -198,10 +188,7 @@ function PostHeaderTitle({ item }: { item: ExploreFeedItem }) {
     <span className="inline-flex min-w-0 max-w-[14rem] items-center gap-1.5">
       <SalonLogo item={item} />
       <span className="truncate">{salon.name}</span>
-      <ReylumiIcon
-        className="h-3.5 w-3.5 shrink-0 text-sky-500"
-        name="verified"
-      />
+      <SalonVerifiedBadge verified={salon.trust.identityVerified}/>
     </span>
   );
 
@@ -337,7 +324,7 @@ function LookMediaStage({ item }: { item: ExploreFeedItem }) {
         ) : null}
         <button
           aria-label="More options"
-          className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/92 text-text-primary shadow-sm ring-1 ring-white/80 backdrop-blur"
+          className="absolute right-3 top-3 grid h-9 w-9 place-items-center bg-transparent text-text-primary transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
           type="button"
         >
           <ReylumiIcon className="h-4 w-4" name="more" />
@@ -463,7 +450,6 @@ export default async function PublicBeautyPostPage({
   const price = bookingPriceLabel(item);
   const duration = bookingDurationLabel(item);
   const distance = bookingDistanceLabel(item);
-  const rating = ratingLabel(item);
   const salonLocation = locationLabel(item);
   const bookedCountText =
     bookedCount !== null ? bookingCountLabel(bookedCount) : null;
@@ -533,26 +519,8 @@ export default async function PublicBeautyPostPage({
               </span>
               <span className="min-w-0">
                 <PostHeaderTitle item={item} />
-                <span className="mt-0.5 flex min-w-0 flex-wrap items-center gap-1 text-xs font-semibold text-text-secondary">
-                  {rating ? (
-                    <>
-                      <span className="text-amber-500">★</span>
-                      <span>{rating}</span>
-                    </>
-                  ) : null}
-                  {salonLocation ? (
-                    <>
-                      <span className="text-text-muted/60">·</span>
-                      <span>{salonLocation}</span>
-                    </>
-                  ) : null}
-                  {distance ? (
-                    <>
-                      <span className="text-text-muted/60">·</span>
-                      <span>{distance}</span>
-                    </>
-                  ) : null}
-                </span>
+                {item.salon?<SalonTrustLine signals={item.salon.trust} href={item.salon.href} name={item.salon.name} distance={distance} expanded className="text-text-secondary"/>:null}
+                {salonLocation?<span className="block text-[11px] text-text-secondary">{salonLocation}</span>:null}
               </span>
             </div>
 
@@ -590,22 +558,8 @@ export default async function PublicBeautyPostPage({
 
             <AvailabilityChips item={item} />
 
-            {bookingHref ? (
-              <Link
-                aria-label={[
-                  booking?.label ?? "Book",
-                  bookedCount !== null ? bookingCountLabel(bookedCount) : null,
-                ]
-                  .filter(Boolean)
-                  .join(", ")}
-                className="inline-flex min-h-11 max-w-full items-center justify-center rounded-[0.75rem] bg-brand-orange px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-                href={bookingHref}
-              >
-                <span className="truncate">
-                  {booking?.label ?? "Book"}{price ? ` - ${price}` : ""}
-                </span>
-              </Link>
-            ) : null}
+            <ExploreBookButton href={bookingHref} name={item.salon?.name??item.author.name} contactHref={item.salon?.href}/>
+
 
             {item.salon?.href ? (
               <Link

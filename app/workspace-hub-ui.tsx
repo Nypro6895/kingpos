@@ -465,7 +465,7 @@ export function WorkspaceActionMenu({
   }
 
   return (
-    <details className="relative shrink-0">
+    <details data-dismissible-popover className="relative shrink-0">
       <summary
         aria-label={label ? undefined : `More actions for ${workspace.label}`}
         aria-disabled={pendingKey ? "true" : undefined}

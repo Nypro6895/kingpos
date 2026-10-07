@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 
 import { notFound, redirect } from "next/navigation";
 import { loginHrefForReturnPath } from "@/lib/auth-routing";
@@ -38,7 +39,9 @@ function mapPlatformAdminContextRow(
   };
 }
 
-export async function getCurrentPlatformAdminContext() {
+export const getCurrentPlatformAdminContext = cache(loadCurrentPlatformAdminContext);
+
+async function loadCurrentPlatformAdminContext() {
   const [currentUser, supabase] = await Promise.all([
     getCurrentKingUser(),
     createAuthenticatedSupabaseServerClient(),

@@ -61,6 +61,7 @@ type LoginSecurityQuickEditorProps = {
   detailHref?: string;
   overview: LoginSecurityOverview | null;
   variant?: "drawer" | "page";
+  passwordOnly?: boolean;
 };
 
 const inputClassName =
@@ -377,6 +378,7 @@ export function LoginSecurityQuickEditor({
   detailHref = "/settings/login-security",
   overview,
   variant = "drawer",
+  passwordOnly = false,
 }: LoginSecurityQuickEditorProps) {
   const router = useRouter();
   const [dialog, setDialog] = useState<QuickDialog | null>(null);
@@ -708,7 +710,7 @@ export function LoginSecurityQuickEditor({
       ) : null}
 
       <section id={variant === "page" ? "quick-actions" : undefined}>
-        {variant === "page" ? (
+        {variant === "page" && !passwordOnly ? (
           <div className="mb-2">
             <h2 className="text-base font-semibold text-zinc-950">
               Quick actions
@@ -729,6 +731,7 @@ export function LoginSecurityQuickEditor({
             tone={overview.account.email ? "success" : "warning"}
           />
 
+          {!passwordOnly ? <>
           <QuickActionRow
             actionLabel="Detail"
             description="A short view of active devices and browsers."
@@ -868,6 +871,7 @@ export function LoginSecurityQuickEditor({
             status="High impact"
             tone="danger"
           />
+          </> : null}
         </div>
       </section>
 

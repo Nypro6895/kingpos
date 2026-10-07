@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 
-// Keep successfully fetched photos locally, revalidate on reconnect and while
-// the app stays open. A missing photo never renders a broken-image icon.
+// Keep photos locally for offline use. Roster changes supply the current URL;
+// reconnection retries missing photos without a timer for every avatar.
 export function StaffAvatar({ src, className }: { src: string | null; className?: string }) {
   const [image, setImage] = useState<{ source: string; url: string } | null>(null);
   useEffect(() => {
@@ -24,16 +24,16 @@ export function StaffAvatar({ src, className }: { src: string | null; className?
         const cache = await caches.open("kingpos-staff-photos-v1");
         if (!objectUrl) { const saved = await cache.match(src); if (saved) await show(saved); }
         if (!navigator.onLine) return;
-        const response = await fetch(src, { cache: "no-cache", signal: AbortSignal.timeout(8000) });
+        const response = await fetch(src, { cache: "default", signal: AbortSignal.timeout(8000) });
         if (response.ok && response.headers.get("content-type")?.startsWith("image/")) {
           await cache.put(src, response.clone()); await show(response);
         }
       } catch { /* The original URL remains a fallback for hosts without CORS. */ }
       finally { busy = false; }
     };
-    void refresh(); const timer = setInterval(() => void refresh(), 60000);
+    void refresh();
     window.addEventListener("online", refresh);
-    return () => { active = false; clearInterval(timer); window.removeEventListener("online", refresh); if (objectUrl) URL.revokeObjectURL(objectUrl); };
+    return () => { active = false; window.removeEventListener("online", refresh); if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [src]);
   if (!src) return null;
   // eslint-disable-next-line @next/next/no-img-element

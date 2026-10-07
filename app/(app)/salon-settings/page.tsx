@@ -1,3 +1,6 @@
+
+import { SubmitButton } from "@/components/submit-button";
+import { getSalonOwnerRoster } from "@/lib/owner-transfer";
 import {
   createCurrentSalonSpecialHoursAction,
   deleteCurrentSalonSpecialHoursAction,
@@ -22,7 +25,6 @@ import { requireSalonManagePageContext } from "@/lib/route-context-guards";
 import {
   getSalonClosureReview,
   getSalonLifecycle,
-  type SalonClosureReview,
 } from "@/lib/salon-lifecycle";
 import {
   getCurrentSalonDiscoveryReadiness,
@@ -41,6 +43,7 @@ import type {
 } from "@/types/salon-operating-status";
 import type { SalonSetting } from "@/types/salon-setting";
 import Link from "next/link";
+import { StaffCreationPermission } from "@/app/staff/appointments/staff-create-appointment";
 
 type SalonSettingsPageProps = {
   searchParams: Promise<{
@@ -266,14 +269,14 @@ function MapLocationSection({
         </div>
       ) : null}
       <div className="mt-4">
-        <button
+        <SubmitButton pendingLabel="Processing…"
           className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={!canManageSettings || !mapLocation.refreshEnabled}
           formAction={refreshSalonMapLocation}
           type="submit"
         >
           Refresh map location
-        </button>
+        </SubmitButton>
       </div>
     </div>
   );
@@ -462,7 +465,7 @@ function OperatingHoursSection({
                       {formatSpecialHoursSummary(special)}
                     </p>
                   </div>
-                  <button
+                  <SubmitButton pendingLabel="Removing…"
                     className="w-fit rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={!canManageSettings}
                     formAction={deleteCurrentSalonSpecialHoursAction}
@@ -471,7 +474,7 @@ function OperatingHoursSection({
                     value={special.id}
                   >
                     Remove
-                  </button>
+                  </SubmitButton>
                 </div>
               ))
             ) : (
@@ -538,14 +541,14 @@ function OperatingHoursSection({
                 />
               </div>
             </label>
-            <button
+            <SubmitButton pendingLabel="Saving…"
               className="min-h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
               disabled={!canManageSettings}
               formAction={createCurrentSalonSpecialHoursAction}
               type="submit"
             >
               Add
-            </button>
+            </SubmitButton>
           </div>
         </div>
       </div>
@@ -598,7 +601,7 @@ function SalonSettingsForm({
       ) : null}
 
       {notice ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+        <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
           {notice}
         </p>
       ) : null}
@@ -816,15 +819,15 @@ function SalonSettingsForm({
       <div className="sticky bottom-0 z-20 rounded-lg border border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-zinc-600">
-            Saves business info, discovery, operating hours, map visibility, and staff application settings.
+            Saves only changed salon details and operating hours.
           </p>
-          <button
+          <SubmitButton pendingLabel="Saving…"
             className="min-h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
             disabled={!canManageSettings}
             type="submit"
           >
             Save settings
-          </button>
+          </SubmitButton>
         </div>
       </div>
     </form>
@@ -879,13 +882,6 @@ export default async function SalonSettingsPage({
     throw new Error("Salon settings could not be loaded.");
   }
 
-  const [discoveryReadiness, mapLocation] = await Promise.all([
-    getCurrentSalonDiscoveryReadiness(setting, context),
-    getCurrentSalonMapLocationState({ context, setting }),
-  ]);
-  const staffDirectory = canViewStaff
-    ? await getCurrentSalonStaffDirectory(context)
-    : { staff: [] as StaffDirectoryMember[] };
   const canManageLifecycle =
     canManageSettings &&
     lifecycle.lifecycleStatus !== "permanently_closed" &&
@@ -895,19 +891,19 @@ export default async function SalonSettingsPage({
     canManageSettings &&
     (isOwnerMembership(context.currentMembership) ||
       context.permissionCodes.includes("account.manage"));
-  let closureReview: SalonClosureReview | null = null;
-
-  if (canManageLifecycle && lifecycle.lifecycleStatus !== "permanently_closed") {
-    closureReview = await getSalonClosureReview({
-      context,
-      salonId: context.currentSalon.id,
-    });
-  }
+  const [discoveryReadiness,mapLocation,staffDirectory,ownerRoster,closureReview] = await Promise.all([
+    getCurrentSalonDiscoveryReadiness(setting,context),
+    getCurrentSalonMapLocationState({context,setting}),
+    canViewStaff ? getCurrentSalonStaffDirectory(context) : Promise.resolve({staff:[] as StaffDirectoryMember[]}),
+    isOwnerMembership(context.currentMembership) ? getSalonOwnerRoster(context.currentSalon.id) : Promise.resolve(null),
+    canManageLifecycle ? getSalonClosureReview({context,salonId:context.currentSalon.id}) : Promise.resolve(null),
+  ]);
 
   const navItems: NavItem[] = [
     { href: "#business-information", label: "Business info" },
     { href: "#public-profile-discovery", label: "Public profile" },
     { href: "#operating-hours", label: "Operating status" },
+    ...(isOwnerMembership(context.currentMembership) ? [{ href: "#staff-appointment-permission", label: "Staff appointments" }] : []),
     { href: "#ownership-admins", label: "Ownership" },
     { href: "#salon-status", label: "Salon status", tone: "danger" },
     ...(canViewStaff ? [{ href: "#public-team", label: "Public team" }] : []),
@@ -982,8 +978,10 @@ export default async function SalonSettingsPage({
             setting={setting}
           />
 
+          {isOwnerMembership(context.currentMembership) ? <StaffCreationPermission salonId={context.currentSalon.id} /> : null}
           <SalonOwnershipSection
             canManageOwnership={canManageOwnership}
+            ownerRoster={ownerRoster}
             permissionsHref="/permissions"
             rolesHref="/roles"
             salon={{

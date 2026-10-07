@@ -679,7 +679,7 @@ function Card({
   title: string;
 }) {
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white shadow-[0_10px_30px_rgba(24,24,27,0.04)]">
+    <section className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
       <div className="flex items-center justify-between gap-4 border-b border-zinc-100 px-4 py-3.5 sm:px-5">
         <div className="flex min-w-0 items-center gap-2">
           {icon ? (
@@ -815,7 +815,7 @@ function CompactEmptyState({
   title: string;
 }) {
   return (
-    <div className="rounded-xl border border-amber-100 bg-amber-50/60 px-4 py-4">
+    <div className="content-surface border-amber-100 bg-amber-50/60 px-4 py-4 rounded-none border-y shadow-none">
       <p className="text-sm font-semibold text-zinc-950">{title}</p>
       <p className="mt-1 text-sm leading-5 text-zinc-600">{detail}</p>
     </div>
@@ -951,7 +951,7 @@ function RightNowSection({
   title: string;
 }) {
   return (
-    <div className="min-w-0 rounded-xl border border-zinc-100 bg-zinc-50/35 p-3 sm:p-4">
+    <div className="content-surface min-w-0 border-zinc-100 bg-zinc-50/35 p-3 sm:p-4 rounded-none border-y shadow-none">
       <div className="mb-2 flex min-h-9 items-center justify-between gap-3">
         <div className="flex min-w-0 items-baseline gap-2">
           <h2 className="text-base font-semibold text-zinc-950">
@@ -976,7 +976,7 @@ function RightNowPanel({ dashboard }: { dashboard: TodayDashboard }) {
   ) : null;
 
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white shadow-[0_10px_30px_rgba(24,24,27,0.04)]">
+    <section className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
       <div className="px-4 py-4 sm:px-5">
         {!canViewBookings ? (
           <CompactEmptyState
@@ -1409,7 +1409,7 @@ function SalesSummary({ performance }: { performance: TodayPerformance }) {
       <dl className="grid grid-cols-3 gap-2">
         {rows.map(([label, value]) => (
           <div
-            className="rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-3"
+            className="content-surface border-zinc-100 bg-zinc-50 px-3 py-3 rounded-none border-y shadow-none"
             key={label}
           >
             <dt className="text-xs font-medium text-zinc-500">{label}</dt>
@@ -1720,7 +1720,7 @@ function LoadErrorsBanner({
   }
 
   return (
-    <section className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+    <section className="content-surface border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 rounded-none border-y shadow-none">
       <p className="font-semibold">Some Today sections could not load.</p>
       <ul className="mt-2 space-y-1">
         {errors.map((error) => (
@@ -1748,7 +1748,7 @@ function RestrictedDashboard({ dashboard }: { dashboard: TodayDashboard }) {
             {formatDashboardDate(dashboard.date)}
           </p>
         </header>
-        <section className="rounded-lg border border-amber-200 bg-amber-50 p-5">
+        <section className="content-surface border-amber-200 bg-amber-50 p-5 rounded-none border-y shadow-none">
           <h2 className="text-base font-semibold text-amber-950">
             Permission required
           </h2>

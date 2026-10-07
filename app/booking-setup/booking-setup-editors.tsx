@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
   type ReactNode,
@@ -345,6 +346,22 @@ function summarizeWeeklyHours(week: Record<number, DayDraft>) {
     : `${enabledDays.length} available day${enabledDays.length === 1 ? "" : "s"}`;
 }
 
+function compactWeeklyHours(week: Record<number, DayDraft>) {
+  const days = [...DAYS.slice(1), DAYS[0]];
+  const active = days.filter(day => week[day.id].working.length);
+  if (!active.length) return "No hours set";
+  const hours = formatIntervalList(week[active[0].id].working);
+  if (!active.every(day => formatIntervalList(week[day.id].working) === hours)) return `${active.length} working days · varied hours`;
+  const groups: string[] = [];
+  for (let i = 0; i < days.length; i++) {
+    if (!week[days[i].id].working.length) continue;
+    const start = i;
+    while (i + 1 < days.length && week[days[i + 1].id].working.length) i++;
+    groups.push(start === i ? days[i].label : `${days[start].label}–${days[i].label}`);
+  }
+  return `${groups.join(", ")} · ${hours}`;
+}
+
 function formatDateText(value: string, timeZone: string) {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
@@ -503,6 +520,9 @@ function IntervalEditor({
 }
 
 export function StaffAvailabilityEditor({
+  onSaved,
+  expectedSalonId,
+  initiallyCollapsed = false,
   availabilityRules,
   canManage,
   readinessByStaffId,
@@ -511,6 +531,9 @@ export function StaffAvailabilityEditor({
   timeBlocks,
   timezone,
 }: {
+  onSaved?: () => void | Promise<void>;
+  expectedSalonId?: string;
+  initiallyCollapsed?: boolean;
   availabilityRules: StaffAvailabilityRule[];
   canManage: boolean;
   readinessByStaffId: Record<string, StaffBookingReadiness>;
@@ -521,11 +544,17 @@ export function StaffAvailabilityEditor({
 }) {
   const router = useRouter();
   const firstStaffId = staff[0]?.id ?? "";
+  const [editDay, setEditDay] = useState<number | null>(null);
+  const [showTimeOffForm, setShowTimeOffForm] = useState(false);
+  const [showCopy, setShowCopy] = useState(false);
+  const saving = useRef(false);
+  const timeOffSaving = useRef(false);
+  const [savedWeeks, setSavedWeeks] = useState<Record<string, { source: string; week: Record<number, DayDraft> }>>({});
   const initialExpandedStaffId =
     (selectedStaffId && staff.some((member) => member.id === selectedStaffId)
       ? selectedStaffId
       : null) ||
-    firstStaffId ||
+    (initiallyCollapsed ? null : firstStaffId) ||
     null;
   const [expandedStaffState, setExpandedStaffState] = useState<{
     key: string;
@@ -551,10 +580,11 @@ export function StaffAvailabilityEditor({
   const initialWeek = useMemo(
     () =>
       expandedStaffId
-        ? weeksByStaffId[expandedStaffId] ??
-          buildWeekDraft(availabilityRules, expandedStaffId)
+        ? savedWeeks[expandedStaffId]?.source === weekKey(weeksByStaffId[expandedStaffId])
+          ? savedWeeks[expandedStaffId].week
+          : weeksByStaffId[expandedStaffId] ?? buildWeekDraft(availabilityRules, expandedStaffId)
         : structuredClone(EMPTY_WEEK),
-    [availabilityRules, expandedStaffId, weeksByStaffId],
+    [availabilityRules, expandedStaffId, weeksByStaffId, savedWeeks],
   );
   const initialWeekKey = weekKey(initialWeek);
   const weekStateKey = `${expandedStaffId ?? "none"}:${initialWeekKey}`;
@@ -636,10 +666,12 @@ export function StaffAvailabilityEditor({
     }
 
     const query = params.toString();
-    router.replace(query ? `/bookings?${query}` : "/bookings", { scroll: false });
+    if (initiallyCollapsed) window.history.replaceState(null, "", query ? `/bookings?${query}` : "/bookings");
+    else router.replace(query ? `/bookings?${query}` : "/bookings", { scroll: false });
   }
 
   function expandStaff(staffId: string) {
+    if (isPending || isTimeOffPending) return;
     const nextStaffId = expandedStaffId === staffId ? null : staffId;
 
     if (
@@ -653,7 +685,15 @@ export function StaffAvailabilityEditor({
 
     setResult(null);
     setCopySourceDay(null);
+    setWeekState({key:weekStateKey, week:initialWeek});
     setCopyTargets([]);
+    setEditDay(null);
+    setShowCopy(false);
+    setShowTimeOffForm(false);
+    setTimeOffResult(null);
+    setTimeOffReason("");
+    setTimeOffStartDate(nextBlockDate);
+    setTimeOffEndDate(nextBlockDate);
     setExpandedStaffState({ key: firstStaffId, staffId: nextStaffId });
     replaceStaffUrl(nextStaffId);
   }
@@ -727,12 +767,14 @@ export function StaffAvailabilityEditor({
   }
 
   function saveWeek() {
-    if (!expandedStaffId) {
+    if (!expandedStaffId || saving.current || !canManage) {
       return;
     }
 
     setResult(null);
+    saving.current = true;
     startTransition(async () => {
+      try {
       const rules = DAYS.flatMap((day) => [
         ...week[day.id].working.map((interval) => ({
           dayOfWeek: day.id,
@@ -750,6 +792,7 @@ export function StaffAvailabilityEditor({
         })),
       ]);
       const response = await saveStaffWeeklyAvailabilityAction({
+        expectedSalonId,
         rules,
         staffId: expandedStaffId,
       });
@@ -757,13 +800,18 @@ export function StaffAvailabilityEditor({
       setResult(response);
 
       if (response.ok) {
-        router.refresh();
+        setSavedWeeks(current => ({...current, [expandedStaffId]: {source: weekKey(weeksByStaffId[expandedStaffId]), week: structuredClone(week)}}));
+        setEditDay(null);
+        if (onSaved) await onSaved();
       }
+      } catch {
+        setResult({ok:false, error:"Could not save hours. Your changes are still here. Please try again."});
+      } finally { saving.current = false; }
     });
   }
 
   function createTimeOff(overrideConflicts = false) {
-    if (!expandedStaffId) {
+    if (!expandedStaffId || !canManage || timeOffSaving.current) {
       return;
     }
 
@@ -777,8 +825,11 @@ export function StaffAvailabilityEditor({
     }
 
     setTimeOffResult(null);
+    timeOffSaving.current = true;
     startTimeOffTransition(async () => {
+      try {
       const response = await createStaffTimeBlockAction({
+        expectedSalonId,
         blockType: "time_off",
         endLocal: `${timeOffEndDate}T23:59`,
         overrideConflicts,
@@ -792,21 +843,29 @@ export function StaffAvailabilityEditor({
 
       if (response.ok) {
         setTimeOffReason("");
-        router.refresh();
+        setShowTimeOffForm(false);
+        if (onSaved) await onSaved();
       }
+      } catch { setTimeOffResult({ok:false,error:"Could not save time off. Please try again."}); }
+      finally { timeOffSaving.current = false; }
     });
   }
 
   function cancelTimeOff(blockId: string) {
+    if (!canManage || timeOffSaving.current) return;
     setTimeOffResult(null);
+    timeOffSaving.current = true;
     startTimeOffTransition(async () => {
-      const response = await cancelStaffTimeBlockAction({ blockId });
+      try {
+      const response = await cancelStaffTimeBlockAction({ blockId, expectedSalonId });
 
       setTimeOffResult(response);
 
       if (response.ok) {
-        router.refresh();
+        if (onSaved) await onSaved();
       }
+      } catch { setTimeOffResult({ok:false,error:"Could not remove time off. Please try again."}); }
+      finally { timeOffSaving.current = false; }
     });
   }
 
@@ -832,6 +891,68 @@ export function StaffAvailabilityEditor({
     );
   }
 
+  if (initiallyCollapsed) {
+    const orderedDays = [...DAYS.slice(1), DAYS[0]];
+    const busy = isPending || isTimeOffPending;
+    const renderIntervals = (dayId: number, target: keyof DayDraft) => <IntervalEditor
+      addLabel={target === "working" ? "add hours" : "add break"}
+      disabled={!canManage || busy}
+      emptyText={target === "working" ? "Off" : "No breaks"}
+      intervals={week[dayId][target]}
+      label={`${DAYS.find(day => day.id === dayId)?.label} ${target === "working" ? "working hours" : "breaks"}`}
+      onAdd={() => updateDay(dayId, target, intervals => [...intervals, target === "working" ? defaultWorkingInterval() : defaultBreakInterval()])}
+      onRemove={index => target === "working" && week[dayId].working.length === 1 ? toggleDay(dayId, false) : updateDay(dayId, target, intervals => intervals.filter((_, i) => i !== index))}
+      onUpdate={(index, next) => updateDay(dayId, target, intervals => intervals.map((value, i) => i === index ? {...value, ...next} : value))}
+    />;
+    return <section className="availability-compact" aria-label="Staff availability">
+      <div className="availability-compact-heading"><span>Choose a professional to edit hours.</span></div>
+      {staff.map(member => {
+        const expanded = member.id === expandedStaffId;
+        const serverWeek = weeksByStaffId[member.id];
+        const memberWeek = expanded ? week : savedWeeks[member.id]?.source === weekKey(serverWeek) ? savedWeeks[member.id].week : serverWeek;
+        const blocks = upcomingTimeOffForStaff(timeBlocks, member.id);
+        const name = ("staff_profile_display_name" in member ? member.staff_profile_display_name : null) || member.display_name;
+        // This status describes the existing online-booking switch, not guaranteed slot availability.
+        const online = member.is_active && member.online_booking_enabled;
+        return <article key={member.id} className="availability-compact-person" data-testid={`availability-staff-row-${member.id}`}>
+          <button type="button" className="availability-person-toggle" aria-expanded={expanded} aria-controls={`compact-staff-${member.id}`} disabled={busy} onClick={() => expandStaff(member.id)}>
+            <SetupStaffAvatar staff={member}/><span className="availability-person-name"><strong>{name}</strong>{!expanded ? <><small>{compactWeeklyHours(memberWeek)}</small>{blocks.length ? <small>Time off · {formatDateRangeText(blocks[0], timezone)}{blocks.length > 1 ? ` +${blocks.length - 1}` : ""}</small> : null}</> : null}</span><span className={online ? "availability-online" : "availability-offline"}>● {online ? "Online" : "Offline"}</span><span aria-hidden="true">{expanded ? "⌃" : "⌄"}</span>
+          </button>
+          {expanded ? <div id={`compact-staff-${member.id}`} className="availability-person-editor">
+            <Message result={result}/>
+            <div className="availability-compact-title"><h3>Weekly hours</h3>{canManage ? <button type="button" disabled={busy} onClick={() => {setShowCopy(!showCopy); if(copySourceDay === null) setCopySourceDay(orderedDays.find(day => week[day.id].working.length)?.id ?? 1);}}>Copy hours</button> : null}</div>
+            {showCopy && canManage ? <fieldset className="availability-inline-editor" disabled={busy}><legend>Copy hours</legend>
+              <label>From day<select value={copySourceDay ?? 1} onChange={event => {setCopySourceDay(Number(event.target.value)); setCopyTargets([]);}}>{orderedDays.map(day => <option key={day.id} value={day.id}>{day.label}</option>)}</select></label>
+              <div className="availability-copy-days">{orderedDays.filter(day => day.id !== copySourceDay).map(day => <label key={day.id}><input type="checkbox" checked={copyTargets.includes(day.id)} onChange={event => toggleCopyTarget(day.id,event.target.checked)}/>{day.label}</label>)}</div>
+              <button type="button" disabled={!copyTargets.length} onClick={() => {copyDayToTargets(copySourceDay ?? 1);setShowCopy(false);}}>Apply to selected days</button>
+              <button type="button" onClick={() => {setWeekState({key:weekStateKey,week:presetWeekdays()});setShowCopy(false);}}>Use weekdays 9 AM–5 PM</button>
+              <button type="button" className="availability-muted-action" onClick={clearWeek}>Clear week</button>
+            </fieldset> : null}
+            {orderedDays.map(day => <div key={day.id} className="availability-compact-day" data-testid={`availability-day-${day.id}`}>
+              <button type="button" className="availability-day-toggle" aria-expanded={editDay === day.id} aria-controls={`compact-day-${member.id}-${day.id}`} disabled={busy} onClick={() => setEditDay(editDay === day.id ? null : day.id)}><strong>{day.label}</strong><span>{week[day.id].working.length ? formatIntervalList(week[day.id].working) : "Off"}{week[day.id].breaks.length ? <small>Break · {formatIntervalList(week[day.id].breaks)}</small> : null}</span><span aria-hidden="true">{editDay === day.id ? "⌃" : week[day.id].working.length ? "›" : "+"}</span></button>
+              {editDay === day.id ? <fieldset id={`compact-day-${member.id}-${day.id}`} className="availability-inline-editor" disabled={!canManage || busy}><legend className="sr-only">{day.label} hours</legend>
+                {renderIntervals(day.id,"working")}
+                {week[day.id].working.length ? <><span className="availability-editor-label">Breaks</span>{renderIntervals(day.id,"breaks")}<button type="button" className="availability-muted-action" onClick={() => toggleDay(day.id,false)}>Set day off</button></> : null}
+                <button type="button" disabled={false} onClick={() => setEditDay(null)}>Done</button>
+              </fieldset> : null}
+            </div>)}
+            <div className="availability-compact-title availability-timeoff-title"><h3>Time off</h3>{canManage ? <button type="button" disabled={busy} aria-expanded={showTimeOffForm} onClick={() => {setShowTimeOffForm(!showTimeOffForm);setTimeOffResult(null);}}>+ Add</button> : null}</div>
+            <Message result={timeOffResult}/>
+            {!blocks.length ? <p className="availability-empty">No upcoming time off.</p> : blocks.map(block => <details key={block.id} className="availability-timeoff-item"><summary><span aria-hidden="true">▦</span><span><strong>{formatDateRangeText(block, timezone)}</strong>{block.reason ? <small>{block.reason}</small> : null}</span><span aria-hidden="true">›</span></summary><div className="availability-timeoff-detail"><p>{formatDateTime(block.starts_at,timezone)} – {formatDateTime(block.ends_at,timezone)}</p>{canManage ? <button type="button" disabled={busy} onClick={() => cancelTimeOff(block.id)}>Remove time off</button> : null}<small>To change dates, remove this entry and add the corrected range.</small></div></details>)}
+            {showTimeOffForm ? <fieldset className="availability-inline-editor" disabled={!canManage || busy}>
+              <legend>Add time off</legend><div className="availability-date-range"><label>From<input type="date" value={timeOffStartDate} onChange={event => {setTimeOffStartDate(event.target.value);if(event.target.value > timeOffEndDate)setTimeOffEndDate(event.target.value);}}/></label><label>To<input type="date" min={timeOffStartDate} value={timeOffEndDate} onChange={event => setTimeOffEndDate(event.target.value)}/></label></div>
+              <label>Reason (optional)<input value={timeOffReason} onChange={event => setTimeOffReason(event.target.value)}/></label>
+              <button type="button" onClick={() => createTimeOff(false)}>{isTimeOffPending ? "Saving…" : "Add time off"}</button>
+              {!timeOffResult?.ok && timeOffResult?.conflicts?.length ? <button type="button" onClick={() => createTimeOff(true)}>Save time off with override</button> : null}
+            </fieldset> : null}
+            <p className="availability-empty">{canManage ? "Tap a day to edit hours or add a break." : "You have read-only availability access."}</p>
+            {weekDirty && canManage ? <div className="availability-compact-save"><button type="button" disabled={busy} onClick={saveWeek}>{isPending ? "Saving…" : "Save changes"}</button><span>Unsaved changes</span><button type="button" disabled={busy} className="availability-discard" onClick={() => setWeekState({key:weekStateKey,week:initialWeek})}>Discard</button></div> : null}
+          </div> : null}
+        </article>;
+      })}
+    </section>;
+  }
+
   return (
     <section
       className="booking-setup-panel"
@@ -841,7 +962,7 @@ export function StaffAvailabilityEditor({
       <div className="booking-availability-head">
         <div>
           <h3>Staff availability</h3>
-          <p>{timezone}</p>
+
         </div>
       </div>
       <div className="booking-availability-staff-list">
@@ -993,7 +1114,7 @@ export function StaffAvailabilityEditor({
                         <p>{weeklySummary}</p>
                       </div>
                       <div className="booking-availability-toolbar">
-                        <details className="booking-availability-menu">
+                        <details data-dismissible-popover className="booking-availability-menu">
                           <summary>Apply preset</summary>
                           <button
                             disabled={!canManage}
@@ -1008,7 +1129,7 @@ export function StaffAvailabilityEditor({
                             Weekdays 9-5
                           </button>
                         </details>
-                        <details className="booking-availability-menu">
+                        <details data-dismissible-popover className="booking-availability-menu">
                           <summary>More</summary>
                           <button
                             className="booking-availability-danger-action"

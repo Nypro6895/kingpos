@@ -1,3 +1,4 @@
+import { cache } from "react";
 import {
   createSupabaseServerClient,
   createUserScopedSupabaseServerClient,
@@ -170,7 +171,9 @@ export async function getKingUserForAuthUser(
   return data ?? createMissingKingUser(authUser, accessToken);
 }
 
-export async function getCurrentKingUser() {
+export const getCurrentKingUser = cache(loadCurrentKingUser);
+
+async function loadCurrentKingUser() {
   const [authUser, accessToken] = await Promise.all([
     getSupabaseAuthUser(),
     getAccessTokenFromRequest(),

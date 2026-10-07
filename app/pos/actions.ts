@@ -38,7 +38,6 @@ import {
   createAuthenticatedSupabaseServerClient,
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
-import { getTodayDate } from "@/lib/staff-workdays";
 import type {
   CustomerDisplayVisit,
   CustomerVisitRequestedService,
@@ -838,7 +837,6 @@ type PosDeskSupabaseClient = NonNullable<
 >;
 
 async function getSalonBusinessDate(input: {
-  fallbackTimezone?: string | null;
   salonId: string;
   supabase: PosDeskSupabaseClient;
 }) {
@@ -850,9 +848,8 @@ async function getSalonBusinessDate(input: {
     throw new Error(error.message);
   }
 
-  return typeof data === "string" && data
-    ? data
-    : getTodayDate(input.fallbackTimezone ?? undefined);
+  if (typeof data !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data)) throw new Error("Salon business date is unavailable. Please retry.");
+  return data;
 }
 
 async function validatePosStaffIds(input: {
@@ -1044,7 +1041,6 @@ async function createTicketFromSubmitInput(
     const [settings, workDate] = await Promise.all([
       getCurrentSalonPosSettings(context),
       getSalonBusinessDate({
-        fallbackTimezone: context.user?.timezone,
         salonId: salon.id,
         supabase,
       }),
@@ -2755,7 +2751,6 @@ export async function submitSessionToTicket(
     }
 
     const workDate = await getSalonBusinessDate({
-      fallbackTimezone: context.user?.timezone,
       salonId: salon.id,
       supabase,
     });

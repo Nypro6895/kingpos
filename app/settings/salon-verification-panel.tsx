@@ -1,0 +1,31 @@
+"use client";
+import {useEffect,useRef,useState} from 'react';
+import {beginSalonVerificationAction,confirmSalonVerificationAction,loadSalonVerificationAction} from './salon-verification-actions';
+import type {SalonVerificationRequest} from '@/lib/salon-identity';
+export function SalonVerificationPanel({expectedSalonId}: {expectedSalonId?: string}) {
+ const [requests,setRequests]=useState<SalonVerificationRequest[]>([]),[error,setError]=useState(''),[loaded,setLoaded]=useState(false),[accessAllowed,setAccessAllowed]=useState(false),[open,setOpen]=useState(false),[busy,setBusy]=useState(false),[requestId,setRequestId]=useState<string|null>(null),[code,setCode]=useState('');
+ const dialog=useRef<HTMLDialogElement>(null);
+ useEffect(()=>{let active=true;loadSalonVerificationAction(expectedSalonId).then(result=>{if(active){setRequests(result.requests);setError(result.error??'');setAccessAllowed(!result.error);setLoaded(true);}}).catch(()=>{if(active){setError('Could not load verification.');setLoaded(true);}});return()=>{active=false;};},[expectedSalonId]);
+ useEffect(()=>{if(open)dialog.current?.showModal();else dialog.current?.close();},[open]);
+ const current=requests[0],status=current?.status;
+ const canApply=loaded && accessAllowed && !['waiting','approved','blocked'].includes(status??'');
+ const retry=Boolean(current && (current.attempt>1 || current.status==='rejected'));
+ if(loaded&&!accessAllowed&&error==='Only the salon owner can request verification.')return null;
+ const inputClass='min-h-11 rounded-xl border border-zinc-300 px-3';
+ return <section className="mb-5 rounded-2xl border border-zinc-200 bg-white p-4">
+  <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-semibold">Verify your salon</h3>{status==='approved'?<span className="rounded-full bg-sky-50 px-2 py-1 text-xs font-semibold text-sky-600">✓ Verified</span>:null}</div>
+  <p role="status" className="mt-2 text-xs text-zinc-600">{!loaded?'Loading…':status==='waiting'?'Waiting for admin review.':status==='approved'?'Approved. Your salon displays a blue verified badge.':status==='blocked'?'Verification requests are blocked. Your owner account remains available.':status==='rejected'?`Rejected${current.review_reason?`: ${current.review_reason}`:'.'} You can reapply.`:status==='otp_pending'?'Phone confirmation has not been completed.':'Confirm your salon phone, then request an identity review.'}</p>
+  {error&&!open?<p role="alert" className="mt-2 text-xs text-red-600">{error}</p>:null}
+  {canApply?<button type="button" onClick={()=>{setError('');setRequestId(null);setCode('');setOpen(true);}} className="mt-3 min-h-10 rounded-xl border border-zinc-200 px-4 text-sm font-semibold">{status==='rejected'?'Reapply':status==='otp_pending'?'Continue verification':'Verify salon'}</button>:null}
+  <dialog ref={dialog} onCancel={e=>{if(busy)e.preventDefault();else setOpen(false);}} onClose={()=>setOpen(false)} className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-xl backdrop:bg-black/40" aria-labelledby="salon-verification-title"><div className="flex items-center justify-between"><h2 id="salon-verification-title" className="text-lg font-semibold">{requestId?'Confirm salon phone':'Verify salon identity'}</h2><button disabled={busy} type="button" aria-label="Close" className="size-10" onClick={()=>setOpen(false)}>×</button></div>
+   {requestId?<form className="mt-3 grid gap-3" onSubmit={async event=>{event.preventDefault();setBusy(true);setError('');try{const result=await confirmSalonVerificationAction(requestId,code,expectedSalonId);if(result.error)setError(result.error);else{setOpen(false);const state=await loadSalonVerificationAction(expectedSalonId);setRequests(state.requests);setError(state.error??'');}}catch{setError('Could not confirm code. Please try again.');}finally{setBusy(false);}}}><p className="text-xs text-zinc-500">Enter the six-digit code sent to your salon phone. It expires in 10 minutes.</p><label className="grid gap-1 text-sm">Confirmation code<input autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,''))} className={inputClass}/></label><button disabled={busy} className="min-h-11 rounded-xl bg-brand-orange text-sm font-semibold text-white">{busy?'Confirming…':'Confirm and submit'}</button><button type="button" disabled={busy} onClick={()=>{setRequestId(null);setError('');}} className="min-h-10 text-xs text-zinc-500">Request another code</button></form>:<form className="mt-3 grid gap-3" onSubmit={async event=>{event.preventDefault();const form=new FormData(event.currentTarget);setBusy(true);setError('');try{const result=await beginSalonVerificationAction(form,expectedSalonId);if(result.error)setError(result.error);else setRequestId(result.requestId);}catch{setError('Could not send code. Please try again.');}finally{setBusy(false);}}}>
+   <p className="text-xs text-zinc-500">Use the salon’s correct name, full address and phone. A blue badge appears after admin approval.</p>
+   <label className="grid gap-1 text-sm">Salon name<input name="name" defaultValue={current?.salon_name} required minLength={2} maxLength={160} className={inputClass}/></label>
+   <label className="grid gap-1 text-sm">Full address<input name="address" defaultValue={current?.address} required minLength={5} maxLength={500} autoComplete="street-address" className={inputClass}/></label>
+   <label className="grid gap-1 text-sm">Salon phone<input name="phone" type="tel" defaultValue={current?.phone} required autoComplete="tel" placeholder="+1…" className={inputClass}/></label>
+   {retry?<label className="grid gap-1 text-sm">Supporting files (optional)<input name="attachments" type="file" multiple accept="image/jpeg,image/png,application/pdf" className="text-xs"/><span className="text-xs text-zinc-500">Up to three JPG, PNG or PDF files, 5 MB each.</span></label>:null}
+   <button disabled={busy} className="min-h-11 rounded-xl bg-brand-orange text-sm font-semibold text-white">{busy?'Sending…':'Send confirmation code'}</button></form>}
+   {error&&open?<p role="alert" className="mt-3 text-sm text-red-600">{error}</p>:null}
+  </dialog>
+ </section>;
+}

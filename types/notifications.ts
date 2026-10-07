@@ -27,6 +27,14 @@ export type NotificationFeedAction =
 
 export type NotificationFeedItem = {
   action: NotificationFeedAction;
+  thumbnailUrl?: string | null;
+  notificationType?: string;
+  booking?: {
+    id: string;
+    updatedAt: string;
+    recipientKind: "customer" | "owner_manager" | "staff";
+    actionable: boolean;
+  };
   body: string | null;
   createdAt: string;
   id: string;

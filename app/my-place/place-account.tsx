@@ -155,7 +155,7 @@ export function AccountRow({
               {inviting ? (
                 <form
                   onSubmit={(event) => submit(readForm(event))}
-                  className="grid gap-3 rounded-xl border border-[#eee5df] bg-white p-4"
+                  className="content-surface grid gap-3 border-[#eee5df] bg-white p-4 rounded-none border-y shadow-none"
                 >
                   <input type="hidden" name="operation" value="invite" />
                   <fieldset
@@ -195,7 +195,7 @@ export function AccountRow({
                 </form>
               ) : null}
               {error ? <Notice error>{error}</Notice> : null}
-              <div className="divide-y divide-[#eee5df] rounded-xl border border-[#eee5df] bg-white">
+              <div className="content-surface divide-y divide-[#eee5df] border-[#eee5df] bg-white rounded-none border-y shadow-none">
                 {data.members.map((m) => (
                   <div
                     key={`${m.id}-${m.roleId}-${m.status}`}

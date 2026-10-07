@@ -21,11 +21,12 @@ function readString(formData: FormData, key: string) {
 
 function revalidateAppNotificationSurfaces() {
   revalidatePath("/notifications");
-  revalidatePath("/", "layout");
 }
 
 function safeNotificationHref(href: string) {
-  return href.startsWith("/") && !href.startsWith("//") ? href : "/notifications";
+  return href.startsWith("/") && !href.startsWith("//")
+    ? href
+    : "/notifications";
 }
 
 function redirectOpenNotificationError(message: string): never {
@@ -51,7 +52,7 @@ async function applyNotificationWorkspaceContext(input: {
     (option) =>
       option.id === input.workspaceId &&
       option.type === "salon" &&
-      option.salonMode === "manage",
+      (option.salonMode === "manage" || option.salonMode === "staff"),
   );
 
   if (!workspace) {
@@ -139,4 +140,43 @@ export async function markAllAppNotificationsReadAction() {
   if (didMarkRead) {
     revalidateAppNotificationSurfaces();
   }
+}
+
+export async function runNotificationBookingAction(input: {
+  notificationId: string;
+  command: "confirm" | "cancel";
+  expectedUpdatedAt: string;
+  acknowledgeNoShow?: boolean;
+}) {
+  const notification = await getCurrentAppNotification(input.notificationId);
+  if (!notification?.booking_id)
+    return { ok: false, message: "Appointment not found." };
+  const destination = resolveAppNotificationDestination(notification);
+  await applyNotificationWorkspaceContext({
+    destinationHref: destination.href,
+    notificationId: notification.id,
+    workspaceId: destination.workspaceId,
+  });
+  if (notification.recipient_kind === "staff") {
+    if (input.command !== "confirm")
+      return { ok: false, message: "Open the appointment to manage changes." };
+    const { confirmStaffBookingWithReviewAction } =
+      await import("@/app/staff/appointments/actions");
+    return confirmStaffBookingWithReviewAction({
+      bookingId: notification.booking_id,
+      acknowledgeNoShow: input.acknowledgeNoShow,
+    });
+  }
+  if (notification.recipient_kind !== "owner_manager")
+    return { ok: false, message: "Open the appointment to manage changes." };
+  const { saveOwnerWorkspaceBookingAction } =
+    await import("@/app/bookings/actions");
+  const result = await saveOwnerWorkspaceBookingAction({
+    bookingId: notification.booking_id,
+    expectedUpdatedAt: input.expectedUpdatedAt,
+    command: input.command,
+    acknowledgeNoShow: input.acknowledgeNoShow,
+  });
+  if (result.ok) revalidateAppNotificationSurfaces();
+  return result;
 }

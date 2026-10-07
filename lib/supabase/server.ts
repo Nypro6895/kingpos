@@ -287,11 +287,14 @@ async function isAccessTokenAllowedForAppSession(
     return false;
   }
 
-  const { data: userStatus, error: userStatusError } = await supabase
-    .from("users")
-    .select("status")
-    .eq("auth_user_id", authData.user.id)
-    .maybeSingle<PublicUserStatusRow>();
+  const [{ data: userStatus, error: userStatusError }, sessionAllowed] = await Promise.all([
+    supabase
+      .from("users")
+      .select("status")
+      .eq("auth_user_id", authData.user.id)
+      .maybeSingle<PublicUserStatusRow>(),
+    isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id),
+  ]);
 
   if (userStatusError) {
     console.error("Unable to verify public user status for app session", {
@@ -309,7 +312,7 @@ async function isAccessTokenAllowedForAppSession(
       return false;
     }
 
-    return isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id);
+    return sessionAllowed;
   }
 
   const { data: authIdentityDeleted, error: authIdentityDeletedError } =
@@ -331,14 +334,14 @@ async function isAccessTokenAllowedForAppSession(
       });
     }
 
-    return isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id);
+    return sessionAllowed;
   }
 
   if (authIdentityDeleted === true) {
     return false;
   }
 
-  return isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id);
+  return sessionAllowed;
 }
 
 function isAccountLoginSecuritySchemaMissing(error: {

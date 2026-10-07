@@ -1,3 +1,4 @@
+import {ExploreBookButton} from "@/components/explore-account-actions";
 import {
   getBeautyProfileRoutePage,
   type BeautyProfileRoutePage,
@@ -31,6 +32,9 @@ type DisplayMedia = {
 };
 
 type DisplayPost = {
+  bookingHref:string|null;
+  salonHref:string|null;
+  salonName:string;
   attribution: string | null;
   caption: string | null;
   commentCount: number;
@@ -85,6 +89,9 @@ function postLabel(post: Pick<DisplayPost, "type">) {
 
 function publicPostToDisplayPost(post: ExplorePersonalPostItem): DisplayPost {
   return {
+    bookingHref:post.booking?.eligible?post.booking.href:null,
+    salonHref:post.salon?.href??null,
+    salonName:post.salon?.name??"this artist",
     attribution: post.salon?.name ?? null,
     caption: post.caption,
     commentCount: post.commentCount,
@@ -200,6 +207,7 @@ function PostCard({
           />
         ) : null}
       </div>
+      <div className="flex justify-end"><ExploreBookButton href={post.bookingHref} name={post.salonName} contactHref={post.salonHref}/></div>
       <div className="grid gap-2 px-1 pb-1">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="rounded-full bg-brand-orange-soft px-3 py-1 text-xs font-extrabold text-brand-orange">

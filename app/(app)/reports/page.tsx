@@ -1,3 +1,4 @@
+
 import { OwnerLiveReports } from '@/app/reports/owner-live-reports';
 import {
   canApplyFinancialCorrections,
@@ -40,11 +41,11 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
 
   const reportOverview = await getOperationalReport(params, context);
   const date = firstParam(params.date);
-  const selectedDate = normalizeReportDate(
+  const selectedDate = await normalizeReportDate(
     isDateInputValue(date) ? date : reportOverview.range.endDate,
     context,
   );
-  const today = getDefaultReportDate(context);
+  const today = await getDefaultReportDate(context);
   const [report, canEditPermission, canRequestCorrection, canApplyCorrection] =
     await Promise.all([
       getDailyPosReport(selectedDate, context),
@@ -54,5 +55,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
     ]);
   const canEdit = canEditPermission && !report.lock.isLocked;
 
-  return <OwnerLiveReports key={JSON.stringify(params)} salonId={context.currentSalon.id} salonName={context.currentSalon.name} today={today} report={report} reportOverview={reportOverview} canEdit={canEdit} canApplyCorrection={canApplyCorrection} canRequestCorrection={canRequestCorrection}/>;
+  // Server response timestamp is intentionally request-specific.
+  // eslint-disable-next-line react-hooks/purity
+  return <OwnerLiveReports snapshotAt={Date.now()} key={JSON.stringify(params)} salonId={context.currentSalon.id} salonName={context.currentSalon.name} today={today} report={report} reportOverview={reportOverview} canEdit={canEdit} canApplyCorrection={canApplyCorrection} canRequestCorrection={canRequestCorrection}/>;
 }

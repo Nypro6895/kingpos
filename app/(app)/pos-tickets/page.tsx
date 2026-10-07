@@ -1,3 +1,7 @@
+
+import { SubmitButton } from "@/components/submit-button";
+import Form from "next/form";
+import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import {OwnerLiveTickets} from '@/app/pos-tickets/owner-live-tickets';
 import { DailyPosTicketCard } from "@/app/pos-tickets/closed-ticket-correction-form";
 import {
@@ -40,13 +44,10 @@ function formatMoney(value: number) {
   }).format(value);
 }
 
-function formatDateKey(value: string) {
-  const date = new Date(value);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+function formatDateKey(value: string, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));
+  const read = (key: string) => parts.find(part => part.type === key)?.value;
+  return `${read("year")}-${read("month")}-${read("day")}`;
 }
 
 function parseLocalDateParts(value: string) {
@@ -205,12 +206,12 @@ function getItemDisplayTotal(item: PosTicketWithRelations["ticket_items"][number
   return parts.reduce((total, part) => total + part.amount, 0);
 }
 
-function buildDailyTicketNumbers(tickets: PosTicketWithRelations[]) {
+function buildDailyTicketNumbers(tickets: PosTicketWithRelations[], timeZone: string) {
   const byDate = new Map<string, PosTicketWithRelations[]>();
   const numbers = new Map<string, number>();
 
   for (const ticket of tickets) {
-    const dateKey = formatDateKey(ticket.opened_at);
+    const dateKey = formatDateKey(ticket.opened_at, timeZone);
     byDate.set(dateKey, [...(byDate.get(dateKey) ?? []), ticket]);
   }
 
@@ -273,11 +274,11 @@ function filterTicketsBySearch(
   );
 }
 
-function groupTicketsByDate(tickets: PosTicketWithRelations[]) {
+function groupTicketsByDate(tickets: PosTicketWithRelations[], timeZone: string) {
   const dateMap = new Map<string, PosTicketWithRelations[]>();
 
   for (const ticket of tickets) {
-    const dateKey = formatDateKey(ticket.opened_at);
+    const dateKey = formatDateKey(ticket.opened_at, timeZone);
 
     dateMap.set(dateKey, [...(dateMap.get(dateKey) ?? []), ticket]);
   }
@@ -304,9 +305,8 @@ function WorkLogFilters({
   todayHref: string;
 }) {
   return (
-    <form
+    <Form
       action="/pos-tickets"
-      method="get"
       className="mt-4 grid gap-3 border-b border-zinc-200 pb-4 sm:grid-cols-[180px_minmax(260px,1fr)_auto_auto]"
     >
       <label className="block">
@@ -328,19 +328,19 @@ function WorkLogFilters({
           type="search"
         />
       </label>
-      <button
+      <SubmitButton pendingLabel="Processing…"
         className="h-10 self-end rounded bg-zinc-950 px-4 text-sm font-medium text-white"
         type="submit"
       >
         Search
-      </button>
+      </SubmitButton>
       <Link
         className="inline-flex h-10 items-center self-end rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
         href={todayHref}
       >
         Today
       </Link>
-    </form>
+    </Form>
   );
 }
 
@@ -435,7 +435,7 @@ export default async function PosTicketsPage({
     );
   }
 
-  const timeZone = context.user.timezone;
+  const timeZone = await getContextBusinessTimezone(context);
   const selectedDate = isDateInputValue(date)
     ? date!
     : getLocalDateString(timeZone);
@@ -467,9 +467,9 @@ export default async function PosTicketsPage({
   const ticketOptions = canEditDailyTickets
     ? await getCurrentSalonPosTicketOptions(context)
     : { services: [], staff: [] };
-  const dailyNumbers = buildDailyTicketNumbers(tickets);
+  const dailyNumbers = buildDailyTicketNumbers(tickets, timeZone);
   const visibleTickets = filterTicketsBySearch(tickets, searchQuery, dailyNumbers);
-  const groups = groupTicketsByDate(visibleTickets);
+  const groups = groupTicketsByDate(visibleTickets, timeZone);
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-6 text-zinc-950 sm:px-6">
@@ -485,7 +485,9 @@ export default async function PosTicketsPage({
         </p>
       ) : null}
 
-      <OwnerLiveTickets key={selectedDate+searchQuery} salonId={context.currentSalon.id} initialTickets={tickets} bounds={getUtcBoundsForLocalDate(selectedDate,timeZone)} searchQuery={searchQuery}
+      {/* Server response time bounds client reconciliation of this snapshot. */}
+      {/* eslint-disable-next-line react-hooks/purity */}
+      <OwnerLiveTickets snapshotAt={Date.now()} key={selectedDate+searchQuery} salonId={context.currentSalon.id} initialTickets={tickets} bounds={getUtcBoundsForLocalDate(selectedDate,timeZone)} searchQuery={searchQuery}
         canApplyFinancialCorrection={canApplyFinancialCorrection}
         canEdit={canEditDailyTickets}
         isBusinessDateLocked={isSelectedDateLocked}

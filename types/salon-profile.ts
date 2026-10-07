@@ -1,3 +1,6 @@
+import type { SalonIdentity } from "@/lib/salon-identity";
+import type { LumiTrustCanonicalEvidence } from "@/lib/reylumi-trust";
+import type { SalonProfilePreferences } from "@/lib/salon-profile-preferences";
 import type { BeautyPostBookingPresentation } from "@/lib/beauty-booking-verification";
 import type { Service } from "@/types/service";
 import type { Staff } from "@/types/staff";
@@ -289,7 +292,8 @@ export type PublicSalonProfileReviewSummary = {
   verifiedCount: number;
 };
 
-export type PublicSalonProfileReputationSummary = {
+export type PublicSalonProfileReputationSummary = Partial<SalonIdentity> & {
+  trustEvidence?: LumiTrustCanonicalEvidence | null;
   averageRating: number | null;
   experienceCount: number;
   issueCount: number;
@@ -402,6 +406,7 @@ export type SalonProfileViewerCapabilities = {
   canCreateContent: boolean;
   canEditProfile: boolean;
   canFollow: boolean;
+  canFeatureOwnContent?: boolean;
   canManageContent: boolean;
   canModerateComments: boolean;
   canPublish: boolean;
@@ -425,12 +430,16 @@ export type PublicSalonProfileBookingRequest = {
 };
 
 export type PublicSalonProfileData = {
+  directoryListing?: import("@/lib/salon-directory").SalonDirectoryListing | null;
+  websiteFeaturedLookId?: string | null;
+  operatingHours?: import("@/types/salon-operating-status").SalonOperatingHoursSettings | null;
   beautyPosts: PublicSalonProfileBeautyPost[];
   comments: PublicSalonProfileComment[];
   experiences: PublicSalonProfileExperience[];
   feed: ProfileFeedItem[];
   looks: PublicSalonProfileLook[];
   profile: PublicSalonProfile;
+  preferences?: SalonProfilePreferences;
   reputationSummary: PublicSalonProfileReputationSummary;
   reviewSummary: PublicSalonProfileReviewSummary;
   reviews: PublicSalonProfileReview[];

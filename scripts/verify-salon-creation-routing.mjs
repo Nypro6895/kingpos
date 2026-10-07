@@ -16,10 +16,10 @@ function assert(condition, message) {
 const navigationShell = read("app/navigation-shell.tsx");
 const salonActions = read("app/salons/actions.ts");
 const salonsPage = read("app/salons/salon-management-page.tsx");
-const salonsNewRoute = read("app/salons/new/page.tsx");
-const businessesRoute = read("app/businesses/page.tsx");
-const businessesNewRoute = read("app/businesses/new/page.tsx");
-const businessesCreateRoute = read("app/businesses/create/page.tsx");
+const salonsNewRoute = read("app/(app)/salons/new/page.tsx");
+const businessesRoute = read("app/(app)/businesses/page.tsx");
+const businessesNewRoute = read("app/(app)/businesses/new/page.tsx");
+const businessesCreateRoute = read("app/(app)/businesses/create/page.tsx");
 const currentContext = read("lib/current-context.ts");
 const baselineMigration = read(
   "supabase/migrations/202607240001_account_salon_baseline.sql",
@@ -63,7 +63,7 @@ assert(
   "Workspace context must expose a single Create Salon destination.",
 );
 assert(
-  salonActions.includes('.rpc("create_account_salon"') &&
+  salonActions.includes('.rpc("create_account_salon_with_owner_staff"') &&
     salonActions.includes("p_account_id: accountId") &&
     salonActions.includes("p_create_request_key: createRequestKey") &&
     salonActions.includes("getCreateSalonAccount(context)") &&
@@ -102,7 +102,7 @@ for (const path of [
   "app/my-place/my-place-client.tsx",
   "app/quick-workspace-panel.tsx",
   "app/salons/salon-management-page.tsx",
-  "app/explore/page.tsx",
+  "app/(app)/explore/page.tsx",
 ]) {
   const contents = read(path);
 

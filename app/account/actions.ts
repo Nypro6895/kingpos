@@ -866,8 +866,8 @@ export async function createOwnerTransferInviteAction(
       inviteUrl: invite.invite_url,
       message:
         mode === "add_co_owner"
-          ? "Co-owner invitation created."
-          : "Ownership transfer invitation created. Deletion can continue only after the recipient accepts.",
+          ? "Co-owner invitation sent. The recipient can accept or ignore it in My Place."
+          : "Ownership transfer invitation sent. The recipient can accept or ignore it in My Place.",
       salonId: invite.salon_id,
     };
   } catch (error) {

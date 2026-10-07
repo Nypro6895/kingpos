@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState, useTransition, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import type { OperationalReportData } from "@/lib/operational-report";
 import { Sheet, inputClass, primaryButton } from "@/app/my-place/place-ui";
 
 export function ClosingDateForm({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const reportPath=usePathname().startsWith('/pos/report')?'/pos/report':'/reports';
   const [busy, start] = useTransition();
   return (
     <form
@@ -18,7 +19,7 @@ export function ClosingDateForm({ children }: { children: ReactNode }) {
           params.set(key, String(value)),
         );
         start(() =>
-          router.push(`/reports?${params}#daily-closing`, { scroll: false }),
+          router.push(`${reportPath}?${params}#daily-closing`, { scroll: false }),
         );
       }}
     >
@@ -48,6 +49,7 @@ export function ReportRangeFilter({
   const [busy, start] = useTransition();
   const [preset, setPreset] = useState(report.range.preset);
   const router = useRouter();
+  const reportPath=usePathname().startsWith('/pos/report')?'/pos/report':'/reports';
   return (
     <div className="min-w-0 text-sm">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -90,7 +92,7 @@ export function ReportRangeFilter({
                 params.set("end", String(form.get("end")));
               }
               start(() => {
-                router.push(`/reports?${params}`, { scroll: false });
+                router.push(`${reportPath}?${params}`, { scroll: false });
               });
               setOpen(false);
             }}
@@ -160,17 +162,21 @@ export function ReportRangeFilter({
 export function ReportTabs({
   overview,
   children,
+  onViewChange,
 }: {
   overview: ReactNode;
   children: ReactNode;
+  onViewChange?: (view:"overview"|"closing")=>void;
 }) {
-  const [closing, setClosing] = useState(false);
+  const workspace=usePathname().startsWith('/pos/report');
+  const [closing, setClosing] = useState(workspace);
   useEffect(() => {
-    const sync = () => setClosing(window.location.hash === "#daily-closing");
+    const sync = () => setClosing(window.location.hash === "#daily-closing" || (workspace && !window.location.hash));
     sync();
     window.addEventListener("hashchange", sync);
-    return () => window.removeEventListener("hashchange", sync);
-  }, []);
+  return () => window.removeEventListener("hashchange", sync);
+  }, [workspace]);
+  useEffect(()=>{onViewChange?.(closing ? "closing" : "overview");},[closing,onViewChange]);
   return (
     <>
       <nav

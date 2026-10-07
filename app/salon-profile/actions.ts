@@ -1,4 +1,5 @@
 "use server";
+import { withSettingsTarget } from "@/lib/settings-target-context";
 
 import {
   canCreateSalonProfileContent,
@@ -42,6 +43,8 @@ import {
   SALON_PROFILE_BADGE_OPTIONS,
   SALON_PROFILE_MOOD_OPTIONS,
   SALON_PROFILE_UPDATE_TYPES,
+  type ProfileFeedItem,
+  type PublicSalonProfileLook,
   type SalonProfileLookStatus,
   type SalonProfileUpdateType,
 } from "@/types/salon-profile";
@@ -162,7 +165,6 @@ function redirectWithNotice(message: string): never {
 }
 
 function revalidateSalonProfile(salonId?: string | null) {
-  revalidatePath("/", "layout");
   revalidatePath("/salon-profile");
   revalidatePath("/explore");
 
@@ -175,7 +177,10 @@ export async function getSalonProfileMediaUploadSessionAction(
   intent: MediaUploadIntent,
   kind: Extract<SalonProfileMediaKind, "cover" | "logo" | "look" | "update">,
   workspaceId?: string,
+  expectedSalonId?: string,
 ): Promise<SalonProfileUploadSession> {
+ return withSettingsTarget(expectedSalonId, async () => {
+
   const [context, accessToken] = await Promise.all([
     workspaceId ? getMyPlaceWorkspaceContext(workspaceId) : getCurrentBusinessContext(),
     getAccessTokenFromRequest(),
@@ -252,10 +257,16 @@ export async function getSalonProfileMediaUploadSessionAction(
     salonId: salon.id,
     supabaseUrl: config.supabaseUrl,
   };
+
+ }, "manage");
 }
 
-export async function deleteSalonProfileMediaAction(path: string) {
+export async function deleteSalonProfileMediaAction(path: string, expectedSalonId?: string) {
+ return withSettingsTarget(expectedSalonId, async () => {
+
   await deleteCurrentSalonProfileMedia(path);
+
+ }, "manage");
 }
 
 export async function updateSalonProfileIdentityMediaAction(input: {
@@ -283,6 +294,7 @@ export async function updateSalonProfileIdentityAction(formData: FormData) {
 
   try {
     await updateCurrentSalonProfileIdentity({
+      salonId,
       addressLine1: readOptionalString(formData, "address_line1"),
       addressLine2: readOptionalString(formData, "address_line2"),
       businessName: readString(formData, "business_name"),
@@ -382,11 +394,10 @@ export async function createSalonProfileSocialPostAction(input: {
   startsAt?: string | null;
   startingPrice?: number | null;
   title?: string | null;
-}): Promise<MutationResult> {
+}): Promise<MutationResult<{ post: ProfileFeedItem; look: PublicSalonProfileLook | null }>> {
   try {
-    await createCurrentSalonProfileSocialPost(input);
-    revalidateSalonProfile(input.salonId);
-    return { error: null };
+    const result = await createCurrentSalonProfileSocialPost(input);
+    return { error: null, ...result };
   } catch (error) {
     if (input.imagePath) {
       try {

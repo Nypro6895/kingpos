@@ -1631,6 +1631,14 @@ export async function deleteBeautyPost(
   return { data: true, ok: true };
 }
 
+export async function getSelfBeautyProfileSettings(): Promise<BeautyProfileSummary> {
+  const context = await getAuthenticatedBeautyContext();
+  if (!context) throw new Error("Sign in to edit your public profile.");
+  const row = await getOrCreateBeautyProfile(context);
+  if (!row) throw new Error("Your public profile could not be loaded.");
+  return profileFromRow(row, context.user);
+}
+
 export async function getSelfBeautyProfilePage(): Promise<
   BeautyServiceResult<{
     profile: BeautyProfileSummary;

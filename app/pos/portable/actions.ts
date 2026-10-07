@@ -277,6 +277,11 @@ export type PortableTicketData = {
 export type PortableBookingSlot = { startAt: string; label: string; endAt?: string; staffName?: string; lines?: {serviceId: string; serviceName: string; staffId: string; staffName: string; startAt: string; endAt: string; price?: number}[] };
 
 export type PortableBookAppointment = {
+  noShowKind?: import("@/lib/booking-no-show").NoShowKind;
+  noShowNote?: string | null;
+  noShowCount?: number;
+  requiresNoShowReview?: boolean;
+  noShowHistory?: import("@/lib/booking-no-show").NoShowHistoryItem[];
   notes?: string | null;
   total?: number;
   customerId?: string; customerEmail?: string | null; serviceIds?: string[]; updatedAt?: string; ticketId?: string | null;
@@ -1747,7 +1752,7 @@ export async function getPortableCheckInData(): Promise<PortableCheckInData> {
     salonName:
       normalizePortableString(payload.salonName) || portableSession.salon_name,
     staff,
-    today: normalizePortableString(payload.today) || getTodayDate(),
+    today: normalizePortableString(payload.today) || getTodayDate(portableSession.salon_timezone),
     timezone: normalizePortableString(payload.timezone) || "America/Chicago",
   };
 }
@@ -1808,7 +1813,7 @@ export async function portableSubmitAttendanceEvent(
         queueTurnCount: normalizePortableNumber(payload.queueTurnCount),
         staffId,
         status: normalizePortableString(payload.status) || "not_checked_in",
-        today: normalizePortableString(payload.today) || getTodayDate(),
+        today: normalizePortableString(payload.today) || getTodayDate(portableSession.salon_timezone),
       },
       ok: true,
     };
@@ -2022,10 +2027,11 @@ export async function getPortableTicketData(
 }
 
 export async function getPortableBookData(
-  date = getTodayDate(),
+  date?: string,
 ): Promise<PortableBookData> {
   const { keyId, portableSession, signature, supabase } =
     await requirePortableCapability(PORTABLE_POS_CAPABILITIES.bookView);
+  date ??= getTodayDate(portableSession.salon_timezone);
   const [deskData, rpcResult, policyResult] = await Promise.all([
     loadPortableReferenceData({
       keyId,
@@ -2124,12 +2130,12 @@ export async function portableBookingSlots(input: { serviceId: string; serviceId
   return data ?? [];
 }
 
-export async function portableManageBooking(input: { bookingId: string; action: "read" | "edit" | "confirm" | "cancel" | "ticket"; payload?: Record<string, unknown> }): Promise<ActionResult<PortableBookAppointment>> {
+export async function portableManageBooking(input: { bookingId: string; action: "read" | "edit" | "confirm" | "cancel" | "ticket" | "mark_no_show" | "mark_no_show_excused"; payload?: Record<string, unknown> }): Promise<ActionResult<PortableBookAppointment>> {
   try {
     const { keyId, signature, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.bookView);
     const { data, error } = await supabase.rpc("manage_pos_portable_booking", {p_key_id:keyId,p_session_signature:signature,p_booking_id:input.bookingId,p_action:input.action,p_payload:input.payload ?? {}});
     if (error || !data) throw new Error(error?.message ?? "Appointment unavailable.");
-    if (input.action !== "read") revalidatePath("/pos/portable/book");
+    if (input.action !== "read" && !(data as PortableBookAppointment).requiresNoShowReview) revalidatePath("/pos/portable/book");
     return {ok:true,data:data as PortableBookAppointment};
   } catch (error) { return {ok:false,error:error instanceof Error ? error.message : "Unable to update appointment."}; }
 }
@@ -2182,10 +2188,11 @@ export async function portableCreateAppointment(
 }
 
 export async function getPortableReportData(
-  reportDate = getTodayDate(),
+  reportDate?: string,
 ): Promise<PortableReportData> {
   const { keyId, portableSession, signature, supabase } =
     await requirePortableCapability(PORTABLE_POS_CAPABILITIES.reportView);
+  reportDate ??= getTodayDate(portableSession.salon_timezone);
   const rpcResult = await supabase.rpc("get_pos_portable_report_data", {
     p_key_id: keyId,
     p_report_date: reportDate,

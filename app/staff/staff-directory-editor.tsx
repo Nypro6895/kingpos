@@ -1,10 +1,13 @@
 "use client";
 
+import { SubmitButton } from "@/components/submit-button";
+
 import {
   resetStaffPasscodeFormAction,
   updateStaffDirectoryBatchFormAction,
 } from "@/app/staff/actions";
 import Link from "next/link";
+import { DeleteUnusedButton } from "@/app/settings/delete-unused-button";
 import { searchTextMatches } from "@/lib/search-normalization";
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
@@ -580,7 +583,7 @@ function StaffRow({
                   placeholder="4-8 digits"
                   type="password"
                 />
-                <button
+                <SubmitButton pendingLabel="Processing…"
                   className="inline-flex min-h-9 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-950"
                   formAction={resetStaffPasscodeFormAction}
                   name="reset_staff_id"
@@ -588,7 +591,8 @@ function StaffRow({
                   value={row.id}
                 >
                   Reset PIN
-                </button>
+                </SubmitButton>
+                <DeleteUnusedButton kind="staff" id={row.id} name={fullName} disabled={dirty} />
               </div>
             ) : null}
           </div>
@@ -787,7 +791,7 @@ export function StaffDirectoryEditor({
         className="mt-4 grid gap-4"
       >
         <input name="q" type="hidden" value={search} />
-        <HiddenInputs rows={rows} />
+        <HiddenInputs rows={rows.filter(row => dirtyIds.has(row.id))} />
         {activeRows.length > 0 ? (
           <StaffTable
             canManageStaff={canManageStaff}
@@ -847,7 +851,7 @@ export function StaffDirectoryEditor({
             ) : (
               <span className="text-xs text-zinc-500">Saved</span>
             )}
-            <button
+            <SubmitButton pendingLabel="Saving…"
               className={classNames(
                 "inline-flex min-h-10 items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition",
                 hasDirtyRows
@@ -858,7 +862,7 @@ export function StaffDirectoryEditor({
               type="submit"
             >
               Save staff changes
-            </button>
+            </SubmitButton>
           </div>
         ) : null}
       </form>

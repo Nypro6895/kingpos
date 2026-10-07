@@ -1,3 +1,5 @@
+
+import { SubmitButton } from "@/components/submit-button";
 import {
   addPosPayment,
   addPosTicketItem,
@@ -137,12 +139,12 @@ function AddServiceForm({
           </option>
         ))}
       </select>
-      <button
+      <SubmitButton pendingLabel="Saving…"
         className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
         type="submit"
       >
         Add Item
-      </button>
+      </SubmitButton>
     </form>
   );
 }
@@ -174,12 +176,12 @@ function AssignStaffForm({
           </option>
         ))}
       </select>
-      <button
+      <SubmitButton pendingLabel="Saving…"
         className="rounded-md border border-zinc-300 px-3 py-1 text-sm font-medium text-zinc-950"
         type="submit"
       >
         Save
-      </button>
+      </SubmitButton>
     </form>
   );
 }
@@ -242,12 +244,12 @@ function AddPaymentForm({
       </label>
 
       <div className="sm:col-span-3">
-        <button
+        <SubmitButton pendingLabel="Saving…"
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
           Add Payment
-        </button>
+        </SubmitButton>
       </div>
     </form>
   );
@@ -278,12 +280,12 @@ function WorkflowActionForm({
           type="text"
         />
       </label>
-      <button
+      <SubmitButton pendingLabel="Processing…"
         className="w-fit rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
         type="submit"
       >
         {buttonLabel}
-      </button>
+      </SubmitButton>
     </form>
   );
 }
@@ -334,12 +336,12 @@ function DiscountForm({
       </label>
 
       <div className="self-end">
-        <button
+        <SubmitButton pendingLabel="Saving…"
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
           Save
-        </button>
+        </SubmitButton>
       </div>
     </form>
   );
@@ -377,12 +379,12 @@ function TaxForm({
       </label>
 
       <div className="self-end">
-        <button
+        <SubmitButton pendingLabel="Saving…"
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
           Save
-        </button>
+        </SubmitButton>
       </div>
     </form>
   );
@@ -434,12 +436,12 @@ function TipForm({
       </label>
 
       <div className="self-end">
-        <button
+        <SubmitButton pendingLabel="Saving…"
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
           Save
-        </button>
+        </SubmitButton>
       </div>
     </form>
   );
@@ -716,12 +718,12 @@ export default async function PosTicketDetailPage({
                       <form action={deletePosTicketItem}>
                         <input name="item_id" type="hidden" value={item.id} />
                         <input name="return_to" type="hidden" value={returnPath} />
-                        <button
+                        <SubmitButton pendingLabel="Removing…"
                           className="font-medium text-zinc-950 underline"
                           type="submit"
                         >
                           Remove Item
-                        </button>
+                        </SubmitButton>
                       </form>
                     ) : null}
                   </div>
@@ -998,12 +1000,12 @@ export default async function PosTicketDetailPage({
                       <form action={deletePosPayment}>
                         <input name="payment_id" type="hidden" value={payment.id} />
                         <input name="return_to" type="hidden" value={returnPath} />
-                        <button
+                        <SubmitButton pendingLabel="Removing…"
                           className="font-medium text-zinc-950 underline"
                           type="submit"
                         >
                           Delete
-                        </button>
+                        </SubmitButton>
                       </form>
                     ) : null}
                   </div>
@@ -1176,12 +1178,12 @@ export default async function PosTicketDetailPage({
                   <form action={closePosTicket} className="rounded-md border border-zinc-200 bg-white p-4">
                     <input name="ticket_id" type="hidden" value={ticket.id} />
                     <input name="return_to" type="hidden" value={returnPath} />
-                    <button
+                    <SubmitButton pendingLabel="Processing…"
                       className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
                       type="submit"
                     >
                       Checkout
-                    </button>
+                    </SubmitButton>
                   </form>
                 ) : null}
                 <WorkflowActionForm

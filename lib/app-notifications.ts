@@ -6,6 +6,11 @@ const APP_NOTIFICATION_SELECT =
   "id, salon_id, recipient_kind, notification_type, booking_id, title, body, href, read_at, created_at";
 
 export type AppNotification = {
+  thumbnail_url?: string | null;
+  appointment_summary?: string | null;
+  booking_updated_at?: string;
+  booking_actionable?: boolean;
+  event_key?: string | null;
   body: string | null;
   booking_id: string | null;
   created_at: string;
@@ -33,15 +38,15 @@ type GetCurrentAppNotificationsInput =
       unreadOnly?: boolean;
     });
 
-function normalizeNotificationInput(input: GetCurrentAppNotificationsInput = {}) {
+function normalizeNotificationInput(
+  input: GetCurrentAppNotificationsInput = {},
+) {
   return typeof input === "number" ? { limit: input } : input;
 }
 
 function recipientKinds(
   recipientKind:
-    | AppNotificationRecipientKind
-    | AppNotificationRecipientKind[]
-    | undefined,
+    AppNotificationRecipientKind | AppNotificationRecipientKind[] | undefined,
 ) {
   return Array.isArray(recipientKind)
     ? recipientKind

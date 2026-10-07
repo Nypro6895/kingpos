@@ -1,3 +1,4 @@
+import type { HistoryEvidence } from "@/lib/booking-history";
 import "server-only";
 
 import {
@@ -167,6 +168,7 @@ export type CustomerBookingSalon = CustomerBookingRawSalon & {
 };
 
 export type CustomerBookingSummary = Booking & {
+  historyEvidence?: HistoryEvidence;
   customer: Pick<Customer, "email" | "id" | "name" | "phone"> | null;
   inspiration: BookingInspirationView | null;
   lines?: CustomerBookingLine[];
@@ -564,6 +566,12 @@ async function hydrateRows<T extends CustomerBookingRaw>(
     ),
   ]);
 
+  const { data: historyData, error: historyError } = rows.length
+    ? await context.supabase.rpc("get_booking_history_evidence", { p_bookings: rows.map(row => row.id) })
+    : { data: [], error: null };
+  if (historyError) console.error("Booking history evidence unavailable", { code: historyError.code });
+  const evidenceById = new Map((Array.isArray(historyData) ? historyData as unknown as HistoryEvidence[] : []).map(item => [item.bookingId, item]));
+
   return rows.map((row) => {
     const lines = sortLines(row.lines).map<CustomerBookingLine>((line) => ({
       ...line,
@@ -579,6 +587,7 @@ async function hydrateRows<T extends CustomerBookingRaw>(
 
     return {
       ...row,
+      historyEvidence: evidenceById.get(row.id),
       inspiration: inspirationsByBookingId.get(row.id) ?? null,
       lines,
       salon: hydrateSalon(
@@ -780,6 +789,7 @@ export async function getCustomerBookingDetail(
 }
 
 export async function loadCustomerRescheduleSlots(input: {
+  findEarliest?: boolean;
   bookingId?: string | null;
   date?: string | null;
 }): Promise<CustomerRescheduleSlotsResult> {
@@ -828,12 +838,12 @@ export async function loadCustomerRescheduleSlots(input: {
   const slots = await loadPublicBookingRescheduleSlots({
     bookingId,
     salonId: booking.salon_id,
-    selection: selection.data,
+    selection: { ...selection.data, findEarliest: input.findEarliest },
   });
 
   return {
     data: {
-      date,
+      date: input.findEarliest && slots[0] ? formatDateInTimeZone(new Date(slots[0].startAt), timezone) : date,
       slots,
     },
     ok: true,

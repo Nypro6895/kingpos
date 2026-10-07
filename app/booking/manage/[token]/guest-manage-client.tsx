@@ -1,421 +1,93 @@
 "use client";
-
-import {
-  cancelGuestBookingAction,
-  claimGuestBookingAction,
-  loadGuestManageSlotsAction,
-  rescheduleGuestBookingAction,
-} from "@/app/book/actions";
+import { cancelGuestBookingAction, claimGuestBookingAction, loadGuestManageSlotsAction, rescheduleGuestBookingAction } from "@/app/book/actions";
 import type { GuestManagePageData, PublicBookingSlot } from "@/lib/public-booking";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import styles from "./guest-manage.module.css";
 
-type GuestManageClientProps = {
-  claimIntent: boolean;
-  currentUser: {
-    displayName: string | null;
-    email: string | null;
-    id: string;
-  } | null;
-  data: GuestManagePageData;
-  token: string;
-};
-
-const styles = {
-  bookingSurface: "public-booking-surface",
-  eyebrow: "public-booking-eyebrow",
-  field: "public-booking-field",
-  pageTitle: "public-booking-page-title",
-  primaryButton: "public-booking-primary-button",
-  publicCard: "public-booking-card",
-  publicRoot: "public-booking-root",
-  summary: "public-booking-summary",
-} as const;
-
-function classNames(...classes: (false | null | string | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
-function formatDate(value: string, timezone: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    month: "short",
-    timeZone: timezone,
-    weekday: "short",
-  }).format(new Date(value));
-}
-
-function dateInputValue(value: string, timezone: string) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: timezone,
-    year: "numeric",
-  }).formatToParts(new Date(value));
-  const read = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+type Props = {claimIntent:boolean;currentUser:{displayName:string|null;email:string|null;id:string}|null;data:GuestManagePageData;token:string};
+function dateKey(value:string,timezone:string) {
+  const parts=new Intl.DateTimeFormat("en-CA",{year:"numeric",month:"2-digit",day:"2-digit",timeZone:timezone}).formatToParts(new Date(value));
+  const read=(type:string)=>parts.find(part=>part.type===type)?.value;
   return `${read("year")}-${read("month")}-${read("day")}`;
 }
-
-function ErrorState({ message }: { message: string }) {
-  return (
-    <main
-      className={classNames(styles.bookingSurface, styles.publicRoot, "px-5 py-12")}
-      data-booking-surface="manage"
-      data-testid="manage-booking-root"
-    >
-      <section className={classNames(styles.publicCard, "mx-auto max-w-2xl p-6")}>
-        <p className={styles.eyebrow}>Booking management</p>
-        <h1 className={classNames(styles.pageTitle, "mt-3")}>Link unavailable</h1>
-        <p className="mt-3 text-sm text-[#786d78]">{message}</p>
-      </section>
-    </main>
-  );
+const money=(value:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(value);
+export function GuestManageClient(props:Props) {
+  if(!props.data.ok)return <main className={styles.root} data-testid="manage-booking-root"><section className={styles.receipt}><h1>Link unavailable</h1><p className={styles.muted}>{props.data.message}</p><a className={styles.link} href="/explore">Back to Explore</a></section></main>;
+  return <GuestManageReady {...props} data={props.data}/>;
 }
-
-function InspirationBand({
-  inspiration,
-}: {
-  inspiration: Extract<GuestManagePageData, { ok: true }>["booking"]["inspiration"];
-}) {
-  if (!inspiration) {
-    return null;
-  }
-
-  return (
-    <div className="mt-5 grid gap-3 rounded-lg bg-[#fff0e8] p-3 sm:grid-cols-[80px_1fr]">
-      <div className="h-20 w-20 overflow-hidden rounded-lg bg-white">
-        {inspiration.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img alt="" className="h-full w-full object-cover" src={inspiration.imageUrl} />
-        ) : (
-          <span className="grid h-full w-full place-items-center text-sm font-extrabold text-[#f26f3d]">
-            Look
-          </span>
-        )}
-      </div>
-      <div className="min-w-0">
-        <p className={styles.eyebrow}>Your inspiration</p>
-        <h3 className="mt-1 line-clamp-2 text-base font-extrabold text-[#211c24]">
-          {inspiration.source_title_snapshot ?? "Booked look"}
-        </h3>
-        <p className="mt-1 text-sm font-semibold text-[#f26f3d]">
-          {[
-            inspiration.service_name_snapshot,
-            inspiration.credited_staff_name_snapshot
-              ? `By ${inspiration.credited_staff_name_snapshot}`
-              : null,
-          ]
-            .filter(Boolean)
-            .join(" / ") || "Saved with this booking"}
-        </p>
-        {inspiration.source_caption_snapshot ? (
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#786d78]">
-            {inspiration.source_caption_snapshot}
-          </p>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-export function GuestManageClient({
-  claimIntent,
-  currentUser,
-  data,
-  token,
-}: GuestManageClientProps) {
-  if (!data.ok) {
-    return <ErrorState message={data.message} />;
-  }
-
-  return (
-    <GuestManageReady
-      claimIntent={claimIntent}
-      currentUser={currentUser}
-      data={data}
-      token={token}
-    />
-  );
-}
-
-function GuestManageReady({
-  claimIntent,
-  currentUser,
-  data,
-  token,
-}: {
-  claimIntent: boolean;
-  currentUser: GuestManageClientProps["currentUser"];
-  data: Extract<GuestManagePageData, { ok: true }>;
-  token: string;
-}) {
-  const [isPending, startTransition] = useTransition();
-  const [isClaimPending, startClaimTransition] = useTransition();
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [claimSaved, setClaimSaved] = useState(false);
-  const booking = data.booking.booking;
-  const timezone = booking.timezone;
-  const [date, setDate] = useState(dateInputValue(booking.startAt, timezone));
-  const [slots, setSlots] = useState<PublicBookingSlot[]>(data.slots);
-  const [selectedStartAt, setSelectedStartAt] = useState(data.slots[0]?.startAt ?? "");
-  const [cancelReason, setCancelReason] = useState("");
-  const selectedSlot = slots.find((slot) => slot.startAt === selectedStartAt) ?? null;
-
-  function loadSlots(nextDate: string) {
-    setDate(nextDate);
-    setError(null);
-    startTransition(async () => {
-      const nextSlots = await loadGuestManageSlotsAction({
-        date: nextDate,
-        token,
-      });
-      setSlots(nextSlots);
-      setSelectedStartAt(nextSlots[0]?.startAt ?? "");
+function GuestManageReady({data,token,currentUser,claimIntent}:Omit<Props,"data">&{data:Extract<GuestManagePageData,{ok:true}>}) {
+  const router=useRouter();
+  const [pending,startTransition]=useTransition();
+  const [slotsPending,startSlotsTransition]=useTransition();
+  const [claimPending,startClaimTransition]=useTransition();
+  const [mode,setMode]=useState<"reschedule"|"cancel"|null>(null);
+  const [message,setMessage]=useState("");
+  const [error,setError]=useState("");
+  const [saved,setSaved]=useState(false);
+  const [updated,setUpdated]=useState<{startAt:string;endAt:string;status:string;lines:typeof data.booking.lines}|null>(null);
+  const original=data.booking.booking;
+  const booking={...original,...updated};
+  const lines=updated?.lines??data.booking.lines;
+  const timezone=booking.timezone;
+  const salon=data.booking.salon;
+  const [date,setDate]=useState(dateKey(booking.startAt,timezone));
+  const [slots,setSlots]=useState<PublicBookingSlot[]>(data.slots);
+  const [selectedStart,setSelectedStart]=useState("");
+  const [reason,setReason]=useState("");
+  const request=useRef(0);
+  const cache=useRef(new Map<string,{until:number;slots:PublicBookingSlot[]}>());
+  const selected=slots.find(slot=>slot.startAt===selectedStart);
+  const canChange=original.canChange&&!['cancelled','completed','no_show'].includes(booking.status);
+  const format=(value:string,options:Intl.DateTimeFormatOptions)=>new Intl.DateTimeFormat("en-US",{...options,timeZone:timezone}).format(new Date(value));
+  const time=(value:string)=>format(value,{hour:"numeric",minute:"2-digit"});
+  const duration=Math.round((+new Date(booking.endAt)-+new Date(booking.startAt))/60000);
+  const total=lines.reduce((sum,line)=>sum+line.unitPrice,0);
+  const returnPath=`/booking/manage/${token}?claim=1`;
+  const loginHref=`/login?next=${encodeURIComponent(returnPath)}`;
+  const signupHref=`/signup?next=${encodeURIComponent(returnPath)}`;
+  function loadSlots(nextDate:string,findEarliest=false) {
+    const version=++request.current;
+    setDate(nextDate);setError("");setSelectedStart("");
+    const known=findEarliest?undefined:cache.current.get(nextDate);
+    setSlots([]);
+    startSlotsTransition(async()=>{
+      if(known&&known.until>performance.now()){setSlots(known.slots);return;}
+      try{const next=await loadGuestManageSlotsAction({token,date:nextDate,findEarliest});if(request.current!==version)return;if(cache.current.size>=7)cache.current.delete(cache.current.keys().next().value!);cache.current.set(nextDate,{until:performance.now()+30000,slots:next});if(findEarliest&&next[0])setDate(dateKey(next[0].startAt,timezone));setSlots(next);}
+      catch{if(request.current===version)setError("Times could not be loaded. Please retry.");}
     });
   }
-
   function reschedule() {
-    if (!selectedSlot) {
-      setError("Choose an available time.");
-      return;
-    }
-
-    setError(null);
-    startTransition(async () => {
-      const result = await rescheduleGuestBookingAction({
-        startAt: selectedSlot.startAt,
-        token,
-      });
-      if (result.ok) {
-        setMessage(result.message);
-      } else {
-        setError(result.message);
-      }
+    if(!selected)return;
+    setError("");startTransition(async()=>{
+      try{const result=await rescheduleGuestBookingAction({token,startAt:selected.startAt});if(result.ok){setUpdated({startAt:selected.startAt,endAt:selected.endAt,status:result.status??booking.status,lines:selected.lines});setMode(null);cache.current.clear();setMessage(result.message);}else{cache.current.clear();loadSlots(date);setError(result.message);}}
+      catch{setError("Your appointment could not be changed. Please try again.");}
     });
   }
-
   function cancel() {
-    setError(null);
-    startTransition(async () => {
-      const result = await cancelGuestBookingAction({
-        reason: cancelReason,
-        token,
-      });
-      if (result.ok) {
-        setMessage(result.message);
-      } else {
-        setError(result.message);
-      }
+    setError("");startTransition(async()=>{
+      try{const result=await cancelGuestBookingAction({token,reason});if(result.ok){setUpdated({startAt:booking.startAt,endAt:booking.endAt,status:"cancelled",lines});setMode(null);setMessage(result.message);}else setError(result.message);}
+      catch{setError("Your appointment could not be cancelled. Please try again.");}
     });
   }
-
-  function claimBooking() {
-    setError(null);
-    startClaimTransition(async () => {
-      const result = await claimGuestBookingAction({ token });
-
-      if (result.ok) {
-        if (result.bookingId) {
-          const params = new URLSearchParams({ message: result.message });
-          window.location.assign(`/my-bookings/${result.bookingId}?${params.toString()}`);
-          return;
-        }
-
-        setClaimSaved(true);
-        setMessage(result.message);
-      } else {
-        setError(result.message);
-      }
+  function claim() {
+    setError("");startClaimTransition(async()=>{
+      try{const result=await claimGuestBookingAction({token});if(result.ok){setSaved(true);if(result.bookingId){router.replace(`/my-bookings?details=${encodeURIComponent(result.bookingId)}&message=${encodeURIComponent(result.message)}`);return;}setMessage(result.message);}else setError(result.message);}
+      catch{setError("This booking could not be saved. Please try again.");}
     });
   }
-
-  const claimReturnPath = `/booking/manage/${token}?claim=1`;
-  const loginHref = `/login?next=${encodeURIComponent(claimReturnPath)}`;
-  const signupHref = `/signup?next=${encodeURIComponent(claimReturnPath)}`;
-
-  return (
-    <main
-      className={classNames(styles.bookingSurface, styles.publicRoot, "px-5 py-8")}
-      data-booking-surface="manage"
-      data-testid="manage-booking-root"
-    >
-      <section className="manage-booking-shell">
-        <div className="space-y-5">
-          <header className={classNames(styles.publicCard, "p-6")}>
-            <p className={styles.eyebrow}>Booking management</p>
-            <h1 className={classNames(styles.pageTitle, "mt-3")}>{data.booking.salon.name}</h1>
-            <p className="mt-2 text-sm text-[#786d78]">
-              {formatDate(booking.startAt, timezone)}
-            </p>
-          </header>
-
-          {message ? (
-            <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              {message}
-            </p>
-          ) : null}
-          {error ? (
-            <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              {error}
-            </p>
-          ) : null}
-
-          <section className={classNames(styles.publicCard, "p-5")}>
-            <h2 className="text-xl font-extrabold text-[#211c24]">
-              Save this booking
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-[#786d78]">
-              Sign in or create an account to keep this appointment with your saved
-              bookings. This link only proves access to this booking.
-            </p>
-            {currentUser ? (
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <button
-                  className={classNames(styles.primaryButton, "px-4")}
-                  disabled={isClaimPending || claimSaved}
-                  onClick={claimBooking}
-                  type="button"
-                >
-                  {claimSaved
-                    ? "Saved to account"
-                    : isClaimPending
-                      ? "Saving..."
-                      : claimIntent
-                        ? "Save booking to account"
-                        : "Save to account"}
-                </button>
-                <span className="text-sm font-medium text-[#786d78]">
-                  Signed in as {currentUser.displayName ?? currentUser.email ?? "your account"}
-                </span>
-              </div>
-            ) : (
-              <div className="mt-4 flex flex-wrap gap-3">
-                <a className={classNames(styles.primaryButton, "px-4")} href={loginHref}>
-                  Sign in
-                </a>
-                <a className="rounded-md border border-[#ffd6c4] px-4 py-2 text-sm font-extrabold text-[#f26f3d]" href={signupHref}>
-                  Create account
-                </a>
-              </div>
-            )}
-          </section>
-
-          <section className={classNames(styles.publicCard, "p-5")}>
-            <h2 className="text-xl font-extrabold text-[#211c24]">Appointment</h2>
-            <ul className="mt-4 divide-y divide-zinc-200">
-              {data.booking.lines.map((line) => (
-                <li className="flex justify-between gap-4 py-3" key={line.serviceId}>
-                  <span>
-                    <span className="block font-medium">{line.serviceName}</span>
-                    <span className="text-sm text-zinc-500">{line.staffName}</span>
-                  </span>
-                  <span className="text-sm text-zinc-600">
-                    {formatDate(line.startAt, timezone)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <InspirationBand inspiration={data.booking.inspiration} />
-          </section>
-
-          {booking.canChange ? (
-            <section className={classNames(styles.publicCard, "p-5")}>
-              <h2 className="text-xl font-extrabold text-[#211c24]">Reschedule</h2>
-              <label className="mt-4 block max-w-xs">
-                <span className="text-sm font-medium text-zinc-700">Date</span>
-                <input
-                  className={classNames(styles.field, "mt-2 w-full")}
-                  onChange={(event) => loadSlots(event.target.value)}
-                  type="date"
-                  value={date}
-                />
-              </label>
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                {slots.map((slot) => (
-                  <button
-                    className={
-                      selectedStartAt === slot.startAt
-                        ? "rounded-xl border border-[#f26f3d] bg-[#f26f3d] px-3 py-2 text-sm font-extrabold text-white"
-                        : "rounded-xl border border-[#f0e6df] px-3 py-2 text-sm font-extrabold hover:border-[#ffd6c4]"
-                    }
-                    key={slot.startAt}
-                    onClick={() => setSelectedStartAt(slot.startAt)}
-                    type="button"
-                  >
-                    {new Intl.DateTimeFormat("en-US", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      timeZone: timezone,
-                    }).format(new Date(slot.startAt))}
-                  </button>
-                ))}
-              </div>
-              {slots.length === 0 ? (
-                <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
-                  No matching slots are available on this date.
-                </p>
-              ) : null}
-              <button
-                className={classNames(styles.primaryButton, "mt-5 px-4")}
-                disabled={isPending || !selectedSlot}
-                onClick={reschedule}
-                type="button"
-              >
-                {isPending ? "Saving..." : "Reschedule"}
-              </button>
-            </section>
-          ) : null}
-
-          {booking.canChange ? (
-            <section className={classNames(styles.publicCard, "p-5")}>
-              <h2 className="text-xl font-extrabold text-[#211c24]">Cancel booking</h2>
-              <label className="mt-4 block">
-                <span className="text-sm font-medium text-zinc-700">Reason</span>
-                <textarea
-                  className="mt-2 min-h-20 w-full rounded-xl border border-[#f0e6df] px-3 py-2 text-sm"
-                  onChange={(event) => setCancelReason(event.target.value)}
-                  value={cancelReason}
-                />
-              </label>
-              <button
-                className="mt-4 rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-700 disabled:opacity-60"
-                disabled={isPending}
-                onClick={cancel}
-                type="button"
-              >
-                Cancel booking
-              </button>
-            </section>
-          ) : null}
-        </div>
-
-        <aside
-          className={classNames(styles.publicCard, styles.summary)}
-          data-testid="manage-booking-summary"
-        >
-          <h2 className="text-lg font-extrabold text-[#211c24]">Details</h2>
-          <dl className="mt-4 grid gap-3 text-sm">
-            <div className="flex justify-between gap-3">
-              <dt className="text-zinc-500">Status</dt>
-              <dd className="font-medium capitalize">{booking.status.replaceAll("_", " ")}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-zinc-500">Customer</dt>
-              <dd className="font-medium">{data.booking.customer.name ?? "-"}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-zinc-500">Phone</dt>
-              <dd className="font-medium">{data.booking.customer.phone ?? "-"}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-zinc-500">Email</dt>
-              <dd className="font-medium">{data.booking.customer.email ?? "-"}</dd>
-            </div>
-          </dl>
-        </aside>
-      </section>
-    </main>
-  );
+  return <main className={styles.root} data-testid="manage-booking-root"><section className={styles.receipt}>
+    <header className={styles.header}><h1>Booking details</h1><a className={styles.link} href="/explore">Explore</a></header>
+    <section className={styles.salon}><span className={styles.logo}>{salon.name.slice(0,2)}</span><div><div className={styles.row}><h2>{salon.name}</h2><span className={styles.muted}>{booking.status.replaceAll("_"," ")}</span></div><p className={styles.muted}>{salon.addressLine1}</p><p className={styles.muted}>{[salon.city,salon.state].filter(Boolean).join(", ")}</p><div className={styles.links}>{salon.phone?<a href={`tel:${salon.phone.replace(/[^\d+]/g,"")}`}>Call salon</a>:null}<a href={`/explore/salons/${booking.salonId}`}>View salon</a></div></div></section>
+    <section className={styles.section}><h2>{format(booking.startAt,{weekday:"short",month:"short",day:"numeric",year:"numeric"})}</h2><p className={styles.time}>{time(booking.startAt)}&ndash;{time(booking.endAt)}</p><p className={styles.muted}>{duration} min</p></section>
+    <section className={styles.section}><h3 className={styles.muted}>Services</h3>{lines.map((line,index)=><div className={styles.service} key={`${line.serviceId}:${index}`}><div><strong>{line.serviceName}</strong><p className={styles.muted}>{line.staffName} &middot; {line.durationMinutes} min</p></div><strong>{money(line.unitPrice)}</strong></div>)}</section>
+    <section className={styles.section}><div className={styles.row}><h2 className={styles.totalLabel}>Estimated total</h2><strong className={styles.total}>{money(total)}</strong></div><p className={styles.muted}>Booking estimate. Final amount is recorded by the salon.</p></section>
+    {message?<p className={styles.message} role="status">{message}</p>:null}{error?<p className={styles.error} role="alert">{error}</p>:null}
+    {canChange?<div className={styles.actions}><button className={styles.primary} disabled={pending} onClick={()=>{setMode("reschedule");setMessage("");loadSlots(date,true);}}>Reschedule</button><button className={styles.secondary} disabled={pending} onClick={()=>{setMode("cancel");setError("");}}>Cancel</button></div>:null}
+    {mode==="reschedule"&&canChange?<section className={styles.editor} aria-label="Reschedule appointment"><div className={styles.row}><strong>Choose a new time</strong><button className={styles.link} disabled={pending} onClick={()=>setMode(null)}>Close</button></div><label className={styles.date}>Date<input type="date" value={date} min={dateKey(new Date().toISOString(),timezone)} disabled={pending} onChange={event=>{if(event.target.value)loadSlots(event.target.value);}}/></label><div className={styles.slots}>{slots.map(slot=><button key={slot.startAt} aria-pressed={selectedStart===slot.startAt} disabled={pending} onClick={()=>setSelectedStart(slot.startAt)}>{slot.label}</button>)}</div>{slotsPending?<p className={styles.muted} role="status">Checking times...</p>:!slots.length?<p className={styles.muted}>No matching times. <button className={styles.link} onClick={()=>loadSlots(date)}>Retry</button></p>:null}<button className={styles.primary} disabled={pending||slotsPending||!selected} onClick={reschedule}>{pending?"Saving...":"Save new time"}</button></section>:null}
+    {mode==="cancel"&&canChange?<section className={styles.editor} aria-label="Cancel appointment"><strong>Cancel this appointment?</strong><p className={styles.muted}>The salon will be notified.</p><label className={styles.date}>Reason (optional)<textarea value={reason} onChange={event=>setReason(event.target.value)} rows={2}/></label><div className={styles.actions}><button className={styles.secondary} disabled={pending} onClick={()=>setMode(null)}>Keep booking</button><button className={styles.danger} disabled={pending} onClick={cancel}>{pending?"Cancelling...":"Confirm cancellation"}</button></div></section>:null}
+    {canChange&&!mode?<p className={`${styles.muted} ${styles.policy}`}>Subject to salon availability.</p>:null}
+    <details className={styles.details}><summary>Customer &amp; booking notes</summary><dl><dt>Customer</dt><dd>{data.booking.customer.name??"-"}</dd><dt>Phone</dt><dd>{data.booking.customer.phone??"-"}</dd><dt>Email</dt><dd>{data.booking.customer.email??"-"}</dd></dl>{booking.publicNotes?<p className={styles.muted}>{booking.publicNotes}</p>:null}{data.booking.inspiration?<p className={styles.muted}>{data.booking.inspiration.source_title_snapshot??"Booked look"}{data.booking.inspiration.source_caption_snapshot?` — ${data.booking.inspiration.source_caption_snapshot}`:""}</p>:null}</details>
+    <section className={styles.account}><p className={styles.muted}>Keep this appointment in your account.</p>{currentUser?<><button className={styles.primary} disabled={claimPending||saved} onClick={claim}>{saved?"Saved to account":claimPending?"Saving...":claimIntent?"Save booking to account":"Save to account"}</button><p className={styles.muted}>Signed in as {currentUser.displayName??currentUser.email??"your account"}</p></>:<div className={styles.actions}><a className={styles.primary} href={loginHref}>Sign in</a><a className={styles.secondary} href={signupHref}>Create account</a></div>}</section>
+  </section></main>;
 }

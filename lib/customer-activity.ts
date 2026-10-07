@@ -1,3 +1,4 @@
+import { historyTicketTotals, type HistoryEvidence } from "@/lib/booking-history";
 import "server-only";
 
 import { calculateTicketTotals } from "@/lib/pos-ticket-calculations";
@@ -49,6 +50,7 @@ export type CustomerActivityResult<T> =
     };
 
 export type CustomerActivitySalon = {
+  location?: string | null;
   coverUrl: string | null;
   id: string;
   imageUrl: string | null;
@@ -79,9 +81,16 @@ export type CustomerActivityStatus =
   | "cancelled"
   | "completed"
   | "no_show"
-  | "upcoming";
+  | "upcoming"
+  | "past_appointment"
+  | "checked_in"
+  | "in_service";
 
 export type CustomerPurchaseActivity = {
+  bookingId?: string;
+  appointmentStartAt?: string;
+  checkedInAt?: string | null;
+  timezone?: string;
   currency: string;
   href: string;
   id: string;
@@ -98,6 +107,8 @@ export type CustomerPurchaseActivity = {
 };
 
 export type CustomerBookingActivity = {
+  historyEvidence?: HistoryEvidence;
+  noShowKind?: import("@/lib/booking-no-show").NoShowKind;
   bookingId: string;
   currency: string;
   endAt: string;
@@ -115,7 +126,14 @@ export type CustomerBookingActivity = {
   type: "booking";
 };
 
+export type CustomerVisitActivity = {
+  type: "visit"; id: string; href: string; occurredAt: string; timezone: string;
+  salon: CustomerActivitySalon; services: CustomerActivityService[]; title: string;
+  status: "checked_in" | "in_service"; total: number; currency: string;
+};
+
 export type CustomerActivity =
+  | CustomerVisitActivity
   | CustomerBookingActivity
   | CustomerPurchaseActivity;
 
@@ -241,6 +259,7 @@ function parseSalon(value: unknown): CustomerActivitySalon {
 
   return {
     coverUrl,
+    location: readString(salon.location),
     id: readUuid(salon.id) ?? "",
     imageUrl: logoUrl,
     name,
@@ -383,6 +402,8 @@ function mapPurchaseActivity(entry: unknown): CustomerPurchaseActivity | null {
     services,
     status: "completed",
     ticketId,
+    timezone: readString(raw.timezone) ?? "America/Chicago",
+    checkedInAt: readString(raw.checkedInAt),
     ticketNumber: readString(raw.ticketNumber) ?? "Receipt",
     title: activityTitle(services, "Purchase"),
     total: totals.total,
@@ -408,8 +429,11 @@ function mapBookingStatus(
     return "no_show";
   }
 
+  if (normalized === "checked_in") return "checked_in";
+  if (normalized === "in_service") return "in_service";
+
   if (normalized === "completed") {
-    return "completed";
+    return "past_appointment";
   }
 
   const startMs = new Date(startAt).getTime();
@@ -417,7 +441,7 @@ function mapBookingStatus(
 
   return Number.isFinite(startMs) && Number.isFinite(nowMs) && startMs >= nowMs
     ? "upcoming"
-    : "completed";
+    : "past_appointment";
 }
 
 function mapBookingActivity(
@@ -448,6 +472,7 @@ function mapBookingActivity(
     staffName,
     startAt,
     status: mapBookingStatus(readString(raw.status), startAt, serverNow),
+    noShowKind: raw.noShowKind === "excused" || raw.noShowKind === "unexcused" ? raw.noShowKind : null,
     timezone: readString(raw.timezone) ?? "America/Chicago",
     title: activityTitle(services, "Appointment"),
     total: services.reduce(
@@ -535,12 +560,43 @@ export async function getCustomerActivity(input?: {
     .filter((activity): activity is CustomerBookingActivity =>
       Boolean(activity),
     );
-  const upcoming = bookings
+  const evidence = (asArray(payload.evidence) as HistoryEvidence[]);
+  const evidenceById = new Map(evidence.map(item => [item.bookingId, item]));
+  const linkedBookings = bookings.filter(booking => {
+    booking.historyEvidence = evidenceById.get(booking.bookingId);
+    const item = booking.historyEvidence;
+    if (item?.ticket) {
+      const purchase = purchases.find(p => p.ticketId === item.ticket!.ticketId) ?? mapPurchaseActivity(item.ticket);
+      if (purchase) {
+        if (!purchases.includes(purchase)) purchases.push(purchase);
+        purchase.bookingId = booking.bookingId;
+        purchase.appointmentStartAt = booking.startAt;
+        purchase.checkedInAt = item.checkedInAt;
+        purchase.timezone = booking.timezone;
+        purchase.title = `${purchase.title} ? Appointment`;
+        purchase.total = historyTicketTotals(item.ticket).total;
+        return false;
+      }
+    }
+    if (item?.checkedInAt && !["cancelled", "no_show"].includes(booking.status)) booking.status = "checked_in";
+    return true;
+  });
+  const visits: CustomerVisitActivity[] = asArray(payload.visits).flatMap(entry => {
+    const raw = asRecord(entry);
+    const id = readUuid(raw.id);
+    const at = readString(raw.at);
+    if (!id || !at || raw.ticketId || raw.bookingId || evidence.some(item => item.visitId === id)) return [];
+    return [{ type: "visit" as const, id: `visit-${id}`, href: "/activity", occurredAt: at,
+      timezone: readString(raw.timezone) ?? "America/Chicago", salon: parseSalon(raw.salon), services: parseServices(raw.services),
+      title: "Checked in", status: raw.status === "in_service" ? "in_service" as const : "checked_in" as const, total: 0, currency: "USD" }];
+  });
+  const upcoming = linkedBookings
     .filter((booking) => booking.status === "upcoming")
     .sort(sortUpcoming);
   const history = [
     ...purchases,
-    ...bookings.filter((booking) => booking.status !== "upcoming"),
+    ...linkedBookings.filter((booking) => booking.status !== "upcoming"),
+    ...visits,
   ].sort(sortDesc);
   const salonCount = new Set(
     [...upcoming, ...history]
@@ -557,19 +613,6 @@ export async function getCustomerActivity(input?: {
     },
     ok: true,
   };
-}
-
-function paymentStatus(totals: ReturnType<typeof calculateTicketTotals>) {
-  const totalCents = Math.round(totals.total * 100);
-  const paidCents = Math.round(totals.paid * 100);
-
-  if (paidCents <= 0) {
-    return "unpaid" as const;
-  }
-
-  return totalCents > 0 && paidCents >= totalCents
-    ? ("paid" as const)
-    : ("partial" as const);
 }
 
 function mapReceipt(entry: unknown): CustomerActivityReceipt | null {
@@ -597,7 +640,7 @@ function mapReceipt(entry: unknown): CustomerActivityReceipt | null {
     customerName: readString(customerRaw.name) ?? "Customer",
     id: ticketId,
     openedAt,
-    paymentStatus: paymentStatus(totals),
+    paymentStatus: "paid", // A finalized ticket is the salon record of settlement.
     payments: payments.map((payment) => ({
       amount: payment.amount,
       createdAt: payment.createdAt,

@@ -1,4 +1,5 @@
 "use client";
+import { bookingStatusLabel } from "@/lib/booking-no-show";
 
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
@@ -78,18 +79,18 @@ export function BookingDayCalendar({appointments,data,date,openingHours,select,f
           {closedBands.map((band,index)=><div className={styles.closedHours} key={index} style={{top:(band.start-start)*pxPerMinute,height:(band.end-band.start)*pxPerMinute}} aria-label="Outside opening hours" />)}
           {column.rows.map(({item,start:from,end:to,lane,lanes})=>{const cardHeight=(to-from)*pxPerMinute;const original=segments.find(segment=>segment.id===item.id)?.booking??item;return <button key={item.id} type="button" className={styles.appointment} data-status={item.status} data-compact={cardHeight<44}
             style={{top:(from-start)*pxPerMinute,height:cardHeight,left:`calc(${lane/lanes*100}% + 3px)`,width:`calc(${100/lanes}% - 6px)`}}
-            aria-label={`${displayBookingTime(item.startAt,data.timezone)}, ${item.customerName||"Walk-in customer"}, ${item.serviceNames.join(", ")}, ${column.name}, ${statusLabel(item.status)}`}
+            aria-label={`${displayBookingTime(item.startAt,data.timezone)}, ${item.customerName||"Walk-in customer"}, ${item.serviceNames.join(", ")}, ${column.name}, ${(item.status === "no_show" ? bookingStatusLabel(item.status,item.noShowKind) : statusLabel(item.status))}`}
             onPointerEnter={e=>{if(e.pointerType!=="touch")show(original,e.currentTarget);}} onPointerLeave={()=>setHover(null)} onFocus={e=>show(original,e.currentTarget)} onBlur={()=>setHover(null)} onClick={()=>{setHover(null);select(original);}}>
             <strong><CustomerName name={item.customerName} fallback="Walk-in customer" /></strong>
             {cardHeight>=44 && <span>{displayBookingTime(item.startAt,data.timezone)} · {Math.round((to-from))} min</span>}
             {cardHeight>=64 && <span>{item.serviceNames.join(", ")}</span>}
-            {cardHeight>=84 && <span>{statusLabel(item.status)}</span>}
+            {cardHeight>=84 && <span>{(item.status === "no_show" ? bookingStatusLabel(item.status,item.noShowKind) : statusLabel(item.status))}</span>}
             {cardHeight>=110 && item.notes && <span>{item.notes}</span>}
           </button>;})}
         </div>)}
         {nowMinute!==null&&<div className={styles.nowLine} data-booking-current-time style={{gridColumn:"1 / -1",gridRow:2,top:(nowMinute-start)*pxPerMinute,left:64}} aria-label={`Current time ${displayBookingTime(now!,data.timezone)}`}><span className={styles.nowLabel}>{displayBookingTime(now!,data.timezone)}</span></div>}
       </div>
     </div>}
-    {hover && hovered && createPortal(<div className={styles.calendarPreview} role="tooltip" style={{left:hover.x,top:hover.y}}><strong><CustomerName name={hovered.customerName} fallback="Walk-in customer" /></strong><small>{hovered.customerPhone}</small><p>{displayBookingTime(hovered.startAt,data.timezone)} – {displayBookingTime(hovered.endAt,data.timezone)} · {statusLabel(hovered.status)}</p>{hovered.lines?.length ? hovered.lines.map(line=><p key={line.id}>{line.serviceName}<small>{line.staffName||data.staff.find(s=>s.id===line.staffId)?.display_name}</small></p>) : <p>{hovered.serviceNames.join(", ")}<small>{hovered.staffName}</small></p>}{hovered.notes&&<p>{hovered.notes}</p>}<small>Click or tap to view and edit</small></div>,document.body)}
+    {hover && hovered && createPortal(<div className={styles.calendarPreview} role="tooltip" style={{left:hover.x,top:hover.y}}><strong><CustomerName name={hovered.customerName} fallback="Walk-in customer" /></strong><small>{hovered.customerPhone}</small><p>{displayBookingTime(hovered.startAt,data.timezone)} – {displayBookingTime(hovered.endAt,data.timezone)} · {(hovered.status === "no_show" ? bookingStatusLabel(hovered.status,hovered.noShowKind) : statusLabel(hovered.status))}</p>{hovered.lines?.length ? hovered.lines.map(line=><p key={line.id}>{line.serviceName}<small>{line.staffName||data.staff.find(s=>s.id===line.staffId)?.display_name}</small></p>) : <p>{hovered.serviceNames.join(", ")}<small>{hovered.staffName}</small></p>}{hovered.notes&&<p>{hovered.notes}</p>}<small>Click or tap to view and edit</small></div>,document.body)}
   </>;
 }

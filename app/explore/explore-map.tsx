@@ -1,12 +1,11 @@
 "use client";
+import {ExploreSalonLove,ExploreBookButton} from "@/components/explore-account-actions";
+import {SalonTrustLine,SalonVerifiedBadge} from "@/components/salon-trust-line";
+import {salonPopularPrice} from "@/lib/salon-identity";
 
 import "./explore-map.css";
 
-import {
-  LumiTrustPopover,
-} from "@/components/reylumi-trust";
 import { SalonOperatingStatusBadge } from "@/components/salon-operating-status-badge";
-import { buildReylumiTrustSummary } from "@/lib/reylumi-trust";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Coordinates } from "@/types/location";
@@ -232,9 +231,6 @@ export function ExploreMap({
   }, [markerReadyToken, selectedSalonId]);
 
   const selectedSalon = salons.find((salon) => salon.id === selectedSalonId) ?? salons[0];
-  const selectedTrust = selectedSalon
-    ? buildReylumiTrustSummary(selectedSalon.trust)
-    : null;
 
   return (
     <div className="relative min-h-[22rem] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100">
@@ -259,20 +255,12 @@ export function ExploreMap({
                 {selectedSalon.name}
               </p>
             )}
-            {selectedTrust ? (
-              <LumiTrustPopover
-                actionHref={
-                  selectedSalon.href ? `${selectedSalon.href}#lumi-trust` : null
-                }
-                entityName={selectedSalon.name}
-                markClassName="grid h-8 w-8 place-items-center rounded-full bg-white p-0 text-brand-orange ring-1 ring-brand-orange/20 hover:bg-brand-orange-soft"
-                presentation="spark"
-                size="sm"
-                summary={selectedTrust}
-              />
-            ) : null}
+            <SalonVerifiedBadge verified={selectedSalon.trust.identityVerified}/>
           </div>
-          <p className="mt-1 line-clamp-1 text-xs font-medium text-zinc-600">
+          <div className="mt-2 flex gap-2"><ExploreSalonLove salonId={selectedSalon.id} name={selectedSalon.name}/><ExploreBookButton href={selectedSalon.bookingHref} name={selectedSalon.name} contactHref={selectedSalon.href} phoneHref={selectedSalon.phoneHref}/></div>
+          <SalonTrustLine signals={selectedSalon.trust} href={selectedSalon.href} name={selectedSalon.name} className="text-zinc-600"/>
+          {salonPopularPrice(selectedSalon.trust)?<p className="text-[11px] leading-5 text-zinc-600">{salonPopularPrice(selectedSalon.trust)}</p>:null}
+          <p className="mt-0.5 line-clamp-1 text-xs font-medium text-zinc-600">
             {[selectedSalon.locationLabel, selectedSalon.distanceMiles !== null ? `${selectedSalon.distanceMiles < 10 ? selectedSalon.distanceMiles.toFixed(1) : Math.round(selectedSalon.distanceMiles)} mi` : null]
               .filter(Boolean)
               .join(" \u00b7 ")}

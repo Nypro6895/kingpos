@@ -29,10 +29,12 @@ import type {
   LoginSecurityOverview,
 } from "@/lib/account-security";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 
 type LoginSecurityPanelProps = {
   overview: LoginSecurityOverview;
+  contactEditor?: ReactNode;
+  onSaved?: ()=>void | Promise<void>;
 };
 
 type PendingKey =
@@ -200,18 +202,10 @@ function Section({
   right?: React.ReactNode;
 }) {
   return (
-    <section className="scroll-mt-6" id={id}>
-      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-base font-semibold text-zinc-950">{label}</h2>
-          <p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p>
-        </div>
-        {right}
-      </div>
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-        {children}
-      </div>
-    </section>
+    <details className="scroll-mt-6 rounded-lg border border-zinc-200 bg-white" id={id} open={id==='sessions'||undefined}>
+      <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">{label}{right?<span className="ml-2">{right}</span>:null}</summary>
+      <div className="border-t border-zinc-100"><p className="px-4 pt-3 text-xs text-zinc-500">{description}</p>{children}</div>
+    </details>
   );
 }
 
@@ -232,7 +226,7 @@ function Field({
 
 function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
+    <p className="content-surface border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-600 rounded-none border-y shadow-none">
       {children}
     </p>
   );
@@ -438,7 +432,7 @@ function MfaFactorRow({
   );
 }
 
-export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
+export function LoginSecurityPanel({ overview, contactEditor, onSaved }: LoginSecurityPanelProps) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -492,6 +486,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
 
       if (options.refresh !== false) {
         router.refresh();
+        await onSaved?.();
       }
     } catch {
       setError("This action could not be completed. Check your connection and try again.");
@@ -617,7 +612,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
     setPendingKey("recovery-codes");
 
     void generateRecoveryCodesAction()
-      .then((result) => {
+      .then(async (result) => {
         if (result.error !== null) {
           setError(result.error);
           return;
@@ -626,6 +621,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
         setRecoveryCodes(result.codes);
         setMessage(result.message);
         router.refresh();
+        await onSaved?.();
       })
       .catch(() => {
         setError("Recovery codes could not be generated.");
@@ -637,7 +633,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
     <div className="grid gap-5">
       {error ? (
         <p
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"
+          className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 rounded-none border-y shadow-none"
           role="alert"
         >
           {error}
@@ -645,7 +641,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
       ) : null}
       {message ? (
         <p
-          className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800"
+          className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none"
           role="status"
         >
           {message}
@@ -656,6 +652,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
         detailHref="/settings/login-security"
         overview={overview}
         variant="page"
+        passwordOnly
       />
 
       <Section
@@ -795,7 +792,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
         {!hasVerifiedTotp || !hasVerifiedPhoneMfa ? (
           <div className="grid gap-4 border-t border-zinc-100 px-4 py-4 lg:grid-cols-2">
             {!hasVerifiedTotp ? (
-              <div className="grid gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-3">
+              <div className="content-surface grid gap-3 border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
                 <div>
                   <p className="text-sm font-semibold text-zinc-950">
                     Authenticator app
@@ -817,7 +814,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
               </div>
             ) : null}
             {!hasVerifiedPhoneMfa ? (
-              <div className="grid gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-3">
+              <div className="content-surface grid gap-3 border-zinc-200 bg-zinc-50 p-3 rounded-none border-y shadow-none">
                 <div>
                   <p className="text-sm font-semibold text-zinc-950">
                     Phone SMS
@@ -827,11 +824,11 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
                   </p>
                 </div>
                 {overview.account.phone ? (
-                  <p className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-950">
+                  <p className="content-surface border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-950 rounded-none border-y shadow-none">
                     {maskPhone(overview.account.phone)}
                   </p>
                 ) : (
-                  <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+                  <p className="content-surface border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 rounded-none border-y shadow-none">
                     Verify a phone number in Profile before using SMS 2FA.
                   </p>
                 )}
@@ -847,7 +844,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
                       : "Send SMS code"}
                   </button>
                   {!overview.account.phone ? (
-                    <a
+                    contactEditor ? <details><summary className="cursor-pointer text-sm font-semibold">Verify phone in Profile</summary><div className="mt-3">{contactEditor}</div></details> : <a
                       className={secondaryButtonClassName}
                       href="/account#profile-contact"
                     >
@@ -859,7 +856,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
             ) : null}
             {totpEnrollment ? (
               <form
-                className="grid gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 lg:col-span-2"
+                className="content-surface grid gap-3 border-zinc-200 bg-zinc-50 p-3 lg:col-span-2 rounded-none border-y shadow-none"
                 onSubmit={submitTotpVerification}
               >
                 <input
@@ -882,7 +879,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
                         <p className="text-xs font-semibold uppercase text-zinc-500">
                           Setup key
                         </p>
-                        <p className="mt-1 break-all rounded-md border border-zinc-200 bg-white px-3 py-2 font-mono text-sm text-zinc-950">
+                        <p className="content-surface mt-1 break-all border-zinc-200 bg-white px-3 py-2 font-mono text-sm text-zinc-950 rounded-none border-y shadow-none">
                           {totpEnrollment.secret}
                         </p>
                       </div>
@@ -912,7 +909,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
             ) : null}
             {phoneMfaEnrollment ? (
               <form
-                className="grid gap-3 rounded-md border border-zinc-200 bg-zinc-50 p-3 lg:col-span-2"
+                className="content-surface grid gap-3 border-zinc-200 bg-zinc-50 p-3 lg:col-span-2 rounded-none border-y shadow-none"
                 onSubmit={submitPhoneMfaVerification}
               >
                 <input
@@ -1000,7 +997,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
             </span>
           </label>
           {!overview.smsLoginAlerts.configured && overview.account.phone ? (
-            <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+            <p className="content-surface border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 rounded-none border-y shadow-none">
               Text-message login alerts are turned on, but messages cannot be sent right now. Please try again later.
             </p>
           ) : null}
@@ -1065,7 +1062,7 @@ export function LoginSecurityPanel({ overview }: LoginSecurityPanelProps) {
             </button>
           </div>
           {recoveryCodes.length > 0 ? (
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
+            <div className="content-surface border-amber-200 bg-amber-50 p-3 rounded-none border-y shadow-none">
               <p className="text-sm font-semibold text-amber-950">
                 Save these codes now. They will not be shown again.
               </p>

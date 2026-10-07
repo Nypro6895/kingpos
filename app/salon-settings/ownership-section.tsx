@@ -1,13 +1,18 @@
 "use client";
 
 import { createOwnerTransferInviteAction } from "@/app/account/actions";
+import type { SalonOwnerRoster } from "@/lib/owner-transfer";
+import { ActionDialog } from "@/app/action-dialog";
+import { leaveSalonOwnershipAction } from "./ownership-actions";
 import Link from "next/link";
+import { SHOW_ROLE_PERMISSION_CATALOGS } from "@/lib/role-catalog-visibility";
 import { useState, useTransition, type FormEvent } from "react";
 
 type OwnerInviteMode = "add_co_owner" | "transfer_ownership";
 
 type SalonOwnershipSectionProps = {
   canManageOwnership: boolean;
+  ownerRoster: SalonOwnerRoster | null;
   permissionsHref: string;
   rolesHref: string;
   salon: {
@@ -16,29 +21,17 @@ type SalonOwnershipSectionProps = {
   };
 };
 
-function downloadUrl(input: {
-  filename: string;
-  url: string;
-}) {
-  const link = document.createElement("a");
-
-  link.href = input.url;
-  link.download = input.filename;
-  link.rel = "noopener";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-}
-
 export function SalonOwnershipSection({
   canManageOwnership,
+  ownerRoster,
   permissionsHref,
   rolesHref,
   salon,
 }: SalonOwnershipSectionProps) {
+  const [confirmLeave, setConfirmLeave] = useState(false);
+  const [leaveError, setLeaveError] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-  const [inviteUrl, setInviteUrl] = useState("");
   const [message, setMessage] = useState("");
   const [mode, setMode] = useState<OwnerInviteMode>("add_co_owner");
   const [note, setNote] = useState("");
@@ -48,7 +41,6 @@ export function SalonOwnershipSection({
   function createInvite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    setInviteUrl("");
     setMessage("");
 
     startTransition(async () => {
@@ -69,7 +61,6 @@ export function SalonOwnershipSection({
       setEmail("");
       setNote("");
       setMessage(result.message ?? "Owner invitation created.");
-      setInviteUrl(result.inviteUrl ?? "");
     });
   }
 
@@ -81,7 +72,7 @@ export function SalonOwnershipSection({
             Ownership & admins
           </h2>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
-            Owner invites, ownership transfer, roles, and permissions for this salon.
+            Owner invitations and ownership transfer for this salon.
           </p>
         </div>
         <span className="inline-flex min-h-7 w-fit items-center rounded-full bg-amber-50 px-2.5 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-200">
@@ -90,7 +81,7 @@ export function SalonOwnershipSection({
       </div>
 
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-        <div className="grid border-b border-zinc-100 md:grid-cols-2">
+        {SHOW_ROLE_PERMISSION_CATALOGS ? <div className="grid border-b border-zinc-100 md:grid-cols-2">
           <Link
             className="flex min-h-16 items-center justify-between gap-3 border-b border-zinc-100 px-4 py-3 transition hover:bg-zinc-50 md:border-b-0 md:border-r"
             href={rolesHref}
@@ -121,13 +112,45 @@ export function SalonOwnershipSection({
           </Link>
         </div>
 
+        : null}
+        {ownerRoster ? (
+          <div className="border-b border-zinc-100 px-4 py-4">
+            <h3 className="text-sm font-semibold text-zinc-950">Current owners ({ownerRoster.owners.length})</h3>
+            <p className="mt-1 text-sm text-zinc-500">Each Owner can manage this salon and leave their own ownership when another active Owner remains.</p>
+            <ul className="mt-3 divide-y divide-zinc-100">
+              {ownerRoster.owners.map((owner) => (
+                <li key={owner.id} className="flex items-center justify-between gap-3 py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-950">{owner.name || owner.email || "Owner"}{owner.isCurrentUser ? " (You)" : ""}</p>
+                    {owner.email ? <p className="break-all text-sm text-zinc-500">{owner.email}</p> : null}
+                  </div>
+                  <span className="text-xs font-semibold text-zinc-500">{owner.status === "active" ? "Active Owner" : "Pending account deletion"}</span>
+                </li>
+              ))}
+            </ul>
+            <button type="button" disabled={isPending || !ownerRoster.canLeave}
+              className="mt-3 min-h-10 rounded-md border border-red-200 px-4 text-sm font-semibold text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => { setLeaveError(""); setConfirmLeave(true); }}>Leave ownership</button>
+            {!ownerRoster.canLeave ? <p className="mt-2 text-sm text-amber-700">You are the last active Owner. Invite another Owner and wait for acceptance before leaving.</p> : null}
+            {leaveError ? <p role="alert" className="mt-2 text-sm text-red-700">{leaveError}</p> : null}
+            <ActionDialog open={confirmLeave} onClose={() => setConfirmLeave(false)} title={`Leave ownership of ${salon.name}?`}
+              description="Your Owner access to this salon will be removed. The remaining Owner will continue managing the salon. Your personal account and salon records will be kept."
+              secondaryAction={{ label: "Cancel" }}
+              primaryAction={{ label: "Leave ownership", onClick: () => {
+                startTransition(async () => {
+                  const result = await leaveSalonOwnershipAction(salon.id);
+                  if (result?.error) setLeaveError(result.error);
+                });
+              } }} />
+          </div>
+        ) : null}
         <form className="grid gap-4 px-4 py-4" onSubmit={createInvite}>
           <div>
             <h3 className="text-sm font-semibold text-zinc-950">
               Owner invitation
             </h3>
             <p className="mt-1 text-sm leading-6 text-zinc-500">
-              Create a protected invite for {salon.name}.
+              Send an invitation for {salon.name}. The recipient can accept or ignore it in My Place.
             </p>
           </div>
 
@@ -215,28 +238,7 @@ export function SalonOwnershipSection({
           {message ? (
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
               <p className="font-semibold">{message}</p>
-              {inviteUrl ? (
-                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <a
-                    className="break-all font-semibold text-zinc-950 underline-offset-4 hover:underline"
-                    href={inviteUrl}
-                  >
-                    {inviteUrl}
-                  </a>
-                  <button
-                    className="min-h-9 rounded-md border border-emerald-300 px-3 text-sm font-semibold text-emerald-900 transition hover:bg-white"
-                    onClick={() =>
-                      downloadUrl({
-                        filename: `${salon.name}-owner-invite.txt`,
-                        url: `data:text/plain;charset=utf-8,${encodeURIComponent(inviteUrl)}`,
-                      })
-                    }
-                    type="button"
-                  >
-                    Save link
-                  </button>
-                </div>
-              ) : null}
+
             </div>
           ) : null}
         </form>

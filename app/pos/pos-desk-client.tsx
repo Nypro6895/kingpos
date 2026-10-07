@@ -667,8 +667,10 @@ export function PosDeskClient({
   const [editingVisit, setEditingVisit] = useState<CustomerVisitQueueItem | null>(null);
   const [visitEditName, setVisitEditName] = useState("");
   const [visitEditPhone, setVisitEditPhone] = useState("");
+  const waitingRequestRunning = useRef(false);
   const refreshWaiting = useCallback(async () => {
-    if (!localFirstDraft || !navigator.onLine) return;
+    if (!localFirstDraft || !navigator.onLine || (isPortableSurface && pathname!=="/pos/portable") || document.visibilityState !== "visible" || waitingRequestRunning.current) return;
+    waitingRequestRunning.current = true;
     try {
       const response = await fetch("/api/pos/portable/waiting", { cache: "no-store", signal: AbortSignal.timeout(5000) });
       if (!response.ok) return;
@@ -687,7 +689,8 @@ export function PosDeskClient({
         try { localStorage.setItem(`kingpos:waiting:${waitingScope}`, JSON.stringify({ at: Date.now(), rows })); } catch { /* Queue cache is optional; receipt durability is checked separately. */ }
       }
     } catch { /* Keep the last queue while offline. */ }
-  }, [localFirstDraft, waitingScope]);
+    finally { waitingRequestRunning.current = false; }
+  }, [localFirstDraft, waitingScope, isPortableSurface, pathname]);
   useEffect(() => {
     if (!localFirstDraft) return;
     try {
@@ -705,8 +708,7 @@ export function PosDeskClient({
     if (channel) channel.onmessage = refresh;
     window.addEventListener("online", refresh); window.addEventListener(WAITING_CHANGED, refresh);
     window.addEventListener(PORTABLE_OPERATIONS_CHANGED, refresh);
-    const timer = setInterval(refresh, 5000);
-    return () => { channel?.close(); clearInterval(timer); window.removeEventListener("online", refresh); window.removeEventListener(WAITING_CHANGED, refresh); window.removeEventListener(PORTABLE_OPERATIONS_CHANGED, refresh); };
+    return () => { channel?.close(); window.removeEventListener("online", refresh); window.removeEventListener(WAITING_CHANGED, refresh); window.removeEventListener(PORTABLE_OPERATIONS_CHANGED, refresh); };
   }, [localFirstDraft, refreshWaiting, waitingScope]);
   const selectedWaitingVisitId = draft.customerVisitId;
   const visitQueue = useMemo(
@@ -970,7 +972,7 @@ export function PosDeskClient({
     if(!response.ok)return;const data=await response.json();if(!Array.isArray(data.services))return;
     setServices(data.services);try{localStorage.setItem('kingpos:catalog:'+staffRealtimeSalonId,JSON.stringify(data.services));}catch{/* Ticket persistence uses its separate durable store. */}
   });
-  usePosResourceRefresh(staffRealtimeSalonId,'waiting',async()=>{await refreshWaiting();});
+  usePosResourceRefresh(staffRealtimeSalonId,'waiting',async()=>{await refreshWaiting();},{enabled:!isPortableSurface || pathname==="/pos/portable"});
   useEffect(()=>{
     if(hasUnsavedDraftWork)return;const next=portableWorkspaceState?.settings;if(!next)return;
     let active=true;queueMicrotask(()=>{if(active)setDefaults(current=>({...current,largeTurnThreshold:Number(next.large_turn_threshold??current.largeTurnThreshold),staffCheckInEnabled:typeof next.staff_check_in_enabled==='boolean'?next.staff_check_in_enabled:current.staffCheckInEnabled,tipSuggestions:Array.isArray(next.tip_suggestions)?next.tip_suggestions as number[]:current.tipSuggestions}));});return()=>{active=false;};
@@ -1088,11 +1090,14 @@ export function PosDeskClient({
       setDraft(current => ({ ...current, tipInput: String(request.amount) }));
       return true;
     } });
+    let lastPublished="",publishedAt=0;
     const publish = () => {
       if (!submitLockedRef.current && !resetInFlightRef.current && localCartId.current) {
         const completed = completedLocalReceipt.current;
-        if (completed && Date.parse(completed.resetAt!) > Date.now()) connection.publish(completed);
-        else connection.publish({ cartId: localCartId.current, revision: currentPortablePayload.current, payload: JSON.parse(currentPortablePayload.current) });
+        const preview=completed && Date.parse(completed.resetAt!) > Date.now() ? completed : { cartId: localCartId.current, revision: currentPortablePayload.current, payload: JSON.parse(currentPortablePayload.current) };
+        const signature=JSON.stringify(preview);
+        if(signature===lastPublished && Date.now()-publishedAt<1000)return;
+        lastPublished=signature;publishedAt=Date.now();connection.publish(preview);
       }
     };
     publish(); const timer = setInterval(publish, 100);
@@ -2793,6 +2798,7 @@ export function PosDeskClient({
         setEditingVisit(null);
       } else setRemovedWaitingVisitIds(current => new Set([...current, visit.id]));
     } catch { showError("Unable to save on this device. Try again."); }
+    finally { setWaitingVisitBusyId(null); }
   }
   function removeWaitingVisit(visit: CustomerVisitQueueItem) {
     if (localFirstDraft) { void changeLocalVisit(visit, "remove"); return; }
@@ -3240,7 +3246,7 @@ export function PosDeskClient({
           <h2 className="font-semibold">Edit customer</h2>
           <label>Name<input className="block border p-2" value={visitEditName} onChange={event => setVisitEditName(event.target.value)} autoComplete="off" maxLength={120} /></label>
           <label>Phone<input className="block border p-2" value={visitEditPhone} onChange={event => setVisitEditPhone(event.target.value)} autoComplete="off" inputMode="tel" /></label>
-          <div className="flex justify-end gap-4"><button type="button" onClick={() => setEditingVisit(null)}>Cancel</button><button type="submit">Save</button></div>
+          <div className="flex justify-end gap-4"><button type="button" disabled={Boolean(waitingVisitBusyId)} onClick={() => setEditingVisit(null)}>Cancel</button><button type="submit" disabled={Boolean(waitingVisitBusyId)} aria-busy={Boolean(waitingVisitBusyId)}>{waitingVisitBusyId ? "Saving…" : "Save"}</button></div>
         </form>
       </div>}
       {toast ? (

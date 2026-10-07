@@ -4,6 +4,7 @@ import { recordVisitExperienceAction } from "@/app/activity/actions";
 import { useState, useTransition, type FormEvent } from "react";
 
 type VisitExperiencePromptProps = {
+  actionLabel?: string;
   compact?: boolean;
   countsTowardReputation: boolean;
   initialBody?: string | null;
@@ -18,6 +19,7 @@ function stateLabel(state: "good" | "issue") {
 }
 
 export function VisitExperiencePrompt({
+  actionLabel = "Review visit",
   compact = false,
   countsTowardReputation,
   initialBody = null,
@@ -26,6 +28,7 @@ export function VisitExperiencePrompt({
   ticketId,
   windowDays,
 }: VisitExperiencePromptProps) {
+  const [expanded, setExpanded] = useState(!compact);
   const [body, setBody] = useState(initialBody ?? "");
   const [draftState, setDraftState] = useState<"issue" | null>(null);
   const [savedState, setSavedState] = useState<"good" | "issue" | null>(
@@ -64,6 +67,10 @@ export function VisitExperiencePrompt({
     save("issue");
   }
 
+  if (compact && !expanded) return <button type="button" onClick={() => setExpanded(true)} className="min-h-9 px-2 text-xs font-bold text-brand-teal">{savedState ? stateLabel(savedState) : actionLabel}</button>;
+
+  if (compact && savedState) return <span className="text-xs font-bold text-brand-teal">{stateLabel(savedState)}</span>;
+
   if (savedState) {
     return (
       <section
@@ -85,10 +92,11 @@ export function VisitExperiencePrompt({
   return (
     <section
       className={[
-        "rounded-2xl border border-border-subtle bg-surface px-4 py-3 shadow-sm",
+        "max-w-sm rounded-xl border border-border-subtle bg-surface px-3 py-2 text-left shadow-sm",
         compact ? "mt-3" : "",
       ].join(" ")}
     >
+      {compact ? <button type="button" onClick={() => setExpanded(false)} className="float-right min-h-9 px-2 text-xs font-bold">Close</button> : null}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase text-brand-teal">

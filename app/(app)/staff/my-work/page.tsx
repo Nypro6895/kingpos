@@ -137,7 +137,7 @@ function StaffPortalHeader({ activeTab, dateLabel, tabs, weekday, workStatusLabe
       </div>
     </header>
     <nav className={dailyStyles.tabs} aria-label="Staff portal tabs">
-      {tabs.filter(tab => tab.id !== "profile").map(tab => <Link key={tab.id} href={tab.href} aria-current={tab.id === activeTab ? "page" : undefined} className={[dailyStyles.tab, tab.id === activeTab ? dailyStyles.selected : ""].join(" ")}>{tab.id === "daily" ? "Overview" : tab.label}</Link>)}
+      {tabs.filter(tab => tab.id !== "profile").map(tab => <Link key={tab.id} href={tab.href} aria-current={tab.id === activeTab ? "page" : undefined} className={[dailyStyles.tab, tab.id === activeTab ? dailyStyles.selected : ""].join(" ")}>{tab.id === "daily" ? "Today" : tab.label}</Link>)}
     </nav>
   </>;
 }

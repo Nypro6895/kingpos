@@ -2,6 +2,8 @@ import { BeautyProfileClient } from "@/app/beauty/beauty-profile-client";
 import { getSelfBeautyProfilePage } from "@/lib/beauty";
 import { getPostCommentViewer } from "@/lib/post-comments";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { BeautyAppointment } from "@/app/beauty/beauty-appointment";
 
 export default async function BeautyPage() {
   const [result, commentViewer] = await Promise.all([
@@ -33,6 +35,7 @@ export default async function BeautyPage() {
 
   return (
     <BeautyProfileClient
+      appointment={<Suspense fallback={<div className="h-32 animate-pulse rounded-2xl bg-surface" aria-label="Loading appointment" />}><BeautyAppointment /></Suspense>}
       commentViewer={commentViewer}
       initialTimeline={result.data.timeline}
       profile={result.data.profile}

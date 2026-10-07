@@ -1,4 +1,5 @@
 import "server-only";
+import { defaultStaffScheduleDate } from "@/lib/staff-schedule-date";
 
 import {
   formatDateInTimeZone,
@@ -38,6 +39,8 @@ import type { Staff } from "@/types/staff";
 export type StaffAppointmentView = "day" | "list" | "week";
 
 export type StaffAppointmentsSearchParams = {
+  range?: string | string[];
+  status?: string | string[];
   bookingId?: string | string[];
   date?: string | string[];
   quickId?: string | string[];
@@ -45,11 +48,16 @@ export type StaffAppointmentsSearchParams = {
 };
 
 export type StaffAppointmentLine = {
+  noShowKind?: import("@/lib/booking-no-show").NoShowKind;
   bookingId: string;
   completedAt: string | null;
   confirmationStatus: BookingConfirmationStatus;
   customerName: string;
   customerPhone: string | null;
+  price: number;
+  noShowCount: number;
+  noShowEligible: boolean;
+  noShowReason: string | null;
   endAt: string;
   id: string;
   inspiration: BookingInspirationView | null;
@@ -69,6 +77,7 @@ export type StaffAppointmentDay = {
 
 export type StaffAppointmentsData = {
   appointments: StaffAppointmentLine[];
+  upcomingCount: number;
   assignedServices: Array<{
     category: string | null;
     durationMinutes: number;
@@ -113,6 +122,7 @@ type BookingLineRow = {
     public_notes: string | null;
     salon_timezone_snapshot: string;
     status: BookingStatus;
+    no_show_kind?: import("@/lib/booking-no-show").NoShowKind;
   } | null;
   completed_at: string | null;
   id: string;
@@ -120,6 +130,7 @@ type BookingLineRow = {
   scheduled_end_at: string;
   scheduled_start_at: string;
   service_name_snapshot: string;
+  line_total: number;
   service_note: string | null;
 };
 
@@ -191,6 +202,7 @@ function appointmentLocalDate(appointment: StaffAppointmentLine, timeZone: strin
 function mapAppointmentLines(
   lines: BookingLineRow[],
   inspirationMap: Map<string, BookingInspirationView>,
+  contacts: Record<string, {customerName: string; customerPhone: string | null; noShowCount: number; noShowReason: string | null}>,
 ) {
   return lines
     .filter((line) => line.booking)
@@ -198,8 +210,12 @@ function mapAppointmentLines(
       bookingId: line.booking?.id ?? "",
       completedAt: line.completed_at,
       confirmationStatus: line.booking?.confirmation_status ?? "confirmed",
-      customerName: line.booking?.customer?.name ?? "Customer",
-      customerPhone: line.booking?.customer?.phone ?? null,
+      customerName: contacts[line.booking?.id ?? ""]?.customerName ?? line.booking?.customer?.name ?? "Customer",
+      customerPhone: contacts[line.booking?.id ?? ""]?.customerPhone ?? line.booking?.customer?.phone ?? null,
+      price: Number(line.line_total),
+      noShowEligible: Date.parse(line.scheduled_start_at) <= Date.now(),
+      noShowCount: contacts[line.booking?.id ?? ""]?.noShowCount ?? 0,
+      noShowReason: contacts[line.booking?.id ?? ""]?.noShowReason ?? null,
       endAt: line.scheduled_end_at,
       id: line.id,
       inspiration: line.booking?.id
@@ -211,6 +227,7 @@ function mapAppointmentLines(
       serviceNote: line.service_note,
       startAt: line.scheduled_start_at,
       status: normalizeStatus(line.booking?.status ?? "confirmed"),
+      noShowKind: line.booking?.no_show_kind ?? null,
       ticketId: line.booking?.pos_ticket_id ?? null,
     }));
 }
@@ -219,8 +236,7 @@ function normalizeLineStatus(status: BookingLineStatus | string): BookingLineSta
   return status === "in_progress" ? "in_service" : (status as BookingLineStatus);
 }
 
-async function loadCurrentStaff(context: CurrentBusinessContext) {
-  const supabase = await createAuthenticatedSupabaseServerClient();
+async function loadCurrentStaff(context: CurrentBusinessContext, supabase: NonNullable<Awaited<ReturnType<typeof createAuthenticatedSupabaseServerClient>>>) {
 
   if (!supabase || !context.user || !context.currentStaffSalon) {
     return null;
@@ -321,6 +337,7 @@ export async function getCurrentStaffAppointments(
   if (!context.user || !isSalonStaffContext(context) || !context.currentStaffSalon) {
     return {
       appointments: [],
+      upcomingCount: 0,
       assignedServices: [],
       availabilityRules: [],
       bookingEnabled: false,
@@ -349,11 +366,15 @@ export async function getCurrentStaffAppointments(
     throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
-  const staff = await loadCurrentStaff(context);
+  const [staff, settings] = await Promise.all([
+    loadCurrentStaff(context, supabase),
+    loadSalonBookingSettings({ salonId: context.currentStaffSalon.id, supabase }),
+  ]);
 
   if (!staff) {
     return {
       appointments: [],
+      upcomingCount: 0,
       assignedServices: [],
       availabilityRules: [],
       bookingEnabled: false,
@@ -376,20 +397,38 @@ export async function getCurrentStaffAppointments(
     };
   }
 
-  const settings = await loadSalonBookingSettings({
-    salonId: context.currentStaffSalon.id,
-    supabase,
-  });
-
   const timezone = settings?.timezone_iana || "America/Chicago";
   const salonBookingStatus = getSalonOnlineBookingStatus(settings);
-  const today = formatDateInTimeZone(new Date(), timezone);
+  const now = new Date();
+  const today = formatDateInTimeZone(now, timezone);
+  const salonRules = isIsoDate(firstParam(params.date)) ? { data: [] as StaffAvailabilityRule[], error: null } : await supabase.from("staff_availability_rules").select("*").eq("salon_id", context.currentStaffSalon.id).is("staff_id", null).eq("is_active", true).returns<StaffAvailabilityRule[]>();
+  if (salonRules.error) throw new Error(salonRules.error.message);
+  const clock = new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(now);
+  const localMinutes = Number(clock.find(part => part.type === "hour")?.value) * 60 + Number(clock.find(part => part.type === "minute")?.value);
   const selectedDate = isIsoDate(firstParam(params.date))
     ? (firstParam(params.date) as string)
-    : today;
+    : defaultStaffScheduleDate(today, localMinutes, salonRules.data ?? []);
+  // Count bookings, not service lines, using the same authenticated staff scope.
+  const loadUpcomingIds = async () => {
+  const upcomingIds = new Set<string>();
+  for (let offset = 0; ; offset += 1000) {
+    const result = await supabase.from("booking_lines")
+      .select("id, booking_id, booking:bookings!inner(status)")
+      .eq("salon_id", context.currentStaffSalon!.id).eq("assigned_staff_id", staff!.id)
+      .gte("scheduled_start_at", now.toISOString())
+      .not("booking.status", "in", "(cancelled,completed,no_show)")
+      .not("line_status", "in", "(cancelled,completed)")
+      .order("id").range(offset, offset + 999);
+    if (result.error) throw new Error(result.error.message);
+    for (const line of result.data ?? []) upcomingIds.add(line.booking_id);
+    if ((result.data?.length ?? 0) < 1000) break;
+  }
+  return upcomingIds;
+  };
   const view = normalizeView(firstParam(params.view));
-  const startDate = view === "week" ? addDays(selectedDate, -dayOfWeek(selectedDate)) : selectedDate;
-  const spanDays = view === "list" ? 14 : view === "week" ? 7 : 1;
+  const selectedRange = firstParam(params.range);
+  const startDate = selectedRange === "all" ? `${selectedDate.slice(0, 7)}-01` : selectedRange === "next7" ? selectedDate : view === "week" ? addDays(selectedDate, -dayOfWeek(selectedDate)) : selectedDate;
+  const spanDays = selectedRange === "all" ? new Date(Date.UTC(Number(selectedDate.slice(0, 4)), Number(selectedDate.slice(5, 7)), 0)).getUTCDate() : selectedRange === "next7" ? 7 : view === "list" ? 14 : view === "week" ? 7 : 1;
   const endDate = addDays(startDate, spanDays);
   const nextAppointmentStartDate = addDays(selectedDate, 1);
   const nextAppointmentEndDate = addDays(selectedDate, 7 - dayOfWeek(selectedDate));
@@ -427,12 +466,13 @@ export async function getCurrentStaffAppointments(
     blocksResult,
     assignmentsResult,
     servicesResult,
+    upcomingIds,
   ] =
     await Promise.all([
     supabase
       .from("booking_lines")
       .select(
-        "id, booking_id, service_name_snapshot, scheduled_start_at, scheduled_end_at, line_status, completed_at, service_note, booking:bookings!inner(id, status, confirmation_status, pos_ticket_id, public_notes, salon_timezone_snapshot, customer:customers(name, phone))",
+        "id, booking_id, service_name_snapshot, line_total, scheduled_start_at, scheduled_end_at, line_status, completed_at, service_note, booking:bookings!inner(id, status, no_show_kind, confirmation_status, pos_ticket_id, public_notes, salon_timezone_snapshot, customer:customers(name, phone))",
       )
       .eq("salon_id", context.currentStaffSalon.id)
       .eq("assigned_staff_id", staff.id)
@@ -444,7 +484,7 @@ export async function getCurrentStaffAppointments(
       ? supabase
           .from("booking_lines")
           .select(
-            "id, booking_id, service_name_snapshot, scheduled_start_at, scheduled_end_at, line_status, completed_at, service_note, booking:bookings!inner(id, status, confirmation_status, pos_ticket_id, public_notes, salon_timezone_snapshot, customer:customers(name, phone))",
+            "id, booking_id, service_name_snapshot, line_total, scheduled_start_at, scheduled_end_at, line_status, completed_at, service_note, booking:bookings!inner(id, status, no_show_kind, confirmation_status, pos_ticket_id, public_notes, salon_timezone_snapshot, customer:customers(name, phone))",
           )
           .eq("salon_id", context.currentStaffSalon.id)
           .eq("assigned_staff_id", staff.id)
@@ -466,8 +506,7 @@ export async function getCurrentStaffAppointments(
       .eq("salon_id", context.currentStaffSalon.id)
       .eq("is_active", true)
       .or(`staff_id.is.null,staff_id.eq.${staff.id}`)
-      .lt("starts_at", rangeEnd)
-      .gt("ends_at", rangeStart)
+      .gt("ends_at", rangeStart < now.toISOString() ? rangeStart : now.toISOString())
       .returns<StaffTimeBlock[]>(),
     supabase
       .from("staff_service_assignments")
@@ -481,6 +520,7 @@ export async function getCurrentStaffAppointments(
       .select(SERVICE_SELECT)
       .eq("salon_id", context.currentStaffSalon.id)
       .returns<Service[]>(),
+    loadUpcomingIds(),
   ]);
 
   if (linesResult.error) {
@@ -514,14 +554,18 @@ export async function getCurrentStaffAppointments(
         .filter((id): id is string => Boolean(id)),
     ),
   ];
-  const inspirationsByBookingId =
+  const [contactsResult, inspirationsByBookingId] = await Promise.all([
+    bookingIds.length ? supabase.rpc("get_assigned_booking_contacts", {p_booking_ids: bookingIds}) : Promise.resolve({data: {}, error: null}),
     bookingIds.length > 0
       ? await supabase
           .from("booking_inspirations")
           .select(BOOKING_INSPIRATION_SELECT)
           .in("booking_id", bookingIds)
           .returns<BookingInspiration[]>()
-      : { data: [] as BookingInspiration[], error: null };
+      : { data: [] as BookingInspiration[], error: null },
+  ]);
+  if (contactsResult.error) throw new Error(contactsResult.error.message);
+  const contacts = contactsResult.data as Record<string, {customerName: string; customerPhone: string | null; noShowCount: number; noShowReason: string | null}>;
 
   if (inspirationsByBookingId.error) {
     throw new Error(inspirationsByBookingId.error.message);
@@ -554,10 +598,11 @@ export async function getCurrentStaffAppointments(
       };
     })
     .filter((service): service is NonNullable<typeof service> => Boolean(service));
-  const appointments = mapAppointmentLines(linesResult.data ?? [], inspirationMap);
+  const appointments = mapAppointmentLines(linesResult.data ?? [], inspirationMap, contacts);
   const nextAppointmentCandidates = mapAppointmentLines(
     nextLinesResult.data ?? [],
     inspirationMap,
+    contacts,
   )
     .filter(
       (appointment) =>
@@ -584,6 +629,7 @@ export async function getCurrentStaffAppointments(
 
   return {
     appointments,
+    upcomingCount: upcomingIds.size,
     assignedServices,
     availabilityRules: availabilityResult.data ?? [],
     bookingEnabled: salonBookingStatus.onlineBookingOpen,

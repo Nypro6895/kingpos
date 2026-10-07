@@ -145,6 +145,7 @@ export type Booking = {
   no_show_at: string | null;
   no_show_by_user_id: string | null;
   no_show_reason: string | null;
+  no_show_kind?: import("@/lib/booking-no-show").NoShowKind;
   created_by_user_id: string | null;
   updated_by_user_id: string | null;
   payment_status: BookingPaymentStatus;

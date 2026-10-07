@@ -1,3 +1,5 @@
+import { OverlayDismissal } from "@/components/overlay-dismissal";
+import { WindowsPosDownloadPrompt } from "@/components/windows-pos-download";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import { SalonSwitcher } from "@/app/salon-switcher";
@@ -6,6 +8,10 @@ import { REYLUMI_METADATA_BASE } from "@/lib/reylumi-config";
 import { isSalonManageContext } from "@/lib/current-context";
 import { OwnerQueueRuntime } from "@/app/pos/owner-queue-runtime";
 import "../globals.css";
+import { QuickBooking } from "@/components/quick-booking";
+import { SessionExpiryPrompt } from "@/components/session-expiry-prompt";
+import { ExploreAdvertising } from "@/components/explore-advertising";
+import { ExploreAccountActionsProvider } from "@/components/explore-account-actions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -64,8 +70,11 @@ export default async function RootLayout({
       lang="en"
     >
       <body className="min-h-full bg-white text-zinc-950">
+        <OverlayDismissal />
+        <WindowsPosDownloadPrompt authenticated={Boolean(context.user)} />
+        <SessionExpiryPrompt authenticated={Boolean(context.user)} />
         <OwnerQueueRuntime scope={isSalonManageContext(context)&&context.currentSalon&&context.user?`owner:${context.currentSalon.id}:${context.user.id}`:null}/>
-        <SalonSwitcher context={context}>{children}</SalonSwitcher>
+        <ExploreAccountActionsProvider authenticated={Boolean(context.user)}><ExploreAdvertising><SalonSwitcher context={context}>{children}</SalonSwitcher></ExploreAdvertising><QuickBooking /></ExploreAccountActionsProvider>
       </body>
     </html>
   );

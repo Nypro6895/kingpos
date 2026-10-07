@@ -70,3 +70,6 @@ next-env.d.ts
 
 # Local scratch builds and diagnostic logs
 /work/
+
+# Alternate local Next.js build outputs
+/.next-*/

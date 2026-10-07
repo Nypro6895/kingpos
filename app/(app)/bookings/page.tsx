@@ -32,7 +32,9 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
 
   return (
     <>
-      <OwnerLiveBookingWorkspace
+      {/* Server response timestamp is intentionally request-specific. */}
+      {/* eslint-disable-next-line react-hooks/purity */}
+      <OwnerLiveBookingWorkspace snapshotAt={Date.now()}
         salonId={context.currentSalon.id}
         bookings={workspace.bookings}
         canManageBookings={workspace.canManageBookings}

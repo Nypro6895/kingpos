@@ -1,5 +1,6 @@
 "use client";
-import {useState} from 'react';import Link from 'next/link';
+import Form from "next/form";
+import {useState,useEffect,useRef} from 'react';import Link from 'next/link';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 import {DailyPosTicketCard} from './closed-ticket-correction-form';
 import {calculateTicketTotals} from '@/lib/pos-ticket-calculations';
@@ -281,9 +282,8 @@ function WorkLogFilters({
   todayHref: string;
 }) {
   return (
-    <form
+    <Form
       action="/pos-tickets"
-      method="get"
       className="mt-4 grid gap-3 border-b border-zinc-200 pb-4 sm:grid-cols-[180px_minmax(260px,1fr)_auto_auto]"
     >
       <label className="block">
@@ -317,7 +317,7 @@ function WorkLogFilters({
       >
         Today
       </Link>
-    </form>
+    </Form>
   );
 }
 
@@ -393,15 +393,22 @@ function DailyWorkLog({
 }
 
 
-type Props=Omit<Parameters<typeof DailyWorkLog>[0],'groups'|'dailyNumbers'>&{salonId:string;initialTickets:PosTicketWithRelations[];bounds:{openedFrom:string;openedTo:string};searchQuery:string};
-export function OwnerLiveTickets({salonId,initialTickets,bounds,searchQuery,...props}:Props){
- const [tickets,setTickets]=useState(initialTickets);
+type Props=Omit<Parameters<typeof DailyWorkLog>[0],'groups'|'dailyNumbers'>&{snapshotAt?:number;salonId:string;initialTickets:PosTicketWithRelations[];bounds:{openedFrom:string;openedTo:string};searchQuery:string};
+export function OwnerLiveTickets({snapshotAt,salonId,initialTickets,bounds,searchQuery,...props}:Props){
+ const [live,setLive]=useState<{base:PosTicketWithRelations[];tickets:PosTicketWithRelations[]}|null>(null);
+ const tickets=live?.base===initialTickets?live.tickets:initialTickets;
+ const generation=useRef(0);
+ useEffect(()=>{generation.current++;},[initialTickets]);
  usePosResourceRefresh(salonId,'tickets',async ids=>{
+   const snapshotGeneration=generation.current;
    const query=new URLSearchParams(bounds);if(ids?.length)query.set('ids',ids.join(','));
    const response=await fetch('/api/pos/owner/tickets?'+query.toString(),{cache:'no-store',signal:AbortSignal.timeout(10000)});
-   if(!response.ok)return;const next=await response.json();if(next.salonId!==salonId)return;
-   setTickets(current=>(ids?.length?[...current.filter(t=>!ids.includes(t.id)),...next.tickets]:next.tickets).sort((a:PosTicketWithRelations,b:PosTicketWithRelations)=>b.opened_at.localeCompare(a.opened_at)));
- });
+   if(!response.ok)return;const next=await response.json();if(next.salonId!==salonId||snapshotGeneration!==generation.current)return;
+   setLive(previous=>{
+     const current=previous?.base===initialTickets?previous.tickets:initialTickets;
+     return {base:initialTickets,tickets:(ids?.length?[...current.filter(t=>!ids.includes(t.id)),...next.tickets]:next.tickets).sort((a:PosTicketWithRelations,b:PosTicketWithRelations)=>b.opened_at.localeCompare(a.opened_at))};
+   });
+ },{initialReconcile:false,snapshotAt});
  const dailyNumbers=buildDailyTicketNumbers(tickets);const groups=groupTicketsByDate(filterTicketsBySearch(tickets,searchQuery,dailyNumbers));
  return <DailyWorkLog {...props} groups={groups} dailyNumbers={dailyNumbers}/>;
 }

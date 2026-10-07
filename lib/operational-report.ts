@@ -1,3 +1,4 @@
+import { getSalonBusinessTimezone } from "@/lib/salon-business-clock";
 import "server-only";
 
 import {
@@ -473,7 +474,7 @@ async function getReportPermissions(context: CurrentBusinessContext) {
 }
 
 async function loadBusinessClock(auth: ReportAuthContext): Promise<ReportClock> {
-  const fallbackTimeZone = auth.user.timezone || "America/Chicago";
+  const fallbackTimeZone = await getSalonBusinessTimezone(auth.salon.id);
   const fallbackDate = fallbackBusinessDate(fallbackTimeZone);
   const fallback = {
     businessDate: fallbackDate,

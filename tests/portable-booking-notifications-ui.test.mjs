@@ -21,7 +21,7 @@ test('Notification bell: confirm, duplicate protection, stale refresh, errors, k
     b.onResolve({ filter: /pos-workspace-sync$/ }, () => ({ path: 'sync', namespace: 'stub' }));
     b.onLoad({ filter: /.*/, namespace: 'stub' }, args => ({ resolveDir: process.cwd(), contents: args.path === 'actions' ? `
       export async function portableBookingNotifications(){if(window.loadFail)throw Error('failed');const rows=[...window.rows];if(window.delay)await new Promise(r=>window.finishRefresh=r);return rows;}
-      export async function portableManageBooking(input){window.calls.push(input);await new Promise(r=>window.finishConfirm=r);if(window.fail)return{ok:false,error:'Appointment changed on another device.'};const item=window.rows.find(x=>x.id===input.bookingId);window.rows=window.rows.filter(x=>x.id!==input.bookingId);return{ok:true,data:{...item,status:'confirmed'}};}
+      export async function portableManageBooking(input){window.calls.push(input);await new Promise(r=>window.finishConfirm=r);if(window.fail)return{ok:false,error:'Appointment changed on another device.'};if(window.noShowWarning&&!input.payload?.acknowledgeNoShow)return{ok:true,data:{requiresNoShowReview:true,noShowHistory:[{id:'old',startAt:'2026-08-31T14:00:00Z',timezone:'America/Chicago',services:['Manicure'],note:null}]}};const item=window.rows.find(x=>x.id===input.bookingId);window.rows=window.rows.filter(x=>x.id!==input.bookingId);return{ok:true,data:{...item,status:'confirmed'}};}
     ` : `import {useEffect} from 'react';export function usePosResourceRefresh(s,r,refresh){window.refresh=refresh;useEffect(()=>{void refresh()},[refresh]);}` }));
   } }] });
   const js = built.outputFiles.find(f => f.path.endsWith('.js')).text;
@@ -79,6 +79,18 @@ test('Notification bell: confirm, duplicate protection, stale refresh, errors, k
     assert.match(await panel.textContent(),/Staff: Unassigned/);
     await page.keyboard.press('Tab');assert.equal(await panel.count(),0);
     await page.evaluate(()=>{window.loadFail=true;return window.refresh()});await bell.click();await page.getByRole('alert').waitFor();
+    await page.evaluate(()=>{window.loadFail=false;window.noShowWarning=true;window.render(true);return window.refresh()});
+    await page.getByRole('button',{name:'Confirm appointment for Sam'}).click();
+    await page.waitForFunction(()=>window.calls.length===4);await page.evaluate(()=>window.finishConfirm());
+    await page.getByRole('dialog',{name:'Previous no-shows'}).waitFor();
+    await page.getByRole('button',{name:'Go back',exact:true}).click();
+    await panel.waitFor();assert.equal(await bell.getAttribute('aria-label'),'Appointment notifications, 1 pending');
+    await page.getByRole('button',{name:'Confirm appointment for Sam'}).click();
+    await page.waitForFunction(()=>window.calls.length===5);await page.evaluate(()=>window.finishConfirm());
+    await page.getByRole('button',{name:'Confirm anyway',exact:true}).click();
+    await page.waitForFunction(()=>window.calls.length===6);await page.evaluate(()=>window.finishConfirm());
+    await page.getByRole('button',{name:'Appointment notifications, 0 pending'}).waitFor();
+    assert.equal(await page.evaluate(()=>window.calls[5].payload.acknowledgeNoShow),true);
     assert.deepEqual(errors,[]);
   } finally {await browser.close();await new Promise(r=>server.close(r));}
 });

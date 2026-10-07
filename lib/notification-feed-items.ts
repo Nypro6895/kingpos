@@ -1,5 +1,8 @@
 import type { AppNotification } from "@/lib/app-notifications";
-import { getManageWorkspaceId } from "@/lib/current-context";
+import {
+  getManageWorkspaceId,
+  getStaffWorkspaceId,
+} from "@/lib/current-context";
 import type {
   SalonStaffConnectionRequestWithDetails,
   StaffConnectionDashboardRequest,
@@ -32,7 +35,10 @@ function relativeTime(value: string, now = new Date()) {
     return "Recently";
   }
 
-  const seconds = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 1000));
+  const seconds = Math.max(
+    0,
+    Math.floor((now.getTime() - date.getTime()) / 1000),
+  );
 
   if (seconds < 60) {
     return "Just now";
@@ -87,7 +93,13 @@ function matchesPath(href: string, path: string) {
 export function resolveAppNotificationDestination(
   notification: AppNotification,
 ) {
-  if (notification.recipient_kind === "customer" && notification.booking_id) {
+  if (
+    notification.recipient_kind === "customer" &&
+    notification.booking_id &&
+    !["payment_receipt", "salon_check_in"].includes(
+      notification.notification_type,
+    )
+  ) {
     const href = `/my-bookings/${notification.booking_id}`;
 
     return {
@@ -97,14 +109,17 @@ export function resolveAppNotificationDestination(
     };
   }
 
-  const href = safeNotificationHref(notification.href);
+  const href =
+    notification.notification_type === "owner_transfer_invite"
+      ? "/my-place"
+      : safeNotificationHref(notification.href);
   const shouldOpenManageWorkspace =
     notification.recipient_kind === "owner_manager" &&
     Boolean(notification.salon_id) &&
-    ((notification.notification_type === BEAUTY_SALON_PUBLICATION_REQUEST_TYPE &&
-      matchesPath(href, BEAUTY_SALON_PUBLICATION_REQUEST_HREF)) ||
-      (notification.notification_type === PUBLIC_BOOKING_CREATED_TYPE &&
-        matchesPath(href, PUBLIC_BOOKING_HREF)));
+    (matchesPath(href, "/bookings") ||
+      matchesPath(href, "/salon-profile") ||
+      matchesPath(href, "/staff") ||
+      matchesPath(href, "/salon-settings"));
 
   return {
     href,
@@ -112,7 +127,11 @@ export function resolveAppNotificationDestination(
     workspaceId:
       shouldOpenManageWorkspace && notification.salon_id
         ? getManageWorkspaceId(notification.salon_id)
-        : null,
+        : notification.recipient_kind === "staff" &&
+            notification.salon_id &&
+            matchesPath(href, "/staff/appointments")
+          ? getStaffWorkspaceId(notification.salon_id)
+          : null,
   };
 }
 
@@ -162,7 +181,18 @@ export function appNotificationToFeedItem(
       type: "open-app",
       workspaceId: destination.workspaceId,
     },
-    body: notification.body,
+    thumbnailUrl: notification.thumbnail_url,
+    notificationType: notification.notification_type,
+    booking:
+      notification.booking_id && notification.booking_updated_at
+        ? {
+            id: notification.booking_id,
+            updatedAt: notification.booking_updated_at,
+            recipientKind: notification.recipient_kind,
+            actionable: notification.booking_actionable === true,
+          }
+        : undefined,
+    body: notification.appointment_summary ?? notification.body,
     createdAt: notification.created_at,
     id: `app:${notification.id}`,
     kindLabel,
@@ -188,19 +218,19 @@ export function staffDashboardRequestToFeedItem(
     : `Requested title ${request.requested_job_title ?? "Not specified"}`;
   const action = pending
     ? isInvite
-      ? ({
+      ? {
           requestId: request.id,
           type: "staff-invite" as const,
-        })
-      : ({
+        }
+      : {
           requestId: request.id,
           type: "staff-application" as const,
-        })
-    : ({
+        }
+    : {
         href: "/staff/connections",
         label: "View",
         type: "link" as const,
-      });
+      };
 
   return {
     action,
@@ -225,7 +255,9 @@ export function managerRequestToFeedItem(
     request.account?.display_name ??
     request.target_email_normalized ??
     "Applicant";
-  const role = request.requested_job_title ? ` - ${request.requested_job_title}` : "";
+  const role = request.requested_job_title
+    ? ` - ${request.requested_job_title}`
+    : "";
 
   return {
     action: {
@@ -294,7 +326,10 @@ export function groupNotificationFeedItems(
 
     if (item.unread) {
       buckets.new.push(item);
-    } else if (!Number.isNaN(createdAt.getTime()) && isSameDate(createdAt, now)) {
+    } else if (
+      !Number.isNaN(createdAt.getTime()) &&
+      isSameDate(createdAt, now)
+    ) {
       buckets.today.push(item);
     } else {
       buckets.earlier.push(item);

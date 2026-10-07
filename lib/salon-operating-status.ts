@@ -621,6 +621,20 @@ export async function deleteCurrentSalonSpecialHours(specialHoursId: string) {
   }
 }
 
+export async function getPublicSalonOperatingHours(salonId: string): Promise<SalonOperatingHoursSettings | null> {
+  const supabase = createSupabaseServerClient();
+  if (!supabase) throw new Error("Could not load operating hours.");
+  const rpc = supabase.rpc.bind(supabase) as unknown as RpcRunner;
+  const { data, error } = await rpc("get_public_salon_operating_status_inputs", { target_salon_ids: normalizeSalonOperatingStatusSalonIds([salonId]) });
+  if (error) throw new Error("Could not load operating hours.");
+  const row = (Array.isArray(data) ? data as PublicStatusInputRow[] : []).find(row => row.salon_id === salonId);
+  if (!row) return null;
+  const weeklyHours = mapPublicWeeklyHours(row.weekly_hours);
+  const specialHours = mapPublicSpecialHours(row.special_hours);
+  const timeZone = normalizeOperatingTimeZone(row.timezone_iana);
+  return { weeklyHours, specialHours, timeZone, status: resolveSalonOperatingStatus({ lifecycleStatus: row.lifecycle_status, weeklyHours, specialHours, timeZone }) };
+}
+
 export async function getPublicSalonOperatingStatusesBySalonId(
   salonIds: string[],
 ) {

@@ -1,3 +1,4 @@
+import { bookingStatusLabel } from "@/lib/booking-no-show";
 import {
   getCustomerActivity,
   type CustomerActivity,
@@ -50,7 +51,7 @@ function formatTime(value: string, timezone?: string) {
 }
 
 function statusLabel(status: CustomerActivity["status"]) {
-  return status === "no_show" ? "No-show" : status.replaceAll("_", " ");
+  return status === "no_show" ? "No-show" : status === "completed" ? "Paid at salon" : status.replaceAll("_", " ");
 }
 
 function statusClass(status: CustomerActivity["status"]) {
@@ -120,7 +121,7 @@ function ActivityAmount({ activity }: { activity: CustomerActivity }) {
     );
   }
 
-  if (activity.status === "upcoming") {
+  if (activity.type === "booking" && activity.status === "upcoming") {
     return (
       <p className="text-sm font-extrabold text-brand-teal sm:text-right">
         {formatTime(activity.startAt, activity.timezone)}
@@ -144,7 +145,7 @@ function ActivityCard({ activity }: { activity: CustomerActivity }) {
     activity.type === "purchase" ? activity.verifiedVisit : null;
 
   return (
-    <article className="rounded-2xl border border-border-subtle bg-surface p-4 shadow-sm transition hover:border-brand-orange/40 hover:shadow-[0_16px_36px_rgba(23,19,22,0.06)]">
+    <article className="content-surface border-border-subtle bg-surface p-4 transition hover:border-brand-orange/40 rounded-none border-y shadow-none">
       <Link
         className="group grid min-h-[84px] gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
         href={activity.href}
@@ -161,7 +162,7 @@ function ActivityCard({ activity }: { activity: CustomerActivity }) {
                 statusClass(activity.status),
               )}
             >
-              {statusLabel(activity.status)}
+              {(activity.type === "booking" && activity.status === "no_show" ? bookingStatusLabel(activity.status, activity.noShowKind) : statusLabel(activity.status))}
             </span>
             {verifiedVisit ? (
               <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold text-emerald-800">
@@ -227,7 +228,7 @@ function UpcomingCard({ booking }: { booking: CustomerBookingActivity }) {
 
 function ErrorState({ message }: { message: string }) {
   return (
-    <section className="grid gap-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-8 shadow-sm">
+    <section className="content-surface grid gap-4 border-red-200 bg-red-50 px-5 py-8 rounded-none border-y shadow-none">
       <div>
         <p className="text-xs font-bold uppercase text-red-700">Activity</p>
         <h2 className="mt-1 text-2xl font-extrabold text-red-950">
@@ -249,7 +250,7 @@ function ErrorState({ message }: { message: string }) {
 
 function EmptyState() {
   return (
-    <section className="grid gap-4 rounded-2xl border border-dashed border-border-subtle bg-surface px-5 py-10 text-center shadow-sm">
+    <section className="content-surface grid gap-4 border-border-subtle bg-surface px-5 py-10 text-center rounded-none border-y shadow-none">
       <p className="text-xs font-bold uppercase text-brand-orange">Activity</p>
       <h2 className="text-2xl font-extrabold text-text-primary">
         No activity yet

@@ -1,4 +1,6 @@
 import "server-only";
+import { cache } from "react";
+import { scopedBusinessContext } from "./scoped-business-context";
 
 import { routes } from "@/lib/routes";
 import {
@@ -470,8 +472,6 @@ function buildAccountWorkspaceActions(input: { isOwner: boolean }) {
   if (input.isOwner) {
     actions.push(
       workspaceAction("create-salon", "Create Salon", routes.salons.create()),
-      workspaceAction("members", "Members", "/roles"),
-      workspaceAction("settings", "Permissions", "/permissions"),
     );
   }
 
@@ -1410,6 +1410,8 @@ function findMembershipForWorkspace(input: {
 }
 
 export async function getCurrentStaffBusinessContext(): Promise<CurrentBusinessContext> {
+  const scoped = scopedBusinessContext();
+  if (scoped?.salonMode === "staff") return scoped;
   const context = await getCurrentBusinessContext();
   const staffWorkspaces = context.workspaceOptions.filter(
     (workspace) => workspace.salonMode === "staff",
@@ -1522,9 +1524,19 @@ async function getCurrentBusinessContextAuth(
   return { supabase, user };
 }
 
-export async function getCurrentBusinessContext(
-  options: CurrentBusinessContextOptions = {},
-): Promise<CurrentBusinessContext> {
+const getDefaultBusinessContext = cache(() => loadCurrentBusinessContext({}));
+
+export function getCurrentBusinessContext(options: CurrentBusinessContextOptions = {}): Promise<CurrentBusinessContext> {
+  const scoped = scopedBusinessContext();
+  if (scoped && !options.accessToken && !options.cookieStore) return Promise.resolve(scoped);
+  return options.accessToken || options.cookieStore
+    ? loadCurrentBusinessContext(options)
+    : getDefaultBusinessContext();
+}
+
+async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions): Promise<CurrentBusinessContext> {
+  const scoped = scopedBusinessContext();
+  if (scoped && !options.accessToken && !options.cookieStore) return scoped;
   const auth = await getCurrentBusinessContextAuth(
     options.accessToken,
   );
@@ -1763,6 +1775,10 @@ export async function getCurrentBusinessContext(
     workspaceOptions,
     workspaceType: currentWorkspace.type,
   };
+}
+
+export async function getCurrentRolePermissionCodesForMembership(membership: CurrentMembership) {
+  return [...await loadPermissionCodesForMembership(membership, await createAuthenticatedSupabaseServerClient())];
 }
 
 async function setPersistentCookie(name: string, value: string) {

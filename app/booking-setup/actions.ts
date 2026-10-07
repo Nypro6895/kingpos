@@ -1,4 +1,6 @@
 "use server";
+import { withSettingsTarget } from "@/lib/settings-target-context";
+
 
 import { localDateTimeToUtcIso } from "@/lib/bookings";
 import {
@@ -35,6 +37,7 @@ export type WeeklyAvailabilityDraftRule = {
 };
 
 export type CreateTimeBlockInput = {
+  expectedSalonId?: string;
   blockType: "blocked" | "break" | "cleanup" | "time_off";
   endLocal: string;
   overrideConflicts?: boolean;
@@ -162,11 +165,14 @@ async function ensureMutableTimeBlock(
 }
 
 export async function saveStaffWeeklyAvailabilityAction(input: {
+  expectedSalonId?: string;
   rules: WeeklyAvailabilityDraftRule[];
   staffId: string;
 }): Promise<BookingSetupActionResult> {
+ return withSettingsTarget(input.expectedSalonId, async () => {
   try {
     const actionContext = await getActionContext();
+    if(input.expectedSalonId && input.expectedSalonId !== actionContext.salonId) throw new Error("The selected salon changed. Reload availability before saving.");
     const staffId = ensureMutableStaffId(
       actionContext,
       ensureUuid(input.staffId, "Staff"),
@@ -197,13 +203,17 @@ export async function saveStaffWeeklyAvailabilityAction(input: {
       error instanceof Error ? error.message : "Weekly availability could not be saved.",
     );
   }
+
+ }, "auto");
 }
 
 export async function createStaffTimeBlockAction(
   input: CreateTimeBlockInput,
 ): Promise<BookingSetupActionResult> {
+ return withSettingsTarget(input.expectedSalonId, async () => {
   try {
     const actionContext = await getActionContext();
+    if(input.expectedSalonId && input.expectedSalonId !== actionContext.salonId) throw new Error("The selected salon changed. Reload availability before saving.");
     const staffId = ensureMutableStaffId(
       actionContext,
       ensureUuid(input.staffId, "Staff"),
@@ -255,13 +265,18 @@ export async function createStaffTimeBlockAction(
       error instanceof Error ? error.message : "Time block could not be created.",
     );
   }
+
+ }, "auto");
 }
 
 export async function cancelStaffTimeBlockAction(input: {
+  expectedSalonId?: string;
   blockId: string;
 }): Promise<BookingSetupActionResult> {
+ return withSettingsTarget(input.expectedSalonId, async () => {
   try {
     const actionContext = await getActionContext();
+    if(input.expectedSalonId && input.expectedSalonId !== actionContext.salonId) throw new Error("The selected salon changed. Reload availability before saving.");
     const blockId = ensureUuid(input.blockId, "Time block");
     await ensureMutableTimeBlock(actionContext, blockId);
 
@@ -281,4 +296,6 @@ export async function cancelStaffTimeBlockAction(input: {
       error instanceof Error ? error.message : "Time block could not be cancelled.",
     );
   }
+
+ }, "auto");
 }

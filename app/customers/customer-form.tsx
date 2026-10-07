@@ -1,3 +1,5 @@
+
+import { SubmitButton } from "@/components/submit-button";
 import type { Customer } from "@/types/customer";
 import Link from "next/link";
 
@@ -117,12 +119,12 @@ export function CustomerForm({ action, customer, error, mode }: CustomerFormProp
       ) : null}
 
       <div className="flex flex-wrap gap-3 sm:col-span-2">
-        <button
+        <SubmitButton pendingLabel="Saving…"
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
           Save Customer
-        </button>
+        </SubmitButton>
         <Link
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
           href={customer ? `/customers/${customer.id}` : "/customers"}

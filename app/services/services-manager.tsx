@@ -1,4 +1,5 @@
 "use client";
+import { DeleteUnusedButton } from "@/app/settings/delete-unused-button";
 
 import {
   createServiceAction,
@@ -21,6 +22,7 @@ import {
   type FormEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -30,6 +32,9 @@ type StatusFilter = "active" | "all" | "inactive" | "needs_setup" | "online";
 type ServicesManagerProps = {
   data: ServicesWorkspaceData;
   initialServiceId: string | null;
+  embedded?: boolean;
+  expectedSalonId?: string;
+  onSaved?: () => void | Promise<void>;
 };
 
 const EMPTY_CREATE_DRAFT: Omit<ServiceConfigInput, "serviceId"> = {
@@ -523,18 +528,24 @@ function ServiceEditor({
 }
 
 function CreateServiceDrawer({
+  embedded = false,
+  expectedSalonId,
   canManage,
   onClose,
   onCreated,
 }: {
+  expectedSalonId?: string;
+  embedded?: boolean;
   canManage: boolean;
   onClose: () => void;
-  onCreated: (serviceId: string) => void;
+  onCreated: (serviceId: string) => void | Promise<void>;
 }) {
   const [draft, setDraft] = useState(EMPTY_CREATE_DRAFT);
   const [result, setResult] = useState<SaveServiceConfigsResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const errors = validateServiceConfig({ ...draft, serviceId: null }).fieldErrors;
+  const creationRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (embedded) creationRef.current?.querySelector<HTMLInputElement>("input")?.focus(); }, [embedded]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -543,9 +554,10 @@ function CreateServiceDrawer({
       }
     }
 
+    if (embedded) return;
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isPending, onClose]);
+  }, [isPending, onClose, embedded]);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -563,22 +575,26 @@ function CreateServiceDrawer({
 
     setResult(null);
     startTransition(async () => {
-      const response = await createServiceAction(draft);
+      let response: SaveServiceConfigsResult;
+      try { response = await createServiceAction(draft, expectedSalonId); }
+      catch { setResult({ ok: false, message: "Could not create service. Your changes are still here. Please try again." }); return; }
       setResult(response);
 
       if (response.ok && response.serviceIds[0]) {
-        onCreated(response.serviceIds[0]);
+        await onCreated(response.serviceIds[0]);
       }
     });
   }
 
   return (
-    <div className="service-drawer-backdrop" role="presentation">
+    <div ref={creationRef} className={embedded ? "service-create-inline" : "service-drawer-backdrop"} role="presentation"
+      onKeyDown={embedded ? (event) => { if (event.key === "Escape") { event.stopPropagation(); if (!isPending) onClose(); } } : undefined}>
+
       <aside
         aria-labelledby="new-service-title"
-        aria-modal="true"
+        aria-modal={embedded ? undefined : true}
         className="service-drawer"
-        role="dialog"
+        role={embedded ? "region" : "dialog"}
       >
         <header className="service-drawer__header">
           <div>
@@ -741,6 +757,9 @@ function CreateServiceDrawer({
 export function ServicesManager({
   data,
   initialServiceId,
+  embedded = false,
+  expectedSalonId,
+  onSaved,
 }: ServicesManagerProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -755,6 +774,7 @@ export function ServicesManager({
   const [serviceErrors, setServiceErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<SaveServiceConfigsResult | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [refreshFailed, setRefreshFailed] = useState(false);
   const [isPending, startTransition] = useTransition();
   const dirtyIds = Object.keys(drafts);
   const normalizedQuery = normalizeSearchText(query);
@@ -885,7 +905,18 @@ export function ServicesManager({
     setMessage(null);
   }
 
+  async function refreshAfterSave() {
+    try {
+      if (onSaved) await onSaved();
+      setRefreshFailed(false);
+    } catch {
+      setRefreshFailed(true);
+      setMessage({ ok: false, message: "Saved, but the service list could not refresh. Reload the list to see the latest values." });
+    }
+  }
+
   function saveAll() {
+    if (isPending || dirtyIds.length === 0) return;
     const configs = dirtyIds.map((serviceId) => drafts[serviceId]);
     const firstInvalid = configs.find(
       (config) => !validateServiceConfig(config).valid,
@@ -902,13 +933,15 @@ export function ServicesManager({
 
     setMessage(null);
     startTransition(async () => {
-      const response = await saveServiceConfigsAction(configs);
+      let response: SaveServiceConfigsResult;
+      try { response = await saveServiceConfigsAction(configs, expectedSalonId); }
+      catch { setMessage({ ok: false, message: "Could not save services. Your changes are still here. Please try again." }); return; }
       setMessage(response);
 
       if (response.ok) {
         setDrafts({});
         setServiceErrors({});
-        router.refresh();
+        await refreshAfterSave();
       } else {
         setServiceErrors(
           response.serviceErrors ??
@@ -926,17 +959,18 @@ export function ServicesManager({
     setMessage(null);
   }
 
-  function handleCreated(serviceId: string) {
+  async function handleCreated(serviceId: string) {
     setShowCreate(false);
     setExpandedServiceId(serviceId);
     setMessage({ message: "Service created. Add booking staff or add-ons when ready.", ok: true, serviceIds: [serviceId] });
-    router.replace(`/services?service=${serviceId}`);
-    router.refresh();
+    if (embedded) await refreshAfterSave();
+    if (!embedded) { router.replace(`/services?service=${serviceId}`); }
   }
 
   return (
-    <main className="services-page">
+    <main className={embedded ? "services-page settings-inline-services" : "services-page"}>
       <div className="services-page__frame services-page__content">
+        {refreshFailed ? <button type="button" className="services-button" disabled={isPending} onClick={() => startTransition(async () => { if (onSaved) await refreshAfterSave(); else { router.refresh(); setRefreshFailed(false); } })}>Reload service list</button> : null}
         {data.canManage ? (
           <div className="services-page__actions">
             <button
@@ -1124,7 +1158,7 @@ export function ServicesManager({
                       </div>
                       <button
                         aria-expanded={expanded}
-                        aria-label={`${expanded ? "Collapse" : "Expand"} ${config.name}`}
+                        aria-label={`${expanded ? "Close" : data.canManage ? "Edit" : "View"} ${config.name}`}
                         className="services-expand-button"
                         onClick={() =>
                           setExpandedServiceId(expanded ? null : service.id)
@@ -1142,14 +1176,17 @@ export function ServicesManager({
                     ) : null}
 
                     {expanded ? (
-                      <ServiceEditor
-                        addOnIdsByServiceId={addOnIdsByServiceId}
-                        canManage={data.canManage && !isPending}
-                        config={config}
-                        data={data}
-                        onChange={(patch) => updateService(service, patch)}
-                        service={service}
-                      />
+                      <>
+                        <ServiceEditor
+                          addOnIdsByServiceId={addOnIdsByServiceId}
+                          canManage={data.canManage && !isPending}
+                          config={config}
+                          data={data}
+                          onChange={(patch) => updateService(service, patch)}
+                          service={service}
+                        />
+                        {data.canManage ? <DeleteUnusedButton expectedSalonId={expectedSalonId} kind="services" id={service.id} name={config.name} onDeleted={onSaved} disabled={dirty || isPending} /> : null}
+                      </>
                     ) : null}
                   </article>
                 );
@@ -1190,6 +1227,8 @@ export function ServicesManager({
 
       {showCreate ? (
         <CreateServiceDrawer
+          embedded={embedded}
+          expectedSalonId={expectedSalonId}
           canManage={data.canManage}
           onClose={() => setShowCreate(false)}
           onCreated={handleCreated}

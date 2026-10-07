@@ -17,7 +17,7 @@ export default async function GuestManagePage({
 }: GuestManagePageProps) {
   const [{ token }, { claim }] = await Promise.all([params, searchParams]);
   const [data, currentUser] = await Promise.all([
-    getGuestManagePageData(token),
+    getGuestManagePageData(token, { deferSlots: true }),
     getCurrentKingUser(),
   ]);
 

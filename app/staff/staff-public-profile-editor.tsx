@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 type StaffPublicProfileEditorProps = {
+  expectedSalonId?: string;
+  onSaved?: ()=>void|Promise<void>;
   avatarUrl: string | null;
   bio: string | null;
   canEditSalonRole?: boolean;
@@ -133,6 +135,8 @@ function uploadToSupabase(input: {
 }
 
 export function StaffPublicProfileEditor({
+  expectedSalonId,
+  onSaved,
   avatarUrl,
   bio,
   canEditSalonRole = false,
@@ -186,7 +190,7 @@ export function StaffPublicProfileEditor({
 
     try {
       const processed = await processAvatar(file);
-      const session = await getStaffProfileAvatarUploadSessionAction(staffId);
+      const session = await getStaffProfileAvatarUploadSessionAction(staffId, expectedSalonId);
 
       await uploadToSupabase({
         accessToken: session.accessToken,
@@ -219,6 +223,7 @@ export function StaffPublicProfileEditor({
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError("");
     setNotice("");
@@ -229,7 +234,8 @@ export function StaffPublicProfileEditor({
       form.set("public_profile_photo_path", avatarPath);
     }
 
-    const result = await updateStaffPublicProfileAction(form);
+    try {
+    const result = await updateStaffPublicProfileAction(form, expectedSalonId);
 
     if (result.error) {
       setError(result.error);
@@ -237,19 +243,23 @@ export function StaffPublicProfileEditor({
       setAvatarPath("");
       setNotice("Staff Profile saved.");
       router.refresh();
+      if(onSaved)try{await onSaved();}catch{setError("Saved, but the staff list could not refresh. Reopen this section to load the latest profile.");}
     }
 
-    setBusy(false);
+    } catch { setError("Could not save profile. Your changes are still here. Please try again."); }
+    finally { setBusy(false); }
   }
 
   async function savePasscode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (passcodeBusy) return;
     setPasscodeBusy(true);
     setPasscodeError("");
     setPasscodeNotice("");
 
     const form = event.currentTarget;
-    const result = await updateOwnStaffPasscodeAction(new FormData(form));
+    try {
+    const result = await updateOwnStaffPasscodeAction(new FormData(form), expectedSalonId);
 
     if (result.error) {
       setPasscodeError(result.error);
@@ -258,7 +268,8 @@ export function StaffPublicProfileEditor({
       setPasscodeNotice("Staff passcode changed.");
     }
 
-    setPasscodeBusy(false);
+    } catch { setPasscodeError("Could not change passcode. Please try again."); }
+    finally { setPasscodeBusy(false); }
   }
 
   return (
@@ -354,7 +365,7 @@ export function StaffPublicProfileEditor({
           disabled={busy}
           type="submit"
         >
-          Save Staff Profile
+          {busy ? "Saving…" : "Save Staff Profile"}
         </button>
       </form>
 
@@ -427,7 +438,7 @@ export function StaffPublicProfileEditor({
             disabled={passcodeBusy}
             type="submit"
           >
-            Change passcode
+            {passcodeBusy ? "Saving…" : "Change passcode"}
           </button>
         </form>
       ) : null}

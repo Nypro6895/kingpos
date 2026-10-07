@@ -1,4 +1,6 @@
 "use server";
+import { scopedBusinessContext } from "@/lib/scoped-business-context";
+import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 
 import {
   POS_TICKET_ITEM_SELECT,
@@ -76,6 +78,7 @@ function redirectWithError(
   paymentTicketId?: string,
   returnPath = "/pos-tickets",
 ): never {
+  if (scopedBusinessContext()) throw new Error(message);
   const params = new URLSearchParams({ error: message });
 
   if (editId) {
@@ -108,7 +111,8 @@ function redirectWithCheckoutError(
   redirect(`${returnPath}${separator}${params.toString()}`);
 }
 
-function redirectAfterMutation(returnPath: string): never {
+function redirectAfterMutation(returnPath: string): void {
+  if (scopedBusinessContext()) return;
   redirect(returnPath);
 }
 
@@ -710,7 +714,7 @@ async function assertOpenedAtFinancialDateMutable(
   context: CurrentBusinessContext,
 ) {
   await assertFinancialDateMutable(
-    formatDateInTimeZone(openedAt, context.user?.timezone ?? "America/Chicago"),
+    formatDateInTimeZone(openedAt, await getContextBusinessTimezone(context)),
     context,
     {
       lockedMessage: LOCKED_TICKET_DATE_MESSAGE,
@@ -1293,7 +1297,7 @@ export async function createPosTicket(formData: FormData) {
 
   try {
     await assertFinancialDateMutable(
-      formatDateInTimeZone(input.openedAt, user.timezone),
+      formatDateInTimeZone(input.openedAt, await getContextBusinessTimezone(context)),
       context,
       {
         lockedMessage: LOCKED_TICKET_DATE_MESSAGE,
@@ -1730,11 +1734,14 @@ export async function cancelPosTicket(formData: FormData) {
 
   await validateOpenTicketRelationship(ticketId, ticketId);
 
-  const { error } = await supabase
-    .from("pos_tickets")
-    .update({ status: "cancelled" })
-    .eq("id", ticketId)
-    .eq("salon_id", salon.id);
+  let cancelQuery = supabase.from("pos_tickets").update({status:"cancelled"}).eq("id",ticketId).eq("salon_id",salon.id).eq("status","open");
+  if(scopedBusinessContext()){
+    const expectedUpdatedAt=readRequiredString(formData,"expected_updated_at");
+    if(!expectedUpdatedAt)throw new Error("Reload the ticket before cancelling it.");
+    cancelQuery=cancelQuery.eq("updated_at",expectedUpdatedAt);
+  }
+  const {data:cancelledTicket,error}=await cancelQuery.select("id").maybeSingle();
+  if(!error&&!cancelledTicket)redirectWithError("This ticket changed. Reload it before cancelling.",ticketId);
 
   if (error) {
     console.error("Supabase cancel POS ticket failed", {
@@ -2119,7 +2126,7 @@ export async function correctClosedPosTicket(formData: FormData) {
       }
     }
 
-    const workDate = formatDateInTimeZone(ticket.opened_at, user.timezone);
+    const workDate = formatDateInTimeZone(ticket.opened_at, await getContextBusinessTimezone(context));
     await assertFinancialDateMutable(workDate, context, {
       lockedMessage: LOCKED_TICKET_DATE_MESSAGE,
       requireEditPermission: false,
@@ -2807,7 +2814,7 @@ export async function submitLockedStaffFinancialCorrection(formData: FormData) {
       throw new Error("Only closed tickets can be corrected with this action.");
     }
 
-    const workDate = formatDateInTimeZone(ticket.opened_at, user.timezone);
+    const workDate = formatDateInTimeZone(ticket.opened_at, await getContextBusinessTimezone(context));
     const isLocked = await isDailyClosingLocked(workDate, context);
 
     if (!isLocked) {
