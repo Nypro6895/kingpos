@@ -1,4 +1,7 @@
 .page{padding:32px 24px 70px;color:var(--text-primary);background:var(--surface)}
+.featureImageButton{display:block;width:calc(100% + 46px);margin:-23px -23px 20px;overflow:hidden;border-radius:11px 11px 0 0;border-bottom:1px solid var(--border-subtle);cursor:pointer;background:#fbf8f5}
+.featureImage{display:block;width:100%;height:auto;transition:transform .2s}.featureImageButton:hover .featureImage{transform:scale(1.025)}
+.detailImage{display:block;width:100%;height:auto;margin-top:22px;border:1px solid var(--border-subtle);border-radius:12px;background:#fbf8f5}
 .heroIllustration{min-width:0;align-self:center}.heroIllustration img{display:block;width:100%;height:auto;filter:drop-shadow(0 10px 16px #7353370a)}
 .insideReylumi{background:var(--brand-teal-soft);border-radius:9px;padding:12px 14px;color:var(--brand-teal)!important;font-weight:600;font-size:12px!important}
 @media(max-width:560px){.heroIllustration{max-width:300px;justify-self:center;width:100%;margin-top:-8px}}
