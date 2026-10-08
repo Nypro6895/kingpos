@@ -44,17 +44,12 @@ const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     group: "Platform management", icon: "♙",
   },
   {
-    href: "/admin/businesses",
+    href: "/admin/locations",
     label: "Businesses",
-    permission: PLATFORM_ADMIN_PERMISSIONS.businessesRead,
+    permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead,
     group: "Platform management", icon: "▦",
   },
-  {
-    href: "/admin/locations",
-    label: "Salons",
-    permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead,
-    group: "Platform management", icon: "⌖",
-  },
+
   { href: "/admin/post-safety", label: "Post safety", permission: PLATFORM_ADMIN_PERMISSIONS.reportsRead, group: "Review & support", icon: "☷" },
   {
     href: "/admin/reports",
@@ -69,7 +64,7 @@ const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     group: "Review & support", icon: "↺",
   },
   {href: "/admin/claims", label: "Ownership claims", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Review & support", icon: "◇"},
-  {href: "/admin/verification", label: "Salon verification", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Review & support", icon: "✓"},
+  {href: "/admin/verification", label: "Business verification", permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead, group: "Review & support", icon: "✓"},
   {href: "/admin/notifications", label: "Notifications", permission: PLATFORM_ADMIN_PERMISSIONS.notificationsRead, group: "Communication", icon: "♧"},
   {href: "/admin/inbox", label: "Support inbox", permission: PLATFORM_ADMIN_PERMISSIONS.inboxRead, group: "Review & support", icon: "✉"},
   {href: "/admin/advertising", label: "Advertising", permission: PLATFORM_ADMIN_PERMISSIONS.advertisingManage, group: "Communication", icon: "◈"},
