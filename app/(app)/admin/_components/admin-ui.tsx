@@ -1,3 +1,5 @@
+import { LogoutButton } from "@/app/account/logout-button";
+import { DashboardIcon } from "../dashboard/dashboard-icons";
 import { CompactFilters } from "@/components/compact-filters";
 
 import Form from "next/form";
@@ -49,7 +51,7 @@ const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   },
   {
     href: "/admin/locations",
-    label: "Locations",
+    label: "Salons",
     permission: PLATFORM_ADMIN_PERMISSIONS.locationsRead,
     group: "Platform management", icon: "⌖",
   },
@@ -122,13 +124,14 @@ export function AdminShell({ children, context, counts = {} }: AdminShellProps) 
           className="flex min-h-14 flex-col items-start justify-center rounded-lg px-2 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
           href="/admin"
         >
-          <AdminBrandLogo className="w-36 max-w-full" />
+          <span className="admin-brand-wordmark">REYLUMI</span>
           <span className="mt-1 block text-xs font-semibold text-zinc-500">
             Admin Control Center
           </span>
         </Link>
         <AdminNavigation items={navItems} />
         <Link href="/account" className="admin-sidebar-account"><span className="admin-avatar" aria-hidden="true">{context.roleName.split(" ").map(word => word[0]).slice(0, 2).join("")}</span><span><strong>{context.roleName}</strong><small>Platform administration</small></span></Link>
+        <LogoutButton className="admin-sidebar-logout"><DashboardIcon name="logout"/>Sign out</LogoutButton>
       </aside>
 
       <div className="lg:pl-64">

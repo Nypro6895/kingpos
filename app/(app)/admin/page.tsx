@@ -1,3 +1,4 @@
+import { DashboardIcon } from "./dashboard/dashboard-icons";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
@@ -8,7 +9,7 @@ import { PLATFORM_ADMIN_PERMISSIONS as P } from "@/types/platform-admin";
 import { filterDashboardQueue, parseDashboardFilters } from "@/lib/admin-dashboard-model";
 import { loadOptionalAdminSection, SectionError } from "./_components/optional-section";
 import { DashboardWorkspace, DashboardRefresh } from "./dashboard/dashboard-workspace";
-import { DashboardAudit, DashboardQuickActions } from "./dashboard/dashboard-secondary";
+import { DashboardAudit } from "./dashboard/dashboard-secondary";
 import { DashboardNewAccounts } from "./dashboard/dashboard-new-accounts";
 import { DashboardSurface } from "./dashboard/dashboard-surface";
 import { DashboardOperations } from "./dashboard/dashboard-operations";
@@ -29,11 +30,11 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const totalQueue = filterDashboardQueue(sources, { ...filters, q: "", kind: "all", view: "all" }, actor.userId, Date.parse(loadedAt));
   const data = overview.data;
   const metric = (label: string, value: number | undefined, href: string, allowed: boolean, detail: ReactNode) => <div className="dashboard-stat-row" key={label}>
-    <dt>{allowed ? <Link href={href}>{label}</Link> : label}</dt><dd>{allowed ? <Link href={href}>{value?.toLocaleString("en-US") ?? "—"}</Link> : value?.toLocaleString("en-US") ?? "—"}</dd>
+    <dt><DashboardIcon name={label === "Users" ? "users" : label === "Businesses" ? "business" : label === "Salons" ? "salon" : "reports"}/>{allowed ? <Link href={href}>{label}</Link> : label}</dt><dd>{allowed ? <Link href={href}>{value?.toLocaleString("en-US") ?? "—"}</Link> : value?.toLocaleString("en-US") ?? "—"}</dd>
     <div className="dashboard-stat-detail">{detail}</div>
   </div>;
   return <DashboardSurface loadedAt={loadedAt} initialSelection={initialSelection}><div className="admin-dashboard">
-    <header className="dashboard-page-heading"><div><h1>Dashboard</h1><p>Review, resolve, and manage your platform.</p></div><DashboardRefresh loadedAt={loadedAt} /></header>
+    <header className="dashboard-page-heading"><div><h1>Dashboard</h1><p>Your platform, ready for action</p></div><DashboardRefresh loadedAt={loadedAt} /></header>
     {overview.error && <SectionError message={overview.error} />}
     <div className="dashboard-overview-layout">
       <DashboardNewAccounts permissions={actor.permissions} />
@@ -44,13 +45,13 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         {metric("Open reports", data?.reports.open, "/admin/reports", can(P.reportsRead), can(P.reportsRead) ? <Link href="/admin?kind=cases&view=urgent">{data?.reports.urgent_or_high ?? "—"} high or urgent</Link> : "Pending reports")}
       </dl></aside>
     </div>
-    {totalQueue.counts.all > 0 && <p className="dashboard-operation-summary"><strong>{totalQueue.counts.all} requests</strong> awaiting review or follow-up.{totalQueue.counts.urgent > 0 && <Link className="dashboard-link" href="/admin?view=urgent">{totalQueue.counts.urgent} need priority attention →</Link>}</p>}
+    {totalQueue.counts.all > 0 && <p className="sr-only"><strong>{totalQueue.counts.all} requests</strong> awaiting review or follow-up.{totalQueue.counts.urgent > 0 && <Link className="dashboard-link" href="/admin?view=urgent">{totalQueue.counts.urgent} need priority attention →</Link>}</p>}
     <DashboardWorkspace queue={queue} sources={sources.map(({ kind, error }) => ({ kind, error }))} filters={filters} loadedAt={loadedAt} userId={actor.userId} permissions={actor.permissions} />
-    <DashboardOperations userId={actor.userId} loadedAt={loadedAt}/>
-    <div className="dashboard-secondary-grid">
+    <DashboardOperations userId={actor.userId} loadedAt={loadedAt} permissions={actor.permissions}/>
+    <details className="dashboard-recent-audit"><summary className="dashboard-link">Recent admin activity</summary><div className="dashboard-secondary-grid">
       {audit && <section aria-labelledby="dashboard-activity-title"><div className="dashboard-section-heading"><h2 id="dashboard-activity-title">Recent activity</h2><Link className="dashboard-link" href="/admin/audit">View audit log →</Link></div>{audit.error ? <SectionError message={audit.error} /> : <DashboardAudit items={audit.data?.items ?? []} permissions={actor.permissions} />}</section>}
-      <DashboardQuickActions permissions={actor.permissions} />
+
     </div>
-    <p className="dashboard-footer">Admin actions are recorded in their audit or workflow history.</p>
+    </details><p className="dashboard-footer">Admin actions are recorded in their audit or workflow history.</p>
   </div></DashboardSurface>;
 }

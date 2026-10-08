@@ -23,10 +23,10 @@ export async function GET(request: NextRequest) {
   try {
     const result: DashboardRecord = { kind, id, name: "", status: "", createdAt: "", href: `/admin/${kind === "user" ? "users" : kind === "location" ? "locations" : "businesses"}/${id}`, facts: [], links: [], followup: null, assignees: [], activity: [], notes: [], permissions: actor.permissions, errors: [], ownAccount: actor.userId === id && kind === "user", deletion: null };
     if (kind === "user") {
-      const { user, salon_memberships, organization_memberships } = await getPlatformAdminUserDetail(id);
+      const { user, salon_memberships, organization_memberships, platform_membership } = await getPlatformAdminUserDetail(id);
       result.name = user.display_name || [user.first_name, user.last_name].filter(Boolean).join(" ") || "Unnamed user";
       result.status = user.status; result.createdAt = user.created_at;
-      result.facts = [{ label: "Email", value: can(P.usersReadSensitive) ? user.email : "Restricted by your role" }, { label: "Phone", value: can(P.usersReadSensitive) ? user.phone : "Restricted by your role" }, { label: "Last login", value: user.last_login_at }, { label: "Timezone", value: user.timezone }];
+      result.facts = [{ label: "Email", value: can(P.usersReadSensitive) ? user.email : "Restricted by your role" }, { label: "Phone", value: can(P.usersReadSensitive) ? user.phone : "Restricted by your role" }, { label: "Role", value: platform_membership?.role_name || (salon_memberships?.some(row => row.status === "active" && row.role.toLowerCase() === "owner") ? "Salon owner" : organization_memberships.some(row => row.status === "active" && row.role.toLowerCase() === "owner") ? "Business owner" : "Standard user") }];
       if (can(P.locationsRead)) result.links.push(...(salon_memberships ?? []).slice(0, 10).map(row => ({ label: row.salon_name, href: `/admin/locations/${row.salon_id}` })));
       if (can(P.businessesRead)) result.links.push(...organization_memberships.slice(0, 10).map(row => ({ label: row.organization_name, href: `/admin/businesses/${row.organization_id}` })));
     } else if (kind === "location") {

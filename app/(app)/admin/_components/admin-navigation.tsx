@@ -19,7 +19,9 @@ function AdminNavIcon({ href }: { href:string }) {
     notifications:"M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4",
     inbox:"M3 5h18v14H3ZM3 5l9 7 9-7",
     advertising:"M3 10v4h4l12 5V5L7 10ZM7 14l2 7h3l-2-6M22 9v6",
-    audit:"M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM12 7v5l4 2",
+    audit:"M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1",
+    attention:"M12 3 2 21h20ZM12 9v5M12 17v1",
+    "post-safety":"M5 21V3M5 4h15l-3 5 3 5H5",
     team:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M16 11h6",
     settings:"M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1Z",
   };
