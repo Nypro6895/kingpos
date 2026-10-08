@@ -329,7 +329,7 @@ async function safeList<T>(input: {
   };
 }
 
-export async function loadRecoveryBackOfficeOverview(): Promise<RecoveryBackOfficeOverview | null> {
+export async function loadRecoveryBackOfficeOverview(requestId?: string): Promise<RecoveryBackOfficeOverview | null> {
   const [supabase, user] = await Promise.all([
     createAuthenticatedSupabaseServerClient(),
     getCurrentKingUser(),
@@ -354,18 +354,14 @@ export async function loadRecoveryBackOfficeOverview(): Promise<RecoveryBackOffi
     };
   }
 
+  let requestsQuery = supabase.from("account_recovery_requests").select(
+    "id, user_id, request_type, status, priority, risk_level, assigned_to_user_id, reviewed_by_user_id, reviewed_at, resolved_by_user_id, resolved_at, resolution_summary, contact_email, contact_phone, details, created_at, updated_at",
+  ).order("created_at", { ascending: false });
+  if (requestId) requestsQuery = requestsQuery.eq("id", requestId);
   const requestsResult = await safeList<RecoveryRequestSupportRow>({
     fallback: [],
     label: "Supabase load recovery support requests failed",
-    load: () =>
-      supabase
-        .from("account_recovery_requests")
-        .select(
-          "id, user_id, request_type, status, priority, risk_level, assigned_to_user_id, reviewed_by_user_id, reviewed_at, resolved_by_user_id, resolved_at, resolution_summary, contact_email, contact_phone, details, created_at, updated_at",
-        )
-        .order("created_at", { ascending: false })
-        .limit(50)
-        .returns<RecoveryRequestSupportRow[]>(),
+    load: () => requestsQuery.limit(50).returns<RecoveryRequestSupportRow[]>(),
   });
   const requests = requestsResult.data;
   const userIds = unique(requests.map((request) => request.user_id));

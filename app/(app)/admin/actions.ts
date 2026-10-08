@@ -32,7 +32,7 @@ import {
 } from "@/lib/platform-admin/validation";
 import type { PlatformAdminNoteTargetType } from "@/lib/platform-admin/notes";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import type { AdminActionResult } from "./_components/action-form";
 
 function revalidateAdminPaths(...paths: string[]) {
   revalidatePath("/admin");
@@ -56,7 +56,7 @@ function readNoteTargetType(value: string): PlatformAdminNoteTargetType {
   throw new Error("Invalid note target type.");
 }
 
-export async function updateAdminUserProfileAction(formData: FormData) {
+async function updateAdminUserProfileActionCore(formData: FormData) {
   const userId = readRequiredFormString(formData, "user_id", "User ID");
 
   await updatePlatformAdminUserProfile({
@@ -71,7 +71,7 @@ export async function updateAdminUserProfileAction(formData: FormData) {
   revalidateAdminPaths("/admin/users", `/admin/users/${userId}`);
 }
 
-export async function suspendAdminUserAction(formData: FormData) {
+async function suspendAdminUserActionCore(formData: FormData) {
   const userId = readRequiredFormString(formData, "user_id", "User ID");
 
   await suspendPlatformAdminUser({
@@ -82,7 +82,7 @@ export async function suspendAdminUserAction(formData: FormData) {
   revalidateAdminPaths("/admin/users", `/admin/users/${userId}`, "/admin/team");
 }
 
-export async function restoreAdminUserAction(formData: FormData) {
+async function restoreAdminUserActionCore(formData: FormData) {
   const userId = readRequiredFormString(formData, "user_id", "User ID");
 
   await restorePlatformAdminUser({
@@ -93,7 +93,7 @@ export async function restoreAdminUserAction(formData: FormData) {
   revalidateAdminPaths("/admin/users", `/admin/users/${userId}`, "/admin/team");
 }
 
-export async function updateAdminBusinessProfileAction(formData: FormData) {
+async function updateAdminBusinessProfileActionCore(formData: FormData) {
   const businessId = readRequiredFormString(formData, "business_id", "Business ID");
 
   await updatePlatformAdminBusinessProfile({
@@ -106,7 +106,7 @@ export async function updateAdminBusinessProfileAction(formData: FormData) {
   revalidateAdminPaths("/admin/businesses", `/admin/businesses/${businessId}`);
 }
 
-export async function updateAdminBusinessStatusAction(formData: FormData) {
+async function updateAdminBusinessStatusActionCore(formData: FormData) {
   const businessId = readRequiredFormString(formData, "business_id", "Business ID");
 
   await updatePlatformAdminBusinessStatus({
@@ -118,7 +118,7 @@ export async function updateAdminBusinessStatusAction(formData: FormData) {
   revalidateAdminPaths("/admin/businesses", `/admin/businesses/${businessId}`);
 }
 
-export async function updateAdminLocationProfileAction(formData: FormData) {
+async function updateAdminLocationProfileActionCore(formData: FormData) {
   const locationId = readRequiredFormString(formData, "location_id", "Location ID");
 
   await updatePlatformAdminLocationProfile({
@@ -137,7 +137,7 @@ export async function updateAdminLocationProfileAction(formData: FormData) {
   revalidateAdminPaths("/admin/locations", `/admin/locations/${locationId}`);
 }
 
-export async function updateAdminLocationStatusAction(formData: FormData) {
+async function updateAdminLocationStatusActionCore(formData: FormData) {
   const locationId = readRequiredFormString(formData, "location_id", "Location ID");
 
   await updatePlatformAdminLocationStatus({
@@ -149,7 +149,7 @@ export async function updateAdminLocationStatusAction(formData: FormData) {
   revalidateAdminPaths("/admin/locations", `/admin/locations/${locationId}`);
 }
 
-export async function createAdminReportAction(formData: FormData) {
+async function createAdminReportActionCore(formData: FormData) {
   const subjectType = readFormString(formData, "subject_type");
   const subjectId = readFormString(formData, "subject_id");
   const result = await createPlatformAdminReport({
@@ -167,10 +167,10 @@ export async function createAdminReportAction(formData: FormData) {
   });
 
   revalidateAdminPaths("/admin/reports");
-  redirect(`/admin/reports/${result.report_id}`);
+  return { href: `/admin/reports/${result.report_id}` };
 }
 
-export async function assignAdminReportAction(formData: FormData) {
+async function assignAdminReportActionCore(formData: FormData) {
   const reportId = readRequiredFormString(formData, "report_id", "Report ID");
 
   await assignPlatformAdminReport({
@@ -182,7 +182,7 @@ export async function assignAdminReportAction(formData: FormData) {
   revalidateAdminPaths("/admin/reports", `/admin/reports/${reportId}`);
 }
 
-export async function updateAdminReportAction(formData: FormData) {
+async function updateAdminReportActionCore(formData: FormData) {
   const reportId = readRequiredFormString(formData, "report_id", "Report ID");
 
   await updatePlatformAdminReport({
@@ -197,7 +197,7 @@ export async function updateAdminReportAction(formData: FormData) {
   revalidateAdminPaths("/admin/reports", `/admin/reports/${reportId}`);
 }
 
-export async function resolveAdminReportAction(formData: FormData) {
+async function resolveAdminReportActionCore(formData: FormData) {
   const reportId = readRequiredFormString(formData, "report_id", "Report ID");
 
   await resolvePlatformAdminReport({
@@ -209,7 +209,7 @@ export async function resolveAdminReportAction(formData: FormData) {
   revalidateAdminPaths("/admin/reports", `/admin/reports/${reportId}`);
 }
 
-export async function closeAdminReportAction(formData: FormData) {
+async function closeAdminReportActionCore(formData: FormData) {
   const reportId = readRequiredFormString(formData, "report_id", "Report ID");
 
   await closePlatformAdminReport({
@@ -220,7 +220,7 @@ export async function closeAdminReportAction(formData: FormData) {
   revalidateAdminPaths("/admin/reports", `/admin/reports/${reportId}`);
 }
 
-export async function createAdminNoteAction(formData: FormData) {
+async function createAdminNoteActionCore(formData: FormData) {
   const targetId = readRequiredFormString(formData, "target_id", "Note target ID");
   const targetType = readRequiredFormString(
     formData,
@@ -239,7 +239,7 @@ export async function createAdminNoteAction(formData: FormData) {
   revalidateAdminPaths(returnPath);
 }
 
-export async function createAdminTeamMembershipAction(formData: FormData) {
+async function createAdminTeamMembershipActionCore(formData: FormData) {
   await createPlatformAdminMembership({
     reason: readReason(formData),
     roleSlug: readRequiredFormString(formData, "role_slug", "Role"),
@@ -249,7 +249,7 @@ export async function createAdminTeamMembershipAction(formData: FormData) {
   revalidateAdminPaths("/admin/team");
 }
 
-export async function updateAdminTeamMembershipAction(formData: FormData) {
+async function updateAdminTeamMembershipActionCore(formData: FormData) {
   await updatePlatformAdminMembership({
     membershipId: readRequiredFormString(formData, "membership_id", "Membership ID"),
     reason: readReason(formData),
@@ -258,4 +258,73 @@ export async function updateAdminTeamMembershipAction(formData: FormData) {
   });
 
   revalidateAdminPaths("/admin/team");
+}
+
+async function runAdminMutation(operation: () => Promise<unknown>): Promise<AdminActionResult> {
+  try {
+    const result = await operation();
+    return { ok: true, message: "Changes saved.", ...(result && typeof result === "object" && "href" in result ? { href: String(result.href) } : {}) };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "Unable to complete the admin request." };
+  }
+}
+
+export async function updateAdminUserProfileAction(formData: FormData) {
+  return runAdminMutation(() => updateAdminUserProfileActionCore(formData));
+}
+
+export async function suspendAdminUserAction(formData: FormData) {
+  return runAdminMutation(() => suspendAdminUserActionCore(formData));
+}
+
+export async function restoreAdminUserAction(formData: FormData) {
+  return runAdminMutation(() => restoreAdminUserActionCore(formData));
+}
+
+export async function updateAdminBusinessProfileAction(formData: FormData) {
+  return runAdminMutation(() => updateAdminBusinessProfileActionCore(formData));
+}
+
+export async function updateAdminBusinessStatusAction(formData: FormData) {
+  return runAdminMutation(() => updateAdminBusinessStatusActionCore(formData));
+}
+
+export async function updateAdminLocationProfileAction(formData: FormData) {
+  return runAdminMutation(() => updateAdminLocationProfileActionCore(formData));
+}
+
+export async function updateAdminLocationStatusAction(formData: FormData) {
+  return runAdminMutation(() => updateAdminLocationStatusActionCore(formData));
+}
+
+export async function createAdminReportAction(formData: FormData) {
+  return runAdminMutation(() => createAdminReportActionCore(formData));
+}
+
+export async function assignAdminReportAction(formData: FormData) {
+  return runAdminMutation(() => assignAdminReportActionCore(formData));
+}
+
+export async function updateAdminReportAction(formData: FormData) {
+  return runAdminMutation(() => updateAdminReportActionCore(formData));
+}
+
+export async function resolveAdminReportAction(formData: FormData) {
+  return runAdminMutation(() => resolveAdminReportActionCore(formData));
+}
+
+export async function closeAdminReportAction(formData: FormData) {
+  return runAdminMutation(() => closeAdminReportActionCore(formData));
+}
+
+export async function createAdminNoteAction(formData: FormData) {
+  return runAdminMutation(() => createAdminNoteActionCore(formData));
+}
+
+export async function createAdminTeamMembershipAction(formData: FormData) {
+  return runAdminMutation(() => createAdminTeamMembershipActionCore(formData));
+}
+
+export async function updateAdminTeamMembershipAction(formData: FormData) {
+  return runAdminMutation(() => updateAdminTeamMembershipActionCore(formData));
 }

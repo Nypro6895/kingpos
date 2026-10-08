@@ -1,3 +1,6 @@
+import { callPlatformAdminRpc } from "@/lib/platform-admin/rpc";
+import { loadOptionalAdminSection, SectionError } from "@/app/(app)/admin/_components/optional-section";
+import { AdminActionForm } from "@/app/(app)/admin/_components/action-form";
 import Link from "next/link";
 import {
   assignAdminReportAction,
@@ -73,6 +76,8 @@ export default async function AdminReportDetailPage({
   );
   const href = subjectHref(detail.subject);
 
+  const assignees = canAssign ? await loadOptionalAdminSection(() => callPlatformAdminRpc<Array<{id:string;name:string;role:string}>>("get_platform_admin_case_assignees")) : null;
+
   return (
     <>
       <AdminPageHeader
@@ -126,7 +131,7 @@ export default async function AdminReportDetailPage({
 
           {canUpdate ? (
             <AdminSection title="Update Report">
-              <form
+              <AdminActionForm
                 action={updateAdminReportAction}
                 className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm lg:grid-cols-2"
               >
@@ -175,7 +180,7 @@ export default async function AdminReportDetailPage({
                 <div className="lg:col-span-2">
                   <SubmitButton>Update report</SubmitButton>
                 </div>
-              </form>
+              </AdminActionForm>
             </AdminSection>
           ) : null}
 
@@ -207,26 +212,22 @@ export default async function AdminReportDetailPage({
         <aside className="grid content-start gap-6">
           {canAssign ? (
             <AdminSection title="Assign">
-              <form
+              <AdminActionForm
                 action={assignAdminReportAction}
                 className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
               >
                 <input name="report_id" type="hidden" value={detail.report.id} />
-                <TextInput
-                  defaultValue={detail.report.assigned_membership_id}
-                  label="Assigned membership ID"
-                  name="assigned_membership_id"
-                />
+                <SelectInput defaultValue={detail.report.assigned_membership_id} label="Assign to" name="assigned_membership_id" options={[{label:"Unassigned",value:""},...(assignees?.data ?? []).map(member=>({label:`${member.name ?? "Admin"} · ${member.role}`,value:member.id}))]}/>{assignees?.error && <SectionError message={assignees.error}/>}
                 <TextArea label="Reason" name="reason" required rows={3} />
                 <SubmitButton>Save assignment</SubmitButton>
-              </form>
+              </AdminActionForm>
             </AdminSection>
           ) : null}
 
           {canResolve ? (
             <AdminSection title="Resolve / Close">
               <div className="grid gap-4">
-                <form
+                <AdminActionForm
                   action={resolveAdminReportAction}
                   className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
                 >
@@ -234,22 +235,22 @@ export default async function AdminReportDetailPage({
                   <TextArea label="Resolution" name="resolution" required />
                   <TextArea label="Reason" name="reason" required rows={3} />
                   <SubmitButton>Resolve report</SubmitButton>
-                </form>
-                <form
+                </AdminActionForm>
+                <AdminActionForm
                   action={closeAdminReportAction}
                   className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
                 >
                   <input name="report_id" type="hidden" value={detail.report.id} />
                   <TextArea label="Close reason" name="reason" required rows={3} />
                   <SubmitButton>Close report</SubmitButton>
-                </form>
+                </AdminActionForm>
               </div>
             </AdminSection>
           ) : null}
 
           <AdminSection title="Internal Notes">
             {canCreateNotes ? (
-              <form action={createAdminNoteAction} className="mb-4 grid gap-3">
+              <AdminActionForm action={createAdminNoteAction} className="mb-4 grid gap-3">
                 <input name="target_id" type="hidden" value={detail.report.id} />
                 <input name="target_type" type="hidden" value="report" />
                 <input
@@ -259,7 +260,7 @@ export default async function AdminReportDetailPage({
                 />
                 <TextArea label="New note" name="body" required />
                 <SubmitButton>Add note</SubmitButton>
-              </form>
+              </AdminActionForm>
             ) : null}
             {detail.notes.length > 0 ? (
               <div className="grid gap-3">

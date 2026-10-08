@@ -11,5 +11,5 @@ export function ClaimReviewControls({requestId,canApprove}:{requestId:string;can
 }
 export function ClaimAttachment({requestId,path,name}:{requestId:string;path:string;name:string}) {
  const [error,setError]=useState<string|null>(null);const [pending,startTransition]=useTransition();
- return <span><button className="text-sm underline" disabled={pending} onClick={()=>startTransition(async()=>{try{const url=await businessClaimAttachmentAction(requestId,path);window.open(url,'_blank','noopener,noreferrer');}catch{setError('Document unavailable.');}})}>{name}</button>{error?<span role="alert" className="ml-2 text-xs text-red-700">{error}</span>:null}</span>;
+ return <span><button type="button" className="text-sm underline" disabled={pending} onClick={()=>{setError(null);const target=window.open('about:blank','_blank');if(target)target.opener=null;startTransition(async()=>{try{const url=await businessClaimAttachmentAction(requestId,path);if(target)target.location.href=url;else setError('Allow popups to open the attachment.');}catch{target?.close();setError('Document unavailable.');}});}}>{pending?'Opening…':name}</button>{error?<span role="alert" className="ml-2 text-xs text-red-700">{error}</span>:null}</span>;
 }

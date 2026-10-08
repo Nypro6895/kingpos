@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { EntityPicker } from "../_components/entity-picker";
+import { AdminActionForm } from "@/app/(app)/admin/_components/action-form";
 import {
   createAdminTeamMembershipAction,
   updateAdminTeamMembershipAction,
@@ -99,9 +102,9 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
                 key={member.id}
               >
                 <div className="md:col-span-3">
-                  <p className="font-bold text-zinc-950">
+                  <Link href={`/admin/users/${member.user_id}`} className="font-semibold text-orange-700">
                     {member.user_display_name ?? member.user_email ?? member.user_id}
-                  </p>
+                  </Link>
                   <p className="mt-1 break-all text-xs text-zinc-500">
                     {member.user_email ?? member.user_id}
                   </p>
@@ -119,7 +122,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
                   {formatAdminDateTime(member.updated_at)}
                 </div>
                 {canManage ? (
-                  <form
+                  <AdminActionForm
                     action={updateAdminTeamMembershipAction}
                     className="grid gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 md:col-span-12 md:grid-cols-4 md:items-end"
                   >
@@ -142,7 +145,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
                     />
                     <TextInput label="Reason" name="reason" required />
                     <SubmitButton>Save member</SubmitButton>
-                  </form>
+                  </AdminActionForm>
                 ) : null}
               </div>
             ))}
@@ -159,11 +162,11 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
 
       {canManage ? (
         <AdminSection title="Add Existing User">
-          <form
+          <AdminActionForm
             action={createAdminTeamMembershipAction}
             className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm lg:grid-cols-3"
           >
-            <TextInput label="Public user ID" name="user_id" required />
+            <EntityPicker kind="user" label="Existing user" name="user_id" required/>
             <SelectInput
               defaultValue="support_agent"
               label="Role"
@@ -174,7 +177,7 @@ export default async function AdminTeamPage({ searchParams }: TeamPageProps) {
             <div className="lg:col-span-3">
               <SubmitButton>Add platform admin</SubmitButton>
             </div>
-          </form>
+          </AdminActionForm>
         </AdminSection>
       ) : null}
     </>

@@ -13,6 +13,7 @@ import type {
 } from "@/types/platform-admin";
 
 export type PlatformAdminUserDetail = {
+  salon_memberships?: Array<{ id: string; salon_id: string; salon_name: string; role: string; status: string; created_at: string }>;
   organization_memberships: Array<{
     id: string;
     organization_id: string;
@@ -44,6 +45,9 @@ export type PlatformAdminUserDetail = {
     language: string;
     last_login_at: string | null;
     timezone: string;
+    deletion_requested_at?: string | null;
+    deletion_scheduled_for?: string | null;
+    can_read_sensitive?: boolean;
   };
 };
 
@@ -52,6 +56,9 @@ export async function searchPlatformAdminUsers(input: {
   pageSize?: string | string[] | null;
   q?: string | string[] | null;
   status?: string | string[] | null;
+  role?: string | string[] | null;
+  businessId?: string | string[] | null;
+  sort?: string | string[] | null;
 }) {
   const search = parseAdminSearchParams(input);
   const statusValue = Array.isArray(input.status) ? input.status[0] : input.status;
@@ -61,21 +68,26 @@ export async function searchPlatformAdminUsers(input: {
     PlatformAdminPageResult<PlatformAdminUserListItem> & {
       can_read_sensitive: boolean;
     }
-  >("search_platform_admin_users", {
+  >("search_platform_admin_users_v2", {
     p_page: search.page,
     p_page_size: search.pageSize,
     p_query: search.query,
     p_status: status,
+    p_role: (Array.isArray(input.role) ? input.role[0] : input.role) || null,
+    p_business_id: (Array.isArray(input.businessId) ? input.businessId[0] : input.businessId) || null,
+    p_sort: (Array.isArray(input.sort) ? input.sort[0] : input.sort) || "created_desc",
   });
 }
 
 export async function getPlatformAdminUserDetail(userId: string) {
-  return callPlatformAdminRpc<PlatformAdminUserDetail>(
+  const detail = await callPlatformAdminRpc<PlatformAdminUserDetail>(
     "get_platform_admin_user_detail",
     {
       p_user_id: assertUuid(userId, "User ID"),
     },
   );
+  if (!detail?.user?.id) throw new Error("The user profile could not be loaded. Please retry.");
+  return { ...detail, organization_memberships: detail.organization_memberships ?? [], related_reports: detail.related_reports ?? [] };
 }
 
 export async function updatePlatformAdminUserProfile(input: {
@@ -87,7 +99,7 @@ export async function updatePlatformAdminUserProfile(input: {
   userId: string;
 }) {
   return callPlatformAdminRpc<{ status: string; user_id: string }>(
-    "update_platform_admin_user_profile",
+    "update_platform_admin_user_profile_v2",
     {
       p_display_name: input.displayName,
       p_first_name: input.firstName,
@@ -104,9 +116,10 @@ export async function suspendPlatformAdminUser(input: {
   userId: string;
 }) {
   return callPlatformAdminRpc<{ status: string; user_id: string }>(
-    "suspend_platform_user",
+    "admin_set_user_access",
     {
       p_reason: input.reason,
+      p_suspend: true,
       p_user_id: assertUuid(input.userId, "User ID"),
     },
   );
@@ -117,9 +130,10 @@ export async function restorePlatformAdminUser(input: {
   userId: string;
 }) {
   return callPlatformAdminRpc<{ status: string; user_id: string }>(
-    "restore_platform_user",
+    "admin_set_user_access",
     {
       p_reason: input.reason,
+      p_suspend: false,
       p_user_id: assertUuid(input.userId, "User ID"),
     },
   );

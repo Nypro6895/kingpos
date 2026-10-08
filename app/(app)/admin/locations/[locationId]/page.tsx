@@ -1,3 +1,5 @@
+import { loadOptionalAdminSection, SectionError } from "@/app/(app)/admin/_components/optional-section";
+import { AdminActionForm } from "@/app/(app)/admin/_components/action-form";
 import Link from "next/link";
 import {
   createAdminNoteAction,
@@ -23,6 +25,8 @@ import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
 import { getPlatformAdminLocationDetail } from "@/lib/platform-admin/locations";
 import { listPlatformAdminNotes } from "@/lib/platform-admin/notes";
 import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
+import { getAdminAttentionState } from "@/lib/platform-admin/attention";
+import { AccountRowActions } from "../../dashboard/account-row-actions";
 
 type LocationDetailPageProps = {
   params: Promise<{ locationId: string }>;
@@ -34,6 +38,7 @@ export default async function AdminLocationDetailPage({
   const context = await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.locationsRead);
   const { locationId } = await params;
   const detail = await getPlatformAdminLocationDetail(locationId);
+  const attention = await loadOptionalAdminSection(() => getAdminAttentionState("location", locationId));
   const canUpdate = hasAdminPermission(
     context,
     PLATFORM_ADMIN_PERMISSIONS.locationsUpdate,
@@ -50,9 +55,10 @@ export default async function AdminLocationDetailPage({
     context,
     PLATFORM_ADMIN_PERMISSIONS.notesCreate,
   );
-  const notes = canReadNotes
-    ? await listPlatformAdminNotes({ targetId: locationId, targetType: "location" })
+  const notesResult = canReadNotes
+    ? await loadOptionalAdminSection(() => listPlatformAdminNotes({ targetId: locationId, targetType: "location" }))
     : null;
+  const notes = notesResult?.data;
 
   return (
     <>
@@ -63,6 +69,8 @@ export default async function AdminLocationDetailPage({
       >
         Location identity, address, status and internal notes.
       </AdminPageHeader>
+      <div className="dashboard-profile-actions"><AccountRowActions id={locationId} name={detail.location.name} kind="location" status={detail.location.status} marked={attention.data ?? false} permissions={context.permissions}/><Link className="dashboard-link" href="/admin/attention?kind=location">Open salon attention list →</Link></div>
+      {attention.error && <SectionError message={attention.error}/>}
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="grid gap-6">
@@ -126,7 +134,7 @@ export default async function AdminLocationDetailPage({
 
           {canUpdate ? (
             <AdminSection title="Safe Location Edit">
-              <form
+              <AdminActionForm
                 action={updateAdminLocationProfileAction}
                 className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm sm:grid-cols-2"
               >
@@ -175,7 +183,7 @@ export default async function AdminLocationDetailPage({
                 <div className="sm:col-span-2">
                   <SubmitButton>Save location</SubmitButton>
                 </div>
-              </form>
+              </AdminActionForm>
             </AdminSection>
           ) : null}
 
@@ -206,7 +214,7 @@ export default async function AdminLocationDetailPage({
         <aside className="grid content-start gap-6">
           {canUpdateStatus ? (
             <AdminSection title="Status">
-              <form
+              <AdminActionForm
                 action={updateAdminLocationStatusAction}
                 className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
               >
@@ -222,13 +230,13 @@ export default async function AdminLocationDetailPage({
                 />
                 <TextArea label="Reason" name="reason" required rows={3} />
                 <SubmitButton>Update status</SubmitButton>
-              </form>
+              </AdminActionForm>
             </AdminSection>
           ) : null}
 
           <AdminSection title="Internal Notes">
             {canCreateNotes ? (
-              <form action={createAdminNoteAction} className="mb-4 grid gap-3">
+              <AdminActionForm action={createAdminNoteAction} className="mb-4 grid gap-3">
                 <input name="target_id" type="hidden" value={detail.location.id} />
                 <input name="target_type" type="hidden" value="location" />
                 <input
@@ -238,9 +246,9 @@ export default async function AdminLocationDetailPage({
                 />
                 <TextArea label="New note" name="body" required />
                 <SubmitButton>Add note</SubmitButton>
-              </form>
+              </AdminActionForm>
             ) : null}
-            {notes && notes.items.length > 0 ? (
+            {notesResult?.error ? <SectionError message={notesResult.error}/> : notes && notes.items.length > 0 ? (
               <div className="grid gap-3">
                 {notes.items.map((note) => (
                   <div

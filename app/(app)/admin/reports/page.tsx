@@ -1,3 +1,8 @@
+import { CaseSubjectPicker } from "../_components/case-subject-picker";
+import { EntityPicker } from "../_components/entity-picker";
+import { callPlatformAdminRpc } from "@/lib/platform-admin/rpc";
+import { loadOptionalAdminSection, SectionError } from "@/app/(app)/admin/_components/optional-section";
+import { AdminActionForm } from "@/app/(app)/admin/_components/action-form";
 import Link from "next/link";
 import { createAdminReportAction } from "@/app/(app)/admin/actions";
 import {
@@ -47,9 +52,12 @@ export default async function AdminReportsPage({ searchParams }: ReportsPageProp
     PLATFORM_ADMIN_PERMISSIONS.reportsCreate,
   );
 
+  const assignees = canCreate ? await loadOptionalAdminSection(() => callPlatformAdminRpc<Array<{id:string;name:string;role:string}>>("get_platform_admin_case_assignees")) : null;
+
   return (
     <>
-      <AdminPageHeader eyebrow="Reports" title="Report Queue">
+      <Link href="/admin/post-safety?origin=user" className="mb-4 inline-flex rounded-xl border bg-white px-4 py-2 text-sm font-semibold">Review reported posts</Link>
+      <AdminPageHeader eyebrow="Review & support" title="Support cases">
         Trust, support and manual platform reports with server-side workflow
         enforcement.
       </AdminPageHeader>
@@ -160,8 +168,8 @@ export default async function AdminReportsPage({ searchParams }: ReportsPageProp
       </AdminSection>
 
       {canCreate ? (
-        <AdminSection title="Create Manual Report">
-          <form
+        <div id="create-case"><AdminSection title="Create Manual Report">
+          <AdminActionForm
             action={createAdminReportAction}
             className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm lg:grid-cols-2"
           >
@@ -178,20 +186,9 @@ export default async function AdminReportsPage({ searchParams }: ReportsPageProp
               ]}
             />
             <TextInput defaultValue="manual" label="Source" name="source" required />
-            <SelectInput
-              defaultValue=""
-              label="Subject type"
-              name="subject_type"
-              options={[
-                { label: "No subject", value: "" },
-                { label: "User", value: "user" },
-                { label: "Business", value: "business" },
-                { label: "Location", value: "location" },
-              ]}
-            />
-            <TextInput label="Subject ID" name="subject_id" />
-            <TextInput label="Reporter user ID" name="reporter_user_id" />
-            <TextInput label="Assigned membership ID" name="assigned_membership_id" />
+            <CaseSubjectPicker/>
+            <EntityPicker kind="user" label="Reported by" name="reporter_user_id"/>
+            <SelectInput label="Assign to" name="assigned_membership_id" options={[{label:"Unassigned",value:""},...(assignees?.data ?? []).map(member=>({label:`${member.name ?? "Admin"} · ${member.role}`,value:member.id}))]}/>{assignees?.error && <SectionError message={assignees.error}/>}
             <div className="lg:col-span-2">
               <TextInput label="Summary" name="summary" required />
             </div>
@@ -201,8 +198,8 @@ export default async function AdminReportsPage({ searchParams }: ReportsPageProp
             <div className="lg:col-span-2">
               <SubmitButton>Create report</SubmitButton>
             </div>
-          </form>
-        </AdminSection>
+          </AdminActionForm>
+        </AdminSection></div>
       ) : null}
     </>
   );

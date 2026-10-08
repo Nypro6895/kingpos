@@ -1,0 +1,4 @@
+import { SearchForm, SelectInput } from "./admin-ui";
+export function ReviewQueueFilters({ q, status, sort, verification = false }: { q?: string; status: string; sort?: string; verification?: boolean }) {
+  return <SearchForm defaultQuery={q} placeholder="Search salon or applicant"><SelectInput label="Status" name="status" defaultValue={status} options={[{label:"All statuses",value:"all"},{label:"Waiting for review",value:"waiting"},{label:"Approved",value:"approved"},{label:"Rejected",value:"rejected"},...(verification ? [{label:"Blocked",value:"blocked"}] : [{label:"Phone confirmation pending",value:"otp_pending"}]),{label:"Expired",value:"expired"}]}/><SelectInput label="Order" name="sort" defaultValue={sort ?? "oldest"} options={[{label:"Oldest first",value:"oldest"},{label:"Newest first",value:"newest"}]}/></SearchForm>;
+}

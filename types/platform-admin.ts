@@ -43,6 +43,14 @@ export const PLATFORM_ADMIN_PERMISSIONS = {
   usersUpdate: "admin.users.update",
   usersRestore: "admin.users.restore",
   usersSuspend: "admin.users.suspend",
+  usersDelete: "admin.users.delete",
+  usersMembershipsManage: "admin.users.memberships.manage",
+  notificationsRead: "admin.notifications.read",
+  notificationsSend: "admin.notifications.send",
+  inboxRead: "admin.inbox.read",
+  inboxManage: "admin.inbox.manage",
+  inboxReply: "admin.inbox.reply",
+  advertisingManage: "admin.advertising.manage",
 } as const;
 
 export type PlatformAdminPermission =
@@ -58,6 +66,7 @@ export type PlatformAdminContext = {
 };
 
 export type PlatformAdminAuditTargetType =
+  | "support_inbox"
   | "platform_admin_business"
   | "platform_admin_location"
   | "platform_admin_membership"
@@ -106,6 +115,9 @@ export type PlatformAdminUserListItem = {
   created_at: string;
   updated_at: string;
   organization_count: number;
+  last_login_at?: string | null;
+  roles?: string[];
+  businesses?: Array<{ id: string; name: string }>;
 };
 
 export type PlatformAdminBusinessListItem = {

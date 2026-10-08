@@ -1,3 +1,5 @@
+import { loadOptionalAdminSection, SectionError } from "@/app/(app)/admin/_components/optional-section";
+import { AdminActionForm } from "@/app/(app)/admin/_components/action-form";
 import Link from "next/link";
 import {
   createAdminNoteAction,
@@ -52,9 +54,10 @@ export default async function AdminBusinessDetailPage({
     context,
     PLATFORM_ADMIN_PERMISSIONS.notesCreate,
   );
-  const notes = canReadNotes
-    ? await listPlatformAdminNotes({ targetId: businessId, targetType: "business" })
+  const notesResult = canReadNotes
+    ? await loadOptionalAdminSection(() => listPlatformAdminNotes({ targetId: businessId, targetType: "business" }))
     : null;
+  const notes = notesResult?.data;
 
   return (
     <>
@@ -72,7 +75,7 @@ export default async function AdminBusinessDetailPage({
           <AdminSection title="Business Details">
             <FieldGrid>
               <Field label="Business ID" value={detail.business.id} />
-              <Field label="Owner" value={detail.owner?.display_name ?? "-"} />
+              <Field label="Owner" value={detail.owner ? <Link href={`/admin/users/${detail.owner.id}`} className="text-orange-700">{detail.owner.display_name ?? "Unnamed owner"}</Link> : "—"} />
               <Field label="Owner email" value={detail.owner?.email ?? "-"} />
               <Field
                 label="Status"
@@ -91,7 +94,7 @@ export default async function AdminBusinessDetailPage({
 
           {canUpdate ? (
             <AdminSection title="Safe Business Edit">
-              <form
+              <AdminActionForm
                 action={updateAdminBusinessProfileAction}
                 className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
               >
@@ -104,7 +107,7 @@ export default async function AdminBusinessDetailPage({
                 />
                 <TextArea label="Reason" name="reason" required rows={3} />
                 <SubmitButton>Save business</SubmitButton>
-              </form>
+              </AdminActionForm>
             </AdminSection>
           ) : null}
 
@@ -140,7 +143,7 @@ export default async function AdminBusinessDetailPage({
                 {detail.members.map((member) => (
                   <Field
                     key={member.id}
-                    label={member.display_name ?? member.user_id}
+                    label={<Link href={`/admin/users/${member.user_id}`} className="text-orange-700">{member.display_name ?? "Unnamed user"}</Link>}
                     value={
                       <span>
                         {member.role} - <StatusBadge value={member.status} /> -{" "}
@@ -180,7 +183,7 @@ export default async function AdminBusinessDetailPage({
         <aside className="grid content-start gap-6">
           {canUpdateStatus ? (
             <AdminSection title="Status">
-              <form
+              <AdminActionForm
                 action={updateAdminBusinessStatusAction}
                 className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
               >
@@ -198,13 +201,13 @@ export default async function AdminBusinessDetailPage({
                 />
                 <TextArea label="Reason" name="reason" required rows={3} />
                 <SubmitButton>Update status</SubmitButton>
-              </form>
+              </AdminActionForm>
             </AdminSection>
           ) : null}
 
           <AdminSection title="Internal Notes">
             {canCreateNotes ? (
-              <form action={createAdminNoteAction} className="mb-4 grid gap-3">
+              <AdminActionForm action={createAdminNoteAction} className="mb-4 grid gap-3">
                 <input name="target_id" type="hidden" value={detail.business.id} />
                 <input name="target_type" type="hidden" value="business" />
                 <input
@@ -214,9 +217,9 @@ export default async function AdminBusinessDetailPage({
                 />
                 <TextArea label="New note" name="body" required />
                 <SubmitButton>Add note</SubmitButton>
-              </form>
+              </AdminActionForm>
             ) : null}
-            {notes && notes.items.length > 0 ? (
+            {notesResult?.error ? <SectionError message={notesResult.error}/> : notes && notes.items.length > 0 ? (
               <div className="grid gap-3">
                 {notes.items.map((note) => (
                   <div

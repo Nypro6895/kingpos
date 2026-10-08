@@ -4,7 +4,8 @@ import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 
 type RpcArgs = Record<string, unknown>;
 
-function adminSafeErrorMessage(message: string) {
+function adminSafeErrorMessage(message: string, code?: string) {
+  if (code === "PGRST202" || code === "42883") return "The admin data service needs an update. Contact a platform owner.";
   if (
     message.includes("permission denied") ||
     message.includes("Permission denied") ||
@@ -24,6 +25,7 @@ function adminSafeErrorMessage(message: string) {
     message.includes("required") ||
     message.includes("must be") ||
     message.includes("cannot")
+    || /^(Only |Transfer ownership|Type DELETE|This |Use account|You cannot|Cancel pending|Title |Deleted )/.test(message)
   ) {
     return message;
   }
@@ -51,7 +53,7 @@ export async function callPlatformAdminRpc<TResult>(
       hint: error.hint,
       message: error.message,
     });
-    throw new Error(adminSafeErrorMessage(error.message));
+    throw new Error(adminSafeErrorMessage(error.message, error.code));
   }
 
   return data as TResult;
