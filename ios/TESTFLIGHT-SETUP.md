@@ -35,7 +35,7 @@ Chuẩn bị từng bước:
 2. Đăng ký App ID và tạo app record Reylumi trong App Store Connect.
 3. Cấu hình signing: Apple Distribution certificate có private key và App Store provisioning profile, hoặc dịch vụ ký tự động phù hợp.
 4. Cấu hình App Store Connect API key để upload từ cloud, cất private key vào secrets.
-5. Tạo archive đã ký, export IPA và upload App Store Connect. Quy trình hiện tại chưa bao gồm phần ký/upload này.
+5. Workflow **Reylumi TestFlight** tạo archive đã ký, export IPA và upload App Store Connect bằng Xcode 26.3. Workflow chạy khi script ký được cập nhật trên nhánh iOS, hoặc chạy thủ công sau khi workflow được đăng ký trên nhánh mặc định.
 6. Khi build được Apple xử lý, thêm tài khoản của chủ app vào nhóm internal testers rồi cài qua TestFlight.
 
 Sau đó kiểm tra trên iPhone thật: login/logout, đóng mở app và session, personal/owner/staff workspace, booking, POS, export CSV, camera/ảnh, location/map, share, file download, bàn phím và safe area, mạng chậm/mất mạng, admin bị chặn. Chưa dùng dữ liệu production để thực hiện thanh toán/ghi giao dịch thử.
@@ -43,3 +43,5 @@ Sau đó kiểm tra trên iPhone thật: login/logout, đóng mở app và sessi
 Trước khi app trỏ production, các thay đổi web nhận diện iOS phải được triển khai theo baseline production hiện tại trong AGENTS.md. Không triển khai toàn bộ checkout cũ để tránh ghi đè các bản Explore/admin/support đã phát hành.
 
 TestFlight là bước kiểm thử; việc duyệt App Store chính thức vẫn cần hoàn thiện privacy, account deletion, moderation và giá trị ứng dụng theo Guideline 4.2.
+
+Signing dùng GitHub Secrets `IOS_DISTRIBUTION_P12`, `IOS_DISTRIBUTION_PASSWORD`, `IOS_PROVISIONING_PROFILE`, `APP_STORE_CONNECT_PRIVATE_KEY` và variables `APPLE_TEAM_ID`, `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`. Không đưa chứng chỉ có private key, mật khẩu hoặc API private key vào Git. Build number là `run_number.run_attempt`; receipt và log được giữ 7 ngày. Upload thành công vẫn cần chờ Apple xử lý trước khi cài TestFlight.
