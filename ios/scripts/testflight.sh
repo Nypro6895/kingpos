@@ -61,3 +61,4 @@ files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('
 receipt={'bundle':'com.reylumi.ios','version':'1.0.0','build':sys.argv[1],'commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'xcode':subprocess.check_output(['xcodebuild','-version'],text=True).strip(),'upload':'accepted','source_sha256':files}
 pathlib.Path('build/testflight-receipt.json').write_text(json.dumps(receipt,indent=2))
 PY
+node scripts/check-build-status.mjs "$BUILD_VERSION"

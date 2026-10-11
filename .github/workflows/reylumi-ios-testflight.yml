@@ -30,6 +30,7 @@ jobs:
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           APP_STORE_CONNECT_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_APP_ID: ${{ vars.APP_STORE_CONNECT_APP_ID }}
           APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
         run: bash scripts/testflight.sh
       - uses: actions/upload-artifact@v4
@@ -39,4 +40,5 @@ jobs:
           path: |
             ios/build/testflight-*.log
             ios/build/testflight-receipt.json
+            ios/build/testflight-processing.json
           retention-days: 7
