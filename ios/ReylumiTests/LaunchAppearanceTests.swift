@@ -15,7 +15,11 @@ final class LaunchAppearanceTests: XCTestCase {
         XCTAssertEqual(controller.view.backgroundColor?.resolvedColor(with: dark), .white)
         XCTAssertEqual(web.backgroundColor?.resolvedColor(with: dark), .white)
         XCTAssertEqual(web.scrollView.backgroundColor?.resolvedColor(with: dark), .white)
-        XCTAssertEqual(web.underPageBackgroundColor.resolvedColor(with: dark), .white)
+        // WebKit returns RGB white while UIColor.white uses grayscale storage.
+        let underPage = web.underPageBackgroundColor.resolvedColor(with: dark)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        XCTAssertTrue(underPage.getRed(&red, green: &green, blue: &blue, alpha: &alpha))
+        for channel in [red, green, blue, alpha] { XCTAssertEqual(channel, 1, accuracy: 0.001) }
         XCTAssertEqual(controller.preferredStatusBarStyle, .darkContent)
         let launch = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? ReylumiLaunchView }.first)
         XCTAssertTrue(launch.isLoading)
