@@ -137,6 +137,8 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         if !hasLoadedPage { launchPanel.showLoading() }
     }
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        // WebKit may create its pinch recognizer only after the first document loads.
+        webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         hasLoadedPage = true
         progress.isHidden = true
         launchPanel.finishLoading()

@@ -12,7 +12,7 @@ final class AppViewportTests: XCTestCase {
         webView.stopLoading()
         XCTAssertFalse(webView.configuration.ignoresViewportScaleLimits)
         XCTAssertEqual(webView.pageZoom, 1)
-        XCTAssertEqual(webView.scrollView.pinchGestureRecognizer?.isEnabled, false)
+        XCTAssertNotEqual(webView.scrollView.pinchGestureRecognizer?.isEnabled, true)
         XCTAssertFalse(webView.scrollView.bouncesZoom)
         XCTAssertFalse(webView.scrollView.alwaysBounceHorizontal)
         XCTAssertEqual(webView.scrollView.contentInsetAdjustmentBehavior, .never)
@@ -46,6 +46,8 @@ final class AppViewportTests: XCTestCase {
             </head><body><input id="email" type="email"><input id="amount" type="number"></body></html>
             """, baseURL: URL(string: "https://reylumi.com"))
         wait(for: [loaded], timeout: 15)
+        controller.webView(webView, didFinish: nil)
+        XCTAssertNotEqual(webView.scrollView.pinchGestureRecognizer?.isEnabled, true)
         let checked = expectation(description: "WebKit viewport checked")
         webView.evaluateJavaScript("""
             ({viewport:document.querySelector('meta[name="viewport"]').content,
