@@ -19,11 +19,15 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         configuration.websiteDataStore = .default()
         configuration.applicationNameForUserAgent = "ReylumiIOS/1.0"
         configuration.allowsInlineMediaPlayback = true
+        // The app uses a fixed, responsive viewport rather than browser page zoom.
+        configuration.ignoresViewportScaleLimits = false
         // Register in viewDidLoad and unregister when the controller is destroyed.
         configuration.userContentController.add(WeakMessageHandler(self), name: "reylumi")
-        if let scriptURL = Bundle.main.url(forResource: "NativeBridge", withExtension: "js"),
-           let script = try? String(contentsOf: scriptURL, encoding: .utf8) {
-            configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        for resource in ["AppViewport", "NativeBridge"] {
+            if let scriptURL = Bundle.main.url(forResource: resource, withExtension: "js"),
+               let script = try? String(contentsOf: scriptURL, encoding: .utf8) {
+                configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+            }
         }
         webView = WKWebView(frame: .zero, configuration: configuration)
         webView.isOpaque = false
@@ -33,6 +37,12 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
+        webView.pageZoom = 1
+        webView.scrollView.pinchGestureRecognizer?.isEnabled = false
+        webView.scrollView.bouncesZoom = false
+        webView.scrollView.alwaysBounceHorizontal = false
+        // Safe areas are already applied by the constraints below.
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.translatesAutoresizingMaskIntoConstraints = false
         progress.translatesAutoresizingMaskIntoConstraints = false
         progress.progressTintColor = ReylumiOrbitView.teal
@@ -42,7 +52,8 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         view.addSubview(progress)
         NSLayoutConstraint.activate([
             webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            webView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            // Resize the page when the keyboard opens so dialogs and actions stay reachable.
+            webView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             progress.topAnchor.constraint(equalTo: webView.topAnchor),

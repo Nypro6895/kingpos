@@ -21,6 +21,7 @@ Máy Windows không có Xcode nên chưa biên dịch Swift, chạy Simulator ha
 - Staff: Today/My Work, appointments, working hours, hồ sơ và các trang được cấp quyền.
 - Admin nền tảng và back office quản trị bị loại; owner/manager salon vẫn hoạt động.
 - Session dùng kho cookie WebKit bền vững; vuốt để quay lại, xử lý mất kết nối có nút thử lại, chia sẻ native, AirPrint và tải file qua WKDownload rồi mở bảng Save/Share.
+- Trang trong app cố định tỷ lệ 1:1: không pinch zoom hay zoom khi chạm hai lần. `AppViewport.js` giữ viewport qua mỗi lần chuyển trang, nâng chữ trong ô nhập nhỏ lên tối thiểu 16px, giữ cửa sổ thao tác trong màn hình và cho phép cuộn nội dung dài. Bàn phím mở sẽ thu chiều cao WebView để các nút vẫn có thể tiếp cận. Thao tác bản đồ và các vùng cuộn riêng vẫn dùng sự kiện chạm của web.
 - Chọn ảnh/camera dùng input file sẵn có của web. Vị trí chỉ được yêu cầu khi web gọi geolocation; không dùng API quyền vị trí beta.
 - Không bổ sung APNs/push nền hay chế độ offline mới. Các tính năng phụ thuộc internet và giới hạn thiết bị của web vẫn áp dụng. Máy in chuyên dụng của bản Windows không trở thành máy in Bluetooth iOS.
 
@@ -31,6 +32,8 @@ Native app chặn đường dẫn admin và client routing; `proxy.ts` chặn th
 ## Kiểm tra trước khi phát hành
 
 Trên Simulator và iPhone thật, dùng tài khoản guest, personal, owner và staff để kiểm tra: đăng nhập/đăng xuất/khôi phục mật khẩu, chuyển workspace, booking, sửa/hủy booking, POS/tickets, payroll CSV (bao gồm blob download), reports, chụp/chọn/cắt ảnh, map và quyền vị trí, chia sẻ/in, safe area/bàn phím, mở link ngoài, reload/mất mạng, session sau khi đóng app. Tài khoản admin phải không thấy Messaging hoặc recovery back office và không vào `/admin` kể cả client routing.
+
+Kiểm tra viewport trên iPhone màn hình nhỏ và khi xoay ngang: chạm các ô nhập email, tìm kiếm, số tiền; mở bàn phím trong dialog; thử pinch và chạm hai lần; cuộn tới nút cuối của form dài; chuyển qua lại Explore/đăng nhập/Settings/POS. Trang phải giữ tỷ lệ 1, không kéo ngang toàn trang; bảng hoặc danh sách có cuộn riêng vẫn phải xem và thao tác được. Bản sửa viewport được đóng gói trong app, cần build và cài bản iOS mới để áp dụng; không cần sửa viewport của Safari hay deploy web riêng cho thay đổi này.
 
 Trên Mac:
 

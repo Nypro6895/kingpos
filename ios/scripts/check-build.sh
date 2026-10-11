@@ -47,6 +47,7 @@ xcodebuild archive \
 
 # Confirm that the bridge is actually bundled, rather than testing JS source alone.
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/NativeBridge.js"
+test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/AppViewport.js"
 python3 - "$task_run_dir" "$task_simulator_id" <<'PY'
 import hashlib, json, os, pathlib, subprocess, sys
 root = pathlib.Path.cwd()
