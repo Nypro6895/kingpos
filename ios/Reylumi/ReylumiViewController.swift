@@ -7,13 +7,14 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     private var progress = UIProgressView(progressViewStyle: .bar)
     private var progressObservation: NSKeyValueObservation?
     private var downloads: [ObjectIdentifier: URL] = [:]
-    private let errorPanel = UIStackView()
-    private let errorLabel = UILabel()
+    private let launchPanel = ReylumiLaunchView()
+    private var hasLoadedPage = false
     private let policy = NavigationPolicy(origin: URL(string: Bundle.main.object(forInfoDictionaryKey: "ReylumiServerURL") as? String ?? "https://reylumi.com")!)
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        overrideUserInterfaceStyle = .light
+        view.backgroundColor = .white
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .default()
         configuration.applicationNameForUserAgent = "ReylumiIOS/1.0"
@@ -25,11 +26,18 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
             configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         }
         webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.isOpaque = false
+        webView.backgroundColor = .white
+        webView.scrollView.backgroundColor = .white
+        webView.underPageBackgroundColor = .white
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
         webView.translatesAutoresizingMaskIntoConstraints = false
         progress.translatesAutoresizingMaskIntoConstraints = false
+        progress.progressTintColor = ReylumiOrbitView.teal
+        progress.trackTintColor = .clear
+        progress.isHidden = true
         view.addSubview(webView)
         view.addSubview(progress)
         NSLayoutConstraint.activate([
@@ -43,32 +51,25 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         ])
         progressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] webView, _ in
             self?.progress.progress = Float(webView.estimatedProgress)
-            self?.progress.isHidden = webView.estimatedProgress >= 1
+            self?.progress.isHidden = self?.hasLoadedPage != true || webView.estimatedProgress >= 1
         }
-        errorPanel.axis = .vertical
-        errorPanel.spacing = 16
-        errorPanel.alignment = .center
-        errorPanel.translatesAutoresizingMaskIntoConstraints = false
-        errorPanel.backgroundColor = .systemBackground
-        errorLabel.numberOfLines = 0
-        errorLabel.textAlignment = .center
-        let retry = UIButton(type: .system)
-        retry.setTitle("Try again", for: .normal)
-        retry.addTarget(self, action: #selector(retryLoad), for: .touchUpInside)
-        errorPanel.addArrangedSubview(errorLabel)
-        errorPanel.addArrangedSubview(retry)
-        view.addSubview(errorPanel)
+        launchPanel.translatesAutoresizingMaskIntoConstraints = false
+        launchPanel.onRetry = { [weak self] in self?.retryLoad() }
+        view.addSubview(launchPanel)
         NSLayoutConstraint.activate([
-            errorPanel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            errorPanel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            errorPanel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.85)
+            launchPanel.topAnchor.constraint(equalTo: webView.topAnchor),
+            launchPanel.bottomAnchor.constraint(equalTo: webView.bottomAnchor),
+            launchPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            launchPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-        errorPanel.isHidden = true
+        launchPanel.showLoading()
         webView.load(URLRequest(url: policy.origin.appendingPathComponent("explore")))
     }
 
     @objc private func retryLoad() {
-        errorPanel.isHidden = true
+        webView.stopLoading()
+        if hasLoadedPage { launchPanel.finishLoading() }
+        else { launchPanel.showLoading() }
         if let url = webView.url, policy.isInternal(url), !policy.isExcluded(url) {
             webView.reload()
         } else {
@@ -120,15 +121,22 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         return nil
     }
 
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { errorPanel.isHidden = true }
+    override var preferredStatusBarStyle: UIStatusBarStyle { .darkContent }
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        if !hasLoadedPage { launchPanel.showLoading() }
+    }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        hasLoadedPage = true
+        progress.isHidden = true
+        launchPanel.finishLoading()
+    }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { showLoadError(error) }
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { showLoadError(error) }
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { webView.reload() }
     private func showLoadError(_ error: Error) {
         guard (error as NSError).code != NSURLErrorCancelled else { return }
         progress.isHidden = true
-        errorLabel.text = "Unable to connect to Reylumi. Check your internet connection and try again."
-        errorPanel.isHidden = false
+        launchPanel.showError()
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {

@@ -4,7 +4,10 @@ import SwiftUI
 struct ReylumiApp: App {
     var body: some Scene {
         WindowGroup {
-            ReylumiView().ignoresSafeArea(.keyboard)
+            ReylumiView()
+                .ignoresSafeArea(.keyboard)
+                .background(Color.white.ignoresSafeArea())
+                .preferredColorScheme(.light)
         }
     }
 }
