@@ -19,9 +19,10 @@ async function list(endpoint,optional=false){
  for(let page=0;next&&page<6;page++){const result=await read(next,optional);if(!result)return rows;rows.push(...result.data);next=result.links?.next;}
  return rows;
 }
-const [appInfo,versions,infos,availability]=await Promise.all([
+const [appInfo,versions,infos,availability,priceSchedule]=await Promise.all([
  read(`/v1/apps/${app}`),list(`/v1/apps/${app}/appStoreVersions?limit=10`),
  list(`/v1/apps/${app}/appInfos?limit=10&include=primaryCategory,secondaryCategory`),read(`/v1/apps/${app}/appAvailabilityV2`,true),
+ read(`/v1/apps/${app}/appPriceSchedule?include=baseTerritory`,true),
 ]);
 const report={app:{id:app,name:appInfo.data.attributes.name,bundleId:appInfo.data.attributes.bundleId,primaryLocale:appInfo.data.attributes.primaryLocale,contentRightsDeclaration:appInfo.data.attributes.contentRightsDeclaration},versions:[],appInfos:[],availability:null,privacyLabels:'Not exposed by this audit; verify in App Store Connect.',failures,checkedAt:new Date().toISOString(),operation:'GET requests only; no uploads, metadata changes, invitations or submission'};
 for(const version of versions){
@@ -42,6 +43,11 @@ for(const version of versions){
 for(const info of infos){
  const [localizations,ageRating]=await Promise.all([list(`/v1/appInfos/${info.id}/appInfoLocalizations?limit=50`,true),read(`/v1/appInfos/${info.id}/ageRatingDeclaration`,true)]);
  report.appInfos.push({id:info.id,state:info.attributes.appStoreState,primaryCategory:info.relationships?.primaryCategory?.data?.id??null,secondaryCategory:info.relationships?.secondaryCategory?.data?.id??null,localizations:localizations.map(loc=>({id:loc.id,locale:loc.attributes.locale,name:loc.attributes.name,subtitle:loc.attributes.subtitle,privacyPolicyUrl:loc.attributes.privacyPolicyUrl})),ageRating:ageRating?.data?.attributes??null});
+}
+report.pricing=null;
+if(priceSchedule?.data){
+ const prices=await read(`/v1/appPriceSchedules/${priceSchedule.data.id}/manualPrices?limit=200&include=appPricePoint,territory`,true);
+ report.pricing={id:priceSchedule.data.id,baseTerritory:priceSchedule.data.relationships?.baseTerritory?.data?.id??null,prices:prices?.data?.map(row=>({startDate:row.attributes.startDate,endDate:row.attributes.endDate,territory:row.relationships?.territory?.data?.id??null,customerPrice:prices.included?.find(point=>point.type==='appPricePoints'&&point.id===row.relationships?.appPricePoint?.data?.id)?.attributes.customerPrice??null}))??[]};
 }
 if(availability?.data){
  const endpoint=`/v2/appAvailabilities/${availability.data.id}/territoryAvailabilities?limit=200&include=territory`;
