@@ -22,6 +22,8 @@ final class StoreScreenshots: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        try screenshot.pngRepresentation.write(to: documents.appendingPathComponent("reylumi-explore.png"), options: .atomic)
+        // JPEG capture avoids the alpha channel prohibited in App Store screenshots.
+        let jpeg = try XCTUnwrap(screenshot.image.jpegData(compressionQuality: 1))
+        try jpeg.write(to: documents.appendingPathComponent("reylumi-explore.jpg"), options: .atomic)
     }
 }

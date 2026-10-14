@@ -17,11 +17,11 @@ def run(*args):
 devices = json.loads(run('xcrun', 'simctl', 'list', 'devices', 'available', '--json'))['devices']
 available = [device for runtime, rows in devices.items() if '.iOS-' in runtime for device in rows if device.get('isAvailable')]
 selections = [
-    ('iphone-69', next((d for d in available if d['name'] in ['iPhone 17 Pro Max', 'iPhone 16 Pro Max']), None)),
+    ('iphone-63', next((d for d in available if d['name'] in ['iPhone 17 Pro', 'iPhone 16 Pro']), None)),
     ('ipad-13', next((d for d in available if 'iPad Pro 13-inch' in d['name']), None)),
 ]
 if any(device is None for _, device in selections):
-    raise RuntimeError('Required iPhone 6.9-inch and iPad 13-inch simulators are unavailable: ' + str([d['name'] for d in available]))
+    raise RuntimeError('Required iPhone Dynamic Island medium and iPad 13-inch simulators are unavailable: ' + str([d['name'] for d in available]))
 
 app = root / 'build/screenshot-derived/Build/Products/Release-iphonesimulator/Reylumi.app'
 receipt = {
@@ -41,8 +41,8 @@ for label, device in selections:
     with (output / (label + '-ui-test.log')).open('w', encoding='utf-8') as log:
         subprocess.run(['xcodebuild', 'test-without-building', '-project', 'Reylumi.xcodeproj', '-scheme', 'ReylumiScreenshots', '-configuration', 'Release', '-destination', 'platform=iOS Simulator,id=' + udid, '-derivedDataPath', 'build/screenshot-derived', '-parallel-testing-enabled', 'NO', '-resultBundlePath', str(output / (label + '.xcresult')), 'CODE_SIGNING_ALLOWED=NO'], stdout=log, stderr=subprocess.STDOUT, check=True, timeout=900)
     container = pathlib.Path(run('xcrun', 'simctl', 'get_app_container', udid, 'com.reylumi.ios.screenshots.xctrunner', 'data'))
-    image = output / (label + '-explore.png')
-    shutil.copyfile(container / 'Documents/reylumi-explore.png', image)
+    image = output / (label + '-explore.jpg')
+    shutil.copyfile(container / 'Documents/reylumi-explore.jpg', image)
     receipt['screenshots'].append({'file': image.name, 'device': device['name'], 'sha256': hashlib.sha256(image.read_bytes()).hexdigest()})
     run('xcrun', 'simctl', 'shutdown', udid)
 (output / 'receipt.json').write_text(json.dumps(receipt, indent=2), encoding='utf-8')
