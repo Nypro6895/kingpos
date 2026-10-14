@@ -1,6 +1,11 @@
 name: Reylumi TestFlight
 on:
   workflow_dispatch:
+    inputs:
+      readiness_only:
+        description: Read App Store metadata without uploading a build
+        type: boolean
+        default: false
   push:
     branches: [codex/reylumi-ios-webview]
     paths:
@@ -13,6 +18,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   upload:
+    if: ${{ !inputs.readiness_only }}
     runs-on: macos-15
     timeout-minutes: 45
     env:
@@ -41,4 +47,23 @@ jobs:
             ios/build/testflight-*.log
             ios/build/testflight-receipt.json
             ios/build/testflight-processing.json
+          retention-days: 7
+  store-readiness:
+    if: ${{ inputs.readiness_only }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read App Store submission readiness
+        working-directory: ios
+        env:
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_APP_ID: ${{ vars.APP_STORE_CONNECT_APP_ID }}
+        run: node scripts/check-store-readiness.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reylumi-store-readiness-${{ github.run_number }}
+          path: ios/build/store-readiness.json
           retention-days: 7
