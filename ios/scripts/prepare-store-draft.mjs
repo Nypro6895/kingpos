@@ -28,10 +28,10 @@ try{
  const builds=await request(`/v1/builds?filter[app]=${plan.appId}&filter[version]=${plan.buildNumber}`);
  assert.ok(builds.data.some(b=>b.id===plan.buildId&&b.attributes.processingState==='VALID'));
  const prerelease=await request(`/v1/builds/${plan.buildId}/preReleaseVersion`);assert.equal(prerelease?.data.attributes.version,plan.version);
- await request(`/v1/appStoreVersions/${plan.versionId}`,'PATCH',{data:{type:'appStoreVersions',id:plan.versionId,attributes:{versionString:plan.version,releaseType:'MANUAL'},relationships:{build:{data:{type:'builds',id:plan.buildId}}}});
+ await request(`/v1/appStoreVersions/${plan.versionId}`,'PATCH',{data:{type:'appStoreVersions',id:plan.versionId,attributes:{versionString:plan.version,releaseType:'MANUAL'},relationships:{build:{data:{type:'builds',id:plan.buildId}}}}});
  await fill('appInfoLocalizations',plan.appInfoLocalizationId,plan.appInfo);
  await fill('appStoreVersionLocalizations',plan.versionLocalizationId,plan.localization);
- const info=await request(`/v1/appInfos/${plan.appInfoId}`),relationships={};
+ const info=await request(`/v1/appInfos/${plan.appInfoId}?include=primaryCategory,secondaryCategory`),relationships={};
  for(const [key,id]of Object.entries(plan.categories)){assert.ok(await request(`/v1/appCategories/${id}`));const existing=info.data.relationships[key]?.data?.id;if(existing&&existing!==id)throw Error('Preserving an existing app category');if(!existing)relationships[key]={data:{type:'appCategories',id}};}
  if(Object.keys(relationships).length)await request(`/v1/appInfos/${plan.appInfoId}`,'PATCH',{data:{type:'appInfos',id:plan.appInfoId,relationships}});
  let availability=await request(`/v1/apps/${plan.appId}/appAvailabilityV2`);
@@ -40,10 +40,10 @@ try{
   availability=await request(`/v1/apps/${plan.appId}/appAvailabilityV2`);
  }
  assert.equal(availability.data.attributes.availableInNewTerritories,false);
- const territories=await request(`/v2/appAvailabilities/${availability.data.id}/territoryAvailabilities?limit=200`);
+ const territories=await request(`/v2/appAvailabilities/${availability.data.id}/territoryAvailabilities?limit=200&include=territory`);
  assert.ok(!territories.links?.next,'Review additional territory pages before changing availability');
  for(const row of territories.data){const id=row.relationships.territory?.data?.id;assert.ok(id);const available=plan.territories.includes(id);if(row.attributes.available!==available)await request(`/v1/territoryAvailabilities/${row.id}`,'PATCH',{data:{type:'territoryAvailabilities',id:row.id,attributes:{available}}});}
- const verified=await request(`/v2/appAvailabilities/${availability.data.id}/territoryAvailabilities?limit=200`);
+ const verified=await request(`/v2/appAvailabilities/${availability.data.id}/territoryAvailabilities?limit=200&include=territory`);
  assert.deepEqual(verified.data.filter(row=>row.attributes.available).map(row=>row.relationships.territory.data.id).sort(),['USA']);
  receipt.availableTerritories=['USA'];receipt.completed=true;
 }catch(error){receipt.error=error.message;throw error;}finally{

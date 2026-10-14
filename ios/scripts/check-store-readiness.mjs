@@ -21,7 +21,7 @@ async function list(endpoint,optional=false){
 }
 const [appInfo,versions,infos,availability]=await Promise.all([
  read(`/v1/apps/${app}`),list(`/v1/apps/${app}/appStoreVersions?limit=10`),
- list(`/v1/apps/${app}/appInfos?limit=10`),read(`/v1/apps/${app}/appAvailabilityV2`,true),
+ list(`/v1/apps/${app}/appInfos?limit=10&include=primaryCategory,secondaryCategory`),read(`/v1/apps/${app}/appAvailabilityV2`,true),
 ]);
 const report={app:{id:app,name:appInfo.data.attributes.name,bundleId:appInfo.data.attributes.bundleId,primaryLocale:appInfo.data.attributes.primaryLocale,contentRightsDeclaration:appInfo.data.attributes.contentRightsDeclaration},versions:[],appInfos:[],availability:null,privacyLabels:'Not exposed by this audit; verify in App Store Connect.',failures,checkedAt:new Date().toISOString(),operation:'GET requests only; no uploads, metadata changes, invitations or submission'};
 for(const version of versions){
@@ -44,7 +44,7 @@ for(const info of infos){
  report.appInfos.push({id:info.id,state:info.attributes.appStoreState,primaryCategory:info.relationships?.primaryCategory?.data?.id??null,secondaryCategory:info.relationships?.secondaryCategory?.data?.id??null,localizations:localizations.map(loc=>({id:loc.id,locale:loc.attributes.locale,name:loc.attributes.name,subtitle:loc.attributes.subtitle,privacyPolicyUrl:loc.attributes.privacyPolicyUrl})),ageRating:ageRating?.data?.attributes??null});
 }
 if(availability?.data){
- const endpoint=availability.data.relationships?.territoryAvailabilities?.links?.related??`/v2/appAvailabilities/${availability.data.id}/territoryAvailabilities?limit=200`;
+ const endpoint=`/v2/appAvailabilities/${availability.data.id}/territoryAvailabilities?limit=200&include=territory`;
  const rows=await list(endpoint,true);
  report.availability={id:availability.data.id,availableInNewTerritories:availability.data.attributes.availableInNewTerritories,territories:rows.map(row=>({id:row.id,territory:row.relationships?.territory?.data?.id??null,available:row.attributes.available,releaseDate:row.attributes.releaseDate,preOrderEnabled:row.attributes.preOrderEnabled}))};
 }
