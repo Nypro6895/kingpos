@@ -174,6 +174,8 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         guard message.frameInfo.isMainFrame, let url = message.frameInfo.request.url,
               policy.isInternal(url), !policy.isExcluded(url), let body = message.body as? [String: Any] else { return }
         switch body["action"] as? String {
+        case "open-market-website":
+            UIApplication.shared.open(policy.origin.appendingPathComponent("market"), options: [:])
         case "open-payment":
             guard let value = body["url"] as? String, let paymentURL = URL(string: value), policy.isSafariPayment(paymentURL) else { return }
             UIApplication.shared.open(paymentURL, options: [:]) { [weak self] opened in
