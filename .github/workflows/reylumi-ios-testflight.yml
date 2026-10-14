@@ -10,6 +10,10 @@ on:
         description: Fill missing US draft metadata and select the tested build, without submitting
         type: boolean
         default: false
+      screenshots_run_id:
+        description: Upload only the screenshots pinned by SHA256 in the reviewed screenshot plan
+        type: string
+        default: ''
   push:
     branches: [codex/reylumi-ios-webview]
     paths:
@@ -17,12 +21,13 @@ on:
       - 'ios/scripts/testflight.sh'
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: reylumi-testflight
   cancel-in-progress: false
 jobs:
   upload:
-    if: ${{ !inputs.readiness_only && !inputs.prepare_store_draft }}
+    if: ${{ !inputs.readiness_only && !inputs.prepare_store_draft && !inputs.screenshots_run_id }}
     runs-on: macos-15
     timeout-minutes: 45
     env:
@@ -53,11 +58,30 @@ jobs:
             ios/build/testflight-processing.json
           retention-days: 7
   store-readiness:
-    if: ${{ inputs.readiness_only || inputs.prepare_store_draft }}
+    if: ${{ inputs.readiness_only || inputs.prepare_store_draft || inputs.screenshots_run_id }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Download reviewed simulator captures
+        if: ${{ inputs.screenshots_run_id }}
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.screenshots_run_id }}
+          pattern: reylumi-ios-check-*
+          merge-multiple: true
+          path: ios/build/reviewed-screenshots
+      - name: Upload reviewed screenshots to the draft
+        if: ${{ inputs.screenshots_run_id }}
+        working-directory: ios
+        env:
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_APP_ID: ${{ vars.APP_STORE_CONNECT_APP_ID }}
+          SCREENSHOTS_RUN_ID: ${{ inputs.screenshots_run_id }}
+        run: node scripts/upload-store-screenshots.mjs
       - name: Prepare missing US draft metadata
         if: ${{ inputs.prepare_store_draft }}
         working-directory: ios
@@ -83,4 +107,5 @@ jobs:
           path: |
             ios/build/store-readiness.json
             ios/build/store-draft-receipt.json
+            ios/build/store-screenshot-upload.json
           retention-days: 7

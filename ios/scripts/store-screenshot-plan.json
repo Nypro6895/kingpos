@@ -1,0 +1,23 @@
+{
+  "appId": "6821394475",
+  "versionId": "618c4a3b-33d0-4370-a361-0de0ba5c59a8",
+  "localizationId": "4c50d919-ce4a-4c81-83bd-02f11329fb6c",
+  "runId": "38613742368",
+  "review": "Viewed both real simulator captures; no popup, loading screen, private account information, or image compositing. Native source hashes match TestFlight 5.1. Content-rights declaration still requires the app owner.",
+  "images": [
+    {
+      "sourceFile": "iphone-63-explore.jpg",
+      "displayType": "APP_IPHONE_61",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "2559ee6ff4b5348dcb9540bbb68e4409725ae6280d1e1078da083cacd1235b50"
+    },
+    {
+      "sourceFile": "ipad-13-explore.jpg",
+      "displayType": "APP_IPAD_PRO_3GEN_129",
+      "width": 2064,
+      "height": 2752,
+      "sha256": "8d79429c57280b57cfbcd817ace45074b72462c194499e9e4aaa0ea5bd3d3b9b"
+    }
+  ]
+}
