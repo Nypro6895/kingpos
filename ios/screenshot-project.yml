@@ -1,0 +1,20 @@
+include: project.yml
+targets:
+  ReylumiScreenshots:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [ReylumiScreenshots]
+    dependencies:
+      - target: Reylumi
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.reylumi.ios.screenshots
+        TEST_TARGET_NAME: Reylumi
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  ReylumiScreenshots:
+    build:
+      targets:
+        Reylumi: all
+    test:
+      targets: [ReylumiScreenshots]
