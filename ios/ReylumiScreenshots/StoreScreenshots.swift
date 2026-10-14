@@ -11,7 +11,8 @@ final class StoreScreenshots: XCTestCase {
         let closePromotion = app.buttons["Close promotion"].firstMatch
         if closePromotion.waitForExistence(timeout: 45) {
             closePromotion.tap()
-            XCTAssertTrue(closePromotion.waitForNonExistence(timeout: 10))
+            let dismissed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: closePromotion)
+            XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 10), .completed)
         }
         XCTAssertTrue(app.staticTexts["Fresh looks"].firstMatch.waitForExistence(timeout: 60))
         Thread.sleep(forTimeInterval: 3)
