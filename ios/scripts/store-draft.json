@@ -1,0 +1,22 @@
+{
+  "appId": "6821394475",
+  "versionId": "618c4a3b-33d0-4370-a361-0de0ba5c59a8",
+  "appInfoId": "a176166d-d032-4450-9087-b0e2c9bfe80c",
+  "versionLocalizationId": "4c50d919-ce4a-4c81-83bd-02f11329fb6c",
+  "appInfoLocalizationId": "abd05b33-8d19-4e5d-a734-2b4e17368138",
+  "buildId": "431d27bd-be85-4323-b04f-812013fc7434",
+  "buildNumber": "5.1",
+  "version": "1.0.1",
+  "appInfo": {
+    "subtitle": "Salons, beauty & bookings",
+    "privacyPolicyUrl": "https://reylumi.com/privacy"
+  },
+  "localization": {
+    "description": "Discover salons, find beauty inspiration and keep your salon work connected with Reylumi.\n\nEXPLORE BEAUTY NEAR YOU\nBrowse salon profiles, services and published work. Find ideas for your next visit and request an appointment when online booking is available.\n\nSHARE YOUR STYLE\nCreate a beauty profile, share your work and join conversations. Report inappropriate content, block users and manage your account privacy in Settings.\n\nTOOLS FOR SALONS AND TEAMS\nUse your salon workspace to manage appointments, services, staff access and customer activity. Available tools depend on your role and the features your salon enables.\n\nOPTIONAL MARKET FEATURES\nSalon owners can add optional Market features. Some features require a paid subscription. Availability and pricing are shown before purchase.\n\nBrowse public content without an account. Sign in to use personal and salon workspace features. Account deletion is available in the app.\n\nPrivacy: https://reylumi.com/privacy\nTerms: https://reylumi.com/terms\nSupport: https://reylumi.com/support",
+    "keywords": "beauty,salon,nails,appointments,booking,hairstyle,spa,local,business",
+    "supportUrl": "https://reylumi.com/support",
+    "marketingUrl": "https://reylumi.com"
+  },
+  "categories": {"primaryCategory": "LIFESTYLE", "secondaryCategory": "BUSINESS"},
+  "territories": ["USA"]
+}

@@ -6,6 +6,10 @@ on:
         description: Read App Store metadata without uploading a build
         type: boolean
         default: false
+      prepare_store_draft:
+        description: Fill missing US draft metadata and select the tested build, without submitting
+        type: boolean
+        default: false
   push:
     branches: [codex/reylumi-ios-webview]
     paths:
@@ -18,7 +22,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   upload:
-    if: ${{ !inputs.readiness_only }}
+    if: ${{ !inputs.readiness_only && !inputs.prepare_store_draft }}
     runs-on: macos-15
     timeout-minutes: 45
     env:
@@ -49,12 +53,22 @@ jobs:
             ios/build/testflight-processing.json
           retention-days: 7
   store-readiness:
-    if: ${{ inputs.readiness_only }}
+    if: ${{ inputs.readiness_only || inputs.prepare_store_draft }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Prepare missing US draft metadata
+        if: ${{ inputs.prepare_store_draft }}
+        working-directory: ios
+        env:
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_APP_ID: ${{ vars.APP_STORE_CONNECT_APP_ID }}
+        run: node scripts/prepare-store-draft.mjs
       - name: Read App Store submission readiness
+        if: always()
         working-directory: ios
         env:
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
@@ -63,7 +77,10 @@ jobs:
           APP_STORE_CONNECT_APP_ID: ${{ vars.APP_STORE_CONNECT_APP_ID }}
         run: node scripts/check-store-readiness.mjs
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: reylumi-store-readiness-${{ github.run_number }}
-          path: ios/build/store-readiness.json
+          path: |
+            ios/build/store-readiness.json
+            ios/build/store-draft-receipt.json
           retention-days: 7
