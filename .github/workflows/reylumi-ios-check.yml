@@ -3,6 +3,11 @@ name: Reylumi iOS Build Check
 # Validate the dedicated iOS branch without merging or deploying the website.
 on:
   workflow_dispatch:
+    inputs:
+      screenshots_only:
+        description: Capture the unchanged app on iPhone and iPad simulators
+        type: boolean
+        default: false
   push:
     branches: [codex/reylumi-ios-webview]
     paths:
@@ -32,7 +37,11 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate, test and archive
+        if: ${{ !inputs.screenshots_only }}
         run: bash scripts/check-build.sh
+      - name: Capture App Store screenshots
+        if: ${{ inputs.screenshots_only }}
+        run: bash scripts/capture-store-screenshots.sh
       - name: Save build results
         if: always()
         uses: actions/upload-artifact@v4
@@ -44,5 +53,6 @@ jobs:
             ios/build/test.log
             ios/build/archive.log
             ios/build/check.*/Reylumi-unsigned.xcarchive
+            ios/build/store-screenshots/**
           if-no-files-found: warn
           retention-days: 7

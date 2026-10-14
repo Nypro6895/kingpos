@@ -36,7 +36,12 @@ try{
  if(Object.keys(relationships).length)await request(`/v1/appInfos/${plan.appInfoId}`,'PATCH',{data:{type:'appInfos',id:plan.appInfoId,relationships}});
  let availability=await request(`/v1/apps/${plan.appId}/appAvailabilityV2`);
  if(!availability){
-  await request('/v2/appAvailabilities','POST',{data:{type:'appAvailabilities',attributes:{availableInNewTerritories:false},relationships:{app:{data:{type:'apps',id:plan.appId}},territoryAvailabilities:{data:[{type:'territoryAvailabilities',id:'${usa}'}]}}},included:[{type:'territoryAvailabilities',id:'${usa}',attributes:{available:true,preOrderEnabled:false},relationships:{territory:{data:{type:'territories',id:'USA'}}}}]});
+  // Apple requires an explicit availability row for every supported territory.
+  const countries=await request('/v1/territories?limit=200');
+  assert.ok(!countries.links?.next,'Review additional territory pages before creating availability');
+  assert.ok(countries.data.some(row=>row.id==='USA'));
+  const included=countries.data.map(row=>({type:'territoryAvailabilities',id:'${'+row.id+'}',attributes:{available:plan.territories.includes(row.id),preOrderEnabled:false},relationships:{territory:{data:{type:'territories',id:row.id}}}}));
+  await request('/v2/appAvailabilities','POST',{data:{type:'appAvailabilities',attributes:{availableInNewTerritories:false},relationships:{app:{data:{type:'apps',id:plan.appId}},territoryAvailabilities:{data:included.map(({type,id})=>({type,id}))}}},included});
   availability=await request(`/v1/apps/${plan.appId}/appAvailabilityV2`);
  }
  assert.equal(availability.data.attributes.availableInNewTerritories,false);
