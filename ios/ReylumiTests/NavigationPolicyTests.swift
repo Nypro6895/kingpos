@@ -23,4 +23,18 @@ final class NavigationPolicyTests: XCTestCase {
         XCTAssertFalse(policy.isExternalAllowed(URL(string: "javascript:alert(1)")!))
         XCTAssertTrue(policy.isExternalAllowed(URL(string: "tel:123456789")!))
     }
+    func testPaymentsOpenOnlyTrustedHostedOrigins() {
+        for value in ["https://checkout.stripe.com/c/pay/cs_example", "https://billing.stripe.com/p/session/example"] {
+            XCTAssertTrue(policy.isSafariPayment(URL(string: value)!))
+        }
+        for value in ["http://checkout.stripe.com/c/pay/test", "https://checkout.stripe.com.evil.test/c/pay/test", "https://user@checkout.stripe.com", "https://checkout.stripe.com:8443", "https://reylumi.com"] {
+            XCTAssertFalse(policy.isSafariPayment(URL(string: value)!))
+        }
+    }
+    func testMarketReturnIsNavigationOnly() {
+        XCTAssertTrue(NavigationPolicy.isMarketReturn(URL(string: "reylumi://market")!))
+        for value in ["reylumi://market?paid=true", "reylumi://market/admin", "reylumi://admin", "reylumi://user@market", "reylumi://market#token", "https://market"] {
+            XCTAssertFalse(NavigationPolicy.isMarketReturn(URL(string: value)!))
+        }
+    }
 }

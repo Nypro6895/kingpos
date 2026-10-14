@@ -19,4 +19,14 @@ struct NavigationPolicy {
         ["https", "tel", "mailto", "sms"].contains(url.scheme?.lowercased() ?? "")
             && url.user == nil && url.password == nil
     }
+
+    func isSafariPayment(_ url: URL) -> Bool {
+        url.scheme == "https" && ["checkout.stripe.com", "billing.stripe.com"].contains(url.host?.lowercased() ?? "")
+            && url.port == nil && url.user == nil && url.password == nil
+    }
+
+    static func isMarketReturn(_ url: URL) -> Bool {
+        url.scheme == "reylumi" && url.host == "market" && url.path.isEmpty
+            && url.query == nil && url.fragment == nil && url.user == nil && url.password == nil && url.port == nil
+    }
 }
