@@ -56,9 +56,10 @@ cd "$SIGNING"
 xcrun altool --upload-app --type ios --file "$ROOT/build/export/Reylumi.ipa" --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" 2>&1 | tee "$ROOT/build/testflight-upload.log"
 cd "$ROOT"
 python3 - "$BUILD_VERSION" <<'PY'
-import json,pathlib,sys,subprocess,hashlib
+import json,pathlib,sys,subprocess,hashlib,plistlib
 files={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('Reylumi').rglob('*') if p.is_file()}
-receipt={'bundle':'com.reylumi.ios','version':'1.0.0','build':sys.argv[1],'commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'xcode':subprocess.check_output(['xcodebuild','-version'],text=True).strip(),'upload':'accepted','source_sha256':files}
+info=plistlib.loads(pathlib.Path('build/Reylumi.xcarchive/Products/Applications/Reylumi.app/Info.plist').read_bytes())
+receipt={'bundle':info['CFBundleIdentifier'],'version':info['CFBundleShortVersionString'],'build':info['CFBundleVersion'],'commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'xcode':subprocess.check_output(['xcodebuild','-version'],text=True).strip(),'upload':'accepted','source_sha256':files}
 pathlib.Path('build/testflight-receipt.json').write_text(json.dumps(receipt,indent=2))
 PY
 node scripts/check-build-status.mjs "$BUILD_VERSION"
