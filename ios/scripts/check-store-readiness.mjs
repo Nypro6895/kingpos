@@ -48,6 +48,8 @@ report.pricing=null;
 if(priceSchedule?.data){
  const prices=await read(`/v1/appPriceSchedules/${priceSchedule.data.id}/manualPrices?limit=200&include=appPricePoint,territory`,true);
  report.pricing={id:priceSchedule.data.id,baseTerritory:priceSchedule.data.relationships?.baseTerritory?.data?.id??null,prices:prices?.data?.map(row=>({startDate:row.attributes.startDate,endDate:row.attributes.endDate,territory:row.relationships?.territory?.data?.id??null,customerPrice:prices.included?.find(point=>point.type==='appPricePoints'&&point.id===row.relationships?.appPricePoint?.data?.id)?.attributes.customerPrice??null}))??[]};
+ const automatic=await read(`/v1/appPriceSchedules/${priceSchedule.data.id}/automaticPrices?filter[territory]=USA&limit=200&include=appPricePoint,territory`,true);
+ report.pricing.automaticUSPrices=automatic?.data?.map(row=>({startDate:row.attributes.startDate,endDate:row.attributes.endDate,customerPrice:automatic.included?.find(point=>point.type==='appPricePoints'&&point.id===row.relationships?.appPricePoint?.data?.id)?.attributes.customerPrice??null}))??[];
 }
 if(availability?.data){
  const endpoint=`/v2/appAvailabilities/${availability.data.id}/territoryAvailabilities?limit=200&include=territory`;
