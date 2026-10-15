@@ -1,0 +1,24 @@
+{
+  "bundle": "com.reylumi.ios",
+  "version": "1.0.1",
+  "build": "16.1",
+  "commit": "e4be37f0aa3d6e43767b3d7bc2573145f477d708",
+  "xcode": "Xcode 26.3\nBuild version 17C529",
+  "upload": "accepted",
+  "source_sha256": {
+    "Reylumi/ReylumiStartupState.swift": "933f7de786bdce92eb97cdf86cd182d989a668ad6ac7226b13638d73c25a4a0f",
+    "Reylumi/NativeBridge.js": "61cbf78a9717c7a8295a9a324f18376a68749dc6832bb662074edf2e475e1cab",
+    "Reylumi/ReylumiApp.swift": "7d1ce49c30b3a39056e222808b320a189de5c2d149b103ff774492c44d46b680",
+    "Reylumi/ReylumiViewController.swift": "42ded6f29adbd89aeb51ae6e04110f4ab4e02a46d53dd77b9f74a1da6397a969",
+    "Reylumi/AppViewport.js": "b1b5bc56d83da5e3f6b219289801396fc405e90dfc504788b1b78f6cb71c2986",
+    "Reylumi/ReylumiLaunchView.swift": "100bd75d5a45e91e9efe546164be1cb84afc1e748d4b39ed78974416f6a391b3",
+    "Reylumi/Info.plist": "33bdc4bfba37b6925a222f2e3f986b3938104e611e50481217af9ebc8049904d",
+    "Reylumi/NavigationPolicy.swift": "589875f944bef570d3f88988ba164c19c3b323a0eb694a181f5b77a7fd1e02e0",
+    "Reylumi/Assets.xcassets/Contents.json": "10e3b5dc202f1cd9fad1f688c8fc9fe9e9669bf3f8295e67d216b10fd99b6f49",
+    "Reylumi/Assets.xcassets/LoadingLogo.imageset/Contents.json": "7f4e9814add64f15b52f3ede56a2fde9414b98441990d754742fc2dfbd197d33",
+    "Reylumi/Assets.xcassets/LoadingLogo.imageset/LoadingLogo.png": "eb620355ec767fda97e488ad21c8f052b09a3b83e8874ca3f1eb31e8f9d55781",
+    "Reylumi/Assets.xcassets/AppIcon.appiconset/Contents.json": "6ad2c5c3bbcf972c7f02d217d6afcac3f24a10e30510c7e2d06c582371ed9d22",
+    "Reylumi/Assets.xcassets/AppIcon.appiconset/AppIcon.png": "9053aa25c99045b16929ad8b49e02e42d8bbc5941ebd0ce9a79a84db79de3db4",
+    "Reylumi/Assets.xcassets/AppBackground.colorset/Contents.json": "88f920768f2c8097e4d1e3dbc8926b8dcf160d196840923183edff04d4420a76"
+  }
+}

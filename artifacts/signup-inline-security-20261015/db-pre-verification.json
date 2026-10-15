@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-10-15T18:25:36.097Z",
+  "verified": true,
+  "existingPoliciesPreserved": 5,
+  "migrations": [
+    "20261015050000",
+    "20261015173000",
+    "20261015190000"
+  ],
+  "checks": {
+    "guard_counts_committed_accounts": true,
+    "guard_installed": true,
+    "preflight_anon_denied": true,
+    "preflight_authenticated_denied": true,
+    "preflight_separate_budgets": true,
+    "preflight_service_allowed": true,
+    "privacy_rpc_anon_denied": true,
+    "privacy_rpc_authenticated_allowed": true,
+    "privacy_rpc_present": true,
+    "signup_device_cap_preserved": true,
+    "signup_ip_cap_preserved": true,
+    "signup_migration_recorded": true,
+    "signup_tickets_enforced": true,
+    "ticket_anon_denied": true
+  }
+}

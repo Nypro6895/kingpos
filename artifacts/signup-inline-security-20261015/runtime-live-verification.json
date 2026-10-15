@@ -1,0 +1,56 @@
+{
+  "deploymentId": "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT",
+  "verified": true,
+  "checkedAt": "2026-10-15T18:32:18.484Z",
+  "pages": [
+    {
+      "pathname": "/signup",
+      "status": 200,
+      "finalURL": "https://reylumi.com/signup",
+      "html": true,
+      "deployIds": [
+        "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT",
+        "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT\\"
+      ]
+    },
+    {
+      "pathname": "/login",
+      "status": 200,
+      "finalURL": "https://reylumi.com/login",
+      "html": true,
+      "deployIds": [
+        "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT",
+        "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT\\"
+      ]
+    },
+    {
+      "pathname": "/explore",
+      "status": 200,
+      "finalURL": "https://reylumi.com/explore",
+      "html": true,
+      "deployIds": [
+        "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT",
+        "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT\\"
+      ]
+    },
+    {
+      "pathname": "/bookings",
+      "status": 200,
+      "finalURL": "https://reylumi.com/bookings",
+      "html": true,
+      "deployIds": [
+        "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT",
+        "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT\\"
+      ]
+    }
+  ],
+  "captcha": {
+    "status": 200,
+    "width": 720,
+    "height": 192,
+    "format": "png",
+    "sha256": "118c97805f8e54c5f27922cba012e0eec0480206d1fb806f5668c8bb55b7b85d",
+    "onlyIdAndRaster": true,
+    "cacheControl": "no-store"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "verified": true,
+  "run": 38783757945,
+  "commit": "e4be37f0aa3d6e43767b3d7bc2573145f477d708",
+  "version": "1.0.1",
+  "build": "16.1",
+  "upload": "accepted",
+  "processingState": "VALID",
+  "internalBuildState": "IN_BETA_TESTING",
+  "sourceHashesVerified": 14,
+  "appStorePublished": false,
+  "checkedAt": "2026-10-15T18:20:18.347Z"
+}

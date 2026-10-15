@@ -1,0 +1,105 @@
+{
+  "startedAt": "2026-10-15T18:32:14.325Z",
+  "mode": "live-page-with-mocked-writes",
+  "referenceLocalBuildId": "D-C7gEQF2Fm6Ehv9nX6nq",
+  "releaseSourceReference": "C:\\Users\\giuse\\kingpos\\artifacts\\signup-inline-security-20261015\\release",
+  "base": "https://reylumi.com",
+  "cases": [
+    {
+      "engine": "chromium",
+      "width": 390,
+      "status": "passed",
+      "assetDeploymentIds": [
+        "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT"
+      ],
+      "responseIdentity": [
+        {
+          "url": "https://reylumi.com/signup?next=%2Fbookings%3Fsalon%3Dfixture",
+          "status": 200,
+          "headers": {
+            "x-vercel-id": "cle1::iad1::c9dgw-1792089135436-995ed70bfb96",
+            "x-vercel-cache": "REVALIDATED",
+            "date": "Thu, 15 Oct 2026 18:32:16 GMT",
+            "cache-control": "public, max-age=0, must-revalidate"
+          }
+        },
+        {
+          "url": "https://reylumi.com/signup?next=%2Fbookings%3Fsalon%3Dfixture",
+          "status": 200,
+          "headers": {
+            "x-vercel-id": "cle1::ks8bt-1792089141801-309640f1015a",
+            "x-vercel-cache": "HIT",
+            "date": "Thu, 15 Oct 2026 18:32:21 GMT",
+            "cache-control": "public, max-age=0, must-revalidate"
+          }
+        }
+      ],
+      "signupRequests": 3,
+      "challengeLoads": 3,
+      "verificationRequests": 2,
+      "pageErrors": [],
+      "blockedWrites": [],
+      "blockedRemoteOrigins": [],
+      "screenshots": [
+        "chromium-390-inline.png",
+        "chromium-390-enlarged.png"
+      ]
+    },
+    {
+      "engine": "webkit",
+      "width": 390,
+      "status": "passed",
+      "assetDeploymentIds": [
+        "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT"
+      ],
+      "responseIdentity": [
+        {
+          "url": "https://reylumi.com/signup?next=%2Fbookings%3Fsalon%3Dfixture",
+          "status": 200,
+          "headers": {
+            "x-vercel-id": "cle1::gkqz5-1792089144871-167b2d8b26fe",
+            "x-vercel-cache": "HIT",
+            "date": "Thu, 15 Oct 2026 18:32:24 GMT",
+            "cache-control": "public, max-age=0, must-revalidate"
+          }
+        },
+        {
+          "url": "https://reylumi.com/signup?next=%2Fbookings%3Fsalon%3Dfixture",
+          "status": 200,
+          "headers": {
+            "x-vercel-id": "cle1::q95xc-1792089151230-eed59a748826",
+            "x-vercel-cache": "HIT",
+            "date": "Thu, 15 Oct 2026 18:32:31 GMT",
+            "cache-control": "public, max-age=0, must-revalidate"
+          }
+        }
+      ],
+      "signupRequests": 3,
+      "challengeLoads": 3,
+      "verificationRequests": 2,
+      "pageErrors": [],
+      "blockedWrites": [],
+      "blockedRemoteOrigins": [],
+      "screenshots": [
+        "webkit-390-inline.png",
+        "webkit-390-enlarged.png"
+      ]
+    }
+  ],
+  "testBoundary": {
+    "pageAndAssets": "Real responses from base URL",
+    "signupAndChallengeRequests": "Intercepted and fulfilled by Playwright; no real account creation, verification or email",
+    "otherWrites": "Blocked",
+    "rasterFixture": "Generated locally from the frozen release renderer; deployed renderer is verified separately"
+  },
+  "referenceSourceHashes": {
+    "app/signup/signup-form.tsx": "098312ca9a9e6a1749a1f5847c58d4162819c1004ebefc375b4cdca3e6739684",
+    "app/(app)/signup/page.tsx": "2ef7f2fea0a4dc5ff2e77dc8052ee4f2e029bee4ba3d054a9497120f94ef734f",
+    "app/(app)/auth-screen.module.css": "746cb9d34b92a7680233445f29d5f9401888d2e3f100075d622e1606ad745ee2",
+    "app/(app)/security-check/security-check.tsx": "4db0357eef36c55f8497d0c072345e1a5fe5829a24a04401698df8d4e33eda45",
+    "components/security-challenge.tsx": "5b6ca073a18eadbe509901ce3df379d7839c0ac7457c781b517c44d26c29a286",
+    "lib/security-challenge-image.ts": "44a6630915d7c085c67064945c540c5654dfa65873194d7184670c6ff306242b"
+  },
+  "status": "passed",
+  "completedAt": "2026-10-15T18:32:33.986Z"
+}

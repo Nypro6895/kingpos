@@ -1,0 +1,16 @@
+{
+  "branch": "codex/signup-inline-security-20261015",
+  "commit": "bd9fe4623684acbd234a763f25c7e5b3862a7632",
+  "parent": "b179f5803dd0723afeb8f029b02dab9a1f31c7a0",
+  "tree": "cf51caa1b46eb727f63a4973aff9abd4db62a078",
+  "webSourceSha256": "2abf8c10e8af162ecd10e8357a2818c5ef48dbf0842eb78c5f49cb6fc01714a9",
+  "selectedEvents": [
+    "c9822b68-4aff-45b3-a44b-e56f75cdb8be",
+    "da4a525d-2d58-4678-8ed5-292622f5bc23",
+    "f1249291-da00-47b8-8ff8-18d898ff1d2e",
+    "26948845-ba80-4e73-a0b4-8489f233a648",
+    "0d783596-8875-49ab-af71-7f3c6fe3748f",
+    "59eec755-5b13-4448-8a17-0e839929d199",
+    "3d2429a2-754e-4f5a-b619-d76086487bd0"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "kind": "release",
+  "summary": "Published inline readable signup verification, transactional account quotas and the compatible iPhone security challenge fix. Integrated verified completed booking privacy/access/notification and Explore actions against exact production source.",
+  "changes": [
+    "c9822b68-4aff-45b3-a44b-e56f75cdb8be",
+    "da4a525d-2d58-4678-8ed5-292622f5bc23",
+    "f1249291-da00-47b8-8ff8-18d898ff1d2e",
+    "26948845-ba80-4e73-a0b4-8489f233a648",
+    "0d783596-8875-49ab-af71-7f3c6fe3748f",
+    "59eec755-5b13-4448-8a17-0e839929d199",
+    "3d2429a2-754e-4f5a-b619-d76086487bd0"
+  ],
+  "sourceCommit": "bd9fe4623684acbd234a763f25c7e5b3862a7632",
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT",
+      "baselineDeploymentId": "dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA",
+      "sourceSha256": "2abf8c10e8af162ecd10e8357a2818c5ef48dbf0842eb78c5f49cb6fc01714a9",
+      "overlaySha256": "4740614233d112ff02d4deed017ba5aa607a604a3bdabf1d5a6bd74f2ef4ce20",
+      "evidence": "artifacts/signup-inline-security-20261015/final-receipt.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "16.1",
+      "commit": "e4be37f0aa3d6e43767b3d7bc2573145f477d708",
+      "evidence": "artifacts/signup-inline-security-20261015/native-upload-verification.json"
+    }
+  },
+  "pending": [
+    "Nine-state directory data import remains unpublished and is reserved for its separate coordinator.",
+    "This receipt confirms TestFlight availability, not App Store publication."
+  ],
+  "id": "7e606ec5-c1ba-43a5-97af-1b4a68993412",
+  "recordedAt": "2026-10-15T18:33:19.999Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "filePath": "C:\\Users\\giuse\\kingpos\\releases\\history\\2026-10-15T18-33-19-999Z-7e606ec5-c1ba-43a5-97af-1b4a68993412.json"
+}
