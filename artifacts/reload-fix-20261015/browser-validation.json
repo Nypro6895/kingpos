@@ -1,0 +1,129 @@
+{
+  "verified": false,
+  "verificationScope": "The complete matrix includes an intermittent incomplete-HTTP WebKit stress failure. Normal completed-document navigation, retained query/DOM, sensitive-form clearing and optional-memory race are verified separately; baseline-confirmed evidence is below.",
+  "generatedAt": "2026-10-15T17:17:03.634Z",
+  "productChanged": false,
+  "normalReloadRegressionFlowsVerified": true,
+  "buildId": "RSHFM8zM925AOAM0HaXI3",
+  "chromium": {
+    "tests": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "validation-built-chromium-resolved-final.log",
+    "artifacts": "built-chromium-final-evidence"
+  },
+  "webkit": {
+    "tests": 4,
+    "passed": 3,
+    "failed": 1,
+    "skipped": 0,
+    "normalFlowTestsPassed": 3,
+    "normalFlows": {
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    "evidence": "validation-built-webkit-resolved-final.log",
+    "artifacts": "built-webkit-final-evidence",
+    "failedTest": "built Next app has an interactive first screen while its document stream remains incomplete"
+  },
+  "diagnosticReason": "Retention tests initially interacted with unhydrated streamed Market input and captured the temporary LegalLayout Suspense fallback heading. Tests now type with trusted keyboard events after final Market shell, verify Clear search and Payroll before navigation, and wait for the resolved guest legal shell before capturing its heading. Every original after-Back value, exact DOM identity, document request count, asset, credential reset and optional-memory race assertion remains. No product code was changed to fix test readiness.",
+  "knownLimitation": {
+    "scope": "Artificially hold the initial HTTP response EOF open after every body byte has arrived in desktop Playwright WebKit on Windows.",
+    "status": "Intermittent readiness timeout, reproduced on both exact baseline and candidate; held-tail assertion remains unchanged and failing final matrix is preserved.",
+    "baselineConfirmed": true,
+    "diagnosticEvidence": "bounded-held-tail-comparison.json",
+    "fixedTrials": [
+      {
+        "trial": 1,
+        "port": "3097",
+        "readyBeforeEof": true,
+        "htmlBytes": 89927,
+        "htmlSha256": "15ac7b82dadf7191e383dbe3dd690f60fda66482c666b34df5e768ad3670d3c4",
+        "stalledHtml": null
+      },
+      {
+        "trial": 2,
+        "port": "3098",
+        "readyBeforeEof": false,
+        "htmlBytes": 89965,
+        "htmlSha256": "f4bd50ac6dee8cb1d1534e5dae5ca4e0c7293f18ca5464732591f94aff336a52",
+        "stalledHtml": "held-tail-stalled-3098-2.html"
+      },
+      {
+        "trial": 3,
+        "port": "3097",
+        "readyBeforeEof": true,
+        "htmlBytes": 89927,
+        "htmlSha256": "3dc48f67a9d711d6ac92628a732637448941d5218b5506ba27c3f08015fb9552",
+        "stalledHtml": null
+      },
+      {
+        "trial": 4,
+        "port": "3098",
+        "readyBeforeEof": true,
+        "htmlBytes": 89965,
+        "htmlSha256": "e243115b83985dd5d3244c09d731eae2ef825f825181e1a829db6f46caa0b3df",
+        "stalledHtml": null
+      },
+      {
+        "trial": 5,
+        "port": "3097",
+        "readyBeforeEof": true,
+        "htmlBytes": 89927,
+        "htmlSha256": "0312959fdb4b646c82ad15e979519e4310e3b6ebf00c85baade178d71bd23269",
+        "stalledHtml": null
+      },
+      {
+        "trial": 6,
+        "port": "3098",
+        "readyBeforeEof": false,
+        "htmlBytes": 89965,
+        "htmlSha256": "422948ed8de8a70fda873400964073bf37e04214708059969ecff5d39c196db8",
+        "stalledHtml": "held-tail-stalled-3098-6.html"
+      },
+      {
+        "trial": 7,
+        "port": "3097",
+        "readyBeforeEof": false,
+        "htmlBytes": 89927,
+        "htmlSha256": "777fd71af2082f7ee05a8913b0fb616543d352e17250a9bb9c9fb829dd5e6b46",
+        "stalledHtml": "held-tail-stalled-3097-7.html"
+      },
+      {
+        "trial": 8,
+        "port": "3098",
+        "readyBeforeEof": true,
+        "htmlBytes": 89965,
+        "htmlSha256": "5b78f4c6ab8ea7b37d6ff8f9ff9a4741e40fabfd31eade4a801d6c6f5979bbf7",
+        "stalledHtml": null
+      }
+    ],
+    "stalledSignature": "At four seconds, page focused and visible and FCP exists; all 26 script resources downloaded, 29 script elements present, 12 inline Flight segments still buffered with native Array.push, no React container on document, no React props/fiber on ready marker or input, no fetch calls, no experience reset/mutation/access events, no hidden Activity nodes. Releasing EOF lets Next bootstrap and readiness complete. This happens before scope/session component execution.",
+    "baselineReadyBeforeEof": 3,
+    "candidateReadyBeforeEof": 2,
+    "trialsPerBuild": 4,
+    "normalCompletedDocumentFlows": "All navigation, retained query/DOM, sensitive-form reset, and held optional-memory-frame tests pass in WebKit.",
+    "caveat": "Do not report all four WebKit tests passing or call this a physical-device result. The final first-frame JSON copied from a prior run is renamed prior-run-unverified and is not evidence of this failed run."
+  },
+  "diagnosticEvidence": [
+    "built-navigation-diagnostic-chromium.json",
+    "built-navigation-diagnostic-webkit-typed.json",
+    "webkit-held-memory-diagnostic.json",
+    "built-legal-diagnostic-3097.json",
+    "built-legal-diagnostic-3098.json",
+    "bounded-held-tail-comparison.json",
+    "bounded-held-tail-comparison.log"
+  ],
+  "testSourceHashes": {
+    "tests/whole-site-navigation-ui.test.mjs": "291c401242107f9ec863ce1fe94d524ace52942f72c341c2ab0c6885b056d589",
+    "tests/market-navigation-race-ui.test.mjs": "d0b121ea026cca9e2112ae2873efce0607280034da3caa37c633923840851acf",
+    "tests/production-startup-stream-ui.test.mjs": "60055fab8a6f506abdd4db1919bbb2ae78209f5095a939d7e866a368287bd51d"
+  },
+  "logHashes": {
+    "validation-built-chromium-resolved-final.log": "1c9444b23bbf7d78529f0754cae79b57deb207d05874bc382442042672b94eb3",
+    "validation-built-webkit-resolved-final.log": "e4605470570b50bfc081e791909096439e4c1f4eb10150f97fd673a08ee15c47",
+    "bounded-held-tail-comparison.json": "66469ed1dd98e4d6a7f77abede8981ef0cec6204dd9cba1154ba07c630110a18"
+  }
+}

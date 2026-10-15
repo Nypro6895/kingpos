@@ -1,0 +1,58 @@
+{
+  "deploymentId": "dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA",
+  "url": "https://reylumi.com",
+  "state": "READY",
+  "pages": [
+    {
+      "route": "/market",
+      "status": 200,
+      "bytes": 104015,
+      "url": "https://reylumi.com/market"
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "bytes": 200535,
+      "url": "https://reylumi.com/privacy"
+    },
+    {
+      "route": "/community",
+      "status": 200,
+      "bytes": 141270,
+      "url": "https://reylumi.com/community"
+    },
+    {
+      "route": "/login",
+      "status": 200,
+      "bytes": 78183,
+      "url": "https://reylumi.com/login"
+    },
+    {
+      "route": "/explore",
+      "status": 200,
+      "bytes": 192871,
+      "url": "https://reylumi.com/explore"
+    }
+  ],
+  "anonymousClaimStatus": 401,
+  "results": [
+    {
+      "engine": "chromium",
+      "exitCode": 0,
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "engine": "webkit",
+      "exitCode": 0,
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "verified": true,
+  "checkedAt": "2026-10-15T17:59:38.699Z"
+}

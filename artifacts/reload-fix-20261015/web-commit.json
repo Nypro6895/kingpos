@@ -1,0 +1,15 @@
+{
+  "branch": "codex/reload-loop-fix-20261015",
+  "commit": "b179f5803dd0723afeb8f029b02dab9a1f31c7a0",
+  "parent": "34ea63589e7e8caf5718bf4ffe54e403eab6775a",
+  "tree": "f549d2963005652dbb7e22e60930d906349791e4",
+  "files": 2312,
+  "webSourceSha256": "0e08004206773b3d8474dfcfeaf522625574663bd0ba83b27602b849ccac3327",
+  "selectedEvents": [
+    "5b4368a3-b932-4ddd-abf6-77f3fda5b9d3",
+    "a21f271b-c2c9-42a0-8850-652beaf52c13",
+    "391ea378-f94f-4293-ac2d-20db9d95531c",
+    "2c799190-a0b0-4765-9f9c-0e889c676d8c"
+  ],
+  "workspaceSwitchSelected": true
+}

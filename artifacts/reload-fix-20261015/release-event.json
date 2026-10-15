@@ -1,0 +1,39 @@
+{
+  "kind": "release",
+  "summary": "Published verified reload-loop fix with retained authorized cache and bounded recovery; integrated the two frozen salon claim fixes. The selected guarded workspace document handoff is also integrated. Native source remains the uploaded 1.0.1 (14.1); actual iOS Simulator verification recorded, no new binary upload.",
+  "changes": [
+    "5b4368a3-b932-4ddd-abf6-77f3fda5b9d3",
+    "a21f271b-c2c9-42a0-8850-652beaf52c13",
+    "391ea378-f94f-4293-ac2d-20db9d95531c",
+    "2c799190-a0b0-4765-9f9c-0e889c676d8c"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA",
+      "baselineDeploymentId": "dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6",
+      "sourceSha256": "0e08004206773b3d8474dfcfeaf522625574663bd0ba83b27602b849ccac3327",
+      "overlaySha256": "3b5b01b721da782cfc62ab5bbdae8d6e1640a209d810fe8fa9c41692d71c1caa",
+      "evidence": "artifacts/reload-fix-20261015/final-receipt.json"
+    }
+  },
+  "sourceCommit": "b179f5803dd0723afeb8f029b02dab9a1f31c7a0",
+  "nativeAssessment": {
+    "nativeBuildRequired": false,
+    "version": "1.0.1",
+    "build": "14.1",
+    "commit": "cc53062ca58795e37ab62269655bea73f4902241",
+    "evidence": "artifacts/reload-fix-20261015/native-validation/assessment.json"
+  },
+  "pending": [
+    "Booking access event 9684890e-52b6-4ded-81fb-e7c8ae60eb18 remains unpublished; its isolated token-guard migration and fixture are required by the later privacy change.",
+    "Booking privacy event a9cf2dfa-4da8-4709-be2f-40df91941338 is needs-integration: its Auth/RLS and loader checks pass, but the access dependency, assembled build/browser validation and staged additive-RPC -> web-loader -> RLS rollout still require completion. No booking privacy migration was selected.",
+    "Booking notification review event b8c3e36a-9748-4ab2-9d65-7fc8738ae9d1 is working; notification/browser sequence remains unfinished.",
+    "No new native binary upload or App Store publication is claimed."
+  ],
+  "id": "9cb01b2b-68c2-431c-b1dc-a7c5876fb8d9",
+  "recordedAt": "2026-10-15T18:02:39.424Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "filePath": "C:\\Users\\giuse\\kingpos\\releases\\history\\2026-10-15T18-02-39-424Z-9cb01b2b-68c2-431c-b1dc-a7c5876fb8d9.json"
+}

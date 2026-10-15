@@ -1,0 +1,15 @@
+{
+  "deploymentId": "dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA",
+  "baselineDeploymentId": "dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6",
+  "startedAt": "2026-10-15T17:58:25.998Z",
+  "guard": {
+    "exitCode": 0,
+    "output": "Production baseline verified: dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6\n",
+    "checkedAt": "2026-10-15T17:58:34.300Z"
+  },
+  "promotion": {
+    "exitCode": 0,
+    "finishedAt": "2026-10-15T17:58:39.907Z",
+    "output": "Vercel CLI 64.2.0 (Node.js 24.18.0)\nFetching deployment \"https://kingpos-20w28vca1-kingpos.vercel.app\" in kingpos…\n> Fetching deployment \"https://kingpos-20w28vca1-kingpos.vercel.app\" in kingpos…\nPromote in progress…\nPromote in progress…\nPromote in progress…\nPromote in progress…\nPromote in progress…\n> Promote in progress…\n> Success! kingpos was promoted to kingpos-20w28vca1-kingpos.vercel.app (dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA) [3s]\n"
+  }
+}
