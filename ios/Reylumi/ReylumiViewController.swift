@@ -249,13 +249,21 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     }
 
     func webView(_ webView: WKWebView, decidePolicyFor response: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-        if response.isForMainFrame, let http = response.response as? HTTPURLResponse, http.statusCode >= 400 {
-            showNavigationError(rejectCompletion: true)
-            decisionHandler(.cancel)
-            return
+        decisionHandler(navigationResponsePolicy(for: response.response, isForMainFrame: response.isForMainFrame, canShowMIMEType: response.canShowMIMEType))
+    }
+
+    func navigationResponsePolicy(for response: URLResponse, isForMainFrame: Bool, canShowMIMEType: Bool) -> WKNavigationResponsePolicy {
+        if let http = response as? HTTPURLResponse,
+           policy.isSecurityChallengeResponse(http, isMainFrame: isForMainFrame, canShowMIMEType: canShowMIMEType) {
+            startup.acceptSecurityChallenge()
+            return .allow
         }
-        let attachment = (response.response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Disposition")?.lowercased().contains("attachment") == true
-        decisionHandler(!response.canShowMIMEType || attachment ? .download : .allow)
+        if isForMainFrame, let http = response as? HTTPURLResponse, http.statusCode >= 400 {
+            showNavigationError(rejectCompletion: true)
+            return .cancel
+        }
+        let attachment = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Disposition")?.lowercased().contains("attachment") == true
+        return !canShowMIMEType || attachment ? .download : .allow
     }
 
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for action: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
@@ -280,6 +288,12 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         guard isCurrent(navigation) else { return }
         startup.commit()
+        if startup.isSecurityChallenge {
+            // A challenge may wait for interaction or keep resources open. It
+            // must be visible without an app bridge message or window load.
+            finishLoading()
+            return
+        }
         var origin = URLComponents(url: policy.origin, resolvingAgainstBaseURL: false)
         origin?.path = ""
         origin?.query = nil

@@ -7,6 +7,7 @@ struct ReylumiStartupState {
     private(set) var hasUsablePage = false
     private(set) var isWaiting = false
     private(set) var didCommit = false
+    private(set) var isSecurityChallenge = false
     private(set) var request: URLRequest?
     private var previousPageWasUsable = false
     private var acceptsCompletion = true
@@ -19,17 +20,26 @@ struct ReylumiStartupState {
         self.request = request
         isWaiting = true
         didCommit = false
+        isSecurityChallenge = false
         acceptsCompletion = true
+    }
+
+    mutating func acceptSecurityChallenge() {
+        guard isWaiting, !didCommit, acceptsCompletion else { return }
+        isSecurityChallenge = true
     }
 
     mutating func commit() {
         didCommit = true
         // The previous document is no longer available after commit.
         hasUsablePage = false
+        // The provider's document has no Reylumi shell readiness marker. Reveal
+        // it at commit and let the visitor finish without the startup timeout.
+        if isSecurityChallenge { finish() }
     }
 
     mutating func ready(nonce: String, generation: Int) -> Bool {
-        guard didCommit, acceptsCompletion, generation == self.generation,
+        guard didCommit, !isSecurityChallenge, acceptsCompletion, generation == self.generation,
               !self.nonce.isEmpty, nonce == self.nonce else { return false }
         finish()
         return true
@@ -46,6 +56,7 @@ struct ReylumiStartupState {
     mutating func fail(rejectCompletion: Bool = false) {
         isWaiting = false
         acceptsCompletion = !rejectCompletion
+        if rejectCompletion { isSecurityChallenge = false }
         hasUsablePage = hasUsablePage || (!didCommit && previousPageWasUsable)
     }
 
@@ -54,6 +65,7 @@ struct ReylumiStartupState {
         nonce = ""
         isWaiting = false
         didCommit = false
+        isSecurityChallenge = false
         hasUsablePage = false
         previousPageWasUsable = false
         acceptsCompletion = false
