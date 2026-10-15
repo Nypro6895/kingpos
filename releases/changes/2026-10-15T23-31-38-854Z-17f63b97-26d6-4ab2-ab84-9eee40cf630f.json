@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "release-journal-checkout-normalization-20261015",
+  "status": "ready",
+  "summary": "Nhật ký nhiều worktree so sánh JSON có chuẩn hóa định dạng; giữ bất biến nội dung, vẫn phát hiện sửa giá trị hoặc thứ tự mảng.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "scripts/release-journal.mjs",
+    "tests/release-journal-line-endings.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\work\\pos-instant-tabs-2026-10-15T23-31-34-156Z",
+    "baseCommit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f"
+  },
+  "validation": [
+    {
+      "name": "2 real Git/worktree formatting regressions and 10 existing journal tests",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos\\artifacts\\pos-instant-tabs-20261015\\implementation-receipt.json"
+    },
+    {
+      "name": "ESLint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos\\artifacts\\pos-instant-tabs-20261015\\implementation-receipt.json"
+    }
+  ],
+  "notes": [
+    "Supports reliable discovery of the POS change across Windows Git checkouts; no event data edited by the helper."
+  ],
+  "id": "17f63b97-26d6-4ab2-ab84-9eee40cf630f",
+  "recordedAt": "2026-10-15T23:31:38.854Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "scripts/release-journal.mjs": "880215360ac215952c91462abe8440f5a8a5690921fd675163b3f5f8661d3dbd",
+    "tests/release-journal-line-endings.test.mjs": "1b9711a1bf47764b7d6845d30773e2b589e9f15fec520616b99bb7f9f194de4d"
+  }
+}

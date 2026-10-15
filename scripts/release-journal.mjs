@@ -20,6 +20,11 @@ function relativeFile(file) {
 }
 function strings(value, name) { if (!Array.isArray(value) || value.some(v => typeof v !== 'string' || !v)) throw Error(`${name} must be a string array`); return [...new Set(value)]; }
 function validDate(value) { if (typeof value !== 'string' || !Number.isFinite(Date.parse(value))) throw Error('Invalid occurredAt'); return new Date(value).toISOString(); }
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value !== null && typeof value === 'object') return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+  return JSON.stringify(value);
+}
 
 export function readJournal({ cwd = process.cwd() } = {}) {
   const ctx = context(cwd), records = new Map();
@@ -30,9 +35,12 @@ export function readJournal({ cwd = process.cwd() } = {}) {
       const bytes = readFileSync(join(folder, file));
       const event = JSON.parse(bytes);
       if (!event.id || !event.recordedAt || !['change', 'release'].includes(event.kind)) throw Error(`Malformed journal record: ${file}`);
+      // Git may change whitespace or line endings in another worktree. Compare
+      // complete JSON values without rewriting either immutable source file.
+      const digest = hash(canonicalJson(event));
       const previous = records.get(event.id);
-      if (previous && previous.digest !== hash(bytes)) throw Error(`Conflicting copies of journal event ${event.id}`);
-      if (!previous) records.set(event.id, { digest: hash(bytes), event });
+      if (previous && previous.digest !== digest) throw Error(`Conflicting copies of journal event ${event.id}`);
+      if (!previous) records.set(event.id, { digest, event });
     }
   }
   return [...records.values()].map(row => row.event).sort((a, b) => a.recordedAt.localeCompare(b.recordedAt) || a.id.localeCompare(b.id));

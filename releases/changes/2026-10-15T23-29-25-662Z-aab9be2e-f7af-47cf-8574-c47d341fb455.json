@@ -1,0 +1,24 @@
+{
+  "kind": "change",
+  "changeId": "release-journal-checkout-normalization-20261015",
+  "status": "working",
+  "summary": "Nhật ký nhiều worktree chấp nhận khác biệt định dạng JSON/CRLF do Git checkout, vẫn từ chối sửa nội dung của cùng event.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "scripts/release-journal.mjs",
+    "tests/release-journal-line-endings.test.mjs"
+  ],
+  "source": {
+    "baseCommit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f"
+  },
+  "notes": [
+    "Found while registering POS ready source; no publication in this task."
+  ],
+  "id": "aab9be2e-f7af-47cf-8574-c47d341fb455",
+  "recordedAt": "2026-10-15T23:29:25.662Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

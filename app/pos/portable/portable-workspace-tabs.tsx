@@ -187,7 +187,7 @@ export function PortableWorkspaceTabs({
     href: string;
   } | null>(null);
   const optimisticHref =
-    optimisticNavigation?.from === pathname
+    !localPanels && optimisticNavigation?.from === pathname
       ? optimisticNavigation.href
       : null;
 
@@ -270,9 +270,9 @@ export function PortableWorkspaceTabs({
                 ].join(" ")}
                 href={item.href}
                 key={item.id}
-                onClick={() =>
-                  setOptimisticNavigation({ from: pathname, href: item.href })
-                }
+                onClick={() => {
+                  if (!localPanels) setOptimisticNavigation({ from: pathname, href: item.href });
+                }}
                 onFocus={() => { if (!localPanels) router.prefetch(item.href); }}
                 onPointerEnter={() => { if (!localPanels) router.prefetch(item.href); }}
                 prefetch={!localPanels}

@@ -96,6 +96,6 @@ export function OwnerPosTabs({ active }: { active: "pos" | "ticket" | "book" | "
   if (active === "settings") return <nav aria-label={translate("Owner POS")}><Link className="owner-switch" href="/pos" aria-label={translate("Back to POS")} title={translate("Back to POS")}><OwnerPosIcon name="pos" /></Link></nav>;
   return <nav className="owner-top-nav" aria-label={translate("Owner POS")}>
     <OwnerMoreMenu key={pathname ?? active} />
-    {shortcuts.map(item => <Link className="owner-nav-item" href={item.href} key={item.href} aria-label={translate(item.label)} aria-current={item.id === active ? "page" : undefined}><OwnerPosIcon name={item.icon} /><span><WorkspaceText text={item.label} /></span></Link>)}
+    {shortcuts.map(item => <Link className="owner-nav-item" data-owner-tab={item.id} href={item.href} key={item.href} aria-label={translate(item.label)} aria-current={item.id === active ? "page" : undefined}><OwnerPosIcon name={item.icon} /><span><WorkspaceText text={item.label} /></span></Link>)}
   </nav>;
 }
