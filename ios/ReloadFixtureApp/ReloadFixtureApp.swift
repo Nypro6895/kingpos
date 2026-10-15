@@ -82,7 +82,10 @@ final class ReloadLoopWebKitTests: NSObject, WKNavigationDelegate, WKScriptMessa
 
     private func openFixture(clearStorage: Bool) async throws {
         if clearStorage { _ = try await js("sessionStorage.clear();true") }
-        if hasLoadedFixture { _ = try? await js("window.ready=false;true") }
+        if hasLoadedFixture {
+            try await check("window.fixtureErrors.length===0", "Each fixture document has no JavaScript runtime errors")
+            _ = try? await js("window.ready=false;true")
+        }
         web.load(URLRequest(url: fixtureURL))
         hasLoadedFixture = true
         try await until("window.ready===true&&document.querySelector('[data-content]')?.getClientRects().length>0", timeout: 30)
@@ -151,7 +154,7 @@ final class FixtureAppDelegate: UIResponder, UIApplicationDelegate {
         let runner = ReloadLoopWebKitTests()
         harness = runner
         Task { @MainActor in
-            var result: [String: Any] = ["engine": "iOS Simulator WKWebView", "iOS": UIDevice.current.systemVersion, "device": UIDevice.current.model, "debugger": false, "transport": "simulated", "nativeAppSourceChanged": false]
+            var result: [String: Any] = ["engine": "iOS Simulator WKWebView", "iOS": UIDevice.current.systemVersion, "device": UIDevice.current.model, "debugger": false, "transport": "simulated", "nativeAppSourceChanged": false, "runToken": ProcessInfo.processInfo.environment["RELOAD_FIX_TOKEN"] ?? "missing"]
             do {
                 try await runner.testFinalWebScopeInIPhoneWebKit()
                 result["status"] = "passed"
