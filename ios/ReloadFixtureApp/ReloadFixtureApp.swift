@@ -66,7 +66,7 @@ final class ReloadLoopWebKitTests: NSObject, WKNavigationDelegate, WKScriptMessa
         // A new document in the same WebView retains the automatic reload budget.
         try await openFixture(clearStorage: false)
         _ = try await js("window.serverContext={...window.currentContext,scope:'revoked-grants',permissionRevision:'revoked'};window.dispatchEvent(new Event('reylumi:experience-scope-changed'));true")
-        try await until("document.body.textContent.includes('Your access has changed. Reload to continue.')")
+        try await until("Array.from(document.querySelectorAll('p[role=status]')).some(p=>p.textContent==='Your access has changed. Reload to continue.'&&p.getClientRects().length>0)")
         try await check("window.diag.reloads===0&&document.querySelector('[data-content]')?.getClientRects().length===0", "Repeated invalid identity must remain blocked without an automatic reload loop")
         _ = try await js("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Reload').click();true")
         try await check("window.diag.reloads===1", "Explicit user reload remains available after the cap")
@@ -74,7 +74,7 @@ final class ReloadLoopWebKitTests: NSObject, WKNavigationDelegate, WKScriptMessa
         // Storage failure must fail closed instead of allowing an unbounded reload.
         try await openFixture(clearStorage: true)
         _ = try await js("Object.defineProperty(window,'sessionStorage',{configurable:true,get(){throw new Error('Storage unavailable')}});window.serverContext={...window.currentContext,scope:'revoked-grants',permissionRevision:'revoked'};window.dispatchEvent(new Event('reylumi:experience-scope-changed'));true")
-        try await until("document.body.textContent.includes('Your access has changed. Reload to continue.')")
+        try await until("Array.from(document.querySelectorAll('p[role=status]')).some(p=>p.textContent==='Your access has changed. Reload to continue.'&&p.getClientRects().length>0)")
         try await check("window.diag.reloads===0&&document.querySelector('[data-content]')?.getClientRects().length===0", "Storage failure cannot permit repeated automatic navigation")
         try await check("window.fixtureErrors.length===0", "Fixture has no JavaScript runtime errors")
         print("RELOAD_FIX_NATIVE_RESULT passed; actual iOS Simulator WKWebView; 15s passive traffic, mutation retention, 503, identity blocking, reload budget, manual reload, unavailable storage")
