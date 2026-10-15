@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "confirmed-social-identity-20261015",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Validated four-file social identity and blocked-users delta on exact current 444ab04 live source. Existing booking and Market fix preserved; no phone claim or Help/Reward changes.",
+  "files": [
+    "supabase/migrations/20261015200000_confirmed_social_identity.sql",
+    "tests/helpers/post-comment-identity-fixture.mjs",
+    "tests/post-comment-confirmed-identity.integration.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-social-release-20261015\\release",
+    "baselineCommit": "444ab04e0e4d291d929133e5d71346fcf6df4f6e",
+    "baselineDeploymentId": "dpl_9ytGDqrS31MBusy9SgnRWpvNFbzQ",
+    "qaSourceSha256": "28e018ac9937a2b7ecaf86f1ae3bf4086308f183a94a74134b5a788dd913938c"
+  },
+  "validation": [
+    {
+      "name": "Full production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-social-release-20261015\\validation.json"
+    },
+    {
+      "name": "84 regressions and 94 Auth/RLS tests; zero lint errors",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-social-release-20261015\\validation.json"
+    },
+    {
+      "name": "Exact current live preservation, SQL target fingerprints and schema rollback",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-social-release-20261015\\baseline-source-verification.json"
+    }
+  ],
+  "limitations": [
+    "Authenticated browser UI not run; no supported local executor"
+  ],
+  "authorizationEvidence": {
+    "deploymentRequestedAt": "2026-10-15T19:13:28Z",
+    "preserveOtherCodexChangesAt": "2026-10-15T19:14:39Z",
+    "specificSocialMigrationConfirmedAt": "2026-10-15T19:35:37Z",
+    "scope": "Four-file delta on current live 444ab04, plus this task handoff/journal/evidence. Only migration 20261015200000; preserve ACL/RLS/quotas and existing rows. No phone claim, Help or Reward changes."
+  },
+  "id": "467d22e1-3c76-4d04-a140-8e425ee65c44",
+  "recordedAt": "2026-10-15T19:46:52.546Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "supabase/migrations/20261015200000_confirmed_social_identity.sql": "c031d5e6c07ec7e4570c746a23923316a8a8350b4bdd09ec4974d229c4ae94c3",
+    "tests/helpers/post-comment-identity-fixture.mjs": "471df708976601c007903a5b5d24f033e21d60f4267d03b336700c847c17a6a0",
+    "tests/post-comment-confirmed-identity.integration.test.mjs": "da6ef1100f7c6c0a5511a6a643084902466aeda88961842c8b31d52d9817e4c3"
+  }
+}
