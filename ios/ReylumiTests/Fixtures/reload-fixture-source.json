@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-15T16:48:23.866Z",
+  "generatedAt": "2026-10-15T16:58:27.270Z",
   "nativeBaseline": "cc53062ca58795e37ab62269655bea73f4902241",
   "webSource": "C:\\Users\\giuse\\kingpos\\artifacts\\reload-fix-20261015\\release",
   "sourceHashes": {
@@ -20,7 +20,7 @@
     "tests/experience-reload-loop-ui.test.mjs": "b3abc26dfd74a9cb3840664a8038a25e75791981ffd1564c1de4ffe906794de5"
   },
   "fixtureSha256": "12219852ba699547d5fc73d97cc4fbf3ff049002c8dcc3ad91c15fe6a511b750",
-  "testSha256": "f11250dc59b8629cee7c1643a9a7466098e1208547ddcb92094dc580f52bc599",
+  "testSha256": "a2a32ab792365addc70a22aa6018b65fe6189dbfe3763d5e4a369499304896c4",
   "testOnly": true,
   "productionNativeChanged": false,
   "simulatedTransport": true

@@ -48,6 +48,7 @@ jobs:
                   time.sleep(0.2)
           PY
       - name: Generate, test and archive
+        timeout-minutes: 15
         run: bash scripts/check-build.sh
       - name: Save build results
         if: always()

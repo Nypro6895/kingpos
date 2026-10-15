@@ -32,6 +32,7 @@ PY
 )"
 
 xcodebuild test \
+  -test-timeouts-enabled YES -default-test-execution-time-allowance 180 -maximum-test-execution-time-allowance 240 \
   -project Reylumi.xcodeproj -scheme Reylumi \
   -destination "platform=iOS Simulator,id=$task_simulator_id" \
   -derivedDataPath "$task_run_dir/DerivedData" \

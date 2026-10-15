@@ -9,9 +9,11 @@ import WebKit
 final class ReloadLoopWebKitTests: XCTestCase, WKNavigationDelegate, WKScriptMessageHandler {
     private var web: WKWebView!
     private var window: UIWindow!
+    private var hasLoadedFixture = false
     private let fixtureURL = URL(string: "http://127.0.0.1:8765/wkwebview-fixture.html")!
 
     func testFinalWebScopeInIPhoneWebKit() async throws {
+        executionTimeAllowance = 180
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
         configuration.applicationNameForUserAgent = "ReylumiIOS/1.0"
@@ -83,8 +85,9 @@ final class ReloadLoopWebKitTests: XCTestCase, WKNavigationDelegate, WKScriptMes
 
     private func openFixture(clearStorage: Bool) async throws {
         if clearStorage { _ = try await js("sessionStorage.clear();true") }
-        _ = try? await js("window.ready=false;true")
+        if hasLoadedFixture { _ = try? await js("window.ready=false;true") }
         web.load(URLRequest(url: fixtureURL))
+        hasLoadedFixture = true
         try await until("window.ready===true&&document.querySelector('[data-content]')?.getClientRects().length>0", timeout: 30)
     }
 
@@ -112,7 +115,17 @@ final class ReloadLoopWebKitTests: XCTestCase, WKNavigationDelegate, WKScriptMes
 
     private func js(_ script: String) async throws -> Any {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Any, Error>) in
+            var completed = false
+            let timeout = DispatchWorkItem {
+                guard !completed else { return }
+                completed = true
+                continuation.resume(throwing: NSError(domain: "ReloadLoopJavaScriptTimeout", code: 1, userInfo: [NSLocalizedDescriptionKey: "WebKit did not finish evaluating: " + String(script.prefix(160))]))
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: timeout)
             web.evaluateJavaScript(script) { result, error in
+                guard !completed else { return }
+                completed = true
+                timeout.cancel()
                 if let error { continuation.resume(throwing: error) }
                 else { continuation.resume(returning: result ?? NSNull()) }
             }
