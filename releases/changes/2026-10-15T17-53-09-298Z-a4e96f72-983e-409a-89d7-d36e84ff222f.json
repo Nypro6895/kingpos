@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "nine-state-beauty-directory-20261015",
+  "status": "ready",
+  "summary": "Frozen nine-state directory import: 51,461 validated ownerless profiles in 107 bounded batches, verified Texas timezone split, and claimed-profile About handling for all nine new states. Live import and release checks remain the coordinator’s responsibility.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "data/california-profile-sources.json",
+    "data/texas-profile-sources.json",
+    "data/georgia-profile-sources.json",
+    "data/virginia-profile-sources.json",
+    "data/massachusetts-profile-sources.json",
+    "data/north-carolina-profile-sources.json",
+    "data/new-york-profile-sources.json",
+    "data/new-jersey-profile-sources.json",
+    "data/pennsylvania-profile-sources.json",
+    "scripts/build-wisconsin-salon-import.mjs",
+    "lib/salon-profile-content.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\nine-state-directory-20261015\\source"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Collection source hashes, contact integrity, bounded batch guards and 27 claimed-content cases",
+      "result": "passed",
+      "evidence": "artifacts/nine-state-directory-20261015/prepared-validation.json"
+    }
+  ],
+  "id": "a4e96f72-983e-409a-89d7-d36e84ff222f",
+  "recordedAt": "2026-10-15T17:53:09.298Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "data/california-profile-sources.json": "49d419d50f62fca96ec5da62dc362d0ab956c812bffc65e415cd777b0e144671",
+    "data/texas-profile-sources.json": "3f8f51089da7c2d32945b4d3411269fe542a1e4db52481002787a9831b0b4a71",
+    "data/georgia-profile-sources.json": "e42271dd3994d87cd5dbb91234528923075005c8189ab6493d7ea98a0acebeb1",
+    "data/virginia-profile-sources.json": "c8dc62c2ebbb0371a4b9acf2c0b304a49825659d58609ea4e0fcdd79d94e8bbf",
+    "data/massachusetts-profile-sources.json": "a223b46aa204892d9c0b69ca459ba6c2605ac9f2cf0b44cede50bd56ad04344a",
+    "data/north-carolina-profile-sources.json": "4527b262ceb482e9a7915b8b996e83b2e25bc5ec606c1c6b22e2ddbd79488fe1",
+    "data/new-york-profile-sources.json": "2bc4605fd010a0272d357895352003cf1d130569f09a960384097b14e0e373e0",
+    "data/new-jersey-profile-sources.json": "3789e75f09e929c3469215d822335a7dc7c29b58c25dcd569ae0e280b0069c2c",
+    "data/pennsylvania-profile-sources.json": "e463e9efe37748d1a5392d8a01bb85f9e7ca114d174380b259e25a1bad41857a",
+    "scripts/build-wisconsin-salon-import.mjs": "bb88215f9e35e1efebaa38a473953d55b46544e9f1e4759732449c54856d041c",
+    "lib/salon-profile-content.ts": "611d4efa774fc5f54735e5de583ba49a0629015e3722cdcc390734649e972abb"
+  }
+}
