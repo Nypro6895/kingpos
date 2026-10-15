@@ -1,0 +1,66 @@
+{
+  "verifiedAt": "2026-10-15T19:56:47.917Z",
+  "alias": "reylumi.com",
+  "deploymentId": "dpl_9ZKEwHw43kFAeqx1kyNUDcGkJNNW",
+  "commit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f",
+  "sourceSha256": "c5f51f6bccd7b8625027990cbee7bc7a6b8e0daff6588b743cdf3f9aa35e92db",
+  "exactSourceMatch": true,
+  "smoke": [
+    {
+      "route": "/",
+      "status": 200,
+      "redirect": null,
+      "checkedAt": "2026-10-15T19:56:45.035Z"
+    },
+    {
+      "route": "/login",
+      "status": 200,
+      "redirect": null,
+      "checkedAt": "2026-10-15T19:56:46.021Z"
+    },
+    {
+      "route": "/explore",
+      "status": 200,
+      "redirect": null,
+      "checkedAt": "2026-10-15T19:56:46.816Z"
+    },
+    {
+      "route": "/salons/new",
+      "status": 200,
+      "redirect": null,
+      "checkedAt": "2026-10-15T19:56:47.457Z"
+    },
+    {
+      "route": "/settings",
+      "status": 200,
+      "redirect": null,
+      "checkedAt": "2026-10-15T19:56:47.916Z"
+    }
+  ],
+  "migration": {
+    "version": "20261015200000",
+    "applied": true,
+    "verifiedAt": "2026-10-15T19:56:29.185Z",
+    "sourceSha256": "c031d5e6c07ec7e4570c746a23923316a8a8350b4bdd09ec4974d229c4ae94c3",
+    "projectRef": "bowkoiprvqwjilwaxhda",
+    "functions": [
+      {
+        "signature": "abuse_guard_actor(text)",
+        "md5": "8149b5f505e2c416ae8e4f21ec0241de"
+      },
+      {
+        "signature": "abuse_track_identity()",
+        "md5": "76f968dcda410b0c6127623647e13f72"
+      },
+      {
+        "signature": "get_abuse_notice(uuid,text,text,text)",
+        "md5": "072382cb11bd66f7b2b699fc92b7fdc7"
+      }
+    ],
+    "aclsRlsQuotasOtherFunctionsPreserved": true,
+    "historicalLedgerUnchanged": true,
+    "noExistingRowDml": true
+  },
+  "authenticatedUiNotRun": true,
+  "nativeBuildRequired": false
+}

@@ -1,0 +1,24 @@
+{
+  "version": "20261015200000",
+  "applied": true,
+  "verifiedAt": "2026-10-15T19:56:29.185Z",
+  "sourceSha256": "c031d5e6c07ec7e4570c746a23923316a8a8350b4bdd09ec4974d229c4ae94c3",
+  "projectRef": "bowkoiprvqwjilwaxhda",
+  "functions": [
+    {
+      "signature": "abuse_guard_actor(text)",
+      "md5": "8149b5f505e2c416ae8e4f21ec0241de"
+    },
+    {
+      "signature": "abuse_track_identity()",
+      "md5": "76f968dcda410b0c6127623647e13f72"
+    },
+    {
+      "signature": "get_abuse_notice(uuid,text,text,text)",
+      "md5": "072382cb11bd66f7b2b699fc92b7fdc7"
+    }
+  ],
+  "aclsRlsQuotasOtherFunctionsPreserved": true,
+  "historicalLedgerUnchanged": true,
+  "noExistingRowDml": true
+}

@@ -1,0 +1,59 @@
+{
+  "kind": "release",
+  "summary": "Confirmed social identity fix and blocked-users panel published on preserved nine-state live baseline; existing booking guards retained. Only approved migration 20261015200000 applied.",
+  "changes": [
+    "467d22e1-3c76-4d04-a140-8e425ee65c44",
+    "5372850d-1dac-4278-a552-ebb1d4cf6813",
+    "573d008b-9bcb-4222-8908-10887c778989",
+    "de395c94-b246-468f-87d0-e401757c0d74"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_9ZKEwHw43kFAeqx1kyNUDcGkJNNW",
+      "baselineDeploymentId": "dpl_9ytGDqrS31MBusy9SgnRWpvNFbzQ",
+      "sourceSha256": "c5f51f6bccd7b8625027990cbee7bc7a6b8e0daff6588b743cdf3f9aa35e92db",
+      "overlaySha256": "a3457ee5cd1b0d8fc0a61ee56810ca86ecb91cf030c197b3fe8fe6335f9c01de",
+      "evidence": "artifacts/booking-social-release-20261015/live-verification.json"
+    }
+  },
+  "sourceCommit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f",
+  "baselineCommit": "444ab04e0e4d291d929133e5d71346fcf6df4f6e",
+  "nativeAssessment": "Compatible web/database change; no native build required.",
+  "migration": {
+    "version": "20261015200000",
+    "applied": true,
+    "verifiedAt": "2026-10-15T19:56:29.185Z",
+    "sourceSha256": "c031d5e6c07ec7e4570c746a23923316a8a8350b4bdd09ec4974d229c4ae94c3",
+    "projectRef": "bowkoiprvqwjilwaxhda",
+    "functions": [
+      {
+        "signature": "abuse_guard_actor(text)",
+        "md5": "8149b5f505e2c416ae8e4f21ec0241de"
+      },
+      {
+        "signature": "abuse_track_identity()",
+        "md5": "76f968dcda410b0c6127623647e13f72"
+      },
+      {
+        "signature": "get_abuse_notice(uuid,text,text,text)",
+        "md5": "072382cb11bd66f7b2b699fc92b7fdc7"
+      }
+    ],
+    "aclsRlsQuotasOtherFunctionsPreserved": true,
+    "historicalLedgerUnchanged": true,
+    "noExistingRowDml": true
+  },
+  "limitations": [
+    "No authenticated browser UI executor; verified source, full builds, SQL tests, metadata invariants and read-only routes."
+  ],
+  "excluded": [
+    "phone claim local working patch",
+    "Help/Support inventory",
+    "Reward research"
+  ],
+  "id": "3eba53ac-2b6d-4d1f-8cf8-0ff22abcfc61",
+  "recordedAt": "2026-10-15T19:56:48.195Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}
