@@ -1,0 +1,39 @@
+{
+  "kind": "release",
+  "summary": "Web source published; nine-state directory import is partial because the 2 GB database disk reached 98.87% utilization and Supabase enabled read-only protection. 14,349 profiles committed; 37,112 remain. No disk/billing modification or read-only override performed.",
+  "changes": [
+    "a4e96f72-983e-409a-89d7-d36e84ff222f"
+  ],
+  "targets": {
+    "web": {
+      "status": "partial",
+      "verified": false,
+      "deploymentId": "dpl_9ytGDqrS31MBusy9SgnRWpvNFbzQ",
+      "baselineDeploymentId": "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT",
+      "sourceSha256": "464231ee12d53e8c55a99612c48c5b279397ff883c94e38edec9af8d449280c5",
+      "overlaySha256": "ae92e9a9e8e1d6d230ffdb25112cc458c52c0389f44f21b42e0e090c5930b2b1",
+      "evidence": "artifacts/nine-state-directory-20261015/partial-data-verification.json"
+    }
+  },
+  "sourceCommit": "444ab04e0e4d291d929133e5d71346fcf6df4f6e",
+  "nativeAssessment": "No bundled/native changes; no new binary required.",
+  "importSummary": {
+    "planned": 51461,
+    "committed": 14349,
+    "remaining": 37112,
+    "committedBatches": 29,
+    "plannedBatches": 107,
+    "exploreDocuments": 14349,
+    "referencePosts": 14349,
+    "claimedOwnerFingerprintUnchanged": true,
+    "suppressionCountUnchanged": true
+  },
+  "verification": {
+    "mobileImageChecks": 2,
+    "profileContactAndClaim": true,
+    "missingExploreDocuments": 0,
+    "incorrectState": 0,
+    "enabledBooking": 0
+  },
+  "blockedOn": "Owner response to prepared 2 GB → 8 GB disk proposal. Existing organization is Pro; official pricing includes 8 GB gp3 for the primary database."
+}

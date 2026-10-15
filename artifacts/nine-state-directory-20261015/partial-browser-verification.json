@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "state": "CA",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "TX",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    }
+  ],
+  "profileContactAndClaim": true
+}

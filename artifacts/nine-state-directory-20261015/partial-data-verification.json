@@ -1,0 +1,16 @@
+{
+  "verification": {
+    "states": {
+      "CA": 13849,
+      "TX": 500
+    },
+    "profiles": 14349,
+    "enabled_booking": 0,
+    "incorrect_state": 0,
+    "reference_posts": 14349,
+    "draft_reference_posts": 0,
+    "missing_explore_documents": 0,
+    "published_reference_posts": 14349,
+    "listing_timezone_fingerprint": "1e4632c8869d2d0abb0598d4746c0f6e"
+  }
+}

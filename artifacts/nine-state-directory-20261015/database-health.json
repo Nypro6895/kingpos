@@ -1,0 +1,30 @@
+{
+  "database": [
+    {
+      "database_size": "942 MB",
+      "readonly": "on",
+      "recovery": false
+    }
+  ],
+  "config/disk/util": {
+    "timestamp": "2026-10-15T18:55:34Z",
+    "metrics": {
+      "fs_size_bytes": 2077073408,
+      "fs_avail_bytes": 23498752,
+      "fs_used_bytes": 2053574656
+    }
+  },
+  "config/disk": {
+    "attributes": {
+      "iops": 3000,
+      "size_gb": 2,
+      "throughput_mibps": 125,
+      "type": "gp3"
+    }
+  },
+  "readonly": {
+    "enabled": true,
+    "override_enabled": false,
+    "override_active_until": "1970-01-01 00:00:00+00"
+  }
+}

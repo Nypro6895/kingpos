@@ -1,0 +1,25 @@
+{
+  "audit": {
+    "states": {
+      "CA": 13849,
+      "FL": 31422,
+      "IL": 4436,
+      "OR": 5894,
+      "TX": 500,
+      "WA": 10455,
+      "WI": 3746
+    },
+    "suppressions": 1,
+    "target_listings": 14349,
+    "claimed_settings": "0e65a08ff06c5c615af445ad8c973f37",
+    "directory_states": {
+      "CA": 13849,
+      "FL": 31422,
+      "IL": 4436,
+      "OR": 5894,
+      "TX": 500,
+      "WA": 10455,
+      "WI": 3746
+    }
+  }
+}

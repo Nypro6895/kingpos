@@ -1,0 +1,9 @@
+{
+  "reason": "Include the immutable ready change event copied after the initial dry file inventory; all product and data source hashes remain unchanged",
+  "priorSourceSha256": "e204fbc8754fd9986549b977a0bd57b0b4a13acaa7c69e530044f75b7ceb0b6f",
+  "sourceSha256": "464231ee12d53e8c55a99612c48c5b279397ff883c94e38edec9af8d449280c5",
+  "additionalFiles": [
+    "releases/changes/2026-10-15T17-53-09-298Z-a4e96f72-983e-409a-89d7-d36e84ff222f.json"
+  ],
+  "verifiedFiles": 1863
+}
