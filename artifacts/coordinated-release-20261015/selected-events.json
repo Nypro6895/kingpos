@@ -1,12 +1,13 @@
 {
-  "frozenAt": "2026-10-15T03:27:24.458Z",
+  "frozenAt": "2026-10-15T03:35:46.043Z",
   "events": [
     "ce7f04df-5333-4e65-92e0-77c6b67ce53d",
     "80b17b4f-e34e-4f23-b7dd-d42fd9081003",
     "23eecbec-5dcc-437f-a030-163ac75a6478",
     "19eae303-672f-41c0-9f3e-11f2758b691b",
     "d286fc90-496c-4ca3-aa09-b792d70ee99d",
-    "e1c69074-dea4-493b-b90c-d106f1b8e867"
+    "e1c69074-dea4-493b-b90c-d106f1b8e867",
+    "145823cc-a295-4e59-8b27-8a2dc08b0fef"
   ],
   "records": [
     {
@@ -358,6 +359,14 @@
         "app/explore/explore-salon-card.tsx": "079bf5294c80aa5b76e4a550da9d605c2481709ae0d846883a889a5c2b8d471a",
         "app/explore/explore-editorial-sections.tsx": "7d1d7b0a9ee5ea14cc732de4e72714ff92feeaee60e8c0a21bde884220af1908",
         "app/explore/explore-editorial.tsx": "2f7a25cd29c75dc3aaa50229fe2cafc54e058f2898c38e705d68451034a9381a"
+      }
+    },
+    {
+      "id": "145823cc-a295-4e59-8b27-8a2dc08b0fef",
+      "changeId": "booking-bootstrap-optional-helper-20261015",
+      "fileHashes": {
+        "supabase/migrations/202609230009_portable_custom_service_snapshot.sql": "642851d590c27636affee535c44cb026957b0e72655e68c8117932643e6c5863",
+        "tests/portable-custom-service-migration.integration.test.mjs": "badd9d8598a825d734ef5f6be901024a2518859a1feb6af437236fbcdc73327d"
       }
     }
   ]

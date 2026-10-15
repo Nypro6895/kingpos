@@ -8682,6 +8682,12 @@
     "bytes": 2733
   },
   {
+    "file": "releases/changes/2026-10-15T03-35-46-034Z-145823cc-a295-4e59-8b27-8a2dc08b0fef.json",
+    "sha256": "cc27a7ad0744a046994e7c19552c46d993cb32084ca731d47c33039c761f0c4c",
+    "sha1": "5f558cf967443a1cdc5b9da646f32e8fe9efa498",
+    "bytes": 1582
+  },
+  {
     "file": "releases/history/2026-10-15T03-17-17-031Z-b21240c4-ef5a-44a5-b9f9-9f4b515ecac4.json",
     "sha256": "f2ec8476a04574c8e027eb9a476daea91f2a39060c22b40dddf50ed1e14f2ca5",
     "sha1": "eb97b746168fd40618c2039c8294a31e3e52233e",
@@ -9649,9 +9655,9 @@
   },
   {
     "file": "supabase/migrations/202609230009_portable_custom_service_snapshot.sql",
-    "sha256": "5c42ff575476bbcd754dc6eba6f87244366857996a343170a4426fb08b5bb783",
-    "sha1": "69f328f0acab0735c1188a420acba8b96330486c",
-    "bytes": 1828
+    "sha256": "642851d590c27636affee535c44cb026957b0e72655e68c8117932643e6c5863",
+    "sha1": "25022e28d210eed87a563a25ec8c8c0ad529d3c7",
+    "bytes": 1831
   },
   {
     "file": "supabase/migrations/202609240001_booking_time_policy.sql",

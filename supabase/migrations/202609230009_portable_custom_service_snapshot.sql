@@ -10,7 +10,7 @@ begin
   if position('submit_pos_portable_receipt_without_booking' in definition) > 0
     and to_regprocedure('public.submit_pos_portable_receipt_without_booking(uuid,text,jsonb,date)') is not null
     and position('portable_custom_service_snapshot_v1' in pg_get_functiondef(
-      'public.submit_pos_portable_receipt_without_booking(uuid,text,jsonb,date)'::regprocedure)) > 0 then
+      to_regprocedure('public.submit_pos_portable_receipt_without_booking(uuid,text,jsonb,date)'))) > 0 then
     return;
   end if;
   if position(E'      service_id,\n      unit_price' in definition) = 0

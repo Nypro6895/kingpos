@@ -86,5 +86,11 @@
       "failed": 0,
       "skipped": 0
     }
-  ]
+  ],
+  "bootstrap": {
+    "event": "145823cc-a295-4e59-8b27-8a2dc08b0fef",
+    "passed": 3,
+    "productionReapplicationRequired": false,
+    "reason": "Only the optional-helper lookup during historical migration replay changes; existing production functions are already upgraded."
+  }
 }

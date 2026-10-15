@@ -2,9 +2,9 @@
   "releaseId": "coordinated-release-20261015",
   "baselineDeploymentId": "dpl_2kiu8uiZSBMHpjAmhTnLdVysNARU",
   "baselineSourceSha256": "861ae4c68e8ece9cea8ba04d8616bdfd91854dd529320e10d4fd952930bec463",
-  "sourceSha256": "3479c017c96d4c6c4f1eff9c838df56cb23b5071dbba4bd6d62fc3431f415cb9",
-  "overlaySha256": "ce9735a199f7d5cfded87f64cfff4a7f505bbd10263c41a950a136faaddbf902",
-  "sourceFiles": 1824,
+  "sourceSha256": "81dbb3429069ab2edf8b91df216bf02fc33eab5d243e63a81b3db4c326d93a33",
+  "overlaySha256": "aa9b975bdbaf3963cfade64e0110379af885fc3fb29a7c027c37ca96eb41f00d",
+  "sourceFiles": 1825,
   "sourceDirectory": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\release",
   "overlays": [
     {
@@ -2045,6 +2045,13 @@
       "baselineSha256": null
     },
     {
+      "file": "releases/changes/2026-10-15T03-35-46-034Z-145823cc-a295-4e59-8b27-8a2dc08b0fef.json",
+      "sha256": "cc27a7ad0744a046994e7c19552c46d993cb32084ca731d47c33039c761f0c4c",
+      "sha1": "5f558cf967443a1cdc5b9da646f32e8fe9efa498",
+      "bytes": 1582,
+      "baselineSha256": null
+    },
+    {
       "file": "releases/history/2026-10-15T03-17-17-031Z-b21240c4-ef5a-44a5-b9f9-9f4b515ecac4.json",
       "sha256": "f2ec8476a04574c8e027eb9a476daea91f2a39060c22b40dddf50ed1e14f2ca5",
       "sha1": "eb97b746168fd40618c2039c8294a31e3e52233e",
@@ -2064,6 +2071,13 @@
       "sha1": "b8d511901bca22fb07fa81177b96c3080f27c63f",
       "bytes": 11230,
       "baselineSha256": null
+    },
+    {
+      "file": "supabase/migrations/202609230009_portable_custom_service_snapshot.sql",
+      "sha256": "642851d590c27636affee535c44cb026957b0e72655e68c8117932643e6c5863",
+      "sha1": "25022e28d210eed87a563a25ec8c8c0ad529d3c7",
+      "bytes": 1831,
+      "baselineSha256": "5c42ff575476bbcd754dc6eba6f87244366857996a343170a4426fb08b5bb783"
     },
     {
       "file": "supabase/migrations/20261015010000_booking_concurrency_guards.sql",
@@ -2118,7 +2132,8 @@
     "23eecbec-5dcc-437f-a030-163ac75a6478",
     "19eae303-672f-41c0-9f3e-11f2758b691b",
     "d286fc90-496c-4ca3-aa09-b792d70ee99d",
-    "e1c69074-dea4-493b-b90c-d106f1b8e867"
+    "e1c69074-dea4-493b-b90c-d106f1b8e867",
+    "145823cc-a295-4e59-8b27-8a2dc08b0fef"
   ],
   "buildId": "WHdou4Y40gL9oxfR0B0t-",
   "validation": {
@@ -2129,5 +2144,5 @@
     "regressionTests": 59,
     "isolatedPostgresTests": 16
   },
-  "frozenAt": "2026-10-15T03:27:35.375Z"
+  "frozenAt": "2026-10-15T03:36:54.857Z"
 }
