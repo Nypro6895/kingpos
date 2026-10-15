@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import ts from "typescript";
 import { parseCityPage } from "../scripts/collect-wisconsin-directory.mjs";
 
-const official = JSON.parse(readFileSync(new URL("../data/wisconsin-business-sources.json", import.meta.url)));
+const official = JSON.parse(readFileSync(new URL("../data/wisconsin-profile-sources.json", import.meta.url)));
 const directory = JSON.parse(readFileSync(new URL("../data/wisconsin-directory-sources.json", import.meta.url)));
 const source = readFileSync(new URL("../lib/wisconsin-directory.ts", import.meta.url), "utf8")
   .replace(/^import sourceData.*$/m, `const sourceData = ${JSON.stringify(official)};`)
@@ -29,7 +29,7 @@ test("every published listing has traceable contact details and a platform refer
     assert.ok(business.post.body.includes(business.phone));
     assert.ok(business.post.body.includes("not been submitted or confirmed by the owner"));
   }
-  assert.equal(ids.size, official.businesses.length + directory.businesses.length);
+  assert.equal(ids.size, official.businesses.length);
 });
 
 test("search combines city/category filters and supports a formatted phone", () => {

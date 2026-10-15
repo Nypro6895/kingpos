@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { usePathname } from "next/navigation";
 import { subscribePosChanges } from "@/lib/pos-workspace-sync";
 import { usePortableWorkspaceState } from "../portable-workspace-state";
@@ -306,6 +307,8 @@ function PortableWorkLogFilters({
   selectedDate: string;
   todayHref: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <form
       action="/pos/portable/ticket"
@@ -313,7 +316,7 @@ function PortableWorkLogFilters({
       method="get"
     >
       <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Date</span>
+        <span className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text="Date" /></span>
         <input
           className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
           defaultValue={selectedDate}
@@ -322,12 +325,12 @@ function PortableWorkLogFilters({
         />
       </label>
       <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Search</span>
+        <span className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text="Search" /></span>
         <input
           className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
           defaultValue={query}
           name="q"
-          placeholder="Search customer, staff, service, ticket #"
+          placeholder={__vt("Search customer, staff, service, ticket #")}
           type="search"
         />
       </label>
@@ -335,13 +338,13 @@ function PortableWorkLogFilters({
         className="h-10 self-end rounded bg-zinc-950 px-4 text-sm font-medium text-white"
         type="submit"
       >
-        Search
+        <WorkspaceText text="Search" />
       </button>
       <Link
         className="inline-flex h-10 items-center self-end rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
         href={todayHref}
       >
-        Today
+        <WorkspaceText text="Today" />
       </Link>
     </form>
   );
@@ -375,12 +378,12 @@ function PortableDailyWorkLog({
       <section className="mt-6">
         <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
           <h2 className="text-lg font-semibold text-zinc-950">
-            {selectedDateLabel}
+            <WorkspaceText text={selectedDateLabel} />
           </h2>
         </div>
         <div className="rounded border border-dashed border-zinc-300 bg-zinc-50 p-6">
           <h2 className="text-lg font-semibold text-zinc-950">
-            No POS work log for this date.
+            <WorkspaceText text="No POS work log for this date." />
           </h2>
         </div>
       </section>
@@ -392,7 +395,7 @@ function PortableDailyWorkLog({
       <section>
         <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
           <h2 className="text-lg font-semibold text-zinc-950">
-            {selectedDateLabel}
+            <WorkspaceText text={selectedDateLabel} />
           </h2>
         </div>
         <div className="overflow-hidden rounded border border-zinc-200 bg-white">
@@ -491,13 +494,13 @@ export function PortableTicketClient({ initialData, searchQuery, error, followTo
 
         {data.setupMessage ? (
           <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            {data.setupMessage}
+            <WorkspaceText text={data.setupMessage} />
           </p>
         ) : null}
 
         {error ? (
           <p className="mt-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-            {error}
+            <WorkspaceText text={error} />
           </p>
         ) : null}
 

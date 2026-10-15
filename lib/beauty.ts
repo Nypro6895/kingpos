@@ -1,3 +1,4 @@
+import { assertAbuseRequest } from "@/lib/abuse-server";
 import "server-only";
 
 import {
@@ -1289,6 +1290,10 @@ export async function createBeautyPost(
     );
   }
 
+  try { await assertAbuseRequest("post"); } catch (error) {
+    await cleanupBeautyMedia(trustedMedia.map(item => item.objectPath));
+    return failure("invalid_input", error instanceof Error ? error.message : "Please try again later.");
+  }
   const { data, error } = await context.supabase.rpc("create_beauty_post", {
     p_attribution_source: input.attributionSource ?? "customer_claimed",
     p_caption: caption,

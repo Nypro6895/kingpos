@@ -1,4 +1,7 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { BookingDepositPanel } from "@/app/market/booking-deposit-panel";
+import { TimeZoneSelect } from "@/components/time-zone-select";
 import { useState } from "react";
 import {
   saveDirectSalonProfile,
@@ -45,6 +48,8 @@ function OperatingHours({
   data: Extract<DirectData,{kind:"salon-profile"}>;
   onSaved: () => Promise<void>;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [windows, setWindows] = useState<
     SalonOperatingHoursSettings["weeklyHours"]
   >(data.hours.weeklyHours);
@@ -58,14 +63,9 @@ function OperatingHours({
       }
       onSaved={onSaved}
       onCancel={() => setWindows(data.hours.weeklyHours)}
-      label="Save opening hours"
+      label={__vt("Save opening hours")}
     >
-      <Field
-        name="timezone"
-        label="Time zone"
-        value={data.hours.timeZone}
-        required
-      />
+      <label className="grid gap-1 text-sm"><WorkspaceText text="Time zone" /><TimeZoneSelect name="timezone" className={inputClass} defaultValue={data.hours.timeZone} required /></label>
       {days.map((day, dayOfWeek) => (
         <div className="grid gap-2 border-t border-zinc-100 pt-3" key={day}>
           <div className="flex items-center justify-between">
@@ -86,11 +86,11 @@ function OperatingHours({
                 ])
               }
             >
-              Add hours
+              <WorkspaceText text="Add hours" />
             </button>
           </div>
           {!windows.some((w) => w.dayOfWeek === dayOfWeek) && (
-            <span className="text-sm text-zinc-500">Closed</span>
+            <span className="text-sm text-zinc-500"><WorkspaceText text="Closed" /></span>
           )}
           {windows.map((window, index) =>
             window.dayOfWeek === dayOfWeek ? (
@@ -100,7 +100,7 @@ function OperatingHours({
               >
                 {(["opensAtLocal", "closesAtLocal"] as const).map((key) => (
                   <label className="grid gap-1 text-sm" key={key}>
-                    {key === "opensAtLocal" ? "Opens" : "Closes"}
+                    <WorkspaceText text={key === "opensAtLocal" ? "Opens" : "Closes"} />
                     <input className={inputClass} type="time" required
                       value={window[key].slice(0, 5)}
                       onChange={(event) => setWindows((current) => current.map((item, i) => i === index ? {...item, [key]: event.target.value} : item))} />
@@ -109,12 +109,12 @@ function OperatingHours({
                 <button
                   className={buttonClass}
                   type="button"
-                  aria-label={`Remove ${day} hours`}
+                  aria-label={__vt(`Remove ${day} hours`)}
                   onClick={() =>
                     setWindows(windows.filter((_, i) => i !== index))
                   }
                 >
-                  Remove
+                  <WorkspaceText text="Remove" />
                 </button>
               </div>
             ) : null,
@@ -125,10 +125,12 @@ function OperatingHours({
   );
 }
 function PublicIdentity({data,onSaved}:{data:Extract<DirectData,{kind:"public-profile"}>;onSaved:()=>Promise<void>}){
+  const __vt = useWorkspaceTranslation();
+
  const [paths,setPaths]=useState<{logo:string|null;cover:string|null}>({logo:null,cover:null}),[removed,setRemoved]=useState({logo:false,cover:false}),[uploading,setUploading]=useState({logo:false,cover:false}),[reset,setReset]=useState(0);
- return <details><summary className="cursor-pointer text-sm font-semibold">Tagline, story, logo & cover</summary><div className="mt-3"><InlineForm disabled={uploading.logo||uploading.cover} save={form=>saveSettingsProfileIdentity(data.salonId,form)} onSaved={async()=>{await onSaved();setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}} onCancel={()=>{setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}}>
- <Field name="tagline" label="Tagline" value={data.profileIdentity?.public_profile_tagline}/><label className="grid gap-1 text-sm">Salon story<textarea className={inputClass} name="story" rows={4} defaultValue={data.profileIdentity?.public_profile_story||''}/></label>
- {(['logo','cover'] as const).map(kind=><div key={kind}><input type="hidden" name={`${kind}_path`} value={paths[kind]||''}/><input type="hidden" name={`remove_${kind}`} value={String(removed[kind])}/><SalonMediaUploader key={`${kind}-${reset}`} onUploadStateChange={busy=>setUploading(v=>v[kind]===busy?v:{...v,[kind]:busy})} expectedSalonId={data.salonId} currentPath={kind==='logo'?data.profileIdentity?.public_profile_logo_path||null:data.profileIdentity?.public_profile_cover_path||null} currentUrl={kind==='logo'?data.logoUrl:data.coverUrl} intent="identity" kind={kind} label={kind==='logo'?'Salon logo':'Cover image'} onRemoveExisting={()=>setRemoved(v=>({...v,[kind]:true}))} onUploaded={path=>{setPaths(v=>({...v,[kind]:path}));if(path)setRemoved(v=>({...v,[kind]:false}));}}/></div>)}
+ return <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Tagline, story, logo & cover" /></summary><div className="mt-3"><InlineForm disabled={uploading.logo||uploading.cover} save={form=>saveSettingsProfileIdentity(data.salonId,form)} onSaved={async()=>{await onSaved();setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}} onCancel={()=>{setReset(v=>v+1);setPaths({logo:null,cover:null});setRemoved({logo:false,cover:false});}}>
+ <Field name="tagline" label={__vt("Tagline")} value={data.profileIdentity?.public_profile_tagline}/><label className="grid gap-1 text-sm"><WorkspaceText text="Salon story" /><textarea className={inputClass} name="story" rows={4} defaultValue={data.profileIdentity?.public_profile_story||''}/></label>
+ {(['logo','cover'] as const).map(kind=><div key={kind}><input type="hidden" name={`${kind}_path`} value={paths[kind]||''}/><input type="hidden" name={`remove_${kind}`} value={String(removed[kind])}/><SalonMediaUploader key={`${kind}-${reset}`} onUploadStateChange={busy=>setUploading(v=>v[kind]===busy?v:{...v,[kind]:busy})} expectedSalonId={data.salonId} currentPath={kind==='logo'?data.profileIdentity?.public_profile_logo_path||null:data.profileIdentity?.public_profile_cover_path||null} currentUrl={kind==='logo'?data.logoUrl:data.coverUrl} intent="identity" kind={kind} label={__vt(kind==='logo'?'Salon logo':'Cover image')} onRemoveExisting={()=>setRemoved(v=>({...v,[kind]:true}))} onUploaded={path=>{setPaths(v=>({...v,[kind]:path}));if(path)setRemoved(v=>({...v,[kind]:false}));}}/></div>)}
  </InlineForm></div></details>;
 }
 export function SalonDetailsPanel({
@@ -138,12 +140,13 @@ export function SalonDetailsPanel({
   data: ProfileData;
   onSaved: () => Promise<void>;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const s = data.setting;
   if (!data.canManage)
     return (
       <p className="text-sm text-zinc-500">
-        You can view this salon but do not have permission to change its
-        settings.
+        <WorkspaceText text="You can view this salon but do not have permission to change its settings." />
       </p>
     );
   if (data.kind === "public-profile")
@@ -168,18 +171,18 @@ export function SalonDetailsPanel({
         >
           <Check
             name="public_discovery_enabled"
-            label="Show salon in Explore"
+            label={__vt("Show salon in Explore")}
             checked={s.public_discovery_enabled}
           />
           <Check
             name="allow_staff_applications"
-            label="Allow staff applications"
+            label={__vt("Allow staff applications")}
             checked={s.allow_staff_applications}
           />
           {!data.readiness.canEnable && (
             <p className="text-sm text-amber-800">
-              Required before enabling Explore:{" "}
-              {data.readiness.missingLabels.join(", ")}.
+              <WorkspaceText text="Required before enabling Explore:" />{" "}
+              <WorkspaceText text={data.readiness.missingLabels.join(", ")} />.
             </p>
           )}
         </InlineForm>:null}
@@ -208,17 +211,17 @@ export function SalonDetailsPanel({
       >
         <Field
           name="business_name"
-          label="Salon name"
+          label={__vt("Salon name")}
           value={s.business_name}
           required
         />
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field name="phone" label="Phone" type="tel" value={s.phone} />
-          <Field name="email" label="Email" type="email" value={s.email} />
+          <Field name="phone" label={__vt("Phone")} type="tel" value={s.phone} />
+          <Field name="email" label={__vt("Email")} type="email" value={s.email} />
         </div>
-        <Field name="website" label="Website" type="url" value={s.website} />
+        <Field name="website" label={__vt("Website")} type="url" value={s.website} />
         <label className="grid gap-1 text-sm">
-          Description
+          <WorkspaceText text="Description" />
           <textarea
             name="business_description"
             className={inputClass}
@@ -226,29 +229,29 @@ export function SalonDetailsPanel({
             rows={3}
           />
         </label>
-        <Field name="address_line1" label="Address" value={s.address_line1} />
+        <Field name="address_line1" label={__vt("Address")} value={s.address_line1} />
         <Field
           name="address_line2"
-          label="Unit / suite"
+          label={__vt("Unit / suite")}
           value={s.address_line2}
         />
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field name="city" label="City" value={s.city} />
-          <Field name="state" label="State" value={s.state} />
-          <Field name="postal_code" label="ZIP code" value={s.postal_code} />
-          <Field name="country" label="Country code" value={s.country} />
+          <Field name="city" label={__vt("City")} value={s.city} />
+          <Field name="state" label={__vt("State")} value={s.state} />
+          <Field name="postal_code" label={__vt("ZIP code")} value={s.postal_code} />
+          <Field name="country" label={__vt("Country code")} value={s.country} />
         </div>
       </InlineForm>
-      <details><summary className="cursor-pointer text-sm font-semibold">Map location</summary><div className="mt-3">
-        <InlineForm save={()=>refreshSettingsMap(data.salonId)} onSaved={onSaved} label="Update map from saved address">
+      <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Map location" /></summary><div className="mt-3">
+        <InlineForm save={()=>refreshSettingsMap(data.salonId)} onSaved={onSaved} label={__vt("Update map from saved address")}>
           <p className="text-sm">{[s.address_line1,s.city,s.state,s.postal_code].filter(Boolean).join(", ")}</p>
-          {data.mapLocation.coordinates?<p className="text-xs text-zinc-500">Latitude {data.mapLocation.coordinates.latitude} · Longitude {data.mapLocation.coordinates.longitude}</p>:null}
+          {data.mapLocation.coordinates?<p className="text-xs text-zinc-500"><WorkspaceText text="Latitude" /> {data.mapLocation.coordinates.latitude} <WorkspaceText text="· Longitude" /> {data.mapLocation.coordinates.longitude}</p>:null}
           <p className="text-sm">{data.mapLocation.statusDescription}</p>
         </InlineForm>
       </div></details>
       <details>
         <summary className="cursor-pointer text-sm font-semibold">
-          Opening hours
+          <WorkspaceText text="Opening hours" />
         </summary>
         <div className="mt-3">
           <OperatingHours
@@ -260,13 +263,13 @@ export function SalonDetailsPanel({
       </details>
       <details>
         <summary className="cursor-pointer text-sm font-semibold">
-          Holiday & special hours
+          <WorkspaceText text="Holiday & special hours" />
         </summary>
         <div className="mt-3 grid gap-3">
           {data.hours.specialHours.map((h) => (
             <InlineForm
               key={h.id}
-              label="Remove special hours"
+              label={__vt("Remove special hours")}
               save={() =>
                 saveDirectSpecialHours(data.salonId, { deleteId: h.id })
               }
@@ -274,15 +277,15 @@ export function SalonDetailsPanel({
             >
               <p className="text-sm">
                 {h.localDate} ·{" "}
-                {h.status === "closed"
+                <WorkspaceText text={h.status === "closed"
                   ? "Closed"
-                  : `${h.opensAtLocal}–${h.closesAtLocal}`}
+                  : `${h.opensAtLocal}–${h.closesAtLocal}`} />
                 {h.reason ? ` · ${h.reason}` : ""}
               </p>
             </InlineForm>
           ))}
           <InlineForm
-            label="Add special hours"
+            label={__vt("Add special hours")}
             save={(form) =>
               saveDirectSpecialHours(data.salonId, {
                 localDate: text(form, "date"),
@@ -297,10 +300,10 @@ export function SalonDetailsPanel({
             }
             onSaved={onSaved}
           >
-            <Field name="date" label="Date" type="date" required />
+            <Field name="date" label={__vt("Date")} type="date" required />
             <Select
               name="status"
-              label="Schedule"
+              label={__vt("Schedule")}
               value="closed"
               options={[
                 ["closed", "Closed"],
@@ -308,10 +311,10 @@ export function SalonDetailsPanel({
               ]}
             />
             <div className="grid grid-cols-2 gap-3">
-              <Field name="opens" label="Opens (custom hours)" type="time" />
-              <Field name="closes" label="Closes (custom hours)" type="time" />
+              <Field name="opens" label={__vt("Opens (custom hours)")} type="time" />
+              <Field name="closes" label={__vt("Closes (custom hours)")} type="time" />
             </div>
-            <Field name="reason" label="Reason (optional)" />
+            <Field name="reason" label={__vt("Reason (optional)")} />
           </InlineForm>
         </div>
       </details>
@@ -327,9 +330,8 @@ const bookingChecks = [
   ["auto_assign_enabled", "Automatically assign staff"],
   ["any_professional_enabled", "Allow any professional"],
   ["split_staff_appointment_enabled", "Allow multiple staff per appointment"],
-  ["reminder_enabled", "Send booking reminders"],
+  ["reminder_enabled", "Send email booking reminders"],
   ["confirmation_email_enabled", "Send email confirmations"],
-  ["confirmation_sms_enabled", "Send SMS confirmations"],
 ] as const;
 export function BookingSettingsPanel({
   data,
@@ -338,11 +340,15 @@ export function BookingSettingsPanel({
   data: Extract<DirectData, { kind: "booking" }>;
   onSaved: () => Promise<void>;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const s = data.settings;
   return (
     <div className="grid gap-4">
       {data.canManage ? (
         <InlineForm
+          className="settings-booking-form"
+          label={__vt("Save booking rules")}
           save={(form) =>
             saveDirectBooking(data.salonId, {
               bookingEnabled: checked(form, "booking_enabled"),
@@ -388,93 +394,30 @@ export function BookingSettingsPanel({
           }
           onSaved={onSaved}
         >
-          {bookingChecks.map(([name, label]) => (
-            <Check
-              key={name}
-              name={name}
-              label={label}
-              checked={Boolean(s[name])}
-            />
-          ))}
-          <Select
-            name="confirmation_mode"
-            label="Confirmation"
-            value={s.confirmation_mode}
-            options={[
-              ["request_confirmation", "Salon approval required"],
-              ["instant_booking", "Instant booking"],
-            ]}
-          />
-          <Field
-            name="minimum_lead_time_minutes"
-            label="Minimum lead time (minutes)"
-            value={s.minimum_lead_time_minutes}
-            type="number"
-            min={0}
-            max={10080}
-            required
-          />
-          <Field
-            name="maximum_advance_window_days"
-            label="Book ahead (days)"
-            value={s.maximum_advance_window_days}
-            type="number"
-            min={1}
-            max={730}
-            required
-          />
-          <Select
-            name="slot_interval_minutes"
-            label="Time slot interval"
-            value={String(s.slot_interval_minutes)}
-            options={[5, 10, 15, 20, 30, 60].map((n) => [
-              String(n),
-              `${n} minutes`,
-            ])}
-          />
-          <Field
-            name="default_cleanup_buffer_minutes"
-            label="Cleanup buffer (minutes)"
-            value={s.default_cleanup_buffer_minutes}
-            type="number"
-            min={0}
-            max={240}
-            required
-          />
-          <Field
-            name="cancellation_window_minutes"
-            label="Cancellation notice (minutes)"
-            value={s.cancellation_window_minutes}
-            type="number"
-            min={0}
-            max={10080}
-            required
-          />
-          <Field
-            name="timezone_iana"
-            label="Time zone"
-            value={s.timezone_iana}
-            required
-          />
-          <Select
-            name="ticket_creation_mode"
-            label="Create POS ticket"
-            value={s.ticket_creation_mode}
-            options={[
-              ["manual", "Manually"],
-              ["on_check_in", "On check-in"],
-              ["on_service_start", "On service start"],
-            ]}
-          />
+          <div className="settings-booking-columns"><div className="settings-booking-access"><h3><WorkspaceText text="Booking access" /></h3>
+          {bookingChecks.slice(0,4).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}
+          <details><summary><WorkspaceText text="Staff assignment" /></summary>{bookingChecks.slice(4,7).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}</details>
+          <details><summary><WorkspaceText text="Confirmations & reminders" /></summary>{bookingChecks.slice(7).map(([name,label])=><Check key={name} name={name} label={__vt(label)} checked={Boolean(s[name])}/>)}
+          <Select name="confirmation_mode" label={__vt("Confirmation")} value={s.confirmation_mode} options={[["request_confirmation","Salon approval required"],["instant_booking","Instant booking"]]}/></details>
+          </div><div className="settings-booking-timing"><h3><WorkspaceText text="Timing & scheduling" /></h3><p className="mb-3 text-xs text-zinc-500"><WorkspaceText text="Times use this salon’s booking timezone." /></p><div className="settings-booking-fields">
+            <Field name="minimum_lead_time_minutes" label={__vt("Minimum lead time (minutes)")} value={s.minimum_lead_time_minutes} type="number" min={0} max={10080} required/>
+            <Field name="maximum_advance_window_days" label={__vt("Book ahead (days)")} value={s.maximum_advance_window_days} type="number" min={1} max={730} required/>
+            <Select name="slot_interval_minutes" label={__vt("Time slot interval")} value={String(s.slot_interval_minutes)} options={[5,10,15,20,30,60].map(n=>[String(n),`${n} minutes`])}/>
+            <Field name="default_cleanup_buffer_minutes" label={__vt("Cleanup buffer (minutes)")} value={s.default_cleanup_buffer_minutes} type="number" min={0} max={240} required/>
+            <Field name="cancellation_window_minutes" label={__vt("Cancellation notice (minutes)")} value={s.cancellation_window_minutes} type="number" min={0} max={10080} required/>
+            <label className="grid gap-1 text-sm"><WorkspaceText text="Time zone" /><TimeZoneSelect name="timezone_iana" className={inputClass} defaultValue={s.timezone_iana} required /></label>
+            <Select name="ticket_creation_mode" label={__vt("Create POS ticket")} value={s.ticket_creation_mode} options={[["manual","Manually"],["on_check_in","On check-in"],["on_service_start","On service start"]]}/>
+          </div></div></div>
         </InlineForm>
       ) : (
         <p className="text-sm text-zinc-500">
-          Booking rules are read-only for your role.
+          <WorkspaceText text="Booking rules are read-only for your role." />
         </p>
       )}
+      {data.canManage ? <BookingDepositPanel key={data.salonId} salonId={data.salonId} /> : null}
       <details>
         <summary className="cursor-pointer text-sm font-semibold">
-          Staff availability & time off
+          <WorkspaceText text="Staff availability & time off" />
         </summary>
         <div className="mt-3">
           <StaffAvailabilityEditor

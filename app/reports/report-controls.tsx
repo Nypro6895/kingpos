@@ -1,9 +1,13 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { toolbarStyles } from "@/components/workspace-toolbar";
+import { CompactFilters } from "@/components/compact-filters";
+import { ContextualSupport } from "@/components/contextual-support";
 
 import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import type { OperationalReportData } from "@/lib/operational-report";
-import { Sheet, inputClass, primaryButton } from "@/app/my-place/place-ui";
+import { inputClass, primaryButton } from "@/app/my-place/place-ui";
 
 export function ClosingDateForm({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -11,7 +15,7 @@ export function ClosingDateForm({ children }: { children: ReactNode }) {
   const [busy, start] = useTransition();
   return (
     <form
-      className="border-b border-zinc-200 pb-4"
+      className="min-w-0"
       onSubmit={(event) => {
         event.preventDefault();
         const params = new URLSearchParams();
@@ -25,13 +29,13 @@ export function ClosingDateForm({ children }: { children: ReactNode }) {
     >
       <fieldset
         disabled={busy}
-        className="flex flex-col gap-3 sm:flex-row sm:items-end"
+        className="grid min-w-0 gap-3"
       >
         {children}
       </fieldset>
       {busy ? (
         <p role="status" className="mt-2 text-xs text-zinc-500">
-          Updating closing date…
+          <WorkspaceText text="Updating closing date…" />
         </p>
       ) : null}
     </form>
@@ -45,39 +49,18 @@ export function ReportRangeFilter({
   report: OperationalReportData;
   selectedClosingDate: string;
 }) {
-  const [open, setOpen] = useState(false);
+  const __vt = useWorkspaceTranslation();
+
   const [busy, start] = useTransition();
   const [preset, setPreset] = useState(report.range.preset);
   const router = useRouter();
   const reportPath=usePathname().startsWith('/pos/report')?'/pos/report':'/reports';
   return (
     <div className="min-w-0 text-sm">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-        <span className="text-zinc-600">{report.range.label}</span>
-        <button
-          className="min-h-11 font-semibold text-teal-700 hover:underline disabled:opacity-50"
-          disabled={busy}
-          onClick={() => {
-            setPreset(report.range.preset);
-            setOpen(true);
-          }}
-        >
-          Filter <span aria-hidden>☷</span>
-        </button>
-      </div>
-      {busy ? (
-        <p role="status" className="text-xs text-zinc-500">
-          Updating report…
-        </p>
-      ) : null}
-      {open ? (
-        <Sheet
-          title="Report filters"
-          subtitle={`Dates use ${report.range.timeZone}`}
-          busy={busy}
-          dirty={false}
-          onClose={() => setOpen(false)}
-        >
+      <div className="flex min-w-0 items-center gap-2">
+        <span className={toolbarStyles.summary} title={__vt(report.range.label)}><WorkspaceText text={report.range.label} /></span>
+        <CompactFilters label={__vt("Report filters")} active={report.range.preset === "custom"}>
+          <p className="mb-3 text-xs text-zinc-500"><WorkspaceText text="Dates use" /> {report.range.timeZone}</p>
           <form
             className="grid gap-6"
             onSubmit={(event) => {
@@ -94,11 +77,10 @@ export function ReportRangeFilter({
               start(() => {
                 router.push(`${reportPath}?${params}`, { scroll: false });
               });
-              setOpen(false);
             }}
           >
             <fieldset className="grid gap-1">
-              <legend className="mb-3 text-sm font-semibold">Date range</legend>
+              <legend className="mb-3 text-sm font-semibold"><WorkspaceText text="Date range" /></legend>
               {(
                 [
                   { value: "today", label: "Today" },
@@ -111,7 +93,7 @@ export function ReportRangeFilter({
                   key={option.value}
                   className={`flex min-h-12 cursor-pointer items-center justify-between border-b border-zinc-100 text-sm ${preset === option.value ? "font-semibold text-teal-700" : "text-zinc-600"}`}
                 >
-                  {option.label}
+                  <WorkspaceText text={option.label} />
                   <input
                     className="h-4 w-4 accent-teal-700"
                     name="preset"
@@ -126,7 +108,7 @@ export function ReportRangeFilter({
             {preset === "custom" ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-2 text-sm">
-                  Start
+                  <WorkspaceText text="Start" />
                   <input
                     className={inputClass}
                     name="start"
@@ -137,7 +119,7 @@ export function ReportRangeFilter({
                   />
                 </label>
                 <label className="grid gap-2 text-sm">
-                  End
+                  <WorkspaceText text="End" />
                   <input
                     className={inputClass}
                     name="end"
@@ -150,11 +132,12 @@ export function ReportRangeFilter({
               </div>
             ) : null}
             <button className={primaryButton} type="submit" disabled={busy}>
-              Apply filters
+              <WorkspaceText text="Apply filters" />
             </button>
           </form>
-        </Sheet>
-      ) : null}
+        </CompactFilters>
+      </div>
+      {busy && <p role="status" className="text-xs text-zinc-500"><WorkspaceText text="Updating report…" /></p>}
     </div>
   );
 }
@@ -163,11 +146,17 @@ export function ReportTabs({
   overview,
   children,
   onViewChange,
+  overviewTools,
+  closingTools,
 }: {
   overview: ReactNode;
+  overviewTools?: ReactNode;
+  closingTools?: ReactNode;
   children: ReactNode;
   onViewChange?: (view:"overview"|"closing")=>void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const workspace=usePathname().startsWith('/pos/report');
   const [closing, setClosing] = useState(workspace);
   useEffect(() => {
@@ -179,9 +168,10 @@ export function ReportTabs({
   useEffect(()=>{onViewChange?.(closing ? "closing" : "overview");},[closing,onViewChange]);
   return (
     <>
+      <div className={toolbarStyles.toolbar}>
       <nav
-        aria-label="Report views"
-        className="flex gap-6 border-b border-zinc-200 text-sm"
+        aria-label={__vt("Report views")}
+        className="flex min-w-0 shrink-0 gap-3 text-sm sm:gap-6"
       >
         {[false, true].map((value) => (
           <button
@@ -198,10 +188,13 @@ export function ReportTabs({
               );
             }}
           >
-            {value ? "Daily Closing" : "Overview"}
+            {value ? "Daily Closing" : <WorkspaceText text="Overview" />}
           </button>
         ))}
       </nav>
+        <ContextualSupport />
+        <div className="ml-auto flex min-w-0 items-center gap-2">{closing ? closingTools : overviewTools}</div>
+      </div>
       <div className="min-w-0" hidden={closing}>
         {overview}
       </div>

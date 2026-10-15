@@ -1,5 +1,8 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { SettingsIcon } from "@/components/settings-icon";
+
 import {
   cancelStaffTimeBlockAction,
   createStaffTimeBlockAction,
@@ -260,12 +263,12 @@ function Message({ result }: { result: BookingSetupActionResult | null }) {
           : "staff-booking-settings-message--error",
       )}
     >
-      {result.ok ? "Saved." : result.error ?? "Save failed."}
+      <WorkspaceText text={result.ok ? "Saved." : result.error ?? "Save failed."} />
       {!result.ok && result.conflicts && result.conflicts.length > 0 ? (
         <ul>
           {result.conflicts.slice(0, 3).map((conflict) => (
             <li key={conflict.booking_line_id}>
-              {conflict.customer_name} / {conflict.status}
+              {conflict.customer_name} / <WorkspaceText text={conflict.status} />
             </li>
           ))}
         </ul>
@@ -293,6 +296,8 @@ export function StaffBookingSettings({
   timezone: string;
   variant?: "summary" | "toolbar";
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [preferences, setPreferences] = useState<{ online: boolean; notifications: boolean } | null>(null);
@@ -483,14 +488,14 @@ export function StaffBookingSettings({
         onClick={openSettings}
         type="button"
       >
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/></svg><span>Settings</span>
+        <SettingsIcon /><span><WorkspaceText text="Settings" /></span>
       </button>
     ) : (
       <section className="staff-booking-settings-summary">
         <div>
-          <p className="staff-booking-settings-kicker">Online booking</p>
-          <h2>{status.label}</h2>
-          <p>{status.body}</p>
+          <p className="staff-booking-settings-kicker"><WorkspaceText text="Online booking" /></p>
+          <h2><WorkspaceText text={status.label} /></h2>
+          <p><WorkspaceText text={status.body} /></p>
           <p className="staff-booking-settings-hours">
             {summarizeWeeklyHours(week)}
           </p>
@@ -500,36 +505,36 @@ export function StaffBookingSettings({
           onClick={openSettings}
           type="button"
         >
-          Booking settings
+          <WorkspaceText text="Booking settings" />
         </button>
       </section>
     );
 
   return (
-    <>
+    <div className="settings-style"><>
       {trigger}
 
       {open ? (
         <div className="staff-booking-settings-overlay">
           <button
-            aria-label="Close booking settings"
+            aria-label={__vt("Close booking settings")}
             className="staff-booking-settings-backdrop"
             onClick={() => setOpen(false)}
             type="button"
           />
           <aside
-            aria-label="Booking settings"
+            aria-label={__vt("Booking settings")}
             aria-modal="true"
             className="staff-booking-settings-sheet"
             role="dialog"
           >
             <div className="staff-booking-settings-head">
               <div>
-                <p className="staff-booking-settings-kicker">Booking settings</p>
+                <p className="staff-booking-settings-kicker"><WorkspaceText text="Booking settings" /></p>
                 <h2>{staff.displayName}</h2>
               </div>
               <button
-                aria-label="Close booking settings"
+                aria-label={__vt("Close booking settings")}
                 className="staff-appointments-icon-button"
                 onClick={() => setOpen(false)}
                 type="button"
@@ -541,17 +546,17 @@ export function StaffBookingSettings({
             <div className="staff-booking-settings-content">
               <section className="staff-booking-settings-section">
                 <div>
-                  <h3>Online booking</h3>
-                  <p>{status.body}</p>
+                  <h3><WorkspaceText text="Online booking" /></h3>
+                  <p><WorkspaceText text={status.body} /></p>
                 </div>
-                <button type="button" role="switch" aria-label="Online booking" aria-checked={preferences?.online ?? staff.onlineBookingEnabled} disabled={!preferences || preferencePending} className="staff-settings-switch" onClick={() => togglePreference("online")}><span aria-hidden="true" />{(preferences?.online ?? staff.onlineBookingEnabled) ? "On" : "Off"}</button>
+                <button type="button" role="switch" aria-label={__vt("Online booking")} aria-checked={preferences?.online ?? staff.onlineBookingEnabled} disabled={!preferences || preferencePending} className="staff-settings-switch" onClick={() => togglePreference("online")}><span aria-hidden="true" /><WorkspaceText text={(preferences?.online ?? staff.onlineBookingEnabled) ? "On" : "Off"} /></button>
               </section>
 
-              {preferenceError ? <p role="alert" className="staff-booking-settings-message staff-booking-settings-message--error">{preferenceError}</p> : null}
+              {preferenceError ? <p role="alert" className="staff-booking-settings-message staff-booking-settings-message--error"><WorkspaceText text={preferenceError} /></p> : null}
               <section className="staff-booking-settings-section staff-booking-settings-section--stack">
                 <div className="staff-booking-settings-section-head">
                   <div>
-                    <h3>Booking hours</h3>
+                    <h3><WorkspaceText text="Booking hours" /></h3>
                     <p>{summarizeWeeklyHours(week)}</p>
                   </div>
                   <button
@@ -560,39 +565,39 @@ export function StaffBookingSettings({
                     onClick={saveWeek}
                     type="button"
                   >
-                    {isPending ? "Saving" : "Save hours"}
+                    {isPending ? "Saving" : <WorkspaceText text="Save hours" />}
                   </button>
                 </div>
                 <Message result={result} />
                 <div className="staff-booking-hours-list">
                   {DAYS.filter(day => week[day.id].working.length > 0).map(day => (
                     <div className="staff-hours-line" key={day.id}>
-                      <strong>{day.label}</strong>
+                      <strong><WorkspaceText text={day.label} /></strong>
                       <div className="staff-hours-times">
                         {week[day.id].working.map((interval, index) => <div className="staff-hours-pair" key={index}>
-                          <input aria-label={`${day.label} start ${index + 1}`} type="time" value={interval.startsAt} onChange={event => updateDay(day.id, current => current.map((item, i) => i === index ? {...item, startsAt: event.target.value} : item))} />
+                          <input aria-label={__vt(`${day.label} start ${index + 1}`)} type="time" value={interval.startsAt} onChange={event => updateDay(day.id, current => current.map((item, i) => i === index ? {...item, startsAt: event.target.value} : item))} />
                           <span>–</span>
-                          <input aria-label={`${day.label} end ${index + 1}`} type="time" value={interval.endsAt} onChange={event => updateDay(day.id, current => current.map((item, i) => i === index ? {...item, endsAt: event.target.value} : item))} />
-                          <button type="button" className="staff-small-remove" aria-label={`Remove ${day.label} interval ${index + 1}`} onClick={() => updateDay(day.id, current => current.filter((_, i) => i !== index))}>×</button>
+                          <input aria-label={__vt(`${day.label} end ${index + 1}`)} type="time" value={interval.endsAt} onChange={event => updateDay(day.id, current => current.map((item, i) => i === index ? {...item, endsAt: event.target.value} : item))} />
+                          <button type="button" className="staff-small-remove" aria-label={__vt(`Remove ${day.label} interval ${index + 1}`)} onClick={() => updateDay(day.id, current => current.filter((_, i) => i !== index))}>×</button>
                         </div>)}
-                        <button type="button" className="staff-subtle-link" onClick={() => updateDay(day.id, current => [...current, defaultWorkingInterval()])}>add interval</button>
+                        <button type="button" className="staff-subtle-link" onClick={() => updateDay(day.id, current => [...current, defaultWorkingInterval()])}><WorkspaceText text="add interval" /></button>
                       </div>
                     </div>
                   ))}
-                  {DAYS.some(day => week[day.id].working.length === 0) ? <label className="staff-add-day"><span>Add day</span><select aria-label="Add day" value="" onChange={event => { if (event.target.value !== "") toggleDay(Number(event.target.value), true); }}><option value="" disabled>Choose day</option>{DAYS.filter(day => !week[day.id].working.length).map(day => <option key={day.id} value={day.id}>{day.label}</option>)}</select></label> : null}
+                  {DAYS.some(day => week[day.id].working.length === 0) ? <label className="staff-add-day"><span><WorkspaceText text="Add day" /></span><select aria-label={__vt("Add day")} value="" onChange={event => { if (event.target.value !== "") toggleDay(Number(event.target.value), true); }}><option value="" disabled><WorkspaceText text="Choose day" /></option>{DAYS.filter(day => !week[day.id].working.length).map(day => <option key={day.id} value={day.id}><WorkspaceText text={day.label} /></option>)}</select></label> : null}
                 </div>
               </section>
 
               <section className="staff-booking-settings-section staff-booking-settings-section--stack">
                 <div className="staff-booking-settings-section-head">
                   <div>
-                    <h3>Time off</h3>
+                    <h3><WorkspaceText text="Time off" /></h3>
                     <p>
-                      {ownTimeOff.length === 0
+                      <WorkspaceText text={ownTimeOff.length === 0
                         ? "No upcoming time off"
                         : `${ownTimeOff.length} upcoming range${
                             ownTimeOff.length === 1 ? "" : "s"
-                          }`}
+                          }`} />
                     </p>
                   </div>
                 </div>
@@ -600,14 +605,14 @@ export function StaffBookingSettings({
                 <div className="staff-booking-timeoff-list">
                   {ownTimeOff.length === 0 ? (
                     <p className="staff-booking-settings-muted">
-                      Time off added here is visible to Owner and blocks public slots.
+                      <WorkspaceText text="Time off added here is visible to Owner and blocks public slots." />
                     </p>
                   ) : (
                     ownTimeOff.map((block) => (
                       <div className="staff-booking-timeoff-item" key={block.id}>
                         <div>
                           <strong>
-                            {formatTimeOff(block, timezone)}
+                            <WorkspaceText text={formatTimeOff(block, timezone)} />
                           </strong>
                           {block.reason ? <p>{block.reason}</p> : null}
                         </div>
@@ -617,22 +622,22 @@ export function StaffBookingSettings({
                           onClick={() => cancelTimeOff(block.id)}
                           type="button"
                         >
-                          Remove
+                          <WorkspaceText text="Remove" />
                         </button>
                       </div>
                     ))
                   )}
                 </div>
-                <button type="button" className="staff-subtle-link" onClick={() => { setShowTimeOffForm(!showTimeOffForm); setTimeOffResult(null); }}>{showTimeOffForm ? "Cancel" : ownTimeOff.length ? "+ Add more time off" : "+ Add time off"}</button>
+                <button type="button" className="staff-subtle-link" onClick={() => { setShowTimeOffForm(!showTimeOffForm); setTimeOffResult(null); }}>{showTimeOffForm ? <WorkspaceText text="Cancel" /> : ownTimeOff.length ? "+ Add more time off" : "+ Add time off"}</button>
                 {showTimeOffForm ? <div className="staff-booking-timeoff-form">
                   <TimeOffRangePicker start={timeOffStartDate} end={timeOffEndDate} onChange={(start, end) => { setTimeOffStartDate(start); setTimeOffEndDate(end); setTimeOffResult(null); }} />
-                  <p className="staff-booking-settings-muted">Full days off</p>
+                  <p className="staff-booking-settings-muted"><WorkspaceText text="Full days off" /></p>
                   <label>
-                    <span>Reason</span>
+                    <span><WorkspaceText text="Reason" /></span>
                     <input
                       className="staff-appointments-field"
                       onChange={(event) => setTimeOffReason(event.target.value)}
-                      placeholder="Optional"
+                      placeholder={__vt("Optional")}
                       value={timeOffReason}
                     />
                   </label>
@@ -642,7 +647,7 @@ export function StaffBookingSettings({
                     onClick={() => createTimeOff(false)}
                     type="button"
                   >
-                    Add time off
+                    <WorkspaceText text="Add time off" />
                   </button>
                 </div> : null}
                 {showTimeOffForm && !timeOffResult?.ok && timeOffResult?.conflicts?.length ? (
@@ -652,23 +657,23 @@ export function StaffBookingSettings({
                     onClick={() => createTimeOff(true)}
                     type="button"
                   >
-                    Save time off with override
+                    <WorkspaceText text="Save time off with override" />
                   </button>
                 ) : null}
               </section>
 
               <section className="staff-booking-settings-section staff-booking-settings-section--stack">
-                <div><h3>Bookable services</h3><p>Assigned by your salon · Read-only</p></div>
-                {assignedServices.filter(service => service.onlineBookable).length ? <ul className="staff-settings-service-list">{assignedServices.filter(service => service.onlineBookable).map(service => <li key={service.id}><span>{service.name}</span><span>{service.durationMinutes} min</span></li>)}</ul> : <p>No online services assigned. Ask your salon to assign services.</p>}
+                <div><h3><WorkspaceText text="Bookable services" /></h3><p><WorkspaceText text="Assigned by your salon · Read-only" /></p></div>
+                {assignedServices.filter(service => service.onlineBookable).length ? <ul className="staff-settings-service-list">{assignedServices.filter(service => service.onlineBookable).map(service => <li key={service.id}><span>{service.name}</span><span>{service.durationMinutes} <WorkspaceText text="min" /></span></li>)}</ul> : <p><WorkspaceText text="No online services assigned. Ask your salon to assign services." /></p>}
               </section>
               <section className="staff-booking-settings-section">
-                <div><h3>Booking notifications</h3><p>New bookings and changes. Existing notifications are kept.</p></div>
-                <button type="button" role="switch" aria-label="Booking notifications" aria-checked={preferences?.notifications ?? true} disabled={!preferences || preferencePending} className="staff-settings-switch" onClick={() => togglePreference("notifications")}><span aria-hidden="true" />{preferences ? preferences.notifications ? "On" : "Off" : "…"}</button>
+                <div><h3><WorkspaceText text="Booking notifications" /></h3><p><WorkspaceText text="New bookings and changes. Existing notifications are kept." /></p></div>
+                <button type="button" role="switch" aria-label={__vt("Booking notifications")} aria-checked={preferences?.notifications ?? true} disabled={!preferences || preferencePending} className="staff-settings-switch" onClick={() => togglePreference("notifications")}><span aria-hidden="true" /><WorkspaceText text={preferences ? preferences.notifications ? "On" : "Off" : "…"} /></button>
               </section>
             </div>
           </aside>
         </div>
       ) : null}
-    </>
+    </></div>
   );
 }

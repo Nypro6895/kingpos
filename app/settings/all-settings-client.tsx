@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ConnectionsPanel } from "@/app/settings/connections-panel";
 import { SalonListPanel } from "@/app/settings/salon-list-panel";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
@@ -389,7 +390,7 @@ function StatusBadge({
   children,
   tone = "neutral",
 }: {
-  children: string;
+  children: React.ReactNode;
   tone?: SettingTone;
 }) {
   return (
@@ -451,18 +452,18 @@ function SettingRowButton({
       </span>
       <span className="min-w-0">
         <span className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="min-w-0 text-sm font-semibold">{row.label}</span>
+          <span className="min-w-0 text-sm font-semibold"><WorkspaceText text={row.label} /></span>
           <span
             className={[
               "inline-flex min-h-5 items-center rounded-full px-2 text-[11px] font-semibold capitalize ring-1 ring-inset",
               scopeClass(row.scope),
             ].join(" ")}
           >
-            {row.scope === "business"
+            <WorkspaceText text={row.scope === "business"
               ? "business"
               : row.scope === "danger"
                 ? "danger"
-                : row.scope}
+                : row.scope} />
           </span>
         </span>
         <span className="mt-0.5 line-clamp-2 block text-xs leading-5 text-zinc-500 sm:line-clamp-1">
@@ -471,7 +472,7 @@ function SettingRowButton({
       </span>
       <span className="grid justify-items-end gap-1">
         <span className="hidden md:block">
-          <StatusBadge tone={row.tone}>{row.status}</StatusBadge>
+          <StatusBadge tone={row.tone}><WorkspaceText text={row.status} /></StatusBadge>
         </span>
         <span className="grid h-9 w-9 place-items-center rounded-md text-zinc-400">
           <Icon name="chevron" />
@@ -493,14 +494,14 @@ function SettingSectionView({
       <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-zinc-950">
-            {section.label}
+            <WorkspaceText text={section.label} />
           </h2>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
             {section.description}
           </p>
         </div>
         <span className="text-xs font-semibold uppercase text-zinc-400">
-          {section.rows.length} {section.rows.length === 1 ? "item" : "items"}
+          {section.rows.length} <WorkspaceText text={section.rows.length === 1 ? "item" : "items"} />
         </span>
       </div>
       <div className="content-surface overflow-hidden border-zinc-200 bg-white rounded-none border-y shadow-none">
@@ -538,7 +539,7 @@ function DetailContent({
   }
 
   if (row.detailKind === "login-security") {
-    return loginSecurityOverview ? <LoginSecurityPanel overview={loginSecurityOverview} contactEditor={<AccountProfileEditor createdAtLabel={createdAtLabel} user={user} />} /> : <p className="text-sm text-zinc-500">Security settings could not be loaded. Reload Settings to try again.</p>;
+    return loginSecurityOverview ? <LoginSecurityPanel overview={loginSecurityOverview} contactEditor={<AccountProfileEditor createdAtLabel={createdAtLabel} user={user} />} /> : <p className="text-sm text-zinc-500"><WorkspaceText text="Security settings could not be loaded. Reload Settings to try again." /></p>;
   }
 
   if (row.detailKind === "delete-account") {
@@ -570,6 +571,8 @@ function SettingsDetailDrawer({
   row: AllSettingsRow | null;
   user: KingUser;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   useCloseOnNavigation(onClose, Boolean(row));
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
@@ -673,23 +676,23 @@ function SettingsDetailDrawer({
                   className="min-w-0 text-xl font-semibold tracking-normal text-zinc-950"
                   id="settings-detail-title"
                 >
-                  {row.label}
+                  <WorkspaceText text={row.label} />
                 </h2>
               </div>
             </div>
             <button
-              aria-label="Close settings detail"
+              aria-label={__vt("Close settings detail")}
               className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
               onClick={onClose}
               ref={closeButtonRef}
               type="button"
             >
               <Icon name="x" />
-              <span>Close</span>
+              <span><WorkspaceText text="Close" /></span>
             </button>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto overscroll-contain bg-surface-muted px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-surface-muted px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-5">
           <DetailContent
             accountDeletionImpact={accountDeletionImpact}
             accountDeletionLoadError={accountDeletionLoadError}
@@ -717,6 +720,8 @@ export function AllSettingsClient({
   sections,
   user,
 }: AllSettingsClientProps) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [activeScope, setActiveScope] = useState<AllSettingsScope>(initialScope);
   const [query, setQuery] = useState(initialQuery);
@@ -794,25 +799,24 @@ export function AllSettingsClient({
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
+    <div className="settings-style settings-style-page"><main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-6xl gap-5">
         <header className="content-surface border-border-subtle bg-white px-4 py-4 sm:px-5 rounded-none border-y shadow-none">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase text-zinc-500">
-                  Account, business, salon
+                  <WorkspaceText text="Account, business, salon" />
                 </p>
                 <h1 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950">
-                  All Settings
+                  <WorkspaceText text="All Settings" />
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
-                  Settings stay grouped by scope, while each row opens a focused
-                  detail view inside Settings.
+                  <WorkspaceText text="Settings stay grouped by scope, while each row opens a focused detail view inside Settings." />
                 </p>
               </div>
               <div className="grid gap-2 sm:justify-items-end">
-                <StatusBadge tone={accountStatusTone}>{accountStatus}</StatusBadge>
+                <StatusBadge tone={accountStatusTone}><WorkspaceText text={accountStatus} /></StatusBadge>
                 <p className="max-w-56 truncate text-sm font-semibold text-zinc-500">
                   {currentWorkspaceLabel}
                 </p>
@@ -826,14 +830,14 @@ export function AllSettingsClient({
               <input
                 className="min-h-11 w-full rounded-md border border-zinc-300 bg-white pl-10 pr-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10"
                 onChange={(event) => setQuery(event.currentTarget.value)}
-                placeholder="Search account, salon, booking, staff, POS..."
+                placeholder={__vt("Search account, salon, booking, staff, POS...")}
                 type="search"
                 value={query}
               />
             </label>
 
             <nav
-              aria-label="Settings scopes"
+              aria-label={__vt("Settings scopes")}
               className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]"
             >
               {SCOPE_TABS.map((tab) => {
@@ -847,10 +851,10 @@ export function AllSettingsClient({
                     data-preloaded={preloadedScopeValues.has(tab.value)}
                     key={tab.value}
                     onClick={() => selectScope(tab.value)}
-                    title={tab.description}
+                    title={__vt(tab.description)}
                     type="button"
                   >
-                    <span>{tab.label}</span>
+                    <span><WorkspaceText text={tab.label} /></span>
                     <span
                       className={[
                         "ml-2 grid min-h-5 min-w-5 place-items-center rounded-full px-1 text-[11px]",
@@ -872,8 +876,8 @@ export function AllSettingsClient({
           <>
             {(query || activeScope !== "all") && (
               <p className="text-sm font-medium text-zinc-500">
-                {resultCount} setting{resultCount === 1 ? "" : "s"} found
-                {query ? ` for "${query}"` : ""}.
+                {resultCount} <WorkspaceText text="setting" />{resultCount === 1 ? "" : "s"} <WorkspaceText text="found" />
+                <WorkspaceText text={query ? ` for "${query}"` : ""} />.
               </p>
             )}
             <div className="grid gap-5">
@@ -889,10 +893,10 @@ export function AllSettingsClient({
         ) : (
           <section className="content-surface border-zinc-300 bg-white px-5 py-8 rounded-none border-y shadow-none">
             <h2 className="text-base font-semibold text-zinc-950">
-              No settings found
+              <WorkspaceText text="No settings found" />
             </h2>
             <p className="mt-2 text-sm leading-6 text-zinc-500">
-              Try a different search or scope.
+              <WorkspaceText text="Try a different search or scope." />
             </p>
             <button
               className="mt-4 inline-flex min-h-10 items-center rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white"
@@ -902,7 +906,7 @@ export function AllSettingsClient({
               }}
               type="button"
             >
-              Clear search
+              <WorkspaceText text="Clear search" />
             </button>
           </section>
         )}
@@ -917,6 +921,6 @@ export function AllSettingsClient({
         row={openRow}
         user={user}
       />
-    </main>
+    </main></div>
   );
 }

@@ -5,7 +5,8 @@ export type BusinessClaimMatch = {
 export type BusinessClaimRequest = {
  id: string; salon_id: string; salon_name: string; address: string; applicant_user_id: string;
  applicant_name: string | null; applicant_email: string | null;
- status: 'otp_pending' | 'waiting' | 'approved' | 'rejected' | 'expired';
+ status: 'otp_pending' | 'waiting' | 'needs_info' | 'approved' | 'rejected' | 'expired';
+ support_report_id?: string | null;
  channel: 'sms' | 'call' | 'support'; phone: string | null; last_sent_at: string | null;
  phone_verified_at: string | null; support_reason: string | null; review_reason: string | null; created_at: string;
  attachments: {path: string; name: string}[];

@@ -1,4 +1,5 @@
 "use server";
+import {systemSmsReady} from "@/lib/system-sms";
 
 import {
   ACCOUNT_LOGIN_SESSION_COOKIE,
@@ -898,6 +899,7 @@ export async function verifyTotpEnrollmentAction(
 }
 
 export async function beginPhoneMfaEnrollmentAction(): Promise<PhoneMfaEnrollmentActionResult> {
+  if (!(await systemSmsReady('authSms'))) return {error:'System authentication SMS is disabled or not configured.'};
   const context = await getMutationContext();
 
   if (!context.ok) {

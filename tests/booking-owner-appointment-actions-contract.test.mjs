@@ -92,7 +92,9 @@ test("owner appointment rows expose customer, edit, ticket, and settings actions
 });
 
 test("booking list columns follow the requested owner workflow order", () => {
-  const client = read("app/bookings/booking-workspace-client.tsx");
+  const client = read("app/bookings/booking-workspace-client.tsx")
+    .replace(/<WorkspaceText text="([^"]+)" \/>/g, "$1")
+    .replace(/aria-label=\{__vt\("([^"]+)"\)\}/g, 'aria-label="$1"');
   const css = read("app/bookings/booking-workspace.css");
   const headerStart = client.indexOf("<div className={styles.tableHeader}>");
   const headerEnd = client.indexOf("{visibleBookings.map", headerStart);

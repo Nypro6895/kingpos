@@ -1,3 +1,70 @@
+/* Drawers sit above the workspace navigation and keep their own scroll area. */
+[data-booking-surface="owner"].booking-modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  height: 100dvh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: rgb(9 9 11 / 35%);
+}
+
+.booking-modal-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  margin-left: auto;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 20px 50px rgb(0 0 0 / 16%);
+}
+
+.booking-modal-panel > :not(.flex-1):not(.booking-quick-setup-body) { flex-shrink: 0; }
+.booking-modal-panel > .flex-1 { min-height: 0; overscroll-behavior: contain; }
+.booking-modal-panel > :first-child button { flex-shrink: 0; white-space: nowrap; }
+
+.booking-quick-setup-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: start;
+  gap: 12px;
+  border-bottom: 1px solid var(--booking-border);
+  padding: 12px 16px;
+}
+.booking-quick-setup-header h2 { margin: 0; font-size: 18px; font-weight: 650; line-height: 1.4; }
+.booking-quick-setup-header p { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: var(--booking-muted); }
+.booking-quick-setup-close { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; color: var(--booking-ink); cursor: pointer; }
+.booking-quick-setup-close:focus-visible { outline: 2px solid var(--booking-orange); outline-offset: -2px; }
+.booking-quick-setup-body { flex: 1; min-height: 0; min-width: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px; }
+.booking-quick-setup-footer { border-top: 1px solid var(--booking-border); padding: 12px 16px; background: white; }
+.booking-quick-setup-footer > [role="status"] { margin: 0 0 8px; border: 0; border-radius: 0; padding: 6px 0; font-size: 12px; }
+.booking-rules-form { display: grid; gap: 20px; max-width: 768px; margin-inline: auto; }
+.booking-rules-section { min-width: 0; }
+.booking-rules-section + .booking-rules-section { border-top: 1px solid var(--booking-border); padding-top: 16px; }
+.booking-rules-section h3 { margin: 0 0 10px; font-size: 13px; font-weight: 650; }
+.booking-rules-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+.booking-rules-section label { min-width: 0; }
+.booking-rules-section label > span:first-child { font-size: 12px; font-weight: 500; line-height: 1.5; }
+.booking-rules-section > label:has(input[type="checkbox"]) { border: 0; border-bottom: 1px solid var(--booking-border); border-radius: 0; padding: 10px 0; min-height: 48px; }
+.booking-rules-section > label:has(select) { margin-top: 12px; }
+.booking-rules-section label:focus-within { outline: 2px solid var(--booking-orange); outline-offset: 2px; }
+.booking-rules-fields label > div { border-radius: 4px; }
+.booking-rules-fields label > div > span { padding-inline: 7px; font-size: 11px; }
+[data-booking-surface="owner"] .booking-rules-section :is(input:not([type="checkbox"]), select) { width: 100%; min-width: 0; min-height: 44px; padding-inline: 8px; font-size: 16px; border-radius: 4px; }
+.booking-rules-note { margin: 8px 0 0; color: var(--booking-muted); font-size: 11px; line-height: 1.5; }
+.booking-rules-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.booking-rules-actions > a { display: inline-flex; align-items: center; min-height: 44px; color: var(--booking-muted); font-size: 12px; }
+.booking-rules-actions > p { font-size: 12px; color: var(--booking-muted); }
+[data-booking-surface="owner"] .booking-rules-actions > button { flex-shrink: 0; padding: 10px 20px; font-size: 13px; font-weight: 600; border-radius: 6px; box-shadow: none; white-space: nowrap; }
+@media (min-width: 640px) {
+  [data-booking-surface="owner"].booking-modal-layer { padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .booking-quick-setup-header, .booking-quick-setup-body, .booking-quick-setup-footer { padding-inline: 24px; }
+}
+@media (max-width: 359px) { .booking-rules-fields { grid-template-columns: minmax(0, 1fr); } }
+
 [data-booking-surface="owner"] {
   --booking-owner-bg: #f7f7f8;
   --booking-surface: #ffffff;
@@ -1044,9 +1111,14 @@
 .booking-settings-main { display: grid; }
 .booking-publish-section, .booking-setup-section, .booking-preview-section { padding: 16px 20px; border-bottom: 1px solid var(--booking-border,#eee3dd); }
 .booking-publish-section { display: grid; gap: 10px; }
-.booking-publish-toggle { min-width: 58px; min-height: 36px; border: 0; border-radius: 18px; background: #eee9e5; color: #786d78; padding: 6px 14px; font-size: 13px; font-weight: 600; }
-.booking-publish-toggle[aria-checked=true] { background: #e6f5ed; color: #16865c; }
-.booking-publish-toggle:disabled { opacity: .6; }
+.booking-publish-toggle { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 12px; background: transparent; cursor: pointer; }
+.booking-publish-toggle-track { position: relative; width: 44px; height: 24px; border-radius: 999px; background: #ffd6c4; transition: background-color .15s; }
+.booking-publish-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: white; box-shadow: 0 1px 3px #211c2426; transition: transform .15s; }
+.booking-publish-toggle[aria-checked=true] .booking-publish-toggle-track { background: #f26f3d; }
+.booking-publish-toggle[aria-checked=true] .booking-publish-toggle-thumb { transform: translateX(20px); }
+.booking-publish-toggle:focus-visible { outline: 2px solid #f26f3d; outline-offset: 3px; }
+.booking-publish-toggle:disabled { cursor: not-allowed; opacity: .6; }
+@media (prefers-reduced-motion: reduce) { .booking-publish-toggle-track, .booking-publish-toggle-thumb { transition: none; } }
 .booking-share-url { font-size: 12px; color: #786d78; overflow-wrap: anywhere; margin: 0; }
 .booking-share-hint { font-size: 12px; color: #786d78; line-height: 1.5; margin: 0; }
 [data-booking-surface="owner"] .booking-publish-section .booking-secondary-button { min-height: 38px; padding: 6px 12px; font-size: 13px; box-shadow: none; }

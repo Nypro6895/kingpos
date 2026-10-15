@@ -1,0 +1,62 @@
+{
+  "kind": "change",
+  "changeId": "booking-flow-local-audit-20261015",
+  "status": "needs-integration",
+  "summary": "Fixed wrong-date availability cache in public booking and guest rescheduling. Both new browser regressions failed before the fix and passed afterward. Isolated API/logic/SQL and browser tests pass. Patch requires integration with the release baseline; no deployment performed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/book/[salonId]/public-booking-client.tsx",
+    "app/booking/manage/[token]/guest-manage-client.tsx",
+    "tests/public-booking-wizard-ui.test.mjs",
+    "tests/guest-manage-ui.test.mjs",
+    "tests/quick-booking-selection.test.mjs",
+    "tests/booking-scheduler-guards.integration.test.mjs"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-source",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968",
+    "patch": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-audit.patch",
+    "hashManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-source-manifest.json"
+  },
+  "validation": [
+    {
+      "name": "API, booking logic, timezone, policy, deposit and SQL schedule guards",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-core-tests.log; 23 tests passed, no skips; PGlite is ephemeral and uses synthetic fixtures."
+    },
+    {
+      "name": "Chrome booking wizard and guest management UI regressions",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-after-regression.log; 2 tests passed, no skips; real React UI with mocked actions/backend, not full E2E."
+    },
+    {
+      "name": "Before-fix reproduction",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-before-regression.log; both new next-day cache assertions failed before the product fix."
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-eslint.log; zero errors, two pre-existing hook warnings preserved."
+    },
+    {
+      "name": "Scoped patch integrity",
+      "result": "passed",
+      "evidence": "git apply --check --reverse booking-audit.patch passed; all six current files match the frozen SHA-256 manifest. Existing EOF whitespace was preserved."
+    }
+  ],
+  "limitations": [
+    "No production mutation, payment, notification, commit, push or deployment.",
+    "No authenticated end-to-end test against Supabase; UI uses mocked API/actions and SQL tests use a minimal synthetic schema. Full concurrency/idempotent booking creation is not covered by this harness.",
+    "Salon lookup filtered log still has no actual RPC error. Statement timeout remains an unconfirmed hypothesis.",
+    "Full dirty-checkout build not run; release integration must preserve unrelated work and run the assembled release build."
+  ],
+  "id": "efb811f1-c9e6-450d-9750-78cee7b17c82",
+  "recordedAt": "2026-10-15T00:49:50.096Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

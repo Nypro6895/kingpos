@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { readAuthResponse, type AuthResponse } from "@/lib/auth-response";
 import { PortableTouchKeyboard } from "@/app/pos/portable/touch-keyboard";
 import { AUTH_OFFLINE_MESSAGE, SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE } from "@/lib/supabase/auth-errors";
@@ -76,6 +77,8 @@ export function LoginForm({
   showRecoveryHelpInitially?: boolean;
   onAuthenticated?: () => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [showRecoveryHelp, setShowRecoveryHelp] = useState(
@@ -197,7 +200,7 @@ export function LoginForm({
           id="login-form-error"
           role="alert"
         >
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
@@ -210,21 +213,21 @@ export function LoginForm({
         >
           <div>
             <p className="text-xs font-extrabold uppercase text-brand-orange">
-              Two-factor verification
+              <WorkspaceText text="Two-factor verification" />
             </p>
             <h3 className="mt-2 text-xl font-semibold tracking-normal text-text-primary">
-              Enter your security code
+              <WorkspaceText text="Enter your security code" />
             </h3>
             <p className="mt-2 text-sm leading-6 text-text-secondary">
-              {mfaChallenge.factorType === "phone"
+              <WorkspaceText text={mfaChallenge.factorType === "phone"
                 ? `We sent an SMS code to ${maskPhone(mfaChallenge.phone)}.`
-                : "Use the 6-digit code from your authenticator app."}
+                : "Use the 6-digit code from your authenticator app."} />
             </p>
           </div>
 
           <div>
             <label className="block text-sm font-extrabold text-text-primary" htmlFor="mfa_code">
-              Security code
+              <WorkspaceText text="Security code" />
             </label>
             <input
               aria-invalid={Boolean(error)}
@@ -252,7 +255,7 @@ export function LoginForm({
                 isSubmitting ? "animate-spin motion-reduce:animate-none" : "hidden",
               ].join(" ")}
             />
-            {isSubmitting ? "Verifying..." : "Verify and log in"}
+            <WorkspaceText text={isSubmitting ? "Verifying..." : "Verify and log in"} />
           </button>
 
           <button
@@ -264,7 +267,7 @@ export function LoginForm({
             }}
             type="button"
           >
-            Use a different account
+            <WorkspaceText text="Use a different account" />
           </button>
         </form>
       ) : (
@@ -279,7 +282,7 @@ export function LoginForm({
         <input name="next" type="hidden" value={nextPath} />
         <div>
           <label className="block text-sm font-extrabold text-text-primary" htmlFor="email">
-            Email
+            <WorkspaceText text="Email" />
           </label>
           <input
             aria-invalid={Boolean(error)}
@@ -295,13 +298,13 @@ export function LoginForm({
         <div>
           <div className="flex items-center justify-between gap-3">
             <label className="block text-sm font-extrabold text-text-primary" htmlFor="password">
-              Password
+              <WorkspaceText text="Password" />
             </label>
             <Link
               className="text-sm font-extrabold text-brand-orange underline-offset-4 transition hover:text-brand-orange-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
               href={`/forgot-password?next=${encodeURIComponent(nextPath)}`}
             >
-              Forgot password?
+              <WorkspaceText text="Forgot password?" />
             </Link>
           </div>
           <div className="relative">
@@ -315,7 +318,7 @@ export function LoginForm({
               required
             />
             <button
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={__vt(showPassword ? "Hide password" : "Show password")}
               className="absolute right-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full text-text-secondary transition hover:bg-surface-muted hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
               onClick={() => setShowPassword((value) => !value)}
               type="button"
@@ -331,7 +334,7 @@ export function LoginForm({
             name="remember_me"
             type="checkbox"
           />
-          <span>Remember me</span>
+          <span><WorkspaceText text="Remember me" /></span>
         </label>
 
         <button
@@ -347,7 +350,7 @@ export function LoginForm({
               isSubmitting ? "animate-spin motion-reduce:animate-none" : "hidden",
             ].join(" ")}
           />
-          {isSubmitting ? "Logging in..." : "Log in"}
+          <WorkspaceText text={isSubmitting ? "Logging in..." : "Log in"} />
         </button>
         </form>
       )}
@@ -357,7 +360,7 @@ export function LoginForm({
           className="mt-5 inline-flex w-full justify-center text-sm font-extrabold text-text-secondary underline-offset-4 transition hover:text-text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange motion-reduce:transition-none"
           href={`/account-recovery?next=${encodeURIComponent(nextPath)}`}
         >
-          Lost access or recovery code?
+          <WorkspaceText text="Lost access or recovery code?" />
         </Link>
       ) : null}
     </div>

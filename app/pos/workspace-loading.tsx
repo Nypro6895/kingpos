@@ -1,6 +1,7 @@
+import { WorkspaceElement } from "@/components/workspace-language";
 export function PosWorkspaceLoading({ compact = false }: { compact?: boolean }) {
   return (
-    <main
+    <WorkspaceElement as="main"
       aria-label="Loading workspace"
       className="min-h-[60vh] bg-[#fbfaf8] px-4 py-5 sm:px-6"
     >
@@ -22,6 +23,6 @@ export function PosWorkspaceLoading({ compact = false }: { compact?: boolean }) 
           )}
         </div>
       </div>
-    </main>
+    </WorkspaceElement>
   );
 }

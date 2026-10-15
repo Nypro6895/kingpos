@@ -79,6 +79,7 @@ export type AccountDeletionImpactSalon = {
 };
 
 export type AccountDeletionImpact = {
+  receiptToken?: string | null;
   backupRecommended: boolean;
   canRequestDeletionWithoutTransfer: boolean;
   coOwnedSalons: AccountDeletionImpactSalon[];
@@ -377,6 +378,7 @@ export async function analyzeAccountDeletionImpact(): Promise<AccountDeletionImp
   );
 
   return {
+    receiptToken: user.status === "pending_deletion" ? await supabase.rpc("get_my_account_deletion_receipt").then(result => result.error ? null : result.data as string | null) : null,
     backupRecommended: impactSalons.length > 0,
     canRequestDeletionWithoutTransfer: lastOwnerOperationalSalons.length === 0,
     coOwnedSalons: impactSalons.filter((salon) => salon.hasOtherOwner),

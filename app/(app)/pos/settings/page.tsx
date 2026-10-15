@@ -1,3 +1,6 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
+import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { OwnerPosTabs } from "@/app/pos/owner-pos-tabs";
 import { SettingsGroupForm } from "@/app/pos/settings/settings-group-form";
 import { normalizeWorkspacePreferences } from "@/lib/pos-workspace-preferences";
@@ -57,7 +60,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-zinc-700">{label}</span>
+      <span className="text-sm font-medium text-zinc-700"><WorkspaceText text={label} /></span>
       <input
         autoComplete={autoComplete}
         className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
@@ -85,7 +88,7 @@ function TextArea({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-zinc-700">{label}</span>
+      <span className="text-sm font-medium text-zinc-700"><WorkspaceText text={label} /></span>
       <textarea
         className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
         defaultValue={defaultValue ?? ""}
@@ -113,7 +116,7 @@ function Checkbox({
         name={name}
         type="checkbox"
       />
-      <span>{label}</span>
+      <span><WorkspaceText text={label} /></span>
     </label>
   );
 }
@@ -136,7 +139,7 @@ function CapabilityCheckbox({
       />
       <span>
         <span className="block font-semibold text-zinc-950">
-          {option.label}
+          <WorkspaceText text={option.label} />
         </span>
         <span className="settings-capability-help">
           {option.description}
@@ -190,7 +193,7 @@ function ImageUploadField({
   return (
     <div className="settings-image">
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">{label}</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text={label} /></span>
         <input
           accept="image/jpeg,image/png,image/webp"
           className="mt-2 block w-full text-sm text-zinc-700 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-950 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
@@ -205,9 +208,9 @@ function ImageUploadField({
       {previewUrl ? (
         <div className="mt-2 overflow-hidden rounded-md bg-zinc-50">
           <div className="px-2 py-1 text-xs text-zinc-500">
-            {currentUrl ? "Current custom image" : "Default image"}
+            <WorkspaceText text={currentUrl ? "Current custom image" : "Default image"} />
           </div>
-          <img
+          <WorkspaceElement as="img"
             alt=""
             className="h-20 w-full bg-white object-contain"
             src={previewUrl}
@@ -217,7 +220,7 @@ function ImageUploadField({
       {currentPath ? (
         <label className="mt-3 flex items-center gap-2 text-sm text-zinc-600">
           <input name={`remove_${name}`} type="checkbox" />
-          Use default image
+          <WorkspaceText text="Use default image" />
         </label>
       ) : null}
     </div>
@@ -282,10 +285,10 @@ function PortableAccessSection({
     <section className="settings-section-body" id="portable-access">
       <div>
         <h2 className="text-lg font-semibold text-zinc-950">
-          Staff access
+          <WorkspaceText text="Staff access" />
         </h2>
         <p className="mt-1 text-sm leading-6 text-zinc-600">
-          Staff sign in with a POS ID, without your Owner account.
+          <WorkspaceText text="Staff sign in with a POS ID, without your Owner account." />
         </p>
       </div>
 
@@ -295,7 +298,7 @@ function PortableAccessSection({
       >
         {setupMessage ? (
           <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 sm:col-span-4">
-            {setupMessage}
+            <WorkspaceText text={setupMessage} />
           </p>
         ) : null}
         <Field autoComplete="off" label="POS ID" name="access_id" required />
@@ -312,19 +315,19 @@ function PortableAccessSection({
           disabled={!canCreateAccess}
           saved={saved === "portable-create"}
         >
-          Create
+          <WorkspaceText text="Create" />
         </SettingsSubmitButton>
-        <details className="settings-permissions sm:col-span-4"><summary>Allowed actions</summary><CapabilityGrid /></details>
+        <details className="settings-permissions sm:col-span-4"><summary><WorkspaceText text="Allowed actions" /></summary><CapabilityGrid /></details>
       </form>
 
       <div className="mt-4 grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-zinc-950">
-              Devices
+              <WorkspaceText text="Devices" />
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-600">
-              Disable an ID to stop new access.
+              <WorkspaceText text="Disable an ID to stop new access." />
             </p>
           </div>
 
@@ -332,7 +335,7 @@ function PortableAccessSection({
 
         {accessKeys.length === 0 ? (
           <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-5 text-sm text-zinc-600">
-            No POS IDs yet.
+            <WorkspaceText text="No POS IDs yet." />
           </p>
         ) : (
           <div className="grid gap-2">
@@ -357,11 +360,11 @@ function PortableAccessSection({
                             : "border-zinc-200 bg-zinc-50 text-zinc-600",
                         ].join(" ")}
                       >
-                        {key.is_active ? "Active" : "Disabled"}
+                        {key.is_active ? <WorkspaceText text="Active" /> : <WorkspaceText text="Disabled" />}
                       </span>
                     </div>
                     <p className="mt-1 truncate text-sm text-zinc-600">
-                      {key.label || "Unnamed device"}
+                      <WorkspaceText text={key.label || "Unnamed device"} />
                     </p>
                   </div>
                   <div className="grid gap-1 text-xs text-zinc-500">
@@ -371,10 +374,10 @@ function PortableAccessSection({
                         sessionState.tone,
                       ].join(" ")}
                     >
-                      {sessionState.label}
+                      <WorkspaceText text={sessionState.label} />
                     </span>
-                    <span>Login: {formatAccessDate(key.last_login_at)}</span>
-                    <span>Logout: {formatAccessDate(key.last_logout_at)}</span>
+                    <span><WorkspaceText text="Login:" /> <WorkspaceText text={formatAccessDate(key.last_login_at)} /></span>
+                    <span><WorkspaceText text="Logout:" /> <WorkspaceText text={formatAccessDate(key.last_logout_at)} /></span>
                   </div>
                   <form action={updatePortablePosAccessStatusAction}>
                     <input name="key_id" type="hidden" value={key.id} />
@@ -388,10 +391,10 @@ function PortableAccessSection({
                       disabled={!canCreateAccess}
                       saved={saved === `portable-status-${key.id}`}
                     >
-                      {key.is_active ? "Disable" : "Enable"}
+                      <WorkspaceText text={key.is_active ? "Disable" : "Enable"} />
                     </SettingsSubmitButton>
                   </form>
-                  <details className="settings-permissions lg:col-span-3"><summary>Edit permissions</summary>
+                  <details className="settings-permissions lg:col-span-3"><summary><WorkspaceText text="Edit permissions" /></summary>
                   <form
                     action={updatePortablePosAccessCapabilitiesAction}
                     className="grid gap-3 pt-3"
@@ -399,14 +402,14 @@ function PortableAccessSection({
                     <input name="key_id" type="hidden" value={key.id} />
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-zinc-950">
-                        Permissions
+                        <WorkspaceText text="Permissions" />
                       </p>
                       <SettingsSubmitButton
                         className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
                         disabled={!canCreateAccess}
                         saved={saved === `portable-capabilities-${key.id}`}
                       >
-                        Save permissions
+                        <WorkspaceText text="Save permissions" />
                       </SettingsSubmitButton>
                     </div>
                     <CapabilityGrid capabilities={key.capabilities} />
@@ -431,10 +434,10 @@ function CustomerDisplaySettingsSection({
     <section className="settings-section-body">
       <div>
         <h2 className="text-lg font-semibold text-zinc-950">
-          Appearance
+          <WorkspaceText text="Appearance" />
         </h2>
         <p className="mt-1 text-sm leading-6 text-zinc-600">
-          Customize what customers see.
+          <WorkspaceText text="Customize what customers see." />
         </p>
       </div>
 
@@ -530,9 +533,11 @@ function CustomerDisplaySettingsSection({
   );
 }
 
-export default async function PosSettingsPage({
+async function PosSettingsPage({
   searchParams,
 }: PosSettingsPageProps) {
+  const __vt = await getWorkspaceTranslation();
+
   const [{ error, saved }, context] = await Promise.all([
     searchParams,
     requireSalonManagePageContext("/pos/settings"),
@@ -544,12 +549,12 @@ export default async function PosSettingsPage({
 
   if (!canManageSettings) {
     return (
-      <main className="mx-auto w-full max-w-5xl px-6 py-10">
+      <div className="settings-style settings-style-page"><main className="mx-auto w-full max-w-5xl px-6 py-10">
         <OwnerPosMenu />
         <p className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-          You do not have permission to manage POS settings.
+          <WorkspaceText text="You do not have permission to manage POS settings." />
         </p>
-      </main>
+      </main></div>
     );
   }
 
@@ -563,36 +568,38 @@ export default async function PosSettingsPage({
   const snapshot=raw??{};
   const preferences=normalizeWorkspacePreferences(raw?.workspace_preferences);
   return (
-    <main className="pos-settings mx-auto w-full max-w-5xl px-3 py-4 sm:px-6 sm:py-6">
+    <div className="settings-style settings-style-page pos-settings-page"><main className="pos-settings mx-auto w-full max-w-5xl px-3 py-4 sm:px-6 sm:py-6">
       <SettingsSaveBroadcast saved={saved} />
-      <div className="settings-heading"><div><h1>POS settings</h1><p>Checkout, staff and devices</p></div><OwnerPosMenu /></div>
+      <div className="settings-heading"><div><h1><WorkspaceText text="POS settings" /></h1><p><WorkspaceText text="Checkout, staff and devices" /></p></div><OwnerPosMenu /></div>
 
       {error ? (
         <p className="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
 
 <div className="settings-sections">
-        <details open><summary>Windows app &amp; devices</summary><DesktopDownloadPanel/></details>
-        <details id="access"><summary>POS login &amp; permissions</summary><PortableAccessSection accessKeys={portableAccessState.keys} canManageSettings={canManageSettings} saved={saved} schemaReady={portableAccessState.schemaReady} setupMessage={portableAccessState.setupMessage}/></details>
-        <details><summary>Staff &amp; turns</summary><SettingsGroupForm group="staff" snapshot={snapshot}>
-          <Checkbox defaultChecked={settings.staffCheckInEnabled} label="Require staff check-in" name="staff_check_in_enabled"/>
-          <Field defaultValue={settings.largeTurnThreshold} label="Large turn amount" min={1} step="0.01" type="number" name="large_turn_threshold"/>
-          <p className="text-sm leading-6 text-zinc-500">Staff check in each day. Late arrivals and returning staff follow your turn rules.</p>
+        <details open><summary><WorkspaceText text="Windows app &amp; devices" /></summary><DesktopDownloadPanel/></details>
+        <details id="access"><summary><WorkspaceText text="POS login &amp; permissions" /></summary><PortableAccessSection accessKeys={portableAccessState.keys} canManageSettings={canManageSettings} saved={saved} schemaReady={portableAccessState.schemaReady} setupMessage={portableAccessState.setupMessage}/></details>
+        <details><summary><WorkspaceText text="Staff &amp; turns" /></summary><SettingsGroupForm group="staff" snapshot={snapshot}>
+          <Checkbox defaultChecked={settings.staffCheckInEnabled} label={__vt("Require staff check-in")} name="staff_check_in_enabled"/>
+          <Field defaultValue={settings.largeTurnThreshold} label={__vt("Large turn amount")} min={1} step="0.01" type="number" name="large_turn_threshold"/>
+          <p className="text-sm leading-6 text-zinc-500"><WorkspaceText text="Staff check in each day. Late arrivals and returning staff follow your turn rules." /></p>
         </SettingsGroupForm></details>
-        <details><summary>Checkout &amp; saved tickets</summary><SettingsGroupForm group="checkout" snapshot={snapshot}>
-          <p className="text-sm font-semibold">Checkout options</p><div className="grid gap-2 sm:grid-cols-2">{([['showStaff','Staff'],['showServices','Services'],['showCustomer','Customer'],['showTip','Tip'],['showDiscount','Discount']] as const).map(([key,label])=><Checkbox key={key} name={key} label={label} defaultChecked={preferences[key]}/>)}</div>
-          <p className="text-sm text-zinc-500">Staff is required when check-in is on.</p>
-          <div className="grid gap-3 sm:grid-cols-4">{settings.tipSuggestions.map((amount,index)=><Field key={index} name={`tip_suggestion_${index+1}`} label={`Tip option ${index+1}`} defaultValue={amount} min={0} type="number" step="0.01"/>)}</div>
-          <Checkbox defaultChecked={settings.touchKeyboardEnabled} label="Portable on-screen keyboard" name="touch_keyboard_enabled"/>
-          <div className="grid gap-3 sm:grid-cols-2"><Field name="idleMinutes" label="Idle reminder (minutes)" defaultValue={preferences.idleMinutes} min={1} type="number"/><Field name="idleWarningSeconds" label="Response time (seconds)" defaultValue={preferences.idleWarningSeconds} min={15} type="number"/></div>
-          <p className="text-sm text-zinc-500">Unfinished entries clear after the countdown. Saved and submitted tickets stay.</p>
+        <details><summary><WorkspaceText text="Checkout &amp; saved tickets" /></summary><SettingsGroupForm group="checkout" snapshot={snapshot}>
+          <p className="text-sm font-semibold"><WorkspaceText text="Checkout options" /></p><div className="grid gap-2 sm:grid-cols-2">{([['showStaff','Staff'],['showServices','Services'],['showCustomer','Customer'],['showTip','Tip'],['showDiscount','Discount']] as const).map(([key,label])=><Checkbox key={key} name={key} label={__vt(label)} defaultChecked={preferences[key]}/>)}</div>
+          <p className="text-sm text-zinc-500"><WorkspaceText text="Staff is required when check-in is on." /></p>
+          <div className="grid gap-3 sm:grid-cols-4">{settings.tipSuggestions.map((amount,index)=><Field key={index} name={`tip_suggestion_${index+1}`} label={__vt(`Tip option ${index+1}`)} defaultValue={amount} min={0} type="number" step="0.01"/>)}</div>
+          <Checkbox defaultChecked={settings.touchKeyboardEnabled} label={__vt("Portable on-screen keyboard")} name="touch_keyboard_enabled"/>
+          <div className="grid gap-3 sm:grid-cols-2"><Field name="idleMinutes" label={__vt("Idle reminder (minutes)")} defaultValue={preferences.idleMinutes} min={1} type="number"/><Field name="idleWarningSeconds" label={__vt("Response time (seconds)")} defaultValue={preferences.idleWarningSeconds} min={15} type="number"/></div>
+          <p className="text-sm text-zinc-500"><WorkspaceText text="Unfinished entries clear after the countdown. Saved and submitted tickets stay." /></p>
         </SettingsGroupForm></details>
-        <details><summary>Customer Display</summary><CustomerDisplayInstallPanel activeAccessKeyCount={portableAccessState.keys.filter(key=>key.is_active).length} displayPath="/pos/customer-display" schemaReady={portableAccessState.schemaReady} setupPath="/pos/customer-display/setup"/><CustomerDisplaySettingsSection settings={settings} snapshot={snapshot}/></details>
-        <details><summary>Data &amp; sync</summary><div className="mt-3 space-y-3 text-sm leading-6 text-zinc-600"><p>Tickets save on the device and upload when connected. Check the sync icon for progress.</p><p>Reports update after each device reconnects.</p><p>Closing the app keeps saved tickets. Do not clear app or browser data before upload finishes.</p>{portableAccessState.keys.map(key=><div key={key.id} className="flex justify-between gap-4 border-t py-3"><strong>{key.label||key.access_id}</strong><span>Last contact: {formatAccessDate(key.last_used_at)}</span></div>)}</div></details>
+        <details><summary><WorkspaceText text="Customer Display" /></summary><CustomerDisplayInstallPanel activeAccessKeyCount={portableAccessState.keys.filter(key=>key.is_active).length} displayPath="/pos/customer-display" schemaReady={portableAccessState.schemaReady} setupPath="/pos/customer-display/setup"/><CustomerDisplaySettingsSection settings={settings} snapshot={snapshot}/></details>
+        <details><summary><WorkspaceText text="Data &amp; sync" /></summary><div className="mt-3 space-y-3 text-sm leading-6 text-zinc-600"><p><WorkspaceText text="Tickets save on the device and upload when connected. Check the sync icon for progress." /></p><p><WorkspaceText text="Reports update after each device reconnects." /></p><p><WorkspaceText text="Closing the app keeps saved tickets. Do not clear app or browser data before upload finishes." /></p>{portableAccessState.keys.map(key=><div key={key.id} className="flex justify-between gap-4 border-t py-3"><strong><WorkspaceText text={key.label||key.access_id} /></strong><span><WorkspaceText text="Last contact:" /> <WorkspaceText text={formatAccessDate(key.last_used_at)} /></span></div>)}</div></details>
       </div>
-    </main>
+    </main></div>
   );
 }
+
+export default withExperiencePage(PosSettingsPage);

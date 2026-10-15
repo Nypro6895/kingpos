@@ -65,6 +65,8 @@ export type TodayClientPresence = {
 };
 
 export type TodayDashboard = {
+  /** Only the first server frame may omit these reads; the live endpoint clears them. */
+  pendingSections?: { metrics: Array<keyof TodayDashboard["summary"]>; details: boolean };
   attention: TodayAttentionItem[];
   businessHours: SalonBusinessHoursWindow;
   date: string;
@@ -268,6 +270,7 @@ type BusinessClock = {
 
 type TodayDashboardOptions = {
   date?: string | string[];
+  phase?: "core" | "full";
 };
 
 type DashboardData<T> =
@@ -1610,6 +1613,7 @@ export async function getTodayDashboard(
   context: CurrentBusinessContext,
   options: TodayDashboardOptions = {},
 ): Promise<TodayDashboard> {
+  const core = options.phase === "core";
   const currentClock = await loadBusinessClock(context);
   const dayView = buildDayView({
     currentDate: currentClock.date,
@@ -1654,7 +1658,7 @@ export async function getTodayDashboard(
     });
   }
 
-  const businessHoursResult = await loadBusinessHoursDashboardData({
+  const businessHoursResult = core ? { data: unavailableBusinessHours, error: null } : await loadBusinessHoursDashboardData({
     context,
     date: clock.date,
     timezone: clock.timezone,
@@ -1677,7 +1681,7 @@ export async function getTodayDashboard(
     quickAccessResult,
   ] = await Promise.all([
     loadStaffDashboardData({
-      canViewFinancials: permissions.canViewStaffFinancials,
+      canViewFinancials: !core && permissions.canViewStaffFinancials,
       context,
       date: clock.date,
     }),
@@ -1728,10 +1732,10 @@ export async function getTodayDashboard(
           data: [] as CustomerVisitQueueItem[],
           error: null,
         }),
-    permissions.canViewReports
+    !core && permissions.canViewReports
       ? loadReportDashboardData({ context, date: clock.date })
       : Promise.resolve({ data: null, error: null }),
-    permissions.canViewStaffFinancials
+    !core && permissions.canViewStaffFinancials
       ? loadFinancialDashboardData({
           businessHours,
           context,
@@ -1739,10 +1743,10 @@ export async function getTodayDashboard(
           timezone: clock.timezone,
         })
       : Promise.resolve({ data: null, error: null }),
-    dayView.isCurrentDate
+    !core && dayView.isCurrentDate
       ? loadNotificationAttentionItems(context)
       : Promise.resolve({ data: [] as TodayAttentionItem[], error: null }),
-    loadQuickAccessDashboardData(context),
+    core ? Promise.resolve({ data: emptyQuickAccessConfiguration(), error: null }) : loadQuickAccessDashboardData(context),
   ]);
   const loadErrors = [
     businessHoursResult.error,
@@ -1758,7 +1762,7 @@ export async function getTodayDashboard(
   const team = staffResult.data
     ? buildTeam({
         activityByStaffId: staffResult.data.activityByStaffId,
-        canViewFinancials: permissions.canViewStaffFinancials,
+        canViewFinancials: !core && permissions.canViewStaffFinancials,
         financialData,
         staff: staffResult.data.staff,
       })
@@ -1768,7 +1772,7 @@ export async function getTodayDashboard(
   const bookingSummary = permissions.canViewBookings
     ? summarizeBookings(bookings, nowIso, dayView.isCurrentDate)
     : null;
-  const bookingChart = permissions.canViewBookings
+  const bookingChart = !core && permissions.canViewBookings
     ? buildBookingMetricChart({
         businessHours,
         bookings,
@@ -1776,7 +1780,7 @@ export async function getTodayDashboard(
         timeZone: clock.timezone,
       })
     : null;
-  const staffChart = buildStaffMetricChart({
+  const staffChart = core ? null : buildStaffMetricChart({
     businessHours,
     date: clock.date,
     team,
@@ -1798,6 +1802,10 @@ export async function getTodayDashboard(
   const notificationAttention = notificationsResult.data ?? [];
 
   const dashboard: TodayDashboard = {
+    pendingSections: { metrics: core ? [
+      ...(permissions.canViewReports ? ["sales" as const] : []),
+      ...(!permissions.canViewBookings && permissions.canViewReports ? ["customers" as const] : []),
+    ] : [], details: core },
     attention: buildAttention({
       bookingSummary,
       canViewTickets: permissions.canViewTickets,

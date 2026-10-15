@@ -86,7 +86,7 @@ test("credential auth forms post natively and routes keep JSON fetch behavior", 
   assert.match(loginRoute, /setPendingMfaSessionCookieWriter/);
   assert.match(loginRoute, /factor\.factor_type === "phone"/);
   assert.match(loginRoute, /channel: "sms"/);
-  assert.match(loginRoute, /rememberLogin \? data\.session\.expires_in : undefined/);
+  assert.match(loginRoute, /rememberLogin \? REMEMBERED_LOGIN_MAX_AGE_SECONDS : undefined/);
   assert.match(loginRoute, /rememberLogin\s*\?\s*REMEMBERED_LOGIN_MAX_AGE_SECONDS\s*:\s*undefined/);
   assert.match(loginRoute, /NextResponse\.redirect\(new URL\(path, request\.url\), 303\)/);
   assert.match(mfaVerifyRoute, /createPendingMfaSupabaseAuthSessionServerClient/);

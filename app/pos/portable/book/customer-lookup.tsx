@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useId, useRef, useState } from "react";
 import type { PosDeskCustomer } from "@/types/pos-desk";
 import styles from "./booking.module.css";
@@ -17,6 +18,8 @@ export function CustomerLookup({ value, onChange, onSelect, search, label, place
   phone?: boolean;
   className?: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const id = useId();
   const sequence = useRef(0);
   const [open, setOpen] = useState(false);
@@ -59,10 +62,10 @@ export function CustomerLookup({ value, onChange, onSelect, search, label, place
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) { ++sequence.current; setOpen(false); }
   }}>
     <input
-      role="combobox" aria-label={label} aria-autocomplete="list" aria-expanded={expanded}
+      role="combobox" aria-label={__vt(label)} aria-autocomplete="list" aria-expanded={expanded}
       aria-controls={expanded ? id : undefined}
       aria-activedescendant={expanded && rows[active] ? `${id}-${active}` : undefined}
-      type={phone ? "tel" : "text"} autoComplete="off" placeholder={placeholder} value={value}
+      type={phone ? "tel" : "text"} autoComplete="off" placeholder={__vt(placeholder)} value={value}
       onFocus={() => setOpen(true)}
       onChange={event => { ++sequence.current; setActive(-1); setResult(null); setOpen(true); onChange(event.target.value); }}
       onKeyDown={event => {
@@ -75,15 +78,15 @@ export function CustomerLookup({ value, onChange, onSelect, search, label, place
       }}
     />
     {expanded && <div className={styles.customerPopover}>
-      <div className={styles.customerPopoverHeading}>Customers in this salon</div>
-      <ul id={id} role="listbox" aria-label="Matching customers">
+      <div className={styles.customerPopoverHeading}><WorkspaceText text="Customers in this salon" /></div>
+      <ul id={id} role="listbox" aria-label={__vt("Matching customers")}>
         {rows.map((customer, index) => <li key={customer.id} id={`${id}-${index}`} role="option" aria-selected={index === active}
           onMouseDown={event => event.preventDefault()} onMouseEnter={() => setActive(index)} onClick={() => choose(customer)}>
           <strong>{customer.name || "Unnamed customer"}</strong>
           <span>{[customer.phone, customer.email].filter(Boolean).join(" · ") || "No contact details"}</span>
         </li>)}
       </ul>
-      {!rows.length && <p role="status">{current?.message || "Searching customers…"}</p>}
+      {!rows.length && <p role="status"><WorkspaceText text={current?.message || "Searching customers…"} /></p>}
     </div>}
   </div>;
 }

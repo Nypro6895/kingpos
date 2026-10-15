@@ -1,10 +1,13 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useState } from "react";
 import {
   NOTIFICATION_CATEGORIES,
   type NotificationPreferences,
 } from "@/lib/notification-categories";
 export function NotificationPreferencesPanel() {
+  const __vt = useWorkspaceTranslation();
+
   const [preferences, setPreferences] = useState<NotificationPreferences>({});
   const [staffBooking, setStaffBooking] = useState<{
     salonId: string;
@@ -83,14 +86,14 @@ export function NotificationPreferencesPanel() {
     }
   }
   return (
-    <div className="space-y-4">
-      <p className="text-xs text-zinc-500">Applies to new in-app notifications in every workspace.</p>
+    <div className="settings-style"><div className="space-y-4">
+      <p className="text-xs text-zinc-500"><WorkspaceText text="Applies to new in-app notifications in every workspace. Support replies, claim decisions and requests for more information are always delivered." /></p>
       {error && (
         <p
           role="alert"
           className="rounded-md bg-red-50 p-3 text-sm text-red-700"
         >
-          {error}{" "}
+          <WorkspaceText text={error} />{" "}
           {!loaded && (
             <button
               type="button"
@@ -100,14 +103,14 @@ export function NotificationPreferencesPanel() {
                 setRetry((value) => value + 1);
               }}
             >
-              Retry
+              <WorkspaceText text="Retry" />
             </button>
           )}
         </p>
       )}
       {!loaded && !error && (
         <p role="status" className="text-sm text-zinc-500">
-          Loading preferences…
+          <WorkspaceText text="Loading preferences…" />
         </p>
       )}
       <div className="content-surface divide-y divide-zinc-100 border-zinc-200 rounded-none border-y shadow-none">
@@ -122,7 +125,7 @@ export function NotificationPreferencesPanel() {
               key={c.id}
               type="button"
               role="switch"
-              aria-label={c.label}
+              aria-label={__vt(c.label)}
               aria-checked={checked}
               disabled={!loaded || busy !== null}
               onClick={() => void save(c.id, !checked)}
@@ -130,7 +133,7 @@ export function NotificationPreferencesPanel() {
             >
               <span>
                 <span className="block text-sm font-semibold text-zinc-950">
-                  {c.label}
+                  <WorkspaceText text={c.label} />
                 </span>
                 <span className="mt-1 block text-xs leading-5 text-zinc-500">
                   {c.description}
@@ -159,23 +162,20 @@ export function NotificationPreferencesPanel() {
         >
           <span className="flex-1">
             <span className="block text-sm font-semibold">
-              Assigned bookings in this salon
+              <WorkspaceText text="Assigned bookings in this salon" />
             </span>
             <span className="mt-1 block text-xs text-zinc-500">
-              Your existing staff booking mute. Both this switch and Booking
-              updates must be On.
+              <WorkspaceText text="Your existing staff booking mute. Both this switch and Booking updates must be On." />
             </span>
           </span>
           <span className="text-sm font-semibold">
-            {staffBooking.enabled ? "On" : "Off"}
+            <WorkspaceText text={staffBooking.enabled ? "On" : "Off"} />
           </span>
         </button>
       )}
       <p className="text-xs leading-5 text-zinc-500">
-        Check-in uses the role default until you choose On or Off here. Followed
-        posts are an opt-in digest, at most once per profile per day. Likes and
-        promotions remain off; their delivery is not yet available.
+        <WorkspaceText text="Check-in uses the role default until you choose On or Off here. Followed posts are an opt-in digest, at most once per profile per day. Likes and promotions remain off; their delivery is not yet available." />
       </p>
-    </div>
+    </div></div>
   );
 }

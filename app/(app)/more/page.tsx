@@ -1,3 +1,8 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
+import { campaignWalletAction } from "@/app/campaigns/credit-actions";
+
+import { SettingsIconShape } from "@/components/settings-icon";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import {
   ROLE_MORE_ITEMS,
@@ -65,12 +70,7 @@ function MoreIcon({ name }: { name: MoreIconName }) {
         <path d="M12 8v13M3 12h18M7.5 8A2.5 2.5 0 1 1 12 6a2.5 2.5 0 1 1 4.5 2" />
       </>
     ),
-    gear: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
-      </>
-    ),
+    gear: <SettingsIconShape />,
     grid: (
       <>
         <rect height="7" rx="1.5" width="7" x="3" y="3" />
@@ -196,6 +196,8 @@ function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {
             "owner-payroll",
             "owner-setting",
             "owner-market",
+            "owner-campaigns",
+            "owner-support",
           ]),
           summary: "Review performance, payroll, and salon configuration.",
           title: "Business",
@@ -213,6 +215,7 @@ function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {
             "staff-my-place",
             "staff-payroll",
             "staff-statistics",
+            "staff-support",
           ]),
           summary: "Switch workplaces and review your pay or performance.",
           title: "Work",
@@ -247,7 +250,7 @@ function MoreItemLink({ item }: { item: MoreItem }) {
       </span>
       <span className="min-w-0">
         <span className="block truncate text-sm font-extrabold text-text-primary">
-          {item.label}
+          <WorkspaceText text={item.label} />
         </span>
         <span className="mt-0.5 block line-clamp-1 text-xs font-semibold text-text-secondary">
           {item.description}
@@ -263,7 +266,7 @@ function MoreItemLink({ item }: { item: MoreItem }) {
   );
 }
 
-export default async function MorePage() {
+async function MorePage() {
   const context = await getCurrentBusinessContext();
 
   if (!context.user) {
@@ -275,6 +278,8 @@ export default async function MorePage() {
     workspaceType: context.workspaceType,
   });
   const more = roleMoreItems(roleKind);
+  const campaignInstalled = roleKind === "owner" ? await campaignWalletAction().then(wallet=>wallet.installed).catch(()=>false) : false;
+  for(const section of more.sections)section.items=section.items.filter(item=>item.id!=="owner-campaigns" || campaignInstalled);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
@@ -292,14 +297,14 @@ export default async function MorePage() {
                     className="text-base font-extrabold text-text-primary"
                     id={`more-${section.id}-title`}
                   >
-                    {section.title}
+                    <WorkspaceText text={section.title} />
                   </h2>
                   <p className="mt-1 text-sm font-semibold text-text-secondary">
                     {section.summary}
                   </p>
                 </div>
                 <p className="text-xs font-bold uppercase text-text-secondary">
-                  {formatItemCount(section.items.length)}
+                  <WorkspaceText text={formatItemCount(section.items.length)} />
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -314,9 +319,11 @@ export default async function MorePage() {
           className="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-border-subtle bg-surface px-4 text-sm font-extrabold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
           href="/settings"
         >
-          View all settings
+          <WorkspaceText text="View all settings" />
         </Link>
       </div>
     </main>
   );
 }
+
+export default withExperiencePage(MorePage);

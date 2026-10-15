@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
 
 import {
@@ -9,7 +10,7 @@ import {
 import Link from "next/link";
 import { DeleteUnusedButton } from "@/app/settings/delete-unused-button";
 import { searchTextMatches } from "@/lib/search-normalization";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import type { StaffDirectoryMember } from "@/lib/staff";
 
@@ -28,6 +29,7 @@ export type StaffDirectoryStatus = {
 };
 
 type StaffDirectoryEditorProps = {
+  toolbarActions?: ReactNode;
   activeStaff: StaffDirectoryMember[];
   addHref: string;
   canManageStaff: boolean;
@@ -156,7 +158,7 @@ function Badge({
 
   return (
     <span
-      className={`inline-flex min-h-7 w-fit items-center rounded-md border px-2.5 py-1 text-xs font-medium ${toneClass}`}
+      className={`inline-flex min-h-6 w-fit items-center rounded-md border px-2 py-0.5 text-[11px] font-medium md:min-h-7 md:px-2.5 md:py-1 md:text-xs ${toneClass}`}
     >
       {children}
     </span>
@@ -167,12 +169,12 @@ function StatusBadgeLink({ status }: { status: StaffDirectoryStatusBadge }) {
   if (status.href) {
     return (
       <Link className="inline-flex" href={status.href}>
-        <Badge tone={status.tone}>{status.label}</Badge>
+        <Badge tone={status.tone}><WorkspaceText text={status.label} /></Badge>
       </Link>
     );
   }
 
-  return <Badge tone={status.tone}>{status.label}</Badge>;
+  return <Badge tone={status.tone}><WorkspaceText text={status.label} /></Badge>;
 }
 
 function StaffStatusAlert({ status }: { status: StaffDirectoryStatusBadge }) {
@@ -180,7 +182,7 @@ function StaffStatusAlert({ status }: { status: StaffDirectoryStatusBadge }) {
     <div className="grid gap-1">
       <StatusBadgeLink status={status} />
       {status.note ? (
-        <span className="text-xs text-zinc-500">{status.note}</span>
+        <span className="text-xs text-zinc-500"><WorkspaceText text={status.note} /></span>
       ) : null}
     </div>
   );
@@ -216,7 +218,7 @@ function EmptyState({
           className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           href={addHref}
         >
-          + Add Staff
+          <WorkspaceText text="+ Add Staff" />
         </Link>
       ) : null}
     </div>
@@ -313,12 +315,22 @@ function AccessToggle({
         onChange={(event) => onChange(event.target.checked)}
         type="checkbox"
       />
-      {label}
+      <WorkspaceText text={label} />
     </label>
   );
 }
 
-function StaffRow({
+function subscribeMobileLayout(onChange: () => void) {
+  const media = window.matchMedia("(max-width: 767px)");
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+
+function getMobileLayout() {
+  return window.matchMedia("(max-width: 767px)").matches;
+}
+
+function DesktopStaffRow({
   canManageStaff,
   dirty,
   editing,
@@ -337,6 +349,8 @@ function StaffRow({
   row: RowState;
   status: StaffDirectoryStatus;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const fullName = getFullName(row);
   const address = getAddress(row);
   const disabled = !editing;
@@ -363,13 +377,13 @@ function StaffRow({
         dirty && "bg-sky-50/50",
       )}
     >
-      <td className="px-4 py-4 align-top">
+      <td className="px-4 py-3 align-top">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
             {row.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                alt=""
+                alt={__vt("")}
                 className="h-full w-full rounded-full object-cover"
                 src={row.avatarUrl}
               />
@@ -400,7 +414,7 @@ function StaffRow({
                   onChange={(event) =>
                     onUpdate({ firstName: event.target.value })
                   }
-                  placeholder="First name"
+                  placeholder={__vt("First name")}
                   value={row.firstName}
                 />
                 <input
@@ -409,13 +423,13 @@ function StaffRow({
                   onChange={(event) =>
                     onUpdate({ lastName: event.target.value })
                   }
-                  placeholder="Last name"
+                  placeholder={__vt("Last name")}
                   value={row.lastName}
                 />
               </div>
             ) : (
               <p className="mt-0.5 truncate px-1 py-0.5 text-xs text-zinc-500">
-                {fullName || "No full name"}
+                <WorkspaceText text={fullName || "No full name"} />
               </p>
             )}
             {editing ? (
@@ -423,32 +437,32 @@ function StaffRow({
                 autoComplete="organization-title"
                 className="mt-1 w-full rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-600 outline-none focus:border-zinc-300 focus:bg-white"
                 onChange={(event) => onUpdate({ jobTitle: event.target.value })}
-                placeholder="Role"
+                placeholder={__vt("Role")}
                 value={row.jobTitle}
               />
             ) : (
               <p className="mt-0.5 truncate px-1 py-0.5 text-xs text-zinc-500">
-                {row.jobTitle || "No role"}
+                <WorkspaceText text={row.jobTitle || "No role"} />
               </p>
             )}
           </div>
         </div>
       </td>
-      <td className="px-4 py-4 align-top">
+      <td className="px-4 py-3 align-top">
         {editing ? (
           <div className="grid gap-1.5">
             <input
               autoComplete="email"
               className="min-h-8 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-sm text-zinc-700 outline-none focus:border-zinc-300 focus:bg-white"
               onChange={(event) => onUpdate({ email: event.target.value })}
-              placeholder="Email"
+              placeholder={__vt("Email")}
               value={row.email}
             />
             <input
               autoComplete="tel"
               className="min-h-8 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-sm text-zinc-700 outline-none focus:border-zinc-300 focus:bg-white"
               onChange={(event) => onUpdate({ phone: event.target.value })}
-              placeholder="Phone"
+              placeholder={__vt("Phone")}
               value={row.phone}
             />
             <input
@@ -457,7 +471,7 @@ function StaffRow({
               onChange={(event) =>
                 onUpdate({ addressLine1: event.target.value })
               }
-              placeholder="Address line 1"
+              placeholder={__vt("Address line 1")}
               value={row.addressLine1}
             />
             <input
@@ -466,7 +480,7 @@ function StaffRow({
               onChange={(event) =>
                 onUpdate({ addressLine2: event.target.value })
               }
-              placeholder="Address line 2"
+              placeholder={__vt("Address line 2")}
               value={row.addressLine2}
             />
             <div className="grid grid-cols-3 gap-2">
@@ -474,14 +488,14 @@ function StaffRow({
                 autoComplete="address-level2"
                 className="min-h-8 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-500 outline-none focus:border-zinc-300 focus:bg-white"
                 onChange={(event) => onUpdate({ city: event.target.value })}
-                placeholder="City"
+                placeholder={__vt("City")}
                 value={row.city}
               />
               <input
                 autoComplete="address-level1"
                 className="min-h-8 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-xs text-zinc-500 outline-none focus:border-zinc-300 focus:bg-white"
                 onChange={(event) => onUpdate({ state: event.target.value })}
-                placeholder="State"
+                placeholder={__vt("State")}
                 value={row.state}
               />
               <input
@@ -490,27 +504,27 @@ function StaffRow({
                 onChange={(event) =>
                   onUpdate({ postalCode: event.target.value })
                 }
-                placeholder="ZIP"
+                placeholder={__vt("ZIP")}
                 value={row.postalCode}
               />
             </div>
           </div>
         ) : (
           <div className="grid gap-1 text-sm text-zinc-700">
-            <span>{row.email || "No email"}</span>
-            <span>{row.phone || "No phone"}</span>
+            <span><WorkspaceText text={row.email || "No email"} /></span>
+            <span><WorkspaceText text={row.phone || "No phone"} /></span>
             <span className="mt-1 truncate text-xs text-zinc-500">
-              {address || "No address"}
+              <WorkspaceText text={address || "No address"} />
             </span>
           </div>
         )}
       </td>
-      <td className="px-4 py-4 align-top">
+      <td className="px-4 py-3 align-top">
         <div className="grid gap-1">
           <AccessToggle
             checked={row.isActive}
             disabled={disabled}
-            label="Enable staff"
+            label={__vt("Enable staff")}
             onChange={(isActive) =>
               onUpdate({
                 isActive,
@@ -525,7 +539,7 @@ function StaffRow({
           <AccessToggle
             checked={row.onlineBookingEnabled}
             disabled={disabled || !row.isActive}
-            label="Online booking"
+            label={__vt("Online booking")}
             onChange={(onlineBookingEnabled) =>
               onUpdate({ onlineBookingEnabled })
             }
@@ -533,23 +547,23 @@ function StaffRow({
           <AccessToggle
             checked={row.posEnabled}
             disabled={disabled || !row.isActive}
-            label="Enable POS"
+            label={__vt("Enable POS")}
             onChange={(posEnabled) => onUpdate({ posEnabled })}
           />
         </div>
       </td>
-      <td className="px-4 py-4 align-top">
+      <td className="px-4 py-3 align-top">
         <div className="grid gap-2">
           {alerts.length > 0 ? (
             alerts.map((alert) => (
               <StaffStatusAlert key={alert.label} status={alert} />
             ))
           ) : (
-            <span className="text-xs text-zinc-500">No alerts</span>
+            <span className="text-xs text-zinc-500"><WorkspaceText text="No alerts" /></span>
           )}
         </div>
       </td>
-      <td className="px-4 py-4 align-top">
+      <td className="px-4 py-3 align-top">
         {canManageStaff ? (
           <div className="grid gap-2">
             <button
@@ -562,14 +576,14 @@ function StaffRow({
               onClick={onToggleEditing}
               type="button"
             >
-              {editing ? "Done" : "Edit"}
+              {editing ? <WorkspaceText text="Done" /> : <WorkspaceText text="Edit" />}
             </button>
             {profileHref ? (
               <Link
                 className="inline-flex min-h-9 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-950"
                 href={profileHref}
               >
-                Profile
+                <WorkspaceText text="Profile" />
               </Link>
             ) : null}
             {editing ? (
@@ -580,7 +594,7 @@ function StaffRow({
                   inputMode="numeric"
                   name={`new_passcode_${row.id}`}
                   pattern="[0-9]{4,8}"
-                  placeholder="4-8 digits"
+                  placeholder={__vt("4-8 digits")}
                   type="password"
                 />
                 <SubmitButton pendingLabel="Processing…"
@@ -590,7 +604,7 @@ function StaffRow({
                   type="submit"
                   value={row.id}
                 >
-                  Reset PIN
+                  <WorkspaceText text="Reset PIN" />
                 </SubmitButton>
                 <DeleteUnusedButton kind="staff" id={row.id} name={fullName} disabled={dirty} />
               </div>
@@ -599,6 +613,165 @@ function StaffRow({
         ) : null}
       </td>
     </tr>
+  );
+}
+
+function StaffRow({
+  canManageStaff,
+  dirty,
+  editing,
+  onToggleEditing,
+  onUpdate,
+  profileHref,
+  row,
+  status,
+}: {
+  canManageStaff: boolean;
+  dirty: boolean;
+  editing: boolean;
+  onToggleEditing: () => void;
+  onUpdate: (patch: Partial<RowState>) => void;
+  profileHref?: string;
+  row: RowState;
+  status: StaffDirectoryStatus;
+}) {
+  const __vt = useWorkspaceTranslation();
+
+  const isMobile = useSyncExternalStore(subscribeMobileLayout, getMobileLayout, () => false);
+  if (!isMobile) {
+    return <DesktopStaffRow canManageStaff={canManageStaff} dirty={dirty} editing={editing}
+      onToggleEditing={onToggleEditing} onUpdate={onUpdate} profileHref={profileHref} row={row} status={status} />;
+  }
+  const fullName = getFullName(row);
+  const address = getAddress(row);
+  const disabled = !editing;
+  const alerts = row.isActive
+    ? [
+        status.booking,
+        status.payroll,
+        row.passcodeIsDefault
+          ? {
+              label: "Default PIN",
+              note: "Default PIN: 1234",
+              tone: "warning" as const,
+            }
+          : null,
+      ].filter((item): item is StaffDirectoryStatusBadge =>
+        Boolean(item?.label),
+      )
+    : [];
+
+  const field = (key: keyof RowState, label: string, autoComplete?: string, type = "text") => (
+    <label className="grid min-w-0 gap-1 text-xs font-medium text-zinc-600">
+      <WorkspaceText text={label} />
+      <input
+        autoComplete={autoComplete}
+        className="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/10"
+        onChange={(event) => onUpdate({ [key]: event.target.value })}
+        type={type}
+        value={String(row[key] ?? "")}
+      />
+    </label>
+  );
+  const buttonClass = "inline-flex min-h-10 items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-700 hover:bg-zinc-50";
+
+  return (
+    <>
+      <tr className={classNames(
+        "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 p-3 lg:table-row lg:p-0",
+        !row.isActive && "bg-zinc-50/70",
+        dirty && "bg-sky-50/50",
+      )}>
+        <td className="min-w-0 lg:px-4 lg:py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-teal-50 text-sm font-semibold text-teal-800">
+              {row.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img alt={__vt("")} className="h-full w-full object-cover" src={row.avatarUrl} />
+              ) : getInitials(row.displayName)}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-zinc-950"><WorkspaceText text={row.displayName || fullName || "Staff member"} /></p>
+              <p className="mt-0.5 truncate text-xs text-zinc-500"><WorkspaceText text={row.jobTitle || row.phone || row.email || (row.isActive ? "Staff member" : "Disabled staff")} /></p>
+            </div>
+          </div>
+        </td>
+        <td className="hidden min-w-0 lg:table-cell lg:px-4 lg:py-3">
+          <p className="break-all text-xs text-zinc-700">{row.phone || "—"}</p>
+          {row.email ? <p className="mt-1 break-all text-xs text-zinc-500">{row.email}</p> : null}
+          {address ? <p className="mt-1 text-xs text-zinc-500">{address}</p> : null}
+        </td>
+        <td className="hidden lg:table-cell lg:px-4 lg:py-3">
+          <div className="flex flex-wrap gap-1">
+            <Badge tone={row.isActive ? "success" : "neutral"}>{row.isActive ? <WorkspaceText text="Active" /> : <WorkspaceText text="Disabled" />}</Badge>
+            {row.isActive && row.posEnabled ? <Badge><WorkspaceText text="POS" /></Badge> : null}
+            {row.isActive && row.onlineBookingEnabled ? <Badge><WorkspaceText text="Booking" /></Badge> : null}
+          </div>
+        </td>
+        <td className={classNames("col-span-2 row-start-2 min-w-0 lg:table-cell lg:px-4 lg:py-3", !alerts.length && "hidden")}>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {alerts.map((alert) => <span key={alert.label} title={__vt(alert.note)}><StatusBadgeLink status={alert} /></span>)}
+          </div>
+        </td>
+        <td className="col-start-2 row-start-1 lg:px-4 lg:py-3">
+          {canManageStaff ? <div className="flex items-center justify-end gap-1.5">
+            {profileHref ? <Link className={buttonClass} href={profileHref}><WorkspaceText text="Profile" /></Link> : null}
+            <button
+              aria-expanded={editing}
+              aria-controls={`staff-edit-${row.id}`}
+              className={classNames(buttonClass, editing && "!border-teal-700 !bg-teal-700 !text-white")}
+              onClick={onToggleEditing}
+              type="button"
+            >{editing ? <WorkspaceText text="Done" /> : <WorkspaceText text="Edit" />}</button>
+          </div> : null}
+        </td>
+      </tr>
+      {editing ? <tr className="block bg-zinc-50/70 lg:table-row">
+        <td colSpan={5} className="block p-3 lg:table-cell lg:p-4" id={`staff-edit-${row.id}`}>
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(220px,0.8fr)]">
+            <section className="grid content-start gap-3" aria-label={__vt("Staff information")}>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500"><WorkspaceText text="Staff information" /></h3>
+              {field("displayName", "Display name", "nickname")}
+              <div className="grid grid-cols-2 gap-2">{field("firstName", "First name", "given-name")}{field("lastName", "Last name", "family-name")}</div>
+              {field("jobTitle", "Role", "organization-title")}
+              <div className="grid grid-cols-2 gap-2">{field("phone", "Phone", "tel", "tel")}{field("email", "Email", "email", "email")}</div>
+              <details className="rounded-lg border border-zinc-200 bg-white">
+                <summary className="cursor-pointer px-3 py-2.5 text-xs font-medium text-zinc-600"><WorkspaceText text="Address" /><WorkspaceText text={address ? ` · ${address}` : " · Optional"} /></summary>
+                <div className="grid gap-2 border-t border-zinc-100 p-3">
+                  {field("addressLine1", "Address line 1", "address-line1")}
+                  {field("addressLine2", "Address line 2", "address-line2")}
+                  <div className="grid grid-cols-3 gap-2">{field("city", "City", "address-level2")}{field("state", "State", "address-level1")}{field("postalCode", "ZIP", "postal-code")}</div>
+                </div>
+              </details>
+            </section>
+            <section className="grid content-start gap-3" aria-label={__vt("Staff access")}>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500"><WorkspaceText text="Access & permissions" /></h3>
+              <div className="grid gap-1 rounded-lg border border-zinc-200 bg-white p-3">
+                <AccessToggle checked={row.isActive} disabled={disabled} label={__vt("Enable staff")} onChange={(isActive) => onUpdate({ isActive, posEnabled: isActive ? row.posEnabled : false, onlineBookingEnabled: isActive ? row.onlineBookingEnabled : false, postingEnabled: isActive ? row.postingEnabled : false })} />
+                <AccessToggle checked={row.onlineBookingEnabled} disabled={disabled || !row.isActive} label={__vt("Online booking")} onChange={(onlineBookingEnabled) => onUpdate({ onlineBookingEnabled })} />
+                <AccessToggle checked={row.posEnabled} disabled={disabled || !row.isActive} label={__vt("Enable POS")} onChange={(posEnabled) => onUpdate({ posEnabled })} />
+              </div>
+              {alerts.length ? <div className="grid gap-2">{alerts.map((alert) => <StaffStatusAlert key={alert.label} status={alert} />)}</div> : null}
+            </section>
+            <section className="grid content-start gap-3" aria-label={__vt("Staff security")}>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500"><WorkspaceText text="Security" /></h3>
+              <div className="rounded-lg border border-zinc-200 bg-white p-3">
+                <label className="grid gap-1 text-xs font-medium text-zinc-600" htmlFor={`pin-${row.id}`}><WorkspaceText text="New PIN" /></label>
+                <div className="mt-2 flex gap-2">
+                  <input id={`pin-${row.id}`} autoComplete="new-password" className="h-10 min-w-0 w-full rounded-lg border border-zinc-200 px-3 text-sm" inputMode="numeric" name={`new_passcode_${row.id}`} pattern="[0-9]{4,8}" placeholder={__vt("4–8 digits")} type="password" />
+                  <SubmitButton pendingLabel="Processing…" className={`${buttonClass} shrink-0`} formAction={resetStaffPasscodeFormAction} name="reset_staff_id" type="submit" value={row.id}><WorkspaceText text="Reset PIN" /></SubmitButton>
+                </div>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-rose-100 bg-white px-3 py-1">
+                <span className="text-xs text-zinc-500"><WorkspaceText text="Remove unused staff" /></span>
+                <DeleteUnusedButton kind="staff" id={row.id} name={fullName || row.displayName} disabled={dirty} />
+              </div>
+            </section>
+          </div>
+          <p className="mt-3 text-xs text-zinc-500"><WorkspaceText text={dirty ? "Changes are ready to save. Use Save staff changes below." : "Update details and permissions, then save your changes."} /></p>
+        </td>
+      </tr> : null}
+    </>
   );
 }
 
@@ -622,28 +795,28 @@ function StaffTable({
   statusByStaffId: Record<string, StaffDirectoryStatus>;
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <table className="w-full min-w-[900px] divide-y divide-zinc-200 text-left text-sm">
-        <thead className="bg-zinc-50 text-xs font-medium uppercase text-zinc-500">
+    <div className="min-w-0 max-w-full overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+      <table className="block w-full divide-y divide-zinc-200 text-left text-sm md:table md:min-w-[900px]">
+        <thead className="hidden bg-zinc-50 text-xs font-medium uppercase text-zinc-500 md:table-header-group">
           <tr>
             <th className="w-[32%] px-4 py-3" scope="col">
-              Staff profile
+              <WorkspaceText text="Staff profile" />
             </th>
             <th className="w-[28%] px-4 py-3" scope="col">
-              Contact
+              <WorkspaceText text="Contact" />
             </th>
             <th className="w-[16%] px-4 py-3" scope="col">
-              Access
+              <WorkspaceText text="Access" />
             </th>
             <th className="w-[16%] px-4 py-3" scope="col">
-              Status
+              <WorkspaceText text="Status" />
             </th>
             <th className="w-[8%] px-4 py-3" scope="col">
-              Edit
+              <WorkspaceText text="Edit" />
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100">
+        <tbody className="block divide-y divide-zinc-100 md:table-row-group">
           {rows.map((row) => (
             <StaffRow
               canManageStaff={canManageStaff}
@@ -671,6 +844,7 @@ function StaffTable({
 }
 
 export function StaffDirectoryEditor({
+  toolbarActions,
   activeStaff,
   addHref,
   canManageStaff,
@@ -680,6 +854,8 @@ export function StaffDirectoryEditor({
   query,
   statusByStaffId,
 }: StaffDirectoryEditorProps) {
+  const __vt = useWorkspaceTranslation();
+
   const initialRows = useMemo(
     () => [
       ...activeStaff.map((member) => rowFromMember(member, false)),
@@ -759,36 +935,25 @@ export function StaffDirectoryEditor({
 
   return (
     <>
-      <div className="flex items-center gap-3">
-        <label className="sr-only" htmlFor="staff-search">
-          Search staff
-        </label>
-        <input
-          id="staff-search"
-          type="search"
-          className="min-h-11 min-w-0 flex-1 rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-teal-600"
-          placeholder="Search staff..."
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-        {search ? (
-          <button
-            type="button"
-            className="min-h-11 text-sm font-medium text-teal-700 hover:underline"
-            onClick={() => setSearch("")}
-          >
-            Clear
-          </button>
-        ) : null}
+      <div className="mb-3 flex items-center justify-between gap-3 md:hidden"><h1 className="text-lg font-semibold tracking-tight text-zinc-950"><WorkspaceText text="Staff" /></h1><span className="text-xs text-zinc-500">{activeStaff.length} <WorkspaceText text="active ·" /> {hiddenStaff.length} <WorkspaceText text="hidden" /></span></div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2 md:flex-nowrap border-b border-zinc-200 pb-3">
+        <div className="relative min-w-0 basis-full sm:basis-auto sm:flex-1 sm:max-w-sm md:flex-1">
+          <label className="sr-only" htmlFor="staff-search"><WorkspaceText text="Search staff" /></label>
+          <input id="staff-search" type="search"
+            className="h-11 w-full min-w-0 rounded-lg border border-zinc-300 bg-white pl-3 pr-8 text-sm outline-none focus:border-teal-600"
+            placeholder={__vt("Search staff…")} value={search} onChange={(event) => setSearch(event.target.value)} />
+          {search ? <button type="button" aria-label={__vt("Clear staff search")} className="absolute inset-y-0 right-0 w-8 text-zinc-500" onClick={() => setSearch("")}>×</button> : null}
+        </div>
+        {toolbarActions}
       </div>
       {search ? (
         <p role="status" className="mt-2 text-xs text-zinc-500">
-          {matchingIds.size} matching staff
+          {matchingIds.size} <WorkspaceText text="matching staff" />
         </p>
       ) : null}
       <form
         action={updateStaffDirectoryBatchFormAction}
-        className="mt-4 grid gap-4"
+        className={classNames("mt-3 min-w-0 grid gap-3", canManageStaff && hasDirtyRows && "pb-24 md:pb-0")}
       >
         <input name="q" type="hidden" value={search} />
         <HiddenInputs rows={rows.filter(row => dirtyIds.has(row.id))} />
@@ -807,21 +972,19 @@ export function StaffDirectoryEditor({
           <EmptyState
             addHref={addHref}
             canManageStaff={canManageStaff}
-            description={
-              hiddenRows.length > 0
+            description={__vt(hiddenRows.length > 0
                 ? "Open the hidden staff list below to restore staff."
-                : undefined
-            }
+                : undefined)}
             hasAnyStaff={hasAnyStaff}
-            title={hiddenRows.length > 0 ? "No enabled staff" : undefined}
+            title={__vt(hiddenRows.length > 0 ? "No enabled staff" : undefined)}
           />
         )}
-        <details
+        {hiddenStaff.length > 0 ? <details
           open={search.trim() ? true : undefined}
           className="rounded-lg border border-zinc-200 bg-white"
         >
           <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-zinc-950">
-            Hidden staff list ({hiddenRows.length})
+            <WorkspaceText text="Hidden staff list (" />{hiddenRows.length})
           </summary>
           <div className="border-t border-zinc-200 p-4">
             {hiddenRows.length > 0 ? (
@@ -837,19 +1000,19 @@ export function StaffDirectoryEditor({
               />
             ) : (
               <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
-                No hidden staff.
+                <WorkspaceText text="No hidden staff." />
               </p>
             )}
           </div>
-        </details>
-        {canManageStaff ? (
-          <div className="flex items-center justify-end gap-3">
+        </details> : null}
+        {canManageStaff && hasDirtyRows ? (
+          <div className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-40 flex items-center justify-between gap-3 rounded-xl border border-teal-200 bg-white p-3 shadow-lg md:static md:justify-end md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none">
             {hasDirtyRows ? (
               <span className="text-xs font-medium text-sky-700">
-                Unsaved changes
+                <WorkspaceText text="Unsaved changes" />
               </span>
             ) : (
-              <span className="text-xs text-zinc-500">Saved</span>
+              <span className="text-xs text-zinc-500"><WorkspaceText text="Saved" /></span>
             )}
             <SubmitButton pendingLabel="Saving…"
               className={classNames(
@@ -861,7 +1024,7 @@ export function StaffDirectoryEditor({
               disabled={!hasDirtyRows}
               type="submit"
             >
-              Save staff changes
+              <WorkspaceText text="Save staff changes" />
             </SubmitButton>
           </div>
         ) : null}

@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { listMyOwnerTransferInvites } from "@/lib/owner-transfer";
 import { MyPlaceClient } from "@/app/my-place/my-place-client";
 import { getCurrentBusinessContext } from "@/lib/current-context";
@@ -11,7 +12,7 @@ type MyPlacePageProps = {
   }>;
 };
 
-export default async function MyPlacePage({ searchParams }: MyPlacePageProps) {
+async function MyPlacePage({ searchParams }: MyPlacePageProps) {
   const [resolvedSearchParams, context] = await Promise.all([
     searchParams ?? Promise.resolve({ error: undefined }),
     getCurrentBusinessContext(),
@@ -53,3 +54,5 @@ export default async function MyPlacePage({ searchParams }: MyPlacePageProps) {
     />
   );
 }
+
+export default withExperiencePage(MyPlacePage);

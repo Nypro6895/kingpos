@@ -1,3 +1,7 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
+import { WorkspaceText } from "@/components/workspace-language";
+import { ContextualSupport } from "@/components/contextual-support";
 
 import { SubmitButton } from "@/components/submit-button";
 import {
@@ -108,7 +112,7 @@ function StatusBadge({ status }: { status: PosTicketStatus }) {
           : "inline-flex rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700"
       }
     >
-      {STATUS_LABELS[status]}
+      <WorkspaceText text={STATUS_LABELS[status]} />
     </span>
   );
 }
@@ -132,7 +136,7 @@ function AddServiceForm({
         name="service_id"
         required
       >
-        <option value="">Add service to ticket</option>
+        <option value=""><WorkspaceText text="Add service to ticket" /></option>
         {services.map((service) => (
           <option key={service.id} value={service.id}>
             {service.name} - {formatMoney(service.base_price)}
@@ -143,7 +147,7 @@ function AddServiceForm({
         className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
         type="submit"
       >
-        Add Item
+        <WorkspaceText text="Add Item" />
       </SubmitButton>
     </form>
   );
@@ -169,10 +173,10 @@ function AssignStaffForm({
         defaultValue={staffId ?? ""}
         name="assigned_staff_id"
       >
-        <option value="">No staff</option>
+        <option value=""><WorkspaceText text="No staff" /></option>
         {staff.map((member) => (
           <option key={member.id} value={member.id}>
-            {member.display_name} - {STAFF_WORKDAY_STATUS_LABELS[member.today_status]}
+            {member.display_name} - <WorkspaceText text={STAFF_WORKDAY_STATUS_LABELS[member.today_status]} />
           </option>
         ))}
       </select>
@@ -180,7 +184,7 @@ function AssignStaffForm({
         className="rounded-md border border-zinc-300 px-3 py-1 text-sm font-medium text-zinc-950"
         type="submit"
       >
-        Save
+        <WorkspaceText text="Save" />
       </SubmitButton>
     </form>
   );
@@ -206,7 +210,7 @@ function AddPaymentForm({
       <input name="return_to" type="hidden" value={returnPath} />
 
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Method</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Method" /></span>
         <select
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue="cash"
@@ -215,14 +219,14 @@ function AddPaymentForm({
         >
           {POS_PAYMENT_METHOD_OPTIONS.map((method) => (
             <option key={method.value} value={method.value}>
-              {method.label}
+              <WorkspaceText text={method.label} />
             </option>
           ))}
         </select>
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Amount</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Amount" /></span>
         <input
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue={defaultAmount}
@@ -235,7 +239,7 @@ function AddPaymentForm({
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Note</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Note" /></span>
         <input
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           name="note"
@@ -248,7 +252,7 @@ function AddPaymentForm({
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
-          Add Payment
+          <WorkspaceText text="Add Payment" />
         </SubmitButton>
       </div>
     </form>
@@ -271,7 +275,7 @@ function WorkflowActionForm({
       <input name="ticket_id" type="hidden" value={ticketId} />
       <input name="return_to" type="hidden" value={returnPath} />
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Note</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Note" /></span>
         <input
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           minLength={1}
@@ -284,7 +288,7 @@ function WorkflowActionForm({
         className="w-fit rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
         type="submit"
       >
-        {buttonLabel}
+        <WorkspaceText text={buttonLabel} />
       </SubmitButton>
     </form>
   );
@@ -310,20 +314,20 @@ function DiscountForm({
       <input name="return_to" type="hidden" value={returnPath} />
 
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Discount Type</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Discount Type" /></span>
         <select
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue={discountType}
           name="discount_type"
           required
         >
-          <option value="fixed_amount">Fixed Amount</option>
-          <option value="percentage">Percentage</option>
+          <option value="fixed_amount"><WorkspaceText text="Fixed Amount" /></option>
+          <option value="percentage"><WorkspaceText text="Percentage" /></option>
         </select>
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Discount Value</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Discount Value" /></span>
         <input
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue={discountValue}
@@ -340,7 +344,7 @@ function DiscountForm({
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
-          Save
+          <WorkspaceText text="Save" />
         </SubmitButton>
       </div>
     </form>
@@ -365,7 +369,7 @@ function TaxForm({
       <input name="return_to" type="hidden" value={returnPath} />
 
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Tax Rate (%)</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Tax Rate (%)" /></span>
         <input
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue={taxRate}
@@ -383,7 +387,7 @@ function TaxForm({
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
-          Save
+          <WorkspaceText text="Save" />
         </SubmitButton>
       </div>
     </form>
@@ -410,20 +414,20 @@ function TipForm({
       <input name="return_to" type="hidden" value={returnPath} />
 
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Tip Type</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Tip Type" /></span>
         <select
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue={tipType}
           name="tip_type"
           required
         >
-          <option value="fixed_amount">Fixed Amount</option>
-          <option value="percentage">Percentage</option>
+          <option value="fixed_amount"><WorkspaceText text="Fixed Amount" /></option>
+          <option value="percentage"><WorkspaceText text="Percentage" /></option>
         </select>
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Tip Value</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Tip Value" /></span>
         <input
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           defaultValue={tipValue}
@@ -440,17 +444,19 @@ function TipForm({
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
-          Save
+          <WorkspaceText text="Save" />
         </SubmitButton>
       </div>
     </form>
   );
 }
 
-export default async function PosTicketDetailPage({
+async function PosTicketDetailPage({
   params,
   searchParams,
 }: PosTicketDetailPageProps) {
+  const __vt = await getWorkspaceTranslation();
+
   const [{ ticketId }, { error }, context] = await Promise.all([
     params,
     searchParams,
@@ -465,7 +471,7 @@ export default async function PosTicketDetailPage({
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
         <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-          You do not have permission to view POS tickets.
+          <WorkspaceText text="You do not have permission to view POS tickets." />
         </p>
       </main>
     );
@@ -481,7 +487,7 @@ export default async function PosTicketDetailPage({
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
         <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-          POS Ticket was not found for the current salon.
+          <WorkspaceText text="POS Ticket was not found for the current salon." />
         </p>
       </main>
     );
@@ -548,25 +554,25 @@ export default async function PosTicketDetailPage({
       <div className="border-b border-zinc-200 pb-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link className="text-sm font-medium text-zinc-950 underline" href="/pos-tickets">
-          Back to POS Tickets
+          <WorkspaceText text="Back to POS Tickets" />
           </Link>
-          <StatusBadge status={ticket.status} />
+          <div className="flex items-center gap-3"><StatusBadge status={ticket.status} /><ContextualSupport /></div>
         </div>
         <div className="mt-4 grid gap-3 text-sm text-zinc-700 sm:grid-cols-4">
           <p>
-            <span className="font-medium text-zinc-950">Ticket:</span>{" "}
+            <span className="font-medium text-zinc-950"><WorkspaceText text="Ticket:" /></span>{" "}
             {ticket.ticket_number}
           </p>
           <p>
-            <span className="font-medium text-zinc-950">Created Time:</span>{" "}
-            {formatTicketDateTime(ticket.created_at)}
+            <span className="font-medium text-zinc-950"><WorkspaceText text="Created Time:" /></span>{" "}
+            <WorkspaceText text={formatTicketDateTime(ticket.created_at)} />
           </p>
           <p>
-            <span className="font-medium text-zinc-950">Closed Time:</span>{" "}
-            {formatTicketDateTime(ticket.closed_at)}
+            <span className="font-medium text-zinc-950"><WorkspaceText text="Closed Time:" /></span>{" "}
+            <WorkspaceText text={formatTicketDateTime(ticket.closed_at)} />
           </p>
           <p>
-            <span className="font-medium text-zinc-950">Assigned Salon:</span>{" "}
+            <span className="font-medium text-zinc-950"><WorkspaceText text="Assigned Salon:" /></span>{" "}
             {context.currentSalon.name}
           </p>
         </div>
@@ -574,7 +580,7 @@ export default async function PosTicketDetailPage({
 
       {error ? (
         <p className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
@@ -583,15 +589,15 @@ export default async function PosTicketDetailPage({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase text-sky-800">
-                From appointment
+                <WorkspaceText text="From appointment" />
               </p>
               <h2 className="mt-1 text-lg font-semibold text-zinc-950">
-                {ticket.source_booking
+                <WorkspaceText text={ticket.source_booking
                   ? formatTicketDateTime(ticket.source_booking.start_at)
-                  : "Linked appointment"}
+                  : "Linked appointment"} />
               </h2>
               <p className="mt-1 text-sm text-sky-900">
-                Booking reference: {ticket.source_booking_id}
+                <WorkspaceText text="Booking reference:" /> {ticket.source_booking_id}
               </p>
             </div>
             <Link
@@ -602,14 +608,14 @@ export default async function PosTicketDetailPage({
                   : `/bookings?bookingId=${ticket.source_booking_id}`
               }
             >
-              View appointment
+              <WorkspaceText text="View appointment" />
             </Link>
           </div>
         </section>
       ) : null}
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Customer</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Customer" /></h2>
         <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-5 text-sm text-zinc-700">
           <p className="font-medium text-zinc-950">
             {ticket.customer?.name ?? "Unknown customer"}
@@ -621,28 +627,28 @@ export default async function PosTicketDetailPage({
 
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-950">Services</h2>
+          <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Services" /></h2>
           {canWorkTicket ? (
             <span className="text-sm font-medium text-zinc-700">
-              Service Actions
+              <WorkspaceText text="Service Actions" />
             </span>
           ) : null}
         </div>
 
         {(ticket.ticket_items ?? []).length === 0 ? (
           <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
-            No services added yet.
+            <WorkspaceText text="No services added yet." />
           </p>
         ) : (
           <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
             <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-              <div className="col-span-12 sm:col-span-3">Service</div>
-              <div className="hidden sm:col-span-1 sm:block">Duration</div>
-              <div className="hidden sm:col-span-1 sm:block">Price</div>
-              <div className="hidden sm:col-span-2 sm:block">Assigned Staff</div>
-              <div className="hidden sm:col-span-1 sm:block">Quantity</div>
-              <div className="hidden sm:col-span-2 sm:block">Subtotal</div>
-              <div className="hidden sm:col-span-2 sm:block">Actions</div>
+              <div className="col-span-12 sm:col-span-3"><WorkspaceText text="Service" /></div>
+              <div className="hidden sm:col-span-1 sm:block"><WorkspaceText text="Duration" /></div>
+              <div className="hidden sm:col-span-1 sm:block"><WorkspaceText text="Price" /></div>
+              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Assigned Staff" /></div>
+              <div className="hidden sm:col-span-1 sm:block"><WorkspaceText text="Quantity" /></div>
+              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Subtotal" /></div>
+              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Actions" /></div>
             </div>
             <ul className="divide-y divide-zinc-200">
               {(ticket.ticket_items ?? []).map((item) => (
@@ -655,27 +661,27 @@ export default async function PosTicketDetailPage({
                     </p>
                     {item.source_kind === "booking" ? (
                       <p className="mt-1 text-xs font-semibold text-sky-700">
-                        Booking snapshot
-                        {item.source_booking_line_id
+                        <WorkspaceText text="Booking snapshot" />
+                        <WorkspaceText text={item.source_booking_line_id
                           ? ` / line ${item.source_booking_line_id.slice(0, 8)}`
-                          : ""}
+                          : ""} />
                       </p>
                     ) : null}
                   </div>
                   <div className="col-span-12 text-sm text-zinc-700 sm:col-span-1">
                     <span className="font-medium text-zinc-500 sm:hidden">
-                      Duration:{" "}
+                      <WorkspaceText text="Duration:" />{" "}
                     </span>
-                    {formatDuration(item.service?.duration_minutes)}
+                    <WorkspaceText text={formatDuration(item.service?.duration_minutes)} />
                   </div>
                   <div className="col-span-12 text-sm text-zinc-700 sm:col-span-1">
                     <span className="font-medium text-zinc-500 sm:hidden">
-                      Price:{" "}
+                      <WorkspaceText text="Price:" />{" "}
                     </span>
                     {formatMoney(item.unit_price)}
                     {item.booked_unit_price_snapshot !== null ? (
                       <p className="mt-1 text-xs text-zinc-500">
-                        Booked {formatMoney(item.booked_unit_price_snapshot)}
+                        <WorkspaceText text="Booked" /> {formatMoney(item.booked_unit_price_snapshot)}
                       </p>
                     ) : null}
                   </div>
@@ -690,12 +696,12 @@ export default async function PosTicketDetailPage({
                     ) : (
                       <>
                         <span className="font-medium text-zinc-500 sm:hidden">
-                          Assigned Staff:{" "}
+                          <WorkspaceText text="Assigned Staff:" />{" "}
                         </span>
                         {item.assigned_staff?.display_name ?? "-"}
                         {item.performed_staff ? (
                           <p className="mt-1 text-xs text-zinc-500">
-                            Performed by {item.performed_staff.display_name}
+                            <WorkspaceText text="Performed by" /> {item.performed_staff.display_name}
                           </p>
                         ) : null}
                       </>
@@ -703,13 +709,13 @@ export default async function PosTicketDetailPage({
                   </div>
                   <div className="col-span-12 text-sm text-zinc-700 sm:col-span-1">
                     <span className="font-medium text-zinc-500 sm:hidden">
-                      Quantity:{" "}
+                      <WorkspaceText text="Quantity:" />{" "}
                     </span>
                     {formatQuantity(item.quantity)}
                   </div>
                   <div className="col-span-12 text-sm font-medium text-zinc-950 sm:col-span-2">
                     <span className="font-medium text-zinc-500 sm:hidden">
-                      Subtotal:{" "}
+                      <WorkspaceText text="Subtotal:" />{" "}
                     </span>
                     {formatMoney(item.line_total)}
                   </div>
@@ -722,7 +728,7 @@ export default async function PosTicketDetailPage({
                           className="font-medium text-zinc-950 underline"
                           type="submit"
                         >
-                          Remove Item
+                          <WorkspaceText text="Remove Item" />
                         </SubmitButton>
                       </form>
                     ) : null}
@@ -743,22 +749,22 @@ export default async function PosTicketDetailPage({
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Discount</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Discount" /></h2>
         <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-5">
           <p>
-            <span className="block text-zinc-500">Current Discount</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Current Discount" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.discount_amount)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Discount Type</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Discount Type" /></span>
             <span className="font-semibold text-zinc-950">
-              {DISCOUNT_TYPE_LABELS[ticket.discount_type]}
+              <WorkspaceText text={DISCOUNT_TYPE_LABELS[ticket.discount_type]} />
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Discount Value</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Discount Value" /></span>
             <span className="font-semibold text-zinc-950">
               {ticket.discount_type === "percentage"
                 ? `${ticket.discount_value}%`
@@ -766,13 +772,13 @@ export default async function PosTicketDetailPage({
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Discounted Amount</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Discounted Amount" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.discount_amount)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Updated Total</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Updated Total" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.total)}
             </span>
@@ -790,28 +796,28 @@ export default async function PosTicketDetailPage({
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Tax</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Tax" /></h2>
         <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-4">
           <p>
-            <span className="block text-zinc-500">Tax Rate</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Tax Rate" /></span>
             <span className="font-semibold text-zinc-950">
               {ticket.tax_rate}%
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Taxable Amount</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Taxable Amount" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.taxable_amount)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Calculated Tax</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Calculated Tax" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.tax_amount)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Updated Total</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Updated Total" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.total)}
             </span>
@@ -828,16 +834,16 @@ export default async function PosTicketDetailPage({
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Tip</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Tip" /></h2>
         <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-5">
           <p>
-            <span className="block text-zinc-500">Tip Type</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Tip Type" /></span>
             <span className="font-semibold text-zinc-950">
-              {TIP_TYPE_LABELS[ticket.tip_type]}
+              <WorkspaceText text={TIP_TYPE_LABELS[ticket.tip_type]} />
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Tip Value</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Tip Value" /></span>
             <span className="font-semibold text-zinc-950">
               {ticket.tip_type === "percentage"
                 ? `${ticket.tip_value}%`
@@ -845,19 +851,19 @@ export default async function PosTicketDetailPage({
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Calculated Tip</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Calculated Tip" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.tip_amount)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Updated Total</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Updated Total" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.total)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Remaining</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Remaining" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.remaining)}
             </span>
@@ -875,36 +881,36 @@ export default async function PosTicketDetailPage({
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Payment Summary</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Payment Summary" /></h2>
         <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm sm:grid-cols-5">
           <p>
-            <span className="block text-zinc-500">Subtotal</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Subtotal" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.subtotal)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Total</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Total" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.total)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Paid</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Paid" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.paid)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Remaining</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Remaining" /></span>
             <span className="font-semibold text-zinc-950">
               {formatMoney(totals.remaining)}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Payment Status</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Payment Status" /></span>
             <span className="font-semibold text-zinc-950">
-              {paymentStatus}
+              <WorkspaceText text={paymentStatus} />
             </span>
           </p>
         </div>
@@ -912,10 +918,10 @@ export default async function PosTicketDetailPage({
 
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-950">Payments</h2>
+          <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Payments" /></h2>
           {canWorkTicket ? (
             <span className="text-sm font-medium text-zinc-700">
-              Payment Actions
+              <WorkspaceText text="Payment Actions" />
             </span>
           ) : null}
         </div>
@@ -923,25 +929,25 @@ export default async function PosTicketDetailPage({
         <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-5 text-sm">
           <div className="grid gap-3 sm:grid-cols-4">
             <p>
-              <span className="block text-zinc-500">Total</span>
+              <span className="block text-zinc-500"><WorkspaceText text="Total" /></span>
               <span className="font-semibold text-zinc-950">
                 {formatMoney(totals.total)}
               </span>
             </p>
             <p>
-              <span className="block text-zinc-500">Paid</span>
+              <span className="block text-zinc-500"><WorkspaceText text="Paid" /></span>
               <span className="font-semibold text-zinc-950">
                 {formatMoney(totals.paid)}
               </span>
             </p>
             <p>
-              <span className="block text-zinc-500">Remaining</span>
+              <span className="block text-zinc-500"><WorkspaceText text="Remaining" /></span>
               <span className="font-semibold text-zinc-950">
                 {formatMoney(totals.remaining)}
               </span>
             </p>
             <p>
-              <span className="block text-zinc-500">Payment Progress</span>
+              <span className="block text-zinc-500"><WorkspaceText text="Payment Progress" /></span>
               <span className="font-semibold text-zinc-950">
                 {paymentProgress.toFixed(0)}%
               </span>
@@ -957,16 +963,16 @@ export default async function PosTicketDetailPage({
 
         {(ticket.payments ?? []).length === 0 ? (
           <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
-            No payments recorded yet.
+            <WorkspaceText text="No payments recorded yet." />
           </p>
         ) : (
           <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
             <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-              <div className="col-span-12 sm:col-span-3">Method</div>
-              <div className="hidden sm:col-span-2 sm:block">Amount</div>
-              <div className="hidden sm:col-span-3 sm:block">Created Time</div>
-              <div className="hidden sm:col-span-2 sm:block">Note</div>
-              <div className="hidden sm:col-span-2 sm:block">Actions</div>
+              <div className="col-span-12 sm:col-span-3"><WorkspaceText text="Method" /></div>
+              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Amount" /></div>
+              <div className="hidden sm:col-span-3 sm:block"><WorkspaceText text="Created Time" /></div>
+              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Note" /></div>
+              <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Actions" /></div>
             </div>
             <ul className="divide-y divide-zinc-200">
               {(ticket.payments ?? []).map((payment) => (
@@ -975,23 +981,23 @@ export default async function PosTicketDetailPage({
                   key={payment.id}
                 >
                   <div className="col-span-12 text-sm font-medium text-zinc-950 sm:col-span-3">
-                    {POS_PAYMENT_METHOD_LABELS[payment.payment_method]}
+                    <WorkspaceText text={POS_PAYMENT_METHOD_LABELS[payment.payment_method]} />
                   </div>
                   <div className="col-span-12 text-sm text-zinc-700 sm:col-span-2">
                     <span className="font-medium text-zinc-500 sm:hidden">
-                      Amount:{" "}
+                      <WorkspaceText text="Amount:" />{" "}
                     </span>
                     {formatMoney(payment.amount)}
                   </div>
                   <div className="col-span-12 text-sm text-zinc-700 sm:col-span-3">
                     <span className="font-medium text-zinc-500 sm:hidden">
-                      Created Time:{" "}
+                      <WorkspaceText text="Created Time:" />{" "}
                     </span>
-                    {formatTicketDateTime(payment.created_at)}
+                    <WorkspaceText text={formatTicketDateTime(payment.created_at)} />
                   </div>
                   <div className="col-span-12 text-sm text-zinc-700 sm:col-span-2">
                     <span className="font-medium text-zinc-500 sm:hidden">
-                      Note:{" "}
+                      <WorkspaceText text="Note:" />{" "}
                     </span>
                     {payment.note ?? "-"}
                   </div>
@@ -1004,7 +1010,7 @@ export default async function PosTicketDetailPage({
                           className="font-medium text-zinc-950 underline"
                           type="submit"
                         >
-                          Delete
+                          <WorkspaceText text="Delete" />
                         </SubmitButton>
                       </form>
                     ) : null}
@@ -1026,7 +1032,7 @@ export default async function PosTicketDetailPage({
 
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-950">Receipt Preview</h2>
+          <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Receipt Preview" /></h2>
           <span className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700">
             {receipt.header.receipt_status}
           </span>
@@ -1041,39 +1047,39 @@ export default async function PosTicketDetailPage({
             ) : null}
             <div className="mt-4 grid gap-2 text-zinc-700 sm:grid-cols-2">
               <p>
-                <span className="font-medium text-zinc-950">Ticket:</span>{" "}
+                <span className="font-medium text-zinc-950"><WorkspaceText text="Ticket:" /></span>{" "}
                 {receipt.header.ticket_number}
               </p>
               <p>
-                <span className="font-medium text-zinc-950">Status:</span>{" "}
+                <span className="font-medium text-zinc-950"><WorkspaceText text="Status:" /></span>{" "}
                 {receipt.header.ticket_status}
               </p>
               <p>
-                <span className="font-medium text-zinc-950">Customer:</span>{" "}
+                <span className="font-medium text-zinc-950"><WorkspaceText text="Customer:" /></span>{" "}
                 {receipt.header.customer_name}
               </p>
               <p>
-                <span className="font-medium text-zinc-950">Created:</span>{" "}
-                {formatTicketDateTime(receipt.header.created_time)}
+                <span className="font-medium text-zinc-950"><WorkspaceText text="Created:" /></span>{" "}
+                <WorkspaceText text={formatTicketDateTime(receipt.header.created_time)} />
               </p>
               <p>
-                <span className="font-medium text-zinc-950">Closed:</span>{" "}
-                {formatTicketDateTime(receipt.header.closed_time)}
+                <span className="font-medium text-zinc-950"><WorkspaceText text="Closed:" /></span>{" "}
+                <WorkspaceText text={formatTicketDateTime(receipt.header.closed_time)} />
               </p>
             </div>
           </div>
 
           <div className="border-b border-zinc-200 py-4">
-            <h3 className="text-sm font-semibold text-zinc-950">Items</h3>
+            <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Items" /></h3>
             {receipt.items.length === 0 ? (
-              <p className="mt-3 text-sm text-zinc-600">No items.</p>
+              <p className="mt-3 text-sm text-zinc-600"><WorkspaceText text="No items." /></p>
             ) : (
               <ul className="mt-3 divide-y divide-zinc-100">
                 {receipt.items.map((item, index) => (
                   <li className="grid gap-2 py-3 text-sm sm:grid-cols-5" key={`${item.service_name}-${index}`}>
                     <p className="font-medium text-zinc-950">{item.service_name}</p>
                     <p className="text-zinc-700">{item.assigned_staff}</p>
-                    <p className="text-zinc-700">Qty {formatQuantity(item.quantity)}</p>
+                    <p className="text-zinc-700"><WorkspaceText text="Qty" /> {formatQuantity(item.quantity)}</p>
                     <p className="text-zinc-700">{formatMoney(item.unit_price)}</p>
                     <p className="font-medium text-zinc-950">
                       {formatMoney(item.line_total)}
@@ -1086,46 +1092,46 @@ export default async function PosTicketDetailPage({
 
           <div className="grid gap-6 border-b border-zinc-200 py-4 md:grid-cols-2">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-950">Totals</h3>
+              <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Totals" /></h3>
               <dl className="mt-3 grid gap-2 text-sm">
                 <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600">Subtotal</dt>
+                  <dt className="text-zinc-600"><WorkspaceText text="Subtotal" /></dt>
                   <dd className="font-medium text-zinc-950">
                     {formatMoney(receipt.totals.subtotal)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600">Discount</dt>
+                  <dt className="text-zinc-600"><WorkspaceText text="Discount" /></dt>
                   <dd className="font-medium text-zinc-950">
                     {formatMoney(receipt.totals.discount)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600">Tax</dt>
+                  <dt className="text-zinc-600"><WorkspaceText text="Tax" /></dt>
                   <dd className="font-medium text-zinc-950">
                     {formatMoney(receipt.totals.tax)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600">Tip</dt>
+                  <dt className="text-zinc-600"><WorkspaceText text="Tip" /></dt>
                   <dd className="font-medium text-zinc-950">
                     {formatMoney(receipt.totals.tip)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3 border-t border-zinc-200 pt-2">
-                  <dt className="font-semibold text-zinc-950">Grand Total</dt>
+                  <dt className="font-semibold text-zinc-950"><WorkspaceText text="Grand Total" /></dt>
                   <dd className="font-semibold text-zinc-950">
                     {formatMoney(receipt.totals.grand_total)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600">Paid</dt>
+                  <dt className="text-zinc-600"><WorkspaceText text="Paid" /></dt>
                   <dd className="font-medium text-zinc-950">
                     {formatMoney(receipt.totals.paid)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="text-zinc-600">Remaining</dt>
+                  <dt className="text-zinc-600"><WorkspaceText text="Remaining" /></dt>
                   <dd className="font-medium text-zinc-950">
                     {formatMoney(receipt.totals.remaining)}
                   </dd>
@@ -1134,9 +1140,9 @@ export default async function PosTicketDetailPage({
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-zinc-950">Payments</h3>
+              <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Payments" /></h3>
               {receipt.payments.length === 0 ? (
-                <p className="mt-3 text-sm text-zinc-600">No payments.</p>
+                <p className="mt-3 text-sm text-zinc-600"><WorkspaceText text="No payments." /></p>
               ) : (
                 <ul className="mt-3 divide-y divide-zinc-100">
                   {receipt.payments.map((payment, index) => (
@@ -1144,7 +1150,7 @@ export default async function PosTicketDetailPage({
                       <div>
                         <p className="font-medium text-zinc-950">{payment.method}</p>
                         <p className="text-xs text-zinc-500">
-                          {formatTicketDateTime(payment.created_time)}
+                          <WorkspaceText text={formatTicketDateTime(payment.created_time)} />
                         </p>
                       </div>
                       <p className="font-medium text-zinc-950">
@@ -1158,14 +1164,14 @@ export default async function PosTicketDetailPage({
           </div>
 
           <p className="pt-4 text-center text-sm text-zinc-700">
-            {receipt.footer.message}
+            <WorkspaceText text={receipt.footer.message} />
           </p>
         </div>
       </section>
 
       {canWorkTicket || canVoidOrReopenTicket ? (
         <section className="mt-8 rounded-lg border border-zinc-200 bg-zinc-50 p-5">
-          <h2 className="text-lg font-semibold text-zinc-950">Actions</h2>
+          <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Actions" /></h2>
           {canWorkTicket && !checkoutAvailable ? (
             <p className="mt-3 text-sm text-zinc-600">
               {checkoutUnavailableReason}
@@ -1182,13 +1188,13 @@ export default async function PosTicketDetailPage({
                       className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
                       type="submit"
                     >
-                      Checkout
+                      <WorkspaceText text="Checkout" />
                     </SubmitButton>
                   </form>
                 ) : null}
                 <WorkflowActionForm
                   action={cancelPosTicket}
-                  buttonLabel="Cancel Ticket"
+                  buttonLabel={__vt("Cancel Ticket")}
                   returnPath={returnPath}
                   ticketId={ticket.id}
                 />
@@ -1198,13 +1204,13 @@ export default async function PosTicketDetailPage({
               <>
                 <WorkflowActionForm
                   action={voidPosTicket}
-                  buttonLabel="Void Ticket"
+                  buttonLabel={__vt("Void Ticket")}
                   returnPath={returnPath}
                   ticketId={ticket.id}
                 />
                 <WorkflowActionForm
                   action={reopenPosTicket}
-                  buttonLabel="Reopen Ticket"
+                  buttonLabel={__vt("Reopen Ticket")}
                   returnPath={returnPath}
                   ticketId={ticket.id}
                 />
@@ -1215,10 +1221,10 @@ export default async function PosTicketDetailPage({
       ) : null}
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Activity Timeline</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Activity Timeline" /></h2>
         {timeline.length === 0 ? (
           <p className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
-            No activity yet.
+            <WorkspaceText text="No activity yet." />
           </p>
         ) : (
           <ol className="mt-4 border-l border-zinc-200">
@@ -1228,13 +1234,13 @@ export default async function PosTicketDetailPage({
                 <div className="rounded-lg border border-zinc-200 bg-white p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-zinc-950">
-                      {item.label}
+                      <WorkspaceText text={item.label} />
                     </p>
                     <p className="text-xs text-zinc-500">
-                      {formatTicketDateTime(item.timestamp)}
+                      <WorkspaceText text={formatTicketDateTime(item.timestamp)} />
                     </p>
                   </div>
-                  <p className="mt-1 text-sm text-zinc-700">User: {item.user}</p>
+                  <p className="mt-1 text-sm text-zinc-700"><WorkspaceText text="User:" /> {item.user}</p>
                   {item.note ? (
                     <p className="mt-2 text-sm text-zinc-700">{item.note}</p>
                   ) : null}
@@ -1247,3 +1253,5 @@ export default async function PosTicketDetailPage({
     </main>
   );
 }
+
+export default withExperiencePage(PosTicketDetailPage);

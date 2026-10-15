@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useTransition, useSyncExternalStore } from "react";
 import { subscribePosChanges } from "@/lib/pos-workspace-sync";
@@ -39,5 +40,5 @@ export function StaffDailyRefresh({ salonId, refreshedAt, viewKey }: { salonId: 
       window.removeEventListener("pageshow", wake);
     };
   }, [salonId, router, viewKey]);
-  return online ? null : <p role="status" className="mb-2 text-xs text-amber-800">Offline · showing the last loaded data. Reconnect to update.</p>;
+  return online ? null : <p role="status" className="mb-2 text-xs text-amber-800"><WorkspaceText text="Offline · showing the last loaded data. Reconnect to update." /></p>;
 }

@@ -1,3 +1,4 @@
+import { savedTaxReportSource } from "@/lib/payroll-tax-report-source";
 import { getSalonBusinessTimezone } from "@/lib/salon-business-clock";
 import "server-only";
 
@@ -913,12 +914,21 @@ async function getLinkedCurrentStaffId(
 }
 
 async function requirePayrollContext(
-  options: { taxCompanyOnly?: boolean } = {},
+  options: { taxCompanyOnly?: boolean; taxSalonId?: string } = {},
 ): Promise<PayrollAuthContext> {
   const context = await getCurrentBusinessContext();
 
   if (!context.user) {
     throw new Error("You must be logged in to view payroll.");
+  }
+
+  if (options.taxCompanyOnly && options.taxSalonId) {
+    const supabase = await createAuthenticatedSupabaseServerClient();
+    if (!supabase) throw new Error("Please sign in again.");
+    const { data, error } = await supabase.rpc("tax_company_scope", { p_salon: options.taxSalonId });
+    if (error || !data?.salon || !data?.account) throw new Error("This salon connection is inactive. Connect again with its current credentials.");
+    return { access: { canManagePayroll: false, canViewAllPayroll: false, canViewTaxCompany: true, linkedStaffId: null },
+      context, Account: data.account, salon: data.salon, supabase, user: context.user };
   }
 
   if (!isSalonManageContext(context)) {
@@ -1767,7 +1777,7 @@ function lineHasTaxFixed(line: PayrollStaffLineWithDailyTotals) {
   return line.pay_type_used === "fixed";
 }
 
-function isTaxCompanyReportableLine(line: PayrollStaffLineWithDailyTotals) {
+export function isTaxCompanyReportableLine(line: PayrollStaffLineWithDailyTotals) {
   if (!lineHasPayrollData(line)) {
     return false;
   }
@@ -2832,22 +2842,16 @@ async function buildTaxCompanyLinesForAuth(input: {
   live?: PayrollLiveSnapshot;
   period: PayrollPeriod;
 }) {
-  const [live, latestStatement] = await Promise.all([
-    input.live ?? calculateLivePayrollForAuth(input.auth, input.period),
-    input.latestStatement === undefined
-      ? loadLatestPayrollSnapshot(input.auth, input.period)
-      : Promise.resolve(input.latestStatement),
-  ]);
-  const lines = attachStatementPaystubsToLines({
-    latestStatement,
-    lines: live.lines,
-  }).filter(isTaxCompanyReportableLine);
+  const latestStatement = input.latestStatement === undefined
+    ? await loadLatestPayrollSnapshot(input.auth, input.period) : input.latestStatement;
+  const selected = savedTaxReportSource(latestStatement);
+  const lines = selected.lines.filter(isTaxCompanyReportableLine);
 
   return {
     latestStatement,
     lines,
-    source: "live" as const,
-    summary: calculateSummary({ corrections: live.corrections, lines }),
+    source: selected.source,
+    summary: calculateSummary({ corrections: [], lines }),
   };
 }
 
@@ -3797,6 +3801,20 @@ export async function markPayrollStatementPaid(payrollRunId: string) {
     return run;
   }
 
+  const period = periodFromDates({
+    cycleType: run.cycle_type,
+    startDate: run.period_start,
+    endDate: run.period_end,
+  });
+  const latest = await loadLatestPayrollSnapshot(auth, period);
+  if (!latest || latest.run.id !== run.id) {
+    throw new Error("Only the latest saved payroll statement can be marked paid.");
+  }
+  const live = await calculateLivePayrollForAuth(auth, period);
+  if (compareLivePayrollToStatement(live, latest).changed) {
+    throw new Error("Payroll has changed. Save a new statement before marking paid.");
+  }
+
   const now = new Date().toISOString();
   const { data, error } = await auth.supabase
     .from("payroll_runs")
@@ -3828,8 +3846,9 @@ export async function uploadPayrollPaystub(input: {
   file: File;
   payrollRunId: string;
   staffId: string;
+  taxSalonId?: string;
 }) {
-  const auth = await requirePayrollContext({ taxCompanyOnly: true });
+  const auth = await requirePayrollContext({ taxCompanyOnly: true, taxSalonId: input.taxSalonId });
 
   if (!auth.access.canManagePayroll && !auth.access.canViewTaxCompany) {
     throw new Error("You do not have permission to upload paystubs.");
@@ -4326,6 +4345,7 @@ export async function getPayrollSettingsWorkspace() {
 }
 
 export async function getPayrollPageData(input: {
+  includeAnalytics?: boolean;
   cycleType?: string | null;
   endDate?: string | null;
   month?: string | null;
@@ -4356,7 +4376,7 @@ export async function getPayrollPageData(input: {
       auth.access.canViewAllPayroll
         ? loadStaffPayrollSettings(auth)
         : Promise.resolve([]),
-      auth.access.canViewAllPayroll
+      auth.access.canViewAllPayroll && input.includeAnalytics !== false
         ? loadPayrollServiceAnalytics(auth, period)
         : Promise.resolve(emptyPayrollServiceAnalytics()),
     ]);

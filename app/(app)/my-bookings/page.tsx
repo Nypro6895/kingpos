@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { ContextualSupport } from "@/components/contextual-support";
 import { ActivityHistoryPanel } from "@/app/(app)/activity/activity-history-panel";
 import { getCustomerActivity } from "@/lib/customer-activity";
 import { BookingDetailsButton } from "@/app/my-bookings/booking-details-button";
@@ -240,7 +242,7 @@ function BookingRow({ booking, initialOpen }: { booking: CustomerBookingSummary;
         <span className={listStyles.location}>
           <SalonThumb booking={booking} />
           <span className={listStyles.place}>
-            <strong>{salonName}</strong>
+            <strong><a href={`/explore/salons/${booking.salon_id}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange">{salonName}</a></strong>
             {place ? <span>{place}</span> : null}
           </span>
         </span>
@@ -264,7 +266,7 @@ function BookingRow({ booking, initialOpen }: { booking: CustomerBookingSummary;
   );
 }
 
-export default async function MyBookingsPage({
+async function MyBookingsPage({
   searchParams,
 }: MyBookingsPageProps) {
   const resolvedSearchParams = await searchParams;
@@ -307,7 +309,8 @@ export default async function MyBookingsPage({
         ) : null}
 
         <p className="text-xs text-text-secondary">Appointments here ? <Link className="font-bold text-brand-teal" href="/activity">All visits & receipts</Link></p>
-        <nav className="flex gap-6 overflow-x-auto" aria-label="Booking filters">
+        <div className="flex min-w-0 items-center gap-3">
+<nav style={{ flex: "1 1 auto", minWidth: 0 }} className="flex gap-6 overflow-x-auto" aria-label="Booking filters">
           {TABS.map((tab) => {
             const active = tab.id === scope;
 
@@ -328,6 +331,8 @@ export default async function MyBookingsPage({
             );
           })}
         </nav>
+<ContextualSupport />
+</div>
 
         {!result.ok ? null : bookings.length === 0 ? (
           <section className="content-surface border-[#ffd6c4] bg-white p-6 rounded-none border-y shadow-none">
@@ -370,3 +375,5 @@ export default async function MyBookingsPage({
     </main>
   );
 }
+
+export default withExperiencePage(MyBookingsPage);

@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import Form from "next/form";
 import {useState,useEffect,useRef} from 'react';import Link from 'next/link';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
@@ -281,13 +282,15 @@ function WorkLogFilters({
   selectedDate: string;
   todayHref: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <Form
       action="/pos-tickets"
       className="mt-4 grid gap-3 border-b border-zinc-200 pb-4 sm:grid-cols-[180px_minmax(260px,1fr)_auto_auto]"
     >
       <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Date</span>
+        <span className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text="Date" /></span>
         <input
           className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
           defaultValue={selectedDate}
@@ -296,12 +299,12 @@ function WorkLogFilters({
         />
       </label>
       <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500">Search</span>
+        <span className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text="Search" /></span>
         <input
           className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
           defaultValue={query}
           name="q"
-          placeholder="Search customer, staff, service, ticket #"
+          placeholder={__vt("Search customer, staff, service, ticket #")}
           type="search"
         />
       </label>
@@ -309,13 +312,13 @@ function WorkLogFilters({
         className="h-10 self-end rounded bg-zinc-950 px-4 text-sm font-medium text-white"
         type="submit"
       >
-        Search
+        <WorkspaceText text="Search" />
       </button>
       <Link
         className="inline-flex h-10 items-center self-end rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
         href={todayHref}
       >
-        Today
+        <WorkspaceText text="Today" />
       </Link>
     </Form>
   );
@@ -349,12 +352,12 @@ function DailyWorkLog({
       <section className="mt-6">
         <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
           <h2 className="text-lg font-semibold text-zinc-950">
-            {selectedDateLabel}
+            <WorkspaceText text={selectedDateLabel} />
           </h2>
         </div>
         <div className="rounded border border-dashed border-zinc-300 bg-zinc-50 p-6">
           <h2 className="text-lg font-semibold text-zinc-950">
-            No POS work log for this date.
+            <WorkspaceText text="No POS work log for this date." />
           </h2>
         </div>
       </section>
@@ -367,7 +370,7 @@ function DailyWorkLog({
         <section key={dateGroup.dateKey}>
           <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
             <h2 className="text-lg font-semibold text-zinc-950">
-              {selectedDateLabel}
+              <WorkspaceText text={selectedDateLabel} />
             </h2>
           </div>
           <div className="overflow-hidden rounded border border-zinc-200 bg-white">

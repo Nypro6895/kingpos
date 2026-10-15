@@ -1,9 +1,10 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { NotificationCenterClient } from "@/app/notifications/notification-center-client";
 import { loadNotificationPage } from "@/lib/notification-center";
 import { getRequestBusinessContext as getCurrentBusinessContext } from "@/lib/request-business-context";
 import { getWorkspacePendingSummary } from "@/lib/workspace-pending";
 import { redirect } from "next/navigation";
-export default async function NotificationsPage({
+async function NotificationsPage({
   searchParams,
 }: {
   searchParams: Promise<{ filter?: string }>;
@@ -31,3 +32,5 @@ export default async function NotificationsPage({
     />
   );
 }
+
+export default withExperiencePage(NotificationsPage);

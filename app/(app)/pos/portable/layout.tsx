@@ -17,6 +17,8 @@ import { PortableWorkspaceTabs } from "@/app/pos/portable/portable-workspace-tab
 import { PortableWorkspaceStateProvider } from "@/app/pos/portable/portable-workspace-state";
 import { PORTABLE_POS_CAPABILITIES } from "@/lib/pos-portable-capabilities";
 import { PORTABLE_POS_ROUTE_LINKS } from "@/lib/pos-portable-routes";
+import { WorkspaceLanguageProvider, WorkspaceText } from "@/components/workspace-language";
+import { marketServiceClient } from "@/lib/market-payments";
 
 function ReylumiLogo() {
   return (
@@ -34,7 +36,7 @@ function ReylumiLogo() {
 async function PreparedPanel({ render }: { render: () => Promise<React.ReactNode> }) {
   try { return await render(); }
   catch {
-    return <p role="alert" className="p-6">This view could not load. Other loaded tabs remain available. Reconnect and refresh to try again.</p>;
+    return <p role="alert" className="p-6"><WorkspaceText text="This view could not load. Other loaded tabs remain available. Reconnect and refresh to try again." /></p>;
   }
 }
 
@@ -66,6 +68,13 @@ export default async function PortablePosLayout({
   if (!session) {
     return <PortableLoginScreen />;
   }
+  // Portable uses its own authenticated device session, rather than owner cookies.
+  const language = await Promise.resolve().then(async () => {
+    const { data } = await marketServiceClient().from("vietnamese_plugin_subscriptions").select("installed,portable_enabled,trial_ends_at,paid_until").eq("salon_id", session.salon_id).maybeSingle();
+    return data;
+  }).catch(() => null);
+  const languageExpiry = language ? [language.trial_ends_at, language.paid_until].filter(Boolean).sort((a, b) => Date.parse(b) - Date.parse(a))[0] : null;
+  const vietnamese = Boolean(language?.installed && language.portable_enabled && languageExpiry && Date.parse(languageExpiry) > preparedAt);
 
   const workspaceLinks = PORTABLE_POS_ROUTE_LINKS.filter((link) => {
     if (link.id === "pos") {
@@ -100,7 +109,7 @@ export default async function PortablePosLayout({
   // Online-only sessions load a panel on first visit and retain it thereafter.
   const offlineEnabled = process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1";
   for (const link of offlineEnabled ? workspaceLinks : []) {
-    panels[link.href] = <Suspense fallback={<p role="status" className="p-6">Loading {link.label}…</p>}>
+    panels[link.href] = <Suspense fallback={<p role="status" className="p-6"><WorkspaceText text="Loading" /> <WorkspaceText text={link.label} />…</p>}>
       {panelPages[link.id]}
     </Suspense>;
   }
@@ -113,7 +122,7 @@ export default async function PortablePosLayout({
       data-portable-shell
       data-pos-persistent-workspace
     >
-      <PortableWorkspaceStateProvider timezone={session.salon_timezone} preparedAt={preparedAt} offlineEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"} scope={`${session.salon_id}:${session.key_id}`}>
+      <WorkspaceLanguageProvider portableSession enabled={vietnamese} portableEnabled={vietnamese} expiresAt={languageExpiry ?? null}><PortableWorkspaceStateProvider timezone={session.salon_timezone} preparedAt={preparedAt} offlineEnabled={process.env.KINGPOS_PORTABLE_DRAFT_OUTBOX === "1"} scope={`${session.salon_id}:${session.key_id}`}>
         <PortableWorkspaceTabs
           canConfirmBookings={session.capabilities.includes(PORTABLE_POS_CAPABILITIES.bookCreate)}
           localPanels
@@ -129,7 +138,7 @@ export default async function PortablePosLayout({
         <PortableOfflineShell />
         <PortableShellRefresh />
         <PortableTouchKeyboard enabled={session.touch_keyboard_enabled !== false} />
-      </PortableWorkspaceStateProvider>
+      </PortableWorkspaceStateProvider></WorkspaceLanguageProvider>
     </main>
   );
 }

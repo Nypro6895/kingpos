@@ -39,10 +39,10 @@ test(
               loader: "js",
               contents:
                 a.path === "next/navigation"
-                  ? `export const useRouter=()=>({refresh(){}});`
+                  ? `export const useRouter=()=>({refresh(){}});export const usePathname=()=>"/admin/advertising";`
                   : a.path.endsWith("/browser")
                     ? `export const createSupabaseBrowserClient=()=>null;`
-                    : `window.rows={};export async function saveCampaignAction(previous,form){if(window.failSave){window.failSave=false;return {ok:false,message:'Save unavailable. Try again.',errors:{}};}const id=form.get('id')||crypto.randomUUID();window.rows[id]=Object.fromEntries(form);return {ok:true,id,message:'Saved'};}export async function deleteCampaignAction(form){delete window.rows[form.get('id')];}export async function campaignImageUploadAction(){throw new Error('Unsupported test upload');}`,
+                    : `window.rows={};export async function saveAdvertisingLimitsAction(){return {ok:true,message:"Limits saved"};}export async function saveCampaignAction(previous,form){if(window.failSave){window.failSave=false;return {ok:false,message:'Save unavailable. Try again.',errors:{}};}const id=form.get('id')||crypto.randomUUID();window.rows[id]=Object.fromEntries(form);return {ok:true,id,message:'Saved'};}export async function deleteCampaignAction(form){delete window.rows[form.get('id')];}export async function campaignImageUploadAction(){throw new Error('Unsupported test upload');}`,
             }));
           },
         },
@@ -130,11 +130,9 @@ test(
         .getByRole("heading", { name: "Keep this draft", exact: true })
         .waitFor();
       await page.getByRole("button", { name: /^Running/ }).click();
-      const first = page
-        .locator("article")
-        .filter({
-          has: page.getByRole("heading", { name: "First offer", exact: true }),
-        });
+      const first = page.locator("article").filter({
+        has: page.getByRole("heading", { name: "First offer", exact: true }),
+      });
       await first.getByRole("button", { name: "Stop", exact: true }).click();
       await page
         .getByRole("heading", { name: "First offer", exact: true })

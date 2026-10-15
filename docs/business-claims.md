@@ -12,6 +12,8 @@ Granting locks account, salon and request in that order, creates owner roles and
 
 ## Support and review
 
+Ownership decisions now send mandatory in-app updates and link to a persistent private conversation. Reviewers can request specific additional information (`needs_info`); applicant replies requeue the same claim without granting access. Public explanations and internal audit notes are separate. See [review communication](review-communication.md) for the workflow and security checks.
+
 Users who cannot access the listed phone submit a reason, with up to three optional private JPG/PNG/PDF documents, 5 MB each. Waiting applicants can add supporting information. Uploads are server-only; storage paths cannot be submitted through the authenticated support RPC. Documents are appended under a request lock and never replace prior evidence. Five support submissions per user per day are allowed. Only the applicant and authorized platform administrators can read a request. Admins open `/admin/claims`; reading requires `admin.locations.read`, and approving/rejecting requires `admin.locations.update_status` and a decision reason. Private file links expire after 60 seconds. Events record sends, evidence and decisions.
 
 ## Server configuration

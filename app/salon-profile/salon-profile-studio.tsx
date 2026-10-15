@@ -1,7 +1,10 @@
 "use client";
+import { MediaUploadProgress } from "@/components/media-upload-progress";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
-import { useCloseOnNavigation } from "@/components/overlay-dismissal";
+import { useCloseOnNavigation, useOverlayPortalHost } from "@/components/overlay-dismissal";
+import { createPortal } from "react-dom";
 
 import {
   createSalonProfileLookAction,
@@ -303,6 +306,7 @@ function uploadToSupabase(input: {
     )}/${encodeStoragePath(input.path)}`;
 
     xhr.open("POST", objectUrl);
+    xhr.timeout = 120_000;
     xhr.setRequestHeader("Authorization", `Bearer ${input.accessToken}`);
     xhr.setRequestHeader("apikey", input.anonKey);
     xhr.setRequestHeader("Content-Type", input.blob.type);
@@ -322,6 +326,7 @@ function uploadToSupabase(input: {
       reject(new Error(xhr.responseText || "Upload failed."));
     };
     xhr.onerror = () => reject(new Error("Upload failed."));
+    xhr.ontimeout = () => reject(new Error("Upload timed out. Check your connection and try again."));
     xhr.onabort = () => reject(new Error("Upload cancelled."));
     xhr.send(input.blob);
   });
@@ -342,7 +347,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-zinc-700">{label}</span>
+      <span className="text-sm font-medium text-zinc-700"><WorkspaceText text={label} /></span>
       <input
         className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
         defaultValue={defaultValue ?? ""}
@@ -367,7 +372,7 @@ function TextArea({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-zinc-700">{label}</span>
+      <span className="text-sm font-medium text-zinc-700"><WorkspaceText text={label} /></span>
       <textarea
         className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-zinc-950"
         defaultValue={defaultValue ?? ""}
@@ -387,7 +392,7 @@ function SelectOptions({
 }) {
   return (
     <>
-      <option value="">{label}</option>
+      <option value=""><WorkspaceText text={label} /></option>
       {items.map((item) => (
         <option key={item.id} value={item.id}>
           {item.name}
@@ -406,10 +411,14 @@ function Drawer({
   onClose: () => void;
   title: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   useCloseOnNavigation(onClose);
   const closeRef = useRef<HTMLButtonElement | null>(null);
+  const portalHost = useOverlayPortalHost();
 
   useEffect(() => {
+    if (!portalHost) return;
     closeRef.current?.focus();
 
     function onKeyDown(event: KeyboardEvent) {
@@ -420,25 +429,28 @@ function Drawer({
 
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+  }, [onClose, portalHost]);
 
-  return (
+  if (!portalHost) return null;
+
+  return createPortal(
     <div
       aria-modal="true"
-      className="fixed inset-0 z-50 grid bg-zinc-950/35 p-0 backdrop-blur-sm sm:p-4"
+      className="fixed inset-0 z-[90] grid bg-zinc-950/35 p-0 backdrop-blur-sm sm:p-4"
       role="dialog"
     >
       <button
-        aria-label="Close dialog"
+        aria-label={__vt("Close dialog")}
         className="absolute inset-0 cursor-default"
         onClick={onClose}
         type="button"
       />
-      <div className="relative ml-auto flex h-dvh w-full max-w-3xl flex-col overflow-hidden bg-white shadow-2xl sm:h-[calc(100dvh-2rem)] sm:rounded-lg">
+      <div className="settings-style relative ml-auto flex h-dvh w-full max-w-3xl flex-col overflow-hidden bg-white pt-[env(safe-area-inset-top)] shadow-2xl sm:h-[calc(100dvh-2rem)] sm:rounded-lg">
         <div className="flex min-h-16 shrink-0 items-center justify-between gap-3 border-b border-zinc-200 px-4 sm:px-5">
-          <h2 className="text-lg font-semibold text-zinc-950">{title}</h2>
+          <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text={title} /></h2>
           <button
-            className="grid h-10 w-10 place-items-center rounded-md border border-zinc-200 text-zinc-700 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+            aria-label={__vt("Close dialog")}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-zinc-200 text-zinc-700 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
             onClick={onClose}
             ref={closeRef}
             type="button"
@@ -448,7 +460,8 @@ function Drawer({
         </div>
         <div className="min-h-0 flex-1 overscroll-contain overflow-auto p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:p-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    portalHost,
   );
 }
 
@@ -468,14 +481,14 @@ function SubmitFooter({
         onClick={onCancel}
         type="button"
       >
-        Cancel
+        <WorkspaceText text="Cancel" />
       </button>
       <SubmitButton
         className="min-h-10 w-full rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300 sm:w-auto"
         disabled={disabled}
         type="submit"
       >
-        {submitLabel}
+        <WorkspaceText text={submitLabel} />
       </SubmitButton>
     </div>
   );
@@ -504,6 +517,8 @@ export function SalonMediaUploader({
   onUploadStateChange?: (isBusy: boolean) => void;
   onUploaded: (path: string | null) => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [processedFile, setProcessedFile] = useState<File | null>(null);
@@ -675,14 +690,14 @@ export function SalonMediaUploader({
         {previewUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            alt={`${label} preview`}
+            alt={__vt(`${label} preview`)}
             className="max-h-56 w-full rounded-md object-cover"
             src={previewUrl}
           />
         ) : (
           <div>
-            <p className="font-semibold text-zinc-950">{label}</p>
-            <p className="mt-1 text-sm text-zinc-600">Drop or choose an image</p>
+            <p className="font-semibold text-zinc-950"><WorkspaceText text={label} /></p>
+            <p className="mt-1 text-sm text-zinc-600"><WorkspaceText text="Drop or choose an image" /></p>
           </div>
         )}
       </div>
@@ -697,7 +712,7 @@ export function SalonMediaUploader({
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="text-xs font-semibold text-zinc-600">
-              Zoom
+              <WorkspaceText text="Zoom" />
               <input
                 className="mt-2 w-full"
                 max="2"
@@ -714,7 +729,7 @@ export function SalonMediaUploader({
               />
             </label>
             <label className="text-xs font-semibold text-zinc-600">
-              Horizontal
+              <WorkspaceText text="Horizontal" />
               <input
                 className="mt-2 w-full"
                 max="1"
@@ -731,7 +746,7 @@ export function SalonMediaUploader({
               />
             </label>
             <label className="text-xs font-semibold text-zinc-600">
-              Vertical
+              <WorkspaceText text="Vertical" />
               <input
                 className="mt-2 w-full"
                 max="1"
@@ -755,7 +770,7 @@ export function SalonMediaUploader({
               onClick={() => void reprocess()}
               type="button"
             >
-              Adjust crop
+              <WorkspaceText text="Adjust crop" />
             </button>
             <button
               className="rounded-md bg-zinc-950 px-3 py-2 text-sm font-semibold text-white disabled:bg-zinc-300"
@@ -763,27 +778,23 @@ export function SalonMediaUploader({
               onClick={() => void upload()}
               type="button"
             >
-              {state === "uploading" ? `Uploading ${progress}%` : "Upload"}
+              <WorkspaceText text={state === "uploading" ? "Uploading…" : "Upload"} />
             </button>
           </div>
         </div>
       ) : null}
 
-      {uploadedPath ? (
-        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          Uploaded and ready to save.
-        </p>
-      ) : null}
+      {busy ? <MediaUploadProgress phase={state === "processing" ? "preparing" : "uploading"} progress={progress} /> : uploadedPath ? <MediaUploadProgress phase="complete" progress={100} /> : null}
       {error ? (
         <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
           <div className="flex items-start justify-between gap-3">
-            <p>{error}</p>
+            <p><WorkspaceText text={error} /></p>
             <button
               className="font-semibold underline"
               onClick={() => setError(null)}
               type="button"
             >
-              Clear
+              <WorkspaceText text="Clear" />
             </button>
           </div>
         </div>
@@ -794,7 +805,7 @@ export function SalonMediaUploader({
           onClick={() => void removeUploaded()}
           type="button"
         >
-          Remove
+          <WorkspaceText text="Remove" />
         </button>
       ) : null}
     </div>
@@ -807,14 +818,14 @@ function ReadinessPanel({ readiness }: { readiness: SalonProfileReadiness }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-zinc-950">
-            Publication readiness
+            <WorkspaceText text="Publication readiness" />
           </h2>
           <p className="mt-1 text-sm text-zinc-600">
-            {readiness.completionPercent}% complete
+            {readiness.completionPercent}<WorkspaceText text="% complete" />
           </p>
         </div>
         <span className="rounded-md border border-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-700">
-          {readiness.isExploreEligible ? "Explore eligible" : "Not eligible"}
+          <WorkspaceText text={readiness.isExploreEligible ? "Explore eligible" : "Not eligible"} />
         </span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-zinc-100">
@@ -830,9 +841,9 @@ function ReadinessPanel({ readiness }: { readiness: SalonProfileReadiness }) {
             key={item.id}
           >
             <div>
-              <p className="text-sm font-medium text-zinc-950">{item.label}</p>
+              <p className="text-sm font-medium text-zinc-950"><WorkspaceText text={item.label} /></p>
               <p className="text-xs text-zinc-500">
-                {item.required ? "Required" : "Optional"}
+                <WorkspaceText text={item.required ? "Required" : "Optional"} />
               </p>
             </div>
             <span
@@ -845,7 +856,7 @@ function ReadinessPanel({ readiness }: { readiness: SalonProfileReadiness }) {
                     : "bg-zinc-100 text-zinc-600",
               ].join(" ")}
             >
-              {item.complete ? "Done" : "Missing"}
+              {item.complete ? <WorkspaceText text="Done" /> : "Missing"}
             </span>
           </div>
         ))}
@@ -864,7 +875,7 @@ function StatusBadge({ status }: { status: SalonProfileLookStatus | string }) {
 
   return (
     <span className={`rounded-md border px-2 py-1 text-xs font-semibold ${className}`}>
-      {status}
+      <WorkspaceText text={status} />
     </span>
   );
 }
@@ -882,6 +893,8 @@ function ProfileDrawer({
   onClose: () => void;
   setting: SalonProfileSetting;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [logoPath, setLogoPath] = useState<string | null>(null);
   const [coverPath, setCoverPath] = useState<string | null>(null);
   const [removeLogo, setRemoveLogo] = useState(false);
@@ -897,36 +910,36 @@ function ProfileDrawer({
       <input name="remove_cover_image" type="hidden" value={removeCover ? "true" : "false"} />
       {!canManageIdentity ? (
         <p className="rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
-          You can view this profile, but you do not have permission to edit it.
+          <WorkspaceText text="You can view this profile, but you do not have permission to edit it." />
         </p>
       ) : null}
       <Field
         defaultValue={setting.business_name}
-        label="Public business name"
+        label={__vt("Public business name")}
         name="business_name"
         required
       />
       <Field
         defaultValue={setting.public_profile_tagline}
-        label="Tagline"
+        label={__vt("Tagline")}
         name="public_profile_tagline"
       />
       <TextArea
         defaultValue={setting.business_description}
-        label="Short public description"
+        label={__vt("Short public description")}
         name="business_description"
       />
       <TextArea
         defaultValue={setting.public_profile_story}
-        label="Salon story"
+        label={__vt("Salon story")}
         name="public_profile_story"
         rows={4}
       />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field defaultValue={setting.phone} label="Phone" name="phone" />
-        <Field defaultValue={setting.email} label="Email" name="email" type="email" />
+        <Field defaultValue={setting.phone} label={__vt("Phone")} name="phone" />
+        <Field defaultValue={setting.email} label={__vt("Email")} name="email" type="email" />
       </div>
-      <Field defaultValue={setting.website} label="Website" name="website" type="url" />
+      <Field defaultValue={setting.website} label={__vt("Website")} name="website" type="url" />
       <div className="grid gap-5 sm:grid-cols-2">
         <SalonMediaUploader
           currentPath={setting.public_profile_logo_path}
@@ -934,7 +947,7 @@ function ProfileDrawer({
           disabled={!canManageIdentity}
           intent="identity"
           kind="logo"
-          label="Logo image"
+          label={__vt("Logo image")}
           onRemoveExisting={() => setRemoveLogo(true)}
           onUploaded={(path) => {
             setLogoPath(path);
@@ -948,7 +961,7 @@ function ProfileDrawer({
           disabled={!canManageIdentity}
           intent="identity"
           kind="cover"
-          label="Cover image"
+          label={__vt("Cover image")}
           onRemoveExisting={() => setRemoveCover(true)}
           onUploaded={(path) => {
             setCoverPath(path);
@@ -960,7 +973,7 @@ function ProfileDrawer({
       <SubmitFooter
         disabled={!canManageIdentity || uploading}
         onCancel={onClose}
-        submitLabel="Save changes"
+        submitLabel={__vt("Save changes")}
       />
     </form>
   );
@@ -979,6 +992,8 @@ function LookDrawer({
   setting: SalonProfileSetting;
   staff: Staff[];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const activeServices = services.filter((service) => service.is_active);
   const activeStaff = staff.filter((member) => member.is_active);
   const [serviceId, setServiceId] = useState("");
@@ -996,24 +1011,24 @@ function LookDrawer({
         disabled={!canManageContent}
         intent="content"
         kind="look"
-        label="Look image"
+        label={__vt("Look image")}
         onUploaded={setImagePath}
         onUploadStateChange={setUploading}
       />
-      <Field label="Look name" name="title" required />
+      <Field label={__vt("Look name")} name="title" required />
       <TextArea
-        label="Short emotional description"
+        label={__vt("Short emotional description")}
         name="emotional_description"
         rows={2}
       />
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="text-sm font-medium text-zinc-700">Mood</span>
+          <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Mood" /></span>
           <select
             className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
             name="mood"
           >
-            <option value="">Choose mood</option>
+            <option value=""><WorkspaceText text="Choose mood" /></option>
             {SALON_PROFILE_MOOD_OPTIONS.filter((mood) => mood !== "Surprise me").map(
               (mood) => (
                 <option key={mood} value={mood}>
@@ -1024,29 +1039,29 @@ function LookDrawer({
           </select>
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-zinc-700">Service</span>
+          <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Service" /></span>
           <select
             className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
             name="service_id"
             onChange={(event) => setServiceId(event.currentTarget.value)}
             value={serviceId}
           >
-            <SelectOptions items={activeServices} label="Choose service" />
+            <SelectOptions items={activeServices} label={__vt("Choose service")} />
           </select>
         </label>
       </div>
       {selectedService ? (
         <p className="rounded-md bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
-          {[
+          <WorkspaceText text={[
             formatDuration(selectedService.duration_minutes),
             formatMoney(selectedService.base_price),
           ]
             .filter(Boolean)
-            .join(" - ")}
+            .join(" - ")} />
         </p>
       ) : null}
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Recommended artist</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Recommended artist" /></span>
         <select
           className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           name="recommended_staff_id"
@@ -1056,22 +1071,22 @@ function LookDrawer({
               id: member.id,
               name: member.display_name,
             }))}
-            label="Choose artist"
+            label={__vt("Choose artist")}
           />
         </select>
       </label>
       <details className="rounded-lg border border-zinc-200 p-4">
         <summary className="cursor-pointer text-sm font-semibold text-zinc-950">
-          Advanced options
+          <WorkspaceText text="Advanced options" />
         </summary>
         <div className="mt-4 grid gap-4">
           <label className="block">
-            <span className="text-sm font-medium text-zinc-700">Badge</span>
+            <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Badge" /></span>
             <select
               className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
               name="badge"
             >
-              <option value="">No badge</option>
+              <option value=""><WorkspaceText text="No badge" /></option>
               {SALON_PROFILE_BADGE_OPTIONS.map((badge) => (
                 <option key={badge} value={badge}>
                   {badge}
@@ -1080,15 +1095,15 @@ function LookDrawer({
             </select>
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Custom duration" name="duration_minutes" type="number" />
-            <Field label="Custom starting price" name="starting_price" type="number" />
+            <Field label={__vt("Custom duration")} name="duration_minutes" type="number" />
+            <Field label={__vt("Custom starting price")} name="starting_price" type="number" />
           </div>
-          <TextArea label="Why you'll love it" name="why_love_it" rows={2} />
+          <TextArea label={__vt("Why you'll love it")} name="why_love_it" rows={2} />
           <div className="grid gap-3 sm:grid-cols-4">
             {["palette_1", "palette_2", "palette_3", "palette_4"].map((name, index) => (
               <label className="block" key={name}>
                 <span className="text-sm font-medium text-zinc-700">
-                  Color {index + 1}
+                  <WorkspaceText text="Color" /> {index + 1}
                 </span>
                 <input
                   className="mt-2 h-11 w-full rounded-md border border-zinc-300 bg-white px-2"
@@ -1103,12 +1118,12 @@ function LookDrawer({
       </details>
       <label className="inline-flex items-center gap-2 text-sm font-medium text-zinc-700">
         <input className="size-4" name="publish_now" type="checkbox" />
-        Publish now
+        <WorkspaceText text="Publish now" />
       </label>
       <SubmitFooter
         disabled={!canManageContent || uploading || !imagePath}
         onCancel={onClose}
-        submitLabel="Save look"
+        submitLabel={__vt("Save look")}
       />
     </form>
   );
@@ -1127,13 +1142,15 @@ function OpeningDrawer({
   setting: SalonProfileSetting;
   staff: Staff[];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <form action={createSalonProfileUpdateAction} className="grid gap-5">
       <input name="salon_id" type="hidden" value={setting.salon_id} />
       <input name="update_type" type="hidden" value="last_minute_opening" />
-      <Field label="Date and time" name="starts_at" required type="datetime-local" />
+      <Field label={__vt("Date and time")} name="starts_at" required type="datetime-local" />
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Service</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Service" /></span>
         <select
           className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           name="service_id"
@@ -1141,12 +1158,12 @@ function OpeningDrawer({
         >
           <SelectOptions
             items={services.filter((service) => service.is_active)}
-            label="Choose service"
+            label={__vt("Choose service")}
           />
         </select>
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Artist</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Artist" /></span>
         <select
           className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           name="staff_id"
@@ -1156,18 +1173,18 @@ function OpeningDrawer({
             items={staff
               .filter((member) => member.is_active)
               .map((member) => ({ id: member.id, name: member.display_name }))}
-            label="Choose artist"
+            label={__vt("Choose artist")}
           />
         </select>
       </label>
       <label className="inline-flex items-center gap-2 text-sm font-medium text-zinc-700">
         <input className="size-4" name="publish_now" type="checkbox" />
-        Publish now
+        <WorkspaceText text="Publish now" />
       </label>
       <SubmitFooter
         disabled={!canManageContent}
         onCancel={onClose}
-        submitLabel="Share opening"
+        submitLabel={__vt("Share opening")}
       />
     </form>
   );
@@ -1184,11 +1201,13 @@ function UpdateDrawer({
   services: Service[];
   setting: SalonProfileSetting;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <form action={createSalonProfileUpdateAction} className="grid gap-5">
       <input name="salon_id" type="hidden" value={setting.salon_id} />
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Update type</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Update type" /></span>
         <select
           className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           name="update_type"
@@ -1202,42 +1221,42 @@ function UpdateDrawer({
           )}
         </select>
       </label>
-      <Field label="Title" name="title" required />
-      <TextArea label="Short summary" name="summary" rows={3} />
+      <Field label={__vt("Title")} name="title" required />
+      <TextArea label={__vt("Short summary")} name="summary" rows={3} />
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">CTA</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="CTA" /></span>
         <select
           className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           name="cta_label"
         >
-          <option value="">No CTA</option>
+          <option value=""><WorkspaceText text="No CTA" /></option>
           {ctaOptions.map((label) => (
             <option key={label} value={label}>
-              {label}
+              <WorkspaceText text={label} />
             </option>
           ))}
         </select>
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-zinc-700">Related service</span>
+        <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Related service" /></span>
         <select
           className="mt-2 min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
           name="service_id"
         >
           <SelectOptions
             items={services.filter((service) => service.is_active)}
-            label="Choose service"
+            label={__vt("Choose service")}
           />
         </select>
       </label>
       <label className="inline-flex items-center gap-2 text-sm font-medium text-zinc-700">
         <input className="size-4" name="publish_now" type="checkbox" />
-        Publish now
+        <WorkspaceText text="Publish now" />
       </label>
       <SubmitFooter
         disabled={!canManageContent}
         onCancel={onClose}
-        submitLabel="Share update"
+        submitLabel={__vt("Share update")}
       />
     </form>
   );
@@ -1257,6 +1276,8 @@ export function SalonProfileStudio({
   staff,
   updates,
 }: StudioProps) {
+  const __vt = useWorkspaceTranslation();
+
   const [drawer, setDrawer] = useState<DrawerId | null>(null);
   const [libraryTab, setLibraryTab] = useState<LibraryTab>("all");
   const [isPending, startTransition] = useTransition();
@@ -1292,7 +1313,7 @@ export function SalonProfileStudio({
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700">
-              {statusLabels[readiness.status]}
+              <WorkspaceText text={statusLabels[readiness.status]} />
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1301,7 +1322,7 @@ export function SalonProfileStudio({
               onClick={() => setDrawer("preview")}
               type="button"
             >
-              Preview
+              <WorkspaceText text="Preview" />
             </button>
             <Link
               className={[
@@ -1313,25 +1334,25 @@ export function SalonProfileStudio({
               href={publicHref}
               aria-disabled={!readiness.isExploreEligible}
             >
-              View public profile
+              <WorkspaceText text="View public profile" />
             </Link>
             <Link
               className="inline-flex min-h-10 items-center rounded-md border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50"
               href="/salon-settings#public-profile-discovery"
             >
-              Publication settings
+              <WorkspaceText text="Publication settings" />
             </Link>
           </div>
         </div>
 
         {error ? (
           <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {error}
+            <WorkspaceText text={error} />
           </p>
         ) : null}
         {notice ? (
           <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            {notice}
+            <WorkspaceText text={notice} />
           </p>
         ) : null}
 
@@ -1341,7 +1362,7 @@ export function SalonProfileStudio({
               {coverUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  alt={`${setting.business_name} cover`}
+                  alt={__vt(`${setting.business_name} cover`)}
                   className="h-full w-full object-cover"
                   src={coverUrl}
                 />
@@ -1352,7 +1373,7 @@ export function SalonProfileStudio({
                 {logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    alt={`${setting.business_name} logo`}
+                    alt={__vt(`${setting.business_name} logo`)}
                     className="h-full w-full object-cover"
                     src={logoUrl}
                   />
@@ -1379,7 +1400,7 @@ export function SalonProfileStudio({
                 onClick={() => setDrawer("profile")}
                 type="button"
               >
-                Edit profile
+                <WorkspaceText text="Edit profile" />
               </button>
             </div>
           </section>
@@ -1389,7 +1410,7 @@ export function SalonProfileStudio({
 
         <section className="grid gap-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold text-zinc-950">Quick create</h2>
+            <h2 className="text-xl font-semibold text-zinc-950"><WorkspaceText text="Quick create" /></h2>
             <div className="flex flex-wrap gap-2">
               <button
                 className="min-h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:bg-zinc-300"
@@ -1397,7 +1418,7 @@ export function SalonProfileStudio({
                 onClick={() => setDrawer("look")}
                 type="button"
               >
-                Drop a look
+                <WorkspaceText text="Drop a look" />
               </button>
               <button
                 className="min-h-10 rounded-md border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:text-zinc-400"
@@ -1405,7 +1426,7 @@ export function SalonProfileStudio({
                 onClick={() => setDrawer("opening")}
                 type="button"
               >
-                Share opening
+                <WorkspaceText text="Share opening" />
               </button>
               <button
                 className="min-h-10 rounded-md border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50 disabled:text-zinc-400"
@@ -1413,7 +1434,7 @@ export function SalonProfileStudio({
                 onClick={() => setDrawer("update")}
                 type="button"
               >
-                Salon update
+                <WorkspaceText text="Salon update" />
               </button>
             </div>
           </div>
@@ -1427,7 +1448,7 @@ export function SalonProfileStudio({
                 className="rounded-lg border border-zinc-200 bg-white p-4"
                 key={label}
               >
-                <p className="text-sm text-zinc-500">{label}</p>
+                <p className="text-sm text-zinc-500"><WorkspaceText text={label} /></p>
                 <p className="mt-1 text-2xl font-semibold text-zinc-950">{count}</p>
               </div>
             ))}
@@ -1438,10 +1459,10 @@ export function SalonProfileStudio({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-zinc-950">
-                Content library
+                <WorkspaceText text="Content library" />
               </h2>
               <p className="mt-1 text-sm text-zinc-600">
-                Manage looks and compact updates for this salon.
+                <WorkspaceText text="Manage looks and compact updates for this salon." />
               </p>
             </div>
             <div className="flex w-max max-w-full gap-1 overflow-x-auto rounded-lg border border-zinc-200 bg-white p-1">
@@ -1457,7 +1478,7 @@ export function SalonProfileStudio({
                   onClick={() => setLibraryTab(tab.id)}
                   type="button"
                 >
-                  {tab.label}
+                  <WorkspaceText text={tab.label} />
                 </button>
               ))}
             </div>
@@ -1465,7 +1486,7 @@ export function SalonProfileStudio({
           {filteredLooks.length === 0 && updates.length === 0 ? (
             <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center">
               <h3 className="text-lg font-semibold text-zinc-950">
-                No content in this view
+                <WorkspaceText text="No content in this view" />
               </h3>
             </div>
           ) : (
@@ -1514,7 +1535,7 @@ export function SalonProfileStudio({
                           disabled={!canManageContent}
                           type="submit"
                         >
-                          {look.status === "published" ? "Archive" : "Publish"}
+                          <WorkspaceText text={look.status === "published" ? "Archive" : "Publish"} />
                         </SubmitButton>
                       </form>
                       <form action={pinSalonProfileLookAction}>
@@ -1530,13 +1551,13 @@ export function SalonProfileStudio({
                           disabled={!canManageContent}
                           type="submit"
                         >
-                          {look.is_pinned ? "Unpin" : "Pin"}
+                          <WorkspaceText text={look.is_pinned ? "Unpin" : "Pin"} />
                         </SubmitButton>
                       </form>
                       <form
                         action={deleteSalonProfileLookAction}
                         onSubmit={(event: FormEvent<HTMLFormElement>) => {
-                          if (!window.confirm("Delete this look?")) {
+                          if (!window.confirm(__vt("Delete this look?"))) {
                             event.preventDefault();
                           }
                         }}
@@ -1548,7 +1569,7 @@ export function SalonProfileStudio({
                           disabled={!canManageContent}
                           type="submit"
                         >
-                          Delete
+                          <WorkspaceText text="Delete" />
                         </SubmitButton>
                       </form>
                     </div>
@@ -1566,7 +1587,7 @@ export function SalonProfileStudio({
                         {update.update_type.replaceAll("_", " ")}
                       </p>
                       <h3 className="mt-1 font-semibold text-zinc-950">
-                        {update.title}
+                        <WorkspaceText text={update.title} />
                       </h3>
                     </div>
                     <StatusBadge status={update.status} />
@@ -1588,11 +1609,11 @@ export function SalonProfileStudio({
         <section className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-base font-semibold text-zinc-950">Publish</h2>
+              <h2 className="text-base font-semibold text-zinc-950"><WorkspaceText text="Publish" /></h2>
               <p className="mt-1 text-sm text-zinc-600">
-                {readiness.canPublish
+                <WorkspaceText text={readiness.canPublish
                   ? "This salon meets the public profile requirements."
-                  : `Missing: ${readiness.missingRequiredItems.join(", ")}`}
+                  : `Missing: ${readiness.missingRequiredItems.join(", ")}`} />
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -1603,7 +1624,7 @@ export function SalonProfileStudio({
                   onClick={() => submitPublication(false)}
                   type="button"
                 >
-                  Unpublish
+                  <WorkspaceText text="Unpublish" />
                 </button>
               ) : (
                 <button
@@ -1612,7 +1633,7 @@ export function SalonProfileStudio({
                   onClick={() => submitPublication(true)}
                   type="button"
                 >
-                  Publish
+                  <WorkspaceText text="Publish" />
                 </button>
               )}
             </div>
@@ -1621,7 +1642,7 @@ export function SalonProfileStudio({
       </section>
 
       {drawer === "profile" ? (
-        <Drawer onClose={() => setDrawer(null)} title="Edit profile">
+        <Drawer onClose={() => setDrawer(null)} title={__vt("Edit profile")}>
           <ProfileDrawer
             canManageIdentity={canManageIdentity}
             coverUrl={coverUrl}
@@ -1632,7 +1653,7 @@ export function SalonProfileStudio({
         </Drawer>
       ) : null}
       {drawer === "look" ? (
-        <Drawer onClose={() => setDrawer(null)} title="Drop a look">
+        <Drawer onClose={() => setDrawer(null)} title={__vt("Drop a look")}>
           <LookDrawer
             canManageContent={canManageContent}
             onClose={() => setDrawer(null)}
@@ -1643,7 +1664,7 @@ export function SalonProfileStudio({
         </Drawer>
       ) : null}
       {drawer === "opening" ? (
-        <Drawer onClose={() => setDrawer(null)} title="Share opening">
+        <Drawer onClose={() => setDrawer(null)} title={__vt("Share opening")}>
           <OpeningDrawer
             canManageContent={canManageContent}
             onClose={() => setDrawer(null)}
@@ -1654,7 +1675,7 @@ export function SalonProfileStudio({
         </Drawer>
       ) : null}
       {drawer === "update" ? (
-        <Drawer onClose={() => setDrawer(null)} title="Salon update">
+        <Drawer onClose={() => setDrawer(null)} title={__vt("Salon update")}>
           <UpdateDrawer
             canManageContent={canManageContent}
             onClose={() => setDrawer(null)}
@@ -1664,7 +1685,7 @@ export function SalonProfileStudio({
         </Drawer>
       ) : null}
       {drawer === "preview" ? (
-        <Drawer onClose={() => setDrawer(null)} title="Preview">
+        <Drawer onClose={() => setDrawer(null)} title={__vt("Preview")}>
           <SalonProfileView data={previewData} />
         </Drawer>
       ) : null}

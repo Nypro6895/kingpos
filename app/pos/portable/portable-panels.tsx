@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import { usePathname, useSearchParams } from "next/navigation";
 import { loadPortablePanel } from "./load-panel";
 import { useEffect, useState, useRef, useMemo, type ReactNode } from "react";
@@ -56,7 +57,7 @@ export function PortablePanels({ panels, children, allowedPaths }: {
         key={path} data-portable-panel={path}>{panel}</div>
     ))}
     {panelRoute && !Object.hasOwn(available,pathname) ? <div className="p-6" role="status">
-      {failure===pathname ? <><p>This view could not load. Your other tabs are still available.</p><button type="button" onClick={()=>{setFailure(null);setRetry(value=>value+1);}}>Try again</button></> : "Loading view…"}
+      {failure===pathname ? <><p><WorkspaceText text="This view could not load. Your other tabs are still available." /></p><button type="button" onClick={()=>{setFailure(null);setRetry(value=>value+1);}}><WorkspaceText text="Try again" /></button></> : "Loading view…"}
     </div> : null}
     {!panelRoute ? children : null}
   </>;

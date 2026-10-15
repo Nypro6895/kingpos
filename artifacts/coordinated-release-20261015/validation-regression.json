@@ -1,0 +1,19 @@
+{
+  "exitCode": 0,
+  "files": [
+    "tests/account-deletion-flow-contract.test.mjs",
+    "tests/explore-continuation-runtime.test.mjs",
+    "tests/explore-search-recommendations-runtime.test.mjs",
+    "tests/explore-empty-recommendations-runtime.test.mjs",
+    "tests/explore-social-feed-runtime.test.mjs",
+    "tests/market-safari-booking-deposit-ui.test.mjs",
+    "tests/booking-deposit-market-flow.test.mjs",
+    "tests/public-booking-cache-scope-ui.test.mjs",
+    "tests/guest-manage-ui.test.mjs",
+    "tests/mobile-landscape-legal-runtime.test.mjs"
+  ],
+  "tests": 59,
+  "passed": 59,
+  "failed": 0,
+  "skipped": 0
+}

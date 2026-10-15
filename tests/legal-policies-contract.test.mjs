@@ -30,10 +30,12 @@ test("legal policy routes exist and use the shared static document system", () =
   const components = read("app/legal/legal-components.tsx");
   const tocClient = read("app/legal/legal-table-of-contents.tsx");
   assert.match(appLayout, /getCurrentBusinessContext/);
-  assert.match(appLayout, /metadataBase: REYLUMI_METADATA_BASE/);
+  assert.match(read("app/layout.tsx"), /metadataBase: REYLUMI_METADATA_BASE/);
   assert.match(legalLayout, /GuestNavigationShell/);
-  assert.match(legalLayout, /metadataBase: REYLUMI_METADATA_BASE/);
-  assert.doesNotMatch(legalLayout, /getCurrentBusinessContext|SalonSwitcher|Supabase/i);
+  assert.match(legalLayout, /export \{ metadata \} from "\.\.\/layout"/);
+  assert.match(legalLayout, /LegalNavigationShell/);
+  assert.match(legalLayout, /authenticated=\{null\}/);
+  assert.doesNotMatch(legalLayout, /getCurrentBusinessContext|SalonSwitcher|from\s+["'][^"']*supabase/i);
   assert.match(components, /LegalHub/);
   assert.match(components, /LegalDocumentPage/);
   assert.match(components, /LegalTableOfContents/);

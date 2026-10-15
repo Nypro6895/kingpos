@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "whole-site-progressive-cache",
+  "status": "ready",
+  "channels": [
+    "ios"
+  ],
+  "summary": "Progressive native startup integrated with uploaded 1.0.1 (5.1) Safari payment, viewport and privacy source; simulator fixture isolated from production loading.",
+  "files": [
+    "ios/Reylumi/NativeBridge.js",
+    "ios/Reylumi/ReylumiLaunchView.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/ReylumiStartupState.swift",
+    "ios/ReylumiTests/StartupStateTests.swift",
+    "ios/ReylumiTests/AppViewportTests.swift",
+    ".github/workflows/reylumi-ios-testflight.yml"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\release",
+    "commit": "cc53062ca58795e37ab62269655bea73f4902241"
+  },
+  "validation": [
+    {
+      "name": "Native tests, unsigned and signed archives, exact source hashes",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\native-upload\\reylumi-testflight-14-1"
+    },
+    {
+      "name": "Apple VALID and TestFlight IN_BETA_TESTING",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\native-upload\\reylumi-testflight-14-1\\testflight-processing.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "1d5bd604-f869-49d2-9e08-9c3b41ccca50",
+  "recordedAt": "2026-10-15T03:17:16.793Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/NativeBridge.js": "61cbf78a9717c7a8295a9a324f18376a68749dc6832bb662074edf2e475e1cab",
+    "ios/Reylumi/ReylumiLaunchView.swift": "100bd75d5a45e91e9efe546164be1cb84afc1e748d4b39ed78974416f6a391b3",
+    "ios/Reylumi/ReylumiViewController.swift": "294661896733537dc4e687750ae4f3843c878b3cb9e7f2ec9f7d574a5aa78150",
+    "ios/Reylumi/ReylumiStartupState.swift": "9e824b907b60961e0cd7ee528e9a57ddf6c024c0b627290f63b0ce05a2b6fbca",
+    "ios/ReylumiTests/StartupStateTests.swift": "d8bf9d31a3a2e063ff0cd759809d88518844aa6a92427f2001e24bd4e68e5935",
+    "ios/ReylumiTests/AppViewportTests.swift": "0e08a70b35591bfc6022d654c4eb4adee125d88e4f3d469070c092c22150044c",
+    ".github/workflows/reylumi-ios-testflight.yml": "fe53492ce00aea5dc00ba20150d32431c88e3f417117d7b9b5b19d2395940f29"
+  },
+  "filePath": "C:\\Users\\giuse\\kingpos\\releases\\changes\\2026-10-15T03-17-16-793Z-1d5bd604-f869-49d2-9e08-9c3b41ccca50.json"
+}

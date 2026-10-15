@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { LoginForm } from "@/app/login/login-form";
 import { LegalFooter } from "@/components/legal-footer";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
@@ -188,7 +189,7 @@ function MobileBrandVisual() {
   );
 }
 
-export default async function LoginPage({ searchParams }: LoginPageProps) {
+async function LoginPage({ searchParams }: LoginPageProps) {
   const { error, message, next } = await searchParams;
   const nextPath = sanitizeAuthReturnPath(next);
 
@@ -283,3 +284,5 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     </div>
   );
 }
+
+export default withExperiencePage(LoginPage);

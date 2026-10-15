@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { SubmitButton } from "@/components/submit-button";
@@ -24,6 +25,8 @@ import type {
 } from "@/types/notifications";
 
 function NotificationAvatar({ item }: { item: NotificationFeedItem }) {
+  const __vt = useWorkspaceTranslation();
+
   const [failed, setFailed] = useState(false);
   const kind = item.notificationType ?? item.kindLabel.toLowerCase();
   const paths = /booking|appointment/.test(kind)
@@ -47,7 +50,7 @@ function NotificationAvatar({ item }: { item: NotificationFeedItem }) {
     return (
       <img
         src={item.thumbnailUrl}
-        alt=""
+        alt={__vt("")}
         onError={() => setFailed(true)}
         className="h-10 w-10 shrink-0 rounded-lg object-cover"
       />
@@ -70,12 +73,14 @@ function NotificationAvatar({ item }: { item: NotificationFeedItem }) {
   );
 }
 function NotificationContent({ item }: { item: NotificationFeedItem }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <>
       <NotificationAvatar item={item} />
       <span className="min-w-0">
         <span className="block text-sm font-semibold leading-5 text-zinc-950">
-          {item.title}
+          <WorkspaceText text={item.title} />
         </span>
         {item.body && (
           <span className="mt-0.5 block text-xs leading-4 text-zinc-700">
@@ -86,13 +91,13 @@ function NotificationContent({ item }: { item: NotificationFeedItem }) {
           {item.meta}
           {item.status && !["read", "unread"].includes(item.status) && (
             <span className="rounded bg-zinc-100 px-1 capitalize">
-              {item.status}
+              <WorkspaceText text={item.status} />
             </span>
           )}
         </span>
       </span>
       <span
-        aria-label={item.unread ? "Unread" : undefined}
+        aria-label={__vt(item.unread ? "Unread" : undefined)}
         className={`mt-2 h-2 w-2 rounded-full ${item.unread ? "bg-blue-600" : ""}`}
       />
     </>
@@ -115,7 +120,7 @@ function NotificationActions({ action }: { action: NotificationFeedAction }) {
           >
             <input name="request_id" type="hidden" value={action.requestId} />
             <SubmitButton className={buttonClass} type="submit">
-              {label as string}
+              <WorkspaceText text={label as string} />
             </SubmitButton>
           </form>
         ))}
@@ -126,13 +131,13 @@ function NotificationActions({ action }: { action: NotificationFeedAction }) {
       <form action={cancelStaffSalonApplicationFormAction}>
         <input name="request_id" type="hidden" value={action.requestId} />
         <SubmitButton className={buttonClass} type="submit">
-          Cancel application
+          <WorkspaceText text="Cancel application" />
         </SubmitButton>
       </form>
     );
   return (
     <Link className={buttonClass} href={action.href}>
-      {action.label}
+      <WorkspaceText text={action.label} />
     </Link>
   );
 }
@@ -191,7 +196,7 @@ function BookingNotificationActions({ item }: { item: NotificationFeedItem }) {
           className={buttonClass}
           onClick={() => void run("confirm")}
         >
-          {pending ? "Saving..." : "Confirm"}
+          <WorkspaceText text={pending ? "Saving..." : "Confirm"} />
         </button>
         {booking.recipientKind === "owner_manager" && (
           <button
@@ -200,13 +205,13 @@ function BookingNotificationActions({ item }: { item: NotificationFeedItem }) {
             className={buttonClass}
             onClick={() => void run("cancel")}
           >
-            Cancel
+            <WorkspaceText text="Cancel" />
           </button>
         )}
       </div>
       {error && (
         <p role="alert" className="mt-1 text-xs text-red-700">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       )}
     </div>
@@ -216,6 +221,8 @@ function NotificationRow({ item }: { item: NotificationFeedItem }) {
   const rowClass =
     "grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2 px-3 py-2.5 text-left";
   const action = item.action;
+  const directSupportLink = action.type === "open-app" && !action.workspaceId &&
+    /^\/support\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(action.href);
   return (
     <article
       data-notification-id={
@@ -223,7 +230,18 @@ function NotificationRow({ item }: { item: NotificationFeedItem }) {
       }
       data-unread={item.unread}
     >
-      {action.type === "open-app" ? (
+      {action.type === "open-app" && directSupportLink ? (
+        <Link
+          href={action.href}
+          className={`${rowClass} hover:bg-zinc-50`}
+          onClick={(event) => {
+            queueViewedNotification(action.notificationId);
+            event.currentTarget.closest("details[data-dismissible-popover]")?.removeAttribute("open");
+          }}
+        >
+          <NotificationContent item={item} />
+        </Link>
+      ) : action.type === "open-app" ? (
         <form action={openAppNotificationAction}>
           <input
             name="notification_id"
@@ -338,7 +356,7 @@ export function NotificationFeedList({
     };
   }, [items]);
   if (!items.length)
-    return <p className="px-3 py-5 text-sm text-zinc-500">{emptyLabel}</p>;
+    return <p className="px-3 py-5 text-sm text-zinc-500"><WorkspaceText text={emptyLabel} /></p>;
   return (
     <div
       ref={root}

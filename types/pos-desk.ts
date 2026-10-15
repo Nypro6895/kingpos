@@ -8,6 +8,7 @@ import type { StaffWorkdayStatus } from "@/types/staff-workday";
 export type PosDeskTurnType = "large" | "small";
 
 export type PosDeskTurnSummary = {
+  pendingTurns?: number;
   largeTurns: number;
   queueTurns: number;
   receiptLargeTurns: number;
@@ -19,6 +20,7 @@ export type PosDeskStaff = Pick<
   Staff,
   "id" | "display_name" | "job_title" | "is_active"
 > & {
+  service_status?: "working" | "ready";
   avatar_url: string | null;
   check_in_at?: string | null;
   check_in_sequence?: number | null;

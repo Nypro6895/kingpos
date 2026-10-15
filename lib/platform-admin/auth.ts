@@ -12,6 +12,10 @@ import {
   getSupabaseAuthUser,
 } from "@/lib/supabase/server";
 import { getCurrentKingUser } from "@/lib/users/current-user";
+import { cookies } from "next/headers";
+import { getAccessTokenFromRequest } from "@/lib/supabase/server";
+import { ADMIN_SESSION_COOKIE, readAdminSession } from "@/lib/supabase/session-policy";
+import { assertAuthAvailable } from "@/lib/supabase/auth-rest";
 import type {
   PlatformAdminContext,
   PlatformAdminRoleSlug,
@@ -40,22 +44,27 @@ function mapPlatformAdminContextRow(
 }
 
 export const getCurrentPlatformAdminContext = cache(loadCurrentPlatformAdminContext);
+// A retained private view must distinguish unverified access from revoked access.
+export const getVerifiedPlatformAdminContext = cache(() => loadCurrentPlatformAdminContext(true));
 
-async function loadCurrentPlatformAdminContext() {
+async function loadCurrentPlatformAdminContext(throwOnUnavailable = false) {
+  const accessToken = await getAccessTokenFromRequest();
+  if (!accessToken || !readAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value, accessToken)) return null;
   const [currentUser, supabase] = await Promise.all([
     getCurrentKingUser(),
-    createAuthenticatedSupabaseServerClient(),
+    createAuthenticatedSupabaseServerClient({ throwOnUnavailable }),
   ]);
 
   if (!currentUser || !supabase) {
     return null;
   }
 
-  const { data, error } = await supabase
+  const { data, error, status } = await supabase
     .rpc("get_current_platform_admin_context")
     .maybeSingle<PlatformAdminContextRow>();
 
   if (error) {
+    if (throwOnUnavailable) assertAuthAvailable(error, status, "Admin access");
     console.error("Supabase resolve platform admin context failed", {
       code: error.code,
       message: error.message,
@@ -73,6 +82,10 @@ export async function requirePlatformAdmin(
   permission: PlatformAdminPermission = PLATFORM_ADMIN_PERMISSIONS.access,
   options: { loginNextPath?: string } = {},
 ) {
+  const accessToken = await getAccessTokenFromRequest();
+  if (!accessToken || !readAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value, accessToken)) {
+    redirect(loginHrefForReturnPath(options.loginNextPath ?? "/admin"));
+  }
   const authUser = await getSupabaseAuthUser();
 
   if (!authUser) {

@@ -5,7 +5,6 @@ import {
 } from "@/lib/salon-operating-status";
 import { type NextRequest, NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
 
 function requestedSalonIds(request: NextRequest) {
   const ids: string[] = [];

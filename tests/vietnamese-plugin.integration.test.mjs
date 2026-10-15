@@ -1,0 +1,56 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { PGlite } from "@electric-sql/pglite";
+
+const owner = "00000000-0000-4000-8000-000000000001", staff = "00000000-0000-4000-8000-000000000002", stranger = "00000000-0000-4000-8000-000000000003";
+test("Vietnamese trial, options, salon isolation and protected paid entitlement", async () => {
+  const db = new PGlite();
+  try {
+    await db.exec(`create role authenticated; create role anon; create role service_role;
+      create table locations(id uuid primary key,status text);
+      create table users(id uuid primary key);
+      create table staff(salon_id uuid,account_user_id uuid,is_active boolean);
+      create function current_public_user_id() returns uuid language sql as $$select nullif(current_setting('test.user',true),'')::uuid$$;
+      create function lifecycle_user_is_salon_owner(salon uuid,actor uuid,pending boolean) returns boolean language sql as $$select salon=actor$$;
+      create function platform_admin_has_permission(permission text) returns boolean language sql as $$select false$$;
+      insert into users values ('${owner}'),('${staff}'),('${stranger}');
+      insert into locations values ('${owner}','active'),('${stranger}','active');
+      insert into staff values ('${owner}','${staff}',true);`);
+    await db.exec(fs.readFileSync("supabase/migrations/202610080006_vietnamese_market_plugin.sql", "utf8"));
+    const login = actor => db.exec(`reset role; select set_config('test.user','${actor}',false); set role authenticated;`);
+    const set = (installed, staffOption = false, portable = false) => db.query("select vietnamese_plugin_set($1,$2,$3,$4) as state", [owner, installed, staffOption, portable]).then(result => result.rows[0].state);
+    await login(owner);
+    const first = await set(true, true, true);
+    assert.equal(first.active, true); assert.equal(first.staff_enabled, true); assert.equal(first.portable_enabled, true);
+    assert.ok(Math.abs(Date.parse(first.trial_ends_at) - Date.now() - 5 * 86400000) < 5000);
+    await set(false);
+    const again = await set(true);
+    assert.equal(again.trial_ends_at, first.trial_ends_at);
+    await assert.rejects(db.exec("update vietnamese_plugin_subscriptions set paid_until=now()+interval '1 year'"), /permission denied/);
+    await assert.rejects(db.query("select vietnamese_plugin_set($1,true)", [stranger]), /owner access/i);
+    await login(staff);
+    assert.equal((await db.query("select vietnamese_plugin_state($1) as state", [owner])).rows[0].state.staff_enabled, false);
+    await assert.rejects(set(true), /owner access/i);
+    await login(stranger);
+    await assert.rejects(db.query("select vietnamese_plugin_state($1)", [owner]), /Salon access/);
+    await db.exec("reset role; update vietnamese_plugin_subscriptions set trial_ends_at=now()-interval '1 day';");
+    await login(owner);
+    assert.equal((await set(true)).active, false);
+    await db.exec("reset role; update vietnamese_plugin_subscriptions set paid_until=now()+interval '1 month';");
+    await login(owner);
+    assert.equal((await set(true)).active, true);
+    await db.exec("reset role; update market_payment_settings set vietnamese_published=false;");
+    await login(owner);
+    await assert.rejects(set(true), /not available/);
+    assert.equal((await set(false)).installed, false);
+    await db.exec("reset role; update market_payment_settings set vietnamese_published=true;");
+    await login(owner); await set(true);
+    await db.exec("reset role;");
+    const firstClaim = (await db.query("select vietnamese_checkout_claim($1,$1) as id", [owner])).rows[0].id;
+    const repeated = (await db.query("select vietnamese_checkout_claim($1,$1) as id", [owner])).rows[0].id;
+    assert.equal(repeated, firstClaim);
+    await login(owner);
+    await assert.rejects(db.query("select vietnamese_checkout_claim($1,$1)", [owner]), /permission denied/);
+  } finally { await db.close(); }
+});

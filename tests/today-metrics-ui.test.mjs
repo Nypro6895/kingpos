@@ -22,7 +22,7 @@ test(
     writeFileSync(
       entry,
       `import React from 'react'; import {createRoot} from 'react-dom/client';
-      import {MetricCard,AttentionPanel} from '${repo}/app/(app)/staff/today/page';
+      import {MetricCard,AttentionPanel} from '${repo}/app/staff/today/today-dashboard-view';
       const chart={kind:'sparkline',ariaLabel:'Sales',points:[{label:'9 AM',value:0},{label:'10 AM',value:300}]};
       const metrics=[{label:'Sales Today',value:'$2,659',tone:'good',chart,detail:'35 closed tickets',trend:{direction:'up',label:'$350 above 7-day average at this time ($2,309)'}},{label:'Appointments',value:'12',tone:'default',detail:'4 completed / 8 upcoming',assessment:'Appointments in progress or scheduled'},{label:'Waiting',value:'5',tone:'danger',detail:'Clients waiting for service',assessment:'Longest wait: 32 min'},{label:'Staff Working',value:'4',tone:'warning',detail:'4 checked in now',assessment:'Queue exceeds checked-in staff'}];
       createRoot(document.getElementById('root')).render(<main style={{maxWidth:1200,margin:'auto',padding:16}}><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{metrics.map(m=><MetricCard key={m.label} metric={m}/>)}</div><AttentionPanel items={[{id:'open',label:'6 open POS tickets',detail:'Review open tickets',tone:'notice',count:6,href:null}]}/><AttentionPanel items={[{id:'all-good',label:'All good',detail:'Nothing needs attention',tone:'good',href:null}]}/></main>);`,
@@ -39,7 +39,7 @@ test(
         {
           name: "fixture",
           setup(b) {
-            b.onLoad({filter:/staff[\\/]today[\\/]page\.tsx$/},args=>({loader:'tsx',contents:readFileSync(args.path,'utf8').replace('function MetricCard(', 'export function MetricCard(').replace('function AttentionPanel(', 'export function AttentionPanel(')}));
+            b.onLoad({filter:/staff[\\/]today[\\/]today-dashboard-view\.tsx$/},args=>({loader:'tsx',contents:readFileSync(args.path,'utf8').replace('function MetricCard(', 'export function MetricCard(').replace('function AttentionPanel(', 'export function AttentionPanel(')}));
             b.onResolve({filter:/^next\/link$/},()=>({path:'link',namespace:'mock'}));
             b.onResolve({filter:/owner-market-promo$/},()=>({path:'market',namespace:'mock'}));
             b.onLoad({filter:/^market$/,namespace:'mock'},()=>({contents:`export const OwnerMarketPromo=()=>null;`}));
@@ -52,7 +52,7 @@ test(
       ],
     });
     const css = await postcss([tailwind({ base: repo })]).process(
-      `@import "tailwindcss" source(none); @source "${repo}/app/(app)/staff/today/page.tsx"; @source "${repo}/app/my-place/place-ui.tsx"; body{font-family:Arial;margin:0}`,
+      `@import "tailwindcss" source(none); @source "${repo}/app/staff/today/today-dashboard-view.tsx"; @source "${repo}/app/my-place/place-ui.tsx"; body{font-family:Arial;margin:0}`,
       { from: join(repo, "reports-qa.css") },
     );
     const server = createServer((req, res) => {
@@ -68,7 +68,7 @@ test(
         );
     });
     await new Promise((r) => server.listen(0, "127.0.0.1", r));
-    const browser = await chromium.launch({
+    const browser = await chromium.launch({ args: ['--no-proxy-server'],
       headless: true,
       executablePath: process.env.TEST_BROWSER_PATH,
     });

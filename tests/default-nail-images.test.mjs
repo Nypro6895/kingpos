@@ -7,10 +7,10 @@ test('actual salon photos take priority, including non-nail salons', () => {
   assert.equal(resolveNailCoverImage({ id: 'salon-1', categories: ['Nails'], coverImageUrl: '/real.webp' }), '/real.webp');
   assert.equal(resolveNailCoverImage({ id: 'salon-2', categories: ['Hair'], coverImageUrl: '/hair.webp' }), '/hair.webp');
 });
-test('nail defaults are stable, diverse, and do not appear on hair or massage profiles', () => {
+test('category defaults stay stable and never use nail photos for hair or massage', () => {
   assert.equal(resolveNailCoverImage({ id: 'salon-1', categories: ['Nails'] }), resolveNailCoverImage({ id: 'salon-1', categories: ['Nails'] }));
-  assert.equal(resolveNailCoverImage({ id: 'salon-2', name: 'Hair Studio', categories: ['Hair'] }), null);
-  assert.equal(resolveNailCoverImage({ id: 'salon-3', categories: ['Massage'] }), null);
+  assert.match(resolveNailCoverImage({ id: 'salon-2', name: 'Hair Studio', categories: ['Hair'] }), /business-defaults\/hair-/);
+  assert.match(resolveNailCoverImage({ id: 'salon-3', categories: ['Massage'] }), /business-defaults\/massage-/);
   const choices = new Set(Array.from({ length: 606 }, (_, i) => resolveNailCoverImage({ id: `salon-${i}`, categories: ['Nails'] })));
   assert.equal(choices.size, 20);
   for (const path of DEFAULT_NAIL_IMAGES) assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)), path);

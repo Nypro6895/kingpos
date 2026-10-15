@@ -34,6 +34,8 @@ const SHELLLESS_NEUTRAL_PREFIXES = [
   "/book",
   "/booking/manage",
   "/pos/customer-display",
+  "/check-in",
+  "/visit",
   "/pos/portable",
   "/staff/invite",
 ] as const;
@@ -44,6 +46,7 @@ const SHARED_CONTEXT_PREFIXES = [
   "/my-place",
   "/notifications",
   "/settings",
+  "/support",
 ] as const;
 const ACCOUNT_CONTEXT_PREFIXES = [
   "/permissions",

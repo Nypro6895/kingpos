@@ -1,4 +1,6 @@
 import "server-only";
+import { prepareBookingDeposit, publicBookingDeposit } from "@/lib/booking-deposit";
+import type { BookingDepositSettings } from "@/types/booking-deposit";
 
 import { BEAUTY_POST_BOOKING_SOURCE_TYPE } from "@/lib/beauty-booking-verification";
 import { formatDateInTimeZone, zonedDateTimeToUtcIso } from "@/lib/bookings";
@@ -187,6 +189,8 @@ export type PublicBookingReadinessItem = {
 
 export type PublicBookingPageData = {
   availabilityResolved?: boolean;
+  bookingPolicy?: string | null;
+  bookingDeposit?: BookingDepositSettings | null;
   currentUser: PublicBookingCurrentUser | null;
   initialSelection: PublicBookingInitialSelection;
   looks: PublicBookingLook[];
@@ -245,6 +249,7 @@ export type PublicBookingCreateInput = PublicBookingSlotRequest & {
   customerPhone?: string | null;
   honeypot?: string | null;
   idempotencyKey?: string | null;
+  paymentCheckout?: "embedded" | "hosted";
   inspirationId?: string | null;
   lookId?: string | null;
   publicNotes?: string | null;
@@ -255,6 +260,8 @@ export type PublicBookingCreateInput = PublicBookingSlotRequest & {
 };
 
 export type PublicBookingActionResult = {
+  payment?: { token: string; checkout: "embedded" | "hosted"; account: string; amountCents: number; url?: string; clientSecret?: string; testMode?: boolean };
+  receipt?: { amountCents: number; refundedCents: number; url?: string | null; testMode?: boolean };
   accountLinked?: boolean;
   bookingId?: string;
   code?: string;
@@ -1744,12 +1751,14 @@ export async function getPublicBookingPageData(
     );
   }
 
-  const [context, currentUser] = await Promise.all([
+  const [context, currentUser, bookingPolicy, bookingDeposit] = await Promise.all([
     loadRawContext(salonId, { includeContentOptions: Boolean(inspirationParam(params)), metadataOnly: options?.deferAvailability && !options.resolveKnownAvailability, contentId: inspirationParam(params) }),
     (async () => {
       const authenticated = await createAuthenticatedSupabaseServerClient();
       return authenticated ? getCurrentKingUser() : null;
     })(),
+    (async () => { const client = await createSupabaseServerClient(); if (!client) return null; const { data } = await client.rpc("public_booking_policy", { p_salon: salonId }); return typeof data === "string" ? data : null; })(),
+    publicBookingDeposit(salonId),
   ]);
   const initialSelection = normalizeInitialSelection(context, params);
   const requestedStart = toIso(singleParam(params.startAt));
@@ -1769,6 +1778,8 @@ export async function getPublicBookingPageData(
           phone: currentUser.phone,
         }
       : null,
+    bookingPolicy,
+    bookingDeposit,
     initialSelection,
     looks: context.looks,
     readiness,
@@ -1844,43 +1855,9 @@ export async function getPublicBookingPageData(
   } else if (requestedStart && initialSelection.initialStep === 2) {
     initialSelection.requestedTimeUnavailable = true;
   }
-  const probeServiceId =
-    initialSelection.serviceId ?? firstBookableServiceId(context);
-  const probeStaffIds = probeServiceId ? eligibleStaffIds(context, probeServiceId) : [];
-  const probeStaffMode =
-    initialSelection.serviceId
-      ? initialSelection.staffMode
-      : context.settings?.anyProfessionalEnabled === false
-        ? "specific"
-        : "any";
-  const anyFutureSlots =
-    slots.length > 0 ||
-    (probeServiceId
-      ? generatePublicBookingSlots(
-          context,
-          {
-            serviceId: probeServiceId,
-            serviceIds: [probeServiceId],
-            staffId: initialSelection.serviceId
-              ? initialSelection.staffId
-              : probeStaffMode === "specific"
-                ? probeStaffIds[0] ?? null
-                : null,
-            staffMode: probeStaffMode,
-          },
-          { limit: 1 },
-        ).length > 0
-      : false);
-
-  // A scoped intent must remain editable when that service/staff has no slots.
-  if (!anyFutureSlots && !singleParam(params.serviceId) && !singleParam(params.staffId) && !inspirationParam(params)) {
-    return unavailablePage(
-      "no_slots",
-      "No online slots are available",
-      "The salon is configured for booking, but there are no future public slots right now.",
-      base,
-    );
-  }
+  // Availability belongs to the selected service, professional, and date.
+  // An empty result (including a required professional not yet selected) must
+  // keep the booking wizard open so the customer can choose another option.
 
   return {
     ...base,
@@ -2180,11 +2157,11 @@ export async function createPublicBooking(
       : input.sourceReferenceType === "salon_profile_look" || inspirationId
         ? "salon_profile_look"
         : null;
-  const { data, error } = await supabase.rpc("create_public_booking", {
-    p_customer_email: customerEmail,
-    p_customer_first_name: customerFirstName,
-    p_customer_last_name: customerLastName,
-    p_customer_phone: customerPhone,
+  const bookingArgs = {
+    p_customer_email: customerEmail || currentUser?.email || null,
+    p_customer_first_name: customerFirstName || currentUser?.first_name || currentUser?.display_name || null,
+    p_customer_last_name: customerLastName || currentUser?.last_name || null,
+    p_customer_phone: customerPhone || currentUser?.phone || null,
     p_end_at: slot.endAt,
     p_idempotency_key: input.idempotencyKey?.trim() || crypto.randomUUID(),
     p_lines: slot.lines.map((line) => ({
@@ -2196,6 +2173,7 @@ export async function createPublicBooking(
       scheduled_end_at: line.endAt,
       scheduled_start_at: line.startAt,
       service_id: line.serviceId,
+      unit_price: line.unitPrice,
     })),
     p_public_notes: input.publicNotes?.trim() || null,
     p_salon_id: salonId,
@@ -2203,7 +2181,10 @@ export async function createPublicBooking(
     p_source_reference_id: inspirationId,
     p_source_reference_type: inspirationId ? sourceReferenceType : null,
     p_start_at: slot.startAt,
-  });
+  };
+  const payment = await prepareBookingDeposit(bookingArgs, Math.round(slot.lines.reduce((sum, line) => sum + line.unitPrice, 0) * 100), currentUser?.id ?? null, input.paymentCheckout === "hosted" ? "hosted" : "embedded");
+  if (payment) return payment;
+  const { data, error } = await supabase.rpc("create_public_booking", bookingArgs);
 
   if (error) {
     console.error("Create public booking RPC failed", {

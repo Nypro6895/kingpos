@@ -1,5 +1,7 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { TimeZoneSelect } from "@/components/time-zone-select";
 import {
   getAccountAvatarUploadSessionAction,
   sendAccountPhoneVerificationOtpAction,
@@ -40,6 +42,7 @@ type AccountProfileEditorProps = {
   createdAtLabel: string;
   user: KingUser;
   compact?: boolean;
+  embedded?: boolean;
   phoneVerified?: boolean;
 };
 
@@ -236,7 +239,7 @@ function ProfileField({ label, onEdit, value }: ProfileFieldProps) {
   return (
     <div className="grid gap-1 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <dt className="text-xs font-semibold uppercase text-zinc-500">
-        {label}
+        <WorkspaceText text={label} />
       </dt>
       <dd className="min-w-0">
         {onEdit ? (
@@ -272,16 +275,16 @@ function EditableField({
         className="text-xs font-semibold uppercase text-zinc-500"
         htmlFor={fieldId}
       >
-        {label}
+        <WorkspaceText text={label} />
       </label>
-      <input
+      {name === "timezone" ? <TimeZoneSelect id={fieldId} name={name} className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm" value={value} onChange={event => onChange(name, event.currentTarget.value)} /> : <input
         autoComplete={autoComplete}
         className="block min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10"
         id={fieldId}
         name={name}
         onChange={(event) => onChange(name, event.currentTarget.value)}
         value={value}
-      />
+      />}
     </div>
   );
 }
@@ -290,7 +293,7 @@ function ReadonlyField({ label, value }: ProfileFieldProps) {
   return (
     <div className="grid gap-2 border-b border-zinc-100 px-4 py-3 last:border-b-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
       <span className="text-xs font-semibold uppercase text-zinc-500">
-        {label}
+        <WorkspaceText text={label} />
       </span>
       <span className="flex min-h-11 items-center rounded-md border border-zinc-200 bg-zinc-50 px-3 text-sm font-semibold text-zinc-950">
         {displayValue(value)}
@@ -315,6 +318,8 @@ function PhoneVerificationDialog({
   successMessage,
   verifying,
 }: PhoneVerificationDialogProps) {
+  const __vt = useWorkspaceTranslation();
+
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -334,7 +339,7 @@ function PhoneVerificationDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/45 px-3 py-4 backdrop-blur-sm sm:items-center sm:px-6">
       <button
-        aria-label="Close phone verification"
+        aria-label={__vt("Close phone verification")}
         className="absolute inset-0 cursor-default"
         disabled={Boolean(successMessage)}
         onClick={onClose}
@@ -354,10 +359,10 @@ function PhoneVerificationDialog({
               className="text-xl font-extrabold text-text-primary"
               id="phone-verification-title"
             >
-              Verify phone number
+              <WorkspaceText text="Verify phone number" />
             </h2>
             <p className="mt-2 text-sm font-medium leading-6 text-text-secondary">
-              Enter the verification code sent to{" "}
+              <WorkspaceText text="Enter the verification code sent to" />{" "}
               <span className="font-bold text-text-primary">
                 {maskPhoneForOtp(claim.normalizedPhone)}
               </span>
@@ -370,13 +375,13 @@ function PhoneVerificationDialog({
             onClick={onClose}
             type="button"
           >
-            Close
+            <WorkspaceText text="Close" />
           </button>
         </div>
 
         {successMessage ? (
           <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-800">
-            {successMessage}
+            <WorkspaceText text={successMessage} />
           </div>
         ) : (
           <div className="mt-5 grid gap-4">
@@ -387,7 +392,7 @@ function PhoneVerificationDialog({
                 onClick={onSend}
                 type="button"
               >
-                {sending ? "Sending..." : "Send code"}
+                <WorkspaceText text={sending ? "Sending..." : "Send code"} />
               </button>
             ) : (
               <>
@@ -396,7 +401,7 @@ function PhoneVerificationDialog({
                     className="text-xs font-bold uppercase tracking-[0.12em] text-text-secondary"
                     htmlFor="phone-verification-code"
                   >
-                    Verification code
+                    <WorkspaceText text="Verification code" />
                   </label>
                   <input
                     autoComplete="one-time-code"
@@ -405,7 +410,7 @@ function PhoneVerificationDialog({
                     inputMode="numeric"
                     maxLength={6}
                     onChange={(event) => onCodeChange(event.currentTarget.value)}
-                    placeholder="000000"
+                    placeholder={__vt("000000")}
                     value={code}
                   />
                 </div>
@@ -416,7 +421,7 @@ function PhoneVerificationDialog({
                     onClick={onVerify}
                     type="button"
                   >
-                    {verifying ? "Verifying..." : "Verify"}
+                    <WorkspaceText text={verifying ? "Verifying..." : "Verify"} />
                   </button>
                   <button
                     className="min-h-12 rounded-full border border-border-subtle px-4 text-sm font-bold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:opacity-60"
@@ -424,9 +429,9 @@ function PhoneVerificationDialog({
                     onClick={onSend}
                     type="button"
                   >
-                    {resendWaitSeconds > 0
+                    <WorkspaceText text={resendWaitSeconds > 0
                       ? `Resend in ${resendWaitSeconds}s`
-                      : "Resend code"}
+                      : "Resend code"} />
                   </button>
                 </div>
               </>
@@ -439,12 +444,12 @@ function PhoneVerificationDialog({
             ) : null}
             {notice ? (
               <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-                {notice}
+                <WorkspaceText text={notice} />
               </p>
             ) : null}
             {error ? (
               <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-                {error}
+                <WorkspaceText text={error} />
               </p>
             ) : null}
           </div>
@@ -458,8 +463,11 @@ export function AccountProfileEditor({
   createdAtLabel,
   user,
   compact = false,
+  embedded = false,
   phoneVerified = false,
 }: AccountProfileEditorProps) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -844,19 +852,19 @@ export function AccountProfileEditor({
   }
 
   return (
-    <section
-      className="scroll-mt-6"
+    <div className="settings-style"><section
+      className={`scroll-mt-6${embedded ? " settings-content-root" : ""}`}
       id="profile-contact"
       onKeyDown={onEditorKeyDown}
     >
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+      {!embedded ? <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-base font-semibold text-zinc-950">
-            {compact ? "Personal" : "Profile & contact"}
+            <WorkspaceText text={compact ? "Personal" : "Profile & contact"} />
           </h2>
         </div>
-        {compact ? <nav aria-label="Personal settings" className="flex gap-4 text-xs font-medium text-zinc-500"><Link className="hover:text-[#d65c2b] hover:underline" href="/account">Account settings</Link><Link className="hover:text-[#d65c2b] hover:underline" href="/settings/login-security">Security</Link></nav> : null}
-      </div>
+        {compact ? <nav aria-label={__vt("Personal settings")} className="flex gap-4 text-xs font-medium text-zinc-500"><Link className="hover:text-[#d65c2b] hover:underline" href="/account"><WorkspaceText text="Account settings" /></Link><Link className="hover:text-[#d65c2b] hover:underline" href="/settings/login-security"><WorkspaceText text="Security" /></Link></nav> : null}
+      </div> : null}
 
       <div className="overflow-hidden rounded-lg border border-border-subtle bg-white">
         <div className="flex flex-col gap-4 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -865,7 +873,7 @@ export function AccountProfileEditor({
               {avatarPreviewUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  alt={`${currentName} avatar`}
+                  alt={__vt(`${currentName} avatar`)}
                   className="h-full w-full object-cover"
                   src={avatarPreviewUrl}
                 />
@@ -878,12 +886,12 @@ export function AccountProfileEditor({
                 {currentName}
               </p>
               <p className="mt-1 truncate text-sm font-semibold text-zinc-500">
-                {user.email ?? "Personal account"}
+                <WorkspaceText text={user.email ?? "Personal account"} />
               </p>
               {compact && !editing ? <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-                <span>{values.phone || "No phone number"}</span>
-                {values.phone && ((phoneVerified && values.phone === user.phone) || (phoneClaim?.status === "connected" && phoneClaim.normalizedPhone === values.phone)) ? <span className="rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700">Verified ✓</span>
-                  : <button className="min-h-8 text-xs font-semibold text-[#d65c2b] hover:underline disabled:opacity-50" disabled={busy} type="button" onClick={values.phone ? saveProfile : beginEdit}>{busy ? "Checking…" : values.phone ? "Verify phone" : "Add phone"}</button>}
+                <span><WorkspaceText text={values.phone || "No phone number"} /></span>
+                {values.phone && ((phoneVerified && values.phone === user.phone) || (phoneClaim?.status === "connected" && phoneClaim.normalizedPhone === values.phone)) ? <span className="rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700"><WorkspaceText text="Verified ✓" /></span>
+                  : <button className="min-h-8 text-xs font-semibold text-[#d65c2b] hover:underline disabled:opacity-50" disabled={busy} type="button" onClick={values.phone ? saveProfile : beginEdit}><WorkspaceText text={busy ? "Checking…" : values.phone ? "Verify phone" : "Add phone"} /></button>}
               </div> : null}
             </div>
           </div>
@@ -894,7 +902,7 @@ export function AccountProfileEditor({
               onClick={beginEdit}
               type="button"
             >
-              {compact ? "Edit info" : "Edit profile"}
+              <WorkspaceText text={compact ? "Edit info" : "Edit profile"} />
             </button>
           ) : (
             <div className="flex flex-wrap gap-2">
@@ -911,9 +919,9 @@ export function AccountProfileEditor({
                 onClick={() => fileInputRef.current?.click()}
                 type="button"
               >
-                {uploading && progress > 0
+                <WorkspaceText text={uploading && progress > 0
                   ? `Uploading ${progress}%`
-                  : "Change photo"}
+                  : "Change photo"} />
               </button>
               {avatarPreviewUrl ? (
                 <button
@@ -922,7 +930,7 @@ export function AccountProfileEditor({
                   onClick={removeAvatar}
                   type="button"
                 >
-                  Remove photo
+                  <WorkspaceText text="Remove photo" />
                 </button>
               ) : null}
             </div>
@@ -934,47 +942,47 @@ export function AccountProfileEditor({
             <div>
               <EditableField
                 autoComplete="name"
-                label="Display name"
+                label={__vt("Display name")}
                 name="display_name"
                 onChange={updateValue}
                 value={values.display_name}
               />
-              <ReadonlyField label="Email" value={user.email} />
+              <ReadonlyField label={__vt("Email")} value={user.email} />
               <EditableField
                 autoComplete="given-name"
-                label="First name"
+                label={__vt("First name")}
                 name="first_name"
                 onChange={updateValue}
                 value={values.first_name}
               />
               <EditableField
                 autoComplete="family-name"
-                label="Last name"
+                label={__vt("Last name")}
                 name="last_name"
                 onChange={updateValue}
                 value={values.last_name}
               />
               <EditableField
                 autoComplete="tel"
-                label="Phone"
+                label={__vt("Phone")}
                 name="phone"
                 onChange={updateValue}
                 value={values.phone}
               />
-              <ReadonlyField label="Status" value={user.status} />
+              <ReadonlyField label={__vt("Status")} value={user.status} />
               <EditableField
-                label="Language"
+                label={__vt("Language")}
                 name="language"
                 onChange={updateValue}
                 value={values.language}
               />
               <EditableField
-                label="Timezone"
+                label={__vt("Timezone")}
                 name="timezone"
                 onChange={updateValue}
                 value={values.timezone}
               />
-              <ReadonlyField label="Created" value={createdAtLabel} />
+              <ReadonlyField label={__vt("Created")} value={createdAtLabel} />
             </div>
             <div className="sticky bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur">
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
@@ -984,7 +992,7 @@ export function AccountProfileEditor({
                   onClick={cancelEdit}
                   type="button"
                 >
-                  Cancel
+                  <WorkspaceText text="Cancel" />
                 </button>
                 <button
                   className="min-h-10 rounded-md bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60"
@@ -992,7 +1000,7 @@ export function AccountProfileEditor({
                   onClick={saveProfile}
                   type="button"
                 >
-                  {saving ? "Saving..." : "Save profile"}
+                  <WorkspaceText text={saving ? "Saving..." : "Save profile"} />
                 </button>
               </div>
             </div>
@@ -1000,50 +1008,50 @@ export function AccountProfileEditor({
         ) : !compact ? (
           <dl>
             <ProfileField
-              label="Display name"
+              label={__vt("Display name")}
               onEdit={beginEdit}
               value={currentName}
             />
-            <ProfileField label="Email" value={user.email} />
+            <ProfileField label={__vt("Email")} value={user.email} />
             <ProfileField
-              label="Phone"
+              label={__vt("Phone")}
               onEdit={beginEdit}
               value={values.phone}
             />
             <ProfileField
-              label="First name"
+              label={__vt("First name")}
               onEdit={beginEdit}
               value={values.first_name}
             />
             <ProfileField
-              label="Last name"
+              label={__vt("Last name")}
               onEdit={beginEdit}
               value={values.last_name}
             />
             <ProfileField
-              label="Language"
+              label={__vt("Language")}
               onEdit={beginEdit}
               value={values.language}
             />
             <ProfileField
-              label="Timezone"
+              label={__vt("Timezone")}
               onEdit={beginEdit}
               value={values.timezone}
             />
-            <ProfileField label="Status" value={user.status} />
-            <ProfileField label="Created" value={createdAtLabel} />
+            <ProfileField label={__vt("Status")} value={user.status} />
+            <ProfileField label={__vt("Created")} value={createdAtLabel} />
           </dl>
         ) : null}
       </div>
 
       {error ? (
         <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
       {notice ? (
         <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-          {notice}
+          <WorkspaceText text={notice} />
         </p>
       ) : null}
 
@@ -1061,10 +1069,10 @@ export function AccountProfileEditor({
           resendWaitSeconds={resendWaitSeconds}
           sending={phoneOtpSending}
           sent={phoneOtpSent}
-          successMessage={phoneOtpSuccessMessage}
+          successMessage={__vt(phoneOtpSuccessMessage)}
           verifying={phoneOtpVerifying}
         />
       ) : null}
-    </section>
+    </section></div>
   );
 }

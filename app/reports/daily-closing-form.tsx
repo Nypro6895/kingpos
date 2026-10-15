@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import {
   saveDailyPosClosing,
   submitDailyClosingCorrection,
@@ -258,9 +259,9 @@ function CorrectionHistory({
     return (
       <section className="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
         <h2 className="text-lg font-semibold text-zinc-950">
-          Correction History
+          <WorkspaceText text="Correction History" />
         </h2>
-        <p className="mt-3 text-sm text-zinc-500">No corrections for this date.</p>
+        <p className="mt-3 text-sm text-zinc-500"><WorkspaceText text="No corrections for this date." /></p>
       </section>
     );
   }
@@ -268,29 +269,29 @@ function CorrectionHistory({
   return (
     <section className="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
       <h2 className="text-lg font-semibold text-zinc-950">
-        Correction History
+        <WorkspaceText text="Correction History" />
       </h2>
       <div className="mt-4 overflow-hidden rounded border border-zinc-200">
         <div className="grid grid-cols-12 bg-zinc-50 px-3 py-2 text-xs font-medium uppercase text-zinc-500">
-          <div className="col-span-2">Status</div>
-          <div className="col-span-2">Field</div>
-          <div className="col-span-3">Requested</div>
-          <div className="col-span-2">Delta</div>
-          <div className="col-span-3">Reason</div>
+          <div className="col-span-2"><WorkspaceText text="Status" /></div>
+          <div className="col-span-2"><WorkspaceText text="Field" /></div>
+          <div className="col-span-3"><WorkspaceText text="Requested" /></div>
+          <div className="col-span-2"><WorkspaceText text="Delta" /></div>
+          <div className="col-span-3"><WorkspaceText text="Reason" /></div>
         </div>
         <ul className="divide-y divide-zinc-200">
           {requests.map((request) => (
             <li className="grid grid-cols-12 gap-2 px-3 py-3 text-sm" key={request.id}>
               <div className="col-span-2">
                 <span className="rounded border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-medium capitalize text-zinc-700">
-                  {request.status}
+                  <WorkspaceText text={request.status} />
                 </span>
                 <p className="mt-1 text-xs text-zinc-500">
-                  {formatDateTime(request.requestedAt)}
+                  <WorkspaceText text={formatDateTime(request.requestedAt)} />
                 </p>
               </div>
               <div className="col-span-2 font-medium text-zinc-950">
-                {getCorrectionFieldLabel(request.correctionType)}
+                <WorkspaceText text={getCorrectionFieldLabel(request.correctionType)} />
               </div>
               <div className="col-span-3 text-zinc-700">
                 {formatCorrectionValue(
@@ -298,7 +299,7 @@ function CorrectionHistory({
                   request.requestedValue,
                 )}
                 <p className="mt-1 text-xs text-zinc-500">
-                  By {request.requestedByName ?? "Unknown"}
+                  <WorkspaceText text="By" /> <WorkspaceText text={request.requestedByName ?? "Unknown"} />
                 </p>
               </div>
               <div className="col-span-2 font-medium text-zinc-950">
@@ -308,7 +309,7 @@ function CorrectionHistory({
                 {request.reason}
                 {request.approvedByName ? (
                   <p className="mt-1 text-xs text-zinc-500">
-                    Approved by {request.approvedByName}
+                    <WorkspaceText text="Approved by" /> {request.approvedByName}
                   </p>
                 ) : null}
               </div>
@@ -318,7 +319,7 @@ function CorrectionHistory({
       </div>
       {adjustments.length > 0 ? (
         <p className="mt-3 text-xs text-zinc-500">
-          Applied adjustment rows: {adjustments.length}
+          <WorkspaceText text="Applied adjustment rows:" /> {adjustments.length}
         </p>
       ) : null}
     </section>
@@ -341,7 +342,7 @@ function SnapshotSummary({
       <div className="grid gap-3 text-sm sm:grid-cols-3">
         <div>
           <p className="text-xs font-medium uppercase text-zinc-500">
-            Snapshot Actual
+            <WorkspaceText text="Snapshot Actual" />
           </p>
           <p className="mt-1 font-semibold text-zinc-950">
             {formatMoney(snapshotTotals.actualTotal)}
@@ -349,7 +350,7 @@ function SnapshotSummary({
         </div>
         <div>
           <p className="text-xs font-medium uppercase text-zinc-500">
-            Adjustments
+            <WorkspaceText text="Adjustments" />
           </p>
           <p className="mt-1 font-semibold text-zinc-950">
             {formatDelta(adjustmentTotals.actualTotalDelta)}
@@ -357,7 +358,7 @@ function SnapshotSummary({
         </div>
         <div>
           <p className="text-xs font-medium uppercase text-zinc-500">
-            Snapshot Expected
+            <WorkspaceText text="Snapshot Expected" />
           </p>
           <p className="mt-1 font-semibold text-zinc-950">
             {formatMoney(snapshotTotals.expectedTotal)}
@@ -542,25 +543,25 @@ export function DailyClosingForm({
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-lg font-semibold text-zinc-950">
-                  Closing Inputs
+                  <WorkspaceText text="Closing Inputs" />
                 </h2>
                 {lock.isLocked ? (
                   <span className="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800">
-                    {getLockLabel(lock)}
+                    <WorkspaceText text={getLockLabel(lock)} />
                   </span>
                 ) : null}
               </div>
               <p className="mt-1 text-sm text-zinc-600">
-                Actual money collected for the selected business date.
+                <WorkspaceText text="Actual money collected for the selected business date." />
               </p>
             </div>
             <div className="min-h-6 text-sm" aria-live="polite">
               {isSavePending ? (
-                <span className="font-medium text-zinc-600">Saving</span>
+                <span className="font-medium text-zinc-600"><WorkspaceText text="Saving" /></span>
               ) : saveState === "saved" ? (
-                <span className="font-medium text-emerald-700">Saved</span>
+                <span className="font-medium text-emerald-700"><WorkspaceText text="Saved" /></span>
               ) : saveState === "error" ? (
-                <span className="font-medium text-red-700">Error</span>
+                <span className="font-medium text-red-700"><WorkspaceText text="Error" /></span>
               ) : null}
             </div>
           </div>
@@ -572,11 +573,11 @@ export function DailyClosingForm({
               saveIfNeeded(true);
             }}
           >
-            {closingChanged?<div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm"><p>Closing amounts were updated on another screen. Your entries have been kept.</p><p className="mt-2">Saved: Cash {formatMoney(closingInputs.cashAmount)} · Card {formatMoney(closingInputs.creditCardAmount)} · Other {formatMoney(closingInputs.otherAmount)}</p><div className="mt-3 flex gap-2"><button type="button" className="min-h-11 rounded-lg border bg-white px-3" onClick={()=>{setValues(getInitialValues(closingInputs));setBaseline(closingInputs);}}>Use saved amounts</button><button type="button" className="min-h-11 rounded-lg border bg-white px-3" onClick={()=>setBaseline(closingInputs)}>Keep my entries for review</button></div></div>:null}
+            {closingChanged?<div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm"><p><WorkspaceText text="Closing amounts were updated on another screen. Your entries have been kept." /></p><p className="mt-2">Saved: Cash {formatMoney(closingInputs.cashAmount)} <WorkspaceText text="· Card" /> {formatMoney(closingInputs.creditCardAmount)} <WorkspaceText text="· Other" /> {formatMoney(closingInputs.otherAmount)}</p><div className="mt-3 flex gap-2"><button type="button" className="min-h-11 rounded-lg border bg-white px-3" onClick={()=>{setValues(getInitialValues(closingInputs));setBaseline(closingInputs);}}><WorkspaceText text="Use saved amounts" /></button><button type="button" className="min-h-11 rounded-lg border bg-white px-3" onClick={()=>setBaseline(closingInputs)}><WorkspaceText text="Keep my entries for review" /></button></div></div>:null}
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="block">
                 <span className="text-xs font-medium uppercase text-zinc-500">
-                  Cash
+                  <WorkspaceText text="Cash" />
                 </span>
                 <input
                   className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
@@ -593,7 +594,7 @@ export function DailyClosingForm({
               </label>
               <label className="block">
                 <span className="text-xs font-medium uppercase text-zinc-500">
-                  Credit Card
+                  <WorkspaceText text="Credit Card" />
                 </span>
                 <input
                   className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
@@ -610,7 +611,7 @@ export function DailyClosingForm({
               </label>
               <label className="block">
                 <span className="text-xs font-medium uppercase text-zinc-500">
-                  Other
+                  <WorkspaceText text="Other" />
                 </span>
                 <input
                   className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
@@ -629,7 +630,7 @@ export function DailyClosingForm({
 
             <label className="block">
               <span className="text-xs font-medium uppercase text-zinc-500">
-                Note
+                <WorkspaceText text="Note" />
               </span>
               <textarea
                 className="mt-1 min-h-20 w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
@@ -643,24 +644,24 @@ export function DailyClosingForm({
 
             {errorMessage ? (
               <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-                {errorMessage}
+                <WorkspaceText text={errorMessage} />
               </p>
             ) : null}
 
             {lock.isLocked ? (
               <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                This business date is locked. Corrections are recorded separately.
+                <WorkspaceText text="This business date is locked. Corrections are recorded separately." />
               </p>
             ) : !canEdit ? (
               <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Payroll manage permission is required to edit closing amounts.
+                <WorkspaceText text="Payroll manage permission is required to edit closing amounts." />
               </p>
             ) : null}
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-4">
               <div>
                 <p className="text-xs font-medium uppercase text-zinc-500">
-                  Actual Total
+                  <WorkspaceText text="Actual Total" />
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-zinc-950">
                   {hasInvalidAmount
@@ -675,7 +676,7 @@ export function DailyClosingForm({
                     onClick={openCorrection}
                     type="button"
                   >
-                    Request Correction
+                    <WorkspaceText text="Request Correction" />
                   </button>
                 ) : null}
                 {!lock.isLocked ? (
@@ -684,7 +685,7 @@ export function DailyClosingForm({
                     disabled={!canEdit || isSavePending}
                     type="submit"
                   >
-                    {isSavePending ? "Saving" : "Save"}
+                    {isSavePending ? "Saving" : <WorkspaceText text="Save" />}
                   </button>
                 ) : null}
               </div>
@@ -694,23 +695,23 @@ export function DailyClosingForm({
 
         <section className="rounded-lg border border-zinc-200 bg-white p-5">
           <h2 className="text-lg font-semibold text-zinc-950">
-            Reconciliation
+            <WorkspaceText text="Reconciliation" />
           </h2>
           <dl className="mt-5 space-y-4">
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-sm text-zinc-600">Expected total</dt>
+              <dt className="text-sm text-zinc-600"><WorkspaceText text="Expected total" /></dt>
               <dd className="text-sm font-semibold text-zinc-950">
                 {formatMoney(expectedTotal)}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-sm text-zinc-600">Actual total</dt>
+              <dt className="text-sm text-zinc-600"><WorkspaceText text="Actual total" /></dt>
               <dd className="text-sm font-semibold text-zinc-950">
                 {hasInvalidAmount ? "-" : formatMoney(fromCents(actualTotalCents))}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-sm text-zinc-600">Difference</dt>
+              <dt className="text-sm text-zinc-600"><WorkspaceText text="Difference" /></dt>
               <dd className="text-sm font-semibold text-zinc-950">
                 {hasInvalidAmount ? "-" : formatMoney(fromCents(differenceCents))}
               </dd>
@@ -725,18 +726,18 @@ export function DailyClosingForm({
             }`}
           >
             <p className="text-sm font-semibold">
-              {hasInvalidAmount
+              <WorkspaceText text={hasInvalidAmount
                 ? "Invalid amount"
-                : RECONCILIATION_LABELS[reconciliationStatus]}
+                : RECONCILIATION_LABELS[reconciliationStatus]} />
             </p>
             {!hasInvalidAmount && reconciliationStatus === "short" ? (
               <p className="mt-1 text-sm">
-                Missing {formatMoney(Math.abs(fromCents(differenceCents)))}
+                <WorkspaceText text="Missing" /> {formatMoney(Math.abs(fromCents(differenceCents)))}
               </p>
             ) : null}
             {!hasInvalidAmount && reconciliationStatus === "over" ? (
               <p className="mt-1 text-sm">
-                Extra {formatMoney(Math.abs(fromCents(differenceCents)))}
+                <WorkspaceText text="Extra" /> {formatMoney(Math.abs(fromCents(differenceCents)))}
               </p>
             ) : null}
           </div>
@@ -763,7 +764,7 @@ export function DailyClosingForm({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-zinc-950">
-                  Request Correction
+                  <WorkspaceText text="Request Correction" />
                 </h2>
                 <p className="mt-1 text-sm text-zinc-600">{reportDate}</p>
               </div>
@@ -772,14 +773,14 @@ export function DailyClosingForm({
                 onClick={() => setIsCorrectionOpen(false)}
                 type="button"
               >
-                Close
+                <WorkspaceText text="Close" />
               </button>
             </div>
 
             <div className="mt-5 space-y-4">
               <label className="block">
                 <span className="text-xs font-medium uppercase text-zinc-500">
-                  Field
+                  <WorkspaceText text="Field" />
                 </span>
                 <select
                   className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
@@ -792,7 +793,7 @@ export function DailyClosingForm({
                 >
                   {CORRECTION_FIELDS.map((field) => (
                     <option key={field} value={field}>
-                      {CORRECTION_FIELD_LABELS[field]}
+                      <WorkspaceText text={CORRECTION_FIELD_LABELS[field]} />
                     </option>
                   ))}
                 </select>
@@ -800,19 +801,19 @@ export function DailyClosingForm({
 
               <div className="rounded border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm">
                 <p className="text-xs font-medium uppercase text-zinc-500">
-                  Current Effective Value
+                  <WorkspaceText text="Current Effective Value" />
                 </p>
                 <p className="mt-1 font-semibold text-zinc-950">
-                  {typeof currentCorrectionValue === "number"
+                  <WorkspaceText text={typeof currentCorrectionValue === "number"
                     ? formatMoney(currentCorrectionValue)
-                    : currentCorrectionValue || "Empty"}
+                    : currentCorrectionValue || "Empty"} />
                 </p>
               </div>
 
               {correctionField === "note" ? (
                 <label className="block">
                   <span className="text-xs font-medium uppercase text-zinc-500">
-                    Requested Note
+                    <WorkspaceText text="Requested Note" />
                   </span>
                   <textarea
                     className="mt-1 min-h-24 w-full rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-950"
@@ -823,7 +824,7 @@ export function DailyClosingForm({
               ) : (
                 <label className="block">
                   <span className="text-xs font-medium uppercase text-zinc-500">
-                    Requested Value
+                    <WorkspaceText text="Requested Value" />
                   </span>
                   <input
                     className="mt-1 h-10 w-full rounded border border-zinc-300 px-3 text-sm text-zinc-950"
@@ -836,7 +837,7 @@ export function DailyClosingForm({
 
               <label className="block">
                 <span className="text-xs font-medium uppercase text-zinc-500">
-                  Reason
+                  <WorkspaceText text="Reason" />
                 </span>
                 <textarea
                   className="mt-1 min-h-24 w-full rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-950"
@@ -848,7 +849,7 @@ export function DailyClosingForm({
 
               {correctionError ? (
                 <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-                  {correctionError}
+                  <WorkspaceText text={correctionError} />
                 </p>
               ) : null}
 
@@ -859,7 +860,7 @@ export function DailyClosingForm({
                   onClick={() => setIsCorrectionOpen(false)}
                   type="button"
                 >
-                  Cancel
+                  <WorkspaceText text="Cancel" />
                 </button>
                 <button
                   className="h-10 rounded border border-zinc-300 px-4 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:bg-zinc-100"
@@ -867,7 +868,7 @@ export function DailyClosingForm({
                   onClick={() => submitCorrection(false)}
                   type="button"
                 >
-                  {isCorrectionPending ? "Submitting" : "Submit Request"}
+                  <WorkspaceText text={isCorrectionPending ? "Submitting" : "Submit Request"} />
                 </button>
                 {canApplyCorrection ? (
                   <button
@@ -876,7 +877,7 @@ export function DailyClosingForm({
                     onClick={() => submitCorrection(true)}
                     type="button"
                   >
-                    {isCorrectionPending ? "Applying" : "Apply Correction"}
+                    <WorkspaceText text={isCorrectionPending ? "Applying" : "Apply Correction"} />
                   </button>
                 ) : null}
               </div>

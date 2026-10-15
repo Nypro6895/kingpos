@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText } from "@/components/workspace-language";
 import { useRef, useState, type ReactNode } from "react";
 import type { loadDirectSettings } from "./direct-settings-actions";
 export type DirectData = Awaited<ReturnType<typeof loadDirectSettings>>;
@@ -30,7 +31,7 @@ export function Field({
 }) {
   return (
     <label className="grid gap-1 text-sm">
-      {label}
+      <WorkspaceText text={label} />
       <input
         name={name}
         className={inputClass}
@@ -64,7 +65,7 @@ export function Check({
         defaultChecked={checked}
         required={required}
       />
-      <span>{label}</span>
+      <span><WorkspaceText text={label} /></span>
     </label>
   );
 }
@@ -81,11 +82,11 @@ export function Select({
 }) {
   return (
     <label className="grid gap-1 text-sm">
-      {label}
+      <WorkspaceText text={label} />
       <select className={inputClass} name={name} defaultValue={value}>
         {options.map(([id, text]) => (
           <option key={id} value={id}>
-            {text}
+            <WorkspaceText text={text} />
           </option>
         ))}
       </select>
@@ -100,6 +101,7 @@ export function InlineForm({
   label = "Save changes",
   danger = false,
   disabled = false,
+  className = "",
 }: {
   children: ReactNode;
   save: (form: FormData) => Promise<ActionResult>;
@@ -108,7 +110,9 @@ export function InlineForm({
   label?: string;
   danger?: boolean;
   disabled?: boolean;
+  className?: string;
 }) {
+  const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
@@ -118,7 +122,8 @@ export function InlineForm({
   return (
     <form
       ref={formRef}
-      className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4"
+      className={`settings-inline-form grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 ${className}`}
+      onChange={() => setDirty(true)}
       onSubmit={async (event) => {
         event.preventDefault();
         if (lock.current || disabled) return;
@@ -137,6 +142,7 @@ export function InlineForm({
             return;
           }
           setMessage(result.message ?? "Saved.");
+          setDirty(false);
           setInviteUrl(
             result.inviteUrl
               ? new URL(result.inviteUrl, window.location.origin).toString()
@@ -166,17 +172,17 @@ export function InlineForm({
       </fieldset>
       {error && (
         <p role="alert" className="text-sm text-red-700">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       )}
       {message && (
         <p role="status" className="text-sm text-emerald-700">
-          {message}
+          <WorkspaceText text={message} />
         </p>
       )}
       {inviteUrl && (
         <label className="grid gap-1 text-sm">
-          Invitation link
+          <WorkspaceText text="Invitation link" />
           <input
             className={inputClass}
             readOnly
@@ -185,12 +191,13 @@ export function InlineForm({
           />
         </label>
       )}
-      <div className="flex gap-2">
+      <div className="settings-form-actions flex gap-2">
+        <p role="status"><WorkspaceText text={dirty ? "Unsaved changes in this group" : "Changes apply to this group only"} /></p>
         <button
           disabled={busy || disabled}
           className={`${buttonClass} ${danger ? "!border-red-700 !bg-red-700" : "!border-zinc-950 !bg-zinc-950"} !text-white`}
         >
-          {busy ? "Processing…" : label}
+          <WorkspaceText text={busy ? "Processing…" : label} />
         </button>
         <button
           type="button"
@@ -198,13 +205,14 @@ export function InlineForm({
           disabled={busy || disabled}
           onClick={() => {
             formRef.current?.reset();
+            setDirty(false);
             onCancel?.();
             setInviteUrl("");
             setError("");
             setMessage("");
           }}
         >
-          Cancel
+          <WorkspaceText text="Cancel" />
         </button>
       </div>
     </form>

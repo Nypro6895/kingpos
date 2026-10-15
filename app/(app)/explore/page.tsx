@@ -1,5 +1,11 @@
+import { exploreCommentIdentity } from "@/lib/explore-comment-identity";
+import { withExperiencePage } from "@/components/experience-page";
+import { Suspense } from "react";
+import { ExploreStartupShell } from "@/app/explore/explore-startup-shell";
+import { ExploreProgressiveClient } from "@/app/explore/explore-progressive-client";
+import { prepareExploreStartupFeed } from "@/lib/explore-startup-feed-server";
+import { runReadWithDeadline } from "@/lib/bounded-get";
 ﻿import {
-  ExploreClient,
   type ExploreQuickAction,
 } from "@/app/explore/explore-client";
 import { getRequestBusinessContext as getCurrentBusinessContext } from "@/lib/request-business-context";
@@ -8,7 +14,8 @@ import {
   getExploreWorkspaceLocation,
   searchExploreSalons,
 } from "@/lib/explore-search";
-import { getExploreFeedPage, emptyFeedPage } from "@/lib/explore-feed";
+import { emptyFeedPage } from "@/lib/explore-feed";
+import { resolveExploreQueryRouting } from "@/lib/explore-query-routing";
 import { getExploreHomeContent, emptyHomeContent } from "@/lib/explore-home";
 import { enrichExploreShowcaseContent } from "@/lib/explore-showcase-content";
 import { buildReylumiTrustSummary, compareReylumiTrustedSalons } from "@/lib/reylumi-trust";
@@ -23,7 +30,8 @@ import {
   getCurrentAppNotifications,
   type AppNotification,
 } from "@/lib/app-notifications";
-import { hasPermission } from "@/lib/permissions";
+import { hasPermissionForRender } from "@/lib/permissions";
+import { redirect } from "next/navigation";
 import type {
   ExploreDiscoveryContent,
   ExploreDiscoveryPreview,
@@ -41,10 +49,15 @@ import type {
 
 type ExplorePageProps = {
   searchParams?: Promise<{
+    browse?: string | string[];
     category?: string | string[];
     location?: string | string[];
     page?: string | string[];
     q?: string | string[];
+    scope?: string | string[];
+    sort?: string | string[];
+    type?: string | string[];
+    locationSource?: string | string[];
   }>;
 };
 
@@ -89,20 +102,20 @@ async function buildQuickActions(
     context.currentWorkspace.salonMode === "manage";
   const managementPermissions = manageWorkspace
     ? await Promise.all([
-        hasPermission("staff.view", context),
-        hasPermission("services.view", context),
-        hasPermission("booking.view", context),
-        hasPermission("customers.view", context),
-        hasPermission("tickets.manage", context),
-        hasPermission("tickets.view", context),
-        hasPermission("reports.view", context),
-        hasPermission("payroll.view", context),
-        hasPermission("salon_settings.view", context),
+        hasPermissionForRender("staff.view", context),
+        hasPermissionForRender("services.view", context),
+        hasPermissionForRender("booking.view", context),
+        hasPermissionForRender("customers.view", context),
+        hasPermissionForRender("tickets.manage", context),
+        hasPermissionForRender("tickets.view", context),
+        hasPermissionForRender("reports.view", context),
+        hasPermissionForRender("payroll.view", context),
+        hasPermissionForRender("salon_settings.view", context),
       ])
     : [];
   const canManageWorkspace = managementPermissions.some(Boolean);
   const canOpenPos = manageWorkspace
-    ? await hasPermission("tickets.manage", context)
+    ? await hasPermissionForRender("tickets.manage", context)
     : false;
 
   if (!hasStaffWorkspace && !hasManageWorkspace) {
@@ -186,103 +199,6 @@ async function buildQuickActions(
 function parsePage(value: string) {
   const page = Number.parseInt(value, 10);
   return Number.isFinite(page) ? Math.max(1, page) : 1;
-}
-
-function locationFromGlobalSearchQuery(
-  query: string,
-  workspaceLocationLabel: string,
-) {
-  const value = query.trim();
-
-  if (!value) {
-    return "";
-  }
-
-  if (/^\d{5}(?:-\d{4})?$/.test(value)) {
-    return value;
-  }
-
-  if (/^[a-z][a-z .'-]+,\s*[a-z]{2}$/i.test(value)) {
-    return value;
-  }
-
-  const workspaceCity = workspaceLocationLabel.split(",")[0]?.trim();
-
-  if (workspaceCity && value.toLowerCase() === workspaceCity.toLowerCase()) {
-    return workspaceLocationLabel;
-  }
-
-  return "";
-}
-
-function isLikelyLocationPhrase(
-  value: string,
-  workspaceLocationLabel: string,
-) {
-  const location = value.trim();
-
-  if (!location) {
-    return false;
-  }
-
-  if (locationFromGlobalSearchQuery(location, workspaceLocationLabel)) {
-    return true;
-  }
-
-  const workspaceCity = workspaceLocationLabel.split(",")[0]?.trim();
-
-  if (workspaceCity && location.toLowerCase() === workspaceCity.toLowerCase()) {
-    return true;
-  }
-
-  return /^[a-z][a-z .'-]{2,},\s*[a-z]{2}$/i.test(location);
-}
-
-function searchIntentFromGlobalQuery(
-  query: string,
-  workspaceLocationLabel: string,
-) {
-  const value = query.trim().replace(/\s+/g, " ");
-
-  if (!value) {
-    return { location: "", query: "" };
-  }
-
-  const directLocation = locationFromGlobalSearchQuery(
-    value,
-    workspaceLocationLabel,
-  );
-
-  if (directLocation) {
-    return { location: directLocation, query: "" };
-  }
-
-  const nearMatch = value.match(/\s+(?:near|nearby|around)\s+(.+)$/i);
-
-  if (nearMatch?.index && nearMatch[1]) {
-    const nextQuery = value.slice(0, nearMatch.index).trim();
-    const location = nearMatch[1].replace(/[,.!?]+$/g, "").trim();
-
-    if (nextQuery && location) {
-      return { location, query: nextQuery };
-    }
-  }
-
-  const inMatch = value.match(/\s+in\s+(.+)$/i);
-
-  if (inMatch?.index && inMatch[1]) {
-    const nextQuery = value.slice(0, inMatch.index).trim();
-    const location = inMatch[1].replace(/[,.!?]+$/g, "").trim();
-
-    if (
-      nextQuery &&
-      isLikelyLocationPhrase(location, workspaceLocationLabel)
-    ) {
-      return { location, query: nextQuery };
-    }
-  }
-
-  return { location: "", query: value };
 }
 
 function bookingLocationLabel(booking: CustomerBookingSummary) {
@@ -436,7 +352,7 @@ function availableTodayDiscoverySalons(...groups: ExploreSearchResult[][]) {
   return dedupeSearchResults(...groups)
     .filter(
       (salon) =>
-        Boolean(salon.nextAvailabilityLabel) || salon.operatingStatus.isOpen,
+        salon.bookingEnabled && Boolean(salon.bookableServiceId),
     )
     .sort((left, right) => {
       const leftTime = left.nextAvailableAt
@@ -834,13 +750,13 @@ function buildExploreDiscoveryContent(input: {
           resultKind: "available_today",
           type: "result",
         },
-        actionLabel: "See times",
+        actionLabel: "Check times",
         context: locationName
-          ? `Open spots near ${locationName}`
-          : "Open booking times",
+          ? `Booking options near ${locationName}`
+          : "Online booking options",
         detail: countLabel(availableTodaySalons.length, "bookable option"),
         id: "available-today",
-        label: "Available today",
+        label: "Booking options",
         moduleKind: "availability",
         previews: discoveryPreviews(selectedPreviews),
       });
@@ -868,7 +784,7 @@ function buildExploreDiscoveryContent(input: {
         context: "Latest public inspiration",
         detail: countLabel(trendingCount, "public look"),
         id: "trending",
-        label: "Trending",
+        label: "Fresh looks",
         moduleKind: "visual",
         previews: discoveryPreviews(selectedPreviews),
       });
@@ -898,9 +814,9 @@ function buildExploreDiscoveryContent(input: {
         actionLabel: "Search this area",
         context: `${countLabel(input.searchResponse.totalCount, "salon")} in this area`,
         detail:
-          input.workspaceLocation.source === "workspace"
-            ? `Using ${location}`
-            : "Using your saved location",
+          input.workspaceLocation.source === "activity"
+            ? "Using your recent activity area"
+            : input.workspaceLocation.source === "manual" ? "Using your selected area" : "Using your saved location",
         id: "near-you",
         label: locationName ? `Near ${locationName}` : "Nearby salons",
         moduleKind: "nearby",
@@ -1120,55 +1036,70 @@ async function getExploreUtilityContent(
   };
 }
 
-export default async function ExplorePage({ searchParams }: ExplorePageProps) {
+async function ExploreCorePage({ searchParams }: ExplorePageProps) {
   const params = (await searchParams) ?? {};
   const rawQuery = clean(stringParam(params.q));
   const requestedLocation = clean(stringParam(params.location));
   const hasLocationParam = params.location !== undefined;
   const category = clean(stringParam(params.category));
+  const requestedTarget = stringParam(params.type);
+  const target = requestedTarget === "posts" || requestedTarget === "salons" ? requestedTarget : "auto";
   const page = parsePage(clean(stringParam(params.page)));
+  if (page > 1) {
+    const fresh = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (key !== "page" && value !== undefined) fresh.set(key, stringParam(value) ?? "");
+    }
+    redirect(`/explore${fresh.size ? `?${fresh}` : ""}`);
+  }
   const hasExplicitSearchParams = Boolean(
-    rawQuery || requestedLocation || category || page > 1,
+    rawQuery || (requestedLocation && stringParam(params.browse) !== "1") || category || target !== "auto" || page > 1,
   );
   const contextPromise = getCurrentBusinessContext();
-  const homeContentPromise = hasExplicitSearchParams ? Promise.resolve(emptyHomeContent()) : getExploreHomeContent();
+  const homeContentPromise = hasExplicitSearchParams ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent(), 10_000).catch(() => emptyHomeContent());
+  const initialHomePromise = hasExplicitSearchParams ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent({ initial: true }), 8_000).catch(() => emptyHomeContent());
   const context = await contextPromise;
-  const workspaceLocationPromise = getExploreWorkspaceLocation(context);
-  const quickActionsPromise = buildQuickActions(context);
+  const workspaceLocationPromise = runReadWithDeadline(getExploreWorkspaceLocation(context), 8_000);
+  const quickActionsPromise = buildQuickActions(context).catch(() => []);
   const utilityContentPromise = hasExplicitSearchParams ? Promise.resolve<ExploreUtilityContent>({
     bookingLoadError:false,notificationLoadError:false,notifications:[],unreadNotificationCount:0,upcomingBooking:null,
-  }) : getExploreUtilityContent(context);
+  }) : runReadWithDeadline(getExploreUtilityContent(context), 10_000).catch(() => ({ bookingLoadError: false, notificationLoadError: false, notifications: [], unreadNotificationCount: 0, upcomingBooking: null }));
   const workspaceLocation = await workspaceLocationPromise;
-  const searchIntent = requestedLocation
-    ? { location: "", query: rawQuery }
-    : searchIntentFromGlobalQuery(rawQuery, workspaceLocation.label);
-  const queryLocation = searchIntent.location;
-  const query = searchIntent.query;
-  const effectiveLocation =
-    requestedLocation || queryLocation ||
-    (hasLocationParam || hasExplicitSearchParams || params.q !== undefined
-      ? ""
-      : workspaceLocation.label);
-  const locationSource: ExploreLocationSource = requestedLocation || queryLocation
-    ? "manual"
-    : effectiveLocation ? workspaceLocation.source : "none";
-  const [searchResponse, initialFeed, quickActions, utilityContent, homeContent] =
-    await Promise.all([
-      searchExploreSalons({
-        category,
+  const urlSource = stringParam(params.locationSource);
+  const locationInputSource = urlSource === "gps" || urlSource === "activity" || urlSource === "saved" || urlSource === "workspace" ? urlSource : undefined;
+  const requestedScope = stringParam(params.scope);
+  const routing = await runReadWithDeadline(resolveExploreQueryRouting({ query: rawQuery, category, location: requestedLocation, locationSource: locationInputSource,
+    target: hasExplicitSearchParams ? target : "salons", scopePolicy: requestedScope === "fixed" || requestedScope === "expandable" ? requestedScope : undefined }, {
+    fallbackLocation: hasLocationParam ? "" : workspaceLocation.label, fallbackSource: workspaceLocation.source,
+  }), 8_000);
+  const queryLocation = routing.locationOrigin === "query" ? routing.location : "";
+  const query = routing.query;
+  const effectiveLocation = routing.location;
+  const locationSource: ExploreLocationSource = routing.locationSource;
+  const scopePolicy = routing.scopePolicy;
+  const requestedSort = stringParam(params.sort);
+  const sort = requestedSort === "trusted" || requestedSort === "bookable" || requestedSort === "closest" ? requestedSort : "relevance";
+  const feedPromise = !hasExplicitSearchParams && !hasLocationParam && !queryLocation
+    ? runReadWithDeadline(prepareExploreStartupFeed(context, { category: routing.category, location: effectiveLocation }), 6_000).catch(() => null)
+    : undefined;
+  const [searchResponse, homeContent] = await Promise.all([searchExploreSalons({
+        category: routing.category,
         location: effectiveLocation,
         page,
-        pageSize: EXPLORE_PAGE_SIZE,
+        pageSize: hasExplicitSearchParams ? EXPLORE_PAGE_SIZE : 4,
         query,
-      }),
-      hasExplicitSearchParams ? Promise.resolve(emptyFeedPage()) : homeContentPromise.then(homeContent => getExploreFeedPage({
-        homeContent,
-        discovery: { category, location: effectiveLocation },
-      })),
-      quickActionsPromise,
-      utilityContentPromise,
-      homeContentPromise,
-    ]);
+        scopePolicy,
+        sort,
+        target: routing.target,
+        locationSource,
+      }, { routing }), initialHomePromise]);
+  const initialFeed = emptyFeedPage();
+  const utilityContent: ExploreUtilityContent = { bookingLoadError: false, notificationLoadError: false, notifications: [], unreadNotificationCount: 0, upcomingBooking: null };
+  const extras = Promise.all([homeContentPromise, utilityContentPromise, quickActionsPromise]).then(([homeContent, utilityContent, quickActions]) => {
+    const discoveryContent = buildExploreDiscoveryContent({ homeContent, initialFeed, searchResponse, utilityContent, workspaceLocation });
+    const enriched = enrichExploreShowcaseContent({ discoveryContent, homeContent, initialFeed, searchResponse });
+    return { discoveryContent: enriched.discoveryContent, homeContent: enriched.homeContent, quickActions };
+  }).catch(() => ({ discoveryContent: { shortcuts: [] }, homeContent: emptyHomeContent(), quickActions: [] }));
   const discoveryContent = buildExploreDiscoveryContent({
     homeContent,
     initialFeed,
@@ -1183,6 +1114,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     searchResponse,
   });
   const commentViewer = {
+    identity: exploreCommentIdentity(context),
     canModerate: false,
     canReplyAsSalon: false,
     isAuthenticated: Boolean(context.user),
@@ -1191,27 +1123,57 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
 
   return (
     <>
-    <ExploreClient
+    <ExploreProgressiveClient
       key={[
+        showcaseContent.searchResponse.target,
+        showcaseContent.searchResponse.contentQuery,
+        showcaseContent.searchResponse.displayQuery,
         showcaseContent.searchResponse.query,
         showcaseContent.searchResponse.location,
         showcaseContent.searchResponse.category,
         showcaseContent.searchResponse.page,
-        showcaseContent.searchResponse.totalCount,
+        sort,
+        scopePolicy,
         locationSource,
         hasExplicitSearchParams ? "search" : "home",
       ].join(":")}
-      commentViewer={commentViewer}
-      initialSearchMode={hasExplicitSearchParams}
-      initialLocationSource={locationSource}
-      initialResponse={showcaseContent.searchResponse}
-      discoveryContent={showcaseContent.discoveryContent}
-      homeContent={showcaseContent.homeContent}
-      hasUrlLocation={hasLocationParam || Boolean(queryLocation) || params.q !== undefined}
-      initialFeed={showcaseContent.initialFeed}
-      quickActions={quickActions}
-      workspaceLocation={workspaceLocation}
+      extras={extras}
+      feed={feedPromise}
+      initial={{ commentViewer,
+      initialSearchMode: hasExplicitSearchParams,
+      initialLocationSource: locationSource,
+      initialResponse: showcaseContent.searchResponse,
+      discoveryContent: showcaseContent.discoveryContent,
+      homeContent: showcaseContent.homeContent,
+      hasUrlLocation: hasLocationParam || Boolean(queryLocation),
+      initialFeed: showcaseContent.initialFeed,
+      quickActions: [],
+      workspaceLocation,
+      }}
     />
     </>
   );
 }
+
+async function ExploreCoreResult({ content }: { content: ReturnType<typeof ExploreCorePage> }) { return await content; }
+
+async function ExplorePage({ searchParams }: ExplorePageProps) {
+  const params = await searchParams ?? {};
+  if (parsePage(clean(stringParam(params.page))) > 1) {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) if (key !== "page" && value !== undefined) query.set(key, stringParam(value) ?? "");
+    redirect(`/explore${query.size ? `?${query}` : ""}`);
+  }
+  // Start the authoritative load before awaiting the shared identity. Returning
+  // this Suspense shell does not wait for search, optional rails or feed hydration.
+  const content = runReadWithDeadline(ExploreCorePage({ searchParams: Promise.resolve(params) }), 15_000);
+  // Identity may fail before the stream is returned; keep the parallel read handled.
+  void content.catch(() => {});
+  const context = await getCurrentBusinessContext();
+  const source = stringParam(params.locationSource);
+  return <Suspense fallback={<ExploreStartupShell query={clean(stringParam(params.q))} category={clean(stringParam(params.category)) || "All"}
+    location={clean(stringParam(params.location))} source={source === "gps" || source === "activity" || source === "saved" || source === "workspace" ? source : params.location ? "manual" : "none"}
+    viewerId={context.user?.id ?? null} />}><ExploreCoreResult content={content} /></Suspense>;
+}
+
+export default withExperiencePage(ExplorePage);

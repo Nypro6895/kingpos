@@ -1,0 +1,80 @@
+/* Shared settings language. Only explicitly marked settings surfaces opt in. */
+.settings-style{--settings-green:#35634e;--settings-green-soft:#edf5ef;--settings-line:#e4e8e4;min-width:0;max-width:100%;color:#27272a}
+.settings-style.settings-style-page{background:#fff;padding:20px 24px}
+.settings-style-page>main{background:transparent;padding:0;min-height:0}
+.settings-style-page>main>div>aside:not([role=dialog]){padding:0 18px 0 0;border-bottom:0;border-right:1px solid var(--settings-line)}
+.settings-style-page>main>div>aside nav{display:grid;gap:4px}
+.settings-style :where(h1){font-size:21px;line-height:1.35;letter-spacing:-.3px;font-weight:650}
+.settings-style :where(h2){font-size:18px;line-height:1.4;letter-spacing:-.2px;font-weight:650}
+.settings-style :where(h3){font-size:14px;line-height:1.5;font-weight:600}
+.settings-style.settings-style-page h1{font-size:21px;line-height:1.35;font-weight:650;letter-spacing:-.3px}
+.settings-style.settings-style-page h2{font-size:18px;line-height:1.4;font-weight:650}
+.settings-style :where(h1,h2,h3,p,label){overflow-wrap:anywhere}
+.settings-style :where(input,select,textarea){min-width:0;max-width:100%;font-size:13px;border-radius:6px}
+.settings-style :where(input[type=checkbox],input[type=radio]){accent-color:var(--settings-green)}
+.settings-style :where(button,a){font-size:13px}
+.settings-style :where(button:not([aria-label]),summary){min-height:40px}
+.settings-style :where(header,section,article,aside,form,.content-surface):not([role=dialog]):not([role=alert]):not([class*="bg-red-"]):not([class*="bg-amber-"]){border-radius:0;box-shadow:none}
+.settings-style :where(header,section,article,aside,.content-surface):not([role=dialog]):not([role=alert]):not([class*="bg-red-"]):not([class*="bg-amber-"]){border-left:0;border-right:0;border-top:0;border-bottom:1px solid var(--settings-line);background:transparent;padding:14px 0}
+.settings-style :where(form):not([class*="bg-red-"]):not([class*="bg-amber-"]){border:0;background:transparent;padding-left:0;padding-right:0}
+.settings-style :where(div.rounded-lg.border.bg-white,div.rounded-xl.border.bg-white,div.rounded-2xl.border.bg-white){border:0;border-radius:0;box-shadow:none;padding-left:0;padding-right:0}
+.settings-style :where(details){border:0;border-radius:0;box-shadow:none;border-top:1px solid var(--settings-line);padding:12px 0;background:transparent}
+.settings-style :where(summary){display:flex;align-items:center;font-size:13px;font-weight:600;cursor:pointer}
+.settings-style :where([class~="text-orange-600"],[class~="text-orange-700"],[class~="text-orange-800"],[class~="text-brand-orange"]){color:var(--settings-green)}
+.settings-style :where([class~="bg-orange-50"],[class~="bg-orange-100"],[class~="bg-brand-orange-soft"]){background:var(--settings-green-soft)}
+.settings-style :where(button[class~="bg-orange-600"],button[class~="bg-brand-orange"]){background:var(--settings-green);color:white}
+.settings-style :where([aria-current=page],[aria-selected=true],button[aria-pressed=true]):not([class*="text-red-"]){background:var(--settings-green-soft);color:var(--settings-green)}
+.settings-style :where(a[class*="hover:bg-orange"],button[class*="hover:bg-orange"]):hover{background:var(--settings-green-soft);color:var(--settings-green)}
+.settings-style :where(input,select,textarea,button,a,summary):focus-visible{outline:2px solid var(--settings-green);outline-offset:2px}
+.settings-style :where(fieldset){min-width:0}
+.settings-style fieldset[class*="rounded"][class*="border"]{border:0;border-top:1px solid var(--settings-line);border-radius:0;padding:12px 0}
+.settings-style :where(legend){font-size:13px;font-weight:600;padding-left:0}
+.settings-style .settings-heading h1{font-size:21px}.settings-style .settings-sections>details{padding:12px 0;border-radius:0;background:none;box-shadow:none}.settings-style .settings-toggle{border-color:var(--settings-line)}.settings-style .settings-toggle input{accent-color:var(--settings-green)}
+.settings-style .settings-image{background:transparent;padding:8px 0;border-radius:0}
+.settings-style .staff-booking-settings-section{background:none;border:0;border-top:1px solid var(--settings-line);border-radius:0;padding:14px 0}
+.settings-style .staff-booking-settings-header{padding:14px 20px}.settings-style .staff-booking-settings-summary{background:none;border-radius:0;box-shadow:none}
+.settings-style .booking-setup-empty{border-radius:0;box-shadow:none}
+.settings-style .booking-setup-staff,.settings-style .booking-availability-schedule-section{border-radius:0;box-shadow:none}
+.settings-style .settings-inline-form{border:0;background:none;padding:0}
+.settings-style .settings-form-actions{padding-top:12px;border-top:1px solid var(--settings-line)}
+.settings-style .settings-booking-timing{padding-top:0;border-bottom:0}
+.settings-hub .settings-style>div>.settings-booking-form{margin:0}
+/* Preserve modal boundaries, image previews, destructive warnings and data tables. */
+.settings-style>section:not([role=dialog]):not([role=alert]){padding-top:0}
+.settings-style section>header:not([role=dialog]):not([role=alert]){padding:0 0 8px;border:0}
+.settings-style.settings-style-page>header{padding-top:0;padding-bottom:10px;margin-bottom:12px}
+.settings-style.settings-style-page>main>div[class~="gap-6"]{gap:16px}
+.settings-style [role=dialog]>header{padding:14px 20px}
+@media(max-width:767px){.settings-style.settings-style-page h1{font-size:20px}.settings-style-page>main>div>aside:not([role=dialog]){border-right:0;border-bottom:1px solid var(--settings-line);padding:0 0 12px}}
+@media(max-width:767px){.settings-style.settings-style-page{padding:14px 16px 24px}.settings-style :where(h1){font-size:20px}.settings-style :where(h2){font-size:18px}.settings-style :where(header,section,article){padding-top:12px;padding-bottom:12px}.settings-style :where(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,button:not([aria-label])){min-height:44px}.settings-style label[class*="min-w-56"]{min-width:0;flex:1 1 160px}.settings-style [role=dialog]>header{padding:12px 16px}.settings-style .settings-booking-timing{padding-top:16px}}
+
+/* POS settings uses an open layout, without cards or framed controls. */
+.pos-settings-page .pos-settings :is(div,section,article,aside,form,fieldset,details,p){border:0;border-radius:0;box-shadow:none}
+.pos-settings-page .pos-settings :is(button,a,input,select,textarea){border-radius:0;box-shadow:none}
+.pos-settings-page .pos-settings :is(button,a){border:0}
+.pos-settings-page .pos-settings :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea){border:0;border-bottom:1px solid var(--settings-line);font-size:16px}
+.pos-settings-page .pos-settings .settings-heading{align-items:flex-start;margin-bottom:12px}
+.pos-settings-page .pos-settings .owner-switch{background:transparent;min-width:44px;min-height:44px}
+.pos-settings-page .pos-settings .settings-sections{gap:4px}
+.pos-settings-page .pos-settings .settings-sections>details{padding:0;background:transparent}
+.pos-settings-page .pos-settings .settings-sections>details>summary{min-height:48px;padding:12px 0;gap:16px;border:0;line-height:1.5}
+.pos-settings-page .pos-settings .settings-sections>details>summary::after{flex-shrink:0;width:24px;text-align:center}
+.pos-settings-page .pos-settings summary::-webkit-details-marker{display:none}
+.pos-settings-page .pos-settings .settings-sections>details[open]{padding-bottom:16px}
+.pos-settings-page .pos-settings .settings-launch{padding-top:4px;padding-bottom:8px}
+.pos-settings-page .pos-settings .settings-launch>div{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:16px}
+.pos-settings-page .pos-settings .settings-launch>div>div{min-width:0;gap:4px}
+.pos-settings-page .pos-settings .settings-launch>div>div>div{gap:8px;align-items:center}
+.pos-settings-page .pos-settings .settings-launch a{min-height:44px;background:transparent;justify-content:flex-start;text-align:left;padding:10px 0;color:var(--settings-green)}
+.pos-settings-page .pos-settings .settings-launch a:hover{background:var(--settings-green-soft)}
+.pos-settings-page .pos-settings .windows-download-link{padding:0;margin:0}
+.pos-settings-page .pos-settings .windows-download-link>summary{min-height:44px;padding:8px 0;gap:8px;list-style:none;font-size:12px;color:#71717a}
+.pos-settings-page .pos-settings .windows-download-link>summary::after{content:'▾'}
+.pos-settings-page .pos-settings .windows-download-link[open]>summary::after{content:'▴'}
+.pos-settings-page .pos-settings .settings-launch>p{line-height:1.6;margin-top:12px}
+.pos-settings-page .pos-settings .settings-launch>small{line-height:1.6}
+@media(max-width:767px){
+ .pos-settings-page .pos-settings .settings-launch>div{grid-template-columns:minmax(0,1fr);gap:4px}
+ .pos-settings-page .pos-settings .settings-launch>div>div>div{display:grid;grid-template-columns:minmax(0,1fr) auto}
+ .pos-settings-page .pos-settings .settings-launch button{min-height:44px;padding:10px 12px;line-height:1.5}
+}

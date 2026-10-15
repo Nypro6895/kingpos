@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
 
 import { SubmitButton } from "@/components/submit-button";
 import {
@@ -56,7 +58,7 @@ function StatusBadge({
           : "inline-flex rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700"
       }
     >
-      {STAFF_WORKDAY_STATUS_LABELS[status]}
+      <WorkspaceText text={STAFF_WORKDAY_STATUS_LABELS[status]} />
     </span>
   );
 }
@@ -65,13 +67,13 @@ function MissingSalonState() {
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
       <p className="content-surface border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-600 rounded-none border-y shadow-none">
-        Please select a salon first.
+        <WorkspaceText text="Please select a salon first." />
       </p>
     </main>
   );
 }
 
-export default async function StaffWorkdayPage({
+async function StaffWorkdayPage({
   searchParams,
 }: StaffWorkdayPageProps) {
   const { error } = await searchParams;
@@ -89,7 +91,7 @@ export default async function StaffWorkdayPage({
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
         <p className="content-surface border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600 rounded-none border-y shadow-none">
-          No active staff profile is linked to your account for this salon.
+          <WorkspaceText text="No active staff profile is linked to your account for this salon." />
         </p>
       </main>
     );
@@ -110,70 +112,70 @@ export default async function StaffWorkdayPage({
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
       {error ? (
         <p className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 rounded-none border-y shadow-none">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
       <section className={error ? "mt-8" : ""}>
-        <h2 className="text-lg font-semibold text-zinc-950">Today Status</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Today Status" /></h2>
         <div className="content-surface mt-4 border-zinc-200 bg-white p-5 rounded-none border-y shadow-none">
           <StatusBadge status={status} />
         </div>
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Today Information</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Today Information" /></h2>
         <div className="content-surface mt-4 grid gap-3 border-zinc-200 bg-white p-5 text-sm sm:grid-cols-2 rounded-none border-y shadow-none">
           <p>
-            <span className="block text-zinc-500">Work Date</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Work Date" /></span>
             <span className="font-semibold text-zinc-950">
-              {formatDate(today)}
+              <WorkspaceText text={formatDate(today)} />
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Salon</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Salon" /></span>
             <span className="font-semibold text-zinc-950">
               {context.currentSalon.name}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Check In Time</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Check In Time" /></span>
             <span className="font-semibold text-zinc-950">
-              {formatDateTime(workday?.check_in_at ?? null)}
+              <WorkspaceText text={formatDateTime(workday?.check_in_at ?? null)} />
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Check Out Time</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Check Out Time" /></span>
             <span className="font-semibold text-zinc-950">
-              {formatDateTime(workday?.check_out_at ?? null)}
+              <WorkspaceText text={formatDateTime(workday?.check_out_at ?? null)} />
             </span>
           </p>
         </div>
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Today Summary</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Today Summary" /></h2>
         <div className="content-surface mt-4 grid gap-3 border-zinc-200 bg-white p-5 text-sm sm:grid-cols-4 rounded-none border-y shadow-none">
           <p>
-            <span className="block text-zinc-500">Assigned Services Today</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Assigned Services Today" /></span>
             <span className="font-semibold text-zinc-950">
               {activity.assignedServices}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Completed Services</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Completed Services" /></span>
             <span className="font-semibold text-zinc-950">
               {activity.completedServices}
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Current Status</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Current Status" /></span>
             <span className="font-semibold text-zinc-950">
-              {STAFF_WORKDAY_STATUS_LABELS[status]}
+              <WorkspaceText text={STAFF_WORKDAY_STATUS_LABELS[status]} />
             </span>
           </p>
           <p>
-            <span className="block text-zinc-500">Assigned Service Amount</span>
+            <span className="block text-zinc-500"><WorkspaceText text="Assigned Service Amount" /></span>
             <span className="font-semibold text-zinc-950">
               {new Intl.NumberFormat("en-US", {
                 currency: "USD",
@@ -185,7 +187,7 @@ export default async function StaffWorkdayPage({
       </section>
 
       <section className="content-surface mt-8 border-zinc-200 bg-zinc-50 p-5 rounded-none border-y shadow-none">
-        <h2 className="text-lg font-semibold text-zinc-950">Actions</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Actions" /></h2>
         <div className="mt-4">
           {status === "not_checked_in" ? (
             <form action={checkInStaffWorkday}>
@@ -193,7 +195,7 @@ export default async function StaffWorkdayPage({
                 className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
                 type="submit"
               >
-                Check In
+                <WorkspaceText text="Check In" />
               </SubmitButton>
             </form>
           ) : null}
@@ -212,7 +214,7 @@ export default async function StaffWorkdayPage({
                     disabled={status === nextStatus}
                     type="submit"
                   >
-                    {label}
+                    <WorkspaceText text={label} />
                   </SubmitButton>
                 </form>
               ))}
@@ -221,7 +223,7 @@ export default async function StaffWorkdayPage({
                 className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
                 type="submit"
               >
-                Check Out
+                <WorkspaceText text="Check Out" />
               </SubmitButton>
               </form>
             </div>
@@ -229,7 +231,7 @@ export default async function StaffWorkdayPage({
 
           {status === "checked_out" ? (
             <p className="text-sm text-zinc-600">
-              Workday is checked out. Summary is read-only.
+              <WorkspaceText text="Workday is checked out. Summary is read-only." />
             </p>
           ) : null}
         </div>
@@ -237,3 +239,5 @@ export default async function StaffWorkdayPage({
     </main>
   );
 }
+
+export default withExperiencePage(StaffWorkdayPage);

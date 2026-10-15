@@ -42,8 +42,8 @@ export const ACCOUNT_DELETION_RETENTION_POLICY: Record<
     category: "AUTH_IDENTITY",
     exportableByOwner: false,
     summary:
-      "The Supabase auth id is disconnected from the public user row and tombstoned to prevent profile recreation.",
-    treatment: "disconnect",
+      "The sign-in identity is deleted through the authentication service after personal storage erasure. A minimal internal tombstone prevents recreation from an old session.",
+    treatment: "delete",
   },
   BUSINESS_OPERATIONAL_HISTORY: {
     category: "BUSINESS_OPERATIONAL_HISTORY",
@@ -77,7 +77,7 @@ export const ACCOUNT_DELETION_RETENTION_POLICY: Record<
     category: "REVIEWS_CONTENT",
     exportableByOwner: true,
     summary:
-      "Reviews and comments remain attached to the retained subject row while profile display falls back to Deleted user.",
+      "Authored posts, comments, reviews and personal uploads are removed. Contentless internal references may remain where accounting or reply threads depend on them.",
     treatment: "retain_minimal",
   },
   CUSTOMER_TRANSACTION_HISTORY: {
@@ -91,7 +91,7 @@ export const ACCOUNT_DELETION_RETENTION_POLICY: Record<
     category: "EXPORT_ARCHIVES",
     exportableByOwner: true,
     summary:
-      "Generated exports are private, requester-scoped, and expire by policy instead of using public permanent URLs.",
+      "Private account exports expire after seven days and are removed when the account is erased.",
     treatment: "retain_minimal",
   },
   RECOVERY_METADATA: {

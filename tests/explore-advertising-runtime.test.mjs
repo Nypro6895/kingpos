@@ -7,7 +7,7 @@ import { chromium } from "playwright-core";
 const enabled = Boolean(
   process.env.ESBUILD_MODULE_PATH && process.env.TEST_BROWSER_PATH,
 );
-async function fixture(run) {
+async function fixture(run, options = {}) {
   const { build } = await import(
     pathToFileURL(process.env.ESBUILD_MODULE_PATH).href
   );
@@ -19,7 +19,7 @@ async function fixture(run) {
   import React,{useState} from 'react';import {createRoot} from 'react-dom/client';
   import {ExploreAdvertising,ExploreAdSlot} from './components/explore-advertising';
   import {ExploreAccountActionsProvider,ExploreBookButton,ExploreSalonLove} from './components/explore-account-actions';
-  function App(){const [auth,setAuth]=useState(false);window.authenticate=()=>setAuth(true);return <ExploreAccountActionsProvider authenticated={auth}><ExploreAdvertising><h1>Explore</h1><div style={{width:220}}><ExploreAdSlot desktop/></div><ExploreAdSlot/><ExploreBookButton name="Quiet Nails" contactHref="/salon" phoneHref="tel:+15555550100"/><ExploreSalonLove name="Quiet Nails" salonId="1650370b-f86d-461e-8d97-6210052eeed7"/></ExploreAdvertising></ExploreAccountActionsProvider>};createRoot(document.getElementById('root')).render(<App/>);
+  function App(){const [auth,setAuth]=useState(false);window.authenticate=()=>setAuth(true);return <ExploreAccountActionsProvider authenticated={auth}><ExploreAdvertising audience={${JSON.stringify(options.audience ?? "guest")}}><h1>Explore</h1>${options.positions ? '<ExploreAdSlot position="page-top"/><ExploreAdSlot position="page-bottom"/>' : ""}<div style={{width:220}}><ExploreAdSlot desktop/></div>${options.allSlots ? "<div data-feed-slots><ExploreAdSlot slotIndex={0}/><ExploreAdSlot slotIndex={1}/><ExploreAdSlot slotIndex={2}/><ExploreAdSlot slotIndex={3}/></div>" : "<ExploreAdSlot/>"}${options.scroll ? "<div style={{height:5000}}>Scroll content</div>" : ""}<ExploreBookButton name="Quiet Nails" contactHref="/salon" phoneHref="tel:+15555550100"/><ExploreSalonLove name="Quiet Nails" salonId="1650370b-f86d-461e-8d97-6210052eeed7"/></ExploreAdvertising></ExploreAccountActionsProvider>};createRoot(document.getElementById('root')).render(<App/>);
  `,
     },
     bundle: true,
@@ -48,7 +48,7 @@ async function fixture(run) {
             resolveDir: process.cwd(),
             contents:
               args.path === "next/navigation"
-                ? `export const usePathname=()=>'/explore';`
+                ? `export const usePathname=()=>window.location.pathname;`
                 : args.path === "next/link"
                   ? `import React from 'react';export default function Link(props){return React.createElement('a',props,props.children);}`
                   : `export const salonLoveAction=async(id,active)=>({active:active??false,error:null});export const referenceLoveAction=salonLoveAction;export const setAccountSavedPostAction=async()=>({active:true,error:null});`,
@@ -74,7 +74,7 @@ async function fixture(run) {
     endsAt: null,
   };
   let claims = 0;
-  const campaigns = [
+  const campaigns = options.campaigns ?? [
     { ...base, id: "a", kind: "placement", name: "Offer A" },
     { ...base, id: "b", kind: "placement", name: "Offer B" },
     {
@@ -87,7 +87,7 @@ async function fixture(run) {
     },
     { ...base, id: "ticker", kind: "ticker", name: "Notice" },
   ];
-  const server = createServer((req, res) => {
+  const server = createServer(async (req, res) => {
     if (req.url === "/bundle.js") {
       res.setHeader("Content-Type", "text/javascript");
       res.end(bundle.outputFiles.find((f) => f.path.endsWith(".js")).text);
@@ -99,11 +99,19 @@ async function fixture(run) {
     } else if (req.url === "/ad.png") {
       res.setHeader("Content-Type", "image/png");
       res.end(fs.readFileSync("public/brand/reylumi-favicon.png"));
-    } else if (req.url === "/api/explore/advertising") {
+    } else if (req.url.startsWith("/api/explore/advertising")) {
       res.setHeader("Content-Type", "application/json");
       if (req.method === "POST") {
-        claims++;
-        res.end(JSON.stringify({ allowed: claims === 1 }));
+        let body = "";
+        for await (const chunk of req) body += chunk;
+        const event = JSON.parse(body);
+        if (
+          event.event === "view" &&
+          (event.id === "popup" || event.id === "scroll")
+        ) {
+          claims++;
+          res.end(JSON.stringify({ allowed: claims === 1 }));
+        } else res.end(JSON.stringify({ allowed: true }));
       } else res.end(JSON.stringify({ campaigns }));
     } else {
       res.setHeader("Content-Type", "text/html");
@@ -123,7 +131,9 @@ async function fixture(run) {
     });
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    await page.goto(`http://127.0.0.1:${server.address().port}/explore`);
+    await page.goto(
+      `http://127.0.0.1:${server.address().port}${options.path ?? "/explore"}`,
+    );
     await run(page, () => claims);
     assert.deepEqual(errors, []);
   } finally {
@@ -136,6 +146,10 @@ test(
   { skip: !enabled },
   () =>
     fixture(async (page, claims) => {
+      await page
+        .getByRole("link", { name: "A lovely first visit", exact: true })
+        .waitFor();
+      assert.equal(claims(), 0, "announcement must precede popup");
       await page.getByRole("dialog", { name: "Welcome gift" }).waitFor();
       assert.equal(claims(), 1);
       fs.mkdirSync(".next/advertising-review", { recursive: true });
@@ -145,7 +159,7 @@ test(
       await page
         .getByRole("dialog", { name: "Welcome gift" })
         .waitFor({ state: "hidden" });
-      const first = await page
+      let first = await page
         .locator('aside[aria-label="Advertisement"] a')
         .first()
         .getAttribute("aria-label");
@@ -156,6 +170,11 @@ test(
         true,
       );
       await page.setViewportSize({ width: 1440, height: 900 });
+      await page.waitForTimeout(300);
+      first = await page
+        .locator('aside[aria-label="Advertisement"] a')
+        .first()
+        .getAttribute("aria-label");
       await page.screenshot({ path: ".next/advertising-review/desktop.png" });
       await page.reload();
       await page
@@ -213,4 +232,132 @@ test(
         .getByRole("dialog", { name: "Keep this salon close ♡" })
         .waitFor();
     }),
+);
+
+test(
+  "three mobile feed campaigns appear once and a fourth slot stays empty",
+  { skip: !enabled },
+  () =>
+    fixture(
+      async (page) => {
+        for (let index = 0; index < 3; index++) {
+          const slot = page.locator("[data-feed-slots] aside").nth(index);
+          await slot.waitFor({ state: "attached" });
+          await slot.scrollIntoViewIfNeeded();
+          await slot.waitFor();
+        }
+        const names = await page
+          .locator("[data-feed-slots] aside a")
+          .evaluateAll((nodes) =>
+            nodes.map((node) => node.getAttribute("aria-label")),
+          );
+        assert.equal(names.length, 3);
+        assert.equal(new Set(names).size, 3);
+        await page.reload();
+        for (let index = 0; index < 3; index++) {
+          const slot = page.locator("[data-feed-slots] aside").nth(index);
+          await slot.waitFor({ state: "attached" });
+          await slot.scrollIntoViewIfNeeded();
+          await slot.waitFor();
+        }
+        assert.equal(await page.locator("[data-feed-slots] aside").count(), 3);
+      },
+      {
+        allSlots: true,
+        campaigns: ["One", "Two", "Three"].map((name, index) => ({
+          id: String(index),
+          kind: "placement",
+          name,
+          href: "/offer",
+          imageUrl: "/ad.png",
+          background: "#ffffff",
+          color: "#302326",
+          delaySeconds: 0,
+          durationSeconds: 0,
+        })),
+      },
+    ),
+);
+test(
+  "popup scroll stage waits until the visitor reaches the configured progress",
+  { skip: !enabled },
+  () =>
+    fixture(
+      async (page, claims) => {
+        await page.waitForTimeout(250);
+        assert.equal(claims(), 0);
+        await page.evaluate(() =>
+          window.scrollTo(0, document.documentElement.scrollHeight * 0.6),
+        );
+        await page.getByRole("dialog", { name: "After browsing" }).waitFor();
+        assert.equal(claims(), 1);
+      },
+      {
+        scroll: true,
+        campaigns: [
+          {
+            id: "scroll",
+            kind: "popup",
+            name: "After browsing",
+            href: "",
+            imageUrl: "",
+            text: "Welcome",
+            background: "#ffffff",
+            color: "#302326",
+            delaySeconds: 0,
+            durationSeconds: 0,
+            closeButton: true,
+            popupTrigger: "scroll",
+            scrollPercent: 35,
+          },
+        ],
+      },
+    ),
+);
+
+test(
+  "owner-only campaign appears in chosen page positions and stays hidden from guests",
+  { skip: !enabled },
+  async () => {
+    const campaign = {
+      id: "owner-banner",
+      kind: "placement",
+      name: "Owner update",
+      href: "",
+      imageUrl: "",
+      text: "Workspace news",
+      background: "#ffffff",
+      color: "#302326",
+      delaySeconds: 0,
+      durationSeconds: 0,
+      audiences: ["owner"],
+      locations: ["/bookings", "/staff"],
+      devices: ["mobile"],
+      placements: ["page-top", "page-bottom"],
+    };
+    await fixture(
+      async (page) => {
+        await page.getByLabel("Owner update").first().waitFor();
+        assert.equal(await page.getByLabel("Owner update").count(), 2);
+      },
+      {
+        path: "/bookings",
+        audience: "owner",
+        positions: true,
+        campaigns: [campaign],
+      },
+    );
+    await fixture(
+      async (page) => {
+        await page.waitForTimeout(300);
+        assert.equal(await page.getByLabel("Owner update").count(), 0);
+      },
+      {
+        path: "/bookings",
+        audience: "guest",
+        positions: true,
+        campaigns: [campaign],
+      },
+    );
+  },
 );

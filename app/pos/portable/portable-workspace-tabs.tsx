@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 
 import Image from "next/image";
 import Link, { useLinkStatus } from "next/link";
@@ -113,6 +114,8 @@ function SalonBrand({
   salonName: string;
   salonTimezone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [clock, setClock] = useState("");
 
   useEffect(() => {
@@ -141,7 +144,7 @@ function SalonBrand({
       <span className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-white sm:block">
         {salonLogoUrl ? (
           <Image
-            alt=""
+            alt={__vt("")}
             className="object-cover"
             fill
             sizes="44px"
@@ -158,7 +161,7 @@ function SalonBrand({
           {salonName}
         </span>
         <span className="block truncate text-xs font-medium tabular-nums text-zinc-500">
-          {clock || "Loading time..."}
+          <WorkspaceText text={clock || "Loading time..."} />
         </span>
       </span>
     </div>
@@ -174,6 +177,8 @@ export function PortableWorkspaceTabs({
   salonName,
   salonTimezone,
 }: PortableWorkspaceTabsProps) {
+  const __vt = useWorkspaceTranslation();
+
   const pathname = usePathname();
   const workspace = usePortableWorkspaceState();
   const router = useRouter();
@@ -246,7 +251,7 @@ export function PortableWorkspaceTabs({
         </div>
 
         <nav
-          aria-label="POS workspace"
+          aria-label={__vt("POS workspace")}
           className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto xl:justify-center"
         >
           {items.map((item) => {
@@ -275,7 +280,7 @@ export function PortableWorkspaceTabs({
                 <span className="hidden sm:block">
                   <PortableNavIcon name={item.id} />
                 </span>
-                <span className="truncate">{item.label}</span>
+                <span className="truncate"><WorkspaceText text={item.label} /></span>
                 <TabPendingIndicator />
               </Link>
             );
@@ -289,9 +294,9 @@ export function PortableWorkspaceTabs({
         <PortableFullscreenButton />
         <form action={logoutPortablePosAction} onSubmit={clearPortableLocalDrafts} className="shrink-0">
           <button
-            aria-label="Lock POS"
+            aria-label={__vt("Lock POS")}
             className="grid h-10 w-10 place-items-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
-            title="Lock POS"
+            title={__vt("Lock POS")}
             type="submit"
           >
             <PortableNavIcon name="lock" />

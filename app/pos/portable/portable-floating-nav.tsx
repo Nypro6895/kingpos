@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -872,6 +873,8 @@ export function PortableFloatingNav({
   items,
   salonName,
 }: PortableFloatingNavProps) {
+  const __vt = useWorkspaceTranslation();
+
   const pathname = usePathname();
   const controlsId = useId();
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -1170,7 +1173,7 @@ export function PortableFloatingNav({
       <button
         aria-controls={isMenuMounted ? controlsId : undefined}
         aria-expanded={isOpen}
-        aria-label="Open portable navigation"
+        aria-label={__vt("Open portable navigation")}
         className={[
           "portable-nav-main-button relative grid place-items-center rounded-full bg-white text-zinc-950 shadow-[0_18px_46px_rgba(15,23,42,0.28)] outline-none ring-1 ring-zinc-950/36 transition duration-200 focus-visible:ring-4 focus-visible:ring-orange-500/30",
           isDimmed && !isOpen ? "opacity-58" : "opacity-100",
@@ -1203,7 +1206,7 @@ export function PortableFloatingNav({
         />
         <span className="relative z-10 grid h-full w-full place-items-center overflow-visible rounded-full bg-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.98)]">
           <Image
-            alt=""
+            alt={__vt("")}
             aria-hidden="true"
             className="h-[68px] w-[68px] max-w-none rounded-full object-contain drop-shadow-[0_14px_22px_rgba(15,23,42,0.30)]"
             data-portable-floating-nav-brand-icon
@@ -1218,7 +1221,7 @@ export function PortableFloatingNav({
 
       {isMenuMounted ? (
         <div
-          aria-label={`Portable navigation for ${salonName}`}
+          aria-label={__vt(`Portable navigation for ${salonName}`)}
           className="pointer-events-none fixed inset-0 z-40 bg-transparent"
           data-portable-floating-nav-menu
           id={controlsId}
@@ -1269,7 +1272,7 @@ export function PortableFloatingNav({
               return (
                 <Link
                   aria-current={isActive ? "page" : undefined}
-                  aria-label={action.label}
+                  aria-label={__vt(action.label)}
                   className={commonClass}
                   data-orbit-angle={item.angle.toFixed(2)}
                   data-orbit-radius={item.radius.toFixed(2)}
@@ -1281,10 +1284,10 @@ export function PortableFloatingNav({
                   ref={index === 0 ? firstActionRef : undefined}
                   role="menuitem"
                   style={commonStyle}
-                  title={action.label}
+                  title={__vt(action.label)}
                 >
                   <Icon icon={action.icon} />
-                  <span className="sr-only">{action.label}</span>
+                  <span className="sr-only"><WorkspaceText text={action.label} /></span>
                 </Link>
               );
             }
@@ -1300,7 +1303,7 @@ export function PortableFloatingNav({
                 style={commonStyle}
               >
                 <button
-                  aria-label={item.action.label}
+                  aria-label={__vt(item.action.label)}
                   className={commonClass.replace("absolute ", "")}
                   data-orbit-angle={item.angle.toFixed(2)}
                   data-orbit-radius={item.radius.toFixed(2)}
@@ -1315,11 +1318,11 @@ export function PortableFloatingNav({
                     transitionDuration: commonStyle.transitionDuration,
                     width: "100%",
                   }}
-                  title={item.action.label}
+                  title={__vt(item.action.label)}
                   type="submit"
                 >
                   <Icon icon={item.action.icon} />
-                  <span className="sr-only">{item.action.label}</span>
+                  <span className="sr-only"><WorkspaceText text={item.action.label} /></span>
                 </button>
               </form>
             );

@@ -1,0 +1,82 @@
+{
+  "kind": "change",
+  "changeId": "booking-lock-order-schema-review-20261015",
+  "status": "needs-integration",
+  "summary": "Prior booking patch remains unchanged. Docker recovered without deleting existing data or manually changing permissions. Authenticated backend E2E passed 21 checks plus four concurrent HTTP scenarios through real Supabase Auth/PostgREST/RLS in isolated containers. Fresh migration replay exposed one unrelated optional-function cast bug; a recorded fixture-only correction allowed the test run. Browser E2E and release integration remain pending.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/booking-concurrency.integration.test.mjs",
+    "supabase/migrations/20261015010000_booking_concurrency_guards.sql"
+  ],
+  "dependencies": [
+    "booking-concurrency-cache-review-20261015"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3-source",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968",
+    "patch": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3.patch",
+    "hashManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3-manifest.json"
+  },
+  "validation": [
+    {
+      "name": "Independent PostgreSQL sessions, socket only",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-lock-order-after.log; 15 scenarios plus parent, 16/16 passed, zero skips. Covers competing create/reschedule/cancel, exact retry-key scope, rank/schedule ordering, POS contact reuse, deposit and customer-scope rejection and atomic rollback."
+    },
+    {
+      "name": "Before-fix POS deadlock and intermediate contact regression",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-pos-lock-before.log shows deadlock with the existing POS body; C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-pos-contact-before.log detects duplicate contacts before the lookup recheck correction. Captured live POS definition independently reproduced the deadlock in C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-pos-existing-risk.log."
+    },
+    {
+      "name": "Live schema metadata and function preservation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3-verification.json and booking-schema-review.json. Live base RPC and rank bodies match tested local sources; pending migration absent from linked database. Applying final migration twice preserves owner, ACL, SECURITY DEFINER and search_path in isolated database."
+    },
+    {
+      "name": "Scoped lint, patches and frozen source",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase3-verification.json; zero lint errors, both patches reverse-apply cleanly, all nine final files match SHA-256 manifests and previous booking files remain unchanged."
+    },
+    {
+      "name": "Local cleanup",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-socket-cleanup.json and docker-retry-cleanup.json; stopped only task-owned instances, zero test databases remain; no TCP listener used in this phase."
+    },
+    {
+      "name": "Authenticated backend E2E and concurrent HTTP",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\docker-booking-e2e-receipt.json; 21 end-to-end backend checks plus 4 concurrent HTTP scenarios passed. Clients use real Auth-issued user JWTs and RLS. No host ports or external egress."
+    },
+    {
+      "name": "Unmodified fresh-database migration replay",
+      "result": "failed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-e2e-fresh-replay-blocker.json; 202609230009 eagerly resolves a helper introduced by 202609240006. Repository unchanged; one explicit fixture-only guard correction was required."
+    },
+    {
+      "name": "Browser and Next.js session E2E",
+      "result": "pending",
+      "evidence": "Browser UI fixtures were previously tested separately; this phase validated Auth/PostgREST/RPC boundaries, not live browser cookies/server-action routing."
+    }
+  ],
+  "limitations": [
+    "Use booking-final.patch/source/manifest for the combined nine-file booking change, or apply phase3 after phase2. The old phase2 frozen migration used a salon-wide early lock and must not be released alone.",
+    "Only schema/function/permission metadata was read from the linked Supabase project. No live booking RPC, data creation, schema or permission change, payments, notification delivery, commit, push or deployment.",
+    "Portable POS now explicitly acquires the same existing ranking advisory lock before rechecking a missing contact. Migration fails closed if that ranking lock signature or expected function anchors changed; future ranking lock changes must update this dependency.",
+    "Current retry-key behavior is preserved: scope is salon plus exact key, without adding actor/payload scoping or a unique index. Hash collisions can only serialize unrelated keys; SQL lookup retains the full key.",
+    "Salon creation root cause remains unconfirmed: the local sanitized lookup log still has startup only. Manual authenticated lookup reproduction is still needed.",
+    "This additional verification used real Auth, PostgREST, RLS and full application schema with a single documented fixture-only bootstrap correction. Browser/Next.js session integration was not exercised. The earlier concurrency harness remains a separate minimal-schema test.",
+    "The unmodified migration chain still fails on a fresh database at 202609230009; fix and replay that chain before claiming clean environment bootstrap.",
+    "Docker is running and prior containers were preserved. Runtime backups remain for recovery; no reset, existing user data deletion, manual ACL change, install, production mutation or deployment occurred.",
+    "Do not claim the production salon-creation incident fixed from isolated success. Production diagnostic reproduction and assembled release validation remain outstanding."
+  ],
+  "combinedBookingPatch": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-final.patch",
+  "combinedBookingManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-final-manifest.json",
+  "id": "f988ec50-c057-4455-8c9c-2e9f2d174ff9",
+  "recordedAt": "2026-10-15T02:27:25.656Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

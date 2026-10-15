@@ -1,11 +1,18 @@
 "use client";
+import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { TimeZoneSelect } from "@/components/time-zone-select";
+import { ContextualSupport } from "@/components/contextual-support";
+
+import { SettingsIcon as SharedSettingsIcon } from "@/components/settings-icon";
 import "./booking-workspace.css";
 import { SchedulePicker } from "@/components/booking-ui/schedule-picker";
-import { useCloseOnNavigation } from "@/components/overlay-dismissal";
+import { useCloseOnNavigation, useOverlayPortalHost } from "@/components/overlay-dismissal";
 import { HistoryLinkControl } from "@/app/activity/history-link-control";
 import { useBookingClock } from "@/components/booking-ui/use-booking-clock";
 import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
+import { getSalonOnlineBookingStatus } from "@/lib/booking-status";
 
 async function reviewBeforeConfirm<T extends { acknowledgeNoShow?: boolean }>(action: (input: T) => Promise<BookingActionResult>, input: T) {
   const result = await action(input);
@@ -61,6 +68,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -343,16 +351,18 @@ function StaffAvatar({
   label: string | null | undefined;
   size?: "regular" | "small";
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const src = safeImageUrl(imageUrl);
 
   return (
     <span
       className={size === "small" ? styles.avatarSmall : styles.avatar}
-      title={label ?? "Staff"}
+      title={__vt(label ?? "Staff")}
     >
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img alt="" className={styles.avatarImage} src={src} />
+        <img alt={__vt("")} className={styles.avatarImage} src={src} />
       ) : (
         initialsFor(label)
       )}
@@ -669,7 +679,7 @@ function InlineActionMessage({
       )}
       role="status"
     >
-      {message}
+      <WorkspaceText text={message} />
     </p>
   );
 }
@@ -685,10 +695,12 @@ function MiniSwitch({
   label: string;
   onChange: (next: boolean) => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <button
       aria-checked={checked}
-      aria-label={label}
+      aria-label={__vt(label)}
       className={classNames(
         "relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition",
         checked
@@ -733,7 +745,7 @@ function QuickSetupCard({
     >
       <div className="min-w-0">
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
-          <span className="text-sm font-extrabold text-[#211c24]">{title}</span>
+          <span className="text-sm font-extrabold text-[#211c24]"><WorkspaceText text={title} /></span>
           <span className="text-sm font-semibold text-[#786d78]">{metric}</span>
         </div>
         <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#786d78]">
@@ -746,7 +758,7 @@ function QuickSetupCard({
           status === "attention" ? styles.statusPending : styles.statusArrived,
         )}
       >
-        {status === "attention" ? "Needs setup" : "Ready"}
+        {status === "attention" ? "Needs setup" : <WorkspaceText text="Ready" />}
       </span>
     </button>
   );
@@ -754,33 +766,39 @@ function QuickSetupCard({
 
 function QuickSetupDrawerFrame({
   children,
+  footer,
   onClose,
   subtitle,
   title,
 }: {
   children: ReactNode;
+  footer?: ReactNode;
   onClose: () => void;
   subtitle: string;
   title: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
-    <ModalFrame label={title} onClose={onClose} size="wide">
-      <div className="flex items-start justify-between gap-4 border-b border-[#f0e6df] px-5 py-4">
+    <ModalFrame label={__vt(title)} onClose={onClose} size="wide">
+      <div className="booking-quick-setup-header">
         <div className="min-w-0">
-          <p className={styles.eyebrow}>Quick setup</p>
-          <h2 className="mt-2 text-xl font-extrabold text-[#211c24]">{title}</h2>
-          <p className="mt-1 text-sm leading-5 text-[#786d78]">{subtitle}</p>
+          <h2><WorkspaceText text={title} /></h2>
+          <p><WorkspaceText text={subtitle} /></p>
         </div>
         <button
-          aria-label="Close quick setup"
-          className={classNames(styles.secondaryButton, "h-10 px-3")}
+          aria-label={__vt("Close quick setup")}
+          className="booking-quick-setup-close"
           onClick={onClose}
           type="button"
         >
-          Close
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
         </button>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
+      <div className="booking-quick-setup-body">{children}</div>
+      {footer ? <div className="booking-quick-setup-footer">{footer}</div> : null}
     </ModalFrame>
   );
 }
@@ -796,6 +814,8 @@ function QuickCreateServiceCard({
   onResult: (result: SaveServiceConfigsResult) => void;
   options: BookingWorkspaceClientProps["options"];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [name, setName] = useState("");
   const [price, setPrice] = useState("0");
   const [durationMinutes, setDurationMinutes] = useState("30");
@@ -879,30 +899,29 @@ function QuickCreateServiceCard({
     >
       <div>
         <p className="text-sm font-extrabold text-[#211c24]">
-          Create quick service
+          <WorkspaceText text="Create quick service" />
         </p>
         <p className="mt-1 text-sm text-[#786d78]">
-          Add the basic service now. Use Advanced settings for categories,
-          add-ons, and longer descriptions.
+          <WorkspaceText text="Add the basic service now. Use Advanced settings for categories, add-ons, and longer descriptions." />
         </p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_120px_140px]">
         <label className="grid gap-1">
           <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#786d78]">
-            Service name
+            <WorkspaceText text="Service name" />
           </span>
           <input
             className={styles.field}
             disabled={disabled}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Pedicure Deluxe"
+            placeholder={__vt("Pedicure Deluxe")}
             value={name}
           />
         </label>
         <label className="grid gap-1">
           <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#786d78]">
-            Price
+            <WorkspaceText text="Price" />
           </span>
           <input
             className={styles.field}
@@ -916,7 +935,7 @@ function QuickCreateServiceCard({
         </label>
         <label className="grid gap-1">
           <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#786d78]">
-            Minutes
+            <WorkspaceText text="Minutes" />
           </span>
           <input
             className={styles.field}
@@ -932,16 +951,16 @@ function QuickCreateServiceCard({
       <div className="flex flex-col gap-3 rounded-lg border border-[#f0e6df] bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-extrabold text-[#211c24]">
-            Show online booking
+            <WorkspaceText text="Show online booking" />
           </p>
           <p className="mt-1 text-xs text-[#786d78]">
-            Keep it on when customers can choose this service.
+            <WorkspaceText text="Keep it on when customers can choose this service." />
           </p>
         </div>
         <MiniSwitch
           checked={onlineBookingEnabled}
           disabled={disabled}
-          label="Online booking for new service"
+          label={__vt("Online booking for new service")}
           onChange={setOnlineBookingEnabled}
         />
       </div>
@@ -949,7 +968,7 @@ function QuickCreateServiceCard({
       {activeStaff.length > 0 ? (
         <div className="grid gap-2">
           <p className="text-sm font-extrabold text-[#211c24]">
-            Professionals who can take it
+            <WorkspaceText text="Professionals who can take it" />
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             {activeStaff.map((member) => (
@@ -962,7 +981,7 @@ function QuickCreateServiceCard({
                     {member.display_name}
                   </span>
                   <span className="block text-xs text-[#786d78]">
-                    {staffBookingReady(member) ? "Booking ready" : "Booking off"}
+                    <WorkspaceText text={staffBookingReady(member) ? "Booking ready" : "Booking off"} />
                   </span>
                 </span>
                 <input
@@ -979,8 +998,7 @@ function QuickCreateServiceCard({
         </div>
       ) : (
         <p className="rounded-lg border border-[#f0e6df] bg-white p-3 text-sm text-[#786d78]">
-          No professionals yet. Create staff in Quick Setup, then match them to
-          this service.
+          <WorkspaceText text="No professionals yet. Create staff in Quick Setup, then match them to this service." />
         </p>
       )}
 
@@ -990,7 +1008,7 @@ function QuickCreateServiceCard({
           disabled={disabled}
           type="submit"
         >
-          {isPending ? "Creating..." : "Create service"}
+          <WorkspaceText text={isPending ? "Creating..." : "Create service"} />
         </button>
       </div>
     </form>
@@ -1010,6 +1028,8 @@ function QuickCreateStaffCard({
   onResult: (result: BookingActionResult) => void;
   options: BookingWorkspaceClientProps["options"];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [displayName, setDisplayName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [onlineBookingEnabled, setOnlineBookingEnabled] = useState(true);
@@ -1067,36 +1087,35 @@ function QuickCreateStaffCard({
     >
       <div>
         <p className="text-sm font-extrabold text-[#211c24]">
-          Create quick professional
+          <WorkspaceText text="Create quick professional" />
         </p>
         <p className="mt-1 text-sm text-[#786d78]">
-          Add the basic staff profile now. Use Advanced settings for contact,
-          payroll, and profile details.
+          <WorkspaceText text="Add the basic staff profile now. Use Advanced settings for contact, payroll, and profile details." />
         </p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,220px)]">
         <label className="grid gap-1">
           <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#786d78]">
-            Display name
+            <WorkspaceText text="Display name" />
           </span>
           <input
             className={styles.field}
             disabled={disabled}
             onChange={(event) => setDisplayName(event.target.value)}
-            placeholder="Macy"
+            placeholder={__vt("Macy")}
             value={displayName}
           />
         </label>
         <label className="grid gap-1">
           <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#786d78]">
-            Role
+            <WorkspaceText text="Role" />
           </span>
           <input
             className={styles.field}
             disabled={disabled}
             onChange={(event) => setJobTitle(event.target.value)}
-            placeholder="Nail tech"
+            placeholder={__vt("Nail tech")}
             value={jobTitle}
           />
         </label>
@@ -1105,17 +1124,16 @@ function QuickCreateStaffCard({
       <div className="flex flex-col gap-3 rounded-lg border border-[#f0e6df] bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-extrabold text-[#211c24]">
-            Enable online booking
+            <WorkspaceText text="Enable online booking" />
           </p>
           <p className="mt-1 text-xs text-[#786d78]">
-            Customers can choose this professional once hours and services are
-            ready.
+            <WorkspaceText text="Customers can choose this professional once hours and services are ready." />
           </p>
         </div>
         <MiniSwitch
           checked={onlineBookingEnabled}
           disabled={disabled}
-          label="Online booking for new professional"
+          label={__vt("Online booking for new professional")}
           onChange={setOnlineBookingEnabled}
         />
       </div>
@@ -1123,7 +1141,7 @@ function QuickCreateStaffCard({
       {activeServices.length > 0 ? (
         <div className="grid gap-2">
           <p className="text-sm font-extrabold text-[#211c24]">
-            Services they can take
+            <WorkspaceText text="Services they can take" />
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             {activeServices.map((service) => {
@@ -1140,9 +1158,9 @@ function QuickCreateStaffCard({
                       {service.name}
                     </span>
                     <span className="block text-xs text-[#786d78]">
-                      {service.online_booking_enabled
+                      <WorkspaceText text={service.online_booking_enabled
                         ? "Online service"
-                        : "Turn service online first"}
+                        : "Turn service online first"} />
                     </span>
                   </span>
                   <input
@@ -1159,19 +1177,18 @@ function QuickCreateStaffCard({
           </div>
           {!canManageAssignments ? (
             <p className="text-xs text-[#786d78]">
-              Service matching is read-only for this account.
+              <WorkspaceText text="Service matching is read-only for this account." />
             </p>
           ) : null}
         </div>
       ) : (
         <p className="rounded-lg border border-[#f0e6df] bg-white p-3 text-sm text-[#786d78]">
-          No services yet. Create services in Quick Setup, then match them to
-          this professional.
+          <WorkspaceText text="No services yet. Create services in Quick Setup, then match them to this professional." />
         </p>
       )}
 
       <button className={styles.primaryButton} disabled={disabled} type="submit">
-        {isPending ? "Creating..." : "Create professional"}
+        <WorkspaceText text={isPending ? "Creating..." : "Create professional"} />
       </button>
     </form>
   );
@@ -1190,6 +1207,8 @@ function ServicesQuickSetupDrawer({
   onClose: () => void;
   options: BookingWorkspaceClientProps["options"];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   
   const [query, setQuery] = useState("");
   const [expandedServiceId, setExpandedServiceId] = useState<string | null>(
@@ -1261,8 +1280,8 @@ function ServicesQuickSetupDrawer({
   return (
     <QuickSetupDrawerFrame
       onClose={onClose}
-      subtitle="Choose which active services appear online and which professionals can receive them."
-      title="Services"
+      subtitle={__vt("Choose which active services appear online and which professionals can receive them.")}
+      title={__vt("Services")}
     >
       <div className="grid gap-4">
         <InlineActionMessage result={result} />
@@ -1273,10 +1292,10 @@ function ServicesQuickSetupDrawer({
             onClick={() => setShowCreateForm((current) => !current)}
             type="button"
           >
-            {showCreateForm ? "Hide quick create" : "Create service"}
+            <WorkspaceText text={showCreateForm ? "Hide quick create" : "Create service"} />
           </button>
           <a className="text-sm font-extrabold text-[#f26f3d]" href="/services">
-            Advanced service settings
+            <WorkspaceText text="Advanced service settings" />
           </a>
         </div>
         {showCreateForm ? (
@@ -1293,11 +1312,11 @@ function ServicesQuickSetupDrawer({
           />
         ) : null}
         <label className="grid gap-1">
-          <span className="sr-only">Search services</span>
+          <span className="sr-only"><WorkspaceText text="Search services" /></span>
           <input
             className={classNames(styles.field, "w-full")}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search services"
+            placeholder={__vt("Search services")}
             type="search"
             value={query}
           />
@@ -1305,8 +1324,7 @@ function ServicesQuickSetupDrawer({
         <div className="grid gap-3">
           {services.length === 0 ? (
             <p className="rounded-xl border border-[#f0e6df] bg-[#fffaf7] p-4 text-sm text-[#786d78]">
-              No services match that search. Use quick create above or open
-              advanced service settings.
+              <WorkspaceText text="No services match that search. Use quick create above or open advanced service settings." />
             </p>
           ) : null}
           {services.map((service) => {
@@ -1346,7 +1364,7 @@ function ServicesQuickSetupDrawer({
                         online ? styles.statusArrived : styles.statusMuted,
                       )}
                     >
-                      {online ? "Online" : "Off"}
+                      <WorkspaceText text={online ? "Online" : "Off"} />
                     </span>
                     <MiniSwitch
                       checked={online}
@@ -1362,27 +1380,25 @@ function ServicesQuickSetupDrawer({
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-[#786d78]">
                   <span>
-                    {assignedStaffIds.length} professional
+                    {assignedStaffIds.length} <WorkspaceText text="professional" />
                     {assignedStaffIds.length === 1 ? "" : "s"}
                   </span>
-                  {!service.is_active ? <span>Inactive service</span> : null}
+                  {!service.is_active ? <span><WorkspaceText text="Inactive service" /></span> : null}
                   <a
                     className="font-extrabold text-[#f26f3d]"
                     href={`/services?service=${service.id}`}
                   >
-                    Edit service details
+                    <WorkspaceText text="Edit service details" />
                   </a>
                 </div>
                 {expanded ? (
                   <div className="mt-4 grid gap-2 border-t border-[#f0e6df] pt-4">
                     <p className="text-sm font-extrabold text-[#211c24]">
-                      Available professionals
+                      <WorkspaceText text="Available professionals" />
                     </p>
                     {options.staff.length === 0 ? (
                       <p className="rounded-lg border border-[#f0e6df] bg-[#fffaf7] p-3 text-sm text-[#786d78]">
-                        No professionals yet. Create staff from the
-                        Professionals quick setup card before matching this
-                        service.
+                        <WorkspaceText text="No professionals yet. Create staff from the Professionals quick setup card before matching this service." />
                       </p>
                     ) : null}
                     {options.staff.map((member) => {
@@ -1409,11 +1425,11 @@ function ServicesQuickSetupDrawer({
                               {member.display_name}
                             </span>
                             <span className="block text-xs text-[#786d78]">
-                              {staffBookingReady(member)
+                              <WorkspaceText text={staffBookingReady(member)
                                 ? "Booking ready"
                                 : member.is_active
                                   ? "Online booking off"
-                                  : "Inactive professional"}
+                                  : "Inactive professional"} />
                             </span>
                           </span>
                           <input
@@ -1439,8 +1455,7 @@ function ServicesQuickSetupDrawer({
         </div>
         {!canManageServices || !canManageAssignments ? (
           <p className="text-sm text-[#786d78]">
-            Some controls are read-only because this account does not have the
-            matching Services or Booking permission.
+            <WorkspaceText text="Some controls are read-only because this account does not have the matching Services or Booking permission." />
           </p>
         ) : null}
       </div>
@@ -1457,6 +1472,8 @@ function QuickTimeOffForm({
   staffId: string;
   timezone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   
   const defaultDate = addDays(todayInTimeZone(timezone), 1);
   const [startDate, setStartDate] = useState(defaultDate);
@@ -1504,7 +1521,7 @@ function QuickTimeOffForm({
       <div className="grid gap-3 lg:grid-cols-[150px_150px_minmax(0,1fr)]">
         <label className="grid gap-1">
           <span className="text-xs font-extrabold uppercase text-[#786d78]">
-            From
+            <WorkspaceText text="From" />
           </span>
           <input
             className={styles.field}
@@ -1516,7 +1533,7 @@ function QuickTimeOffForm({
         </label>
         <label className="grid gap-1">
           <span className="text-xs font-extrabold uppercase text-[#786d78]">
-            To
+            <WorkspaceText text="To" />
           </span>
           <input
             className={styles.field}
@@ -1528,13 +1545,13 @@ function QuickTimeOffForm({
         </label>
         <label className="grid gap-1">
           <span className="text-xs font-extrabold uppercase text-[#786d78]">
-            Reason
+            <WorkspaceText text="Reason" />
           </span>
           <input
             className={styles.field}
             disabled={!canManage || isPending}
             onChange={(event) => setReason(event.target.value)}
-            placeholder="Optional"
+            placeholder={__vt("Optional")}
             value={reason}
           />
         </label>
@@ -1546,7 +1563,7 @@ function QuickTimeOffForm({
           onClick={() => submit(false)}
           type="button"
         >
-          {isPending ? "Adding" : "Add time off"}
+          <WorkspaceText text={isPending ? "Adding" : "Add time off"} />
         </button>
         <button
           className={classNames(styles.secondaryButton, "px-4")}
@@ -1554,7 +1571,7 @@ function QuickTimeOffForm({
           onClick={resetTimeOff}
           type="button"
         >
-          Reset
+          <WorkspaceText text="Reset" />
         </button>
         {!result?.ok && result?.conflicts?.length ? (
           <button
@@ -1563,7 +1580,7 @@ function QuickTimeOffForm({
             onClick={() => submit(true)}
             type="button"
           >
-            Save with override
+            <WorkspaceText text="Save with override" />
           </button>
         ) : null}
       </div>
@@ -1721,7 +1738,7 @@ function SimpleBookingHoursEditor({
     <section className="grid gap-3">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-extrabold text-[#211c24]">Booking hours</p>
+          <p className="text-sm font-extrabold text-[#211c24]"><WorkspaceText text="Booking hours" /></p>
           <p className="mt-1 text-sm text-[#786d78]">
             {summarizeStaffHours(options, staffId)}
           </p>
@@ -1733,7 +1750,7 @@ function SimpleBookingHoursEditor({
             onClick={() => setEditing(true)}
             type="button"
           >
-            Edit hours
+            <WorkspaceText text="Edit hours" />
           </button>
         )}
       </div>
@@ -1749,7 +1766,7 @@ function SimpleBookingHoursEditor({
                 key={day.id}
               >
                 <strong className="self-center text-sm text-[#211c24]">
-                  {day.label}
+                  <WorkspaceText text={day.label} />
                 </strong>
                 <label className="flex items-center gap-2 text-sm font-semibold text-[#786d78]">
                   <input
@@ -1760,7 +1777,7 @@ function SimpleBookingHoursEditor({
                     }
                     type="checkbox"
                   />
-                  {dayDraft.enabled ? "Open" : "Off"}
+                  {dayDraft.enabled ? <WorkspaceText text="Open" /> : "Off"}
                 </label>
                 <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr]">
                   <input
@@ -1795,7 +1812,7 @@ function SimpleBookingHoursEditor({
               onClick={saveHours}
               type="button"
             >
-              {isPending ? "Saving" : "Save hours"}
+              {isPending ? "Saving" : <WorkspaceText text="Save hours" />}
             </button>
             <button
               className={classNames(styles.secondaryButton, "px-4")}
@@ -1803,7 +1820,7 @@ function SimpleBookingHoursEditor({
               onClick={resetDraft}
               type="button"
             >
-              Reset
+              <WorkspaceText text="Reset" />
             </button>
             <button
               className={classNames(styles.secondaryButton, "px-4")}
@@ -1814,12 +1831,11 @@ function SimpleBookingHoursEditor({
               }}
               type="button"
             >
-              Cancel
+              <WorkspaceText text="Cancel" />
             </button>
           </div>
           <p className="text-xs leading-5 text-[#786d78]">
-            This quick editor saves one working interval per day and keeps existing
-            breaks. Use Advanced availability for multiple intervals or exceptions.
+            <WorkspaceText text="This quick editor saves one working interval per day and keeps existing breaks. Use Advanced availability for multiple intervals or exceptions." />
           </p>
         </div>
       ) : (
@@ -1838,7 +1854,7 @@ function SimpleBookingHoursEditor({
                 key={day.id}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <strong className="text-[#211c24]">{day.label}</strong>
+                  <strong className="text-[#211c24]"><WorkspaceText text={day.label} /></strong>
                   <span className="text-right text-[#786d78]">
                     {dayWorking.length > 0
                       ? dayWorking
@@ -1854,7 +1870,7 @@ function SimpleBookingHoursEditor({
                 </div>
                 {dayBreaks.length > 0 ? (
                   <p className="mt-1 text-xs text-[#786d78]">
-                    Break{" "}
+                    <WorkspaceText text="Break" />{" "}
                     {dayBreaks
                       .map(
                         (rule) =>
@@ -1899,6 +1915,8 @@ function ProfessionalDetailPanel({
   staffOnline: boolean;
   timezone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const timeOff = upcomingTimeOffBlocks(options, staff.id);
   const services = options.services.filter((service) => service.is_active);
 
@@ -1910,7 +1928,7 @@ function ProfessionalDetailPanel({
             {staff.display_name}
           </h3>
           <p className="mt-1 text-sm text-[#786d78]">
-            {staff.job_title ?? "Professional"}
+            <WorkspaceText text={staff.job_title ?? "Professional"} />
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -1920,12 +1938,12 @@ function ProfessionalDetailPanel({
               staffOnline ? styles.statusArrived : styles.statusMuted,
             )}
           >
-            {staffOnline ? "Online" : "Off"}
+            <WorkspaceText text={staffOnline ? "Online" : "Off"} />
           </span>
           <MiniSwitch
             checked={staffOnline}
             disabled={!canManageStaff || pendingKey === `staff:${staff.id}`}
-            label={`Online booking for ${staff.display_name}`}
+            label={__vt(`Online booking for ${staff.display_name}`)}
             onChange={(next) => onStaffOnlineChange(staff.id, next)}
           />
         </div>
@@ -1939,11 +1957,10 @@ function ProfessionalDetailPanel({
       />
 
       <section className="grid gap-3">
-        <p className="text-sm font-extrabold text-[#211c24]">Bookable services</p>
+        <p className="text-sm font-extrabold text-[#211c24]"><WorkspaceText text="Bookable services" /></p>
         {services.length === 0 ? (
           <p className="rounded-lg border border-[#f0e6df] bg-[#fffaf7] p-3 text-sm text-[#786d78]">
-            No active services yet. Create a service from the Services quick
-            setup card before matching it to this professional.
+            <WorkspaceText text="No active services yet. Create a service from the Services quick setup card before matching it to this professional." />
           </p>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2">
@@ -1969,9 +1986,9 @@ function ProfessionalDetailPanel({
                       {service.name}
                     </span>
                     <span className="block text-xs text-[#786d78]">
-                      {service.online_booking_enabled
+                      <WorkspaceText text={service.online_booking_enabled
                         ? "Online service"
-                        : "Service off"}
+                        : "Service off"} />
                     </span>
                   </span>
                   <input
@@ -1995,11 +2012,11 @@ function ProfessionalDetailPanel({
 
       <section className="grid gap-3">
         <div className="flex flex-col gap-1">
-          <p className="text-sm font-extrabold text-[#211c24]">Time off</p>
+          <p className="text-sm font-extrabold text-[#211c24]"><WorkspaceText text="Time off" /></p>
           <p className="text-sm text-[#786d78]">
-            {timeOff.length === 0
+            <WorkspaceText text={timeOff.length === 0
               ? "No upcoming time off"
-              : `${timeOff.length} upcoming range${timeOff.length === 1 ? "" : "s"}`}
+              : `${timeOff.length} upcoming range${timeOff.length === 1 ? "" : "s"}`} />
           </p>
         </div>
         {timeOff.length > 0 ? (
@@ -2010,7 +2027,7 @@ function ProfessionalDetailPanel({
                 key={block.id}
               >
                 <strong className="text-[#211c24]">
-                  {formatTimeOffRange(block, timezone)}
+                  <WorkspaceText text={formatTimeOffRange(block, timezone)} />
                 </strong>
                 {block.reason ? (
                   <p className="mt-1 text-[#786d78]">{block.reason}</p>
@@ -2027,7 +2044,7 @@ function ProfessionalDetailPanel({
       </section>
 
       <a className="text-sm font-extrabold text-[#f26f3d]" href={`/staff?staff=${staff.id}`}>
-        Edit staff details
+        <WorkspaceText text="Edit staff details" />
       </a>
     </section>
   );
@@ -2050,6 +2067,8 @@ function ProfessionalsQuickSetupDrawer({
   options: BookingWorkspaceClientProps["options"];
   timezone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   
   const [query, setQuery] = useState("");
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(
@@ -2123,8 +2142,8 @@ function ProfessionalsQuickSetupDrawer({
   return (
     <QuickSetupDrawerFrame
       onClose={onClose}
-      subtitle="Set who appears online, review hours, and match professionals to services."
-      title="Professionals"
+      subtitle={__vt("Set who appears online, review hours, and match professionals to services.")}
+      title={__vt("Professionals")}
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
         <div className="grid content-start gap-3">
@@ -2136,13 +2155,13 @@ function ProfessionalsQuickSetupDrawer({
               onClick={() => setShowCreateForm((current) => !current)}
               type="button"
             >
-              {showCreateForm ? "Hide quick create" : "Create professional"}
+              <WorkspaceText text={showCreateForm ? "Hide quick create" : "Create professional"} />
             </button>
             <a
               className="text-sm font-extrabold text-[#f26f3d]"
               href="/staff?add=1"
             >
-              Advanced staff settings
+              <WorkspaceText text="Advanced staff settings" />
             </a>
           </div>
           {showCreateForm ? (
@@ -2160,11 +2179,11 @@ function ProfessionalsQuickSetupDrawer({
             />
           ) : null}
           <label className="grid gap-1">
-            <span className="sr-only">Search professionals</span>
+            <span className="sr-only"><WorkspaceText text="Search professionals" /></span>
             <input
               className={classNames(styles.field, "w-full")}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search professionals"
+              placeholder={__vt("Search professionals")}
               type="search"
               value={query}
             />
@@ -2203,11 +2222,11 @@ function ProfessionalsQuickSetupDrawer({
                       online ? styles.statusArrived : styles.statusMuted,
                     )}
                   >
-                    {online ? "On" : "Off"}
+                    <WorkspaceText text={online ? "On" : "Off"} />
                   </span>
                 </div>
                 <p className="text-sm text-[#786d78]">
-                  {servicesCount} service{servicesCount === 1 ? "" : "s"}
+                  {servicesCount} <WorkspaceText text="service" />{servicesCount === 1 ? "" : "s"}
                 </p>
               </button>
             );
@@ -2229,8 +2248,7 @@ function ProfessionalsQuickSetupDrawer({
           />
         ) : (
           <p className="rounded-xl border border-[#f0e6df] bg-white p-4 text-sm text-[#786d78]">
-            No professionals found. Use quick create or open advanced staff
-            settings.
+            <WorkspaceText text="No professionals found. Use quick create or open advanced staff settings." />
           </p>
         )}
       </div>
@@ -2251,6 +2269,8 @@ function BookingHoursQuickSetupDrawer({
   options: BookingWorkspaceClientProps["options"];
   timezone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [selectedStaffId, setSelectedStaffId] = useState<string | null>(
     initialStaffId && options.staff.some((member) => member.id === initialStaffId)
       ? initialStaffId
@@ -2264,8 +2284,8 @@ function BookingHoursQuickSetupDrawer({
   return (
     <QuickSetupDrawerFrame
       onClose={onClose}
-      subtitle="Review simple weekly booking hours and add time off without leaving Booking."
-      title="Booking hours"
+      subtitle={__vt("Review simple weekly booking hours and add time off without leaving Booking.")}
+      title={__vt("Booking hours")}
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
         <div className="grid content-start gap-2">
@@ -2312,7 +2332,7 @@ function BookingHoursQuickSetupDrawer({
               timezone={timezone}
             />
             <a className="text-sm font-extrabold text-[#f26f3d]" href="/bookings?tab=availability">
-              Advanced availability
+              <WorkspaceText text="Advanced availability" />
             </a>
           </section>
         ) : null}
@@ -2330,7 +2350,8 @@ function BookingRulesQuickSetupDrawer({
   onClose: () => void;
   settings: BookingWorkspaceClientProps["settings"];
 }) {
-  
+  const __vt = useWorkspaceTranslation();
+  const formId = useId();
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const [state, setState] = useState<UpdateBookingSettingsInput>(() =>
@@ -2349,11 +2370,10 @@ function BookingRulesQuickSetupDrawer({
     event.preventDefault();
     setResult(null);
     startTransition(async () => {
-      const response = await updateBookingSettingsAction(state);
-      setResult(response);
-
-      if (response.ok) {
-        
+      try {
+        setResult(await updateBookingSettingsAction(state));
+      } catch {
+        setResult({ ok: false, message: "Could not save. Please try again." });
       }
     });
   }
@@ -2361,29 +2381,41 @@ function BookingRulesQuickSetupDrawer({
   return (
     <QuickSetupDrawerFrame
       onClose={onClose}
-      subtitle="Adjust the common online booking rules. Advanced settings stay on the Settings tab."
-      title="Booking rules"
-    >
-      <form className="grid max-w-3xl gap-4" onSubmit={submit}>
+      subtitle={__vt("Set booking times and preferences.")}
+      title={__vt("Booking rules")}
+      footer={<>
         <InlineActionMessage result={result} />
-        <section className="grid gap-4 rounded-xl border border-[#f0e6df] bg-white p-4 sm:grid-cols-2">
+        <div className="booking-rules-actions">
+          <a href="/bookings?tab=settings"><WorkspaceText text="Advanced settings" /></a>
+          {canManage ? (
+            <button className={styles.primaryButton} disabled={isPending} form={formId} type="submit">
+              <WorkspaceText text={isPending ? "Saving" : "Save rules"} />
+            </button>
+          ) : <p><WorkspaceText text="You have read-only booking access." /></p>}
+        </div>
+      </>}
+    >
+      <form className="booking-rules-form" id={formId} onSubmit={submit}>
+        <section className="booking-rules-section">
+          <h3><WorkspaceText text="Timing" /></h3>
+          <div className="booking-rules-fields">
           <NumberField
             disabled={!canManage}
-            label={`Minimum notice (${formatMinutes(state.minimumLeadTimeMinutes)})`}
+            label={__vt("Minimum notice")}
             onChange={(value) => setNumber("minimumLeadTimeMinutes", value)}
             suffix="min"
             value={state.minimumLeadTimeMinutes}
           />
           <NumberField
             disabled={!canManage}
-            label="Booking horizon"
+            label={__vt("Book ahead")}
             onChange={(value) => setNumber("maximumAdvanceWindowDays", value)}
             suffix="days"
             value={state.maximumAdvanceWindowDays}
           />
           <label className="grid gap-1">
             <span className="text-sm font-extrabold text-[#211c24]">
-              Slot interval
+              <WorkspaceText text="Slot interval" />
             </span>
             <select
               className={styles.select}
@@ -2395,41 +2427,38 @@ function BookingRulesQuickSetupDrawer({
             >
               {[5, 10, 15, 20, 30, 60].map((interval) => (
                 <option key={interval} value={interval}>
-                  {interval} min
+                  {interval} <WorkspaceText text="min" />
                 </option>
               ))}
             </select>
           </label>
           <NumberField
             disabled={!canManage}
-            label={`Cancellation window (${formatMinutes(
-              state.cancellationWindowMinutes,
-            )})`}
+            label={__vt("Cancellation notice")}
             onChange={(value) => setNumber("cancellationWindowMinutes", value)}
             suffix="min"
             value={state.cancellationWindowMinutes}
           />
+          </div>
         </section>
-        <section className="grid gap-3 rounded-xl border border-[#f0e6df] bg-white p-4 sm:grid-cols-2">
-          <Toggle checked={state.reminderEnabled} disabled={!canManage} label="Send a reminder within 24 hours of the appointment" onChange={(value) => setBoolean("reminderEnabled", value)} />
-          <Toggle checked={state.autoAssignEnabled} disabled={!canManage} label="Auto assign available professionals fairly (Portable)" onChange={(value) => setBoolean("autoAssignEnabled", value)} />
-          <Toggle checked={state.confirmationEmailEnabled} disabled={!canManage} label="Email booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationEmailEnabled", value)} />
-          <Toggle checked={state.confirmationSmsEnabled} disabled={!canManage} label="SMS booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationSmsEnabled", value)} />
+        <section className="booking-rules-section">
+          <h3><WorkspaceText text="Booking access" /></h3>
+          <Toggle checked={state.autoAssignEnabled} disabled={!canManage} label={__vt("Auto-assign staff (Portable)")} onChange={(value) => setBoolean("autoAssignEnabled", value)} />
           <Toggle
             checked={state.anyProfessionalEnabled}
             disabled={!canManage}
-            label="Any Professional"
+            label={__vt("Any Professional")}
             onChange={(value) => setBoolean("anyProfessionalEnabled", value)}
           />
           <Toggle
             checked={state.guestBookingEnabled}
             disabled={!canManage}
-            label="Guest booking"
+            label={__vt("Guest booking")}
             onChange={(value) => setBoolean("guestBookingEnabled", value)}
           />
           <label className="grid gap-1">
             <span className="text-sm font-extrabold text-[#211c24]">
-              Confirmation
+              <WorkspaceText text="Confirmation" />
             </span>
             <select
               className={styles.select}
@@ -2442,28 +2471,17 @@ function BookingRulesQuickSetupDrawer({
               }
               value={state.confirmationMode}
             >
-              <option value="request_confirmation">Request confirmation</option>
-              <option value="instant_booking">Instant booking</option>
+              <option value="request_confirmation"><WorkspaceText text="Request confirmation" /></option>
+              <option value="instant_booking"><WorkspaceText text="Instant booking" /></option>
             </select>
           </label>
-          <a
-            className={classNames(styles.secondaryButton, "self-end px-4")}
-            href="/bookings?tab=settings"
-          >
-            Advanced settings
-          </a>
         </section>
-        {canManage ? (
-          <button
-            className={classNames(styles.primaryButton, "w-fit px-5")}
-            disabled={isPending}
-            type="submit"
-          >
-            {isPending ? "Saving" : "Save rules"}
-          </button>
-        ) : (
-          <p className="text-sm text-[#786d78]">You have read-only booking access.</p>
-        )}
+        <section className="booking-rules-section">
+          <h3><WorkspaceText text="Email notifications" /></h3>
+          <Toggle checked={state.reminderEnabled} disabled={!canManage} label={__vt("24-hour reminder")} onChange={(value) => setBoolean("reminderEnabled", value)} />
+          <Toggle checked={state.confirmationEmailEnabled} disabled={!canManage} label={__vt("Booking updates")} onChange={(value) => setBoolean("confirmationEmailEnabled", value)} />
+          <p className="booking-rules-note"><WorkspaceText text="Booking updates require a connected email provider." /></p>
+        </section>
       </form>
     </QuickSetupDrawerFrame>
   );
@@ -2480,11 +2498,12 @@ function OnlineBookingControlCard({
   publicBookingHref: string;
   settings: BookingWorkspaceClientProps["settings"];
 }) {
-  
+  const __vt = useWorkspaceTranslation();
+
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const [copyMessage, setCopyMessage] = useState("");
-  const isPublished = settings.booking_enabled && settings.online_booking_visible;
+  const isPublished = getSalonOnlineBookingStatus(settings).onlineBookingOpen;
   const isLive = isPublished && isReady;
 
   async function copyPublicUrl() {
@@ -2502,16 +2521,13 @@ function OnlineBookingControlCard({
       ...settingsToInput(settings),
       bookingEnabled: next,
       onlineBookingVisible: next,
+      guestBookingEnabled: next || settings.guest_booking_enabled,
     };
 
     setResult(null);
     startTransition(async () => {
       const response = await updateBookingSettingsAction(input);
       setResult(response);
-
-      if (response.ok) {
-        
-      }
     });
   }
 
@@ -2519,11 +2535,27 @@ function OnlineBookingControlCard({
     <article className="booking-publish-section">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold">Online booking</h2>
-          <p className="mt-1 text-xs text-[#786d78]">{isLive ? "Live · accepting online appointments" : isPublished ? "On · finish setup to go live" : "Off · online booking is paused"}</p>
+          <h2 className="text-base font-semibold"><WorkspaceText text="Online booking" /></h2>
+          <p className="mt-1 text-xs text-[#786d78]"><WorkspaceText text={isLive ? "Live · accepting online appointments" : isPublished ? "On · finish setup to go live" : "Off · online booking is paused"} /></p>
         </div>
-        <button className="booking-publish-toggle" role="switch" aria-label="Online booking" aria-checked={isPublished} disabled={!canManage || isPending} onClick={togglePublished} type="button">{isPending ? "Saving…" : isPublished ? "On" : "Off"}</button>
+        <button
+          className="booking-publish-toggle"
+          role="switch"
+          aria-label={__vt("Online booking")}
+          aria-checked={isPublished}
+          aria-busy={isPending}
+          disabled={!canManage || isPending}
+          onClick={togglePublished}
+          type="button"
+        >
+          <span className="booking-publish-toggle-track" aria-hidden="true">
+            <span className="booking-publish-toggle-thumb" />
+          </span>
+        </button>
       </div>
+      {isPending ? (
+        <p className="booking-share-hint" role="status"><WorkspaceText text="Saving…" /></p>
+      ) : null}
       <InlineActionMessage result={result} />
       <p className="booking-share-url">
         {publicBookingHref}
@@ -2534,7 +2566,7 @@ function OnlineBookingControlCard({
           onClick={copyPublicUrl}
           type="button"
         >
-          Copy link
+          <WorkspaceText text="Copy link" />
         </button>
         <a
           className={classNames(styles.secondaryButton, "px-4")}
@@ -2542,11 +2574,11 @@ function OnlineBookingControlCard({
           rel="noreferrer"
           target="_blank"
         >
-          Open public page
+          <WorkspaceText text="Open public page" />
         </a>
       </div>
-      <p className="booking-share-hint">Add this booking link to your Google Maps business profile, website, or anywhere you want customers to book.</p>
-      {copyMessage ? <p role="status" className="booking-share-hint">{copyMessage}</p> : null}
+      <p className="booking-share-hint"><WorkspaceText text="Add this booking link to your Google Maps business profile, website, or anywhere you want customers to book." /></p>
+      {copyMessage ? <p role="status" className="booking-share-hint"><WorkspaceText text={copyMessage} /></p> : null}
     </article>
   );
 }
@@ -2586,7 +2618,7 @@ function StatusBadge({ status, kind }: { status: string; kind?: import("@/lib/bo
         statusTone(status),
       )}
     >
-      {status === "no_show" ? bookingStatusLabel(status, kind) : STATUS_LABELS[status] ?? status}
+      <WorkspaceText text={status === "no_show" ? bookingStatusLabel(status, kind) : STATUS_LABELS[status] ?? status} />
     </span>
   );
 }
@@ -2606,7 +2638,7 @@ function Message({ result }: { result: BookingActionResult | null }) {
       )}
       role="status"
     >
-      {result.message}
+      <WorkspaceText text={result.message} />
     </p>
   );
 }
@@ -2622,16 +2654,28 @@ function ModalFrame({
   onClose: () => void;
   size?: "detail" | "wide";
 }) {
+  const __vt = useWorkspaceTranslation();
+
   useCloseOnNavigation(onClose);
   const frameRef = useRef<HTMLDivElement | null>(null);
+  const portalHost = useOverlayPortalHost();
 
   useEffect(() => {
+    if (!portalHost) return;
     const frame = frameRef.current;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const focusable = getFocusable(frame);
-    focusable[0]?.focus();
-  }, []);
+    focusable[0]?.focus({ preventScroll: true });
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+    };
+  }, [portalHost]);
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.defaultPrevented || (event.target as Element).closest("dialog[open]")) return;
     if (event.key === "Escape") {
       onClose();
       return;
@@ -2661,11 +2705,14 @@ function ModalFrame({
     }
   }
 
-  return (
+  if (!portalHost) return null;
+
+  return createPortal(
     <div
-      aria-label={label}
+      aria-label={__vt(label)}
       aria-modal="true"
-      className="fixed inset-0 z-50 grid bg-zinc-950/35 p-0 sm:p-4"
+      className="booking-modal-layer"
+      data-booking-surface="owner"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
@@ -2676,14 +2723,15 @@ function ModalFrame({
     >
       <div
         className={classNames(
-          "ml-auto flex h-dvh w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-[calc(100dvh-2rem)] sm:rounded-lg",
+          "booking-modal-panel",
           size === "detail" ? "max-w-2xl" : "max-w-5xl",
         )}
         ref={frameRef}
       >
         {children}
       </div>
-    </div>
+    </div>,
+    portalHost,
   );
 }
 
@@ -2703,7 +2751,7 @@ function getFocusable(root: HTMLElement | null) {
         "[tabindex]:not([tabindex='-1'])",
       ].join(","),
     ),
-  );
+  ).filter((element) => element.getClientRects().length > 0);
 }
 
 function buildUrl(
@@ -2780,21 +2828,7 @@ function DownChevronIcon() {
 }
 
 function SettingsIcon() {
-  return (
-    <svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24">
-      <path
-        d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Z"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path
-        d="M19 12a7 7 0 0 0-.08-1.05l2.01-1.56-2-3.46-2.38.96a7.4 7.4 0 0 0-1.82-1.05L14.36 3h-4l-.37 2.84a7.4 7.4 0 0 0-1.82 1.05l-2.38-.96-2 3.46 2.01 1.56a7 7 0 0 0 0 2.1l-2.01 1.56 2 3.46 2.38-.96c.55.43 1.16.79 1.82 1.05l.37 2.84h4l.37-2.84c.66-.26 1.27-.62 1.82-1.05l2.38.96 2-3.46-2.01-1.56c.05-.34.08-.69.08-1.05Z"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
+  return <SharedSettingsIcon className="size-4 shrink-0" />;
 }
 
 function formatToolbarDate(date: string, timezone: string) {
@@ -2880,12 +2914,12 @@ function WorkspaceTabs({
             })}
             key={tab.value}
           >
-            {tab.label}
+            <WorkspaceText text={tab.label} />
             {"count" in tab ? (
               <span className={styles.tabCount}>{tab.count}</span>
             ) : null}
             {"setupNeeded" in tab && tab.setupNeeded ? (
-              <span className="booking-tab-setup-badge">Setup needed</span>
+              <span className="booking-tab-setup-badge"><WorkspaceText text="Setup needed" /></span>
             ) : null}
           </a>
         ))}
@@ -2912,12 +2946,12 @@ function AppointmentCard({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-zinc-950">
-            {formatTime(booking.start_at, timezone)} -{" "}
-            {formatTime(booking.end_at, timezone)}
+            <WorkspaceText text={formatTime(booking.start_at, timezone)} /> -{" "}
+            <WorkspaceText text={formatTime(booking.end_at, timezone)} />
           </p>
           <p className="mt-1 truncate text-base font-semibold text-zinc-950">
             {booking.customer?.name ?? "Unknown customer"}
-                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} <WorkspaceText text="previous no-show" />{booking.noShowCount === 1 ? "" : "s"}</span>}
           </p>
         </div>
         <StatusBadge status={booking.normalizedStatus} kind={booking.no_show_kind} />
@@ -2926,29 +2960,29 @@ function AppointmentCard({
         <p className="line-clamp-2">
           {booking.serviceNames.length > 0
             ? booking.serviceNames.join(", ")
-            : "No services"}
+            : <WorkspaceText text="No services" />}
         </p>
         <p className="truncate">
           {booking.assignedStaffNames.length > 0
             ? booking.assignedStaffNames.join(", ")
-            : "Unassigned"}
+            : <WorkspaceText text="Unassigned" />}
         </p>
       </div>
       <div className="flex flex-wrap gap-2 text-xs font-semibold text-zinc-600">
         <span className="rounded-md border border-zinc-200 px-2 py-1">
-          {sourceLabel(booking.source)}
+          <WorkspaceText text={sourceLabel(booking.source)} />
         </span>
         <span className="rounded-md border border-zinc-200 px-2 py-1">
           {booking.confirmation_status}
         </span>
         {booking.hasOverbookingOverride ? (
           <span className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-amber-800">
-            Override
+            <WorkspaceText text="Override" />
           </span>
         ) : null}
         {booking.lines.length > 1 ? (
           <span className="rounded-md border border-sky-200 bg-sky-50 px-2 py-1 text-sky-800">
-            Multi-service
+            <WorkspaceText text="Multi-service" />
           </span>
         ) : null}
       </div>
@@ -3097,7 +3131,7 @@ function DayCalendarCanvas({
     <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <div className="grid grid-cols-[72px_minmax(0,1fr)] border-b border-zinc-200 bg-zinc-50">
         <div className="px-3 py-3 text-xs font-semibold uppercase text-zinc-500">
-          Time
+          <WorkspaceText text="Time" />
         </div>
         <div
           className="grid min-w-[680px]"
@@ -3108,7 +3142,7 @@ function DayCalendarCanvas({
               className="border-l border-zinc-200 px-3 py-3 text-sm font-semibold text-zinc-950"
               key={column.id}
             >
-              {column.label}
+              <WorkspaceText text={column.label} />
             </div>
           ))}
         </div>
@@ -3122,7 +3156,7 @@ function DayCalendarCanvas({
                 key={hour}
                 style={{ top: ((hour - bounds.start) / totalMinutes) * canvasHeight }}
               >
-                {localTimeLabel(hour)}
+                <WorkspaceText text={localTimeLabel(hour)} />
               </div>
             ))}
           </div>
@@ -3180,15 +3214,15 @@ function DayCalendarCanvas({
                         type="button"
                       >
                         <span className="block truncate text-xs font-semibold">
-                          {formatTime(booking.start_at, timezone)}{" "}
+                          <WorkspaceText text={formatTime(booking.start_at, timezone)} />{" "}
                           {booking.customer?.name ?? "Unknown customer"}
-                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} <WorkspaceText text="previous no-show" />{booking.noShowCount === 1 ? "" : "s"}</span>}
                         </span>
                         <span className="mt-1 block truncate text-xs text-zinc-200">
-                          {booking.serviceNames.join(", ") || "Appointment"}
+                          <WorkspaceText text={booking.serviceNames.join(", ") || "Appointment"} />
                         </span>
                         <span className="mt-1 block truncate text-[11px] text-zinc-300">
-                          {bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)}
+                          <WorkspaceText text={bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)} />
                         </span>
                       </button>
                     );
@@ -3206,9 +3240,9 @@ function DayCalendarCanvas({
             {dayBookings.length === 0 ? (
               <div className="booking-empty-state pointer-events-none absolute inset-x-4 top-8">
                 <p className="font-semibold text-zinc-950">
-                  No appointments scheduled for this day.
+                  <WorkspaceText text="No appointments scheduled for this day." />
                 </p>
-                <p className="mt-1">Use New appointment to add a manual booking.</p>
+                <p className="mt-1"><WorkspaceText text="Use New appointment to add a manual booking." /></p>
               </div>
             ) : null}
           </div>
@@ -3313,6 +3347,8 @@ function AppointmentRowEditDialog({
   options: BookingWorkspaceClientProps["options"];
   timezone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [booking]=useState(serverBooking);
   
   const [result, setResult] = useState<BookingActionResult | null>(null);
@@ -3426,14 +3462,14 @@ function AppointmentRowEditDialog({
   }
 
   return (
-    <ModalFrame label={title} onClose={onClose} size="detail">
+    <ModalFrame label={__vt(title)} onClose={onClose} size="detail">
       <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
         <div className="min-w-0">
-          <h2 className="truncate text-xl font-semibold text-zinc-950">{title}</h2>
+          <h2 className="truncate text-xl font-semibold text-zinc-950"><WorkspaceText text={title} /></h2>
           <p className="mt-1 text-sm text-zinc-500">
             {booking.customer?.name ?? "Unknown customer"}
-                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>} /{" "}
-            {formatDateTime(booking.start_at, timezone)}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} <WorkspaceText text="previous no-show" />{booking.noShowCount === 1 ? "" : "s"}</span>} /{" "}
+            <WorkspaceText text={formatDateTime(booking.start_at, timezone)} />
           </p>
         </div>
         <button
@@ -3446,17 +3482,17 @@ function AppointmentRowEditDialog({
       </div>
       <div className="grid flex-1 gap-4 overflow-y-auto px-5 py-5">
         <Message result={result} />
-
+        <BookingDepositReceipt booking={booking} />
         {mode === "status" ? (
           <form className="grid gap-4" onSubmit={submitStatus}>
             {statusOptions.length === 0 ? (
               <p className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
-                This status has no quick confirm or cancel action.
+                <WorkspaceText text="This status has no quick confirm or cancel action." />
               </p>
             ) : (
               <>
                 <label className="grid gap-1">
-                  <span className="text-sm font-semibold text-zinc-700">Status</span>
+                  <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Status" /></span>
                   <select
                     className={styles.select}
                     onChange={(event) =>
@@ -3466,14 +3502,14 @@ function AppointmentRowEditDialog({
                   >
                     {statusOptions.map((action) => (
                       <option key={action.command} value={action.command}>
-                        {action.label}
+                        <WorkspaceText text={action.label} />
                       </option>
                     ))}
                   </select>
                 </label>
                 <label className="grid gap-1">
                   <span className="text-sm font-semibold text-zinc-700">
-                    Reason or note
+                    <WorkspaceText text="Reason or note" />
                   </span>
                   <input
                     className={styles.field}
@@ -3486,7 +3522,7 @@ function AppointmentRowEditDialog({
                   disabled={isPending}
                   type="submit"
                 >
-                  {isPending ? "Saving" : "Save status"}
+                  <WorkspaceText text={isPending ? "Saving" : "Save status"} />
                 </button>
               </>
             )}
@@ -3497,7 +3533,7 @@ function AppointmentRowEditDialog({
           <form className="grid gap-4" onSubmit={submitTime}>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="grid gap-1">
-                <span className="text-sm font-semibold text-zinc-700">Start</span>
+                <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Start" /></span>
                 <input
                   className={styles.field}
                   onChange={(event) => setStartLocal(event.target.value)}
@@ -3506,7 +3542,7 @@ function AppointmentRowEditDialog({
                 />
               </label>
               <label className="grid gap-1">
-                <span className="text-sm font-semibold text-zinc-700">End</span>
+                <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="End" /></span>
                 <input
                   className={styles.field}
                   onChange={(event) => setEndLocal(event.target.value)}
@@ -3517,7 +3553,7 @@ function AppointmentRowEditDialog({
             </div>
             <label className="grid gap-1">
               <span className="text-sm font-semibold text-zinc-700">
-                Override reason
+                <WorkspaceText text="Override reason" />
               </span>
               <input
                 className={styles.field}
@@ -3530,7 +3566,7 @@ function AppointmentRowEditDialog({
               disabled={isPending}
               type="submit"
             >
-              {isPending ? "Saving" : "Save time"}
+              <WorkspaceText text={isPending ? "Saving" : "Save time"} />
             </button>
           </form>
         ) : null}
@@ -3539,7 +3575,7 @@ function AppointmentRowEditDialog({
           <form className="grid gap-4" onSubmit={submitServices}>
             {serviceBlockMessage ? (
               <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
-                {serviceBlockMessage}
+                <WorkspaceText text={serviceBlockMessage} />
               </p>
             ) : null}
             <div className="grid gap-2">
@@ -3558,7 +3594,7 @@ function AppointmentRowEditDialog({
                       {service.name}
                     </span>
                     <span className="block text-xs text-[#786d78]">
-                      {service.duration_minutes} min /{" "}
+                      {service.duration_minutes} <WorkspaceText text="min /" />{" "}
                       {formatMoney(Number(service.base_price))}
                     </span>
                   </span>
@@ -3567,7 +3603,7 @@ function AppointmentRowEditDialog({
             </div>
             <label className="grid gap-1">
               <span className="text-sm font-semibold text-zinc-700">
-                Override reason
+                <WorkspaceText text="Override reason" />
               </span>
               <input
                 className={styles.field}
@@ -3583,7 +3619,7 @@ function AppointmentRowEditDialog({
               }
               type="submit"
             >
-              {isPending ? "Saving" : "Save services"}
+              <WorkspaceText text={isPending ? "Saving" : "Save services"} />
             </button>
           </form>
         ) : null}
@@ -3608,7 +3644,7 @@ function AppointmentRowEditDialog({
                   }}
                   value={lineAssignments[index]?.staffId ?? ""}
                 >
-                  <option value="">Unassigned</option>
+                  <option value=""><WorkspaceText text="Unassigned" /></option>
                   {staffForService(options).map((staff) => (
                     <option key={staff.id} value={staff.id}>
                       {staff.display_name}
@@ -3619,7 +3655,7 @@ function AppointmentRowEditDialog({
             ))}
             <label className="grid gap-1">
               <span className="text-sm font-semibold text-zinc-700">
-                Override reason
+                <WorkspaceText text="Override reason" />
               </span>
               <input
                 className={styles.field}
@@ -3632,7 +3668,7 @@ function AppointmentRowEditDialog({
               disabled={isPending}
               type="submit"
             >
-              {isPending ? "Saving" : "Save professional"}
+              <WorkspaceText text={isPending ? "Saving" : "Save professional"} />
             </button>
           </form>
         ) : null}
@@ -4005,6 +4041,8 @@ function AppointmentRowInlinePopover({
   onClose: () => void;
   options: BookingWorkspaceClientProps["options"];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const serviceBlockMessage = serviceReplacementBlockMessage(booking);
   const selectedDate = draft.startLocal.slice(0, 10);
   const selectedTime = draft.startLocal.slice(11, 16);
@@ -4065,9 +4103,9 @@ function AppointmentRowInlinePopover({
 
   if (mode === "time") {
     return (
-      <div className="booking-inline-popover" role="dialog" aria-label="Adjust time">
+      <div className="booking-inline-popover" role="dialog" aria-label={__vt("Adjust time")}>
         <div className="booking-inline-popover__header">
-          <span>Date & time</span>
+          <span><WorkspaceText text="Date & time" /></span>
           <button onClick={onClose} type="button">
             x
           </button>
@@ -4092,12 +4130,12 @@ function AppointmentRowInlinePopover({
               }}
               type="button"
             >
-              {formatLocalInputTime(`${selectedDate}T${slot}`)}
+              <WorkspaceText text={formatLocalInputTime(`${selectedDate}T${slot}`)} />
             </button>
           ))}
         </div>
         <p className="booking-inline-note">
-          Ends {formatLocalInputTime(draft.endLocal)}
+          <WorkspaceText text="Ends" /> <WorkspaceText text={formatLocalInputTime(draft.endLocal)} />
         </p>
       </div>
     );
@@ -4108,16 +4146,16 @@ function AppointmentRowInlinePopover({
       <div
         className="booking-inline-popover booking-inline-popover--wide"
         role="dialog"
-        aria-label="Adjust services"
+        aria-label={__vt("Adjust services")}
       >
         <div className="booking-inline-popover__header">
-          <span>Services & add-ons</span>
+          <span><WorkspaceText text="Services & add-ons" /></span>
           <button onClick={onClose} type="button">
-            Done
+            <WorkspaceText text="Done" />
           </button>
         </div>
         {serviceBlockMessage ? (
-          <p className="booking-inline-warning">{serviceBlockMessage}</p>
+          <p className="booking-inline-warning"><WorkspaceText text={serviceBlockMessage} /></p>
         ) : null}
         <div className="booking-inline-list">
           {options.services.map((service) => (
@@ -4134,14 +4172,14 @@ function AppointmentRowInlinePopover({
                 </span>
                 <span className="block truncate text-xs text-[#786d78]">
                   {service.category ? `${service.category} / ` : ""}
-                  {service.duration_minutes} min / {formatMoney(Number(service.base_price))}
+                  {service.duration_minutes} <WorkspaceText text="min /" /> {formatMoney(Number(service.base_price))}
                 </span>
               </span>
             </label>
           ))}
         </div>
         <p className="booking-inline-note">
-          Total {formatMinutes(appointmentRowDurationMinutes(booking, options, draft.serviceIds))}
+          <WorkspaceText text="Total" /> {formatMinutes(appointmentRowDurationMinutes(booking, options, draft.serviceIds))}
         </p>
       </div>
     );
@@ -4152,12 +4190,12 @@ function AppointmentRowInlinePopover({
       <div
         className="booking-inline-popover booking-inline-popover--wide"
         role="dialog"
-        aria-label="Adjust professional"
+        aria-label={__vt("Adjust professional")}
       >
         <div className="booking-inline-popover__header">
-          <span>Professional</span>
+          <span><WorkspaceText text="Professional" /></span>
           <button onClick={onClose} type="button">
-            Done
+            <WorkspaceText text="Done" />
           </button>
         </div>
         <div className="booking-inline-list">
@@ -4171,7 +4209,7 @@ function AppointmentRowInlinePopover({
                   onChange={(event) => updateStaff(index, event.target.value)}
                   value={draft.staffIds[index] ?? ""}
                 >
-                  <option value="">Any / unassigned</option>
+                  <option value=""><WorkspaceText text="Any / unassigned" /></option>
                   {staffForServiceId(options, serviceId).map((staff) => (
                     <option key={staff.id} value={staff.id}>
                       {staff.display_name}
@@ -4187,9 +4225,9 @@ function AppointmentRowInlinePopover({
   }
 
   return (
-    <div className="booking-inline-popover booking-inline-popover--status" role="dialog" aria-label="Adjust status">
+    <div className="booking-inline-popover booking-inline-popover--status" role="dialog" aria-label={__vt("Adjust status")}>
       <div className="booking-inline-popover__header">
-        <span>Status</span>
+        <span><WorkspaceText text="Status" /></span>
         <button onClick={onClose} type="button">
           x
         </button>
@@ -4202,11 +4240,11 @@ function AppointmentRowInlinePopover({
             statusReason: event.target.value,
           })
         }
-        placeholder="Note optional"
+        placeholder={__vt("Note optional")}
         value={draft.statusReason}
       />
       <div className="booking-inline-status-actions">
-        {statusOptions.filter(action => action.command === "mark_no_show" || action.command === "mark_no_show_excused").map(action => <button key={action.command} className="booking-inline-cancel-button" disabled={booking.normalizedStatus !== "no_show" && Date.parse(booking.start_at) > noShowClock} onClick={() => {onChange({...draft,statusCommand:action.command});onClose();}} type="button">{action.label}</button>)}
+        {statusOptions.filter(action => action.command === "mark_no_show" || action.command === "mark_no_show_excused").map(action => <button key={action.command} className="booking-inline-cancel-button" disabled={booking.normalizedStatus !== "no_show" && Date.parse(booking.start_at) > noShowClock} onClick={() => {onChange({...draft,statusCommand:action.command});onClose();}} type="button"><WorkspaceText text={action.label} /></button>)}
         <button
           className="booking-inline-confirm-button"
           disabled={!canConfirm}
@@ -4216,7 +4254,7 @@ function AppointmentRowInlinePopover({
           }}
           type="button"
         >
-          Confirm
+          <WorkspaceText text="Confirm" />
         </button>
         <button
           className="booking-inline-cancel-button"
@@ -4227,7 +4265,7 @@ function AppointmentRowInlinePopover({
           }}
           type="button"
         >
-          Cancel
+          <WorkspaceText text="Cancel" />
         </button>
       </div>
     </div>
@@ -4249,6 +4287,8 @@ function AppointmentTableRow({
   showDate: boolean;
   timezone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [booking,setBooking]=useState(serverBooking);
   
   const timeAnchorRef = useRef<HTMLButtonElement | null>(null);
@@ -4372,7 +4412,7 @@ function AppointmentTableRow({
         <div>
           <div className="booking-inline-anchor">
             <button
-              aria-label="Adjust appointment time"
+              aria-label={__vt("Adjust appointment time")}
               className={classNames(
                 "booking-cell-button",
                 timeChanged && "booking-cell-button-dirty",
@@ -4385,12 +4425,12 @@ function AppointmentTableRow({
               <span className="grid text-sm font-extrabold text-[#211c24]">
                 {showDate ? (
                   <span className="mb-1 text-xs font-semibold text-[#f26f3d]">
-                    {formatShortDateFromDate(draft.startLocal.slice(0, 10), timezone)}
+                    <WorkspaceText text={formatShortDateFromDate(draft.startLocal.slice(0, 10), timezone)} />
                   </span>
                 ) : null}
-                <span>{formatLocalInputTime(draft.startLocal)}</span>
+                <span><WorkspaceText text={formatLocalInputTime(draft.startLocal)} /></span>
                 <span className="mt-1 text-xs font-medium text-[#786d78]">
-                  {formatLocalInputTime(draft.endLocal)}
+                  <WorkspaceText text={formatLocalInputTime(draft.endLocal)} />
                 </span>
               </span>
             </button>
@@ -4414,7 +4454,7 @@ function AppointmentTableRow({
         <div>
           <div className="booking-inline-anchor">
             <button
-              aria-label="Adjust appointment professional"
+              aria-label={__vt("Adjust appointment professional")}
               className={classNames(
                 "booking-cell-button",
                 staffChanged && "booking-cell-button-dirty",
@@ -4429,7 +4469,7 @@ function AppointmentTableRow({
               <span className="flex min-w-0 items-center gap-2">
                 <StaffAvatar
                   imageUrl={draftStaff?.public_profile_photo_path}
-                  label={draftStaff?.display_name ?? draftStaffName}
+                  label={__vt(draftStaff?.display_name ?? draftStaffName)}
                   size="small"
                 />
                 <span className="truncate text-sm font-extrabold text-[#211c24]">
@@ -4457,7 +4497,7 @@ function AppointmentTableRow({
         <div>
           <div className="booking-inline-anchor">
             <button
-              aria-label="Adjust appointment services"
+              aria-label={__vt("Adjust appointment services")}
               className={classNames(
                 "booking-cell-button",
                 servicesChanged && "booking-cell-button-dirty",
@@ -4465,7 +4505,7 @@ function AppointmentTableRow({
               disabled={!canManage}
               onClick={() => setPopover(popover === "services" ? null : "services")}
               ref={servicesAnchorRef}
-              title={serviceReplacementBlockMessage(booking) ?? undefined}
+              title={__vt(serviceReplacementBlockMessage(booking) ?? undefined)}
               type="button"
             >
               <span className="min-w-0">
@@ -4505,7 +4545,7 @@ function AppointmentTableRow({
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-extrabold text-[#211c24] group-hover:text-[#f26f3d] group-hover:underline group-hover:underline-offset-3">
                     {booking.customer?.name ?? "Unknown customer"}
-                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} <WorkspaceText text="previous no-show" />{booking.noShowCount === 1 ? "" : "s"}</span>}
                   </span>
                 </span>
               </a>
@@ -4515,7 +4555,7 @@ function AppointmentTableRow({
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-extrabold text-[#211c24]">
                     {booking.customer?.name ?? "Unknown customer"}
-                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} <WorkspaceText text="previous no-show" />{booking.noShowCount === 1 ? "" : "s"}</span>}
                   </span>
                 </span>
               </span>
@@ -4524,15 +4564,15 @@ function AppointmentTableRow({
               {customerProfileHref ? (
                 <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                   <a className="booking-profile-link" href={customerProfileHref}>
-                    Customer details
+                    <WorkspaceText text="Customer details" />
                   </a>
                   <span className="block truncate text-xs font-semibold text-[#786d78]">
-                    {sourceLabel(booking.source)}
+                    <WorkspaceText text={sourceLabel(booking.source)} />
                   </span>
                 </span>
               ) : (
                 <span className="block truncate text-xs text-[#786d78]">
-                  {sourceLabel(booking.source)}
+                  <WorkspaceText text={sourceLabel(booking.source)} />
                 </span>
               )}
             </span>
@@ -4546,7 +4586,7 @@ function AppointmentTableRow({
         <div>
           <div className="booking-inline-anchor">
             <button
-              aria-label="Adjust appointment status"
+              aria-label={__vt("Adjust appointment status")}
               className={classNames(
                 "booking-status-button",
                 statusChanged && "booking-cell-button-dirty",
@@ -4581,23 +4621,23 @@ function AppointmentTableRow({
               className="booking-row-action-button"
               href={`/pos-tickets/${booking.posTicket.id}`}
             >
-              Open ticket
+              <WorkspaceText text="Open ticket" />
             </a>
           ) : (
             <button
               className="booking-row-action-button"
               disabled={!canManage || isPending || ticketConversionBlocked}
               onClick={createTicket}
-              title={ticketConversionBlocked ? "Confirm this appointment before creating a ticket." : undefined}
+              title={__vt(ticketConversionBlocked ? "Confirm this appointment before creating a ticket." : undefined)}
               type="button"
             >
-              {isPending ? "Creating" : "Create ticket"}
+              <WorkspaceText text={isPending ? "Creating" : "Create ticket"} />
             </button>
           )}
         </div>
         <div>
           <button
-            aria-label="Open appointment settings"
+            aria-label={__vt("Open appointment settings")}
             className="booking-settings-button"
             onClick={() => onOpen(booking)}
             type="button"
@@ -4615,7 +4655,7 @@ function AppointmentTableRow({
         <div className="booking-table-row-message">
           <div className="booking-row-save-bar">
             <span>
-              {changeLabels.join(", ")} ready to save.
+              <WorkspaceText text={changeLabels.join(", ")} /> <WorkspaceText text="ready to save." />
             </span>
             <div>
               <button
@@ -4624,7 +4664,7 @@ function AppointmentTableRow({
                 onClick={saveDraft}
                 type="button"
               >
-                {isPending ? "Saving" : "Confirm changes"}
+                <WorkspaceText text={isPending ? "Saving" : "Confirm changes"} />
               </button>
               <button
                 className="booking-row-action-button"
@@ -4632,12 +4672,12 @@ function AppointmentTableRow({
                 onClick={resetDraft}
                 type="button"
               >
-                Reset
+                <WorkspaceText text="Reset" />
               </button>
             </div>
           </div>
           {draftValidationMessage ? (
-            <p className="booking-inline-warning mt-2">{draftValidationMessage}</p>
+            <p className="booking-inline-warning mt-2"><WorkspaceText text={draftValidationMessage} /></p>
           ) : null}
         </div>
       ) : null}
@@ -4678,13 +4718,13 @@ function CalendarView({
               key={day.date}
             >
               <div className="border-b border-zinc-200 px-3 py-2">
-                <h3 className="text-sm font-semibold text-zinc-950">{day.label}</h3>
-                <p className="text-xs text-zinc-500">{dayBookings.length} booked</p>
+                <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text={day.label} /></h3>
+                <p className="text-xs text-zinc-500">{dayBookings.length} <WorkspaceText text="booked" /></p>
               </div>
               <div className="grid gap-2 p-2">
                 {dayBookings.length === 0 ? (
                   <p className="booking-empty-state px-3 py-6">
-                    No appointments
+                    <WorkspaceText text="No appointments" />
                   </p>
                 ) : (
                   dayBookings.map((booking) => (
@@ -4709,9 +4749,9 @@ function CalendarView({
       return (
         <div className="booking-empty-state m-5">
           <p className="font-extrabold text-[#211c24]">
-            No appointments match this {filters.dateRange === "day" ? "day" : "range"}.
+            <WorkspaceText text="No appointments match this" /> <WorkspaceText text={filters.dateRange === "day" ? "day" : "range"} />.
           </p>
-          <p className="mt-1">Try another date or clear filters.</p>
+          <p className="mt-1"><WorkspaceText text="Try another date or clear filters." /></p>
         </div>
       );
     }
@@ -4720,14 +4760,14 @@ function CalendarView({
       <div className="overflow-x-auto">
         <div className={styles.table}>
           <div className={styles.tableHeader}>
-            <div>Time</div>
-            <div>Professional</div>
-            <div>Services</div>
-            <div>Customer</div>
-            <div>Total</div>
-            <div>Status</div>
-            <div>Create ticket</div>
-            <div>Edit</div>
+            <div><WorkspaceText text="Time" /></div>
+            <div><WorkspaceText text="Professional" /></div>
+            <div><WorkspaceText text="Services" /></div>
+            <div><WorkspaceText text="Customer" /></div>
+            <div><WorkspaceText text="Total" /></div>
+            <div><WorkspaceText text="Status" /></div>
+            <div><WorkspaceText text="Create ticket" /></div>
+            <div><WorkspaceText text="Edit" /></div>
           </div>
           {visibleBookings.map((booking) => (
             <AppointmentTableRow
@@ -4765,6 +4805,8 @@ function CustomerInspirationSection({
 }: {
   booking: BookingWorkspaceItem;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const inspiration = booking.inspiration;
 
   if (!inspiration) {
@@ -4774,7 +4816,7 @@ function CustomerInspirationSection({
   return (
     <section>
       <h3 className="text-sm font-semibold uppercase text-zinc-500">
-        Customer inspiration
+        <WorkspaceText text="Customer inspiration" />
       </h3>
       <div className="mt-2 grid gap-3 rounded-lg border border-zinc-200 bg-white p-3 sm:grid-cols-[96px_1fr]">
         <a
@@ -4785,16 +4827,16 @@ function CustomerInspirationSection({
         >
           {inspiration.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img alt="" className="h-full w-full object-cover" src={inspiration.imageUrl} />
+            <img alt={__vt("")} className="h-full w-full object-cover" src={inspiration.imageUrl} />
           ) : (
             <span className="grid h-full w-full place-items-center text-sm font-semibold text-zinc-500">
-              Look
+              <WorkspaceText text="Look" />
             </span>
           )}
         </a>
         <div className="min-w-0 text-sm">
           <p className="font-semibold text-zinc-950">
-            {inspiration.source_title_snapshot ?? "Booked look"}
+            <WorkspaceText text={inspiration.source_title_snapshot ?? "Booked look"} />
           </p>
           <p className="mt-1 font-semibold text-[#f26f3d]">
             {[
@@ -4832,6 +4874,8 @@ function DetailDrawer({
   settings: BookingWorkspaceClientProps["settings"];
   timezone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [booking]=useState(serverBooking);
   
   const [result, setResult] = useState<BookingActionResult | null>(null);
@@ -4936,15 +4980,15 @@ function DetailDrawer({
   }
 
   return (
-    <ModalFrame label={canManage ? "Manage appointment" : "Appointment details"} onClose={onClose} size="detail">
+    <ModalFrame label={__vt(canManage ? "Manage appointment" : "Appointment details")} onClose={onClose} size="detail">
       <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
         <div className="min-w-0">
           <h2 className="truncate text-xl font-semibold text-zinc-950">
             {booking.customer?.name ?? "Unknown customer"}
-                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} previous no-show{booking.noShowCount === 1 ? "" : "s"}</span>}
+                    {Boolean(booking.noShowCount) && <span className="ml-2 inline-block rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800">{booking.noShowCount} <WorkspaceText text="previous no-show" />{booking.noShowCount === 1 ? "" : "s"}</span>}
           </h2>
           <p className="mt-1 text-sm text-zinc-500">
-            {formatDateTime(booking.start_at, timezone)}
+            <WorkspaceText text={formatDateTime(booking.start_at, timezone)} />
           </p>
         </div>
         <button
@@ -4961,7 +5005,7 @@ function DetailDrawer({
           <div className="flex flex-wrap gap-2">
             <StatusBadge status={booking.normalizedStatus} kind={booking.no_show_kind} />
             <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600">
-              {sourceLabel(booking.source)}
+              <WorkspaceText text={sourceLabel(booking.source)} />
             </span>
             <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600">
               {booking.confirmation_status}
@@ -4969,11 +5013,11 @@ function DetailDrawer({
           </div>
           <div className="grid gap-2 text-sm text-zinc-700 sm:grid-cols-2">
             <p>
-              <span className="font-semibold text-zinc-950">Customer: </span>
+              <span className="font-semibold text-zinc-950"><WorkspaceText text="Customer:" /> </span>
               {booking.customer?.name ?? "Unknown"}
             </p>
             <p>
-              <span className="font-semibold text-zinc-950">Contact: </span>
+              <span className="font-semibold text-zinc-950"><WorkspaceText text="Contact:" /> </span>
               {canManage
                 ? [booking.customer?.phone, booking.customer?.email]
                     .filter(Boolean)
@@ -4981,14 +5025,14 @@ function DetailDrawer({
                 : "Restricted"}
             </p>
             <p>
-              <span className="font-semibold text-zinc-950">Total: </span>
+              <span className="font-semibold text-zinc-950"><WorkspaceText text="Total:" /> </span>
               {formatMoney(booking.subtotal)}
             </p>
           </div>
         </section>
 
         <details className="owner-manage-disclosure">
-          <summary>Services</summary>
+          <summary><WorkspaceText text="Services" /></summary>
           <div className="mt-2 divide-y divide-zinc-100 rounded-lg border border-zinc-200">
             {booking.lines.map((line) => (
               <div className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto]" key={line.id}>
@@ -4997,34 +5041,34 @@ function DetailDrawer({
                     {line.service_name_snapshot}
                   </p>
                   <p className="mt-1 text-sm text-zinc-600">
-                    {line.duration_minutes} min / {formatMoney(Number(line.line_total))}
+                    {line.duration_minutes} <WorkspaceText text="min /" /> {formatMoney(Number(line.line_total))}
                   </p>
                   <p className="mt-1 text-xs font-semibold text-zinc-600">
                     {line.line_status.replace(/_/g, " ")}
-                    {line.performedByStaffName
+                    <WorkspaceText text={line.performedByStaffName
                       ? ` by ${line.performedByStaffName}`
-                      : ""}
+                      : ""} />
                   </p>
                   {line.service_note ? (
                     <p className="mt-1 text-xs text-zinc-500">
-                      Note: {line.service_note}
+                      <WorkspaceText text="Note:" /> {line.service_note}
                     </p>
                   ) : null}
                   {line.overbooking_override_reason ? (
                     <p className="mt-1 text-xs font-semibold text-amber-700">
-                      Override: {line.overbooking_override_reason}
+                      <WorkspaceText text="Override:" /> {line.overbooking_override_reason}
                     </p>
                   ) : null}
                 </div>
                 <div className="text-sm text-zinc-700 sm:text-right">
-                  <p>{line.assignedStaffName ?? "Unassigned"}</p>
+                  <p><WorkspaceText text={line.assignedStaffName ?? "Unassigned"} /></p>
                   <p className="mt-1 text-xs text-zinc-500">
-                    {line.scheduled_start_at
+                    <WorkspaceText text={line.scheduled_start_at
                       ? `${formatTime(line.scheduled_start_at, timezone)} - ${formatTime(
                           line.scheduled_end_at ?? booking.end_at,
                           timezone,
                         )}`
-                      : "No line schedule"}
+                      : "No line schedule"} />
                   </p>
                 </div>
               </div>
@@ -5035,38 +5079,38 @@ function DetailDrawer({
         <CustomerInspirationSection booking={booking} />
 
         <section className="grid gap-2 text-sm text-zinc-700">
-          <h3 className="text-sm font-semibold uppercase text-zinc-500">Notes</h3>
+          <h3 className="text-sm font-semibold uppercase text-zinc-500"><WorkspaceText text="Notes" /></h3>
           <p>
-            <span className="font-semibold text-zinc-950">Public: </span>
-            {booking.public_notes || booking.notes || "None"}
+            <span className="font-semibold text-zinc-950"><WorkspaceText text="Public:" /> </span>
+            <WorkspaceText text={booking.public_notes || booking.notes || "None"} />
           </p>
           <p>
-            <span className="font-semibold text-zinc-950">Internal: </span>
-            {canManage ? booking.internal_notes || "None" : "Restricted"}
+            <span className="font-semibold text-zinc-950"><WorkspaceText text="Internal:" /> </span>
+            <WorkspaceText text={canManage ? booking.internal_notes || "None" : "Restricted"} />
           </p>
           {booking.cancellation_reason ? (
             <p>
-              <span className="font-semibold text-zinc-950">Cancellation: </span>
+              <span className="font-semibold text-zinc-950"><WorkspaceText text="Cancellation:" /> </span>
               {booking.cancellation_reason}
             </p>
           ) : null}
           {canManage ? <HistoryLinkControl owner bookingId={booking.id} timezone={timezone} /> : null}
           {booking.no_show_reason ? (
             <p>
-              <span className="font-semibold text-zinc-950">No-show: </span>
+              <span className="font-semibold text-zinc-950"><WorkspaceText text="No-show:" /> </span>
               {booking.no_show_reason}
             </p>
           ) : null}
           {booking.pos_ticket_id ? (
             <p>
-              <span className="font-semibold text-zinc-950">POS ticket: </span>
+              <span className="font-semibold text-zinc-950"><WorkspaceText text="POS ticket:" /> </span>
               {booking.pos_ticket_id}
             </p>
           ) : null}
           {booking.source_reference_id ? (
             <p>
-              <span className="font-semibold text-zinc-950">Source reference: </span>
-              {booking.source_reference_type ?? "reference"} / {booking.source_reference_id}
+              <span className="font-semibold text-zinc-950"><WorkspaceText text="Source reference:" /> </span>
+              <WorkspaceText text={booking.source_reference_type ?? "reference"} /> / {booking.source_reference_id}
             </p>
           ) : null}
         </section>
@@ -5075,10 +5119,10 @@ function DetailDrawer({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold uppercase text-zinc-500">
-                Ticket
+                <WorkspaceText text="Ticket" />
               </h3>
               <p className="mt-1 text-sm text-zinc-600">
-                Mode: {TICKET_CREATION_MODE_LABELS[settings.ticket_creation_mode]}.
+                <WorkspaceText text="Mode:" /> <WorkspaceText text={TICKET_CREATION_MODE_LABELS[settings.ticket_creation_mode]} />.
               </p>
             </div>
             {booking.posTicket ? (
@@ -5086,7 +5130,7 @@ function DetailDrawer({
                 className="inline-flex min-h-10 items-center rounded-md bg-[#f26f3d] px-3 text-sm font-semibold text-white"
                 href={`/pos-tickets/${booking.posTicket.id}`}
               >
-                Open POS ticket
+                <WorkspaceText text="Open POS ticket" />
               </a>
             ) : canManage ? (
               <button
@@ -5095,7 +5139,7 @@ function DetailDrawer({
                 onClick={createTicket}
                 type="button"
               >
-                Create POS ticket
+                <WorkspaceText text="Create POS ticket" />
               </button>
             ) : null}
           </div>
@@ -5103,58 +5147,55 @@ function DetailDrawer({
           {booking.posTicket ? (
             <div className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 text-sm sm:grid-cols-2">
               <p>
-                <span className="block text-zinc-500">Ticket</span>
+                <span className="block text-zinc-500"><WorkspaceText text="Ticket" /></span>
                 <span className="font-semibold text-zinc-950">
                   {booking.posTicket.ticketNumber}
                 </span>
               </p>
               <p>
-                <span className="block text-zinc-500">Status</span>
+                <span className="block text-zinc-500"><WorkspaceText text="Status" /></span>
                 <span className="font-semibold capitalize text-zinc-950">
-                  {booking.posTicket.status}
+                  <WorkspaceText text={booking.posTicket.status} />
                 </span>
               </p>
               <p>
-                <span className="block text-zinc-500">Subtotal</span>
+                <span className="block text-zinc-500"><WorkspaceText text="Subtotal" /></span>
                 <span className="font-semibold text-zinc-950">
                   {formatMoney(booking.posTicket.totals.subtotal)}
                 </span>
               </p>
               <p>
-                <span className="block text-zinc-500">Tax</span>
+                <span className="block text-zinc-500"><WorkspaceText text="Tax" /></span>
                 <span className="font-semibold text-zinc-950">
                   {formatMoney(booking.posTicket.totals.tax_amount)}
                 </span>
               </p>
               <p>
-                <span className="block text-zinc-500">Total</span>
+                <span className="block text-zinc-500"><WorkspaceText text="Total" /></span>
                 <span className="font-semibold text-zinc-950">
                   {formatMoney(booking.posTicket.totals.total)}
                 </span>
               </p>
               <p>
-                <span className="block text-zinc-500">Payment</span>
+                <span className="block text-zinc-500"><WorkspaceText text="Payment" /></span>
                 <span className="font-semibold capitalize text-zinc-950">
-                  {booking.posTicket.paymentStatus}
+                  <WorkspaceText text={booking.posTicket.paymentStatus} />
                 </span>
               </p>
             </div>
           ) : (
             <div className="grid gap-2 text-sm text-zinc-700">
               <p>
-                The ticket will use booked services, booked prices, and assigned
-                staff snapshots. POS owns discounts, tax, tips, and payments after
-                creation.
+                <WorkspaceText text="The ticket will use booked services, booked prices, and assigned staff snapshots. POS owns discounts, tax, tips, and payments after creation." />
               </p>
               {ticketConversionBlocked ? (
                 <p className="font-semibold text-amber-700">
-                  Confirm this appointment before creating a POS ticket.
+                  <WorkspaceText text="Confirm this appointment before creating a POS ticket." />
                 </p>
               ) : null}
               {missingStaff ? (
                 <p className="font-semibold text-amber-700">
-                  One or more services are unassigned; ticket staff attribution may
-                  need review.
+                  <WorkspaceText text="One or more services are unassigned; ticket staff attribution may need review." />
                 </p>
               ) : null}
             </div>
@@ -5162,34 +5203,32 @@ function DetailDrawer({
 
           {paymentPending ? (
             <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
-              Payment pending: the appointment is complete, but this POS ticket is
-              not fully paid.
+              <WorkspaceText text="Payment pending: the appointment is complete, but this POS ticket is not fully paid." />
             </p>
           ) : null}
 
           {hasTicket && booking.normalizedStatus === "cancelled" ? (
             <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
-              This appointment was cancelled after ticket creation. Review the POS
-              ticket separately.
+              <WorkspaceText text="This appointment was cancelled after ticket creation. Review the POS ticket separately." />
             </p>
           ) : null}
         </section>
 
         <details className="owner-manage-disclosure">
-          <summary>Timeline</summary>
+          <summary><WorkspaceText text="Timeline" /></summary>
           <div className="mt-2 grid gap-2">
             {booking.events.length === 0 ? (
               <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500">
-                No status events recorded.
+                <WorkspaceText text="No status events recorded." />
               </p>
             ) : (
               booking.events.map((event) => (
                 <div className="rounded-lg border border-zinc-200 px-4 py-3" key={event.id}>
                   <p className="text-sm font-semibold capitalize text-zinc-950">
-                    {eventLabel(event)}
+                    <WorkspaceText text={eventLabel(event)} />
                   </p>
                   <p className="mt-1 text-xs text-zinc-500">
-                    {formatDateTime(event.created_at, timezone)}
+                    <WorkspaceText text={formatDateTime(event.created_at, timezone)} />
                   </p>
                 </div>
               ))
@@ -5199,10 +5238,10 @@ function DetailDrawer({
 
         {canManage ? (
           <section className="grid gap-4">
-            <h3 className="text-sm font-semibold uppercase text-zinc-500">Actions</h3>
+            <h3 className="text-sm font-semibold uppercase text-zinc-500"><WorkspaceText text="Actions" /></h3>
             <label className="grid gap-1">
               <span className="text-sm font-semibold text-zinc-700">
-                Note (optional)
+                <WorkspaceText text="Note (optional)" />
               </span>
               <input
                 className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
@@ -5219,16 +5258,16 @@ function DetailDrawer({
                   onClick={() => runStatus(action.command)}
                   type="button"
                 >
-                  {action.label}
+                  <WorkspaceText text={action.label} />
                 </button>
               ))}
             </div>
 
-<details className="owner-manage-disclosure"><summary>Reschedule</summary>            <form className="grid gap-3 rounded-lg border border-zinc-200 p-4" onSubmit={runReschedule}>
+<details className="owner-manage-disclosure"><summary><WorkspaceText text="Reschedule" /></summary>            <form className="grid gap-3 rounded-lg border border-zinc-200 p-4" onSubmit={runReschedule}>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="grid gap-1">
-                  <span className="text-sm font-semibold text-zinc-700">Start</span>
+                  <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Start" /></span>
                   <input
                     className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
                     onChange={(event) => setRescheduleStart(event.target.value)}
@@ -5237,7 +5276,7 @@ function DetailDrawer({
                   />
                 </label>
                 <label className="grid gap-1">
-                  <span className="text-sm font-semibold text-zinc-700">End</span>
+                  <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="End" /></span>
                   <input
                     className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
                     onChange={(event) => setRescheduleEnd(event.target.value)}
@@ -5248,7 +5287,7 @@ function DetailDrawer({
               </div>
               <label className="grid gap-1">
                 <span className="text-sm font-semibold text-zinc-700">
-                  Override reason
+                  <WorkspaceText text="Override reason" />
                 </span>
                 <input
                   className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
@@ -5261,11 +5300,11 @@ function DetailDrawer({
                 disabled={isPending}
                 type="submit"
               >
-                Save time
+                <WorkspaceText text="Save time" />
               </button>
             </form></details>
 
-<details className="owner-manage-disclosure"><summary>Assign staff</summary>            <form className="grid gap-3 rounded-lg border border-zinc-200 p-4" onSubmit={runReassign}>
+<details className="owner-manage-disclosure"><summary><WorkspaceText text="Assign staff" /></summary>            <form className="grid gap-3 rounded-lg border border-zinc-200 p-4" onSubmit={runReassign}>
 
               {booking.lines.map((line, index) => (
                 <label className="grid gap-1" key={line.id}>
@@ -5285,7 +5324,7 @@ function DetailDrawer({
                     }}
                     value={lineAssignments[index]?.staffId ?? ""}
                   >
-                    <option value="">Unassigned</option>
+                    <option value=""><WorkspaceText text="Unassigned" /></option>
                     {staffForService(options).map((staff) => (
                       <option key={staff.id} value={staff.id}>
                         {staff.display_name}
@@ -5299,7 +5338,7 @@ function DetailDrawer({
                 disabled={isPending}
                 type="submit"
               >
-                Save assignment
+                <WorkspaceText text="Save assignment" />
               </button>
             </form></details>
           </section>
@@ -5493,6 +5532,8 @@ function AppointmentDrawer({
   settings: BookingWorkspaceClientProps["settings"];
   timezone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   
   const [step, setStep] = useState(0);
   const [result, setResult] = useState<BookingActionResult | null>(null);
@@ -5603,10 +5644,10 @@ function AppointmentDrawer({
   }
 
   return (
-    <ModalFrame label="New appointment" onClose={onClose}>
+    <ModalFrame label={__vt("New appointment")} onClose={onClose}>
       <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4">
         <div>
-          <h2 className="text-xl font-semibold text-zinc-950">New appointment</h2>
+          <h2 className="text-xl font-semibold text-zinc-950"><WorkspaceText text="New appointment" /></h2>
 
         </div>
         <button
@@ -5631,7 +5672,7 @@ function AppointmentDrawer({
               onClick={() => setStep(index)}
               type="button"
             >
-              {index + 1}. {label}
+              {index + 1}. <WorkspaceText text={label} />
             </button>
           ))}
         </div>
@@ -5642,14 +5683,14 @@ function AppointmentDrawer({
           <section className="mt-4 grid gap-4">
             <label className="grid gap-1">
               <span className="text-sm font-semibold text-zinc-700">
-                Existing customer
+                <WorkspaceText text="Existing customer" />
               </span>
               <select
                 className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm"
                 onChange={(event) => setCustomerId(event.target.value)}
                 value={customerId}
               >
-                <option value="">Quick-create or request customer</option>
+                <option value=""><WorkspaceText text="Quick-create or request customer" /></option>
                 {options.customers.map((customer) => (
                   <option key={customer.id} value={customer.id}>
                     {customer.name} {customer.phone ? `/ ${customer.phone}` : ""}
@@ -5659,7 +5700,7 @@ function AppointmentDrawer({
             </label>
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="grid gap-1">
-                <span className="text-sm font-semibold text-zinc-700">Name</span>
+                <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Name" /></span>
                 <input
                   className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
                   onChange={(event) => setCustomerName(event.target.value)}
@@ -5667,7 +5708,7 @@ function AppointmentDrawer({
                 />
               </label>
               <label className="grid gap-1">
-                <span className="text-sm font-semibold text-zinc-700">Phone</span>
+                <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Phone" /></span>
                 <input
                   className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
                   onChange={(event) => setCustomerPhone(event.target.value)}
@@ -5675,7 +5716,7 @@ function AppointmentDrawer({
                 />
               </label>
               <label className="grid gap-1">
-                <span className="text-sm font-semibold text-zinc-700">Email</span>
+                <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Email" /></span>
                 <input
                   className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
                   onChange={(event) => setCustomerEmail(event.target.value)}
@@ -5686,7 +5727,7 @@ function AppointmentDrawer({
             </div>
             {customerUserId ? (
               <p className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
-                Linked customer account: {customerUserId}
+                <WorkspaceText text="Linked customer account:" /> {customerUserId}
               </p>
             ) : null}
             {duplicateWarning ? (
@@ -5703,7 +5744,7 @@ function AppointmentDrawer({
               <div className="grid gap-3 rounded-lg border border-zinc-200 p-4 sm:grid-cols-[minmax(0,1fr)_auto]" key={index}>
                 <label className="grid gap-1">
                   <span className="text-sm font-semibold text-zinc-700">
-                    Service {index + 1}
+                    <WorkspaceText text="Service" /> {index + 1}
                   </span>
                   <select
                     className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm"
@@ -5714,7 +5755,7 @@ function AppointmentDrawer({
                   >
                     {options.services.map((service) => (
                       <option key={service.id} value={service.id}>
-                        {service.name} / {service.duration_minutes} min /{" "}
+                        {service.name} / {service.duration_minutes} <WorkspaceText text="min /" />{" "}
                         {formatMoney(Number(service.base_price))}
                       </option>
                     ))}
@@ -5730,7 +5771,7 @@ function AppointmentDrawer({
                     }
                     type="button"
                   >
-                    Remove
+                    <WorkspaceText text="Remove" />
                   </button>
                 ) : null}
               </div>
@@ -5740,10 +5781,10 @@ function AppointmentDrawer({
               onClick={addLine}
               type="button"
             >
-              Add service
+              <WorkspaceText text="Add service" />
             </button>
             <p className="text-sm text-zinc-600">
-              Total {draftMinutes} min / {formatMoney(draftSubtotal)}
+              <WorkspaceText text="Total" /> {draftMinutes} <WorkspaceText text="min /" /> {formatMoney(draftSubtotal)}
             </p>
           </section>
         ) : null}
@@ -5769,7 +5810,7 @@ function AppointmentDrawer({
                     <option value="">
                       {settings.any_professional_enabled
                         ? "Any professional / unassigned"
-                        : "Unassigned"}
+                        : <WorkspaceText text="Unassigned" />}
                     </option>
                     {eligibleStaff.map((staff) => (
                       <option key={staff.id} value={staff.id}>
@@ -5786,7 +5827,7 @@ function AppointmentDrawer({
         {step === 3 ? (
           <section className="mt-4 grid gap-4">
             <label className="grid gap-1">
-              <span className="text-sm font-semibold text-zinc-700">Start</span>
+              <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Start" /></span>
               <input
                 className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
                 onChange={(event) => setStartLocal(event.target.value)}
@@ -5795,19 +5836,17 @@ function AppointmentDrawer({
               />
             </label>
             <div className="grid gap-2">
-              <h3 className="text-sm font-semibold text-zinc-950">Real available slots</h3>
+              <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Real available slots" /></h3>
               {slots.length === 0 ? (
                 <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                  No slot can be generated from configured staff availability for this
-                  selection. Manual time remains available for owner review and will still
-                  be validated by the booking domain.{" "}
+                  <WorkspaceText text="No slot can be generated from configured staff availability for this selection. Manual time remains available for owner review and will still be validated by the booking domain." />{" "}
                   <a
                     className="font-semibold underline"
                     href={`/bookings?tab=availability${
                       lines[0]?.staffId ? `&staffId=${lines[0].staffId}` : ""
                     }`}
                   >
-                    Set staff hours
+                    <WorkspaceText text="Set staff hours" />
                   </a>
                 </p>
               ) : (
@@ -5837,7 +5876,7 @@ function AppointmentDrawer({
           <section className="mt-4 grid gap-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="grid gap-1">
-                <span className="text-sm font-semibold text-zinc-700">Source</span>
+                <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Source" /></span>
                 <select
                   className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm"
                   onChange={(event) => setSource(event.target.value as BookingSource)}
@@ -5845,14 +5884,14 @@ function AppointmentDrawer({
                 >
                   {BOOKING_SOURCES.map((sourceOption) => (
                     <option key={sourceOption} value={sourceOption}>
-                      {sourceLabel(sourceOption)}
+                      <WorkspaceText text={sourceLabel(sourceOption)} />
                     </option>
                   ))}
                 </select>
               </label>
               <label className="grid gap-1">
                 <span className="text-sm font-semibold text-zinc-700">
-                  Confirmation
+                  <WorkspaceText text="Confirmation" />
                 </span>
                 <select
                   className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm"
@@ -5861,14 +5900,14 @@ function AppointmentDrawer({
                   }
                   value={confirmationMode}
                 >
-                  <option value="request_confirmation">Request confirmation</option>
-                  <option value="instant_booking">Instant booking</option>
+                  <option value="request_confirmation"><WorkspaceText text="Request confirmation" /></option>
+                  <option value="instant_booking"><WorkspaceText text="Instant booking" /></option>
                 </select>
               </label>
             </div>
             <label className="grid gap-1">
               <span className="text-sm font-semibold text-zinc-700">
-                Public notes
+                <WorkspaceText text="Public notes" />
               </span>
               <textarea
                 className="min-h-24 rounded-md border border-zinc-300 px-3 py-2 text-sm"
@@ -5878,7 +5917,7 @@ function AppointmentDrawer({
             </label>
             <label className="grid gap-1">
               <span className="text-sm font-semibold text-zinc-700">
-                Internal notes
+                <WorkspaceText text="Internal notes" />
               </span>
               <textarea
                 className="min-h-24 rounded-md border border-zinc-300 px-3 py-2 text-sm"
@@ -5888,7 +5927,7 @@ function AppointmentDrawer({
             </label>
             <label className="grid gap-1">
               <span className="text-sm font-semibold text-zinc-700">
-                Overbooking override reason
+                <WorkspaceText text="Overbooking override reason" />
               </span>
               <input
                 className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
@@ -5903,19 +5942,19 @@ function AppointmentDrawer({
           <section className="mt-4 grid gap-4">
             <div className="rounded-lg border border-zinc-200 p-4 text-sm text-zinc-700">
               <p>
-                <span className="font-semibold text-zinc-950">Customer: </span>
+                <span className="font-semibold text-zinc-950"><WorkspaceText text="Customer:" /> </span>
                 {customerId
                   ? options.customers.find((customer) => customer.id === customerId)?.name
                   : customerName || customerUserId || "Not selected"}
               </p>
               <p className="mt-2">
-                <span className="font-semibold text-zinc-950">Services: </span>
+                <span className="font-semibold text-zinc-950"><WorkspaceText text="Services:" /> </span>
                 {selectedServices(options, lines)
                   .map((service) => service.name)
                   .join(", ") || "None"}
               </p>
               <p className="mt-2">
-                <span className="font-semibold text-zinc-950">Staff: </span>
+                <span className="font-semibold text-zinc-950"><WorkspaceText text="Staff:" /> </span>
                 {lines
                   .map((line) =>
                     line.staffId
@@ -5927,16 +5966,16 @@ function AppointmentDrawer({
                   .join(", ")}
               </p>
               <p className="mt-2">
-                <span className="font-semibold text-zinc-950">Start: </span>
+                <span className="font-semibold text-zinc-950"><WorkspaceText text="Start:" /> </span>
                 {startLocal.replace("T", " ")}
               </p>
               <p className="mt-2">
-                <span className="font-semibold text-zinc-950">Subtotal: </span>
+                <span className="font-semibold text-zinc-950"><WorkspaceText text="Subtotal:" /> </span>
                 {formatMoney(draftSubtotal)}
               </p>
               <p className="mt-2">
-                <span className="font-semibold text-zinc-950">Cancellation window: </span>
-                {settings.cancellation_window_minutes} minutes
+                <span className="font-semibold text-zinc-950"><WorkspaceText text="Cancellation window:" /> </span>
+                {settings.cancellation_window_minutes} <WorkspaceText text="minutes" />
               </p>
             </div>
           </section>
@@ -5949,7 +5988,7 @@ function AppointmentDrawer({
           onClick={() => setStep((current) => Math.max(0, current - 1))}
           type="button"
         >
-          Back
+          <WorkspaceText text="Back" />
         </button>
         <div className="flex gap-2">
           {step < steps.length - 1 ? (
@@ -5958,7 +5997,7 @@ function AppointmentDrawer({
               onClick={() => setStep((current) => Math.min(steps.length - 1, current + 1))}
               type="button"
             >
-              Next
+              <WorkspaceText text="Next" />
             </button>
           ) : (
             <button
@@ -5967,7 +6006,7 @@ function AppointmentDrawer({
               onClick={submit}
               type="button"
             >
-              {isPending ? "Creating" : "Create appointment"}
+              <WorkspaceText text={isPending ? "Creating" : "Create appointment"} />
             </button>
           )}
         </div>
@@ -5990,9 +6029,9 @@ function RequestsPanel({
   if (requests.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center">
-        <h3 className="text-lg font-semibold text-zinc-950">No profile requests</h3>
+        <h3 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="No profile requests" /></h3>
         <p className="mt-2 text-sm text-zinc-600">
-          Public profile booking requests will appear here for owner review.
+          <WorkspaceText text="Public profile booking requests will appear here for owner review." />
         </p>
       </div>
     );
@@ -6009,18 +6048,18 @@ function RequestsPanel({
                   {request.customerName}
                 </p>
                 <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600">
-                  {request.status}
+                  <WorkspaceText text={request.status} />
                 </span>
               </div>
               <p className="mt-1 text-sm text-zinc-600">
-                {request.serviceName ?? "Service not selected"} /{" "}
-                {request.staffName ?? "Any staff"} /{" "}
-                {request.requestedStartAt
+                <WorkspaceText text={request.serviceName ?? "Service not selected"} /> /{" "}
+                <WorkspaceText text={request.staffName ?? "Any staff"} /> /{" "}
+                <WorkspaceText text={request.requestedStartAt
                   ? formatDateTime(request.requestedStartAt, timezone)
-                  : "No requested time"}
+                  : "No requested time"} />
               </p>
               <p className="mt-1 line-clamp-2 text-sm text-zinc-500">
-                {request.privateNote || "No note"}
+                <WorkspaceText text={request.privateNote || "No note"} />
               </p>
             </div>
             {canManage && request.status === "requested" ? (
@@ -6029,7 +6068,7 @@ function RequestsPanel({
                 onClick={() => onConvert(request)}
                 type="button"
               >
-                Review
+                <WorkspaceText text="Review" />
               </button>
             ) : null}
           </li>
@@ -6151,12 +6190,18 @@ function buildReadinessByStaff(input: {
 
 function bookingReadinessSteps(input: {
   bookingEnabled: boolean;
+  guestBookingEnabled: boolean;
   onlineBookingVisible: boolean;
   options: BookingWorkspaceClientProps["options"];
   publicBookingHref: string;
   timezoneIana: string;
   warnings: BookingWorkspaceClientProps["warnings"];
 }) {
+  const onlineBookingOpen = getSalonOnlineBookingStatus({
+    booking_enabled: input.bookingEnabled,
+    guest_booking_enabled: input.guestBookingEnabled,
+    online_booking_visible: input.onlineBookingVisible,
+  }).onlineBookingOpen;
   const warningCodes = new Set(input.warnings.map((warning) => warning.code));
   const missingAvailabilityStaffId = firstStaffMissingAvailability(input.options);
   const bookableServiceCount = input.options.services.filter(
@@ -6228,11 +6273,10 @@ function bookingReadinessSteps(input: {
     },
     {
       complete:
-        input.bookingEnabled &&
-        input.onlineBookingVisible &&
+        onlineBookingOpen &&
         Boolean(input.timezoneIana.trim()),
       cta: "Review settings",
-      detail: input.bookingEnabled && input.onlineBookingVisible
+      detail: onlineBookingOpen
         ? "Publishing controls are on"
         : "Online booking is not live",
       fixPanel: "rules" as const,
@@ -6245,6 +6289,7 @@ function bookingReadinessSteps(input: {
 
 function BookingReadinessPanel({
   bookingEnabled,
+  guestBookingEnabled,
   onlineBookingVisible,
   options,
   publicBookingHref,
@@ -6252,6 +6297,7 @@ function BookingReadinessPanel({
   warnings,
 }: {
   bookingEnabled: boolean;
+  guestBookingEnabled: boolean;
   onlineBookingVisible: boolean;
   options: BookingWorkspaceClientProps["options"];
   publicBookingHref: string;
@@ -6260,6 +6306,7 @@ function BookingReadinessPanel({
 }) {
   const steps = bookingReadinessSteps({
     bookingEnabled,
+    guestBookingEnabled,
     onlineBookingVisible,
     options,
     publicBookingHref,
@@ -6277,18 +6324,17 @@ function BookingReadinessPanel({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h2 className="text-base font-semibold text-amber-950">
-            Finish online booking setup
+            <WorkspaceText text="Finish online booking setup" />
           </h2>
           <p className="mt-1 text-sm text-amber-800">
-            {completeCount} of {steps.length} steps complete. Manual appointments
-            still work, but customers cannot book online until setup is complete.
+            {completeCount} <WorkspaceText text="of" /> {steps.length} <WorkspaceText text="steps complete. Manual appointments still work, but customers cannot book online until setup is complete." />
           </p>
         </div>
         <a
           className="inline-flex min-h-10 w-fit items-center rounded-md border border-amber-300 bg-white px-3 text-sm font-semibold text-amber-950"
           href={publicBookingHref}
         >
-          Review booking page
+          <WorkspaceText text="Review booking page" />
         </a>
       </div>
       <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -6298,7 +6344,7 @@ function BookingReadinessPanel({
             key={step.id}
           >
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-zinc-950">{step.label}</p>
+              <p className="text-sm font-semibold text-zinc-950"><WorkspaceText text={step.label} /></p>
               <span
                 className={classNames(
                   "rounded-md px-2 py-1 text-xs font-semibold",
@@ -6307,7 +6353,7 @@ function BookingReadinessPanel({
                     : "bg-amber-100 text-amber-800",
                 )}
               >
-                {step.complete ? "Ready" : "Needs setup"}
+                {step.complete ? <WorkspaceText text="Ready" /> : "Needs setup"}
               </span>
             </div>
             {!step.complete ? (
@@ -6339,6 +6385,8 @@ function SettingsPanel({
   settings: BookingWorkspaceClientProps["settings"];
   warnings: BookingWorkspaceClientProps["warnings"];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   
   const searchParams = useSearchParams();
   const [result, setResult] = useState<BookingActionResult | null>(null);
@@ -6387,6 +6435,7 @@ function SettingsPanel({
 
   const readiness = bookingReadinessSteps({
     bookingEnabled: state.bookingEnabled,
+    guestBookingEnabled: state.guestBookingEnabled,
     onlineBookingVisible: state.onlineBookingVisible,
     options,
     publicBookingHref,
@@ -6413,7 +6462,7 @@ function SettingsPanel({
       <Message result={result} />
       <section className="grid gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 lg:grid-cols-[1fr_auto]">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-950">Public booking link</h3>
+          <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Public booking link" /></h3>
           <p className="mt-2 break-all rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700">
             {publicBookingHref}
           </p>
@@ -6423,7 +6472,7 @@ function SettingsPanel({
                 className="flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700"
                 key={item.id}
               >
-                <span>{item.label}</span>
+                <span><WorkspaceText text={item.label} /></span>
                 <span
                   className={classNames(
                     "rounded-md px-2 py-1 text-xs font-semibold",
@@ -6432,7 +6481,7 @@ function SettingsPanel({
                       : "bg-amber-100 text-amber-800",
                   )}
                 >
-                  {item.complete ? "Ready" : "Needs setup"}
+                  {item.complete ? <WorkspaceText text="Ready" /> : "Needs setup"}
                 </span>
               </li>
             ))}
@@ -6444,7 +6493,7 @@ function SettingsPanel({
             onClick={copyPublicUrl}
             type="button"
           >
-            Copy
+            <WorkspaceText text="Copy" />
           </button>
           <a
             className="grid min-h-10 place-items-center rounded-md bg-[#f26f3d] px-3 text-sm font-semibold text-white"
@@ -6452,12 +6501,13 @@ function SettingsPanel({
             rel="noreferrer"
             target="_blank"
           >
-            Preview
+            <WorkspaceText text="Preview" />
           </a>
         </div>
       </section>
       <BookingReadinessPanel
         bookingEnabled={state.bookingEnabled}
+        guestBookingEnabled={state.guestBookingEnabled}
         onlineBookingVisible={state.onlineBookingVisible}
         options={options}
         publicBookingHref={publicBookingHref}
@@ -6468,47 +6518,46 @@ function SettingsPanel({
         <Toggle
           checked={state.bookingEnabled}
           disabled={!canManage}
-          label="Booking enabled"
+          label={__vt("Booking enabled")}
           onChange={(value) => setBoolean("bookingEnabled", value)}
         />
         <Toggle
           checked={state.onlineBookingVisible}
           disabled={!canManage}
-          label="Online booking visible"
+          label={__vt("Online booking visible")}
           onChange={(value) => setBoolean("onlineBookingVisible", value)}
         />
         <Toggle
           checked={state.sameDayBookingEnabled}
           disabled={!canManage}
-          label="Allow same-day booking (future times only)"
+          label={__vt("Allow same-day booking (future times only)")}
           onChange={(value) => setBoolean("sameDayBookingEnabled", value)}
         />
-        <Toggle checked={state.reminderEnabled} disabled={!canManage} label="Send a reminder within 24 hours of the appointment" onChange={(value) => setBoolean("reminderEnabled", value)} />
-          <Toggle checked={state.autoAssignEnabled} disabled={!canManage} label="Auto assign available professionals fairly (Portable)" onChange={(value) => setBoolean("autoAssignEnabled", value)} />
-        <Toggle checked={state.confirmationEmailEnabled} disabled={!canManage} label="Email booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationEmailEnabled", value)} />
-        <Toggle checked={state.confirmationSmsEnabled} disabled={!canManage} label="SMS booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationSmsEnabled", value)} />
+        <Toggle checked={state.reminderEnabled} disabled={!canManage} label={__vt("Send an email reminder within 24 hours of the appointment")} onChange={(value) => setBoolean("reminderEnabled", value)} />
+          <Toggle checked={state.autoAssignEnabled} disabled={!canManage} label={__vt("Auto assign available professionals fairly (Portable)")} onChange={(value) => setBoolean("autoAssignEnabled", value)} />
+        <Toggle checked={state.confirmationEmailEnabled} disabled={!canManage} label={__vt("Email booking updates (requires connected provider)")} onChange={(value) => setBoolean("confirmationEmailEnabled", value)} />
         <Toggle
           checked={state.anyProfessionalEnabled}
           disabled={!canManage}
-          label="Any Professional"
+          label={__vt("Any Professional")}
           onChange={(value) => setBoolean("anyProfessionalEnabled", value)}
         />
         <Toggle
           checked={state.splitStaffAppointmentEnabled}
           disabled={!canManage}
-          label="Split-staff appointments"
+          label={__vt("Split-staff appointments")}
           onChange={(value) => setBoolean("splitStaffAppointmentEnabled", value)}
         />
         <Toggle
           checked={state.guestBookingEnabled}
           disabled={!canManage}
-          label="Guest booking"
+          label={__vt("Guest booking")}
           onChange={(value) => setBoolean("guestBookingEnabled", value)}
         />
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <label className="grid gap-1">
-          <span className="text-sm font-semibold text-zinc-700">Confirmation mode</span>
+          <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Confirmation mode" /></span>
           <select
             className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm"
             disabled={!canManage}
@@ -6520,13 +6569,13 @@ function SettingsPanel({
             }
             value={state.confirmationMode}
           >
-            <option value="request_confirmation">Request confirmation</option>
-            <option value="instant_booking">Instant booking</option>
+            <option value="request_confirmation"><WorkspaceText text="Request confirmation" /></option>
+            <option value="instant_booking"><WorkspaceText text="Instant booking" /></option>
           </select>
         </label>
         <label className="grid gap-1">
           <span className="text-sm font-semibold text-zinc-700">
-            POS ticket creation
+            <WorkspaceText text="POS ticket creation" />
           </span>
           <select
             className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm"
@@ -6539,27 +6588,27 @@ function SettingsPanel({
             }
             value={state.ticketCreationMode}
           >
-            <option value="manual">Manual</option>
-            <option value="on_check_in">On check-in</option>
-            <option value="on_service_start">On service start</option>
+            <option value="manual"><WorkspaceText text="Manual" /></option>
+            <option value="on_check_in"><WorkspaceText text="On check-in" /></option>
+            <option value="on_service_start"><WorkspaceText text="On service start" /></option>
           </select>
         </label>
         <NumberField
           disabled={!canManage}
-          label="Minimum lead time"
+          label={__vt("Minimum lead time")}
           onChange={(value) => setNumber("minimumLeadTimeMinutes", value)}
           suffix="min"
           value={state.minimumLeadTimeMinutes}
         />
         <NumberField
           disabled={!canManage}
-          label="Maximum advance"
+          label={__vt("Maximum advance")}
           onChange={(value) => setNumber("maximumAdvanceWindowDays", value)}
           suffix="days"
           value={state.maximumAdvanceWindowDays}
         />
         <label className="grid gap-1">
-          <span className="text-sm font-semibold text-zinc-700">Slot interval</span>
+          <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Slot interval" /></span>
           <select
             className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm"
             disabled={!canManage}
@@ -6568,28 +6617,28 @@ function SettingsPanel({
           >
             {[5, 10, 15, 20, 30, 60].map((interval) => (
               <option key={interval} value={interval}>
-                {interval} min
+                {interval} <WorkspaceText text="min" />
               </option>
             ))}
           </select>
         </label>
         <NumberField
           disabled={!canManage}
-          label="Cleanup buffer"
+          label={__vt("Cleanup buffer")}
           onChange={(value) => setNumber("defaultCleanupBufferMinutes", value)}
           suffix="min"
           value={state.defaultCleanupBufferMinutes}
         />
         <NumberField
           disabled={!canManage}
-          label="Cancellation window"
+          label={__vt("Cancellation window")}
           onChange={(value) => setNumber("cancellationWindowMinutes", value)}
           suffix="min"
           value={state.cancellationWindowMinutes}
         />
         <label className="grid gap-1">
-          <span className="text-sm font-semibold text-zinc-700">Timezone</span>
-          <input
+          <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text="Timezone" /></span>
+          <TimeZoneSelect
             className="min-h-10 rounded-md border border-zinc-300 px-3 text-sm"
             disabled={!canManage}
             onChange={(event) =>
@@ -6605,10 +6654,10 @@ function SettingsPanel({
           disabled={isPending}
           type="submit"
         >
-          {isPending ? "Saving" : "Save settings"}
+          {isPending ? "Saving" : <WorkspaceText text="Save settings" />}
         </button>
       ) : (
-        <p className="text-sm text-zinc-600">You have read-only booking access.</p>
+        <p className="text-sm text-zinc-600"><WorkspaceText text="You have read-only booking access." /></p>
       )}
       </form>
       <StaffAvailabilityEditor
@@ -6641,6 +6690,8 @@ function BookingPagePanel({
   settings: BookingWorkspaceClientProps["settings"];
   warnings: BookingWorkspaceClientProps["warnings"];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [activeSetup, setActiveSetup] = useState<QuickSetupPanelId | null>(null);
@@ -6648,6 +6699,7 @@ function BookingPagePanel({
   const [focusedServiceId, setFocusedServiceId] = useState<string | null>(null);
   const readiness = bookingReadinessSteps({
     bookingEnabled: settings.booking_enabled,
+    guestBookingEnabled: settings.guest_booking_enabled,
     onlineBookingVisible: settings.online_booking_visible,
     options,
     publicBookingHref,
@@ -6690,7 +6742,7 @@ function BookingPagePanel({
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-semibold text-[#211c24]">
-                Booking setup
+                <WorkspaceText text="Booking setup" />
               </h2>
             </div>
             <span className="text-xs font-extrabold text-[#786d78]">
@@ -6699,44 +6751,44 @@ function BookingPagePanel({
           </div>
           <div className="mt-2 grid">
             <QuickSetupCard
-              detail="Active services customers can choose online."
+              detail={__vt("Active services customers can choose online.")}
               metric={`${bookableServices.length} bookable`}
               onOpen={() => openSetup("services")}
               status={readiness.find((item) => item.id === "services")?.complete ? "ready" : "attention"}
-              title="Services"
+              title={__vt("Services")}
             />
             <QuickSetupCard
-              detail={`${onlineStaff.length} of ${options.staff.length} staff enabled online.`}
+              detail={__vt(`${onlineStaff.length} of ${options.staff.length} staff enabled online.`)}
               metric={`${readyStaffCount} ready`}
               onOpen={() => openSetup("professionals")}
               status={readiness.find((item) => item.id === "assignments")?.complete ? "ready" : "attention"}
-              title="Professionals"
+              title={__vt("Professionals")}
             />
             <QuickSetupCard
-              detail="Based on professional weekly schedules and time off."
+              detail={__vt("Based on professional weekly schedules and time off.")}
               metric={summarizeBookingHours(options)}
               onOpen={() => openSetup("hours")}
               status={readiness.find((item) => item.id === "availability")?.complete ? "ready" : "attention"}
-              title="Booking hours"
+              title={__vt("Booking hours")}
             />
             <QuickSetupCard
-              detail={settings.any_professional_enabled ? "Customers may choose Any Professional." : "Customers choose from available professionals."}
+              detail={__vt(settings.any_professional_enabled ? "Customers may choose Any Professional." : "Customers choose from available professionals.")}
               metric={bookingRulesSummary(settings)}
               onOpen={() => openSetup("rules")}
               status={readiness.find((item) => item.id === "settings")?.complete ? "ready" : "attention"}
-              title="Booking rules"
+              title={__vt("Booking rules")}
             />
           </div>
         </article>
       </div>
 
       <details className="booking-preview-section" onToggle={event => setPreviewOpen(event.currentTarget.open)}>
-        <summary>Customer preview</summary>
+        <summary><WorkspaceText text="Customer preview" /></summary>
         {previewOpen ? <div>
         <div className="flex flex-col gap-3 border-b border-[#f0e6df] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className={styles.eyebrow}>Customer preview</p>
-            <h2 className="mt-2 text-lg font-extrabold text-[#211c24]">{salonName}</h2>
+            <p className={styles.eyebrow}><WorkspaceText text="Customer preview" /></p>
+            <h2 className="mt-2 text-lg font-extrabold text-[#211c24]"><a href="/salon-profile" className="hover:underline">{salonName}</a></h2>
           </div>
           <div className="flex rounded-xl border border-[#ffd6c4] bg-white p-1">
             {(["desktop", "mobile"] as const).map((mode) => (
@@ -6751,7 +6803,7 @@ function BookingPagePanel({
                 onClick={() => setPreviewMode(mode)}
                 type="button"
               >
-                {mode === "desktop" ? "Desktop" : "Mobile"}
+                <WorkspaceText text={mode === "desktop" ? "Desktop" : "Mobile"} />
               </button>
             ))}
           </div>
@@ -6772,7 +6824,7 @@ function BookingPagePanel({
               className="h-[640px] w-full bg-white"
               src={publicBookingHref}
               loading="lazy"
-              title="Public booking preview"
+              title={__vt("Public booking preview")}
             />
           </div>
         </div>
@@ -6860,6 +6912,8 @@ function OwnerSettingsPanel({
   canManage: boolean;
   settings: BookingWorkspaceClientProps["settings"];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -6912,50 +6966,50 @@ function OwnerSettingsPanel({
       </div>
       <section className={classNames(styles.panel, "grid gap-4 p-5")}>
         <div>
-          <p className={styles.eyebrow}>Online booking</p>
-          <h2 className="mt-2 text-xl font-extrabold text-[#211c24]">Publishing controls</h2>
+          <p className={styles.eyebrow}><WorkspaceText text="Online booking" /></p>
+          <h2 className="mt-2 text-xl font-extrabold text-[#211c24]"><WorkspaceText text="Publishing controls" /></h2>
         </div>
         <Toggle
           checked={state.bookingEnabled}
           disabled={!canManage}
-          label="Booking enabled"
+          label={__vt("Booking enabled")}
           onChange={(value) => setBoolean("bookingEnabled", value)}
         />
         <Toggle
           checked={state.onlineBookingVisible}
           disabled={!canManage}
-          label="Online booking visible"
+          label={__vt("Online booking visible")}
           onChange={(value) => setBoolean("onlineBookingVisible", value)}
         />
         <Toggle
           checked={state.sameDayBookingEnabled}
           disabled={!canManage}
-          label="Allow same-day booking (future times only)"
+          label={__vt("Allow same-day booking (future times only)")}
           onChange={(value) => setBoolean("sameDayBookingEnabled", value)}
         />
       </section>
 
       <section className={classNames(styles.panel, "grid gap-4 p-5")}>
         <div>
-          <p className={styles.eyebrow}>Scheduling rules</p>
-          <h2 className="mt-2 text-xl font-extrabold text-[#211c24]">Time windows</h2>
+          <p className={styles.eyebrow}><WorkspaceText text="Scheduling rules" /></p>
+          <h2 className="mt-2 text-xl font-extrabold text-[#211c24]"><WorkspaceText text="Time windows" /></h2>
         </div>
         <NumberField
           disabled={!canManage}
-          label={`Minimum lead time (${formatMinutes(state.minimumLeadTimeMinutes)})`}
+          label={__vt(`Minimum lead time (${formatMinutes(state.minimumLeadTimeMinutes)})`)}
           onChange={(value) => setNumber("minimumLeadTimeMinutes", value)}
           suffix="min"
           value={state.minimumLeadTimeMinutes}
         />
         <NumberField
           disabled={!canManage}
-          label="Maximum advance"
+          label={__vt("Maximum advance")}
           onChange={(value) => setNumber("maximumAdvanceWindowDays", value)}
           suffix="days"
           value={state.maximumAdvanceWindowDays}
         />
         <label className="grid gap-1">
-          <span className="text-sm font-extrabold text-[#211c24]">Slot interval</span>
+          <span className="text-sm font-extrabold text-[#211c24]"><WorkspaceText text="Slot interval" /></span>
           <select
             className={styles.select}
             disabled={!canManage}
@@ -6964,14 +7018,14 @@ function OwnerSettingsPanel({
           >
             {[5, 10, 15, 20, 30, 60].map((interval) => (
               <option key={interval} value={interval}>
-                {interval} min
+                {interval} <WorkspaceText text="min" />
               </option>
             ))}
           </select>
         </label>
         <NumberField
           disabled={!canManage}
-          label="Cleanup buffer"
+          label={__vt("Cleanup buffer")}
           onChange={(value) => setNumber("defaultCleanupBufferMinutes", value)}
           suffix="min"
           value={state.defaultCleanupBufferMinutes}
@@ -6980,11 +7034,11 @@ function OwnerSettingsPanel({
 
       <section className={classNames(styles.panel, "grid gap-4 p-5")}>
         <div>
-          <p className={styles.eyebrow}>Confirmation</p>
-          <h2 className="mt-2 text-xl font-extrabold text-[#211c24]">Booking outcome</h2>
+          <p className={styles.eyebrow}><WorkspaceText text="Confirmation" /></p>
+          <h2 className="mt-2 text-xl font-extrabold text-[#211c24]"><WorkspaceText text="Booking outcome" /></h2>
         </div>
         <label className="grid gap-1">
-          <span className="text-sm font-extrabold text-[#211c24]">Confirmation mode</span>
+          <span className="text-sm font-extrabold text-[#211c24]"><WorkspaceText text="Confirmation mode" /></span>
           <select
             className={styles.select}
             disabled={!canManage}
@@ -6996,19 +7050,19 @@ function OwnerSettingsPanel({
             }
             value={state.confirmationMode}
           >
-            <option value="request_confirmation">Request confirmation</option>
-            <option value="instant_booking">Instant booking</option>
+            <option value="request_confirmation"><WorkspaceText text="Request confirmation" /></option>
+            <option value="instant_booking"><WorkspaceText text="Instant booking" /></option>
           </select>
         </label>
         <NumberField
           disabled={!canManage}
-          label={`Cancellation window (${formatMinutes(state.cancellationWindowMinutes)})`}
+          label={__vt(`Cancellation window (${formatMinutes(state.cancellationWindowMinutes)})`)}
           onChange={(value) => setNumber("cancellationWindowMinutes", value)}
           suffix="min"
           value={state.cancellationWindowMinutes}
         />
         <label className="grid gap-1">
-          <span className="text-sm font-extrabold text-[#211c24]">POS ticket creation</span>
+          <span className="text-sm font-extrabold text-[#211c24]"><WorkspaceText text="POS ticket creation" /></span>
           <select
             className={styles.select}
             disabled={!canManage}
@@ -7020,43 +7074,42 @@ function OwnerSettingsPanel({
             }
             value={state.ticketCreationMode}
           >
-            <option value="manual">Manual</option>
-            <option value="on_check_in">On check-in</option>
-            <option value="on_service_start">On service start</option>
+            <option value="manual"><WorkspaceText text="Manual" /></option>
+            <option value="on_check_in"><WorkspaceText text="On check-in" /></option>
+            <option value="on_service_start"><WorkspaceText text="On service start" /></option>
           </select>
         </label>
       </section>
 
       <section className={classNames(styles.panel, "grid gap-4 p-5")}>
         <div>
-          <p className={styles.eyebrow}>Professional assignment</p>
-          <h2 className="mt-2 text-xl font-extrabold text-[#211c24]">Customer choice</h2>
+          <p className={styles.eyebrow}><WorkspaceText text="Professional assignment" /></p>
+          <h2 className="mt-2 text-xl font-extrabold text-[#211c24]"><WorkspaceText text="Customer choice" /></h2>
         </div>
-        <Toggle checked={state.reminderEnabled} disabled={!canManage} label="Send a reminder within 24 hours of the appointment" onChange={(value) => setBoolean("reminderEnabled", value)} />
-          <Toggle checked={state.autoAssignEnabled} disabled={!canManage} label="Auto assign available professionals fairly (Portable)" onChange={(value) => setBoolean("autoAssignEnabled", value)} />
-        <Toggle checked={state.confirmationEmailEnabled} disabled={!canManage} label="Email booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationEmailEnabled", value)} />
-        <Toggle checked={state.confirmationSmsEnabled} disabled={!canManage} label="SMS booking updates (requires connected provider)" onChange={(value) => setBoolean("confirmationSmsEnabled", value)} />
+        <Toggle checked={state.reminderEnabled} disabled={!canManage} label={__vt("Send an email reminder within 24 hours of the appointment")} onChange={(value) => setBoolean("reminderEnabled", value)} />
+          <Toggle checked={state.autoAssignEnabled} disabled={!canManage} label={__vt("Auto assign available professionals fairly (Portable)")} onChange={(value) => setBoolean("autoAssignEnabled", value)} />
+        <Toggle checked={state.confirmationEmailEnabled} disabled={!canManage} label={__vt("Email booking updates (requires connected provider)")} onChange={(value) => setBoolean("confirmationEmailEnabled", value)} />
         <Toggle
           checked={state.anyProfessionalEnabled}
           disabled={!canManage}
-          label="Any Professional"
+          label={__vt("Any Professional")}
           onChange={(value) => setBoolean("anyProfessionalEnabled", value)}
         />
         <Toggle
           checked={state.splitStaffAppointmentEnabled}
           disabled={!canManage}
-          label="Split-staff appointments"
+          label={__vt("Split-staff appointments")}
           onChange={(value) => setBoolean("splitStaffAppointmentEnabled", value)}
         />
         <Toggle
           checked={state.guestBookingEnabled}
           disabled={!canManage}
-          label="Guest booking"
+          label={__vt("Guest booking")}
           onChange={(value) => setBoolean("guestBookingEnabled", value)}
         />
         <label className="grid gap-1">
-          <span className="text-sm font-extrabold text-[#211c24]">Timezone</span>
-          <input
+          <span className="text-sm font-extrabold text-[#211c24]"><WorkspaceText text="Timezone" /></span>
+          <TimeZoneSelect
             className={styles.field}
             disabled={!canManage}
             onChange={(event) =>
@@ -7074,10 +7127,10 @@ function OwnerSettingsPanel({
             disabled={isPending}
             type="submit"
           >
-            {isPending ? "Saving" : "Save settings"}
+            {isPending ? "Saving" : <WorkspaceText text="Save settings" />}
           </button>
         ) : (
-          <p className="text-sm text-[#786d78]">You have read-only booking access.</p>
+          <p className="text-sm text-[#786d78]"><WorkspaceText text="You have read-only booking access." /></p>
         )}
       </div>
     </form>
@@ -7097,7 +7150,7 @@ function Toggle({
 }) {
   return (
     <label className="flex min-h-12 items-center justify-between gap-3 rounded-xl border border-[#f0e6df] bg-white px-3">
-      <span className="text-sm font-extrabold text-[#211c24]">{label}</span>
+      <span className="text-sm font-extrabold text-[#211c24]"><WorkspaceText text={label} /></span>
       <input
         checked={checked}
         className="sr-only"
@@ -7139,7 +7192,7 @@ function NumberField({
 }) {
   return (
     <label className="grid gap-1">
-      <span className="text-sm font-extrabold text-[#211c24]">{label}</span>
+      <span className="text-sm font-extrabold text-[#211c24]"><WorkspaceText text={label} /></span>
       <div className="flex overflow-hidden rounded-xl border border-[#f0e6df] bg-white">
         <input
           className="min-h-10 min-w-0 flex-1 px-3 text-sm outline-none"
@@ -7150,7 +7203,7 @@ function NumberField({
           value={value}
         />
         <span className="grid min-h-10 place-items-center border-l border-[#f0e6df] px-3 text-sm text-[#786d78]">
-          {suffix}
+          <WorkspaceText text={suffix} />
         </span>
       </div>
     </label>
@@ -7177,11 +7230,11 @@ function OwnerAgenda({bookings, filters, range, timezone, canManage, onOpen}: {
   const groups = filters.view === "week" ? range.days : filters.dateRange === "day" ? [{date:filters.date,label:""}] :
     [...new Set(visible.map(item=>dateParts(item.start_at,timezone).date))].map(date=>({date,label:formatDateOnly(`${date}T12:00:00Z`,timezone)}));
   return <div className="owner-agenda" ref={root}>
-    {!visible.length && filters.view !== "week" ? <p className="owner-agenda-empty">No appointments for this selection. Choose another date or clear filters.</p> : null}
+    {!visible.length && filters.view !== "week" ? <p className="owner-agenda-empty"><WorkspaceText text="No appointments for this selection. Choose another date or clear filters." /></p> : null}
     {groups.map(day => {
       const items = visible.filter(item=>dateParts(item.start_at,timezone).date===day.date);
       return <section key={day.date} className="owner-agenda-day">
-        {day.label ? <div className="owner-agenda-day-heading"><h2>{day.label}</h2><span>{items.length ? `${items.length} booked` : "No appointments"}</span></div> : null}
+        {day.label ? <div className="owner-agenda-day-heading"><h2><WorkspaceText text={day.label} /></h2><span>{items.length ? `${items.length} booked` : <WorkspaceText text="No appointments" />}</span></div> : null}
         {items.map(booking=><OwnerAgendaRow key={`${booking.id}:${booking.updated_at}`} booking={booking} timezone={timezone} canManage={canManage} onOpen={onOpen}/>)}
       </section>;
     })}
@@ -7195,22 +7248,22 @@ function OwnerAgendaRow({booking,timezone,canManage,onOpen}: {booking:BookingWor
   const [confirmed,setConfirmed]=useState(false);
   return <details className="owner-agenda-item" name="owner-appointment" data-busy={pending}>
     <summary className="owner-agenda-row">
-      <time dateTime={booking.start_at}>{formatTime(booking.start_at,timezone)}</time>
+      <time dateTime={booking.start_at}><WorkspaceText text={formatTime(booking.start_at,timezone)} /></time>
       <span className="owner-agenda-customer"><strong>{booking.customer?.name ?? "Unknown customer"}</strong>
-        <span>{booking.serviceNames.join(" / ") || "No services"} · {booking.durationMinutes} min · {formatMoney(booking.subtotal)}</span>
-        <small>{booking.assignedStaffNames.join(", ") || "Unassigned"}</small>
+        <span><WorkspaceText text={booking.serviceNames.join(" / ") || "No services"} /> · {booking.durationMinutes} <WorkspaceText text="min ·" /> {formatMoney(booking.subtotal)}</span>
+        <small><WorkspaceText text={booking.assignedStaffNames.join(", ") || "Unassigned"} /></small>
       </span>
       <StatusBadge status={confirmed ? "confirmed" : booking.normalizedStatus} kind={booking.no_show_kind}/><span className="owner-agenda-chevron"><DownChevronIcon/></span>
     </summary>
     <div className="owner-agenda-expanded">
       <dl>
-        {canManage && booking.customer?.phone ? <div><dt>Phone</dt><dd><a href={`tel:${booking.customer.phone}`}>{booking.customer.phone}</a></dd></div>:null}
-        {canManage && booking.customer?.email ? <div><dt>Email</dt><dd><a href={`mailto:${booking.customer.email}`}>{booking.customer.email}</a></dd></div>:null}
-        {booking.public_notes || booking.notes ? <div><dt>Customer note</dt><dd>{booking.public_notes || booking.notes}</dd></div>:null}
-        {canManage && booking.internal_notes ? <div><dt>Internal note</dt><dd>{booking.internal_notes}</dd></div>:null}
-        {Boolean(booking.noShowCount) ? <div><dt>No-show history</dt><dd>{booking.noShowCount} previous no-show{booking.noShowCount===1?"":"s"}</dd></div>:null}
-        {booking.no_show_reason ? <div><dt>No-show reason</dt><dd>{booking.no_show_reason}</dd></div>:null}
-        {booking.cancellation_reason ? <div><dt>Cancellation</dt><dd>{booking.cancellation_reason}</dd></div>:null}
+        {canManage && booking.customer?.phone ? <div><dt><WorkspaceText text="Phone" /></dt><dd><a href={`tel:${booking.customer.phone}`}>{booking.customer.phone}</a></dd></div>:null}
+        {canManage && booking.customer?.email ? <div><dt><WorkspaceText text="Email" /></dt><dd><a href={`mailto:${booking.customer.email}`}>{booking.customer.email}</a></dd></div>:null}
+        {booking.public_notes || booking.notes ? <div><dt><WorkspaceText text="Customer note" /></dt><dd>{booking.public_notes || booking.notes}</dd></div>:null}
+        {canManage && booking.internal_notes ? <div><dt><WorkspaceText text="Internal note" /></dt><dd>{booking.internal_notes}</dd></div>:null}
+        {Boolean(booking.noShowCount) ? <div><dt><WorkspaceText text="No-show history" /></dt><dd>{booking.noShowCount} <WorkspaceText text="previous no-show" />{booking.noShowCount===1?"":"s"}</dd></div>:null}
+        {booking.no_show_reason ? <div><dt><WorkspaceText text="No-show reason" /></dt><dd>{booking.no_show_reason}</dd></div>:null}
+        {booking.cancellation_reason ? <div><dt><WorkspaceText text="Cancellation" /></dt><dd>{booking.cancellation_reason}</dd></div>:null}
       </dl>
       <CustomerInspirationSection booking={booking}/>
       <Message result={result}/>
@@ -7218,9 +7271,9 @@ function OwnerAgendaRow({booking,timezone,canManage,onOpen}: {booking:BookingWor
         {canManage && !confirmed && booking.normalizedStatus === "pending" ? <button className={styles.primaryButton} disabled={pending} type="button" onClick={()=>startTransition(async()=>{
           try {const response=await runBookingStatusAction({bookingId:booking.id,expectedUpdatedAt:booking.updated_at,command:"confirm",reason:""});setResult(response);if(response.ok){setConfirmed(true);}}
           catch {setResult({ok:false,message:"Could not confirm. Please try again."});}
-        })}>{pending?"Confirming…":"Confirm"}</button>:null}
-        <button type="button" className={styles.secondaryButton} disabled={pending} onClick={()=>onOpen(booking)}>{canManage?"Edit / Manage":"View appointment"}</button>
-        {booking.posTicket ? <a className={styles.secondaryButton} href={`/pos-tickets/${booking.posTicket.id}`}>POS ticket</a>:null}
+        })}>{pending?"Confirming…":<WorkspaceText text="Confirm" />}</button>:null}
+        <button type="button" className={styles.secondaryButton} disabled={pending} onClick={()=>onOpen(booking)}><WorkspaceText text={canManage?"Edit / Manage":"View appointment"} /></button>
+        {booking.posTicket ? <a className={styles.secondaryButton} href={`/pos-tickets/${booking.posTicket.id}`}><WorkspaceText text="POS ticket" /></a>:null}
       </div>
     </div>
   </details>;
@@ -7241,6 +7294,8 @@ export function BookingWorkspaceClient({
   timezone,
   warnings,
 }: BookingWorkspaceClientProps) {
+  const __vt = useWorkspaceTranslation();
+
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -7313,6 +7368,7 @@ export function BookingWorkspaceClient({
   ).length;
   const setupIncomplete = bookingReadinessSteps({
     bookingEnabled: settings.booking_enabled,
+    guestBookingEnabled: settings.guest_booking_enabled,
     onlineBookingVisible: settings.online_booking_visible,
     options,
     publicBookingHref,
@@ -7322,31 +7378,34 @@ export function BookingWorkspaceClient({
 
   return (
     <main
-      aria-label={`${accountName} ${salonName} booking workspace`}
+      aria-label={__vt(`${accountName} ${salonName} booking workspace`)}
       className={classNames(styles.bookingSurface, styles.ownerRoot)}
       data-booking-surface="owner"
       data-testid="booking-owner-root"
     >
       <section className="booking-owner-header owner-schedule-header" ref={navigation}>
-        <nav className="owner-schedule-tabs" aria-label="Booking schedule">
-          <button type="button" aria-current={filters.tab==='calendar' && filters.date===today && filters.dateRange==='day' && filters.view!=='week'?"page":undefined} onClick={()=>goDay(today)}><CalendarIcon/><span>Today</span></button>
-          <button type="button" aria-current={filters.tab==='calendar' && filters.date===tomorrow && filters.dateRange==='day' && filters.view!=='week'?"page":undefined} onClick={()=>goDay(tomorrow)}><ChevronIcon direction="right"/><span>Next day</span></button>
-          <details data-dismissible-popover className="owner-schedule-menu"><summary><CalendarIcon/><span>Calendar</span></summary><div className="owner-schedule-popover">
+        <div className="flex min-w-0 items-center gap-3">
+<nav style={{ flex: "1 1 auto", minWidth: 0 }} className="owner-schedule-tabs" aria-label={__vt("Booking schedule")}>
+          <button type="button" aria-current={filters.tab==='calendar' && filters.date===today && filters.dateRange==='day' && filters.view!=='week'?"page":undefined} onClick={()=>goDay(today)}><CalendarIcon/><span><WorkspaceText text="Today" /></span></button>
+          <button type="button" aria-current={filters.tab==='calendar' && filters.date===tomorrow && filters.dateRange==='day' && filters.view!=='week'?"page":undefined} onClick={()=>goDay(tomorrow)}><ChevronIcon direction="right"/><span><WorkspaceText text="Next day" /></span></button>
+          <details data-dismissible-popover className="owner-schedule-menu"><summary><CalendarIcon/><span><WorkspaceText text="Calendar" /></span></summary><div className="owner-schedule-popover">
             <SchedulePicker key={filters.date} date={filters.date} range={filters.dateRange} status={filters.status ?? ""} onChange={value => {
               setTimeline(false);
               router.push(buildUrl(pathname, searchParams, { date:value.date, range:value.range === "day" ? null : value.range, status:value.status || null, view:"list", tab:"calendar", bookingId:null }), {scroll:false});
               navigation.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(item=>item.open=false);
             }}/>
           </div></details>
-          <details data-dismissible-popover className="owner-schedule-menu"><summary><SettingsIcon/><span>Settings</span></summary><div className="owner-schedule-popover owner-settings-menu">
+          <details data-dismissible-popover className="owner-schedule-menu"><summary><SettingsIcon/><span><WorkspaceText text="Settings" /></span></summary><div className="owner-schedule-popover owner-settings-menu">
             <WorkspaceTabs appointmentCount={appointmentCount} filters={filters} setupIncomplete={setupIncomplete}/>
           </div></details>
         </nav>
+<ContextualSupport />
+</div>
         <div className="owner-schedule-date">
-          <h1>{filters.tab==='calendar' ? `${filters.dateRange==='day' && filters.view!=='week' ? filters.date===today?'Today, ':filters.date===tomorrow?'Tomorrow, ':'' : ''}${filters.dateRange==='day' && filters.view!=='week' ? new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(`${filters.date}T12:00:00Z`)):formatToolbarRange(filters,timezone)}` : filters.tab==='booking-page'?'Booking page':filters.tab==='availability'?'Availability':'Booking settings'}</h1>
-          <div><span>{filters.tab === "availability" ? `${options.staff.length} professionals` : `${appointmentCount} booked`}</span>{canManageBookings && filters.tab !== "availability" ? <button type="button" className="owner-schedule-new" data-testid="booking-owner-new-appointment" onClick={()=>{setDrawerPrefill(null);setShowCreate(true);}}>＋ New</button>:null}</div>
+          <h1>{filters.tab==='calendar' ? `${filters.dateRange==='day' && filters.view!=='week' ? filters.date===today?'Today, ':filters.date===tomorrow?'Tomorrow, ':'' : ''}${filters.dateRange==='day' && filters.view!=='week' ? new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(`${filters.date}T12:00:00Z`)):formatToolbarRange(filters,timezone)}` : filters.tab==='booking-page'?'Booking page':filters.tab==='availability'?'Availability':<WorkspaceText text="Booking settings" />}</h1>
+          <div><span><WorkspaceText text={filters.tab === "availability" ? `${options.staff.length} professionals` : `${appointmentCount} booked`} /></span>{canManageBookings && filters.tab !== "availability" ? <button type="button" className="owner-schedule-new" data-testid="booking-owner-new-appointment" onClick={()=>{setDrawerPrefill(null);setShowCreate(true);}}><WorkspaceText text="＋ New" /></button>:null}</div>
         </div>
-        {filters.query || filters.staffId || filters.status || filters.serviceId || filters.source ? <div className="owner-active-filter">Filtered appointments <a href={buildUrl(pathname,searchParams,{q:null,staff:null,status:null,service:null,source:null})}>Clear filters</a></div>:null}
+        {filters.query || filters.staffId || filters.status || filters.serviceId || filters.source ? <div className="owner-active-filter"><WorkspaceText text="Filtered appointments" /> <a href={buildUrl(pathname,searchParams,{q:null,staff:null,status:null,service:null,source:null})}><WorkspaceText text="Clear filters" /></a></div>:null}
       </section>
 
       <section className={styles.ownerContent}>
@@ -7371,13 +7430,13 @@ export function BookingWorkspaceClient({
               <section className={classNames(styles.panel, "p-5")}>
                 <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className={styles.eyebrow}>Request inbox</p>
+                    <p className={styles.eyebrow}><WorkspaceText text="Request inbox" /></p>
                     <h2 className="mt-2 text-xl font-extrabold text-[#211c24]">
-                      Legacy requests
+                      <WorkspaceText text="Legacy requests" />
                     </h2>
                   </div>
                   <p className="text-sm text-[#786d78]">
-                    {requests.length} request{requests.length === 1 ? "" : "s"}
+                    {requests.length} <WorkspaceText text="request" />{requests.length === 1 ? "" : "s"}
                   </p>
                 </div>
                 <RequestsPanel

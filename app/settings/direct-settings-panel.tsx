@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useCallback, useEffect, useState } from "react";
 import {
   loadDirectSettings,
@@ -30,6 +31,8 @@ import "./direct-settings.css";
 import { ShortcutsSettingsPanel } from "./shortcuts-settings-panel";
 
 function OwnPreferences({ salonId }: { salonId: string }) {
+  const __vt = useWorkspaceTranslation();
+
   const [values, setValues] = useState<{
       online: boolean;
       notifications: boolean;
@@ -59,7 +62,7 @@ function OwnPreferences({ salonId }: { salonId: string }) {
   if (!values)
     return (
       <p role={error ? "alert" : "status"} className="text-sm text-zinc-500">
-        {error || "Loading booking preferences…"}
+        <WorkspaceText text={error || "Loading booking preferences…"} />
       </p>
     );
   return (
@@ -83,7 +86,7 @@ function OwnPreferences({ salonId }: { salonId: string }) {
           }}
           onSaved={load}
         >
-          <Check name={preference} label={label} checked={values[preference]} />
+          <Check name={preference} label={__vt(label)} checked={values[preference]} />
         </InlineForm>
       ))}
     </div>
@@ -162,7 +165,7 @@ function Content({
       return (
         <div className="grid gap-3">
           <p className="text-sm text-zinc-500">
-            Access rules are read-only. Manage staff access in Staff & Team.
+            <WorkspaceText text="Access rules are read-only. Manage staff access in Staff & Team." />
           </p>
           {data.catalog.roles.map((role) => (
             <details
@@ -212,13 +215,13 @@ export function DirectSettingsPanel({ kind, salonId, onChanged }: { kind: Direct
     };
   }, [kind, salonId, retry]);
   return (
-    <div className="settings-direct-panel grid gap-4">
+    <div className="settings-style"><div className="settings-direct-panel grid gap-4">
       {error && (
         <div
           role="alert"
           className="rounded-md bg-red-50 p-3 text-sm text-red-800"
         >
-          <p>{error}</p>
+          <p><WorkspaceText text={error} /></p>
           <button
             type="button"
             className={`${buttonClass} mt-2`}
@@ -227,26 +230,21 @@ export function DirectSettingsPanel({ kind, salonId, onChanged }: { kind: Direct
               setRetry((n) => n + 1);
             }}
           >
-            Retry
+            <WorkspaceText text="Retry" />
           </button>
         </div>
       )}
       {data && data.kind === kind && (!salonId || ("salonId" in data && data.salonId === salonId)) ? (
         <>
-          {"salonName" in data && (
-            <p className="text-sm font-medium text-zinc-500">
-              {data.salonName}
-            </p>
-          )}
           <Content data={data} reload={reload} />
         </>
       ) : (
         !error && (
           <p role="status" className="text-sm text-zinc-500">
-            Loading settings…
+            <WorkspaceText text="Loading settings…" />
           </p>
         )
       )}
-    </div>
+    </div></div>
   );
 }

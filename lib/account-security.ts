@@ -642,7 +642,7 @@ export async function loadLoginSecurityOverview(): Promise<LoginSecurityOverview
           currentSessionId,
         }),
       ],
-      smsLoginAlerts: getLoginSmsAlertStatus(),
+      smsLoginAlerts: await getLoginSmsAlertStatus(),
       trustedDevices: [],
     };
   }
@@ -762,7 +762,7 @@ export async function loadLoginSecurityOverview(): Promise<LoginSecurityOverview
     recoveryCodes: recoveryCodeSummary(recoveryCodeRows),
     recoveryRequests: recoveryRequestRows.map(mapRecoveryRequest),
     sessions,
-    smsLoginAlerts: getLoginSmsAlertStatus(),
+    smsLoginAlerts: await getLoginSmsAlertStatus(),
     trustedDevices: trustedDeviceRows.map((row) =>
       mapTrustedDevice(row, currentSessionId),
     ),

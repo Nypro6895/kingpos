@@ -1,0 +1,54 @@
+# Post safety
+
+The post menu is shared by Explore, salon posts and personal Beauty posts. It places reporting alongside the existing owner actions. Reporting asks for a reason and a short “Are you sure?” confirmation with a “Send” button. Success shows “Thank you.” briefly, then closes the dialog. Every reason, including “I don’t want to see this”, creates an admin case and support report. Reports hide only for the reporter. Signed-in hiding is stored in the database and synchronized to the browser; guest hiding is stored in the database using the signed browser identity and synchronized to the browser. Report submission is deduplicated per reporter/post and limited to ten reports per hour. Guest sessions use the server-issued signed device cookie. Hidden posts are removed from Explore cards, salon timelines and galleries, and any open post popup.
+
+Owners can edit captions, archive and delete posts. Image posts can be used for a profile feature. Personal posts copy the photo into the existing profile cover workflow. Salon looks use featured selection; image updates use the salon cover. Promotion is a coming-soon dialog and does not create a campaign or charge anyone.
+
+## Administration
+
+Open `/admin/post-safety`. User reports and automatic moderation have separate tabs. User reports also create cases in the existing support queue. Reviewers can see the caption and images, contact the author through existing communication tools, delete a post, dismiss a user report, allow an automatic hold, or delete and suspend the author. Suspending uses the existing account suspension/session revocation mechanism and requires its existing permission. Decisions record reviewer, time and explanation.
+
+Keyword rules support configurable phrases, categories and an enabled flag. The initial rules cover English and Vietnamese sexual/violence terms. These are screening signals, not proof of a violation. Matching text holds the post for review. Personal posts become self-visible; salon posts become private drafts visible to their author and salon managers. Authors cannot release holds by editing text or changing publication flags. Approval restores the original publication visibility. Rules run on creation and content edits; existing posts are not scanned retroactively. Images are available for human review but are not automatically classified.
+
+Database migrations: `202610070007_post_safety.sql` and `202610070008_abuse_prevention.sql`. Integration coverage exercises reports, permission checks, signed requests, transactional limits, holds, edit bypass attempts, approvals, identity review, challenge binding/replay, and original visibility restoration.
+
+## Spam protection
+
+Open `/admin/post-safety/spam` for a separate activity queue, account/device/network/country restrictions, identity approval, quota controls and decision history. Restrictions require an explanation and expire within 30 days. Review mode holds future posts and comments; allowing one post does not approve the account. Removing a restriction does not automatically release previously held content. Reviewers need `admin.reports.update` to allow or delete held content; account restrictions, identity approval and policy changes require `admin.users.suspend`.
+
+All counters are shared PostgreSQL records updated atomically, including device/network counters across account changes. New accounts (first seven days) start with three posts/hour, ten/day and ten comments/ten minutes. Established accounts start with ten posts/hour, fifty/day and thirty comments/ten minutes. Admin can adjust these limits. Reports are limited to ten/hour. Signups have device/network/email admission limits and server-issued, one-use, email-bound tickets; direct email signup through the public Supabase API cannot bypass admission after activation. Login and password recovery have independent throttles.
+
+The proxy issues a signed HttpOnly device cookie and signs timestamped request context for the database. Only Vercel's trusted forwarding/location headers are used in production; arbitrary client forwarding headers are ignored. IP addresses are stored as keyed hashes, not raw addresses. A device cookie identifies a browser installation, not immutable hardware: clearing cookies resets it, while network limits and new-identity review remain applicable. VPN/proxy changes and shared networks make blanket blocking unreliable. Country is a coarse signal, never a precise location or proof of abuse.
+
+BotID Basic checks social publishing, reports and account creation. Suspect requests must complete `/security-check`: a Vercel WAF challenge plus a short-lived, device/network-bound raster challenge. Challenge answers are never sent as text. Answers expire after five minutes, allow five guesses, and cannot be reused; successful passes last fifteen minutes and do not override posting limits or bans. The configured Vercel plan does not support WAF rate-limit rules, so quotas remain enforced by the application/database and the WAF uses challenge actions. Rate denials are persisted in a separate admission request; repeated violations can produce automatic cooldown/review restrictions.
+
+Normalized text and exact uploaded-image fingerprints detect repeated submissions across accounts. Repeated URLs/phone numbers use a higher threshold because real salons share these details. Image matching uses storage checksums and detects identical files, not visually similar crops or semantic sexual/violent content. Text keywords also screen comments. Automatic findings remain separate from user reports and require human review.
+
+Daily `/api/security/cleanup` runs through Vercel Cron, authenticated with `CRON_SECRET`. Counters/challenges/tickets expire, fingerprints are kept seven days, expired restrictions are removed after thirty days, and older event IP/device hashes are cleared after thirty days. Administrative decisions remain in the audit history.
+
+## Identity verification and rollout
+
+Production currently has no SMTP sender configured. Do not turn off Supabase email auto-confirmation until a real sender is connected; the default sender cannot serve unrestricted customer signup. Until then, fresh email identities are marked for review independently of Supabase auto-confirmation: they can use the application, but their posts/comments are private until reviewed. Existing accounts are grandfathered. An admin can approve an identity after checking the person/business; future safe posts then publish normally. Previously held posts still require individual review.
+
+When SMTP is configured, set Supabase `mailer_autoconfirm=false`, verify the production site/redirect URLs, then call service-only `configure_abuse_email_verification(true)`. Actual email confirmation releases identity review; unconfirmed identities cannot publish. No test or production email is sent merely by deploying these changes.
+
+`ANTISPAM_SIGNING_KEY` must match the value seeded through service-only `configure_abuse_security`. Apply migrations with admission/signature enforcement disabled, seed the key, deploy the matching production app, then enable both flags. Older builds cannot write social content once enforcement is enabled; for rollback, turn enforcement off before promoting an old deployment. Never expose signing/service credentials in browser bundles, logs or documentation.
+
+Further improvements can add perceptual image matching, image/video classifiers and a richer appeal workflow. Current controls reduce spam; they do not guarantee that a persistent actor with new devices and networks can never return.
+
+## Production verification (2026-10-07)
+
+Deployed to https://reylumi.com (Vercel deployment `dpl_HLm5BjneDNjcjcccnzt3HFViFKXs`, READY). Migrations 202610070004/0007/0008 are applied. Signed context and signup ticket enforcement are enabled. WAF challenge rule for `/security-check` is published; BotID Basic is integrated. SMTP readiness remains off and fresh email identities use review.
+
+Validation: 26 relevant tests, lint and production build passed. Live mobile Explore reporting reached the confirmation dialog without JavaScript errors. The challenge API returned a raster image without a text answer and a signed HttpOnly device cookie. Unsigned reports and direct signup were rejected. Cleanup rejected an unauthenticated request and accepted its authorized cron request. Browser challenge verification rejected an incorrect answer with HTTP 400.
+
+
+## Operational review workspace
+
+`/admin/post-safety` and post report detail pages use the same workspace. The queue supports search, status/reason filters, sorting and pagination (200 cases per page). URLs retain the selected case, filters, queue page and the next-after-resolution preference. Previous/Next/Skip navigate without making a moderation decision. A requested case that is missing is never silently replaced with another case.
+
+Current report status, post publication state, reporter-specific hiding, account status and active restrictions are independent facts returned by a permission-checked RPC. User reports do not imply global hiding or account suspension. Related automatic holds remain separate from user report decisions.
+
+Content decisions appear directly below the post evidence. No violation resolves a user report and preserves personal hiding. Approve releases an automatic hold. Delete removes the post and resolves pending reports about the same source. Account-only restrictions keep the case pending and do not advance the queue. All decisions require confirmation and record their reason; stale decisions are rejected by the database.
+
+Original public post links open separately, while held/deleted content is previewed inside admin with signed media URLs. Snapshot, decision history, related cases and restriction expiry use stored facts. The workspace never returns guest keys or full browser hashes. Guest restrictions are signed-cookie browser restrictions, not hardware bans. Restriction links target the actual entry on the Spam protection page for review/revocation. In-app contact uses the existing permission-checked preview/confirm composer.

@@ -1,13 +1,18 @@
 "use client";
+import { handleExploreLogoClick } from "@/lib/explore-entry-navigation";
+import { ExploreHeaderSearchSlot } from "@/app/explore/explore-header-search-slot";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ExploreAdSlot } from "@/components/explore-advertising";
 import advertisingStyles from "./guest-navigation-shell.module.css";
 
 import { LegalFooter } from "@/components/legal-footer";
+import { ExploreSearchInput } from "@/app/explore/explore-search-input";
+import type { ExploreSearchSuggestion } from "@/lib/explore-search-suggestions";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import type { ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
 
 const GUEST_CHROMELESS_PREFIXES = [
   "/pos/customer-display",
@@ -48,15 +53,19 @@ function SearchIcon() {
   );
 }
 
-function ReylumiLogo() {
+function ReylumiLogo({ prefetch }: { prefetch?: boolean } = {}) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <Link
-      aria-label="Reylumi Explore"
+      aria-label={__vt("Reylumi Explore")}
       className="inline-flex min-h-11 shrink-0 items-center rounded-full px-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
       href="/explore"
+      onClick={handleExploreLogoClick}
+      prefetch={prefetch}
     >
       <Image
-        alt="Reylumi"
+        alt={__vt("Reylumi")}
         className="h-auto w-[7rem] max-w-[28vw] object-contain sm:w-[8.25rem]"
         fetchPriority="high"
         height={419}
@@ -67,16 +76,26 @@ function ReylumiLogo() {
   );
 }
 
-export function GuestNavigationShell({ children }: { children: ReactNode }) {
+export function GuestNavigationShell({ children, authenticated = false }: { children: ReactNode; authenticated?: boolean | null }) {
+  const __vt = useWorkspaceTranslation();
+
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const [useCurrentLocation, setUseCurrentLocation] = useState(false);
+  useEffect(() => {
+    const receive = (event: Event) => setUseCurrentLocation(Boolean((event as CustomEvent<{ enabled?: boolean }>).detail.enabled));
+    window.addEventListener("kingpos:explore-location-state", receive);
+    window.dispatchEvent(new CustomEvent("kingpos:explore-request-location-state"));
+    return () => window.removeEventListener("kingpos:explore-location-state", receive);
+  }, []);
 
   if (
     pathname === "/login" ||
     pathname === "/signup" ||
     isGuestChromelessPath(pathname)
   ) {
-    return <>{children}</>;
+    return <><ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" /></>;
   }
 
   const nextPath = sanitizeAuthReturnPath(
@@ -90,6 +109,24 @@ export function GuestNavigationShell({ children }: { children: ReactNode }) {
     pathname === "/explore" || pathname.startsWith("/explore/");
   const isLoginPage = pathname === "/login";
   const isSignupPage = pathname === "/signup";
+  function selectSuggestion(suggestion: ExploreSearchSuggestion) {
+    const category = suggestion.kind === "service" ? suggestion.category : searchParams.get("category") ?? undefined;
+    if (pathname === "/explore" && useCurrentLocation && suggestion.kind !== "area") {
+      window.dispatchEvent(new CustomEvent("kingpos:explore-search-current-location", { detail: {
+        query: suggestion.query, category, target: suggestion.target,
+      } }));
+      return;
+    }
+    const params = new URLSearchParams(pathname === "/explore" ? searchParams.toString() : "");
+    for (const key of ["page", "cursor", "lat", "lng", "latitude", "longitude"]) params.delete(key);
+    params.set("q", suggestion.kind === "area" ? "" : suggestion.query);
+    params.set("type", suggestion.target);
+    if (category) params.set("category", category);
+    if (suggestion.kind === "area" && suggestion.location) {
+      params.set("location", suggestion.location); params.set("scope", "fixed"); params.set("locationSource", "manual");
+    }
+    router.push(`/explore?${params}`);
+  }
 
   return (
     <>
@@ -97,54 +134,78 @@ export function GuestNavigationShell({ children }: { children: ReactNode }) {
         className="sticky top-0 z-[60] border-b border-border-subtle bg-white/95 px-3 py-2 shadow-[0_8px_28px_rgba(35,25,22,0.045)] backdrop-blur sm:px-4"
         data-testid="guest-navigation-shell"
       >
-        <div className="mx-auto flex w-full max-w-[92rem] flex-col gap-2 lg:flex-row lg:items-center">
-          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-            <ReylumiLogo />
-            <form
+        <div className="mx-auto flex w-full max-w-[92rem] flex-col gap-2 sm:flex-row sm:items-center">
+          <div className={`flex min-w-0 flex-1 items-center gap-2 sm:gap-3 ${pathname === "/explore" ? "justify-between" : ""}`}>
+            <ReylumiLogo prefetch={isExploreBrowsePage ? false : undefined} />
+            {pathname === "/explore" ? <ExploreHeaderSearchSlot /> : null}
+            {pathname !== "/explore" ? <form
               action="/explore"
               className="relative min-w-0 flex-1"
               method="get"
               role="search"
+              onSubmit={(event) => {
+                if (pathname !== "/explore" || !useCurrentLocation) return;
+                event.preventDefault();
+                const query = String(new FormData(event.currentTarget).get("q") ?? "");
+                window.dispatchEvent(new CustomEvent("kingpos:explore-search-current-location", { detail: {
+                  query, category: searchParams.get("category") ?? undefined,
+                  target: searchParams.get("type") ?? "auto",
+                } }));
+              }}
             >
+              {pathname === "/explore" ? ["location", "category", "type", "scope", "locationSource"].map(name =>
+                searchParams.has(name) ? <input key={name} type="hidden" name={name} value={searchParams.get(name) ?? ""} /> : null,
+              ) : null}
               <label className="sr-only" htmlFor="guest-global-search">
-                Search salons, services, or locations
+                <WorkspaceText text="Search salons, services, or locations" />
               </label>
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary sm:left-4">
                 <SearchIcon />
               </span>
-              <input
+              <ExploreSearchInput
                 className="h-11 w-full rounded-full border border-border-subtle bg-surface pl-10 pr-3 text-sm font-medium text-text-primary outline-none transition placeholder:font-normal placeholder:text-text-secondary/80 focus:border-brand-orange/50 focus:ring-4 focus:ring-brand-orange/15 sm:pr-24"
                 defaultValue={exploreQuery}
                 id="guest-global-search"
                 key={exploreQuery}
                 name="q"
-                placeholder="Search salons, services, city, or ZIP"
-                type="search"
+                category={searchParams.get("category") ?? undefined}
+                location={searchParams.get("location") ?? undefined}
+                onSuggestionSelect={selectSuggestion}
+                placeholder={__vt("Search salons, cities, or nail ideas")}
               />
               <button
                 className="absolute right-1.5 top-1/2 hidden min-h-8 -translate-y-1/2 items-center justify-center rounded-full bg-brand-black px-4 text-xs font-semibold text-white transition hover:bg-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:inline-flex"
                 type="submit"
               >
-                Search
+                <WorkspaceText text="Search" />
               </button>
-            </form>
-            {isExploreBrowsePage ? (
+            </form> : null}
+            {isExploreBrowsePage && authenticated === false ? (
               <Link
                 className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-brand-orange px-3 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:px-5"
                 href={`/login?next=${encodeURIComponent(nextPath)}`}
+                prefetch={false}
               >
-                Login
+                <WorkspaceText text="Login" />
               </Link>
             ) : null}
           </div>
-          {!isExploreBrowsePage ? (
+          {authenticated === true ? (
+            <Link
+              className="inline-flex min-h-11 shrink-0 items-center justify-center self-end rounded-full border border-border-subtle bg-white px-4 text-sm font-semibold text-text-primary transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:self-auto"
+              href="/account"
+            >
+              <WorkspaceText text="My account" />
+            </Link>
+          ) : null}
+          {!isExploreBrowsePage && authenticated === false ? (
             <div className="flex shrink-0 items-center justify-end gap-2 lg:self-auto">
               {!isLoginPage ? (
                 <Link
                   className="inline-flex min-h-10 items-center justify-center rounded-full border border-border-subtle bg-white px-4 text-sm font-semibold text-text-primary transition hover:border-brand-orange/40 hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
                   href={`/login?next=${encodeURIComponent(nextPath)}`}
                 >
-                  Login
+                  <WorkspaceText text="Login" />
                 </Link>
               ) : null}
               {!isSignupPage ? (
@@ -152,15 +213,15 @@ export function GuestNavigationShell({ children }: { children: ReactNode }) {
                   className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
                   href={`/signup?next=${encodeURIComponent(nextPath)}`}
                 >
-                  Create account
+                  <WorkspaceText text="Create account" />
                 </Link>
               ) : null}
             </div>
           ) : null}
         </div>
       </header>
-      {isExploreBrowsePage ? <div className={advertisingStyles.sidebar}><nav className="mb-3 grid gap-2 rounded-2xl bg-orange-50 p-4 text-sm font-semibold"><Link href="/explore">Explore</Link><Link href="/explore/favorites">Your favorites ♡</Link></nav><ExploreAdSlot desktop /></div> : null}
-      <div className={isExploreBrowsePage ? advertisingStyles.content : undefined}>{children}</div>
+      {isExploreBrowsePage ? <div className={advertisingStyles.sidebar}><nav className="mb-3 grid gap-2 rounded-2xl bg-orange-50 p-4 text-sm font-semibold"><Link href="/explore" prefetch={false}><WorkspaceText text="Explore" /></Link><Link href="/explore/favorites" prefetch={false}><WorkspaceText text="Your favorites ♡" /></Link></nav><ExploreAdSlot desktop /></div> : null}
+      <div className={isExploreBrowsePage ? advertisingStyles.content : undefined}><ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" /></div>
       <LegalFooter />
     </>
   );

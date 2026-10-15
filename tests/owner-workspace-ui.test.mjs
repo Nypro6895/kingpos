@@ -19,6 +19,8 @@ test('Owner POS: isolated draft, one writer, offline submit survives reopen, ret
  createRoot(document.getElementById('runtime')).render(<OwnerQueueRuntime scope="owner:salon:user"/>);
  const ownerRoot=createRoot(document.getElementById('root'));window.closePosPage=()=>ownerRoot.unmount();ownerRoot.render(<OwnerPosClient scope="owner:salon:user" salonId="salon" salonName="Test salon" initial={{staff:[],services:[],today:'2026-09-24',defaults:{staffCheckInEnabled:false,largeTurnThreshold:25,tipSuggestions:[10,15,20,25]}}}/>);`},jsx:'automatic',bundle:true,write:false,platform:'browser',plugins:[{name:'fixture',setup(b){
  b.onResolve({filter:/pos-workspace-sync$/},()=>({path:'refresh',namespace:'fixture'}));
+ b.onResolve({filter:/service-relay\/desk-relay$/},()=>({path:'relay',namespace:'fixture-relay'}));
+ b.onLoad({filter:/.*/,namespace:'fixture-relay'},()=>({loader:'tsx',contents:'export function DeskRelay(){return null;}'}));
  b.onResolve({filter:/\.css$/},()=>({path:'css',namespace:'fixture'}));
  b.onResolve({filter:/^next\/link$/},()=>({path:'link',namespace:'fixture'}));
  b.onResolve({filter:/^\.\/actions$/},args=>args.importer.endsWith('owner-pos-client.tsx')?{path:'actions',namespace:'fixture'}:undefined);
@@ -54,6 +56,8 @@ test('Owner reference layout: pickers, keypad targets, menus and responsive tick
  createRoot(document.getElementById('runtime')).render(<OwnerQueueRuntime scope="owner:salon:user"/>);
  const ownerRoot=createRoot(document.getElementById('root'));window.closePosPage=()=>ownerRoot.unmount();ownerRoot.render(<OwnerPosClient scope="owner:salon:user" salonId="salon" salonName="Test salon" initial={{staff:[{id:'alice',display_name:'Alice',today_status:'working',turns:{queueTurns:1}},{id:'bob',display_name:'Bob',today_status:'working',turns:{queueTurns:2}},...Array.from({length:24},(_,i)=>({id:'employee-'+i,display_name:'Employee '+i+' with a long name',today_status:'working',turns:{queueTurns:i%5,smallTurns:i%3}}))],services:[{id:'manicure',name:'Manicure',base_price:25},{id:'pedicure',name:'Pedicure',base_price:40},...Array.from({length:38},(_,i)=>({id:'service-'+i,name:'Service '+i+' with a long descriptive name',base_price:20+i}))],today:'2026-09-24',defaults:{staffCheckInEnabled:false,largeTurnThreshold:25,tipSuggestions:[10,15,20,25]}}}/>);`},jsx:'automatic',bundle:true,write:false,platform:'browser',plugins:[{name:'fixture',setup(b){
  b.onResolve({filter:/pos-workspace-sync$/},()=>({path:'refresh',namespace:'fixture'}));
+ b.onResolve({filter:/service-relay\/desk-relay$/},()=>({path:'relay',namespace:'fixture-relay'}));
+ b.onLoad({filter:/.*/,namespace:'fixture-relay'},()=>({loader:'tsx',contents:'export function DeskRelay(){return null;}'}));
  b.onResolve({filter:/\.css$/},()=>({path:'css',namespace:'fixture'}));
  b.onResolve({filter:/^next\/link$/},()=>({path:'link',namespace:'fixture'}));
  b.onResolve({filter:/^\.\/actions$/},args=>args.importer.endsWith('owner-pos-client.tsx')?{path:'actions',namespace:'fixture'}:undefined);
@@ -79,12 +83,24 @@ test('Owner reference layout: pickers, keypad targets, menus and responsive tick
  await page.getByRole('button',{name:'Tip',exact:true}).click();await page.getByRole('button',{name:'5',exact:true}).click();assert.equal(await page.locator('dialog[open]').count(),0);assert.equal(await page.getByRole('button',{name:'Tip',exact:true}).getAttribute('aria-pressed'),'true');assert.match(await page.locator('.owner-adjustment-row').innerText(),/Tip.*\$5.00/s);
  await page.getByRole('button',{name:'Discount',exact:true}).click();await page.getByRole('button',{name:'5',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Tip',exact:true}).getAttribute('aria-pressed'),'false');assert.match(await page.locator('.owner-adjustment-row').last().innerText(),/Discount.*-\$5.00/s);assert.match(await page.locator('.owner-mobile-ticket .owner-total').innerText(),/\$90.00/);
  await page.reload();await page.getByRole('button',{name:'Discount',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'Discount',exact:true}).getAttribute('aria-pressed'),'true');await page.getByRole('button',{name:'Edit entry 1',exact:true}).click();assert.equal(await page.locator('[aria-label=Amount]:visible').inputValue(),'50');
- await page.getByRole('button',{name:'More',exact:true}).click();const menus=page.getByRole('dialog',{name:'All menus',exact:true});for(const label of ['Payroll','Staff','Customers','Services','Notifications','My Place','Account Settings'])assert.ok(await menus.getByRole('link',{name:label,exact:false}).count(),label);await menus.getByRole('button',{name:'Close menus'}).click();assert.equal(await page.getByRole('link',{name:'Settings',exact:true}).getAttribute('href'),'/pos/settings');
+ await page.getByRole('button',{name:'More',exact:true}).click();const menus=page.getByRole('region',{name:'More',exact:true});for(const label of ['Payroll','Staff','Customers','Services','My Place','View all settings'])assert.ok(await menus.getByRole('link',{name:label,exact:false}).count(),label);
+ assert.equal(await menus.getByRole('link',{name:'All',exact:true}).getAttribute('href'),'/more');
+ assert.equal(await menus.locator('a[aria-current=page]').getAttribute('href'),'/pos');
+ assert.equal(await page.getByRole('button',{name:'More',exact:true}).locator('svg circle').count(),9);
+ await page.keyboard.press('Escape');assert.equal(await menus.count(),0);assert.equal(await page.getByRole('button',{name:'More',exact:true}).evaluate(e=>e===document.activeElement),true);
+ await page.getByRole('button',{name:'More',exact:true}).click();await page.getByRole('button',{name:'Reset',exact:true}).focus();assert.equal(await menus.count(),0);
+ assert.equal(await page.getByRole('link',{name:'Settings',exact:true}).getAttribute('href'),'/pos/settings');
  assert.ok(await page.locator('.owner-top-nav').evaluate(e=>e.scrollWidth>e.clientWidth));await page.locator('.owner-top-nav').evaluate(e=>e.scrollLeft=e.scrollWidth);assert.ok(await page.locator('.owner-top-nav').evaluate(e=>e.scrollLeft>0));
  for(const [width,height] of [[320,568],[360,640],[390,844],[430,932],[768,900],[820,900],[844,390],[980,600],[1024,768],[1440,900],[1920,1080]]){
    await page.setViewportSize({width,height});await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`No horizontal page overflow at ${width}`);
    assert.equal(await page.locator('.owner-submit button:last-child').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(242, 111, 61)',`Brand orange Submit at ${width}`);
+   assert.equal(await page.locator('.owner-keypad button').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 255, 255)',`White keys at ${width}`);
+   assert.equal(await page.locator('.owner-keypad button[data-key=backspace]').evaluate(e=>getComputedStyle(e).color),'rgb(29, 128, 124)',`Logo teal at ${width}`);
+   await page.locator('.owner-top-nav').evaluate(e=>e.scrollLeft=0);await page.getByRole('button',{name:'More',exact:true}).click();
+   assert.ok(await page.locator('[data-owner-more-popover]').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1&&r.top>=0;}),`More fits ${width}x${height}`);
+   assert.ok(await page.locator('[data-role-more-items]').evaluate(e=>e.scrollHeight>e.clientHeight),`More list scrolls at ${width}`);
+   await page.keyboard.press('Escape');
    assert.equal(await page.getByRole('button',{name:'Services',exact:true}).isVisible(),width<980,`Service picker only on mobile at ${width}`);
    assert.equal(await page.getByRole('button',{name:'Employees',exact:true}).isVisible(),width<980,`Employee picker only on mobile at ${width}`);
    assert.equal(await page.getByRole('button',{name:'Decimal point',exact:true}).count(),0);
@@ -99,7 +115,7 @@ test('Owner reference layout: pickers, keypad targets, menus and responsive tick
  await page.getByRole('button',{name:'Services',exact:true}).click();const servicesDialog=page.getByRole('dialog',{name:'Services',exact:true});await servicesDialog.getByRole('searchbox',{name:'Search services'}).fill('Manicure');assert.equal(await servicesDialog.locator('button[aria-pressed=true]').evaluate(e=>getComputedStyle(e).borderTopColor),'rgb(242, 111, 61)');assert.ok(await servicesDialog.evaluate(e=>e.getBoundingClientRect().bottom<=innerHeight));
  if(process.env.KINGPOS_UI_SCREENSHOT_DIR)await page.screenshot({path:resolve(process.env.KINGPOS_UI_SCREENSHOT_DIR,'owner-services-popup.png')});await servicesDialog.getByRole('button',{name:'Done',exact:true}).click();
  await page.getByRole('button',{name:'Employees',exact:true}).click();const employeesDialog=page.getByRole('dialog',{name:'Employees',exact:true});await employeesDialog.getByRole('searchbox',{name:'Search employees'}).fill('Alice');assert.equal(await employeesDialog.getByRole('button',{name:/Alice/}).count(),1);if(process.env.KINGPOS_UI_SCREENSHOT_DIR)await page.screenshot({path:resolve(process.env.KINGPOS_UI_SCREENSHOT_DIR,'owner-employees-popup.png')});await employeesDialog.getByRole('button',{name:'Done',exact:true}).click();
- await page.getByRole('button',{name:'More',exact:true}).click();if(process.env.KINGPOS_UI_SCREENSHOT_DIR)await page.screenshot({path:resolve(process.env.KINGPOS_UI_SCREENSHOT_DIR,'owner-more-popup.png')});await page.getByRole('button',{name:'Close menus'}).click();
+ await page.getByRole('button',{name:'More',exact:true}).click();if(process.env.KINGPOS_UI_SCREENSHOT_DIR)await page.screenshot({path:resolve(process.env.KINGPOS_UI_SCREENSHOT_DIR,'owner-more-popup.png')});await page.keyboard.press('Escape');
  const originalCart=await page.evaluate(()=>localStorage.getItem('kingpos:owner-cart:v1:owner:salon:user'));
  await page.evaluate(raw=>{const saved=JSON.parse(raw);const first=saved.cart.lines[0];saved.savedAt=Date.now();saved.cart={...saved.cart,amount:'',staffId:null,serviceId:null,lines:[first,...Array.from({length:12},(_,i)=>({...first,id:'long-ticket-'+i,serviceLabel:'Long service '+(i+1)+' with additional details',staffName:'Employee with a long name',amountInput:'10',amountParts:[10],total:10}))]};localStorage.setItem('kingpos:owner-cart:v1:owner:salon:user',JSON.stringify(saved));},originalCart);await page.reload();await page.locator('[aria-label=Amount]:visible').waitFor();
  for(const [width,height] of [[320,568],[390,844],[844,390],[1440,900]]){

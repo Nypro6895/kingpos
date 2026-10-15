@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useState } from "react";
 
 function resolveInviteUrl(value: string) {
@@ -39,12 +40,14 @@ export function CopyInviteLinkButton({ value }: { value: string }) {
       onClick={copyLink}
       type="button"
     >
-      {copied ? "Copied" : "Copy link"}
+      {copied ? "Copied" : <WorkspaceText text="Copy link" />}
     </button>
   );
 }
 
 export function InviteLinkTools({ value }: { value: string }) {
+  const __vt = useWorkspaceTranslation();
+
   const [qrValue, setQrValue] = useState<string | null>(null);
   const showQr = Boolean(qrValue);
 
@@ -59,13 +62,13 @@ export function InviteLinkTools({ value }: { value: string }) {
           }
           type="button"
         >
-          {showQr ? "Hide QR Code" : "Show QR Code"}
+          <WorkspaceText text={showQr ? "Hide QR Code" : "Show QR Code"} />
         </button>
         {qrValue ? (
           <div className="absolute right-0 z-10 mt-2 rounded-lg border border-zinc-200 bg-white p-3 shadow-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              alt="Invite QR code"
+              alt={__vt("Invite QR code")}
               className="size-40"
               height={160}
               src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(

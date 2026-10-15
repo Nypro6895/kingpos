@@ -1,4 +1,5 @@
 import "server-only";
+import type {AdminReportPreview} from "@/lib/admin-report-presentation";
 
 import { callPlatformAdminRpc } from "@/lib/platform-admin/rpc";
 import {
@@ -14,6 +15,7 @@ import type {
   PlatformAdminReportAssignee,
   PlatformAdminReportListItem,
   PlatformAdminReportSubject,
+  PlatformReportStatus,
 } from "@/types/platform-admin";
 
 export type PlatformAdminReportDetail = {
@@ -29,7 +31,7 @@ export type PlatformAdminReportDetail = {
     report_number: string;
     category: string;
     priority: string;
-    status: string;
+    status: PlatformReportStatus;
     summary: string;
     description: string | null;
     source: string;
@@ -75,7 +77,7 @@ export async function searchPlatformAdminReports(input: {
     throw new Error("Invalid assignment filter.");
   }
 
-  return callPlatformAdminRpc<PlatformAdminPageResult<PlatformAdminReportListItem>>(
+  const result = await callPlatformAdminRpc<PlatformAdminPageResult<PlatformAdminReportListItem>>(
     "search_platform_admin_reports",
     {
       p_assigned: assigned,
@@ -86,6 +88,11 @@ export async function searchPlatformAdminReports(input: {
       p_status: status,
     },
   );
+  if(result.items.length){
+    const previews=await callPlatformAdminRpc<Record<string,AdminReportPreview>>("get_admin_report_previews",{p_report_ids:result.items.map(row=>row.id)});
+    result.items=result.items.map(row=>({...row,preview:previews[row.id]??null}));
+  }
+  return result;
 }
 
 export async function getPlatformAdminReportDetail(reportId: string) {

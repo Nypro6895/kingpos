@@ -312,12 +312,23 @@ export async function getCurrentSalonPosDeskData({includeCustomers=true,context:
       );
     });
 
+  // Read the same POS projection used by Portable and subsequent staff refreshes.
+  // The database keeps pending service turns separate from submitted turn parts.
+  const projected = await supabase.rpc("get_owner_workspace_staff", { p_salon: salon.id, p_ids: null });
+  const projectedById = new Map<string, { turns: PosDeskTurnSummary; service_status?: "working" | "ready" }>(
+    (projected.data?.staff ?? []).map((member: PosDeskStaff) => [member.id, member]),
+  );
+  const projectedStaff = staff.map(member => {
+    const current = projectedById.get(member.id);
+    const pending = current?.turns.pendingTurns ?? 0;
+    return current ? { ...member, service_status: current.service_status, turns: { ...member.turns, pendingTurns: pending, queueTurns: member.turns.queueTurns + pending, largeTurns: member.turns.largeTurns + pending, totalTurns: member.turns.totalTurns + pending } } : member;
+  }).sort((a, b) => a.turns.queueTurns - b.turns.queueTurns || (a.check_in_sequence ?? Number.MAX_SAFE_INTEGER) - (b.check_in_sequence ?? Number.MAX_SAFE_INTEGER));
   return {
     context,
     customers: customersResult.data ?? [],
     defaults: getPosDeskDefaults(settingsView),
     services: servicesResult.data ?? [],
-    staff,
+    staff: projectedStaff,
     today,
     totalsPreview: calculateTicketTotals({ items: [] }),
     waitingVisits,

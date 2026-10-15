@@ -1,3 +1,4 @@
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import { NavigationShell } from "@/app/navigation-shell";
 import { GuestNavigationShell } from "@/app/guest-navigation-shell";
 import {
@@ -12,7 +13,7 @@ import {
   isSalonStaffContext,
   type CurrentBusinessContext,
 } from "@/lib/current-context";
-import { hasPermission } from "@/lib/permissions";
+import { hasPermissionForRender } from "@/lib/permissions";
 import { routes } from "@/lib/routes";
 import { SHOW_ROLE_PERMISSION_CATALOGS } from "@/lib/role-catalog-visibility";
 import { Suspense } from "react";
@@ -43,7 +44,7 @@ async function can(
     return true;
   }
 
-  return hasPermission(code, context);
+  return hasPermissionForRender(code, context);
 }
 
 function salonOption(salon: { id: string; name: string }) {
@@ -134,11 +135,13 @@ function buildAccountNavigation(context: CurrentBusinessContext) {
 }
 
 async function PendingNotificationSummary({context}:{context:CurrentBusinessContext}) {
+  const __vt = await getWorkspaceTranslation();
+
   let summary: Awaited<ReturnType<typeof getWorkspacePendingSummary>>;
   try {
     summary=await getWorkspacePendingSummary(context);
   } catch { return null; }
-  return <WorkspaceSummarySeed summary={summary} scope={`${context.user?.id}:${context.currentWorkspace?.id ?? "personal"}`}/>;
+  return <WorkspaceSummarySeed summary={__vt(summary)} scope={`${context.user?.id}:${context.currentWorkspace?.id ?? "personal"}`}/>;
 }
 
 export async function SalonSwitcher({

@@ -4,12 +4,23 @@ import fs from "node:fs";
 import ts from "typescript";
 const output = ts.transpileModule(
   fs.readFileSync("lib/explore-advertising-rules.ts", "utf8"),
-  { compilerOptions: { module: ts.ModuleKind.ESNext } },
+  {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2020,
+    },
+  },
 ).outputText;
-const { parseCampaign, campaignActive, chooseCampaign, safeCampaignUrl } =
-  await import(
-    "data:text/javascript;base64," + Buffer.from(output).toString("base64")
-  );
+const {
+  parseCampaign,
+  campaignActive,
+  chooseCampaign,
+  safeCampaignUrl,
+  campaignMatches,
+  shuffleCampaigns,
+} = await import(
+  "data:text/javascript;base64," + Buffer.from(output).toString("base64")
+);
 function form(overrides = {}) {
   const data = new FormData();
   for (const [key, value] of Object.entries({
@@ -109,4 +120,28 @@ test("validation identifies every invalid field", () => {
         error.fields.href && error.fields.delaySeconds && error.fields.endsAt,
       ),
   );
+});
+test("targeting matches multiple pages, workspace roles and devices", () => {
+  const c = parseCampaign(
+    form({
+      locations: "/staff,/bookings",
+      audiences: "staff,owner",
+      devices: "mobile",
+      placements: "page-top,page-bottom",
+      popupTrigger: "scroll",
+      scrollPercent: "40",
+    }),
+  );
+  assert.equal(campaignMatches(c, "/staff/my-work", "staff", "mobile"), true);
+  assert.equal(campaignMatches(c, "/bookings", "owner", "mobile"), true);
+  assert.equal(campaignMatches(c, "/staffish", "staff", "mobile"), false);
+  assert.equal(campaignMatches(c, "/staff", "guest", "mobile"), false);
+  assert.equal(campaignMatches(c, "/staff", "staff", "desktop"), false);
+  assert.throws(() =>
+    parseCampaign(form({ audiences: "", locations: "https://example.com" })),
+  );
+  const original = ["a", "b", "c"];
+  const shuffled = shuffleCampaigns(original, () => 0);
+  assert.equal(new Set(shuffled).size, 3);
+  assert.deepEqual(original, ["a", "b", "c"]);
 });

@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "coordinated-integration-20261015",
+  "status": "working",
+  "summary": "Audit all worktrees and historical handoffs; integrate completed changes with exact live web and uploaded native sources, validate and release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [],
+  "source": {
+    "snapshot": "artifacts/coordinated-release-20261015"
+  },
+  "validation": [
+    {
+      "name": "Source discovery and integration",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [
+    "whole-site-progressive-cache",
+    "project-release-coordination"
+  ],
+  "id": "644c6fb4-6e7f-4ba7-8e09-bcc03bf2c844",
+  "recordedAt": "2026-10-15T00:44:00.560Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

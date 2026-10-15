@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
 import {
   getCustomerActivity,
@@ -269,7 +270,7 @@ function EmptyState() {
   );
 }
 
-export default async function ActivityPage() {
+async function ActivityPage() {
   const result = await getCustomerActivity({ limit: 100 });
 
   if (!result.ok && result.code === "sign_in_required") {
@@ -306,3 +307,5 @@ export default async function ActivityPage() {
     </main>
   );
 }
+
+export default withExperiencePage(ActivityPage);

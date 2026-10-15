@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import type { PendingOwnerTransferInvite } from "@/lib/owner-transfer";
 import { respondOwnerInvite } from "./owner-invite-actions";
 import { useRef, useState, useTransition } from "react";
@@ -66,6 +67,8 @@ export function MyPlaceClient({
   ownerInvites,
   ownerInvitesError,
 }: Props) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState<{
@@ -128,7 +131,6 @@ export function MyPlaceClient({
         if (!result.ok) setNotice({ text: result.message, error: true });
         else {
           router.push(result.href);
-          router.refresh();
         }
       } catch {
         setNotice({
@@ -165,7 +167,7 @@ export function MyPlaceClient({
     return items.length ? (
       <details open className="border-t border-[#f1ebe6] px-4 py-2 sm:px-5">
         <summary className="cursor-pointer py-1 text-xs font-semibold text-[#ad542d]">
-          Requests & invitations ({items.length})
+          <WorkspaceText text="Requests & invitations (" />{items.length})
         </summary>
         <div className="divide-y divide-[#f1ebe6]">
           {items.map((r) => (
@@ -207,12 +209,12 @@ export function MyPlaceClient({
           <div className="min-w-0 flex-1 basis-36">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="break-words text-sm font-bold text-[#302a28]">
-                {workspace.label}
+                <WorkspaceText text={workspace.label} />
               </h3>
               {currentWorkspace?.id === workspace.id ? <CurrentBadge /> : null}
             </div>
             <p className="mt-1 text-xs text-zinc-500">
-              {workspace.roleLabel}
+              <WorkspaceText text={workspace.roleLabel} />
               {shortAddress ? ` · ${shortAddress}` : ""}
             </p>
           </div>
@@ -223,7 +225,7 @@ export function MyPlaceClient({
                   type="button"
                   role="switch"
                   aria-checked={active}
-                  aria-label={`Salon activity for ${workspace.label}`}
+                  aria-label={__vt(`Salon activity for ${workspace.label}`)}
                   disabled={busy}
                   onClick={() => setPanel({ type: "activity", workspace })}
                   className="mr-2 inline-flex min-h-10 items-center gap-2 text-xs font-semibold text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f26f3d]"
@@ -234,15 +236,15 @@ export function MyPlaceClient({
                   >
                     <span className="h-4 w-4 rounded-full bg-white shadow-sm" />
                   </span>
-                  {active ? "Active" : "Temporarily paused"}
+                  <WorkspaceText text={active ? "Active" : "Temporarily paused"} />
                 </button>
               ) : (
                 <span className="mr-2 text-xs font-medium text-zinc-500">
-                  {closed
+                  <WorkspaceText text={closed
                     ? "Permanently closed"
                     : active
                       ? "Active"
-                      : "Temporarily paused"}
+                      : "Temporarily paused"} />
                 </span>
               )
             ) : null}
@@ -251,7 +253,7 @@ export function MyPlaceClient({
               disabled={busy}
               onClick={() => setPanel({ type: "salon", workspace })}
             >
-              Details
+              <WorkspaceText text="Details" />
             </button>
             {workspace.primaryAction ? (
               <button
@@ -259,13 +261,13 @@ export function MyPlaceClient({
                 disabled={busy}
                 onClick={() => run(workspace, workspace.primaryAction!)}
               >
-                {pendingId === workspace.id ? "Opening…" : "Open workspace"}
+                <WorkspaceText text={pendingId === workspace.id ? "Opening…" : "Open workspace"} />
               </button>
             ) : null}
           </div>
         </div>
         <nav
-          aria-label={`Shortcuts for ${workspace.label}`}
+          aria-label={__vt(`Shortcuts for ${workspace.label}`)}
           className="mt-1 flex flex-wrap items-center gap-x-4 sm:pl-14"
         >
           {managing && workspace.roleCode === "OWNER" ? (
@@ -273,25 +275,25 @@ export function MyPlaceClient({
               href="/pos/portable"
               prefetch={false}
               className={textLink}
-              title="Open Portable using your salon?s Portable ID and access code"
+              title={__vt("Open Portable using your salon?s Portable ID and access code")}
             >
-              Portable
+              <WorkspaceText text="Portable" />
             </Link>
           ) : null}
           {links.slice(0, 3).map((link) => (
             <a key={link.label} className={textLink} href={link.href}>
-              {link.label}
+              <WorkspaceText text={link.label} />
             </a>
           ))}
           {links.length > 3 ? (
             <details className="group">
               <summary className={`${textLink} cursor-pointer`}>
-                More settings
+                <WorkspaceText text="More settings" />
               </summary>
               <div className="flex flex-wrap gap-x-4">
                 {links.slice(3).map((link) => (
                   <a key={link.label} className={textLink} href={link.href}>
-                    {link.label}
+                    <WorkspaceText text={link.label} />
                   </a>
                 ))}
               </div>
@@ -304,25 +306,25 @@ export function MyPlaceClient({
 
   return (
     <main className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-5 sm:px-6 lg:px-8">
-      <header className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-        <h1 className="text-xl font-bold tracking-tight text-[#302a28]">
-          My Place
+      <header className="flex min-w-0 items-center justify-between gap-3">
+        <h1 className="shrink-0 text-lg font-bold tracking-tight text-[#302a28] sm:text-xl">
+          <WorkspaceText text="My Place" />
         </h1>
-        <div className="relative w-full sm:max-w-xs">
+        <div className="relative min-w-0 flex-1 sm:max-w-xs">
           <input
-            aria-label="Search My Place"
+            aria-label={__vt("Search My Place")}
             className={`${inputClass} pr-16`}
-            placeholder="Search your places…"
+            placeholder={__vt("Search your places…")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           {query ? (
             <button
-              aria-label="Clear search"
+              aria-label={__vt("Clear search")}
               className="absolute inset-y-0 right-3 text-xs font-semibold text-zinc-600"
               onClick={() => setQuery("")}
             >
-              Clear
+              <WorkspaceText text="Clear" />
             </button>
           ) : null}
         </div>
@@ -336,18 +338,18 @@ export function MyPlaceClient({
           timeZone: "UTC",
         })}
       />
-      {notice?.error ? <QueryErrorDialog key={notice.text} message={notice.text} title="Could not complete this action" primaryLabel="Got it" /> : notice ? <Notice>{notice.text}</Notice> : null}
+      {notice?.error ? <QueryErrorDialog key={notice.text} message={notice.text} title={__vt("Could not complete this action")} primaryLabel="Got it" /> : notice ? <Notice><WorkspaceText text={notice.text} /></Notice> : null}
       {!requests.ok ? (
         <Notice error>
-          Requests could not be loaded. {requests.message}{" "}
+          <WorkspaceText text="Requests could not be loaded." /> <WorkspaceText text={requests.message} />{" "}
           <button className="ml-2 underline" onClick={() => router.refresh()}>
-            Retry
+            <WorkspaceText text="Retry" />
           </button>
         </Notice>
       ) : null}
 
       <Section
-        title="Staff"
+        title={__vt("Staff")}
         count={staff.length}
         action={
           <div className="flex items-center gap-4">
@@ -355,7 +357,7 @@ export function MyPlaceClient({
               className={button}
               onClick={() => setPanel({ type: "apply" })}
             >
-              Find a salon
+              <WorkspaceText text="Find a salon" />
             </button>
           </div>
         }
@@ -364,16 +366,16 @@ export function MyPlaceClient({
           <div className="divide-y divide-[#f1ebe6]">{staff.map(salonRow)}</div>
         ) : (
           <p className="px-5 py-3 text-sm text-zinc-500">
-            {normalized
+            <WorkspaceText text={normalized
               ? "No matching staff workplaces."
-              : "Not working at a salon yet? Find a salon to apply."}
+              : "Not working at a salon yet? Find a salon to apply."} />
           </p>
         )}
         {requestRows(staffRequests)}
         {historyRequests.length ? (
           <details className="border-t border-[#f1ebe6] px-5 py-2">
             <summary className={`${textLink} cursor-pointer`}>
-              Connection history ({historyRequests.length})
+              <WorkspaceText text="Connection history (" />{historyRequests.length})
             </summary>
             {historyRequests.map((r) => (
               <RequestRow
@@ -389,7 +391,7 @@ export function MyPlaceClient({
       </Section>
 
       <Section
-        title="Salon / Business"
+        title={__vt("Businesses")}
         count={owners.length + ownerInvites.length}
         action={
           createAccounts.length ? (
@@ -397,37 +399,26 @@ export function MyPlaceClient({
               className={button}
               onClick={() => setPanel({ type: "create" })}
             >
-              ＋ Create salon
+              <WorkspaceText text="＋ Create salon" />
             </button>
           ) : null
         }
       >
         {owners.length ? (
-          [...new Set(owners.map((w) => w.accountId))].map((accountId) => (
-            <div key={accountId ?? "salons"}>
-              {accounts.length > 1 ? (
-                <p className="bg-[#fcfaf8] px-5 py-1.5 text-xs font-semibold text-zinc-500">
-                  {owners.find((w) => w.accountId === accountId)?.accountName}
-                </p>
-              ) : null}
-              <div className="divide-y divide-[#f1ebe6]">
-                {owners.filter((w) => w.accountId === accountId).map(salonRow)}
-              </div>
-            </div>
-          ))
+          <div className="divide-y divide-[#f1ebe6]">{owners.map(salonRow)}</div>
         ) : (
           <p className="px-5 py-3 text-sm text-zinc-500">
-            {normalized
+            <WorkspaceText text={normalized
               ? "No matching salons."
-              : "Your owned and managed salons will appear here."}
+              : "Your owned and managed salons will appear here."} />
           </p>
         )}
-        {ownerInvitesError ? <Notice error>{ownerInvitesError} <button type="button" className="ml-2 underline" onClick={() => router.refresh()}>Retry</button></Notice> : null}
+        {ownerInvitesError ? <Notice error><WorkspaceText text={ownerInvitesError} /> <button type="button" className="ml-2 underline" onClick={() => router.refresh()}><WorkspaceText text="Retry" /></button></Notice> : null}
         {ownerInvites.filter((invite) => !normalized || normalizeSearchText(invite.salonName).includes(normalized)).map((invite) => (
           <div key={invite.id} className="border-t border-[#f1ebe6] px-5 py-4">
             <p className="text-sm font-semibold">{invite.salonName}</p>
-            <p className="mt-1 text-sm text-zinc-500">{invite.mode === "transfer_ownership" ? "Ownership transfer · Needs acceptance" : "Co-owner invitation · Needs acceptance"}</p>
-            {invite.message ? <p className="mt-1 text-sm">{invite.message}</p> : null}
+            <p className="mt-1 text-sm text-zinc-500"><WorkspaceText text={invite.mode === "transfer_ownership" ? "Ownership transfer · Needs acceptance" : "Co-owner invitation · Needs acceptance"} /></p>
+            {invite.message ? <p className="mt-1 text-sm"><WorkspaceText text={invite.message} /></p> : null}
             <div className="mt-3 flex gap-2">
               {(["accept", "ignore"] as const).map((response) => (
                 <button key={response} className={response === "accept" ? primaryButton : button} disabled={busy} onClick={() => {
@@ -440,7 +431,7 @@ export function MyPlaceClient({
                       else complete(response === "accept" ? "Owner invitation accepted." : "Owner invitation ignored.");
                     } finally { lock.current = false; }
                   });
-                }}>{response === "accept" ? "Accept" : "Ignore"}</button>
+                }}><WorkspaceText text={response === "accept" ? "Accept" : "Ignore"} /></button>
               ))}
             </div>
           </div>
@@ -449,7 +440,7 @@ export function MyPlaceClient({
         {accounts.length ? (
           <details className="border-t border-[#f1ebe6] px-5 py-2">
             <summary className={`${textLink} cursor-pointer`}>
-              Business accounts & access
+              <WorkspaceText text="Shared access & invitations" />
             </summary>
             <div className="divide-y divide-[#f1ebe6]">
               {accounts.filter(matches).map((w) => (

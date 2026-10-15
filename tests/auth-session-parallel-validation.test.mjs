@@ -22,6 +22,9 @@ function session({ status = "active", revoked = false, queryError = false, delet
     rpc: async () => ({ data: deleted, error: null }),
   };
   const dependencies = {
+    "@/lib/abuse-context": { safetyRequestHeaders: async () => ({}) },
+    "./session-policy": {},
+    "./auth-rest": { supabaseDeadlineFetch() {}, assertAuthAvailable() {}, AuthAvailabilityError: class extends Error {} },
     "@supabase/supabase-js": { createClient: () => client },
     "@/lib/account-security-shared": { ACCOUNT_LOGIN_SESSION_COOKIE: "login", isAccountLoginSessionId: () => true },
     "@/lib/users/account-status": { isDeniedKingUserStatus: value => ["suspended", "deleted"].includes(value) },

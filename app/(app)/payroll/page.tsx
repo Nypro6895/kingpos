@@ -1,3 +1,16 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { isOwnerMembership } from "@/lib/current-context";
+import { taxCompanySettings } from "@/lib/tax-company";
+import { PayrollDisclosure } from "@/app/payroll/payroll-disclosure";
+import { PayrollEditBoundary, PayrollOutputGuard } from "@/app/payroll/payroll-edit-boundary";
+import styles from "@/app/payroll/payroll-mobile.module.css";
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
+import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
+import { ContextualSupport } from "@/components/contextual-support";
+import { DataDownloadPanel } from "@/app/payroll/data-download-panel";
+import { payrollDataPluginInstalled } from "@/lib/market-plugins";
+import { SubmitButton } from "@/components/submit-button";
+import { PayrollFilterToolbar } from "@/app/payroll/payroll-filter-toolbar";
 import {
   markLatestPayrollStatementPaidAction,
   savePayrollStatementAction,
@@ -7,10 +20,6 @@ import { PayrollScheduleForm } from "@/app/payroll/payroll-schedule-form";
 import { StaffIncomeAutosaveInputs } from "@/app/payroll/staff-income-autosave-inputs";
 import { ShopIncomeDailyTable } from "@/app/payroll/shop-income-daily-table";
 import { StaffPayrollSettingInlineEdit } from "@/app/payroll/staff-payroll-setting-inline-edit";
-import {
-  TaxCompanyCalculationGuide,
-  TaxCompanyLinesTable,
-} from "@/app/payroll/tax-company-table";
 import {
   DismissPayrollMismatchButton,
   MarkPaidButton,
@@ -57,7 +66,7 @@ type PayrollPageProps = {
   }>;
 };
 
-type PayrollTab = "overview" | "staff" | "shop" | "tax" | "settings";
+type PayrollTab = "overview" | "staff" | "shop" | "tax" | "settings" | "tools" | "download";
 
 const TABS: Array<{ id: PayrollTab; label: string }> = [
   { id: "overview", label: "Overview" },
@@ -215,7 +224,7 @@ function getActiveTab(value: string | undefined, canViewAllPayroll: boolean): Pa
     return "staff";
   }
 
-  if (canViewAllPayroll && (value === "shop" || value === "tax" || value === "settings")) {
+  if (canViewAllPayroll && (value === "shop" || value === "tax" || value === "settings" || value === "tools" || value === "download")) {
     return value;
   }
 
@@ -252,6 +261,7 @@ function getPayrollHref(input: {
 function getTaxCompanyHref(period: PayrollPeriod) {
   const params = new URLSearchParams({
     preset: period.preset,
+    report: "1",
   });
 
   if (period.preset === "custom") {
@@ -540,22 +550,6 @@ function getSettingsEditHref(period: PayrollPeriod, staffId: string) {
   return `/payroll?${href.toString()}`;
 }
 
-function statusBadgeClass(kind: string) {
-  if (kind === "paid") {
-    return "border-sky-200 bg-sky-50 text-sky-700";
-  }
-
-  if (kind === "changed_since_print") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
-  }
-
-  if (kind === "printed") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  return "border-zinc-200 bg-zinc-50 text-zinc-700";
-}
-
 function taxLineRateLabel(line: PayrollStaffLineWithDailyTotals) {
   if (line.is_mixed_rate && line.tax_withheld !== 0) {
     return "Mixed rate";
@@ -589,46 +583,14 @@ function CompactPayoutLabel({
 }) {
   return (
     <span className="whitespace-nowrap text-[11px] font-medium text-zinc-500">
-      {formatPayoutMethod(method)}
+      <WorkspaceText text={formatPayoutMethod(method)} />
       {taxed ? (
         <>
           {" \u00b7 "}
-          Tax
+          <WorkspaceText text="Tax" />
         </>
       ) : null}
     </span>
-  );
-}
-
-function LedgerLine({
-  children,
-  emphasis = "normal",
-  label,
-  width = "wide",
-}: {
-  children: ReactNode;
-  emphasis?: "normal" | "strong" | "total";
-  label: string;
-  width?: "short" | "wide";
-}) {
-  const valueClass =
-    emphasis === "strong"
-      ? "text-sm font-semibold text-zinc-950"
-      : emphasis === "total"
-        ? "text-[13px] font-semibold text-zinc-900"
-        : "font-medium text-zinc-800";
-  const gridClass =
-    width === "short"
-      ? "grid-cols-[54px_100px]"
-      : "grid-cols-[82px_100px]";
-
-  return (
-    <div className={`grid ${gridClass} items-baseline gap-2`}>
-      <dt className="text-zinc-500">{label}:</dt>
-      <dd className={`min-w-0 text-right tabular-nums ${valueClass}`}>
-        {children}
-      </dd>
-    </div>
   );
 }
 
@@ -769,43 +731,13 @@ function HiddenPeriodFields({
   );
 }
 
-function ShopIncomeCard({
-  label,
-  subLines,
-  tone = "default",
-  value,
-}: {
-  label: string;
-  subLines: Array<{ label: string; value: string }>;
-  tone?: "default" | "warning";
-  value: string;
+function ShopIncomeCard({ label, subLines, tone = "default", value }: {
+  label: string; subLines: Array<{ label: string; value: string }>; tone?: "default" | "warning"; value: string;
 }) {
-  return (
-    <div
-      className={`rounded-lg border bg-white p-4 shadow-sm ${
-        tone === "warning" ? "border-rose-200" : "border-zinc-200"
-      }`}
-    >
-      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-        {label}
-      </p>
-      <p
-        className={`mt-2 text-2xl font-semibold ${
-          tone === "warning" ? "text-rose-700" : "text-zinc-950"
-        }`}
-      >
-        {value}
-      </p>
-      <dl className="mt-3 grid gap-1 text-sm text-zinc-600">
-        {subLines.map((line) => (
-          <div className="flex items-center justify-between gap-3" key={line.label}>
-            <dt>{line.label}</dt>
-            <dd className="font-medium text-zinc-800">{line.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
-  );
+  return <PayrollDisclosure className={styles.staffCard} summary={<div className={styles.staffSummary}><strong><WorkspaceText text={label} /></strong><strong className={tone === "warning" ? "text-rose-700" : ""}><WorkspaceText text={value} /></strong></div>}>
+    <div className="p-4"><div className={styles.desktopOnly}><p className="text-xs font-medium uppercase tracking-wide text-zinc-500"><WorkspaceText text={label} /></p><p className={`mt-2 text-2xl font-semibold ${tone === "warning" ? "text-rose-700" : "text-zinc-950"}`}><WorkspaceText text={value} /></p></div>
+    <dl className="grid gap-2 text-sm text-zinc-600 lg:mt-3">{subLines.map(line=><div className="flex items-center justify-between gap-3" key={line.label}><dt><WorkspaceText text={line.label} /></dt><dd className="font-medium text-zinc-800">{line.value}</dd></div>)}</dl></div>
+  </PayrollDisclosure>;
 }
 
 function monthInputFromPeriod(period: PayrollPeriod) {
@@ -816,10 +748,10 @@ function NoPermissionState({ message }: { message: string }) {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-10">
       <p className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-        {message}
+        <WorkspaceText text={message} />
       </p>
       <Link className="text-sm font-medium text-zinc-700 underline" href="/">
-        Back to dashboard
+        <WorkspaceText text="Back to dashboard" />
       </Link>
     </main>
   );
@@ -842,7 +774,8 @@ function PeriodSelector({
   const missingBiweeklyAnchor = scheduleSetup.needsBiweeklyAnchor;
 
   return (
-    <section className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <div className="min-w-0 space-y-2">
+    <PayrollFilterToolbar summary={<WorkspaceElement as="p" className="truncate" title={period.label}><WorkspaceText text={period.label} /></WorkspaceElement>} periodLabel={period.label} active={period.preset === "custom"}>
       <form
         action="/payroll"
         className="flex flex-wrap items-end gap-3"
@@ -850,7 +783,7 @@ function PeriodSelector({
         <input name="tab" type="hidden" value={activeTab} />
         {scheduleCycle === "monthly" ? (
           <label className="flex min-w-48 flex-col gap-1 text-sm font-medium text-zinc-700">
-            Month
+            <WorkspaceText text="Month" />
             <input
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
               defaultValue={monthInputFromPeriod(period)}
@@ -862,7 +795,7 @@ function PeriodSelector({
         {scheduleCycle === "semi_monthly" ? (
           <>
             <label className="flex min-w-48 flex-col gap-1 text-sm font-medium text-zinc-700">
-              Month
+              <WorkspaceText text="Month" />
               <input
                 className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
                 defaultValue={monthInputFromPeriod(period)}
@@ -871,7 +804,7 @@ function PeriodSelector({
               />
             </label>
             <label className="flex min-w-64 flex-col gap-1 text-sm font-medium text-zinc-700">
-              Period
+              <WorkspaceText text="Period" />
               <select
                 className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
                 defaultValue={
@@ -886,8 +819,8 @@ function PeriodSelector({
           </>
         ) : null}
         {scheduleCycle === "biweekly" ? (
-          <label className="flex min-w-72 flex-col gap-1 text-sm font-medium text-zinc-700">
-            Pay period
+          <label className="flex min-w-0 w-full sm:w-72 flex-col gap-1 text-sm font-medium text-zinc-700">
+            <WorkspaceText text="Pay period" />
             <select
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
               disabled={missingBiweeklyAnchor}
@@ -895,11 +828,11 @@ function PeriodSelector({
               defaultValue={period.startDate}
             >
               {missingBiweeklyAnchor ? (
-                <option value="">Set anchor in Settings</option>
+                <option value=""><WorkspaceText text="Set anchor in Settings" /></option>
               ) : (
                 periodOptions.map((option) => (
                   <option key={option.value} value={option.startDate}>
-                    {option.label}
+                    <WorkspaceText text={option.label} />
                   </option>
                 ))
               )}
@@ -907,23 +840,19 @@ function PeriodSelector({
           </label>
         ) : null}
         <button className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
-          Apply
+          <WorkspaceText text="Apply" />
         </button>
       </form>
-      {missingBiweeklyAnchor ? (
-        <p className="text-sm text-amber-700">
-          Every-2-weeks payroll needs an anchor date. Update it in Settings.
-        </p>
-      ) : null}
+
       <details>
         <summary className="cursor-pointer text-sm font-medium text-zinc-600">
-          Advanced custom range
+          <WorkspaceText text="Advanced custom range" />
         </summary>
         <form action="/payroll" className="mt-3 flex flex-wrap items-end gap-3">
           <input name="tab" type="hidden" value={activeTab} />
           <input name="preset" type="hidden" value="custom" />
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
-            Start
+            <WorkspaceText text="Start" />
             <input
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
               defaultValue={period.startDate}
@@ -932,7 +861,7 @@ function PeriodSelector({
             />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
-            End
+            <WorkspaceText text="End" />
             <input
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm"
               defaultValue={period.endDate}
@@ -941,48 +870,48 @@ function PeriodSelector({
             />
           </label>
           <button className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">
-            Apply Custom
+            <WorkspaceText text="Apply Custom" />
           </button>
         </form>
       </details>
-    </section>
+    </PayrollFilterToolbar>
+      {missingBiweeklyAnchor ? (
+        <p className="text-sm text-amber-700">
+          <WorkspaceText text="Every-2-weeks payroll needs an anchor date. Update it in Settings." />
+        </p>
+      ) : null}
+    </div>
   );
 }
 
-function TopActions({
+function StatementActions({
   canManage,
+  hasData,
   hasLiveDifference,
   latestStatement,
   period,
   returnPath,
 }: {
   canManage: boolean;
+  hasData: boolean;
   hasLiveDifference: boolean;
   latestStatement: Awaited<ReturnType<typeof getPayrollPageData>>["latestStatement"];
   period: PayrollPeriod;
   returnPath: string;
 }) {
-  const canMarkPaid = Boolean(latestStatement && latestStatement.run.status !== "paid");
+  const canMarkPaid = Boolean(latestStatement && latestStatement.run.status !== "paid" && !hasLiveDifference);
 
   return (
     <div className="flex flex-wrap gap-2">
+      {latestStatement ? <p className="basis-full text-xs text-zinc-500"><WorkspaceText text="Statement v" />{latestStatement.run.version} · {latestStatement.run.status === "paid" ? <WorkspaceText text="Paid" /> : hasLiveDifference ? "Changes need saving" : <WorkspaceText text="Saved" />}</p> : null}
       <form action={savePayrollStatementAction}>
         <HiddenPeriodFields period={period} returnPath={returnPath} />
-        <button
-          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-          disabled={!canManage}
-        >
-          Print / Save Statement
-        </button>
+        <SubmitButton pendingLabel="Saving statement…"
+          className="min-h-11 rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
+          disabled={!canManage || !hasData || Boolean(latestStatement && !hasLiveDifference)}>
+          <WorkspaceText text="Save Statement" />
+        </SubmitButton>
       </form>
-      <button
-        className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-500 disabled:cursor-not-allowed disabled:bg-zinc-50"
-        disabled
-        title="Export is not implemented yet."
-        type="button"
-      >
-        Export
-      </button>
       <form action={markLatestPayrollStatementPaidAction}>
         <HiddenPeriodFields period={period} returnPath={returnPath} />
         <input
@@ -998,47 +927,24 @@ function TopActions({
       </form>
       {latestStatement && latestStatement.run.status !== "paid" && hasLiveDifference ? (
         <p className="basis-full text-xs font-medium text-amber-700">
-          Review differences or print a new statement before marking paid.
+          <WorkspaceText text="Review differences and save a new statement before marking paid." />
         </p>
       ) : null}
     </div>
   );
 }
 
-function Tabs({
-  activeTab,
-  canViewAllPayroll,
-  period,
-}: {
-  activeTab: PayrollTab;
-  canViewAllPayroll: boolean;
-  period: PayrollPeriod;
+function Tabs({ activeTab, canViewAllPayroll, period }: {
+  activeTab: PayrollTab; canViewAllPayroll: boolean; period: PayrollPeriod;
 }) {
-  const visibleTabs = canViewAllPayroll
-    ? TABS
-    : TABS.filter((tab) => tab.id === "overview" || tab.id === "staff");
-
-  return (
-    <nav className="flex flex-wrap gap-2 border-b border-zinc-200">
-      {visibleTabs.map((tab) => {
-        const active = tab.id === activeTab;
-
-        return (
-          <Link
-            className={`border-b-2 px-3 py-2 text-sm font-medium ${
-              active
-                ? "border-zinc-950 text-zinc-950"
-                : "border-transparent text-zinc-500 hover:text-zinc-950"
-            }`}
-            href={getPayrollHref({ period, tab: tab.id })}
-            key={tab.id}
-          >
-            {tab.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
+  const desktopTabs = canViewAllPayroll ? [...TABS, { id: "tools" as const, label: "Tools" }] : TABS.filter(tab => tab.id === "overview" || tab.id === "staff");
+  const mobileTabs: { id: PayrollTab; label: string }[] = canViewAllPayroll
+    ? [{ id: "overview", label: "Overview" }, { id: "staff", label: "Staff" }, { id: "shop", label: "Shop" }, { id: "tools", label: "Tools" }]
+    : [{ id: "overview", label: "Overview" }, { id: "staff", label: "Staff" }];
+  return <>
+    <nav className={styles.mobileNav} aria-label="Payroll sections">{mobileTabs.map(tab => <Link key={tab.id} href={getPayrollHref({ period, tab: tab.id })} aria-current={activeTab === tab.id || tab.id === "tools" && ["tax", "settings", "download"].includes(activeTab) ? "page" : undefined}><WorkspaceText text={tab.label} /></Link>)}</nav>
+    <div className={styles.desktopNav}><div className="flex min-w-0 items-center gap-3"><nav aria-label="Payroll sections" className="flex min-w-0 flex-1 flex-wrap gap-1 border-b border-zinc-200">{desktopTabs.map(tab => <Link key={tab.id} href={getPayrollHref({ period, tab: tab.id })} aria-current={activeTab === tab.id ? "page" : undefined} className={`border-b-2 px-3 py-2 text-sm font-medium ${activeTab === tab.id ? "border-zinc-950 text-zinc-950" : "border-transparent text-zinc-500"}`}><WorkspaceText text={tab.label} /></Link>)}</nav><ContextualSupport /></div></div>
+  </>;
 }
 
 function DifferenceBanner({
@@ -1074,10 +980,9 @@ function DifferenceBanner({
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <p className="font-semibold">Live payroll has changed since last print.</p>
+          <p className="font-semibold"><WorkspaceText text="Live payroll has changed since last print." /></p>
           <p>
-            The printed statement is outdated because payroll was changed after
-            it was printed.
+            <WorkspaceText text="The printed statement is outdated because payroll was changed after it was printed." />
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -1085,7 +990,7 @@ function DifferenceBanner({
             className="rounded-md bg-zinc-950 px-3 py-2 font-medium text-white"
             href={staffIncomeHref}
           >
-            Review Staff Income
+            <WorkspaceText text="Review Staff Income" />
           </Link>
           <form action={savePayrollStatementAction}>
             <HiddenPeriodFields period={period} returnPath={returnPath} />
@@ -1093,7 +998,7 @@ function DifferenceBanner({
               className="rounded-md border border-zinc-950 bg-white px-3 py-2 font-medium text-zinc-950 disabled:cursor-not-allowed disabled:border-zinc-300 disabled:text-zinc-400"
               disabled={!canManage}
             >
-              Print New Statement
+              <WorkspaceText text="Save New Statement" />
             </button>
           </form>
           <DismissPayrollMismatchButton targetId="payroll-differences" />
@@ -1102,31 +1007,30 @@ function DifferenceBanner({
       {affectedStaff.length > 0 ? (
         <div className="mt-3">
           <p className="text-xs font-semibold uppercase text-amber-800">
-            {affectedStaff.length} staff affected
+            {affectedStaff.length} <WorkspaceText text="staff affected" />
           </p>
           <ul className="mt-2 grid gap-1.5 text-zinc-800 md:grid-cols-2">
             {visibleAffectedStaff.map((staff) => (
               <li key={staff.staffId}>
                 <span className="font-medium text-zinc-950">{staff.staffName}</span>
                 {" - "}
-                {staff.categories.length > 0
+                <WorkspaceText text={staff.categories.length > 0
                   ? `${staff.categories.join(" / ")} changed`
-                  : "payroll changed"}
+                  : "payroll changed"} />
               </li>
             ))}
           </ul>
           {moreAffectedStaffCount > 0 ? (
             <p className="mt-2 text-sm font-medium text-amber-900">
-              +{moreAffectedStaffCount} more staff affected
+              +{moreAffectedStaffCount} <WorkspaceText text="more staff affected" />
             </p>
           ) : null}
         </div>
       ) : (
         <div className="mt-3 rounded-md border border-amber-200 bg-white/75 p-3">
-          <p className="font-semibold text-zinc-950">Shop / POS totals changed</p>
+          <p className="font-semibold text-zinc-950"><WorkspaceText text="Shop / POS totals changed" /></p>
           <p className="text-zinc-700">
-            No staff payout action was detected, but the live shop totals differ
-            from the printed statement.
+            <WorkspaceText text="No staff payout action was detected, but the live shop totals differ from the printed statement." />
           </p>
         </div>
       )}
@@ -1137,22 +1041,6 @@ function DifferenceBanner({
       ) : null}
     </section>
   );
-}
-
-function getStatusSubtitle(data: Awaited<ReturnType<typeof getPayrollPageData>>) {
-  if (!data.latestStatement) {
-    return "Live payroll - not printed yet";
-  }
-
-  if (data.latestStatement.run.status === "paid") {
-    return `Statement v${data.latestStatement.run.version} marked paid`;
-  }
-
-  if (data.difference.changed) {
-    return `Live payroll differs from statement v${data.latestStatement.run.version}`;
-  }
-
-  return `Latest statement v${data.latestStatement.run.version} - live matches statement`;
 }
 
 function OverviewFilters({
@@ -1176,15 +1064,17 @@ function OverviewFilters({
   ];
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-3 shadow-sm">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex rounded-md border border-zinc-200 bg-zinc-50 p-0.5">
+    <PayrollFilterToolbar
+      periodLabel={period.label}
+      active={Boolean(filters.staffId || filters.serviceId || (period.preset === "custom" && !range))}
+      summary={<div className="flex min-w-0 items-center gap-2">
+        <div className="flex shrink-0 rounded-md border border-zinc-200 bg-zinc-50 p-0.5">
           {ranges.map((option) => {
             const active = range === option.id;
 
             return (
               <Link
-                className={`rounded px-3 py-1.5 text-xs font-medium ${
+                className={`rounded px-2 py-2 sm:px-3 text-xs font-medium ${
                   active
                     ? "bg-white text-zinc-950 shadow-sm"
                     : "text-zinc-500 hover:text-zinc-950"
@@ -1192,13 +1082,16 @@ function OverviewFilters({
                 href={getOverviewRangeHref({ filters, range: option.id })}
                 key={option.id}
               >
-                {option.label}
+                <WorkspaceText text={option.label} />
               </Link>
             );
           })}
         </div>
 
-        <form action="/payroll" className="flex flex-1 flex-wrap items-end gap-2">
+        <WorkspaceElement as="span" className="hidden min-w-0 truncate text-xs text-zinc-500 sm:block" title={period.label}><WorkspaceText text={period.label} /></WorkspaceElement>
+      </div>}
+    >
+        <form action="/payroll" className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
           <input name="tab" type="hidden" value="overview" />
           <input name="preset" type="hidden" value="custom" />
           <input name="overviewTrend" type="hidden" value={filters.trendMode} />
@@ -1210,31 +1103,31 @@ function OverviewFilters({
           {range ? <input name="overviewRange" type="hidden" value={range} /> : null}
 
           <label className="flex flex-col gap-1 text-xs font-medium text-zinc-600">
-            Start
+            <WorkspaceText text="Start" />
             <input
-              className="h-9 w-36 rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900"
+              className="h-9 min-w-0 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900"
               defaultValue={period.startDate}
               name="start"
               type="date"
             />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium text-zinc-600">
-            End
+            <WorkspaceText text="End" />
             <input
-              className="h-9 w-36 rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900"
+              className="h-9 min-w-0 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900"
               defaultValue={period.endDate}
               name="end"
               type="date"
             />
           </label>
-          <label className="flex min-w-40 flex-col gap-1 text-xs font-medium text-zinc-600">
-            Staff
+          <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-zinc-600">
+            <WorkspaceText text="Staff" />
             <select
-              className="h-9 rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900"
+              className="h-9 min-w-0 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900"
               defaultValue={filters.staffId ?? ""}
               name="overviewStaff"
             >
-              <option value="">All Staff</option>
+              <option value=""><WorkspaceText text="All Staff" /></option>
               {lines.map((line) => (
                 <option key={line.staff_id} value={line.staff_id}>
                   {line.staff_display_name_snapshot}
@@ -1242,14 +1135,14 @@ function OverviewFilters({
               ))}
             </select>
           </label>
-          <label className="flex min-w-44 flex-col gap-1 text-xs font-medium text-zinc-600">
-            Service
+          <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-zinc-600">
+            <WorkspaceText text="Service" />
             <select
-              className="h-9 rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900"
+              className="h-9 min-w-0 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900"
               defaultValue={filters.serviceId ?? ""}
               name="overviewService"
             >
-              <option value="">All Services</option>
+              <option value=""><WorkspaceText text="All Services" /></option>
               {serviceAnalytics.rows.map((service) => (
                 <option key={service.serviceId} value={service.serviceId}>
                   {service.serviceName}
@@ -1258,19 +1151,18 @@ function OverviewFilters({
             </select>
           </label>
           <button className="h-9 rounded-md bg-zinc-950 px-3 text-sm font-medium text-white">
-            Apply
+            <WorkspaceText text="Apply" />
           </button>
-          <button
-            className="h-9 rounded-md border border-zinc-300 px-3 text-sm font-medium text-zinc-500 disabled:cursor-not-allowed disabled:bg-zinc-50"
-            disabled
-            title="Export is not implemented yet."
-            type="button"
-          >
-            Export
-          </button>
+
         </form>
-      </div>
-    </section>
+        {filters.staffId || filters.serviceId ? (
+          <span className="min-w-0 max-w-full break-words py-3 text-xs text-teal-700">
+            {[lines.find((line) => line.staff_id === filters.staffId)?.staff_display_name_snapshot,
+              serviceAnalytics.rows.find((service) => service.serviceId === filters.serviceId)?.serviceName].filter(Boolean).join(" · ")}
+            <Link className="ml-2 underline" href={getOverviewHref({ filters, period, range, overrides: { staffId: null, serviceId: null } })}><WorkspaceText text="Clear" /></Link>
+          </span>
+        ) : null}
+    </PayrollFilterToolbar>
   );
 }
 
@@ -1369,16 +1261,17 @@ function BusinessSnapshotCards({ analytics }: { analytics: PayrollOverviewAnalyt
   ];
 
   return (
-    <section className="grid gap-3 lg:grid-cols-5">
+    <section className={styles.snapshot}>
       {cards.map((card) => (
         <div
           className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm"
           key={card.label}
+          data-metric={card.label}
         >
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                {card.label}
+                <WorkspaceText text={card.label} />
               </p>
               <p
                 className={`mt-2 text-2xl font-semibold tabular-nums ${
@@ -1391,17 +1284,17 @@ function BusinessSnapshotCards({ analytics }: { analytics: PayrollOverviewAnalyt
                         : "text-zinc-950"
                 }`}
               >
-                {card.value === null
+                <WorkspaceText text={card.value === null
                   ? "N/A"
                   : card.label === "Over / Short"
                     ? formatSignedMoney(card.value)
-                    : formatMoney(card.value)}
+                    : formatMoney(card.value)} />
               </p>
             </div>
             <Sparkline values={card.trend} />
           </div>
           <p className="mt-2 text-xs text-zinc-500">{card.helper}</p>
-          <p className="mt-1 text-[11px] text-zinc-400">Previous period unavailable</p>
+          <p className="mt-1 text-[11px] text-zinc-400"><WorkspaceText text="Previous period unavailable" /></p>
         </div>
       ))}
     </section>
@@ -1445,12 +1338,12 @@ function CorrectionAlertBanner({
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="font-semibold">Statement or correction activity needs review.</p>
+          <p className="font-semibold"><WorkspaceText text="Statement or correction activity needs review." /></p>
           <p className="mt-1 text-amber-900">
-            {staffSummary} have {fieldSummary} changes
-            {latestCorrection
+            {staffSummary} <WorkspaceText text="have" /> {fieldSummary} <WorkspaceText text="changes" />
+            <WorkspaceText text={latestCorrection
               ? `, latest ${formatDateTime(latestCorrection.correctionDate)}`
-              : ""}
+              : ""} />
             .
           </p>
         </div>
@@ -1459,7 +1352,7 @@ function CorrectionAlertBanner({
             className="rounded-md bg-zinc-950 px-3 py-2 text-xs font-medium text-white"
             href={getPayrollHref({ period, tab: "staff" })}
           >
-            View Details
+            <WorkspaceText text="View Details" />
           </Link>
           <DismissPayrollMismatchButton targetId="overview-correction-alert" />
         </div>
@@ -1484,7 +1377,7 @@ function AnalyticsPanel({
       className={`rounded-lg border border-zinc-200 bg-white p-4 shadow-sm ${className}`}
     >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-zinc-950">{title}</h2>
+        <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text={title} /></h2>
         {action}
       </div>
       {children}
@@ -1587,7 +1480,7 @@ function RevenuePayrollProfitChart({
               })}
               key={mode.id}
             >
-              {mode.label}
+              <WorkspaceText text={mode.label} />
             </Link>
           ))}
         </div>
@@ -1597,14 +1490,14 @@ function RevenuePayrollProfitChart({
     >
       {analytics.trend.length === 0 ? (
         <div className="flex h-64 items-center justify-center rounded-md border border-dashed border-zinc-300 bg-zinc-50 text-sm text-zinc-500">
-          No trend data for this filter.
+          <WorkspaceText text="No trend data for this filter." />
         </div>
       ) : (
         <>
           <div className="overflow-x-auto">
-            <svg
+            <WorkspaceElement as="svg"
               aria-label="Revenue, staff payout, and shop net trend"
-              className="h-72 min-w-[720px] text-zinc-400"
+              className="h-56 w-full min-w-0 text-zinc-400"
               preserveAspectRatio="none"
               viewBox="0 0 720 240"
             >
@@ -1632,27 +1525,27 @@ function RevenuePayrollProfitChart({
                 min={min}
                 points={analytics.trend}
               />
-            </svg>
+            </WorkspaceElement>
           </div>
           <div className="mt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-500">
             <div className="flex flex-wrap gap-3">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-4 rounded-full bg-blue-600" />
-                Revenue
+                <WorkspaceText text="Revenue" />
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-4 rounded-full bg-orange-500" />
-                Staff Payout
+                <WorkspaceText text="Staff Payout" />
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-4 rounded-full bg-emerald-600" />
-                Shop Net
+                <WorkspaceText text="Shop Net" />
               </span>
             </div>
             <div className="flex flex-wrap gap-3">
               {analytics.trend.map((point, index) =>
                 index % labelEvery === 0 || index === analytics.trend.length - 1 ? (
-                  <span key={point.key}>{point.label}</span>
+                  <span key={point.key}><WorkspaceText text={point.label} /></span>
                 ) : null,
               )}
             </div>
@@ -1676,7 +1569,7 @@ function AccountingLine({
 }) {
   return (
     <div className="grid grid-cols-[1fr_auto] gap-4 border-b border-zinc-100 py-2 last:border-b-0">
-      <span className="text-zinc-600">{label}</span>
+      <span className="text-zinc-600"><WorkspaceText text={label} /></span>
       <span
         className={`text-right tabular-nums ${
           strong ? "font-semibold" : "font-medium"
@@ -1706,7 +1599,7 @@ function PaymentAccountingSummary({
       <div className="grid gap-4 text-sm">
         <div>
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-blue-700">
-            Money Received
+            <WorkspaceText text="Money Received" />
           </p>
           <AccountingLine label="Cash Received" value={accounting.cashReceived} />
           <AccountingLine label="Check Received" value={accounting.checkReceived} />
@@ -1719,7 +1612,7 @@ function PaymentAccountingSummary({
         </div>
         <div>
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-rose-700">
-            Money Paid / Deducted
+            <WorkspaceText text="Money Paid / Deducted" />
           </p>
           <AccountingLine label="Cash Payout" value={accounting.cashPayout} />
           <AccountingLine
@@ -1744,13 +1637,14 @@ function PaymentAccountingSummary({
   );
 }
 
-function StaffPerformancePanel({
+async function StaffPerformancePanel({
   analytics,
   period,
 }: {
   analytics: PayrollOverviewAnalytics;
   period: PayrollPeriod;
 }) {
+  const __vt = await getWorkspaceTranslation();
   return (
     <AnalyticsPanel
       action={
@@ -1758,7 +1652,7 @@ function StaffPerformancePanel({
           className="text-xs font-medium text-blue-700 hover:text-blue-900"
           href={getPayrollHref({ period, tab: "staff" })}
         >
-          View all staff income -&gt;
+          <WorkspaceText text="View all staff income -&gt;" />
         </Link>
       }
       className="lg:col-span-6"
@@ -1766,26 +1660,26 @@ function StaffPerformancePanel({
     >
       {analytics.staffPerformance.length === 0 ? (
         <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center text-sm text-zinc-500">
-          No staff income for this period.
+          <WorkspaceText text="No staff income for this period." />
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+          <table className={`min-w-full text-sm ${styles.responsiveTable}`}>
             <thead className="text-left text-xs uppercase tracking-wide text-zinc-500">
               <tr>
-                <th className="py-2 pr-4">Staff</th>
-                <th className="py-2 pr-4 text-right">Service Sales</th>
-                <th className="py-2 pr-4 text-right">Commission</th>
-                <th className="py-2 pr-4 text-right">Tips</th>
-                <th className="py-2 pr-4 text-right">Bonus</th>
-                <th className="py-2 pr-4 text-right">Total Income</th>
-                <th className="py-2 text-right">Growth %</th>
+                <th className="py-2 pr-4"><WorkspaceText text="Staff" /></th>
+                <th className="py-2 pr-4 text-right"><WorkspaceText text="Service Sales" /></th>
+                <th className="py-2 pr-4 text-right"><WorkspaceText text="Commission" /></th>
+                <th className="py-2 pr-4 text-right"><WorkspaceText text="Tips" /></th>
+                <th className="py-2 pr-4 text-right"><WorkspaceText text="Bonus" /></th>
+                <th className="py-2 pr-4 text-right"><WorkspaceText text="Total Income" /></th>
+                <th className="py-2 text-right"><WorkspaceText text="Growth %" /></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
               {analytics.staffPerformance.map((row) => (
                 <tr key={row.staffId}>
-                  <td className="py-2 pr-4">
+                  <td data-label={__vt("Staff")} className="py-2 pr-4">
                     <div className="font-medium text-zinc-950">{row.staffName}</div>
                     {row.tags.length > 0 ? (
                       <div className="mt-1 flex flex-wrap gap-1">
@@ -1800,22 +1694,22 @@ function StaffPerformancePanel({
                       </div>
                     ) : null}
                   </td>
-                  <td className="py-2 pr-4 text-right tabular-nums">
+                  <td data-label={__vt("Service Sales")} className="py-2 pr-4 text-right tabular-nums">
                     {formatMoney(row.serviceSales)}
                   </td>
-                  <td className="py-2 pr-4 text-right tabular-nums">
+                  <td data-label={__vt("Commission")} className="py-2 pr-4 text-right tabular-nums">
                     {formatMoney(row.commission)}
                   </td>
-                  <td className="py-2 pr-4 text-right tabular-nums">
+                  <td data-label={__vt("Tips")} className="py-2 pr-4 text-right tabular-nums">
                     {formatMoney(row.tips)}
                   </td>
-                  <td className="py-2 pr-4 text-right tabular-nums">
+                  <td data-label={__vt("Bonus")} className="py-2 pr-4 text-right tabular-nums">
                     {formatMoney(row.bonus)}
                   </td>
-                  <td className="py-2 pr-4 text-right font-semibold tabular-nums text-zinc-950">
+                  <td data-label={__vt("Total Income")} className="py-2 pr-4 text-right font-semibold tabular-nums text-zinc-950">
                     {formatMoney(row.totalIncome)}
                   </td>
-                  <td className="py-2 text-right text-zinc-500">
+                  <td data-label={__vt("Growth %")} className="py-2 text-right text-zinc-500">
                     {formatRatioPercent(row.growthPercent)}
                   </td>
                 </tr>
@@ -1869,7 +1763,7 @@ function ServiceAnalyticsPanel({
                 })}
                 key={mode.id}
               >
-                {mode.label}
+                <WorkspaceText text={mode.label} />
               </Link>
             ))}
           </div>
@@ -1877,7 +1771,7 @@ function ServiceAnalyticsPanel({
             className="hidden text-xs font-medium text-blue-700 hover:text-blue-900 sm:inline"
             href="/services"
           >
-            View all services -&gt;
+            <WorkspaceText text="View all services -&gt;" />
           </Link>
         </div>
       }
@@ -1886,7 +1780,7 @@ function ServiceAnalyticsPanel({
     >
       {analytics.servicePerformance.length === 0 ? (
         <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center text-sm text-zinc-500">
-          No service analytics for this period.
+          <WorkspaceText text="No service analytics for this period." />
         </p>
       ) : (
         <div className="grid gap-3">
@@ -1925,14 +1819,14 @@ function ServiceAnalyticsPanel({
 function BusinessHealthCards({ analytics }: { analytics: PayrollOverviewAnalytics }) {
   return (
     <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-      <h2 className="text-sm font-semibold text-zinc-950">Business Health</h2>
+      <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Business Health" /></h2>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         {analytics.health.map((metric) => (
           <div
             className="rounded-md border border-zinc-200 bg-zinc-50 p-3"
             key={metric.label}
           >
-            <p className="text-xs font-medium text-zinc-500">{metric.label}</p>
+            <p className="text-xs font-medium text-zinc-500"><WorkspaceText text={metric.label} /></p>
             <p
               className={`mt-1 text-lg font-semibold tabular-nums ${
                 metric.tone === "warning"
@@ -1951,7 +1845,7 @@ function BusinessHealthCards({ analytics }: { analytics: PayrollOverviewAnalytic
   );
 }
 
-function SummaryTable({
+async function SummaryTable({
   columns,
   emptyLabel,
   rows,
@@ -1962,44 +1856,45 @@ function SummaryTable({
   rows: PayrollOverviewAnalytics["weeklySummary"];
   title: string;
 }) {
+  const __vt = await getWorkspaceTranslation();
   return (
     <AnalyticsPanel title={title}>
       {rows.length === 0 ? (
         <p className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center text-sm text-zinc-500">
-          {emptyLabel}
+          <WorkspaceText text={emptyLabel} />
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+          <table className={`min-w-full text-sm ${styles.responsiveTable}`}>
             <thead className="text-left text-xs uppercase tracking-wide text-zinc-500">
               <tr>
-                <th className="py-2 pr-4">{columns === "weekly" ? "Week" : "Month"}</th>
-                <th className="py-2 pr-4 text-right">Revenue</th>
-                <th className="py-2 pr-4 text-right">Actual Received</th>
-                <th className="py-2 pr-4 text-right">Staff Payout</th>
+                <th className="py-2 pr-4">{columns === "weekly" ? <WorkspaceText text="Week" /> : <WorkspaceText text="Month" />}</th>
+                <th className="py-2 pr-4 text-right"><WorkspaceText text="Revenue" /></th>
+                <th className="py-2 pr-4 text-right"><WorkspaceText text="Actual Received" /></th>
+                <th className="py-2 pr-4 text-right"><WorkspaceText text="Staff Payout" /></th>
                 {columns === "weekly" ? (
-                  <th className="py-2 pr-4 text-right">Over / Short</th>
+                  <th className="py-2 pr-4 text-right"><WorkspaceText text="Over / Short" /></th>
                 ) : (
-                  <th className="py-2 pr-4 text-right">Payroll Ratio</th>
+                  <th className="py-2 pr-4 text-right"><WorkspaceText text="Payroll Ratio" /></th>
                 )}
-                <th className="py-2 text-right">Shop Net</th>
+                <th className="py-2 text-right"><WorkspaceText text="Shop Net" /></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
               {rows.map((row) => (
                 <tr key={row.label}>
-                  <td className="py-2 pr-4 font-medium text-zinc-950">{row.label}</td>
-                  <td className="py-2 pr-4 text-right tabular-nums">
+                  <td data-label={__vt("Period")} className="py-2 pr-4 font-medium text-zinc-950"><WorkspaceText text={row.label} /></td>
+                  <td data-label={__vt("Revenue")} className="py-2 pr-4 text-right tabular-nums">
                     {formatMoney(row.revenue)}
                   </td>
-                  <td className="py-2 pr-4 text-right tabular-nums">
+                  <td data-label={__vt("Actual Received")} className="py-2 pr-4 text-right tabular-nums">
                     {formatOptionalMoney(row.actualReceived, "N/A")}
                   </td>
-                  <td className="py-2 pr-4 text-right tabular-nums">
+                  <td data-label={__vt("Staff Payout")} className="py-2 pr-4 text-right tabular-nums">
                     {formatMoney(row.staffPayout)}
                   </td>
                   {columns === "weekly" ? (
-                    <td
+                    <td data-label={__vt("Over / Short")}
                       className={`py-2 pr-4 text-right tabular-nums ${
                         row.overShort !== null && row.overShort < 0
                           ? "text-rose-700"
@@ -2011,11 +1906,11 @@ function SummaryTable({
                       {row.overShort === null ? "N/A" : formatSignedMoney(row.overShort)}
                     </td>
                   ) : (
-                    <td className="py-2 pr-4 text-right tabular-nums">
+                    <td data-label={__vt("Payroll Ratio")} className="py-2 pr-4 text-right tabular-nums">
                       {formatRatioPercent(row.payrollRatio)}
                     </td>
                   )}
-                  <td className="py-2 text-right font-medium tabular-nums">
+                  <td data-label={__vt("Shop Net")} className="py-2 text-right font-medium tabular-nums">
                     {formatOptionalMoney(row.shopNet, "N/A")}
                   </td>
                 </tr>
@@ -2050,10 +1945,10 @@ function WeeklyMonthlySummary({ analytics }: { analytics: PayrollOverviewAnalyti
 function KeyInsightsPanel({ analytics }: { analytics: PayrollOverviewAnalytics }) {
   return (
     <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-      <h2 className="text-sm font-semibold text-zinc-950">Key Insights</h2>
+      <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Key Insights" /></h2>
       {analytics.insights.length === 0 ? (
         <p className="mt-3 rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-500">
-          No reliable insights yet.
+          <WorkspaceText text="No reliable insights yet." />
         </p>
       ) : (
         <ul className="mt-3 grid gap-2 text-sm text-zinc-700">
@@ -2109,7 +2004,7 @@ function OverviewTab({
       />
       {!analytics.hasPayrollData ? (
         <p className="rounded-lg border border-zinc-200 bg-white p-8 text-center text-sm text-zinc-500 shadow-sm">
-          No payroll data for this period.
+          <WorkspaceText text="No payroll data for this period." />
         </p>
       ) : (
         <>
@@ -2124,6 +2019,8 @@ function OverviewTab({
               {analytics.filterNotice}
             </p>
           ) : null}
+          <PayrollDisclosure summary="More analytics" className={styles.analytics}>
+          <div className={styles.mobileOnly}><p className="text-sm"><WorkspaceText text="POS Revenue" />: {formatMoney(analytics.snapshot.posRevenue)}</p><p className="text-sm"><WorkspaceText text="Over / Short" />: {formatOptionalMoney(analytics.snapshot.overShort, "Missing actual input")}</p></div>
           <section className="grid gap-4 lg:grid-cols-12">
             <RevenuePayrollProfitChart
               analytics={analytics}
@@ -2145,191 +2042,45 @@ function OverviewTab({
           <BusinessHealthCards analytics={analytics} />
           <WeeklyMonthlySummary analytics={analytics} />
           <KeyInsightsPanel analytics={analytics} />
+          </PayrollDisclosure>
         </>
       )}
     </section>
   );
 }
 
-function StaffIncomeTab({
-  canManage,
-  lines,
-  period,
-}: {
-  canManage: boolean;
-  lines: PayrollStaffLineWithDailyTotals[];
-  period: PayrollPeriod;
+function StaffIncomeTab({ canManage, lines, period }: {
+  canManage: boolean; lines: PayrollStaffLineWithDailyTotals[]; period: PayrollPeriod;
 }) {
-  if (lines.length === 0) {
-    return (
-      <p className="rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-        No staff income lines for this period.
-      </p>
-    );
-  }
-
-  return (
-    <section className="grid gap-2">
-      <div className="hidden rounded border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 md:grid md:grid-cols-[minmax(145px,0.78fr)_minmax(150px,0.8fr)_minmax(195px,1fr)_minmax(230px,1.1fr)]">
-        <span>Staff</span>
-        <span>Actual Payout</span>
-        <span>Wage / Net Details</span>
-        <span>Tax / Add-ons / Inputs</span>
+  if (!lines.length) return <p className={styles.panel}><WorkspaceText text="No staff income lines for this period." /></p>;
+  return <section className="grid gap-3">
+    <div className={styles.heading}><h2 className="text-base font-semibold"><WorkspaceText text="Staff Income" /></h2><p className={styles.context}>{lines.length} <WorkspaceText text="Staff" /> · <WorkspaceText text="Current calculation" /></p></div>
+    {lines.map(line => <PayrollDisclosure key={`${period.startDate}:${period.endDate}:${line.staff_id}`} className={styles.staffCard} summary={<div className={styles.staffSummary}>
+      <div><strong>{line.staff_display_name_snapshot}</strong>{!line.staff_legal_name_snapshot && <small className="!text-amber-700"><WorkspaceText text="Missing legal name" /></small>}{line.final_check_amount < 0 && <small className="!text-rose-700"><WorkspaceText text="Check amount negative" /></small>}</div>
+      <div className={styles.staffMoney}><strong>{formatMoney(line.final_staff_income)}</strong><small><WorkspaceText text="Cash" /> {formatMoney(line.final_cash_amount)}</small><small><WorkspaceText text="Check" /> {formatMoney(line.final_check_amount)}</small></div>
+    </div>}>
+      <div className={styles.staffBody}>
+        <section className={styles.staffSection}><h3>{line.staff_display_name_snapshot} · <WorkspaceText text="Actual Payout" /></h3><dl className={styles.ledger}>
+          <div><dt><WorkspaceText text="Cash" /></dt><dd>{formatMoney(line.final_cash_amount)}</dd></div>
+          <div><dt><WorkspaceText text="Check" /></dt><dd className={line.final_check_amount < 0 ? "text-rose-700" : ""}>{formatMoney(line.final_check_amount)}</dd></div>
+          <div><dt><WorkspaceText text="Total" /></dt><dd className="font-semibold">{formatMoney(line.final_staff_income)}</dd></div>
+          <div><dt><WorkspaceText text="Tax" /></dt><dd>{taxLineRateLabel(line)} · {formatMoney(line.tax_withheld)}</dd></div>
+          <div><dt><WorkspaceText text="Tip" /></dt><dd>{formatMoney(line.tip_amount)} <CompactPayoutLabel method={line.tip_payout_method_snapshot} taxed={line.tax_tips_snapshot} /></dd></div>
+        </dl></section>
+        <section className={styles.staffSection}><h3><WorkspaceText text="Wage / Net Details" /></h3><dl className={styles.ledger}>
+          <div><dt><WorkspaceText text="Shop Gross" /></dt><dd>{formatMoney(line.gross_sales)}</dd></div>
+          <div><dt><WorkspaceText text="Comm Gross" /></dt><dd>{formatMoney(line.staff_commission_gross)}</dd></div>
+          <div><dt><WorkspaceText text="Cash Net" /></dt><dd>{formatMoney(line.base_cash_amount)}</dd></div>
+          <div><dt><WorkspaceText text="Check Net" /></dt><dd>{formatMoney(line.check_net)}</dd></div>
+        </dl></section>
+        <section className={styles.staffSection}><h3><WorkspaceText text="Period adjustments" /></h3><StaffIncomeAutosaveInputs bonusAmount={line.bonus_amount} bonusPayoutMethod={line.bonus_payout_method_snapshot} canManage={canManage} checkNumber={line.check_number} cycleType={period.cycleType} note={line.note} periodEnd={period.endDate} periodStart={period.startDate} staffId={line.staff_id} taxBonus={line.tax_bonus_snapshot} /></section>
       </div>
-      {lines.map((line) => (
-        <section
-          className="overflow-hidden rounded border border-zinc-200 bg-white text-xs"
-          key={line.staff_id}
-        >
-            <div className="grid gap-0 md:grid-cols-[minmax(145px,0.78fr)_minmax(150px,0.8fr)_minmax(195px,1fr)_minmax(230px,1.1fr)]">
-              <section className="border-b border-zinc-100 px-3 py-2 md:border-b-0 md:border-r">
-                <p className="truncate text-sm font-semibold text-zinc-950">
-                  {line.staff_display_name_snapshot}
-                </p>
-                {!line.staff_legal_name_snapshot ? (
-                  <p className="mt-0.5 text-[11px] font-medium text-amber-700">
-                    Missing legal name
-                  </p>
-                ) : null}
-              </section>
-
-              <section className="border-b border-zinc-100 px-3 py-2 md:border-b-0 md:border-r">
-                <dl className="grid gap-1">
-                  <LedgerLine emphasis="strong" label="Cash" width="short">
-                    {formatMoney(line.final_cash_amount)}
-                  </LedgerLine>
-                  <LedgerLine emphasis="strong" label="Check" width="short">
-                    <span
-                      className={
-                        line.final_check_amount < 0 ? "text-rose-700" : undefined
-                      }
-                    >
-                      {formatMoney(line.final_check_amount)}
-                    </span>
-                  </LedgerLine>
-                  <LedgerLine emphasis="total" label="Total" width="short">
-                    {formatMoney(line.final_staff_income)}
-                  </LedgerLine>
-                </dl>
-              </section>
-
-              <section className="border-b border-zinc-100 px-3 py-2 md:border-b-0 md:border-r">
-                <dl className="grid gap-1">
-                  <LedgerLine label="Shop Gross">
-                    {formatMoney(line.gross_sales)}
-                  </LedgerLine>
-                  <LedgerLine label="Comm Gross">
-                    {formatMoney(line.staff_commission_gross)}
-                  </LedgerLine>
-                  <LedgerLine label="Cash Net">
-                    {formatMoney(line.base_cash_amount)}
-                  </LedgerLine>
-                  <LedgerLine label="Check Net">
-                    {formatMoney(line.check_net)}
-                  </LedgerLine>
-                </dl>
-              </section>
-
-              <section className="px-3 py-2">
-                <dl className="grid gap-1">
-                  <LedgerLine label="Tax" width="short">
-                    {taxLineRateLabel(line)} {formatMoney(line.tax_withheld)}
-                  </LedgerLine>
-                  <LedgerLine label="Tip" width="short">
-                    <span className="flex items-baseline justify-end gap-1.5">
-                      <span>{formatMoney(line.tip_amount)}</span>
-                      <CompactPayoutLabel
-                        method={line.tip_payout_method_snapshot}
-                        taxed={line.tax_tips_snapshot}
-                      />
-                    </span>
-                  </LedgerLine>
-                </dl>
-                <div className="mt-1.5">
-                  <StaffIncomeAutosaveInputs
-                    bonusAmount={line.bonus_amount}
-                    bonusPayoutMethod={line.bonus_payout_method_snapshot}
-                    canManage={canManage}
-                    checkNumber={line.check_number}
-                    cycleType={period.cycleType}
-                    note={line.note}
-                    periodEnd={period.endDate}
-                    periodStart={period.startDate}
-                    staffId={line.staff_id}
-                    taxBonus={line.tax_bonus_snapshot}
-                  />
-                </div>
-              </section>
-            </div>
-
-            <details className="border-t border-zinc-100 bg-white px-3 py-2">
-              <summary className="cursor-pointer text-xs font-medium text-zinc-700">
-                Breakdown
-              </summary>
-              {line.dailyTotals.length > 0 ? (
-                <div className="mt-2 overflow-x-auto">
-                  <table className="min-w-full text-xs">
-                    <thead className="text-left uppercase text-zinc-500">
-                      <tr>
-                        <th className="py-2 pr-4">Date</th>
-                        <th className="py-2 pr-4 text-right">Shop Gross</th>
-                        <th className="py-2 pr-4 text-right">Comm Gross</th>
-                        <th className="py-2 pr-4 text-right">Tip</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-200">
-                      {line.dailyTotals.map((dailyTotal) => (
-                        <tr key={dailyTotal.id}>
-                          <td className="py-2 pr-4 text-zinc-700">
-                            {formatDate(dailyTotal.business_date)}
-                          </td>
-                          <td className="py-2 pr-4 text-right text-zinc-900">
-                            {formatMoney(dailyTotal.gross_sales)}
-                          </td>
-                          <td className="py-2 pr-4 text-right text-zinc-900">
-                            {formatMoney(dailyCommissionGross(dailyTotal))}
-                          </td>
-                          <td className="py-2 pr-4 text-right font-medium text-zinc-900">
-                            {formatMoney(dailyTotal.tip_amount)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p className="mt-2 text-xs text-zinc-500">
-                  No daily rows for this staff member.
-                </p>
-              )}
-              {line.inputHistory?.length ? (
-                <div className="mt-3 border-t border-zinc-200 pt-3">
-                  <p className="text-xs font-semibold text-zinc-700">
-                    Input history
-                  </p>
-                  <ul className="mt-2 grid gap-1.5 text-xs text-zinc-600">
-                    {line.inputHistory.map((history) => (
-                      <li
-                        className="flex flex-wrap items-center gap-x-3 gap-y-1"
-                        key={history.id}
-                      >
-                        <span className="font-medium text-zinc-900">
-                          {inputHistoryLabel(history.change_type)}
-                        </span>
-                        <span>{inputHistoryFields(history.field_changes)}</span>
-                        <span className="text-zinc-500">
-                          {formatDateTime(history.created_at)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </details>
-        </section>
-      ))}
-    </section>
-  );
+      <details className="border-t p-4"><summary className="text-sm font-medium"><WorkspaceText text="Breakdown" /></summary>
+        {line.dailyTotals.length ? <div className="grid gap-3">{line.dailyTotals.map(day => <div key={day.id} className="rounded-lg bg-zinc-50 p-3"><p className="mb-2 text-sm font-medium"><WorkspaceText text={formatDate(day.business_date)} /></p><dl className={styles.ledger}><div><dt><WorkspaceText text="Shop Gross" /></dt><dd>{formatMoney(day.gross_sales)}</dd></div><div><dt><WorkspaceText text="Comm Gross" /></dt><dd>{formatMoney(dailyCommissionGross(day))}</dd></div><div><dt><WorkspaceText text="Tip" /></dt><dd>{formatMoney(day.tip_amount)}</dd></div></dl></div>)}</div> : <p className="text-sm text-zinc-500"><WorkspaceText text="No daily rows for this staff member." /></p>}
+        {Boolean(line.inputHistory?.length) && <details className="mt-3 border-t pt-2"><summary className="text-sm font-medium"><WorkspaceText text="Input history" /></summary><ul className="grid gap-2 text-sm">{line.inputHistory?.map(history => <li key={history.id}><WorkspaceText text={inputHistoryLabel(history.change_type)} /> · {inputHistoryFields(history.field_changes)}<p className="text-xs text-zinc-500"><WorkspaceText text={formatDateTime(history.created_at)} /></p></li>)}</ul></details>}
+      </details>
+    </PayrollDisclosure>)}
+  </section>;
 }
 
 function ShopIncomeTab({
@@ -2383,83 +2134,80 @@ function ShopIncomeTab({
           value={formatOptionalMoney(summary.shopNetIncome, "Missing actual input")}
         />
       </div>
+      <p className="text-sm text-zinc-500"><WorkspaceText text="Shop Net is before other operating expenses." /></p>
       <ShopIncomeDailyTable rows={rows} />
-      <section className="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-600 shadow-sm">
-        <h2 className="text-sm font-semibold text-zinc-950">Notes</h2>
+      <PayrollDisclosure summary="How shop income is calculated" className={styles.compactNote}>
+        <h2 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Notes" /></h2>
         <dl className="mt-3 grid gap-2">
           <div>
-            <dt className="font-medium text-zinc-800">Total Actual</dt>
-            <dd>Total money actually collected from daily input: Cash + Card + Other.</dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="Total Actual" /></dt>
+            <dd><WorkspaceText text="Total money actually collected from daily input: Cash + Card + Other." /></dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-800">POS</dt>
-            <dd>Expected collected amount recorded by POS for comparison with Actual.</dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="POS" /></dt>
+            <dd><WorkspaceText text="Expected collected amount recorded by POS for comparison with Actual." /></dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-800">Total Staff Obligation</dt>
-            <dd>Money handled for staff: Staff Pay + Tips Paid + Tax Withheld.</dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="Total Staff Obligation" /></dt>
+            <dd><WorkspaceText text="Money handled for staff: Staff Pay + Tips Paid + Tax Withheld." /></dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-800">Staff Pay</dt>
-            <dd>Net commission or fixed pay after tax withholding.</dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="Staff Pay" /></dt>
+            <dd><WorkspaceText text="Net commission or fixed pay after tax withholding." /></dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-800">Tips Paid</dt>
-            <dd>Tips paid to staff after optional tip tax withholding.</dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="Tips Paid" /></dt>
+            <dd><WorkspaceText text="Tips paid to staff after optional tip tax withholding." /></dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-800">Tax Withheld</dt>
-            <dd>Staff income withheld for IRS. It is not shop profit.</dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="Tax Withheld" /></dt>
+            <dd><WorkspaceText text="Staff income withheld for IRS. It is not shop profit." /></dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-800">Shop Net Income</dt>
-            <dd>Total Actual minus Total Staff Obligation, before future expenses.</dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="Shop Net Income" /></dt>
+            <dd><WorkspaceText text="Total Actual minus Total Staff Obligation, before future expenses." /></dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-800">Corrections</dt>
-            <dd>Only after-close changes are counted here; same-day edits before closing are not.</dd>
+            <dt className="font-medium text-zinc-800"><WorkspaceText text="Corrections" /></dt>
+            <dd><WorkspaceText text="Only after-close changes are counted here; same-day edits before closing are not." /></dd>
           </div>
         </dl>
-      </section>
+      </PayrollDisclosure>
     </section>
   );
 }
 
-function TaxTab({
-  period,
-  taxCompany,
-}: {
-  period: PayrollPeriod;
-  taxCompany: Awaited<ReturnType<typeof getPayrollPageData>>["taxCompany"];
+function TaxTab({ period, taxCompany, plugin, hasChanges, canManageConnection }: {
+  period: PayrollPeriod; taxCompany: Awaited<ReturnType<typeof getPayrollPageData>>["taxCompany"];
+  plugin: Awaited<ReturnType<typeof taxCompanySettings>> | null; hasChanges: boolean; canManageConnection: boolean;
 }) {
-  const taxLines = taxCompany.lines;
-  const returnPath = getPayrollHref({ period, tab: "tax" });
-  const payrollRunId = taxCompany.latestStatement?.run.id ?? null;
-
-  return (
-    <section className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-4">
-        <div>
-          <p className="text-sm font-semibold text-zinc-950">Tax company preview</p>
-          <p className="text-sm text-zinc-500">
-            {taxLines.length} reportable staff line{taxLines.length === 1 ? "" : "s"}
-          </p>
-        </div>
-        <Link
-          className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-          href={getTaxCompanyHref(period)}
-        >
-          Open Tax Company
-        </Link>
-      </div>
-      <TaxCompanyLinesTable
-        lines={taxLines}
-        payrollRunId={payrollRunId}
-        returnPath={returnPath}
-      />
-      <TaxCompanyCalculationGuide />
+  const statement = taxCompany.latestStatement;
+  const paystubs = taxCompany.lines.filter(line => line.paystub).length;
+  const connections = plugin?.connections.filter(connection => connection.account_active).length ?? 0;
+  const status = !canManageConnection ? "Connection managed by salon owner" : !plugin ? "Connection status unavailable" : !plugin.active ? "Plugin inactive" : !plugin.enabled || !connections ? "Ready to connect" : "Sharing enabled";
+  return <section className="grid gap-4">
+    <div className={styles.heading}><h2 className="text-lg font-semibold">Tax Company</h2><span className={styles.status}><WorkspaceText text={status} /></span></div>
+    {canManageConnection && !plugin && <p role="alert" className={styles.warning}><WorkspaceText text="Tax Company status could not load. Your saved payroll reports remain available." /> <Link className="underline" href={getPayrollHref({ period, tab: "tax" })}><WorkspaceText text="Try again" /></Link></p>}
+    <section className={styles.panel}><h2><WorkspaceText text="Saved payroll report" /></h2><p><WorkspaceText text={period.label} /></p>
+      {statement ? <><p><WorkspaceText text="Statement v" />{statement.run.version} · <WorkspaceText text={statement.run.status === "paid" ? "Paid" : "Saved"} /></p><p>{paystubs} / {taxCompany.lines.length} <WorkspaceText text="Paystubs available" /></p>{hasChanges && <p className={styles.warning}><WorkspaceText text="Current payroll has changes. The tax company sees the saved version until you save a new statement." /></p>}</> : <p><WorkspaceText text="Save a statement before sharing this period with your tax company." /></p>}
+      <Link className={`${styles.action} ${styles.primary}`} href={getTaxCompanyHref(period)}><WorkspaceText text="View report and paystubs" /></Link>
+      <p className={styles.context}><WorkspaceText text="Reports and paystubs belong to the saved payroll version shown above." /></p>
     </section>
-  );
+    <div className={styles.tools}>
+      {canManageConnection && <Link className={styles.toolLink} href="/payroll/tax-company/settings"><span><strong><WorkspaceText text="Connection and access" /></strong><small><WorkspaceText text="Manage your tax company connection" /></small></span><span aria-hidden="true">→</span></Link>}
+      <Link className={styles.toolLink} href="/tax-company/install"><span><strong><WorkspaceText text="Download / install app" /></strong><small>Tax Company</small></span><span aria-hidden="true">↗</span></Link>
+      {plugin && !plugin.active && <Link className={styles.toolLink} href="/market"><span><strong><WorkspaceText text="Open Market" /></strong><small><WorkspaceText text="Activate Tax Company" /></small></span><span aria-hidden="true">→</span></Link>}
+    </div>
+  </section>;
+}
+
+function ToolsTab({ period, downloadEnabled }: { period: PayrollPeriod; downloadEnabled: boolean }) {
+  const links: { tab: PayrollTab; title: string; subtitle: string }[] = [
+    { tab: "settings", title: "Payroll settings", subtitle: "Schedule, compensation and withholding" },
+    { tab: "tax", title: "Tax Company", subtitle: "Connection, saved reports and paystubs" },
+    ...(downloadEnabled ? [{ tab: "download" as const, title: "Download", subtitle: "Payroll Data Download" }] : []),
+  ];
+  return <section className={styles.tools}>{links.map(link => <Link className={styles.toolLink} key={link.tab} href={getPayrollHref({ period, tab: link.tab })}><span><strong><WorkspaceText text={link.title} /></strong><small><WorkspaceText text={link.subtitle} /></small></span><span aria-hidden="true">→</span></Link>)}</section>;
 }
 
 function SettingChip({ children }: { children: ReactNode }) {
@@ -2482,7 +2230,7 @@ function SettingsHistory({ history }: { history: StaffPayrollSetting[] }) {
   return (
     <details className="border-t border-zinc-100 pt-3">
       <summary className="cursor-pointer text-xs font-medium text-zinc-600">
-        History
+        <WorkspaceText text="History" />
       </summary>
       {history.length > 0 ? (
         <div className="mt-2 grid gap-2">
@@ -2498,26 +2246,26 @@ function SettingsHistory({ history }: { history: StaffPayrollSetting[] }) {
                 key={version.id || version.effective_from}
               >
                 <span className="font-medium text-zinc-900">
-                  {formatDate(version.effective_from)}
+                  <WorkspaceText text={formatDate(version.effective_from)} />
                 </span>
                 <span className="text-zinc-500">
-                  Changed{" "}
-                  {version.updated_at
+                  <WorkspaceText text="Changed" />{" "}
+                  <WorkspaceText text={version.updated_at
                     ? formatDateTime(version.updated_at)
-                    : "Unknown"}
+                    : "Unknown"} />
                 </span>
                 {changes.length > 0 ? (
                   <>
                     {changes.map((change) => (
                       <SettingChip key={change.label}>
-                        {change.previous
+                        <WorkspaceText text={change.previous
                           ? `${change.label}: ${change.previous} to ${change.current}`
-                          : `${change.label}: ${change.current}`}
+                          : `${change.label}: ${change.current}`} />
                       </SettingChip>
                     ))}
                   </>
                 ) : (
-                  <span>No manual field changes</span>
+                  <span><WorkspaceText text="No manual field changes" /></span>
                 )}
               </div>
             );
@@ -2525,7 +2273,7 @@ function SettingsHistory({ history }: { history: StaffPayrollSetting[] }) {
         </div>
       ) : (
         <p className="mt-2 text-xs text-zinc-500">
-          No effective setting history yet.
+          <WorkspaceText text="No effective setting history yet." />
         </p>
       )}
     </details>
@@ -2542,7 +2290,7 @@ function SettingGroup({
   return (
     <section className="grid gap-2">
       <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-        {title}
+        <WorkspaceText text={title} />
       </h4>
       <dl className="grid gap-2">{children}</dl>
     </section>
@@ -2558,7 +2306,7 @@ function SettingField({
 }) {
   return (
     <div className="flex min-w-0 items-baseline gap-1.5 text-sm">
-      <dt className="shrink-0 text-zinc-500">{label}:</dt>
+      <dt className="shrink-0 text-zinc-500"><WorkspaceText text={label} />:</dt>
       <dd className="min-w-0 font-medium text-zinc-900">{children}</dd>
     </div>
   );
@@ -2598,8 +2346,7 @@ function StaffProfileAvatar({
   return (
     <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
       {imageUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <WorkspaceElement as="img"
           alt=""
           className="h-full w-full rounded-full object-cover"
           src={imageUrl}
@@ -2617,7 +2364,9 @@ function SettingsReadContent({
   staff,
   staffProfileAvatarUrl,
   staffProfileDisplayName,
+  canManage,
 }: {
+  canManage: boolean;
   period: PayrollPeriod;
   setting: StaffPayrollSetting | null;
   staff: StaffPayrollSettingWithStaff["staff"];
@@ -2644,20 +2393,20 @@ function SettingsReadContent({
             </h3>
             {setting?.legal_name ? (
               <p className="mt-0.5 truncate text-xs text-zinc-500">
-                Legal name: {setting.legal_name}
+                <WorkspaceText text="Legal name:" /> {setting.legal_name}
               </p>
             ) : null}
             <p className="mt-1 text-sm text-zinc-600">
-              Effective from {formatSettingDate(setting?.effective_from)}
+              <WorkspaceText text="Effective from" /> <WorkspaceText text={formatSettingDate(setting?.effective_from)} />
             </p>
           </div>
         </div>
-        <Link
+        {canManage && <Link
           className="rounded border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 hover:bg-zinc-50"
           href={getSettingsEditHref(period, staff.id)}
         >
-          Edit
-        </Link>
+          <WorkspaceText text="Edit" />
+        </Link>}
       </div>
 
       <div className="grid gap-5 md:grid-cols-3">
@@ -2683,26 +2432,26 @@ function SettingsReadContent({
           </SettingField>
           {isFixed ? (
             <SettingField label="Tax fixed">
-              {formatYesNo(Boolean(setting?.apply_tax_to_fixed_pay))}
+              <WorkspaceText text={formatYesNo(Boolean(setting?.apply_tax_to_fixed_pay))} />
             </SettingField>
           ) : null}
           <SettingField label="Tax cash">
-            <SettingStatus active={taxCash}>{formatOnOff(taxCash)}</SettingStatus>
+            <SettingStatus active={taxCash}><WorkspaceText text={formatOnOff(taxCash)} /></SettingStatus>
           </SettingField>
           <SettingField label="Tax tip">
-            <SettingStatus active={taxTip}>{formatYesNo(taxTip)}</SettingStatus>
+            <SettingStatus active={taxTip}><WorkspaceText text={formatYesNo(taxTip)} /></SettingStatus>
           </SettingField>
           <SettingField label="Tax bonus">
-            <SettingStatus active={taxBonus}>{formatYesNo(taxBonus)}</SettingStatus>
+            <SettingStatus active={taxBonus}><WorkspaceText text={formatYesNo(taxBonus)} /></SettingStatus>
           </SettingField>
         </SettingGroup>
 
         <SettingGroup title="Payout">
           <SettingField label="Tip payout">
-            {formatPayoutMethod(setting?.tip_payout_method ?? "cash")}
+            <WorkspaceText text={formatPayoutMethod(setting?.tip_payout_method ?? "cash")} />
           </SettingField>
           <SettingField label="Bonus payout">
-            {formatPayoutMethod(setting?.bonus_payout_method ?? "check")}
+            <WorkspaceText text={formatPayoutMethod(setting?.bonus_payout_method ?? "check")} />
           </SettingField>
         </SettingGroup>
       </div>
@@ -2711,6 +2460,7 @@ function SettingsReadContent({
 }
 
 function SettingsStaffCard({
+  canManage,
   history,
   isEditing,
   period,
@@ -2720,6 +2470,7 @@ function SettingsStaffCard({
   staffProfileAvatarUrl,
   staffProfileDisplayName,
 }: {
+  canManage: boolean;
   history: StaffPayrollSetting[];
   isEditing: boolean;
   period: PayrollPeriod;
@@ -2730,7 +2481,8 @@ function SettingsStaffCard({
   staffProfileDisplayName: string;
 }) {
   return (
-    <section className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+    <PayrollDisclosure initiallyOpen={isEditing} className={styles.staffCard} summary={<div><strong>{staffProfileDisplayName}</strong><p className={styles.context}>{settingPayTypeLabel(setting)} · <WorkspaceText text="Effective from" /> <WorkspaceText text={formatSettingDate(setting?.effective_from)} /></p></div>}>
+      <div className="grid gap-4 p-4">
       {isEditing ? (
         <StaffPayrollSettingInlineEdit
           period={period}
@@ -2741,7 +2493,7 @@ function SettingsStaffCard({
           staffProfileDisplayName={staffProfileDisplayName}
         />
       ) : (
-        <SettingsReadContent
+        <SettingsReadContent canManage={canManage}
           period={period}
           setting={setting}
           staff={staff}
@@ -2750,61 +2502,57 @@ function SettingsStaffCard({
         />
       )}
       <SettingsHistory history={history} />
-    </section>
+      </div>
+    </PayrollDisclosure>
   );
 }
 
 function SettingsExplanationNote() {
   return (
     <section className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
-      <h3 className="text-sm font-semibold text-zinc-950">Setting notes</h3>
+      <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Setting notes" /></h3>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <div>
-          <p className="font-medium text-zinc-800">Compensation</p>
+          <p className="font-medium text-zinc-800"><WorkspaceText text="Compensation" /></p>
           <p className="mt-1">
-            Pay type controls whether staff is paid by commission or fixed pay.
-            Commission split rate is the staff share of production. Check split
-            controls how much base pay goes to check versus cash.
+            <WorkspaceText text="Pay type controls whether staff is paid by commission or fixed pay. Commission split rate is the staff share of production. Check split controls how much base pay goes to check versus cash." />
           </p>
         </div>
         <div>
-          <p className="font-medium text-zinc-800">Tax reporting</p>
+          <p className="font-medium text-zinc-800"><WorkspaceText text="Tax reporting" /></p>
           <p className="mt-1">
-            Tax rate is the withholding/reporting rate. Tax cash controls whether
-            cash wage is shown on Tax Company. Tax tip and Tax bonus control
-            whether tips and bonuses are included in tax reporting.
+            <WorkspaceText text="Tax rate is the withholding/reporting rate. Tax cash controls whether cash wage is shown on Tax Company. Tax tip and Tax bonus control whether tips and bonuses are included in tax reporting." />
           </p>
         </div>
         <div>
-          <p className="font-medium text-zinc-800">Payout</p>
+          <p className="font-medium text-zinc-800"><WorkspaceText text="Payout" /></p>
           <p className="mt-1">
-            Tip payout and Bonus payout decide whether those amounts are paid by
-            check or cash. They do not change the amount earned.
+            <WorkspaceText text="Tip payout and Bonus payout decide whether those amounts are paid by check or cash. They do not change the amount earned." />
           </p>
         </div>
         <div>
-          <p className="font-medium text-zinc-800">Effective date</p>
+          <p className="font-medium text-zinc-800"><WorkspaceText text="Effective date" /></p>
           <p className="mt-1">
-            Settings apply from the effective date forward. Older payroll periods
-            keep using the setting that was effective for that period.
+            <WorkspaceText text="Settings apply from the effective date forward. Older payroll periods keep using the setting that was effective for that period." />
           </p>
         </div>
       </div>
       <p className="mt-3 border-t border-zinc-200 pt-3 text-xs text-zinc-500">
-        Tax cash controls whether cash wage is reported to Tax Company. Tip and
-        bonus payout methods do not decide whether those amounts are taxed.
+        <WorkspaceText text="Tax cash controls whether cash wage is reported to Tax Company. Tip and bonus payout methods do not decide whether those amounts are taxed." />
       </p>
     </section>
   );
 }
 
 function SettingsTab({
+  canManage,
   editStaffId,
   period,
   returnPath,
   salonPayrollSetting,
   settings,
 }: {
+  canManage: boolean;
   editStaffId: string | undefined;
   period: PayrollPeriod;
   returnPath: string;
@@ -2814,22 +2562,22 @@ function SettingsTab({
   return (
     <section className="grid gap-6" id="payroll-settings">
       <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-        <h2 className="text-base font-semibold text-zinc-950">Shop Payroll Schedule</h2>
-        <PayrollScheduleForm
+        <h2 className="text-base font-semibold text-zinc-950"><WorkspaceText text="Shop Payroll Schedule" /></h2>
+        <fieldset disabled={!canManage}><PayrollScheduleForm
           action={saveSalonPayrollScheduleAction}
           anchorDate={salonPayrollSetting.biweekly_anchor_date}
           cycleType={salonPayrollSetting.cycle_type}
           returnPath={returnPath}
-        />
+        /></fieldset>
       </div>
 
       <div className="grid gap-3">
         <div>
           <h2 className="text-base font-semibold text-zinc-950">
-            Staff Payroll Settings
+            <WorkspaceText text="Staff Payroll Settings" />
           </h2>
           <p className="mt-1 text-sm text-zinc-500">
-            Staff-specific compensation, tax reporting, payout, and effective settings.
+            <WorkspaceText text="Staff-specific compensation, tax reporting, payout, and effective settings." />
           </p>
         </div>
         <div className="grid gap-3">
@@ -2841,10 +2589,10 @@ function SettingsTab({
               staffProfileAvatarUrl,
               staffProfileDisplayName,
             }) => {
-              const isEditing = editStaffId === staff.id;
+              const isEditing = canManage && editStaffId === staff.id;
 
               return (
-                <SettingsStaffCard
+                <SettingsStaffCard canManage={canManage}
                   history={history}
                   isEditing={isEditing}
                   key={staff.id}
@@ -2859,19 +2607,22 @@ function SettingsTab({
             },
           )}
         </div>
-        <SettingsExplanationNote />
+        <PayrollDisclosure summary="Setting notes" className={styles.compactNote}><SettingsExplanationNote /></PayrollDisclosure>
       </div>
     </section>
   );
 }
 
-export default async function PayrollPage({ searchParams }: PayrollPageProps) {
+async function PayrollPage({ searchParams }: PayrollPageProps) {
+  const __vt = await getWorkspaceTranslation();
+
   const params = await searchParams;
-  await requireSalonManagePageContext("/payroll");
+  const pageContext = await requireSalonManagePageContext("/payroll");
   let data: Awaited<ReturnType<typeof getPayrollPageData>>;
 
   try {
     data = await getPayrollPageData({
+      includeAnalytics: !params.tab || params.tab === "overview" || !["staff", "shop", "tax", "settings", "tools", "download"].includes(params.tab),
       endDate: params.end,
       month: params.month,
       payPeriodStart: params.payPeriodStart,
@@ -2884,6 +2635,9 @@ export default async function PayrollPage({ searchParams }: PayrollPageProps) {
     return <NoPermissionState message={message} />;
   }
 
+  const canManageConnection = isOwnerMembership(pageContext.currentMembership);
+  const taxPlugin = params.tab === "tax" && canManageConnection ? await taxCompanySettings().catch(() => null) : null;
+  const downloadEnabled = await payrollDataPluginInstalled().catch(() => false);
   const activeTab = getActiveTab(params.tab, data.access.canViewAllPayroll);
   const returnPath = getReturnPath(data.period, activeTab);
   const overviewRange = getOverviewRange(params.overviewRange);
@@ -2912,35 +2666,20 @@ export default async function PayrollPage({ searchParams }: PayrollPageProps) {
       : params.payroll_error;
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-      <header className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <span
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusBadgeClass(
-                data.status.kind,
-              )}`}
-            >
-              {data.status.label}
-            </span>
-            <p className="text-sm text-zinc-500">
-              {data.period.label} - {getStatusSubtitle(data)}
-            </p>
-          </div>
-          <TopActions
-            canManage={data.access.canManagePayroll}
-            hasLiveDifference={data.difference.changed}
-            latestStatement={data.latestStatement}
-            period={data.period}
-            returnPath={returnPath}
-          />
-        </div>
+    <PayrollEditBoundary><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
+      <header className={styles.heading}><div><h1>Payroll</h1><p className={styles.context}>{pageContext.currentSalon.name}</p></div><span className={styles.status}><WorkspaceText text={data.difference.changed ? "Changes need saving" : data.latestStatement?.run.status === "paid" ? "Paid" : data.latestStatement ? "Saved" : "Current calculation"} />{data.latestStatement ? ` · v${data.latestStatement.run.version}` : ""}</span></header>
+      <Tabs
+        activeTab={activeTab}
+        canViewAllPayroll={data.access.canViewAllPayroll}
+        period={data.period}
+      />
+      {(!["overview", "settings", "tools", "download"].includes(activeTab)) || visiblePayrollError ? <header className="flex flex-col gap-4">
         {visiblePayrollError ? (
           <p className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
-            {visiblePayrollError}
+            <WorkspaceText text={visiblePayrollError} />
           </p>
         ) : null}
-        {activeTab === "overview" ? null : (
+        {["overview", "settings", "tools", "download"].includes(activeTab) ? null : (
           <PeriodSelector
             activeTab={activeTab}
             period={data.period}
@@ -2949,22 +2688,17 @@ export default async function PayrollPage({ searchParams }: PayrollPageProps) {
             salonPayrollSetting={data.salonPayrollSetting}
           />
         )}
-      </header>
+      </header> : null}
 
-      {activeTab === "overview" ? null : (
-        <DifferenceBanner
+      {activeTab !== "overview" && data.difference.changed ? (
+        <PayrollDisclosure summary="Review changes" className={styles.compactNote}><DifferenceBanner
           canManage={data.access.canManagePayroll}
           corrections={data.live.corrections}
           difference={data.difference}
           period={data.period}
           returnPath={returnPath}
-        />
-      )}
-      <Tabs
-        activeTab={activeTab}
-        canViewAllPayroll={data.access.canViewAllPayroll}
-        period={data.period}
-      />
+        /></PayrollDisclosure>
+      ) : null}
 
       {activeTab === "overview" ? (
         <OverviewTab
@@ -2989,14 +2723,28 @@ export default async function PayrollPage({ searchParams }: PayrollPageProps) {
       {activeTab === "shop" && data.access.canViewAllPayroll ? (
         <ShopIncomeTab
           rows={data.live.shopDailyRows}
-          summary={data.live.shopSummary}
+          summary={__vt(data.live.shopSummary)}
         />
       ) : null}
+      {activeTab === "staff" || (activeTab === "shop" && data.access.canViewAllPayroll) ? (
+        <footer className={styles.output} aria-label={__vt("Payroll output actions")}>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm"><span><WorkspaceText text="Total staff payout" /></span><strong>{formatMoney(data.live.lines.reduce((sum, line) => sum + line.final_staff_income, 0))}</strong></div>
+          {data.access.canManagePayroll ? <PayrollOutputGuard><StatementActions
+            canManage={data.access.canManagePayroll}
+            hasData={data.live.lines.length > 0 || data.live.shopDailyRows.some(row => row.posIncome !== 0 || row.actualIncome !== null)}
+            hasLiveDifference={data.difference.changed}
+            latestStatement={data.latestStatement}
+            period={data.period}
+            returnPath={returnPath}
+          /></PayrollOutputGuard> : null}
+
+        </footer>
+      ) : null}
       {activeTab === "tax" && data.access.canViewAllPayroll ? (
-        <TaxTab period={data.period} taxCompany={data.taxCompany} />
+        <TaxTab canManageConnection={canManageConnection} period={data.period} taxCompany={data.taxCompany} plugin={taxPlugin} hasChanges={data.difference.changed} />
       ) : null}
       {activeTab === "settings" && data.access.canViewAllPayroll ? (
-        <SettingsTab
+        <SettingsTab canManage={data.access.canManagePayroll}
           editStaffId={params.editStaff}
           period={data.period}
           returnPath={returnPath}
@@ -3004,6 +2752,11 @@ export default async function PayrollPage({ searchParams }: PayrollPageProps) {
           settings={data.staffPayrollSettings}
         />
       ) : null}
-    </main>
+      {activeTab === "tools" && data.access.canViewAllPayroll && <ToolsTab period={data.period} downloadEnabled={downloadEnabled} />}
+      {activeTab === "download" && !downloadEnabled && <p className={styles.panel}><WorkspaceText text="Install Payroll Data Download from Market to export data." /><Link href="/market" className="underline"><WorkspaceText text="Open Market" /></Link></p>}
+      {activeTab === "download" && downloadEnabled && data.access.canViewAllPayroll ? <DataDownloadPanel key={`${pageContext.currentSalon.id}-${data.period.startDate}-${data.period.endDate}`} startDate={data.period.startDate} endDate={data.period.endDate} /> : null}
+    </main></PayrollEditBoundary>
   );
 }
+
+export default withExperiencePage(PayrollPage);

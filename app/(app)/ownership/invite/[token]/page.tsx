@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
 import { OwnerTransferAcceptancePanel } from "@/app/ownership/owner-transfer-acceptance-panel";
 import { getCurrentKingUser } from "@/lib/users/current-user";
 import Link from "next/link";
@@ -8,7 +10,7 @@ type OwnerTransferInvitePageProps = {
   }>;
 };
 
-export default async function OwnerTransferInvitePage({
+async function OwnerTransferInvitePage({
   params,
 }: OwnerTransferInvitePageProps) {
   const [{ token }, user] = await Promise.all([params, getCurrentKingUser()]);
@@ -18,23 +20,23 @@ export default async function OwnerTransferInvitePage({
       <main className="mx-auto min-h-screen w-full max-w-xl px-4 py-12">
         <section className="rounded-2xl border border-border-subtle bg-surface p-5 shadow-[var(--shadow-soft)]">
           <h1 className="text-2xl font-extrabold text-text-primary">
-            Owner invitation
+            <WorkspaceText text="Owner invitation" />
           </h1>
           <p className="mt-2 text-sm font-medium text-text-secondary">
-            Sign in with the invited account to continue.
+            <WorkspaceText text="Sign in with the invited account to continue." />
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             <Link
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white"
               href={`/login?next=${encodeURIComponent(`/ownership/invite/${token}`)}`}
             >
-              Login
+              <WorkspaceText text="Login" />
             </Link>
             <Link
               className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-950"
               href={`/signup?next=${encodeURIComponent(`/ownership/invite/${token}`)}`}
             >
-              Sign up
+              <WorkspaceText text="Sign up" />
             </Link>
           </div>
         </section>
@@ -50,3 +52,5 @@ export default async function OwnerTransferInvitePage({
     </main>
   );
 }
+
+export default withExperiencePage(OwnerTransferInvitePage);

@@ -48,6 +48,7 @@ export type LegalDocument = {
   description: string;
   href: string;
   intro: string;
+  lastUpdated?: string;
   sections: readonly LegalSection[];
   shortTitle: string;
   title: string;
@@ -317,6 +318,23 @@ const termsSections: LegalSection[] = [
       ),
       paragraph(
         "If you publish content publicly, such as public salon profile content, reviews, or beauty profile content, other users may be able to view it, interact with it, or use it to decide whether to book or work with a salon.",
+      ),
+    ],
+  },
+  {
+    id: "ai-generated-images",
+    title: "AI-Generated Reference Images (lumiAi)",
+    blocks: [
+      paragraph(
+        "Images marked ",
+        strong("lumiAi"),
+        " are AI-generated reference images created by ReyLUMI for inspiration and illustration. These images may appear in Explore, style references, service guides, and placeholder imagery on business profiles.",
+      ),
+      paragraph(
+        "A lumiAi image is not a photograph of actual work, clients, staff, or premises of the salon or professional shown nearby. Its placement does not mean that the business created the image, performed the illustrated work, or endorsed the design.",
+      ),
+      paragraph(
+        "AI-generated images may contain unrealistic details. They do not guarantee that a design or service is available or that the same result can be achieved. Confirm the design, suitability, price, and availability directly with the salon or professional before booking.",
       ),
     ],
   },
@@ -666,20 +684,20 @@ const privacySections: LegalSection[] = [
     title: "Account Deletion",
     blocks: [
       paragraph(
-        "A user may request deletion of an eligible personal account through the available support or account process. If an in-product deletion control is not available, the request should be made through the official support channel. ReyLUMI currently uses a 30-day pending deletion period before eligible personal account deletion is completed.",
+        "Request deletion in Settings → Personal account → Delete personal account. You can cancel during the 30-day pending period. After that period, deletion normally completes within 24 hours; service failures are retried. Save the private status link shown in Settings to check completion after sign-out. We also send an email confirmation when an email address and email delivery service are available.",
       ),
       paragraph(
         "During the pending period, a deletion request may be cancelled if the applicable workflow or support process allows it. ReyLUMI may also delay or block deletion where necessary to verify the request, prevent fraud, protect security, comply with law, resolve disputes, or preserve records that must be retained.",
       ),
       list(
         item(
-          "Deletion may be blocked or delayed if the user is still the sole Owner of a salon or has unresolved ownership responsibilities. A sole Owner may need to transfer, add, or resolve ownership before personal account deletion can be completed.",
+          "A sole salon Owner can transfer ownership or choose the in-app option to permanently close last-owner salons before scheduling deletion. Contacting support is not required to request deletion.",
         ),
         item(
           "Personal Account deletion does not automatically delete lawful business, accounting, payroll, tax, audit, customer, booking, or POS records.",
         ),
         item(
-          "Deletion of an eligible personal account may release personal identity links, while preserving operational records that a salon or the platform must retain.",
+          "Deletion removes the sign-in identity, personal profile fields, authored social posts, comment and review text, personal images and private account exports. Contentless references may remain to preserve reply threads and accounting references.",
         ),
         item(
           "Where appropriate, ReyLUMI may anonymize, de-identify, detach, or restrict personal identifiers instead of destructively deleting operational records.",
@@ -700,7 +718,7 @@ const privacySections: LegalSection[] = [
         "Business records may remain available to an authorized salon, account, or successor owner where needed for continuity, recordkeeping, dispute resolution, payroll, tax, legal compliance, audit, customer service, or legitimate business operations.",
       ),
       paragraph(
-        "For example, deleting a personal account should not automatically erase a salon's POS history, payroll run, tax-company record, customer receipt, booking history, review record, or audit trail when the salon or platform has a legitimate reason or legal requirement to retain it.",
+        "For example, deleting a personal account should not automatically erase a salon's POS history, payroll run, tax-company record, customer receipt, booking history or audit trail when the salon or platform has a legitimate reason or legal requirement to retain it.",
       ),
       paragraph(
         "Access to sensitive historical records should remain limited to authorized users and should not be exposed merely because a personal account was removed or ownership changed. See ",
@@ -1334,6 +1352,7 @@ export const legalDocuments = {
     description:
       "Terms that explain how clients, professionals, staff, and businesses use ReyLUMI.",
     href: "/terms",
+    lastUpdated: "October 13, 2026",
     intro:
       "Rules for accounts, bookings, payments, content, disputes, platform outputs, and responsible use of ReyLUMI.",
     sections: termsSections,

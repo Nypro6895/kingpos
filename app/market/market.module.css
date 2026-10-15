@@ -1,4 +1,8 @@
 .page{padding:32px 24px 70px;color:var(--text-primary);background:var(--surface)}
+.detailImage{display:block;width:100%;height:auto;margin-top:22px;border:1px solid var(--border-subtle);border-radius:12px;background:#fbf8f5}
+.heroIllustration{min-width:0;align-self:center}.heroIllustration img{display:block;width:100%;height:auto;filter:drop-shadow(0 10px 16px #7353370a)}
+.insideReylumi{background:var(--brand-teal-soft);border-radius:9px;padding:12px 14px;color:var(--brand-teal)!important;font-weight:600;font-size:12px!important}
+@media(max-width:560px){.heroIllustration{max-width:300px;justify-self:center;width:100%;margin-top:-8px}}
 .logo svg{width:32px;height:34px}.logo{box-shadow:inset 0 1px 0 #fff8,0 3px 8px #241b1f08}
 .conceptLabel{font-size:9px;font-weight:500;padding:3px 6px;background:var(--surface-muted);border-radius:4px;color:var(--text-muted);margin-left:6px;display:inline-block;vertical-align:middle}
 .cardBenefits{display:grid;gap:7px;font-size:10px;color:var(--text-secondary);margin-bottom:20px}
@@ -42,3 +46,15 @@
 .page button:focus-visible{outline:2px solid var(--brand-orange);outline-offset:3px}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding:30px;gap:20px}.art{padding:20px 12px}.toolbar{flex-direction:column;align-items:stretch}.search{width:100%}}
 @media(max-width:560px){.page{padding:22px 16px 90px}.header{align-items:flex-start;gap:10px}.header h1{font-size:27px}.header>.secondary{font-size:11px;padding:8px 10px}.header p{font-size:12px}.hero{grid-template-columns:1fr;padding:28px 24px}.hero h2{font-size:34px}.art{display:none}.grid{grid-template-columns:1fr}.filters{gap:2px}.filters button{padding:8px 10px}.developer{flex-direction:column;align-items:flex-start;padding:24px}.sectionHeading h2{font-size:16px}.dialog{padding:26px}}
+
+.featureDialog{max-width:860px!important}
+
+.developerContact{margin:24px 0;padding-top:4px;border-top:1px solid var(--border-subtle)}.developerContact>p{margin-bottom:20px}
+.languageOptions{display:grid;gap:14px;margin:20px 0;padding:0;border:0;min-width:0}.languageOptions label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.7}.languageOptions input{flex:none;margin-top:4px;width:16px;height:16px;accent-color:#d86232}.languageActions{display:flex;flex-wrap:wrap;gap:12px}.languageActions button{white-space:normal}
+
+.campaignPreview{margin-top:22px;min-width:0}.previewChoices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}.previewChoices button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 8px;border:1px solid #e0e8e2;border-radius:10px;background:#fff;color:#52625c;font-size:12px;font-weight:650;line-height:1.4;cursor:pointer}.previewChoices button[aria-selected=true]{border-color:#285d4c;background:#eef5ef;color:#285d4c}.previewChoices button>span{display:grid;place-items:center;flex:none;width:22px;height:22px;border-radius:50%;background:#eef2ed;font-size:11px}.previewChoices button[aria-selected=true]>span{background:#285d4c;color:#fff}.previewFigure{margin:0;overflow:hidden;border:1px solid #e0e8e2;border-radius:14px;background:#fff}.previewImage{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:contain;background:#f8faf7}.previewFigure figcaption{padding:16px 18px}.previewFigure figcaption>strong{font-size:14px;color:var(--text-primary)}.previewFigure figcaption>p{margin:6px 0 12px}.previewFoot{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;font-size:10px;line-height:1.6;color:var(--text-secondary)}.previewFoot a{flex:none;color:#285d4c;text-decoration:underline;text-underline-offset:3px}.previewChoices button:focus-visible,.previewFoot a:focus-visible{outline:2px solid #285d4c;outline-offset:3px}@media(max-width:560px){.previewChoices{gap:6px}.previewChoices button{flex-direction:column;gap:5px;padding:10px 4px;font-size:11px}.previewFigure figcaption{padding:14px}.previewFoot{flex-wrap:wrap}}
+
+.vietnameseScreenshot{max-height:480px;overflow:auto;background:#f5f6f8}.vietnameseScreenshot img{display:block;width:100%;height:auto}.vietnameseScreenshot:focus-visible{outline:2px solid var(--brand-orange);outline-offset:-2px}
+
+.vietnameseChoices{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ownerPreviewImage{display:block;width:100%;height:auto;background:#fafbf9}

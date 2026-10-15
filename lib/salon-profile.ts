@@ -1,3 +1,5 @@
+import { loadSalonPostAttribution } from "@/lib/salon-post-attribution";
+import { assertAbuseRequest } from "@/lib/abuse-server";
 import { getSalonIdentityById } from "@/lib/salon-identity-data";
 import { resolveNailCoverImage } from "@/lib/default-nail-images";
 import { getPublicSalonDirectoryListing } from "@/lib/salon-directory";
@@ -1488,6 +1490,8 @@ export function buildSalonProfileFeed(input: {
   updates: PublicSalonProfileUpdate[];
 }): ProfileFeedItem[] {
   const lookItems: ProfileFeedItem[] = input.looks.map((look) => ({
+    authorRole: look.authorRole,
+    salonName: input.profileName,
     authorAvatarUrl: look.authorAvatarUrl,
     authorName: look.authorDisplayName || input.profileName,
     authorStaffId: look.authorStaffId,
@@ -1513,6 +1517,8 @@ export function buildSalonProfileFeed(input: {
     title: look.title,
   }));
   const updateItems: ProfileFeedItem[] = input.updates.map((update) => ({
+    authorRole: update.authorRole,
+    salonName: input.profileName,
     authorAvatarUrl: update.authorAvatarUrl,
     authorName: update.authorDisplayName || input.profileName,
     authorStaffId: update.authorStaffId,
@@ -1679,8 +1685,15 @@ async function loadPublicSalonProfileData(salonId: string): Promise<PublicSalonP
     ? { ...operatingStatus, kind: "hours_unset" as const, label: "Hours not confirmed", detail: "Call to confirm", tone: "muted" as const, source: "unset" as const }
     : operatingStatus;
   const mappedProfile = claimedSalonContent(mapPublicProfile(profile, displayOperatingStatus), directoryListing, updateRows.find(row => row.id === directoryListing?.referencePostId)?.caption);
-  const looks = lookRows.map(mapPublicLook);
-  const updates = visibleSalonPosts(updateRows.map(mapPublicUpdate), directoryListing);
+  const heldResult = await rpc("get_my_held_salon_posts", { p_salon_id: salonId });
+  const held = heldResult.data as { looks?: PublicLookRow[]; updates?: PublicUpdateRow[] } | null;
+  if (!heldResult.error && held) {
+    for (const row of held.looks ?? []) lookRows.push({ ...row, badge: "Awaiting review · only you and salon managers can see this" });
+    for (const row of held.updates ?? []) updateRows.push({ ...row, summary: row.summary ?? "Awaiting review" });
+  }
+  const attribution = await loadSalonPostAttribution([...lookRows, ...updateRows].map(row => row.id));
+  const looks = lookRows.map(row => ({ ...mapPublicLook(row), authorRole: attribution.get(row.id)?.role ?? "salon" as const }));
+  const updates = visibleSalonPosts(updateRows.map(row => ({ ...mapPublicUpdate(row), authorRole: attribution.get(row.id)?.role ?? "salon" as const })), directoryListing);
   const beautyPosts = beautyPostRows.map((row) =>
     mapPublicBeautyPost(row, {
       id: mappedProfile.salonId,
@@ -2256,6 +2269,7 @@ export async function createCurrentSalonProfileLook(input: {
   title: string;
   whyLoveIt: string | null;
 }) {
+  await assertAbuseRequest("post");
   const context = await getCurrentBusinessContext();
 
   if (!context.user) {
@@ -2460,6 +2474,7 @@ export async function createCurrentSalonProfileUpdate(input: {
   title: string;
   type: SalonProfileUpdateType;
 }) {
+  await assertAbuseRequest("post");
   const context = await getCurrentBusinessContext();
 
   if (!context.user) {

@@ -54,7 +54,7 @@ function sectionNumber(index: number) {
   return String(index + 1).padStart(2, "0");
 }
 
-function LegalMeta() {
+function LegalMeta({ lastUpdated = LEGAL_DATES.lastUpdated }: { lastUpdated?: string }) {
   return (
     <dl className="flex flex-wrap gap-x-5 gap-y-1 text-sm leading-6 text-text-secondary">
       <div className="flex gap-1.5">
@@ -63,7 +63,7 @@ function LegalMeta() {
       </div>
       <div className="flex gap-1.5">
         <dt className="font-semibold text-text-primary">Last updated:</dt>
-        <dd>{LEGAL_DATES.lastUpdated}</dd>
+        <dd>{lastUpdated}</dd>
       </div>
     </dl>
   );
@@ -363,7 +363,7 @@ export function LegalDocumentPage({ document }: { document: LegalDocument }) {
               {document.intro}
             </p>
             <div className="mt-5">
-              <LegalMeta />
+              <LegalMeta lastUpdated={document.lastUpdated} />
             </div>
           </header>
 

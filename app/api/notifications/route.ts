@@ -2,8 +2,10 @@ import { getCurrentBusinessContext } from "@/lib/current-context";
 import { getAppNotificationScopeForContext } from "@/lib/workspace-pending";
 import { loadNotificationPage } from "@/lib/notification-center";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
+import { headers as requestHeaders } from "next/headers";
 const headers = { "Cache-Control": "private, no-store" };
 export async function GET(request: Request) {
+  if ((await requestHeaders()).get("x-reylumi-auth-unavailable") === "1") return Response.json({ error: "Authentication temporarily unavailable" }, { status: 503, headers });
   const url = new URL(request.url);
   const at = url.searchParams.get("before");
   const id = url.searchParams.get("id");

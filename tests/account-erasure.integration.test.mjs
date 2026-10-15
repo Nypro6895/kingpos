@@ -1,0 +1,107 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {PGlite} from '@electric-sql/pglite';
+const U='00000000-0000-4000-8000-000000000001',AUTH='10000000-0000-4000-8000-000000000001';
+
+test('finalization queues erasure, scrubs content, protects business files and confirms storage plus auth before completion',async()=>{
+ const db=new PGlite();const one=async(sql,args=[]) => (await db.query(sql,args)).rows[0];
+ try{
+  await db.exec(`
+   create role anon;create role authenticated;create role service_role;
+   create schema auth;create table auth.users(id uuid primary key);
+   create schema storage;create table storage.objects(bucket_id text,name text,owner uuid,owner_id text);
+   create table users(id uuid primary key,auth_user_id uuid,email text,phone text,first_name text,last_name text,display_name text,avatar_url text,status text,
+    deletion_requested_at timestamptz,deletion_scheduled_for timestamptz,deletion_finalization_started_at timestamptz,deletion_finalized_at timestamptz,
+    deletion_finalization_attempts int default 0,deletion_finalization_failed_at timestamptz,deletion_finalization_error text,updated_at timestamptz,deleted_at timestamptz,anonymized_at timestamptz,last_login_at timestamptz);
+   create function current_public_user_id() returns uuid language sql as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
+   create function account_deletion_unresolved_owned_salon_count(uuid) returns integer language sql as $$select coalesce(nullif(current_setting('test.unresolved',true),''),'0')::int$$;
+   create table account_lifecycle_events(user_id uuid,actor_user_id uuid,event_type text,metadata jsonb);
+   create table deleted_auth_identities(auth_user_id uuid primary key,user_id uuid,deleted_at timestamptz,metadata jsonb);
+   create table account_memberships(user_id uuid,status text,updated_at timestamptz);
+   create table salon_memberships(like account_memberships);
+   create table staff(account_user_id uuid,user_id uuid,public_bio text,public_profile_photo_path text,public_profile_visible boolean,owner_public_enabled boolean,salon_profile_content_posting_enabled boolean,staff_public_consent_status text,updated_at timestamptz);
+   create table beauty_profiles(id uuid,user_id uuid,bio text,cover_media_path text,visibility text,updated_at timestamptz);
+   create table beauty_posts(id uuid,author_user_id uuid,caption text,visibility text,moderation_status text,deleted_at timestamptz,updated_at timestamptz);
+   create table beauty_post_media(post_id uuid,bucket text,object_path text);
+   create table beauty_profile_follows(user_id uuid,profile_id uuid);
+   create table salon_profile_looks(author_user_id uuid,title text,caption text,emotional_description text,why_love_it text,mood text,palette text[],badge text,media_path text,booking_note text,author_display_name text,author_avatar_path text,status text);
+   create table salon_profile_updates(author_user_id uuid,title text,caption text,summary text,media_path text,cta_label text,author_display_name text,author_avatar_path text,status text);
+   create table salon_profile_comments(author_user_id uuid,body text,author_display_name text,status text,updated_at timestamptz,id uuid);
+   create table salon_profile_reviews(author_user_id uuid,body text,title text,moderation_reason text,moderation_status text,updated_at timestamptz);
+   create table salon_profile_review_replies(author_user_id uuid,body text,moderation_status text,updated_at timestamptz);
+   create table customer_visit_experiences(author_user_id uuid,body text);
+   create table post_safety_cases(author_user_id uuid,content_snapshot jsonb,matched_keywords text[]);
+   create table salon_profile_media_assets(bucket text,object_path text,status text,deleted_at timestamptz);
+   create table lifecycle_exports(requested_by_user_id uuid,subject_user_id uuid,storage_bucket text,storage_path text);
+   create table user_blocks(blocker_user_id uuid,blocked_user_id uuid);
+   create table app_notifications(recipient_user_id uuid,event_key text);
+   create table pos_owner_operations(user_id uuid references auth.users(id));
+  `);
+  for(const name of ['salon_profile_look_saves','salon_profile_follows','account_favorite_customers','account_post_saves','post_safety_hidden','notification_preferences','account_login_sessions','account_trusted_devices','account_recovery_codes','account_security_preferences','account_login_activity','account_recovery_requests','customer_verified_phones'])await db.exec(`create table ${name}(user_id uuid)`);
+  for(const name of ['abuse_guard_content','abuse_guard_image','post_safety_scan','validate_unified_post_comment','validate_comment_persona'])await db.exec(`create function ${name}() returns trigger language plpgsql as $$\nbegin\n if new.author_display_name is distinct from old.author_display_name then raise exception 'Comment identity cannot change';end if;return new;end$$;`);
+  await db.exec('create trigger persona before update on salon_profile_comments for each row execute function validate_comment_persona()');
+  await db.exec(fs.readFileSync('supabase/migrations/202610140003_account_erasure.sql','utf8'));
+  await db.exec(`insert into auth.users values('${AUTH}');
+   insert into users(id,auth_user_id,email,display_name,status,deletion_requested_at,deletion_scheduled_for) values('${U}','${AUTH}','example@example.test','Private Name','pending_deletion',now(),now()+interval '1 day');
+   insert into beauty_profiles values('${U}','${U}','private bio','${U}/cover.webp','public',now());
+   insert into beauty_posts values('${U}','${U}','private caption','public','visible',null,now());
+   insert into beauty_post_media values('${U}','beauty-profile-media','${U}/post.webp');
+   insert into salon_profile_comments values('${U}','private comment','Private Name','published',now(),'${U}');
+   insert into salon_profile_reviews values('${U}','private review','private title',null,'visible',now());
+   insert into salon_profile_review_replies values('${U}','private reply','visible',now());
+   insert into customer_visit_experiences values('${U}','private experience');
+   insert into post_safety_cases values('${U}','{"caption":"private"}','{private}');
+   insert into account_memberships values('${U}','active',now());
+   insert into pos_owner_operations values('${AUTH}');
+   insert into storage.objects values('account-avatars','${U}/old.webp','${AUTH}','${AUTH}'),('beauty-profile-media','${U}/post.webp','${AUTH}','${AUTH}'),('payroll-paystubs','salon/retained.pdf','${AUTH}','${AUTH}'),('account-avatars','another-user/avatar.webp',null,null);
+   set test.uid='${U}';
+  `);
+  const token=(await one('select get_my_account_deletion_receipt() token')).token;
+  assert.ok(token);
+  assert.equal((await one('select finalize_account_deletion($1) r',[U])).r.reason,'not_due');
+  assert.equal((await one('select count(*)::int n from account_erasure_jobs')).n,0);
+  await db.exec(`update users set deletion_scheduled_for=now()-interval '1 hour';set test.unresolved='1';`);
+  assert.equal((await one('select finalize_account_deletion($1) r',[U])).r.reason,'ownership_unresolved');
+  assert.equal((await one('select caption from beauty_posts')).caption,'private caption');
+  await db.exec(`set test.unresolved='0'`);
+  const queued=(await one('select finalize_account_deletion($1) r',[U])).r;
+  assert.equal(queued.ok,true,JSON.stringify(queued));
+  assert.equal((await one('select status,deletion_finalized_at from users')).status,'deleted');
+  assert.equal((await one('select deletion_finalized_at from users')).deletion_finalized_at,null);
+  assert.equal((await one('select caption from beauty_posts')).caption,null);
+  assert.equal((await one('select body,status from salon_profile_comments')).body,'[Deleted]');
+  assert.equal((await one('select title from salon_profile_reviews')).title,null);
+  assert.equal((await one('select body from salon_profile_review_replies')).body,'[Deleted]');
+  assert.equal((await one('select count(*)::int n from customer_visit_experiences')).n,0);
+  assert.deepEqual((await one('select content_snapshot from post_safety_cases')).content_snapshot,{});
+  assert.equal((await one('select count(*)::int n from pos_owner_operations')).n,0);
+  assert.equal((await one('select count(*)::int n from storage.objects')).n,4); // SQL never deletes storage bytes
+  assert.equal((await one("select disposition from account_erasure_objects where bucket_id='payroll-paystubs'")).disposition,'retain_business');
+  assert.equal((await one('select get_account_deletion_receipt($1) r',[token])).r.status,'processing');
+  assert.equal((await one('select finalize_account_deletion($1) r',[U])).r.changed,false);
+  const job=(await one('select claim_account_erasure() r')).r;
+  assert.equal((await one('select claim_account_erasure() r')).r,null);
+  await assert.rejects(db.query('select finish_account_erasure($1,$2)',[U,job.lease]),/Storage erasure is incomplete/);
+  await assert.rejects(db.query('select finish_account_erasure_object($1,$2,$3,$4)',[U,job.lease,'account-avatars',U+'/old.webp']),/not been confirmed/);
+  await db.exec(`delete from storage.objects where bucket_id in ('account-avatars','beauty-profile-media') and owner='${AUTH}'; update storage.objects set owner=null,owner_id=null where bucket_id='payroll-paystubs';`); // simulated Storage API outcomes
+  for(const task of (await one('select account_erasure_batch($1,$2) r',[U,job.lease])).r)await db.query('select finish_account_erasure_object($1,$2,$3,$4)',[U,job.lease,task.bucket_id,task.object_path]);
+  await assert.rejects(db.query('select finish_account_erasure($1,$2)',[U,job.lease]),/Authentication erasure is incomplete/);
+  await db.query('select finish_account_erasure($1,$2,$3)',[U,job.lease,'provider_retry']);
+  assert.equal((await one('select claim_account_erasure() r')).r,null);
+  await db.exec('update account_erasure_jobs set next_attempt_at=now()');
+  const retry=(await one('select claim_account_erasure() r')).r;
+  assert.notEqual(retry.lease,job.lease);
+  await assert.rejects(db.query('select account_erasure_batch($1,$2)',[U,job.lease]),/lease expired/);
+  assert.equal((await one('select account_erasure_batch($1,$2) r',[U,retry.lease])).r.length,0);
+  await db.exec('delete from auth.users');
+  await db.query('select finish_account_erasure($1,$2)',[U,retry.lease]);
+  assert.equal((await one('select get_account_deletion_receipt($1) r',[token])).r.status,'complete');
+  assert.ok((await one('select deletion_finalized_at from users')).deletion_finalized_at);
+  assert.equal((await one("select count(*)::int n from storage.objects where name='salon/retained.pdf'")).n,1);
+  await db.exec('set role authenticated');
+  await assert.rejects(db.query('select claim_account_erasure()'),/permission denied/);
+  await assert.rejects(db.query('select * from account_erasure_jobs'),/permission denied/);
+  assert.equal((await one('select get_account_deletion_receipt($1) r',[AUTH])).r,null);
+ }finally{await db.close();}
+});

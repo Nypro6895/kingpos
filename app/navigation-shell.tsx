@@ -1,4 +1,10 @@
 "use client";
+import { handleExploreLogoClick } from "@/lib/explore-entry-navigation";
+import { ExploreHeaderSearchSlot } from "@/app/explore/explore-header-search-slot";
+
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { WorkspaceNavigationIcon as Icon } from "@/components/workspace-navigation-icon";
+import { RoleMoreContent } from "@/components/role-more-content";
 
 import { LogoutButton } from "@/app/account/logout-button";
 import { ExploreAdSlot } from "@/components/explore-advertising";
@@ -15,7 +21,6 @@ import {
   ROLE_NAVIGATION,
   ROLE_MORE_ITEMS,
   SHARED_CONTEXT_ROUTE_PREFIXES,
-  type NavigationIcon,
   type NavigationLink,
   type NavigationSection,
   type RoleNavigationConfig,
@@ -557,6 +562,8 @@ function AccountAvatar({
   className: string;
   label: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const safeAvatarUrl = safeAccountAvatarUrl(avatarUrl);
 
   return (
@@ -564,7 +571,7 @@ function AccountAvatar({
       {safeAvatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          alt={`${label} avatar`}
+          alt={__vt(`${label} avatar`)}
           className="h-full w-full object-cover"
           src={safeAvatarUrl}
         />
@@ -588,12 +595,14 @@ function WorkspaceAvatar({
   label: string;
   workspace: CurrentWorkspaceOption | null;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   if (workspace?.type === "personal") {
     return (
       <AccountAvatar
         avatarUrl={accountAvatarUrl}
         className={className}
-        label={accountLabel}
+        label={__vt(accountLabel)}
       />
     );
   }
@@ -603,7 +612,7 @@ function WorkspaceAvatar({
       {workspace?.avatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          alt={`${label} avatar`}
+          alt={__vt(`${label} avatar`)}
           className="h-full w-full object-cover"
           src={workspace.avatarUrl}
         />
@@ -626,160 +635,15 @@ function Badge({ value }: { value: number }) {
   );
 }
 
-function Icon({ name }: { name: NavigationIcon }) {
-  const common = {
-    "aria-hidden": true,
-    className: "h-4 w-4",
-    fill: "none",
-    stroke: "currentColor",
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    strokeWidth: 2,
-    viewBox: "0 0 24 24",
-  };
-  const paths: Record<NavigationIcon, ReactNode> = {
-    bell: (
-      <>
-        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
-        <path d="M10 19a2 2 0 0 0 4 0" />
-      </>
-    ),
-    book: (
-      <>
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z" />
-      </>
-    ),
-    briefcase: (
-      <>
-        <path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1" />
-        <rect height="14" rx="2" width="18" x="3" y="6" />
-      </>
-    ),
-    calendar: (
-      <>
-        <rect height="18" rx="2" width="18" x="3" y="4" />
-        <path d="M8 2v4M16 2v4M3 10h18" />
-      </>
-    ),
-    cash: (
-      <>
-        <rect height="12" rx="2" width="18" x="3" y="6" />
-        <path d="M8 12h.01M16 12h.01M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
-      </>
-    ),
-    check: <path d="m20 6-11 11-5-5" />,
-    "chevron-down": <path d="m6 9 6 6 6-6" />,
-    compass: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="m15 9-2 6-4 2 2-6z" />
-      </>
-    ),
-    gear: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
-      </>
-    ),
-    home: (
-      <>
-        <path d="m3 11 9-8 9 8" />
-        <path d="M5 10v10h14V10" />
-      </>
-    ),
-    grid: (
-      <>
-        <rect height="7" rx="1.5" width="7" x="3" y="3" />
-        <rect height="7" rx="1.5" width="7" x="14" y="3" />
-        <rect height="7" rx="1.5" width="7" x="3" y="14" />
-        <rect height="7" rx="1.5" width="7" x="14" y="14" />
-      </>
-    ),
-    list: (
-      <>
-        <path d="M8 6h13M8 12h13M8 18h13" />
-        <path d="M3 6h.01M3 12h.01M3 18h.01" />
-      </>
-    ),
-    "log-out": (
-      <>
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-        <path d="m16 17 5-5-5-5M21 12H9" />
-      </>
-    ),
-    message: (
-      <>
-        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-        <path d="M8 9h8M8 13h5" />
-      </>
-    ),
-    more: (
-      <>
-        <circle cx="5" cy="5" r="1" />
-        <circle cx="12" cy="5" r="1" />
-        <circle cx="19" cy="5" r="1" />
-        <circle cx="5" cy="12" r="1" />
-        <circle cx="12" cy="12" r="1" />
-        <circle cx="19" cy="12" r="1" />
-        <circle cx="5" cy="19" r="1" />
-        <circle cx="12" cy="19" r="1" />
-        <circle cx="19" cy="19" r="1" />
-      </>
-    ),
-    people: (
-      <>
-        <path d="M16 21v-2a4 4 0 0 0-8 0v2" />
-        <circle cx="12" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-      </>
-    ),
-    plus: <path d="M12 5v14M5 12h14" />,
-    receipt: (
-      <>
-        <path d="M4 2v20l3-2 3 2 3-2 3 2 3-2V2z" />
-        <path d="M8 7h8M8 12h8M8 17h5" />
-      </>
-    ),
-    scissors: (
-      <>
-        <circle cx="6" cy="6" r="3" />
-        <circle cx="6" cy="18" r="3" />
-        <path d="M20 4 8.1 15.9M8.1 8.1 20 20" />
-      </>
-    ),
-    search: (
-      <>
-        <circle cx="11" cy="11" r="7" />
-        <path d="m20 20-3.5-3.5" />
-      </>
-    ),
-    star: <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z" />,
-    store: (
-      <>
-        <path d="M4 10h16l-1-6H5z" />
-        <path d="M5 10v10h14V10M9 20v-6h6v6" />
-      </>
-    ),
-    user: (
-      <>
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 22a8 8 0 0 1 16 0" />
-      </>
-    ),
-    x: <path d="M18 6 6 18M6 6l12 12" />,
-  };
-
-  return <svg {...common}>{paths[name]}</svg>;
-}
-
 function ReylumiMark({ className = "h-8 w-8" }: { className?: string }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <Image
       aria-hidden="true"
       className={["shrink-0 object-contain", className].join(" ")}
       src="/brand/reylumi-favicon.png"
-      alt=""
+      alt={__vt("")}
       height={364}
       width={364}
     />
@@ -787,15 +651,18 @@ function ReylumiMark({ className = "h-8 w-8" }: { className?: string }) {
 }
 
 function ReylumiLogo() {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <Link
-      aria-label="Reylumi Explore"
+      aria-label={__vt("Reylumi Explore")}
       className="inline-flex min-h-11 shrink-0 items-center rounded-full px-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
       href="/explore"
+      onClick={handleExploreLogoClick}
     >
       <Image
         aria-hidden="true"
-        alt=""
+        alt={__vt("")}
         className="h-auto w-[7.25rem] max-w-[32vw] object-contain min-[390px]:w-[8rem]"
         height={419}
         priority
@@ -814,6 +681,8 @@ function CustomerWorkspaceRow({
   pendingKey,
   workspace,
 }: CustomerWorkspaceRowProps) {
+  const __vt = useWorkspaceTranslation();
+
   const isSelected = workspace.id === currentWorkspaceId;
   const label = customerWorkspaceLabel(workspace, accountLabel);
   const subtitle = customerWorkspaceSubtitle(workspace);
@@ -825,7 +694,7 @@ function CustomerWorkspaceRow({
   return (
     <button
       aria-current={isSelected ? "true" : undefined}
-      aria-label={`Switch to ${label}`}
+      aria-label={__vt(`Switch to ${label}`)}
       className={[
         "grid min-h-[64px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl px-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-default",
         isSelected
@@ -840,13 +709,13 @@ function CustomerWorkspaceRow({
         accountAvatarUrl={accountAvatarUrl}
         accountLabel={accountLabel}
         className={workspaceAvatarClass(isSelected)}
-        label={label}
+        label={__vt(label)}
         workspace={workspace}
       />
       <span className="min-w-0">
-        <span className="block truncate text-sm font-bold">{label}</span>
+        <span className="block truncate text-sm font-bold"><WorkspaceText text={label} /></span>
         <span className="mt-0.5 block truncate text-xs font-semibold text-text-secondary">
-          {isPending ? "Opening..." : subtitle}
+          <WorkspaceText text={isPending ? "Opening..." : subtitle} />
         </span>
       </span>
       {isSelected ? (
@@ -867,6 +736,8 @@ function CustomerContextSheet({
   onClose,
   workspaceOptions,
 }: CustomerContextSheetProps) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
@@ -980,7 +851,6 @@ function CustomerContextSheet({
 
         closeAndFocus();
         router.push(result.href);
-        router.refresh();
         setPendingKey(null);
       } catch {
         setError(WORKSPACE_SWITCH_ERROR);
@@ -1020,7 +890,6 @@ function CustomerContextSheet({
 
         closeAndFocus();
         router.push(result.href);
-        router.refresh();
         setPendingKey(null);
       } catch {
         setError(WORKSPACE_SWITCH_ERROR);
@@ -1054,17 +923,17 @@ function CustomerContextSheet({
                 className="truncate text-lg font-extrabold"
                 id="customer-context-title"
               >
-                Switch account
+                <WorkspaceText text="Switch account" />
               </p>
               <p
                 className="mt-0.5 truncate text-xs font-semibold text-text-secondary"
                 id="customer-context-description"
               >
-                {accountEmail ?? "Reylumi account"}
+                <WorkspaceText text={accountEmail ?? "Reylumi account"} />
               </p>
             </div>
             <button
-              aria-label="Close account switcher"
+              aria-label={__vt("Close account switcher")}
               className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-text-secondary transition hover:bg-surface-muted hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
               onClick={closeAndFocus}
               ref={closeButtonRef}
@@ -1076,7 +945,7 @@ function CustomerContextSheet({
         </div>
 
         <div className="grid flex-1 content-start gap-4 overflow-y-auto px-4 py-4">
-          <section className="grid gap-2" aria-label="Personal account">
+          <section className="grid gap-2" aria-label={__vt("Personal account")}>
             {personalWorkspace ? (
               <CustomerWorkspaceRow
                 accountAvatarUrl={accountAvatarUrl}
@@ -1091,14 +960,14 @@ function CustomerContextSheet({
                 <AccountAvatar
                   avatarUrl={accountAvatarUrl}
                   className={workspaceAvatarClass(true)}
-                  label={accountLabel}
+                  label={__vt(accountLabel)}
                 />
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-bold">
                     {accountLabel}
                   </span>
                   <span className="mt-0.5 block truncate text-xs font-semibold text-text-secondary">
-                    Personal account
+                    <WorkspaceText text="Personal account" />
                   </span>
                 </span>
               </div>
@@ -1108,7 +977,7 @@ function CustomerContextSheet({
           {groups.map((group) => (
             <section className="grid gap-1" key={group.id}>
               <p className="px-2 text-[11px] font-bold uppercase text-text-secondary">
-                {group.label}
+                <WorkspaceText text={group.label} />
               </p>
               <div className="grid gap-1">
                 {group.options.map((workspace) => (
@@ -1140,7 +1009,7 @@ function CustomerContextSheet({
                 type="button"
               >
                 <Icon name="plus" />
-                <span>Create Salon</span>
+                <span><WorkspaceText text="Create Salon" /></span>
               </button>
             ) : null}
             <Link
@@ -1149,17 +1018,18 @@ function CustomerContextSheet({
               onClick={closeAndFocus}
             >
               <Icon name="gear" />
-              <span>All Settings</span>
+              <span><WorkspaceText text="All Settings" /></span>
             </Link>
+            <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Help & support" /></span></Link>
             <LogoutButton className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60">
               <Icon name="log-out" />
-              <span>Log out</span>
+              <span><WorkspaceText text="Log out" /></span>
             </LogoutButton>
           </div>
         </div>
       </aside>
       <ActionDialog
-        description={error ?? ""}
+        description={__vt(error ?? "")}
         onClose={() => setError(null)}
         open={Boolean(error)}
         primaryAction={{
@@ -1167,7 +1037,7 @@ function CustomerContextSheet({
           onClick: () => setError(null),
         }}
         secondaryAction={{ href: "/explore", label: "Explore" }}
-        title="Workspace action needed"
+        title={__vt("Workspace action needed")}
       />
     </div>
   );
@@ -1254,7 +1124,7 @@ function RoleMorePanel({
   searchParams: SearchParamsReader;
   variant: "desktop" | "mobile" | "rail" | "sidebar";
 }) {
-  const items = ROLE_MORE_ITEMS[roleKind];
+  const activeItemIds = ROLE_MORE_ITEMS[roleKind].filter(item => isLinkActive(moreItemAsNavigationLink(item), pathname, searchParams)).map(item => item.id);
   const isMobile = variant === "mobile";
   const isRail = variant === "rail";
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -1272,84 +1142,18 @@ function RoleMorePanel({
       className={[
         "z-[75] overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated text-text-primary shadow-[0_22px_60px_rgba(35,25,22,0.16)]",
         isMobile
-          ? "fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom))]"
+          ? "workspace-mobile-panel fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom))]"
           : isRail
             ? "absolute left-[calc(100%+0.75rem)] top-0 w-80"
           : "absolute left-0 top-[calc(100%+0.5rem)] w-full",
       ].join(" ")}
     >
-      <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-3 py-2.5">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-text-secondary">
-          More
-        </p>
-        <Link
-          className="inline-flex min-h-8 items-center justify-center rounded-full bg-brand-orange-soft px-3 text-xs font-bold text-brand-orange transition hover:bg-brand-orange hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          href="/more"
-          onNavigate={closeMoreMenu}
-        >
-          All
-        </Link>
-      </div>
-      <div
-        className={[
-          "grid gap-1 overflow-y-auto p-2",
-          isMobile ? "max-h-[min(24rem,55vh)]" : "max-h-[min(28rem,64vh)]",
-        ].join(" ")}
-      >
-        {items.map((item) => {
-          const isActive = isLinkActive(
-            moreItemAsNavigationLink(item),
-            pathname,
-            searchParams,
-          );
-          const isSavedPostItem = item.href === "/more/saved-post";
-
-          return (
-            <Link
-              aria-current={isActive ? "page" : undefined}
-              className={[
-                "grid min-h-12 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 py-2 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
-                isActive
-                  ? "bg-brand-orange-soft text-brand-orange"
-                : "text-text-primary hover:bg-surface-muted",
-              ].join(" ")}
-              data-saved-post-target={isSavedPostItem ? "true" : undefined}
-              href={item.href}
-              key={item.id}
-              onNavigate={closeMoreMenu}
-            >
-              <span
-                className={[
-                  "grid h-9 w-9 shrink-0 place-items-center rounded-full",
-                  isActive ? "bg-white" : "bg-brand-orange-soft text-brand-orange",
-                ].join(" ")}
-              >
-                <Icon name={item.navigationIcon} />
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-bold">
-                  {item.label}
-                </span>
-                <span className="mt-0.5 block truncate text-xs font-medium text-text-secondary">
-                  {item.description}
-                </span>
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-      <div className="border-t border-border-subtle p-2">
-        <Link
-          className="grid min-h-11 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-sm font-bold text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          href="/settings"
-          onNavigate={closeMoreMenu}
-        >
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-orange-soft text-brand-orange">
-            <Icon name="gear" />
-          </span>
-          <span>View all settings</span>
-        </Link>
-      </div>
+      <RoleMoreContent
+        roleKind={roleKind}
+        activeItemIds={activeItemIds}
+        onNavigate={closeMoreMenu}
+        listClassName={isMobile ? "max-h-[min(24rem,55vh)]" : "max-h-[min(28rem,64vh)]"}
+      />
     </div>
   );
 }
@@ -1384,7 +1188,7 @@ function CustomerDesktopMoreMenu({
         >
           <Icon name="more" />
         </span>
-        <span className="truncate">More</span>
+        <span className="truncate"><WorkspaceText text="More" /></span>
         <span className="grid h-7 w-7 place-items-center rounded-full text-text-secondary transition group-open/more:rotate-180">
           <Icon name="chevron-down" />
         </span>
@@ -1408,6 +1212,8 @@ function SidebarMoreMenu({
   pathname: string;
   searchParams: SearchParamsReader;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const detailsRef = useDismissibleDetails();
   const roleKind = roleKindForMoreLink(link);
   const isActive = isRoleMoreActive(roleKind, pathname, searchParams);
@@ -1421,10 +1227,10 @@ function SidebarMoreMenu({
           "cursor-pointer list-none [&::-webkit-details-marker]:hidden",
         ].join(" ")}
         data-more-menu-target="true"
-        title={link.label}
+        title={__vt(link.label)}
       >
         <Icon name={link.icon} />
-        <span className="truncate">{link.label}</span>
+        <span className="truncate"><WorkspaceText text={link.label} /></span>
       </summary>
       <RoleMorePanel
         pathname={pathname}
@@ -1445,6 +1251,8 @@ function RailMoreMenu({
   pathname: string;
   searchParams: SearchParamsReader;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const detailsRef = useDismissibleDetails();
   const isActive = isRoleMoreActive("personal", pathname, searchParams);
 
@@ -1452,13 +1260,13 @@ function RailMoreMenu({
     <details data-dismissible-popover className="relative" ref={detailsRef}>
       <summary
         aria-current={matchesPath(pathname, link.href) ? "page" : undefined}
-        aria-label={link.label}
+        aria-label={__vt(link.label)}
         className={[
           railLinkClass(isActive),
           "cursor-pointer list-none [&::-webkit-details-marker]:hidden",
         ].join(" ")}
         data-more-menu-target="true"
-        title={link.label}
+        title={__vt(link.label)}
       >
         <Icon name={link.icon} />
       </summary>
@@ -1473,15 +1281,18 @@ function RailMoreMenu({
 }
 
 function CustomerDesktopLogo({ href }: { href: string }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <Link
-      aria-label="Reylumi"
+      aria-label={__vt("Reylumi")}
       className="inline-flex min-h-[4.75rem] w-full items-center rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
       href={href}
+      onClick={href === "/explore" ? handleExploreLogoClick : undefined}
     >
       <Image
         aria-hidden="true"
-        alt=""
+        alt={__vt("")}
         className="h-auto w-[13.25rem] max-w-full object-contain"
         height={452}
         priority
@@ -1505,6 +1316,8 @@ function CustomerDesktopWorkspaceSwitcher({
   currentWorkspace: CurrentWorkspaceOption | null;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setOpen] = useState(false);
@@ -1615,7 +1428,6 @@ function CustomerDesktopWorkspaceSwitcher({
         }
 
         router.push(result.href);
-        router.refresh();
         setOpen(false);
         setPendingKey(null);
       } catch {
@@ -1655,7 +1467,6 @@ function CustomerDesktopWorkspaceSwitcher({
         }
 
         router.push(result.href);
-        router.refresh();
         setOpen(false);
         setPendingKey(null);
       } catch {
@@ -1674,11 +1485,11 @@ function CustomerDesktopWorkspaceSwitcher({
   const currentSubtitle = customerWorkspaceSubtitle(currentWorkspace);
 
   return (
-    <section className="relative" aria-label="Account switcher">
+    <section className="relative" aria-label={__vt("Account switcher")}>
       <button
         aria-controls={CUSTOMER_DESKTOP_ACCOUNT_MENU_ID}
         aria-expanded={isOpen}
-        aria-label="Open account menu"
+        aria-label={__vt("Open account menu")}
         className="grid min-h-[72px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-surface-elevated px-3 text-left shadow-[var(--shadow-soft)] ring-1 ring-divider-subtle/80 transition hover:ring-brand-orange/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
         data-testid="customer-desktop-account-trigger"
         onClick={() => {
@@ -1692,7 +1503,7 @@ function CustomerDesktopWorkspaceSwitcher({
           accountAvatarUrl={accountAvatarUrl}
           accountLabel={accountLabel}
           className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange"
-          label={currentLabel}
+          label={__vt(currentLabel)}
           workspace={currentWorkspace}
         />
         <span className="min-w-0">
@@ -1739,7 +1550,7 @@ function CustomerDesktopWorkspaceSwitcher({
               return (
                 <button
                   aria-current={isSelected ? "true" : undefined}
-                  aria-label={`Switch to ${label}`}
+                  aria-label={__vt(`Switch to ${label}`)}
                   className={[
                     "grid min-h-12 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl px-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-default",
                     isSelected
@@ -1755,15 +1566,15 @@ function CustomerDesktopWorkspaceSwitcher({
                     accountAvatarUrl={accountAvatarUrl}
                     accountLabel={accountLabel}
                     className={workspaceAvatarClass(isSelected)}
-                    label={label}
+                    label={__vt(label)}
                     workspace={workspace}
                   />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-bold">
-                      {label}
+                      <WorkspaceText text={label} />
                     </span>
                     <span className="mt-0.5 block truncate text-xs font-normal text-text-secondary">
-                      {isPending ? "Opening..." : subtitle}
+                      <WorkspaceText text={isPending ? "Opening..." : subtitle} />
                     </span>
                   </span>
                   {isSelected ? (
@@ -1787,7 +1598,7 @@ function CustomerDesktopWorkspaceSwitcher({
                 type="button"
               >
                 <Icon name="plus" />
-                <span>Create Salon</span>
+                <span><WorkspaceText text="Create Salon" /></span>
               </button>
             ) : null}
             <Link
@@ -1795,17 +1606,18 @@ function CustomerDesktopWorkspaceSwitcher({
               href="/settings"
             >
               <Icon name="gear" />
-              <span>All Settings</span>
+              <span><WorkspaceText text="All Settings" /></span>
             </Link>
+            <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Help & support" /></span></Link>
             <LogoutButton className="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-sm font-medium text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60">
               <Icon name="log-out" />
-              <span>Log out</span>
+              <span><WorkspaceText text="Log out" /></span>
             </LogoutButton>
           </div>
         </div>
       ) : null}
       <ActionDialog
-        description={error ?? ""}
+        description={__vt(error ?? "")}
         onClose={() => setError(null)}
         open={Boolean(error)}
         primaryAction={{
@@ -1813,7 +1625,7 @@ function CustomerDesktopWorkspaceSwitcher({
           onClick: () => setError(null),
         }}
         secondaryAction={{ href: "/my-place", label: "My Place" }}
-        title="Workspace action needed"
+        title={__vt("Workspace action needed")}
       />
     </section>
   );
@@ -1830,10 +1642,12 @@ function CustomerDesktopNavigation({
   pathname: string;
   searchParams: SearchParamsReader;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
-    <nav aria-label={navigation.desktopAriaLabel} className="grid gap-1">
+    <nav aria-label={__vt(navigation.desktopAriaLabel)} className="grid gap-1">
       <p className="px-1 pb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-text-secondary">
-        Navigation
+        <WorkspaceText text="Navigation" />
       </p>
       {navigation.links.map((link) => {
         const isActive =
@@ -1867,7 +1681,7 @@ function CustomerDesktopNavigation({
             >
               <Icon name={link.icon} />
             </span>
-            <span className="truncate">{link.label}</span>
+            <span className="truncate"><WorkspaceText text={link.label} /></span>
             {link.id === "notifications" && notificationSummary.total > 0 ? (
               <span className="grid min-h-5 min-w-5 place-items-center rounded-full bg-danger px-1 text-[10px] font-semibold leading-none text-white">
                 {notificationSummary.total > 9 ? "9+" : notificationSummary.total}
@@ -1889,10 +1703,10 @@ function CustomerDesktopMembershipCard() {
         </span>
         <div className="min-w-0">
           <h2 className="text-sm font-semibold text-text-primary">
-            Become a Member
+            <WorkspaceText text="Become a Member" />
           </h2>
           <p className="mt-1 line-clamp-2 text-xs font-normal leading-5 text-text-secondary">
-            Unlock customer perks, saved favorites, and special offers.
+            <WorkspaceText text="Unlock customer perks, saved favorites, and special offers." />
           </p>
         </div>
       </div>
@@ -1900,7 +1714,7 @@ function CustomerDesktopMembershipCard() {
         className="mt-2 inline-flex min-h-8 items-center justify-center rounded-full bg-brand-orange px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
         href="/more/memberships"
       >
-        View Memberships
+        <WorkspaceText text="View Memberships" />
       </Link>
     </section>
   );
@@ -1927,9 +1741,11 @@ function CustomerDesktopSidebar({
   searchParams: SearchParamsReader;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <aside
-      aria-label={`${navigation.ariaLabel} account`}
+      aria-label={__vt(`${navigation.ariaLabel} account`)}
       className="sticky top-0 flex h-screen min-w-0 flex-col gap-3 overflow-y-auto border-r border-divider-subtle/70 bg-surface-elevated px-4 py-4 shadow-[10px_0_34px_rgba(35,25,22,0.035)]"
       data-testid="customer-desktop-sidebar"
     >
@@ -1966,6 +1782,8 @@ function NotificationDropdown({
   bottom?: boolean;
   isActive?: boolean;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [error,setError]=useState("");
   const [marking,setMarking]=useState(false);
   useEffect(()=>{const show=(event:Event)=>setError((event as CustomEvent<string>).detail); window.addEventListener("kingpos:notifications-error",show); return ()=>window.removeEventListener("kingpos:notifications-error",show);},[]);
@@ -1982,7 +1800,7 @@ function NotificationDropdown({
     >
       <summary
         aria-current={isActive ? "page" : undefined}
-        aria-label="Notifications"
+        aria-label={__vt("Notifications")}
         className={[triggerClassName, "cursor-pointer list-none"].join(" ")}
       >
         <span className={bottom ? "relative grid h-7 w-7 shrink-0 place-items-center" : "relative"}>
@@ -1993,13 +1811,13 @@ function NotificationDropdown({
             </span>
           ) : null}
         </span>
-        {bottom ? <span className="max-w-full truncate">Notifications</span> : null}
+        {bottom ? <span className="max-w-full truncate"><WorkspaceText text="Notifications" /></span> : null}
       </summary>
-      <div className={`fixed right-2 ${bottom ? "bottom-[calc(5rem+env(safe-area-inset-bottom))]" : "top-[calc(4.75rem+env(safe-area-inset-top))]"} z-[70] flex max-h-[calc(100dvh-7rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-[min(24rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-950 shadow-2xl sm:right-4`}>
+      <div className={`fixed right-2 ${bottom ? "workspace-mobile-panel bottom-[calc(5rem+env(safe-area-inset-bottom))]" : "top-[calc(4.75rem+env(safe-area-inset-top))]"} z-[70] flex max-h-[calc(100dvh-7rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-[min(24rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white text-zinc-950 shadow-2xl sm:right-4`}>
         <header className="px-4 pb-3 pt-4">
           <div className="flex items-center gap-3">
-            <h2 className="min-w-0 flex-1 text-xl font-bold">Notifications</h2>
-            <Link aria-label="Notification settings" prefetch={false} href="/settings?section=notifications" className="rounded-md p-2 text-zinc-500 hover:bg-zinc-100"><Icon name="gear" /></Link>
+            <h2 className="min-w-0 flex-1 text-xl font-bold"><WorkspaceText text="Notifications" /></h2>
+            <Link aria-label={__vt("Notification settings")} prefetch={false} href="/settings?section=notifications" className="rounded-md p-2 text-zinc-500 hover:bg-zinc-100"><Icon name="gear" /></Link>
             {hasUnreadAppNotifications ? (
                 <button
                   disabled={marking}
@@ -2007,19 +1825,19 @@ function NotificationDropdown({
                   className="inline-flex min-h-8 items-center justify-center rounded-full px-2.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                   type="button"
                 >
-                  Mark all viewed
+                  <WorkspaceText text="Mark all viewed" />
                 </button>
             ) : null}
           </div>
         </header>
-        {error && <p role="alert" className="mx-3 rounded-md bg-red-50 p-2 text-xs text-red-700">{error} <button type="button" className="font-semibold underline" onClick={()=>{setError("");window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH));}}>Retry</button></p>}
+        {error && <p role="alert" className="mx-3 rounded-md bg-red-50 p-2 text-xs text-red-700"><WorkspaceText text={error} /> <button type="button" className="font-semibold underline" onClick={()=>{setError("");window.dispatchEvent(new Event(NOTIFICATIONS_REFRESH));}}><WorkspaceText text="Retry" /></button></p>}
         <div className="flex items-center gap-3 px-4 pb-1">
-          <p className="min-w-0 flex-1 text-base font-bold">Recent updates</p>
+          <p className="min-w-0 flex-1 text-base font-bold"><WorkspaceText text="Recent updates" /></p>
           <Link
             className="text-sm font-semibold text-blue-700 transition hover:text-blue-800"
             href="/notifications"
           >
-            See all
+            <WorkspaceText text="See all" />
           </Link>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">
@@ -2029,14 +1847,14 @@ function NotificationDropdown({
             items={previewItems.filter(item=>item.source === "app").slice(0,5)}
           />
         </div>
-        {previewItems.some(item=>item.source !== "app") && <section className="max-h-40 overflow-y-auto border-t border-zinc-100 p-3"><h3 className="mb-2 text-sm font-bold">Needs action</h3><NotificationFeedList compact items={previewItems.filter(item=>item.source !== "app")} /></section>}
+        {previewItems.some(item=>item.source !== "app") && <section className="max-h-40 overflow-y-auto border-t border-zinc-100 p-3"><h3 className="mb-2 text-sm font-bold"><WorkspaceText text="Needs action" /></h3><NotificationFeedList compact items={previewItems.filter(item=>item.source !== "app")} /></section>}
         <footer className="border-t border-zinc-100 p-3">
           <Link
             className="inline-flex min-h-10 w-full items-center justify-center rounded-md bg-zinc-200 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
             href="/notifications"
             prefetch={false}
           >
-            View notification center
+            <WorkspaceText text="View notification center" />
           </Link>
         </footer>
       </div>
@@ -2059,8 +1877,23 @@ function CustomerDesktopHeader({
   pathname: string;
   searchParams: SearchParamsReader;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const staffWorkspace = currentWorkspace?.salonMode === "staff";
   const compactStaffHeader = staffWorkspace && pathname !== "/explore";
+  const exploreHeader = pathname === "/explore";
+  const [nearYouEnabled, setNearYouEnabled] = useState(false);
+  const [nearYouPending, setNearYouPending] = useState(false);
+  useEffect(() => {
+    function updateLocationState(event: Event) {
+      const state = (event as CustomEvent<{ enabled: boolean; pending: boolean }>).detail;
+      setNearYouEnabled(state.enabled);
+      setNearYouPending(state.pending);
+    }
+    window.addEventListener("kingpos:explore-location-state", updateLocationState);
+    window.dispatchEvent(new Event("kingpos:explore-request-location-state"));
+    return () => window.removeEventListener("kingpos:explore-location-state", updateLocationState);
+  }, [pathname]);
   const exploreQuery =
     pathname === "/explore"
       ? searchParams.get("q") ?? ""
@@ -2077,84 +1910,82 @@ function CustomerDesktopHeader({
       return;
     }
 
-    window.dispatchEvent(new CustomEvent("kingpos:explore-use-current-location"));
+    window.dispatchEvent(new CustomEvent(nearYouEnabled || nearYouPending
+      ? "kingpos:explore-clear-current-location"
+      : "kingpos:explore-use-current-location"));
   }
 
   return (
     <header
-      className={compactStaffHeader ? "sticky top-0 z-30 border-b border-zinc-100 bg-white/95 px-6 py-3 backdrop-blur-sm" : "sticky top-0 z-30 bg-white/92 px-7 py-4 backdrop-blur-sm"}
+      className={compactStaffHeader || exploreHeader ? "sticky top-0 z-30 border-b border-zinc-100 bg-white/95 px-6 py-3 backdrop-blur-sm" : "sticky top-0 z-30 bg-white/92 px-7 py-4 backdrop-blur-sm"}
       data-testid="customer-desktop-header"
     >
-      <div className={compactStaffHeader ? "flex items-center justify-between gap-4" : "grid grid-cols-[minmax(24rem,1fr)_auto] items-center gap-5"}>
-        {compactStaffHeader ? <span className="text-sm text-zinc-500">Staff workspace</span> : null}
-        {!compactStaffHeader && <form action="/explore" className="relative" role="search">
-          <div className="relative">
+      <div className={exploreHeader ? "flex items-center justify-end gap-4" : compactStaffHeader ? "flex items-center justify-between gap-4" : "grid grid-cols-[minmax(24rem,1fr)_auto] items-center gap-5"}>
+        {exploreHeader ? <ExploreHeaderSearchSlot /> : null}
+        {compactStaffHeader ? <span className="text-sm text-zinc-500"><WorkspaceText text="Staff workspace" /></span> : null}
+        {!compactStaffHeader && !exploreHeader && <form action="/explore" className="relative" role="search"
+          onSubmit={(event) => {
+            if (!nearYouEnabled || pathname !== "/explore") return;
+            event.preventDefault();
+            const query = String(new FormData(event.currentTarget).get("q") ?? "");
+            window.dispatchEvent(new CustomEvent("kingpos:explore-search-current-location", { detail: { query } }));
+          }}>
+          <input name="location" type="hidden" value="" />
           <label className="sr-only" htmlFor="customer-desktop-search">
-            Search salons, services, or locations
+            <WorkspaceText text="Search salons, services, or locations" />
           </label>
           <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-text-secondary">
             <Icon name="search" />
           </span>
           <input
-            className="h-14 w-full rounded-full bg-surface-elevated pl-12 pr-56 text-sm font-normal text-text-primary shadow-[0_12px_30px_rgba(35,25,22,0.045)] outline-none ring-1 ring-divider-subtle/85 transition placeholder:font-normal placeholder:text-text-secondary/80 focus:ring-4 focus:ring-brand-orange/15"
+            className="h-14 w-full rounded-full bg-surface-elevated pl-12 pr-64 text-sm font-normal text-text-primary shadow-[0_12px_30px_rgba(35,25,22,0.045)] outline-none ring-1 ring-divider-subtle/85 transition placeholder:font-normal placeholder:text-text-secondary/80 focus:ring-4 focus:ring-brand-orange/15"
             defaultValue={exploreQuery}
             id="customer-desktop-search"
             key={exploreQuery}
             name="q"
-            placeholder="Search salons, services, designs, city, or ZIP..."
+            placeholder={__vt("Search salons, services, designs, city, or ZIP...")}
             type="search"
           />
           <button
-            aria-label="Use current location"
+            aria-label={__vt(nearYouEnabled || nearYouPending ? "Turn off nearby search" : "Turn on nearby search")}
+            aria-pressed={nearYouEnabled}
+            title={__vt(nearYouEnabled || nearYouPending ? "Click to search any location" : "Click to search near your current location")}
             className="absolute right-24 top-1/2 inline-flex min-h-10 -translate-y-1/2 items-center gap-1.5 rounded-full bg-brand-teal-soft px-3 text-xs font-semibold text-brand-teal transition hover:bg-white hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-teal"
             onClick={requestExploreLocation}
             type="button"
           >
             <Icon name="compass" />
-            <span>Near you</span>
+            <span><WorkspaceText text={nearYouPending ? "Locating… ×" : nearYouEnabled ? "Near you · On ×" : "Any location"} /></span>
           </button>
           <button
             className="absolute right-2 top-1/2 inline-flex min-h-10 -translate-y-1/2 items-center justify-center rounded-full bg-brand-orange px-5 text-xs font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
             type="submit"
           >
-            Search
+            <WorkspaceText text="Search" />
           </button>
-          </div>
-          <label className="mt-2 flex items-center gap-2 px-4 text-xs text-text-secondary" htmlFor="customer-desktop-location">
-            <span className="shrink-0">Location (optional)</span>
-            <input
-              className="min-w-0 flex-1 rounded-full bg-surface-elevated px-3 py-2 text-sm text-text-primary outline-none focus:ring-2 focus:ring-brand-orange/20"
-              defaultValue={pathname === "/explore" ? searchParams.get("location") ?? "" : ""}
-              id="customer-desktop-location"
-              key={`${pathname}:${searchParams.get("location") ?? ""}`}
-              name="location"
-              placeholder="Any location"
-              type="search"
-            />
-          </label>
         </form>}
         <div className="flex items-center gap-3">
-          {compactStaffHeader && <Link href="/explore" aria-label="Search salons and services" className={customerDesktopSoftButtonClass()}><Icon name="search" /></Link>}
+          {compactStaffHeader && <Link href="/explore" aria-label={__vt("Search salons and services")} className={customerDesktopSoftButtonClass()}><Icon name="search" /></Link>}
           <NotificationDropdown
             notificationSummary={notificationSummary}
             triggerClassName={customerDesktopSoftButtonClass()}
           />
           <Link
-            aria-label="Messages"
+            aria-label={__vt("Messages")}
             className={customerDesktopSoftButtonClass()}
             href="/notifications"
           >
             <Icon name="message" />
           </Link>
           <Link
-            aria-label={staffWorkspace ? "Open Staff Profile" : "All settings"}
+            aria-label={__vt(staffWorkspace ? "Open Staff Profile" : "All settings")}
             className="grid min-h-12 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-full bg-surface-elevated py-1 pl-1.5 pr-4 text-left shadow-[0_10px_28px_rgba(35,25,22,0.045)] ring-1 ring-divider-subtle/85 transition hover:ring-brand-orange/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
             href={staffWorkspace ? "/staff/my-work?profile=1" : "/settings"}
           >
             <AccountAvatar
               avatarUrl={accountAvatarUrl}
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange"
-              label={accountLabel}
+              label={__vt(accountLabel)}
             />
             <span className="min-w-0">
               <span className="block max-w-32 truncate text-sm font-semibold text-text-primary">
@@ -2186,6 +2017,8 @@ function CustomerMobileHeader({
   notificationSummary: NotificationSummary;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [isContextOpen, setContextOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const shouldRestoreContextFocusRef = useRef(false);
@@ -2212,8 +2045,8 @@ function CustomerMobileHeader({
           <button
             aria-controls={CUSTOMER_CONTEXT_SHEET_ID}
             aria-expanded={isContextOpen}
-            aria-label="Open account switcher"
-            className="grid min-h-11 min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-full bg-surface-elevated px-2.5 py-1 text-left shadow-[var(--shadow-soft)] ring-1 ring-divider-subtle/80 transition hover:ring-brand-orange/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+            aria-label={__vt("Open account switcher")}
+            className="grid min-h-11 min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-1 py-1 text-left transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
             onClick={() => setContextOpen(true)}
             ref={triggerRef}
             type="button"
@@ -2222,18 +2055,18 @@ function CustomerMobileHeader({
               accountAvatarUrl={accountAvatarUrl}
               accountLabel={accountLabel}
               className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange"
-              label={label}
+              label={__vt(label)}
               workspace={currentWorkspace}
             />
             <span className="min-w-0">
               <span className="block truncate text-sm font-extrabold text-text-primary">
-                {label}
+                <WorkspaceText text={label} />
               </span>
               <span className="block truncate text-[11px] font-semibold text-text-secondary">
-                {subtitle}
+                <WorkspaceText text={subtitle} />
               </span>
             </span>
-            <span className="grid h-7 w-7 place-items-center rounded-full text-text-secondary">
+            <span className="grid h-7 w-7 self-start mt-0.5 place-items-center rounded-full bg-brand-orange-soft text-text-secondary ring-1 ring-brand-orange/15">
               <Icon name="chevron-down" />
             </span>
           </button>
@@ -2268,6 +2101,8 @@ function WorkspaceOptionButton({
   currentWorkspaceId: string | null;
   workspace: CurrentWorkspaceOption;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const isCurrent = workspace.id === currentWorkspaceId;
   const label = customerWorkspaceLabel(workspace, accountLabel);
   const subtitle = customerWorkspaceSubtitle(workspace);
@@ -2294,18 +2129,18 @@ function WorkspaceOptionButton({
               ? "bg-white/15 text-white"
               : "bg-brand-orange-soft text-brand-orange",
           ].join(" ")}
-          label={label}
+          label={__vt(label)}
           workspace={workspace}
         />
         <span className="min-w-0">
-          <span className="block truncate font-semibold">{label}</span>
+          <span className="block truncate font-semibold"><WorkspaceText text={label} /></span>
           <span
             className={[
               "block truncate text-xs",
               isCurrent ? "text-zinc-200" : "text-zinc-500",
             ].join(" ")}
           >
-            {subtitle}
+            <WorkspaceText text={subtitle} />
           </span>
         </span>
       </button>
@@ -2369,7 +2204,7 @@ function ModeSwitch({
               className="rounded-md px-3 py-1.5 text-center text-sm font-semibold text-zinc-400"
               key={mode}
             >
-              {mode === "staff" ? "Staff" : "Owner"}
+              {mode === "staff" ? <WorkspaceText text="Staff" /> : <WorkspaceText text="Owner" />}
             </span>
           );
         }
@@ -2388,7 +2223,7 @@ function ModeSwitch({
               disabled={isActive}
               type="submit"
             >
-              {mode === "staff" ? "Staff" : "Owner"}
+              {mode === "staff" ? <WorkspaceText text="Staff" /> : <WorkspaceText text="Owner" />}
             </button>
           </form>
         );
@@ -2408,6 +2243,8 @@ function WorkspaceSwitcher({
   currentWorkspace: CurrentWorkspaceOption | null;
   workspaceOptions: CurrentWorkspaceOption[];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const detailsRef = useDismissibleDetails();
   const currentWorkspaceId = currentWorkspace?.id ?? null;
   const currentLabel = customerWorkspaceLabel(currentWorkspace, accountLabel);
@@ -2419,7 +2256,7 @@ function WorkspaceSwitcher({
           accountAvatarUrl={accountAvatarUrl}
           accountLabel={accountLabel}
           className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-orange-soft text-xs font-semibold text-brand-orange"
-          label={currentLabel}
+          label={__vt(currentLabel)}
           workspace={currentWorkspace}
         />
         <span className="min-w-0">
@@ -2438,7 +2275,7 @@ function WorkspaceSwitcher({
         {groupWorkspaceOptions(workspaceOptions).map((group) => (
           <section className="grid gap-1" key={group.id}>
             <p className="px-2 text-xs font-semibold uppercase text-zinc-500">
-              {group.label}
+              <WorkspaceText text={group.label} />
             </p>
             {group.options.map((workspace) => (
               <WorkspaceOptionButton
@@ -2473,17 +2310,19 @@ function AppRail({
   pathname: string;
   searchParams: SearchParamsReader;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <aside className="fixed inset-y-0 left-0 z-50 hidden w-16 flex-col border-r border-zinc-200 bg-white lg:flex">
       <Link
-        aria-label="Reylumi Explore"
+        aria-label={__vt("Reylumi Explore")}
         className="mx-auto mt-3 grid h-10 w-10 place-items-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
         href="/explore"
-        title="Reylumi"
+        title={__vt("Reylumi")}
       >
         <ReylumiMark className="h-10 w-10 text-lg" />
       </Link>
-      <nav aria-label="Personal app" className="mt-6 grid justify-center gap-2">
+      <nav aria-label={__vt("Personal app")} className="mt-6 grid justify-center gap-2">
         {PERSONAL_LINKS.map((link) => {
           const isActive = isLinkActive(link, pathname, searchParams);
 
@@ -2501,11 +2340,11 @@ function AppRail({
           return (
             <Link
               aria-current={isActive ? "page" : undefined}
-              aria-label={link.label}
+              aria-label={__vt(link.label)}
               className={railLinkClass(isActive)}
               href={link.href}
               key={link.id}
-              title={link.label}
+              title={__vt(link.label)}
             >
               <Icon name={link.icon} />
               {link.id === "notifications" ? (
@@ -2517,28 +2356,28 @@ function AppRail({
         <button
           aria-current={matchesPath(pathname, WORKSPACE_PANEL_LINK.href) ? "page" : undefined}
           aria-expanded={isWorkspacePanelOpen}
-          aria-label={WORKSPACE_PANEL_LINK.label}
+          aria-label={__vt(WORKSPACE_PANEL_LINK.label)}
           className={railLinkClass(
             matchesPath(pathname, WORKSPACE_PANEL_LINK.href),
             isWorkspacePanelOpen && !matchesPath(pathname, WORKSPACE_PANEL_LINK.href),
           )}
           onClick={(event) => onOpenWorkspacePanel(event.currentTarget)}
-          title={WORKSPACE_PANEL_LINK.label}
+          title={__vt(WORKSPACE_PANEL_LINK.label)}
           type="button"
         >
           <Icon name={WORKSPACE_PANEL_LINK.icon} />
         </button>
       </nav>
       <Link
-        aria-label="All Settings"
+        aria-label={__vt("All Settings")}
         className="mx-auto mb-3 mt-auto grid h-10 w-10 place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
         href="/settings"
-        title="All Settings"
+        title={__vt("All Settings")}
       >
         <AccountAvatar
           avatarUrl={accountAvatarUrl}
           className="grid h-full w-full place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange"
-          label={accountLabel}
+          label={__vt(accountLabel)}
         />
       </Link>
     </aside>
@@ -2554,16 +2393,18 @@ function WorkspaceNavigation({
   searchParams: SearchParamsReader;
   workspaceSections: readonly NavigationSection[];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   if (workspaceSections.length === 0) {
     return null;
   }
 
   return (
-    <nav aria-label="Workspace" className="grid gap-4">
+    <nav aria-label={__vt("Workspace")} className="grid gap-4">
       {workspaceSections.map((section) => (
         <section className="grid gap-1" key={section.id}>
           <p className="px-2 text-[11px] font-semibold uppercase text-zinc-500">
-            {section.label}
+            <WorkspaceText text={section.label} />
           </p>
           <div className="grid gap-0.5">
             {section.links.map((link) => {
@@ -2586,10 +2427,10 @@ function WorkspaceNavigation({
                   className={sidebarLinkClass(isActive)}
                   href={link.href}
                   key={link.id}
-                  title={link.label}
+                  title={__vt(link.label)}
                 >
                   <Icon name={link.icon} />
-                  <span className="truncate">{link.label}</span>
+                  <span className="truncate"><WorkspaceText text={link.label} /></span>
                 </Link>
               );
             })}
@@ -2609,6 +2450,8 @@ function ProfileMenu({
   accountEmail: string | null;
   accountLabel: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const detailsRef = useDismissibleDetails();
 
   return (
@@ -2617,23 +2460,24 @@ function ProfileMenu({
         <AccountAvatar
           avatarUrl={accountAvatarUrl}
           className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange"
-          label={accountLabel}
+          label={__vt(accountLabel)}
         />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold text-zinc-950">
             {accountLabel}
           </span>
           <span className="block truncate text-xs text-zinc-500">
-            {accountEmail ?? "Reylumi account"}
+            <WorkspaceText text={accountEmail ?? "Reylumi account"} />
           </span>
         </span>
       </summary>
       <div className="absolute bottom-full left-0 z-50 mb-2 grid w-full gap-1 rounded-xl border border-zinc-200 bg-white p-2 shadow-xl">
         <Link className={sidebarLinkClass(false)} href="/settings">
           <Icon name="user" />
-          All Settings
+          <WorkspaceText text="All Settings" />
         </Link>
-        <LogoutButton />
+        <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Help & support" /></span></Link>
+            <LogoutButton />
       </div>
     </details>
   );
@@ -2720,6 +2564,8 @@ function MobileHeader({
   workspaceOptions: CurrentWorkspaceOption[];
   workspaceSections: readonly NavigationSection[];
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const workspaceNavigationDetailsRef = useDismissibleDetails();
 
   if (isCustomerShell) {
@@ -2746,7 +2592,7 @@ function MobileHeader({
         />
         <details data-dismissible-popover className="relative ml-auto" ref={workspaceNavigationDetailsRef}>
           <summary
-            aria-label="Open workspace navigation"
+            aria-label={__vt("Open workspace navigation")}
             className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-md border border-zinc-200 text-zinc-700"
           >
             <Icon name="list" />
@@ -2759,7 +2605,7 @@ function MobileHeader({
             />
             <Link className={sidebarLinkClass(false)} href="/settings">
               <Icon name="user" />
-              All Settings
+              <WorkspaceText text="All Settings" />
             </Link>
           </div>
         </details>
@@ -2770,7 +2616,7 @@ function MobileHeader({
           <AccountAvatar
             avatarUrl={accountAvatarUrl}
             className="grid h-full w-full place-items-center rounded-full bg-brand-black text-xs font-semibold text-brand-orange"
-            label={accountLabel}
+            label={__vt(accountLabel)}
           />
         </Link>
       </div>
@@ -2810,7 +2656,7 @@ function MobileMoreMenu({
         >
           <Icon name={link.icon} />
         </span>
-        <span className="max-w-full truncate">{link.label}</span>
+        <span className="max-w-full truncate"><WorkspaceText text={link.label} /></span>
       </summary>
       <RoleMorePanel
         pathname={pathname}
@@ -2837,10 +2683,12 @@ function MobileBottomNav({
   roleKind: RoleNavigationKind;
   searchParams: SearchParamsReader;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <nav
-      aria-label={ariaLabel}
-      className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border-subtle bg-surface/95 px-1 pb-[calc(0.35rem+env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_30px_rgba(23,19,22,0.08)] backdrop-blur lg:hidden"
+      aria-label={__vt(ariaLabel)}
+      className="workspace-mobile-nav fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border-subtle bg-surface px-1 pb-[env(safe-area-inset-bottom)] pt-2.5 shadow-[0_-10px_30px_rgba(23,19,22,0.08)] lg:hidden"
     >
       {links.map((link) => {
         const isActive =
@@ -2894,7 +2742,7 @@ function MobileBottomNav({
               <Icon name={link.icon} />
               {link.id === "notifications" && notificationSummary.total > 0 ? (
                 <span
-                  aria-label={notificationBadgeLabel(notificationSummary.total)}
+                  aria-label={__vt(notificationBadgeLabel(notificationSummary.total))}
                   className="absolute -right-2 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white"
                 >
                   {notificationSummary.total > 9 ? "9+" : notificationSummary.total}
@@ -2902,7 +2750,7 @@ function MobileBottomNav({
               ) : null}
             </span>
             <span className="max-w-full truncate">
-              {link.label}
+              <WorkspaceText text={link.label} />
             </span>
           </Link>
         );
@@ -2939,7 +2787,7 @@ export function NavigationShell({
   }, []);
 
   if (isShelllessPath(pathname)) {
-    return <>{children}</>;
+    return <><ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" /></>;
   }
 
   const routeWorkspaceKind = getRouteWorkspaceKind(pathname);
@@ -3008,13 +2856,13 @@ export function NavigationShell({
               <CustomerDesktopHeader accountAvatarUrl={accountAvatarUrl} accountLabel={accountLabel}
                 currentWorkspace={routeCurrentWorkspace} notificationSummary={notificationSummary} pathname={pathname} searchParams={searchParams} />
             </div>
-            <div className={`${mobileDisplay} [&>header]:!block`}>
+            <div className={`${mobileDisplay} [&>header]:!block ${pathname === "/pos/settings" ? "sticky top-0 z-50" : ""}`}>
               <MobileHeader accountAvatarUrl={accountAvatarUrl} accountEmail={accountEmail} accountLabel={accountLabel}
                 currentWorkspace={routeCurrentWorkspace} isCustomerShell notificationSummary={notificationSummary}
                 pathname={pathname} searchParams={searchParams} workspaceOptions={workspaceOptions} workspaceSections={[]} />
             </div>
             <div className={`customer-desktop-content min-w-0 ${desktopShellBreakpoint === "lg" ? "pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0" : "pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:pb-0"}`}>
-              {children}
+              <ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" />
             </div>
             <div className={`${mobileDisplay} [&>nav]:!grid`}>
               <MobileBottomNav ariaLabel={routeNavigation.ariaLabel} links={routeNavigation.links}
@@ -3084,7 +2932,7 @@ export function NavigationShell({
             workspaceSections={showWorkspaceContextSidebar ? workspaceSections : []}
           />
           <div className={["min-h-screen", contentPaddingClass].join(" ")}>
-            {children}
+            <ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" />
           </div>
 
         </div>

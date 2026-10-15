@@ -1,6 +1,14 @@
 import 'server-only';
 import {getTwilioSettings} from '@/lib/twilio-settings';
 
+export async function businessClaimDeliveryMethods() {
+ try {
+  const c=await getTwilioSettings();
+  const ready=Boolean(c.enabled && c.accountSid && c.authToken && c.verifyServiceSid && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return {sms:ready && c.claimSms,call:ready && c.claimVoice};
+ } catch {return {sms:false,call:false};}
+}
+
 export async function businessClaimMessagingReady() {
  try {
  const c=await getTwilioSettings();

@@ -1,5 +1,82 @@
 @import "tailwindcss";
 
+/* One Explore search instance moves into the desktop chrome after hydration. */
+@media (min-width: 1280px) {
+  body:has([data-explore-header-search]) [data-explore-inline-search] { display: none; }
+}
+
+/* The same four actions stay on one row across feeds and post dialogs. */
+.post-action-toolbar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+}
+
+.post-action-toolbar > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.post-action-toolbar > span,
+.post-action-toolbar > span > span:first-child { display:flex; min-width:0; }
+.post-action-toolbar > span > span:first-child { width:100%; }
+.post-action-toolbar > :is(button,a),
+.post-action-toolbar > span > :is(button,a),
+.post-action-toolbar > span > span:first-child > button {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; width:100%; min-width:0; min-height:52px; margin:0; padding:5px 2px;
+  border:0; border-radius:6px; background:transparent; box-shadow:none;
+  color:var(--text-secondary,#52525b); font-size:12px; font-weight:400; line-height:16px;
+}
+.post-action-toolbar :is(button,a) span { white-space:nowrap; }
+.post-action-toolbar :is(button,a):has(> [data-post-action-count]) { position:relative; }
+.post-action-toolbar :is(button,a) > [data-post-action-count] {
+  position:absolute; top:5px; left:calc(50% + 15px); font-size:10px; line-height:16px;
+}
+.post-action-toolbar > span > span:first-child > button { position:relative; }
+.post-action-toolbar > span > span:first-child > button > span + span { position:absolute; top:5px; left:calc(50% + 15px); font-size:10px; line-height:16px; }
+.post-action-toolbar :is(button,a):hover { background:#fafafa; }
+
+.post-action-toolbar svg {
+  flex-shrink: 0;
+  width:21px;
+  height:21px;
+}
+
+/* A full-screen backdrop must cover the whole viewport. Older native clients
+   apply a blanket dialog inset that clips backdrops as well as their panels. */
+.fixed.inset-0[role="dialog"]:not(.content-viewer) {
+  max-width: 100dvw !important;
+  max-height: 100dvh !important;
+}
+
+/* Fit browsing panels above the actual mobile bar (including safe-area and
+   landscape sizing). Override the older iOS wrapper's blanket dialog limits. */
+.content-viewer[role="dialog"] {
+  top: var(--content-viewer-top, 0px);
+  bottom: auto;
+  height: var(--content-viewer-height, 100dvh);
+  max-height: var(--content-viewer-height, 100dvh) !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  outline: none;
+}
+
+.content-viewer > * {
+  min-height: 0;
+  max-height: 100%;
+}
+
+@media (max-width: 639px) {
+  .content-viewer > * {
+    max-height: 100% !important;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
 /* Flat content shares a continuous page canvas, including the side gutters.
    Keep text, controls and desktop columns at their existing readable widths. */
 main:has(.content-surface),
@@ -81,6 +158,40 @@ main:has([data-continuous-surface]),
 html {
   min-height: 100%;
   background: var(--background);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* A phone rotated sideways still uses touch navigation. Keep a single page
+   scroll and recover vertical room without switching to a desktop sidebar. */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1023px) and (pointer: coarse) {
+  .workspace-mobile-nav {
+    padding-top: 4px;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom));
+    padding-left: max(4px, env(safe-area-inset-left));
+    padding-right: max(4px, env(safe-area-inset-right));
+  }
+
+  .workspace-mobile-nav > a,
+  .workspace-mobile-nav > details > summary {
+    min-height: 44px;
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .workspace-mobile-panel {
+    bottom: calc(61px + env(safe-area-inset-bottom));
+    max-height: calc(100dvh - 73px - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+    display: flex;
+    flex-direction: column;
+  }
+
+  .workspace-mobile-panel > :first-child { flex-shrink: 0; }
+  .workspace-mobile-panel > .overflow-y-auto { min-height: 0; }
+
+  .customer-desktop-content {
+    padding-bottom: calc(69px + env(safe-area-inset-bottom));
+  }
 }
 
 body {

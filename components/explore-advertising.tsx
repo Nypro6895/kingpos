@@ -1,18 +1,35 @@
-/* eslint-disable @next/next/no-img-element -- Preserve uploaded GIF animation and intrinsic campaign dimensions. */
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+/* eslint-disable @next/next/no-img-element -- Preserve uploaded GIF animation and intrinsic campaign dimensions. */
+
 import {
   createContext,
   useContext,
   useEffect,
   useState,
+  useRef,
+  useId,
+  useCallback,
   type ReactNode,
 } from "react";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
-import type { Campaign } from "@/types/explore-advertising";
-import { chooseCampaign } from "@/lib/explore-advertising-rules";
+import type {
+  Campaign,
+  CampaignAudience,
+  CampaignPlacement,
+} from "@/types/explore-advertising";
+import {
+  chooseCampaign,
+  shuffleCampaigns,
+  campaignMatches,
+} from "@/lib/explore-advertising-rules";
 import styles from "./explore-advertising.module.css";
-const Context = createContext<Campaign | null>(null);
+const Context = createContext<{
+  campaigns: Campaign[];
+  claimFeed: (id: string, slot: string) => boolean;
+  record: (campaign: Campaign, event: "view" | "click") => Promise<boolean>;
+}>({ campaigns: [], claimFeed: () => true, record: async () => true });
 function select(campaigns: Campaign[], kind: Campaign["kind"]) {
   let previous: string | null = null;
   try {
@@ -28,70 +45,199 @@ function select(campaigns: Campaign[], kind: Campaign["kind"]) {
     } catch {}
   return selected;
 }
-function ImageAd({ campaign }: { campaign: Campaign }) {
-  const Tag = campaign.href ? "a" : "div";
+export function ImageAd({
+  campaign,
+  preview = false,
+}: {
+  campaign: Campaign;
+  preview?: boolean;
+}) {
+  const __vt = useWorkspaceTranslation();
+
+  const { record } = useContext(Context);
+  const Tag = campaign.href && !preview ? "a" : "div";
   return (
     <Tag
       className={styles.imageLink}
-      {...(campaign.href ? { href: campaign.href } : {})}
-      aria-label={campaign.name}
+      {...(campaign.href && !preview
+        ? {
+            href: campaign.href,
+            onClick: async (event: React.MouseEvent) => {
+              if (
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+              ) {
+                void record(campaign, "click");
+                return;
+              }
+              event.preventDefault();
+              await Promise.race([
+                record(campaign, "click"),
+                new Promise((resolve) => setTimeout(resolve, 1200)),
+              ]);
+              window.location.assign(campaign.href);
+            },
+          }
+        : {})}
+      aria-label={__vt(campaign.name)}
       style={{ background: campaign.background, color: campaign.color }}
     >
       {campaign.imageUrl ? (
-        <img src={campaign.imageUrl} alt={campaign.name} />
+        <img src={campaign.imageUrl} alt={__vt(campaign.name)} />
       ) : null}
       {campaign.text || !campaign.imageUrl ? (
         <div className={styles.message}>
           <strong>{campaign.name}</strong>
-          {campaign.text ? <p>{campaign.text}</p> : null}
+          {campaign.text ? <p><WorkspaceText text={campaign.text} /></p> : null}
         </div>
       ) : null}
-      <span className={styles.sponsored}>Sponsored</span>
+      <span className={styles.sponsored}><WorkspaceText text="Sponsored" /></span>
     </Tag>
   );
 }
-export function ExploreAdSlot({ desktop = false }: { desktop?: boolean }) {
-  const campaign = useContext(Context);
+export function ExploreAdSlot({
+  desktop = false,
+  slotIndex = 0,
+  position,
+}: {
+  desktop?: boolean;
+  slotIndex?: number;
+  position?: CampaignPlacement;
+}) {
+  const __vt = useWorkspaceTranslation();
+
+  const { campaigns, claimFeed, record } = useContext(Context);
+  const slotId = useId();
+  const location = position ?? (desktop ? "sidebar" : "feed");
+  const campaign =
+    campaigns.filter((item) =>
+      (item.placements ?? ["sidebar", "feed"]).includes(location),
+    )[slotIndex] ?? null;
   const [visible, setVisible] = useState(false);
+  const slotRef = useRef<HTMLElement>(null);
+  const [admitted, setAdmitted] = useState(false);
   useEffect(() => {
     if (!campaign) return;
-    const show = setTimeout(
-      () => setVisible(true),
-      campaign.delaySeconds * 1000,
-    );
-    const hide = campaign.durationSeconds
-      ? setTimeout(
-          () => setVisible(false),
-          (campaign.delaySeconds + campaign.durationSeconds) * 1000,
-        )
-      : undefined;
+    const show = setTimeout(() => {
+      setAdmitted(false);
+      setVisible(true);
+    }, campaign.delaySeconds * 1000);
     return () => {
       clearTimeout(show);
-      clearTimeout(hide);
       setVisible(false);
     };
   }, [campaign]);
+  useEffect(() => {
+    if (!visible || !campaign || !slotRef.current) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let disposed = false;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        observer.disconnect();
+        if (location === "feed" && !claimFeed(campaign.id, slotId)) {
+          setVisible(false);
+          return;
+        }
+        void record(campaign, "view").then((allowed) => {
+          if (disposed) return;
+          if (!allowed) {
+            setVisible(false);
+            return;
+          }
+          setAdmitted(true);
+          if (campaign.durationSeconds)
+            timer = setTimeout(
+              () => setVisible(false),
+              campaign.durationSeconds * 1000,
+            );
+        });
+      }
+    });
+    observer.observe(slotRef.current);
+    return () => {
+      disposed = true;
+      observer.disconnect();
+      clearTimeout(timer);
+    };
+  }, [visible, campaign, location, claimFeed, slotId, record]);
   if (!campaign || !visible) return null;
   return (
     <aside
-      aria-label="Advertisement"
-      className={desktop ? styles.desktop : styles.feed}
+      ref={slotRef}
+      style={{ visibility: admitted ? "visible" : "hidden" }}
+      aria-label={__vt("Advertisement")}
+      className={
+        position ? styles.pagePlacement : desktop ? styles.desktop : styles.feed
+      }
     >
       <ImageAd campaign={campaign} />
     </aside>
   );
 }
-export function ExploreAdvertising({ children }: { children: ReactNode }) {
+export function ExploreAdvertising({
+  children,
+  audience = "guest",
+}: {
+  children: ReactNode;
+  audience?: CampaignAudience;
+}) {
+  const __vt = useWorkspaceTranslation();
+
   const pathname = usePathname();
-  const active = pathname.startsWith("/explore");
-  const [placement, setPlacement] = useState<Campaign | null>(null);
+  const active = !pathname.startsWith("/admin");
+  const [device, setDevice] = useState<"desktop" | "mobile" | null>(null);
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1280px)");
+    const update = () => setDevice(query.matches ? "desktop" : "mobile");
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  const [placement, setPlacement] = useState<Campaign[]>([]);
+  const feedClaims = useRef(new Map<string, string>());
+  const claimFeed = useCallback((id: string, slot: string) => {
+    const previous = feedClaims.current.get(id);
+    if (previous && previous !== slot) return false;
+    feedClaims.current.set(id, slot);
+    return true;
+  }, []);
+  const recorded = useRef(new Map<string, Promise<boolean>>());
+  const record = useCallback(
+    (campaign: Campaign, event: "view" | "click") => {
+      const key = `${pathname}:${campaign.id}:${event}`;
+      const previous = recorded.current.get(key);
+      if (previous) return previous;
+      const promise = fetch("/api/explore/advertising", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: campaign.id,
+          event,
+          path: pathname,
+          device,
+        }),
+        keepalive: true,
+      })
+        .then((response) => response.json())
+        .then((result) => result.allowed === true)
+        .catch(() => false);
+      recorded.current.set(key, promise);
+      return promise;
+    },
+    [pathname, device],
+  );
   const [popup, setPopup] = useState<Campaign | null>(null);
   const [ticker, setTicker] = useState<Campaign | null>(null);
   useEffect(() => {
-    if (!active) return;
+    if (!active || !device) return;
+    feedClaims.current.clear();
+    recorded.current.clear();
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const controller = new AbortController();
+    const listeners: (() => void)[] = [];
     const schedule = (
       campaign: Campaign | null,
       set: (campaign: Campaign | null) => void,
@@ -99,7 +245,10 @@ export function ExploreAdvertising({ children }: { children: ReactNode }) {
       if (!campaign) return;
       timers.push(
         setTimeout(() => {
-          if (!cancelled) set(campaign);
+          if (!cancelled)
+            void record(campaign, "view").then((allowed) => {
+              if (!cancelled && allowed) set(campaign);
+            });
         }, campaign.delaySeconds * 1000),
       );
       if (campaign.durationSeconds)
@@ -112,51 +261,97 @@ export function ExploreAdvertising({ children }: { children: ReactNode }) {
           ),
         );
     };
-    void fetch("/api/explore/advertising", {
-      cache: "no-store",
-      signal: controller.signal,
-    })
+    void fetch(
+      `/api/explore/advertising?path=${encodeURIComponent(pathname)}&device=${device}`,
+      {
+        cache: "no-store",
+        signal: controller.signal,
+      },
+    )
       .then((response) => response.json())
       .then((data: { campaigns: Campaign[] }) => {
         if (cancelled) return;
-        setPlacement(select(data.campaigns, "placement"));
-        schedule(select(data.campaigns, "ticker"), setTicker);
-        const selected = select(data.campaigns, "popup");
-        if (selected)
-          timers.push(
-            setTimeout(async () => {
-              try {
-                const response = await fetch("/api/explore/advertising", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ id: selected.id }),
-                  signal: controller.signal,
-                });
-                const result = await response.json();
-                if (!cancelled && result.allowed) {
-                  setPopup(selected);
-                  if (selected.durationSeconds)
-                    timers.push(
-                      setTimeout(
-                        () => setPopup(null),
-                        selected.durationSeconds * 1000,
-                      ),
-                    );
-                }
-              } catch {}
-            }, selected.delaySeconds * 1000),
+        const eligible = data.campaigns.filter((campaign) =>
+          campaignMatches(campaign, pathname, audience, device),
+        );
+        const shuffled = shuffleCampaigns(
+          eligible.filter((c) => c.kind === "placement"),
+        );
+        const first = select(shuffled, "placement");
+        setPlacement(
+          first ? [first, ...shuffled.filter((c) => c.id !== first.id)] : [],
+        );
+        const announcement = select(eligible, "ticker");
+        const announcementDelay =
+          device === "mobile" ? 0 : (announcement?.delaySeconds ?? 0);
+        schedule(
+          announcement
+            ? {
+                ...announcement,
+                delaySeconds: announcementDelay,
+                position: device === "mobile" ? "top" : announcement.position,
+              }
+            : null,
+          setTicker,
+        );
+        const selected = select(eligible, "popup");
+        if (selected) {
+          const display = async () => {
+            const allowed = await record(selected, "view");
+            if (!cancelled && allowed) {
+              setPopup(selected);
+              if (selected.durationSeconds)
+                timers.push(
+                  setTimeout(
+                    () => setPopup(null),
+                    selected.durationSeconds * 1000,
+                  ),
+                );
+            }
+          };
+          const delay = Math.max(
+            selected.delaySeconds,
+            announcement ? announcementDelay + 8 : 0,
           );
+          let ready = false,
+            fired = false;
+          const reached = () => {
+            const height =
+              document.documentElement.scrollHeight - window.innerHeight;
+            return (
+              selected.popupTrigger !== "scroll" ||
+              (height > 0 &&
+                (window.scrollY / height) * 100 >=
+                  (selected.scrollPercent ?? 35))
+            );
+          };
+          const attempt = () => {
+            if (ready && !fired && reached()) {
+              fired = true;
+              void display();
+            }
+          };
+          window.addEventListener("scroll", attempt, { passive: true });
+          listeners.push(() => window.removeEventListener("scroll", attempt));
+          timers.push(
+            setTimeout(() => {
+              ready = true;
+              attempt();
+            }, delay * 1000),
+          );
+        }
       })
       .catch(() => {});
     return () => {
       cancelled = true;
       controller.abort();
       timers.forEach(clearTimeout);
+      listeners.forEach((remove) => remove());
       setPopup(null);
       setTicker(null);
-      setPlacement(null);
+      setPlacement([]);
     };
-  }, [active, pathname]);
+  }, [active, pathname, audience, device, record]);
   useEffect(() => {
     if (!popup) return;
     const previous = document.activeElement as HTMLElement | null;
@@ -191,7 +386,9 @@ export function ExploreAdvertising({ children }: { children: ReactNode }) {
     };
   }, [popup]);
   return (
-    <Context.Provider value={active ? placement : null}>
+    <Context.Provider
+      value={{ campaigns: active ? placement : [], claimFeed, record }}
+    >
       <div
         className={
           active && ticker
@@ -212,21 +409,33 @@ export function ExploreAdvertising({ children }: { children: ReactNode }) {
               {ticker.href ? (
                 <a
                   href={ticker.href}
+                  onClick={async (event) => {
+                    if (event.metaKey || event.ctrlKey || event.shiftKey) {
+                      void record(ticker, "click");
+                      return;
+                    }
+                    event.preventDefault();
+                    await Promise.race([
+                      record(ticker, "click"),
+                      new Promise((resolve) => setTimeout(resolve, 1200)),
+                    ]);
+                    window.location.assign(ticker.href);
+                  }}
                   style={{ animationDuration: `${ticker.speedSeconds}s` }}
                 >
-                  {ticker.text || ticker.name}
+                  <WorkspaceText text={ticker.text || ticker.name} />
                 </a>
               ) : (
                 <span
                   className={styles.tickerText}
                   style={{ animationDuration: `${ticker.speedSeconds}s` }}
                 >
-                  {ticker.text || ticker.name}
+                  <WorkspaceText text={ticker.text || ticker.name} />
                 </span>
               )}
               {ticker.closeButton ? (
                 <button
-                  aria-label="Close announcement"
+                  aria-label={__vt("Close announcement")}
                   onClick={() => setTicker(null)}
                 >
                   ×
@@ -245,13 +454,13 @@ export function ExploreAdvertising({ children }: { children: ReactNode }) {
                 tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
-                aria-label={popup.name}
+                aria-label={__vt(popup.name)}
               >
                 <ImageAd campaign={popup} />
                 {popup.closeButton ? (
                   <button
                     className={styles.close}
-                    aria-label="Close promotion"
+                    aria-label={__vt("Close promotion")}
                     onClick={() => setPopup(null)}
                   >
                     ×

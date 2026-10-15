@@ -1,0 +1,15 @@
+{
+  "baseline": "ffbcd24513cd991a8c7a883a53d6ac360f3ff137",
+  "uploadedVersion": "1.0.1",
+  "uploadedBuild": "5.1",
+  "ancestor": "3f6b625fbb68b70226af377017a6b594a4383d4e",
+  "files": [
+    "ios/Reylumi/NativeBridge.js",
+    "ios/Reylumi/ReylumiLaunchView.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/ReylumiStartupState.swift",
+    "ios/ReylumiTests/StartupStateTests.swift"
+  ],
+  "conflicts": [],
+  "resolution": "Preserve screen-ready startup nonce validation and existing Safari payment/open-market actions"
+}

@@ -1,20 +1,34 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { SavedSalonList } from "@/components/saved-salon-list";
 import Link from "next/link";
-import { getSupabaseAuthUser } from "@/lib/supabase/server";
-import { advertisingClient } from "@/lib/explore-advertising";
-import { referenceFavorite } from "@/lib/explore-reference-favorites";
+import { createAuthenticatedSupabaseServerClient, getSupabaseAuthUser } from "@/lib/supabase/server";
+import { encodeReferenceFavoriteCursor, referenceFavoriteCursor, resolveReferenceFavorites } from "@/lib/explore-reference-favorites";
 import { redirect } from "next/navigation";
 import { ExploreReferenceLove } from "@/components/explore-account-actions";
-export default async function ExploreFavoritesPage() {
+import { nailLookById } from "@/lib/nail-inspiration-catalog";
+import { NailInspirationCard } from "@/app/explore/nail-inspiration";
+async function ExploreFavoritesPage({ searchParams }: {
+  searchParams: Promise<{ salons?: string; after?: string | string[] }>;
+}) {
   const user = await getSupabaseAuthUser();
-  if (!user) redirect("/login?next=%2Fexplore%2Ffavorites");
-  const { data, error } = await advertisingClient()
-    .from("explore_reference_favorites")
-    .select("item_key")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
-  const favorites = (data ?? [])
-    .map((item) => referenceFavorite(item.item_key))
-    .filter((item) => item !== null);
+  const client = await createAuthenticatedSupabaseServerClient();
+  if (!user || !client) redirect("/login?next=%2Fexplore%2Ffavorites");
+  const params = await searchParams;
+  const salonOffset = Math.max(0, Math.min(100000, Number.parseInt(params.salons ?? "0", 10) || 0));
+  const salonPreferences = await client.rpc("get_my_explore_salon_preferences", { p_offset: salonOffset });
+  const salonRows = Array.isArray(salonPreferences.data) ? salonPreferences.data : [];
+  const cursor = referenceFavoriteCursor(Array.isArray(params.after) ? params.after[0] : params.after);
+  const { data, error } = await client.rpc("get_my_explore_reference_favorites", {
+    p_before_created_at: cursor?.createdAt ?? null,
+    p_before_item_key: cursor?.itemKey ?? null,
+    p_limit: 20,
+  });
+  const rows = Array.isArray(data) ? data as Array<{ item_key: string; created_at: string }> : [];
+  const shown = rows.slice(0, 20);
+  const resolved = await resolveReferenceFavorites(shown.map(item => item.item_key));
+  const favorites = resolved.items;
+  const last = shown.at(-1);
+  const next = rows.length > 20 && last ? encodeReferenceFavoriteCursor({ createdAt: last.created_at, itemKey: last.item_key }) : null;
   return (
     <main className="mx-auto max-w-3xl space-y-5 p-6">
       <Link href="/explore" className="text-brand-orange">
@@ -32,10 +46,11 @@ export default async function ExploreFavoritesPage() {
           Followed salons & artists
         </Link>
       </div>
-      {error ? (
+      {salonPreferences.error ? <p role="alert">Your salons could not be loaded. Please try again.</p> : salonRows.length ? <><SavedSalonList items={salonRows.slice(0,20)}/>{salonRows.length>20?<Link href={`/explore/favorites?salons=${salonOffset+20}`} className="text-brand-orange">More salons →</Link>:null}</> : null}
+      {error || resolved.error ? (
         <p role="alert">Favorites could not be loaded. Please try again.</p>
       ) : favorites.length ? (
-        favorites.map((item) => (
+        favorites.map((item) => item.nailLookId && nailLookById(item.nailLookId) ? <NailInspirationCard key={item.key} look={nailLookById(item.nailLookId)!} initialSaved /> : (
           <article
             key={item.key}
             className="flex items-center justify-between rounded-2xl border p-4"
@@ -43,7 +58,7 @@ export default async function ExploreFavoritesPage() {
             <Link href={item.href} className="font-semibold">
               {item.name}
             </Link>
-            <ExploreReferenceLove itemKey={item.key} name={item.name} />
+            <ExploreReferenceLove itemKey={item.key} name={item.name} initialActive />
           </article>
         ))
       ) : (
@@ -51,6 +66,9 @@ export default async function ExploreFavoritesPage() {
           Find something you love on Explore and tap the heart to keep it here.
         </p>
       )}
+      {next ? <Link className="text-brand-orange" href={`/explore/favorites?after=${next}`}>More favorites →</Link> : null}
     </main>
   );
 }
+
+export default withExperiencePage(ExploreFavoritesPage);

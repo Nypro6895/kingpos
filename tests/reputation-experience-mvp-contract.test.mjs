@@ -74,7 +74,7 @@ test("explore reputation signals use Experience volume and visit evidence confid
   assert.match(exploreClient, /Trusted first/);
   assert.match(exploreClient, /orderedSearchSections/);
   assert.match(exploreClient, /orderReylumiExploreResults/);
-  assert.match(explorePage, /searchIntentFromGlobalQuery/);
+  assert.match(explorePage, /resolveExploreQueryRouting/);
   assert.match(reylumiTrust, /rightSignals\.verifiedVisitCount \/ 80/);
   assert.match(explorePage, /LUMI Truth, customer feedback and repeat visits/);
   assert.match(exploreTypes, /ExploreFeedTrustSignals/);

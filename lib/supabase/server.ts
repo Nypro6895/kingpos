@@ -1,3 +1,4 @@
+import { safetyRequestHeaders } from "@/lib/abuse-context";
 import { createClient } from "@supabase/supabase-js";
 import type { Session } from "@supabase/supabase-js";
 import {
@@ -7,6 +8,8 @@ import {
 import { isDeniedKingUserStatus } from "@/lib/users/account-status";
 import type { KingUserStatus } from "@/types/user";
 import { cookies, headers } from "next/headers";
+import { ADMIN_SESSION_COOKIE, REMEMBER_LOGIN_COOKIE, sessionCookieOptions } from "./session-policy";
+import { assertAuthAvailable, AuthAvailabilityError, supabaseDeadlineFetch } from "./auth-rest";
 
 export const ACCESS_TOKEN_COOKIE = "sb-access-token";
 export const REFRESH_TOKEN_COOKIE = "sb-refresh-token";
@@ -78,6 +81,8 @@ export function clearSupabaseSessionCookieWriter(
 ) {
   cookieStore.delete(ACCESS_TOKEN_COOKIE);
   cookieStore.delete(REFRESH_TOKEN_COOKIE);
+  cookieStore.delete(REMEMBER_LOGIN_COOKIE);
+  cookieStore.delete(ADMIN_SESSION_COOKIE);
   clearPendingMfaSessionCookieWriter(cookieStore);
 
   for (const name of cookieNames.filter(isSupabaseAuthTokenCookieName)) {
@@ -134,6 +139,7 @@ export function createSupabaseServerClient() {
   }
 
   return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    global: { fetch: supabaseDeadlineFetch },
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -156,6 +162,7 @@ export function createUserScopedSupabaseServerClient(accessToken: string) {
       detectSessionInUrl: false,
     },
     global: {
+      fetch: supabaseDeadlineFetch,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -163,7 +170,7 @@ export function createUserScopedSupabaseServerClient(accessToken: string) {
   });
 }
 
-export async function createAuthenticatedSupabaseServerClient() {
+export async function createAuthenticatedSupabaseServerClient(options: { throwOnUnavailable?: boolean } = {}) {
   const config = getSupabaseConfig();
   const accessToken = await getAccessTokenFromRequest();
 
@@ -174,6 +181,7 @@ export async function createAuthenticatedSupabaseServerClient() {
   const accessTokenAllowed = await isAccessTokenAllowedForAppSession(
     config,
     accessToken,
+    options.throwOnUnavailable,
   );
 
   if (!accessTokenAllowed) {
@@ -187,8 +195,10 @@ export async function createAuthenticatedSupabaseServerClient() {
       detectSessionInUrl: false,
     },
     global: {
+      fetch: supabaseDeadlineFetch,
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        ...await safetyRequestHeaders(),
       },
     },
   });
@@ -203,6 +213,7 @@ export async function createAuthenticatedSupabaseAuthSessionServerClient() {
   }
 
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    global: { fetch: supabaseDeadlineFetch },
     auth: {
       persistSession: true,
       autoRefreshToken: false,
@@ -240,6 +251,7 @@ export async function createPendingMfaSupabaseAuthSessionServerClient() {
   }
 
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    global: { fetch: supabaseDeadlineFetch },
     auth: {
       persistSession: true,
       autoRefreshToken: false,
@@ -265,6 +277,7 @@ export async function createPendingMfaSupabaseAuthSessionServerClient() {
 async function isAccessTokenAllowedForAppSession(
   config: SupabaseConfig,
   accessToken: string,
+  throwOnUnavailable = false,
 ) {
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
@@ -273,6 +286,7 @@ async function isAccessTokenAllowedForAppSession(
       detectSessionInUrl: false,
     },
     global: {
+      fetch: supabaseDeadlineFetch,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -284,6 +298,7 @@ async function isAccessTokenAllowedForAppSession(
   );
 
   if (authError || !authData.user) {
+    if (throwOnUnavailable) assertAuthAvailable(authError, authError?.status, "Authentication");
     return false;
   }
 
@@ -293,10 +308,11 @@ async function isAccessTokenAllowedForAppSession(
       .select("status")
       .eq("auth_user_id", authData.user.id)
       .maybeSingle<PublicUserStatusRow>(),
-    isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id),
+    isAppLoginSessionCookieAllowed(config, accessToken, authData.user.id, throwOnUnavailable),
   ]);
 
   if (userStatusError) {
+    if (throwOnUnavailable) throw new AuthAvailabilityError("Account status");
     console.error("Unable to verify public user status for app session", {
       authUserId: authData.user.id,
       code: userStatusError.code,
@@ -321,6 +337,9 @@ async function isAccessTokenAllowedForAppSession(
     });
 
   if (authIdentityDeletedError) {
+    if (throwOnUnavailable && authIdentityDeletedError.code !== "42883" && authIdentityDeletedError.code !== "42P01") {
+      throw new AuthAvailabilityError("Account status");
+    }
     if (
       authIdentityDeletedError.code !== "42883" &&
       authIdentityDeletedError.code !== "42P01"
@@ -362,6 +381,7 @@ async function isAppLoginSessionCookieAllowed(
   config: SupabaseConfig,
   accessToken: string,
   authUserId: string,
+  throwOnUnavailable = false,
 ) {
   const loginSessionId = (await cookies()).get(
     ACCOUNT_LOGIN_SESSION_COOKIE,
@@ -378,6 +398,7 @@ async function isAppLoginSessionCookieAllowed(
       detectSessionInUrl: false,
     },
     global: {
+      fetch: supabaseDeadlineFetch,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -394,6 +415,7 @@ async function isAppLoginSessionCookieAllowed(
     if (isAccountLoginSecuritySchemaMissing(error)) {
       return true;
     }
+    if (throwOnUnavailable) throw new AuthAvailabilityError("Session status");
 
     console.error("Unable to verify app login session", {
       code: error.code,
@@ -460,17 +482,19 @@ export async function getPendingMfaSessionTokensFromRequest(): Promise<PendingMf
 
 export async function setSupabaseSessionCookies(session: Session) {
   const cookieStore = await cookies();
+  const remember = cookieStore.get(REMEMBER_LOGIN_COOKIE)?.value === "1";
 
   cookieStore.set(
     ACCESS_TOKEN_COOKIE,
     session.access_token,
-    getSupabaseCookieOptions(session.expires_in),
+    sessionCookieOptions(remember),
   );
   cookieStore.set(
     REFRESH_TOKEN_COOKIE,
     session.refresh_token,
-    getSupabaseCookieOptions(60 * 60 * 24 * 30),
+    sessionCookieOptions(remember),
   );
+  cookieStore.set(REMEMBER_LOGIN_COOKIE, remember ? "1" : "0", sessionCookieOptions(remember));
 }
 
 export async function clearSupabaseSessionCookies() {
@@ -481,7 +505,7 @@ export async function clearSupabaseSessionCookies() {
   );
 }
 
-export async function getSupabaseAuthUser() {
+export async function getSupabaseAuthUser(options: { throwOnUnavailable?: boolean } = { throwOnUnavailable: true }) {
   const supabase = createSupabaseServerClient();
   const accessToken = await getAccessTokenFromRequest();
 
@@ -492,8 +516,18 @@ export async function getSupabaseAuthUser() {
   const { data, error } = await supabase.auth.getUser(accessToken);
 
   if (error || !data.user) {
+    if (options.throwOnUnavailable !== false) assertAuthAvailable(error, error?.status, "Authentication");
     return null;
   }
 
   return data.user;
+}
+
+export async function createSafetySupabaseServerClient() {
+  const config = getSupabaseConfig();
+  if (!config) return null;
+  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    global: { fetch: supabaseDeadlineFetch, headers: await safetyRequestHeaders() },
+  });
 }

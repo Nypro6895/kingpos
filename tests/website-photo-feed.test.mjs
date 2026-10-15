@@ -10,7 +10,7 @@ const moduleExports = {};
 const require = createRequire(import.meta.url);
 new Function("require", "exports", ts.transpileModule(readFileSync("app/salon-profile/website-photo-feed.tsx", "utf8"), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
-}).outputText)(name => name.endsWith(".css") ? { default: {} } : require(name), moduleExports);
+}).outputText)(name => name.endsWith(".css") ? { default: {} } : name.endsWith("workspace-language") ? { WorkspaceText: ({text}) => text, useWorkspaceTranslation: () => text => text } : require(name), moduleExports);
 
 test("photo feed excludes shown URLs, duplicates, drafts and missing images, newest first", () => {
   const photo = (id, imageUrl, publishedAt = "2026-10-01") => ({ id, imageUrl, publishedAt, title: id });
@@ -37,6 +37,10 @@ test("all layouts append photos on scroll, stop at the end, open photos and hand
       return <SalonWebsiteHome key={layout+empty+hero} data={data} posts={empty?[]:posts} preferences={{layout,show_featured:hero,show_services:true,show_team:true,show_customer_reviews:false}} canBook={false} onPost={post=>window.opened.push(post.id)} onGallery={()=>{}} onServices={()=>{}} onTeam={()=>{}} onBook={()=>{}}/>;
     }createRoot(document.getElementById('root')).render(<App/>);
   ` }, bundle: true, write: false, outdir: "fixture", jsx: "automatic", plugins: [{ name: "server-stubs", setup(build) {
+    build.onResolve({ filter: /^next\// }, args => ({ path: args.path, namespace: "next-fixture" }));
+    build.onLoad({ filter: /.*/, namespace: "next-fixture" }, () => ({ resolveDir: process.cwd(), loader: "tsx", contents: "export function usePathname(){return '/explore/salons/test'};export default function Link({children,...props}){return <a {...props}>{children}</a>}" }));
+    build.onResolve({ filter: /post-moderation\/actions$/ }, args => ({ path: args.path, namespace: "moderation-fixture" }));
+    build.onLoad({ filter: /.*/, namespace: "moderation-fixture" }, () => ({ contents: "export async function postModerationAction(){return {}};export async function loadHiddenPostIdentitiesAction(){return []}" }));
     build.onResolve({ filter: /operating-hours-display|quick-booking-client$/ }, args => ({ path: args.path, namespace: "fixture" }));
     build.onLoad({ filter: /.*/, namespace: "fixture" }, args => ({ resolveDir: process.cwd(), loader: "tsx", contents: args.path.includes("hours")
       ? "import React from 'react';export function OperatingHoursDisplay(){return <p>Monday – Saturday, 9 AM – 6 PM</p>}"
@@ -57,10 +61,13 @@ test("all layouts append photos on scroll, stop at the end, open photos and hand
       await page.evaluate(layout=>window.configure(layout), layout);
       const feed=page.getByRole('region',{name:'More salon photos'});
       await feed.waitFor();
-      assert.equal(await feed.locator('article').count(),0,layout+': feed must wait for scroll');
-      await feed.getByRole('button',{name:'Explore more photos'}).scrollIntoViewIfNeeded();
-      await page.waitForFunction(()=>document.querySelector('[aria-label="More salon photos"]').querySelectorAll('article').length===6);
-      assert.ok(await feed.locator('article').count()<=6);
+      assert.equal(await feed.locator('article').count(),6,layout+': first two rows are immediately available');
+      const latest=page.locator('[data-count]');
+      assert.equal(await latest.locator('article').count(),6,layout+': latest includes six posts');
+      if(width===1440) {
+        const rows=await latest.locator('article').evaluateAll(cards=>new Set(cards.map(card=>Math.round(card.getBoundingClientRect().top))).size);
+        assert.equal(rows,2,layout+': latest has two desktop rows');
+      }
       await feed.getByRole('button',{name:/^Open Photo/}).first().click();
       assert.equal((await page.evaluate(()=>window.opened)).length,1);
       for(let attempt=0;attempt<10 && await feed.getByRole('button',{name:'Load more photos'}).count();attempt++) {

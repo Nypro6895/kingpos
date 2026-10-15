@@ -29,7 +29,7 @@ async function actions() {
               args.path === "next/cache"
                 ? "export function revalidatePath(){}"
                 : args.path.endsWith("/permissions")
-                  ? 'export const PLATFORM_ADMIN_PERMISSIONS={businessesUpdate:"admin.businesses.update"};'
+                  ? 'export const PLATFORM_ADMIN_PERMISSIONS={advertisingManage:"admin.advertising.manage"};'
                   : args.path.endsWith("/auth")
                     ? 'export async function requirePlatformAdmin(permission){globalThis.adCalls.push(permission);if(!globalThis.adAuthorized)throw new Error("Denied");return {userId:"1650370b-f86d-461e-8d97-6210052eeed7"};}'
                     : `export function advertisingClient(){return {from:()=>({upsert:async row=>{globalThis.adRows.push(row);return {error:null};}}),storage:{from:()=>({createSignedUploadUrl:async path=>({data:{token:'upload-token'},error:null}),getPublicUrl:path=>({data:{publicUrl:'https://images.example.com/'+path}})})}};}`,
@@ -73,7 +73,7 @@ test(
       /Denied/,
     );
     assert.equal(globalThis.adRows.length, 0);
-    assert.equal(globalThis.adCalls[0], "admin.businesses.update");
+    assert.equal(globalThis.adCalls[0], "admin.advertising.manage");
     globalThis.adAuthorized = true;
     const result = await saveCampaignAction({ ok: false, message: "" }, form);
     assert.equal(result.ok, true);
@@ -123,5 +123,43 @@ test(
     const upload = await campaignImageUploadAction("image/gif", 2000);
     assert.equal(upload.token, "upload-token");
     assert.match(upload.path, /^uploads\/[0-9a-f-]+\.gif$/);
+  },
+);
+
+test(
+  "session limit settings require permission and reject invalid bounds",
+  { skip: !enabled },
+  async () => {
+    globalThis.adCalls = [];
+    globalThis.adRows = [];
+    globalThis.adAuthorized = false;
+    const { saveAdvertisingLimitsAction } = await actions();
+    const form = new FormData();
+    for (const [key, value] of Object.entries({
+      maxTotal: "6",
+      maxPopups: "1",
+      minPopupGapSeconds: "60",
+      sessionMinutes: "30",
+    }))
+      form.set(key, value);
+    await assert.rejects(() => saveAdvertisingLimitsAction(form), /Denied/);
+    globalThis.adAuthorized = true;
+    form.set("maxPopups", "7");
+    assert.equal((await saveAdvertisingLimitsAction(form)).ok, false);
+    assert.equal(globalThis.adRows.length, 0);
+    form.set("maxPopups", "1");
+    form.set("sessionMinutes", "1");
+    assert.equal((await saveAdvertisingLimitsAction(form)).ok, false);
+    form.set("sessionMinutes", "30");
+    assert.equal((await saveAdvertisingLimitsAction(form)).ok, true);
+    assert.deepEqual(globalThis.adRows[0], {
+      id: true,
+      config: {
+        maxTotal: 6,
+        maxPopups: 1,
+        minPopupGapSeconds: 60,
+        sessionMinutes: 30,
+      },
+    });
   },
 );

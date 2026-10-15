@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   updateStaffPublicTeamBatchAction,
   type PublicTeamBatchUpdate,
@@ -72,7 +73,7 @@ function Toggle({
         onChange={(event) => onChange(event.currentTarget.checked)}
         type="checkbox"
       />
-      <span className="font-medium text-zinc-950">{label}</span>
+      <span className="font-medium text-zinc-950"><WorkspaceText text={label} /></span>
     </label>
   );
 }
@@ -81,6 +82,8 @@ export function PublicTeamSettingsEditor({
   canManageSettings,
   members,
 }: PublicTeamSettingsEditorProps) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [savedMembers, setSavedMembers] = useState<DraftMember[]>(members);
   const [draftMembers, setDraftMembers] = useState<DraftMember[]>(members);
@@ -172,14 +175,14 @@ export function PublicTeamSettingsEditor({
 
   if (members.length === 0) {
     return (
-      <p className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-white p-5 text-sm text-zinc-600">
-        No staff profiles found for this salon.
-      </p>
+      <div className="settings-style"><p className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-white p-5 text-sm text-zinc-600">
+        <WorkspaceText text="No staff profiles found for this salon." />
+      </p></div>
     );
   }
 
   return (
-    <div className="mt-4 grid gap-4">
+    <div className="settings-style"><div className="mt-4 grid gap-4">
       <div className="flex flex-wrap gap-2">
         <button
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
@@ -193,7 +196,7 @@ export function PublicTeamSettingsEditor({
           }
           type="button"
         >
-          Turn online booking on for all active
+          <WorkspaceText text="Turn online booking on for all active" />
         </button>
         <button
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
@@ -203,7 +206,7 @@ export function PublicTeamSettingsEditor({
           }
           type="button"
         >
-          Turn online booking off for all
+          <WorkspaceText text="Turn online booking off for all" />
         </button>
         <button
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
@@ -217,7 +220,7 @@ export function PublicTeamSettingsEditor({
           }
           type="button"
         >
-          Allow all active staff to post
+          <WorkspaceText text="Allow all active staff to post" />
         </button>
         <button
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
@@ -227,16 +230,16 @@ export function PublicTeamSettingsEditor({
           }
           type="button"
         >
-          Disable posting for all
+          <WorkspaceText text="Disable posting for all" />
         </button>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
         <div className="hidden grid-cols-[minmax(13rem,1.3fr)_repeat(3,minmax(8rem,.8fr))] gap-3 border-b border-zinc-200 bg-zinc-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500 lg:grid">
-          <span>Staff</span>
-          <span>Online booking</span>
-          <span>Posting</span>
-          <span>Order</span>
+          <span><WorkspaceText text="Staff" /></span>
+          <span><WorkspaceText text="Online booking" /></span>
+          <span><WorkspaceText text="Posting" /></span>
+          <span><WorkspaceText text="Order" /></span>
         </div>
         <div className="divide-y divide-zinc-200">
           {draftMembers.map((member) => {
@@ -256,7 +259,7 @@ export function PublicTeamSettingsEditor({
                   {member.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      alt={`${member.displayName} Staff Profile`}
+                      alt={__vt(`${member.displayName} Staff Profile`)}
                       className="h-12 w-12 shrink-0 rounded-full border border-zinc-200 object-cover"
                       src={member.avatarUrl}
                     />
@@ -272,18 +275,18 @@ export function PublicTeamSettingsEditor({
                       </p>
                       {rowDirty ? (
                         <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">
-                          Unsaved
+                          <WorkspaceText text="Unsaved" />
                         </span>
                       ) : null}
                     </div>
                     <p className="mt-1 text-sm text-zinc-500">
-                      {member.jobTitle ?? "Staff"} /{" "}
-                      {member.isActive ? "Active" : "Inactive"}
+                      <WorkspaceText text={member.jobTitle ?? "Staff"} /> /{" "}
+                      {member.isActive ? <WorkspaceText text="Active" /> : <WorkspaceText text="Inactive" />}
                     </p>
                     <p className="mt-1 text-xs font-semibold text-zinc-600">
-                      {effectivePublic
+                      <WorkspaceText text={effectivePublic
                         ? "Staff Profile appears where this staff is online"
-                        : "Internal staff only"}
+                        : "Internal staff only"} />
                     </p>
                   </div>
                 </div>
@@ -291,7 +294,7 @@ export function PublicTeamSettingsEditor({
                 <Toggle
                   checked={member.onlineBookingEnabled}
                   disabled={!canManageSettings || !member.isActive}
-                  label="Online booking"
+                  label={__vt("Online booking")}
                   onChange={(checked) =>
                     updateMember(member.id, { onlineBookingEnabled: checked })
                   }
@@ -299,7 +302,7 @@ export function PublicTeamSettingsEditor({
                 <Toggle
                   checked={member.salonProfileContentPostingEnabled}
                   disabled={!canManageSettings || !member.isActive}
-                  label="Allow Salon Profile posting"
+                  label={__vt("Allow Salon Profile posting")}
                   onChange={(checked) =>
                     updateMember(member.id, {
                       salonProfileContentPostingEnabled: checked,
@@ -307,7 +310,7 @@ export function PublicTeamSettingsEditor({
                   }
                 />
                 <label className="grid gap-1 text-sm text-zinc-700">
-                  <span className="font-medium text-zinc-950">Display order</span>
+                  <span className="font-medium text-zinc-950"><WorkspaceText text="Display order" /></span>
                   <input
                     className="max-w-28 rounded-md border border-zinc-300 px-2 py-1 text-sm"
                     disabled={!canManageSettings}
@@ -330,9 +333,9 @@ export function PublicTeamSettingsEditor({
       <div className="sticky bottom-0 z-20 -mx-4 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur sm:mx-0 sm:rounded-lg sm:border sm:shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-zinc-600">
-            {hasDirtyChanges
+            <WorkspaceText text={hasDirtyChanges
               ? `${dirtyCount} unsaved change${dirtyCount === 1 ? "" : "s"}`
-              : message || "No unsaved changes"}
+              : message || "No unsaved changes"} />
           </p>
           <div className="flex gap-2">
             <button
@@ -341,7 +344,7 @@ export function PublicTeamSettingsEditor({
               onClick={cancel}
               type="button"
             >
-              Cancel
+              <WorkspaceText text="Cancel" />
             </button>
             <button
               className="min-h-10 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
@@ -349,14 +352,14 @@ export function PublicTeamSettingsEditor({
               onClick={save}
               type="button"
             >
-              {isPending ? "Saving..." : "Save changes"}
+              {isPending ? "Saving..." : <WorkspaceText text="Save changes" />}
             </button>
           </div>
         </div>
         {message && hasDirtyChanges ? (
-          <p className="mt-2 text-sm text-red-700">{message}</p>
+          <p className="mt-2 text-sm text-red-700"><WorkspaceText text={message} /></p>
         ) : null}
       </div>
-    </div>
+    </div></div>
   );
 }

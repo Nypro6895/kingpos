@@ -19,7 +19,7 @@ test('guest management uses compact receipt and loads editing times only on dema
     createRoot(document.getElementById('root')).render(<GuestManageClient token='secure-token' claimIntent={Boolean(currentUser)} currentUser={currentUser} data={data}/>);`;
   const built=await build({stdin:{contents,loader:'tsx',resolveDir:process.cwd()},bundle:true,write:false,outdir:'fixture',jsx:'automatic',define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'stub',setup(b){
     b.onResolve({filter:/app\/book\/actions$|next\/navigation$/},a=>({path:a.path,namespace:'stub'}));
-    b.onLoad({filter:/.*/,namespace:'stub'},a=>({loader:'js',contents:a.path==='next/navigation'?'export const useRouter=()=>({replace:href=>window.calls.navigation.push(href)});':`export async function loadGuestManageSlotsAction(input){window.calls.slots.push(input);await new Promise(r=>setTimeout(r,60));return[{startAt:input.date+'T16:00:00Z',endAt:input.date+'T16:45:00Z',label:'11:00 AM',lines:[{...window.line,startAt:input.date+'T16:00:00Z',endAt:input.date+'T16:45:00Z'}]}];}export async function rescheduleGuestBookingAction(input){window.calls.reschedule.push(input);return{ok:true,status:'pending',message:'Time updated.'};}export async function cancelGuestBookingAction(input){window.calls.cancel.push(input);return{ok:true,message:'Appointment cancelled.'};}export async function claimGuestBookingAction(input){window.calls.claim.push(input);return{ok:true,bookingId:'booking',message:'Saved.'};}`}));
+    b.onLoad({filter:/.*/,namespace:'stub'},a=>({loader:'js',contents:a.path==='next/navigation'?'export const useRouter=()=>({replace:href=>window.calls.navigation.push(href)});':`export async function loadGuestManageSlotsAction(input){window.calls.slots.push(input);await new Promise(r=>setTimeout(r,60));if(new URLSearchParams(location.search).has('next-day')){if(input.findEarliest)input={...input,date:'2099-10-05'};else if(input.date==='2099-10-03')return [];}return[{startAt:input.date+'T16:00:00Z',endAt:input.date+'T16:45:00Z',label:'11:00 AM',lines:[{...window.line,startAt:input.date+'T16:00:00Z',endAt:input.date+'T16:45:00Z'}]}];}export async function rescheduleGuestBookingAction(input){window.calls.reschedule.push(input);return{ok:true,status:'pending',message:'Time updated.'};}export async function cancelGuestBookingAction(input){window.calls.cancel.push(input);return{ok:true,message:'Appointment cancelled.'};}export async function claimGuestBookingAction(input){window.calls.claim.push(input);return{ok:true,bookingId:'booking',message:'Saved.'};}`}));
   }}]});
   const css=(await postcss([tailwind()]).process(readFileSync('app/globals.css','utf8'),{from:'app/globals.css'})).css+'\n'+built.outputFiles.find(f=>f.path.endsWith('.css')).text;
   const server=createServer((req,res)=>{if(req.url==='/fixture.js'){res.setHeader('Content-Type','text/javascript');res.end(built.outputFiles.find(f=>f.path.endsWith('.js')).text);}else if(req.url==='/fixture.css'){res.setHeader('Content-Type','text/css');res.end(css);}else res.end('<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/fixture.css"></head><body><div id="root"></div><script src="/fixture.js"></script></body></html>');});
@@ -27,6 +27,22 @@ test('guest management uses compact receipt and loads editing times only on dema
   const browser=await chromium.launch({executablePath:process.env.TEST_BROWSER_PATH,headless:true});
   await mkdir('artifacts/guest-manage-qa',{recursive:true});
   try{
+    {
+      const page=await browser.newPage({viewport:{width:375,height:900},timezoneId:'Asia/Ho_Chi_Minh'});
+      await page.goto('http://127.0.0.1:'+server.address().port+'/?next-day=1');
+      await page.getByRole('button',{name:'Reschedule',exact:true}).click();
+      await page.getByRole('button',{name:'11:00 AM',exact:true}).waitFor();
+      assert.equal(await page.getByLabel('Date',{exact:true}).inputValue(),'2099-10-05');
+      await page.getByLabel('Date',{exact:true}).fill('2099-10-03');
+      await page.waitForFunction(()=>window.calls.slots.length===2,{},{timeout:3000});
+      await page.getByText('No matching times.',{exact:false}).waitFor();
+      assert.equal(await page.getByRole('button',{name:'11:00 AM',exact:true}).count(),0,'returning to the original date must not show a later day from the earliest search');
+      assert.equal(await page.getByRole('button',{name:'Save new time',exact:true}).isDisabled(),true);
+      await page.getByLabel('Date',{exact:true}).fill('2099-10-05');
+      await page.getByRole('button',{name:'11:00 AM',exact:true}).waitFor();
+      assert.equal(await page.evaluate(()=>window.calls.slots.length),2,'the resolved salon date owns the cache entry');
+      await page.close();
+    }
     for(const width of [320,375,1280]){
       const page=await browser.newPage({viewport:{width,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.goto('http://127.0.0.1:'+server.address().port);await page.getByRole('heading',{name:'Booking details'}).waitFor();

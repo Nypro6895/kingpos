@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText } from "@/components/workspace-language";
 import { readAuthResponse } from "@/lib/auth-response";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -53,18 +54,18 @@ export function StaffInviteSignupForm({
 
       {error ? (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
       <div className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3">
-        <p className="text-sm font-medium text-zinc-950">Invited email</p>
+        <p className="text-sm font-medium text-zinc-950"><WorkspaceText text="Invited email" /></p>
         <p className="mt-1 text-sm text-zinc-600">{maskedEmail}</p>
       </div>
 
       <label className="block">
         <span className="text-sm font-medium text-zinc-700">
-          Re-enter invited email
+          <WorkspaceText text="Re-enter invited email" />
         </span>
         <input
           autoComplete="email"
@@ -77,7 +78,7 @@ export function StaffInviteSignupForm({
 
       <label className="block">
         <span className="text-sm font-medium text-zinc-700">
-          Create password
+          <WorkspaceText text="Create password" />
         </span>
         <input
           autoComplete="new-password"
@@ -94,7 +95,7 @@ export function StaffInviteSignupForm({
         disabled={isSubmitting}
         type="submit"
       >
-        {isSubmitting ? "Creating account..." : "Create account and connect"}
+        <WorkspaceText text={isSubmitting ? "Creating account..." : "Create account and connect"} />
       </button>
     </form>
   );

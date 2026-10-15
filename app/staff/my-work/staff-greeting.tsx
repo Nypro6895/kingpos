@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
 import { staffGreeting, type StaffGreetingHistory } from "@/lib/staff-greeting";
 
@@ -7,6 +8,8 @@ export function StaffGreeting(props: {
   name: string; timezone: string; todayServices: number; businessDate: string;
   history: StaffGreetingHistory | null; now: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [now, setNow] = useState(props.now);
   const span = useRef<HTMLSpanElement>(null);
   const message = staffGreeting({ ...props, now });
@@ -37,5 +40,5 @@ export function StaffGreeting(props: {
     document.fonts.ready.then(fit);
     return () => observer.disconnect();
   }, [message.text, message.compact]);
-  return <span ref={span} title={message.text} aria-label={message.text} style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: "clamp(14px, 3.4vw, 26px)" }}>{message.text}</span>;
+  return <span ref={span} title={__vt(message.text)} aria-label={__vt(message.text)} style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: "clamp(14px, 3.4vw, 26px)" }}><WorkspaceText text={message.text} /></span>;
 }

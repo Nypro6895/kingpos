@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { usePathname } from "next/navigation";
 import { posUserMessage } from "@/lib/pos-user-messages";
 import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
@@ -109,6 +110,8 @@ export function PortableReportClosingForm({
 }: {
   data: PortableReportData;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const pathname=usePathname();
   const workspace = usePortableWorkspaceState();
   const [data,setData]=useState(initialData);
@@ -240,25 +243,25 @@ export function PortableReportClosingForm({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-      {pendingCount>0?<p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 lg:col-span-2">{pendingCount} ticket(s) on this device are not uploaded yet. Report totals will update after they are uploaded. Check the sync icon for details.</p>:null}
-      {closingChanged?<div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm lg:col-span-2"><p className="font-semibold">Closing amounts changed on another screen.</p><p className="mt-1">Your entries have been kept. Latest saved total: {formatMoney(data.closingInputs.cashAmount+data.closingInputs.creditCardAmount+data.closingInputs.otherAmount)}.</p><div className="mt-3 flex flex-wrap gap-2"><button className="min-h-11 rounded-lg border bg-white px-4" onClick={()=>{setValues(getInitialValues(data));setSavedSnapshot(getSnapshot(getInitialValues(data)));setBaseline(data.closingInputs);}}>Use saved amounts</button><button className="min-h-11 rounded-lg border bg-white px-4" onClick={()=>{setBaseline(data.closingInputs);setErrorMessage(null);}}>Keep my entries for review</button></div></div>:null}
+      {pendingCount>0?<p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 lg:col-span-2">{pendingCount} <WorkspaceText text="ticket(s) on this device are not uploaded yet. Report totals will update after they are uploaded. Check the sync icon for details." /></p>:null}
+      {closingChanged?<div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm lg:col-span-2"><p className="font-semibold"><WorkspaceText text="Closing amounts changed on another screen." /></p><p className="mt-1"><WorkspaceText text="Your entries have been kept. Latest saved total:" /> {formatMoney(data.closingInputs.cashAmount+data.closingInputs.creditCardAmount+data.closingInputs.otherAmount)}.</p><div className="mt-3 flex flex-wrap gap-2"><button className="min-h-11 rounded-lg border bg-white px-4" onClick={()=>{setValues(getInitialValues(data));setSavedSnapshot(getSnapshot(getInitialValues(data)));setBaseline(data.closingInputs);}}><WorkspaceText text="Use saved amounts" /></button><button className="min-h-11 rounded-lg border bg-white px-4" onClick={()=>{setBaseline(data.closingInputs);setErrorMessage(null);}}><WorkspaceText text="Keep my entries for review" /></button></div></div>:null}
       <section className="rounded-lg border border-zinc-200 bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-zinc-950">
-              Closing Inputs
+              <WorkspaceText text="Closing Inputs" />
             </h2>
             <p className="mt-1 text-sm text-zinc-600">
-              Actual money collected for the selected business date.
+              <WorkspaceText text="Actual money collected for the selected business date." />
             </p>
           </div>
           <div className="min-h-6 text-sm" aria-live="polite">
             {isPending ? (
-              <span className="font-medium text-zinc-600">Saving</span>
+              <span className="font-medium text-zinc-600"><WorkspaceText text="Saving" /></span>
             ) : saveState === "saved" ? (
-              <span className="font-medium text-emerald-700">Saved</span>
+              <span className="font-medium text-emerald-700"><WorkspaceText text="Saved" /></span>
             ) : saveState === "error" ? (
-              <span className="font-medium text-red-700">Error</span>
+              <span className="font-medium text-red-700"><WorkspaceText text="Error" /></span>
             ) : null}
           </div>
         </div>
@@ -273,13 +276,13 @@ export function PortableReportClosingForm({
           <div className="grid gap-4 sm:grid-cols-3">
             <label className="block">
               <span className="text-xs font-medium uppercase text-zinc-500">
-                Cash
+                <WorkspaceText text="Cash" />
               </span>
               <input
                 className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
                 disabled={isReadOnly}
                 inputMode="decimal"
-                placeholder="0.00"
+                placeholder={__vt("0.00")}
                 onFocus={(event) => {
                   if (Number(event.currentTarget.value) === 0) {
                     const key = event.currentTarget.dataset.amount as keyof ClosingValues;
@@ -295,13 +298,13 @@ export function PortableReportClosingForm({
             </label>
             <label className="block">
               <span className="text-xs font-medium uppercase text-zinc-500">
-                Credit Card
+                <WorkspaceText text="Credit Card" />
               </span>
               <input
                 className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
                 disabled={isReadOnly}
                 inputMode="decimal"
-                placeholder="0.00"
+                placeholder={__vt("0.00")}
                 onFocus={(event) => {
                   if (Number(event.currentTarget.value) === 0) {
                     const key = event.currentTarget.dataset.amount as keyof ClosingValues;
@@ -319,13 +322,13 @@ export function PortableReportClosingForm({
             </label>
             <label className="block">
               <span className="text-xs font-medium uppercase text-zinc-500">
-                Other
+                <WorkspaceText text="Other" />
               </span>
               <input
                 className="mt-1 h-11 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
                 disabled={isReadOnly}
                 inputMode="decimal"
-                placeholder="0.00"
+                placeholder={__vt("0.00")}
                 onFocus={(event) => {
                   if (Number(event.currentTarget.value) === 0) {
                     const key = event.currentTarget.dataset.amount as keyof ClosingValues;
@@ -345,7 +348,7 @@ export function PortableReportClosingForm({
 
           <label className="block">
             <span className="text-xs font-medium uppercase text-zinc-500">
-              Note
+              <WorkspaceText text="Note" />
             </span>
             <textarea
               className="mt-1 min-h-24 w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
@@ -358,21 +361,20 @@ export function PortableReportClosingForm({
 
           {errorMessage ? (
             <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-              {errorMessage}
+              <WorkspaceText text={errorMessage} />
             </p>
           ) : null}
 
           {data.lock.isLocked ? (
             <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              This business date is locked. Update the main report correction flow
-              instead.
+              <WorkspaceText text="This business date is locked. Update the main report correction flow instead." />
             </p>
           ) : null}
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-4">
             <div>
               <p className="text-xs font-medium uppercase text-zinc-500">
-                Actual Total
+                <WorkspaceText text="Actual Total" />
               </p>
               <p className="mt-1 text-2xl font-semibold text-zinc-950">
                 {hasInvalidAmount ? "-" : formatMoney(fromCents(actualTotalCents))}
@@ -383,29 +385,29 @@ export function PortableReportClosingForm({
               disabled={isReadOnly || isPending}
               type="submit"
             >
-              {isPending ? "Saving" : "Save"}
+              {isPending ? "Saving" : <WorkspaceText text="Save" />}
             </button>
           </div>
         </form>
       </section>
 
       <section className="rounded-lg border border-zinc-200 bg-white p-5">
-        <h2 className="text-lg font-semibold text-zinc-950">Reconciliation</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Reconciliation" /></h2>
         <dl className="mt-5 space-y-4">
           <div className="flex items-center justify-between gap-4">
-            <dt className="text-sm text-zinc-600">Expected total</dt>
+            <dt className="text-sm text-zinc-600"><WorkspaceText text="Expected total" /></dt>
             <dd className="text-sm font-semibold text-zinc-950">
               {formatMoney(data.totals.expectedTotal)}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <dt className="text-sm text-zinc-600">Actual total</dt>
+            <dt className="text-sm text-zinc-600"><WorkspaceText text="Actual total" /></dt>
             <dd className="text-sm font-semibold text-zinc-950">
               {hasInvalidAmount ? "-" : formatMoney(fromCents(actualTotalCents))}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <dt className="text-sm text-zinc-600">Difference</dt>
+            <dt className="text-sm text-zinc-600"><WorkspaceText text="Difference" /></dt>
             <dd className="text-sm font-semibold text-zinc-950">
               {hasInvalidAmount ? "-" : formatMoney(fromCents(differenceCents))}
             </dd>
@@ -421,12 +423,12 @@ export function PortableReportClosingForm({
           ].join(" ")}
         >
           <p className="font-semibold">
-            {hasInvalidAmount
+            <WorkspaceText text={hasInvalidAmount
               ? "Invalid amount"
-              : RECONCILIATION_LABELS[reconciliationStatus]}
+              : RECONCILIATION_LABELS[reconciliationStatus]} />
           </p>
           <p className="mt-2 text-sm">
-            {hasInvalidAmount ? "Check the amounts before saving." : missingOrOverText}
+            <WorkspaceText text={hasInvalidAmount ? "Check the amounts before saving." : missingOrOverText} />
           </p>
         </div>
       </section>

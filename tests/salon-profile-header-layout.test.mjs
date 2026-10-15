@@ -13,6 +13,8 @@ const end = source.indexOf('        </section>', start) + '        </section>'.l
 assert.ok(start >= 0 && end > start);
 const code = ts.transpileModule(`export function Header(p) {
   const { profile, capabilities, identityMeta, data, mainTabs, visibleTabs, effectiveTab, preferences } = p;
+  const __vt = text => text;
+  const SettingsIcon = () => null;
   const ownerMenuOpen = false, manageData = null, trustSummary = {}, sortedLooks = [], ownerMenuButtonRef = null, ownerMenuRef = null, canShowFollow = false, canShowBook = false;
   const changeTab = () => {}, onTabKeyDown = () => {}, setOwnerMenuOpen = () => {}, setProfileSettingsOpen = () => {}, setProfileEditorOpen = () => {}, setPublicationOpen = () => {}, setHoursInfoOpen = () => {}, setOperatingHoursOpen = () => {}, shareSalon = () => {};
   return (${source.slice(start, end).trim()});
@@ -20,7 +22,7 @@ const code = ts.transpileModule(`export function Header(p) {
 const compiledModule = { exports: {} };
 const Cover = () => React.createElement("div", { className: "absolute inset-0 bg-brand-orange-soft" });
 const Trust = () => React.createElement("span", { className: "text-brand-orange" }, "+");
-new Function("require", "exports", "SalonCover", "SalonTrustLine", "SalonVerifiedBadge", "salonPopularPrice", "Button", code)(createRequire(import.meta.url), compiledModule.exports, Cover, Trust, () => null, () => null, () => null);
+new Function("require", "exports", "SalonCover", "SalonTrustLine", "SalonVerifiedBadge", "salonPopularPrice", "Button", "WorkspaceText", code)(createRequire(import.meta.url), compiledModule.exports, Cover, Trust, () => null, () => null, () => null, ({ text }) => text);
 const cssPath = ".next/dev/static/css/app/(app)/layout.css";
 const chromePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 const css = existsSync(cssPath) ? readFileSync(cssPath, "utf8") : "";

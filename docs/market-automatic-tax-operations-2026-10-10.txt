@@ -1,0 +1,31 @@
+REYLUMI — QUẢN LÝ SALES TAX CHO PLUGIN
+
+Phạm vi: bán plugin trên toàn nước Mỹ. Doanh nghiệp dự kiến đặt tại Wisconsin; chủ doanh nghiệp xác nhận chưa đăng ký thu sales tax. Cấu hình ban đầu: thuế tự động tắt, chưa chọn mã phân loại, không tạo đăng ký thuế.
+
+Admin mở Market & System → Automatic tax → Manage tax & reports.
+1. Lưu kết nối Stripe trong Payment bằng trường bảo mật của admin.
+2. Trong Stripe Tax, nhập địa chỉ thực tế của doanh nghiệp; kiểm tra nghĩa vụ thuế và đăng ký tại nơi cần thiết. Khai một registration trong Stripe không thay cho đăng ký với cơ quan thuế.
+3. Chọn mã phân loại phù hợp cho từng plugin. Không mặc định mọi plugin đều chịu thuế. Wisconsin phân biệt phần mềm truy cập trên máy chủ nhà cung cấp và phần mềm dựng sẵn tải xuống; phần mềm trực tuyến có thể không chịu thuế theo điều kiện của Wisconsin. Các bang khác áp dụng quy định riêng.
+4. Chọn giá chưa bao gồm thuế (phổ biến ở Mỹ) hoặc giá bao gồm thuế. Phí của Reylumi được cộng vào giá dịch vụ trước khi Stripe tính thuế; thuế cố định cũ không được cộng thêm khi chế độ tự động hoạt động.
+5. Check Stripe Tax; xem địa chỉ, chế độ live/test, đăng ký active/scheduled/expired và thời điểm kiểm tra. Chỉ bật thu thuế tự động khi kết nối live, địa chỉ, phân loại và đăng ký hiện hành đáp ứng kiểm tra của hệ thống. Chế độ tắt không dừng các hợp đồng đã có.
+
+Khách hàng: Add/Buy with card → ô thẻ và địa chỉ thanh toán → tổng tiền cuối cùng cùng thuế trước xác nhận → Stripe xử lý → webhook xác minh tiền và ghi thuế → kích hoạt plugin và hướng dẫn sử dụng hiện có. Có thể lưu thẻ tại Stripe để dùng lại; Reylumi không lưu số thẻ/CVV.
+Mỗi giao dịch giữ giá, phí, phân loại và cách tính thuế đã chốt. Thay đổi setting chỉ áp dụng đơn mới; hợp đồng hiện có tiếp tục điều khoản đã lưu. Thuế từng hóa đơn có thể thay đổi theo địa chỉ, đăng ký và quy định Stripe áp dụng khi hóa đơn được chốt.
+
+Thu chi thuế: hóa đơn đã thanh toán và thuế theo từng nơi được ghi bằng số cent nguyên. Báo cáo có khoảng ngày UTC, số thuế thu, thuế hoàn hợp lệ, thuế ròng, và xuất CSV đầy đủ (tối đa 25.000 dòng mỗi khoảng ngày). CSV không bị cắt ngầm. Thuế thu hộ không phải doanh thu của Reylumi.
+Đây là sổ đối soát thuế đã thu qua các hóa đơn plugin đã trả tiền, không thay báo cáo nghĩa vụ thuế để nộp tờ khai. Stripe Tax ghi nghĩa vụ khi hóa đơn được chốt, kể cả chưa thanh toán, và điều chỉnh cho refund/credit note theo quy tắc riêng. Do đó thời điểm và số liệu có thể khác sổ tiền đã thu này; dùng Stripe Tax reports cùng đơn vị kế toán làm căn cứ kê khai. Hoàn thẻ trực tiếp có thể đã được Stripe điều chỉnh thuế; cảnh báo trong Reylumi chỉ cho biết chứng từ đối soát của sổ nội bộ chưa đầy đủ. Ngày ghi giảm từ credit note dùng ngày có hiệu lực/phát hành của chứng từ.
+Hoàn tiền: admin hoàn hóa đơn có thuế bằng credit note của Stripe kèm hoàn về thẻ, đồng thời ngừng gia hạn. Sổ thuế chỉ giảm bằng số thuế thực tế trên credit note đã phát hành, có liên kết với hoàn tiền thành công. Hoàn thẻ trực tiếp chưa có credit note sẽ xuất hiện cảnh báo đối soát; hệ thống không tự ước tính và ghi giảm thuế. Hoàn hóa đơn cũ được xử lý riêng, không xóa thời hạn đã trả tiền của hóa đơn mới.
+Webhook được ký và kiểm tra lại dữ liệu Stripe. Sự kiện trùng hoặc đến muộn không ghi thuế trùng. Tác vụ đối soát hiện có thử lại lỗi, kiểm tra hóa đơn cần xử lý và cập nhật trạng thái Stripe Tax hằng ngày; không tạo thêm khoản thu.
+
+Đăng ký, nộp tờ khai và nộp tiền thuế là công việc riêng. Tính và thu thuế tại checkout không đồng nghĩa đã khai/nộp thuế. Admin có liên kết để thiết lập dịch vụ filing/remittance của Stripe hoặc đơn vị kế toán; hệ thống không hiển thị “đã nộp” khi chưa xác minh.
+Các plugin bên ngoài còn ở chế độ preview không được nhận tiền trước khi có cơ chế kích hoạt được duyệt. Khi được kết nối vào luồng mua plugin, chúng cần phân loại thuế, hợp đồng, người bán và trách nhiệm thuế rõ ràng. Campaign credits và các khoản thanh toán dịch vụ salon theo connected account là các luồng riêng, chưa thuộc báo cáo thuế plugin này.
+
+Nguồn chính thức:
+https://www.revenue.wi.gov/Pages/FAQS/pcs-computerc.aspx
+https://www.revenue.wi.gov/Pages/FAQS/pcs-sales.aspx
+https://docs.stripe.com/tax/set-up
+https://docs.stripe.com/tax/checkout/page
+https://docs.stripe.com/tax/invoicing
+https://docs.stripe.com/tax/registering
+https://docs.stripe.com/tax/filing
+https://docs.stripe.com/api/credit_notes/create

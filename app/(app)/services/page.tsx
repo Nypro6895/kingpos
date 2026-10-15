@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
 import { ServicesManager } from "@/app/services/services-manager";
 import "@/app/services/services.css";
 import { hasPermission } from "@/lib/permissions";
@@ -17,7 +19,7 @@ function stringParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export default async function ServicesPage({ searchParams }: ServicesPageProps) {
+async function ServicesPage({ searchParams }: ServicesPageProps) {
   const [params, context] = await Promise.all([
     searchParams,
     requireSalonManagePageContext("/services"),
@@ -31,7 +33,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
     return (
       <main className="services-page">
         <div className="services-page__frame services-page__empty">
-          You do not have permission to view services.
+          <WorkspaceText text="You do not have permission to view services." />
         </div>
       </main>
     );
@@ -46,3 +48,5 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
     />
   );
 }
+
+export default withExperiencePage(ServicesPage);

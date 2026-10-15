@@ -8,6 +8,11 @@ function load(path, overrides = {}) {
   const exports = {};
   const localRequire = name => {
     if (name in overrides) return overrides[name];
+    if (name === '@/components/workspace-language') return {
+      WorkspaceText: ({ text }) => text,
+      WorkspaceElement: ({ as = 'div', children, ...props }) => require('react').createElement(as, props, children),
+      useWorkspaceTranslation: () => text => text,
+    };
     if (name === './staff-pay-period-picker') return load('app/staff/my-work/staff-pay-period-picker.tsx');
     if (name === 'next/navigation') return { useRouter: () => ({ push() {} }) };
     if (name === 'next/link') return { __esModule: true, default: ({ children, ...props }) => require('react').createElement('a', props, children) };

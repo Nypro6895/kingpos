@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -52,7 +52,7 @@ test(
             b.onLoad({ filter: /.*/, namespace: "mock" }, ({ path }) => ({
               resolveDir: repo,
               contents:
-                path === "navigation" ? "export const useRouter=()=>({refresh(){}});" : path === "link"
+                path === "navigation" ? "export const useRouter=()=>({refresh(){}}); export const usePathname=()=>'/staff';" : path === "link"
                   ? `import React from 'react';export default function Link({children,...p}){return React.createElement('a',p,children)}`
                   : `export async function deleteUnusedRecordAction(){throw Error('Deletion is outside this fixture');}; export async function resetStaffPasscodeFormAction(){}; export async function updateStaffDirectoryBatchFormAction(form){window.calls.push(Object.fromEntries(form));}`,
             }));
@@ -104,7 +104,7 @@ test(
       );
       await search.fill("not-found");
       await page.getByText("0 matching staff", { exact: true }).waitFor();
-      await page.getByRole("button", { name: "Clear", exact: true }).click();
+      await page.getByRole("button", { name: "Clear staff search", exact: true }).click();
       assert.equal(await search.inputValue(), "");
       assert.equal(
         await page.getByRole("button", { name: "Edit", exact: true }).count(),
@@ -117,6 +117,63 @@ test(
       await search.press("Enter");
       assert.equal(requests, 0);
       assert.deepEqual(await page.evaluate(() => window.calls), []);
+      await search.fill("");
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.getByRole("button", { name: "Done", exact: true }).click();
+      const compactHeight = await page.locator("tbody > tr").first().evaluate(el => el.getBoundingClientRect().height);
+      assert.ok(compactHeight < 130, `Compact row is ${compactHeight}px tall`);
+      await page.getByRole("button", { name: "Edit", exact: true }).first().click();
+      await page.getByLabel("Display name", { exact: true }).fill("Tracy Updated");
+      await page.getByLabel("Phone", { exact: true }).fill("5558888");
+      await page.getByRole("button", { name: "Save staff changes", exact: true }).waitFor();
+      for (const width of [320, 375, 768, 1440]) {
+        await page.setViewportSize({ width, height: 900 });
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Overflow at ${width}px`);
+        const target = join(repo, "artifacts", "staff-directory-redesign");
+        mkdirSync(target, { recursive: true });
+        await page.screenshot({ path: join(target, `${width}-edit.png`), fullPage: true });
+      }
+      // A long roster must not push mobile saving below the viewport or navigation.
+      await page.setViewportSize({ width: 320, height: 568 });
+      await page.locator("tbody").first().evaluate((body) => {
+        for (let index = 0; index < 20; index++) {
+          const row = document.createElement("tr");
+          row.dataset.fixture = "long-roster";
+          row.innerHTML = '<td style="height:100px">Additional staff</td>';
+          body.append(row);
+        }
+        const navigation = document.createElement("nav");
+        navigation.id = "fixture-mobile-navigation";
+        navigation.style.cssText = "position:fixed;bottom:0;left:0;right:0;height:80px;z-index:50;background:white";
+        document.body.append(navigation);
+      });
+      const saveButton = page.getByRole("button", { name: "Save staff changes", exact: true });
+      for (const width of [320, 375, 767]) {
+        await page.setViewportSize({ width, height: 568 });
+        for (const bottom of [false, true]) {
+          await page.evaluate((bottom) => window.scrollTo(0, bottom ? document.body.scrollHeight : 0), bottom);
+          const bounds = await saveButton.boundingBox();
+          assert.ok(bounds && bounds.x >= 0 && bounds.x + bounds.width <= width);
+          assert.ok(bounds.y >= 0 && bounds.y + bounds.height <= 488, `Save obscured at ${width}px`);
+          assert.ok(await saveButton.evaluate((button) => {
+            const box = button.getBoundingClientRect();
+            return button.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2));
+          }), "Save must be clickable without scrolling");
+        }
+      }
+      await saveButton.click();
+      await page.locator('[data-fixture="long-roster"]').evaluateAll((rows) => rows.forEach(row => row.remove()));
+      await page.locator("#fixture-mobile-navigation").evaluate((nav) => nav.remove());
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.waitForFunction(() => window.calls.length === 1);
+      assert.equal(await page.getByRole("region", { name: "Staff information" }).count(), 0);
+      assert.equal(await page.getByPlaceholder("First name", { exact: true }).count(), 1);
+      assert.equal(await page.getByPlaceholder("Address line 1", { exact: true }).count(), 1);
+      assert.equal(await page.locator("tbody").first().locator(":scope > tr").count(), 2);
+      const saved = await page.evaluate(() => window.calls[0]);
+      assert.equal(saved.display_name_a, "Tracy Updated");
+      assert.equal(saved.phone_a, "5558888");
+      assert.equal(saved.staff_id, "a");
       assert.deepEqual(errors, []);
     } finally {
       await browser.close();

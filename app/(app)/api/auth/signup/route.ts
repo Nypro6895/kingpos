@@ -1,8 +1,10 @@
+import { writeLoginPolicy, sessionCookieOptions } from "@/lib/supabase/session-policy";
+import { createSignupTicket } from "@/lib/abuse-server";
+import { recordAdvertisingSignup } from "@/lib/advertising-attribution";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
   createSupabaseServerClient,
-  getSupabaseCookieOptions,
 } from "@/lib/supabase/server";
 import {
   fallbackPostAuthWorkspaceNavigation,
@@ -84,11 +86,15 @@ export async function POST(request: Request) {
     );
   }
 
+  let signupTicket: string;
+  try { signupTicket = await createSignupTicket(email); } catch (error) { return signupErrorResponse(request, error instanceof Error ? error.message : "Please try again later.", 429, nextPath); }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
+        abuse_signup_ticket: signupTicket,
         display_name: displayName || email,
       },
     },
@@ -107,6 +113,8 @@ export async function POST(request: Request) {
       nextPath,
     );
   }
+
+  await recordAdvertisingSignup(request, data.user);
 
   if (!data.session) {
     const loginParams = new URLSearchParams({
@@ -134,16 +142,20 @@ export async function POST(request: Request) {
   response.cookies.set(
     ACCESS_TOKEN_COOKIE,
     data.session.access_token,
-    getSupabaseCookieOptions(data.session.expires_in),
+    sessionCookieOptions(true),
   );
   response.cookies.set(
     REFRESH_TOKEN_COOKIE,
     data.session.refresh_token,
-    getSupabaseCookieOptions(60 * 60 * 24 * 30),
+    sessionCookieOptions(true),
   );
   if (navigation.workspace) {
-    writeNormalizedWorkspaceContextCookies(response.cookies, navigation.workspace);
+    writeNormalizedWorkspaceContextCookies(
+      response.cookies,
+      navigation.workspace,
+    );
   }
 
+  writeLoginPolicy(response.cookies, data.session.access_token, true);
   return response;
 }

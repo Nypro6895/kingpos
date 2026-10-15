@@ -1,4 +1,4 @@
-import {ExploreBookButton,ExploreSalonLove} from "@/components/explore-account-actions";
+import { withExperiencePage } from "@/components/experience-page";
 import { SalonProfileView } from "@/app/salon-profile/salon-profile-view";
 import { getCurrentBusinessContext, isSalonManageContext } from "@/lib/current-context";
 import { getPublicSalonProfileData } from "@/lib/salon-profile";
@@ -32,7 +32,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function PublicSalonProfilePage({
+async function PublicSalonProfilePage({
   params,
 }: PublicSalonProfilePageProps) {
   const { salonId } = await params;
@@ -51,7 +51,6 @@ export default async function PublicSalonProfilePage({
 
   return (
     <main>
-      <div className="flex justify-end gap-3 px-5 py-3"><ExploreSalonLove salonId={salonId} name={data.profile.name}/><ExploreBookButton href={`/book/${salonId}`} name={data.profile.name} contactHref={`/explore/salons/${salonId}`} phoneHref={data.profile.phone?`tel:${data.profile.phone}`:null}/></div>
       <SalonProfileView
         capabilities={{
           canBook: data.directoryListing?.claimState !== "unclaimed" && data.profile.operatingStatus.kind !== "permanently_closed",
@@ -72,3 +71,5 @@ export default async function PublicSalonProfilePage({
     </main>
   );
 }
+
+export default withExperiencePage(PublicSalonProfilePage);

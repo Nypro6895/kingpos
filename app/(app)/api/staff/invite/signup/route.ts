@@ -1,3 +1,6 @@
+import { writeLoginPolicy, sessionCookieOptions } from "@/lib/supabase/session-policy";
+import { createSignupTicket } from "@/lib/abuse-server";
+import { recordAdvertisingSignup } from "@/lib/advertising-attribution";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
@@ -43,7 +46,10 @@ export async function POST(request: Request) {
   const password = readString(formData, "password");
 
   if (!supabase) {
-    return jsonError("This feature is temporarily unavailable. Please try again later.", 500);
+    return jsonError(
+      "This feature is temporarily unavailable. Please try again later.",
+      500,
+    );
   }
 
   if (!token || !email || !password) {
@@ -56,7 +62,9 @@ export async function POST(request: Request) {
     invite = await getStaffInviteByToken(token);
   } catch (error) {
     return jsonError(
-      error instanceof Error ? error.message : "Invitation could not be loaded.",
+      error instanceof Error
+        ? error.message
+        : "Invitation could not be loaded.",
       400,
     );
   }
@@ -87,7 +95,9 @@ export async function POST(request: Request) {
     verification = await verifyStaffInviteEmail({ email, token });
   } catch (error) {
     return jsonError(
-      error instanceof Error ? error.message : "Invited email could not be verified.",
+      error instanceof Error
+        ? error.message
+        : "Invited email could not be verified.",
       400,
     );
   }
@@ -104,11 +114,15 @@ export async function POST(request: Request) {
     );
   }
 
+  let signupTicket: string;
+  try { signupTicket = await createSignupTicket(email); } catch (error) { return jsonError(error instanceof Error ? error.message : "Please try again later.", 429); }
+
   const { data: signupData, error: signupError } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
+        abuse_signup_ticket: signupTicket,
         display_name: invite.staff.display_name,
         staff_invite_request_id: invite.request_id,
         staff_invite_salon_id: invite.salon.id,
@@ -124,6 +138,8 @@ export async function POST(request: Request) {
 
     return jsonError(authError.message, authError.status);
   }
+
+  await recordAdvertisingSignup(request, signupData.user);
 
   if (!signupData.user || !signupData.session) {
     const loginParams = new URLSearchParams({
@@ -143,7 +159,9 @@ export async function POST(request: Request) {
   );
 
   if (!publicUser) {
-    return jsonError("Account was created, but the profile could not be prepared.");
+    return jsonError(
+      "Account was created, but the profile could not be prepared.",
+    );
   }
 
   const userScopedSupabase = createUserScopedSupabaseServerClient(
@@ -151,7 +169,10 @@ export async function POST(request: Request) {
   );
 
   if (!userScopedSupabase) {
-    return jsonError("This feature is temporarily unavailable. Please try again later.", 500);
+    return jsonError(
+      "This feature is temporarily unavailable. Please try again later.",
+      500,
+    );
   }
 
   const { data: acceptData, error: acceptError } = await userScopedSupabase.rpc(
@@ -176,11 +197,14 @@ export async function POST(request: Request) {
       supabase: userScopedSupabase,
     });
   } catch (error) {
-    console.error("Staff Profile defaults could not be initialized after signup", {
-      error,
-      salonId: acceptedInvite.salon_id,
-      staffId: acceptedInvite.staff_id,
-    });
+    console.error(
+      "Staff Profile defaults could not be initialized after signup",
+      {
+        error,
+        salonId: acceptedInvite.salon_id,
+        staffId: acceptedInvite.staff_id,
+      },
+    );
   }
 
   const response = NextResponse.json({
@@ -191,12 +215,12 @@ export async function POST(request: Request) {
   response.cookies.set(
     ACCESS_TOKEN_COOKIE,
     signupData.session.access_token,
-    getSupabaseCookieOptions(signupData.session.expires_in),
+    sessionCookieOptions(true),
   );
   response.cookies.set(
     REFRESH_TOKEN_COOKIE,
     signupData.session.refresh_token,
-    getSupabaseCookieOptions(60 * 60 * 24 * 30),
+    sessionCookieOptions(true),
   );
 
   if (acceptedInvite.salon_id) {
@@ -214,5 +238,6 @@ export async function POST(request: Request) {
     response.cookies.delete(LEGACY_CURRENT_SALON_COOKIE);
   }
 
+  writeLoginPolicy(response.cookies, signupData.session.access_token, true);
   return response;
 }

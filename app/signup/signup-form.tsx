@@ -101,7 +101,7 @@ export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
           id="signup-form-error"
           role="alert"
         >
-          {error}
+          {error} {error.includes("/security-check") ? <Link href="/security-check" className="underline">Open security check</Link> : null}
         </p>
       ) : null}
 

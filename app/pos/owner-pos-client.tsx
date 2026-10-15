@@ -1,4 +1,6 @@
 "use client";
+import { DeskRelay } from "@/app/service-relay/desk-relay";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useCallback,useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { PosDeskCustomer, PosDeskService, PosDeskStaff } from "@/types/pos-desk";
@@ -27,6 +29,8 @@ export function OwnerPosClient(props:Parameters<typeof OwnerPosWorkspace>[0]) {
 function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initialPreferences=DEFAULT_WORKSPACE_PREFERENCES}:{
   snapshotAt?:number;scope:string;salonId:string;salonName:string;initial:{staff:PosDeskStaff[];services:PosDeskService[];defaults:PosDeskDefaults;today:string};preferences?:PosWorkspacePreferences;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   useEffect(()=>{
     const resize=()=>{
       const element=document.querySelector<HTMLElement>('[data-pos-owner-page]');if(!element)return;
@@ -174,73 +178,74 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   const entryCount=(cart?.lines.length??0)+(currentEntry?1:0);
   const inputTarget=cart?.inputTarget??'amount';
   const inputValue=inputTarget==='amount'?amountValue:(cart?.[inputTarget]??'');
-  const inlineRows=cart?<div ref={entries} className="owner-inline-rows" aria-label="Ticket entries">
+  const inlineRows=cart?<div ref={entries} className="owner-inline-rows" aria-label={__vt("Ticket entries")}>
     {cart.lines.map((line,index)=><div key={line.id} data-selected={inputTarget==='amount'&&selectedLine?.id===line.id}>
-      <button className="owner-row-select" aria-label={`Edit entry ${index+1}`} onClick={()=>selectLine(line.id)}/>
-      <span title={line.serviceLabel}>{line.serviceLabel}</span><span className="owner-row-dash">-</span><span title={line.staffName}>{line.staffName}</span>
-      {selectedLine?.id===line.id&&inputTarget==='amount'?<label className="owner-inline-money">$<input aria-label="Amount" inputMode="none" value={amountValue} placeholder="0.00" onFocus={e=>{replaceAmount.current=true;e.target.select();}} onClick={e=>e.stopPropagation()} onChange={e=>setAmount(e.target.value)}/></label>:<strong>{money(line.total)}</strong>}
+      <button className="owner-row-select" aria-label={__vt(`Edit entry ${index+1}`)} onClick={()=>selectLine(line.id)}/>
+      <span title={__vt(line.serviceLabel)}>{line.serviceLabel}</span><span className="owner-row-dash">-</span><span title={__vt(line.staffName)}>{line.staffName}</span>
+      {selectedLine?.id===line.id&&inputTarget==='amount'?<label className="owner-inline-money">$<input aria-label={__vt("Amount")} inputMode="none" value={amountValue} placeholder={__vt("0.00")} onFocus={e=>{replaceAmount.current=true;e.target.select();}} onClick={e=>e.stopPropagation()} onChange={e=>setAmount(e.target.value)}/></label>:<strong>{money(line.total)}</strong>}
     </div>)}
     {currentEntry?<div data-selected={inputTarget==='amount'&&!selectedLine}>
-      <button className="owner-row-select" aria-label="Edit current entry" onClick={()=>selectLine(null)}/>
-      <span title={reference.services.find(s=>s.id===cart.serviceId)?.name}>{reference.services.find(s=>s.id===cart.serviceId)?.name??'Service'}</span><span className="owner-row-dash">-</span><span>{reference.staff.find(s=>s.id===cart.staffId)?.display_name??'Unassigned'}</span>
-      {!selectedLine&&inputTarget==='amount'?<label className="owner-inline-money">$<input aria-label="Amount" inputMode="none" value={cart.amount} placeholder="0.00" onFocus={e=>{replaceAmount.current=true;e.target.select();}} onClick={e=>e.stopPropagation()} onChange={e=>setAmount(e.target.value)}/></label>:<strong>{money(amountPreview(cart.amount))}</strong>}
+      <button className="owner-row-select" aria-label={__vt("Edit current entry")} onClick={()=>selectLine(null)}/>
+      <span title={__vt(reference.services.find(s=>s.id===cart.serviceId)?.name)}>{reference.services.find(s=>s.id===cart.serviceId)?.name??'Service'}</span><span className="owner-row-dash">-</span><span>{reference.staff.find(s=>s.id===cart.staffId)?.display_name??'Unassigned'}</span>
+      {!selectedLine&&inputTarget==='amount'?<label className="owner-inline-money">$<input aria-label={__vt("Amount")} inputMode="none" value={cart.amount} placeholder={__vt("0.00")} onFocus={e=>{replaceAmount.current=true;e.target.select();}} onClick={e=>e.stopPropagation()} onChange={e=>setAmount(e.target.value)}/></label>:<strong>{money(amountPreview(cart.amount))}</strong>}
     </div>:null}
     {(['tip','discount'] as const).map(target=>(Number(cart[target])>0||inputTarget===target)?<div key={target} className="owner-adjustment-row" data-selected={inputTarget===target}>
-      <button className="owner-row-select" aria-label={`Edit ${target}`} onClick={()=>chooseAdjustment(target)}/>
-      <span>{target==='tip'?'Tip':'Discount'}</span><strong>{target==='discount'?'-':''}{money(Number(cart[target]||0))}</strong>
+      <button className="owner-row-select" aria-label={__vt(`Edit ${target}`)} onClick={()=>chooseAdjustment(target)}/>
+      <span>{target==='tip'?<WorkspaceText text="Tip" />:<WorkspaceText text="Discount" />}</span><strong>{target==='discount'?'-':''}{money(Number(cart[target]||0))}</strong>
     </div>:null)}
   </div>:null;
   const linesView=cart?<div className="owner-lines">
     {cart.lines.map((line,index)=><div key={line.id} data-selected={inputTarget==='amount'&&selectedLine?.id===line.id}>
-      <button className="owner-desktop-line" aria-label={`Edit entry ${index+1}`} onClick={()=>selectLine(line.id)}><span><strong>{line.serviceLabel}</strong><small>{line.staffName}</small></span><strong>{money(line.total)}</strong></button>
-      <button aria-label={`Remove ${line.serviceLabel}`} onClick={()=>update({lines:cart.lines.filter(l=>l.id!==line.id),activeLineId:selectedLine?.id===line.id?null:cart.activeLineId})}>×</button>
+      <button className="owner-desktop-line" aria-label={__vt(`Edit entry ${index+1}`)} onClick={()=>selectLine(line.id)}><span><strong>{line.serviceLabel}</strong><small>{line.staffName}</small></span><strong>{money(line.total)}</strong></button>
+      <button aria-label={__vt(`Remove ${line.serviceLabel}`)} onClick={()=>update({lines:cart.lines.filter(l=>l.id!==line.id),activeLineId:selectedLine?.id===line.id?null:cart.activeLineId})}>×</button>
     </div>)}
-    {currentEntry?<div data-selected={inputTarget==='amount'&&!selectedLine}><button className="owner-desktop-line" aria-label="Edit current entry" onClick={()=>selectLine(null)}><span><strong>{reference.services.find(s=>s.id===cart.serviceId)?.name??'Service'}</strong><small>{reference.staff.find(s=>s.id===cart.staffId)?.display_name??'Unassigned'} · Current entry</small></span><strong>{money(amountPreview(cart.amount))}</strong></button></div>:null}
+    {currentEntry?<div data-selected={inputTarget==='amount'&&!selectedLine}><button className="owner-desktop-line" aria-label={__vt("Edit current entry")} onClick={()=>selectLine(null)}><span><strong>{reference.services.find(s=>s.id===cart.serviceId)?.name??'Service'}</strong><small>{reference.staff.find(s=>s.id===cart.staffId)?.display_name??'Unassigned'} <WorkspaceText text="· Current entry" /></small></span><strong>{money(amountPreview(cart.amount))}</strong></button></div>:null}
   </div>:null;
   return <main className="owner-checkout" data-pos-owner-page data-owner-reference="true" data-step="amount">
     <div className="owner-sync-status"><PortableSyncIndicator scope={scope}/></div>
     <OwnerPosTabs active="pos"/>
-    {error?<p role="alert" className="owner-error">{error}</p>:null}
+    <DeskRelay salonId={salonId}/>
+    {error?<p role="alert" className="owner-error"><WorkspaceText text={error} /></p>:null}
     {cart?<>
       <div className="owner-tools">
         <PortableDraftControls scope={scope} active={Boolean(cart.lines.length||cart.amount)} activity={JSON.stringify(cart)} value={cart} label={cart.customer?.name??'Walk-in'} reset={reset} restore={value=>persist(value)} idleMinutes={preferences.idleMinutes} warningSeconds={preferences.idleWarningSeconds}/>
         {preferences.showCustomer?<button className="owner-customer-shortcut" onClick={()=>setPanel('customer')}>{cart.customer?.name??'Customer'}</button>:null}
       </div>
       <div className="owner-workbench">
-        <section className="owner-receipt"><div className="owner-section-heading"><h2>Receipt</h2><Link href="/pos-tickets">History</Link></div>{linesView}
+        <section className="owner-receipt"><div className="owner-section-heading"><h2><WorkspaceText text="Receipt" /></h2><Link href="/pos-tickets"><WorkspaceText text="History" /></Link></div>{linesView}
           <div className="owner-receipt-summary">
-            {Number(cart.tip)>0||Number(cart.discount)>0?<div><span>Subtotal</span><strong>{money(subtotal+amountPreview(cart.amount))}</strong></div>:null}
-            {(['discount','tip'] as const).map(target=>Number(cart[target])>0?<button key={target} onClick={()=>chooseAdjustment(target)}><span>{target==='tip'?'Tip':'Discount'}</span><strong>{target==='discount'?'-':''}{money(Number(cart[target]))}</strong></button>:null)}
-            <div className="owner-total"><span>Total ({entryCount})</span><strong>{money(total)}</strong></div>
+            {Number(cart.tip)>0||Number(cart.discount)>0?<div><span><WorkspaceText text="Subtotal" /></span><strong>{money(subtotal+amountPreview(cart.amount))}</strong></div>:null}
+            {(['discount','tip'] as const).map(target=>Number(cart[target])>0?<button key={target} onClick={()=>chooseAdjustment(target)}><span>{target==='tip'?<WorkspaceText text="Tip" />:<WorkspaceText text="Discount" />}</span><strong>{target==='discount'?'-':''}{money(Number(cart[target]))}</strong></button>:null)}
+            <div className="owner-total"><span><WorkspaceText text="Total (" />{entryCount})</span><strong>{money(total)}</strong></div>
           </div>
         </section>
         <section className="owner-catalog">
-          {hasStaff?<div className="owner-staff"><div className="owner-section-heading"><h2>Staff Turn Board</h2><small>Large turn: {money(ticketDefaults.largeTurnThreshold)}</small></div><div className="owner-choice-grid">{staff.map(s=><button key={s.id} data-turn-tone={getStaffTurnToneLevel(s.turns?.queueTurns??0,staff.map(item=>item.turns?.queueTurns??0))} aria-pressed={s.id===(selectedLine?selectedLine.staffId:cart.staffId)} onClick={()=>chooseStaff(s.id)}><strong>{s.display_name}</strong><b className="owner-turn">{s.turns?.queueTurns??0}</b><small>{s.turns?.smallTurns??0} small</small></button>)}</div>{!staff.length?<p className="owner-empty">No staff checked in. Check in a staff member to start.</p>:null}{!ticketDefaults.staffCheckInEnabled?<button className="owner-skip" onClick={()=>chooseStaff(null)}>No staff assignment</button>:null}</div>:null}
-          {hasServices?<div className="owner-services"><div className="owner-section-heading"><h2>Services</h2><button onClick={()=>openPicker('services')}>View all</button></div><div className="owner-choice-grid">{reference.services.map(s=><button key={s.id} aria-pressed={s.id===(selectedLine?selectedLine.serviceId:cart.serviceId)} onClick={()=>chooseService(s.id)}><strong>{s.name}</strong><small>{money(Number(s.base_price??0))}</small></button>)}</div><button className="owner-skip" onClick={()=>chooseService(null)}>Amount only</button></div>:null}
+          {hasStaff?<div className="owner-staff"><div className="owner-section-heading"><h2><WorkspaceText text="Staff Turn Board" /></h2><small><WorkspaceText text="Large turn:" /> {money(ticketDefaults.largeTurnThreshold)}</small></div><div className="owner-choice-grid">{staff.map(s=><button key={s.id} data-turn-tone={getStaffTurnToneLevel(s.turns?.queueTurns??0,staff.map(item=>item.turns?.queueTurns??0))} aria-pressed={s.id===(selectedLine?selectedLine.staffId:cart.staffId)} onClick={()=>chooseStaff(s.id)}><strong>{s.display_name}{s.service_status === "working" ? <small>Working</small> : null}</strong><b className="owner-turn">{s.turns?.queueTurns??0}</b><small>{s.turns?.smallTurns??0} <WorkspaceText text="small" /></small></button>)}</div>{!staff.length?<p className="owner-empty"><WorkspaceText text="No staff checked in. Check in a staff member to start." /></p>:null}{!ticketDefaults.staffCheckInEnabled?<button className="owner-skip" onClick={()=>chooseStaff(null)}><WorkspaceText text="No staff assignment" /></button>:null}</div>:null}
+          {hasServices?<div className="owner-services"><div className="owner-section-heading"><h2><WorkspaceText text="Services" /></h2><button onClick={()=>openPicker('services')}><WorkspaceText text="View all" /></button></div><div className="owner-choice-grid">{reference.services.map(s=><button key={s.id} aria-pressed={s.id===(selectedLine?selectedLine.serviceId:cart.serviceId)} onClick={()=>chooseService(s.id)}><strong>{s.name}</strong><small>{money(Number(s.base_price??0))}</small></button>)}</div><button className="owner-skip" onClick={()=>chooseService(null)}><WorkspaceText text="Amount only" /></button></div>:null}
         </section>
         <section className="owner-amount">
-          <div className="owner-mobile-ticket">{inlineRows}<div className="owner-total"><span>Total ({entryCount})</span><strong>{money(total)}</strong></div></div>
-          <div className="owner-section-heading"><span className="owner-selection">{selectedLine?.staffName??member?.display_name??'Amount'}{selectedLine?` · ${selectedLine.serviceLabel}`:service?` · ${service.name}`:''}</span></div>
-          <label className="owner-amount-field"><span>{inputTarget==='amount'?'Amount':inputTarget==='tip'?'Tip':'Discount'}</span><input aria-label={inputTarget==='amount'?'Amount':inputTarget==='tip'?'Tip amount':'Discount amount'} inputMode="none" autoComplete="off" value={inputValue} placeholder="0.00" onFocus={e=>{replaceAmount.current=true;e.target.select();}} onChange={e=>{if(inputTarget==='amount')setAmount(e.target.value);else if(/^\d*(\.\d{0,2})?$/.test(e.target.value))update({[inputTarget]:e.target.value});}}/></label>
-          <div className="owner-mode-tabs" aria-label="Keypad controls">
-            <button className="owner-mobile-picker" aria-label="Services" aria-haspopup="dialog" aria-pressed={inputTarget==='amount'&&panel!=='staff'} onClick={()=>openPicker('services')}><OwnerPosIcon name="services"/><span>Services</span></button>
-            <button className="owner-mobile-picker" aria-label="Employees" aria-haspopup="dialog" aria-pressed={panel==='staff'} onClick={()=>openPicker('staff')}><OwnerPosIcon name="employees"/><span>Employees</span></button>
-            {preferences.showTip?<button aria-label="Tip" aria-pressed={inputTarget==='tip'} onClick={()=>chooseAdjustment('tip')}><OwnerPosIcon name="tip"/><span>Tip</span></button>:null}
-            {preferences.showDiscount?<button aria-label="Discount" aria-pressed={inputTarget==='discount'} onClick={()=>chooseAdjustment('discount')}><OwnerPosIcon name="discount"/><span>Discount</span></button>:null}
+          <div className="owner-mobile-ticket">{inlineRows}<div className="owner-total"><span><WorkspaceText text="Total (" />{entryCount})</span><strong>{money(total)}</strong></div></div>
+          <div className="owner-section-heading"><span className="owner-selection"><WorkspaceText text={selectedLine?.staffName??member?.display_name??'Amount'} />{selectedLine?` · ${selectedLine.serviceLabel}`:service?` · ${service.name}`:''}</span></div>
+          <label className="owner-amount-field"><span>{inputTarget==='amount'?<WorkspaceText text="Amount" />:inputTarget==='tip'?<WorkspaceText text="Tip" />:<WorkspaceText text="Discount" />}</span><input aria-label={__vt(inputTarget==='amount'?'Amount':inputTarget==='tip'?'Tip amount':'Discount amount')} inputMode="none" autoComplete="off" value={inputValue} placeholder={__vt("0.00")} onFocus={e=>{replaceAmount.current=true;e.target.select();}} onChange={e=>{if(inputTarget==='amount')setAmount(e.target.value);else if(/^\d*(\.\d{0,2})?$/.test(e.target.value))update({[inputTarget]:e.target.value});}}/></label>
+          <div className="owner-mode-tabs" aria-label={__vt("Keypad controls")}>
+            <button className="owner-mobile-picker" aria-label={__vt("Services")} aria-haspopup="dialog" aria-pressed={inputTarget==='amount'&&panel!=='staff'} onClick={()=>openPicker('services')}><OwnerPosIcon name="services"/><span><WorkspaceText text="Services" /></span></button>
+            <button className="owner-mobile-picker" aria-label={__vt("Employees")} aria-haspopup="dialog" aria-pressed={panel==='staff'} onClick={()=>openPicker('staff')}><OwnerPosIcon name="employees"/><span><WorkspaceText text="Employees" /></span></button>
+            {preferences.showTip?<button aria-label={__vt("Tip")} aria-pressed={inputTarget==='tip'} onClick={()=>chooseAdjustment('tip')}><OwnerPosIcon name="tip"/><span><WorkspaceText text="Tip" /></span></button>:null}
+            {preferences.showDiscount?<button aria-label={__vt("Discount")} aria-pressed={inputTarget==='discount'} onClick={()=>chooseAdjustment('discount')}><OwnerPosIcon name="discount"/><span><WorkspaceText text="Discount" /></span></button>:null}
           </div>
-          <div className="owner-keypad">{['1','2','3','4','5','6','7','8','9','⌫','0','/'].map(n=><button key={n} data-key={n==='⌫'?'backspace':n} aria-label={n==='⌫'?'Backspace':n} disabled={busy||(n==='/'&&inputTarget!=='amount')} onClick={()=>pressKey(n)}>{n}</button>)}</div>
-          <div className="owner-keypad-edit"><button disabled={busy} onClick={()=>void reset()}>Reset</button><button disabled={busy} onClick={()=>{replaceAmount.current=true;if(inputTarget==='amount')setAmount('');else update({[inputTarget]:''});}}>Clear</button><button onClick={()=>setPanel('ticket')}>Edit line</button></div>
-          <div className="owner-submit"><button disabled={busy} onClick={add}>+ Add another</button><button disabled={busy} onClick={()=>void submit()}>{busy?'Saving…':'Submit'}</button></div>
+          <div className="owner-keypad">{['1','2','3','4','5','6','7','8','9','⌫','0','/'].map(n=><button key={n} data-key={n==='⌫'?'backspace':n} aria-label={__vt(n==='⌫'?'Backspace':n)} disabled={busy||(n==='/'&&inputTarget!=='amount')} onClick={()=>pressKey(n)}>{n==='⌫'?<OwnerPosIcon name="backspace"/>:n}</button>)}</div>
+          <div className="owner-keypad-edit"><button disabled={busy} onClick={()=>void reset()}><WorkspaceText text="Reset" /></button><button disabled={busy} onClick={()=>{replaceAmount.current=true;if(inputTarget==='amount')setAmount('');else update({[inputTarget]:''});}}><WorkspaceText text="Clear" /></button><button onClick={()=>setPanel('ticket')}><WorkspaceText text="Edit line" /></button></div>
+          <div className="owner-submit"><button disabled={busy} onClick={add}><WorkspaceText text="+ Add another" /></button><button disabled={busy} onClick={()=>void submit()}>{busy?<WorkspaceText text="Saving…" />:'Submit'}</button></div>
         </section>
       </div>
-    </>:<p>Opening your saved workspace…</p>}
+    </>:<p><WorkspaceText text="Opening your saved workspace…" /></p>}
     <dialog ref={dialog} aria-labelledby="owner-picker-title" onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)setPanel(null);}}} onCancel={()=>setPanel(null)} className="owner-picker-dialog">
-      <header><h2 id="owner-picker-title">{panel==='staff'?'Employees':panel==='services'?'Services':panel==='customer'?'Customer':'Ticket'}</h2><button onClick={()=>setPanel(null)}>Done</button></header>
-      {panel==='ticket'?<><div className="owner-ticket-actions"><button onClick={()=>openPicker('staff')}>Employees</button><button onClick={()=>openPicker('services')}>Services</button>{selectedLine?<button onClick={()=>{update({lines:cart!.lines.filter(l=>l.id!==selectedLine.id),activeLineId:null});setPanel(null);}}>Remove line</button>:null}{preferences.showCustomer?<button onClick={()=>setPanel('customer')}>Customer</button>:null}</div>{linesView}<div className="owner-total"><span>Total</span><strong>{money(total)}</strong></div><Link href="/pos-tickets" className="owner-skip">Ticket history →</Link></>:null}
-      {panel==='staff'||panel==='services'?<><input className="owner-picker-search" aria-label={panel==='staff'?'Search employees':'Search services'} type="search" placeholder={panel==='staff'?'Search employees':'Search services'} value={pickerQuery} onChange={e=>setPickerQuery(e.target.value)}/><div className="owner-picker-options">
-        {panel==='staff'?<>{!ticketDefaults.staffCheckInEnabled?<button onClick={()=>chooseStaff(null)}>No staff assignment</button>:null}{staff.filter(s=>s.display_name.toLowerCase().includes(pickerQuery.toLowerCase())).map(s=><button key={s.id} aria-pressed={s.id===(selectedLine?selectedLine.staffId:cart?.staffId)} onClick={()=>chooseStaff(s.id)}><span>{s.display_name}</span><small>{s.turns?.queueTurns??0} turns</small></button>)}{!staff.length?<p>No staff checked in. Check in a staff member to start.</p>:null}</>:<><button onClick={()=>chooseService(null)}>Amount only</button>{reference.services.filter(s=>s.name.toLowerCase().includes(pickerQuery.toLowerCase())).map(s=><button key={s.id} aria-pressed={s.id===(selectedLine?selectedLine.serviceId:cart?.serviceId)} onClick={()=>chooseService(s.id)}><span>{s.name}</span><small>{money(Number(s.base_price??0))}</small></button>)}</>}
+      <header><h2 id="owner-picker-title">{panel==='staff'?'Employees':panel==='services'?<WorkspaceText text="Services" />:panel==='customer'?<WorkspaceText text="Customer" />:<WorkspaceText text="Ticket" />}</h2><button onClick={()=>setPanel(null)}><WorkspaceText text="Done" /></button></header>
+      {panel==='ticket'?<><div className="owner-ticket-actions"><button onClick={()=>openPicker('staff')}><WorkspaceText text="Employees" /></button><button onClick={()=>openPicker('services')}><WorkspaceText text="Services" /></button>{selectedLine?<button onClick={()=>{update({lines:cart!.lines.filter(l=>l.id!==selectedLine.id),activeLineId:null});setPanel(null);}}><WorkspaceText text="Remove line" /></button>:null}{preferences.showCustomer?<button onClick={()=>setPanel('customer')}><WorkspaceText text="Customer" /></button>:null}</div>{linesView}<div className="owner-total"><span><WorkspaceText text="Total" /></span><strong>{money(total)}</strong></div><Link href="/pos-tickets" className="owner-skip"><WorkspaceText text="Ticket history →" /></Link></>:null}
+      {panel==='staff'||panel==='services'?<><input className="owner-picker-search" aria-label={__vt(panel==='staff'?'Search employees':'Search services')} type="search" placeholder={__vt(panel==='staff'?'Search employees':'Search services')} value={pickerQuery} onChange={e=>setPickerQuery(e.target.value)}/><div className="owner-picker-options">
+        {panel==='staff'?<>{!ticketDefaults.staffCheckInEnabled?<button onClick={()=>chooseStaff(null)}><WorkspaceText text="No staff assignment" /></button>:null}{staff.filter(s=>s.display_name.toLowerCase().includes(pickerQuery.toLowerCase())).map(s=><button key={s.id} aria-pressed={s.id===(selectedLine?selectedLine.staffId:cart?.staffId)} onClick={()=>chooseStaff(s.id)}><span>{s.display_name}</span><small>{s.turns?.queueTurns??0} <WorkspaceText text="turns" /></small></button>)}{!staff.length?<p><WorkspaceText text="No staff checked in. Check in a staff member to start." /></p>:null}</>:<><button onClick={()=>chooseService(null)}><WorkspaceText text="Amount only" /></button>{reference.services.filter(s=>s.name.toLowerCase().includes(pickerQuery.toLowerCase())).map(s=><button key={s.id} aria-pressed={s.id===(selectedLine?selectedLine.serviceId:cart?.serviceId)} onClick={()=>chooseService(s.id)}><span>{s.name}</span><small>{money(Number(s.base_price??0))}</small></button>)}</>}
       </div></>:null}
-      {panel==='customer'?<><input autoComplete="off" aria-label="Search customers" placeholder="Name or phone" className="owner-picker-search" value={query} onChange={e=>setQuery(e.target.value)}/><div className="owner-picker-options"><button onClick={()=>{update({customer:null});setPanel(null);}}>Walk-in customer</button>{customers.map(c=><button key={c.id} onClick={()=>{update({customer:c});setPanel(null);}}>{c.name} · {c.phone?.slice(-4)}</button>)}</div></>:null}
+      {panel==='customer'?<><input autoComplete="off" aria-label={__vt("Search customers")} placeholder={__vt("Name or phone")} className="owner-picker-search" value={query} onChange={e=>setQuery(e.target.value)}/><div className="owner-picker-options"><button onClick={()=>{update({customer:null});setPanel(null);}}><WorkspaceText text="Walk-in customer" /></button>{customers.map(c=><button key={c.id} onClick={()=>{update({customer:c});setPanel(null);}}>{c.name} · {c.phone?.slice(-4)}</button>)}</div></>:null}
     </dialog>
   </main>;
 }

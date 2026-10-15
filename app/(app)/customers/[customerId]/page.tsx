@@ -1,4 +1,8 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
+import { WorkspaceText } from "@/components/workspace-language";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
+import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 import {
   getCurrentSalonCustomerDetail,
   type CustomerBookingSummary,
@@ -59,7 +63,7 @@ function DetailRow({
 }) {
   return (
     <div className="border-b border-zinc-100 py-4 last:border-b-0">
-      <dt className="text-sm font-medium text-zinc-500">{label}</dt>
+      <dt className="text-sm font-medium text-zinc-500"><WorkspaceText text={label} /></dt>
       <dd className="mt-1 text-sm text-zinc-950">{value || "-"}</dd>
     </div>
   );
@@ -77,7 +81,7 @@ function Section({
   return (
     <section className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-5 py-4">
-        <h2 className="text-lg font-semibold text-zinc-950">{title}</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text={title} /></h2>
         {action}
       </div>
       <div className="p-5">{children}</div>
@@ -94,7 +98,7 @@ function StatusBadge({ customer }: { customer: Customer }) {
           : "inline-flex rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700"
       }
     >
-      {customer.status === "active" ? "Active" : "Inactive"}
+      {customer.status === "active" ? <WorkspaceText text="Active" /> : <WorkspaceText text="Inactive" />}
     </span>
   );
 }
@@ -110,10 +114,10 @@ function ReylumiProfileCard({
     return (
       <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
         <p className="text-sm font-semibold text-zinc-950">
-          No ReyLUMI profile linked
+          <WorkspaceText text="No ReyLUMI profile linked" />
         </p>
         <p className="mt-1 text-sm text-zinc-600">
-          This customer is only a salon CRM record right now.
+          <WorkspaceText text="This customer is only a salon CRM record right now." />
         </p>
       </div>
     );
@@ -123,10 +127,10 @@ function ReylumiProfileCard({
     return (
       <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
         <p className="text-sm font-semibold text-zinc-950">
-          No ReyLUMI profile linked
+          <WorkspaceText text="No ReyLUMI profile linked" />
         </p>
         <p className="mt-1 text-sm text-zinc-600">
-          This customer is only a salon CRM record right now.
+          <WorkspaceText text="This customer is only a salon CRM record right now." />
         </p>
       </div>
     );
@@ -136,10 +140,10 @@ function ReylumiProfileCard({
     return (
       <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
         <p className="text-sm font-semibold text-zinc-950">
-          ReyLUMI account linked
+          <WorkspaceText text="ReyLUMI account linked" />
         </p>
         <p className="mt-1 text-sm text-zinc-600">
-          Beauty profile is not available yet.
+          <WorkspaceText text="Beauty profile is not available yet." />
         </p>
       </div>
     );
@@ -149,10 +153,10 @@ function ReylumiProfileCard({
     return (
       <div className="content-surface border-amber-200 bg-amber-50 p-4 rounded-none border-y shadow-none">
         <p className="text-sm font-semibold text-amber-950">
-          ReyLUMI account linked
+          <WorkspaceText text="ReyLUMI account linked" />
         </p>
         <p className="mt-1 text-sm text-amber-800">
-          Beauty profile could not be checked right now.
+          <WorkspaceText text="Beauty profile could not be checked right now." />
         </p>
       </div>
     );
@@ -181,14 +185,13 @@ function ReylumiProfileCard({
             {profile.displayName}
           </span>
           <span className="mt-1 inline-flex rounded-full bg-white px-2 py-1 text-[11px] font-semibold capitalize text-orange-700 ring-1 ring-orange-100">
-            {isPrivate ? "Beauty profile is private" : "Public Beauty profile"}
+            <WorkspaceText text={isPrivate ? "Beauty profile is private" : "Public Beauty profile"} />
           </span>
         </span>
       </div>
       {isPrivate ? (
         <p className="text-sm leading-6 text-zinc-600">
-          This customer has a ReyLUMI Beauty identity, but their Beauty content
-          is private.
+          <WorkspaceText text="This customer has a ReyLUMI Beauty identity, but their Beauty content is private." />
         </p>
       ) : null}
       {!isPrivate && profile.bio ? (
@@ -200,7 +203,7 @@ function ReylumiProfileCard({
         className="inline-flex min-h-10 w-fit items-center justify-center rounded-md bg-[#f26f3d] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#e85f2b]"
         href={profile.href}
       >
-        View Beauty Profile
+        <WorkspaceText text="View Beauty Profile" />
       </Link>
     </div>
   );
@@ -225,21 +228,22 @@ function BookingList({
     <ul className="divide-y divide-zinc-100">
       {items.map((booking) => (
         <li className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto]" key={booking.id}>
+          <BookingDepositReceipt booking={booking} />
           <div className="min-w-0">
             <Link
               className="font-semibold text-zinc-950 underline"
               href={`/bookings?date=${booking.start_at.slice(0, 10)}&bookingId=${booking.id}`}
             >
-              {formatDateTime(booking.start_at)}
+              <WorkspaceText text={formatDateTime(booking.start_at)} />
             </Link>
             <p className="mt-1 text-sm text-zinc-600">
-              {booking.serviceNames.join(", ") || "No services"} /{" "}
-              {booking.staff?.display_name ?? "Unassigned"}
+              <WorkspaceText text={booking.serviceNames.join(", ") || "No services"} /> /{" "}
+              <WorkspaceText text={booking.staff?.display_name ?? "Unassigned"} />
             </p>
           </div>
           <div className="flex flex-wrap gap-2 sm:justify-end">
             <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold capitalize text-zinc-700">
-              {bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)}
+              <WorkspaceText text={bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)} />
             </span>
             <span className="rounded-md bg-zinc-950 px-2 py-1 text-xs font-semibold text-white">
               {formatMoney(booking.subtotal)}
@@ -255,7 +259,7 @@ function TicketList({ items }: { items: CustomerTicketSummary[] }) {
   if (items.length === 0) {
     return (
       <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
-        No linked POS tickets yet.
+        <WorkspaceText text="No linked POS tickets yet." />
       </p>
     );
   }
@@ -272,13 +276,13 @@ function TicketList({ items }: { items: CustomerTicketSummary[] }) {
               {ticket.ticket_number}
             </Link>
             <p className="mt-1 text-sm text-zinc-600">
-              {formatDateTime(ticket.opened_at)}
-              {ticket.source_booking_id ? " / From appointment" : ""}
+              <WorkspaceText text={formatDateTime(ticket.opened_at)} />
+              <WorkspaceText text={ticket.source_booking_id ? " / From appointment" : ""} />
             </p>
           </div>
           <div className="flex flex-wrap gap-2 sm:justify-end">
             <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold capitalize text-zinc-700">
-              {ticket.status}
+              <WorkspaceText text={ticket.status} />
             </span>
             <span className="rounded-md bg-zinc-950 px-2 py-1 text-xs font-semibold text-white">
               {formatMoney(ticket.totals.total)}
@@ -294,7 +298,7 @@ function Timeline({ items }: { items: CustomerTimelineItem[] }) {
   if (items.length === 0) {
     return (
       <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
-        No timeline activity yet.
+        <WorkspaceText text="No timeline activity yet." />
       </p>
     );
   }
@@ -308,11 +312,11 @@ function Timeline({ items }: { items: CustomerTimelineItem[] }) {
             <div className="flex flex-wrap items-center justify-between gap-3">
               {item.href ? (
                 <Link className="text-sm font-semibold capitalize text-zinc-950 underline" href={item.href}>
-                  {item.label}
+                  <WorkspaceText text={item.label} />
                 </Link>
               ) : (
                 <p className="text-sm font-semibold capitalize text-zinc-950">
-                  {item.label}
+                  <WorkspaceText text={item.label} />
                 </p>
               )}
               <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold capitalize text-zinc-600">
@@ -320,7 +324,7 @@ function Timeline({ items }: { items: CustomerTimelineItem[] }) {
               </span>
             </div>
             <p className="mt-1 text-xs text-zinc-500">
-              {formatDateTime(item.timestamp)}
+              <WorkspaceText text={formatDateTime(item.timestamp)} />
             </p>
           </div>
         </li>
@@ -345,10 +349,12 @@ function historyFilterHref(customerId: string, filter: string, group?: string) {
   return query ? `/customers/${customerId}?${query}` : `/customers/${customerId}`;
 }
 
-export default async function CustomerDetailPage({
+async function CustomerDetailPage({
   params,
   searchParams,
 }: CustomerDetailPageProps) {
+  const __vt = await getWorkspaceTranslation();
+
   const { customerId } = await params;
   const { error, group, history, merged } = await searchParams;
   const historyFilter = ["appointments", "tickets", "timeline"].includes(history ?? "")
@@ -393,14 +399,14 @@ export default async function CustomerDetailPage({
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
             href="/customers"
           >
-            Customers
+            <WorkspaceText text="Customers" />
           </Link>
           {canManageCustomers && !data.isWalkingGroup ? (
             <Link
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               href={`/customers/${customer.id}/edit`}
             >
-              Edit
+              <WorkspaceText text="Edit" />
             </Link>
           ) : null}
         </div>
@@ -408,25 +414,25 @@ export default async function CustomerDetailPage({
 
       {merged ? (
         <p className="content-surface border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 rounded-none border-y shadow-none">
-          Merged {merged} duplicate customer record{merged === "1" ? "" : "s"}.
+          <WorkspaceText text="Merged" /> {merged} <WorkspaceText text="duplicate customer record" />{merged === "1" ? "" : "s"}.
         </p>
       ) : null}
 
       {error ? (
         <p className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 rounded-none border-y shadow-none">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
       {data.duplicateCandidates.length > 0 ? (
         <section className="content-surface border-amber-200 bg-amber-50 px-5 py-4 rounded-none border-y shadow-none">
           <h2 className="text-base font-semibold text-amber-950">
-            {data.isWalkingGroup ? "Walking group" : "Possible duplicate customer"}
+            <WorkspaceText text={data.isWalkingGroup ? "Walking group" : "Possible duplicate customer"} />
           </h2>
           <p className="mt-1 text-sm text-amber-800">
-            {data.isWalkingGroup
+            <WorkspaceText text={data.isWalkingGroup
               ? "This view combines walk-in records that have no customer contact information."
-              : "Matching phone or email exists in this salon. No merge was performed."}
+              : "Matching phone or email exists in this salon. No merge was performed."} />
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {data.duplicateCandidates.map((candidate) => (
@@ -460,21 +466,21 @@ export default async function CustomerDetailPage({
                 href={historyFilterHref(customer.id, value, group)}
                 key={value}
               >
-                {label}
+                <WorkspaceText text={label} />
               </Link>
             ))}
           </div>
 
           {showAppointments ? (
             <>
-              <Section title="Upcoming Appointments">
+              <Section title={__vt("Upcoming Appointments")}>
                 <BookingList
                   empty="No upcoming appointments."
                   items={data.upcomingBookings}
                 />
               </Section>
 
-              <Section title="Booking History">
+              <Section title={__vt("Booking History")}>
                 <BookingList
                   empty="No booking history yet."
                   items={data.bookingHistory}
@@ -484,81 +490,81 @@ export default async function CustomerDetailPage({
           ) : null}
 
           {showTickets ? (
-            <Section title="POS Ticket History">
+            <Section title={__vt("POS Ticket History")}>
               <TicketList items={data.tickets} />
             </Section>
           ) : null}
 
           {showTimeline ? (
-            <Section title="Timeline">
+            <Section title={__vt("Timeline")}>
               <Timeline items={data.timeline} />
             </Section>
           ) : null}
         </section>
 
         <aside className="grid h-fit gap-6">
-          <Section title="ReyLUMI Profile">
+          <Section title={__vt("ReyLUMI Profile")}>
             <ReylumiProfileCard
               linked={Boolean(customer.customer_user_id)}
               result={beautyProfileResult}
             />
           </Section>
 
-          <Section title="Identity">
+          <Section title={__vt("Identity")}>
             <dl className="divide-y divide-zinc-100">
-              <DetailRow label="Customer Name" value={customer.name} />
-              <DetailRow label="Phone" value={customer.phone} />
-              <DetailRow label="Email" value={customer.email} />
-              <DetailRow label="Source" value={sourceLabel(customer.source)} />
+              <DetailRow label={__vt("Customer Name")} value={customer.name} />
+              <DetailRow label={__vt("Phone")} value={customer.phone} />
+              <DetailRow label={__vt("Email")} value={customer.email} />
+              <DetailRow label={__vt("Source")} value={sourceLabel(customer.source)} />
               <DetailRow
-                label="Account Link"
+                label={__vt("Account Link")}
                 value={customer.customer_user_id ? "Linked" : "Not linked"}
               />
               <DetailRow
-                label="Status"
+                label={__vt("Status")}
                 value={customer.status === "active" ? "Active" : "Inactive"}
               />
             </dl>
           </Section>
 
-          <Section title="Signals">
+          <Section title={__vt("Signals")}>
             <dl className="grid gap-4 text-sm">
               <div>
-                <dt className="text-zinc-500">Finalized POS spend</dt>
+                <dt className="text-zinc-500"><WorkspaceText text="Finalized POS spend" /></dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {formatMoney(data.finalizedSpend)}
                 </dd>
               </div>
               <div>
-                <dt className="text-zinc-500">Active tickets</dt>
+                <dt className="text-zinc-500"><WorkspaceText text="Active tickets" /></dt>
                 <dd className="mt-1 font-semibold text-zinc-950">
                   {data.activeTickets.length}
                 </dd>
               </div>
               <div>
-                <dt className="text-zinc-500">Last visit</dt>
+                <dt className="text-zinc-500"><WorkspaceText text="Last visit" /></dt>
                 <dd className="mt-1 font-semibold text-zinc-950">
-                  {formatDateTimeMaybe(lastVisit?.start_at ?? null)}
+                  <WorkspaceText text={formatDateTimeMaybe(lastVisit?.start_at ?? null)} />
                 </dd>
               </div>
             </dl>
           </Section>
 
-          <Section title="Notes">
+          <Section title={__vt("Notes")}>
             <dl className="divide-y divide-zinc-100">
-              <DetailRow label="Public notes" value={customer.notes} />
-              <DetailRow label="Staff-safe notes" value={customer.staff_notes} />
+              <DetailRow label={__vt("Public notes")} value={customer.notes} />
+              <DetailRow label={__vt("Staff-safe notes")} value={customer.staff_notes} />
               <DetailRow
-                label="Owner-only notes"
+                label={__vt("Owner-only notes")}
                 value={customer.internal_notes}
               />
             </dl>
           </Section>
 
-          <Section title="Record">
+          <Section title={__vt("Record")}>
             <dl className="divide-y divide-zinc-100">
-              <DetailRow label="Created At" value={formatDateTime(customer.created_at)} />
-              <DetailRow label="Updated At" value={formatDateTime(customer.updated_at)} />
+              <DetailRow label={__vt("Created At")} value={formatDateTime(customer.created_at)} />
+              <DetailRow label={__vt("Updated At")} value={formatDateTime(customer.updated_at)} />
             </dl>
           </Section>
         </aside>
@@ -566,3 +572,5 @@ export default async function CustomerDetailPage({
     </main>
   );
 }
+
+export default withExperiencePage(CustomerDetailPage);

@@ -1,3 +1,4 @@
+import { assertAbuseRequest } from "@/lib/abuse-server";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import { getSupabaseAuthErrorResponse } from "@/lib/supabase/auth-errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -35,6 +36,8 @@ export async function POST(request: Request) {
   if (!email) {
     return NextResponse.json({ error: "Email is required." }, { status: 400 });
   }
+
+  try { await assertAbuseRequest("recovery", email); } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Please try again later." }, { status: 429 }); }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: resetPasswordRedirectUrl(request, nextPath),

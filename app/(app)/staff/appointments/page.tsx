@@ -1,3 +1,6 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceLink } from "@/components/workspace-link";
+import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { StaffScheduleInteractions, StaffAppointmentStatus } from "@/app/staff/appointments/staff-schedule-interactions";
 import { StaffScheduleCalendar } from "@/app/staff/appointments/staff-schedule-calendar";
 import { StaffConfirmBookingButton } from "@/app/staff/appointments/staff-confirm-booking-button";
@@ -144,7 +147,7 @@ function StatusBadge({ status, kind }: {status:string; kind?:import("@/lib/booki
         statusTone(status),
       )}
     >
-      {status === "no_show" ? bookingStatusLabel(status,kind) : STATUS_LABELS[status] ?? status}
+      <WorkspaceText text={status === "no_show" ? bookingStatusLabel(status,kind) : STATUS_LABELS[status] ?? status} />
     </span>
   );
 }
@@ -217,13 +220,13 @@ function Header({
   const prefix = selectedDate === today ? "Today, " : selectedDate === tomorrow ? "Tomorrow, " : "";
   const label = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${selectedDate}T12:00:00Z`));
   return <header className="staff-appointments-header"><div className="staff-appointments-frame staff-schedule-header">
-    <nav className="staff-schedule-tabs" aria-label="Schedule navigation">
-      <Link className="staff-schedule-tab" aria-current={selectedDate === today && data.view === "day" ? "page" : undefined} href={buildHref(params, {date: today, view: "day"})}><CalendarIcon /><span>Today</span></Link>
-      <Link className="staff-schedule-tab" aria-current={selectedDate === tomorrow && data.view === "day" ? "page" : undefined} href={buildHref(params, {date: tomorrow, view: "day"})}><ChevronIcon direction="right" /><span>Next day</span></Link>
+    <WorkspaceElement as="nav" className="staff-schedule-tabs" aria-label="Schedule navigation">
+      <Link className="staff-schedule-tab" aria-current={selectedDate === today && data.view === "day" ? "page" : undefined} href={buildHref(params, {date: today, view: "day"})}><CalendarIcon /><span><WorkspaceText text="Today" /></span></Link>
+      <Link className="staff-schedule-tab" aria-current={selectedDate === tomorrow && data.view === "day" ? "page" : undefined} href={buildHref(params, {date: tomorrow, view: "day"})}><ChevronIcon direction="right" /><span><WorkspaceText text="Next day" /></span></Link>
       <StaffScheduleCalendar date={selectedDate} range={firstParam(params.range) === "all" ? "all" : firstParam(params.range) === "next7" || data.view === "week" ? "next7" : "day"} status={firstParam(params.status) ?? ""} />
       {data.staff && salonId ? <StaffBookingSettings salonId={salonId} assignedServices={data.assignedServices} availabilityRules={data.availabilityRules} salonBookingStatus={data.salonBookingStatus} staff={data.staff} timeBlocks={data.timeBlocks} timezone={data.timezone} variant="toolbar" /> : null}
-    </nav>
-    <div className="staff-schedule-date-line"><h1>{prefix}{label}</h1><div className="staff-schedule-heading-actions"><span title="Your future bookings across all dates">{data.upcomingCount} upcoming</span>{data.staff && salonId ? <StaffCreateAppointment salonId={salonId} date={selectedDate} /> : null}</div></div>
+    </WorkspaceElement>
+    <div className="staff-schedule-date-line"><h1>{prefix}<WorkspaceText text={label} /></h1><div className="staff-schedule-heading-actions"><WorkspaceElement as="span" title="Your future bookings across all dates">{data.upcomingCount} <WorkspaceText text="upcoming" /></WorkspaceElement>{data.staff && salonId ? <StaffCreateAppointment salonId={salonId} date={selectedDate} /> : null}</div></div>
   </div></header>;
 }
 
@@ -243,8 +246,8 @@ function AppointmentSummary({
   const minutes = Math.max(0, Math.round((Date.parse(appointment.endAt) - Date.parse(appointment.startAt)) / 60000));
   return <details name="staff-appointment" className={classNames("staff-schedule-appointment", compact && "staff-schedule-appointment--compact")} data-status={displayStatus}>
     <summary className="staff-schedule-row">
-      <div className="staff-schedule-time">{showDate ? <span>{formatAppointmentDate(appointment.startAt, timezone)}</span> : null}<strong>{formatTime(appointment.startAt, timezone)}</strong></div>
-      <div className="staff-schedule-customer"><strong>{appointment.customerName}</strong><span>{appointment.serviceName} · {minutes} min · {formatPrice(appointment.price)}</span></div>
+      <div className="staff-schedule-time">{showDate ? <span><WorkspaceText text={formatAppointmentDate(appointment.startAt, timezone)} /></span> : null}<strong><WorkspaceText text={formatTime(appointment.startAt, timezone)} /></strong></div>
+      <div className="staff-schedule-customer"><strong>{appointment.customerName}</strong><span>{appointment.serviceName} · {minutes} <WorkspaceText text="min ·" /> {formatPrice(appointment.price)}</span></div>
       <StaffAppointmentStatus bookingId={appointment.bookingId}><StatusBadge status={displayStatus} kind={appointment.noShowKind} /></StaffAppointmentStatus><span className="staff-schedule-expand" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg></span>
     </summary>
     <AppointmentExpanded appointment={appointment} />
@@ -260,11 +263,11 @@ function AppointmentExpanded({appointment}: {appointment: StaffAppointmentLine})
   const eligible = active && !appointment.ticketId && ["pending", "confirmed"].includes(appointment.status) && appointment.lineStatus === "scheduled" && appointment.noShowEligible;
   return <div className="staff-schedule-expanded">
     <dl className="staff-schedule-contact">
-      <div><dt>Phone</dt><dd>{appointment.customerPhone ? <a href={`tel:${appointment.customerPhone.replace(/[^+\d]/g, "")}`}>{appointment.customerPhone}</a> : "No phone provided"}</dd></div>
-      {appointment.publicNotes ? <div><dt>Customer note</dt><dd>{appointment.publicNotes}</dd></div> : null}
-      {appointment.serviceNote ? <div><dt>Service note</dt><dd>{appointment.serviceNote}</dd></div> : null}
-      {appointment.noShowCount > 0 ? <div><dt>No-show history</dt><dd>{appointment.noShowCount} previous {appointment.noShowCount === 1 ? "no-show" : "no-shows"} without a reason</dd></div> : null}
-      {appointment.noShowReason ? <div><dt>No-show note</dt><dd>{appointment.noShowReason}</dd></div> : null}
+      <div><dt><WorkspaceText text="Phone" /></dt><dd>{appointment.customerPhone ? <a href={`tel:${appointment.customerPhone.replace(/[^+\d]/g, "")}`}>{appointment.customerPhone}</a> : "No phone provided"}</dd></div>
+      {appointment.publicNotes ? <div><dt><WorkspaceText text="Customer note" /></dt><dd>{appointment.publicNotes}</dd></div> : null}
+      {appointment.serviceNote ? <div><dt><WorkspaceText text="Service note" /></dt><dd>{appointment.serviceNote}</dd></div> : null}
+      {appointment.noShowCount > 0 ? <div><dt><WorkspaceText text="No-show history" /></dt><dd>{appointment.noShowCount} <WorkspaceText text="previous" /> <WorkspaceText text={appointment.noShowCount === 1 ? "no-show" : "no-shows"} /> <WorkspaceText text="without a reason" /></dd></div> : null}
+      {appointment.noShowReason ? <div><dt><WorkspaceText text="No-show note" /></dt><dd>{appointment.noShowReason}</dd></div> : null}
       <AppointmentInspiration appointment={appointment} />
     </dl>
     <div className="staff-schedule-row-actions">
@@ -292,8 +295,8 @@ function NextAppointmentDays({
     <aside className="staff-appointments-day-next-panel">
       <div className="staff-appointments-day-next-head">
         <div>
-          <h3>Next appointments</h3>
-          <p>{appointments.length} upcoming this week</p>
+          <h3><WorkspaceText text="Next appointments" /></h3>
+          <p>{appointments.length} <WorkspaceText text="upcoming this week" /></p>
         </div>
       </div>
       {appointments.length > 0 ? (
@@ -309,13 +312,13 @@ function NextAppointmentDays({
           ))}
           {data.nextAppointmentDays.hasMore ? (
             <Link className="staff-appointments-day-next-more" href={weekHref}>
-              View more
+              <WorkspaceText text="View more" />
             </Link>
           ) : null}
         </div>
       ) : (
         <div className="staff-appointments-empty p-4 text-sm">
-          No upcoming appointments later this week.
+          <WorkspaceText text="No upcoming appointments later this week." />
         </div>
       )}
     </aside>
@@ -333,10 +336,10 @@ function QuickAppointmentPopover({
   params: StaffAppointmentsSearchParams;
   style?: CSSProperties;
 }) {
-  return <div aria-label={`Appointment for ${appointment.customerName}`} className={classNames("staff-appointments-quick-popover", className)} role="dialog" style={style}>
+  return <WorkspaceElement as="div" aria-label={`Appointment for ${appointment.customerName}`} className={classNames("staff-appointments-quick-popover", className)} role="dialog" style={style}>
     <AppointmentExpanded appointment={appointment} />
-    <Link className="staff-appointments-secondary-button" href={buildHref(params, {quickId: null})}>Close</Link>
-  </div>;
+    <Link className="staff-appointments-secondary-button" href={buildHref(params, {quickId: null})}><WorkspaceText text="Close" /></Link>
+  </WorkspaceElement>;
 }
 
 function timeToMinutes(value: string) {
@@ -528,7 +531,7 @@ function TimelineAppointmentCard({
 
   return (
     <>
-      <Link
+      <WorkspaceLink
         aria-label={cardLabel}
         className={classNames(
           "staff-appointments-timeline-card",
@@ -545,7 +548,7 @@ function TimelineAppointmentCard({
             {timeRange}
           </span>
           <span className="staff-appointments-timeline-card-status">
-            {statusLabel}
+            <WorkspaceText text={statusLabel} />
           </span>
         </span>
         <span className="staff-appointments-timeline-card-title">
@@ -554,7 +557,7 @@ function TimelineAppointmentCard({
         <span className="staff-appointments-timeline-card-service">
           {appointment.serviceName}
         </span>
-      </Link>
+      </WorkspaceLink>
       {isQuickOpen ? (
         <QuickAppointmentPopover
           appointment={appointment}
@@ -594,7 +597,7 @@ function DayCanvas({
             ))
           ) : (
             <div className="staff-appointments-empty p-4 text-sm">
-              No assigned appointments for this day.
+              <WorkspaceText text="No assigned appointments for this day." />
             </div>
           )}
         </div>
@@ -620,8 +623,8 @@ function WeekView({
         {data.days.map((day) => {
           return (
             <div className="staff-appointments-week-day-head" key={day.date}>
-              <h2>{day.label}</h2>
-              <p>{appointmentsForDate(data, day.date).length} assigned</p>
+              <h2><WorkspaceText text={day.label} /></h2>
+              <p>{appointmentsForDate(data, day.date).length} <WorkspaceText text="assigned" /></p>
             </div>
           );
         })}
@@ -639,7 +642,7 @@ function WeekView({
               key={hour}
               style={{ top: ((hour - metrics.start) / metrics.total) * metrics.height }}
             >
-              {minutesLabel(hour)}
+              <WorkspaceText text={minutesLabel(hour)} />
             </div>
           ))}
         </div>
@@ -693,7 +696,7 @@ function WeekView({
                 />
               ))}
               {dayAppointments.length === 0 && dayBlocks.length === 0 ? (
-                <div className="staff-appointments-day-empty">No appointments</div>
+                <div className="staff-appointments-day-empty"><WorkspaceText text="No appointments" /></div>
               ) : null}
             </div>
           );
@@ -706,8 +709,8 @@ function WeekView({
           return (
             <section className="staff-appointments-week-mobile-day" key={day.date}>
               <div className="staff-appointments-week-mobile-heading">
-                <h2>{day.label}</h2>
-                <p>{dayAppointments.length ? `${dayAppointments.length} assigned` : "No appointments"}</p>
+                <h2><WorkspaceText text={day.label} /></h2>
+                <p>{dayAppointments.length ? `${dayAppointments.length} assigned` : <WorkspaceText text="No appointments" />}</p>
               </div>
               {dayAppointments.map((appointment) => (
                   <AppointmentSummary
@@ -735,7 +738,7 @@ function ListView({
   if (data.appointments.length === 0) {
     return (
       <div className="staff-appointments-empty p-6 text-sm">
-        No assigned appointments in this range.
+        <WorkspaceText text="No assigned appointments in this range." />
       </div>
     );
   }
@@ -767,7 +770,7 @@ function AppointmentInspiration({
 
   return (
     <div className="rounded-lg bg-zinc-50 p-3">
-      <dt className="font-semibold text-zinc-950">Customer inspiration</dt>
+      <dt className="font-semibold text-zinc-950"><WorkspaceText text="Customer inspiration" /></dt>
       <dd className="mt-2 grid gap-3 sm:grid-cols-[80px_1fr]">
         <a
           className="block h-20 w-20 overflow-hidden rounded-lg bg-zinc-100"
@@ -777,16 +780,16 @@ function AppointmentInspiration({
         >
           {inspiration.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img alt="" className="h-full w-full object-cover" src={inspiration.imageUrl} />
+            <WorkspaceElement as="img" alt="" className="h-full w-full object-cover" src={inspiration.imageUrl} />
           ) : (
             <span className="grid h-full w-full place-items-center text-sm font-semibold text-zinc-500">
-              Look
+              <WorkspaceText text="Look" />
             </span>
           )}
         </a>
         <span className="min-w-0 text-zinc-700">
           <span className="block font-semibold text-zinc-950">
-            {inspiration.source_title_snapshot ?? "Booked look"}
+            <WorkspaceText text={inspiration.source_title_snapshot ?? "Booked look"} />
           </span>
           <span className="mt-1 block text-sm">
             {[
@@ -824,16 +827,16 @@ function DetailPanel({
   }
 
   return <div className="staff-appointments-detail-overlay">
-    <Link aria-label="Close appointment detail" className="staff-appointments-detail-backdrop" href={buildHref(params, {bookingId: null})} />
-    <aside className="staff-appointments-detail-sheet" role="dialog" aria-label="Appointment information">
-      <div className="staff-appointments-detail-head"><div><h2>{appointment.customerName}</h2><p>{formatDateTime(appointment.startAt, timezone)}</p><p>{appointment.serviceName} · {formatPrice(appointment.price)}</p></div><Link className="staff-appointments-detail-close" aria-label="Close appointment detail" href={buildHref(params, {bookingId: null})}>×</Link></div>
+    <WorkspaceLink aria-label="Close appointment detail" className="staff-appointments-detail-backdrop" href={buildHref(params, {bookingId: null})} />
+    <WorkspaceElement as="aside" className="staff-appointments-detail-sheet" role="dialog" aria-label="Appointment information">
+      <div className="staff-appointments-detail-head"><div><h2>{appointment.customerName}</h2><p><WorkspaceText text={formatDateTime(appointment.startAt, timezone)} /></p><p>{appointment.serviceName} · {formatPrice(appointment.price)}</p></div><WorkspaceLink className="staff-appointments-detail-close" aria-label="Close appointment detail" href={buildHref(params, {bookingId: null})}>×</WorkspaceLink></div>
       <StaffAppointmentStatus bookingId={appointment.bookingId}><StatusBadge status={appointmentDisplayStatus(appointment)} kind={appointment.noShowKind} /></StaffAppointmentStatus>
       <AppointmentExpanded appointment={appointment} />
-    </aside>
+    </WorkspaceElement>
   </div>;
 }
 
-export default async function StaffAppointmentsPage({
+async function StaffAppointmentsPage({
   searchParams,
 }: StaffAppointmentsPageProps) {
   const params = (await searchParams) ?? {};
@@ -858,8 +861,7 @@ export default async function StaffAppointmentsPage({
       <section className="staff-appointments-frame staff-appointments-body py-4">
         {!data.staff ? (
           <div className="staff-appointments-empty p-6 text-sm">
-            No active staff profile is linked to this account for the selected
-            staff workspace.
+            <WorkspaceText text="No active staff profile is linked to this account for the selected staff workspace." />
           </div>
         ) : data.view === "week" ? (
           <WeekView data={data} params={params} />
@@ -878,3 +880,5 @@ export default async function StaffAppointmentsPage({
     </main></StaffScheduleInteractions>
   );
 }
+
+export default withExperiencePage(StaffAppointmentsPage);

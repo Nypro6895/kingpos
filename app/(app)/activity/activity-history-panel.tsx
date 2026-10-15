@@ -360,7 +360,7 @@ export function ActivityHistoryPanel({ activities, initialSelectedBookingId }: A
         </p>
       ) : (
         <div className="content-surface overflow-hidden border-border-subtle bg-surface rounded-none border-y shadow-none">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 border-b border-divider-subtle bg-surface px-4 py-3 sm:grid-cols-1 sm:gap-3 sm:py-4 lg:grid-cols-[minmax(18rem,1fr)_auto] lg:items-end">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 border-b border-divider-subtle bg-surface px-4 py-3 sm:gap-3">
             <label className="grid gap-1.5">
               <span className="text-xs font-bold uppercase text-text-muted">
                 Search history
@@ -376,8 +376,8 @@ export function ActivityHistoryPanel({ activities, initialSelectedBookingId }: A
                 value={query}
               />
             </label>
-            <button type="button" aria-expanded={filtersOpen} onClick={() => setFiltersOpen(!filtersOpen)} className="min-h-11 px-1 text-xs font-bold text-brand-teal sm:hidden">Filters</button>
-            <div className={classNames(filtersOpen ? "grid" : "hidden", "col-span-2 grid-cols-2 gap-2 sm:col-span-1 sm:grid sm:grid-cols-3")}>
+            <button type="button" aria-expanded={filtersOpen} onClick={() => setFiltersOpen(!filtersOpen)} className="min-h-11 px-1 text-xs font-bold text-brand-teal">Filters{hasFilters ? " •" : ""}</button>
+            <div className={classNames(filtersOpen ? "grid" : "hidden", "col-span-2 grid-cols-1 gap-2 sm:grid-cols-3")}>
               <label className="grid gap-1.5">
                 <span className="text-xs font-bold uppercase text-text-muted">
                   Type

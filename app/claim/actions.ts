@@ -105,7 +105,7 @@ export async function reviewBusinessClaimAction(form:FormData) {
  const requestId=String(form.get('request_id')??'');
  const {data}=await client.rpc('get_business_claim_requests',{});
  const row=(data as BusinessClaimRequest[]|null)?.find(r=>r.id===requestId);
- const {error}=await client.rpc('review_business_claim',{p_request:requestId,p_decision:String(form.get('decision')??''),p_reason:String(form.get('reason')??'')});
+ const {error}=await client.rpc('review_business_claim_with_message',{p_request:requestId,p_decision:String(form.get('decision')??''),p_reason:String(form.get('reason')??''),p_internal_note:String(form.get('internal_note')??'')});
  if(error)return {error:error.message};
  if(row)refreshClaim(row.salon_id);
  return {error:null};

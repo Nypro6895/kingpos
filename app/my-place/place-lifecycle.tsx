@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useState, useTransition } from "react";
 import { getPlaceLifecycleReview, setPlaceSalonActivity } from "./actions";
 import {
@@ -26,6 +27,8 @@ export function PlaceLifecyclePanel({
   onClose: () => void;
   onSaved: (message: string) => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [dirty, setDirty] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,8 +62,8 @@ export function PlaceLifecyclePanel({
   const pause = review?.status === "active";
   return (
     <Sheet
-      title="Salon activity"
-      subtitle={workspace.label}
+      title={__vt("Salon activity")}
+      subtitle={__vt(workspace.label)}
       busy={busy}
       dirty={dirty}
       onClose={onClose}
@@ -98,36 +101,34 @@ export function PlaceLifecyclePanel({
             value={pause ? "pause" : "resume"}
           />
           <h3 className="font-semibold">
-            {pause ? "Temporarily pause this salon?" : "Reactivate this salon?"}
+            <WorkspaceText text={pause ? "Temporarily pause this salon?" : "Reactivate this salon?"} />
           </h3>
           <p className="text-sm leading-6 text-zinc-600">
-            {pause
+            <WorkspaceText text={pause
               ? "This pauses business activity, including new bookings and POS tickets. Operational edits are restricted. History and permitted settings remain available. Existing appointments are not automatically cancelled."
-              : "Business activity can resume with the salon’s existing settings. Working hours and online booking preferences are kept."}
+              : "Business activity can resume with the salon’s existing settings. Working hours and online booking preferences are kept."} />
           </p>
           <p className="text-sm text-zinc-500">
-            This is separate from opening and closing hours.
+            <WorkspaceText text="This is separate from opening and closing hours." />
           </p>
           {pause ? (
             <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
-              <p className="font-semibold">Current work</p>
+              <p className="font-semibold"><WorkspaceText text="Current work" /></p>
               <ul className="mt-2 list-inside list-disc">
-                <li>{review.counts.futureBookings} upcoming appointments</li>
+                <li>{review.counts.futureBookings} <WorkspaceText text="upcoming appointments" /></li>
                 <li>
-                  {review.counts.pendingBookings} pending / in-progress
-                  appointments
+                  {review.counts.pendingBookings} <WorkspaceText text="pending / in-progress appointments" />
                 </li>
-                <li>{review.counts.openPosTickets} open POS tickets</li>
+                <li>{review.counts.openPosTickets} <WorkspaceText text="open POS tickets" /></li>
               </ul>
               <p className="mt-2">
-                Review unfinished work before pausing. Appointment counts may
-                overlap.
+                <WorkspaceText text="Review unfinished work before pausing. Appointment counts may overlap." />
               </p>
             </div>
           ) : null}
           <fieldset className="grid gap-4" disabled={busy}>
             <label className="grid gap-2 text-sm font-medium">
-              Reason (optional)
+              <WorkspaceText text="Reason (optional)" />
               <textarea
                 className={inputClass}
                 name="reason"
@@ -143,16 +144,16 @@ export function PlaceLifecyclePanel({
                 required
               />
               <span>
-                {pause
+                <WorkspaceText text={pause
                   ? "I understand that business activity will be paused."
-                  : "I confirm that business activity can resume."}
+                  : "I confirm that business activity can resume."} />
               </span>
             </label>
           </fieldset>
-          {error ? <Notice error>{error}</Notice> : null}
+          {error ? <Notice error><WorkspaceText text={error} /></Notice> : null}
           <FormFooter
             busy={busy}
-            label={pause ? "Pause salon" : "Reactivate salon"}
+            label={__vt(pause ? "Pause salon" : "Reactivate salon")}
           />
         </form>
       )}

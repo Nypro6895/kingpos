@@ -1,3 +1,5 @@
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
+import { WorkspaceText } from "@/components/workspace-language";
 
 import { SubmitButton } from "@/components/submit-button";
 ﻿import { createSalonAction, setCurrentSalon } from "@/app/salons/actions";
@@ -66,7 +68,7 @@ function InputField({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-zinc-700">{label}</span>
+      <span className="text-sm font-medium text-zinc-700"><WorkspaceText text={label} /></span>
       <input
         autoComplete={autoComplete}
         className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
@@ -122,8 +124,8 @@ function SalonForm({ createRequestKey, draft }: { createRequestKey: string; draf
 
       <label className="flex items-start gap-3 rounded-md border border-zinc-200 p-4 sm:col-span-2">
         <input type="checkbox" name="owner_is_staff" value="yes" defaultChecked={value("owner_is_staff") === "yes"} className="mt-1" />
-        <span><span className="block text-sm font-medium">I also work as staff at this salon</span>
-          <span className="mt-1 block text-sm text-zinc-600">Create my staff profile using my personal name, email, and phone. I will keep my Owner access.</span>
+        <span><span className="block text-sm font-medium"><WorkspaceText text="I also work as staff at this salon" /></span>
+          <span className="mt-1 block text-sm text-zinc-600"><WorkspaceText text="Create my staff profile using my personal name, email, and phone. I will keep my Owner access." /></span>
         </span>
       </label>
       <div className="flex flex-wrap gap-3 sm:col-span-2">
@@ -132,7 +134,7 @@ function SalonForm({ createRequestKey, draft }: { createRequestKey: string; draf
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
           href={routes.salons.list()}
         >
-          Cancel
+          <WorkspaceText text="Cancel" />
         </Link>
       </div>
     </form>
@@ -149,13 +151,13 @@ function SalonCreationUnavailable({
 }) {
   return (
     <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-5">
-      <h2 className="text-sm font-semibold text-amber-950">{title}</h2>
+      <h2 className="text-sm font-semibold text-amber-950"><WorkspaceText text={title} /></h2>
       <p className="mt-2 text-sm text-amber-900">{description}</p>
       <Link
         className="mt-4 inline-flex rounded-md border border-amber-300 bg-white px-4 py-2 text-sm font-medium text-amber-950 transition hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700"
         href={routes.salons.list()}
       >
-        Back to Salons
+        <WorkspaceText text="Back to Salons" />
       </Link>
     </div>
   );
@@ -175,17 +177,16 @@ function SalonList({
   if (salons.length === 0) {
     return (
       <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
-        <h2 className="text-lg font-semibold text-zinc-950">No salons yet</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="No salons yet" /></h2>
         <p className="mt-2 text-sm text-zinc-600">
-          Create your first salon so customers, services, tickets, and bookings
-          have a home.
+          <WorkspaceText text="Create your first salon so customers, services, tickets, and bookings have a home." />
         </p>
         {showCreateAction ? (
           <Link
             className="mt-4 inline-flex rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
             href={routes.salons.create()}
           >
-            Create your first Salon
+            <WorkspaceText text="Create your first Salon" />
           </Link>
         ) : null}
       </div>
@@ -195,11 +196,11 @@ function SalonList({
   return (
     <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-medium uppercase text-zinc-500">
-        <div className="col-span-12 sm:col-span-3">Salon</div>
-        <div className="hidden sm:col-span-3 sm:block">Address</div>
-        <div className="hidden sm:col-span-2 sm:block">Phone</div>
-        <div className="hidden sm:col-span-2 sm:block">Status</div>
-        <div className="hidden sm:col-span-2 sm:block">Current</div>
+        <div className="col-span-12 sm:col-span-3"><WorkspaceText text="Salon" /></div>
+        <div className="hidden sm:col-span-3 sm:block"><WorkspaceText text="Address" /></div>
+        <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Phone" /></div>
+        <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Status" /></div>
+        <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Current" /></div>
       </div>
       <ul className="divide-y divide-zinc-200">
         {salons.map((salon) => {
@@ -209,28 +210,28 @@ function SalonList({
           return (
             <li className="grid grid-cols-12 gap-3 px-5 py-4" key={salon.id}>
               <div className="col-span-12 sm:col-span-3">
-                <p className="font-medium text-zinc-950">{salon.name}</p>
+                <p className="font-medium text-zinc-950"><a href={`/explore/salons/${salon.id}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange">{salon.name}</a></p>
                 {isCurrentSalon ? (
                   <span className="mt-2 inline-flex rounded-md bg-zinc-950 px-2 py-1 text-xs font-medium text-white">
-                    Current Salon
+                    <WorkspaceText text="Current Salon" />
                   </span>
                 ) : null}
               </div>
               <div className="col-span-12 self-center text-sm text-zinc-600 sm:col-span-3">
-                <span className="font-medium text-zinc-500 sm:hidden">Address: </span>
-                {address || "No address"}
+                <span className="font-medium text-zinc-500 sm:hidden"><WorkspaceText text="Address:" /> </span>
+                <WorkspaceText text={address || "No address"} />
               </div>
               <div className="col-span-6 self-center text-sm text-zinc-700 sm:col-span-2">
-                <span className="font-medium text-zinc-500 sm:hidden">Phone: </span>
+                <span className="font-medium text-zinc-500 sm:hidden"><WorkspaceText text="Phone:" /> </span>
                 {salon.phone || "-"}
               </div>
               <div className="col-span-6 self-center text-sm text-zinc-700 sm:col-span-2">
-                <span className="font-medium text-zinc-500 sm:hidden">Status: </span>
-                {formatLabel(salon.status)}
+                <span className="font-medium text-zinc-500 sm:hidden"><WorkspaceText text="Status:" /> </span>
+                <WorkspaceText text={formatLabel(salon.status)} />
               </div>
               <div className="col-span-12 self-center text-sm text-zinc-600 sm:col-span-2">
                 {isCurrentSalon ? (
-                  <span className="font-medium text-zinc-950">Selected</span>
+                  <span className="font-medium text-zinc-950"><WorkspaceText text="Selected" /></span>
                 ) : canSwitchSalon ? (
                   <form action={setCurrentSalon}>
                     <input name="salon_id" type="hidden" value={salon.id} />
@@ -238,7 +239,7 @@ function SalonList({
                       className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
                       type="submit"
                     >
-                      Set as Current
+                      <WorkspaceText text="Set as Current" />
                     </SubmitButton>
                   </form>
                 ) : (
@@ -257,6 +258,8 @@ export async function SalonManagementPage({
   mode,
   searchParams,
 }: SalonManagementPageProps) {
+  const __vt = await getWorkspaceTranslation();
+
   const [query, context] = await Promise.all([
     searchParams,
     getCurrentBusinessContext(),
@@ -289,15 +292,15 @@ export async function SalonManagementPage({
           primaryLabel="Review form"
           secondaryHref={routes.salons.list()}
           secondaryLabel="Salons"
-          title="Salon action needed"
+          title={__vt("Salon action needed")}
         />
 
         {hasCreatePermission ? (
           <SalonForm createRequestKey={randomUUID()} draft={query} />
         ) : (
           <SalonCreationUnavailable
-            description="You do not have permission to create a salon."
-            title="Create Salon is unavailable"
+            description={__vt("You do not have permission to create a salon.")}
+            title={__vt("Create Salon is unavailable")}
           />
         )}
       </main>
@@ -310,18 +313,18 @@ export async function SalonManagementPage({
         <div className="flex flex-wrap gap-3">
           {hasCreatePermission ? (
             <Link
-              aria-label="Create Salon"
+              aria-label={__vt("Create Salon")}
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
               href={routes.salons.create()}
             >
-              Create Salon
+              <WorkspaceText text="Create Salon" />
             </Link>
           ) : null}
           <Link
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
             href="/account"
           >
-            Account
+            <WorkspaceText text="Account" />
           </Link>
         </div>
       </div>
@@ -331,7 +334,7 @@ export async function SalonManagementPage({
         primaryLabel="Review salons"
         secondaryHref="/my-place"
         secondaryLabel="My Place"
-        title="Salon action needed"
+        title={__vt("Salon action needed")}
       />
       {createdMessage ? (
         <><ClearSalonCreationDraft /><p className="mt-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
@@ -340,7 +343,7 @@ export async function SalonManagementPage({
       ) : null}
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-950">Your Salons</h2>
+        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text="Your Salons" /></h2>
         <SalonList
           canSwitchSalon={Boolean(context.user)}
           currentSalonId={context.currentBusiness?.id ?? context.currentSalon?.id ?? null}

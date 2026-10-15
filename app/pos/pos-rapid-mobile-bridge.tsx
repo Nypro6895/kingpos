@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { mergePortableStaff, usePortableWorkspaceState } from "@/app/pos/portable/portable-workspace-state";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -54,6 +55,8 @@ function numericInput(value: string) {
 }
 
 export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckInEnabled = true }: Props) {
+  const __vt = useWorkspaceTranslation();
+
   const workspace = usePortableWorkspaceState();
   const staff = useMemo(() => mergePortableStaff(serverStaff, workspace, undefined, staffCheckInEnabled), [serverStaff, workspace, staffCheckInEnabled]);
   const bridgeRef = useRef<HTMLDivElement | null>(null);
@@ -406,7 +409,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
   return (
     <div ref={bridgeRef} data-pos-rapid-mobile-bridge>
       <button
-        aria-label={`Current ticket total ${total}. Open receipt`}
+        aria-label={__vt(`Current ticket total ${total}. Open receipt`)}
         className="absolute inset-x-2 top-2 z-20 flex h-14 items-center justify-between rounded-2xl border border-zinc-200 bg-white/96 px-4 text-left shadow-[0_12px_30px_rgba(24,24,27,0.12)] backdrop-blur"
         data-pos-rapid-total
         onClick={() => {
@@ -418,10 +421,10 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
       >
         <span>
           <span className="block text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500">
-            Current ticket
+            <WorkspaceText text="Current ticket" />
           </span>
           <span className="mt-0.5 block text-xs font-semibold text-zinc-600">
-            {receiptLines.length} {receiptLines.length === 1 ? "service" : "services"}
+            {receiptLines.length} <WorkspaceText text={receiptLines.length === 1 ? "service" : "services"} />
           </span>
         </span>
         <span className="text-2xl font-black tabular-nums text-zinc-950">{total}</span>
@@ -430,7 +433,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
       {stage ? (
         <div className="fixed inset-0 z-[85] flex items-end bg-zinc-950/35">
           <button
-            aria-label="Close"
+            aria-label={__vt("Close")}
             className="absolute inset-0 cursor-default"
             onClick={() => setStage(null)}
             type="button"
@@ -446,13 +449,13 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
                   {stage === "staff" || stage === "staff-edit"
                     ? "Technician"
                     : stage === "amount"
-                      ? "Amount"
+                      ? <WorkspaceText text="Amount" />
                       : stage === "service-edit"
-                        ? "Service"
-                        : "Receipt"}
+                        ? <WorkspaceText text="Service" />
+                        : <WorkspaceText text="Receipt" />}
                 </p>
                 <h2 className="truncate text-lg font-bold text-zinc-950">
-                  {stage === "staff"
+                  <WorkspaceText text={stage === "staff"
                     ? pendingService?.name ?? "Choose technician"
                     : stage === "staff-edit"
                       ? "Change technician"
@@ -460,7 +463,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
                         ? pendingService?.name ?? "Edit amount"
                         : stage === "service-edit"
                           ? "Change service"
-                          : `Current ticket · ${total}`}
+                          : `Current ticket · ${total}`} />
                 </h2>
               </div>
               <button
@@ -474,7 +477,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
 
             {notice ? (
               <p className="mx-4 mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
-                {notice}
+                <WorkspaceText text={notice} />
               </p>
             ) : null}
 
@@ -521,7 +524,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
             {stage === "amount" ? (
               <div className="grid gap-3 px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                 <div className="rounded-2xl bg-zinc-100 px-4 py-4 text-center">
-                  <p className="text-xs font-bold uppercase text-zinc-500">Amount</p>
+                  <p className="text-xs font-bold uppercase text-zinc-500"><WorkspaceText text="Amount" /></p>
                   <p className="mt-1 text-4xl font-black tabular-nums text-zinc-950">
                     {currentInput}
                   </p>
@@ -546,14 +549,14 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
                     onClick={() => void pressKey("Back")}
                     type="button"
                   >
-                    Back
+                    <WorkspaceText text="Back" />
                   </button>
                   <button
                     className="min-h-12 rounded-2xl border border-zinc-200 bg-white font-bold text-zinc-700"
                     onClick={() => void clearAmount()}
                     type="button"
                   >
-                    Clear
+                    <WorkspaceText text="Clear" />
                   </button>
                   <button
                     className="min-h-12 rounded-2xl bg-brand-orange font-black text-white shadow-lg"
@@ -565,7 +568,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
                     }}
                     type="button"
                   >
-                    Done
+                    <WorkspaceText text="Done" />
                   </button>
                 </div>
               </div>
@@ -576,7 +579,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
                 <input
                   className="h-12 shrink-0 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 text-base outline-none focus:border-brand-orange"
                   onChange={(event) => setServiceQuery(event.target.value)}
-                  placeholder="Search services"
+                  placeholder={__vt("Search services")}
                   type="search"
                   value={serviceQuery}
                 />
@@ -605,7 +608,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
                   {receiptLines.length === 0 ? (
                     <p className="rounded-2xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm font-semibold text-zinc-500">
-                      No services yet.
+                      <WorkspaceText text="No services yet." />
                     </p>
                   ) : (
                     <div className="grid gap-2">
@@ -653,7 +656,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
                               {line.price}
                             </button>
                             <button
-                              aria-label={`Remove ${line.service}`}
+                              aria-label={__vt(`Remove ${line.service}`)}
                               className="grid h-9 w-9 place-items-center rounded-full text-lg font-bold text-red-600"
                               onClick={() => removeLine(line.index)}
                               type="button"
@@ -668,7 +671,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
                 </div>
                 <footer className="grid shrink-0 grid-cols-[1fr_auto] items-center gap-3 border-t border-zinc-200 bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                   <div>
-                    <p className="text-[11px] font-bold uppercase text-zinc-500">Total</p>
+                    <p className="text-[11px] font-bold uppercase text-zinc-500"><WorkspaceText text="Total" /></p>
                     <p className="text-2xl font-black tabular-nums text-zinc-950">{total}</p>
                   </div>
                   <button
@@ -677,7 +680,7 @@ export function PosRapidMobileBridge({ services, staff: serverStaff, staffCheckI
                     onClick={checkout}
                     type="button"
                   >
-                    Checkout
+                    <WorkspaceText text="Checkout" />
                   </button>
                 </footer>
               </div>

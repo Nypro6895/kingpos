@@ -1,3 +1,8 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
+import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
+import { TimeZoneSelect } from "@/components/time-zone-select";
+import { ContextualSupport } from "@/components/contextual-support";
 
 import { SubmitButton } from "@/components/submit-button";
 import { getSalonOwnerRoster } from "@/lib/owner-transfer";
@@ -70,17 +75,6 @@ const OPERATING_WEEK_DAYS = [
   { dayOfWeek: 0, label: "Sunday" },
 ] as const;
 
-const OPERATING_TIMEZONE_OPTIONS = [
-  { label: "Central", value: "America/Chicago" },
-  { label: "Eastern", value: "America/New_York" },
-  { label: "Mountain", value: "America/Denver" },
-  { label: "Pacific", value: "America/Los_Angeles" },
-  { label: "Arizona", value: "America/Phoenix" },
-  { label: "Alaska", value: "America/Anchorage" },
-  { label: "Hawaii", value: "Pacific/Honolulu" },
-  { label: "UTC", value: "UTC" },
-] as const;
-
 function Field({
   label,
   name,
@@ -98,7 +92,7 @@ function Field({
 }) {
   return (
     <label className="grid gap-1.5">
-      <span className="text-sm font-semibold text-zinc-700">{label}</span>
+      <span className="text-sm font-semibold text-zinc-700"><WorkspaceText text={label} /></span>
       <input
         autoComplete={autoComplete}
         className="min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10"
@@ -125,7 +119,7 @@ function StatusPill({
         className,
       ].join(" ")}
     >
-      {label}
+      <WorkspaceText text={label} />
     </span>
   );
 }
@@ -149,7 +143,7 @@ function SectionHeader({
       id={id}
     >
       <div>
-        <h2 className="text-base font-semibold text-zinc-950">{title}</h2>
+        <h2 className="text-base font-semibold text-zinc-950"><WorkspaceText text={title} /></h2>
         <p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p>
       </div>
       {status ? (
@@ -226,9 +220,9 @@ function MapLocationSection({
     <div className="border-t border-zinc-100 px-4 py-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-950">Map location</h3>
+          <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Map location" /></h3>
           <p className="mt-1 text-sm leading-6 text-zinc-600">
-            {mapLocation.address.formattedAddress || "No public address yet."}
+            <WorkspaceText text={mapLocation.address.formattedAddress || "No public address yet."} />
           </p>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
             {mapLocation.statusDescription}
@@ -239,20 +233,19 @@ function MapLocationSection({
 
       {mapLocation.coordinates ? (
         <p className="mt-3 text-xs font-medium text-zinc-500">
-          Coordinates are stored for the current mapped address. Last geocoded:{" "}
-          {mapLocation.geocodedAt
+          <WorkspaceText text="Coordinates are stored for the current mapped address. Last geocoded:" />{" "}
+          <WorkspaceText text={mapLocation.geocodedAt
             ? new Intl.DateTimeFormat("en-US", {
                 dateStyle: "medium",
                 timeStyle: "short",
               }).format(new Date(mapLocation.geocodedAt))
-            : "not recorded"}
+            : "not recorded"} />
           .
         </p>
       ) : null}
       {missingConfiguration.length > 0 ? (
         <p className="mt-2 text-xs font-medium text-zinc-500">
-          Configure {missingConfiguration.join(" and ")} to enable geocoding
-          and map tiles.
+          <WorkspaceText text="Configure" /> {missingConfiguration.join(" and ")} <WorkspaceText text="to enable geocoding and map tiles." />
         </p>
       ) : null}
       {mapLocation.providerConfigured &&
@@ -275,7 +268,7 @@ function MapLocationSection({
           formAction={refreshSalonMapLocation}
           type="submit"
         >
-          Refresh map location
+          <WorkspaceText text="Refresh map location" />
         </SubmitButton>
       </div>
     </div>
@@ -327,11 +320,7 @@ function OperatingHoursSection({
   operatingSettings: SalonOperatingHoursSettings;
 }) {
   const byDay = weeklyWindowByDay(operatingSettings.weeklyHours);
-  const currentTimezoneKnown = OPERATING_TIMEZONE_OPTIONS.some(
-    (option) => option.value === operatingSettings.timeZone,
-  );
-
-  return (
+return (
     <section className="scroll-mt-6">
       <SectionHeader
         description="Set the customer-facing open or closed status shown on the profile, Explore, and search cards."
@@ -342,10 +331,10 @@ function OperatingHoursSection({
         <div className="flex flex-col gap-3 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-zinc-950">
-              Customer status preview
+              <WorkspaceText text="Customer status preview" />
             </h3>
             <p className="mt-1 text-sm leading-6 text-zinc-500">
-              Permanent closure is managed from Salon status below.
+              <WorkspaceText text="Permanent closure is managed from Salon status below." />
             </p>
           </div>
           <SalonOperatingStatusBadge
@@ -358,25 +347,13 @@ function OperatingHoursSection({
         <div className="grid gap-4 px-4 py-4">
           <label className="grid gap-1.5 sm:max-w-xs">
             <span className="text-sm font-semibold text-zinc-700">
-              Salon timezone
+              <WorkspaceText text="Salon timezone" />
             </span>
-            <select
+            <TimeZoneSelect
               className="min-h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
               defaultValue={operatingSettings.timeZone}
               disabled={!canManageSettings}
-              name="operating_timezone_iana"
-            >
-              {!currentTimezoneKnown ? (
-                <option value={operatingSettings.timeZone}>
-                  {operatingSettings.timeZone}
-                </option>
-              ) : null}
-              {OPERATING_TIMEZONE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label} - {option.value}
-                </option>
-              ))}
-            </select>
+              name="operating_timezone_iana" />
           </label>
 
           <div className="overflow-hidden rounded-lg border border-zinc-200">
@@ -396,10 +373,10 @@ function OperatingHoursSection({
                       name={`operating_day_${day.dayOfWeek}_enabled`}
                       type="checkbox"
                     />
-                    <span>{day.label}</span>
+                    <span><WorkspaceText text={day.label} /></span>
                   </label>
                   <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
-                    <input
+                    <WorkspaceElement as="input"
                       aria-label={`${day.label} opening time`}
                       className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
                       defaultValue={window?.opensAtLocal ?? "09:00"}
@@ -413,7 +390,7 @@ function OperatingHoursSection({
                     >
                       -
                     </span>
-                    <input
+                    <WorkspaceElement as="input"
                       aria-label={`${day.label} closing time`}
                       className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
                       defaultValue={window?.closesAtLocal ?? "17:00"}
@@ -428,8 +405,7 @@ function OperatingHoursSection({
           </div>
 
           <p className="text-xs font-medium leading-5 text-zinc-500">
-            Closing after midnight is supported. Leave a day unchecked when the
-            salon is closed all day.
+            <WorkspaceText text="Closing after midnight is supported. Leave a day unchecked when the salon is closed all day." />
           </p>
         </div>
 
@@ -437,11 +413,10 @@ function OperatingHoursSection({
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold text-zinc-950">
-                Special dates
+                <WorkspaceText text="Special dates" />
               </h3>
               <p className="mt-1 text-sm leading-6 text-zinc-500">
-                Holiday closures and one-day custom hours override the weekly
-                schedule.
+                <WorkspaceText text="Holiday closures and one-day custom hours override the weekly schedule." />
               </p>
             </div>
             <StatusPill
@@ -459,7 +434,7 @@ function OperatingHoursSection({
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-zinc-950">
-                      {formatSpecialHoursDate(special.localDate)}
+                      <WorkspaceText text={formatSpecialHoursDate(special.localDate)} />
                     </p>
                     <p className="mt-0.5 truncate text-xs font-medium text-zinc-500">
                       {formatSpecialHoursSummary(special)}
@@ -473,20 +448,20 @@ function OperatingHoursSection({
                     type="submit"
                     value={special.id}
                   >
-                    Remove
+                    <WorkspaceText text="Remove" />
                   </SubmitButton>
                 </div>
               ))
             ) : (
               <p className="px-3 py-4 text-sm text-zinc-500">
-                No special dates are scheduled.
+                <WorkspaceText text="No special dates are scheduled." />
               </p>
             )}
           </div>
 
           <div className="mt-4 grid gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.35fr)_auto] lg:items-end">
             <label className="grid gap-1.5">
-              <span className="text-xs font-semibold text-zinc-600">Date</span>
+              <span className="text-xs font-semibold text-zinc-600"><WorkspaceText text="Date" /></span>
               <input
                 className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={!canManageSettings}
@@ -496,7 +471,7 @@ function OperatingHoursSection({
             </label>
             <label className="grid gap-1.5">
               <span className="text-xs font-semibold text-zinc-600">
-                Override
+                <WorkspaceText text="Override" />
               </span>
               <select
                 className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
@@ -504,12 +479,12 @@ function OperatingHoursSection({
                 disabled={!canManageSettings}
                 name="special_status"
               >
-                <option value="closed">Closed all day</option>
-                <option value="custom_hours">Custom hours</option>
+                <option value="closed"><WorkspaceText text="Closed all day" /></option>
+                <option value="custom_hours"><WorkspaceText text="Custom hours" /></option>
               </select>
             </label>
             <label className="grid gap-1.5">
-              <span className="text-xs font-semibold text-zinc-600">Open</span>
+              <span className="text-xs font-semibold text-zinc-600"><WorkspaceText text="Open" /></span>
               <input
                 className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
                 defaultValue="09:00"
@@ -520,10 +495,10 @@ function OperatingHoursSection({
             </label>
             <label className="grid gap-1.5">
               <span className="text-xs font-semibold text-zinc-600">
-                Close / reason
+                <WorkspaceText text="Close / reason" />
               </span>
               <div className="grid gap-2 sm:grid-cols-2">
-                <input
+                <WorkspaceElement as="input"
                   aria-label="Special date closing time"
                   className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
                   defaultValue="17:00"
@@ -531,7 +506,7 @@ function OperatingHoursSection({
                   name="special_closes_at_local"
                   type="time"
                 />
-                <input
+                <WorkspaceElement as="input"
                   aria-label="Special date reason"
                   className="min-h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10 disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={!canManageSettings}
@@ -547,7 +522,7 @@ function OperatingHoursSection({
               formAction={createCurrentSalonSpecialHoursAction}
               type="submit"
             >
-              Add
+              <WorkspaceText text="Add" />
             </SubmitButton>
           </div>
         </div>
@@ -596,19 +571,19 @@ function SalonSettingsForm({
     >
       {error ? (
         <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
       {notice ? (
         <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-          {notice}
+          <WorkspaceText text={notice} />
         </p>
       ) : null}
 
       {!canManageSettings ? (
         <p className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
-          You do not have permission to manage salon settings.
+          <WorkspaceText text="You do not have permission to manage salon settings." />
         </p>
       ) : null}
 
@@ -687,7 +662,7 @@ function SalonSettingsForm({
             />
             <label className="grid gap-1.5 sm:col-span-2">
               <span className="text-sm font-semibold text-zinc-700">
-                Business description
+                <WorkspaceText text="Business description" />
               </span>
               <textarea
                 className="min-h-28 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-zinc-950 focus:ring-2 focus:ring-zinc-950/10"
@@ -718,11 +693,10 @@ function SalonSettingsForm({
             />
             <span>
               <span className="block font-semibold text-zinc-950">
-                Show salon on Explore
+                <WorkspaceText text="Show salon on Explore" />
               </span>
               <span className="mt-1 block leading-6 text-zinc-600">
-                Requires active location details, a public description, and at
-                least one active service.
+                <WorkspaceText text="Requires active location details, a public description, and at least one active service." />
               </span>
             </span>
           </label>
@@ -731,15 +705,15 @@ function SalonSettingsForm({
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-zinc-950">
-                  Readiness checklist
+                  <WorkspaceText text="Readiness checklist" />
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-zinc-500">
-                  Fix missing items directly from each row.
+                  <WorkspaceText text="Fix missing items directly from each row." />
                 </p>
               </div>
               {!discoveryReadiness.canEnable ? (
                 <span className="text-xs font-semibold text-amber-700">
-                  Complete missing rows to publish
+                  <WorkspaceText text="Complete missing rows to publish" />
                 </span>
               ) : null}
             </div>
@@ -751,7 +725,7 @@ function SalonSettingsForm({
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-zinc-950">
-                      {item.label}
+                      <WorkspaceText text={item.label} />
                     </p>
                     <p
                       className={[
@@ -759,7 +733,7 @@ function SalonSettingsForm({
                         item.complete ? "text-emerald-700" : "text-amber-700",
                       ].join(" ")}
                     >
-                      {item.complete ? "Complete" : "Missing"}
+                      <WorkspaceText text={item.complete ? "Complete" : "Missing"} />
                     </p>
                   </div>
                   {!item.complete ? (
@@ -768,14 +742,14 @@ function SalonSettingsForm({
                         className="shrink-0 text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline"
                         href={item.href}
                       >
-                        Update
+                        <WorkspaceText text="Update" />
                       </a>
                     ) : (
                       <Link
                         className="shrink-0 text-sm font-semibold text-zinc-950 underline-offset-4 hover:underline"
                         href={item.href}
                       >
-                        Open
+                        <WorkspaceText text="Open" />
                       </Link>
                     )
                   ) : null}
@@ -801,10 +775,10 @@ function SalonSettingsForm({
             />
             <span>
               <span className="block font-semibold text-zinc-950">
-                Allow staff applications
+                <WorkspaceText text="Allow staff applications" />
               </span>
               <span className="mt-1 block leading-6 text-zinc-600">
-                Show this active salon in staff application search.
+                <WorkspaceText text="Show this active salon in staff application search." />
               </span>
             </span>
           </label>
@@ -819,14 +793,14 @@ function SalonSettingsForm({
       <div className="sticky bottom-0 z-20 rounded-lg border border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(24,24,27,.08)] backdrop-blur">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-zinc-600">
-            Saves only changed salon details and operating hours.
+            <WorkspaceText text="Saves only changed salon details and operating hours." />
           </p>
           <SubmitButton pendingLabel="Saving…"
             className="min-h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
             disabled={!canManageSettings}
             type="submit"
           >
-            Save settings
+            <WorkspaceText text="Save settings" />
           </SubmitButton>
         </div>
       </div>
@@ -834,9 +808,11 @@ function SalonSettingsForm({
   );
 }
 
-export default async function SalonSettingsPage({
+async function SalonSettingsPage({
   searchParams,
 }: SalonSettingsPageProps) {
+  const __vt = await getWorkspaceTranslation();
+
   const [
     {
       error,
@@ -855,11 +831,11 @@ export default async function SalonSettingsPage({
 
   if (!canViewSettings) {
     return (
-      <main className="min-h-screen bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
+      <div className="settings-style settings-style-page"><main className="min-h-screen bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-3xl rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
-          You do not have permission to view salon settings.
+          <WorkspaceText text="You do not have permission to view salon settings." />
         </div>
-      </main>
+      </main></div>
     );
   }
 
@@ -910,21 +886,21 @@ export default async function SalonSettingsPage({
   ];
 
   return (
-    <main className="min-h-screen bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
+    <div className="settings-style settings-style-page"><main className="min-h-screen bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-6xl gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <aside className="h-fit rounded-lg border border-border-subtle bg-white p-3 lg:sticky lg:top-5">
           <div className="border-b border-zinc-100 px-2 pb-3">
             <p className="text-xs font-semibold uppercase text-zinc-500">
-              Salon settings
+              <WorkspaceText text="Salon settings" />
             </p>
             <h1 className="mt-1 truncate text-lg font-semibold text-zinc-950">
               {setting.business_name}
             </h1>
             <p className="mt-1 truncate text-sm text-zinc-500">
-              {context.currentWorkspace?.label ?? "Current salon"}
+              <WorkspaceText text={context.currentWorkspace?.label ?? "Current salon"} />
             </p>
           </div>
-          <nav aria-label="Salon settings sections" className="mt-3 grid gap-1">
+          <nav aria-label={__vt("Salon settings sections")} className="mt-3 grid gap-1">
             {navItems.map((item) => (
               <a
                 className={[
@@ -934,7 +910,7 @@ export default async function SalonSettingsPage({
                 href={item.href}
                 key={item.href}
               >
-                {item.label}
+                <WorkspaceText text={item.label} />
               </a>
             ))}
           </nav>
@@ -942,7 +918,7 @@ export default async function SalonSettingsPage({
             className="mt-3 flex min-h-10 items-center rounded-md border border-zinc-200 px-2.5 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
             href="/settings"
           >
-            All settings
+            <WorkspaceText text="All settings" />
           </Link>
         </aside>
 
@@ -951,20 +927,19 @@ export default async function SalonSettingsPage({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase text-zinc-500">
-                  Salon controls
+                  <WorkspaceText text="Salon controls" />
                 </p>
                 <h2 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950">
-                  Salon settings
+                  <WorkspaceText text="Salon settings" />
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
-                  Business details, public visibility, ownership, salon
-                  lifecycle, and staff profile controls in one compact workflow.
+                  <WorkspaceText text="Business details, public visibility, ownership, salon lifecycle, and staff profile controls in one compact workflow." />
                 </p>
               </div>
-              <StatusPill
+              <div className="flex shrink-0 items-center gap-3"><ContextualSupport /><StatusPill
                 className="bg-zinc-100 text-zinc-700 ring-zinc-200"
-                label={lifecycle.lifecycleStatus.replace("_", " ")}
-              />
+                label={__vt(lifecycle.lifecycleStatus.replace("_", " "))}
+              /></div>
             </div>
           </header>
 
@@ -1012,6 +987,8 @@ export default async function SalonSettingsPage({
           ) : null}
         </div>
       </div>
-    </main>
+    </main></div>
   );
 }
+
+export default withExperiencePage(SalonSettingsPage);

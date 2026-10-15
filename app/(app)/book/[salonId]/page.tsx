@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { PublicBookingClient } from "@/app/book/[salonId]/public-booking-client";
 import {
   getPublicBookingPageData,
@@ -11,7 +12,7 @@ type PublicBookingPageProps = {
   searchParams: Promise<PublicBookingSearchParams>;
 };
 
-export default async function PublicBookingPage({
+async function PublicBookingPage({
   params,
   searchParams,
 }: PublicBookingPageProps) {
@@ -20,3 +21,5 @@ export default async function PublicBookingPage({
 
   return <PublicBookingClient data={data} />;
 }
+
+export default withExperiencePage(PublicBookingPage);

@@ -397,6 +397,7 @@ export async function createSalonProfileSocialPostAction(input: {
 }): Promise<MutationResult<{ post: ProfileFeedItem; look: PublicSalonProfileLook | null }>> {
   try {
     const result = await createCurrentSalonProfileSocialPost(input);
+    revalidatePath("/salon-profile");
     return { error: null, ...result };
   } catch (error) {
     if (input.imagePath) {

@@ -1,4 +1,11 @@
 "use client";
+import { ContentViewer } from "@/components/content-viewer";
+import { MediaUploadProgress } from "@/components/media-upload-progress";
+import { mediaBatchProgress, type MediaUploadPhase } from "@/lib/media-upload-progress";
+
+import { SettingsIcon } from "@/components/settings-icon";
+import { PostActions } from "@/app/salon-profile/post-actions";
+import { useHiddenPosts, postIdentity } from "@/components/post-safety";
 
 import {
   createBeautyPostAction,
@@ -13,6 +20,7 @@ import {
   updateBeautyProfileAction,
 } from "@/app/beauty/actions";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import NextImage from "next/image";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import "./beauty-profile.css";
@@ -284,7 +292,7 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
           ref={shareButtonRef}
           type="button"
         >
-          <ReylumiIcon name="share" />
+          <ReylumiIcon name="share" /><span>Share</span>
         </button>
         <span
           className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 hidden w-64 rounded-2xl bg-text-primary px-3 py-2 text-left text-xs font-semibold leading-5 text-white shadow-lg group-hover:block group-focus-within:block"
@@ -295,7 +303,7 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
         </span>
       </span>
 
-      {open ? (
+      {open ? createPortal(
         <div
           aria-labelledby={dialogTitleId}
           aria-modal="true"
@@ -405,7 +413,7 @@ function SharePostAction({ post }: { post: BeautyTimelinePost }) {
               </p>
             ) : null}
           </div>
-        </div>
+        </div>, document.body,
       ) : null}
     </>
   );
@@ -587,6 +595,7 @@ function uploadToSupabase(input: {
     )}/${encodeStoragePath(input.path)}`;
 
     xhr.open("POST", objectUrl);
+    xhr.timeout = 120_000;
     xhr.setRequestHeader("Authorization", `Bearer ${input.accessToken}`);
     xhr.setRequestHeader("apikey", input.anonKey);
     xhr.setRequestHeader("Content-Type", input.blob.type);
@@ -606,6 +615,7 @@ function uploadToSupabase(input: {
       reject(new Error(xhr.responseText || "Upload failed."));
     };
     xhr.onerror = () => reject(new Error("Upload failed."));
+    xhr.ontimeout = () => reject(new Error("Upload timed out. Check your connection and try again."));
     xhr.onabort = () => reject(new Error("Upload cancelled."));
     xhr.send(input.blob);
   });
@@ -803,15 +813,11 @@ function PostCard({
   onDeleted: (postId: string) => void;
   post: BeautyTimelinePost;
 }) {
+  const hiddenPosts = useHiddenPosts(commentViewer.userId);
   const [editing, setEditing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
-  const commentsDialogRef = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    if (commentsOpen) commentsDialogRef.current?.showModal();
-    else commentsDialogRef.current?.close();
-  }, [commentsOpen]);
   const [commentCountState, setCommentCountState] = useState(() => ({
     count: post.commentCount,
     postId: post.id,
@@ -871,6 +877,7 @@ function PostCard({
     });
   }
 
+  if (hiddenPosts.includes(postIdentity(commentTarget))) return null;
   return (
     <article data-continuous-surface className="beauty-post grid gap-3 rounded-[1.35rem] bg-surface p-3 shadow-[0_18px_52px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80 sm:p-4">
       <div className="flex items-start justify-between gap-3 px-1">
@@ -894,25 +901,7 @@ function PostCard({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1"><VerificationBadge verification={post.verification} />{canManage && !editing ? (            <details data-dismissible-popover className="relative">
-              <summary
-                aria-label="More post actions"
-                className="grid min-h-10 min-w-10 cursor-pointer list-none place-items-center bg-transparent px-2 text-text-secondary transition marker:hidden hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-              >
-                <ReylumiIcon name="more" className="h-5 w-5" />
-              </summary>
-              <div className="absolute right-0 top-12 z-20 grid min-w-32 gap-1 rounded-2xl bg-surface p-2 shadow-xl ring-1 ring-divider-subtle">
-                <button type="button" className="min-h-10 px-3 text-left text-sm" disabled={pending} onClick={() => setEditing(true)}>Edit caption</button>
-                <button
-                  className="min-h-10 rounded-xl px-3 text-left text-sm font-bold text-red-700 transition hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-wait disabled:opacity-60"
-                  disabled={pending}
-                  onClick={() => setConfirmingDelete(true)}
-                  type="button"
-                >
-                  Delete
-                </button>
-              </div>
-            </details>) : null}</div>
+        <div className="flex items-center gap-1"><VerificationBadge verification={post.verification} /><PostActions target={commentTarget} viewerId={commentViewer.userId} onHidden={()=>onDeleted(post.id)} onChanged={()=>window.location.reload()} /></div>
       </div>
 
       <PostMedia post={post} />
@@ -977,17 +966,17 @@ function PostCard({
         ) : null}
 
         {post.visibility === "public" ? (
-          <div className="beauty-post-actions">
+          <div className="post-action-toolbar">
             {savedState ? <SavePostButton size="toolbar" initialSaved={savedState.saved} saveCount={savedState.count} onSavedChange={saved => onSavedChange(post.id, saved)} isAuthenticated={commentViewer.isAuthenticated} target={{ sourceId: post.id, sourceType: "beauty_post" }} /> : <span className="beauty-action text-text-muted" aria-label="Loading Love status"><ReylumiIcon name="heart" /></span>}
-            <button type="button" className="beauty-action" aria-label={`Comments (${commentCount})`} aria-haspopup="dialog" aria-expanded={commentsOpen} onClick={() => { setCommentsLoaded(true); setCommentsOpen(true); }}><ReylumiIcon name="message" /><span className="text-xs">{commentCount || ""}</span></button>
+            <button type="button" className="beauty-action" aria-label={`Comments (${commentCount})`} aria-haspopup="dialog" aria-expanded={commentsOpen} onClick={() => { setCommentsLoaded(true); setCommentsOpen(true); }}><ReylumiIcon name="message" /><span>Comment</span><span data-post-action-count className="text-xs">{commentCount || ""}</span></button>
             <SharePostAction post={post} />
-            {post.bookingAction ? <Link className="beauty-action text-brand-teal" href={canManage ? `/book/${post.bookingAction.salonId}` : post.bookingAction.href}>{canManage ? "Book again" : "Book"}</Link> : null}
+            {post.bookingAction ? <Link aria-label="Book" className="beauty-action text-brand-teal" href={canManage ? `/book/${post.bookingAction.salonId}` : post.bookingAction.href}><ReylumiIcon name="calendar" /><span>Book</span></Link> : null}
           </div>
         ) : null}
-        <dialog ref={commentsDialogRef} onClose={() => setCommentsOpen(false)} onClick={event => { if (event.target === event.currentTarget) setCommentsOpen(false); }} className="beauty-comments-dialog" aria-labelledby={`comments-title-${post.id}`}>
+        <ContentViewer open={commentsOpen} onClose={() => setCommentsOpen(false)} aria-labelledby={`comments-title-${post.id}`} className="place-items-end sm:place-items-center"><div className="w-full max-w-[560px] overflow-y-auto rounded-t-2xl bg-surface text-text-primary shadow-xl sm:rounded-2xl">
           <header className="flex items-center justify-between border-b border-border-subtle p-3"><h2 id={`comments-title-${post.id}`} className="font-semibold">Comments</h2><button type="button" className="beauty-action" aria-label="Close comments" onClick={() => setCommentsOpen(false)}><ReylumiIcon name="close" /></button></header>
           <div className="p-4">{commentsLoaded ? <PostCommentThread compact initialCount={commentCount} onCountChange={handleCommentCountChange} target={commentTarget} viewer={commentViewer} /> : null}</div>
-        </dialog>
+        </div></ContentViewer>
 
 
       </div>
@@ -1120,6 +1109,9 @@ export function BeautyProfileClient({
   const [composerError, setComposerError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadPhase, setUploadPhase] = useState<MediaUploadPhase>("preparing");
+  const [uploadBatch, setUploadBatch] = useState({ current: 1, total: 1 });
+  const [failedUpload, setFailedUpload] = useState<{ files: File[]; role: "image" | "before" | "after" } | null>(null);
   const [attribution, setAttribution] = useState<SelectedAttribution | null>(
     null,
   );
@@ -1603,6 +1595,8 @@ export function BeautyProfileClient({
     setNormalMedia([]);
     setBeforeMedia(null);
     setAfterMedia(null);
+    setFailedUpload(null);
+    setUploadPhase("preparing");
     setComposerError("");
     setUploadProgress(0);
     setAttribution(null);
@@ -1621,7 +1615,10 @@ export function BeautyProfileClient({
     setComposerOpen(false);
   }
 
-  async function uploadBeautyFile(file: File, role: BeautyPostMediaInput["role"]) {
+  async function uploadBeautyFile(file: File, role: BeautyPostMediaInput["role"], options?: {
+    processed: Awaited<ReturnType<typeof processBeautyImage>>;
+    onProgress: (value: number) => void;
+  }) {
     if (!acceptedMimeTypes.has(file.type)) {
       throw new Error("Use a JPEG, PNG, or WebP image.");
     }
@@ -1634,7 +1631,7 @@ export function BeautyProfileClient({
     let uploadedPath: string | null = null;
 
     try {
-      const processed = await processBeautyImage(file);
+      const processed = options?.processed ?? await processBeautyImage(file);
       previewUrl = URL.createObjectURL(processed.file);
       rememberObjectUrl(previewUrl);
       const session = await getBeautyMediaUploadSessionAction(role);
@@ -1645,7 +1642,10 @@ export function BeautyProfileClient({
         anonKey: session.anonKey,
         blob: processed.file,
         bucket: session.bucket,
-        onProgress: setUploadProgress,
+        onProgress: options?.onProgress ?? ((value) => {
+          setUploadProgress(value);
+          setUploadPhase(value >= 100 ? "confirming" : "uploading");
+        }),
         path: session.path,
         supabaseUrl: session.supabaseUrl,
       });
@@ -1678,7 +1678,8 @@ export function BeautyProfileClient({
     }
   }
 
-  async function addNormalFiles(files: FileList | null) {
+  async function addNormalFiles(files: FileList | File[] | null) {
+    if (composerBusy) return;
     const selected = Array.from(files ?? []).slice(0, 4 - normalMedia.length);
 
     if (selected.length === 0) {
@@ -1688,23 +1689,48 @@ export function BeautyProfileClient({
     setComposerError("");
     setUploading(true);
     setUploadProgress(0);
+    setUploadPhase("preparing");
+    setUploadBatch({ current: 1, total: selected.length });
+    setFailedUpload(null);
 
     const uploaded: UploadedBeautyMedia[] = [];
 
     try {
+      // Prepare first so the total represents actual compressed bytes.
+      const prepared: Awaited<ReturnType<typeof processBeautyImage>>[] = [];
       for (const file of selected) {
-        uploaded.push(await uploadBeautyFile(file, "image"));
+        if (!acceptedMimeTypes.has(file.type)) throw new Error("Use a JPEG, PNG, or WebP image.");
+        if (file.size > BEAUTY_IMAGE_LIMIT) throw new Error(`Image must be ${formatBytes(BEAUTY_IMAGE_LIMIT)} or smaller.`);
+        prepared.push(await processBeautyImage(file));
+      }
+      const totalBytes = prepared.reduce((sum, item) => sum + item.file.size, 0);
+      let completedBytes = 0;
+      setUploadPhase("uploading");
+      for (const [index, file] of selected.entries()) {
+        const processed = prepared[index];
+        setUploadBatch({ current: index + 1, total: selected.length });
+        uploaded.push(await uploadBeautyFile(file, "image", {
+          processed,
+          onProgress: (value) => {
+            setUploadProgress(mediaBatchProgress(completedBytes, processed.file.size, value, totalBytes));
+            setUploadPhase(value >= 100 ? "confirming" : "uploading");
+          },
+        }));
+        completedBytes += processed.file.size;
+        setUploadProgress(mediaBatchProgress(completedBytes, 0, 0, totalBytes));
       }
 
       setNormalMedia((current) => [...current, ...uploaded].slice(0, 4));
+      setUploadPhase("complete");
+      setUploadProgress(100);
     } catch (error) {
       uploaded.forEach(releaseMedia);
+      setFailedUpload({ files: selected, role: "image" });
       setComposerError(
         error instanceof Error ? error.message : "Upload failed.",
       );
     } finally {
       setUploading(false);
-      setUploadProgress(0);
 
       if (normalFileInputRef.current) {
         normalFileInputRef.current.value = "";
@@ -1716,13 +1742,16 @@ export function BeautyProfileClient({
     file: File | null,
     role: "after" | "before",
   ) {
-    if (!file) {
+    if (!file || composerBusy) {
       return;
     }
 
     setComposerError("");
     setUploading(true);
     setUploadProgress(0);
+    setUploadPhase("preparing");
+    setUploadBatch({ current: 1, total: 1 });
+    setFailedUpload(null);
 
     try {
       const uploaded = await uploadBeautyFile(file, role);
@@ -1734,13 +1763,15 @@ export function BeautyProfileClient({
         releaseMedia(afterMedia);
         setAfterMedia(uploaded);
       }
+      setUploadPhase("complete");
+      setUploadProgress(100);
     } catch (error) {
+      setFailedUpload({ files: [file], role });
       setComposerError(
         error instanceof Error ? error.message : "Upload failed.",
       );
     } finally {
       setUploading(false);
-      setUploadProgress(0);
 
       if (beforeInputRef.current) {
         beforeInputRef.current.value = "";
@@ -1857,6 +1888,7 @@ export function BeautyProfileClient({
           return;
         }
 
+        window.dispatchEvent(new CustomEvent("reylumi:post-published"));
         const newestPost = result.timeline.items[0];
         const newestVerification = newestPost?.verification;
 
@@ -1910,7 +1942,7 @@ export function BeautyProfileClient({
       <div className="mx-auto grid w-full max-w-3xl gap-4">
         <section className="beauty-identity">
           <div className="beauty-cover">{profile.coverImageUrl ? <NextImage alt={`${profile.displayName} Beauty cover`} src={profile.coverImageUrl} fill sizes="(min-width: 1024px) 960px, 100vw" /> : null}
-            {profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="beauty-settings" ref={profileEditButtonRef} onClick={openProfileEditor}><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 3 2 3-1 2 2 3-2 1-3 3-1v-4l-3-1-1-3h-4Z"/><circle cx="12" cy="12" r="3"/></svg></button> : null}
+            {profile.isSelf ? <button type="button" aria-label="Edit Beauty profile" title="Edit profile" className="beauty-settings" ref={profileEditButtonRef} onClick={openProfileEditor}><SettingsIcon /></button> : null}
           </div>
           <div className="beauty-person"><ProfileAvatar className="beauty-profile-avatar" profile={profile} /><div><h1 className="text-2xl font-semibold">{profile.displayName}</h1>{profile.bio ? <p className="mt-1 text-sm text-text-secondary">{profile.bio}</p> : null}<p className="mt-1 text-xs text-text-secondary">{profile.visibility === "public" ? "Public profile" : "Private profile"}</p></div></div>
         </section>
@@ -2067,7 +2099,7 @@ export function BeautyProfileClient({
             aria-describedby="beauty-profile-editor-description"
             aria-labelledby="beauty-profile-editor-title"
             aria-modal="true"
-            className="relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl"
+            className="settings-style relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-xl sm:rounded-2xl"
             onSubmit={saveBeautyProfile}
             ref={profileEditorDialogRef}
             role="dialog"
@@ -2274,13 +2306,7 @@ export function BeautyProfileClient({
                 </section>
 
                 {profileUpload ? (
-                  <p
-                    aria-live="polite"
-                    className="rounded-2xl border border-brand-orange/20 bg-brand-orange-soft px-3 py-2 text-sm font-extrabold text-brand-orange"
-                  >
-                    Uploading {profileUpload}
-                    {profileUploadProgress ? ` ${profileUploadProgress}%` : "..."}
-                  </p>
+                  <MediaUploadProgress progress={profileUploadProgress || undefined} />
                 ) : null}
 
                 {profileEditorError ? (
@@ -2324,7 +2350,7 @@ export function BeautyProfileClient({
             aria-describedby="beauty-composer-description"
             aria-labelledby="beauty-composer-title"
             aria-modal="true"
-            className="relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
+            className="settings-style relative flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-surface shadow-[0_24px_80px_rgba(23,19,22,0.22)] sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
             ref={composerDialogRef}
             role="dialog"
             tabIndex={-1}
@@ -2647,10 +2673,8 @@ export function BeautyProfileClient({
                   </>
                 )}
 
-                {uploading ? (
-                  <p className="rounded-2xl border border-brand-orange/20 bg-brand-orange-soft px-3 py-2 text-sm font-extrabold text-brand-orange">
-                    Uploading{uploadProgress ? ` ${uploadProgress}%` : "..."}
-                  </p>
+                {uploading || (uploadPhase === "complete" && currentComposerMedia.length > 0) ? (
+                  <MediaUploadProgress phase={uploadPhase} progress={uploadProgress} current={uploadBatch.current} total={uploadBatch.total} />
                 ) : null}
 
                 {composerError ? (
@@ -2658,6 +2682,10 @@ export function BeautyProfileClient({
                     {composerError}
                   </p>
                 ) : null}
+                {failedUpload && !composerBusy ? <button type="button" className="min-h-11 justify-self-start rounded-full bg-brand-teal-soft px-5 text-sm font-semibold text-brand-teal" onClick={() => {
+                  if (failedUpload.role === "image") void addNormalFiles(failedUpload.files);
+                  else void replaceBeforeAfterFile(failedUpload.files[0], failedUpload.role);
+                }}>Try again</button> : null}
               </div>
             </div>
 

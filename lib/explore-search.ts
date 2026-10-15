@@ -1,4 +1,6 @@
 import "server-only";
+import { classifyExploreSearchError, exploreSearchErrorMessage, runExploreSearchRpc } from "@/lib/explore-search-rpc";
+import { resolveExploreQueryRouting, type ExploreQueryRouting } from "@/lib/explore-query-routing";
 import { resolveNailCoverImage } from "@/lib/default-nail-images";
 
 import {
@@ -16,19 +18,24 @@ import {
   operatingStatusFromMap,
 } from "@/lib/salon-operating-status";
 import { getSalonProfileMediaUrl } from "@/lib/salon-profile";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   ExploreInitialLocation,
   ExploreResultGroup,
   ExploreSearchInput,
   ExploreSearchResponse,
   ExploreSearchResult,
+  ExploreSearchErrorKind,
+  ExploreSearchScope,
 } from "@/types/explore";
 
 export const EXPLORE_PAGE_SIZE = 12;
-const EXPLORE_MAX_PAGE_SIZE = 12;
+const EXPLORE_MAX_PAGE_SIZE = 20;
 
 type ExploreRpcRow = {
+  search_scope?: "exact" | "A" | "B" | "C";
+  scope_label?: string;
+  pagination_cursor?: Record<string, unknown>;
   active_service_count: number | null;
   address_line1: string | null;
   address_line2: string | null;
@@ -114,6 +121,7 @@ function normalizeCoordinate(value: number | null | undefined, min: number, max:
 function emptyResponse(input: {
   category: string;
   error?: string | null;
+  errorKind?: ExploreSearchErrorKind;
   location: string;
   page: number;
   pageSize: number;
@@ -122,6 +130,9 @@ function emptyResponse(input: {
   return {
     category: input.category,
     error: input.error ?? null,
+    errorKind: input.errorKind ?? null,
+    hasMore: false,
+    nextCursor: null,
     groupCounts: {
       bestMatches: 0,
       nearby: 0,
@@ -166,6 +177,8 @@ function mapExploreRow(
 
   return {
     activeServiceCount: row.active_service_count ?? 0,
+    searchScope: row.search_scope,
+    scopeLabel: row.scope_label,
     addressLine1: row.address_line1,
     addressLine2: row.address_line2,
     averageRating: decisionSignals.averageRating,
@@ -245,24 +258,6 @@ function readMoney(value: number | string | null | undefined) {
   return null;
 }
 
-function readGroupCounts(rows: ExploreRpcRow[]) {
-  const firstRow = rows[0];
-
-  if (firstRow) {
-    return {
-      bestMatches: readCount(firstRow.best_match_count),
-      nearby: readCount(firstRow.nearby_count),
-      recommended: readCount(firstRow.recommended_count),
-    };
-  }
-
-  return {
-    bestMatches: 0,
-    nearby: 0,
-    recommended: 0,
-  };
-}
-
 function groupResults(results: ExploreSearchResult[]) {
   return {
     bestMatches: results.filter((result) => result.resultGroup === "best_match"),
@@ -273,38 +268,73 @@ function groupResults(results: ExploreSearchResult[]) {
 
 export async function searchExploreSalons(
   input: ExploreSearchInput = {},
+  options: { signal?: AbortSignal; routing?: ExploreQueryRouting } = {},
 ): Promise<ExploreSearchResponse> {
-  const query = clean(input.query);
-  const location = clean(input.location);
-  const category = normalizeCategory(input.category);
+  let query = clean(input.query);
+  let location = clean(input.location);
+  let category = normalizeCategory(input.category);
   const page = normalizePage(input.page);
   const pageSize = normalizePageSize(input.pageSize);
-  const latitude = normalizeCoordinate(input.latitude, -90, 90);
-  const longitude = normalizeCoordinate(input.longitude, -180, 180);
-  const supabase = createSupabaseServerClient();
+  let latitude = normalizeCoordinate(input.latitude, -90, 90);
+  let longitude = normalizeCoordinate(input.longitude, -180, 180);
+  let routing = options.routing;
+  let scopePolicy = input.scopePolicy ?? (location && (!input.locationSource || input.locationSource === "manual") ? "fixed" : "expandable");
+  const metadata = () => routing ? {
+    target: routing.target, contentQuery: routing.contentQuery, displayQuery: routing.displayQuery,
+    locationOrigin: routing.locationOrigin, locationSource: routing.locationSource,
+    requiresGps: routing.requiresGps, areaCandidates: routing.areaCandidates,
+    areaAmbiguous: routing.areaAmbiguous, locationConflict: routing.locationConflict, queryLocationHint: routing.queryLocationHint, lookupFailed: routing.lookupFailed,
+  } : {
+    target: input.target === "posts" ? "posts" as const : "salons" as const,
+    contentQuery: (input as ExploreSearchInput & { contentQuery?: string }).contentQuery ?? "",
+    displayQuery: (input as ExploreSearchInput & { displayQuery?: string }).displayQuery ?? query,
+    locationOrigin: location ? input.locationSource && input.locationSource !== "manual" ? "context" as const : "manual" as const : "none" as const,
+    locationSource: input.locationSource ?? (location ? "manual" as const : "none" as const),
+  };
+  const supabase = (await createAuthenticatedSupabaseServerClient()) ?? createSupabaseServerClient();
 
   if (!supabase) {
-    return emptyResponse({
+    return { ...emptyResponse({
       category,
       error: "Salon search is temporarily unavailable. Please try again later.",
       location,
       page,
       pageSize,
       query,
-    });
+    }), ...metadata() };
   }
 
   try {
-    const rpc = supabase.rpc.bind(supabase) as unknown as RpcRunner;
-    const { data, error } = await rpc("search_public_explore_salons", {
+    const rpc: RpcRunner = async (name, args) => {
+      const request = supabase.rpc(name, args);
+      return await (options.signal ? request.abortSignal(options.signal) : request) as unknown as Awaited<ReturnType<RpcRunner>>;
+    };
+    // A continuation already carries canonical filters from its frozen session.
+    // Re-interpreting it could change region/category after data or GPS changes.
+    if (!routing && !input.cursor) routing = await resolveExploreQueryRouting(input, { rpc, signal: options.signal });
+    if (routing) {
+      query = routing.query; location = routing.location; category = routing.category;
+      latitude = routing.latitude; longitude = routing.longitude; scopePolicy = routing.scopePolicy;
+      if (routing.lookupFailed) return { ...emptyResponse({ category, location, query, page, pageSize,
+        error: "Search is temporarily unavailable. Please try again.", errorKind: "query" }), ...metadata() };
+    }
+    if (routing?.target === "posts" || input.target === "posts" || routing?.requiresGps) {
+      return { ...emptyResponse({ category, location, query, page, pageSize }), ...metadata(), countKind: "loaded",
+        scope: { policy: scopePolicy, stage: location ? "A" : "C", label: location || (routing?.requiresGps ? "Choose an area or allow location" : "Matching public posts"), expanded: false } };
+    }
+    // Numbered links restart from the indexed cursor path; they never trigger OFFSET work.
+    const { data: rawData, error } = await runExploreSearchRpc(() => rpc("search_public_explore_session", {
       p_category: category || null,
       p_latitude: latitude,
       p_location: location || null,
       p_longitude: longitude,
-      p_page: page,
-      p_page_size: pageSize,
+      p_cursor: input.cursor ?? null,
+      p_limit: pageSize,
       p_query: query || null,
-    });
+      p_scope_policy: scopePolicy,
+      p_sort: input.sort ?? "relevance",
+      p_intent: input.intent ?? "search",
+    }), options.signal);
 
     if (error) {
       console.warn("Explore public salon search unavailable", {
@@ -314,34 +344,26 @@ export async function searchExploreSalons(
         message: error.message,
       });
 
-      return emptyResponse({
+      return { ...emptyResponse({
         category,
-        error: "Salon search is temporarily unavailable. Please try again later.",
+        error: exploreSearchErrorMessage(classifyExploreSearchError(error)),
+        errorKind: classifyExploreSearchError(error),
         location,
         page,
         pageSize,
         query,
-      });
+      }), ...metadata() };
     }
 
+    const envelope = rawData && typeof rawData === "object" ? rawData as {
+      rows?: unknown; cursor?: Record<string, unknown>; nextCursor?: Record<string, unknown>;
+      hasMore?: boolean; totalCount?: number; countKind?: "loaded"; scope?: ExploreSearchScope;
+      appliedSort?: string;
+      supportedSorts?: string[]; sortFallbackReason?: string | null;
+      rankVersion?: number | null; rankAsOf?: string | null; rankingBasis?: "indexed_scope" | "candidate_pool";
+    } : null;
+    const data = envelope?.rows ?? rawData;
     const rows = Array.isArray(data) ? (data as ExploreRpcRow[]) : [];
-    let countRows = rows;
-
-    if (rows.length === 0 && page > 1) {
-      const countResult = await rpc("search_public_explore_salons", {
-        p_category: category || null,
-        p_latitude: latitude,
-        p_location: location || null,
-        p_longitude: longitude,
-        p_page: 1,
-        p_page_size: 1,
-        p_query: query || null,
-      });
-
-      if (!countResult.error && Array.isArray(countResult.data)) {
-        countRows = countResult.data as ExploreRpcRow[];
-      }
-    }
 
     const salonIds = rows.map((row) => row.salon_id);
     const [signalMap, logoPathMap, operatingStatusMap] = await Promise.all([
@@ -355,20 +377,37 @@ export async function searchExploreSalons(
       getPublicSalonOperatingStatusesBySalonId(salonIds),
     ]);
     const results = rows.map((row) =>
-      mapExploreRow(
+      ({ ...mapExploreRow(
         row,
         signalMap.get(row.salon_id),
         operatingStatusFromMap(operatingStatusMap, row.salon_id),
         logoPathMap.get(row.salon_id),
-      ),
+      ), continuationCursor: row.pagination_cursor }),
     );
     const sections = groupResults(results);
-    const groupCounts = readGroupCounts(countRows);
-    const totalCount = readCount(countRows[0]?.total_count);
+    const groupCounts = {
+      bestMatches: sections.bestMatches.length,
+      nearby: sections.nearby.length,
+      recommended: sections.recommended.length,
+    };
+    const totalCount = readCount(envelope?.totalCount ?? rows[0]?.total_count ?? results.length);
 
     return {
+      ...metadata(),
+      nextCursor: envelope?.hasMore ? envelope.nextCursor ?? envelope.cursor ?? null : null,
+      hasMore: envelope ? Boolean(envelope.hasMore) : page < Math.ceil(totalCount / pageSize),
       category,
       error: null,
+      errorKind: null,
+      countKind: "loaded",
+      scope: envelope?.scope,
+      sort: input.sort ?? "relevance",
+      appliedSort: envelope?.appliedSort,
+      supportedSorts: envelope?.supportedSorts,
+      sortFallbackReason: envelope?.sortFallbackReason,
+      rankVersion: envelope?.rankVersion,
+      rankAsOf: envelope?.rankAsOf,
+      rankingBasis: envelope?.rankingBasis,
       groupCounts,
       location,
       page,
@@ -377,21 +416,22 @@ export async function searchExploreSalons(
       results,
       sections,
       totalCount,
-      totalPages: Math.max(1, Math.ceil(totalCount / pageSize)),
+      totalPages: envelope?.hasMore ? page + 1 : page,
     };
   } catch (error) {
     console.warn("Explore public salon search unavailable", {
       message: error instanceof Error ? error.message : "Unknown error",
     });
 
-    return emptyResponse({
+    return { ...emptyResponse({
       category,
-      error: "Explore search could not be loaded.",
+      error: exploreSearchErrorMessage(classifyExploreSearchError(error)),
+      errorKind: classifyExploreSearchError(error),
       location,
       page,
       pageSize,
       query,
-    });
+    }), ...metadata() };
   }
 }
 
@@ -399,17 +439,23 @@ export async function getExploreWorkspaceLocation(
   context?: CurrentBusinessContext,
 ): Promise<ExploreInitialLocation> {
   const resolvedContext = context ?? (await getCurrentBusinessContext());
-  const salon = resolvedContext.currentSalon;
-
-  if (!salon) {
-    return { label: "", source: "none" };
+  if (resolvedContext.user) {
+    const client = await createAuthenticatedSupabaseServerClient();
+    const [activity, saved] = client ? await Promise.all([
+      client.rpc("get_explore_activity_region"),
+      client.rpc("get_my_explore_preferences"),
+    ]) : [null, null];
+    const region = !activity?.error && activity?.data && typeof activity.data === "object" ? activity.data as Record<string, unknown> : null;
+    if (region?.source === "activity" && typeof region.label === "string" && region.label.trim()) {
+      return {
+        label: region.label.trim(), source: "activity",
+        confidence: typeof region.confidence === "number" ? region.confidence : undefined,
+        evidenceDays: typeof region.evidenceDays === "number" ? region.evidenceDays : undefined,
+        lastObservedAt: typeof region.lastObservedAt === "string" ? region.lastObservedAt : null,
+      };
+    }
+    const location = !saved?.error && typeof saved?.data?.location === "string" ? saved.data.location.trim() : "";
+    if (location) return { label: location, source: "saved" };
   }
-
-  const cityState = [salon.city, salon.state].filter(Boolean).join(", ");
-  const label = cityState || salon.postal_code || "";
-
-  return {
-    label,
-    source: label ? "workspace" : "none",
-  };
+  return { label: "", source: "none" };
 }

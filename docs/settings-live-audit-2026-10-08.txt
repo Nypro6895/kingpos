@@ -1,0 +1,33 @@
+SETTINGS — AUDIT THỰC TẾ & ĐỀ XUẤT LAYOUT, 2026-10-08
+
+Phạm vi
+Đọc luồng/source SettingsHubClient và mở 21 mục chính có sẵn trong tài khoản đăng nhập: 6 mục Personal, 10 mục salon, Add salon, Recovery, Platform administration, Legal, Help. Tài khoản có một salon Owner; chưa kiểm tra trực tiếp vai trò staff/view-only, nhiều salon, salon đóng. Không lưu thay đổi dữ liệu, gửi lời mời, OTP, trả lương, chuyển quyền hay xóa tài khoản. Draft thử nghiệm đã Cancel và xác nhận phục hồi.
+Recovery đã tải hoàn tất: không có case. Website cần đối chiếu kết quả tải cuối cùng trong runtime-observations.json. Các kiểm tra nguồn không được coi là xác nhận thao tác backend.
+
+Bằng chứng đo layout hiện tại
+- Mobile 390x844: form Personal bắt đầu tại 870px; form salon tại 1214px tính từ đầu trang. Riêng 10 tab salon chiếm 394px.
+- Mobile 360px: document rộng 378px, tràn ngang 18px; cạnh phải menu salon bị cắt.
+- Desktop 1440px: tab salon chiếm 146px/3 hàng; nội dung bắt đầu tại 470px. 1280px: 195px/4 hàng, nội dung 519px. 768px: tab 294px, nội dung 593px.
+- Thông tin chủ sở hữu lặp trên từng màn salon, rồi xuất hiện lại trong Ownership.
+
+Ưu tiên sửa luồng và trạng thái
+P1. Booking > Manage Booking staff trỏ /services và bị chuyển đến My Place với lỗi yêu cầu workspace salon khi global workspace là Personal. Settings chọn đúng salon qua withSettingsTarget nhưng link làm mất ngữ cảnh. Điều hướng nội bộ sang Services cùng salon hoặc truyền salon/role rõ ràng.
+P1. Cùng nhân viên: Services ghi Booking ready, Booking ghi Needs setup vì chưa có dịch vụ/giờ làm. lib/services.ts dùng active + online_booking_enabled; lib/booking-setup.ts kiểm tra thêm cấu hình salon, dịch vụ và giờ làm. Thống nhất tiêu chí hoặc đổi tên nhãn hẹp.
+P1. Draft được giữ khi đổi mục nhưng không có thông báo chưa lưu; URL không đổi. Cần trạng thái dirty theo nhóm lưu và điều hướng có thể truy cập lại đúng salon/mục.
+P1. Mobile phải chuyển sang Settings > chọn salon > chọn mục > chỉnh sửa; loại bỏ danh sách toàn bộ tab phía trên mỗi form. Đảm bảo min-width và không tràn ngang.
+P2. Desktop dùng menu mục dọc trong ngữ cảnh salon; đưa nội dung lên cao, bỏ roster chủ sở hữu lặp.
+P2. Save có nhiều đơn vị thực: thông tin, giờ mở cửa, Booking rules, POS, payroll theo staff; Notifications lưu ngay. Không gộp thành nút Save toàn Settings. Mobile đặt hành động theo nhóm trên thanh điều hướng dưới.
+P2. Payroll: hiện trường anchor cho Twice monthly; Commission vẫn hiện fixed pay và fixed-pay tax. Hiển thị phụ thuộc lựa chọn nhưng bảo toàn giá trị và effective date.
+P2. Security có danh sách phiên dài mở sẵn, đẩy các nhóm bảo mật xuống dưới; cần tóm tắt và mở chi tiết.
+P2, source-only. Một số mục view-only hiện thông báo thay vì giá trị; cần hiển thị dữ liệu được phép xem. Notifications staff phụ thuộc global staff workspace, cần thể hiện phạm vi. Map dùng địa chỉ đã lưu; timezone mở cửa/Booking cần rõ phạm vi. Child public preferences cần trạng thái lỗi và Retry.
+
+Bản minh họa độc lập
+artifacts/settings-live-audit-2026-10-08/settings-preview.html
+Preview: http://127.0.0.1:3218/?screen=edit&section=booking
+Chi tiết minh họa: Booking, Salon information, Personal profile; mục khác là placeholder layout, chưa phải bản triển khai hoàn chỉnh. Dùng dữ liệu mẫu. Không gọi API hay sửa ứng dụng.
+Mobile 390px: nhóm form Booking bắt đầu 372px (hiện tại 1214px); không tràn ngang. Thanh Save ở 710–780px; navigation ở 780–844px. Desktop bỏ tab nhiều hàng, chia Booking access và Timing & scheduling, giữ phạm vi Save booking rules.
+
+Kiểm tra
+25 kiểm tra hiện có về target context, regressions, save feedback, salon list và direct actions đã pass trong bước audit nguồn. Chưa có thay đổi mã ứng dụng nên không coi đây là xác nhận bản sửa. Cần kiểm tra sau triển khai trên 360/390/768/1280/1440px; Owner, staff, view-only; global Personal + target salon; draft/cancel/save/error; readiness; save bar và bàn phím mobile.
+
+Ảnh và dữ liệu đo nằm trong artifacts/settings-live-audit-2026-10-08. Báo cáo này thay cho bản audit nguồn ngày 2026-10-07 vốn chưa có phiên đăng nhập.

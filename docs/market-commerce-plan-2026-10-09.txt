@@ -1,0 +1,117 @@
+REYLUMI MARKET — CẤU TRÚC THƯƠNG MẠI VÀ KẾ HOẠCH THANH TOÁN
+Ngày: 09/10/2026
+
+1. KẾT QUẢ KIỂM TRA
+- Vietnamese Language: 3.99 USD/tháng/tiệm, dùng thử 5 ngày.
+- Booking Rules (booking-policy): 0.99 USD/tháng/tiệm.
+- Booking Deposit: 5.90 USD/tháng/tiệm. Phí mua plugin khác với tiền đặt cọc
+  khách thanh toán cho salon; không chuyển tiền đặt cọc vào ngân hàng Reylumi.
+- Check-in Receipt: 4.70 USD/tháng/tiệm.
+- Payroll Data Download: miễn phí; không áp phí giao dịch cho cài đặt miễn phí.
+- Campaigns: cài miễn phí, mua credit; giữ ledger credit và thanh toán riêng.
+- Service Relay: giữ cơ chế hiện hành, chưa tự áp giá thuê bao mới.
+- Các listing bên ngoài hiện là concept/preview; chưa phải hợp đồng nhà cung cấp.
+- Bốn plugin thuê bao dùng giá hằng số. Webhook kiểm tra đúng hằng số đó.
+  Không được đổi checkout đơn lẻ rồi để webhook kiểm tra giá cũ.
+
+2. ĐÃ TINH CHỈNH TRONG WORKSPACE
+- Admin Settings có đường dẫn Plugins and payments đến Admin Market.
+- Admin Market có cấu hình NHÁP ngân hàng, người thụ hưởng, tài khoản,
+  routing/SWIFT, hướng dẫn, bốn giá thuê bao, thuế %, phí %, phí cố định.
+- Chỉ platform_owner có quyền teamManage được xem/chỉnh cấu hình ngân hàng.
+- Server kiểm tra giá và tỷ lệ, chống ghi đè bản mới bằng version.
+- Audit ghi phiên bản/giá/phí, không sao chép tài khoản ngân hàng vào log.
+- Migration khóa truy cập trực tiếp của khách vào bảng cấu hình ngân hàng.
+- Bộ tính tiền dùng cent và basis point; làm tròn từng dòng, không tính phí
+  phần trăm chồng lên thuế hoặc phí. Đây là chính sách mẫu, chưa bật thu tiền.
+- Cấu hình nháp chưa thay giá Market công khai, checkout hay gia hạn hiện tại.
+- Chưa chạy migration trên production, chưa triển khai lên reylumi.com.
+
+3. QUY CHUẨN GIAO DỊCH ĐỀ XUẤT
+Mỗi đơn lưu snapshot bất biến: order_id, salon_id, payer_id, plugin_id,
+publisher_id, plan/version, đơn vị tiền, kỳ dịch vụ, giá niêm yết, discount,
+subtotal, căn cứ thuế, thuế, phí từng loại, bên chịu phí, tổng, ngân hàng
+nhận/version và mã chuyển khoản duy nhất. Mỗi sự kiện có idempotency key.
+Tách order, payment_attempt, bank_receipt, allocation, refund, entitlement
+và publisher_payable; không dùng một cờ paid cho toàn bộ vòng đời.
+
+Các dòng phí:
+- Plugin fee: giá dịch vụ theo kỳ hoặc một lần.
+- Tax: có căn cứ địa điểm/loại dịch vụ, tax-inclusive/exclusive và hóa đơn.
+  Không coi một tỷ lệ chung là đủ cho mọi khu vực.
+- Transaction fee: cấu hình theo phương thức thanh toán, % + cố định,
+  công khai trước khi khách xác nhận; mặc định 0 khi chưa chốt chính sách.
+- Platform commission cho đối tác: khấu trừ từ doanh thu đối tác theo hợp đồng,
+  ghi riêng; không tự cộng thành phí khách hàng.
+- FX, refund, dispute, payout: chỉ ghi khi có thực tế phát sinh và chính sách;
+  không thêm một khoản “other fees” không có tên/căn cứ.
+- Cài plugin miễn phí không tạo hóa đơn thu tiền hay phí cố định.
+
+Ví dụ kiểm tra công thức (minh họa, không phải mức thuế/phí thực tế):
+giá 5.90, tax 8%, fee 2% + 0.30 => tax 0.47, fee 0.42, total 6.79 USD.
+Thuế trên phí, giảm giá và hóa đơn điều chỉnh cần quy tắc riêng theo vùng.
+
+Trạng thái order: awaiting_payment -> partially_paid / under_review -> paid;
+awaiting_payment -> expired / cancelled; paid -> partially_refunded / refunded.
+Không cấp quyền từ ảnh chuyển khoản, nút “đã thanh toán”, redirect thành công
+hay webhook chưa xác thực. Chỉ cấp sau khi bank receipt được đối soát/duyệt.
+Receipt có unique(bank_account_id, bank_transaction_id); allocation phải khóa
+hàng trong DB và kiểm tra tổng phân bổ, để không dùng một khoản tiền hai lần.
+Khoản thiếu chưa cấp quyền; dư ghi số dư/refund riêng, không âm thầm tăng kỳ.
+Chuyển khoản đến muộn vào hàng chờ xem xét; không tự áp một giá mới.
+Refund ghi giao dịch đảo và cập nhật quyền theo chính sách; không xóa lịch sử.
+Đối soát hằng ngày: order tổng, allocation, bank receipt, refund và payable.
+
+4. LUỒNG NGÂN HÀNG CẦN XÂY TIẾP
+P0 — trước khi nhận tiền thật:
+[ ] Catalog/plan có phiên bản, ngày hiệu lực và trạng thái published.
+[ ] Đơn hàng chụp giá/thuế/phí phía server, ràng buộc owner + salon active.
+[ ] Checkout hiển thị tổng, kỳ, ngân hàng, mã tham chiếu và hạn thanh toán.
+[ ] Lưu snapshot ngân hàng để sửa Settings không đổi hướng dẫn đơn đang mở.
+[ ] Admin đối soát có nguồn sao kê/receipt; upload khách chỉ là chứng cứ tham khảo.
+[ ] Xác nhận settlement + cấp entitlement trong một transaction DB/idempotent.
+[ ] Mapping entitlement đến bốn bảng subscription hiện tại và quyền sử dụng.
+[ ] Chặn chồng kỳ hoặc tính tiền hai lần khi salon còn Stripe subscription.
+[ ] Hóa đơn/biên nhận, lịch sử thanh toán, hủy đơn, xử lý thiếu/dư và refund.
+[ ] Tests race/replay, sai tiền/currency/salon, receipt trùng, callback giả,
+    gia hạn/cuối tháng, đổi giá/đổi ngân hàng khi đơn đang chờ, refund.
+
+P1 — tự động hóa:
+[ ] Kết nối bank feed hoặc provider bank-transfer có webhook xác thực,
+    retry, event ledger và reconciliation. Settings tài khoản không thay thế API.
+[ ] Gia hạn chuyển khoản bằng hóa đơn mới; không gọi chuyển khoản là auto-debit.
+[ ] Nhắc trước hết hạn, thời gian ân hạn cấu hình, giữ dữ liệu khi hết quyền.
+[ ] Price snapshot được lưu trong DB để webhook Stripe xác minh hợp đồng mua,
+    thay vì so với giá hiện tại hoặc metadata khách có thể thay.
+[ ] Khách đang dùng giữ giá hợp đồng; đổi giá kỳ sau theo chính sách thông báo.
+[ ] Giao diện Market và panel plugin dùng cùng catalog với checkout.
+[ ] Tax engine theo vùng, fee policy theo phương thức, giới hạn chi tiêu.
+
+5. PLUGIN BÊN NGOÀI — GIẢI PHÁP NGAY BÂY GIỜ
+Plugin chưa phát triển giữ Preview/Coming soon, tắt mua và không thu trước.
+Giá concept cần ghi là giá dự kiến; không hứa trial/khả năng tích hợp thật.
+Mỗi publisher tương lai có hồ sơ, hợp đồng, thông tin thanh toán, hỗ trợ,
+chính sách refund, billing_model (free/subscription/one_time/usage), commission,
+tax responsibility và entitlement adapter. Chỉ published khi adapter đã qua test.
+
+Hai mô hình phải được lựa chọn rõ cho từng publisher:
+A. Reylumi thu hộ: khách trả vào ngân hàng cấu hình của Reylumi; ledger ghi
+   nghĩa vụ trả đối tác. Payout sau đối soát/refund theo hợp đồng; không chuyển
+   tiền tự động chỉ dựa vào giá listing. Cần xác định bên bán trên hóa đơn.
+B. Nhà cung cấp thu trực tiếp: checkout bên nhà cung cấp, Reylumi nhận webhook
+   ký và cấp quyền theo contract adapter. Ghi rõ ngân hàng/bên nhận thuộc đối tác;
+   mô hình này không đáp ứng yêu cầu mọi khách đều trả vào ngân hàng Reylumi.
+Với yêu cầu hiện tại, đề xuất A sau khi ký hợp đồng và hoàn tất đối soát/payout.
+Không tự ấn định commission 10/20/30% khi chưa có thỏa thuận.
+
+6. TRIỂN KHAI
+Áp migration cấu hình trên staging trước. Chỉ bật cấu hình giá/ngân hàng thật
+khi toàn bộ P0 hoàn thành. Kiểm tra build, thực hiện QA owner/admin/mobile.
+Trước phát hành reylumi.com: lấy deployment ID alias hiện tại làm baseline,
+giữ Explore/admin/support hiện có, lưu hash source/overlay vào release receipt,
+chạy verify-production-base ngay trước promotion, refresh nếu alias thay đổi.
+
+Nguồn tham khảo:
+https://support.stripe.com/questions/bank-transfer-reconciliation
+https://github.com/stripe/ai/blob/main/providers/grok/plugin/skills/stripe-best-practices/references/tax.md
+https://stripe.dev/blog/stripe-marketplaces-mapping-commercial-relationships-code

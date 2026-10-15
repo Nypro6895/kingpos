@@ -3,7 +3,9 @@ import { getCurrentBusinessContext,isSalonManageContext } from '@/lib/current-co
 import { getDailyPosReport,canEditDailyPosClosing,canApplyFinancialCorrections } from '@/lib/daily-pos-report';
 import { getOperationalReport } from '@/lib/operational-report';
 import { hasPermission } from '@/lib/permissions';
+import { headers } from 'next/headers';
 export async function GET(request:Request){
+ if((await headers()).get('x-reylumi-auth-unavailable')==='1')return new NextResponse(null,{status:503,headers:{'Cache-Control':'private, no-store'}});
  const context=await getCurrentBusinessContext();
  if(!context.user||!context.currentSalon||!isSalonManageContext(context)||!await hasPermission('reports.view',context))return new NextResponse(null,{status:401});
  const params=Object.fromEntries(new URL(request.url).searchParams);

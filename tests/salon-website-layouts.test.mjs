@@ -10,10 +10,10 @@ import { chromium } from "playwright-core";
 const source = readFileSync("app/salon-profile/salon-website-home.tsx", "utf8");
 const exports = {};
 const css = readFileSync("app/salon-profile/salon-website-home.module.css", "utf8");
-const actionExports = {};
-new Function("require","exports",ts.transpileModule(readFileSync("app/salon-profile/post-actions.tsx","utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText)(createRequire(import.meta.url),actionExports);
+const actionExports = { PostActions: () => React.createElement("button", { type: "button", "aria-label": "Post actions" }, "…") };
 const classes = Object.fromEntries([...css.matchAll(/\.([a-zA-Z][a-zA-Z0-9]*)/g)].map(match => [match[1], match[1]]));
 function fixtureRequire(name) {
+  if (name.endsWith("workspace-language")) return { WorkspaceText: ({text}) => text, useWorkspaceTranslation: () => text => text };
   if (name.includes("post-actions")) return actionExports;
   if (name.endsWith(".css")) return { default: classes };
   if (name.includes("quick-booking-client")) return { preloadQuickBooking() {} };
@@ -21,7 +21,8 @@ function fixtureRequire(name) {
   if (name.includes("nail-illustration-credit")) return { NailIllustrationCredit: () => null };
   const fixturePath = name.includes("website-photo-feed") ? "app/salon-profile/website-photo-feed.tsx"
     : name === "@/lib/salon-profile-content" ? "lib/salon-profile-content.ts"
-    : name === "@/lib/default-nail-images" ? "lib/default-nail-images.ts" : null;
+    : name === "@/lib/default-nail-images" ? "lib/default-nail-images.ts"
+    : name === "@/lib/post-identity" ? "lib/post-identity.ts" : null;
   if (!fixturePath) return createRequire(import.meta.url)(name);
   const loaded = {};
   new Function("require", "exports", ts.transpileModule(readFileSync(fixturePath, "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText)(fixtureRequire, loaded);
@@ -35,15 +36,15 @@ data.experiences = [
   {id:"positive-four",authorUserId:"customer-three",authorDisplayName:"Kim",body:"Friendly team, I will return.",rating:4,feedbackState:"good",verificationStatus:"unverified",source:"experience",createdAt:"2026-10-03"},
 ];
 const posts = Array.from({ length: 5 }, (_, index) => ({ id: String(index), title: `Post ${index}`, contentType: "look", publishedAt: `2026-10-0${index + 1}`, isPinned: index === 0, imageUrl: `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='100'><text>${index}</text></svg>` }));
-test("all three website layouts fit mobile and desktop, keep essentials, and show newest three posts", async () => {
+test("all three website layouts fit mobile and desktop, keep essentials, and show available recent posts", async () => {
   const browser = await chromium.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true });
   try {
     for (const width of [320, 390, 1280]) for (const layout of ["booking", "portfolio", "balanced"]) {
       const page = await browser.newPage({ viewport: { width, height: 900 } });
       const html = renderToStaticMarkup(React.createElement(exports.SalonWebsiteHome, { data, posts, preferences: { layout, show_services: true, show_team: true }, canBook: true, onPost() {}, onGallery() {}, onServices() {}, onTeam() {}, onBook() {} }));
       await page.setContent(`<style>*{box-sizing:border-box}body{margin:0;padding:12px;font-family:Arial}h3,h4,p{margin:0}button{border:0;font:inherit;cursor:pointer}${css}</style>${html}`);
-      assert.equal(await page.locator(".latest .post").count(), 3);
-      assert.equal(await page.locator(".latest .post strong").first().textContent(), "Post 4");
+      assert.equal(await page.locator(".latest .post").count(), layout === "booking" ? 5 : 4);
+      assert.equal(await page.locator(".latest .postBody>strong").first().textContent(), "Post 4");
       if (layout === "booking") assert.equal(await page.locator(".feature img").count(),0);
       else assert.equal(await page.locator(".feature img").first().getAttribute("alt"),"Post 0");
       for (const section of ["hours", "services", "team", "about"]) assert.equal(await page.locator(`.${section}`).count(), 1, `${section}/${layout}/${width}`);
@@ -128,6 +129,6 @@ test("automatic hero uses engagement, server daily choice, manual priority, and 
  const manual=exports.selectWebsitePhotos([{...list[0],isPinned:true},...list.slice(1)],"2");assert.equal(manual.featured.id,"0");
  const shared=exports.selectWebsitePhotos([...list,{...list[4],id:"duplicate"}]);
  const urls=[...shared.photos,...shared.latest.filter(post=>post.imageUrl)].map(post=>post.imageUrl);assert.equal(new Set(urls).size,urls.length);
- const hidden=exports.selectWebsitePhotos(list,null,[],false);assert.equal(hidden.photos.length,0);assert.equal(hidden.latest.length,3);
+ const hidden=exports.selectWebsitePhotos(list,null,[],false);assert.equal(hidden.photos.length,0);assert.equal(hidden.latest.length,5);
  const broken=exports.selectWebsitePhotos(list,"4",[list[4].imageUrl]);assert.notEqual(broken.featured?.id,"4");
 });

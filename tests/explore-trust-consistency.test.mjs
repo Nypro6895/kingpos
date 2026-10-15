@@ -27,7 +27,9 @@ test('Explore uses the same canonical reputation evidence as Profile', async () 
     calls.push([name, args]);
     return { error: null, data: name === 'get_public_explore_decision_signals'
       ? [{ salon_id: 'salon-a', average_rating: null, review_count: 0, booking_enabled: true, booking_href: '/book/salon-a' }]
-      : [{ average_rating: 4.7, experience_count: 80, no_issue_rate: 0.95, unique_customer_count: 40, verified_visit_count: 120 }] };
+      : name === 'get_public_explore_reputation_summaries'
+        ? [{ salon_id: 'salon-a', reputation: { average_rating: 4.7, experience_count: 80, no_issue_rate: 0.95, unique_customer_count: 40, verified_visit_count: 120 } }]
+        : [] };
   }, ['salon-a', 'salon-a']);
   const signals = result.get('salon-a');
   assert.equal(signals.verifiedVisitCount, 120);
@@ -44,6 +46,33 @@ test('Explore preserves available signals if canonical reputation is unavailable
     ? { error: null, data: [{ salon_id: 'salon-a', average_rating: 4, review_count: 3 }] }
     : { error: { message: 'Unavailable' }, data: null }, ['salon-a']);
   assert.equal(result.get('salon-a').experienceCount, 3);
+});
+
+test('twelve cards load canonical reputation with one batch request', async () => {
+  const ids = Array.from({ length: 12 }, (_, i) => `salon-${i}`);
+  const calls = [];
+  const result = await mod.exports.getExploreDecisionSignalsBySalonId(async (name, args) => {
+    calls.push(name);
+    return { error: null, data: name === 'get_public_explore_reputation_summaries'
+      ? args.target_salon_ids.map(id => ({ salon_id: id, reputation: { average_rating: 4.8, experience_count: 9 } }))
+      : [] };
+  }, ids);
+  assert.equal(calls.filter(name => name === 'get_public_explore_reputation_summaries').length, 1);
+  assert.equal(calls.includes('get_public_salon_profile_reputation_summary'), false);
+  assert.equal(result.size, 12);
+  for (const id of ids) assert.equal(result.get(id).averageRating, 4.8);
+});
+
+test('large candidate sets split reputation into bounded batches without losing salons', async () => {
+  const ids = Array.from({ length: 201 }, (_, i) => `salon-${i}`);
+  const batches = [];
+  const result = await mod.exports.getExploreDecisionSignalsBySalonId(async (name, args) => {
+    if (name !== 'get_public_explore_reputation_summaries') return { error: null, data: [] };
+    batches.push(args.target_salon_ids.length);
+    return { error: null, data: args.target_salon_ids.map(id => ({ salon_id: id, reputation: { average_rating: 4.2 } })) };
+  }, ids);
+  assert.deepEqual(batches, [100, 100, 1]);
+  for (const id of ids) assert.equal(result.get(id).averageRating, 4.2);
 });
 test('Feed computes salon trust without post-specific verification and has no white icon cover', () => {
   const feed = readFileSync('app/explore/explore-feed.tsx', 'utf8');

@@ -1,8 +1,11 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { PostIdentity } from "@/components/post-identity";
 import {ExploreBookButton} from "@/components/explore-account-actions";
-import {SalonTrustLine,SalonVerifiedBadge} from "@/components/salon-trust-line";
+import {SalonTrustLine} from "@/components/salon-trust-line";
 import { getPublicExploreBeautyPost } from "@/lib/explore-personal";
 import { getPostCommentViewer } from "@/lib/post-comments";
 import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
+import { PostShareButton } from "@/components/post-share-button";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
 import { ReylumiIcon } from "@/components/reylumi-icons";
@@ -140,79 +143,8 @@ function locationLabel(item: ExploreFeedItem) {
   return [item.salon?.city, item.salon?.state].filter(Boolean).join(", ") || null;
 }
 
-function SalonLogo({ item }: { item: ExploreFeedItem }) {
-  const salon = item.salon;
-
-  if (!salon) {
-    return null;
-  }
-
-  return (
-    <span
-      aria-hidden
-      className="relative grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-orange-soft text-[0.65rem] font-extrabold text-brand-orange ring-1 ring-divider-subtle"
-    >
-      {salon.logoImageUrl ? (
-        <Image
-          alt=""
-          className="object-cover"
-          fill
-          sizes="24px"
-          src={salon.logoImageUrl}
-        />
-      ) : (
-        initialsFor(salon.name)
-      )}
-    </span>
-  );
-}
-
 function PostHeaderTitle({ item }: { item: ExploreFeedItem }) {
-  const salon = item.salon;
-  const authorHref = `/explore/beauty/${encodeURIComponent(
-    item.personal?.profileId ?? item.author.id,
-  )}`;
-
-  if (!salon) {
-    return (
-      <Link
-        className="block truncate rounded-md text-base font-semibold text-text-primary transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-        href={authorHref}
-      >
-        {item.author.name}
-      </Link>
-    );
-  }
-
-  const salonIdentity = (
-    <span className="inline-flex min-w-0 max-w-[14rem] items-center gap-1.5">
-      <SalonLogo item={item} />
-      <span className="truncate">{salon.name}</span>
-      <SalonVerifiedBadge verified={salon.trust.identityVerified}/>
-    </span>
-  );
-
-  return (
-    <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-base font-semibold text-text-primary">
-      <Link
-        className="block min-w-0 max-w-[10rem] truncate rounded-md transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:max-w-[13rem]"
-        href={authorHref}
-      >
-        {item.author.name}
-      </Link>
-      <span className="shrink-0 font-medium text-text-secondary">at</span>
-      {salon.href ? (
-        <Link
-          className="min-w-0 rounded-md transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
-          href={salon.href}
-        >
-          {salonIdentity}
-        </Link>
-      ) : (
-        salonIdentity
-      )}
-    </span>
-  );
+  return <PostIdentity source={item.sourceType} salonName={item.salon?.name} salonHref={item.salon?.href} authorName={item.sourceType === "salon" ? item.salonAuthorName : item.author.name} authorRole={item.salonAuthorRole} authorHref={`/explore/beauty/${encodeURIComponent(item.personal?.profileId ?? item.author.id)}`} />;
 }
 
 function SingleMedia({
@@ -313,15 +245,6 @@ function LookMediaStage({ item }: { item: ExploreFeedItem }) {
             <ReylumiIcon className="h-4 w-4" name="chevron-left" />
           </Link>
         </div>
-        {item.saveTarget ? (
-          <SavePostButton
-            className="absolute right-14 top-3"
-            initialSaved={item.saveTarget.saved}
-            saveCount={item.saveTarget.saveCount}
-            size="compact"
-            target={item.saveTarget}
-          />
-        ) : null}
         <button
           aria-label="More options"
           className="absolute right-3 top-3 grid h-9 w-9 place-items-center bg-transparent text-text-primary transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
@@ -379,30 +302,6 @@ function AvailabilityChips({ item }: { item: ExploreFeedItem }) {
   );
 }
 
-function ShareButtons() {
-  const actions = [
-    { icon: "share" as const, label: "Copy link" },
-    { icon: "image" as const, label: "Photos" },
-    { icon: "message" as const, label: "Message" },
-    { icon: "more" as const, label: "More" },
-  ];
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {actions.map((action) => (
-        <button
-          aria-label={action.label}
-          className="grid h-10 w-10 place-items-center rounded-full bg-surface-muted text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange"
-          key={action.label}
-          type="button"
-        >
-          <ReylumiIcon className="h-4 w-4" name={action.icon} />
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export async function generateMetadata({
   params,
 }: PublicBeautyPostPageProps): Promise<Metadata> {
@@ -421,7 +320,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function PublicBeautyPostPage({
+async function PublicBeautyPostPage({
   params,
 }: PublicBeautyPostPageProps) {
   const { postId, profileId } = await params;
@@ -558,7 +457,12 @@ export default async function PublicBeautyPostPage({
 
             <AvailabilityChips item={item} />
 
-            <ExploreBookButton href={bookingHref} name={item.salon?.name??item.author.name} contactHref={item.salon?.href}/>
+            <div className="post-action-toolbar">
+              {item.saveTarget ? <SavePostButton size="toolbar" initialSaved={item.saveTarget.saved} saveCount={item.saveTarget.saveCount} isAuthenticated={commentViewer.isAuthenticated} target={item.saveTarget} /> : null}
+              <a href="#comments" aria-label="Comment"><ReylumiIcon name="message" /><span>Comment</span></a>
+              <PostShareButton href={item.destination.href || "/explore/beauty/" + profileId + "/posts/" + postId} title={item.caption || item.author.name} />
+              <ExploreBookButton href={bookingHref} name={item.salon?.name??item.author.name} contactHref={item.salon?.href}/>
+            </div>
 
 
             {item.salon?.href ? (
@@ -578,12 +482,6 @@ export default async function PublicBeautyPostPage({
             </div>
           </section>
 
-          <section className="grid gap-3 rounded-[1.1rem] bg-white p-4 shadow-[0_18px_44px_rgba(35,25,22,0.055)] ring-1 ring-divider-subtle/80">
-            <h2 className="text-sm font-semibold text-text-primary">
-              Share this look
-            </h2>
-            <ShareButtons />
-          </section>
         </aside>
       </article>
 
@@ -606,3 +504,5 @@ export default async function PublicBeautyPostPage({
     </main>
   );
 }
+
+export default withExperiencePage(PublicBeautyPostPage);

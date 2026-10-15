@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   cancelAccountDeletionAction,
   createOwnerTransferInviteAction,
@@ -67,7 +68,7 @@ function SalonImpactList({
   if (salons.length === 0) {
     return (
       <p className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
-        No owned salons were found for this account.
+        <WorkspaceText text="No owned salons were found for this account." />
       </p>
     );
   }
@@ -80,9 +81,9 @@ function SalonImpactList({
           key={salon.id}
         >
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-semibold text-zinc-950">{salon.name}</p>
+            <p className="text-sm font-semibold text-zinc-950"><a href={`/explore/salons/${salon.id}`} className="hover:underline">{salon.name}</a></p>
             <p className="text-xs font-semibold uppercase text-zinc-500">
-              {salon.lifecycleStatus.replace("_", " ")}
+              <WorkspaceText text={salon.lifecycleStatus.replace("_", " ")} />
             </p>
           </div>
           <p className="mt-1 text-sm leading-6 text-zinc-600">
@@ -103,6 +104,8 @@ export function AccountDeletionPanel({
   loadError,
   onSaved,
 }: AccountDeletionPanelProps) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [backupError, setBackupError] = useState("");
   const [backupNotice, setBackupNotice] = useState("");
@@ -124,7 +127,7 @@ export function AccountDeletionPanel({
     return (
       <section className="scroll-mt-6" id="delete-account">
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-          {loadError ?? "Account deletion status could not be loaded."}
+          <WorkspaceText text={loadError ?? "Account deletion status could not be loaded."} />
         </div>
       </section>
     );
@@ -240,26 +243,24 @@ export function AccountDeletionPanel({
       <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-base font-semibold text-zinc-950">
-            Danger Zone
+            <WorkspaceText text="Danger Zone" />
           </h2>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
-            Backup, ownership transfer, and personal account deletion controls.
+            <WorkspaceText text="Backup, ownership transfer, and personal account deletion controls." />
           </p>
         </div>
         <span className="inline-flex min-h-7 w-fit items-center rounded-full bg-red-50 px-2.5 text-xs font-semibold text-red-700 ring-1 ring-inset ring-red-200">
-          Protected
+          <WorkspaceText text="Protected" />
         </span>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-red-200 bg-white">
         <div className="border-b border-red-100 bg-red-50 px-4 py-4">
           <h3 className="text-sm font-semibold text-red-950">
-            Delete personal account
+            <WorkspaceText text="Delete personal account" />
           </h3>
           <p className="mt-1 text-sm leading-6 text-red-900">
-            Personal identity enters a deletion lifecycle. Business records may
-            be retained for operational, audit, tax, payroll, booking, or legal
-            reasons.
+            <WorkspaceText text="After the 30-day cancellation period, we remove your sign-in identity, personal profile, authored posts, comments, reviews and personal uploads. This cannot be undone. Financial, payroll and required business records remain with the salon." />
           </p>
         </div>
 
@@ -267,17 +268,16 @@ export function AccountDeletionPanel({
           <div className="grid gap-3 bg-amber-50 px-4 py-4">
             <div>
               <h3 className="text-sm font-semibold text-amber-950">
-                Account deletion scheduled
+                <WorkspaceText text="Account deletion scheduled" />
               </h3>
               <p className="mt-1 text-sm leading-6 text-amber-900">
-                Requested {formatDateTime(deletionState.deletionRequestedAt)}.
-                Scheduled for {formatDateTime(deletionState.deletionScheduledFor)}
-                {remaining === null ? "." : `, with ${remaining} day${remaining === 1 ? "" : "s"} remaining.`}
+                <WorkspaceText text="Requested" /> <WorkspaceText text={formatDateTime(deletionState.deletionRequestedAt)} /><WorkspaceText text=". Scheduled for" /> <WorkspaceText text={formatDateTime(deletionState.deletionScheduledFor)} />
+                <WorkspaceText text={remaining === null ? "." : `, with ${remaining} day${remaining === 1 ? "" : "s"} remaining.`} />
               </p>
+              {impact.receiptToken ? <p className="mt-3 text-sm"><a className="underline" href={`/deletion-status/${impact.receiptToken}`} rel="noreferrer"><WorkspaceText text="Save your private deletion status link" /></a><br/><WorkspaceText text="This link works after sign-out. Deletion normally completes within 24 hours after the scheduled date. We also email confirmation when an email address and delivery service are available."/></p> : null}
             </div>
             <p className="text-sm leading-6 text-amber-900">
-              Cancelling does not reopen permanently closed salons and does not
-              reactivate disabled salons.
+              <WorkspaceText text="Cancelling does not reopen permanently closed salons and does not reactivate disabled salons." />
             </p>
             <div>
               <button
@@ -286,7 +286,7 @@ export function AccountDeletionPanel({
                 onClick={cancelDeletion}
                 type="button"
               >
-                {cancelPending ? "Cancelling..." : "Cancel account deletion"}
+                <WorkspaceText text={cancelPending ? "Cancelling..." : "Cancel account deletion"} />
               </button>
             </div>
           </div>
@@ -294,12 +294,12 @@ export function AccountDeletionPanel({
           <>
             <div className="border-b border-zinc-100 px-4 py-4">
               <h3 className="text-sm font-semibold text-zinc-950">
-                Ownership transfer review
+                <WorkspaceText text="Ownership transfer review" />
               </h3>
               <p className="mt-1 text-sm leading-6 text-zinc-600">
-                {ownedSalonCount === 0
+                <WorkspaceText text={ownedSalonCount === 0
                   ? "No salon ownership is attached to this Personal Account."
-                  : `${ownedSalonCount} owned salon${ownedSalonCount === 1 ? "" : "s"} found. ${lastOwnerCount} require transfer or no-transfer closure before deletion can be scheduled.`}
+                  : `${ownedSalonCount} owned salon${ownedSalonCount === 1 ? "" : "s"} found. ${lastOwnerCount} require transfer or no-transfer closure before deletion can be scheduled.`} />
               </p>
               <div className="mt-3">
                 <SalonImpactList salons={impact.ownedSalons} />
@@ -310,11 +310,10 @@ export function AccountDeletionPanel({
               <div className="border-b border-red-100 bg-red-50/80 px-4 py-4">
                 <div className="mb-3">
                   <h3 className="text-sm font-semibold text-red-950">
-                    Last-owner salons
+                    <WorkspaceText text="Last-owner salons" />
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-red-900">
-                    Transfer ownership before deleting, or continue without
-                    transfer and permanently close these salons.
+                    <WorkspaceText text="Transfer ownership before deleting, or continue without transfer and permanently close these salons." />
                   </p>
                 </div>
                 <div className="mt-3 grid gap-3">
@@ -324,7 +323,7 @@ export function AccountDeletionPanel({
                       key={`transfer-${salon.id}`}
                     >
                       <p className="text-sm font-semibold text-zinc-950">
-                        Transfer {salon.name}
+                        <WorkspaceText text="Transfer" /> {salon.name}
                       </p>
                       <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
                         <input
@@ -338,7 +337,7 @@ export function AccountDeletionPanel({
                               [salon.id]: recipientEmail,
                             }));
                           }}
-                          placeholder="recipient@example.com"
+                          placeholder={__vt("recipient@example.com")}
                           type="email"
                           value={transferEmails[salon.id] ?? ""}
                         />
@@ -348,7 +347,7 @@ export function AccountDeletionPanel({
                           onClick={() => createTransferInvite(salon.id)}
                           type="button"
                         >
-                          {transferPending ? "Creating..." : "Create invite"}
+                          <WorkspaceText text={transferPending ? "Creating..." : "Create invite"} />
                         </button>
                       </div>
                       {transferMessages[salon.id] ? (
@@ -359,11 +358,11 @@ export function AccountDeletionPanel({
                               : "text-red-900"
                           }`}
                         >
-                          {transferMessages[salon.id]}
+                          <WorkspaceText text={transferMessages[salon.id]} />
                         </p>
                       ) : null}
                       {transferUrls[salon.id] ? (
-                        <label className="mt-2 grid gap-1 text-sm">Invitation link<input className="min-h-10 w-full rounded-md border px-3" readOnly value={transferUrls[salon.id]} onFocus={event=>event.currentTarget.select()}/></label>
+                        <label className="mt-2 grid gap-1 text-sm"><WorkspaceText text="Invitation link" /><input className="min-h-10 w-full rounded-md border px-3" readOnly value={transferUrls[salon.id]} onFocus={event=>event.currentTarget.select()}/></label>
                       ) : null}
                     </div>
                   ))}
@@ -376,10 +375,10 @@ export function AccountDeletionPanel({
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-zinc-950">
-                    Backup export
+                    <WorkspaceText text="Backup export" />
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-zinc-500">
-                    Download a private export before scheduling deletion.
+                    <WorkspaceText text="Download a private export before scheduling deletion." />
                   </p>
                 </div>
                 <button
@@ -388,7 +387,7 @@ export function AccountDeletionPanel({
                   onClick={downloadBackup}
                   type="button"
                 >
-                  {backupPending ? "Preparing..." : "Download backup"}
+                  <WorkspaceText text={backupPending ? "Preparing..." : "Download backup"} />
                 </button>
               </div>
               {backupNotice ? (
@@ -398,7 +397,7 @@ export function AccountDeletionPanel({
               ) : null}
               {backupError ? (
                 <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-                  {backupError}
+                  <WorkspaceText text={backupError} />
                 </p>
               ) : null}
             </div>
@@ -418,8 +417,7 @@ export function AccountDeletionPanel({
                     type="checkbox"
                   />
                   <span>
-                    I have downloaded a backup or understand I am continuing
-                    without one.
+                    <WorkspaceText text="I have downloaded a backup or understand I am continuing without one." />
                   </span>
                 </label>
               ) : null}
@@ -435,15 +433,14 @@ export function AccountDeletionPanel({
                     type="checkbox"
                   />
                   <span>
-                    Continue without transfer and permanently close my last-owner
-                    salons.
+                    <WorkspaceText text="Continue without transfer and permanently close my last-owner salons." />
                   </span>
                 </label>
               ) : null}
 
               <label className="grid gap-1.5">
                 <span className="text-sm font-semibold text-red-950">
-                  Type DELETE to confirm
+                  <WorkspaceText text="Type DELETE to confirm" />
                 </span>
                 <input
                   autoComplete="off"
@@ -455,7 +452,7 @@ export function AccountDeletionPanel({
 
               <label className="grid gap-1.5">
                 <span className="text-sm font-semibold text-red-950">
-                  Reason, optional
+                  <WorkspaceText text="Reason, optional" />
                 </span>
                 <textarea
                   className="min-h-20 rounded-md border border-red-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-red-500"
@@ -470,7 +467,7 @@ export function AccountDeletionPanel({
                   disabled={busy}
                   type="submit"
                 >
-                  {requestPending ? "Scheduling..." : "Request account deletion"}
+                  <WorkspaceText text={requestPending ? "Scheduling..." : "Request account deletion"} />
                 </button>
               </div>
             </form>
@@ -480,12 +477,12 @@ export function AccountDeletionPanel({
 
       {error ? (
         <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
       {message ? (
         <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-          {message}
+          <WorkspaceText text={message} />
         </p>
       ) : null}
     </section>

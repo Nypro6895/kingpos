@@ -1,0 +1,90 @@
+{
+  "baseline": "dpl_2kiu8uiZSBMHpjAmhTnLdVysNARU",
+  "worktrees": [
+    {
+      "cwd": "C:/Users/giuse/kingpos",
+      "head": "252612d9d522a622a6ce8d8d8041e38581bae968"
+    },
+    {
+      "cwd": "C:/Users/giuse/.codex/worktrees/app-store-us-readiness/kingpos",
+      "head": "f42244c1c232e5fb0107d5d0d0f2343ada3dc092"
+    },
+    {
+      "cwd": "C:/Users/giuse/.codex/worktrees/explore-ios-release/kingpos",
+      "head": "3f6b625fbb68b70226af377017a6b594a4383d4e"
+    },
+    {
+      "cwd": "C:/Users/giuse/.codex/worktrees/iphone-loading/kingpos",
+      "head": "0cf327aba00941af1cf1e89b3f6c1f32f332c0ff"
+    },
+    {
+      "cwd": "C:/Users/giuse/.codex/worktrees/reylumi-ios-webview/kingpos",
+      "head": "8444cc919458add9e79e82151bbf6179fee0340f"
+    },
+    {
+      "cwd": "C:/Users/giuse/kingpos-admin-phase-1-foundation",
+      "head": "6b70618f2fce56fab859295c3e28f30d3bd26437"
+    },
+    {
+      "cwd": "C:/Users/giuse/kingpos-pr-worktrees/booking-customer-experience-v2-pr",
+      "head": "b7df9f0069cc6ad78eee3d114abcd04810a91fa0"
+    }
+  ],
+  "discovery": [
+    "Git worktree status and recent commits",
+    "Exact production source SHA-1 verification",
+    "Root product tracked and untracked diff",
+    "Historical web/native receipts",
+    "Related task summaries",
+    "Release journal refreshed after concurrent booking task completion"
+  ],
+  "oldBranches": {
+    "booking-customer-experience-v2-pr": "Foundation superseded by current account/salon baseline, booking rules, current Quick Book validation and content-source migrations; no old checkout replacement",
+    "kingpos-admin-phase-1-foundation": "Preserved evolved admin workspace and current auth gates from exact production",
+    "app-store-us-readiness": "Draft metadata/screenshots already performed; unsubmitted first listing needs owner legal/privacy/pricing/contact declarations",
+    "older iOS worktrees": "Use actual uploaded 5.1 source, preserve Safari/viewport/privacy in 14.1"
+  },
+  "excluded": [
+    {
+      "changeId": "salon-claim-lookup-diagnostics-20261014",
+      "reason": "Explicit blocked status; authenticated root cause unverified; diagnostic code not published"
+    },
+    {
+      "scope": "Older local Explore/UI/native versions",
+      "reason": "Superseded by proven shipped continuous recommendations, local real-post priority, comment identity, Safari payment and native version 1.0.1; intent merged instead of rolling back"
+    }
+  ],
+  "native": {
+    "status": "testflight-available",
+    "verified": true,
+    "version": "1.0.1",
+    "build": "14.1",
+    "commit": "cc53062ca58795e37ab62269655bea73f4902241",
+    "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\native-upload\\reylumi-testflight-14-1",
+    "baselineCommit": "ffbcd24513cd991a8c7a883a53d6ac360f3ff137",
+    "appleBuildId": "d9b87d07-b8aa-4ea8-9716-f24cf756a465"
+  },
+  "validation": [
+    {
+      "name": "main",
+      "tests": 195,
+      "passed": 195,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "built",
+      "tests": 4,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "regression",
+      "tests": 59,
+      "passed": 59,
+      "failed": 0,
+      "skipped": 0
+    }
+  ]
+}

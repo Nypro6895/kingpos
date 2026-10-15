@@ -1,5 +1,8 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { SettingsIconShape } from "@/components/settings-icon";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -45,12 +48,7 @@ function ShortcutIcon({ name }: { name: TodayQuickAccess["icon"] }) {
         <path d="m16 8-2.5 5.5L8 16l2.5-5.5L16 8Z" />
       </>
     ),
-    gear: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
-      </>
-    ),
+    gear: <SettingsIconShape />,
     grid: (
       <>
         <rect height="7" rx="1.5" width="7" x="3" y="3" />
@@ -185,6 +183,8 @@ export function QuickAccessPanel({
 }: {
   configuration: TodayQuickAccessConfiguration;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
@@ -274,21 +274,21 @@ export function QuickAccessPanel({
   }
 
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white shadow-[0_10px_30px_rgba(24,24,27,0.04)]">
+    <div className="settings-style"><section className="rounded-xl border border-zinc-200 bg-white shadow-[0_10px_30px_rgba(24,24,27,0.04)]">
       <div className="flex items-center justify-between gap-4 border-b border-zinc-100 px-4 py-3.5 sm:px-5">
         <div className="flex min-w-0 items-center gap-2">
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-amber-50 text-amber-700">
             <UtilityIcon name="quick" />
           </span>
           <h2 className="truncate text-base font-semibold text-zinc-950">
-            Quick Accesses
+            <WorkspaceText text="Quick Accesses" />
           </h2>
         </div>
         {configuration.canCustomize && !editing ? (
           <button
-            aria-label="Edit quick accesses"
+            aria-label={__vt("Edit quick accesses")}
             className="grid min-h-11 min-w-11 place-items-center rounded-md border border-zinc-200 text-zinc-600 transition hover:border-amber-200 hover:bg-amber-50 hover:text-amber-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-            title="Edit quick accesses"
+            title={__vt("Edit quick accesses")}
             type="button"
             onClick={() => {
               setDraft(configuration.selected);
@@ -305,13 +305,13 @@ export function QuickAccessPanel({
         <div className="space-y-3">
           {configuration.loadError ? (
             <p className="text-xs font-medium text-amber-700">
-              {configuration.loadError}
+              <WorkspaceText text={configuration.loadError} />
             </p>
           ) : null}
 
           {error ? (
             <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
-              {error}
+              <WorkspaceText text={error} />
             </p>
           ) : null}
 
@@ -320,22 +320,22 @@ export function QuickAccessPanel({
               <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(128px,1fr))] gap-2">
                 {configuration.selected.map((shortcut) => (
                   <Link
-                    aria-label={`Open ${shortcut.label}`}
+                    aria-label={__vt(`Open ${shortcut.label}`)}
                     className="flex min-h-12 min-w-0 items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50/80 px-3 text-sm font-semibold text-zinc-800 transition hover:border-amber-200 hover:bg-amber-50 hover:text-amber-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                     href={shortcut.href}
                     key={shortcut.id}
-                    title={shortcut.description}
+                    title={__vt(shortcut.description)}
                   >
                     <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-white text-amber-700 shadow-sm">
                       <ShortcutIcon name={shortcut.icon} />
                     </span>
-                    <span className="min-w-0 truncate">{shortcut.label}</span>
+                    <span className="min-w-0 truncate"><WorkspaceText text={shortcut.label} /></span>
                   </Link>
                 ))}
               </div>
             ) : (
               <p className="rounded-lg bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
-                No quick accesses selected.
+                <WorkspaceText text="No quick accesses selected." />
               </p>
             )
           ) : (
@@ -352,35 +352,35 @@ export function QuickAccessPanel({
                           <ShortcutIcon name={shortcut.icon} />
                         </span>
                         <span className="min-w-0 truncate text-sm font-semibold text-zinc-950">
-                          {shortcut.label}
+                          <WorkspaceText text={shortcut.label} />
                         </span>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         <button
-                          aria-label={`Move ${shortcut.label} earlier`}
+                          aria-label={__vt(`Move ${shortcut.label} earlier`)}
                           className="grid min-h-11 min-w-11 place-items-center rounded-md text-zinc-500 transition hover:bg-zinc-50 hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 disabled:cursor-not-allowed disabled:text-zinc-300"
                           disabled={index === 0 || isPending}
-                          title={`Move ${shortcut.label} earlier`}
+                          title={__vt(`Move ${shortcut.label} earlier`)}
                           type="button"
                           onClick={() => moveShortcut(index, -1)}
                         >
                           <UtilityIcon name="up" />
                         </button>
                         <button
-                          aria-label={`Move ${shortcut.label} later`}
+                          aria-label={__vt(`Move ${shortcut.label} later`)}
                           className="grid min-h-11 min-w-11 place-items-center rounded-md text-zinc-500 transition hover:bg-zinc-50 hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 disabled:cursor-not-allowed disabled:text-zinc-300"
                           disabled={index === draft.length - 1 || isPending}
-                          title={`Move ${shortcut.label} later`}
+                          title={__vt(`Move ${shortcut.label} later`)}
                           type="button"
                           onClick={() => moveShortcut(index, 1)}
                         >
                           <UtilityIcon name="down" />
                         </button>
                         <button
-                          aria-label={`Remove ${shortcut.label}`}
+                          aria-label={__vt(`Remove ${shortcut.label}`)}
                           className="grid min-h-11 min-w-11 place-items-center rounded-md text-zinc-500 transition hover:bg-rose-50 hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 disabled:cursor-not-allowed disabled:text-zinc-300"
                           disabled={isPending}
-                          title={`Remove ${shortcut.label}`}
+                          title={__vt(`Remove ${shortcut.label}`)}
                           type="button"
                           onClick={() => removeShortcut(shortcut.id)}
                         >
@@ -392,7 +392,7 @@ export function QuickAccessPanel({
                 </ul>
               ) : (
                 <p className="rounded-lg bg-zinc-50 px-3 py-3 text-sm text-zinc-500">
-                  No quick accesses selected.
+                  <WorkspaceText text="No quick accesses selected." />
                 </p>
               )}
 
@@ -401,7 +401,7 @@ export function QuickAccessPanel({
                   <details data-dismissible-popover className="relative">
                     <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 text-sm font-semibold text-amber-900 transition hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
                       <UtilityIcon name="plus" />
-                      <span>Add shortcut</span>
+                      <span><WorkspaceText text="Add shortcut" /></span>
                       <UtilityIcon name="chevron-down" />
                     </summary>
                     <div className="absolute left-0 z-20 mt-2 max-h-72 w-[min(20rem,calc(100vw-2rem))] overflow-auto rounded-lg border border-zinc-200 bg-white p-2 shadow-xl">
@@ -410,13 +410,13 @@ export function QuickAccessPanel({
                           <button
                             className="flex min-h-11 w-full min-w-0 items-center gap-2 rounded-md px-3 text-left text-sm font-medium text-zinc-800 transition hover:bg-amber-50 hover:text-amber-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                             key={shortcut.id}
-                            title={shortcut.description}
+                            title={__vt(shortcut.description)}
                             type="button"
                             onClick={() => addShortcut(shortcut)}
                           >
                             <ShortcutIcon name={shortcut.icon} />
                             <span className="min-w-0 truncate">
-                              {shortcut.label}
+                              <WorkspaceText text={shortcut.label} />
                             </span>
                           </button>
                         ))}
@@ -425,9 +425,9 @@ export function QuickAccessPanel({
                   </details>
                 ) : (
                   <span className="text-sm text-zinc-500">
-                    {draft.length >= configuration.maxSelected
+                    <WorkspaceText text={draft.length >= configuration.maxSelected
                       ? "Shortcut limit reached."
-                      : "No more shortcuts available."}
+                      : "No more shortcuts available."} />
                   </span>
                 )}
 
@@ -438,7 +438,7 @@ export function QuickAccessPanel({
                     type="button"
                     onClick={cancelEditing}
                   >
-                    Cancel
+                    <WorkspaceText text="Cancel" />
                   </button>
                   <button
                     className="min-h-11 rounded-md bg-amber-600 px-4 text-sm font-semibold text-white transition hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-amber-300"
@@ -446,7 +446,7 @@ export function QuickAccessPanel({
                     type="button"
                     onClick={saveEditing}
                   >
-                    {isPending ? "Saving" : "Save"}
+                    {isPending ? "Saving" : <WorkspaceText text="Save" />}
                   </button>
                 </div>
               </div>
@@ -454,6 +454,6 @@ export function QuickAccessPanel({
           )}
         </div>
       </div>
-    </section>
+    </section></div>
   );
 }

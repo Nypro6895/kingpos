@@ -1,0 +1,242 @@
+{
+  "createdAt": "2026-10-09T17:46:23.563Z",
+  "provider": "U.S. Census Bureau",
+  "benchmark": "Public_AR_Current",
+  "productionCoordinateWrites": 0,
+  "paidCalls": 0,
+  "samples": [
+    {
+      "salonId": "00b9f7d4-7ced-59ac-a10a-4e3f225cc55b",
+      "name": "Nail Candy",
+      "address": {
+        "addressLine1": "420 6th St Suite 3",
+        "addressLine2": null,
+        "city": "Racine",
+        "state": "WI",
+        "postalCode": "53403",
+        "country": "US"
+      },
+      "claimState": "unclaimed",
+      "publiclyDiscoverable": true,
+      "sourceUrl": "https://nailsalondirectories.com/wisconsin/racine",
+      "durationMs": 271,
+      "providerMatches": [
+        {
+          "tigerLine": {
+            "side": "R",
+            "tigerLineId": "77910452"
+          },
+          "coordinates": {
+            "x": -87.78528772096,
+            "y": 42.726670200478
+          },
+          "addressComponents": {
+            "zip": "53403",
+            "streetName": "6TH",
+            "preType": "",
+            "city": "RACINE",
+            "preDirection": "",
+            "suffixDirection": "",
+            "fromAddress": "400",
+            "state": "WI",
+            "suffixType": "ST",
+            "toAddress": "498",
+            "suffixQualifier": "",
+            "preQualifier": ""
+          },
+          "matchedAddress": "420 6TH ST, RACINE, WI, 53403"
+        }
+      ],
+      "accepted": true,
+      "reason": null,
+      "accuracy": "address_range_interpolated"
+    },
+    {
+      "salonId": "056a17eb-590b-5c68-add6-7ed4234ce075",
+      "name": "Nails & Hair By Zuly",
+      "address": {
+        "addressLine1": "2271 S Nye School Rd",
+        "addressLine2": null,
+        "city": "Beloit",
+        "state": "WI",
+        "postalCode": "53511",
+        "country": "US"
+      },
+      "claimState": "unclaimed",
+      "publiclyDiscoverable": true,
+      "sourceUrl": "https://hairsalondirectories.com/wisconsin/beloit",
+      "durationMs": 133,
+      "providerMatches": [
+        {
+          "tigerLine": {
+            "side": "R",
+            "tigerLineId": "640579919"
+          },
+          "coordinates": {
+            "x": -89.080700329693,
+            "y": 42.535001090221
+          },
+          "addressComponents": {
+            "zip": "53511",
+            "streetName": "NYE SCHOOL",
+            "preType": "",
+            "city": "BELOIT",
+            "preDirection": "S",
+            "suffixDirection": "",
+            "fromAddress": "2101",
+            "state": "WI",
+            "suffixType": "RD",
+            "toAddress": "2399",
+            "suffixQualifier": "",
+            "preQualifier": ""
+          },
+          "matchedAddress": "2271 S NYE SCHOOL RD, BELOIT, WI, 53511"
+        }
+      ],
+      "accepted": true,
+      "reason": null,
+      "accuracy": "address_range_interpolated"
+    },
+    {
+      "salonId": "07a78126-7eb7-5e41-a201-03618f6a155d",
+      "name": "Nail Lounge",
+      "address": {
+        "addressLine1": "N112W16510 Mequon Rd",
+        "addressLine2": null,
+        "city": "Germantown",
+        "state": "WI",
+        "postalCode": "53022",
+        "country": "US"
+      },
+      "claimState": "unclaimed",
+      "publiclyDiscoverable": true,
+      "sourceUrl": "https://nailsalondirectories.com/wisconsin/germantown",
+      "durationMs": 128,
+      "providerMatches": [
+        {
+          "tigerLine": {
+            "side": "R",
+            "tigerLineId": "637361783"
+          },
+          "coordinates": {
+            "x": -88.113216700135,
+            "y": 43.22110405242
+          },
+          "addressComponents": {
+            "zip": "53022",
+            "streetName": "MEQUON",
+            "preType": "",
+            "city": "GERMANTOWN",
+            "preDirection": "",
+            "suffixDirection": "",
+            "fromAddress": "N112W16500",
+            "state": "WI",
+            "suffixType": "RD",
+            "toAddress": "N112W16798",
+            "suffixQualifier": "",
+            "preQualifier": ""
+          },
+          "matchedAddress": "N112W16510 MEQUON RD, GERMANTOWN, WI, 53022"
+        }
+      ],
+      "accepted": false,
+      "reason": "unsupported_address",
+      "accuracy": null
+    },
+    {
+      "salonId": "08ce4ec5-05b8-5e5e-aa31-8a88f10d1c2a",
+      "name": "Nails 2000",
+      "address": {
+        "addressLine1": "1626 S 84th St",
+        "addressLine2": null,
+        "city": "West Allis",
+        "state": "WI",
+        "postalCode": "53214",
+        "country": "US"
+      },
+      "claimState": "unclaimed",
+      "publiclyDiscoverable": true,
+      "sourceUrl": "https://nailsalondirectories.com/wisconsin/west-allis",
+      "durationMs": 259,
+      "providerMatches": [
+        {
+          "tigerLine": {
+            "side": "L",
+            "tigerLineId": "77730067"
+          },
+          "coordinates": {
+            "x": -88.017014424243,
+            "y": 43.012615504437
+          },
+          "addressComponents": {
+            "zip": "53214",
+            "streetName": "84TH",
+            "preType": "",
+            "city": "WEST ALLIS",
+            "preDirection": "S",
+            "suffixDirection": "",
+            "fromAddress": "1600",
+            "state": "WI",
+            "suffixType": "ST",
+            "toAddress": "1698",
+            "suffixQualifier": "",
+            "preQualifier": ""
+          },
+          "matchedAddress": "1626 S 84TH ST, WEST ALLIS, WI, 53214"
+        }
+      ],
+      "accepted": true,
+      "reason": null,
+      "accuracy": "address_range_interpolated"
+    },
+    {
+      "salonId": "0a6dc43e-2517-5683-afa1-e495b0f0be63",
+      "name": "Nails U Luv",
+      "address": {
+        "addressLine1": "17800 W Bluemound Rd #2",
+        "addressLine2": null,
+        "city": "Brookfield",
+        "state": "WI",
+        "postalCode": "53045",
+        "country": "US"
+      },
+      "claimState": "unclaimed",
+      "publiclyDiscoverable": true,
+      "sourceUrl": "https://nailsalondirectories.com/wisconsin/brookfield",
+      "durationMs": 139,
+      "providerMatches": [
+        {
+          "tigerLine": {
+            "side": "R",
+            "tigerLineId": "53868476"
+          },
+          "coordinates": {
+            "x": -88.133534482921,
+            "y": 43.036824841979
+          },
+          "addressComponents": {
+            "zip": "53045",
+            "streetName": "BLUEMOUND",
+            "preType": "",
+            "city": "BROOKFIELD",
+            "preDirection": "W",
+            "suffixDirection": "",
+            "fromAddress": "17784",
+            "state": "WI",
+            "suffixType": "RD",
+            "toAddress": "17998",
+            "suffixQualifier": "",
+            "preQualifier": ""
+          },
+          "matchedAddress": "17800 W BLUEMOUND RD, BROOKFIELD, WI, 53045"
+        }
+      ],
+      "accepted": true,
+      "reason": null,
+      "accuracy": "address_range_interpolated"
+    }
+  ],
+  "accepted": 4,
+  "rejected": 1,
+  "limitations": "Five public US addresses only; Census address-range interpolation is not a verified rooftop or owner pin."
+}

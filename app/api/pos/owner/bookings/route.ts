@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import { getCurrentBusinessContext,isSalonManageContext } from '@/lib/current-context';
 import { getCurrentSalonBookingWorkspace,BOOKING_PERMISSIONS } from '@/lib/bookings';
 import { hasPermission } from '@/lib/permissions';
+import { headers } from 'next/headers';
 export async function GET(request:Request){
+ if((await headers()).get('x-reylumi-auth-unavailable')==='1')return new NextResponse(null,{status:503,headers:{'Cache-Control':'private, no-store'}});
  const context=await getCurrentBusinessContext();
  if(!context.user||!context.currentSalon||!isSalonManageContext(context)||!await hasPermission(BOOKING_PERMISSIONS.view,context))return new NextResponse(null,{status:401});
  const params=new URL(request.url).searchParams;

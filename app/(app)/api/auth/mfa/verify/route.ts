@@ -1,3 +1,4 @@
+import { REMEMBER_LOGIN_SECONDS, writeLoginPolicy } from "@/lib/supabase/session-policy";
 import {
   ACCOUNT_LOGIN_SESSION_COOKIE,
   isAccountLoginSessionId,
@@ -22,7 +23,7 @@ import {
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 
-const REMEMBERED_LOGIN_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+const REMEMBERED_LOGIN_MAX_AGE_SECONDS = REMEMBER_LOGIN_SECONDS;
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -69,31 +70,32 @@ export async function POST(request: Request) {
     );
   }
 
-  const navigation = await getPostAuthWorkspaceNavigation({
-    accessToken: verification.data.access_token,
-    requestedPath: nextPath,
-  }).catch((error: unknown) => {
-    console.error("Unable to resolve post-MFA workspace navigation", {
-      message: error instanceof Error ? error.message : String(error),
-    });
-
-    return fallbackPostAuthWorkspaceNavigation();
-  });
   const loginSessionId = randomUUID();
+  const [navigation] = await Promise.all([
+    getPostAuthWorkspaceNavigation({
+      accessToken: verification.data.access_token,
+      requestedPath: nextPath,
+    }).catch((error: unknown) => {
+      console.error("Unable to resolve post-MFA workspace navigation", {
+        message: error instanceof Error ? error.message : String(error),
+      });
 
-  await recordAccountLoginForSession({
-    accessToken: verification.data.access_token,
-    requestHeaders: request.headers,
-    sessionId: loginSessionId,
-  }).catch((error: unknown) => {
-    console.error("Unable to record MFA login security session", {
-      message: error instanceof Error ? error.message : String(error),
-    });
-  });
+      return fallbackPostAuthWorkspaceNavigation();
+    }),
+    recordAccountLoginForSession({
+      accessToken: verification.data.access_token,
+      requestHeaders: request.headers,
+      sessionId: loginSessionId,
+    }).catch((error: unknown) => {
+      console.error("Unable to record MFA login security session", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }),
+  ]);
 
   const response = NextResponse.json({ redirectTo: navigation.redirectTo });
   const accessTokenMaxAge = pending.rememberLogin
-    ? verification.data.expires_in
+    ? REMEMBERED_LOGIN_MAX_AGE_SECONDS
     : undefined;
   const sessionMaxAge = pending.rememberLogin
     ? REMEMBERED_LOGIN_MAX_AGE_SECONDS
@@ -114,6 +116,7 @@ export async function POST(request: Request) {
     loginSessionId,
     getSupabaseCookieOptions(sessionMaxAge),
   );
+  writeLoginPolicy(response.cookies, verification.data.access_token, pending.rememberLogin);
   clearPendingMfaSessionCookieWriter(response.cookies);
   clearWorkspaceContextCookies(response.cookies);
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   getAccountSavedPostStatesAction,
   setAccountSavedPostAction,
@@ -43,6 +44,7 @@ type SavePostButtonProps = {
   onSavedChange?: (saved: boolean) => void;
   saveCount?: number | null;
   showTooltip?: boolean;
+  showZeroCount?: boolean;
   size?: "compact" | "default" | "toolbar";
   target: AccountSavedPostTarget | null | undefined;
 };
@@ -147,10 +149,13 @@ function SavePostButtonInner({
   onSavedChange,
   saveCount,
   showTooltip = false,
+  showZeroCount = false,
   size = "default",
   stableTarget,
   stateKey,
 }: SavePostButtonInnerProps) {
+  const __vt = useWorkspaceTranslation();
+
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const tooltipId = useId();
   const [isPending, startTransition] = useTransition();
@@ -367,11 +372,11 @@ function SavePostButtonInner({
       >
         <button
           aria-describedby={showTooltip ? tooltipId : undefined}
-          aria-label={saveAriaLabel}
+          aria-label={__vt(saveAriaLabel)}
           aria-pressed={saved}
           className={[
             isToolbar
-              ? "inline-flex min-h-9 w-full min-w-0 items-center justify-center gap-1.5 rounded-none bg-transparent px-1.5 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-orange"
+              ? "inline-flex min-h-11 min-w-11 max-w-full items-center justify-center gap-1.5 bg-transparent px-2 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-orange"
               : "grid place-items-center bg-transparent text-brand-orange transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange",
             !isToolbar && size === "compact" ? "h-8 w-8" : "",
             !isToolbar && size !== "compact" ? "h-10 w-10" : "",
@@ -406,10 +411,10 @@ function SavePostButtonInner({
             <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
           </svg>
           {isToolbar ? (
-            <span className="min-w-0 truncate">{saved ? "Loved" : "Love"}</span>
+            <span className="min-w-0 whitespace-normal break-words"><WorkspaceText text={saved ? "Loved" : "Love"} /></span>
           ) : null}
-          {isToolbar && displaySaveCount > 0 ? (
-            <span className="shrink-0 text-[11px] font-bold tabular-nums text-zinc-500">
+          {isToolbar && (showZeroCount || displaySaveCount > 0) ? (
+            <span data-post-action-count className="shrink-0 text-[11px] font-bold tabular-nums text-zinc-500">
               {displaySaveCount}
             </span>
           ) : null}
@@ -430,16 +435,15 @@ function SavePostButtonInner({
         ) : null}
       </span>
       <span aria-live="polite" className="sr-only">
-        {message}
+        <WorkspaceText text={message} />
       </span>
       {authPromptOpen ? (
         <AuthIntentPrompt
           kicker="Save intent"
           onClose={() => {setAuthPromptOpen(false);clearExploreIntent();}}
-          title="Save this look?"
+          title={__vt("Save this look?")}
         >
-          Create a free ReyLUMI account to keep your inspiration, follow the
-          artist or shop, and come back when you are ready to book.
+          <WorkspaceText text="Create a free ReyLUMI account to keep your inspiration, follow the artist or shop, and come back when you are ready to book." />
         </AuthIntentPrompt>
       ) : null}
     </span>
@@ -453,6 +457,7 @@ export function SavePostButton({
   onSavedChange,
   saveCount,
   showTooltip,
+  showZeroCount,
   size = "default",
   target,
 }: SavePostButtonProps) {
@@ -484,6 +489,7 @@ export function SavePostButton({
       onSavedChange={onSavedChange}
       saveCount={saveCount}
       showTooltip={showTooltip}
+      showZeroCount={showZeroCount}
       size={size}
       stableTarget={stableTarget}
       stateKey={stateKey}

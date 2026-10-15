@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { CustomerDisplayClient } from "@/app/pos/customer-display/customer-display-client";
 import {
   getCustomerDisplayServiceCatalog,
@@ -58,7 +59,7 @@ async function resolveCustomerDisplayToken(explicitToken: string) {
   return "";
 }
 
-export default async function CustomerDisplayPage({
+async function CustomerDisplayPage({
   searchParams,
 }: CustomerDisplayPageProps) {
   const { token = "" } = await searchParams;
@@ -78,3 +79,5 @@ export default async function CustomerDisplayPage({
     </main>
   );
 }
+
+export default withExperiencePage(CustomerDisplayPage);

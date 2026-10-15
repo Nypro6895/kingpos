@@ -1,6 +1,6 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-  if (process.env.NODE_ENV !== "production") return;
+  if (process.env.NODE_ENV !== "production" || process.env.KINGPOS_DISABLE_BACKGROUND_DISPATCH === "1") return;
   const { dispatchBookingMessages } = await import("@/lib/booking-notifications");
   // Portable runs a persistent Node server. Serverless deployments can call the
   // authenticated worker endpoint on their scheduler instead.

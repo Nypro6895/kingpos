@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { mergeStaffRoster } from "@/lib/portable-staff-roster";
 import { subscribePosChanges } from "@/lib/pos-workspace-sync";
 import { portableBusinessDate } from "@/lib/portable-business-day";
@@ -233,6 +234,8 @@ export function PortableCheckInClient({
   action,
   data,
 }: PortableCheckInClientProps) {
+  const __vt = useWorkspaceTranslation();
+
   const router = useRouter();
   const pathname = usePathname();
   const workspaceState = usePortableWorkspaceState();
@@ -526,11 +529,10 @@ export function PortableCheckInClient({
       >
         <div className="max-w-md rounded-lg border border-white/70 bg-white/70 p-6 shadow-sm backdrop-blur-xl">
           <h2 className="text-xl font-semibold text-zinc-950">
-            Staff check-in is off
+            <WorkspaceText text="Staff check-in is off" />
           </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Enable staff check-in from POS Settings before using this Portable
-            page.
+            <WorkspaceText text="Enable staff check-in from POS Settings before using this Portable page." />
           </p>
         </div>
       </section>
@@ -552,7 +554,7 @@ export function PortableCheckInClient({
             {viewData.salonLogoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                alt={`${viewData.salonName} logo`}
+                alt={__vt(`${viewData.salonName} logo`)}
                 className="h-full w-full object-cover"
                 src={viewData.salonLogoUrl}
               />
@@ -588,9 +590,9 @@ export function PortableCheckInClient({
               className="group relative min-h-[116px] overflow-hidden rounded-lg border border-white/65 bg-white/52 p-3 text-left shadow-[0_12px_28px_rgba(24,24,27,0.09)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/68 hover:shadow-[0_16px_36px_rgba(24,24,27,0.13)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
               key={member.id}
               onClick={() => openAction(member)}
-              title={`${member.displayName}: ${statusLabel(
+              title={__vt(`${member.displayName}: ${statusLabel(
                 member.status,
-              )}, turn ${member.queueTurnCount}, ${checkInLabel}`}
+              )}, turn ${member.queueTurnCount}, ${checkInLabel}`)}
               type="button"
             >
               <span
@@ -619,13 +621,13 @@ export function PortableCheckInClient({
                       )}`}
                     >
                       <span className="truncate">
-                        {statusLabel(member.status)}
+                        <WorkspaceText text={statusLabel(member.status)} />
                       </span>
                     </span>
                   </span>
                   <span className="grid min-w-11 justify-items-end rounded-md bg-white/55 px-2 py-1 ring-1 ring-white/70">
                     <span className="text-[9px] font-bold uppercase tracking-normal text-zinc-500">
-                      Turn
+                      <WorkspaceText text="Turn" />
                     </span>
                     <span className="text-xl font-black leading-none tabular-nums">
                       {member.queueTurnCount}
@@ -633,13 +635,13 @@ export function PortableCheckInClient({
                   </span>
                 </div>
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-white/60 pt-2 text-[11px] font-semibold leading-tight text-zinc-500">
-                  <span className="truncate">{checkInLabel}</span>
+                  <span className="truncate"><WorkspaceText text={checkInLabel} /></span>
                   <span
                     className={`truncate text-right ${
                       isSaving ? "text-emerald-700" : ""
                     }`}
                   >
-                    {isSaving ? "Saving..." : sequenceLabel}
+                    <WorkspaceText text={isSaving ? "Saving..." : sequenceLabel} />
                   </span>
                 </div>
               </div>
@@ -654,7 +656,7 @@ export function PortableCheckInClient({
         data-portable-check-in-reylumi-logo
       >
         <Image
-          alt=""
+          alt={__vt("")}
           className="h-auto w-24 object-contain drop-shadow-[0_12px_24px_rgba(24,24,27,0.16)]"
           height={419}
           src="/brand/reylumi-logo-horizontal.png"
@@ -679,7 +681,7 @@ export function PortableCheckInClient({
             />
             <div className="min-w-0">
               <p className="text-base font-bold text-zinc-950">
-                {toast.title}
+                <WorkspaceText text={toast.title} />
               </p>
               <p className="mt-1 truncate text-sm font-medium text-zinc-600">
                 {toast.detail}
@@ -698,11 +700,11 @@ export function PortableCheckInClient({
           <div className="grid max-h-[calc(100dvh-2rem)] w-full max-w-sm gap-4 overflow-hidden rounded-lg border border-white/70 bg-white/88 p-4 shadow-2xl backdrop-blur-xl">
             <div>
               <p className="text-sm font-bold text-zinc-500">
-                {statusLabel(modal.staff.status)}
+                <WorkspaceText text={statusLabel(modal.staff.status)} />
               </p>
               <h2 className="text-xl font-semibold">{modal.staff.displayName}</h2>
               <p className="mt-1 text-sm text-zinc-600">
-                Current turn {modal.staff.queueTurnCount}
+                <WorkspaceText text="Current turn" /> {modal.staff.queueTurnCount}
               </p>
             </div>
 
@@ -723,16 +725,16 @@ export function PortableCheckInClient({
                   }
                   type="button"
                 >
-                  {eventLabel(eventType)}
+                  <WorkspaceText text={eventLabel(eventType)} />
                 </button>
               ))}
             </div>
 
             <label className="grid gap-2">
-              <span className="text-sm font-medium text-zinc-700">Passcode</span>
+              <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Passcode" /></span>
               <div
                 role="textbox"
-                aria-label="Passcode"
+                aria-label={__vt("Passcode")}
                 tabIndex={0}
                 className="flex min-h-12 items-center justify-center rounded-md border border-zinc-300 bg-white/82 px-3 text-center text-2xl font-semibold tracking-[0.25em] shadow-inner focus:outline-2 focus:outline-zinc-950"
                 onKeyDown={(event) => {
@@ -751,14 +753,14 @@ export function PortableCheckInClient({
                   onClick={() => pressKey(key)}
                   type="button"
                 >
-                  {key === "back" ? "Back" : key === "clear" ? "Clear" : key}
+                  {key === "back" ? <WorkspaceText text="Back" /> : key === "clear" ? <WorkspaceText text="Clear" /> : key}
                 </button>
               ))}
             </div>
 
             {error ? (
               <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
-                {error}
+                <WorkspaceText text={error} />
               </p>
             ) : null}
 
@@ -768,7 +770,7 @@ export function PortableCheckInClient({
                 onClick={clearModal}
                 type="button"
               >
-                Cancel
+                <WorkspaceText text="Cancel" />
               </button>
               <button
                 className="min-h-11 rounded-md bg-zinc-950 px-3 py-2 font-semibold text-white transition hover:bg-zinc-800 disabled:bg-zinc-300"
@@ -776,7 +778,7 @@ export function PortableCheckInClient({
                 onClick={submit}
                 type="button"
               >
-                Confirm
+                <WorkspaceText text="Confirm" />
               </button>
             </div>
           </div>

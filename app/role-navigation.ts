@@ -82,6 +82,7 @@ export const SHARED_CONTEXT_ROUTE_PREFIXES = [
   "/my-place",
   "/notifications",
   "/settings",
+  "/support",
 ] as const;
 
 export function roleNavigationKindForContext(input: {
@@ -202,11 +203,11 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       navigationIcon: "receipt",
     },
     {
-      description: "Support updates and customer report history.",
-      href: "/more/reports",
+      description: "Get help and continue your support conversations.",
+      href: "/support",
       icon: "flag",
       id: "personal-reports",
-      label: "Reports",
+      label: "Help & support",
       navigationIcon: "list",
     },
   ],
@@ -253,8 +254,9 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
     },
   ],
   owner: [
+    { description: "Reach more people, see your results and manage payment.", href: "/campaigns", icon: "flag", id: "owner-campaigns", label: "Campaigns", navigationIcon: "star" },
     {
-      description: "Discover sample apps and integrations for your salon.",
+      description: "Add messaging, payroll, rewards, and more to Reylumi.",
       href: "/market",
       icon: "store",
       id: "owner-market",
@@ -336,6 +338,10 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   ],
 };
 
+for (const kind of ["owner", "staff"] as const) {
+  ROLE_MORE_ITEMS[kind].push({id:`${kind}-support`,href:"/support",icon:"gear",navigationIcon:"message",label:"Help & support",description:"Get help and view your requests."});
+}
+
 function moreNavigationLinks(kind: RoleNavigationKind): NavigationLink[] {
   return ROLE_MORE_ITEMS[kind].map((item) => ({
     href: item.href,
@@ -386,6 +392,7 @@ export const ROLE_NAVIGATION: Record<RoleNavigationKind, RoleNavigationConfig> =
     links: OWNER_LINKS,
     moreLinks: moreNavigationLinks("owner"),
     routePrefixes: [
+      "/campaigns",
       "/bookings",
       "/customers",
       "/payroll",

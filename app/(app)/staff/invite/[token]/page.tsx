@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
 
 import { SubmitButton } from "@/components/submit-button";
 import {
@@ -52,7 +54,7 @@ function formatAddress(input: {
     .join(" - ");
 }
 
-export default async function StaffInvitePage({
+async function StaffInvitePage({
   params,
   searchParams,
 }: StaffInvitePageProps) {
@@ -70,10 +72,10 @@ export default async function StaffInvitePage({
     return (
       <main className="mx-auto w-full max-w-2xl px-6 py-12">
         <h1 className="text-3xl font-semibold text-zinc-950">
-          Invitation not found
+          <WorkspaceText text="Invitation not found" />
         </h1>
         <p className="mt-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm text-zinc-600">
-          This invite link is invalid, expired, or has already been used.
+          <WorkspaceText text="This invite link is invalid, expired, or has already been used." />
         </p>
       </main>
     );
@@ -98,7 +100,7 @@ export default async function StaffInvitePage({
   return (
     <main className="mx-auto grid w-full max-w-2xl gap-6 px-6 py-12">
       <div>
-        <p className="text-sm font-medium text-zinc-500">Staff Invitation</p>
+        <p className="text-sm font-medium text-zinc-500"><WorkspaceText text="Staff Invitation" /></p>
         <h1 className="mt-2 text-3xl font-semibold text-zinc-950">
           {invite.salon.name}
         </h1>
@@ -107,48 +109,48 @@ export default async function StaffInvitePage({
 
       {connectionError ? (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {connectionError}
+          <WorkspaceText text={connectionError} />
         </p>
       ) : null}
 
       <section className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
         <div>
-          <p className="text-sm text-zinc-500">Invited staff</p>
+          <p className="text-sm text-zinc-500"><WorkspaceText text="Invited staff" /></p>
           <p className="mt-1 text-lg font-semibold text-zinc-950">
             {invite.staff.display_name}
           </p>
           <p className="mt-1 text-sm text-zinc-600">
-            {invite.staff.job_title ?? "Staff"}
+            <WorkspaceText text={invite.staff.job_title ?? "Staff"} />
           </p>
           <p className="mt-3 text-sm text-zinc-600">
-            {invite.salon.name} has prepared this staff profile for you.{" "}
-            {currentUser
+            {invite.salon.name} <WorkspaceText text="has prepared this staff profile for you." />{" "}
+            <WorkspaceText text={currentUser
               ? "Accept it to connect your account to this salon."
-              : "Verify the invited email and create a password to connect your staff account automatically."}
+              : "Verify the invited email and create a password to connect your staff account automatically."} />
           </p>
         </div>
 
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div>
-            <dt className="font-medium text-zinc-500">Status</dt>
-            <dd className="mt-1 text-zinc-950">{invite.status}</dd>
+            <dt className="font-medium text-zinc-500"><WorkspaceText text="Status" /></dt>
+            <dd className="mt-1 text-zinc-950"><WorkspaceText text={invite.status} /></dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-500">Expires</dt>
+            <dt className="font-medium text-zinc-500"><WorkspaceText text="Expires" /></dt>
             <dd className="mt-1 text-zinc-950">
-              {formatDateTime(invite.expires_at)}
+              <WorkspaceText text={formatDateTime(invite.expires_at)} />
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-500">Email</dt>
+            <dt className="font-medium text-zinc-500"><WorkspaceText text="Email" /></dt>
             <dd className="mt-1 text-zinc-950">
-              {invite.target.masked_email ?? "Not provided"}
+              <WorkspaceText text={invite.target.masked_email ?? "Not provided"} />
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-zinc-500">Phone</dt>
+            <dt className="font-medium text-zinc-500"><WorkspaceText text="Phone" /></dt>
             <dd className="mt-1 text-zinc-950">
-              {invite.target.masked_phone ?? "Not provided"}
+              <WorkspaceText text={invite.target.masked_phone ?? "Not provided"} />
             </dd>
           </div>
         </dl>
@@ -162,26 +164,25 @@ export default async function StaffInvitePage({
           <div className="flex flex-wrap gap-3 border-t border-zinc-200 pt-4">
             {invite.target.has_account_target ? (
               <p className="basis-full text-sm text-zinc-600">
-                This invite was sent to an existing Reylumi account. Log in with
-                that account to accept it.
+                <WorkspaceText text="This invite was sent to an existing Reylumi account. Log in with that account to accept it." />
               </p>
             ) : (
               <p className="basis-full text-sm text-zinc-600">
-                This invite needs an account before it can be accepted.
+                <WorkspaceText text="This invite needs an account before it can be accepted." />
               </p>
             )}
             <Link
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               href={`/login?next=${encodeURIComponent(nextPath)}`}
             >
-              Login
+              <WorkspaceText text="Login" />
             </Link>
             {!invite.target.has_account_target ? (
               <Link
                 className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-950"
                 href={`/signup?next=${encodeURIComponent(nextPath)}`}
               >
-                Create account
+                <WorkspaceText text="Create account" />
               </Link>
             ) : null}
           </div>
@@ -193,7 +194,7 @@ export default async function StaffInvitePage({
                 className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
                 type="submit"
               >
-                Accept invitation
+                <WorkspaceText text="Accept invitation" />
               </SubmitButton>
             </form>
             <form action={declineStaffInviteTokenFormAction}>
@@ -202,17 +203,18 @@ export default async function StaffInvitePage({
                 className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-950"
                 type="submit"
               >
-                Decline
+                <WorkspaceText text="Decline" />
               </SubmitButton>
             </form>
           </div>
         ) : (
           <p className="border-t border-zinc-200 pt-4 text-sm text-zinc-600">
-            This invitation cannot be accepted because it is no longer pending,
-            the salon is inactive, or the staff profile is inactive.
+            <WorkspaceText text="This invitation cannot be accepted because it is no longer pending, the salon is inactive, or the staff profile is inactive." />
           </p>
         )}
       </section>
     </main>
   );
 }
+
+export default withExperiencePage(StaffInvitePage);

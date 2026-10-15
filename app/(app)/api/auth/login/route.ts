@@ -1,3 +1,6 @@
+import {systemSmsReady} from "@/lib/system-sms";
+import { REMEMBER_LOGIN_SECONDS, writeLoginPolicy } from "@/lib/supabase/session-policy";
+import { assertAbuseRequest } from "@/lib/abuse-server";
 import {
   ACCOUNT_LOGIN_SESSION_COOKIE,
 } from "@/lib/account-security-shared";
@@ -24,7 +27,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 
 const LOGIN_PATH = "/login";
-const REMEMBERED_LOGIN_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+const REMEMBERED_LOGIN_MAX_AGE_SECONDS = REMEMBER_LOGIN_SECONDS;
 
 type LoginMfaFactor = {
   factor_type: "phone" | "totp";
@@ -151,6 +154,7 @@ async function createLoginMfaChallenge(
     };
   }
 
+  if (factor.factor_type === 'phone' && !(await systemSmsReady('authSms'))) return {error:'System authentication SMS is disabled or not configured.'};
   const challengeResult = await supabase.auth.mfa.challenge(
     factor.factor_type === "phone"
       ? { channel: "sms", factorId: factor.id }
@@ -241,6 +245,8 @@ export async function POST(request: Request) {
     );
   }
 
+  try { await assertAbuseRequest("login", email); } catch (error) { return loginErrorResponse(request, error instanceof Error ? error.message : "Please try again later.", 429, nextPath); }
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -273,30 +279,31 @@ export async function POST(request: Request) {
     });
   }
 
-  const navigation = await getPostAuthWorkspaceNavigation({
-    accessToken: data.session.access_token,
-    requestedPath,
-  }).catch((error: unknown) => {
-    console.error("Unable to resolve post-login workspace navigation", {
-      message: error instanceof Error ? error.message : String(error),
-    });
-
-    return fallbackPostAuthWorkspaceNavigation();
-  });
   const loginSessionId = randomUUID();
+  const [navigation] = await Promise.all([
+    getPostAuthWorkspaceNavigation({
+      accessToken: data.session.access_token,
+      requestedPath,
+    }).catch((error: unknown) => {
+      console.error("Unable to resolve post-login workspace navigation", {
+        message: error instanceof Error ? error.message : String(error),
+      });
 
-  await recordAccountLoginForSession({
-    accessToken: data.session.access_token,
-    requestHeaders: request.headers,
-    sessionId: loginSessionId,
-  }).catch((error: unknown) => {
-    console.error("Unable to record login security session", {
-      message: error instanceof Error ? error.message : String(error),
-    });
-  });
+      return fallbackPostAuthWorkspaceNavigation();
+    }),
+    recordAccountLoginForSession({
+      accessToken: data.session.access_token,
+      requestHeaders: request.headers,
+      sessionId: loginSessionId,
+    }).catch((error: unknown) => {
+      console.error("Unable to record login security session", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }),
+  ]);
 
   const response = loginSuccessResponse(request, navigation.redirectTo);
-  const accessTokenMaxAge = rememberLogin ? data.session.expires_in : undefined;
+  const accessTokenMaxAge = rememberLogin ? REMEMBERED_LOGIN_MAX_AGE_SECONDS : undefined;
   const sessionMaxAge = rememberLogin
     ? REMEMBERED_LOGIN_MAX_AGE_SECONDS
     : undefined;
@@ -316,6 +323,7 @@ export async function POST(request: Request) {
     loginSessionId,
     getSupabaseCookieOptions(sessionMaxAge),
   );
+  writeLoginPolicy(response.cookies, data.session.access_token, rememberLogin);
   clearPendingMfaSessionCookieWriter(response.cookies);
   if (navigation.workspace) {
     writeNormalizedWorkspaceContextCookies(response.cookies, navigation.workspace);

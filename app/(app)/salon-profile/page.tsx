@@ -1,3 +1,6 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { loadSalonPostAttribution } from "@/lib/salon-post-attribution";
+import { WorkspaceText } from "@/components/workspace-language";
 import { SalonProfileView } from "@/app/salon-profile/salon-profile-view";
 import {
   buildSalonProfileFeed,
@@ -32,6 +35,7 @@ type SalonProfilePageProps = {
 };
 
 function buildPreviewData(input: {
+  attribution?: Awaited<ReturnType<typeof loadSalonPostAttribution>>;
   accountId: string;
   looks: SalonProfileLook[];
   operatingStatus: PublicSalonProfileData["profile"]["operatingStatus"];
@@ -75,6 +79,7 @@ function buildPreviewData(input: {
           staffPresentations.get(look.author_staff_id ?? "")?.displayName ??
           staffById.get(look.author_staff_id ?? "")?.display_name ??
           input.setting.business_name,
+        authorRole: input.attribution?.get(look.id)?.role ?? "salon",
         authorStaffId: look.author_staff_id,
         badge: look.badge,
         bookingNote: look.booking_note,
@@ -122,6 +127,7 @@ function buildPreviewData(input: {
           staffPresentations.get(update.author_staff_id ?? "")?.displayName ??
           staffById.get(update.author_staff_id ?? "")?.display_name ??
           input.setting.business_name,
+        authorRole: input.attribution?.get(update.id)?.role ?? "salon",
         authorStaffId: update.author_staff_id,
         ctaLabel: update.cta_label,
         caption: update.caption ?? update.summary,
@@ -292,7 +298,7 @@ function withManagedPreviewStaff(
   };
 }
 
-export default async function SalonProfilePage({
+async function SalonProfilePage({
   searchParams,
 }: SalonProfilePageProps) {
   const [{ error, notice }, context] = await Promise.all([
@@ -305,7 +311,7 @@ export default async function SalonProfilePage({
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
         <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-          You do not have permission to view Salon Profile.
+          <WorkspaceText text="You do not have permission to view Salon Profile." />
         </p>
       </main>
     );
@@ -315,7 +321,9 @@ export default async function SalonProfilePage({
     getCurrentSalonOperatingStatus(context).catch(() => defaultSalonOperatingStatus()),
     getPublicSalonProfileData(data.setting.salon_id),
   ]);
+  const attribution = await loadSalonPostAttribution([...data.looks, ...data.updates].map(post => post.id));
   const previewData = buildPreviewData({
+    attribution,
     ...data,
     accountId: data.context.currentAccount?.id ?? data.context.accountId ?? "",
     operatingStatus,
@@ -361,3 +369,5 @@ export default async function SalonProfilePage({
     </main>
   );
 }
+
+export default withExperiencePage(SalonProfilePage);

@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 
 import { SubmitButton } from "@/components/submit-button";
 import {
@@ -278,7 +280,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-zinc-700">{label}</span>
+      <span className="text-sm font-medium text-zinc-700"><WorkspaceText text={label} /></span>
       <input
         autoComplete={autoComplete}
         className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
@@ -317,7 +319,7 @@ function Badge({
 function StatusBadge({ isActive }: { isActive: boolean }) {
   return (
     <Badge tone={isActive ? "dark" : "neutral"}>
-      {isActive ? "Visible" : "Hidden"}
+      <WorkspaceText text={isActive ? "Visible" : "Hidden"} />
     </Badge>
   );
 }
@@ -333,7 +335,7 @@ function AvatarInitials({
     <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <WorkspaceElement as="img"
           alt=""
           className="h-full w-full rounded-full object-cover"
           src={imageUrl}
@@ -355,7 +357,7 @@ function StaffForm({
   if (!canManageStaff) {
     return (
       <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-        You do not have permission to manage staff.
+        <WorkspaceText text="You do not have permission to manage staff." />
       </p>
     );
   }
@@ -367,7 +369,7 @@ function StaffForm({
     >
       {error ? (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 sm:col-span-2">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
@@ -407,7 +409,7 @@ function StaffForm({
           name="is_active"
           type="checkbox"
         />
-        Active
+        <WorkspaceText text="Active" />
       </label>
 
       <div className="flex flex-wrap gap-3 sm:col-span-2">
@@ -415,7 +417,7 @@ function StaffForm({
           className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           type="submit"
         >
-          Create Staff
+          <WorkspaceText text="Create Staff" />
         </SubmitButton>
       </div>
     </form>
@@ -469,15 +471,15 @@ function AddStaffConnectionPanel({
     <section className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-5">
       <div>
         <h3 className="text-base font-semibold text-zinc-950">
-          Invite staff account
+          <WorkspaceText text="Invite staff account" />
         </h3>
         <p className="mt-1 text-sm text-zinc-600">
-          Search an exact email or phone before sending a connection invite.
+          <WorkspaceText text="Search an exact email or phone before sending a connection invite." />
         </p>
       </div>
 
       {lookupError ? (
-        <NoticeBanner tone="danger">{lookupError}</NoticeBanner>
+        <NoticeBanner tone="danger"><WorkspaceText text={lookupError} /></NoticeBanner>
       ) : null}
 
       {!searchAddsDrawer ? (
@@ -492,7 +494,7 @@ function AddStaffConnectionPanel({
             <input name="add" type="hidden" value="1" />
           ) : null}
           <label className="block">
-            <span className="text-sm font-medium text-zinc-700">Email</span>
+            <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Email" /></span>
             <input
               className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
               defaultValue={inviteEmail}
@@ -501,7 +503,7 @@ function AddStaffConnectionPanel({
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-zinc-700">Phone</span>
+            <span className="text-sm font-medium text-zinc-700"><WorkspaceText text="Phone" /></span>
             <input
               className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
               defaultValue={invitePhone}
@@ -514,7 +516,7 @@ function AddStaffConnectionPanel({
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
               type="submit"
             >
-              Search account
+              <WorkspaceText text="Search account" />
             </SubmitButton>
           </div>
         </form>
@@ -522,7 +524,7 @@ function AddStaffConnectionPanel({
 
       {searched && lookupResult?.status === "ambiguous" ? (
         <NoticeBanner tone="danger">
-          More than one account matched. Refine the email or phone.
+          <WorkspaceText text="More than one account matched. Refine the email or phone." />
         </NoticeBanner>
       ) : null}
 
@@ -547,28 +549,28 @@ function AddStaffConnectionPanel({
             />
             <div>
               <p className="font-medium text-zinc-950">
-                {lookupResult.account.display_name ?? "Existing account"}
+                <WorkspaceText text={lookupResult.account.display_name ?? "Existing account"} />
               </p>
               <p className="text-sm text-zinc-500">
-                {[
+                <WorkspaceText text={[
                   lookupResult.account.masked_email,
                   lookupResult.account.masked_phone,
                 ]
                   .filter(Boolean)
-                  .join(" / ") || "Matched account"}
+                  .join(" / ") || "Matched account"} />
               </p>
             </div>
           </div>
 
           <label className="block">
             <span className="text-sm font-medium text-zinc-700">
-              Staff profile
+              <WorkspaceText text="Staff profile" />
             </span>
             <select
               className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950"
               name="staff_id"
             >
-              <option value="">Create a new staff profile</option>
+              <option value=""><WorkspaceText text="Create a new staff profile" /></option>
               {unconnectedStaff.map((member) => (
                 <option key={member.id} value={member.id}>
                   {member.display_name}
@@ -588,13 +590,13 @@ function AddStaffConnectionPanel({
               name="is_active"
               type="checkbox"
             />
-            Active
+            <WorkspaceText text="Active" />
           </label>
           <SubmitButton pendingLabel="Processing…"
             className="w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
             type="submit"
           >
-            Send invite
+            <WorkspaceText text="Send invite" />
           </SubmitButton>
         </RequestForm>
       ) : null}
@@ -620,13 +622,13 @@ function AddStaffConnectionPanel({
               name="is_active"
               type="checkbox"
             />
-            Active
+            <WorkspaceText text="Active" />
           </label>
           <SubmitButton pendingLabel="Saving…"
             className="w-fit rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
             type="submit"
           >
-            Create staff and invite
+            <WorkspaceText text="Create staff and invite" />
           </SubmitButton>
         </RequestForm>
       ) : null}
@@ -654,25 +656,25 @@ function PayrollSetupCell({
   if (member.payroll_setup_status === "restricted") {
     return (
       <div className="grid gap-1">
-        <Badge>Restricted</Badge>
-        <span className="text-xs text-zinc-500">Payroll permission needed</span>
+        <Badge><WorkspaceText text="Restricted" /></Badge>
+        <span className="text-xs text-zinc-500"><WorkspaceText text="Payroll permission needed" /></span>
       </div>
     );
   }
 
   if (member.payroll_setup_status === "configured") {
-    return <Badge tone="success">Configured</Badge>;
+    return <Badge tone="success"><WorkspaceText text="Configured" /></Badge>;
   }
 
   return (
     <div className="grid gap-1">
-      <Badge tone="warning">Missing Setup</Badge>
+      <Badge tone="warning"><WorkspaceText text="Missing Setup" /></Badge>
       {canManagePayroll ? (
         <Link
           className="text-xs font-medium text-zinc-950 underline"
           href={`/payroll?tab=settings&editStaff=${member.id}`}
         >
-          Set Payroll
+          <WorkspaceText text="Set Payroll" />
         </Link>
       ) : null}
     </div>
@@ -752,7 +754,7 @@ function StaffInlineInput({
   value: string | null;
 }) {
   return (
-    <input
+    <WorkspaceElement as="input"
       autoComplete={autoComplete}
       className={`${className} w-full rounded-sm border border-transparent bg-transparent px-1 py-0.5 outline-none transition focus:border-zinc-300 focus:bg-white disabled:text-zinc-500`}
       defaultValue={value ?? ""}
@@ -787,7 +789,7 @@ function AccessCheckbox({
         name={staffFieldName(field, member.id)}
         type="checkbox"
       />
-      {label}
+      <WorkspaceText text={label} />
     </label>
   );
 }
@@ -807,16 +809,16 @@ function StaffDirectoryTableSection({
         <thead className="bg-zinc-50 text-xs font-medium uppercase text-zinc-500">
           <tr>
             <th className="w-[42%] px-4 py-3" scope="col">
-              Staff profile
+              <WorkspaceText text="Staff profile" />
             </th>
             <th className="w-[28%] px-4 py-3" scope="col">
-              Contact
+              <WorkspaceText text="Contact" />
             </th>
             <th className="w-[20%] px-4 py-3" scope="col">
-              Access
+              <WorkspaceText text="Access" />
             </th>
             <th className="w-[10%] px-4 py-3" scope="col">
-              Edit
+              <WorkspaceText text="Edit" />
             </th>
           </tr>
         </thead>
@@ -921,7 +923,7 @@ function StaffDirectoryTableSection({
                 </td>
                 <td className="px-4 py-4 align-top">
                   <ActionButton href={detailHref} tone="primary">
-                    Edit
+                    <WorkspaceText text="Edit" />
                   </ActionButton>
                 </td>
               </tr>
@@ -963,7 +965,7 @@ function StaffDirectoryEmptyState({
           className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
           href={addHref}
         >
-          + Add Staff
+          <WorkspaceText text="+ Add Staff" />
         </Link>
       ) : null}
     </div>
@@ -1027,7 +1029,7 @@ function StaffDirectoryManager({
 
       <details className="rounded-lg border border-zinc-200 bg-white">
         <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-zinc-950">
-          Hidden staff list ({hiddenStaff.length})
+          <WorkspaceText text="Hidden staff list (" />{hiddenStaff.length})
         </summary>
         <div className="border-t border-zinc-200 p-4">
           {hiddenStaff.length > 0 ? (
@@ -1038,7 +1040,7 @@ function StaffDirectoryManager({
             />
           ) : (
             <p className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-600">
-              No hidden staff.
+              <WorkspaceText text="No hidden staff." />
             </p>
           )}
         </div>
@@ -1050,7 +1052,7 @@ function StaffDirectoryManager({
             className="inline-flex min-h-10 items-center justify-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
             type="submit"
           >
-            Save staff changes
+            <WorkspaceText text="Save staff changes" />
           </SubmitButton>
         </div>
       ) : null}
@@ -1061,7 +1063,7 @@ function StaffDirectoryManager({
 function DetailField({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="grid gap-1">
-      <dt className="text-xs font-medium uppercase text-zinc-500">{label}</dt>
+      <dt className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text={label} /></dt>
       <dd className="min-w-0 text-sm font-medium text-zinc-950">{value}</dd>
     </div>
   );
@@ -1076,7 +1078,7 @@ function DetailSection({
 }) {
   return (
     <section className="rounded-lg border border-zinc-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-zinc-950">{title}</h3>
+      <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text={title} /></h3>
       <dl className="mt-4 grid gap-4 sm:grid-cols-2">{children}</dl>
     </section>
   );
@@ -1108,10 +1110,10 @@ function DetailActions({
   return (
     <div className="mt-4 flex flex-wrap gap-2">
       {accountStatus === "need_contact" ? (
-        <ActionButton disabled>Add Contact</ActionButton>
+        <ActionButton disabled><WorkspaceText text="Add Contact" /></ActionButton>
       ) : null}
       {accountStatus === "ready_to_invite" ? (
-        <ActionButton disabled>Send Invite</ActionButton>
+        <ActionButton disabled><WorkspaceText text="Send Invite" /></ActionButton>
       ) : null}
       {accountStatus === "invite_sent" ? (
         <>
@@ -1123,7 +1125,7 @@ function DetailActions({
             />
             <input name="staff_id" type="hidden" value={member.id} />
             <SubmitActionButton disabled={!pendingInvite}>
-              Resend Invite
+              <WorkspaceText text="Resend Invite" />
             </SubmitActionButton>
           </form>
           <form action={revokeSalonStaffInviteFormAction}>
@@ -1133,27 +1135,27 @@ function DetailActions({
               value={pendingInvite?.id ?? ""}
             />
             <SubmitActionButton disabled={!pendingInvite}>
-              Cancel
+              <WorkspaceText text="Cancel" />
             </SubmitActionButton>
           </form>
           {currentInviteToken ? (
             <InviteLinkTools value={getInviteHref(currentInviteToken)} />
           ) : (
             <p className="flex min-h-9 items-center text-xs text-zinc-500">
-              Resend to generate a copyable link and QR.
+              <WorkspaceText text="Resend to generate a copyable link and QR." />
             </p>
           )}
         </>
       ) : null}
       {accountStatus === "connected" ? (
-        <ActionButton disabled>Disconnect Account</ActionButton>
+        <ActionButton disabled><WorkspaceText text="Disconnect Account" /></ActionButton>
       ) : null}
       {member.payroll_setup_status === "missing" ? (
         <ActionButton
           disabled={!canManagePayroll}
           href={`/payroll?tab=settings&editStaff=${member.id}`}
         >
-          Payroll Settings
+          <WorkspaceText text="Payroll Settings" />
         </ActionButton>
       ) : null}
     </div>
@@ -1202,7 +1204,7 @@ function StaffDetailDrawer({
             {member.staff_profile_display_name}
           </p>
           <p className="text-sm text-zinc-500">
-            {cleanValue(member.job_title) || "Need role"}
+            <WorkspaceText text={cleanValue(member.job_title) || "Need role"} />
           </p>
         </div>
       </div>
@@ -1237,10 +1239,9 @@ function StaffDetailDrawer({
 
       <section className="rounded-lg border border-zinc-200 bg-white p-4">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-950">Staff Profile</h3>
+          <h3 className="text-sm font-semibold text-zinc-950"><WorkspaceText text="Staff Profile" /></h3>
           <p className="mt-1 text-sm text-zinc-600">
-            This salon-specific profile controls the identity customers see in
-            booking and on Salon Profile.
+            <WorkspaceText text="This salon-specific profile controls the identity customers see in booking and on Salon Profile." />
           </p>
         </div>
         <div className="mt-4">
@@ -1285,7 +1286,7 @@ function StaffDetailDrawer({
         <DetailField
           label="Configure"
           value={
-            <ActionButton href="/services">Services and hours</ActionButton>
+            <ActionButton href="/services"><WorkspaceText text="Services and hours" /></ActionButton>
           }
         />
       </DetailSection>
@@ -1293,7 +1294,7 @@ function StaffDetailDrawer({
       <DetailSection title="Account Connection">
         <DetailField
           label="Account Status"
-          value={<Badge tone={accountStatus.tone}>{accountStatus.label}</Badge>}
+          value={<Badge tone={accountStatus.tone}><WorkspaceText text={accountStatus.label} /></Badge>}
         />
         <DetailField
           label="Connected User"
@@ -1324,17 +1325,17 @@ function StaffDetailDrawer({
           label="Booking"
           value={
             bookingStatus.kind === "ready" ? (
-              <Badge tone={bookingStatus.tone}>{bookingStatus.label}</Badge>
+              <Badge tone={bookingStatus.tone}><WorkspaceText text={bookingStatus.label} /></Badge>
             ) : (
               <Link className="inline-flex" href="/services">
-                <Badge tone={bookingStatus.tone}>{bookingStatus.label}</Badge>
+                <Badge tone={bookingStatus.tone}><WorkspaceText text={bookingStatus.label} /></Badge>
               </Link>
             )
           }
         />
         <DetailField
           label="POS"
-          value={<Badge tone={posStatus.tone}>{posStatus.label}</Badge>}
+          value={<Badge tone={posStatus.tone}><WorkspaceText text={posStatus.label} /></Badge>}
         />
         <DetailField
           label="Payroll"
@@ -1349,13 +1350,13 @@ function StaffDetailDrawer({
           label="Shortcuts"
           value={
             <div className="flex flex-wrap gap-2">
-              <ActionButton href="/services">Booking staff</ActionButton>
-              <ActionButton disabled>POS Setup</ActionButton>
+              <ActionButton href="/services"><WorkspaceText text="Booking staff" /></ActionButton>
+              <ActionButton disabled><WorkspaceText text="POS Setup" /></ActionButton>
               <ActionButton
                 disabled={!canManagePayroll}
                 href={`/payroll?tab=settings&editStaff=${member.id}`}
               >
-                Payroll Settings
+                <WorkspaceText text="Payroll Settings" />
               </ActionButton>
             </div>
           }
@@ -1459,7 +1460,7 @@ function IncomingApplicationsSection({
 }) {
   if (requests.length === 0) {
     return (
-      <EmptyConnectionState>No incoming applications.</EmptyConnectionState>
+      <EmptyConnectionState><WorkspaceText text="No incoming applications." /></EmptyConnectionState>
     );
   }
 
@@ -1479,17 +1480,17 @@ function IncomingApplicationsSection({
                 {requestContact(request)}
               </p>
               <p className="mt-1 text-sm text-zinc-600">
-                Requested title:{" "}
-                {request.requested_job_title ?? "Not specified"}
+                <WorkspaceText text="Requested title:" />{" "}
+                <WorkspaceText text={request.requested_job_title ?? "Not specified"} />
               </p>
               {request.message ? (
                 <p className="mt-2 rounded-md bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
-                  {request.message}
+                  <WorkspaceText text={request.message} />
                 </p>
               ) : null}
             </div>
             <Badge tone="warning">
-              Submitted {formatDateTime(request.created_at)}
+              <WorkspaceText text="Submitted" /> <WorkspaceText text={formatDateTime(request.created_at)} />
             </Badge>
           </div>
 
@@ -1501,7 +1502,7 @@ function IncomingApplicationsSection({
                 className="rounded-md bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
                 type="submit"
               >
-                Accept
+                <WorkspaceText text="Accept" />
               </SubmitButton>
             </RequestForm>
 
@@ -1512,7 +1513,7 @@ function IncomingApplicationsSection({
                 className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-950"
                 type="submit"
               >
-                Decline
+                <WorkspaceText text="Decline" />
               </SubmitButton>
             </RequestForm>
           </div>
@@ -1530,14 +1531,14 @@ function InviteLinkToolsUnavailable() {
         disabled
         type="button"
       >
-        Copy link
+        <WorkspaceText text="Copy link" />
       </button>
       <button
         className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400"
         disabled
         type="button"
       >
-        QR code
+        <WorkspaceText text="QR code" />
       </button>
     </div>
   );
@@ -1554,7 +1555,7 @@ function OutgoingInvitationsSection({
 }) {
   if (requests.length === 0) {
     return (
-      <EmptyConnectionState>No outgoing invitations.</EmptyConnectionState>
+      <EmptyConnectionState><WorkspaceText text="No outgoing invitations." /></EmptyConnectionState>
     );
   }
 
@@ -1583,12 +1584,12 @@ function OutgoingInvitationsSection({
                   {requestContact(request)}
                 </p>
                 <p className="mt-1 text-sm text-zinc-600">
-                  Sent {formatDateTime(request.created_at)} · Expires{" "}
-                  {formatDateTime(request.expires_at)}
+                  <WorkspaceText text="Sent" /> <WorkspaceText text={formatDateTime(request.created_at)} /> <WorkspaceText text="· Expires" />{" "}
+                  <WorkspaceText text={formatDateTime(request.expires_at)} />
                 </p>
               </div>
               <Badge tone={connectionStatusTone(request.status)}>
-                {request.status}
+                <WorkspaceText text={request.status} />
               </Badge>
             </div>
 
@@ -1608,7 +1609,7 @@ function OutgoingInvitationsSection({
                   disabled={!canMutate}
                   type="submit"
                 >
-                  Resend
+                  <WorkspaceText text="Resend" />
                 </SubmitButton>
               </RequestForm>
               {currentInviteHref ? (
@@ -1623,13 +1624,13 @@ function OutgoingInvitationsSection({
                   disabled={request.status !== "pending"}
                   type="submit"
                 >
-                  Cancel
+                  <WorkspaceText text="Cancel" />
                 </SubmitButton>
               </RequestForm>
             </div>
             {!currentToken ? (
               <p className="text-xs text-zinc-500">
-                Resend to email the invite again and refresh the copy/QR link.
+                <WorkspaceText text="Resend to email the invite again and refresh the copy/QR link." />
               </p>
             ) : null}
           </article>
@@ -1646,7 +1647,7 @@ function ConnectionHistorySection({
 }) {
   if (requests.length === 0) {
     return (
-      <EmptyConnectionState>No connection history yet.</EmptyConnectionState>
+      <EmptyConnectionState><WorkspaceText text="No connection history yet." /></EmptyConnectionState>
     );
   }
 
@@ -1669,14 +1670,14 @@ function ConnectionHistorySection({
               </p>
             </div>
             <Badge tone={connectionStatusTone(request.status)}>
-              {request.status}
+              <WorkspaceText text={request.status} />
             </Badge>
           </div>
           <p className="mt-3 text-sm text-zinc-600">
-            {request.direction === "staff_application"
+            <WorkspaceText text={request.direction === "staff_application"
               ? "Application"
-              : "Invitation"}{" "}
-            · Updated {formatDateTime(request.updated_at)}
+              : "Invitation"} />{" "}
+            <WorkspaceText text="· Updated" /> <WorkspaceText text={formatDateTime(request.updated_at)} />
           </p>
         </article>
       ))}
@@ -1785,7 +1786,7 @@ function StaffConnectionRequestsSection({
   );
 }
 
-export default async function StaffPage({ searchParams }: StaffPageProps) {
+async function StaffPage({ searchParams }: StaffPageProps) {
   const [params, context] = await Promise.all([
     searchParams,
     requireSalonManagePageContext("/staff"),
@@ -1807,7 +1808,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     return (
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
         <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-          You do not have permission to view staff.
+          <WorkspaceText text="You do not have permission to view staff." />
         </p>
       </main>
     );
@@ -1901,30 +1902,31 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
 
   return (
     <>
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-        {canManageStaff ? (
-          <div className="flex justify-end gap-3">
-            {canBecomeStaff ? <form action={becomeOwnerStaffAction}>
-              <SubmitButton pendingLabel="Processing…" type="submit" className="inline-flex min-h-10 items-center justify-center rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium">Be staff</SubmitButton>
-            </form> : null}
-            <Link
-              className="inline-flex min-h-10 items-center justify-center rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
-              href={addStaffHref}
-            >
-              + Add Staff
-            </Link>
-          </div>
-        ) : null}
+      <main className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+
 
         {connectionNotice ? (
           <NoticeBanner>{connectionNotice}</NoticeBanner>
         ) : null}
         {connectionError ? (
-          <NoticeBanner tone="danger">{connectionError}</NoticeBanner>
+          <NoticeBanner tone="danger"><WorkspaceText text={connectionError} /></NoticeBanner>
         ) : null}
 
         <section>
           <StaffDirectoryEditor
+            toolbarActions={canManageStaff ? (
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            {canBecomeStaff ? <form action={becomeOwnerStaffAction}>
+              <SubmitButton pendingLabel="Processing…" type="submit" className="inline-flex min-h-11 items-center justify-center rounded-md border border-zinc-300 whitespace-nowrap px-2 py-2 text-xs sm:px-4 sm:text-sm font-medium"><WorkspaceText text="Be staff" /></SubmitButton>
+            </form> : null}
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-zinc-950 whitespace-nowrap px-2 py-2 text-xs sm:px-4 sm:text-sm font-medium text-white"
+              href={addStaffHref}
+            >
+              <WorkspaceText text="+ Add Staff" />
+            </Link>
+          </div>
+        ) : null}
             activeStaff={activeStaff}
             addHref={addStaffHref}
             canManageStaff={canManageStaff}
@@ -1940,7 +1942,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
           <StaffConnectionRequestsSection
             feedback={
               connectionError ? (
-                <NoticeBanner tone="danger">{connectionError}</NoticeBanner>
+                <NoticeBanner tone="danger"><WorkspaceText text={connectionError} /></NoticeBanner>
               ) : connectionNotice ? (
                 <NoticeBanner>{connectionNotice}</NoticeBanner>
               ) : null
@@ -1983,3 +1985,5 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     </>
   );
 }
+
+export default withExperiencePage(StaffPage);

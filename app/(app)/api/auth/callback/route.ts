@@ -1,8 +1,9 @@
+import { writeLoginPolicy, sessionCookieOptions } from "@/lib/supabase/session-policy";
+import { recordAdvertisingSignup } from "@/lib/advertising-attribution";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
   createSupabaseServerClient,
-  getSupabaseCookieOptions,
 } from "@/lib/supabase/server";
 import {
   fallbackPostAuthWorkspaceNavigation,
@@ -45,6 +46,7 @@ export async function GET(request: Request) {
     );
   }
 
+  await recordAdvertisingSignup(request, data.user);
   const navigation = await getPostAuthWorkspaceNavigation({
     accessToken: data.session.access_token,
     requestedPath,
@@ -61,16 +63,20 @@ export async function GET(request: Request) {
   response.cookies.set(
     ACCESS_TOKEN_COOKIE,
     data.session.access_token,
-    getSupabaseCookieOptions(data.session.expires_in),
+    sessionCookieOptions(true),
   );
   response.cookies.set(
     REFRESH_TOKEN_COOKIE,
     data.session.refresh_token,
-    getSupabaseCookieOptions(60 * 60 * 24 * 30),
+    sessionCookieOptions(true),
   );
   if (navigation.workspace) {
-    writeNormalizedWorkspaceContextCookies(response.cookies, navigation.workspace);
+    writeNormalizedWorkspaceContextCookies(
+      response.cookies,
+      navigation.workspace,
+    );
   }
 
+  writeLoginPolicy(response.cookies, data.session.access_token, true);
   return response;
 }

@@ -1247,6 +1247,7 @@ export async function updateBookingSettingsAction(
     }
 
     revalidatePath("/bookings");
+    revalidatePath(`/book/${context.data.salon.id}`);
     after(() => broadcastPosStaffChange(context.data.salon.id, "booking"));
     return success("Booking settings saved.");
   } catch (error) {

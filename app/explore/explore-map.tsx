@@ -266,6 +266,7 @@ export function ExploreMap({
               .join(" \u00b7 ")}
           </p>
           <SalonOperatingStatusBadge
+            salonId={selectedSalon.id}
             className="mt-2 max-w-full"
             status={selectedSalon.operatingStatus}
           />

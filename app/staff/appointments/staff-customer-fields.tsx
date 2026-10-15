@@ -1,10 +1,13 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import "./staff-appointments.css";
 import { useEffect, useId, useState } from "react";
 
 type Customer = { id: string; name: string; phone: string | null };
 
 export function StaffCustomerFields({ salonId, disabled }: { salonId: string; disabled: boolean }) {
+  const __vt = useWorkspaceTranslation();
+
   const listId = useId();
   const [name, setName] = useState(""), [phone, setPhone] = useState("");
   const [selectedId, setSelectedId] = useState("");
@@ -39,7 +42,7 @@ export function StaffCustomerFields({ salonId, disabled }: { salonId: string; di
     if (!event.currentTarget.contains(event.relatedTarget)) { setFocused(null); setResults([]); setStatus(""); }
   }}>
     <input type="hidden" name="customerId" value={selectedId}/>
-    {(["name", "phone"] as const).map(field => <label key={field}>{field === "name" ? "Customer name" : "Phone"}
+    {(["name", "phone"] as const).map(field => <label key={field}>{field === "name" ? "Customer name" : <WorkspaceText text="Phone" />}
       <input name={field} type={field === "phone" ? "tel" : "text"} required maxLength={field === "name" ? 150 : 40}
         value={field === "name" ? name : phone} disabled={disabled} autoComplete="off"
         role="combobox" aria-autocomplete="list" aria-expanded={focused === field && results.length > 0}
@@ -53,12 +56,12 @@ export function StaffCustomerFields({ salonId, disabled }: { salonId: string; di
           if (event.key === "Enter" && active >= 0 && results[active]) { event.preventDefault(); choose(results[active]); }
         }}/>
     </label>)}
-    {results.length > 0 ? <div id={listId} role="listbox" aria-label="Salon customers" className="staff-customer-suggestions">
+    {results.length > 0 ? <div id={listId} role="listbox" aria-label={__vt("Salon customers")} className="staff-customer-suggestions">
       {results.map((customer, index) => <button key={customer.id} id={`${listId}-${index}`} type="button" role="option" aria-selected={active === index}
         onMouseDown={event => event.preventDefault()} onClick={() => choose(customer)} disabled={disabled}>
-        <span>{customer.name}</span><small>{customer.phone || "No phone on file"}</small>
+        <span>{customer.name}</span><small><WorkspaceText text={customer.phone || "No phone on file"} /></small>
       </button>)}
     </div> : null}
-    {status ? <p role="status">{status}</p> : null}
+    {status ? <p role="status"><WorkspaceText text={status} /></p> : null}
   </div>;
 }

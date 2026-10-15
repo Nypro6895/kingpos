@@ -1,3 +1,4 @@
+import { WorkspaceElement, WorkspaceText } from "@/components/workspace-language";
 import {
   LEGAL_FOOTER_LINKS,
   REYLUMI_APP_NAME,
@@ -14,7 +15,7 @@ export function LegalFooter({ className = "" }: { className?: string }) {
       ].join(" ")}
     >
       <div className="mx-auto flex w-full max-w-[92rem] flex-col items-center gap-3 text-center text-xs font-semibold text-text-secondary sm:flex-row sm:justify-between sm:text-left">
-        <nav
+        <WorkspaceElement as="nav"
           aria-label="Legal links"
           className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start"
         >
@@ -25,12 +26,12 @@ export function LegalFooter({ className = "" }: { className?: string }) {
               key={link.href}
               prefetch={false}
             >
-              {link.label}
+              <WorkspaceText text={link.label} />
             </Link>
           ))}
-        </nav>
+        </WorkspaceElement>
         <p className="text-text-secondary">
-          &copy; {REYLUMI_COPYRIGHT_YEAR} {REYLUMI_APP_NAME}. All rights reserved.
+          <WorkspaceText text="&copy;" /> {REYLUMI_COPYRIGHT_YEAR} {REYLUMI_APP_NAME}<WorkspaceText text=". All rights reserved." />
         </p>
       </div>
     </footer>

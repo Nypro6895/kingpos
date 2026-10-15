@@ -1,3 +1,7 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
+import { WorkspaceText } from "@/components/workspace-language";
+import { WorkspaceToolbar, toolbarStyles } from "@/components/workspace-toolbar";
 
 import Form from "next/form";
 import { SubmitButton } from "@/components/submit-button";
@@ -51,7 +55,7 @@ function StatusBadge({ status }: { status: CustomerListItem["status"] }) {
           : "inline-flex rounded-md border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-700"
       }
     >
-      {status === "active" ? "Active" : "Inactive"}
+      {status === "active" ? <WorkspaceText text="Active" /> : <WorkspaceText text="Inactive" />}
     </span>
   );
 }
@@ -90,14 +94,14 @@ function DuplicateMergeMenu({
   return (
     <details data-dismissible-popover className="relative">
       <summary className="inline-flex cursor-pointer list-none rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 marker:hidden">
-        Duplicate?
+        <WorkspaceText text="Duplicate?" />
       </summary>
       <div className="absolute left-0 z-20 mt-2 w-[min(360px,calc(100vw-48px))] rounded-lg border border-zinc-200 bg-white p-3 text-left shadow-xl">
         <p className="text-sm font-semibold text-zinc-950">
-          Matching customer records
+          <WorkspaceText text="Matching customer records" />
         </p>
         <p className="mt-1 text-xs text-zinc-500">
-          Keep {customer.name} and move selected history into it.
+          <WorkspaceText text="Keep" /> {customer.name} <WorkspaceText text="and move selected history into it." />
         </p>
         <div className="mt-3 grid max-h-48 gap-2 overflow-y-auto pr-1">
           {customer.duplicateCandidates.map((candidate) => (
@@ -111,10 +115,10 @@ function DuplicateMergeMenu({
               <p className="mt-0.5 text-xs text-zinc-600">
                 {[candidate.phone, candidate.email].filter(Boolean).join(" / ") ||
                   "No contact"}{" "}
-                / {sourceLabel(candidate.source)}
+                / <WorkspaceText text={sourceLabel(candidate.source)} />
               </p>
               <p className="mt-0.5 text-xs text-zinc-500">
-                Created {formatDateTime(candidate.created_at)}
+                <WorkspaceText text="Created" /> <WorkspaceText text={formatDateTime(candidate.created_at)} />
               </p>
             </div>
           ))}
@@ -133,7 +137,7 @@ function DuplicateMergeMenu({
             className="w-full rounded-md bg-zinc-950 px-3 py-2 text-sm font-semibold text-white"
             type="submit"
           >
-            Merge all
+            <WorkspaceText text="Merge all" />
           </SubmitButton>
         </form>
         <form action={mergeDuplicateCustomers} className="mt-2 grid gap-2">
@@ -158,7 +162,7 @@ function DuplicateMergeMenu({
             className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950"
             type="submit"
           >
-            Merge selected
+            <WorkspaceText text="Merge selected" />
           </SubmitButton>
         </form>
       </div>
@@ -181,12 +185,12 @@ function CustomerList({
     return (
       <div className="content-surface mt-4 border-zinc-300 bg-white p-6 rounded-none border-y shadow-none">
         <h2 className="text-lg font-semibold text-zinc-950">
-          {query ? "No matching customers" : "No customers yet"}
+          <WorkspaceText text={query ? "No matching customers" : "No customers yet"} />
         </h2>
         <p className="mt-2 text-sm text-zinc-600">
-          {query
+          <WorkspaceText text={query
             ? "Try a different name, phone, or email."
-            : "Customers will appear here when appointments or POS tickets create salon-local relationships."}
+            : "Customers will appear here when appointments or POS tickets create salon-local relationships."} />
         </p>
       </div>
     );
@@ -196,12 +200,12 @@ function CustomerList({
     <>
       <div className="content-surface mt-4 overflow-visible border-zinc-200 bg-white rounded-none border-y shadow-none">
         <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-medium uppercase text-zinc-500">
-          <div className="col-span-12 sm:col-span-3">Customer</div>
-          <div className="hidden sm:col-span-2 sm:block">Upcoming</div>
-          <div className="hidden sm:col-span-2 sm:block">Last visit</div>
-          <div className="hidden sm:col-span-2 sm:block">History</div>
-          <div className="hidden sm:col-span-2 sm:block">Spend</div>
-          <div className="hidden sm:col-span-1 sm:block">Actions</div>
+          <div className="col-span-12 sm:col-span-3"><WorkspaceText text="Customer" /></div>
+          <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Upcoming" /></div>
+          <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Last visit" /></div>
+          <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="History" /></div>
+          <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Spend" /></div>
+          <div className="hidden sm:col-span-1 sm:block"><WorkspaceText text="Actions" /></div>
         </div>
         <ul className="divide-y divide-zinc-200">
           {customers.map((customer) => {
@@ -221,7 +225,7 @@ function CustomerList({
                       canManageCustomers ? (
                         <DuplicateMergeMenu customer={customer} />
                       ) : (
-                        <SignalBadge tone="amber">Duplicate?</SignalBadge>
+                        <SignalBadge tone="amber"><WorkspaceText text="Duplicate?" /></SignalBadge>
                       )
                     ) : null}
                   </div>
@@ -232,19 +236,19 @@ function CustomerList({
                         "No contact"}
                   </p>
                   <p className="mt-1 text-xs capitalize text-zinc-500">
-                    {sourceLabel(customer.source)}
+                    <WorkspaceText text={sourceLabel(customer.source)} />
                   </p>
                 </div>
                 <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
                   <span className="font-medium text-zinc-500 sm:hidden">
-                    Upcoming:{" "}
+                    <WorkspaceText text="Upcoming:" />{" "}
                   </span>
                   {customer.metrics.upcoming_start_at ? (
                     <Link
                       className="font-medium text-zinc-950 underline"
                       href={`/bookings?bookingId=${customer.metrics.upcoming_booking_id}`}
                     >
-                      {formatDateTime(customer.metrics.upcoming_start_at)}
+                      <WorkspaceText text={formatDateTime(customer.metrics.upcoming_start_at)} />
                     </Link>
                   ) : (
                     "-"
@@ -252,13 +256,13 @@ function CustomerList({
                 </div>
                 <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
                   <span className="font-medium text-zinc-500 sm:hidden">
-                    Last visit:{" "}
+                    <WorkspaceText text="Last visit:" />{" "}
                   </span>
-                  {formatDateTime(customer.metrics.last_visit_at)}
+                  <WorkspaceText text={formatDateTime(customer.metrics.last_visit_at)} />
                 </div>
                 <div className="col-span-12 flex flex-wrap gap-2 self-center sm:col-span-2">
                   <SignalBadge tone="strong">
-                    {customer.metrics.appointment_count} appts
+                    {customer.metrics.appointment_count} <WorkspaceText text="appts" />
                   </SignalBadge>
                   {riskCount > 0 ? (
                     <SignalBadge tone="amber">
@@ -268,12 +272,12 @@ function CustomerList({
                 </div>
                 <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
                   <span className="font-medium text-zinc-500 sm:hidden">
-                    Finalized spend:{" "}
+                    <WorkspaceText text="Finalized spend:" />{" "}
                   </span>
                   {formatMoney(customer.metrics.finalized_spend)}
                   {customer.metrics.active_pos_ticket_count > 0 ? (
                     <p className="mt-1 text-xs font-semibold text-amber-700">
-                      {customer.metrics.active_pos_ticket_count} open ticket
+                      {customer.metrics.active_pos_ticket_count} <WorkspaceText text="open ticket" />
                     </p>
                   ) : null}
                 </div>
@@ -282,14 +286,14 @@ function CustomerList({
                     className="font-medium text-zinc-950 underline"
                     href={detailHref}
                   >
-                    View
+                    <WorkspaceText text="View" />
                   </Link>
                   {canManageCustomers && !customer.isWalkingGroup ? (
                     <Link
                       className="font-medium text-zinc-950 underline sm:block"
                       href={`/customers/${customer.id}/edit`}
                     >
-                      Edit
+                      <WorkspaceText text="Edit" />
                     </Link>
                   ) : null}
                 </div>
@@ -302,8 +306,8 @@ function CustomerList({
       {pagination.pageCount > 1 ? (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
           <p className="text-zinc-600">
-            Page {pagination.page} of {pagination.pageCount} /{" "}
-            {pagination.count} customers
+            <WorkspaceText text="Page" /> {pagination.page} <WorkspaceText text="of" /> {pagination.pageCount} /{" "}
+            {pagination.count} <WorkspaceText text="customers" />
           </p>
           <div className="flex gap-2">
             {pagination.page > 1 ? (
@@ -314,7 +318,7 @@ function CustomerList({
                   q: query,
                 })}
               >
-                Previous
+                <WorkspaceText text="Previous" />
               </Link>
             ) : null}
             {pagination.page < pagination.pageCount ? (
@@ -325,7 +329,7 @@ function CustomerList({
                   q: query,
                 })}
               >
-                Next
+                <WorkspaceText text="Next" />
               </Link>
             ) : null}
           </div>
@@ -350,7 +354,9 @@ function customerListHref({ page, q }: { page: number; q: string }) {
   return query ? `/customers?${query}` : "/customers";
 }
 
-export default async function CustomersPage({ searchParams }: CustomersPageProps) {
+async function CustomersPage({ searchParams }: CustomersPageProps) {
+  const __vt = await getWorkspaceTranslation();
+
   const { error, page, q } = await searchParams;
   await requireSalonManagePageContext("/customers");
   const { context, customers, pagination } = await getCurrentSalonCustomerList({
@@ -361,50 +367,48 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
   const canManageCustomers = await hasPermission("customers.manage", context);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-10">
+    <main className="mx-auto w-full max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
       {error ? (
         <p className="content-surface border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 rounded-none border-y shadow-none">
-          {error}
+          <WorkspaceText text={error} />
         </p>
       ) : null}
 
-      <section className="border-b border-zinc-200 py-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <Form className="flex flex-col gap-3 sm:flex-row" action="/customers">
+      <WorkspaceToolbar>
+          <Form className={toolbarStyles.search} action="/customers">
             <input
-              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-950 sm:w-[480px]"
+              aria-label={__vt("Search customers")} className="h-11 w-full min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
               defaultValue={q ?? ""}
               name="q"
-              placeholder="Search name, phone, email"
+              placeholder={__vt("Search name, phone, email")}
               type="search"
             />
             <SubmitButton pendingLabel="Processing…"
-              className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+              aria-label={__vt("Search customers")} className={toolbarStyles.icon}
               type="submit"
             >
-              Search
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>
             </SubmitButton>
             {q ? (
               <Link
-                className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
+                aria-label={__vt("Clear customer search")} className="inline-flex h-11 shrink-0 items-center px-1 text-sm text-zinc-600"
                 href="/customers"
               >
-                Clear
+                ×
               </Link>
             ) : null}
           </Form>
           {canManageCustomers ? (
             <Link
-              className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+              aria-label={__vt("Create customer")} className={toolbarStyles.primary}
               href="/customers/new"
             >
-              + Create Customer
+              <span className="sm:hidden"><WorkspaceText text="+ Customer" /></span><span className="hidden sm:inline"><WorkspaceText text="+ Create Customer" /></span>
             </Link>
           ) : null}
-        </div>
-      </section>
+      </WorkspaceToolbar>
 
-      <section className="pt-6">
+      <section className="pt-4">
         <CustomerList
           canManageCustomers={canManageCustomers}
           customers={customers}
@@ -415,3 +419,5 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
     </main>
   );
 }
+
+export default withExperiencePage(CustomersPage);

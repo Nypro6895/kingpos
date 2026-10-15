@@ -3,25 +3,25 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     background_color: "#ffffff",
-    description: "Reylumi customer-facing POS checkout display.",
+    description: "Reylumi beauty booking and salon workspace",
     display: "standalone",
     icons: [
       {
-        src: "/brand/reylumi-favicon.png",
-        sizes: "364x364",
+        src: "/brand/reylumi-app-192.png",
+        sizes: "192x192",
         type: "image/png",
       },
       {
-        src: "/apple-icon.png",
-        sizes: "364x364",
+        src: "/brand/reylumi-app-512.png",
+        sizes: "512x512",
         type: "image/png",
       },
     ],
-    id: "/pos/customer-display",
-    name: "Reylumi Customer Display",
-    scope: "/pos/",
-    short_name: "Reylumi Display",
-    start_url: "/pos/customer-display/setup",
+    id: "/",
+    name: "Reylumi",
+    scope: "/",
+    short_name: "Reylumi",
+    start_url: "/",
     theme_color: "#0f766e",
   };
 }

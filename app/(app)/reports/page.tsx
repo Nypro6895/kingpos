@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
 
 import { OwnerLiveReports } from '@/app/reports/owner-live-reports';
 import {
@@ -24,7 +26,7 @@ function firstParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export default async function ReportsPage({ searchParams }: ReportsPageProps) {
+async function ReportsPage({ searchParams }: ReportsPageProps) {
   const [params, context] = await Promise.all([
     searchParams,
     requireSalonManagePageContext("/reports"),
@@ -36,7 +38,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   );
 
   if (!canViewReports) {
-    return <p className="p-6">You do not have permission to view reports.</p>;
+    return <p className="p-6"><WorkspaceText text="You do not have permission to view reports." /></p>;
   }
 
   const reportOverview = await getOperationalReport(params, context);
@@ -59,3 +61,5 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   // eslint-disable-next-line react-hooks/purity
   return <OwnerLiveReports snapshotAt={Date.now()} key={JSON.stringify(params)} salonId={context.currentSalon.id} salonName={context.currentSalon.name} today={today} report={report} reportOverview={reportOverview} canEdit={canEdit} canApplyCorrection={canApplyCorrection} canRequestCorrection={canRequestCorrection}/>;
 }
+
+export default withExperiencePage(ReportsPage);

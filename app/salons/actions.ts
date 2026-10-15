@@ -16,7 +16,7 @@ import {
 import { hasPermission } from "@/lib/permissions";
 import { routes, withSearchParams } from "@/lib/routes";
 import { createAuthenticatedSupabaseServerClient } from "@/lib/supabase/server";
-import { refresh, revalidatePath } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 const MANAGE_SALON_SWITCH_PERMISSIONS = [
@@ -218,8 +218,9 @@ async function switchWorkspaceToDestination(input: {
     };
   }
 
+  // Cookie writes update the shell; invalidation makes the destination fresh.
+  // Callers navigate once without issuing another router refresh.
   revalidatePath("/", "layout");
-  refresh();
   return { href, ok: true };
 }
 

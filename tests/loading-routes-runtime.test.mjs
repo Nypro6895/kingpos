@@ -32,6 +32,11 @@ test('owner, staff and personal shells render page content once with both naviga
     '@/lib/supabase/browser':{createSupabaseBrowserClient:()=>null},'@/app/role-navigation':role,
     '@/app/salons/actions':{},'@/lib/routes':routes,
     '@/components/explore-advertising':{ExploreAdSlot:()=>null},
+    '@/lib/explore-entry-navigation':load('lib/explore-entry-navigation.ts'),
+    '@/app/explore/explore-header-search-slot':{ExploreHeaderSearchSlot:()=>null},
+    '@/components/workspace-language':{WorkspaceText:({text})=>text,useWorkspaceTranslation:()=>text=>text},
+    '@/components/workspace-navigation-icon':{WorkspaceNavigationIcon:()=>null},
+    '@/components/role-more-content':{RoleMoreContent:()=>null},
     '@/lib/notification-client':{useNotificationSummary:initial=>initial},
     'next/navigation':{usePathname:()=>pathname,useSearchParams:()=>new URLSearchParams(),useRouter:()=>({})},
     'next/link':{__esModule:true,default:({children,href,prefetch,...props})=>React.createElement('a',{href,...props},children)},
@@ -54,6 +59,7 @@ test('report refresh loads only the requested tab and rejects unauthorized reads
   const calls=[];let permitted=true;
   const context={user:{id:'user'},currentSalon:{id:'salon'}};
   const {GET}=load('app/api/pos/owner/reports/route.ts',{
+    'next/headers':{headers:async()=>new Headers()},
     'next/server':{NextResponse:class extends Response{static json(data,options){return Response.json(data,options);}}},
     '@/lib/current-context':{getCurrentBusinessContext:async()=>context,isSalonManageContext:()=>true},
     '@/lib/permissions':{hasPermission:async()=>permitted},
@@ -72,6 +78,7 @@ test('report refresh loads only the requested tab and rejects unauthorized reads
 test('booking calendar refresh requests a scoped detail patch and omits server identity context',async()=>{
   let options;
   const {GET}=load('app/api/pos/owner/bookings/route.ts',{
+    'next/headers':{headers:async()=>new Headers()},
     'next/server':{NextResponse:class extends Response{static json(data,init){return Response.json(data,init);}}},
     '@/lib/current-context':{getCurrentBusinessContext:async()=>({user:{id:'user'},currentSalon:{id:'salon'}}),isSalonManageContext:()=>true},
     '@/lib/permissions':{hasPermission:async()=>true},

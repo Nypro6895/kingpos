@@ -14,7 +14,7 @@ const dailyReport = read("lib/daily-pos-report.ts");
 const salonBusinessHours = read("lib/salon-business-hours.ts");
 const quickAccesses = read("lib/today-quick-accesses.ts");
 const quickAccessActions = read("app/staff/today/actions.ts");
-const todayPage = read("app/(app)/staff/today/page.tsx");
+const todayPage = read("app/(app)/staff/today/page.tsx") + read("app/staff/today/today-dashboard-view.tsx");
 const quickAccessEditor = read("app/staff/today/quick-access-editor.tsx");
 const quickAccessMigration = read(
   "supabase/migrations/202608150001_today_quick_access_preferences.sql",
@@ -66,7 +66,7 @@ test("Today waiting state consumes active customer visits and has no fake chart"
   assert.match(todayPage, /function getWaitingMinutes/);
   assert.match(
     todayPage,
-    /clientPresenceStatusLabel\(client\.status\)\} \{waitingDuration\}/,
+    /text=\{clientPresenceStatusLabel\(client\.status\)\} \/> \{waitingDuration\}/,
   );
   assert.doesNotMatch(todayPage, /function WaitingAttentionItem/);
 });
@@ -142,7 +142,7 @@ test("Today layout keeps Team and Performance full-width with compact staff rows
     /aria-label=\{`\$\{member\.turns\.large\} large turns and \$\{member\.turns\.small\} small turns`\}/,
   );
   assert.match(todayPage, /formatShortMoney\(input\.value\)/);
-  assert.match(todayPage, /Services\s*\{services\.label\}/);
+  assert.match(todayPage, /text="Services" \/> <WorkspaceText text=\{services\.label\}/);
   assert.match(todayPage, /Tips not attributed to this staff member/);
   assert.match(todayPage, /No turn activity yet/);
   assert.doesNotMatch(todayPage, /No sales"|No tips"/);
@@ -164,7 +164,7 @@ test("Day View validates URL date and propagates selected business date", () => 
   assert.match(todayPage, /searchParams: Promise/);
   assert.match(
     todayPage,
-    /getTodayDashboard\(context, \{ date: params\.date \}\)/,
+    /getTodayDashboard\(context, \{ date: params\.date, phase: "core" \}\)/,
   );
   assert.match(todayPage, /function DayViewControl/);
   assert.match(todayPage, /method="get"/);

@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { CurrentWorkspaceOption as Workspace } from "@/lib/current-context";
 import type { Location } from "@/types/location";
@@ -42,33 +43,35 @@ export function placeAddress(salon?: Location) {
 }
 
 function SalonFields({ salon }: { salon?: Location }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <>
       <Field
-        label="Salon name"
+        label={__vt("Salon name")}
         name="name"
         value={salon?.name}
         required
         maxLength={160}
       />
-      <Field label="Phone" name="phone" value={salon?.phone} type="tel" />
+      <Field label={__vt("Phone")} name="phone" value={salon?.phone} type="tel" />
       <Field
-        label="Street address"
+        label={__vt("Street address")}
         name="address_line1"
         value={salon?.address_line1}
       />
       <Field
-        label="Suite / unit"
+        label={__vt("Suite / unit")}
         name="address_line2"
         value={salon?.address_line2}
       />
       <div className="grid grid-cols-2 gap-3">
-        <Field label="City" name="city" value={salon?.city} />
-        <Field label="State" name="state" value={salon?.state} />
-        <Field label="ZIP code" name="postal_code" value={salon?.postal_code} />
+        <Field label={__vt("City")} name="city" value={salon?.city} />
+        <Field label={__vt("State")} name="state" value={salon?.state} />
+        <Field label={__vt("ZIP code")} name="postal_code" value={salon?.postal_code} />
         {salon ? (
           <Field
-            label="Country code"
+            label={__vt("Country code")}
             name="country"
             value={salon.country}
             required
@@ -93,6 +96,8 @@ export function CreateSalonPanel({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [busy, start] = useTransition();
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,8 +122,8 @@ export function CreateSalonPanel({
   }
   return (
     <Sheet
-      title="Create salon"
-      subtitle="Add a salon to your business account."
+      title={__vt("Create salon")}
+      subtitle={__vt("Create a business. Choose which existing access settings it shares.")}
       busy={busy}
       dirty={dirty}
       onClose={onClose}
@@ -130,7 +135,7 @@ export function CreateSalonPanel({
       >
         <fieldset disabled={busy} className="grid gap-4">
           <label className="grid gap-1.5 text-sm font-medium">
-            Business account
+            <WorkspaceText text="Shared access group" />
             <select
               className={inputClass}
               name="workspace_id"
@@ -139,15 +144,15 @@ export function CreateSalonPanel({
             >
               {accounts.map((a) => (
                 <option value={a.id} key={a.id}>
-                  {a.label}
+                  <WorkspaceText text={a.label} />
                 </option>
               ))}
             </select>
           </label>
           <SalonFields />
         </fieldset>
-        {error ? <Notice error>{error}</Notice> : null}
-        <FormFooter busy={busy} label="Create salon" />
+        {error ? <Notice error><WorkspaceText text={error} /></Notice> : null}
+        <FormFooter busy={busy} label={__vt("Create salon")} />
       </form>
     </Sheet>
   );
@@ -162,6 +167,8 @@ export function SalonDetailsPanel({
   onClose: () => void;
   onSaved: (message: string) => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [details, setDetails] = useState<PlaceSalonDetails | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -217,7 +224,7 @@ export function SalonDetailsPanel({
   return (
     <Sheet
       title={details?.salon.name ?? workspace.label}
-      subtitle={`${workspace.roleLabel} · ${workspace.accountName ?? "Salon"}`}
+      subtitle={__vt(workspace.roleLabel)}
       busy={busy || logoBusy}
       dirty={dirty}
       onClose={onClose}
@@ -230,7 +237,7 @@ export function SalonDetailsPanel({
             {success ? <Notice>{success}</Notice> : null}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="rounded-full bg-[#f6f3f0] px-3 py-1 text-xs font-semibold capitalize">
-                {details.salon.status.replaceAll("_", " ")}
+                <WorkspaceText text={details.salon.status.replaceAll("_", " ")} />
               </span>
               {details.canEdit && !editing ? (
                 <button
@@ -241,7 +248,7 @@ export function SalonDetailsPanel({
                     setSuccess(null);
                   }}
                 >
-                  Edit details
+                  <WorkspaceText text="Edit details" />
                 </button>
               ) : null}
             </div>
@@ -254,7 +261,7 @@ export function SalonDetailsPanel({
                 <fieldset disabled={busy} className="grid gap-4">
                   <SalonFields salon={details.salon} />
                 </fieldset>
-                {error ? <Notice error>{error}</Notice> : null}
+                {error ? <Notice error><WorkspaceText text={error} /></Notice> : null}
                 <FormFooter busy={busy} />
                 <button
                   className={button}
@@ -263,7 +270,7 @@ export function SalonDetailsPanel({
                   onClick={() => {
                     if (
                       !dirty ||
-                      window.confirm("Discard your unsaved changes?")
+                      window.confirm(__vt("Discard your unsaved changes?"))
                     ) {
                       setEditing(false);
                       setDirty(false);
@@ -271,21 +278,20 @@ export function SalonDetailsPanel({
                     }
                   }}
                 >
-                  Cancel editing
+                  <WorkspaceText text="Cancel editing" />
                 </button>
               </form>
             ) : (
               <dl className="grid gap-4 text-sm">
                 {[
                   ["Salon", details.salon.name],
-                  ["Business account", workspace.accountName],
                   ["Phone", details.salon.phone],
                   ["Address", placeAddress(details.salon)],
                 ].map(([label, value]) => (
                   <div key={label}>
-                    <dt className="text-xs text-zinc-500">{label}</dt>
+                    <dt className="text-xs text-zinc-500"><WorkspaceText text={label} /></dt>
                     <dd className="mt-1 break-words font-medium">
-                      {value || "Not provided"}
+                      <WorkspaceText text={value || "Not provided"} />
                     </dd>
                   </div>
                 ))}
@@ -314,6 +320,8 @@ function LogoEditor({
   onSaved: (message: string) => void;
   onBusy: (value: boolean) => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [busy, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
@@ -385,7 +393,7 @@ function LogoEditor({
           disabled={busy}
           onClick={() => input.current?.click()}
         >
-          {busy ? "Saving…" : "Change logo"}
+          <WorkspaceText text={busy ? "Saving…" : "Change logo"} />
         </button>
         {workspace.avatarUrl ? (
           <button
@@ -406,22 +414,22 @@ function LogoEditor({
               });
             }}
           >
-            Remove logo
+            <WorkspaceText text="Remove logo" />
           </button>
         ) : null}
       </div>
       <input
         ref={input}
-        aria-label="Upload salon logo"
+        aria-label={__vt("Upload salon logo")}
         type="file"
         className="hidden"
         accept="image/jpeg,image/png,image/webp"
         onChange={(e) => upload(e.target.files?.[0])}
       />
       <p className="text-xs text-zinc-500">
-        JPG, PNG, or WebP, up to 8 MB. Logo changes save immediately.
+        <WorkspaceText text="JPG, PNG, or WebP, up to 8 MB. Logo changes save immediately." />
       </p>
-      {error ? <Notice error>{error}</Notice> : null}
+      {error ? <Notice error><WorkspaceText text={error} /></Notice> : null}
     </div>
   );
 }
@@ -433,6 +441,8 @@ export function ApplyPanel({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PublicStaffApplicationSalon[] | null>(
     null,
@@ -445,8 +455,8 @@ export function ApplyPanel({
   const [dirty, setDirty] = useState(false);
   return (
     <Sheet
-      title="Apply to salon"
-      subtitle="Find a salon and send your application here."
+      title={__vt("Apply to salon")}
+      subtitle={__vt("Find a salon and send your application here.")}
       busy={busy}
       dirty={dirty}
       onClose={onClose}
@@ -471,27 +481,26 @@ export function ApplyPanel({
               }}
             >
               <input
-                aria-label="Salon name or address"
+                aria-label={__vt("Salon name or address")}
                 className={inputClass}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Salon name or address"
+                placeholder={__vt("Salon name or address")}
                 minLength={2}
                 maxLength={160}
                 required
                 disabled={busy}
               />
               <button className={primaryButton} disabled={busy} type="submit">
-                {busy ? "Searching…" : "Search"}
+                <WorkspaceText text={busy ? "Searching…" : "Search"} />
               </button>
             </form>
             <p className="text-xs text-zinc-500">
-              Results show salons that accept staff applications.
+              <WorkspaceText text="Results show salons that accept staff applications." />
             </p>
             {results?.length === 0 ? (
               <p className="text-sm text-zinc-500">
-                No matching salons accepting applications. Try another name or
-                address.
+                <WorkspaceText text="No matching salons accepting applications. Try another name or address." />
               </p>
             ) : null}
             {results?.map((s) => (
@@ -510,7 +519,7 @@ export function ApplyPanel({
                     .join(", ")}
                 </span>
                 <span className="mt-2 block text-xs font-semibold text-[#d65c2b]">
-                  Apply →
+                  <WorkspaceText text="Apply →" />
                 </span>
               </button>
             ))}
@@ -543,19 +552,19 @@ export function ApplyPanel({
             </div>
             <input type="hidden" name="salon_id" value={selected.salon_id} />
             <fieldset className="grid gap-4" disabled={busy}>
-              <Field label="Position / job title" name="requested_job_title" />
+              <Field label={__vt("Position / job title")} name="requested_job_title" />
               <label className="grid gap-1.5 text-sm font-medium">
-                Message
+                <WorkspaceText text="Message" />
                 <textarea
                   className={inputClass}
                   rows={4}
                   name="message"
                   maxLength={2000}
-                  placeholder="Introduce yourself to the salon…"
+                  placeholder={__vt("Introduce yourself to the salon…")}
                 />
               </label>
             </fieldset>
-            <FormFooter busy={busy} label="Send application" />
+            <FormFooter busy={busy} label={__vt("Send application")} />
             <button
               className={button}
               disabled={busy}
@@ -563,18 +572,18 @@ export function ApplyPanel({
               onClick={() => {
                 if (
                   !dirty ||
-                  window.confirm("Discard your application draft?")
+                  window.confirm(__vt("Discard your application draft?"))
                 ) {
                   setSelected(null);
                   setDirty(false);
                 }
               }}
             >
-              Choose another salon
+              <WorkspaceText text="Choose another salon" />
             </button>
           </form>
         )}
-        {error ? <Notice error>{error}</Notice> : null}
+        {error ? <Notice error><WorkspaceText text={error} /></Notice> : null}
       </div>
     </Sheet>
   );

@@ -11,7 +11,7 @@ export function OwnerWorkspaceFrame({checkout,children}:{checkout:ReactNode;chil
  return <div data-owner-workspace onClickCapture={event=>{
   if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
   const link=(event.target as Element).closest<HTMLAnchorElement>('a[href]');
-  if(!link||link.target||link.hasAttribute('download')||link.closest('.owner-menu-dialog'))return;
+  if(!link||link.target||link.hasAttribute('download')||link.closest('[data-owner-more-popover]'))return;
   const url=new URL(link.href,location.href);if(url.origin!==location.origin)return;
   const target=workspaceHref(url.pathname+url.search+url.hash);
   if(target!==url.pathname+url.search+url.hash){event.preventDefault();event.stopPropagation();router.push(target);}

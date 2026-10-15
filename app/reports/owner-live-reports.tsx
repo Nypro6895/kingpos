@@ -1,6 +1,10 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { CompactFilters } from "@/components/compact-filters";
+import { toolbarStyles } from "@/components/workspace-toolbar";
+import { ReportRangeFilter } from "./report-controls";
 import {useState,useEffect,useRef,useCallback} from 'react';
-import {useSearchParams} from 'next/navigation';
+import {useSearchParams,usePathname} from 'next/navigation';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 import {ClosingDateForm,ReportTabs} from './report-controls';
 import {DailyClosingForm} from './daily-closing-form';
@@ -15,7 +19,7 @@ function formatMoney(value: number) {
   }).format(value);
 }
 
-function getReportHref(date: string, reportOverview?: OperationalReportData) {
+function getReportHref(date: string, reportOverview?: OperationalReportData, reportPath = "/reports") {
   const params = new URLSearchParams({ date });
 
   if (reportOverview) {
@@ -24,13 +28,13 @@ function getReportHref(date: string, reportOverview?: OperationalReportData) {
     params.set("end", reportOverview.range.endDate);
   }
 
-  return `/reports?${params.toString()}#daily-closing`;
+  return `${reportPath}?${params.toString()}#daily-closing`;
 }
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <section className="rounded-lg border border-zinc-200 bg-white p-4">
-      <p className="text-xs font-medium uppercase text-zinc-500">{label}</p>
+      <p className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text={label} /></p>
       <p className="mt-2 text-2xl font-semibold text-zinc-950">{value}</p>
     </section>
   );
@@ -40,7 +44,7 @@ function NoPermissionState() {
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
       <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 text-sm text-zinc-600">
-        You do not have permission to view reports.
+        <WorkspaceText text="You do not have permission to view reports." />
       </p>
     </main>
   );
@@ -55,7 +59,13 @@ function DateSelector({
   selectedDate: string;
   today: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
+  const reportPath = usePathname().startsWith("/pos/report") ? "/pos/report" : "/reports";
   return (
+    <div className="flex min-w-0 items-center gap-2">
+      <span className={toolbarStyles.summary}>{selectedDate}</span>
+      <CompactFilters label={__vt("Closing date")} active={selectedDate !== today}>
     <ClosingDateForm>
       <input name="preset" type="hidden" value={reportOverview.range.preset} />
       <input
@@ -64,12 +74,13 @@ function DateSelector({
         value={reportOverview.range.startDate}
       />
       <input name="end" type="hidden" value={reportOverview.range.endDate} />
-      <label className="block sm:w-56">
+      <label className="block min-w-0">
         <span className="text-xs font-medium uppercase text-zinc-500">
-          Business Date
+          <WorkspaceText text="Business Date" />
         </span>
         <input
           className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
+          key={selectedDate}
           defaultValue={selectedDate}
           name="date"
           type="date"
@@ -79,15 +90,17 @@ function DateSelector({
         className="h-10 rounded bg-zinc-950 px-4 text-sm font-medium text-white"
         type="submit"
       >
-        Load
+        <WorkspaceText text="Load" />
       </button>
       <Link
         className="inline-flex h-11 items-center px-3 text-sm font-medium text-teal-700 hover:underline"
-        href={getReportHref(today, reportOverview)}
+        href={getReportHref(today, reportOverview, reportPath)}
       >
-        Today
+        <WorkspaceText text="Today" />
       </Link>
     </ClosingDateForm>
+      </CompactFilters>
+    </div>
   );
 }
 
@@ -96,7 +109,7 @@ function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
     return (
       <div className="mt-4 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6">
         <h2 className="text-lg font-semibold text-zinc-950">
-          No finalized staff rows for this date.
+          <WorkspaceText text="No finalized staff rows for this date." />
         </h2>
       </div>
     );
@@ -105,10 +118,10 @@ function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
   return (
     <div className="mt-4 overflow-hidden rounded-lg border border-zinc-200 bg-white">
       <div className="grid grid-cols-12 bg-zinc-50 px-4 py-2 text-xs font-medium uppercase text-zinc-500">
-        <div className="col-span-6">Staff</div>
-        <div className="col-span-3 text-right">Total Earned</div>
-        <div className="hidden text-right sm:col-span-2 sm:block">Tip</div>
-        <div className="col-span-3 text-right sm:col-span-1">Turns</div>
+        <div className="col-span-6"><WorkspaceText text="Staff" /></div>
+        <div className="col-span-3 text-right"><WorkspaceText text="Total Earned" /></div>
+        <div className="hidden text-right sm:col-span-2 sm:block"><WorkspaceText text="Tip" /></div>
+        <div className="col-span-3 text-right sm:col-span-1"><WorkspaceText text="Turns" /></div>
       </div>
       <ul className="divide-y divide-zinc-200">
         {rows.map((row) => (
@@ -135,6 +148,8 @@ function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
 
 type Props={snapshotAt?:number;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:OperationalReportData;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
 export function OwnerLiveReports(initial:Props){
+  const __vt = useWorkspaceTranslation();
+
  const [live,setLive]=useState<{base:Props;data:Props}|null>(null);const params=useSearchParams();
  const data=live?.base===initial?live.data:initial;
  const generation=useRef(0);
@@ -173,9 +188,11 @@ export function OwnerLiveReports(initial:Props){
    await refreshView();
  },{initialReconcile:false,snapshotAt:initial.snapshotAt});
   return (
-    <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-6 text-zinc-950 sm:px-6">
+    <main className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-4 text-zinc-950 sm:px-6">
       <ReportTabs
         onViewChange={onViewChange}
+        overviewTools={<ReportRangeFilter key={`${reportOverview.range.preset}:${reportOverview.range.startDate}:${reportOverview.range.endDate}`} report={reportOverview} selectedClosingDate={report.reportDate} />}
+        closingTools={<DateSelector reportOverview={reportOverview} selectedDate={report.reportDate} today={today} />}
         overview={
           <OperationalReportDashboard
             report={reportOverview}
@@ -185,49 +202,34 @@ export function OwnerLiveReports(initial:Props){
         }
       >
         <section className="grid gap-5">
-          <div>
-            <h2 className="text-xl font-semibold text-zinc-950">
-              Daily Closing
-            </h2>
-            <p className="mt-1 text-sm text-zinc-600">
-              Cash reconciliation, correction requests, and staff daily rows for
-              a single business date.
-            </p>
-          </div>
+          <h2 className="sr-only"><WorkspaceText text="Daily Closing" /></h2>
 
-          <DateSelector
-            reportOverview={reportOverview}
-            selectedDate={report.reportDate}
-            today={today}
-          />
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <SummaryCard
-              label="Total Staff Earned"
+              label={__vt("Total Staff Earned")}
               value={formatMoney(report.totals.totalStaffEarned)}
             />
             <SummaryCard
-              label="Total Tip"
+              label={__vt("Total Tip")}
               value={formatMoney(report.totals.totalTip)}
             />
             <SummaryCard
-              label="Total Discount"
+              label={__vt("Total Discount")}
               value={formatMoney(report.totals.totalDiscount)}
             />
             <SummaryCard
-              label="Gift Card"
+              label={__vt("Gift Card")}
               value={formatMoney(report.totals.totalGiftCard)}
             />
             <SummaryCard
-              label="Expected Total"
+              label={__vt("Expected Total")}
               value={formatMoney(report.totals.expectedTotal)}
             />
           </div>
 
           {report.lock.liveTotalsDifferFromSnapshot ? (
             <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              Current POS data differs from the locked snapshot. Corrections are
-              recorded through adjustment records.
+              <WorkspaceText text="Current POS data differs from the locked snapshot. Corrections are recorded through adjustment records." />
             </p>
           ) : null}
 
@@ -249,11 +251,10 @@ export function OwnerLiveReports(initial:Props){
             <div className="flex flex-wrap items-end justify-between gap-3 border-b border-zinc-200 pb-3">
               <div>
                 <h2 className="text-lg font-semibold text-zinc-950">
-                  Staff Daily Report
+                  <WorkspaceText text="Staff Daily Report" />
                 </h2>
                 <p className="mt-1 text-sm text-zinc-600">
-                  Finalized POS staff earnings and turn totals for this business
-                  date.
+                  <WorkspaceText text="Finalized POS staff earnings and turn totals for this business date." />
                 </p>
               </div>
             </div>
@@ -262,12 +263,12 @@ export function OwnerLiveReports(initial:Props){
 
           <section className="mt-8 rounded-lg border border-zinc-200 bg-white p-5">
             <h2 className="text-lg font-semibold text-zinc-950">
-              Verification
+              <WorkspaceText text="Verification" />
             </h2>
             <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <div>
                 <dt className="text-xs font-medium uppercase text-zinc-500">
-                  Tickets
+                  <WorkspaceText text="Tickets" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {report.metadata.ticketCount}
@@ -275,7 +276,7 @@ export function OwnerLiveReports(initial:Props){
               </div>
               <div>
                 <dt className="text-xs font-medium uppercase text-zinc-500">
-                  Finalized
+                  <WorkspaceText text="Finalized" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {report.metadata.finalizedTicketCount}
@@ -283,7 +284,7 @@ export function OwnerLiveReports(initial:Props){
               </div>
               <div>
                 <dt className="text-xs font-medium uppercase text-zinc-500">
-                  Open Excluded
+                  <WorkspaceText text="Open Excluded" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {report.metadata.excludedOpenTicketCount}
@@ -299,7 +300,7 @@ export function OwnerLiveReports(initial:Props){
               </div>
               <div>
                 <dt className="text-xs font-medium uppercase text-zinc-500">
-                  Gift Card Payments
+                  <WorkspaceText text="Gift Card Payments" />
                 </dt>
                 <dd className="mt-1 text-lg font-semibold text-zinc-950">
                   {formatMoney(report.totals.giftCardPaymentTotal)}

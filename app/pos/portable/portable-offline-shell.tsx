@@ -1,5 +1,6 @@
 "use client";
 import { desktopDevice } from "@/lib/portable-device-storage";
+import { registerPortableServiceWorker } from "@/lib/portable-service-worker";
 import { useEffect } from "react";
 import { usePortableWorkspaceState } from "./portable-workspace-state";
 
@@ -19,10 +20,9 @@ export function PortableOfflineShell() {
           return;
         }
         if (!("serviceWorker" in navigator)) return;
-        await navigator.serviceWorker.register("/portable-sw.js", { scope: "/pos/" });
-        const registration = await navigator.serviceWorker.ready;
+        const worker = await registerPortableServiceWorker();
         if (!active) return;
-        registration.active?.postMessage({ kind: "portable-prepare", scope,
+        worker?.postMessage({ kind: "portable-prepare", scope,
           assets: performance.getEntriesByType("resource").map(entry => entry.name) });
       } catch { /* Local commands still work if shell caching is unavailable. */ }
       finally { running = false; }

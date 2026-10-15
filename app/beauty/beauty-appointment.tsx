@@ -10,7 +10,7 @@ export async function BeautyAppointment() {
     <p className="text-xs font-semibold text-text-secondary">Next appointment</p>
     {booking ? <>
       <h2 className="mt-2 pr-6 text-lg font-semibold">{new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: booking.salon_timezone_snapshot }).format(new Date(booking.start_at))}</h2>
-      <p className="mt-1 text-sm text-text-secondary">{booking.salon?.displayName ?? "Salon appointment"}</p>
+      <p className="mt-1 text-sm text-text-secondary"><Link href={`/explore/salons/${booking.salon_id}`} className="hover:underline">{booking.salon?.displayName ?? "Salon appointment"}</Link></p>
       <p className="mt-1 text-xs text-text-secondary">{booking.lines?.filter(line => line.line_type === "service").map(line => line.service_name_snapshot).join(" · ")}</p>
       <div className="mt-3 flex items-center justify-between gap-3"><span className="text-xs capitalize text-brand-teal">{booking.status.replaceAll("_", " ")}</span><Link className="inline-flex min-h-10 items-center text-sm font-semibold text-brand-teal" href={`/my-bookings/${booking.id}`}>View booking →</Link></div>
     </> : <p className="mt-2 text-sm text-text-secondary">No upcoming appointments. <Link href="/my-bookings" className="text-brand-teal">View bookings</Link></p>}

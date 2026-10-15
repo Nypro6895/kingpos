@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import {ExploreReferenceLove} from "@/components/explore-account-actions";
 import { ShowcaseBookIntent } from "@/app/explore/showcase-book-intent";
 import { ReylumiIcon } from "@/components/reylumi-icons";
@@ -201,7 +202,7 @@ function LookMediaStage({ look }: { look: ExploreShowcaseLookPage }) {
   );
 }
 
-export default async function ShowcaseLookPage({
+async function ShowcaseLookPage({
   params,
 }: ShowcaseLookRouteProps) {
   const { lookId } = await params;
@@ -371,3 +372,5 @@ export default async function ShowcaseLookPage({
     </main>
   );
 }
+
+export default withExperiencePage(ShowcaseLookPage);

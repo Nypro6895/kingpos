@@ -24,12 +24,16 @@ export type ExploreLocationSource =
   | "gps"
   | "manual"
   | "none"
+  | "activity"
   | "saved"
   | "workspace";
 
 export type ExploreResultGroup = "best_match" | "nearby" | "recommended";
 
 export type ExploreSearchInput = {
+  target?: "auto" | "salons" | "posts";
+  locationSource?: ExploreLocationSource;
+  cursor?: Record<string, unknown> | null;
   category?: string;
   latitude?: number | null;
   location?: string;
@@ -37,9 +41,24 @@ export type ExploreSearchInput = {
   page?: number;
   pageSize?: number;
   query?: string;
+  scopePolicy?: "fixed" | "expandable";
+  sort?: "relevance" | "trusted" | "bookable" | "closest";
+  intent?: "search" | "discover" | "latest";
+};
+
+export type ExploreSearchErrorKind = "query" | "timeout" | "network" | "cursor";
+
+export type ExploreSearchScope = {
+  policy: "fixed" | "expandable";
+  stage: string;
+  label: string;
+  expanded: boolean;
 };
 
 export type ExploreSearchResult = Partial<SalonIdentity> & {
+  continuationCursor?: Record<string, unknown>;
+  searchScope?: "exact" | "A" | "B" | "C";
+  scopeLabel?: string;
   trustEvidence?: LumiTrustCanonicalEvidence | null;
   activeServiceCount: number;
   addressLine1: string | null;
@@ -113,6 +132,9 @@ export type ExploreInspirationLayoutVariant =
   | "square";
 
 export type ExploreInspirationItem = {
+  authorRole?: import("@/lib/post-identity").SalonPostAuthorRole;
+  authorStaffId?: string | null;
+  commentCount?: number;
   aspectRatio: number | null;
   authorDisplayName: string | null;
   authorIsAnonymous: boolean;
@@ -241,6 +263,11 @@ export type ExploreFeedVerification = {
 };
 
 export type ExploreFeedItem = {
+  platformIntroduction?: boolean;
+  contentKey?: string;
+  salonAuthorRole?: import("@/lib/post-identity").SalonPostAuthorRole;
+  salonAuthorName?: string | null;
+  salonAuthorStaffId?: string | null;
   publishedAtKnown?: boolean;
   discoverySalon?: ExploreHomeSalon;
   discoveryScope?: "local" | "wider";
@@ -282,6 +309,10 @@ export type ExplorePersonalPostPage = {
 };
 
 export type ExploreFeedPage = {
+  sessionCursor?: string | null;
+  asOf?: string;
+  newestPublishedAt?: string | null;
+  scope?: "local" | "wider" | "mixed";
   error: string | null;
   hasMore: boolean;
   items: ExploreFeedItem[];
@@ -419,6 +450,29 @@ export type ExploreSearchGroupCounts = {
 };
 
 export type ExploreSearchResponse = {
+  target?: "salons" | "posts";
+  contentQuery?: string;
+  displayQuery?: string;
+  locationOrigin?: "manual" | "query" | "context" | "none";
+  locationSource?: ExploreLocationSource;
+  requiresGps?: boolean;
+  areaAmbiguous?: boolean;
+  locationConflict?: boolean;
+  queryLocationHint?: string;
+  lookupFailed?: boolean;
+  areaCandidates?: Array<{ kind: "city"; label: string; city: string; stateCode: string | null }>;
+  appliedSort?: string;
+  supportedSorts?: string[];
+  sortFallbackReason?: string | null;
+  rankVersion?: number | null;
+  rankAsOf?: string | null;
+  rankingBasis?: "indexed_scope" | "candidate_pool";
+  sort?: ExploreSearchInput["sort"];
+  errorKind?: ExploreSearchErrorKind | null;
+  countKind?: "exact" | "loaded";
+  scope?: ExploreSearchScope;
+  nextCursor?: Record<string, unknown> | null;
+  hasMore?: boolean;
   category: string;
   error: string | null;
   groupCounts: ExploreSearchGroupCounts;
@@ -433,6 +487,9 @@ export type ExploreSearchResponse = {
 };
 
 export type ExploreInitialLocation = {
+  confidence?: number;
+  evidenceDays?: number;
+  lastObservedAt?: string | null;
   label: string;
   source: ExploreLocationSource;
 };

@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { AccountRecoveryForm } from "@/app/account-recovery/account-recovery-form";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import type { Metadata } from "next";
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   description: "Use a ReyLUMI recovery code to request account access help.",
 };
 
-export default async function AccountRecoveryPage({
+async function AccountRecoveryPage({
   searchParams,
 }: AccountRecoveryPageProps) {
   const { next } = await searchParams;
@@ -58,3 +59,5 @@ export default async function AccountRecoveryPage({
     </main>
   );
 }
+
+export default withExperiencePage(AccountRecoveryPage);

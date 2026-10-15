@@ -59,6 +59,44 @@ function resolve(input) {
   });
 }
 
+function publicStatusModule(defaultClient) {
+  const exports = {};
+  vm.runInNewContext(ts.transpileModule(readFileSync(join(root, "lib/salon-operating-status.ts"), "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText, {
+    exports, Date, Intl, Map, Set, console: { warn() {} },
+    require(specifier) {
+      if (specifier === "server-only") return {};
+      if (specifier === "@/lib/salon-operating-status-core") return moduleContext.module.exports;
+      if (specifier === "@/lib/supabase/server") return { createSupabaseServerClient: defaultClient };
+      if (["@/lib/salon-settings", "@/lib/current-context", "@/lib/permissions"].includes(specifier)) return {};
+      throw new Error(`Unexpected operating-status dependency: ${specifier}`);
+    },
+  });
+  return exports;
+}
+
+test("public operating status uses injected selected RPC runner and keeps legacy client support", async () => {
+  const salonId = "00000000-0000-4000-8000-000000000001";
+  const calls = [];
+  let defaultClientCalls = 0;
+  const api = publicStatusModule(() => {
+    defaultClientCalls++;
+    return { rpc: async (name, args) => { calls.push({ name, args, injected: false }); return { data: [], error: null }; } };
+  });
+  const runner = async (name, args) => { calls.push({ name, args, injected: true }); return { data: [], error: null }; };
+  const statuses = await api.getPublicSalonOperatingStatusesBySalonId([salonId, salonId.toUpperCase(), "invalid"], runner);
+  assert.equal(statuses.size, 1);
+  assert.equal(defaultClientCalls, 0);
+  assert.equal(calls[0].name, "get_public_salon_operating_status_inputs");
+  assert.deepEqual(JSON.parse(JSON.stringify(calls[0].args)), { target_salon_ids: [salonId] });
+  await api.getPublicSalonOperatingStatusesBySalonId([salonId]);
+  assert.equal(defaultClientCalls, 1);
+  assert.equal(calls[1].injected, false);
+  const aborted = Object.assign(new Error("Request aborted"), { name: "AbortError" });
+  await assert.rejects(api.getPublicSalonOperatingStatusesBySalonId([salonId], async () => { throw aborted; }), error => error === aborted);
+});
+
 test("operating-hours tables grant RLS roles the required table privileges", () => {
   assert.match(
     tableGrantsMigration,

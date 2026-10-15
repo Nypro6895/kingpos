@@ -1,3 +1,5 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
 import { getPortableReportData } from "@/app/pos/portable/actions";
 import { PortableReportClosingForm } from "@/app/pos/portable/report/portable-report-closing-form";
 
@@ -30,12 +32,10 @@ function PortableReportDenied() {
       <div className="mx-auto grid max-w-3xl gap-4">
         <div className="rounded-lg border border-zinc-200 bg-white p-5">
           <h2 className="text-2xl font-semibold tracking-normal">
-            Report unavailable
+            <WorkspaceText text="Report unavailable" />
           </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
-            This Portable POS device does not have report access. Enable the
-            restricted Report capability from POS Settings before using this
-            route.
+            <WorkspaceText text="This Portable POS device does not have report access. Enable the restricted Report capability from POS Settings before using this route." />
           </p>
         </div>
       </div>
@@ -43,7 +43,7 @@ function PortableReportDenied() {
   );
 }
 
-export default async function PortableReportPage({
+async function PortableReportPage({
   searchParams,
 }: PortableReportPageProps) {
   const params = await searchParams;
@@ -63,12 +63,12 @@ export default async function PortableReportPage({
       <div className="mx-auto grid max-w-7xl gap-5">
         <header className="flex flex-wrap items-end justify-between gap-3">
           <p className="text-sm font-medium text-zinc-600">
-            {data.salonName} / {formatDate(data.reportDate, data.timezone)}
+            {data.salonName} / <WorkspaceText text={formatDate(data.reportDate, data.timezone)} />
           </p>
           <form className="flex items-end gap-2" method="get">
             <label className="block">
               <span className="text-xs font-semibold uppercase text-zinc-500">
-                Date
+                <WorkspaceText text="Date" />
               </span>
               <input
                 className="mt-1 h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
@@ -81,14 +81,14 @@ export default async function PortableReportPage({
               className="h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white"
               type="submit"
             >
-              Load
+              <WorkspaceText text="Load" />
             </button>
           </form>
         </header>
 
         {data.setupMessage ? (
           <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            {data.setupMessage}
+            <WorkspaceText text={data.setupMessage} />
           </p>
         ) : null}
 
@@ -97,3 +97,5 @@ export default async function PortableReportPage({
     </section>
   );
 }
+
+export default withExperiencePage(PortableReportPage);

@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import {
   getPortableBookData,
   portableCreateAppointment,
@@ -18,7 +19,7 @@ function validDate(value: string | undefined) {
   return value?.match(/^\d{4}-\d{2}-\d{2}$/) ? value : undefined;
 }
 
-export default async function PortableBookPage({
+async function PortableBookPage({
   searchParams,
 }: PortableBookPageProps) {
   const params = await searchParams;
@@ -30,3 +31,5 @@ export default async function PortableBookPage({
     </div>
   );
 }
+
+export default withExperiencePage(PortableBookPage);

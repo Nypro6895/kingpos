@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 import { BeautyProfileClient } from "@/app/beauty/beauty-profile-client";
 import { getSelfBeautyProfilePage } from "@/lib/beauty";
 import { getPostCommentViewer } from "@/lib/post-comments";
@@ -5,7 +6,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { BeautyAppointment } from "@/app/beauty/beauty-appointment";
 
-export default async function BeautyPage() {
+async function BeautyPage() {
   const [result, commentViewer] = await Promise.all([
     getSelfBeautyProfilePage(),
     getPostCommentViewer(),
@@ -43,3 +44,5 @@ export default async function BeautyPage() {
     />
   );
 }
+
+export default withExperiencePage(BeautyPage);

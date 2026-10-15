@@ -193,6 +193,7 @@ export type PublicSalonProfileStaff = {
 };
 
 export type PublicSalonProfileLook = {
+  authorRole?: import("@/lib/post-identity").SalonPostAuthorRole;
   authorAvatarUrl: string | null;
   authorDisplayName: string;
   authorStaffId: string | null;
@@ -221,6 +222,7 @@ export type PublicSalonProfileLook = {
 };
 
 export type PublicSalonProfileUpdate = {
+  authorRole?: import("@/lib/post-identity").SalonPostAuthorRole;
   authorAvatarUrl: string | null;
   authorDisplayName: string;
   authorStaffId: string | null;
@@ -354,6 +356,8 @@ export type PublicSalonProfileExperience = {
 
 export type ProfileFeedItem =
   | {
+      authorRole?: import("@/lib/post-identity").SalonPostAuthorRole;
+      salonName?: string;
       authorName: string;
       authorAvatarUrl: string | null;
       authorStaffId: string | null;
@@ -379,6 +383,8 @@ export type ProfileFeedItem =
       title: string;
     }
   | {
+      authorRole?: import("@/lib/post-identity").SalonPostAuthorRole;
+      salonName?: string;
       authorName: string;
       authorAvatarUrl: string | null;
       authorStaffId: string | null;

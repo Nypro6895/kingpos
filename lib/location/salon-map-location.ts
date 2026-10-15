@@ -2,6 +2,7 @@
 
 import { normalizePublicSalonAddress } from "@/lib/location/address";
 import { hasValidCoordinates } from "@/lib/location/distance";
+import { hasCurrentLocationPin, locationPinSnapshot } from "@/lib/location/coordinate-validity";
 import {
   geocodePublicSalonAddress,
   getGeocodingProviderStatus,
@@ -32,6 +33,7 @@ type LocationGeocodingRow = {
   geocoding_place_id: string | null;
   geocoding_provider: string | null;
   geocoding_status: StoredGeocodingStatus | null;
+  geocoding_pin_origin: "auto_census" | "auto_maptiler" | "owner_confirmed" | null;
   latitude: number | null;
   longitude: number | null;
   updated_at: string | null;
@@ -68,7 +70,7 @@ function readCoordinates(row: LocationGeocodingRow | null) {
     longitude: row?.longitude ?? null,
   };
 
-  return hasValidCoordinates(coordinates) ? coordinates : null;
+  return hasValidCoordinates(coordinates) && !(coordinates.latitude === 0 && coordinates.longitude === 0) ? coordinates : null;
 }
 
 function mapStatus(input: {
@@ -77,6 +79,10 @@ function mapStatus(input: {
   providerConfigured: boolean;
   row: LocationGeocodingRow | null;
 }): SalonMapLocationStatus {
+  if (input.coordinates && !input.row?.geocoding_address_fingerprint
+    && !["stale", "address_required", "pending", "failed"].includes(input.row?.geocoding_status ?? "")) {
+    return "mapped";
+  }
   if (!input.address.isComplete) {
     return "address_required";
   }
@@ -87,6 +93,10 @@ function mapStatus(input: {
 
   if (input.row?.geocoding_status === "stale") {
     return "stale";
+  }
+
+  if (input.row?.geocoding_status === "pending") {
+    return "pending";
   }
 
   if (
@@ -188,7 +198,7 @@ async function loadLocationGeocodingRow(input: {
   const { data, error } = await supabase
     .from("locations")
     .select(
-      "latitude, longitude, geocoded_at, geocoding_status, geocoding_provider, geocoding_place_id, geocoding_error_code, geocoding_address_fingerprint, updated_at",
+      "latitude, longitude, geocoded_at, geocoding_status, geocoding_provider, geocoding_place_id, geocoding_error_code, geocoding_address_fingerprint, geocoding_pin_origin, updated_at",
     )
     .eq("id", input.setting.salon_id)
     .maybeSingle<LocationGeocodingRow>();
@@ -211,18 +221,28 @@ async function updateLocationGeocodingRow(input: {
   context: CurrentBusinessContext;
   setting: SalonSetting;
   updates: Partial<LocationGeocodingRow>;
+  priorRow: LocationGeocodingRow | null;
 }) {
   const supabase = await createAuthenticatedSupabaseServerClient();
 
-  if (!supabase) {
-    return;
+  if (!supabase || !input.priorRow) {
+    return false;
   }
 
-  const { error } = await supabase
-    .from("locations")
-    .update(input.updates)
-    .eq("id", input.setting.salon_id)
-    .eq("account_id", input.context.currentAccount?.id ?? "");
+  const address = normalizePublicSalonAddress(addressInputFromSetting(input.setting));
+  const { data, error } = await supabase.rpc("set_current_salon_geocoding_state", {
+    p_salon_id: input.setting.salon_id,
+    p_fingerprint: address.fingerprint,
+    p_prior_pin: locationPinSnapshot(input.priorRow),
+    p_values: {
+      status: input.updates.geocoding_status,
+      errorCode: input.updates.geocoding_error_code ?? null,
+      latitude: input.updates.latitude ?? null,
+      longitude: input.updates.longitude ?? null,
+      provider: input.updates.geocoding_provider ?? null,
+      placeId: input.updates.geocoding_place_id ?? null,
+    },
+  });
 
   if (error) {
     console.warn("Supabase update salon map location state failed", {
@@ -233,6 +253,7 @@ async function updateLocationGeocodingRow(input: {
       salonId: input.setting.salon_id,
     });
   }
+  return !error && (data === "updated" || data === "succeeded");
 }
 
 async function assertCanManageMapLocation(input: {
@@ -273,11 +294,12 @@ export async function getCurrentSalonMapLocationState(input: {
     setting: input.setting,
   });
   const address = normalizePublicSalonAddress(addressInputFromSetting(input.setting));
-  const coordinates = readCoordinates(row);
+  const sourceCoordinates = readCoordinates(row);
+  const coordinates = hasCurrentLocationPin(row, address) ? sourceCoordinates : null;
   const providerStatus = getGeocodingProviderStatus();
   const status = mapStatus({
     address,
-    coordinates,
+    coordinates: sourceCoordinates,
     providerConfigured: providerStatus.configured,
     row,
   });
@@ -294,6 +316,7 @@ export async function getCurrentSalonMapLocationState(input: {
     refreshEnabled:
       providerStatus.configured &&
       address.isComplete &&
+      row?.geocoding_pin_origin !== "owner_confirmed" &&
       (status === "failed" || status === "pending" || status === "stale"),
     status,
     statusDescription: copy.description,
@@ -312,11 +335,18 @@ export async function refreshCurrentSalonMapLocation(input: {
   const address = normalizePublicSalonAddress(addressInputFromSetting(input.setting));
   const providerStatus = getGeocodingProviderStatus();
 
+  if (!row || row.geocoding_pin_origin === "owner_confirmed"
+    || input.reason !== "manual_refresh" && (hasCurrentLocationPin(row, address)
+      || (row.latitude !== null || row.longitude !== null)
+        && row.geocoding_pin_origin !== "auto_census" && row.geocoding_pin_origin !== "auto_maptiler")) {
+    return getCurrentSalonMapLocationState(input);
+  }
+
   if (!address.isComplete) {
     await updateLocationGeocodingRow({
       ...input,
+      priorRow: row,
       updates: {
-        geocoding_address_fingerprint: null,
         geocoding_error_code: "address_required",
         geocoding_status: "address_required",
       },
@@ -327,10 +357,9 @@ export async function refreshCurrentSalonMapLocation(input: {
   if (!providerStatus.configured) {
     await updateLocationGeocodingRow({
       ...input,
+      priorRow: row,
       updates: {
-        geocoding_address_fingerprint: address.fingerprint,
         geocoding_error_code: "provider_unavailable",
-        geocoding_provider: null,
         geocoding_status: "provider_unavailable",
       },
     });
@@ -345,23 +374,23 @@ export async function refreshCurrentSalonMapLocation(input: {
     return getCurrentSalonMapLocationState(input);
   }
 
-  await updateLocationGeocodingRow({
+  const prepared = await updateLocationGeocodingRow({
     ...input,
+    priorRow: row,
     updates: {
-      geocoding_address_fingerprint: address.fingerprint,
       geocoding_error_code: null,
-      geocoding_provider: providerStatus.provider,
       geocoding_status: "pending",
     },
   });
+  if (!prepared) return getCurrentSalonMapLocationState(input);
 
   const geocoding = await geocodePublicSalonAddress(address);
 
   if (geocoding.error || !isAcceptableGeocodingResult(geocoding.result)) {
     await updateLocationGeocodingRow({
       ...input,
+      priorRow: row,
       updates: {
-        geocoding_address_fingerprint: address.fingerprint,
         geocoding_error_code: geocoding.error
           ? geocodingErrorCode(geocoding.error)
           : "low_confidence",
@@ -373,9 +402,8 @@ export async function refreshCurrentSalonMapLocation(input: {
 
   await updateLocationGeocodingRow({
     ...input,
+    priorRow: row,
     updates: {
-      geocoded_at: geocoding.result.geocodedAt,
-      geocoding_address_fingerprint: address.fingerprint,
       geocoding_error_code: null,
       geocoding_place_id: geocoding.result.providerPlaceId,
       geocoding_provider: geocoding.result.provider,
@@ -403,7 +431,6 @@ export async function syncCurrentSalonMapLocationAddressState(input: {
   const updates: Partial<LocationGeocodingRow> = {};
 
   if (!address.isComplete) {
-    updates.geocoding_address_fingerprint = null;
     updates.geocoding_status = "address_required";
     updates.geocoding_error_code = "address_required";
   } else if (
@@ -415,7 +442,6 @@ export async function syncCurrentSalonMapLocationAddressState(input: {
     updates.geocoding_status = "stale";
     updates.geocoding_error_code = null;
   } else if (!providerStatus.configured && !coordinates) {
-    updates.geocoding_address_fingerprint = address.fingerprint;
     updates.geocoding_status = "provider_unavailable";
     updates.geocoding_error_code = "provider_unavailable";
   } else if (
@@ -437,6 +463,7 @@ export async function syncCurrentSalonMapLocationAddressState(input: {
 
   await updateLocationGeocodingRow({
     ...input,
+    priorRow: row,
     updates,
   });
 }

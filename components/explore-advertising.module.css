@@ -26,6 +26,18 @@
 .feed {
   margin: 8px 0;
 }
+.pagePlacement {
+  margin: 16px auto;
+  padding: 0 16px;
+  width: min(100%, 720px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker a,
+  .tickerText {
+    animation: none;
+    padding-left: 12px;
+  }
+}
 .desktop {
   margin: 16px 10px;
   animation: slide 0.5s ease-out;

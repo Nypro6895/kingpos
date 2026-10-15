@@ -1,9 +1,11 @@
+import { withExperiencePage } from "@/components/experience-page";
 import {ExploreBookButton} from "@/components/explore-account-actions";
 import {
   getBeautyProfileRoutePage,
   type BeautyProfileRoutePage,
 } from "@/lib/beauty-relationship";
 import { BeautyFollowButton } from "@/app/explore/beauty/beauty-follow-button";
+import { PostShareButton } from "@/components/post-share-button";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import type { ExplorePersonalPostItem } from "@/types/explore";
@@ -199,15 +201,13 @@ function PostCard({
             ))}
           </div>
         )}
-        {post.saveTarget ? (
-          <SavePostButton
-            className="absolute bottom-3 right-3"
-            initialSaved={post.saveTarget.saved}
-            target={post.saveTarget}
-          />
-        ) : null}
       </div>
-      <div className="flex justify-end"><ExploreBookButton href={post.bookingHref} name={post.salonName} contactHref={post.salonHref}/></div>
+      <div className="post-action-toolbar">
+        {post.saveTarget ? <SavePostButton size="toolbar" initialSaved={post.saveTarget.saved} saveCount={post.saveTarget.saveCount} target={post.saveTarget} /> : null}
+        {post.href ? <Link href={post.href + "#comments"} aria-label="Comment"><ReylumiIcon name="message" /><span>Comment</span></Link> : null}
+        {post.href ? <PostShareButton href={post.href} title={post.caption || name} /> : null}
+        <ExploreBookButton href={post.bookingHref} name={post.salonName} contactHref={post.salonHref}/>
+      </div>
       <div className="grid gap-2 px-1 pb-1">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="rounded-full bg-brand-orange-soft px-3 py-1 text-xs font-extrabold text-brand-orange">
@@ -324,7 +324,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function PublicBeautyProfilePage({
+async function PublicBeautyProfilePage({
   params,
   searchParams,
 }: PublicBeautyProfilePageProps) {
@@ -505,3 +505,5 @@ export default async function PublicBeautyProfilePage({
     </main>
   );
 }
+
+export default withExperiencePage(PublicBeautyProfilePage);

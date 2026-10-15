@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withBotId } from "botid/next/config";
 
 const SUPABASE_PUBLIC_IMAGE_BUCKETS = [
   "account-avatars",
@@ -76,6 +77,9 @@ if (deploymentId) {
 }
 
 const nextConfig: NextConfig = {
+  // Next 16 preserves up to three visited routes with Activity. Protected data
+  // remains uncached on the server and is scoped/validated by the client shell.
+  cacheComponents: true,
   // Allow an isolated production check while the development tunnel is running.
   distDir: process.env.KINGPOS_BUILD_OUTPUT || ".next",
   experimental: {
@@ -93,4 +97,4 @@ const nextConfig: NextConfig = {
   generateBuildId: async () => deploymentSourceId ?? null,
 };
 
-export default nextConfig;
+export default withBotId(nextConfig);

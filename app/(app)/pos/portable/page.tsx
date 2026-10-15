@@ -1,3 +1,7 @@
+import { withExperiencePage } from "@/components/experience-page";
+import { WorkspaceText } from "@/components/workspace-language";
+import { DeskRelay } from "@/app/service-relay/desk-relay";
+import { portableLoadServiceRelay, portableSubmitServiceRelay } from "@/app/pos/portable/actions";
 import { PosDeskClient } from "@/app/pos/pos-desk-client";
 import { PosRapidMobileBridge } from "@/app/pos/pos-rapid-mobile-bridge";
 import styles from "@/app/pos/pos-rapid-mobile.module.css";
@@ -13,11 +17,12 @@ import {
   portableCancelWaitingVisitForPos,
   portableSubmitPosDeskReceipt,
   portableSelectWaitingVisitForPos,
+  portableResolveScannedCheckinReceipt,
   portableUpdatePosActiveDraft,
   portableUpdatePosLiveDraftCustomer,
 } from "@/app/pos/portable/actions";
 
-export default async function PortablePosPage() {
+async function PortablePosPage() {
   if (!(await cookies()).get('kingpos-workspace-device')?.value) return <PrepareWorkspaceDevice/>;
   let data: Awaited<ReturnType<typeof getPortablePosDeskData>>;
 
@@ -28,11 +33,10 @@ export default async function PortablePosPage() {
       <section className="grid h-full place-items-center px-6 text-center">
         <div className="max-w-md rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-semibold text-zinc-950">
-            Portable POS is locked
+            <WorkspaceText text="Portable POS is locked" />
           </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
-            End the current device session and sign in again with a valid Portable
-            POS ID.
+            <WorkspaceText text="End the current device session and sign in again with a valid Portable POS ID." />
           </p>
         </div>
       </section>
@@ -41,6 +45,7 @@ export default async function PortablePosPage() {
 
   return (
     <SingleWorkspaceWindow id="portable-pos">
+    <DeskRelay salonId={data.salonId} load={portableLoadServiceRelay} submit={portableSubmitServiceRelay} />
     <section
       className="h-full min-h-0 overflow-hidden p-2 max-md:p-0"
       data-portable-pos-page="pos"
@@ -56,6 +61,7 @@ export default async function PortablePosPage() {
               getPosLiveDraft: portableGetPosLiveDraft,
               searchPosDeskCustomers: portableSearchPosDeskCustomers,
               selectWaitingVisitForPos: portableSelectWaitingVisitForPos,
+              resolveScannedCheckinReceipt: portableResolveScannedCheckinReceipt,
               submitPosDeskReceipt: portableSubmitPosDeskReceipt,
               updatePosActiveDraft: portableUpdatePosActiveDraft,
               updatePosLiveDraftCustomer: portableUpdatePosLiveDraftCustomer,
@@ -77,3 +83,5 @@ export default async function PortablePosPage() {
     </section></SingleWorkspaceWindow>
   );
 }
+
+export default withExperiencePage(PortablePosPage);

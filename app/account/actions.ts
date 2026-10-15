@@ -258,7 +258,7 @@ export async function updateAccountProfileAction(
       } else if (phoneChanged) {
         return {
           error: null,
-          phoneClaim: getPhoneVerificationRequirement(
+          phoneClaim: await getPhoneVerificationRequirement(
             inspection.data.normalizedPhone,
           ),
         };

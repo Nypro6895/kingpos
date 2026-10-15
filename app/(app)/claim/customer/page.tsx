@@ -1,3 +1,4 @@
+import { withExperiencePage } from "@/components/experience-page";
 
 import { SubmitButton } from "@/components/submit-button";
 import { connectCustomerHistory } from "@/app/claim/customer/actions";
@@ -126,7 +127,7 @@ function ErrorState({ message }: { message: string }) {
   );
 }
 
-export default async function CustomerClaimPage({
+async function CustomerClaimPage({
   searchParams,
 }: CustomerClaimPageProps) {
   const params = await searchParams;
@@ -216,3 +217,5 @@ export default async function CustomerClaimPage({
     </main>
   );
 }
+
+export default withExperiencePage(CustomerClaimPage);

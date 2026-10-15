@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "booking-concurrency-cache-review-20261015",
+  "status": "working",
+  "summary": "Expanded local audit after real PostgreSQL reproduced duplicate idempotency requests and inconsistent concurrent reschedules. Add a forward migration with transaction locks, retaining behavior and grants; no production migration.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/book/[salonId]/public-booking-client.tsx",
+    "tests/public-booking-cache-scope-ui.test.mjs",
+    "tests/booking-concurrency.integration.test.mjs",
+    "supabase/migrations/20261015010000_booking_concurrency_guards.sql"
+  ],
+  "dependencies": [
+    "booking-flow-local-audit-20261015"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\booking-phase2-before",
+    "commit": "252612d9d522a622a6ce8d8d8041e38581bae968"
+  },
+  "validation": [
+    {
+      "name": "Concurrency and cache review",
+      "result": "pending"
+    }
+  ],
+  "id": "599482d8-d059-48c7-9095-aeca6116f634",
+  "recordedAt": "2026-10-15T01:01:27.138Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

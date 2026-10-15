@@ -14,6 +14,9 @@ import type {
   PublicBookingStaffMode,
 } from "@/lib/public-booking";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { BookingCardPayment } from "@/components/booking-card-payment";
+import { bookingDepositCents } from "@/types/booking-deposit";
+import type { PublicBookingActionResult } from "@/lib/public-booking";
 
 import { useRouter } from "next/navigation";
 import { ReylumiIcon } from "@/components/reylumi-icons";
@@ -44,20 +47,30 @@ type CustomerFieldErrors = Partial<Record<CustomerFieldKey, string>>;
 type BookingIdentityMode = "choice" | "guest";
 
 type StoredBookingDraft = {
-  customer: CustomerDraft;
+  accountId: string | null;
+  authHandoff: boolean;
+  context: string;
   date: string;
   identityMode?: BookingIdentityMode;
   inspirationId?: string | null;
   inspirationRemoved?: boolean;
   lineStaffByKey: Record<string, string>;
+  notes: string;
+  salonId: string;
+  savedAt: number;
   selectedAddOnSelections: PublicBookingAddOnSelection[];
   selectedServiceIds: string[];
   selectedSlotStart: string;
   staffId: string;
   staffMode: PublicBookingStaffMode;
   step: number;
-  version: 2;
+  version: 3;
 };
+
+type BookingDraftSelection = Pick<StoredBookingDraft,
+  "date" | "identityMode" | "inspirationRemoved" | "lineStaffByKey" | "notes" |
+  "selectedAddOnSelections" | "selectedServiceIds" | "selectedSlotStart" | "staffId" | "staffMode" | "step"
+>;
 
 type SummaryLine = {
   key: string;
@@ -145,7 +158,10 @@ const STEP_PROFESSIONAL = 1;
 const STEP_TIME = 2;
 const STEP_REVIEW = 3;
 const STEP_DONE = 4;
-const PUBLIC_BOOKING_DRAFT_VERSION = 2;
+const PUBLIC_BOOKING_DRAFT_VERSION = 3;
+const PUBLIC_BOOKING_DRAFT_PREFIX = "kingpos.publicBookingDraft.v3.";
+const PUBLIC_BOOKING_DRAFT_TTL = 2 * 60 * 60 * 1000;
+const PUBLIC_BOOKING_AUTH_DRAFT_TTL = 15 * 60 * 1000;
 
 function classNames(...classes: (false | null | string | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -177,41 +193,161 @@ function displayWebsite(value: string | null | undefined) {
   return value?.replace(/^https?:\/\//i, "").replace(/\/$/, "") ?? null;
 }
 
-function draftStorageKey(salonId: string | null | undefined) {
-  return salonId ? `kingpos.publicBookingDraft.${salonId}` : null;
+function bookingDraftContext(data: PublicBookingPageData) {
+  const initial = data.initialSelection;
+  return JSON.stringify({
+    inspiration: initial.inspiration?.id ?? null,
+    look: initial.lookId,
+    services: initial.serviceIds,
+    service: initial.serviceId,
+    staff: initial.staffId,
+    source: initial.source,
+    start: initial.startAt ?? null,
+    date: initial.dateExplicit ? initial.date : null,
+  });
 }
 
-function readStoredBookingDraft(salonId: string | null | undefined) {
-  const key = draftStorageKey(salonId);
+function draftStorageKey(data: PublicBookingPageData, authHandoff = false) {
+  if (!data.salon) return null;
+  const base = `${PUBLIC_BOOKING_DRAFT_PREFIX}${data.salon.salonId}.`;
+  return authHandoff ? `${base}auth` : `${base}${data.currentUser?.id ?? "guest"}.${encodeURIComponent(bookingDraftContext(data))}`;
+}
 
-  if (!key || typeof window === "undefined") {
-    return null;
-  }
-
+function writeStoredBookingDraft(data: PublicBookingPageData, selection: BookingDraftSelection, authHandoff = false) {
+  const key = draftStorageKey(data, authHandoff);
+  if (!key || !data.salon || typeof window === "undefined") return false;
+  // Deliberately enumerate fields: contact details, payment data and tokens never enter storage.
+  const draft: StoredBookingDraft = {
+    accountId: data.currentUser?.id ?? null,
+    authHandoff,
+    context: bookingDraftContext(data),
+    date: selection.date,
+    identityMode: selection.identityMode,
+    inspirationId: data.initialSelection.inspiration?.id ?? null,
+    inspirationRemoved: selection.inspirationRemoved,
+    lineStaffByKey: selection.lineStaffByKey,
+    notes: selection.notes.slice(0, 2000),
+    salonId: data.salon.salonId,
+    savedAt: Date.now(),
+    selectedAddOnSelections: selection.selectedAddOnSelections,
+    selectedServiceIds: selection.selectedServiceIds,
+    selectedSlotStart: selection.selectedSlotStart,
+    staffId: selection.staffId,
+    staffMode: selection.staffMode,
+    step: Math.min(STEP_REVIEW, Math.max(STEP_SERVICES, selection.step)),
+    version: PUBLIC_BOOKING_DRAFT_VERSION,
+  };
   try {
-    const parsed = JSON.parse(window.sessionStorage.getItem(key) ?? "null") as
-      | Partial<StoredBookingDraft>
-      | null;
-
-    if (
-      !parsed ||
-      parsed.version !== PUBLIC_BOOKING_DRAFT_VERSION ||
-      !Array.isArray(parsed.selectedServiceIds)
-    ) {
-      return null;
+    window.sessionStorage.removeItem(`kingpos.publicBookingDraft.${data.salon.salonId}`);
+    const records: { key: string; savedAt: number }[] = [];
+    for (let index = window.sessionStorage.length - 1; index >= 0; index--) {
+      const candidate = window.sessionStorage.key(index);
+      if (!candidate?.startsWith(PUBLIC_BOOKING_DRAFT_PREFIX) || candidate === key) continue;
+      try {
+        const stored = JSON.parse(window.sessionStorage.getItem(candidate) ?? "null");
+        const ttl = stored?.authHandoff ? PUBLIC_BOOKING_AUTH_DRAFT_TTL : PUBLIC_BOOKING_DRAFT_TTL;
+        if (!stored?.savedAt || Date.now() - stored.savedAt > ttl) window.sessionStorage.removeItem(candidate);
+        else records.push({ key: candidate, savedAt: stored.savedAt });
+      } catch { window.sessionStorage.removeItem(candidate); }
     }
+    records.sort((left, right) => right.savedAt - left.savedAt);
+    for (const record of records.slice(19)) window.sessionStorage.removeItem(record.key);
+    window.sessionStorage.setItem(key, JSON.stringify(draft));
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-    return parsed as StoredBookingDraft;
+function readStoredBookingDraft(data: PublicBookingPageData) {
+  if (!data.salon || typeof window === "undefined") return null;
+  try {
+    window.sessionStorage.removeItem(`kingpos.publicBookingDraft.${data.salon.salonId}`);
+    for (const authHandoff of [true, false]) {
+      const key = draftStorageKey(data, authHandoff)!;
+      let parsed: Partial<StoredBookingDraft> | null;
+      try { parsed = JSON.parse(window.sessionStorage.getItem(key) ?? "null") as Partial<StoredBookingDraft> | null; }
+      catch { window.sessionStorage.removeItem(key); continue; }
+      if (!parsed) continue;
+      const ttl = authHandoff ? PUBLIC_BOOKING_AUTH_DRAFT_TTL : PUBLIC_BOOKING_DRAFT_TTL;
+      const valid = parsed.version === PUBLIC_BOOKING_DRAFT_VERSION && parsed.authHandoff === authHandoff &&
+        parsed.salonId === data.salon.salonId && typeof parsed.savedAt === "number" &&
+        Date.now() - parsed.savedAt <= ttl && parsed.savedAt <= Date.now() + 60000 &&
+        Array.isArray(parsed.selectedServiceIds) && Array.isArray(parsed.selectedAddOnSelections) &&
+        parsed.lineStaffByKey !== null && typeof parsed.lineStaffByKey === "object" &&
+        typeof parsed.notes === "string" && typeof parsed.date === "string" &&
+        typeof parsed.staffId === "string" && typeof parsed.selectedSlotStart === "string" &&
+        ["any", "specific", "split"].includes(parsed.staffMode ?? "") && Number.isInteger(parsed.step);
+      if (!valid) { window.sessionStorage.removeItem(key); continue; }
+      const sameAccount = parsed.accountId === (data.currentUser?.id ?? null);
+      const guestSignIn = authHandoff && parsed.accountId === null && Boolean(data.currentUser);
+      const sameIntent = authHandoff
+        ? (parsed.inspirationId ?? null) === (data.initialSelection.inspiration?.id ?? null)
+        : parsed.context === bookingDraftContext(data);
+      if ((!sameAccount && !guestSignIn) || !sameIntent) continue;
+      if (authHandoff) window.sessionStorage.removeItem(key);
+      return normalizeStoredBookingDraft(parsed as StoredBookingDraft, data);
+    }
+    return null;
   } catch {
     return null;
   }
 }
 
-function clearStoredBookingDraft(salonId: string | null | undefined) {
-  const key = draftStorageKey(salonId);
+function normalizeStoredBookingDraft(draft: StoredBookingDraft, data: PublicBookingPageData): BookingDraftSelection {
+  const services = new Map(data.services.map(service => [service.id, service]));
+  const selectedServiceIds = uniqueStrings(draft.selectedServiceIds.filter(id => typeof id === "string" && services.has(id) && !services.get(id)!.isAddOnOnly));
+  const selectedAddOnSelections = draft.selectedAddOnSelections.filter((selection, index, all) =>
+    selection && selectedServiceIds.includes(selection.parentServiceId) &&
+    !selectedServiceIds.includes(selection.serviceId) && services.has(selection.serviceId) &&
+    services.get(selection.parentServiceId)!.addOnIds.includes(selection.serviceId) &&
+    all.findIndex(other => other?.parentServiceId === selection.parentServiceId && other?.serviceId === selection.serviceId) === index,
+  );
+  const lines = selectedServiceIds.flatMap(id => [
+    { key: `service:${id}`, serviceId: id },
+    ...selectedAddOnSelections.filter(extra => extra.parentServiceId === id).map(extra => ({ key: `add_on:${id}:${extra.serviceId}`, serviceId: extra.serviceId })),
+  ]);
+  const lineStaffByKey: Record<string, string> = {};
+  for (const line of lines) {
+    const staffId = draft.lineStaffByKey[line.key];
+    if (typeof staffId === "string" && serviceStaffNames(data, line.serviceId).some(staff => staff.id === staffId)) lineStaffByKey[line.key] = staffId;
+  }
+  let staffMode = draft.staffMode;
+  let staffId = draft.staffId;
+  const specificValid = staffEligibleForServices(data, lines.map(line => line.serviceId)).some(staff => staff.id === staffId);
+  const splitValid = Boolean(data.settings?.splitStaffAppointmentEnabled && lines.length > 1 && lines.every(line => lineStaffByKey[line.key] || data.settings?.anyProfessionalEnabled));
+  const staffValid = staffMode === "any" ? Boolean(data.settings?.anyProfessionalEnabled) : staffMode === "split" ? splitValid : specificValid;
+  if (!staffValid) { staffMode = data.settings?.anyProfessionalEnabled ? "any" : "specific"; staffId = ""; }
+  const today = zonedDateKey(new Date(), data.settings?.timezoneIana ?? "UTC");
+  const dateValid = /^\d{4}-\d{2}-\d{2}$/.test(draft.date) && !Number.isNaN(Date.parse(`${draft.date}T12:00:00Z`)) &&
+    new Date(`${draft.date}T12:00:00Z`).toISOString().slice(0, 10) === draft.date &&
+    draft.date >= today && draft.date <= addDaysKey(today, data.settings?.maximumAdvanceWindowDays ?? 60);
+  const changedServices = selectedServiceIds.length !== draft.selectedServiceIds.length || selectedAddOnSelections.length !== draft.selectedAddOnSelections.length;
+  const start = new Date(draft.selectedSlotStart);
+  const timeValid = staffValid && dateValid && !changedServices && !Number.isNaN(start.getTime()) && start.getTime() > Date.now() && zonedDateKey(start, data.settings?.timezoneIana ?? "UTC") === draft.date;
+  return {
+    date: dateValid ? draft.date : data.initialSelection.date,
+    identityMode: draft.identityMode === "guest" ? "guest" : "choice",
+    inspirationRemoved: draft.inspirationRemoved === true,
+    lineStaffByKey,
+    notes: draft.notes.slice(0, 2000),
+    selectedAddOnSelections,
+    selectedServiceIds,
+    selectedSlotStart: timeValid ? draft.selectedSlotStart : "",
+    staffId,
+    staffMode,
+    step: Math.min(changedServices || selectedServiceIds.length === 0 ? STEP_SERVICES : !staffValid ? STEP_PROFESSIONAL : !timeValid ? STEP_TIME : STEP_REVIEW, Math.max(STEP_SERVICES, draft.step)),
+  };
+}
 
-  if (key && typeof window !== "undefined") {
-    try { window.sessionStorage.removeItem(key); } catch { /* Draft storage is optional. */ }
+function clearStoredBookingDraft(data: PublicBookingPageData) {
+  if (typeof window !== "undefined") {
+    try {
+      for (const authHandoff of [false, true]) {
+        const key = draftStorageKey(data, authHandoff);
+        if (key) window.sessionStorage.removeItem(key);
+      }
+    } catch { /* Draft storage is optional. */ }
   }
 }
 
@@ -558,14 +694,16 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
       : hasInitialInspiration || data.initialSelection.staffId
         ? ""
       : (mainServices[0]?.id ?? "");
-  const initialServiceIds =
+  const initialServiceIds = useMemo(() =>
     data.initialSelection.serviceIds.length > 0
       ? data.initialSelection.serviceIds.filter((serviceId) =>
           mainServices.some((service) => service.id === serviceId),
         )
       : initialServiceId
         ? [initialServiceId]
-        : [];
+        : [],
+    [data.initialSelection.serviceIds, initialServiceId, mainServices],
+  );
   const categoryNames = useMemo(
     () => [...new Set(mainServices.map((service) => service.category ?? "Services"))],
     [mainServices],
@@ -646,6 +784,8 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
   });
   const [identityMode, setIdentityMode] = useState<BookingIdentityMode>("choice");
   const [honeypot, setHoneypot] = useState("");
+  const [paymentCheckout, setPaymentCheckout] = useState<"embedded" | "hosted">(data.bookingDeposit?.checkout === "hosted" ? "hosted" : "embedded");
+  const [payment, setPayment] = useState<PublicBookingActionResult["payment"]>();
   const [result, setResult] = useState<{
     accountLinked?: boolean;
     bookingId?: string;
@@ -670,6 +810,16 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
   const [availabilityError, setAvailabilityError] = useState(false);
   const [slotError, setSlotError] = useState(false);
   const [availabilityRetry, setAvailabilityRetry] = useState(0);
+  const bookingDraftKey = draftStorageKey(data);
+  const restoredDraftScope = useRef<string | null>(null);
+  const [draftReadyScope, setDraftReadyScope] = useState<string | null>(null);
+  const restoredSlotStart = useRef<string | null>(null);
+  const draftCompleted = useRef(false);
+  useEffect(() => {
+    const reset = () => { draftCompleted.current = true; };
+    window.addEventListener("reylumi:experience-reset", reset);
+    return () => window.removeEventListener("reylumi:experience-reset", reset);
+  }, []);
   const activeInspiration =
     data.initialSelection.inspiration && !inspirationRemoved
       ? data.initialSelection.inspiration
@@ -744,6 +894,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
     () =>
       JSON.stringify({
         addOnSelections: selectedAddOnSelections,
+        timezone: settings?.timezoneIana,
         date,
         lineStaffIds,
         serviceIds: selectedServiceIds,
@@ -757,10 +908,12 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
       selectedServiceIds,
       staffId,
       staffMode,
+      settings?.timezoneIana,
     ],
   );
   const slots =
     data.state === "ready" &&
+    draftReadyScope === bookingDraftKey &&
     selectedServiceIds.length > 0 &&
     slotResult.signature === slotRequestSignature
       ? slotResult.slots
@@ -871,8 +1024,8 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
     return scopes;
   }, [data, eligibleStaff, lineStaffIds, settings, summaryLines]);
   const availabilityScopeSignature = useMemo(
-    () => JSON.stringify({ scopes: availabilityScopes, serviceIds: selectedServiceIds, addOnSelections: selectedAddOnSelections }),
-    [availabilityScopes, selectedServiceIds, selectedAddOnSelections],
+    () => JSON.stringify({ scopes: availabilityScopes, serviceIds: selectedServiceIds, addOnSelections: selectedAddOnSelections, timezone: settings?.timezoneIana }),
+    [availabilityScopes, selectedServiceIds, selectedAddOnSelections, settings?.timezoneIana],
   );
   const availabilityHints =
     availabilityResult.signature === availabilityScopeSignature
@@ -948,38 +1101,23 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
   }
 
   function storeDraftForAuth() {
-    const key = draftStorageKey(data.salon?.salonId);
-
-    if (!key || typeof window === "undefined") {
-      return false;
-    }
-
-    const draft: StoredBookingDraft = {
-      customer,
+    return writeStoredBookingDraft(data, {
       date,
       identityMode,
-      inspirationId: data.initialSelection.inspiration?.id ?? null,
       inspirationRemoved,
       lineStaffByKey,
+      notes: customer.notes,
       selectedAddOnSelections,
       selectedServiceIds,
       selectedSlotStart,
       staffId,
       staffMode,
       step,
-      version: PUBLIC_BOOKING_DRAFT_VERSION,
-    };
-
-    try {
-      window.sessionStorage.setItem(key, JSON.stringify(draft));
-      return true;
-    } catch {
-      return false;
-    }
+    }, true);
   }
 
   useEffect(() => {
-    if (embedded || data.state !== "ready" || !data.salon) {
+    if (data.state !== "ready" || !data.salon || !bookingDraftKey || restoredDraftScope.current === bookingDraftKey) {
       return;
     }
 
@@ -989,64 +1127,70 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         return;
       }
 
-      const draft = readStoredBookingDraft(data.salon?.salonId);
-
+      const previousScope = restoredDraftScope.current;
+      restoredDraftScope.current = bookingDraftKey;
+      draftCompleted.current = false;
+      const draft = readStoredBookingDraft(data);
       if (!draft) {
+        // A changed account or booking intent starts from its current server context.
+        if (previousScope !== null) {
+          setSelectedServiceIds(initialServiceIds);
+          setSelectedAddOnSelections(data.initialSelection.addOnSelections);
+          setStaffMode(data.initialSelection.staffMode);
+          setStaffId(data.initialSelection.staffId ?? "");
+          setLineStaffByKey({});
+          setDate(data.initialSelection.date);
+          setSelectedSlotStart(data.initialSelection.startAt ?? "");
+          setStep(Math.min(STEP_REVIEW, Math.max(STEP_SERVICES, data.initialSelection.initialStep)));
+          setCustomer({ email: data.currentUser?.email ?? "", firstName: data.currentUser?.firstName ?? initialCustomerName.firstName, lastName: data.currentUser?.lastName ?? initialCustomerName.lastName, phone: data.currentUser?.phone ?? "", notes: "" });
+          setIdentityMode("choice");
+          setInspirationRemoved(false);
+          setAccountSessionChanged(false);
+          setResult(null);
+          setPayment(undefined);
+          initialSlotsLoaded.current = false;
+          slotCache.current.clear();
+          hintCache.current.clear();
+          restoredSlotStart.current = null;
+          manualDate.current = Boolean(data.initialSelection.dateExplicit || data.initialSelection.startAt);
+        }
+        setDraftReadyScope(bookingDraftKey);
         return;
       }
-
-      const validServiceIds = draft.selectedServiceIds.filter((serviceId) =>
-        mainServices.some((service) => service.id === serviceId),
-      );
-
-      if (validServiceIds.length === 0) {
-        clearStoredBookingDraft(data.salon?.salonId);
-        return;
-      }
-
-      const validServiceIdSet = new Set(validServiceIds);
-      const validAddOnSelections = draft.selectedAddOnSelections.filter(
-        (selection) =>
-          validServiceIdSet.has(selection.parentServiceId) &&
-          !validServiceIdSet.has(selection.serviceId) &&
-          data.services.some((service) => service.id === selection.serviceId),
-      );
       const firstService = mainServices.find(
-        (service) => service.id === validServiceIds[0],
+        (service) => service.id === draft.selectedServiceIds[0],
       );
 
-      setSelectedServiceIds(validServiceIds);
-      setSelectedAddOnSelections(validAddOnSelections);
+      setSelectedServiceIds(draft.selectedServiceIds);
+      setSelectedAddOnSelections(draft.selectedAddOnSelections);
       setStaffMode(draft.staffMode);
       setStaffId(draft.staffId);
       setLineStaffByKey(draft.lineStaffByKey);
       manualDate.current = true;
       setDate(draft.date);
-      setSelectedSlotStart(draft.selectedSlotStart);
-      setInspirationRemoved(
-        (draft.inspirationId ?? null) ===
-          (data.initialSelection.inspiration?.id ?? null) &&
-          draft.inspirationRemoved === true,
-      );
-      setCustomer((current) => ({
-        email: nonEmpty(data.currentUser?.email) ?? draft.customer.email ?? current.email,
+      // A saved time is a preference; only a new availability response can select it.
+      restoredSlotStart.current = draft.selectedSlotStart;
+      initialSlotsLoaded.current = true;
+      slotCache.current.clear();
+      hintCache.current.clear();
+      setSlotResult({ signature: "", slots: [] });
+      setSelectedSlotStart("");
+      setInspirationRemoved(draft.inspirationRemoved === true);
+      setCustomer({
+        email: data.currentUser?.email ?? "",
         firstName:
           nonEmpty(data.currentUser?.firstName) ??
-          nonEmpty(initialCustomerName.firstName) ??
-          draft.customer.firstName ??
-          current.firstName,
+          initialCustomerName.firstName,
         lastName:
           nonEmpty(data.currentUser?.lastName) ??
-          nonEmpty(initialCustomerName.lastName) ??
-          draft.customer.lastName ??
-          current.lastName,
-        notes: draft.customer.notes ?? current.notes,
-        phone: nonEmpty(data.currentUser?.phone) ?? draft.customer.phone ?? current.phone,
-      }));
+          initialCustomerName.lastName,
+        notes: draft.notes,
+        phone: data.currentUser?.phone ?? "",
+      });
       setIdentityMode(data.currentUser ? "choice" : draft.identityMode ?? "choice");
       setCategory(firstService?.category ?? categoryNames[0] ?? "Services");
       setStep(Math.min(STEP_REVIEW, Math.max(STEP_SERVICES, draft.step)));
-      clearStoredBookingDraft(data.salon?.salonId);
+      setDraftReadyScope(bookingDraftKey);
     });
 
     return () => {
@@ -1054,6 +1198,8 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
     };
   }, [
     categoryNames,
+    data,
+    bookingDraftKey,
     data.currentUser,
     data.initialSelection.inspiration?.id,
     data.salon,
@@ -1062,8 +1208,18 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
     initialCustomerName.firstName,
     initialCustomerName.lastName,
     mainServices,
-    embedded,
+    initialServiceIds,
   ]);
+
+  useEffect(() => {
+    if (!bookingDraftKey || draftReadyScope !== bookingDraftKey || data.state !== "ready" || draftCompleted.current || step >= STEP_DONE || isPending) return;
+    writeStoredBookingDraft(data, {
+      date, identityMode, inspirationRemoved, lineStaffByKey, notes: customer.notes,
+      selectedAddOnSelections, selectedServiceIds,
+      selectedSlotStart: restoredSlotStart.current ?? selectedSlotStart,
+      staffId, staffMode, step,
+    });
+  }, [bookingDraftKey, draftReadyScope, data, date, identityMode, inspirationRemoved, lineStaffByKey, customer.notes, selectedAddOnSelections, selectedServiceIds, selectedSlotStart, staffId, staffMode, step, isPending]);
 
   useEffect(() => {
     if (data.state !== "ready" || !data.salon || availabilityScopes.length === 0 || (embedded && step >= STEP_TIME)) return;
@@ -1112,11 +1268,11 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
 
   const slotReadDelay = step >= STEP_TIME ? 0 : 120;
   useEffect(() => {
-    if (data.state !== "ready" || selectedServiceIds.length === 0) return;
+    if (data.state !== "ready" || selectedServiceIds.length === 0 || draftReadyScope !== bookingDraftKey) return;
     let active = true;
     let ownedController:AbortController|undefined;
     const signature = slotRequestSignature;
-    const selectionSignature = JSON.stringify({ selectedServiceIds, selectedAddOnSelections, lineStaffIds, staffId, staffMode });
+    const selectionSignature = JSON.stringify({ selectedServiceIds, selectedAddOnSelections, lineStaffIds, staffId, staffMode, timezone: settings?.timezoneIana });
     const findEarliest = !manualDate.current && searchedSelection.current !== selectionSignature;
     if (!initialSlotsLoaded.current) {
       initialSlotsLoaded.current = true;
@@ -1139,11 +1295,21 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         const nextDate = findEarliest && nextSlots[0] && settings ? zonedDateKey(new Date(nextSlots[0].startAt), settings.timezoneIana) : date;
         const nextSignature = nextDate === date ? signature : JSON.stringify({ ...JSON.parse(signature), date: nextDate });
         if (nextDate !== date) {
+          // Earliest search results belong only to the resolved salon date.
+          if (slotCache.current.get(signature) === entry) slotCache.current.delete(signature);
           slotCache.current.set(nextSignature, { expires: Date.now() + 30000, promise: Promise.resolve(nextSlots) });
           setDate(nextDate);
         }
         setSlotResult({ signature: nextSignature, slots: nextSlots });
-        setSelectedSlotStart(current => nextSlots.some(slot => slot.startAt === current) ? current : nextSlots[0]?.startAt ?? "");
+        if (restoredSlotStart.current !== null) {
+          const savedStart = restoredSlotStart.current;
+          restoredSlotStart.current = null;
+          const savedSlot = nextSlots.find(slot => slot.startAt === savedStart);
+          setSelectedSlotStart(savedSlot?.startAt ?? "");
+          if (!savedSlot) setStep(current => Math.min(current, STEP_TIME));
+        } else {
+          setSelectedSlotStart(current => nextSlots.some(slot => slot.startAt === current) ? current : nextSlots[0]?.startAt ?? "");
+        }
       } catch { if(slotCache.current.get(signature)===entry)slotCache.current.delete(signature); if (active) setSlotError(true); }
     }, slotCache.current.has(signature) ? 0 : slotReadDelay);
     return () => {
@@ -1153,7 +1319,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         ownedController.abort();slotCache.current.delete(signature);
       }
     };
-  }, [data.salon?.salonId, data.state, data.slots, data.availabilityResolved, data.initialSelection.staffMode, date, lineStaffIds, selectedAddOnSelections, selectedServiceIds, slotRequestSignature, staffId, staffMode, availabilityRetry, settings, slotReadDelay]);
+  }, [bookingDraftKey, draftReadyScope, data.salon?.salonId, data.state, data.slots, data.availabilityResolved, data.initialSelection.staffMode, date, lineStaffIds, selectedAddOnSelections, selectedServiceIds, slotRequestSignature, staffId, staffMode, availabilityRetry, settings, slotReadDelay]);
 
   if (data.state !== "ready" || !settings || !data.salon) {
     if (embedded) return <div className={compact.unavailable}><button className={compact.icon} onClick={onClose} aria-label="Close booking">&times;</button><h2>{data.title}</h2><p className={compact.muted}>{data.message}</p></div>;
@@ -1299,6 +1465,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
           customerPhone: customer.phone,
           honeypot,
           idempotencyKey,
+          paymentCheckout,
           lineStaffIds,
           inspirationId:
             activeInspiration?.status === "unavailable"
@@ -1323,7 +1490,14 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
           startAt: selectedSlot.startAt,
         });
 
+        if (response.payment) {
+          setPayment(response.payment);
+          if (response.payment.url) window.location.assign(response.payment.url);
+          return;
+        }
         if (response.ok && response.bookingId) {
+          draftCompleted.current = true;
+          clearStoredBookingDraft(data);
           if (response.accountLinked && !embedded) {
             setResult(response);
             setStep(STEP_DONE);
@@ -1403,9 +1577,9 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         ? "Request received"
         : "Booking not submitted";
   const primaryActionLabel = step === STEP_REVIEW
-    ? isPending ? "Submitting..." : settings.confirmationMode === "instant_booking" ? "Confirm booking" : "Request appointment"
+    ? isPending ? "Submitting..." : data.bookingDeposit ? "Continue to payment" : settings.confirmationMode === "instant_booking" ? "Confirm booking" : "Request appointment"
     : embedded ? "Continue" : ["Next: Choose staff", "Next: Choose time", "Next: Review & confirm"][step];
-  const primaryActionDisabled = isPending || (step === STEP_REVIEW ? accountSessionChanged || !selectedSlot || (!signedIn && !settings.guestBookingEnabled) : !canContinue);
+  const primaryActionDisabled = Boolean(payment) || isPending || (step === STEP_REVIEW ? accountSessionChanged || !selectedSlot || (!signedIn && !settings.guestBookingEnabled) : !canContinue);
 
   const bookingFlowState = isPending
     ? "submitting"
@@ -1480,6 +1654,8 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
   const selectedServiceNames = summaryLines.map(line => line.service.name).join(" + ");
   const addMoreButton = <button type="button" className={compact.textLink} disabled={isPending} onClick={() => { setKeepInitialStaff(false); setCategory("All"); setSearch(""); setError(null); setStep(STEP_SERVICES); }}>+ Add more</button>;
 
+  if (payment) return <main className={`${compact.root} ${embedded ? compact.embedded : ""}`}><section className={compact.shell}><header className={compact.header}><div><strong>{data.salon.name}</strong><p>Appointment payment</p></div>{embedded ? <button type="button" aria-label="Close payment" onClick={onClose}>×</button> : null}</header><div className="p-4"><BookingCardPayment payment={payment} /></div></section></main>;
+
   return <main className={`${compact.root} ${embedded ? compact.embedded : ""}`} data-booking-surface="public" data-booking-complete={step === STEP_DONE ? "true" : undefined} data-booking-flow-state={bookingFlowState} data-testid="public-booking-root">
     <section className={compact.shell} data-testid="public-booking-shell">
       {embedded ? <header className={compact.quickHeader}><strong>{step === STEP_SERVICES ? "Choose services" : step === STEP_PROFESSIONAL ? "Choose staff" : step === STEP_TIME ? "Choose a time" : step === STEP_REVIEW ? "Confirm booking" : confirmationTitle}</strong><button className={compact.icon} onClick={onClose} aria-label="Close booking" type="button">&times;</button></header> : <header className={compact.header}>
@@ -1487,13 +1663,14 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         <div className={compact.salon}>{data.salon.logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img className={compact.logo} src={data.salon.logoUrl} alt="" />
-        ) : null}<span>{data.salon.name}</span></div>
+        ) : null}<a href={`/explore/salons/${data.salon.salonId}`} className="hover:underline">{data.salon.name}</a></div>
         <a className={compact.icon} href="/explore" aria-label="Close booking">&times;</a>
       </header>}
       {!embedded && step < STEP_DONE ? <nav className={compact.progress} aria-label="Booking progress" data-testid="public-booking-stepper">
         {STEPS.map((label, index) => <span key={label} className="inline-flex items-center gap-3"><button aria-current={step === index ? "step" : undefined} disabled={index > step || isPending} onClick={() => setStep(index)} type="button">{label}</button>{index < STEPS.length - 1 ? <span aria-hidden="true">&rsaquo;</span> : null}</span>)}
       </nav> : null}
       <div className={compact.content} data-testid="public-booking-content">
+        {data.bookingPolicy ? <details className={compact.notes} open={step === STEP_REVIEW}><summary>Salon booking rules</summary><p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", padding: "12px 0" }}>{data.bookingPolicy}</p></details> : null}
         {error ? <div className={compact.error} role="alert"><p>{error}</p>{accountSessionChanged ? <a className={`${compact.textLink} mt-1 inline-block text-sm font-medium underline underline-offset-2`} href={signInHref} onClick={storeDraftForAuth}>sign in</a> : null}</div> : null}
         {!error && activeInspiration?.message && (activeInspiration.status === "service_unavailable" || activeInspiration.status === "staff_unavailable") ? <p className={compact.error} role="status">{activeInspiration.message}</p> : null}
         {step === STEP_SERVICES ? <section>
@@ -1568,7 +1745,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
             <details className={compact.notes}><summary>Add a note (optional)</summary><textarea className={compact.field} aria-label="Appointment note" value={customer.notes} onChange={event => setCustomerField("notes", event.target.value)} /></details>
           </>}
           <input aria-hidden="true" tabIndex={-1} className="hidden" autoComplete="off" value={honeypot} onChange={event => setHoneypot(event.target.value)} />
-          <p className={`${compact.muted} mt-3`}>{embedded ? "No online payment required." : "Estimate only. The salon records the final amount."}</p>
+          {data.bookingDeposit ? <div className="mt-4 grid gap-3 rounded-xl border border-zinc-200 p-4"><h2 className="font-semibold">{data.bookingDeposit.mode === "full" ? "Pay before booking" : "Appointment deposit"}</h2><p>Due now: {money(bookingDepositCents(Math.round(total * 100), data.bookingDeposit) / 100)} · Remaining at salon: {money(Math.max(0, total - bookingDepositCents(Math.round(total * 100), data.bookingDeposit) / 100))}</p><p className={compact.muted}>{data.bookingDeposit.testMode ? "Test mode — no money will be charged. Completing checkout creates a test-marked appointment." : "Your appointment is submitted after payment succeeds. The salon pays processing fees."}</p>{data.bookingDeposit.checkout === "both" ? <fieldset disabled={Boolean(payment)} className="flex flex-wrap gap-4"><legend className="mb-2 text-sm">How would you like to pay?</legend><label><input type="radio" name="booking-payment-method" checked={paymentCheckout === "embedded"} onChange={() => setPaymentCheckout("embedded")} /> Enter card here</label><label><input type="radio" name="booking-payment-method" checked={paymentCheckout === "hosted"} onChange={() => setPaymentCheckout("hosted")} /> Stripe checkout</label></fieldset> : null}{payment ? <BookingCardPayment payment={payment} /> : null}</div> : <p className={`${compact.muted} mt-3`}>{embedded ? "No online payment required." : "Estimate only. The salon records the final amount."}</p>}
         </section> : null}
         {step === STEP_DONE && !embedded && result?.ok ? <section><h1 id="public-booking-confirmation-title" tabIndex={-1}>{confirmationTitle}</h1><p className={compact.muted}>{result.message}</p><div className={`${compact.receipt} mt-4`}><strong>{data.salon.name}</strong><p>{selectedSlot ? formatDateTime(selectedSlot.startAt, settings.timezoneIana) : ""}</p><p className={compact.muted}>{summaryServices.map(service => service.name).join(" / ")}</p></div>{embedded && result.accountLinked ? <a className={`${compact.primary} mt-4`} href={`/my-bookings?details=${encodeURIComponent(result.bookingId ?? "")}`}>View booking</a> : manageHref ? <a className={`${compact.primary} mt-4`} href={manageHref}>Manage booking</a> : null}{embedded ? <button type="button" className={compact.textLink} onClick={onClose}>Continue exploring</button> : null}{!result.accountLinked ? <p className={`${compact.muted} mt-2`}>Save your secure manage link to change this appointment.</p> : null}</section> : null}
       </div>
@@ -1584,3 +1761,4 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
     </section>
   </main>;
 }
+

@@ -7,8 +7,38 @@ import {
   CampaignValidationError,
 } from "@/lib/explore-advertising-rules";
 import { revalidatePath } from "next/cache";
+export async function saveAdvertisingLimitsAction(form: FormData) {
+  await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.advertisingManage);
+  const config: Record<string, number> = {};
+  for (const [key, min, max] of [
+    ["maxTotal", 0, 30],
+    ["maxPopups", 0, 10],
+    ["minPopupGapSeconds", 8, 3600],
+    ["sessionMinutes", 5, 120],
+  ] as const) {
+    const value = Number(form.get(key));
+    if (!Number.isInteger(value) || value < min || value > max)
+      return {
+        ok: false,
+        message: `${key}: enter a whole number between ${min} and ${max}.`,
+      };
+    config[key] = value;
+  }
+  if (config.maxPopups > config.maxTotal)
+    return { ok: false, message: "Popup limit cannot exceed the total limit." };
+  const { error } = await advertisingClient()
+    .from("advertising_settings")
+    .upsert({ id: true, config });
+  if (error)
+    return {
+      ok: false,
+      message: "Settings could not be saved. Your inputs have been kept.",
+    };
+  revalidatePath("/admin/advertising");
+  return { ok: true, message: "Session limits saved." };
+}
 export async function campaignImageUploadAction(mime: string, size: number) {
-  await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.businessesUpdate);
+  await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.advertisingManage);
   if (
     !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(mime) ||
     !Number.isFinite(size) ||
@@ -34,7 +64,7 @@ export async function saveCampaignAction(
   form: FormData,
 ) {
   const actor = await requirePlatformAdmin(
-    PLATFORM_ADMIN_PERMISSIONS.businessesUpdate,
+    PLATFORM_ADMIN_PERMISSIONS.advertisingManage,
   );
   try {
     const file = form.get("image");
@@ -80,7 +110,7 @@ export async function saveCampaignAction(
   }
 }
 export async function deleteCampaignAction(form: FormData) {
-  await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.businessesUpdate);
+  await requirePlatformAdmin(PLATFORM_ADMIN_PERMISSIONS.advertisingManage);
   const { error } = await advertisingClient()
     .from("explore_campaigns")
     .delete()

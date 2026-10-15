@@ -1,5 +1,6 @@
 "use client";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
 
 import {
@@ -81,7 +82,7 @@ function StatusPill({
         className,
       ].join(" ")}
     >
-      {label}
+      <WorkspaceText text={label} />
     </span>
   );
 }
@@ -95,7 +96,7 @@ function StatusRow({
 }) {
   return (
     <div className="grid gap-1 px-4 py-3 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
-      <p className="text-xs font-semibold uppercase text-zinc-500">{label}</p>
+      <p className="text-xs font-semibold uppercase text-zinc-500"><WorkspaceText text={label} /></p>
       <p className="text-sm font-semibold text-zinc-950">{value}</p>
     </div>
   );
@@ -108,6 +109,8 @@ export function SalonLifecycleSection({
   notice,
   salon,
 }: SalonLifecycleSectionProps) {
+  const __vt = useWorkspaceTranslation();
+
   const [backupError, setBackupError] = useState("");
   const [backupNotice, setBackupNotice] = useState("");
   const [backupPending, startBackup] = useTransition();
@@ -142,51 +145,51 @@ export function SalonLifecycleSection({
   }
 
   return (
-    <section className="scroll-mt-6" id="salon-status">
+    <div className="settings-style"><section className="scroll-mt-6" id="salon-status">
       <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-base font-semibold text-zinc-950">
-            Salon status
+            <WorkspaceText text="Salon status" />
           </h2>
           <p className="mt-1 text-sm leading-6 text-zinc-500">
-            Pause, reactivate, export, or permanently close this salon.
+            <WorkspaceText text="Pause, reactivate, export, or permanently close this salon." />
           </p>
         </div>
         <StatusPill
           className={statusTone}
-          label={statusLabel(salon.lifecycleStatus)}
+          label={__vt(statusLabel(salon.lifecycleStatus))}
         />
       </div>
 
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
         {notice ? (
           <p className="border-b border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-            {notice}
+            <WorkspaceText text={notice} />
           </p>
         ) : null}
         {error ? (
           <p className="border-b border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-            {error}
+            <WorkspaceText text={error} />
           </p>
         ) : null}
 
         <div className="divide-y divide-zinc-100">
           <StatusRow
-            label="Current state"
+            label={__vt("Current state")}
             value={statusLabel(salon.lifecycleStatus)}
           />
-          <StatusRow label="Disabled" value={disabledAt ?? "-"} />
-          <StatusRow label="Closed" value={closedAt ?? "-"} />
+          <StatusRow label={__vt("Disabled")} value={disabledAt ?? "-"} />
+          <StatusRow label={__vt("Closed")} value={closedAt ?? "-"} />
         </div>
 
         <div className="border-t border-zinc-100 px-4 py-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-sm font-semibold text-zinc-950">
-                Backup export
+                <WorkspaceText text="Backup export" />
               </h3>
               <p className="mt-1 text-sm leading-6 text-zinc-500">
-                Download a private salon export before high-impact changes.
+                <WorkspaceText text="Download a private salon export before high-impact changes." />
               </p>
             </div>
             <button
@@ -195,7 +198,7 @@ export function SalonLifecycleSection({
               onClick={downloadBackup}
               type="button"
             >
-              {backupPending ? "Preparing..." : "Download backup"}
+              <WorkspaceText text={backupPending ? "Preparing..." : "Download backup"} />
             </button>
           </div>
           {backupNotice ? (
@@ -205,7 +208,7 @@ export function SalonLifecycleSection({
           ) : null}
           {backupError ? (
             <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-              {backupError}
+              <WorkspaceText text={backupError} />
             </p>
           ) : null}
         </div>
@@ -213,11 +216,10 @@ export function SalonLifecycleSection({
         {salon.lifecycleStatus === "permanently_closed" ? (
           <div className="border-t border-zinc-100 bg-zinc-50 px-4 py-4">
             <h3 className="text-sm font-semibold text-zinc-950">
-              Historical access only
+              <WorkspaceText text="Historical access only" />
             </h3>
             <p className="mt-1 text-sm leading-6 text-zinc-600">
-              This salon remains available for retained history. Standard
-              reactivation is not available.
+              <WorkspaceText text="This salon remains available for retained history. Standard reactivation is not available." />
             </p>
           </div>
         ) : null}
@@ -229,17 +231,16 @@ export function SalonLifecycleSection({
           >
             <div>
               <h3 className="text-sm font-semibold text-amber-950">
-                Temporarily disable
+                <WorkspaceText text="Temporarily disable" />
               </h3>
               <p className="mt-1 text-sm leading-6 text-amber-900">
-                Pause new bookings, POS activity, and operational changes. You
-                can reactivate later.
+                <WorkspaceText text="Pause new bookings, POS activity, and operational changes. You can reactivate later." />
               </p>
             </div>
             <textarea
               className="min-h-20 rounded-md border border-amber-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-amber-500"
               name="disable_reason"
-              placeholder="Reason, optional"
+              placeholder={__vt("Reason, optional")}
             />
             <label className="flex items-start gap-3 text-sm text-amber-950">
               <input
@@ -247,7 +248,7 @@ export function SalonLifecycleSection({
                 name="disable_acknowledged"
                 type="checkbox"
               />
-              <span>I understand business activity will pause.</span>
+              <span><WorkspaceText text="I understand business activity will pause." /></span>
             </label>
             <div>
               <SubmitButton
@@ -255,7 +256,7 @@ export function SalonLifecycleSection({
                 disabled={!canManageLifecycle}
                 type="submit"
               >
-                Disable salon
+                <WorkspaceText text="Disable salon" />
               </SubmitButton>
             </div>
           </form>
@@ -268,17 +269,16 @@ export function SalonLifecycleSection({
           >
             <div>
               <h3 className="text-sm font-semibold text-emerald-950">
-                Reactivate salon
+                <WorkspaceText text="Reactivate salon" />
               </h3>
               <p className="mt-1 text-sm leading-6 text-emerald-900">
-                Resume standard salon workflows once this salon is active
-                again.
+                <WorkspaceText text="Resume standard salon workflows once this salon is active again." />
               </p>
             </div>
             <textarea
               className="min-h-20 rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-emerald-500"
               name="reactivate_reason"
-              placeholder="Reason, optional"
+              placeholder={__vt("Reason, optional")}
             />
             <label className="flex items-start gap-3 text-sm text-emerald-950">
               <input
@@ -286,7 +286,7 @@ export function SalonLifecycleSection({
                 name="reactivate_acknowledged"
                 type="checkbox"
               />
-              <span>Resume operational workflows for this salon.</span>
+              <span><WorkspaceText text="Resume operational workflows for this salon." /></span>
             </label>
             <div>
               <SubmitButton
@@ -294,7 +294,7 @@ export function SalonLifecycleSection({
                 disabled={!canManageLifecycle}
                 type="submit"
               >
-                Reactivate salon
+                <WorkspaceText text="Reactivate salon" />
               </SubmitButton>
             </div>
           </form>
@@ -305,26 +305,25 @@ export function SalonLifecycleSection({
             <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase text-red-800">
-                  Danger Zone
+                  <WorkspaceText text="Danger Zone" />
                 </p>
                 <h3 className="mt-1 text-sm font-semibold text-red-950">
-                  Permanently close salon
+                  <WorkspaceText text="Permanently close salon" />
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-red-900">
-                  This ends the business lifecycle for this salon. Personal
-                  Account access and other salons are not deleted.
+                  <WorkspaceText text="This ends the business lifecycle for this salon. Personal Account access and other salons are not deleted." />
                 </p>
               </div>
               <StatusPill
                 className="bg-red-100 text-red-700 ring-red-200"
-                label="Protected"
+                label={__vt("Protected")}
               />
             </div>
 
             {closureReview ? (
               <div className="mb-3">
                 <p className="mb-2 text-xs font-semibold uppercase text-red-900">
-                  Operational review
+                  <WorkspaceText text="Operational review" />
                 </p>
                 {closureReview.blockingRecords.length > 0 ? (
                   <div className="overflow-hidden rounded-lg border border-red-200 bg-white">
@@ -334,7 +333,7 @@ export function SalonLifecycleSection({
                         key={record.id}
                       >
                         <p className="text-sm font-semibold text-red-950">
-                          {record.label}: {record.count}
+                          <WorkspaceText text={record.label} />: {record.count}
                         </p>
                         <p className="mt-1 text-sm leading-6 text-red-800">
                           {record.description}
@@ -344,8 +343,7 @@ export function SalonLifecycleSection({
                   </div>
                 ) : (
                   <p className="rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-emerald-800">
-                    No future bookings, pending appointments, or open POS
-                    tickets were found.
+                    <WorkspaceText text="No future bookings, pending appointments, or open POS tickets were found." />
                   </p>
                 )}
               </div>
@@ -362,13 +360,12 @@ export function SalonLifecycleSection({
                   type="checkbox"
                 />
                 <span>
-                  I have downloaded a backup or understand I am continuing
-                  without one.
+                  <WorkspaceText text="I have downloaded a backup or understand I am continuing without one." />
                 </span>
               </label>
               <label className="grid gap-1.5">
                 <span className="text-sm font-semibold text-red-950">
-                  Type salon name to confirm
+                  <WorkspaceText text="Type salon name to confirm" />
                 </span>
                 <input
                   autoComplete="off"
@@ -379,7 +376,7 @@ export function SalonLifecycleSection({
               <textarea
                 className="min-h-20 rounded-md border border-red-200 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-red-500"
                 name="closure_reason"
-                placeholder="Reason, optional"
+                placeholder={__vt("Reason, optional")}
               />
               <div>
                 <SubmitButton
@@ -387,13 +384,13 @@ export function SalonLifecycleSection({
                   disabled={!canManageLifecycle || closureReview?.canClose === false}
                   type="submit"
                 >
-                  Permanently close salon
+                  <WorkspaceText text="Permanently close salon" />
                 </SubmitButton>
               </div>
             </form>
           </div>
         ) : null}
       </div>
-    </section>
+    </section></div>
   );
 }

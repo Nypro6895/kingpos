@@ -1,5 +1,11 @@
 "use client";
+import {BlockUserButton} from "@/components/block-user-button";
+import { commentIdentityKey } from "@/lib/explore-comment-identity";
+import { InlineCommentComposer } from "./inline-comment-composer";
+import Link from "next/link";
+import { commentDisplayName } from "@/lib/comment-identity";
 
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import {
   createPostCommentAction,
   deletePostCommentAction,
@@ -25,6 +31,9 @@ import {
 } from "react";
 
 type PostCommentThreadProps = {
+  inlineComposer?: boolean;
+  expanded?: boolean;
+  focusKey?: number;
   autoFocusComposer?: boolean;
   className?: string;
   compact?: boolean;
@@ -202,7 +211,10 @@ function mapRealtimeComment(
   }
 
   return {
-    authorDisplayName: readText(row.author_display_name) ?? "Reylumi customer",
+    actingRole: row.acting_role as PostComment["actingRole"],
+    actingSalonId: readText(row.acting_salon_id),
+    salonName: target.salonName ?? null,
+    authorDisplayName: commentDisplayName({authorName:readText(row.author_display_name),isSalonReply:readBoolean(row.is_salon_reply),salonName:target.salonName}),
     authorUserId: readText(row.author_user_id),
     beautyPostId: readText(row.beauty_post_id),
     body,
@@ -285,7 +297,8 @@ function createOptimisticComment(input: {
   const parentCommentId = input.parentComment?.id ?? null;
 
   return {
-    authorDisplayName: input.asSalonReply ? "Salon" : "You",
+    salonName: input.target.salonName ?? null,
+    authorDisplayName: input.viewer.identity?.name ?? (input.asSalonReply ? commentDisplayName({isSalonReply:true,salonName:input.target.salonName}) : "You"),
     authorUserId: input.viewer.userId,
     beautyPostId: input.target.sourceType === "beauty_post" ? input.target.sourceId : null,
     body: input.body,
@@ -326,10 +339,13 @@ function buttonClass(tone: "danger" | "primary" | "subtle" = "subtle") {
 }
 
 export function PostCommentThread(props: PostCommentThreadProps) {
-  return <PostCommentThreadContent {...props} key={`${props.viewer.userId ?? "guest"}:${targetKey(props.target)}`} />;
+  return <PostCommentThreadContent {...props} key={`${props.viewer.userId ?? "guest"}:${props.viewer.identity ? commentIdentityKey(props.viewer.identity) : "personal"}:${targetKey(props.target)}`} />;
 }
 
 function PostCommentThreadContent({
+  inlineComposer = false,
+  expanded = false,
+  focusKey = 0,
   autoFocusComposer = false,
   className,
   compact = false,
@@ -339,6 +355,10 @@ function PostCommentThreadContent({
   target,
   viewer,
 }: PostCommentThreadProps) {
+  const __vt = useWorkspaceTranslation();
+
+  const [active, setActive] = useState(false);
+  const enabled = !inlineComposer || expanded || active;
   const [comments, setComments] = useState<DraftComment[]>([]);
   const [totalCount, setTotalCount] = useState(Math.max(0, initialCount));
   const [nextOffset, setNextOffset] = useState<number | null>(0);
@@ -383,7 +403,7 @@ function PostCommentThreadContent({
   }, [totalCount]);
 
   useEffect(() => {
-    if (!autoFocusComposer) {
+    if (!autoFocusComposer && !focusKey) {
       return;
     }
 
@@ -392,7 +412,7 @@ function PostCommentThreadContent({
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [autoFocusComposer, key]);
+  }, [autoFocusComposer, key, focusKey]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -404,9 +424,9 @@ function PostCommentThreadContent({
   }, [key]);
 
   useEffect(() => {
-    loadPage(0, true);
+    if (enabled) loadPage(0, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, enabled]);
 
   useEffect(() => {
     if (!loaded || typeof window === "undefined") {
@@ -427,18 +447,21 @@ function PostCommentThreadContent({
   }, [comments, loaded]);
 
   useEffect(() => {
+    if (!enabled) return;
     function refreshOnFocus() {
       if (document.visibilityState === "visible") {
         refreshCommentsSoon();
       }
     }
 
+    window.addEventListener("reylumi:user-blocks-changed", refreshOnFocus);
     window.addEventListener("focus", refreshOnFocus);
-    return () => window.removeEventListener("focus", refreshOnFocus);
+    return () => {window.removeEventListener("focus", refreshOnFocus);window.removeEventListener("reylumi:user-blocks-changed", refreshOnFocus);};
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     const supabase = createSupabaseBrowserClient();
     const filter = targetRealtimeFilter(target);
 
@@ -479,14 +502,13 @@ function PostCommentThreadContent({
               : null;
 
           if (incoming) {
-            setComments((current) =>
-              mergeComments(
-                current.filter(
-                  (comment) => !optimisticMatchesRealtimeComment(comment, incoming),
-                ),
-                [incoming],
-              ),
-            );
+            setComments((current) => {
+              const salonName = target.salonName ?? current.find(comment => comment.salonId === incoming.salonId && comment.salonName)?.salonName;
+              // Resolve missing salon identity through the authoritative reload below.
+              if (incoming.isSalonReply && !salonName) return current;
+              const resolved = incoming.isSalonReply ? { ...incoming, salonName, authorDisplayName: commentDisplayName({isSalonReply:true,salonName}) } : incoming;
+              return mergeComments(current.filter(comment => !optimisticMatchesRealtimeComment(comment, resolved)), [resolved]);
+            });
           } else {
             const removedId = readText(oldRow.id) ?? readText(nextRow.id);
 
@@ -514,7 +536,7 @@ function PostCommentThreadContent({
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, enabled]);
 
   function loadPage(offset: number, replace = false) {
     if (submitPendingRef.current || loadPendingRef.current) {
@@ -637,11 +659,11 @@ function PostCommentThreadContent({
 
     const parentComment = replyTo;
     const parentCommentId = parentComment?.id ?? null;
-    const postAsSalon = asSalonReply && viewer.canReplyAsSalon;
+    const postAsSalon = !inlineComposer && asSalonReply && viewer.canReplyAsSalon;
     let storage: Storage | null = null;
     try { storage = window.sessionStorage; } catch { /* Storage is optional. */ }
     const request = prepareCommentRequest(
-      `${viewer.userId}:${key}`,
+      `${viewer.userId}:${key}:${inlineComposer && viewer.identity ? commentIdentityKey(viewer.identity) : "default"}`,
       { body: nextBody, parentCommentId, asSalonReply: postAsSalon },
       storage,
       () => crypto.randomUUID(),
@@ -671,6 +693,7 @@ function PostCommentThreadContent({
     startPostTransition(async () => {
       const result = await withRequestTimeout(createPostCommentAction({
         requestId: request.id,
+        workspaceIdentityKey: inlineComposer && viewer.identity ? commentIdentityKey(viewer.identity) : undefined,
         asSalonReply: postAsSalon,
         body: nextBody,
         parentCommentId,
@@ -709,7 +732,7 @@ function PostCommentThreadContent({
   function beginReply(comment: PostComment) {
     draftVersionRef.current += 1;
     setReplyTo(comment);
-    setAsSalonReply(viewer.canReplyAsSalon);
+    // Keep the chosen persona; permission alone must not switch identity.
 
     window.requestAnimationFrame(() => {
       textareaRef.current?.focus({ preventScroll: false });
@@ -803,33 +826,30 @@ function PostCommentThreadContent({
   return (
     <section className={[compact ? "grid gap-3" : "grid gap-4", className].filter(Boolean).join(" ")}>
       {compact ? (
-        <h3 className="sr-only">Comments for {target.title ?? "post"}</h3>
+        <h3 className="sr-only"><WorkspaceText text="Comments for" /> <WorkspaceText text={target.title ?? "post"} /></h3>
       ) : (
         <div>
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-zinc-950">Comments</h3>
+            <h3 className="text-base font-semibold text-zinc-950"><WorkspaceText text="Comments" /></h3>
             <span className="text-xs font-semibold text-zinc-500">
               {displayCommentCount(totalCount)}
             </span>
           </div>
-          {target.title ? (
-            <p className="mt-1 text-sm text-zinc-500">{target.title}</p>
-          ) : null}
         </div>
       )}
 
-      <div
+      <div hidden={inlineComposer && !enabled} style={inlineComposer ? { order: 2 } : undefined}
         className={
           compact ? "grid max-h-80 gap-2 overflow-y-auto pr-1" : "grid gap-3"
         }
       >
         {!loaded && comments.length === 0 ? (
           <p className="rounded-lg bg-white px-3 py-2.5 text-sm text-zinc-600">
-            Loading comments...
+            <WorkspaceText text="Loading comments..." />
           </p>
         ) : loadError ? (
           <button type="button" className={buttonClass()} onClick={() => loadPage(0, true)} disabled={loading}>
-            Retry loading comments
+            <WorkspaceText text="Retry loading comments" />
           </button>
         ) : groupedComments.roots.length === 0 ? (
           <p
@@ -838,7 +858,7 @@ function PostCommentThreadContent({
               compact ? "bg-white px-3 py-2.5" : "bg-zinc-50 p-4",
             ].join(" ")}
           >
-            No comments yet.
+            <WorkspaceText text="No comments yet." />
           </p>
         ) : (
           groupedComments.roots.map((comment) => (
@@ -862,28 +882,29 @@ function PostCommentThreadContent({
             onClick={() => loadPage(nextOffset)}
             type="button"
           >
-            {loading ? "Loading..." : "Load more"}
+            <WorkspaceText text={loading ? "Loading..." : "Load more"} />
           </button>
         ) : null}
       </div>
 
-      <form className="grid gap-2" onSubmit={submit}>
+      <form className="grid gap-2" style={inlineComposer ? { order: 1 } : undefined} onSubmit={submit} onFocus={() => setActive(true)}>
         {replyTo ? (
           <div className="flex items-center justify-between gap-3 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-            <span>Replying to {replyTo.authorDisplayName}</span>
+            <span><WorkspaceText text="Replying to" /> {replyTo.authorDisplayName}</span>
             <button
               className="font-semibold underline-offset-4 hover:underline"
               onClick={() => setReplyTo(null)}
               type="button"
             >
-              Cancel
+              <WorkspaceText text="Cancel" />
             </button>
           </div>
         ) : null}
-        <textarea
+        {inlineComposer ? <InlineCommentComposer viewer={viewer} value={body} textareaRef={textareaRef} canSubmit={canSubmit} posting={posting} replying={Boolean(replyTo)} onChange={value => { draftVersionRef.current += 1; setBody(value); }} /> : <textarea
+          aria-label={__vt("Write a public comment...")}
           className={[
             "resize-none rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm leading-6 text-zinc-950 outline-none transition focus:border-zinc-950",
-            compact ? "min-h-14" : "min-h-24",
+            "min-h-12",
           ].join(" ")}
           disabled={!viewer.isAuthenticated}
           maxLength={1000}
@@ -891,17 +912,16 @@ function PostCommentThreadContent({
             draftVersionRef.current += 1;
             setBody(event.currentTarget.value);
           }}
-          placeholder={
-            viewer.isAuthenticated
+          placeholder={__vt(viewer.isAuthenticated
               ? replyTo
                 ? "Write a reply..."
                 : "Write a public comment..."
-              : "Sign in to comment."
-          }
+              : "Sign in to comment.")}
+          rows={2}
           ref={textareaRef}
           value={body}
-        />
-        {viewer.canReplyAsSalon ? (
+        />}
+        {viewer.canReplyAsSalon && !inlineComposer ? (
           <label className="flex items-center gap-2 text-sm text-zinc-700">
             <input
               checked={asSalonReply}
@@ -909,16 +929,18 @@ function PostCommentThreadContent({
               onChange={(event) => setAsSalonReply(event.currentTarget.checked)}
               type="checkbox"
             />
-            Reply as salon
+            <WorkspaceText text="Reply as salon" />
           </label>
         ) : null}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3" hidden={inlineComposer && !status}>
+          {!inlineComposer && !viewer.isAuthenticated ? <Link className="text-xs text-brand-orange" href="/login?next=%2Fexplore"><WorkspaceText text="Sign in to comment." /></Link> : null}
           <p aria-live="polite" className="min-h-5 text-sm text-zinc-600">
-            {status}
+            <WorkspaceText text={status} />
           </p>
-          <button className={buttonClass("primary")} disabled={!canSubmit} type="submit">
-            {posting ? "Posting..." : replyTo ? "Post reply" : "Post comment"}
-          </button>
+          {status?.includes("/security-check") ? <a href="/security-check" className="text-sm underline"><WorkspaceText text="Open security check" /></a> : null}
+          {!inlineComposer ? <button className={buttonClass("primary")} disabled={!canSubmit} type="submit">
+            <WorkspaceText text={posting ? "Posting..." : replyTo ? "Post reply" : "Post comment"} />
+          </button> : null}
         </div>
       </form>
     </section>
@@ -946,6 +968,7 @@ function CommentItem({
   replyingToName?: string | null;
   viewer: PostCommentViewer;
 }) {
+  const [repliesExpanded, setRepliesExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [draftState, setDraftState] = useState(() => ({
     body: comment.body,
@@ -960,10 +983,11 @@ function CommentItem({
     viewer.isAuthenticated && !comment.optimistic && comment.replyDepth < 8;
 
   return (
-    <div className="grid gap-2" id={`comment-${comment.id}`}>
+    <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-2 gap-y-2" id={`comment-${comment.id}`}>
+      <span aria-hidden="true" className="grid size-8 place-items-center rounded-full bg-zinc-200 text-xs font-semibold text-zinc-600">{comment.authorDisplayName.slice(0, 2).toUpperCase()}</span>
       <div
         className={[
-          "rounded-lg p-3",
+          "rounded-2xl px-3 py-2",
           comment.optimistic ? "bg-zinc-100 opacity-80" : "bg-zinc-50",
         ].join(" ")}
       >
@@ -973,7 +997,7 @@ function CommentItem({
               {comment.authorDisplayName}
               {comment.isSalonReply ? (
                 <span className="ml-2 rounded-md bg-emerald-50 px-2 py-0.5 text-xs text-emerald-800">
-                  Salon
+                  <WorkspaceText text="Salon" />
                 </span>
               ) : null}
             </p>
@@ -1002,7 +1026,7 @@ function CommentItem({
                     }}
                     type="button"
                   >
-                    Cancel
+                    <WorkspaceText text="Cancel" />
                   </button>
                   <button
                     className={buttonClass("primary")}
@@ -1012,7 +1036,7 @@ function CommentItem({
                     }}
                     type="button"
                   >
-                    Save
+                    <WorkspaceText text="Save" />
                   </button>
                 </div>
               </div>
@@ -1020,7 +1044,7 @@ function CommentItem({
               <>
                 {replyingToName ? (
                   <p className="mt-1 text-xs font-semibold text-zinc-500">
-                    Replying to {replyingToName}
+                    <WorkspaceText text="Replying to" /> {replyingToName}
                   </p>
                 ) : null}
                 <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-700">
@@ -1028,8 +1052,9 @@ function CommentItem({
                 </p>
                 <p className="mt-1 text-xs text-zinc-500">
                   {humanTime(comment.createdAt)}
-                  {comment.editedAt ? " · Edited" : ""}
-                  {comment.optimistic ? " · Sending" : ""}
+                  <WorkspaceText text={comment.editedAt ? " · Edited" : ""} />
+                  <WorkspaceText text={comment.optimistic ? " · Sending" : ""} />
+                  <WorkspaceText text={comment.moderationPending ? " · Pending review, visible only to you" : ""} />
                 </p>
               </>
             )}
@@ -1041,9 +1066,10 @@ function CommentItem({
                 onClick={() => onReply(comment)}
                 type="button"
               >
-                Reply
+                <WorkspaceText text="Reply" />
               </button>
             ) : null}
+            {viewer.userId && comment.authorUserId && comment.authorUserId !== viewer.userId ? <BlockUserButton userId={comment.authorUserId}/> : null}
             {canEdit ? (
               <button
                 className={buttonClass()}
@@ -1051,7 +1077,7 @@ function CommentItem({
                 onClick={() => setIsEditing(true)}
                 type="button"
               >
-                Edit
+                <WorkspaceText text="Edit" />
               </button>
             ) : null}
             {canDelete ? (
@@ -1061,7 +1087,7 @@ function CommentItem({
                 onClick={() => onDelete(comment)}
                 type="button"
               >
-                Delete
+                <WorkspaceText text="Delete" />
               </button>
             ) : null}
             {canHide ? (
@@ -1070,14 +1096,15 @@ function CommentItem({
                 onClick={() => onHide(comment)}
                 type="button"
               >
-                Hide
+                <WorkspaceText text="Hide" />
               </button>
             ) : null}
           </div>
         </div>
       </div>
-      {replies.length > 0 ? (
-        <div className="ml-5 grid gap-2 border-l border-zinc-200 pl-3">
+      {replies.length > 0 ? <button type="button" aria-expanded={repliesExpanded} onClick={()=>setRepliesExpanded(current=>!current)} className="col-start-2 justify-self-start text-xs font-semibold text-zinc-500"><WorkspaceText text={repliesExpanded ? "Hide replies" : `View ${replies.length} ${replies.length === 1 ? "reply" : "replies"}`} /></button> : null}
+      {replies.length > 0 && repliesExpanded ? (
+        <div className="col-start-2 grid gap-2">
           {replies.map((reply) => (
             <CommentItem
               comment={reply}

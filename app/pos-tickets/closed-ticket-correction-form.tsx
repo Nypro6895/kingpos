@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText } from "@/components/workspace-language";
 import { CustomerName } from "@/components/customer-name";
 
 import { useMemo, useRef, useState } from "react";
@@ -409,7 +410,7 @@ function SaveButton({
             onClick={() => onCorrectionIntentChange("request")}
             type="submit"
           >
-            {pending ? "Submitting..." : "Submit Correction Request"}
+            <WorkspaceText text={pending ? "Submitting..." : "Submit Correction Request"} />
           </button>
         ) : null}
         <button
@@ -423,13 +424,13 @@ function SaveButton({
           }
           type="submit"
         >
-          {pending
+          <WorkspaceText text={pending
             ? canApplyFinancialCorrection
               ? "Applying..."
               : "Submitting..."
             : canApplyFinancialCorrection
               ? "Apply Correction"
-              : "Submit Correction Request"}
+              : "Submit Correction Request"} />
         </button>
       </>
     );
@@ -442,7 +443,7 @@ function SaveButton({
       formAction={correctClosedTicketAction}
       type="submit"
     >
-      {pending ? "Saving..." : "Save Correction"}
+      <WorkspaceText text={pending ? "Saving..." : "Save Correction"} />
     </button>
   );
 }
@@ -464,7 +465,7 @@ function PickerPopover({
           onClick={() => onSelect(item.id)}
           type="button"
         >
-          {item.label}
+          <WorkspaceText text={item.label} />
         </button>
       ))}
     </div>
@@ -1604,7 +1605,7 @@ export function DailyPosTicketCard({
             onClick={() => addPart(line)}
             type="button"
           >
-            + Part
+            <WorkspaceText text="+ Part" />
           </button>
         ) : null}
       </span>
@@ -1645,7 +1646,7 @@ export function DailyPosTicketCard({
         )}
         {renderParts(line)}
         <span className="font-medium text-zinc-950">
-          Total {formatMoney(lineTotal(line))}
+          <WorkspaceText text="Total" /> {formatMoney(lineTotal(line))}
         </span>
         {line.staffId ? (
           <InlineMoney
@@ -1658,7 +1659,7 @@ export function DailyPosTicketCard({
             value={staffTipInput}
           />
         ) : (
-          <span className="text-zinc-500">Tip $0.00</span>
+          <span className="text-zinc-500"><WorkspaceText text="Tip $0.00" /></span>
         )}
         {isEditing ? (
           <button
@@ -1666,7 +1667,7 @@ export function DailyPosTicketCard({
             onClick={() => removeLine(line)}
             type="button"
           >
-            {line.remove ? "Undo" : "Remove"}
+            {line.remove ? "Undo" : <WorkspaceText text="Remove" />}
           </button>
         ) : null}
       </div>
@@ -1682,7 +1683,7 @@ export function DailyPosTicketCard({
 
     return (
       <div className="border-t border-zinc-100 bg-zinc-50/60 px-3 py-2 text-xs text-zinc-600">
-        <div className="font-semibold text-zinc-800">Correction History</div>
+        <div className="font-semibold text-zinc-800"><WorkspaceText text="Correction History" /></div>
         <ul className="mt-1 space-y-1">
           {adjustments.map((adjustment) => {
             const kind = historyKind(adjustment);
@@ -1710,17 +1711,17 @@ export function DailyPosTicketCard({
                 key={adjustment.id}
               >
                 <span className="font-medium text-zinc-800">
-                  {formatDateTime(adjustment.created_at, timeZone)}
+                  <WorkspaceText text={formatDateTime(adjustment.created_at, timeZone)} />
                 </span>
                 <span className="px-1 text-zinc-400">|</span>
                 {isCorrection ? (
                   <>
                     <span className="font-semibold text-amber-900">
-                      {historyBadgeLabel(kind)}
+                      <WorkspaceText text={historyBadgeLabel(kind)} />
                     </span>
                     <span className="text-amber-900">
                       {" "}
-                      for {businessDateCompactLabel}
+                      <WorkspaceText text="for" /> <WorkspaceText text={businessDateCompactLabel} />
                     </span>
                     <span className="px-1 text-amber-300">|</span>
                   </>
@@ -1730,7 +1731,7 @@ export function DailyPosTicketCard({
                   <>
                     <span className="px-1 text-zinc-400">|</span>
                     <span>
-                      Reason:{" "}
+                      <WorkspaceText text="Reason:" />{" "}
                       <span className={isCorrection ? "text-amber-950" : "text-zinc-800"}>
                         {adjustment.reason}
                       </span>
@@ -1739,7 +1740,7 @@ export function DailyPosTicketCard({
                 ) : null}
                 <span className="px-1 text-zinc-400">-</span>
                 <span className={isCorrection ? "text-amber-950" : "text-zinc-700"}>
-                  {historySummaryLabel(kind)}: {summaryText}
+                  <WorkspaceText text={historySummaryLabel(kind)} />: {summaryText}
                 </span>
               </li>
             );
@@ -1785,30 +1786,30 @@ export function DailyPosTicketCard({
         <div className="grid items-center gap-2 bg-zinc-50 px-3 py-2 text-sm sm:grid-cols-[48px_80px_minmax(150px,1fr)_110px_150px_130px_56px]">
           <span className="font-semibold text-zinc-950">#{dailyNumber}</span>
           <span className="text-zinc-700">
-            {formatTime(ticket.opened_at, timeZone)}
+            <WorkspaceText text={formatTime(ticket.opened_at, timeZone)} />
           </span>
           <span className="min-w-0 truncate font-medium text-zinc-950">
             <CustomerName name={ticket.customer?.name} />
             {ticket.source_booking_id ? (
               <span className="ml-2 rounded border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-800">
-                From appointment
+                <WorkspaceText text="From appointment" />
               </span>
             ) : null}
           </span>
           <span className="text-zinc-700">
-            Total:{" "}
+            <WorkspaceText text="Total:" />{" "}
             <span className="font-semibold text-zinc-950">
               {formatMoney(headerTotals.subtotal)}
             </span>
           </span>
           <span className="text-zinc-700">
-            After Discount:{" "}
+            <WorkspaceText text="After Discount:" />{" "}
             <span className="font-semibold text-zinc-950">
               {formatMoney(headerTotals.taxable_amount)}
             </span>
           </span>
           <span className="text-zinc-700">
-            Tip:{" "}
+            <WorkspaceText text="Tip:" />{" "}
             <InlineMoney
               className="inline-block hover:underline hover:decoration-dotted"
               disabled={!isEditing}
@@ -1825,14 +1826,14 @@ export function DailyPosTicketCard({
               onClick={startEdit}
               type="button"
             >
-              Edit
+              <WorkspaceText text="Edit" />
             </button>
           ) : null}
         </div>
         <div className="divide-y divide-zinc-100">
           {displayedLines.length === 0 ? (
             <div className="px-3 py-2 text-sm text-zinc-500">
-              No services recorded.
+              <WorkspaceText text="No services recorded." />
             </div>
           ) : (
             displayedLines.map((line) => renderLine(line))
@@ -1844,7 +1845,7 @@ export function DailyPosTicketCard({
             {isCorrectionMode ? (
               <div className="mb-3">
                 <span className="inline-flex rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800">
-                  Correction Mode
+                  <WorkspaceText text="Correction Mode" />
                 </span>
               </div>
             ) : null}
@@ -1853,17 +1854,17 @@ export function DailyPosTicketCard({
               onClick={addLine}
               type="button"
             >
-              + Add Staff Line
+              <WorkspaceText text="+ Add Staff Line" />
             </button>
             <div className="mt-3 grid gap-2 text-sm text-zinc-700 md:grid-cols-5">
-              <span>Subtotal: {formatMoney(editedTotals.subtotal)}</span>
-              <span>Discount: {formatMoney(editedTotals.discount_amount)}</span>
-              <span>After Discount: {formatMoney(editedTotals.taxable_amount)}</span>
-              <span>Tax: {formatMoney(editedTotals.tax_amount)}</span>
-              <span>Total: {formatMoney(editedTotals.total)}</span>
+              <span><WorkspaceText text="Subtotal:" /> {formatMoney(editedTotals.subtotal)}</span>
+              <span><WorkspaceText text="Discount:" /> {formatMoney(editedTotals.discount_amount)}</span>
+              <span><WorkspaceText text="After Discount:" /> {formatMoney(editedTotals.taxable_amount)}</span>
+              <span><WorkspaceText text="Tax:" /> {formatMoney(editedTotals.tax_amount)}</span>
+              <span><WorkspaceText text="Total:" /> {formatMoney(editedTotals.total)}</span>
             </div>
             <label className="mt-3 block text-sm font-medium text-zinc-700">
-              Correction Reason
+              <WorkspaceText text="Correction Reason" />
               <textarea
                 className="mt-1 min-h-20 w-full rounded border border-zinc-300 px-3 py-2 text-sm text-zinc-950"
                 name="correction_reason"
@@ -1874,7 +1875,7 @@ export function DailyPosTicketCard({
             </label>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs text-zinc-500">
-                {duplicateStaff
+                <WorkspaceText text={duplicateStaff
                   ? "Each staff member can appear only once on a ticket."
                   : manualTipsTooHigh
                     ? "Manual staff tips cannot exceed total tip."
@@ -1892,7 +1893,7 @@ export function DailyPosTicketCard({
                               : "Active lines require staff and positive parts."
                             : hasChange
                               ? "Ready to save correction."
-                              : "Make a change to enable save."}
+                              : "Make a change to enable save."} />
               </p>
               <div className="flex gap-2">
                 <button
@@ -1900,7 +1901,7 @@ export function DailyPosTicketCard({
                   onClick={resetEdit}
                   type="button"
                 >
-                  Cancel
+                  <WorkspaceText text="Cancel" />
                 </button>
                 <SaveButton
                   canApplyFinancialCorrection={canApplyFinancialCorrection}
@@ -1923,12 +1924,10 @@ export function DailyPosTicketCard({
             role="dialog"
           >
             <h3 className="text-base font-semibold text-zinc-950">
-              Locked Business Date
+              <WorkspaceText text="Locked Business Date" />
             </h3>
             <p className="mt-3 text-sm leading-6 text-zinc-700">
-              This business date is locked. Your changes will be recorded as a
-              financial correction request instead of directly changing the
-              original ticket.
+              <WorkspaceText text="This business date is locked. Your changes will be recorded as a financial correction request instead of directly changing the original ticket." />
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <button
@@ -1936,14 +1935,14 @@ export function DailyPosTicketCard({
                 onClick={() => setShowLockedConfirmation(false)}
                 type="button"
               >
-                Cancel
+                <WorkspaceText text="Cancel" />
               </button>
               <button
                 className="rounded bg-zinc-950 px-3 py-2 text-sm font-medium text-white"
                 onClick={continueLockedCorrection}
                 type="button"
               >
-                Continue
+                <WorkspaceText text="Continue" />
               </button>
             </div>
           </div>

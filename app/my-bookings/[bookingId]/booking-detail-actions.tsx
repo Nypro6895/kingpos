@@ -1,4 +1,5 @@
 "use client";
+import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 
 import {
   cancelCustomerBookingAction,
@@ -621,6 +622,7 @@ export function BookingDetailActions({
   return (
     <>
       <aside className={embedded ? "" : "lg:sticky lg:top-6"}>
+        {!embedded ? <BookingDepositReceipt booking={booking} /> : null}
         <div className={embedded ? "" : "rounded-2xl border border-[#f0e6df] bg-white p-4 shadow-[0_1px_0_rgba(33,28,36,0.03)]"}>
           {!embedded ? <div className="flex items-center justify-between gap-3">
             <div>

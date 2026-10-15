@@ -1,4 +1,7 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { CheckinReceiptPanel } from "./checkin-receipt-panel";
+import { CustomerRelayPass, CustomerRelayEntry } from "@/app/service-relay/customer-relay";
 import { notifyWaitingChanged } from "@/lib/portable-waiting";
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 
@@ -352,9 +355,11 @@ function FullscreenButton({
   hidden: boolean;
   onClick: () => void;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <button
-      aria-label={hidden ? "Exit full view" : "Enter full view"}
+      aria-label={__vt(hidden ? "Exit full view" : "Enter full view")}
       className="absolute right-4 top-4 z-40 grid h-12 w-12 place-items-center rounded-lg border border-white/40 bg-white/90 text-zinc-800 opacity-40 shadow-lg backdrop-blur transition hover:bg-white hover:opacity-100 focus-visible:opacity-100"
       data-customer-display-fullscreen-button
       onClick={(event) => {
@@ -362,7 +367,7 @@ function FullscreenButton({
         onClick();
       }}
       onPointerDown={(event) => event.stopPropagation()}
-      title={hidden ? "Exit full view" : "Enter full view"}
+      title={__vt(hidden ? "Exit full view" : "Enter full view")}
       type="button"
     >
       <FullscreenIcon />
@@ -381,6 +386,8 @@ function SalonBrand({
   showName: boolean;
   tone?: "dark" | "light";
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const displayName = name?.trim() || "Your salon";
   const isLight = tone === "light";
 
@@ -394,7 +401,7 @@ function SalonBrand({
       >
         {logoUrl ? (
           <img
-            alt={`${displayName} logo`}
+            alt={__vt(`${displayName} logo`)}
             className="h-full w-full object-cover"
             src={logoUrl}
           />
@@ -412,7 +419,7 @@ function SalonBrand({
               isLight ? "text-white/70" : "text-zinc-500",
             ].join(" ")}
           >
-            Welcome to
+            <WorkspaceText text="Welcome to" />
           </p>
           <p
             className={[
@@ -433,6 +440,8 @@ function ReylumiCornerLogo({
 }: {
   behindPanels?: boolean;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <div
       className={[
@@ -446,7 +455,7 @@ function ReylumiCornerLogo({
       }}
     >
       <img
-        alt="Reylumi"
+        alt={__vt("Reylumi")}
         className="h-auto w-24 object-contain drop-shadow-lg sm:w-28"
         src="/brand/reylumi-logo-horizontal.png"
       />
@@ -471,11 +480,13 @@ function AttractScreen({
   onFullscreen: () => void;
   settings: CustomerDisplaySettings;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const displayName = settings.salonName?.trim() || "Your salon";
 
   return (
     <section
-      aria-label="Customer display attract screen"
+      aria-label={__vt("Customer display attract screen")}
       className="relative h-full w-full overflow-hidden bg-zinc-950 text-white"
       data-customer-display-attract
       onClick={onBegin}
@@ -490,7 +501,7 @@ function AttractScreen({
     >
       {images.map((imageUrl, index) => (
         <img
-          alt=""
+          alt={__vt("")}
           aria-hidden="true"
           className={[
             "absolute inset-0 h-full w-full object-contain transition-opacity duration-1000",
@@ -534,14 +545,14 @@ function AttractScreen({
               {displayName}
             </p>
             <h1 className="mt-4 text-5xl font-semibold leading-tight sm:text-6xl lg:text-7xl">
-              Touch anywhere to begin
+              <WorkspaceText text="Touch anywhere to begin" />
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-xl leading-8 text-white/82">
               {settings.customerRightAdText || settings.customerLeftAdText}
             </p>
             {error ? (
               <p className="mx-auto mt-5 max-w-xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
-                {error}
+                <WorkspaceText text={error} />
               </p>
             ) : null}
           </div>
@@ -549,7 +560,7 @@ function AttractScreen({
 
         <footer className="flex min-w-0 items-center justify-center gap-3 text-sm font-medium text-white/70">
           <span className="h-2 w-2 rounded-full bg-emerald-300" />
-          <span>Ready for checkout</span>
+          <span><WorkspaceText text="Ready for checkout" /></span>
         </footer>
       </div>
     </section>
@@ -565,6 +576,8 @@ function PhoneKeypad({
   onChange: (value: string) => void;
   value: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const digits = digitsOnly(value);
   const digitKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
   const digitButtonClass =
@@ -588,7 +601,7 @@ function PhoneKeypad({
     >
       {digitKeys.map((digit) => (
         <button
-          aria-label={`Digit ${digit}`}
+          aria-label={__vt(`Digit ${digit}`)}
           className={digitButtonClass}
           disabled={disabled}
           key={digit}
@@ -600,7 +613,7 @@ function PhoneKeypad({
         </button>
       ))}
       <button
-        aria-label="Clear"
+        aria-label={__vt("Clear")}
         className={secondaryButtonClass}
         disabled={disabled || digits.length === 0}
         onClick={() => onChange("")}
@@ -614,7 +627,7 @@ function PhoneKeypad({
         C
       </button>
       <button
-        aria-label="Digit 0"
+        aria-label={__vt("Digit 0")}
         className={digitButtonClass}
         disabled={disabled}
         onClick={() => appendDigit("0")}
@@ -624,7 +637,7 @@ function PhoneKeypad({
         0
       </button>
       <button
-        aria-label="Backspace"
+        aria-label={__vt("Backspace")}
         className={secondaryButtonClass}
         disabled={disabled || digits.length === 0}
         onClick={() => onChange(digits.slice(0, -1))}
@@ -666,6 +679,8 @@ function PhoneEntryPanel({
   phoneInput: string;
   showTipShortcut: boolean;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const formattedPhone = formatPhoneDisplay(phoneInput);
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -699,33 +714,33 @@ function PhoneEntryPanel({
     >
       <div>
         <h2 className="text-3xl font-semibold leading-tight text-zinc-950">
-          Enter your phone number
+          <WorkspaceText text="Enter your phone number" />
         </h2>
         <p className="mt-2 text-sm font-medium leading-6 text-zinc-500">
-          We&apos;ll find your profile and keep your visit connected.
+          <WorkspaceText text="We&apos;ll find your profile and keep your visit connected." />
         </p>
       </div>
 
       <label className="mt-5 block">
-        <span className="sr-only">Phone</span>
+        <span className="sr-only"><WorkspaceText text="Phone" /></span>
         <div
           className="grid min-h-16 items-center gap-3 rounded-2xl border border-stone-200 bg-white/85 px-4 shadow-inner transition focus-within:border-teal-700 focus-within:ring-4 focus-within:ring-teal-700/10"
           style={{ gridTemplateColumns: "minmax(0, 1fr) auto" }}
         >
           <input
-            aria-label="Phone"
+            aria-label={__vt("Phone")}
             autoFocus
             className="min-w-0 bg-transparent text-3xl font-semibold tabular-nums text-zinc-950 outline-none placeholder:text-zinc-400"
             disabled={disabled}
             inputMode="tel"
             onChange={(event) => onPhoneInput(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="(xxx) xxx-xxxx"
+            placeholder={__vt("(xxx) xxx-xxxx")}
             readOnly
             value={formattedPhone}
           />
           <button
-            aria-label="Confirm phone number"
+            aria-label={__vt("Confirm phone number")}
             className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-teal-700 text-white shadow-lg transition active:translate-y-px active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:shadow-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-700/20"
             disabled={disabled || digitsOnly(phoneInput).length < 4}
             onClick={onSubmitPhone}
@@ -751,19 +766,19 @@ function PhoneEntryPanel({
           onClick={onSkipToTip}
           type="button"
         >
-          Tip
+          <WorkspaceText text="Tip" />
         </button>
       ) : null}
 
       <div className="mt-4 grid min-h-20 content-start gap-2">
         {isSearching ? (
           <p className="rounded-lg bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-600">
-            Searching
+            <WorkspaceText text="Searching" />
           </p>
         ) : null}
         {customerStatus ? (
           <p className="rounded-lg bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-600">
-            {customerStatus}
+            <WorkspaceText text={customerStatus} />
           </p>
         ) : null}
         {customerResults.length > 0 ? (
@@ -810,6 +825,8 @@ function ProfileCreationPanel({
   onSubmit: () => void;
   phone: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const nameIsReady = nameInput.trim().length >= 2;
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -829,10 +846,10 @@ function ProfileCreationPanel({
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold uppercase text-teal-700">
-            New profile
+            <WorkspaceText text="New profile" />
           </p>
           <h2 className="mt-1 text-3xl font-semibold leading-tight text-zinc-950">
-            Enter customer name
+            <WorkspaceText text="Enter customer name" />
           </h2>
           <p className="mt-2 text-sm font-medium text-zinc-500">
             {maskPhone(phone)}
@@ -844,14 +861,14 @@ function ProfileCreationPanel({
           onClick={onBack}
           type="button"
         >
-          Back
+          <WorkspaceText text="Back" />
         </button>
       </div>
 
       <label className="block">
-        <span className="sr-only">Customer name</span>
+        <span className="sr-only"><WorkspaceText text="Customer name" /></span>
         <input
-          aria-label="Customer name"
+          aria-label={__vt("Customer name")}
           autoComplete="name"
           autoFocus
           className="min-h-16 w-full rounded-2xl border border-stone-200 bg-white/85 px-4 text-2xl font-semibold text-zinc-950 shadow-inner outline-none transition placeholder:text-zinc-400 focus:border-teal-700 focus:bg-white focus:ring-4 focus:ring-teal-700/10"
@@ -859,19 +876,18 @@ function ProfileCreationPanel({
           maxLength={80}
           onChange={(event) => onNameInput(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="First and last name"
+          placeholder={__vt("First and last name")}
           value={nameInput}
         />
       </label>
 
       <div className="grid content-center gap-3">
         <p className="rounded-2xl border border-teal-700/10 bg-teal-50/80 px-4 py-3 text-sm font-medium leading-6 text-teal-900">
-          We did not find this phone number. Create a profile to continue your
-          visit.
+          <WorkspaceText text="We did not find this phone number. Create a profile to continue your visit." />
         </p>
         {customerStatus ? (
           <p className="rounded-xl bg-white/80 px-3 py-2 text-sm font-medium text-zinc-600">
-            {customerStatus}
+            <WorkspaceText text={customerStatus} />
           </p>
         ) : null}
       </div>
@@ -882,7 +898,7 @@ function ProfileCreationPanel({
         onClick={onSubmit}
         type="button"
       >
-        {isPending ? "Creating" : "Continue"}
+        {isPending ? "Creating" : <WorkspaceText text="Continue" />}
       </button>
     </section>
   );
@@ -897,6 +913,8 @@ function MoneyKeypad({
   onChange: (value: string) => void;
   value: string;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
   const buttonClass =
     "grid min-h-14 place-items-center rounded-lg border border-zinc-200 bg-white text-xl font-semibold text-zinc-950 transition hover:border-teal-400 hover:bg-teal-50 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-300";
@@ -913,7 +931,7 @@ function MoneyKeypad({
     <div className="grid grid-cols-3 gap-2">
       {keys.map((digit) => (
         <button
-          aria-label={`Custom tip digit ${digit}`}
+          aria-label={__vt(`Custom tip digit ${digit}`)}
           className={buttonClass}
           disabled={disabled}
           key={digit}
@@ -924,7 +942,7 @@ function MoneyKeypad({
         </button>
       ))}
       <button
-        aria-label="Clear custom tip"
+        aria-label={__vt("Clear custom tip")}
         className={buttonClass}
         disabled={disabled || value.length === 0}
         onClick={() => onChange("")}
@@ -933,7 +951,7 @@ function MoneyKeypad({
         C
       </button>
       <button
-        aria-label="Custom tip digit 0"
+        aria-label={__vt("Custom tip digit 0")}
         className={buttonClass}
         disabled={disabled}
         onClick={() => appendDigit("0")}
@@ -942,7 +960,7 @@ function MoneyKeypad({
         0
       </button>
       <button
-        aria-label="Delete custom tip digit"
+        aria-label={__vt("Delete custom tip digit")}
         className={buttonClass}
         disabled={disabled || value.length === 0}
         onClick={() => onChange(value.slice(0, -1))}
@@ -995,7 +1013,7 @@ function TipPanel({
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold uppercase text-teal-700">
-            Customer
+            <WorkspaceText text="Customer" />
           </p>
           <h2 className="mt-1 break-words text-2xl font-semibold leading-tight text-zinc-950">
             {identityLabel}
@@ -1009,12 +1027,12 @@ function TipPanel({
           onClick={onChangeCustomer}
           type="button"
         >
-          Change
+          <WorkspaceText text="Change" />
         </button>
       </div>
 
       <div className="rounded-2xl border border-stone-200 bg-white/82 px-4 py-3 shadow-inner">
-        <p className="text-sm font-medium text-zinc-600">Current total</p>
+        <p className="text-sm font-medium text-zinc-600"><WorkspaceText text="Current total" /></p>
         <p className="mt-1 text-3xl font-semibold text-zinc-950">
           {formatMoney(liveDraft?.total ?? 0)}
         </p>
@@ -1028,7 +1046,7 @@ function TipPanel({
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase text-zinc-500">
-                Custom tip
+                <WorkspaceText text="Custom tip" />
               </p>
               <p className="text-3xl font-semibold text-zinc-950">
                 {formatMoney(customTipAmount)}
@@ -1039,7 +1057,7 @@ function TipPanel({
               onClick={() => onSetCustomTipMode(false)}
               type="button"
             >
-              Back
+              <WorkspaceText text="Back" />
             </button>
           </div>
           <MoneyKeypad
@@ -1051,7 +1069,7 @@ function TipPanel({
       ) : (
         <div className="grid min-h-0 content-center gap-3">
           <p className="text-sm font-medium text-zinc-600">
-            100% goes to your service team
+            <WorkspaceText text="100% goes to your service team" />
           </p>
           <div className="grid grid-cols-3 gap-2">
             {tipOptions.map((option) => {
@@ -1087,7 +1105,7 @@ function TipPanel({
               onClick={() => onSetCustomTipMode(true)}
               type="button"
             >
-              Custom tip
+              <WorkspaceText text="Custom tip" />
             </button>
             <button
               className="min-h-14 rounded-2xl border border-stone-200 bg-white/90 px-3 font-semibold text-zinc-800 shadow-sm transition active:translate-y-px hover:border-teal-400 disabled:cursor-not-allowed disabled:opacity-50"
@@ -1095,7 +1113,7 @@ function TipPanel({
               onClick={() => onConfirmTip(0)}
               type="button"
             >
-              No tip
+              <WorkspaceText text="No tip" />
             </button>
           </div>
         </div>
@@ -1107,7 +1125,7 @@ function TipPanel({
         onClick={() => onConfirmTip(customTipMode ? customTipAmount : selectedTip)}
         type="button"
       >
-        {isTipPending ? "Saving" : customTipMode ? "Apply custom tip" : "Confirm tip"}
+        <WorkspaceText text={isTipPending ? "Saving" : customTipMode ? "Apply custom tip" : "Confirm tip"} />
       </button>
     </section>
   );
@@ -1131,6 +1149,8 @@ function safeAppDownloadUrl(value: string) {
 }
 
 function CustomerAppDownloadCard({ appDownloadUrl }: { appDownloadUrl: string }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <aside
       className="grid w-[clamp(132px,13vw,156px)] justify-items-center gap-1.5 rounded-2xl border border-stone-200 bg-white/86 p-2.5 text-center shadow-inner"
@@ -1139,13 +1159,13 @@ function CustomerAppDownloadCard({ appDownloadUrl }: { appDownloadUrl: string })
     >
       <div className="flex items-center gap-1.5">
         <img
-          alt=""
+          alt={__vt("")}
           aria-hidden="true"
           className="h-5 w-5 shrink-0"
           src="/brand/reylumi-favicon.png"
         />
         <p className="text-sm font-semibold leading-tight text-zinc-950">
-          Get Reylumi
+          <WorkspaceText text="Get Reylumi" />
         </p>
       </div>
       <QrCodeTile
@@ -1157,7 +1177,7 @@ function CustomerAppDownloadCard({ appDownloadUrl }: { appDownloadUrl: string })
         valueToEncode={appDownloadUrl}
       />
       <p className="text-[11px] font-medium leading-tight text-zinc-500">
-        Scan to download the app.
+        <WorkspaceText text="Scan to download the app." />
       </p>
     </aside>
   );
@@ -1176,6 +1196,8 @@ function TransactionSummary({
   liveDraft: PosLiveDraftView | null;
   settings: CustomerDisplaySettings;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const lines = liveDraft?.staff_lines ?? [];
   const appDownloadUrl = safeAppDownloadUrl(settings.appDownloadUrl);
   const showAppDownloadCard = displayMode === "tip" && Boolean(appDownloadUrl);
@@ -1228,12 +1250,12 @@ function TransactionSummary({
             className="mt-1 text-4xl font-semibold text-zinc-950 lg:text-5xl"
             style={RECEIPT_TITLE_STYLE}
           >
-            Your Receipt
+            <WorkspaceText text="Your Receipt" />
           </h1>
         </div>
         <div className="shrink-0 text-right">
           <p className="text-sm font-semibold uppercase tracking-normal text-zinc-500">
-            Current total
+            <WorkspaceText text="Current total" />
           </p>
           <p
             className="mt-1 text-4xl font-semibold text-teal-800 lg:text-5xl"
@@ -1254,8 +1276,8 @@ function TransactionSummary({
           data-customer-display-receipt-column-header
           style={RECEIPT_COLUMN_HEADER_STYLE}
         >
-          <span>Item</span>
-          <span className="text-right">Amount</span>
+          <span><WorkspaceText text="Item" /></span>
+          <span className="text-right"><WorkspaceText text="Amount" /></span>
         </div>
 
         {showWaiting ? (
@@ -1266,10 +1288,10 @@ function TransactionSummary({
           >
             <div className="rounded-2xl border border-dashed border-stone-300 bg-white/72 px-5 py-4">
               <p className="text-lg font-semibold text-zinc-600">
-                Waiting for services
+                <WorkspaceText text="Waiting for services" />
               </p>
               <p className="mt-1 text-sm font-medium text-zinc-500">
-                Your receipt will update automatically.
+                <WorkspaceText text="Your receipt will update automatically." />
               </p>
             </div>
           </div>
@@ -1295,7 +1317,7 @@ function TransactionSummary({
                   data-customer-display-receipt-line
                   key={line.id}
                   style={RECEIPT_LINE_ROW_STYLE}
-                  title={`${itemTitle} ${formatMoney(line.amount)}`}
+                  title={__vt(`${itemTitle} ${formatMoney(line.amount)}`)}
                 >
                   <p
                     className="min-w-0 font-semibold text-zinc-950"
@@ -1303,13 +1325,13 @@ function TransactionSummary({
                     style={RECEIPT_ITEM_TEXT_STYLE}
                   >
                     <span data-customer-display-receipt-service>
-                      {label}
+                      <WorkspaceText text={label} />
                     </span>
                     {staffLabel ? (
                       <>
                         <span aria-hidden="true" className="text-zinc-400">
                           {" "}
-                          &middot;{" "}
+                          <WorkspaceText text="&middot;" />{" "}
                         </span>
                         <span
                           className="font-medium text-zinc-500"
@@ -1325,7 +1347,7 @@ function TransactionSummary({
                         data-customer-display-receipt-quantity
                       >
                         {" "}
-                        &times;{quantity}
+                        <WorkspaceText text="&times;" />{quantity}
                       </span>
                     ) : null}
                   </p>
@@ -1356,25 +1378,25 @@ function TransactionSummary({
           style={RECEIPT_SUMMARY_STYLE}
         >
           <div className="flex items-center justify-between gap-4">
-            <span>Subtotal</span>
+            <span><WorkspaceText text="Subtotal" /></span>
             <span>{formatMoney(liveDraft?.subtotal ?? 0)}</span>
           </div>
           {liveDraft?.discount ? (
             <div className="flex items-center justify-between gap-4 text-zinc-500">
-              <span>Discount</span>
+              <span><WorkspaceText text="Discount" /></span>
               <span>-{formatMoney(liveDraft.discount)}</span>
             </div>
           ) : null}
           <div className="flex items-center justify-between gap-4 text-zinc-500">
-            <span>Tax</span>
+            <span><WorkspaceText text="Tax" /></span>
             <span>{formatMoney(liveDraft?.tax ?? 0)}</span>
           </div>
           <div className="flex items-center justify-between gap-4 text-zinc-500">
-            <span>Tip</span>
+            <span><WorkspaceText text="Tip" /></span>
             <span>{formatMoney(liveDraft?.tip ?? 0)}</span>
           </div>
           <div className="mt-1 flex items-center justify-between gap-4 border-t border-stone-200 pt-2 text-lg text-teal-800">
-            <span>Total</span>
+            <span><WorkspaceText text="Total" /></span>
             <span>{formatMoney(liveDraft?.total ?? 0)}</span>
           </div>
         </div>
@@ -1389,16 +1411,16 @@ function TransactionSummary({
       >
         <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-500">
           <img
-            alt=""
+            alt={__vt("")}
             aria-hidden="true"
             className="h-5 w-auto shrink-0"
             src="/brand/reylumi-favicon.png"
           />
-          <span className="truncate">Secure checkout by Reylumi</span>
+          <span className="truncate"><WorkspaceText text="Secure checkout by Reylumi" /></span>
         </span>
         {settings.customerShowReceiptStatus ? (
           <span className="shrink-0 rounded-xl border border-teal-700/10 bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-800">
-            {statusLabel}
+            <WorkspaceText text={statusLabel} />
           </span>
         ) : null}
       </footer>
@@ -1457,7 +1479,7 @@ function CheckoutShell({
           <div className="min-h-0">{children}</div>
           {error ? (
             <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 lg:col-span-2">
-              {error}
+              <WorkspaceText text={error} />
             </p>
           ) : null}
         </div>
@@ -1481,10 +1503,12 @@ function CheckInShell({
   onFullscreen: () => void;
   settings: CustomerDisplaySettings;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   return (
     <div className="relative h-full w-full overflow-hidden bg-stone-100">
       <img
-        alt=""
+        alt={__vt("")}
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover opacity-100"
         data-customer-display-checkin-background
@@ -1520,7 +1544,7 @@ function CheckInShell({
 
         {error ? (
           <p className="mx-auto max-w-3xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-            {error}
+            <WorkspaceText text={error} />
           </p>
         ) : (
           <span />
@@ -1545,6 +1569,8 @@ function CompletedScreen({
   onFullscreen: () => void;
   resetSeconds: number | null;
 }) {
+  const __vt = useWorkspaceTranslation();
+
   const firstName = getFirstName(liveDraft?.customer?.name);
   const nameLabel = firstName ? `, ${firstName}` : "";
 
@@ -1563,7 +1589,7 @@ function CompletedScreen({
       tabIndex={0}
     >
       <img
-        alt=""
+        alt={__vt("")}
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover opacity-100"
         src={backgroundImageUrl}
@@ -1576,23 +1602,23 @@ function CompletedScreen({
       <ReylumiCornerLogo />
       <div className="relative z-10 max-w-3xl">
         <p className="text-base font-semibold uppercase text-teal-800">
-          Payment complete
+          <WorkspaceText text="Payment complete" />
         </p>
         <h1 className="mt-4 text-6xl font-semibold leading-tight lg:text-7xl">
-          Thank you{nameLabel}!
+          <WorkspaceText text="Thank you" />{nameLabel}!
         </h1>
         <p className="mt-5 text-3xl font-semibold text-zinc-950">
-          Final total {formatMoney(liveDraft?.total ?? 0)}
+          <WorkspaceText text="Final total" /> {formatMoney(liveDraft?.total ?? 0)}
         </p>
         <p className="mx-auto mt-5 max-w-2xl text-xl leading-8 text-zinc-800">
-          We appreciate your visit. Please see our team if you need anything else.
+          <WorkspaceText text="We appreciate your visit. Please see our team if you need anything else." />
         </p>
         <p className="mt-6 text-sm font-semibold uppercase text-teal-800">
-          Tap to continue
+          <WorkspaceText text="Tap to continue" />
         </p>
         {resetSeconds !== null ? (
           <p className="mt-6 text-sm font-medium text-zinc-600">
-            Resetting in {resetSeconds}s
+            <WorkspaceText text="Resetting in" /> {resetSeconds}s
           </p>
         ) : null}
       </div>
@@ -1629,21 +1655,21 @@ function CheckInConfirmationPanel({
       </div>
       <div>
         <p className="text-sm font-semibold uppercase text-teal-700">
-          {sourceLabel}
+          <WorkspaceText text={sourceLabel} />
         </p>
         <h2 className="mt-2 text-4xl font-semibold leading-tight text-zinc-950">
-          {title}
+          <WorkspaceText text={title} />
         </h2>
         <p className="mt-3 text-2xl font-semibold text-zinc-800">
-          Thanks, {firstName}.
+          <WorkspaceText text="Thanks," /> {firstName}.
         </p>
       </div>
       <p className="mx-auto max-w-sm text-base font-medium leading-7 text-zinc-600">
-        {requestedServiceLabel || "Our team has your arrival."}
+        <WorkspaceText text={requestedServiceLabel || "Our team has your arrival."} />
       </p>
       {requestedServiceLabel ? (
         <p className="mx-auto max-w-sm text-base font-medium leading-7 text-zinc-600">
-          We&apos;ll be with you shortly.
+          <WorkspaceText text="We&apos;ll be with you shortly." />
         </p>
       ) : null}
     </section>
@@ -1679,13 +1705,13 @@ function ServiceSelectionPanel({
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold uppercase text-teal-700">
-            Check in
+            <WorkspaceText text="Check in" />
           </p>
           <h2 className="mt-1 text-2xl font-semibold leading-tight text-zinc-950">
-            What are you here for?
+            <WorkspaceText text="What are you here for?" />
           </h2>
           <p className="mt-1 text-sm font-medium leading-6 text-zinc-500">
-            Thanks, {firstName}. Select any services you&apos;d like today.
+            <WorkspaceText text="Thanks," /> {firstName}<WorkspaceText text=". Select any services you&apos;d like today." />
           </p>
         </div>
         <button
@@ -1694,7 +1720,7 @@ function ServiceSelectionPanel({
           onClick={onBack}
           type="button"
         >
-          Back
+          <WorkspaceText text="Back" />
         </button>
       </div>
 
@@ -1753,7 +1779,7 @@ function ServiceSelectionPanel({
         onClick={onSubmit}
         type="button"
       >
-        {disabled ? "Saving" : "Check in"}
+        {disabled ? "Saving" : <WorkspaceText text="Check in" />}
       </button>
     </section>
   );
@@ -1784,6 +1810,7 @@ export function CustomerDisplayClient({
   const [createCustomerMode, setCreateCustomerMode] = useState(false);
   const [customerNameInput, setCustomerNameInput] = useState("");
   const [newCustomerKey, setNewCustomerKey] = useState<string | null>(null);
+  const [receiptPrinting, setReceiptPrinting] = useState(false);
   const [checkInState, setCheckInState] = useState<CheckInState | null>(null);
   const [serviceSelectionState, setServiceSelectionState] =
     useState<CheckInState | null>(null);
@@ -2471,7 +2498,7 @@ export function CustomerDisplayClient({
   }, [displayMode, liveDraftStatus, phoneDigits, submitPhoneLookup]);
 
   useEffect(() => {
-    if (!checkInState) {
+    if (!checkInState || receiptPrinting) {
       return;
     }
 
@@ -2494,7 +2521,7 @@ export function CustomerDisplayClient({
     }, CHECKIN_SUCCESS_RESET_MS);
 
     return () => window.clearTimeout(timeoutId);
-  }, [checkInState]);
+  }, [checkInState, receiptPrinting]);
 
   async function confirmCustomer(customer: PosLiveDraftCustomer) {
     const phone = digitsOnly(customer.phone ?? phoneInput).slice(0, 11);
@@ -2751,6 +2778,7 @@ export function CustomerDisplayClient({
 
   return (
     <div className={rootClass} ref={rootRef}>
+      {!hasCheckoutHandoff && ["attract", "phone"].includes(displayMode) && <div className="fixed bottom-4 right-4 z-30"><CustomerRelayEntry token={token} /></div>}
       {displayMode === "tip" ? (
         <FullscreenButton hidden={isFullscreen} onClick={enterFullscreen} />
       ) : null}
@@ -2842,7 +2870,7 @@ export function CustomerDisplayClient({
             settings={settings}
           >
             {displayMode === "checkin" && checkInState ? (
-              <CheckInConfirmationPanel checkIn={checkInState} />
+              <><CheckInConfirmationPanel checkIn={checkInState} /><CustomerRelayPass key={`relay-${checkInState.visit.id}`} token={token} visitId={checkInState.visit.id} /><CheckinReceiptPanel key={checkInState.visit.id} token={token} visitId={checkInState.visit.id} onPrintingChange={setReceiptPrinting} /></>
             ) : displayMode === "service_select" && serviceSelectionState ? (
               <ServiceSelectionPanel
                 checkIn={serviceSelectionState}

@@ -1,4 +1,5 @@
 "use client";
+import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { usePortableWorkspaceState } from "./portable-workspace-state";
 import { desktopDevice } from "@/lib/portable-device-storage";
 
@@ -10,6 +11,8 @@ type Editor = HTMLInputElement | HTMLTextAreaElement;
 const supported = new Set(["text", "search", "email", "tel", "password", "url", "number", "date", "time", "datetime-local"]);
 
 export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector = "[data-portable-shell]", desktopOnly = false }: { enabled: boolean; scopeSelector?: string; desktopOnly?: boolean }) {
+  const __vt = useWorkspaceTranslation();
+
   const workspace=usePortableWorkspaceState();
   const enabled=typeof workspace?.settings?.touch_keyboard_enabled==='boolean'?workspace.settings.touch_keyboard_enabled:initialEnabled;
   const [editor, setEditor] = useState<Editor | null>(null);
@@ -107,18 +110,18 @@ export function PortableTouchKeyboard({ enabled: initialEnabled, scopeSelector =
     setDateValue(text);
   }
   const rows = symbols ? ["1234567890", "@#$%&*()-+", "_/:;!?.,'", "\"=<>[]{}\\|^~`"] : ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
-  return createPortal(<div ref={panel} className={styles.keyboard} role="group" aria-label="Touch keyboard" onPointerDown={(event) => { if ((event.target as HTMLElement).closest("button")) event.preventDefault(); }}>
-    <div className={styles.top}><span>{editor.getAttribute("aria-label") || editor.placeholder || "Touch keyboard"}</span><button type="button" onClick={() => setEditor(null)}>Hide keyboard</button></div>
+  return createPortal(<div ref={panel} className={styles.keyboard} role="group" aria-label={__vt("Touch keyboard")} onPointerDown={(event) => { if ((event.target as HTMLElement).closest("button")) event.preventDefault(); }}>
+    <div className={styles.top}><span><WorkspaceText text={editor.getAttribute("aria-label") || editor.placeholder || "Touch keyboard"} /></span><button type="button" onClick={() => setEditor(null)}><WorkspaceText text="Hide keyboard" /></button></div>
     {dateEditor ? <div className={styles.row}>
-      {editor.type !== "time" && <label>Date <input aria-label="Touch date" type="date" min={editor.min.slice(0,10)} max={editor.max.slice(0,10)} value={dateValue.slice(0,10)} onChange={event => setDate(editor.type === "date" ? event.target.value : `${event.target.value}T${dateValue.slice(11,16) || "09:00"}`)} /></label>}
-      {editor.type !== "date" && <label>Time <select aria-label="Touch time" value={editor.type === "time" ? dateValue : dateValue.slice(11,16)} onChange={event => setDate(editor.type === "time" ? event.target.value : `${dateValue.slice(0,10)}T${event.target.value}`)}>{Array.from({length:96}, (_,i) => {const time = `${String(Math.floor(i/4)).padStart(2,"0")}:${String(i%4*15).padStart(2,"0")}`; return <option key={time}>{time}</option>;})}</select></label>}
-    </div> : <>{rows.map((row, index) => <div className={styles.row} key={index}>{Array.from(row).map((letter) => <button type="button" key={letter} onClick={() => insert(shift ? letter.toUpperCase() : letter)}>{shift ? letter.toUpperCase() : letter}</button>)}{index === 0 && <button type="button" aria-label="Backspace" onClick={() => insert("", true)}>⌫</button>}</div>)}
+      {editor.type !== "time" && <label><WorkspaceText text="Date" /> <input aria-label={__vt("Touch date")} type="date" min={editor.min.slice(0,10)} max={editor.max.slice(0,10)} value={dateValue.slice(0,10)} onChange={event => setDate(editor.type === "date" ? event.target.value : `${event.target.value}T${dateValue.slice(11,16) || "09:00"}`)} /></label>}
+      {editor.type !== "date" && <label><WorkspaceText text="Time" /> <select aria-label={__vt("Touch time")} value={editor.type === "time" ? dateValue : dateValue.slice(11,16)} onChange={event => setDate(editor.type === "time" ? event.target.value : `${dateValue.slice(0,10)}T${event.target.value}`)}>{Array.from({length:96}, (_,i) => {const time = `${String(Math.floor(i/4)).padStart(2,"0")}:${String(i%4*15).padStart(2,"0")}`; return <option key={time}>{time}</option>;})}</select></label>}
+    </div> : <>{rows.map((row, index) => <div className={styles.row} key={index}>{Array.from(row).map((letter) => <button type="button" key={letter} onClick={() => insert(shift ? letter.toUpperCase() : letter)}>{shift ? letter.toUpperCase() : letter}</button>)}{index === 0 && <button type="button" aria-label={__vt("Backspace")} onClick={() => insert("", true)}>⌫</button>}</div>)}
     <div className={styles.row}>
-      <button type="button" aria-pressed={shift} onClick={() => setShift(!shift)}>Shift</button>
-      <button type="button" onClick={() => setSymbols(!symbols)}>{symbols ? "ABC" : "123 / @"}</button>
-      <button type="button" className={styles.space} onClick={() => insert(" ")}>Space</button>
-      {editor instanceof HTMLTextAreaElement && <button type="button" onClick={() => insert("\n")}>New line</button>}
-      <button type="button" onClick={() => setEditor(null)}>Done</button>
+      <button type="button" aria-pressed={shift} onClick={() => setShift(!shift)}><WorkspaceText text="Shift" /></button>
+      <button type="button" onClick={() => setSymbols(!symbols)}><WorkspaceText text={symbols ? "ABC" : "123 / @"} /></button>
+      <button type="button" className={styles.space} onClick={() => insert(" ")}><WorkspaceText text="Space" /></button>
+      {editor instanceof HTMLTextAreaElement && <button type="button" onClick={() => insert("\n")}><WorkspaceText text="New line" /></button>}
+      <button type="button" onClick={() => setEditor(null)}><WorkspaceText text="Done" /></button>
     </div></>}
   </div>, document.body);
 }
