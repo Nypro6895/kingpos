@@ -1,0 +1,108 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "state": "CA",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "TX",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "GA",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "VA",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "MA",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "NC",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "NY",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "NJ",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "PA",
+      "category": "Nails",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "CA",
+      "category": "Hair",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "CA",
+      "category": "Massage",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "CA",
+      "category": "Lashes",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "CA",
+      "category": "Tattoo",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "CA",
+      "category": "Spa",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "CA",
+      "category": "Brows",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "CA",
+      "category": "Waxing",
+      "salonLink": true,
+      "illustrationLoaded": true
+    },
+    {
+      "state": "CA",
+      "category": "Skin Care",
+      "salonLink": true,
+      "illustrationLoaded": true
+    }
+  ],
+  "profileContactAndClaim": true
+}

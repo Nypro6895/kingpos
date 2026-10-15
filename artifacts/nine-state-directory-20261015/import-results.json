@@ -1,0 +1,644 @@
+[
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-000.sql",
+    "batchSha256": "d14f0f4bf69cedda1b808c0050cc42fe05e3ae0b9ef80a346b8974d61e33479b",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-001.sql",
+    "batchSha256": "88faecc565d1d2d595576d5f9b2b5ac1427500ba0af8bb97aaf9a779b171e354",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-002.sql",
+    "batchSha256": "18d638c0bde9a883bec78b01617d5da68a706e9326f97a2cc1f92a20b94e6edf",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-003.sql",
+    "batchSha256": "4abda7d8d584972c0942029e1c744107d0ce550e53eb09a19d8b43e1ae7457a1",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-004.sql",
+    "batchSha256": "c24833cd25750f6daa3916edd2d615cbc523467030dbac996a893c7ca9da9c84",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-005.sql",
+    "batchSha256": "e0f5693152bf2faecc4d704b3aecbff795f3e2e067dfbda2aebad86e875ec890",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-006.sql",
+    "batchSha256": "274758d8252c5087a1de9586fd4a49f853e26610a69d445c903a00442505f6be",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-007.sql",
+    "batchSha256": "f61a97c8753600e2c827f5009989f1b4bbad6aedf70bfed195c79b4e44fcebc2",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-008.sql",
+    "batchSha256": "b8e4cba5e69397279d77661459ee4eb694a88ae9f7a7425c3e50851192e4e57e",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-009.sql",
+    "batchSha256": "2adc1a0b71a48b7b16691f63068dfd75e35fbe1ed9933f9613dadadbe2cbbb9d",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-010.sql",
+    "batchSha256": "e1a1f942e5fb2662f965c6da54875ff9a14bd8d157049a8c2cbe74493af9b180",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-011.sql",
+    "batchSha256": "5bbb6d5e8248b813060fc4abbd1c8edfd27d0ef186a1b94673e1ae983906de79",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-012.sql",
+    "batchSha256": "1f31e58574aa06433d811e2a0dc4d06cadf577bda6aa30ed0478aa5e21af0448",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-013.sql",
+    "batchSha256": "45360dae3c610b6590495998df4b24882df49655246e19c6c846e8d6bb719f23",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-014.sql",
+    "batchSha256": "995b17f5c09d6f03ff1ef3a7f1ec7196fc03f6a1d750e607dca00c949b512bdd",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-015.sql",
+    "batchSha256": "cc979fc67e7548a0575782c46d8bd69c9333b03e7c051e85d0b2e2052c0ca33f",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-016.sql",
+    "batchSha256": "d70a23869ba0a272b729e033c5af2cd37bcce098fa3893cc459eae35d9198fd7",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-017.sql",
+    "batchSha256": "1b4be116a5f3bad585d30e2c171477ca1198ad7a1ed5b6efd65be4f103cfd22f",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-018.sql",
+    "batchSha256": "48f5211834d40c388cff24a4f161122c3dbc273e3ed50b5ac292317dfeff6e22",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-019.sql",
+    "batchSha256": "b502130bc9ce0e117aa87fa5c2fb590ec01fbcb0e740bf376cbd4713718542ca",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-020.sql",
+    "batchSha256": "0817d807409a983b344e97bd615016c3bc69f310a1d38713a93403d9465ebe6c",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-021.sql",
+    "batchSha256": "e1c585404ca607e2492f32a4f8518dbeb1dc14fd52b326d041c0ec77a62f39c6",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-022.sql",
+    "batchSha256": "a0917b235890d093f6cef6d82601c75d00075b02c7eea89d63ec8277877c6928",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-023.sql",
+    "batchSha256": "cc48ab125f2e6a631450d4c4098169138bf8ac5bccb7b766beb37b0add1d270f",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-024.sql",
+    "batchSha256": "fcbbd17a4e55a1cfc1321c7aff3b1a4e52b22bbc4aab9f645da295b49bde34b3",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-025.sql",
+    "batchSha256": "9a5eaf5060288199883d2940f172aca24aee3555e6fdb518dd2a67edd56dad28",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-026.sql",
+    "batchSha256": "4b63321fb0ca31847c93d8e143c97a76d22f8a88e1fad6941e97ccc5d3a13e0b",
+    "imported": 500
+  },
+  {
+    "state": "CA",
+    "path": "artifacts/nine-state-directory-20261015/batches/CA-Los_Angeles-027.sql",
+    "batchSha256": "3d48bfaf002215503182ee345fbd0c838ff0bc16b1f95cc169593f7ee2c588dc",
+    "imported": 349
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-000.sql",
+    "batchSha256": "4d0e2d472909c53e41b4a4c44c7d25661637c23d854e542faa3feff8b8017b53",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-001.sql",
+    "batchSha256": "186a8c0ee974b84861fa5ff03f92859b95d0b154ed805a179287bd0240a22c23",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-002.sql",
+    "batchSha256": "f6ef4c862ac60af6517c9437412958c934641492e2af684f7343eaf29dfb6092",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-003.sql",
+    "batchSha256": "8c06f859aec4628b485eb0fdc2d19b07bc9ed168a5c4651b6f2ce91854dfbe49",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-004.sql",
+    "batchSha256": "d615d856651e53a81aa21b3cb064b2dc7a64db1e3f4364bcd5ae63babe1b4861",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-005.sql",
+    "batchSha256": "b5e739cd340ef71c2fc9aa4233c9092e1d61de5a4de855cad8a4e8b441209a40",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-006.sql",
+    "batchSha256": "814dcf26ef2c4b9d92f9f4428441ffa169ad536de917fe0ed54b827e9978972b",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-007.sql",
+    "batchSha256": "fd20bb0c1f59131c2699baca40c097891cc3828b8649ffac1d083f60995f1820",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-008.sql",
+    "batchSha256": "0a3c8f5b2a7730b02b9f0d2962a38483652cc319f1b6ac682fbac01cb39d5b39",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-009.sql",
+    "batchSha256": "6e31c6e70cc5af66f39bfe2b36d753df6bb534562c6b7229471f66f7c0378a95",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-010.sql",
+    "batchSha256": "0634b07309bcfc5746a22e5c57fbcd40c16f32c6ed517d9d2db3aaeeaac24760",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-011.sql",
+    "batchSha256": "8c884e20fa3e97bd684b67ab1257b18d3f25bf5a28c15b78c48a9531224626cd",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-012.sql",
+    "batchSha256": "5fe4d2c27bb7efd7dbab1c1ffb4947e113f29037e1465fb484f197d27575df16",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-013.sql",
+    "batchSha256": "b90b74ea25cdd49142c2fb435e154865d4a627c6681d09665aaf94a7dd751f48",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-014.sql",
+    "batchSha256": "a3ebbd86bba513072a9cdf4b29a3fe54cf93dc67eaae33ad97c3b4eb7aa6a2ba",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-015.sql",
+    "batchSha256": "9e14370845cbf6895ceabbc9d0378044d9dae0dee405eb9de4de9d37d0528dff",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-016.sql",
+    "batchSha256": "3316b3284cf7050b23b3341f754486b812db41cba9c865472e4fac157ba9e03f",
+    "imported": 500
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Chicago-017.sql",
+    "batchSha256": "b9cb3d71234dbdcce8df521a75e83e8cfaf2f8b308d18efe39921b999098cf6e",
+    "imported": 231
+  },
+  {
+    "state": "TX",
+    "path": "artifacts/nine-state-directory-20261015/batches/TX-Denver-000.sql",
+    "batchSha256": "dc9f0cd75e9ebeb70d5ec77911a7157084960e6b35b080d6545dc8e0d2bac27a",
+    "imported": 261
+  },
+  {
+    "state": "GA",
+    "path": "artifacts/nine-state-directory-20261015/batches/GA-New_York-000.sql",
+    "batchSha256": "07690b5cc38a623182869b9f56a5bc254525dd2e8c869a019eb69e77599d5bab",
+    "imported": 500
+  },
+  {
+    "state": "GA",
+    "path": "artifacts/nine-state-directory-20261015/batches/GA-New_York-001.sql",
+    "batchSha256": "2d2186b33bcef2be59dfbfdc609e8d225dced90f52b5b802bb6c4d106d276477",
+    "imported": 500
+  },
+  {
+    "state": "GA",
+    "path": "artifacts/nine-state-directory-20261015/batches/GA-New_York-002.sql",
+    "batchSha256": "ca62f6e12bfbed82f8a6baac31d540c8e2eb592a29321e3c9c4eb913a0a2f29e",
+    "imported": 500
+  },
+  {
+    "state": "GA",
+    "path": "artifacts/nine-state-directory-20261015/batches/GA-New_York-003.sql",
+    "batchSha256": "fa191113e44e2496a3d7eb4215a0671426dcdaaa4849797b1edb89fb52f53e8c",
+    "imported": 500
+  },
+  {
+    "state": "GA",
+    "path": "artifacts/nine-state-directory-20261015/batches/GA-New_York-004.sql",
+    "batchSha256": "8c1d5b4b9856f833622d61e6a977d3fe06b13e77c31af74a832294f416b2536b",
+    "imported": 500
+  },
+  {
+    "state": "GA",
+    "path": "artifacts/nine-state-directory-20261015/batches/GA-New_York-005.sql",
+    "batchSha256": "728465fcc8686d3a651c7abc2baaf3be0745487ba71caccf69b19aacd136a508",
+    "imported": 500
+  },
+  {
+    "state": "GA",
+    "path": "artifacts/nine-state-directory-20261015/batches/GA-New_York-006.sql",
+    "batchSha256": "8c9c007898b52dffd3241e8a64e8bd662f2b6fcaa501e455a6c799118b834fb2",
+    "imported": 500
+  },
+  {
+    "state": "GA",
+    "path": "artifacts/nine-state-directory-20261015/batches/GA-New_York-007.sql",
+    "batchSha256": "be5788fb1c54b350ca1714b507a78a14a8397c9f5dd4c44635f578ab4249e478",
+    "imported": 500
+  },
+  {
+    "state": "GA",
+    "path": "artifacts/nine-state-directory-20261015/batches/GA-New_York-008.sql",
+    "batchSha256": "9441112e5db329d4229425da1e516b10d1134938a4498061fa7c0abc88d18319",
+    "imported": 355
+  },
+  {
+    "state": "VA",
+    "path": "artifacts/nine-state-directory-20261015/batches/VA-New_York-000.sql",
+    "batchSha256": "4082bc55b4130d22b99b2b7b19cbde9c1c355811b257e22850591620ce8b5212",
+    "imported": 500
+  },
+  {
+    "state": "VA",
+    "path": "artifacts/nine-state-directory-20261015/batches/VA-New_York-001.sql",
+    "batchSha256": "7a44eb97fa2b16e0f8773bd21ccea44907947727b8bb61a3ee60a966ccafe1bf",
+    "imported": 500
+  },
+  {
+    "state": "VA",
+    "path": "artifacts/nine-state-directory-20261015/batches/VA-New_York-002.sql",
+    "batchSha256": "bc55071059168f31fedcf532f5bcc1eae6ca9308a3dcf9a8555f5af8295928b2",
+    "imported": 500
+  },
+  {
+    "state": "VA",
+    "path": "artifacts/nine-state-directory-20261015/batches/VA-New_York-003.sql",
+    "batchSha256": "200bb7056a5327cb639fc7967d4aad7311b64312cae75c9777d76e25a79f7eb8",
+    "imported": 500
+  },
+  {
+    "state": "VA",
+    "path": "artifacts/nine-state-directory-20261015/batches/VA-New_York-004.sql",
+    "batchSha256": "bf974db996b862748f64c331b46e5adfaea2e7bfdff763045112932f66630126",
+    "imported": 500
+  },
+  {
+    "state": "VA",
+    "path": "artifacts/nine-state-directory-20261015/batches/VA-New_York-005.sql",
+    "batchSha256": "208fa8c3d6a7ca0dff1a009530608fa004b57633db7199690bad42aeeee9a917",
+    "imported": 500
+  },
+  {
+    "state": "VA",
+    "path": "artifacts/nine-state-directory-20261015/batches/VA-New_York-006.sql",
+    "batchSha256": "f8e74fd9a9d6f51ca663a061b8f6d29e57546c54e2a56af81905b7cf8077ab6c",
+    "imported": 500
+  },
+  {
+    "state": "VA",
+    "path": "artifacts/nine-state-directory-20261015/batches/VA-New_York-007.sql",
+    "batchSha256": "2a35484ff7759a6f124e59c437211b3c6cec4861e4aa3a9f3cabe325d6474d42",
+    "imported": 317
+  },
+  {
+    "state": "MA",
+    "path": "artifacts/nine-state-directory-20261015/batches/MA-New_York-000.sql",
+    "batchSha256": "06954aeaa4ecf5a0deb66117a98008ab32bfbf491e2d3517075c0e49f96aa668",
+    "imported": 500
+  },
+  {
+    "state": "MA",
+    "path": "artifacts/nine-state-directory-20261015/batches/MA-New_York-001.sql",
+    "batchSha256": "5b812eb10d5221f8f6f7d52952319aa097fbc35e692902bf714bbbd677f00992",
+    "imported": 500
+  },
+  {
+    "state": "MA",
+    "path": "artifacts/nine-state-directory-20261015/batches/MA-New_York-002.sql",
+    "batchSha256": "c2c4c133a3e28ff70d2d79ff93684a4a4ee8a76b7baf19312ad374e7fa6d9d6d",
+    "imported": 500
+  },
+  {
+    "state": "MA",
+    "path": "artifacts/nine-state-directory-20261015/batches/MA-New_York-003.sql",
+    "batchSha256": "32a991c00a1d4b72ba8c16a800b0e7e7e6747e33cf9d65531ad066eeb7adb9a0",
+    "imported": 500
+  },
+  {
+    "state": "MA",
+    "path": "artifacts/nine-state-directory-20261015/batches/MA-New_York-004.sql",
+    "batchSha256": "6bd312ef9f5f51ebd7cbfbb2208ff962dd17335cbaa342fdc7c98bfbfa4b89fe",
+    "imported": 500
+  },
+  {
+    "state": "MA",
+    "path": "artifacts/nine-state-directory-20261015/batches/MA-New_York-005.sql",
+    "batchSha256": "dfc64561aec4a2912d9f4ddf1d2e84b41e941e7763d00df1f86d6865c42acfb6",
+    "imported": 500
+  },
+  {
+    "state": "MA",
+    "path": "artifacts/nine-state-directory-20261015/batches/MA-New_York-006.sql",
+    "batchSha256": "920a09b509048d01b1eca0a526b98e866439a73ec8b978fb6adbc817f0f7d428",
+    "imported": 500
+  },
+  {
+    "state": "MA",
+    "path": "artifacts/nine-state-directory-20261015/batches/MA-New_York-007.sql",
+    "batchSha256": "c69cfc925fc026bf695205875786f848d07f4c7909ab72626d6769c6920e1737",
+    "imported": 346
+  },
+  {
+    "state": "NC",
+    "path": "artifacts/nine-state-directory-20261015/batches/NC-New_York-000.sql",
+    "batchSha256": "0967080d0f42f2e4e5b866fbcd331c77be20be0e537739b7ee12e88169ca6d0f",
+    "imported": 500
+  },
+  {
+    "state": "NC",
+    "path": "artifacts/nine-state-directory-20261015/batches/NC-New_York-001.sql",
+    "batchSha256": "ec21fb6f5a32a25e47cd7e929ec3a26f048917492159684c9818728bb5bc0f73",
+    "imported": 500
+  },
+  {
+    "state": "NC",
+    "path": "artifacts/nine-state-directory-20261015/batches/NC-New_York-002.sql",
+    "batchSha256": "4a294d694bb12945c1f8ef8c76c36833d9cd82ff7f8c17dea15ea33d94d8447a",
+    "imported": 500
+  },
+  {
+    "state": "NC",
+    "path": "artifacts/nine-state-directory-20261015/batches/NC-New_York-003.sql",
+    "batchSha256": "da3d87a4b4faf33aef2020e11ab9533dcab2f6bf3dc164a84e43fb1a946ad9db",
+    "imported": 500
+  },
+  {
+    "state": "NC",
+    "path": "artifacts/nine-state-directory-20261015/batches/NC-New_York-004.sql",
+    "batchSha256": "87ed4a13bbacc79e69d48a81701507c945efffff80168ee5205074bbfa888aeb",
+    "imported": 500
+  },
+  {
+    "state": "NC",
+    "path": "artifacts/nine-state-directory-20261015/batches/NC-New_York-005.sql",
+    "batchSha256": "63fdc79bb41af9fccb82f3681858b422b424a2444df99ba0b9b02595e004c8a3",
+    "imported": 500
+  },
+  {
+    "state": "NC",
+    "path": "artifacts/nine-state-directory-20261015/batches/NC-New_York-006.sql",
+    "batchSha256": "1070fde9a069b8ea9b1476422be83f484b48aa234ceec5884f7564b453ac4405",
+    "imported": 500
+  },
+  {
+    "state": "NC",
+    "path": "artifacts/nine-state-directory-20261015/batches/NC-New_York-007.sql",
+    "batchSha256": "7a400ebc4cedbf31ba662e4cc7930c6c9f62222c0126d7ed6f15f9df8d863c75",
+    "imported": 500
+  },
+  {
+    "state": "NC",
+    "path": "artifacts/nine-state-directory-20261015/batches/NC-New_York-008.sql",
+    "batchSha256": "2f746fa036fd5ba930743f732109acb0ecbe897c4e7954c6b4181560a6a7f846",
+    "imported": 458
+  },
+  {
+    "state": "NY",
+    "path": "artifacts/nine-state-directory-20261015/batches/NY-New_York-000.sql",
+    "batchSha256": "ac993e9da0f9834822fab46aead8414efc95ab2159a8be02e77f39c225cbf0da",
+    "imported": 500
+  },
+  {
+    "state": "NY",
+    "path": "artifacts/nine-state-directory-20261015/batches/NY-New_York-001.sql",
+    "batchSha256": "4171b073940e8d460d5fdc7c70c1d5bb51ebeae507aefe4a8afe177b5b26f27e",
+    "imported": 500
+  },
+  {
+    "state": "NY",
+    "path": "artifacts/nine-state-directory-20261015/batches/NY-New_York-002.sql",
+    "batchSha256": "715d02bb636998aa5acc9a32378f598f7d4ab74a9fc61bc512effebaf5294326",
+    "imported": 500
+  },
+  {
+    "state": "NY",
+    "path": "artifacts/nine-state-directory-20261015/batches/NY-New_York-003.sql",
+    "batchSha256": "bf28eb6f40b9ea5d1edbd9bb53242270d50209a0dfde4376ff35b73a56cdeb32",
+    "imported": 500
+  },
+  {
+    "state": "NY",
+    "path": "artifacts/nine-state-directory-20261015/batches/NY-New_York-004.sql",
+    "batchSha256": "99c2251b96baedcfb127533dd76bd4ab742c17293579dc7e40cbdcd50a30cd7c",
+    "imported": 500
+  },
+  {
+    "state": "NY",
+    "path": "artifacts/nine-state-directory-20261015/batches/NY-New_York-005.sql",
+    "batchSha256": "8d2b6f59fa2e7006bbd243998636caee8fab7a1178a8367f63d8aadd43db89b3",
+    "imported": 500
+  },
+  {
+    "state": "NY",
+    "path": "artifacts/nine-state-directory-20261015/batches/NY-New_York-006.sql",
+    "batchSha256": "5d3143207cb6155d70cb9cb757e58c04413ce417f0c28c2c32fcf12d65312ee8",
+    "imported": 500
+  },
+  {
+    "state": "NY",
+    "path": "artifacts/nine-state-directory-20261015/batches/NY-New_York-007.sql",
+    "batchSha256": "ad8e8f58db084082d7202727341ce706a23ce86e86cc49960d1855dd90ce8c75",
+    "imported": 500
+  },
+  {
+    "state": "NY",
+    "path": "artifacts/nine-state-directory-20261015/batches/NY-New_York-008.sql",
+    "batchSha256": "1242a967de7f54dd5caae79e2cf883c561f32e818f74b251406a7e6a8cc85985",
+    "imported": 500
+  },
+  {
+    "state": "NY",
+    "path": "artifacts/nine-state-directory-20261015/batches/NY-New_York-009.sql",
+    "batchSha256": "9be52030e5b825e95a2626eed83574f7a888f39161bb77bda249669d6166aee5",
+    "imported": 170
+  },
+  {
+    "state": "NJ",
+    "path": "artifacts/nine-state-directory-20261015/batches/NJ-New_York-000.sql",
+    "batchSha256": "42aa2b3032613c92e13b1598ada33f952e6a5bc939ad70c569c924f849b45964",
+    "imported": 500
+  },
+  {
+    "state": "NJ",
+    "path": "artifacts/nine-state-directory-20261015/batches/NJ-New_York-001.sql",
+    "batchSha256": "ee5abcb6a48a561fbec8103800b3d6890893be9a83b3dbed2defd0791a7cdbd4",
+    "imported": 500
+  },
+  {
+    "state": "NJ",
+    "path": "artifacts/nine-state-directory-20261015/batches/NJ-New_York-002.sql",
+    "batchSha256": "80330d685d9d2d2a874d12f47e91378299916ca10ca99955ada9016f26563973",
+    "imported": 500
+  },
+  {
+    "state": "NJ",
+    "path": "artifacts/nine-state-directory-20261015/batches/NJ-New_York-003.sql",
+    "batchSha256": "0f722ac9e8fc05d2339a56d0680825b25142ce4f6617280fcf13da8ce9330d82",
+    "imported": 500
+  },
+  {
+    "state": "NJ",
+    "path": "artifacts/nine-state-directory-20261015/batches/NJ-New_York-004.sql",
+    "batchSha256": "c67e9f3b09619ebf8754183c460a54fd38406755877f623b5dad0d4cfc0d77a0",
+    "imported": 500
+  },
+  {
+    "state": "NJ",
+    "path": "artifacts/nine-state-directory-20261015/batches/NJ-New_York-005.sql",
+    "batchSha256": "7ecc2c77d97cb4e4fcf2bbe03438dc95816cb62fa64c0b71cd87012d97ff1ebb",
+    "imported": 500
+  },
+  {
+    "state": "NJ",
+    "path": "artifacts/nine-state-directory-20261015/batches/NJ-New_York-006.sql",
+    "batchSha256": "125e9e2d2a7084b35ac3c8b8f9ec13f4900196dec590182eb2f825905a15a76d",
+    "imported": 500
+  },
+  {
+    "state": "NJ",
+    "path": "artifacts/nine-state-directory-20261015/batches/NJ-New_York-007.sql",
+    "batchSha256": "c519a92085634a5b1c52a012173ecf3f6a5d2201701ba5d5613984d8cf61ddab",
+    "imported": 229
+  },
+  {
+    "state": "PA",
+    "path": "artifacts/nine-state-directory-20261015/batches/PA-New_York-000.sql",
+    "batchSha256": "80067829e3040694897ca607e55fd8b6fbee8221bcc955fb33689e104a9c64e6",
+    "imported": 500
+  },
+  {
+    "state": "PA",
+    "path": "artifacts/nine-state-directory-20261015/batches/PA-New_York-001.sql",
+    "batchSha256": "c4714448faabf99a12a26e2dc7d97461086cf434cf2a2b2a9fa8a9f7b2462cf3",
+    "imported": 500
+  },
+  {
+    "state": "PA",
+    "path": "artifacts/nine-state-directory-20261015/batches/PA-New_York-002.sql",
+    "batchSha256": "76ab03ae626b458adeb35d5b667cb36c5c8c0dd096b19bfe78e004ea6b6c05a5",
+    "imported": 500
+  },
+  {
+    "state": "PA",
+    "path": "artifacts/nine-state-directory-20261015/batches/PA-New_York-003.sql",
+    "batchSha256": "8883be4c80afc2d856b927c0430184397b0a525f111a181ded10bf135ba7e48a",
+    "imported": 500
+  },
+  {
+    "state": "PA",
+    "path": "artifacts/nine-state-directory-20261015/batches/PA-New_York-004.sql",
+    "batchSha256": "b5675648a226c64510eabbfcc17800a999b45cb05b2ef7a6df3db83a64c1d1dc",
+    "imported": 500
+  },
+  {
+    "state": "PA",
+    "path": "artifacts/nine-state-directory-20261015/batches/PA-New_York-005.sql",
+    "batchSha256": "d968d641c016ec89df814a24889cbd709cf7cd83faf2fb8b1ac4c5683d7fed25",
+    "imported": 500
+  },
+  {
+    "state": "PA",
+    "path": "artifacts/nine-state-directory-20261015/batches/PA-New_York-006.sql",
+    "batchSha256": "869961ac3b3f41631494f5cb24c337b8cf3fcf9f7d4d5fa2ad0c75472636773d",
+    "imported": 500
+  },
+  {
+    "state": "PA",
+    "path": "artifacts/nine-state-directory-20261015/batches/PA-New_York-007.sql",
+    "batchSha256": "360f33ffdaa1c7d1c9892c097108a166c0af85041ccb30ceba3980f41fd81a5e",
+    "imported": 245
+  }
+]

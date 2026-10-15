@@ -1,0 +1,725 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "state": "CA",
+      "category": "Nails",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 962,
+      "continuationWithoutDuplicates": true
+    },
+    {
+      "state": "CA",
+      "category": "Hair",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 657
+    },
+    {
+      "state": "CA",
+      "category": "Massage",
+      "status": 200,
+      "rows": 12,
+      "total": 148,
+      "ms": 823
+    },
+    {
+      "state": "CA",
+      "category": "Lashes",
+      "status": 200,
+      "rows": 12,
+      "total": 23,
+      "ms": 456
+    },
+    {
+      "state": "CA",
+      "category": "Tattoo",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 639
+    },
+    {
+      "state": "CA",
+      "category": "Spa",
+      "status": 200,
+      "rows": 12,
+      "total": 22,
+      "ms": 474
+    },
+    {
+      "state": "CA",
+      "category": "Brows",
+      "status": 200,
+      "rows": 12,
+      "total": 83,
+      "ms": 514
+    },
+    {
+      "state": "CA",
+      "category": "Waxing",
+      "status": 200,
+      "rows": 12,
+      "total": 83,
+      "ms": 502
+    },
+    {
+      "state": "CA",
+      "category": "Skin Care",
+      "status": 200,
+      "rows": 12,
+      "total": 149,
+      "ms": 708
+    },
+    {
+      "state": "TX",
+      "category": "Nails",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 541,
+      "continuationWithoutDuplicates": true
+    },
+    {
+      "state": "TX",
+      "category": "Hair",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 560
+    },
+    {
+      "state": "TX",
+      "category": "Massage",
+      "status": 200,
+      "rows": 12,
+      "total": 153,
+      "ms": 597
+    },
+    {
+      "state": "TX",
+      "category": "Lashes",
+      "status": 200,
+      "rows": 12,
+      "total": 66,
+      "ms": 632
+    },
+    {
+      "state": "TX",
+      "category": "Tattoo",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 562
+    },
+    {
+      "state": "TX",
+      "category": "Spa",
+      "status": 200,
+      "rows": 12,
+      "total": 54,
+      "ms": 583
+    },
+    {
+      "state": "TX",
+      "category": "Brows",
+      "status": 200,
+      "rows": 12,
+      "total": 113,
+      "ms": 574
+    },
+    {
+      "state": "TX",
+      "category": "Waxing",
+      "status": 200,
+      "rows": 12,
+      "total": 114,
+      "ms": 479
+    },
+    {
+      "state": "TX",
+      "category": "Skin Care",
+      "status": 200,
+      "rows": 12,
+      "total": 159,
+      "ms": 575
+    },
+    {
+      "state": "GA",
+      "category": "Nails",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 479,
+      "continuationWithoutDuplicates": true
+    },
+    {
+      "state": "GA",
+      "category": "Hair",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 607
+    },
+    {
+      "state": "GA",
+      "category": "Massage",
+      "status": 200,
+      "rows": 12,
+      "total": 49,
+      "ms": 575
+    },
+    {
+      "state": "GA",
+      "category": "Lashes",
+      "status": 200,
+      "rows": 8,
+      "total": 8,
+      "ms": 509
+    },
+    {
+      "state": "GA",
+      "category": "Tattoo",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 533
+    },
+    {
+      "state": "GA",
+      "category": "Spa",
+      "status": 200,
+      "rows": 12,
+      "total": 20,
+      "ms": 611
+    },
+    {
+      "state": "GA",
+      "category": "Brows",
+      "status": 200,
+      "rows": 12,
+      "total": 16,
+      "ms": 438
+    },
+    {
+      "state": "GA",
+      "category": "Waxing",
+      "status": 200,
+      "rows": 12,
+      "total": 16,
+      "ms": 624
+    },
+    {
+      "state": "GA",
+      "category": "Skin Care",
+      "status": 200,
+      "rows": 12,
+      "total": 50,
+      "ms": 1002
+    },
+    {
+      "state": "VA",
+      "category": "Nails",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 643,
+      "continuationWithoutDuplicates": true
+    },
+    {
+      "state": "VA",
+      "category": "Hair",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 610
+    },
+    {
+      "state": "VA",
+      "category": "Massage",
+      "status": 200,
+      "rows": 12,
+      "total": 57,
+      "ms": 425
+    },
+    {
+      "state": "VA",
+      "category": "Lashes",
+      "status": 200,
+      "rows": 5,
+      "total": 5,
+      "ms": 442
+    },
+    {
+      "state": "VA",
+      "category": "Tattoo",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 561
+    },
+    {
+      "state": "VA",
+      "category": "Spa",
+      "status": 200,
+      "rows": 12,
+      "total": 21,
+      "ms": 504
+    },
+    {
+      "state": "VA",
+      "category": "Brows",
+      "status": 200,
+      "rows": 12,
+      "total": 36,
+      "ms": 421
+    },
+    {
+      "state": "VA",
+      "category": "Waxing",
+      "status": 200,
+      "rows": 12,
+      "total": 36,
+      "ms": 598
+    },
+    {
+      "state": "VA",
+      "category": "Skin Care",
+      "status": 200,
+      "rows": 12,
+      "total": 60,
+      "ms": 589
+    },
+    {
+      "state": "MA",
+      "category": "Nails",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 517,
+      "continuationWithoutDuplicates": true
+    },
+    {
+      "state": "MA",
+      "category": "Hair",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 502
+    },
+    {
+      "state": "MA",
+      "category": "Massage",
+      "status": 200,
+      "rows": 12,
+      "total": 18,
+      "ms": 607
+    },
+    {
+      "state": "MA",
+      "category": "Lashes",
+      "status": 200,
+      "rows": 2,
+      "total": 2,
+      "ms": 478
+    },
+    {
+      "state": "MA",
+      "category": "Tattoo",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 582
+    },
+    {
+      "state": "MA",
+      "category": "Spa",
+      "status": 200,
+      "rows": 3,
+      "total": 3,
+      "ms": 407
+    },
+    {
+      "state": "MA",
+      "category": "Brows",
+      "status": 200,
+      "rows": 12,
+      "total": 30,
+      "ms": 455
+    },
+    {
+      "state": "MA",
+      "category": "Waxing",
+      "status": 200,
+      "rows": 12,
+      "total": 30,
+      "ms": 400
+    },
+    {
+      "state": "MA",
+      "category": "Skin Care",
+      "status": 200,
+      "rows": 12,
+      "total": 18,
+      "ms": 611
+    },
+    {
+      "state": "NC",
+      "category": "Nails",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 584,
+      "continuationWithoutDuplicates": true
+    },
+    {
+      "state": "NC",
+      "category": "Hair",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 557
+    },
+    {
+      "state": "NC",
+      "category": "Massage",
+      "status": 200,
+      "rows": 12,
+      "total": 67,
+      "ms": 409
+    },
+    {
+      "state": "NC",
+      "category": "Lashes",
+      "status": 200,
+      "rows": 4,
+      "total": 4,
+      "ms": 401
+    },
+    {
+      "state": "NC",
+      "category": "Tattoo",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 441
+    },
+    {
+      "state": "NC",
+      "category": "Spa",
+      "status": 200,
+      "rows": 12,
+      "total": 24,
+      "ms": 786
+    },
+    {
+      "state": "NC",
+      "category": "Brows",
+      "status": 200,
+      "rows": 12,
+      "total": 32,
+      "ms": 464
+    },
+    {
+      "state": "NC",
+      "category": "Waxing",
+      "status": 200,
+      "rows": 12,
+      "total": 32,
+      "ms": 622
+    },
+    {
+      "state": "NC",
+      "category": "Skin Care",
+      "status": 200,
+      "rows": 12,
+      "total": 67,
+      "ms": 555
+    },
+    {
+      "state": "NY",
+      "category": "Nails",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 646,
+      "continuationWithoutDuplicates": true
+    },
+    {
+      "state": "NY",
+      "category": "Hair",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 621
+    },
+    {
+      "state": "NY",
+      "category": "Massage",
+      "status": 200,
+      "rows": 12,
+      "total": 42,
+      "ms": 554
+    },
+    {
+      "state": "NY",
+      "category": "Lashes",
+      "status": 200,
+      "rows": 3,
+      "total": 3,
+      "ms": 451
+    },
+    {
+      "state": "NY",
+      "category": "Tattoo",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 547
+    },
+    {
+      "state": "NY",
+      "category": "Spa",
+      "status": 200,
+      "rows": 12,
+      "total": 16,
+      "ms": 446
+    },
+    {
+      "state": "NY",
+      "category": "Brows",
+      "status": 200,
+      "rows": 12,
+      "total": 85,
+      "ms": 600
+    },
+    {
+      "state": "NY",
+      "category": "Waxing",
+      "status": 200,
+      "rows": 12,
+      "total": 85,
+      "ms": 576
+    },
+    {
+      "state": "NY",
+      "category": "Skin Care",
+      "status": 200,
+      "rows": 12,
+      "total": 42,
+      "ms": 561
+    },
+    {
+      "state": "NJ",
+      "category": "Nails",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 515,
+      "continuationWithoutDuplicates": true
+    },
+    {
+      "state": "NJ",
+      "category": "Hair",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 558
+    },
+    {
+      "state": "NJ",
+      "category": "Massage",
+      "status": 200,
+      "rows": 12,
+      "total": 92,
+      "ms": 553
+    },
+    {
+      "state": "NJ",
+      "category": "Lashes",
+      "status": 200,
+      "rows": 10,
+      "total": 10,
+      "ms": 426
+    },
+    {
+      "state": "NJ",
+      "category": "Tattoo",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 448
+    },
+    {
+      "state": "NJ",
+      "category": "Spa",
+      "status": 200,
+      "rows": 12,
+      "total": 54,
+      "ms": 414
+    },
+    {
+      "state": "NJ",
+      "category": "Brows",
+      "status": 200,
+      "rows": 12,
+      "total": 71,
+      "ms": 820
+    },
+    {
+      "state": "NJ",
+      "category": "Waxing",
+      "status": 200,
+      "rows": 12,
+      "total": 71,
+      "ms": 3882
+    },
+    {
+      "state": "NJ",
+      "category": "Skin Care",
+      "status": 200,
+      "rows": 12,
+      "total": 92,
+      "ms": 429
+    },
+    {
+      "state": "PA",
+      "category": "Nails",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 521,
+      "continuationWithoutDuplicates": true
+    },
+    {
+      "state": "PA",
+      "category": "Hair",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 451
+    },
+    {
+      "state": "PA",
+      "category": "Massage",
+      "status": 200,
+      "rows": 12,
+      "total": 65,
+      "ms": 623
+    },
+    {
+      "state": "PA",
+      "category": "Lashes",
+      "status": 200,
+      "rows": 9,
+      "total": 9,
+      "ms": 522
+    },
+    {
+      "state": "PA",
+      "category": "Tattoo",
+      "status": 200,
+      "rows": 12,
+      "total": 256,
+      "ms": 418
+    },
+    {
+      "state": "PA",
+      "category": "Spa",
+      "status": 200,
+      "rows": 12,
+      "total": 43,
+      "ms": 432
+    },
+    {
+      "state": "PA",
+      "category": "Brows",
+      "status": 200,
+      "rows": 12,
+      "total": 46,
+      "ms": 532
+    },
+    {
+      "state": "PA",
+      "category": "Waxing",
+      "status": 200,
+      "rows": 12,
+      "total": 46,
+      "ms": 472
+    },
+    {
+      "state": "PA",
+      "category": "Skin Care",
+      "status": 200,
+      "rows": 12,
+      "total": 66,
+      "ms": 458
+    },
+    {
+      "state": "CA",
+      "profile": true,
+      "status": 200,
+      "contact": true,
+      "claim": true
+    },
+    {
+      "state": "TX",
+      "profile": true,
+      "status": 200,
+      "contact": true,
+      "claim": true
+    },
+    {
+      "state": "GA",
+      "profile": true,
+      "status": 200,
+      "contact": true,
+      "claim": true
+    },
+    {
+      "state": "VA",
+      "profile": true,
+      "status": 200,
+      "contact": true,
+      "claim": true
+    },
+    {
+      "state": "MA",
+      "profile": true,
+      "status": 200,
+      "contact": true,
+      "claim": true
+    },
+    {
+      "state": "NC",
+      "profile": true,
+      "status": 200,
+      "contact": true,
+      "claim": true
+    },
+    {
+      "state": "NY",
+      "profile": true,
+      "status": 200,
+      "contact": true,
+      "claim": true
+    },
+    {
+      "state": "NJ",
+      "profile": true,
+      "status": 200,
+      "contact": true,
+      "claim": true
+    },
+    {
+      "state": "PA",
+      "profile": true,
+      "status": 200,
+      "contact": true,
+      "claim": true
+    }
+  ]
+}

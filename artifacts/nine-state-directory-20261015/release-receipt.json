@@ -1,0 +1,27 @@
+{
+  "kind": "release",
+  "summary": "Nine-state beauty directory published with the current Explore implementation preserved; existing claimed owners and suppressions retained.",
+  "changes": [
+    "a4e96f72-983e-409a-89d7-d36e84ff222f"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_9ytGDqrS31MBusy9SgnRWpvNFbzQ",
+      "baselineDeploymentId": "dpl_2k29B84fDFLMg5rv9cj2S1JoUzXT",
+      "sourceSha256": "464231ee12d53e8c55a99612c48c5b279397ff883c94e38edec9af8d449280c5",
+      "overlaySha256": "ae92e9a9e8e1d6d230ffdb25112cc458c52c0389f44f21b42e0e090c5930b2b1",
+      "evidence": "artifacts/nine-state-directory-20261015/live-verification.json"
+    }
+  },
+  "nativeAssessment": "Web data/server content only; no native binary change required.",
+  "importSummary": {
+    "records": 51461,
+    "batches": 107,
+    "claimedOwnerFingerprintUnchanged": true
+  },
+  "sourceCommit": "444ab04e0e4d291d929133e5d71346fcf6df4f6e",
+  "baselineCommit": "bd9fe4623684acbd234a763f25c7e5b3862a7632",
+  "sourceDirectory": "C:\\Users\\giuse\\kingpos\\artifacts\\nine-state-directory-20261015\\release-1792089229497"
+}

@@ -1,0 +1,13 @@
+{
+  "diskLastModifiedAt": "2026-10-15T18:56:28.397Z",
+  "readonlyApiEnabled": false,
+  "throughputMiBps": 125,
+  "attribution": "Modification preceded this coordinator resize script; external actor not inferred",
+  "sizeGb": 8,
+  "action": "No resize mutation sent: disk was already 8 GB during precondition check",
+  "at": "2026-10-15T18:58:38.7226500Z",
+  "diskType": "gp3",
+  "plan": "pro",
+  "iops": 3000,
+  "ownerAuthorization": "Explicit approval in current chat to increase disk to 8 GB"
+}
