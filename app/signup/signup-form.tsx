@@ -1,19 +1,18 @@
 "use client";
 
 import { readAuthResponse } from "@/lib/auth-response";
+import { SecurityChallenge, type SecurityChallengeHandle } from "@/components/security-challenge";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 const inputClassName =
   "mt-2 min-h-[52px] w-full rounded-2xl border bg-white px-4 text-base font-semibold text-text-primary outline-none transition placeholder:font-normal placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10 motion-reduce:transition-none";
 const inputDefaultClassName = "border-border-subtle";
-const inputErrorClassName = "border-red-300 focus:border-red-500 focus:ring-red-500/10";
-
-function fieldClassName(hasError: boolean, extraClassName = "") {
+function fieldClassName(extraClassName = "") {
   return [
     inputClassName,
-    hasError ? inputErrorClassName : inputDefaultClassName,
+    inputDefaultClassName,
     extraClassName,
   ]
     .filter(Boolean)
@@ -58,16 +57,41 @@ function PasswordVisibilityIcon({ isVisible }: { isVisible: boolean }) {
   );
 }
 
-export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
+export function SignupForm({ nextPath = "/explore", initialError }: { nextPath?: string; initialError?: string }) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const initialChallenge = initialError?.includes("/security-check") ?? false;
+  const [error, setError] = useState<string | null>(initialChallenge ? null : initialError ?? null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [challengeRequired, setChallengeRequired] = useState(initialChallenge);
+  const form = useRef<HTMLFormElement>(null);
+  const securityCheck = useRef<SecurityChallengeHandle>(null);
+  const submitting = useRef(false);
+  const request = useRef<AbortController | null>(null);
+  const mounted = useRef(true);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      request.current?.abort();
+      // Activity can hide this form without discarding its state. Returning must
+      // keep the entered fields while allowing an explicit fresh attempt.
+      submitting.current = false;
+      setIsSubmitting(false);
+    };
+  }, []);
+
+  async function createAccount() {
+    if (submitting.current || !form.current || !form.current.reportValidity()) return;
+    // Keep credentials only in this mounted form, including after verification.
+    const body = new FormData(form.current);
+    const controller = new AbortController();
+    request.current = controller;
+    submitting.current = true;
     setError(null);
     setIsSubmitting(true);
+    let navigating = false;
 
     try {
       const response = await fetch("/api/auth/signup", {
@@ -75,22 +99,38 @@ export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
           Accept: "application/json",
         },
         method: "POST",
-        body: new FormData(event.currentTarget),
+        body,
+        signal: controller.signal,
       });
       const result = await readAuthResponse(response, "Unable to create account.");
+      if (controller.signal.aborted || !mounted.current) return;
 
       if (!response.ok || result.error) {
+        if (result.challengeRequired === true || result.code === "security_check_required" || result.error?.includes("/security-check")) {
+          setChallengeRequired(true);
+          return;
+        }
         setError(result.error ?? "Unable to create account.");
         return;
       }
 
+      navigating = true;
       router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
-      setError("Unable to create account. Please check your connection and try again.");
+      if (!controller.signal.aborted && mounted.current) setError("Unable to create account. Please check your connection and try again.");
     } finally {
-      setIsSubmitting(false);
+      if (!controller.signal.aborted && mounted.current && !navigating) {
+        submitting.current = false;
+        setIsSubmitting(false);
+      }
     }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (challengeRequired) await securityCheck.current?.verify();
+    else await createAccount();
   }
 
   return (
@@ -101,11 +141,13 @@ export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
           id="signup-form-error"
           role="alert"
         >
-          {error} {error.includes("/security-check") ? <Link href="/security-check" className="underline">Open security check</Link> : null}
+          {error}
         </p>
       ) : null}
 
       <form
+        ref={form}
+        data-signup-security-check={challengeRequired || undefined}
         action="/api/auth/signup"
         aria-describedby={error ? "signup-form-error" : undefined}
         className="relative z-10 mt-6 space-y-5 pointer-events-auto"
@@ -118,7 +160,7 @@ export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
             Display name
           </label>
           <input
-            className={fieldClassName(Boolean(error))}
+            className={fieldClassName()}
             id="display_name"
             name="display_name"
             placeholder="Your name"
@@ -132,8 +174,7 @@ export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
             Email
           </label>
           <input
-            aria-invalid={Boolean(error)}
-            className={fieldClassName(Boolean(error))}
+            className={fieldClassName()}
             id="email"
             name="email"
             placeholder="you@example.com"
@@ -149,8 +190,7 @@ export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
           </label>
           <div className="relative">
             <input
-              aria-invalid={Boolean(error)}
-              className={fieldClassName(Boolean(error), "pr-12")}
+              className={fieldClassName("pr-12")}
               id="password"
               name="password"
               placeholder="Create a password"
@@ -169,7 +209,18 @@ export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
           </div>
         </div>
 
-        <button
+        {challengeRequired ? (
+          <SecurityChallenge
+            ref={securityCheck}
+            disabled={isSubmitting}
+            submitLabel="Verify and create account"
+            onVerified={async () => {
+              setChallengeRequired(false);
+              // Exactly one retry follows an explicit successful verification.
+              await createAccount();
+            }}
+          />
+        ) : <button
           aria-busy={isSubmitting}
           className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-brand-orange px-5 text-sm font-extrabold text-white shadow-[0_14px_32px_rgba(242,111,61,0.24)] transition hover:bg-brand-orange-hover active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-70 motion-reduce:transform-none motion-reduce:transition-none"
           disabled={isSubmitting}
@@ -183,7 +234,7 @@ export function SignupForm({ nextPath = "/explore" }: { nextPath?: string }) {
             ].join(" ")}
           />
           {isSubmitting ? "Creating..." : "Create account"}
-        </button>
+        </button>}
         <p className="text-xs leading-5 text-text-secondary">
           By creating an account, you agree to ReyLUMI&apos;s{" "}
           <Link

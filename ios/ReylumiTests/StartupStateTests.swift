@@ -60,6 +60,45 @@ final class StartupStateTests: XCTestCase {
         XCTAssertFalse(state.hasUsablePage)
     }
 
+    func testSecurityChallengeRevealsAtCommitWithoutBridgeOrLoadCompletion() {
+        var state = ReylumiStartupState()
+        state.begin(request("/security-check"))
+        state.acceptSecurityChallenge()
+        XCTAssertTrue(state.isWaiting, "A response alone has not displayed a document")
+        XCTAssertFalse(state.hasUsablePage)
+        state.commit()
+        XCTAssertTrue(state.isSecurityChallenge)
+        XCTAssertTrue(state.hasUsablePage)
+        XCTAssertFalse(state.isWaiting, "The startup watchdog must not cancel a visitor's check")
+        XCTAssertFalse(state.ready(nonce: state.nonce, generation: state.generation), "Provider documents do not use app readiness")
+        XCTAssertTrue(state.finish(), "A later WebKit load completion remains harmless")
+    }
+
+    func testChallengeStateDoesNotLeakIntoNextPageOrRecoverRejectedErrors() {
+        var state = ReylumiStartupState()
+        state.begin(request("/security-check"))
+        state.acceptSecurityChallenge()
+        state.commit()
+        state.begin(request("/signup"))
+        XCTAssertFalse(state.isSecurityChallenge)
+        XCTAssertTrue(state.isWaiting)
+        state.fail(rejectCompletion: true)
+        state.acceptSecurityChallenge()
+        XCTAssertFalse(state.isSecurityChallenge)
+        XCTAssertFalse(state.finish())
+        state.begin(request("/security-check"))
+        state.acceptSecurityChallenge()
+        state.fail(rejectCompletion: true)
+        state.commit()
+        XCTAssertFalse(state.isSecurityChallenge)
+        XCTAssertFalse(state.hasUsablePage)
+        state.begin(request("/security-check"))
+        state.acceptSecurityChallenge()
+        state.processTerminated()
+        XCTAssertFalse(state.isSecurityChallenge)
+        XCTAssertFalse(state.hasUsablePage)
+    }
+
     func testLateReadinessAfterSoftFailureCanRecoverTheSameDocument() {
         var state = ReylumiStartupState()
         state.begin(request())

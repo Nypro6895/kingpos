@@ -1,11 +1,7 @@
 import type { HistoryEvidence } from "@/lib/booking-history";
 import "server-only";
 
-import {
-  BOOKING_LINE_SELECT,
-  BOOKING_SELECT,
-  formatDateInTimeZone,
-} from "@/lib/bookings";
+import { formatDateInTimeZone } from "@/lib/bookings";
 import {
   BOOKING_INSPIRATION_SELECT,
   mapBookingInspirationsByBookingId,
@@ -38,8 +34,6 @@ import type { Customer } from "@/types/customer";
 
 const GENERIC_DISCOVERY_MESSAGE =
   "If matching bookings can be verified, we will send secure access instructions.";
-const CUSTOMER_BOOKING_SALON_SELECT =
-  "id, name, phone, address_line1, address_line2, city, state, postal_code, country, latitude, longitude";
 const SALON_SETTING_SELECT =
   "salon_id, business_name, phone, email, website, address_line1, address_line2, city, state, postal_code, country, public_discovery_enabled, public_profile_logo_path, public_profile_cover_path";
 const CUSTOMER_BOOKING_STAFF_SELECT =
@@ -76,10 +70,64 @@ type CustomerBookingRawSalon = {
   state: string | null;
 };
 
-type CustomerBookingRaw = Booking & {
+// Mirrors the explicit database projection; private fields are not part of this API.
+type CustomerBookingRecord = Pick<Booking,
+  | "id"
+  | "salon_id"
+  | "customer_id"
+  | "staff_id"
+  | "start_at"
+  | "end_at"
+  | "public_notes"
+  | "status"
+  | "source"
+  | "confirmation_mode"
+  | "confirmation_status"
+  | "salon_timezone_snapshot"
+  | "cancellation_reason"
+  | "cancelled_at"
+  | "no_show_at"
+  | "no_show_reason"
+  | "no_show_kind"
+  | "payment_status"
+  | "deposit_paid_cents"
+  | "deposit_refunded_cents"
+  | "deposit_receipt_url"
+  | "deposit_policy_snapshot"
+  | "created_at"
+  | "updated_at"
+>;
+type CustomerBookingLineRecord = Pick<BookingLine,
+  | "id"
+  | "salon_id"
+  | "booking_id"
+  | "parent_booking_line_id"
+  | "line_type"
+  | "service_id"
+  | "service_name_snapshot"
+  | "service_category_snapshot"
+  | "service_description_snapshot"
+  | "unit_price"
+  | "quantity"
+  | "line_total"
+  | "duration_minutes"
+  | "cleanup_buffer_minutes"
+  | "display_order"
+  | "assigned_staff_id"
+  | "scheduled_start_at"
+  | "scheduled_end_at"
+  | "line_status"
+  | "started_at"
+  | "completed_at"
+  | "service_note"
+  | "created_at"
+  | "updated_at"
+>;
+
+type CustomerBookingRaw = CustomerBookingRecord & {
   customer: Pick<Customer, "email" | "id" | "name" | "phone"> | null;
   events?: BookingStatusEvent[];
-  lines?: BookingLine[];
+  lines?: CustomerBookingLineRecord[];
   salon: CustomerBookingRawSalon | null;
 };
 
@@ -153,7 +201,7 @@ export type CustomerBookingStaff = {
   publicProfileVisible: boolean;
 };
 
-export type CustomerBookingLine = BookingLine & {
+export type CustomerBookingLine = CustomerBookingLineRecord & {
   assignedStaff: CustomerBookingStaff | null;
   currentServiceBookable: boolean;
 };
@@ -167,7 +215,7 @@ export type CustomerBookingSalon = CustomerBookingRawSalon & {
   website: string | null;
 };
 
-export type CustomerBookingSummary = Booking & {
+export type CustomerBookingSummary = CustomerBookingRecord & {
   historyEvidence?: HistoryEvidence;
   customer: Pick<Customer, "email" | "id" | "name" | "phone"> | null;
   inspiration: BookingInspirationView | null;
@@ -313,7 +361,7 @@ function mutationResultFromRpc(
   };
 }
 
-function sortLines(lines: BookingLine[] | undefined) {
+function sortLines(lines: CustomerBookingLineRecord[] | undefined) {
   return (lines ?? []).slice().sort((left, right) => {
     const order = left.display_order - right.display_order;
     return order || left.created_at.localeCompare(right.created_at);
@@ -367,7 +415,7 @@ async function loadPublicSalonProfiles(salonIds: string[]) {
   return profiles;
 }
 
-async function loadStaffRows(context: CustomerBookingContext, lines: BookingLine[]) {
+async function loadStaffRows(context: CustomerBookingContext, lines: CustomerBookingLineRecord[]) {
   const staffIds = [
     ...new Set(lines.map((line) => line.assigned_staff_id).filter(Boolean)),
   ] as string[];
@@ -449,7 +497,7 @@ async function loadPublicStaffRows(salonIds: string[]) {
 
 async function loadServiceBookableRows(
   context: CustomerBookingContext,
-  lines: BookingLine[],
+  lines: CustomerBookingLineRecord[],
 ) {
   const serviceIds = [
     ...new Set(lines.map((line) => line.service_id).filter(Boolean)),
@@ -603,20 +651,17 @@ async function loadRawCustomerBookingDetail(
   context: CustomerBookingContext,
   bookingId: string,
 ) {
-  const { data, error } = await context.supabase
-    .from("bookings")
-    .select(
-      `${BOOKING_SELECT}, customer:customers(id, name, phone, email), salon:locations(${CUSTOMER_BOOKING_SALON_SELECT}), lines:booking_lines(${BOOKING_LINE_SELECT})`,
-    )
-    .eq("id", bookingId)
-    .eq("customer_user_id", context.userId)
-    .maybeSingle<CustomerBookingRaw>();
+  const { data, error } = await context.supabase.rpc("get_customer_booking_rows", {
+    p_booking_id: bookingId,
+    p_limit: 1,
+  });
 
   if (error) {
     return { code: error.code, message: "Unable to load booking.", ok: false as const };
   }
 
-  return { data: data ?? null, ok: true as const };
+  const rows = Array.isArray(data) ? (data as CustomerBookingRaw[]) : [];
+  return { data: rows[0] ?? null, ok: true as const };
 }
 
 function buildRescheduleSelection(
@@ -720,43 +765,18 @@ export async function listCustomerBookings(input?: {
     return context;
   }
 
-  const limit = Math.min(Math.max(input?.limit ?? 20, 1), 50);
-  const scope = input?.scope ?? "upcoming";
-  const now = new Date().toISOString();
-  let query = context.data.supabase
-    .from("bookings")
-    .select(
-      `${BOOKING_SELECT}, customer:customers(id, name, phone, email), salon:locations(${CUSTOMER_BOOKING_SALON_SELECT}), lines:booking_lines(${BOOKING_LINE_SELECT})`,
-    )
-    .eq("customer_user_id", context.data.userId)
-    .limit(limit);
-
-  if (scope === "cancelled") {
-    query = query
-      .eq("status", "cancelled")
-      .order("start_at", { ascending: false })
-      .order("id", { ascending: false });
-  } else if (scope === "upcoming") {
-    query = query
-      .gte("start_at", input?.cursorStartAt ?? now)
-      .not("status", "in", "(cancelled,no_show,completed)")
-      .order("start_at", { ascending: true })
-      .order("id", { ascending: true });
-  } else {
-    query = query
-      .lt("start_at", input?.cursorStartAt ?? now)
-      .not("status", "eq", "cancelled")
-      .order("start_at", { ascending: false })
-      .order("id", { ascending: false });
-  }
-
-  const { data, error } = await query.returns<CustomerBookingRaw[]>();
+  const { data, error } = await context.data.supabase.rpc("get_customer_booking_rows", {
+    p_scope: input?.scope ?? "upcoming",
+    p_cursor_start_at: input?.cursorStartAt ?? null,
+    p_limit: Math.min(Math.max(input?.limit ?? 20, 1), 50),
+  });
 
   if (error) {
     return { code: error.code, message: "Unable to load bookings.", ok: false };
   }
 
-  return { data: await hydrateRows(context.data, data ?? []), ok: true };
+  const rows = Array.isArray(data) ? (data as CustomerBookingRaw[]) : [];
+  return { data: await hydrateRows(context.data, rows), ok: true };
 }
 
 export async function getCustomerBookingDetail(

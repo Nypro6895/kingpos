@@ -19,6 +19,8 @@ test("report salon opens in place from Explore and profile, submits once, and su
     import {SalonWebsiteHeader} from './app/salon-profile/salon-website-header';
     import {OverlayDismissal} from './components/overlay-dismissal';
     import {useHiddenPosts,postIdentity} from '@/components/post-safety';
+    import {COLLAPSED_COMMENTS} from './lib/explore-comment-presentation';
+    import {explorePostIdentity} from './lib/explore-post-presentation';
     const serviceLabel=()=>null,displayName=(name,fallback)=>name||fallback,timeAgo=()=>'',itemContextLabel=item=>item.author.name;
     const Empty=()=>null, FeedHeroIntro=Empty,FeedAvatar=Empty,FeedSalonIdentityLine=Empty,FeedMediaFrame=Empty,FeedDecisionMeta=Empty,InspirationAvailability=Empty,ExploreBookButton=Empty,FeedShareButton=Empty,CommentActionIcon=Empty,SavePostButton=Empty,ExploreSalonLove=Empty,PostCommentThread=Empty;
     const useSalonSocial=()=>({state:{hidden:false}}),ExploreSalonFollow=Empty,ExploreSocialActions=Empty,ExploreSalonMenu=({salon,target})=><PostActions salon={salon} target={target}/>;
@@ -58,6 +60,8 @@ test("report salon opens in place from Explore and profile, submits once, and su
     await page.route("https://report.test/", route => route.fulfill({ contentType: "text/html", body: `<style>${css}body{font:15px Arial;margin:16px}section{margin:16px 0}button{cursor:pointer}${result.outputFiles.find(file => file.path.endsWith('.css')).text}</style><div id="root"></div><script src="/app.js"></script>` }));
     await page.route("**/app.js", route => route.fulfill({ contentType: "text/javascript", body: result.outputFiles.find(file => file.path.endsWith('.js')).text }));
     await page.goto("https://report.test/");
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    assert.deepEqual(errors, [], "the current Explore card fixture mounts without missing dependencies");
     mkdirSync("work/salon-report-qa", { recursive: true });
     for (const width of [320, 390, 1440]) {
       await page.setViewportSize({ width, height: 900 });
@@ -69,6 +73,7 @@ test("report salon opens in place from Explore and profile, submits once, and su
       await dialog.waitFor();
       assert.equal(page.url(), "https://report.test/");
       assert.equal(await page.getByRole("button", { name: "Send report", exact: true }).isDisabled(), true);
+      await page.getByRole("menu").waitFor({ state: "hidden" });
       assert.equal(await page.getByRole("menu").count(), 0);
       await page.getByRole("radio", { name: "Incorrect salon information", exact: true }).check();
       await page.getByRole("textbox").fill("The listed address is incorrect.");

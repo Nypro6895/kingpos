@@ -20,6 +20,19 @@ struct NavigationPolicy {
             && url.user == nil && url.password == nil
     }
 
+    /// A provider challenge is an interactive document, not an application error.
+    /// Keep this exception limited to the dedicated check on our own origin.
+    func isSecurityChallengeResponse(_ response: HTTPURLResponse, isMainFrame: Bool, canShowMIMEType: Bool) -> Bool {
+        guard isMainFrame, canShowMIMEType,
+              let url = response.url, isInternal(url), !isExcluded(url),
+              url.path == "/security-check",
+              [403, 429].contains(response.statusCode),
+              response.mimeType?.lowercased() == "text/html",
+              response.value(forHTTPHeaderField: "Content-Disposition")?.lowercased().contains("attachment") != true else { return false }
+        return response.value(forHTTPHeaderField: "x-vercel-mitigated")?
+            .trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "challenge"
+    }
+
     func isSafariPayment(_ url: URL) -> Bool {
         url.scheme == "https" && ["checkout.stripe.com", "billing.stripe.com"].contains(url.host?.lowercased() ?? "")
             && url.port == nil && url.user == nil && url.password == nil

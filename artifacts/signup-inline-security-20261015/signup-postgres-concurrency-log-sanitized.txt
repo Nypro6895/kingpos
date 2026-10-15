@@ -1,0 +1,12 @@
+2026-10-15 13:04:07.226 CDT [6744] LOG:  starting PostgreSQL 17.11 on x86_64-windows, compiled by msvc-19.44.35229, 64-bit
+2026-10-15 13:04:07.319 CDT [6744] LOG:  database system is ready to accept connections
+2026-10-15 13:04:10.131 CDT [13156] ERROR:  Account creation limit reached. Please try again later.
+2026-10-15 13:04:10.133 CDT [10120] ERROR:  Account creation limit reached. Please try again later.
+2026-10-15 13:04:10.135 CDT [27452] ERROR:  Account creation limit reached. Please try again later.
+2026-10-15 13:04:10.137 CDT [25568] ERROR:  Account creation limit reached. Please try again later.
+2026-10-15 13:04:10.138 CDT [25676] ERROR:  Account creation limit reached. Please try again later.
+2026-10-15 13:04:10.140 CDT [25900] ERROR:  Account creation limit reached. Please try again later.
+2026-10-15 13:04:10.142 CDT [25220] ERROR:  Account creation limit reached. Please try again later.
+2026-10-15 13:04:10.144 CDT [3552] ERROR:  Account creation limit reached. Please try again later.
+2026-10-15 13:04:10.146 CDT [19256] ERROR:  Account creation limit reached. Please try again later.
+2026-10-15 13:04:10.731 CDT [6744] LOG:  database system is shut down

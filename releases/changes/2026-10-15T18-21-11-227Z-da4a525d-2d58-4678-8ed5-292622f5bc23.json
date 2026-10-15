@@ -1,0 +1,75 @@
+{
+  "kind": "change",
+  "changeId": "booking-customer-privacy-20261015",
+  "status": "ready",
+  "summary": "Integrate verified booking access/privacy/notification guards and safe customer readers on current production source.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/customer-bookings.ts",
+    "lib/beauty.ts",
+    "tests/booking-access.integration.test.mjs",
+    "tests/customer-booking-projection.test.mjs",
+    "supabase/migrations/20261015163000_customer_booking_privacy.sql"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\signup-inline-security-20261015\\source-v1",
+    "baselineDeploymentId": "dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA",
+    "integratesEvent": "a9cf2dfa-4da8-4709-be2f-40df91941338"
+  },
+  "dependencies": [
+    "booking-access-review-20261015"
+  ],
+  "validation": [
+    {
+      "name": "Final production webpack build and TypeScript",
+      "result": "passed",
+      "evidence": "artifacts/signup-inline-security-20261015/production-build.log"
+    },
+    {
+      "name": "Assembled product ESLint",
+      "result": "passed",
+      "evidence": "artifacts/signup-inline-security-20261015/assembled-eslint.log"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Customer booking projection",
+      "result": "passed",
+      "tests": 7,
+      "skipped": 0
+    },
+    {
+      "name": "Notification dispatch capture",
+      "result": "passed",
+      "tests": 11,
+      "skipped": 0
+    },
+    {
+      "name": "Isolated Supabase Auth/PostgREST/RLS and notification outbox",
+      "result": "passed",
+      "tests": 94,
+      "skipped": 0,
+      "migrationsPerFixture": 265,
+      "evidence": [
+        "booking-integration-verification/booking-access-results.json",
+        "booking-integration-verification/booking-notification-results.json"
+      ]
+    }
+  ],
+  "id": "da4a525d-2d58-4678-8ed5-292622f5bc23",
+  "recordedAt": "2026-10-15T18:21:11.227Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/customer-bookings.ts": "29969183186081bebc6d33956cd19fddebb6bc60c0c0ab94cfd02b56a25fdff1",
+    "lib/beauty.ts": "5b195b059c1b2e453daa145488e1578c15fc5f783ee38deb93e6426e6813e1fa",
+    "tests/booking-access.integration.test.mjs": "8281501ea572db4f892c11532e27d05718a722d7447e0b6da086ec36f1055266",
+    "tests/customer-booking-projection.test.mjs": "768d3bc790e23bdcada5bd2271776144e4f35d7f94641c48be1f1ac019e3a071",
+    "supabase/migrations/20261015163000_customer_booking_privacy.sql": "dbbdaeb3707438626033a3b38b996a418f08a41f4b66228ab2565f1c6abd7881"
+  }
+}

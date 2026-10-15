@@ -156,18 +156,7 @@ async function SignupPage({ searchParams }: SignupPageProps) {
                   place.
                 </p>
 
-                {error ? (
-                  <p
-                    className={[
-                      styles.authNotice,
-                      "rounded-2xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-800",
-                    ].join(" ")}
-                  >
-                    {error}
-                  </p>
-                ) : null}
-
-                <SignupForm nextPath={nextPath} />
+                <SignupForm nextPath={nextPath} initialError={error} />
 
                 <p
                   className={[

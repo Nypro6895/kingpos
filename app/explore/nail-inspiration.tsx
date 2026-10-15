@@ -63,10 +63,7 @@ export function NailInspirationCard({ look, salon, location = "", initialSaved, 
   const tags = [look.colors[0], look.shape, look.length, look.finish];
   const detailHref = `/explore/inspiration/${look.id}${location ? `?location=${encodeURIComponent(location)}` : ""}`;
   const actions = salon ? <div className="flex flex-wrap items-center gap-2">
-    <Link href={nailSalonHref(salon)} prefetch={false} className="inline-flex min-h-10 items-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white" aria-label={`View ${salon.name}`}>View salon</Link>
-    {salon.bookingEnabled && salon.bookingHref ? <ExploreBookButton href={salon.bookingHref} name={salon.name} className="!min-h-10 !px-5 !text-sm" /> : <>
-      {phone ? <a href={phone} className="inline-flex min-h-10 items-center rounded-full bg-brand-teal-soft px-4 text-sm font-semibold text-brand-teal" aria-label={`Call ${salon.name}`}>Call salon</a> : null}
-    </>}
+    <ExploreBookButton href={salon.bookingEnabled ? salon.bookingHref : null} name={salon.name} contactHref={nailSalonHref(salon)} phoneHref={phone} className="!min-h-11 !px-5 !text-sm" />
   </div> : <Link href={nailSalonSearchHref(location)} prefetch={false} className="inline-flex min-h-10 items-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white">Browse nail salons{location ? " in this area" : " nearby"}</Link>;
   return <article className="overflow-hidden rounded-2xl border border-divider-subtle bg-white" data-testid="nail-inspiration-post" data-nail-look={look.id} data-salon-id={salon?.id}>
     <div className="relative">

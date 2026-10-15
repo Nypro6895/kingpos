@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -34,6 +35,12 @@ export function useExploreAuthenticated() {
   return useContext(Auth);
 }
 const KEY = "reylumi-explore-account-intent";
+const REFERENCE_FAVORITE_EVENT = "reylumi:reference-favorite";
+const SALON_FAVORITE_EVENT = "reylumi:salon-favorite";
+const FAVORITE_CONNECTION_ERROR = "Connection interrupted. Please try saving again.";
+function announceFavorite(event: string, key: string, active: boolean) {
+  window.dispatchEvent(new CustomEvent(event, { detail: { key, active } }));
+}
 export function clearExploreIntent() {
   try {
     sessionStorage.removeItem(KEY);
@@ -81,26 +88,28 @@ export function ExploreAccountActionsProvider({
             } else if (intent.kind === "reference") {
               void referenceLoveAction(intent.itemKey, true).then((result) => {
                 setMessage(result.error ?? "Added to your favorites");
-                if (!result.error) window.dispatchEvent(new CustomEvent("reylumi:reference-favorite", { detail: { key: intent.itemKey, active: result.active } }));
-              });
+                if (!result.error) announceFavorite(REFERENCE_FAVORITE_EVENT, intent.itemKey, result.active);
+              }).catch(() => setMessage(FAVORITE_CONNECTION_ERROR));
             } else if (intent.kind === "salon") {
-              void salonLoveAction(intent.salonId, true).then((result) =>
-                setMessage(result.error ?? "Salon added to your favorites ♡"),
-              );
+              void salonLoveAction(intent.salonId, true).then((result) => {
+                setMessage(result.error ?? "Salon added to your favorites ♡");
+                if (!result.error) announceFavorite(SALON_FAVORITE_EVENT, intent.salonId, result.active);
+              }).catch(() => setMessage(FAVORITE_CONNECTION_ERROR));
             } else if (intent.kind === "save") {
               void setAccountSavedPostAction(intent.target, true).then(
                 (result) => {
                   setMessage(result.error ?? "Your look has been saved ♡");
-                  window.dispatchEvent(
+                  if (!result.error) window.dispatchEvent(
                     new CustomEvent("reylumi:saved-post-state-change", {
                       detail: {
                         key: `${intent.target.sourceType}:${intent.target.sourceId}`,
                         saved: result.active,
+                        saveCount: result.saveCount,
                       },
                     }),
                   );
                 },
-              );
+              ).catch(() => setMessage(FAVORITE_CONNECTION_ERROR));
             }
           }
         }
@@ -280,23 +289,7 @@ export function ExploreSalonLove({
   name: string;
   className?: string;
 }) {
-  const __vt = useWorkspaceTranslation();
-
   const authenticated = useContext(Auth);
-  const [prompt, setPrompt] = useState(false);
-  const [active, setActive] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    if (!authenticated || !/^([0-9a-f-]{36})$/i.test(salonId)) return;
-    let mounted = true;
-    void salonLoveAction(salonId).then((result) => {
-      if (mounted && !result.error) setActive(result.active);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, [authenticated, salonId]);
   if (salonId.startsWith("showcase-"))
     return (
       <ExploreReferenceLove
@@ -305,54 +298,7 @@ export function ExploreSalonLove({
         className={className}
       />
     );
-  return (
-    <>
-      <button
-        type="button"
-        disabled={busy}
-        aria-label={__vt(`Love ${name}`)}
-        aria-pressed={active}
-        className={`inline-grid h-8 w-8 place-items-center rounded-full bg-white text-brand-orange shadow-sm ring-1 ring-orange-100 ${className}`}
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          if (!authenticated) {
-            rememberExploreIntent({ kind: "salon", salonId });
-            setPrompt(true);
-            return;
-          }
-          setBusy(true);
-          void salonLoveAction(salonId, !active)
-            .then((result) => {
-              if (result.error) setError(result.error);
-              else setActive(result.active ?? false);
-            })
-            .finally(() => setBusy(false));
-        }}
-      >
-        <span className="text-xl" aria-hidden>
-          {active ? "♥" : "♡"}
-        </span>
-      </button>
-      {error ? (
-        <span role="alert" className="text-xs text-red-700">
-          <WorkspaceText text={error} />
-        </span>
-      ) : null}
-      {prompt ? (
-        <AuthIntentPrompt
-          kicker="Made for your favorites"
-          title={__vt("Keep this salon close ♡")}
-          onClose={() => {
-            setPrompt(false);
-            clearExploreIntent();
-          }}
-        >
-          <WorkspaceText text="Create a free account or log in to follow" /> {name} <WorkspaceText text="and find it again whenever you need a little self-care." />
-        </AuthIntentPrompt>
-      ) : null}
-    </>
-  );
+  return <FavoriteLoveButton key={`salon:${salonId}:${authenticated}`} kind="salon" itemKey={salonId} name={name} className={className} authenticated={authenticated} />;
 }
 
 export function ExploreReferenceLove({
@@ -366,36 +312,59 @@ export function ExploreReferenceLove({
   className?: string;
   initialActive?: boolean;
 }) {
-  const __vt = useWorkspaceTranslation();
-
   const authenticated = useContext(Auth);
+  return <FavoriteLoveButton key={`reference:${itemKey}:${authenticated}`} kind="reference" itemKey={itemKey} name={name} className={className} initialActive={initialActive} authenticated={authenticated} />;
+}
+
+function FavoriteLoveButton({ kind, itemKey, name, className, initialActive, authenticated }: {
+  kind: "salon" | "reference";
+  itemKey: string;
+  name: string;
+  className: string;
+  initialActive?: boolean;
+  authenticated: boolean;
+}) {
+  const __vt = useWorkspaceTranslation();
   const [prompt, setPrompt] = useState(false);
-  const [active, setActive] = useState(initialActive ?? false);
-  const [savedContext, setSavedContext] = useState({ itemKey, initialActive, authenticated });
-  if (savedContext.itemKey !== itemKey || savedContext.initialActive !== initialActive || savedContext.authenticated !== authenticated) {
-    setSavedContext({ itemKey, initialActive, authenticated });
-    setActive(authenticated ? initialActive ?? false : false);
-  }
+  const [active, setActive] = useState(authenticated && Boolean(initialActive));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const readVersion = useRef(0);
+  const saving = useRef(false);
+  const mounted = useRef(false);
+  const action = kind === "salon" ? salonLoveAction : referenceLoveAction;
+  const eventName = kind === "salon" ? SALON_FAVORITE_EVENT : REFERENCE_FAVORITE_EVENT;
   useEffect(() => {
-    if (!authenticated || initialActive !== undefined) return;
-    let mounted = true;
-    void referenceLoveAction(itemKey).then((result) => {
-      if (mounted && !result.error) setActive(result.active);
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+  useEffect(() => {
+    if (!authenticated) return;
+    if (initialActive !== undefined) { if (!saving.current) setActive(initialActive); return; }
+    if (kind === "salon" && !/^[0-9a-f-]{36}$/i.test(itemKey)) return;
+    const version = ++readVersion.current;
+    let current = true;
+    void action(itemKey).then(result => {
+      if (!current || version !== readVersion.current) return;
+      if (result.error) setError(result.error);
+      else setActive(result.active);
+    }).catch(() => {
+      if (current && version === readVersion.current) setError("Favorites could not be loaded. Please try again.");
     });
-    return () => {
-      mounted = false;
-    };
-  }, [authenticated, itemKey, initialActive]);
+    return () => { current = false; };
+  }, [authenticated, itemKey, initialActive, action, kind]);
   useEffect(() => {
     const changed = (event: Event) => {
       const detail = (event as CustomEvent<{ key: string; active: boolean }>).detail;
-      if (detail?.key === itemKey && typeof detail.active === "boolean") setActive(detail.active);
+      if (authenticated && detail?.key === itemKey && typeof detail.active === "boolean") {
+        readVersion.current += 1;
+        setActive(detail.active);
+        setError("");
+      }
     };
-    window.addEventListener("reylumi:reference-favorite", changed);
-    return () => window.removeEventListener("reylumi:reference-favorite", changed);
-  }, [itemKey]);
+    window.addEventListener(eventName, changed);
+    return () => window.removeEventListener(eventName, changed);
+  }, [authenticated, itemKey, eventName]);
   return (
     <>
       <button
@@ -407,22 +376,27 @@ export function ExploreReferenceLove({
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
+          if (saving.current) return;
           if (!authenticated) {
-            rememberExploreIntent({ kind: "reference", itemKey });
+            rememberExploreIntent(kind === "salon" ? { kind, salonId: itemKey } : { kind, itemKey });
             setPrompt(true);
             return;
           }
+          saving.current = true;
+          readVersion.current += 1;
           setBusy(true);
           setError("");
-          void referenceLoveAction(itemKey, !active)
+          void action(itemKey, !active)
             .then((result) => {
+              if (!mounted.current) return;
               if (result.error) setError(result.error);
               else {
                 setActive(result.active);
-                window.dispatchEvent(new CustomEvent("reylumi:reference-favorite", { detail: { key: itemKey, active: result.active } }));
+                announceFavorite(eventName, itemKey, result.active);
               }
             })
-            .finally(() => setBusy(false));
+            .catch(() => { if (mounted.current) setError(FAVORITE_CONNECTION_ERROR); })
+            .finally(() => { saving.current = false; if (mounted.current) setBusy(false); });
         }}
       >
         <span aria-hidden className="text-xl">
@@ -436,14 +410,14 @@ export function ExploreReferenceLove({
       ) : null}
       {prompt ? (
         <AuthIntentPrompt
-          kicker="A little inspiration"
-          title={__vt("Keep what you love")}
+          kicker={kind === "salon" ? "Made for your favorites" : "A little inspiration"}
+          title={__vt(kind === "salon" ? "Keep this salon close ♡" : "Keep what you love")}
           onClose={() => {
             setPrompt(false);
             clearExploreIntent();
           }}
         >
-          <WorkspaceText text="Create a free account or log in to keep" /> {name} <WorkspaceText text="in your favorites." />
+          {kind === "salon" ? <><WorkspaceText text="Create a free account or log in to follow" /> {name} <WorkspaceText text="and find it again whenever you need a little self-care." /></> : <><WorkspaceText text="Create a free account or log in to keep" /> {name} <WorkspaceText text="in your favorites." /></>}
         </AuthIntentPrompt>
       ) : null}
     </>

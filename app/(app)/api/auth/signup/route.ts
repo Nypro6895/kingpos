@@ -1,5 +1,5 @@
 import { writeLoginPolicy, sessionCookieOptions } from "@/lib/supabase/session-policy";
-import { createSignupTicket } from "@/lib/abuse-server";
+import { createSignupTicket, getAbuseErrorResponse } from "@/lib/abuse-server";
 import { recordAdvertisingSignup } from "@/lib/advertising-attribution";
 import {
   ACCESS_TOKEN_COOKIE,
@@ -38,9 +38,10 @@ function signupErrorResponse(
   message: string,
   status: number,
   nextPath: string,
+  security?: { code: string; challengeRequired: boolean },
 ) {
   if (wantsJsonResponse(request)) {
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ error: message, ...security }, { status, headers: { "Cache-Control": "no-store" } });
   }
 
   const params = new URLSearchParams({
@@ -87,7 +88,15 @@ export async function POST(request: Request) {
   }
 
   let signupTicket: string;
-  try { signupTicket = await createSignupTicket(email); } catch (error) { return signupErrorResponse(request, error instanceof Error ? error.message : "Please try again later.", 429, nextPath); }
+  try {
+    signupTicket = await createSignupTicket(email);
+  } catch (error) {
+    const security = getAbuseErrorResponse(error);
+    return signupErrorResponse(request, security.error, security.status, nextPath, {
+      code: security.code,
+      challengeRequired: security.challengeRequired,
+    });
+  }
 
   const { data, error } = await supabase.auth.signUp({
     email,

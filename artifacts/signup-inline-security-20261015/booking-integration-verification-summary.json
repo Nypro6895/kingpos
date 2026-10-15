@@ -1,0 +1,60 @@
+{
+  "completedAt": "2026-10-15T18:18:37.406Z",
+  "events": [
+    "9684890e-52b6-4ded-81fb-e7c8ae60eb18",
+    "a9cf2dfa-4da8-4709-be2f-40df91941338",
+    "d5da863b-17a1-4b03-b0f5-f9236794868d"
+  ],
+  "releaseSource": "C:\\Users\\giuse\\kingpos\\artifacts\\signup-inline-security-20261015\\release",
+  "integrationFileHashesVerified": 10,
+  "validation": [
+    {
+      "name": "Scoped ESLint",
+      "result": "passed"
+    },
+    {
+      "name": "Customer booking projection",
+      "result": "passed",
+      "tests": 7,
+      "skipped": 0
+    },
+    {
+      "name": "Notification dispatch capture",
+      "result": "passed",
+      "tests": 11,
+      "skipped": 0
+    },
+    {
+      "name": "Isolated Supabase Auth/PostgREST/RLS and notification outbox",
+      "result": "passed",
+      "tests": 94,
+      "skipped": 0,
+      "migrationsPerFixture": 265,
+      "evidence": [
+        "booking-integration-verification/booking-access-results.json",
+        "booking-integration-verification/booking-notification-results.json"
+      ]
+    }
+  ],
+  "isolatedFixtureCleanup": {
+    "bothCompleted": true,
+    "testContainersRemaining": 0,
+    "priorContainersPreserved": true,
+    "credentialsDiscarded": true,
+    "hostPortsPublished": false
+  },
+  "productionComparison": {
+    "result": "no drift",
+    "evidence": "booking-live-drift-review.json",
+    "functionsCompared": 3,
+    "policiesCompared": 5
+  },
+  "productionWritesPerformed": false,
+  "rollout": [
+    "Apply booking access guard migration (050000) and the additive booking-privacy-pre-web.sql. Apply notification guard migration (173000), or retain until after web if needed; it does not depend on the new readers.",
+    "Build/publish the assembled web source that uses get_customer_booking_rows and get_customer_verified_booking_counts; confirm live booking reads.",
+    "Apply the complete idempotent customer_booking_privacy migration (163000) in a transaction to enforce base-table RLS and dependent inspiration/history ownership. Record complete migration only after this stage. Recheck owner/staff/customer reads.",
+    "After RLS enforcement, rollback to older readers requires restoring old SELECT policies first or deploying compatible readers; do not promote an old web baseline blindly."
+  ],
+  "postWebReadOnlyAssertions": "booking-post-web-assertions.sql"
+}

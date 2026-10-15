@@ -1,0 +1,59 @@
+{
+  "events": [
+    "9684890e-52b6-4ded-81fb-e7c8ae60eb18",
+    "a9cf2dfa-4da8-4709-be2f-40df91941338",
+    "d5da863b-17a1-4b03-b0f5-f9236794868d"
+  ],
+  "preWeb": {
+    "file": "booking-privacy-pre-web.sql",
+    "sha256": "14a218c1152873fc4f53875d3fcd185135ca824dab254510db531f268a257931"
+  },
+  "files": [
+    {
+      "file": "lib/customer-bookings.ts",
+      "sha256": "29969183186081bebc6d33956cd19fddebb6bc60c0c0ab94cfd02b56a25fdff1"
+    },
+    {
+      "file": "lib/beauty.ts",
+      "sha256": "5b195b059c1b2e453daa145488e1578c15fc5f783ee38deb93e6426e6813e1fa"
+    },
+    {
+      "file": "tests/helpers/isolated-supabase-fixture.mjs",
+      "sha256": "625eea3b591a4642d9084b95084feab941843dfdec1bd9a72f53d78c62dec849"
+    },
+    {
+      "file": "tests/booking-access.integration.test.mjs",
+      "sha256": "8281501ea572db4f892c11532e27d05718a722d7447e0b6da086ec36f1055266"
+    },
+    {
+      "file": "tests/customer-booking-projection.test.mjs",
+      "sha256": "768d3bc790e23bdcada5bd2271776144e4f35d7f94641c48be1f1ac019e3a071"
+    },
+    {
+      "file": "supabase/migrations/20261015050000_booking_access_guards.sql",
+      "sha256": "55c2e87eaea6a0a1da1ee032b8c4d299b7fdccb9f826192a27913e840e8ca65b"
+    },
+    {
+      "file": "supabase/migrations/20261015163000_customer_booking_privacy.sql",
+      "sha256": "dbbdaeb3707438626033a3b38b996a418f08a41f4b66228ab2565f1c6abd7881"
+    },
+    {
+      "file": "supabase/migrations/20261015173000_booking_notification_access_guards.sql",
+      "sha256": "84bcf7bdb111db68c8876aec0bf413e77f8535b11ca0c8b78db55b6f04de0f6b"
+    },
+    {
+      "file": "tests/booking-notification-outbox.integration.test.mjs",
+      "sha256": "31f22e21d43b55841492b1ff3f65595b4a4f41cbfecbc97ca4e4fcc0867241a9"
+    },
+    {
+      "file": "tests/booking-notification-dispatch.test.mjs",
+      "sha256": "5c9d069e8ec17000274c9c736d7281fc7bd67c406855dea9c5c663a383004a76"
+    }
+  ],
+  "rollout": [
+    "Apply booking access guard migration (050000) and the additive booking-privacy-pre-web.sql. Apply notification guard migration (173000), or retain until after web if needed; it does not depend on the new readers.",
+    "Build/publish the assembled web source that uses get_customer_booking_rows and get_customer_verified_booking_counts; confirm live booking reads.",
+    "Apply the complete idempotent customer_booking_privacy migration (163000) in a transaction to enforce base-table RLS and dependent inspiration/history ownership. Record complete migration only after this stage. Recheck owner/staff/customer reads.",
+    "After RLS enforcement, rollback to older readers requires restoring old SELECT policies first or deploying compatible readers; do not promote an old web baseline blindly."
+  ]
+}

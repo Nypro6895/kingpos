@@ -20,9 +20,7 @@ import {
   type BeautyPostMediaRole,
 } from "@/lib/beauty-media";
 import {
-  BEAUTY_BOOK_VERIFIED_BOOKING_STATUSES,
   beautyBookingHrefForSalon,
-  isBeautyBookVerifiedBooking,
 } from "@/lib/beauty-booking-verification";
 import {
   createAuthenticatedSupabaseServerClient,
@@ -119,12 +117,6 @@ type BeautySalonPublicationStatusRow = {
   requested_at: string;
   responded_at: string | null;
   status: string;
-};
-type BeautyBookVerifiedBookingRow = {
-  confirmation_status: string | null;
-  id: string;
-  salon_id: string;
-  status: string | null;
 };
 
 type StorageObjectMetadata = {
@@ -722,14 +714,9 @@ async function loadBeautyBookVerifiedCountsBySalon(input: {
     return counts;
   }
 
-  const { data, error } = await input.supabase
-    .from("bookings")
-    .select("id, salon_id, status, confirmation_status")
-    .eq("customer_user_id", input.userId)
-    .eq("confirmation_status", "confirmed")
-    .in("salon_id", uniqueSalonIds)
-    .in("status", BEAUTY_BOOK_VERIFIED_BOOKING_STATUSES)
-    .returns<BeautyBookVerifiedBookingRow[]>();
+  const { data, error } = await input.supabase.rpc("get_customer_verified_booking_counts", {
+    p_salon_ids: uniqueSalonIds,
+  });
 
   if (error) {
     console.error("Supabase load Beauty verified booking counts failed", {
@@ -742,16 +729,9 @@ async function loadBeautyBookVerifiedCountsBySalon(input: {
     return counts;
   }
 
-  for (const row of data ?? []) {
-    if (
-      cleanUuid(row.salon_id) &&
-      isBeautyBookVerifiedBooking({
-        confirmationStatus: row.confirmation_status,
-        status: row.status,
-      })
-    ) {
-      counts.set(row.salon_id, (counts.get(row.salon_id) ?? 0) + 1);
-    }
+  for (const row of (data ?? []) as Array<{ salon_id: string; booking_count: number }>) {
+    const salonId = cleanUuid(row.salon_id);
+    if (salonId) counts.set(salonId, Number(row.booking_count));
   }
 
   return counts;

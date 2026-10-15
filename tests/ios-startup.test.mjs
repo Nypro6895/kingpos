@@ -112,7 +112,7 @@ test("Swift startup source retains bounded safe retry and protected bridge entry
   assert.match(controller, /message\.frameInfo\.isMainFrame/);
   assert.match(controller, /policy\.isInternal\(url\), !policy\.isExcluded\(url\)/);
   assert.match(controller, /startup\.ready\(nonce: nonce, generation: generation\)/);
-  assert.match(controller, /response\.isForMainFrame[\s\S]*http\.statusCode >= 400/);
+  assert.match(controller, /isForMainFrame[\s\S]*http\.statusCode >= 400/);
   assert.match(state, /request\.httpBody == nil, request\.httpBodyStream == nil/);
   assert.match(state, /timeoutInterval: 15/);
   assert.match(state, /timeIntervalSince\(lastProcessRecovery\) < 60/);

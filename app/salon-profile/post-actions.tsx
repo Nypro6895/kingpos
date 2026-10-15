@@ -27,7 +27,17 @@ export function PostActions({plain=false,extraActions=[],onOpen,onShare,onFeatur
  const [busy,setBusy]=useState(false);
  const [position,setPosition]=useState({left:8,top:8});
  useEffect(()=>{if(!open)return;function close(event:Event){if(event.target instanceof Node && !ref.current?.contains(event.target) && !menuRef.current?.contains(event.target))ref.current?.removeAttribute("open");}function escape(event:KeyboardEvent){if(event.key === "Escape"){event.stopPropagation();ref.current?.removeAttribute("open");ref.current?.querySelector<HTMLElement>("summary")?.focus();}}document.addEventListener("pointerdown",close,true);document.addEventListener("focusin",close,true);document.addEventListener("keydown",escape,true);const navigation=()=>ref.current?.removeAttribute("open");document.addEventListener("reylumi:overlay-navigation",navigation);return()=>{document.removeEventListener("pointerdown",close,true);document.removeEventListener("focusin",close,true);document.removeEventListener("keydown",escape,true);document.removeEventListener("reylumi:overlay-navigation",navigation);};},[open]);
- useEffect(()=>{if(!open || !target)return;let active=true;void postModerationAction(target,"permissions").then(result=>{if(active){setCanBlock(Boolean(result.data?.canBlock));setCanManage(Boolean(result.data?.canManage));setCanFeature(Boolean(result.data?.canFeature));setCanPromote(Boolean(result.data?.canPromote));}});return()=>{active=false;};},[open,target]);
+ useEffect(()=>{
+   if(!open || !target)return;
+   let active=true;
+   void postModerationAction(target,"permissions").then(result=>{
+     if(active){setCanBlock(Boolean(result.data?.canBlock));setCanManage(Boolean(result.data?.canManage));setCanFeature(Boolean(result.data?.canFeature));setCanPromote(Boolean(result.data?.canPromote));}
+   }).catch(()=>{
+     // Report remains available when permission lookup is offline; privileged actions need a successful response.
+     if(active){setCanBlock(false);setCanManage(false);setCanFeature(false);setCanPromote(false);}
+   });
+   return()=>{active=false;};
+ },[open,target]);
  const owner=canManage || Boolean(onArchive || onDelete);
  const actions: Array<{label:string;action?:()=>void|Promise<unknown>;icon?:ReactNode}>=[
  ...extraActions,

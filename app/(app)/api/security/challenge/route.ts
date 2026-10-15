@@ -1,5 +1,5 @@
 import { randomInt, randomUUID } from "node:crypto";
-import sharp from "sharp";
+import { createSecurityChallengeImage, SECURITY_CHALLENGE_ALPHABET } from "@/lib/security-challenge-image";
 import { getSafetyContext } from "@/lib/abuse-context";
 import { abuseHash } from "@/lib/abuse-signals";
 import { abuseServiceClient } from "@/lib/abuse-server";
@@ -11,7 +11,7 @@ export async function GET() {
   try {
     const ctx = await getSafetyContext();
     const id = randomUUID();
-    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const alphabet = SECURITY_CHALLENGE_ALPHABET;
     const answer = Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join("");
     const { data, error } = await abuseServiceClient().rpc("create_abuse_challenge", {
       p_id: id, p_device: ctx.deviceHash, p_ip: ctx.ipHash || null,
@@ -19,9 +19,7 @@ export async function GET() {
     });
     if (error) throw new Error("Security check is temporarily unavailable.");
     if (!data) return Response.json({ error: "Too many security checks. Please try again later." }, { status: 429, ...options });
-    const letters = [...answer].map((letter, index) => `<text x="${25 + index * 43}" y="${52 + randomInt(-8, 9)}" transform="rotate(${randomInt(-16, 17)} ${25 + index * 43} 48)" font-family="sans-serif" font-weight="bold" font-size="36" fill="#243953">${letter}</text>`).join("");
-    const noise = Array.from({ length: 8 }, () => `<path d="M0 ${randomInt(80)} Q150 ${randomInt(80)} 310 ${randomInt(80)}" stroke="#809ab7" stroke-width="1" fill="none"/>`).join("");
-    const image = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="310" height="80"><rect width="310" height="80" fill="#edf2f7"/>${letters}${noise}</svg>`)).png().toBuffer();
+    const image = await createSecurityChallengeImage(answer);
     return Response.json({ id, image: `data:image/png;base64,${image.toString("base64")}` }, options);
   } catch {
     return Response.json({ error: "Security check is temporarily unavailable. Please try again later." }, { status: 503, ...options });

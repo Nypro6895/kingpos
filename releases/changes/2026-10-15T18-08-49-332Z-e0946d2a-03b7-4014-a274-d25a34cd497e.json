@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "signup-release-integration-20261015",
+  "status": "working",
+  "summary": "Integrate completed booking access/privacy/notification and Explore Book/love/report changes into the exact current production source while preserving reload/workspace fixes.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/helpers/isolated-supabase-fixture.mjs",
+    "tests/booking-access.integration.test.mjs",
+    "supabase/migrations/20261015050000_booking_access_guards.sql",
+    "lib/customer-bookings.ts",
+    "lib/beauty.ts",
+    "tests/customer-booking-projection.test.mjs",
+    "supabase/migrations/20261015163000_customer_booking_privacy.sql",
+    "supabase/migrations/20261015173000_booking_notification_access_guards.sql",
+    "tests/booking-notification-outbox.integration.test.mjs",
+    "tests/booking-notification-dispatch.test.mjs",
+    "app/explore/nail-inspiration.tsx",
+    "components/explore-account-actions.tsx",
+    "app/salon-profile/post-actions.tsx",
+    "tests/nail-salon-navigation-runtime.test.mjs",
+    "tests/nail-discovery-runtime.test.mjs",
+    "tests/nail-book-card-ui.test.mjs",
+    "tests/explore-account-actions-ui.test.mjs",
+    "tests/post-report-actions-ui.test.mjs",
+    "tests/explore-save-runtime.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\signup-inline-security-20261015\\baseline-dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA",
+    "baselineDeploymentId": "dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA"
+  },
+  "dependencies": [
+    "booking-access-review-20261015",
+    "booking-customer-privacy-20261015",
+    "booking-notification-review-20261015",
+    "explore-book-love-report-20261015"
+  ],
+  "validation": [
+    {
+      "name": "Scoped integrations, assembled build, browser and database checks",
+      "result": "pending"
+    }
+  ],
+  "id": "e0946d2a-03b7-4014-a274-d25a34cd497e",
+  "recordedAt": "2026-10-15T18:08:49.332Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

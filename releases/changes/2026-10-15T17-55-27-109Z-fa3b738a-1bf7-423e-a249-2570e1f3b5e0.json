@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "signup-inline-security-ios-20261015",
+  "status": "working",
+  "summary": "Allow recognized same-origin Vercel browser challenges in iPhone navigation while preserving error handling.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiViewController.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\signup-inline-security-20261015\\before",
+    "commit": "34ea63589e7e8caf5718bf4ffe54e403eab6775a"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Implementation and regression verification",
+      "result": "pending"
+    }
+  ],
+  "id": "fa3b738a-1bf7-423e-a249-2570e1f3b5e0",
+  "recordedAt": "2026-10-15T17:55:27.109Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

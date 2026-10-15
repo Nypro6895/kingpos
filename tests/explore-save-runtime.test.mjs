@@ -18,7 +18,8 @@ function eventBus() {
 function harness(props, saveAction, inheritedAuth, bus = eventBus()) {
   const states = [], refs = [], pending = [], effects = [];
   let stateIndex = 0, refIndex = 0, effectIndex = 0;
-  const jsx = (type, props) => ({ type, props });
+  const WorkspaceText = ({ text }) => text;
+  const jsx = (type, props) => type === WorkspaceText ? WorkspaceText(props) : ({ type, props });
   const react = {
     createContext: () => ({}),
     useContext: () => inheritedAuth,
@@ -41,6 +42,7 @@ function harness(props, saveAction, inheritedAuth, bus = eventBus()) {
     require(name) {
       if (name === "react") return react;
       if (name === "react/jsx-runtime") return { jsx, jsxs: jsx };
+      if (name === "@/components/workspace-language") return { WorkspaceText, useWorkspaceTranslation: () => text => text };
       if (name.includes("saved-post/actions")) return { setAccountSavedPostAction: saveAction };
       if (name.includes("types/saved-post")) return { savedPostKey: target => target.sourceId };
       if (name.includes("auth-intent-prompt")) return { AuthIntentPrompt: "AuthIntentPrompt" };
@@ -68,6 +70,7 @@ function harness(props, saveAction, inheritedAuth, bus = eventBus()) {
     message: () => nodes(render()).find(n => n.props?.["aria-live"] === "polite").props.children,
     hasPrompt: () => nodes(render()).some(n => n.type === "AuthIntentPrompt"),
     hasButton: () => nodes(render()).some(n => n.type === "button"),
+    referenceFavorite: () => nodes(render()).find(n => n.type === "ExploreReferenceLove")?.props,
     settle: () => Promise.all(pending),
   };
 }
@@ -109,9 +112,10 @@ test("lost save response rolls back the heart and releases the click lock", asyn
   assert.equal(ui.button()["aria-pressed"], true);
 });
 
-test("showcase cards never expose a save action for non-database IDs", () => {
+test("showcase cards delegate to reference favorites instead of database post saves", () => {
   const ui = harness({ target: { sourceId: "showcase-look-1", sourceType: "salon_profile_look" } }, async () => { throw new Error("must not send"); });
   assert.equal(ui.hasButton(), false);
+  assert.equal(ui.referenceFavorite()?.itemKey, "look:showcase-look-1");
 });
 
 test("rapid clicks produce one in-flight mutation", async () => {

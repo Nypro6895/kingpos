@@ -1,0 +1,39 @@
+{
+  "baselineDeploymentId": "dpl_CFFj18W7DvyxxGnBAebkHi8nBLWA",
+  "preWeb": {
+    "file": "db-pre-web.sql",
+    "sha256": "8b64e387e432a11e5ec40d79cca90afebaa717f7c4e4bf8a377e75ab7d88fecb",
+    "migrations": [
+      {
+        "file": "20261015050000_booking_access_guards.sql",
+        "version": "20261015050000",
+        "name": "booking_access_guards",
+        "sha256": "55c2e87eaea6a0a1da1ee032b8c4d299b7fdccb9f826192a27913e840e8ca65b"
+      },
+      {
+        "file": "20261015173000_booking_notification_access_guards.sql",
+        "version": "20261015173000",
+        "name": "booking_notification_access_guards",
+        "sha256": "84bcf7bdb111db68c8876aec0bf413e77f8535b11ca0c8b78db55b6f04de0f6b"
+      },
+      {
+        "file": "20261015190000_signup_admission_retries.sql",
+        "version": "20261015190000",
+        "name": "signup_admission_retries",
+        "sha256": "68e493f1b0a98a459f489892590254342706ff5f55d06f3619535a6c15205e83"
+      }
+    ],
+    "additivePrivacyRpcSha256": "14a218c1152873fc4f53875d3fcd185135ca824dab254510db531f268a257931"
+  },
+  "postWeb": {
+    "file": "db-post-web.sql",
+    "sha256": "ebffa66be3d8b91bf546f4b7fe87683cf459e1e578045ac00aaeacb37833054d",
+    "migration": {
+      "file": "20261015163000_customer_booking_privacy.sql",
+      "version": "20261015163000",
+      "name": "customer_booking_privacy",
+      "sha256": "dbbdaeb3707438626033a3b38b996a418f08a41f4b66228ab2565f1c6abd7881"
+    }
+  },
+  "compatibility": "Pre-web retains all five existing SELECT policies. Full privacy RLS applies only after compatible new readers are live. Signup RPC signatures and existing restrictions remain unchanged."
+}

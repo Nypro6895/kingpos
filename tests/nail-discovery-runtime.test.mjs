@@ -62,7 +62,8 @@ test('automatic discovery learns, keeps visible cards stable, loads on scroll an
     assert.equal(await cards.count(), 6);
     assert.equal(await page.evaluate(()=>window.lastSalonInput.sort),'closest');
     assert.equal(await page.evaluate(()=>window.lastSalonInput.query),'');
-    assert.equal(await cards.first().getByRole('link',{name:'View Local Nails',exact:true}).getAttribute('href'),'/explore/salons/10000000-0000-4000-8000-000000000001');
+    assert.equal(await cards.first().getByRole('link').filter({hasText:'Local Nails'}).getAttribute('href'),'/explore/salons/10000000-0000-4000-8000-000000000001');
+    assert.equal(await cards.first().getByRole('button',{name:'Book',exact:true}).count(),1);
     assert.match(await cards.first().innerText(),/Local Nails/);
     assert.match(await cards.first().innerText(),/Not a photo of this salon’s work/);
     await page.waitForFunction(() => new Set(window.favoriteBatches.flat()).size === window.catalog.length);

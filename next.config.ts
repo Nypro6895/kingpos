@@ -89,6 +89,9 @@ const nextConfig: NextConfig = {
     runtimeServerDeploymentId: false,
   },
   allowedDevOrigins: ["*.trycloudflare.com"],
+  outputFileTracingIncludes: {
+    "/api/security/challenge": ["./app/fonts/GeistMono.ttf", "./app/fonts/Geist-OFL.txt"],
+  },
   images: {
     remotePatterns: supabaseImagePatterns(),
   },
