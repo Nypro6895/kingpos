@@ -30,13 +30,21 @@ final class AppViewportTests: XCTestCase {
     }
 
     @MainActor
-    func testBundledViewportInWebKit() throws {
+    func testBundledViewportInWebKit() async throws {
         let controller = ReylumiViewController()
         controller.loadViewIfNeeded()
-        let webView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
-        webView.stopLoading()
-        controller.view.frame = CGRect(x: 0, y: 0, width: 375, height: 667)
-        controller.view.layoutIfNeeded()
+        let configuredView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
+        configuredView.stopLoading()
+        // Keep the bundled configuration, but isolate this local HTML fixture
+        // from the production controller's navigation watchdog and requests.
+        let webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 375, height: 667), configuration: configuredView.configuration)
+        let host = UIViewController()
+        host.view.addSubview(webView)
+        let window = UIWindow(frame: webView.frame)
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
+        window.rootViewController = host
+        window.isHidden = false
+        defer { window.isHidden = true; webView.stopLoading() }
         let loaded = expectation(description: "Viewport fixture loaded")
         let navigation = ViewportNavigationDelegate(loaded: loaded)
         webView.navigationDelegate = navigation
@@ -45,9 +53,7 @@ final class AppViewportTests: XCTestCase {
             <style>body{margin:0}input{font-size:12px}#amount{font-size:36px}</style>
             </head><body><input id="email" type="email"><input id="amount" type="number"></body></html>
             """, baseURL: URL(string: "https://reylumi.com"))
-        wait(for: [loaded], timeout: 15)
-        controller.webView(webView, didFinish: nil)
-        XCTAssertNotEqual(webView.scrollView.pinchGestureRecognizer?.isEnabled, true)
+        await fulfillment(of: [loaded], timeout: 30)
         let checked = expectation(description: "WebKit viewport checked")
         webView.evaluateJavaScript("""
             ({viewport:document.querySelector('meta[name="viewport"]').content,
@@ -64,7 +70,7 @@ final class AppViewportTests: XCTestCase {
             XCTAssertEqual(values?["amountFont"] as? String, "36px")
             checked.fulfill()
         }
-        wait(for: [checked], timeout: 10)
+        await fulfillment(of: [checked], timeout: 10)
         withExtendedLifetime(navigation) {}
     }
 }

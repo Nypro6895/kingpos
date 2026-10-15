@@ -20,6 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: brew install xcodegen
+      - name: Test simulator and unsigned archive
+        working-directory: ios
+        run: bash scripts/check-build.sh
       - name: Sign and upload to TestFlight
         working-directory: ios
         shell: bash
@@ -38,6 +41,9 @@ jobs:
         with:
           name: reylumi-testflight-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
+            ios/build/test.log
+            ios/build/archive.log
+            ios/build/build-receipt.json
             ios/build/testflight-*.log
             ios/build/testflight-receipt.json
             ios/build/testflight-processing.json
