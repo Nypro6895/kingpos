@@ -1,0 +1,31 @@
+{
+  "dependencies": [
+    "salon-claim-lookup-diagnostics-20261014"
+  ],
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/claim/actions.ts",
+    "app/claim/claim-panel.tsx",
+    "app/salons/claim-suggestions.tsx"
+  ],
+  "kind": "change",
+  "validation": [
+    {
+      "name": "Implementation and regression validation",
+      "result": "pending"
+    }
+  ],
+  "status": "working",
+  "summary": "Fix authenticated salon lookup timeout, salon creation and navigation after an approved claim. Implement and test against production source 34ea635 without publishing.",
+  "changeId": "salon-claim-create-fix-20261015",
+  "source": {
+    "commit": "34ea63589e7e8caf5718bf4ffe54e403eab6775a"
+  },
+  "id": "d3ee78c3-39f8-4e1c-80fc-52608e84bae9",
+  "recordedAt": "2026-10-15T04:54:33.962Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

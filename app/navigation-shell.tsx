@@ -28,11 +28,7 @@ import {
   type RoleMoreItem,
   roleNavigationKindForContext,
 } from "@/app/role-navigation";
-import {
-  setCurrentWorkspace,
-  switchWorkspaceDestination,
-  switchWorkspaceLanding,
-} from "@/app/salons/actions";
+import { navigateToWorkspace } from "@/lib/workspace-navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -838,19 +834,9 @@ function CustomerContextSheet({
           return;
         }
 
-        const result = await switchWorkspaceDestination({
-          destinationHref: action.href,
-          workspaceId: workspace.id,
-        });
-
-        if (!result.ok) {
-          setError(result.message);
-          setPendingKey(null);
-          return;
-        }
+        navigateToWorkspace(workspace.id, action.href);
 
         closeAndFocus();
-        router.push(result.href);
         setPendingKey(null);
       } catch {
         setError(WORKSPACE_SWITCH_ERROR);
@@ -878,18 +864,9 @@ function CustomerContextSheet({
           return;
         }
 
-        const result = await switchWorkspaceLanding({
-          workspaceId: workspace.id,
-        });
-
-        if (!result.ok) {
-          setError(result.message);
-          setPendingKey(null);
-          return;
-        }
+        navigateToWorkspace(workspace.id);
 
         closeAndFocus();
-        router.push(result.href);
         setPendingKey(null);
       } catch {
         setError(WORKSPACE_SWITCH_ERROR);
@@ -1416,18 +1393,8 @@ function CustomerDesktopWorkspaceSwitcher({
           return;
         }
 
-        const result = await switchWorkspaceDestination({
-          destinationHref: action.href,
-          workspaceId: workspace.id,
-        });
+        navigateToWorkspace(workspace.id, action.href);
 
-        if (!result.ok) {
-          setError(result.message);
-          setPendingKey(null);
-          return;
-        }
-
-        router.push(result.href);
         setOpen(false);
         setPendingKey(null);
       } catch {
@@ -1456,17 +1423,8 @@ function CustomerDesktopWorkspaceSwitcher({
           return;
         }
 
-        const result = await switchWorkspaceLanding({
-          workspaceId: workspace.id,
-        });
+        navigateToWorkspace(workspace.id);
 
-        if (!result.ok) {
-          setError(result.message);
-          setPendingKey(null);
-          return;
-        }
-
-        router.push(result.href);
         setOpen(false);
         setPendingKey(null);
       } catch {
@@ -2108,7 +2066,7 @@ function WorkspaceOptionButton({
   const subtitle = customerWorkspaceSubtitle(workspace);
 
   return (
-    <form action={setCurrentWorkspace}>
+    <form action="/workspace/open" method="get">
       <input name="workspace_id" type="hidden" value={workspace.id} />
       <button
         className={[
@@ -2210,7 +2168,7 @@ function ModeSwitch({
         }
 
         return (
-          <form action={setCurrentWorkspace} key={mode}>
+          <form action="/workspace/open" method="get" key={mode}>
             <input name="workspace_id" type="hidden" value={option.id} />
             <button
               aria-pressed={isActive}

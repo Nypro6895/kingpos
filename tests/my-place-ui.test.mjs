@@ -80,6 +80,7 @@ test(
               path: "link",
               namespace: "fixture",
             }));
+            b.onResolve({ filter: /^@\/lib\/workspace-navigation$/ }, () => ({ path: "workspace", namespace: "fixture" }));
             b.onResolve({ filter: /actions$/ }, (args) => {
               if (
                 args.path.includes("/account/") ||
@@ -110,7 +111,7 @@ test(
                       : path === "navigation"
                         ? `export const usePathname=()=>'/my-place';export const useRouter=()=>({refresh:()=>window.dispatchEvent(new Event('fixture-refresh')),push:href=>window.calls.push({name:'navigate',args:href})});`
                         : path === "workspace"
-                          ? `export async function switchWorkspaceDestination(args){window.calls.push({name:'switch',args});return {ok:true,href:args.destinationHref};}`
+                          ? `export function navigateToWorkspace(workspaceId,destinationHref){window.calls.push({name:'switch',args:{workspaceId,destinationHref}});}`
                           : `export async function getSalonProfileMediaUploadSessionAction(intent,kind,id){window.calls.push({name:'uploadSession',args:{intent,kind,id}});return {supabaseUrl:location.origin,accessToken:'fixture',anonKey:'fixture',bucket:'logos',path:'salon-a/test.webp'};}`,
             }));
           },
@@ -163,7 +164,7 @@ test(
         .allTextContents();
       assert.deepEqual(
         sections.map((s) => s.replace(/\s*\d+$/, "").trim()),
-        ["Personal", "Staff", "Salon / Business"],
+        ["Personal", "Staff", "Businesses"],
       );
       const staffSection = page
         .locator("section")
@@ -326,7 +327,7 @@ test(
       );
       await page.getByRole("button", { name: "Close panel" }).click();
       await page
-        .getByText("Business accounts & access", { exact: true })
+        .getByText("Shared access & invitations", { exact: true })
         .click();
       await page
         .getByRole("button", { name: /King Nails Group.*Manage/ })

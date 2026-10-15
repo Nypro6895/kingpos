@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import test from 'node:test';
 import { build } from 'esbuild';
-import { chromium } from 'playwright-core';
+import { chromium, webkit } from 'playwright-core';
 
 test('actual Activity scope guards validate reveals, discard old auth results, block logout and recover from temporary failures', { timeout: 60_000 }, async () => {
   const result = await build({ stdin: { resolveDir: process.cwd(), loader: 'tsx', contents: `
@@ -40,12 +40,14 @@ test('actual Activity scope guards validate reveals, discard old auth results, b
     response.end(request.url === '/bundle.js' ? js : '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script src="/bundle.js"></script></body></html>');
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const browser = await chromium.launch({ args: ['--no-proxy-server'], executablePath: process.env.TEST_BROWSER_PATH, channel: process.env.TEST_BROWSER_PATH ? undefined : 'chrome', headless: true });
+  const useWebKit = process.env.TEST_BROWSER_ENGINE === 'webkit';
+  const browser = await (useWebKit ? webkit : chromium).launch({ executablePath: process.env.TEST_BROWSER_PATH, ...(useWebKit ? {} : { args: ['--no-proxy-server'], channel: process.env.TEST_BROWSER_PATH ? undefined : 'chrome' }), headless: true });
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     const open = async () => {
+      if (page.url() !== 'about:blank') await page.evaluate(() => sessionStorage.clear());
       await page.goto(`http://127.0.0.1:${server.address().port}`);
       await page.waitForFunction(() => window.ready);
       assert.equal(await page.locator('[data-private]').isVisible(), true);
@@ -117,7 +119,7 @@ test('actual Activity scope guards validate reveals, discard old auth results, b
     await open();
     await page.evaluate(() => { void window.forceValidate(); });
     await page.waitForFunction(() => window.requests.length === 1);
-    await page.evaluate(() => window.dispatchEvent(new CustomEvent('reylumi:experience-mutation')));
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('reylumi:experience-scope-changed')));
     await page.waitForFunction(() => window.requests.length === 2);
     await page.evaluate(() => window.finish(0, { ...window.currentContext, scope: 'before-mutation-context' }));
     await page.waitForTimeout(50);

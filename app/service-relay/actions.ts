@@ -8,6 +8,10 @@ import { revalidatePath } from "next/cache";
 import { SERVICE_RELAY_PLUGIN, type RelayWorkspace } from "@/types/service-relay";
 
 function message(error: unknown) { return error instanceof Error ? error.message : "Please reconnect and try again."; }
+function revalidateServiceRelay() {
+  // Retained pages may have disconnected their realtime listeners.
+  for (const path of ["/staff/today", "/staff/my-work", "/notifications"]) revalidatePath(path);
+}
 async function staffContext() {
   const { context, staff, supabase } = await getStaffPortalIdentity();
   if (!context.currentSalon || !staff || !supabase) throw new Error("Open your Staff workspace first.");
@@ -51,6 +55,7 @@ export async function respondServiceRelay(offerId: string, accept: boolean) {
     const { client, salonId } = await staffContext();
     const { error } = await client.rpc("service_relay_respond", { p_salon: salonId, p_offer: offerId, p_accept: accept });
     if (error) throw new Error(error.message);
+    revalidateServiceRelay();
     await broadcastPosStaffChange(salonId, "pos");
     return { ok: true };
   } catch (error) { return { error: message(error) }; }
@@ -60,6 +65,7 @@ export async function saveServiceRelay(input: { offerId: string; lines: { id: st
     const { client, salonId } = await staffContext();
     const { error } = await client.rpc("service_relay_save", { p_salon: salonId, p_offer: input.offerId, p_lines: input.lines, p_done: input.done, p_expected: input.revision });
     if (error) throw new Error(error.message);
+    revalidateServiceRelay();
     await broadcastPosStaffChange(salonId, "pos");
     return { ok: true };
   } catch (error) { return { error: message(error) }; }
@@ -69,6 +75,7 @@ export async function submitServiceRelay(input: { visitId: string; revision: num
     const { client, salonId } = await deskContext();
     const { data, error } = await client.rpc("service_relay_submit", { p_salon: salonId, p_visit: input.visitId, p_expected: input.revision, p_tip: input.tip, p_discount: input.discount });
     if (error) throw new Error(error.message);
+    revalidateServiceRelay();
     await broadcastPosStaffChange(salonId, "pos");
     return { ok: true, ticketId: String(data.ticketId) };
   } catch (error) { return { error: message(error) }; }
@@ -87,6 +94,7 @@ export async function findServiceRelay(code: string) {
     const { client, salonId } = await staffContext();
     const { error } = await client.rpc("service_relay_claim", { p_salon: salonId, p_code: code.trim() });
     if (error) throw new Error(error.message);
+    revalidateServiceRelay();
     await broadcastPosStaffChange(salonId, "pos");
     return { ok: true };
   } catch (error) { return { error: message(error) }; }

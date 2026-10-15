@@ -130,8 +130,8 @@ test("explicit workspace switches land on canonical workspace homes", () => {
   );
   assert.match(
     navigationShell,
-    /switchWorkspaceLanding/,
-    "Account switcher rows must use the landing switch action.",
+    /navigateToWorkspace\(workspace.id\)/,
+    "Account switcher rows must use the checked document handoff without a destination override.",
   );
   assert.match(
     navigationShell,
@@ -164,7 +164,7 @@ test("workspace blocking errors render as accessible action dialogs", () => {
   assert.match(actionDialog, /event\.stopImmediatePropagation\(\)/);
   assert.match(queryErrorDialog, /<ActionDialog/);
   assert.match(myPlaceClient, /notice\?\.error \? <QueryErrorDialog/);
-  assert.match(myPlaceClient, /title="Could not complete this action"/);
+  assert.match(myPlaceClient, /title=\{__vt\("Could not complete this action"\)\}/);
   assert.match(salonManagementPage, /<QueryErrorDialog/);
 
   for (const [path, source] of [

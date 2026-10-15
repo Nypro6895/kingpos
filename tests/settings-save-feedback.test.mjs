@@ -10,7 +10,9 @@ test('submit button blocks duplicate submissions while preserving the action and
   const action = async () => {};
   const render = (pending, disabled = false) => {
     vm.runInNewContext(ts.transpileModule(readFileSync('components/submit-button.tsx', 'utf8'), { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, {
-      exports, require: name => name === 'react-dom' ? { useFormStatus: () => ({ pending }) } : { jsx: (type, props) => ({type, props}), jsxs: (type, props) => ({type, props}), Fragment: 'fragment' },
+      exports, require: name => name === 'react-dom' ? { useFormStatus: () => ({ pending }) }
+        : name === '@/components/workspace-language' ? { useWorkspaceTranslation: () => value => value, WorkspaceText: ({ text }) => text }
+        : { jsx: (type, props) => ({type, props}), jsxs: (type, props) => ({type, props}), Fragment: 'fragment' },
     });
     return exports.SubmitButton({children: 'Save', name: 'special_hours_id', value: 'hours-id', formAction: action, disabled}).props;
   };

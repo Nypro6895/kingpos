@@ -1,0 +1,298 @@
+{
+  "checkedAt": "2026-10-15T17:37:24.268Z",
+  "method": "Independent read-only source compatibility review and SHA256 comparison; no CI rerun",
+  "result": "compatible",
+  "nativeBuildRequired": false,
+  "nativeBaseline": {
+    "commit": "cc53062ca58795e37ab62269655bea73f4902241",
+    "version": "1.0.1",
+    "build": "14.1"
+  },
+  "webFiles": [
+    {
+      "file": "app/navigation-shell.tsx",
+      "sha256": "4b73e2de91db0bd80aedf6069e3d61021331f94beef8dea900741db310d12ec8",
+      "originalSha256": "4b73e2de91db0bd80aedf6069e3d61021331f94beef8dea900741db310d12ec8",
+      "matchesOriginal": true
+    },
+    {
+      "file": "app/my-place/my-place-client.tsx",
+      "sha256": "c3462cae2b016593b04260207266ba6149fa589a7e2bec6c961bcce5c8ad24ff",
+      "originalSha256": "c3462cae2b016593b04260207266ba6149fa589a7e2bec6c961bcce5c8ad24ff",
+      "matchesOriginal": true
+    },
+    {
+      "file": "app/quick-workspace-panel.tsx",
+      "sha256": "fa5c60112c204802de5577a365ad0095d7d7f34ffee8286f94320d2fe2ff880b",
+      "originalSha256": "fa5c60112c204802de5577a365ad0095d7d7f34ffee8286f94320d2fe2ff880b",
+      "matchesOriginal": true
+    },
+    {
+      "file": "lib/workspace-navigation.ts",
+      "sha256": "3db897693d0d09dae80a40f3f2582fd7c021feb1aed9f9a4100dd42c3a890b3d",
+      "originalSha256": "3db897693d0d09dae80a40f3f2582fd7c021feb1aed9f9a4100dd42c3a890b3d",
+      "matchesOriginal": true
+    }
+  ],
+  "originalWorkspaceSource": "C:\\Users\\giuse\\kingpos\\artifacts\\workspace-switch-navigation-20261015\\source-v1",
+  "endpoint": {
+    "file": "app/(app)/workspace/open/route.ts",
+    "sha256": "3e0ff26fe119ba4d89af6a13fd64a38d9a1d8b4bfab46947f2f1e4c90ba1e64a",
+    "baselineSha256": "3e0ff26fe119ba4d89af6a13fd64a38d9a1d8b4bfab46947f2f1e4c90ba1e64a",
+    "unchangedFromWebBaseline": true
+  },
+  "nativeFiles": [
+    {
+      "file": "ios/Reylumi/ReylumiStartupState.swift",
+      "expected": "9e824b907b60961e0cd7ee528e9a57ddf6c024c0b627290f63b0ce05a2b6fbca",
+      "actual": "9e824b907b60961e0cd7ee528e9a57ddf6c024c0b627290f63b0ce05a2b6fbca",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/NativeBridge.js",
+      "expected": "61cbf78a9717c7a8295a9a324f18376a68749dc6832bb662074edf2e475e1cab",
+      "actual": "61cbf78a9717c7a8295a9a324f18376a68749dc6832bb662074edf2e475e1cab",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/ReylumiApp.swift",
+      "expected": "7d1ce49c30b3a39056e222808b320a189de5c2d149b103ff774492c44d46b680",
+      "actual": "7d1ce49c30b3a39056e222808b320a189de5c2d149b103ff774492c44d46b680",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/ReylumiViewController.swift",
+      "expected": "294661896733537dc4e687750ae4f3843c878b3cb9e7f2ec9f7d574a5aa78150",
+      "actual": "294661896733537dc4e687750ae4f3843c878b3cb9e7f2ec9f7d574a5aa78150",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/AppViewport.js",
+      "expected": "b1b5bc56d83da5e3f6b219289801396fc405e90dfc504788b1b78f6cb71c2986",
+      "actual": "b1b5bc56d83da5e3f6b219289801396fc405e90dfc504788b1b78f6cb71c2986",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/ReylumiLaunchView.swift",
+      "expected": "100bd75d5a45e91e9efe546164be1cb84afc1e748d4b39ed78974416f6a391b3",
+      "actual": "100bd75d5a45e91e9efe546164be1cb84afc1e748d4b39ed78974416f6a391b3",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/Info.plist",
+      "expected": "33bdc4bfba37b6925a222f2e3f986b3938104e611e50481217af9ebc8049904d",
+      "actual": "33bdc4bfba37b6925a222f2e3f986b3938104e611e50481217af9ebc8049904d",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/NavigationPolicy.swift",
+      "expected": "80b6af5110e9b4724563940a91dec2378fc3d34eb577a4590ca49659606f13aa",
+      "actual": "80b6af5110e9b4724563940a91dec2378fc3d34eb577a4590ca49659606f13aa",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/Assets.xcassets/Contents.json",
+      "expected": "10e3b5dc202f1cd9fad1f688c8fc9fe9e9669bf3f8295e67d216b10fd99b6f49",
+      "actual": "10e3b5dc202f1cd9fad1f688c8fc9fe9e9669bf3f8295e67d216b10fd99b6f49",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/Assets.xcassets/LoadingLogo.imageset/Contents.json",
+      "expected": "7f4e9814add64f15b52f3ede56a2fde9414b98441990d754742fc2dfbd197d33",
+      "actual": "7f4e9814add64f15b52f3ede56a2fde9414b98441990d754742fc2dfbd197d33",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/Assets.xcassets/LoadingLogo.imageset/LoadingLogo.png",
+      "expected": "eb620355ec767fda97e488ad21c8f052b09a3b83e8874ca3f1eb31e8f9d55781",
+      "actual": "eb620355ec767fda97e488ad21c8f052b09a3b83e8874ca3f1eb31e8f9d55781",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/Assets.xcassets/AppIcon.appiconset/Contents.json",
+      "expected": "6ad2c5c3bbcf972c7f02d217d6afcac3f24a10e30510c7e2d06c582371ed9d22",
+      "actual": "6ad2c5c3bbcf972c7f02d217d6afcac3f24a10e30510c7e2d06c582371ed9d22",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+      "expected": "9053aa25c99045b16929ad8b49e02e42d8bbc5941ebd0ce9a79a84db79de3db4",
+      "actual": "9053aa25c99045b16929ad8b49e02e42d8bbc5941ebd0ce9a79a84db79de3db4",
+      "match": true
+    },
+    {
+      "file": "ios/Reylumi/Assets.xcassets/AppBackground.colorset/Contents.json",
+      "expected": "88f920768f2c8097e4d1e3dbc8926b8dcf160d196840923183edff04d4420a76",
+      "actual": "88f920768f2c8097e4d1e3dbc8926b8dcf160d196840923183edff04d4420a76",
+      "match": true
+    }
+  ],
+  "coreFiles": [
+    {
+      "file": "components/experience-scope.tsx",
+      "expected": "1577f54e831948da9f39e45384a6e9dc5315f85c95de9d2bf0d4fb971b9bf8e1",
+      "actual": "1577f54e831948da9f39e45384a6e9dc5315f85c95de9d2bf0d4fb971b9bf8e1",
+      "match": true
+    },
+    {
+      "file": "components/experience-page-boundary.tsx",
+      "expected": "965a4a9fad6a8e75db1667899fc3c817d14a063d7ee028efaa28b640a51364b6",
+      "actual": "965a4a9fad6a8e75db1667899fc3c817d14a063d7ee028efaa28b640a51364b6",
+      "match": true
+    },
+    {
+      "file": "components/experience-cache-lifecycle.tsx",
+      "expected": "b6ee5318aa786416552910057793d0f72e52c850c4fae4531fddd59e878e03b9",
+      "actual": "b6ee5318aa786416552910057793d0f72e52c850c4fae4531fddd59e878e03b9",
+      "match": true
+    },
+    {
+      "file": "components/session-expiry-prompt.tsx",
+      "expected": "b8934afeb2dbe203dcf6518e7a28e377e20bd1201efed691a1808f572becb564",
+      "actual": "b8934afeb2dbe203dcf6518e7a28e377e20bd1201efed691a1808f572becb564",
+      "match": true
+    },
+    {
+      "file": "components/explore-account-actions.tsx",
+      "expected": "6b9f1147b2e3dfbc305368ace4979911d10cb3978a43032e1a3e1f2a9607c621",
+      "actual": "6b9f1147b2e3dfbc305368ace4979911d10cb3978a43032e1a3e1f2a9607c621",
+      "match": true
+    },
+    {
+      "file": "components/owner-campaign-runtime.tsx",
+      "expected": "6a996a84f735a985b6e2804de8c335333927fcb12381dcb2d8cd7b1a5a0b365b",
+      "actual": "6a996a84f735a985b6e2804de8c335333927fcb12381dcb2d8cd7b1a5a0b365b",
+      "match": true
+    },
+    {
+      "file": "lib/experience-cache-events.ts",
+      "expected": "8ee1aa21c2956d4b8a6bfb92184fad01e1fad254476f811c7e65fbdbe2da8c48",
+      "actual": "8ee1aa21c2956d4b8a6bfb92184fad01e1fad254476f811c7e65fbdbe2da8c48",
+      "match": true
+    },
+    {
+      "file": "lib/experience-resource-cache.ts",
+      "expected": "e16127fe02bf8c5771df89f166f3f85b4da6c46336857dd23edff6b149ff6b96",
+      "actual": "e16127fe02bf8c5771df89f166f3f85b4da6c46336857dd23edff6b149ff6b96",
+      "match": true
+    },
+    {
+      "file": "lib/experience-mutations.ts",
+      "expected": "e35dbcc187e3e423ca9f5d6fe9af3f2a831305977293d9c8ea9a7203f442a07c",
+      "actual": "e35dbcc187e3e423ca9f5d6fe9af3f2a831305977293d9c8ea9a7203f442a07c",
+      "match": true
+    },
+    {
+      "file": "lib/experience-reload.ts",
+      "expected": "f82c32591dc34230ecad90ba24d5e507ee9144b8d403c99e2c7101db30ec656b",
+      "actual": "f82c32591dc34230ecad90ba24d5e507ee9144b8d403c99e2c7101db30ec656b",
+      "match": true
+    },
+    {
+      "file": "lib/reset-experience-cache.ts",
+      "expected": "e8f1dc277e3112b1a8a4c98f18de72767a21ff7530a95234f920a4f90f467033",
+      "actual": "e8f1dc277e3112b1a8a4c98f18de72767a21ff7530a95234f920a4f90f467033",
+      "match": true
+    },
+    {
+      "file": "lib/use-experience-resource.ts",
+      "expected": "f605efb988df9ef58b8c4e02ca0758342fa19e103aa534fcd832899049c7b7b6",
+      "actual": "f605efb988df9ef58b8c4e02ca0758342fa19e103aa534fcd832899049c7b7b6",
+      "match": true
+    },
+    {
+      "file": "lib/explore-feed-client.ts",
+      "expected": "bd332c19414bc3c2810cc19a570f26a83112be22cd7be5be8ad58f8f51cc67bc",
+      "actual": "bd332c19414bc3c2810cc19a570f26a83112be22cd7be5be8ad58f8f51cc67bc",
+      "match": true
+    },
+    {
+      "file": "lib/explore-search-client.ts",
+      "expected": "7ca6175f6306589016c49bcd378564fb54086d69a1bd622d932eb75ab3cfdb8e",
+      "actual": "7ca6175f6306589016c49bcd378564fb54086d69a1bd622d932eb75ab3cfdb8e",
+      "match": true
+    },
+    {
+      "file": "tests/experience-reload-loop-ui.test.mjs",
+      "expected": "b3abc26dfd74a9cb3840664a8038a25e75791981ffd1564c1de4ffe906794de5",
+      "actual": "b3abc26dfd74a9cb3840664a8038a25e75791981ffd1564c1de4ffe906794de5",
+      "match": true
+    }
+  ],
+  "priorSimulatorRun": 38775495497,
+  "priorSimulatorCommit": "26a50ecc664842ee5f8cf425c04022ea80fe12f3",
+  "behavior": [
+    {
+      "file": "lib/workspace-navigation.ts",
+      "line": 4,
+      "observation": "Uses URLSearchParams and window.location.assign with relative /workspace/open; starts a normal same-origin document GET from the user action. No new native API or custom scheme."
+    },
+    {
+      "file": "app/navigation-shell.tsx",
+      "lines": [
+        837,
+        867,
+        1396,
+        1426,
+        2069,
+        2171
+      ],
+      "observation": "Changed workspace selections use navigateToWorkspace; existing GET forms also target /workspace/open. Same-current-workspace actions keep ordinary client navigation."
+    },
+    {
+      "file": "app/my-place/my-place-client.tsx",
+      "line": 127,
+      "observation": "Workspace shortcut uses navigateToWorkspace(workspace.id, action.href)."
+    },
+    {
+      "file": "app/quick-workspace-panel.tsx",
+      "lines": [
+        197,
+        204
+      ],
+      "observation": "Current workspace stays on router.push; different workspace uses the document handoff."
+    },
+    {
+      "file": "app/(app)/workspace/open/route.ts",
+      "line": 41,
+      "observation": "Existing GET checks login, available workspace membership and allowed same-origin destination, updates workspace context, then redirects on the same origin."
+    },
+    {
+      "file": "ios/Reylumi/NavigationPolicy.swift",
+      "lines": [
+        6,
+        11
+      ],
+      "observation": "HTTPS same host/port is internal. /workspace/open is not in the excluded admin/download paths."
+    },
+    {
+      "file": "ios/Reylumi/ReylumiViewController.swift",
+      "lines": [
+        228,
+        233,
+        269,
+        280
+      ],
+      "observation": "Internal navigation is allowed in the same WKWebView, records main-frame request and uses the existing provisional-start/commit/finish lifecycle. Committed document receives the existing nonce/generation startup context."
+    },
+    {
+      "file": "ios/Reylumi/NativeBridge.js",
+      "lines": [
+        6,
+        39,
+        58
+      ],
+      "observation": "No workspace-specific bridge action is required. Existing HTTPS origin readiness protocol and admin-only history exclusion work with this standard document navigation."
+    }
+  ],
+  "conclusion": "Workspace switch overlay is web-compatible with actually uploaded native1.0.1(14.1). It introduces no Swift, bundled assets, permissions, app configuration, signing or bridge-contract requirement. All14 native files and all recorded core fixture files remain unchanged.",
+  "limitations": [
+    "This supplemental review does not claim the new workspace UI overlay was exercised by the earlier simulator fixture. Root owns assembled web/browser validation.",
+    "Physical iPhone hardware has not been tested."
+  ],
+  "unchangedEvidence": [
+    "simulator-ci-commit.json",
+    "simulator-final-result.json",
+    "assessment.json"
+  ]
+}

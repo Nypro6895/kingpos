@@ -1,0 +1,76 @@
+{
+  "verifiedAt": "2026-10-15T16:47:46.846Z",
+  "migration": "artifacts/reload-fix-20261015/release/supabase/migrations/20261015051000_business_claim_lookup_indexes.sql",
+  "sha256": "805f050f26bc71b4354cd762f5a09e5b7458452664b21126e61555f272cc8c16",
+  "productionBefore": {
+    "location_bytes": 11878400,
+    "location_rows_estimate": 55954,
+    "migration_ledger_columns": [
+      {
+        "name": "version",
+        "type": "text"
+      },
+      {
+        "name": "statements",
+        "type": "ARRAY"
+      },
+      {
+        "name": "name",
+        "type": "text"
+      }
+    ],
+    "visibility_function": "CREATE OR REPLACE FUNCTION public.salon_profile_public_salon_exists(target_salon_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'extensions'\nAS $function$\n SELECT EXISTS(SELECT 1 FROM salon_settings settings JOIN locations salons ON salons.id=settings.salon_id\n WHERE settings.salon_id=target_salon_id AND settings.public_discovery_enabled AND salons.status='active'\n AND (salons.created_at IS NULL OR salons.created_at<=now())\n AND (settings.public_discovery_published_at IS NULL OR settings.public_discovery_published_at<=now()))\n$function$\n"
+  },
+  "originalFunctionSha256": "5e6b19505b5eaa7c730b25254148c281dc49cd378512c7d247035123d5ceafd5",
+  "local": {
+    "cases": 206,
+    "rows": 1000,
+    "exactProductionFunctionUsed": true,
+    "semanticsUnchanged": true,
+    "dataDigestsUnchanged": true,
+    "idempotent": true,
+    "before": {
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "security_definer": true,
+      "volatility": "s",
+      "config": [
+        "search_path=public"
+      ]
+    },
+    "after": {
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "security_definer": true,
+      "volatility": "s",
+      "config": [
+        "search_path=public"
+      ]
+    },
+    "grants": {
+      "anon": false,
+      "authenticated": true
+    },
+    "indexes": [
+      {
+        "name": "locations_claim_address_idx",
+        "valid": true,
+        "ready": true,
+        "definition": "CREATE INDEX locations_claim_address_idx ON public.locations USING btree (business_claim_text(address_line1)) WHERE (status = 'active'::text)"
+      },
+      {
+        "name": "locations_claim_city_idx",
+        "valid": true,
+        "ready": true,
+        "definition": "CREATE INDEX locations_claim_city_idx ON public.locations USING btree (business_claim_text(city)) WHERE (status = 'active'::text)"
+      },
+      {
+        "name": "locations_claim_phone_idx",
+        "valid": true,
+        "ready": true,
+        "definition": "CREATE INDEX locations_claim_phone_idx ON public.locations USING btree (business_claim_phone(phone)) WHERE (status = 'active'::text)"
+      }
+    ]
+  },
+  "productionMutationsPerformed": false
+}

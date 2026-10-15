@@ -1,0 +1,313 @@
+{
+  "checkedAt": "2026-10-15T17:28:06.654Z",
+  "scope": "Native compatibility and available iPhone validation for web session/scope reload fix",
+  "nativeBuildRequired": false,
+  "nativeBuildAssessment": "All 14 native source/assets in the assembled release match the actually uploaded 1.0.1 (14.1) receipt. The web session/scope invalidation fix changes no bundled bridge contract, app configuration, permissions, signing or distribution; native upload is not required.",
+  "latestActuallyUploadedNative": {
+    "version": "1.0.1",
+    "build": "14.1",
+    "commit": "cc53062ca58795e37ab62269655bea73f4902241",
+    "githubRun": "https://github.com/Nypro6895/kingpos/actions/runs/38672972769",
+    "source": "artifacts/coordinated-release-20261015/release",
+    "uploadReceipt": "artifacts/coordinated-release-20261015/native-upload/reylumi-testflight-14-1/testflight-receipt.json",
+    "appleProcessingReceipt": "artifacts/coordinated-release-20261015/native-upload/reylumi-testflight-14-1/testflight-processing.json",
+    "lastRecordedAppleStatus": "VALID / IN_BETA_TESTING at 2026-10-15T02:56:42.133Z",
+    "verifiedGitHubRunRead": true,
+    "newAppleBuildQueryPerformed": false
+  },
+  "laterWorkflowIsNotNativeUpload": {
+    "githubRun": "https://github.com/Nypro6895/kingpos/actions/runs/38681373493",
+    "commit": "f42244c1c232e5fb0107d5d0d0f2343ada3dc092",
+    "uploadJob": "skipped",
+    "completedJob": "store-readiness",
+    "readOnlyArtifact": "store-readiness-latest/store-readiness.json",
+    "appStoreStatus": "PREPARE_FOR_SUBMISSION",
+    "appStoreDraftSelectedBuild": "5.1"
+  },
+  "performedChecks": [
+    {
+      "name": "Native startup and client bridge tests against exact uploaded source",
+      "result": "passed",
+      "passed": 11,
+      "skipped": 0,
+      "evidence": "native-baseline-logic.tap"
+    },
+    {
+      "name": "WebKit readiness while slow image blocks document load",
+      "result": "passed",
+      "passed": 1,
+      "skipped": 0,
+      "evidence": "webkit-ios-startup-ui.test.mjs.log"
+    },
+    {
+      "name": "WebKit native viewport, navigation, focus, orientation, dialogs and 320–1024px screens",
+      "result": "passed",
+      "passed": 1,
+      "skipped": 0,
+      "evidence": "webkit-ios-app-viewport.test.mjs.log"
+    },
+    {
+      "name": "Final source Activity scope authorization regressions on WebKit",
+      "result": "passed",
+      "passed": 1,
+      "skipped": 0,
+      "evidence": "final-scope-webkit.tap"
+    },
+    {
+      "name": "Final source session, love, owner background actions, live cache, races and bounded reloads on WebKit",
+      "result": "passed",
+      "passed": 1,
+      "skipped": 0,
+      "soakMilliseconds": 90000,
+      "evidence": "final-reload-loop-webkit-90s-v2.tap"
+    },
+    {
+      "name": "Actual iPhone Simulator WKWebView session and cache regression",
+      "result": "passed",
+      "passed": 1,
+      "skipped": 0,
+      "evidence": "simulator-final-result.json"
+    }
+  ],
+  "environment": {
+    "host": "Windows",
+    "browser": "Playwright WebKit 26.5",
+    "xcodeAvailable": false,
+    "iosSimulatorAvailableLocally": false,
+    "physicalIPhoneTested": false,
+    "nativeSimulatorRunForThisTask": true
+  },
+  "availableSimulatorCommand": {
+    "command": "gh workflow run reylumi-ios-check.yml --repo Nypro6895/kingpos --ref codex/reload-ios-simulator-direct-20261015",
+    "expectedHeadSha": "26a50ecc664842ee5f8cf425c04022ea80fe12f3",
+    "dispatched": true,
+    "effect": "Isolated iPhone Simulator WKWebView regression and unsigned unchanged native archive; no signing or upload",
+    "limitation": "Transport is simulated. Reload intents are intercepted and the following document is loaded manually. HTTP fixture does not exercise the HTTPS-only native startup handshake."
+  },
+  "statusHelperAudit": {
+    "safe": "ios/scripts/check-build-status.mjs <exact-build>: GET-only Apple queries, local receipt output",
+    "unsafeForStatusOnly": "ios/scripts/testflight-status.mjs creates or modifies TestFlight groups and testers; not invoked",
+    "localAppleCredentialsConfigured": false,
+    "tlsVerificationDisabled": false,
+    "remoteMutationPerformed": false
+  },
+  "pending": [],
+  "finalSource": "C:\\Users\\giuse\\kingpos\\artifacts\\reload-fix-20261015\\release",
+  "finalSourceHashes": {
+    "tests/experience-reload-loop-ui.test.mjs": "b3abc26dfd74a9cb3840664a8038a25e75791981ffd1564c1de4ffe906794de5",
+    "tests/experience-scope-ui.test.mjs": "ad398496f57d28e8e2f1928a2792af3fec8a4579fa79b4dab456998dc07ca4bb",
+    "components/experience-scope.tsx": "1577f54e831948da9f39e45384a6e9dc5315f85c95de9d2bf0d4fb971b9bf8e1",
+    "components/experience-page-boundary.tsx": "965a4a9fad6a8e75db1667899fc3c817d14a063d7ee028efaa28b640a51364b6",
+    "components/experience-cache-lifecycle.tsx": "b6ee5318aa786416552910057793d0f72e52c850c4fae4531fddd59e878e03b9",
+    "components/session-expiry-prompt.tsx": "b8934afeb2dbe203dcf6518e7a28e377e20bd1201efed691a1808f572becb564",
+    "components/explore-account-actions.tsx": "6b9f1147b2e3dfbc305368ace4979911d10cb3978a43032e1a3e1f2a9607c621",
+    "components/owner-campaign-runtime.tsx": "6a996a84f735a985b6e2804de8c335333927fcb12381dcb2d8cd7b1a5a0b365b",
+    "lib/experience-cache-events.ts": "8ee1aa21c2956d4b8a6bfb92184fad01e1fad254476f811c7e65fbdbe2da8c48",
+    "lib/experience-resource-cache.ts": "e16127fe02bf8c5771df89f166f3f85b4da6c46336857dd23edff6b149ff6b96",
+    "lib/experience-mutations.ts": "e35dbcc187e3e423ca9f5d6fe9af3f2a831305977293d9c8ea9a7203f442a07c",
+    "lib/experience-reload.ts": "f82c32591dc34230ecad90ba24d5e507ee9144b8d403c99e2c7101db30ec656b",
+    "lib/use-experience-resource.ts": "f605efb988df9ef58b8c4e02ca0758342fa19e103aa534fcd832899049c7b7b6",
+    "lib/explore-feed-client.ts": "bd332c19414bc3c2810cc19a570f26a83112be22cd7be5be8ad58f8f51cc67bc",
+    "lib/explore-search-client.ts": "7ca6175f6306589016c49bcd378564fb54086d69a1bd622d932eb75ab3cfdb8e"
+  },
+  "finalNativeHashEvidence": "release-native-hash-verification.json",
+  "limitations": [
+    "Physical iPhone hardware has not been tested. Actual iOS Simulator WKWebView status is recorded separately.",
+    "Simulator uses an isolated fixture with production React modules and simulated transport. Automatic reload intent is captured; a manual next-document load verifies the persistent cap. HTTPS-only native startup handshake is outside this HTTP fixture.",
+    "Apple build status is the last recorded read-only receipt, not a fresh Apple API query in this task."
+  ],
+  "simulatorCI": {
+    "createdAt": "2026-10-15T17:12:57.581Z",
+    "baseline": "cc53062ca58795e37ab62269655bea73f4902241",
+    "parent": "ba84f29ffd4917b209f16dbc1ffac882685eb21b",
+    "branch": "codex/reload-ios-simulator-direct-20261015",
+    "commit": "26a50ecc664842ee5f8cf425c04022ea80fe12f3",
+    "tree": "0b3a9983b3a9bdb5b0bc541ebd071cce59872cb1",
+    "files": [
+      {
+        "file": ".github/workflows/reylumi-ios-check.yml",
+        "sha256": "5dde32d4dc9d121353382c1f31648ef2a6bc343a01d6ece8147d4d4c55229b1f",
+        "blob": "7f29b290933394ce78529f86a72cf187add8a056"
+      },
+      {
+        "file": "ios/reload-fixture-project.yml",
+        "sha256": "b07ebf1f56f783e86f2f4da9c2d24e6e32304489c684f16148c10211e03ebd18",
+        "blob": "67c1830ab0aaaa91b0c7f7832d7c5db6c02a72a8"
+      },
+      {
+        "file": "ios/ReloadFixtureApp/ReloadFixtureApp.swift",
+        "sha256": "3f5b61494d2703fb8a86a3552528896738dbf2bb8b97833c6e37c6e5c3cf9da7",
+        "blob": "5b64dd80064136ccea455d69a2a32a40367da4bc"
+      },
+      {
+        "file": "ios/ReloadFixtureApp/Info.plist",
+        "sha256": "4f6edc64830255ff5103561e939f35e28d7245099c5971eea0bb64ed677f9243",
+        "blob": "49e330710d6a97686d6b0a8bd9ea79d958b1c3b5"
+      },
+      {
+        "file": "ios/ReloadFixtureApp/Fixtures/wkwebview-fixture.html",
+        "sha256": "12219852ba699547d5fc73d97cc4fbf3ff049002c8dcc3ad91c15fe6a511b750",
+        "blob": "25bd9d2ffdea154fd300d1e411305a8909266228"
+      },
+      {
+        "file": "ios/ReloadFixtureApp/Fixtures/reload-fixture-source.json",
+        "sha256": "4f1a78d9b73b51dd9142a70b1acb48a983b5d9e7ede429e790fe3b50fd31cff3",
+        "blob": "8f814eb87033ae57382a4b3beee171a1caa6135e"
+      },
+      {
+        "file": "ios/scripts/check-reload-simulator.sh",
+        "sha256": "bfbf1025517d5dad1277c65c0472ef32317d442a0b04803068a96e4a6d17d404",
+        "blob": "7072bd98dbac0f8b09e86a436b604516813158a3"
+      }
+    ],
+    "manifest": {
+      "generatedAt": "2026-10-15T17:12:56.152Z",
+      "nativeBaseline": "cc53062ca58795e37ab62269655bea73f4902241",
+      "webSource": "C:\\Users\\giuse\\kingpos\\artifacts\\reload-fix-20261015\\release",
+      "sourceHashes": {
+        "components/experience-scope.tsx": "1577f54e831948da9f39e45384a6e9dc5315f85c95de9d2bf0d4fb971b9bf8e1",
+        "components/experience-page-boundary.tsx": "965a4a9fad6a8e75db1667899fc3c817d14a063d7ee028efaa28b640a51364b6",
+        "components/experience-cache-lifecycle.tsx": "b6ee5318aa786416552910057793d0f72e52c850c4fae4531fddd59e878e03b9",
+        "components/session-expiry-prompt.tsx": "b8934afeb2dbe203dcf6518e7a28e377e20bd1201efed691a1808f572becb564",
+        "components/explore-account-actions.tsx": "6b9f1147b2e3dfbc305368ace4979911d10cb3978a43032e1a3e1f2a9607c621",
+        "components/owner-campaign-runtime.tsx": "6a996a84f735a985b6e2804de8c335333927fcb12381dcb2d8cd7b1a5a0b365b",
+        "lib/experience-cache-events.ts": "8ee1aa21c2956d4b8a6bfb92184fad01e1fad254476f811c7e65fbdbe2da8c48",
+        "lib/experience-resource-cache.ts": "e16127fe02bf8c5771df89f166f3f85b4da6c46336857dd23edff6b149ff6b96",
+        "lib/experience-mutations.ts": "e35dbcc187e3e423ca9f5d6fe9af3f2a831305977293d9c8ea9a7203f442a07c",
+        "lib/experience-reload.ts": "f82c32591dc34230ecad90ba24d5e507ee9144b8d403c99e2c7101db30ec656b",
+        "lib/reset-experience-cache.ts": "e8f1dc277e3112b1a8a4c98f18de72767a21ff7530a95234f920a4f90f467033",
+        "lib/use-experience-resource.ts": "f605efb988df9ef58b8c4e02ca0758342fa19e103aa534fcd832899049c7b7b6",
+        "lib/explore-feed-client.ts": "bd332c19414bc3c2810cc19a570f26a83112be22cd7be5be8ad58f8f51cc67bc",
+        "lib/explore-search-client.ts": "7ca6175f6306589016c49bcd378564fb54086d69a1bd622d932eb75ab3cfdb8e",
+        "tests/experience-reload-loop-ui.test.mjs": "b3abc26dfd74a9cb3840664a8038a25e75791981ffd1564c1de4ffe906794de5"
+      },
+      "fixtureSha256": "12219852ba699547d5fc73d97cc4fbf3ff049002c8dcc3ad91c15fe6a511b750",
+      "testSha256": "3f5b61494d2703fb8a86a3552528896738dbf2bb8b97833c6e37c6e5c3cf9da7",
+      "testOnly": true,
+      "productionNativeChanged": false,
+      "simulatedTransport": true,
+      "testRunner": "simctl application launch without debugger",
+      "baseline": "cc53062ca58795e37ab62269655bea73f4902241",
+      "reloadExecution": "reload intents intercepted by fixture; subsequent document loaded manually in same WKWebView",
+      "nativeBridge": "exact baseline scripts injected; HTTPS-only startup handshake not exercised by localhost HTTP fixture"
+    },
+    "workflow": "reylumi-ios-check.yml",
+    "upload": false,
+    "signing": false
+  },
+  "simulatorRun": {
+    "checkedAt": "2026-10-15T17:28:06.396Z",
+    "commit": "26a50ecc664842ee5f8cf425c04022ea80fe12f3",
+    "runs": [
+      {
+        "id": 38775495497,
+        "status": "completed",
+        "conclusion": "success",
+        "headSha": "26a50ecc664842ee5f8cf425c04022ea80fe12f3",
+        "event": "workflow_dispatch",
+        "url": "https://github.com/Nypro6895/kingpos/actions/runs/38775495497",
+        "createdAt": "2026-10-15T17:13:14Z",
+        "runNumber": 21
+      }
+    ]
+  },
+  "simulatorAttempts": [
+    {
+      "run": 38772076864,
+      "commit": "4a611c9023ceed85ba7423b8e51fa2abdb00b411",
+      "result": "cancelled",
+      "evidence": "reylumi-ios-check-17",
+      "reason": "Compiled native app and XCTest. Simulator booted and installed app; test debugger launch stalled before any test output. Superseded by bounded rerun."
+    },
+    {
+      "run": 38773447229,
+      "commit": "88103190a394dd94a2f56e8532e0790fc1964c5b",
+      "result": "failed",
+      "evidence": "simulator-job-116555245596.log",
+      "reason": "After slow test debugger launch, all17 existing native cases passed. New actual WKWebView regression passed idle, mutation retention,503 and first identity recovery, then failed due harness wait matching text inside inline script before the Reload button rendered. Corrected to visible DOM status element in final runner; no product assertion failure indicated."
+    },
+    {
+      "run": 38774512990,
+      "commit": "6d1ee53b1dacb2eb083eb7c332c9e5058203871c",
+      "result": "superseded",
+      "evidence": "simulator-run-38774512990.json",
+      "reason": "Added per-launch UUID binding and per-document error checks during review."
+    },
+    {
+      "run": 38774831443,
+      "commit": "ba84f29ffd4917b209f16dbc1ffac882685eb21b",
+      "result": "superseded",
+      "evidence": "simulator-run-38774831443.json",
+      "reason": "Corrected DOM readiness condition after hosted test evidence identified inline-script literal match."
+    }
+  ],
+  "actualSimulatorResult": {
+    "checkedAt": "2026-10-15T17:28:06.565Z",
+    "status": "passed",
+    "run": 38775495497,
+    "url": "https://github.com/Nypro6895/kingpos/actions/runs/38775495497",
+    "commit": "26a50ecc664842ee5f8cf425c04022ea80fe12f3",
+    "nativeBaseline": "cc53062ca58795e37ab62269655bea73f4902241",
+    "fixtureSha256": "12219852ba699547d5fc73d97cc4fbf3ff049002c8dcc3ad91c15fe6a511b750",
+    "engine": "Actual iOS Simulator WKWebView",
+    "device": "iPhone 17 Pro",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-2",
+    "iOS": "26.2",
+    "fixtureResult": {
+      "debugger": false,
+      "device": "iPhone",
+      "engine": "iOS Simulator WKWebView",
+      "iOS": "26.2",
+      "nativeAppSourceChanged": false,
+      "runToken": "fd7014c2-512f-4f1b-8d38-7ba82356454f",
+      "status": "passed",
+      "transport": "simulated",
+      "simulator": "E952A9B0-CC78-435C-BF08-06AD47FE1076",
+      "commit": "26a50ecc664842ee5f8cf425c04022ea80fe12f3"
+    },
+    "artifact": "reylumi-ios-direct-21",
+    "artifactReceipt": {
+      "downloadedAt": "2026-10-15T17:27:57.657Z",
+      "artifact": "11994726575",
+      "name": "reylumi-ios-direct-21",
+      "destination": "C:\\Users\\giuse\\kingpos\\artifacts\\reload-fix-20261015\\native-validation\\reylumi-ios-direct-21.zip",
+      "commit": "26a50ecc664842ee5f8cf425c04022ea80fe12f3",
+      "run": 38775495497,
+      "sha256": "89b709f4ce8b0da1fc435e7a751e970bd467888762cb0d03065412b38e1d3c6c",
+      "providerDigest": "sha256:89b709f4ce8b0da1fc435e7a751e970bd467888762cb0d03065412b38e1d3c6c"
+    },
+    "checks": [
+      "15second idle passive search/feed/campaign traffic without reload or effect loop",
+      "Data mutation keeps same DOM, input and scroll while refreshing resource",
+      "Transient background503 retains page",
+      "Confirmed grant change hides private DOM before recovery",
+      "One automatic reload intent per sessionStorage budget across documents",
+      "Manual Reload remains available",
+      "Unavailable sessionStorage blocks automatic reload",
+      "No JavaScript runtime errors in each document"
+    ],
+    "unsignedArchive": {
+      "status": "passed",
+      "evidence": "reylumi-ios-direct-21/archive.log",
+      "productionNativeSourceChanged": false,
+      "upload": false,
+      "signing": false
+    },
+    "hostedXCTest": {
+      "run": 38773447229,
+      "workflowStatus": "failed",
+      "existingNativeCasesPassed": 17,
+      "newFixtureCase": "failed at premature manualReload selector; corrected in this final direct test",
+      "evidence": "simulator-job-116555245596.log"
+    },
+    "sourceHashesVerified": true,
+    "physicalIPhoneTested": false,
+    "limitations": [
+      "Fixture transport simulated; production React scope/session/cache modules bundled from recorded hashes",
+      "Automatic reload intent captured; subsequent document loaded manually in the same WKWebView to check persistent budget",
+      "Baseline bridge scripts injected; HTTPS-only startup handshake is not exercised by localhost HTTP fixture",
+      "Physical iPhone hardware has not been tested"
+    ],
+    "review": "simulator-harness-review.json"
+  }
+}

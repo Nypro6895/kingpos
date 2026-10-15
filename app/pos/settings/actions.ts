@@ -51,6 +51,9 @@ export async function savePosSettingsGroup(formData: FormData): Promise<{ok:bool
       }
       throw Error(error.message);
     }
+    // The socket hint can be missed while a retained page is hidden. Signal
+    // the completed write so its next visit cannot reuse pre-save settings.
+    for (const path of ["/pos/settings", "/settings", "/staff/today", "/staff/my-work"]) revalidatePath(path);
     return {ok:true,snapshot:data};
   }catch(error){return {ok:false,error:error instanceof Error?error.message:'Unable to save. Your changes have been kept.'};}
 }

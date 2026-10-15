@@ -6,8 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import { resetExperienceCaches } from "@/lib/reset-experience-cache";
 import { invalidateExperienceResources } from "@/lib/experience-resource-cache";
 import { createPortal } from "react-dom";
+import { useExperienceScope } from "@/components/experience-scope";
+import { classifyExperienceResponse, experienceMutationTags } from "@/lib/experience-mutations";
 
 export function SessionExpiryPrompt({ authenticated }: { authenticated: boolean }) {
+  const scopeId = useExperienceScope()?.context.scope;
   const [expired, setExpired] = useState(false);
   const hadSession = useRef(authenticated);
   const invalidated = useRef(false);
@@ -53,7 +56,10 @@ export function SessionExpiryPrompt({ authenticated }: { authenticated: boolean 
     }
 
     const monitoredFetch: typeof fetch = async (input, init) => {
+      const generation = sessionGeneration.current;
       const response = await originalFetch(input, init);
+      // An old account's response must not invalidate or reveal the new account.
+      if (disposed || generation !== sessionGeneration.current) return response;
       const url = new URL(input instanceof Request ? input.url : String(input), window.location.href);
       const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
       const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
@@ -64,10 +70,16 @@ export function SessionExpiryPrompt({ authenticated }: { authenticated: boolean 
         resetExperienceCaches({ reason: "logout", suspend: true, broadcast: true });
         setExpired(false);
       }
-      if (response.ok && url.origin === window.location.origin && !url.pathname.startsWith("/api/auth/") &&
-          (headers.has("Next-Action") || ["POST", "PATCH", "PUT", "DELETE"].includes(method))) {
-        invalidateExperienceResources({});
-        window.dispatchEvent(new Event("reylumi:experience-mutation"));
+      if (response.ok && url.origin === window.location.origin) {
+        const change = classifyExperienceResponse(url.pathname, method, headers, response.headers);
+        if (change !== "none") {
+          const detail = { scope: scopeId, tags: experienceMutationTags(url.pathname) };
+          invalidateExperienceResources(detail);
+          // This response belongs to the current mounted session. Nested admin
+          // providers have a different grant digest and must also revalidate.
+          // Resource invalidation above remains confined to the request scope.
+          window.dispatchEvent(new CustomEvent(change === "scope" ? "reylumi:experience-scope-changed" : "reylumi:experience-mutation", { detail: { tags: detail.tags } }));
+        }
       }
       // Authentication requests must keep their own validation and MFA errors.
       if (url.origin === window.location.origin && !url.pathname.startsWith("/api/auth/") &&
@@ -108,7 +120,7 @@ export function SessionExpiryPrompt({ authenticated }: { authenticated: boolean 
       window.removeEventListener("online", onVisible);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, []);
+  }, [scopeId]);
 
   useEffect(() => {
     if (!expired) return;

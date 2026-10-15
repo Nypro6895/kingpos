@@ -3,7 +3,7 @@
 import { WorkspaceText } from "@/components/workspace-language";
 import {useEffect,useRef,useState,useTransition,type ReactNode} from 'react';
 import Link from 'next/link';
-import {findBusinessClaimMatchesAction} from '@/app/claim/actions';
+import {findBusinessClaimMatches} from '@/lib/business-claim-client';
 import type {BusinessClaimInput,BusinessClaimMatch} from '@/lib/business-claims';
 
 function readForm(form:HTMLFormElement):BusinessClaimInput {
@@ -19,17 +19,21 @@ export function ClaimSuggestions({children}:{children:ReactNode}) {
  const wrapper=useRef<HTMLDivElement>(null);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);const generation=useRef(0);
  const [matches,setMatches]=useState<BusinessClaimMatch[]>([]);const [error,setError]=useState<string|null>(null);const [pending,startTransition]=useTransition();
  const checkedKey=useRef('');const acknowledgedKey=useRef('');
+ const activeSearch=useRef<AbortController|null>(null);
  useEffect(()=>{
  const form=wrapper.current?.querySelector('form');if(!form)return;
  try {const draft=JSON.parse(sessionStorage.getItem('business-create-draft')??'null') as Record<string,string>|null;
  if(draft)for(const [key,value] of Object.entries(draft)){const field=form.elements.namedItem(key);if(field instanceof HTMLInputElement && field.type!=='hidden'){if(field.type==='checkbox')field.checked=value==='yes';else if(!field.value)field.value=value;}}
  }catch{/* Browser storage is optional. */}
- return ()=>{if(timer.current)clearTimeout(timer.current);};
+ return ()=>{if(timer.current)clearTimeout(timer.current);activeSearch.current?.abort();activeSearch.current=null;};
  },[]);
  async function search(form:HTMLFormElement) {
  const input=readForm(form),key=inputKey(input),current=++generation.current;
- const result=await findBusinessClaimMatchesAction(input);
- if(current!==generation.current || key!==inputKey(readForm(form)))return null;
+ activeSearch.current?.abort();const controller=new AbortController();activeSearch.current=controller;
+ const deadline=setTimeout(()=>controller.abort(),12000);
+ let result;
+ try{result=await findBusinessClaimMatches(input,controller.signal);}finally{clearTimeout(deadline);}
+ if(activeSearch.current!==controller || current!==generation.current || key!==inputKey(readForm(form)))return null;
  checkedKey.current=result.error?'':key;setMatches(result.matches);setError(result.error);
  return result;
  }
@@ -45,7 +49,7 @@ export function ClaimSuggestions({children}:{children:ReactNode}) {
  }
  return <div ref={wrapper} onChange={event=>{
  const form=(event.target as HTMLInputElement).form;if(!form)return;
- persist(form);acknowledgedKey.current='';generation.current++;setMatches([]);
+ persist(form);acknowledgedKey.current='';generation.current++;activeSearch.current?.abort();setMatches([]);setError(null);
  const field=form.elements.namedItem('duplicate_acknowledged');if(field instanceof HTMLInputElement)field.value='no';
  if(timer.current)clearTimeout(timer.current);timer.current=setTimeout(()=>startTransition(async()=>{await search(form);}),450);
  }} onSubmit={event=>{

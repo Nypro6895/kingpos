@@ -9,19 +9,26 @@ const ts = require("typescript");
 const { outputText } = ts.transpileModule(readFileSync("components/session-expiry-prompt.tsx", "utf8"), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
 });
+const mutations = {};
+vm.runInNewContext(ts.transpileModule(readFileSync('lib/experience-mutations.ts', 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText, { exports: mutations });
 
-async function fixture({ authenticated = true, expired = false, valid = true, unavailable = false, admin = false, adminExpired = false, serviceUnavailable = false, sessionFetch } = {}) {
+async function fixture({ authenticated = true, expired = false, valid = true, unavailable = false, admin = false, adminExpired = false, serviceUnavailable = false, sessionFetch, responseStatus, responseHeaders = {}, apiFetch } = {}) {
   const effects = [], states = [], calls = [], cacheResets = [], invalidations = [], events = [];
   const window = {
     location: new URL(`https://app.test/${admin ? "admin" : "settings"}`),
     fetch: async (input) => {
-      calls.push(String(input));
-      if (String(input).startsWith("/api/auth/session")) {
+      const target = input instanceof Request ? input.url : String(input);
+      calls.push(target);
+      if (target.startsWith("/api/auth/session")) {
         if (sessionFetch) return sessionFetch();
         if (unavailable) throw new Error("offline");
         return Response.json({ authenticated: valid, adminExpired }, { status: serviceUnavailable ? 503 : 200 });
       }
-      return new Response(null, { status: input === "/api/auth/logout" || input === "/settings" ? 200 : 401 });
+      const custom = apiFetch?.(target);
+      if (custom) return custom;
+      return new Response(null, { status: responseStatus ?? (target === "/api/auth/logout" || target === "/settings" ? 200 : 401), headers: responseHeaders });
     },
     setInterval: () => 1, clearInterval() {}, addEventListener() {}, removeEventListener() {},
     dispatchEvent: event => events.push(event.type),
@@ -29,7 +36,7 @@ async function fixture({ authenticated = true, expired = false, valid = true, un
   const original = window.fetch;
   const exports = {};
   vm.runInNewContext(outputText, {
-    exports, window, navigator: { onLine: true }, URL, Request, Headers, Event, HTMLElement: class {},
+    exports, window, navigator: { onLine: true }, URL, Request, Headers, Event, CustomEvent, HTMLElement: class {},
     document: { body: { style: { overflow: "" } }, visibilityState: "visible", addEventListener() {}, removeEventListener() {} },
     require: (name) => name === "react" ? {
       useState: () => [expired, value => states.push(value)],
@@ -37,7 +44,9 @@ async function fixture({ authenticated = true, expired = false, valid = true, un
     } : name === "react/jsx-runtime" ? { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }) }
       : name === "react-dom" ? { createPortal: child => child }
       : name === "@/lib/reset-experience-cache" ? { resetExperienceCaches: options => cacheResets.push(options) }
-      : name === "@/lib/experience-resource-cache" ? { invalidateExperienceResources: options => invalidations.push(options) } : {},
+      : name === "@/lib/experience-resource-cache" ? { invalidateExperienceResources: options => invalidations.push(options) }
+      : name === "@/components/experience-scope" ? { useExperienceScope: () => ({ context: { scope: 'account-one' } }) }
+      : name === "@/lib/experience-mutations" ? mutations : {},
   });
   const rendered = exports.SessionExpiryPrompt({ authenticated });
   const cleanups = effects.map(fn => fn());
@@ -85,13 +94,76 @@ test("login validation errors do not trigger another session check", async () =>
   f.cleanup();
 });
 
-test("server action responses check the session even with HTTP 200", async () => {
+test("server-action reads check the session without invalidating data or restarting page effects", async () => {
   const f = await fixture();
   await f.window.fetch("/settings", { method: "POST", headers: { "Next-Action": "action-id" } });
   assert.equal(f.calls.filter(url => url === "/api/auth/session").length, 2);
-  assert.equal(f.invalidations.length, 1);
+  assert.equal(f.invalidations.length, 0);
+  assert.deepEqual(f.events, []);
+  f.cleanup();
+});
+
+test("confirmed server-action writes invalidate the request account and emit the data event", async () => {
+  for (const value of ['1', '2']) {
+    const f = await fixture({ responseHeaders: { 'x-action-revalidated': value } });
+    await f.window.fetch('/settings', { method: 'POST', headers: { 'Next-Action': 'write-action' } });
+    assert.equal(f.invalidations.length, 1);
+    assert.equal(f.invalidations[0].scope, 'account-one');
+    assert.deepEqual(f.events, ['reylumi:experience-mutation']);
+    assert.equal(f.calls.filter(url => url === '/api/auth/session').length, 2);
+    f.cleanup();
+  }
+});
+
+test("explicit access changes remain blocking signals, separate from ordinary data refresh", async () => {
+  const f = await fixture({ responseHeaders: { 'x-reylumi-experience-change': 'scope' } });
+  await f.window.fetch('/settings', { method: 'POST', headers: { 'Next-Action': 'grant-action' } });
+  assert.equal(f.invalidations[0].scope, 'account-one');
+  assert.deepEqual(f.events, ['reylumi:experience-scope-changed']);
+  f.cleanup();
+});
+
+test("passive POST responses including campaign delivery never invalidate resources", async () => {
+  const f = await fixture({ responseStatus: 200 });
+  for (const path of ['/api/explore/search', '/api/explore/feed', '/api/explore/area', '/api/explore/advertising', '/api/public-booking/inspiration-times', '/api/pos/windows-download', '/api/campaigns/delivery']) {
+    await f.window.fetch(path, { method: 'POST' });
+  }
+  assert.deepEqual(f.invalidations, []);
+  assert.deepEqual(f.events, []);
+  f.cleanup();
+});
+
+test("notification writes refresh only their relevant account cache tags", async () => {
+  const f = await fixture({ responseStatus: 200 });
+  await f.window.fetch('/api/notifications', { method: 'POST' });
+  assert.equal(f.invalidations[0].scope, 'account-one');
+  assert.deepEqual(Array.from(f.invalidations[0].tags), ['notification-center']);
   assert.deepEqual(f.events, ['reylumi:experience-mutation']);
   f.cleanup();
+});
+
+test("external successful writes and authentication requests cannot emit ordinary app mutation events", async () => {
+  const f = await fixture({ responseStatus: 200 });
+  await f.window.fetch('https://other.test/write', { method: 'POST' });
+  await f.window.fetch('/api/auth/login', { method: 'POST' });
+  assert.deepEqual(f.invalidations, []);
+  assert.deepEqual(f.events, []);
+  f.cleanup();
+});
+
+test("a write response from before logout or Activity cleanup cannot invalidate the current account", async () => {
+  for (const endSession of ['logout', 'cleanup']) {
+    let finish;
+    const f = await fixture({ apiFetch: target => target === '/api/late-write' ? new Promise(resolve => { finish = resolve; }) : undefined });
+    const pending = f.window.fetch('/api/late-write', { method: 'POST' });
+    if (endSession === 'logout') await f.window.fetch('/api/auth/logout', { method: 'POST' });
+    else f.cleanup();
+    finish(new Response(null, { status: 200 }));
+    await pending;
+    assert.deepEqual(f.invalidations, []);
+    assert.deepEqual(f.events, []);
+    if (endSession === 'logout') f.cleanup();
+  }
 });
 
 test("intentional logout stops expiry checks", async () => {

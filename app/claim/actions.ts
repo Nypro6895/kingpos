@@ -3,6 +3,7 @@
 import {createClient} from '@supabase/supabase-js';
 import {randomUUID} from 'node:crypto';
 import {revalidatePath} from 'next/cache';
+import {withBusinessClaimLookupDiagnostics} from '@/lib/business-claim-diagnostics';
 import {createAuthenticatedSupabaseServerClient} from '@/lib/supabase/server';
 import {getCurrentKingUser} from '@/lib/users/current-user';
 import {setCurrentManageSalonCookie} from '@/lib/current-context';
@@ -28,7 +29,7 @@ function refreshClaim(salonId:string) {
 export async function findBusinessClaimMatchesAction(input:BusinessClaimInput) {
  try {
  const {client}=await actor();
- const {data,error}=await client.rpc('find_business_claim_matches',{p_name:input.name,p_phone:input.phone,p_address:input.address,p_unit:input.unit,p_city:input.city,p_state:input.state});
+ const {data,error}=await withBusinessClaimLookupDiagnostics('suggestions',()=>client.rpc('find_business_claim_matches',{p_name:input.name,p_phone:input.phone,p_address:input.address,p_unit:input.unit,p_city:input.city,p_state:input.state}));
  if (error) throw new Error('Could not check existing salons. Please try again.');
  return {matches:(data??[]) as BusinessClaimMatch[],error:null};
  } catch(error) {return {matches:[] as BusinessClaimMatch[],error:errorMessage(error)};}

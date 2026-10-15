@@ -1770,6 +1770,12 @@
     "bytes": 2130
   },
   {
+    "file": "app/api/business-claims/matches/route.ts",
+    "sha256": "30657e4fcfe9016f53a85d93744b914dea278fc2b94415bb264940da0b9143e1",
+    "sha1": "ba2ea2771bb2f6b8a68b1c69e2a1c3ed7719dc8e",
+    "bytes": 1580
+  },
+  {
     "file": "app/api/campaigns/delivery/route.ts",
     "sha256": "34f0ca609a2cb5a4aee59943de99ba4fcf60dddec9588eb20ebfb8e173ca9974",
     "sha1": "765a8d93a24ef03a28ef3118e6344ad0433fe5da",
@@ -2245,15 +2251,15 @@
   },
   {
     "file": "app/claim/actions.ts",
-    "sha256": "03e0efcdace14b5077c6cf15a51c9a4c6cb3c331b6e3c3217fb32d9c832351af",
-    "sha1": "b2c1e99cbad8b31a720a26db3e9fbd837556790b",
-    "bytes": 8780
+    "sha256": "6abf0722b3c9df55902476a18c57d2542f8c9b97fce6214e64de3bf93b2cfd9a",
+    "sha1": "7b2d57a48ac789a35b5291232d420f888fccce36",
+    "bytes": 9049
   },
   {
     "file": "app/claim/claim-panel.tsx",
-    "sha256": "46e9fae4c28cc367ef86e1132e76b51134f8c3e1b946e3ff2d5dbc1d1fa8aaf8",
-    "sha1": "3fc80851df7fbc7973f36919d9c02ccb85b47510",
-    "bytes": 8793
+    "sha256": "bc042ae1915611ae46f06dde348ad28ea8220ae2573b0a89db989fcd76d401b1",
+    "sha1": "73bbaa7f816ee15d52bc20cf0e8c3d670c57f75f",
+    "bytes": 8869
   },
   {
     "file": "app/claim/customer/actions.ts",
@@ -2827,9 +2833,9 @@
   },
   {
     "file": "app/my-place/my-place-client.tsx",
-    "sha256": "b1d0d963a1b1f85650d815a51dd1be48e8e67e6027fa0143f83c9f6ad1c8394f",
-    "sha1": "8b53a388d512293657b9228d64a2f4057315adbc",
-    "bytes": 19692
+    "sha256": "c3462cae2b016593b04260207266ba6149fa589a7e2bec6c961bcce5c8ad24ff",
+    "sha1": "54f27f935eac46ea25badd213d4920cea47170f4",
+    "bytes": 19458
   },
   {
     "file": "app/my-place/owner-invite-actions.ts",
@@ -2875,9 +2881,9 @@
   },
   {
     "file": "app/navigation-shell.tsx",
-    "sha256": "212ba00a3fb796598b7d4bca25d102f34acf02419a93acc8c291bad882f64e9b",
-    "sha1": "3b90746004fb33de6315671ced1bc0f72ce69a08",
-    "bytes": 101589
+    "sha256": "4b73e2de91db0bd80aedf6069e3d61021331f94beef8dea900741db310d12ec8",
+    "sha1": "8c3920febdc4d0ad26e319818b5b2401d64d63c9",
+    "bytes": 100628
   },
   {
     "file": "app/notifications/actions.ts",
@@ -3331,9 +3337,9 @@
   },
   {
     "file": "app/pos/settings/actions.ts",
-    "sha256": "a5b0dd28ff192e372128e781aa213b35f6d84d0ec9a6e115ebd7c2be648c2273",
-    "sha1": "fa4d020a2d9f4962ad10f433ee48c8fce3a5e96b",
-    "bytes": 19154
+    "sha256": "200951a5aa28879fe187a866be818aa7a922e480134b91a82a5ca7f623adfffb",
+    "sha1": "445bf4fc6215cbbf892247e2db1e816667bd0563",
+    "bytes": 19422
   },
   {
     "file": "app/pos/settings/customer-display-install-panel.tsx",
@@ -3421,9 +3427,9 @@
   },
   {
     "file": "app/quick-workspace-panel.tsx",
-    "sha256": "5bd911d04c0ef7f03c58f1a9bcd9d1cfc88980d9fd3a157f1abd5e3b3cfce3fb",
-    "sha1": "6a8d4ee39cd9a36a2869fae93db59651f829d842",
-    "bytes": 15472
+    "sha256": "fa5c60112c204802de5577a365ad0095d7d7f34ffee8286f94320d2fe2ff880b",
+    "sha1": "c8993a983c244782da57b557f69faf88694c1ea3",
+    "bytes": 15232
   },
   {
     "file": "app/reports/actions.ts",
@@ -3649,15 +3655,15 @@
   },
   {
     "file": "app/salons/actions.ts",
-    "sha256": "2b52fbc25a6a509e0e3f2c776e4bbf5d0318bdd1b83d28f4498adcdc7ae6069e",
-    "sha1": "cc4707a37ffc1470fa96fec8c009afc32c6e4a12",
-    "bytes": 11826
+    "sha256": "ef37073f265805274c1797a1d9d30bfea3fe81122d2fb1b1491ce1401870f979",
+    "sha1": "861043fb35b88a1f0e690e10a07c602bcad62bf7",
+    "bytes": 11966
   },
   {
     "file": "app/salons/claim-suggestions.tsx",
-    "sha256": "4bb20dc1b949f366fd9b4e353c1ab885c928e6f3f7aa145d0f09e0d58ea1c67c",
-    "sha1": "67908ef235b1d7e27f386c2d96f4089de442ed63",
-    "bytes": 5337
+    "sha256": "8abc99ee214a5d0475375c6483269b928ec0f1b91570366b550276146cfb271b",
+    "sha1": "a87a7dc722088d411d9992d16ee1994bbed9aae0",
+    "bytes": 5755
   },
   {
     "file": "app/salons/create-salon-submit-button.tsx",
@@ -3685,9 +3691,9 @@
   },
   {
     "file": "app/service-relay/actions.ts",
-    "sha256": "76aef21076183b6af3e8cffa1c64e345b80fba32f3592b8cf1cee5d0bc217bec",
-    "sha1": "4b5c820ea53a356b94926659c027d2ecef137013",
-    "bytes": 5286
+    "sha256": "17bcb083ffa0e1eb550cd70e0f4f7cc98dce7c283f4ae227e9e27bb30cad8deb",
+    "sha1": "8811f0d6866c4236eb2de6c77ec8bf2aa9ce49c8",
+    "bytes": 5609
   },
   {
     "file": "app/service-relay/customer-relay.tsx",
@@ -4399,9 +4405,9 @@
   },
   {
     "file": "components/experience-scope.tsx",
-    "sha256": "0f87d589f9af8e5a3a8b1a1e8a104c797159f5c1789fdb93c9720d2da7d66854",
-    "sha1": "751cd6484a5ea86e3061139d367131902168f9ce",
-    "bytes": 9576
+    "sha256": "1577f54e831948da9f39e45384a6e9dc5315f85c95de9d2bf0d4fb971b9bf8e1",
+    "sha1": "f1cab889748e9e494ec7613a62b3513395c7c70a",
+    "bytes": 11892
   },
   {
     "file": "components/explore-account-actions.tsx",
@@ -4597,9 +4603,9 @@
   },
   {
     "file": "components/session-expiry-prompt.tsx",
-    "sha256": "6d2ed94ff426a15d3fc1caec6d5ca94230ff9cbe04cba25f69d34fcae1acc3d3",
-    "sha1": "cd9d9b8f007014782c49ef6984e4675c3270d299",
-    "bytes": 7136
+    "sha256": "b8934afeb2dbe203dcf6518e7a28e377e20bd1201efed691a1808f572becb564",
+    "sha1": "e774a9b942082c7f01cfaf3a6d1bfafb1cfd8bb5",
+    "bytes": 8017
   },
   {
     "file": "components/settings-icon.tsx",
@@ -5104,6 +5110,24 @@
     "sha256": "548f50e698ec692fbf3b87ff13b681ac085d2a3b9041a292d11b175f2c267de0",
     "sha1": "b823980b224d616a1f1426dd25106730d3583103",
     "bytes": 10216
+  },
+  {
+    "file": "docs/qa/experience-reload-fix-20261015.txt",
+    "sha256": "0503aba3a431b76fcc2a56ddf400e8d53ad58ec328be7d8f42e06b0facaf8f82",
+    "sha1": "55bc16a521f0da8d2e30b04acc1bc93aee06de56",
+    "bytes": 6297
+  },
+  {
+    "file": "docs/qa/salon-claim-create-20261015.txt",
+    "sha256": "006bcc2ebc14e8c56547968ca4c109bb063d12c3fcfcc9cdfca17f035743e7fe",
+    "sha1": "eb5e9ba8566522d2dd21c6cddeafbd37ef8d05f9",
+    "bytes": 5081
+  },
+  {
+    "file": "docs/qa/workspace-switch-navigation-20261015.txt",
+    "sha256": "d32ba02754460e9df5ff37405238b2b6e4a3885f03badb03f74966c032ee862d",
+    "sha1": "3d1bbfdc8b912077f39de6945e43fafebe1708ca",
+    "bytes": 6109
   },
   {
     "file": "docs/release-policy.txt",
@@ -5706,6 +5730,18 @@
     "bytes": 6391
   },
   {
+    "file": "lib/business-claim-client.ts",
+    "sha256": "1caf33dfce13cd86460c4bef4bcb5949f53dd932db60d696f7dbd655fa78c6f1",
+    "sha1": "6f074a4ce446b082f63d2d9e0c9573d211baca22",
+    "bytes": 862
+  },
+  {
+    "file": "lib/business-claim-diagnostics.ts",
+    "sha256": "a26763f8438c3b955db4b832120069a3a3bd1de5170df73a005d76cc3136b918",
+    "sha1": "c21cddb7c8ead508af55229eecba399c395448e4",
+    "bytes": 3054
+  },
+  {
     "file": "lib/business-claim-provider.ts",
     "sha256": "bc6b6ea74563f73b7a1de685252d10a74e6a822ee3f14c7bce0eec9a00dc828a",
     "sha1": "b8a881b42ca932d11599d8469b0ba1206b6f0419",
@@ -5848,6 +5884,18 @@
     "sha256": "1e60268d2f3ba2e5fccecc3fcb3bf5c5151e86818a65c91c33c579af25dc667b",
     "sha1": "8dc3a257b91bd2e18dffd9fe830e7b890d8e5a53",
     "bytes": 1221
+  },
+  {
+    "file": "lib/experience-mutations.ts",
+    "sha256": "e35dbcc187e3e423ca9f5d6fe9af3f2a831305977293d9c8ea9a7203f442a07c",
+    "sha1": "e6887edf46b4528270120dedfed2450edc73b090",
+    "bytes": 1971
+  },
+  {
+    "file": "lib/experience-reload.ts",
+    "sha256": "f82c32591dc34230ecad90ba24d5e507ee9144b8d403c99e2c7101db30ec656b",
+    "sha1": "777d9c1f4c93f776ef81b2ae656b356ae47bb51d",
+    "bytes": 903
   },
   {
     "file": "lib/experience-resource-cache.ts",
@@ -7404,6 +7452,12 @@
     "bytes": 1515
   },
   {
+    "file": "lib/workspace-navigation.ts",
+    "sha256": "3db897693d0d09dae80a40f3f2582fd7c021feb1aed9f9a4100dd42c3a890b3d",
+    "sha1": "8e13f934134d6f626503fa414770d45bd915e3b6",
+    "bytes": 518
+  },
+  {
     "file": "lib/workspace-pending.ts",
     "sha256": "b1a63486e00bb4bfd639cacf58778bd738e497428cd9f2374ede7e1fec0b71b7",
     "sha1": "890fb62107cde3709067fba5dbd99d4276a6deac",
@@ -8686,6 +8740,60 @@
     "sha256": "cc27a7ad0744a046994e7c19552c46d993cb32084ca731d47c33039c761f0c4c",
     "sha1": "5f558cf967443a1cdc5b9da646f32e8fe9efa498",
     "bytes": 1582
+  },
+  {
+    "file": "releases/changes/2026-10-15T04-49-11-894Z-1580e2e9-25ca-4490-8b58-fd7a61255f4c.json",
+    "sha256": "da6211e95236198fdfb9d86f58b33e19861764fbefeb25430e3faf8112e80633",
+    "sha1": "23ef3f161e071913a422f28939b4d888e4c39690",
+    "bytes": 2783
+  },
+  {
+    "file": "releases/changes/2026-10-15T04-54-33-962Z-d3ee78c3-39f8-4e1c-80fc-52608e84bae9.json",
+    "sha256": "cb83daf3f9f267a4707362f91e9fcac075dda1e2b9551e3a08c5abf199503da5",
+    "sha1": "cab6da0ff200d79f73e41351f4c7d712a2e81087",
+    "bytes": 877
+  },
+  {
+    "file": "releases/changes/2026-10-15T16-23-02-343Z-5b4368a3-b932-4ddd-abf6-77f3fda5b9d3.json",
+    "sha256": "b0ab5cb5be0edf7b20a2fbbd68d75e1c4182637ae3dcc643ce75ad0669d4d01f",
+    "sha1": "8e59dabb73b90b24db15bc6e1f2cfc7fb813fb99",
+    "bytes": 2958
+  },
+  {
+    "file": "releases/changes/2026-10-15T16-23-02-618Z-a21f271b-c2c9-42a0-8850-652beaf52c13.json",
+    "sha256": "f19ecf25e202754db2aef6cfa0fdbd560ef165b62b18fe6c4043d8f05e80a8e6",
+    "sha1": "cfbff4abdfb43d7f1c0b8b7a9a48b1238dacd022",
+    "bytes": 4838
+  },
+  {
+    "file": "releases/changes/2026-10-15T16-31-19-149Z-f4a2af6f-9210-4fbd-a2c1-7b2fc52ca26a.json",
+    "sha256": "99b532d983607118f22560ba4572662b1acf79dbe521b78b8a2052e7f495cbad",
+    "sha1": "00c12534d7fc3a86791481898d93c010590d050f",
+    "bytes": 1422
+  },
+  {
+    "file": "releases/changes/2026-10-15T16-44-42-102Z-f9c4eba2-3b2a-464b-840f-d909275a47fc.json",
+    "sha256": "d75dd80b048b3ab777c837309ece029722759c4798a1813a6b06eab88f2eb2d1",
+    "sha1": "c8c57cccbbc5dfa33fea3293c631dbb004e37c89",
+    "bytes": 903
+  },
+  {
+    "file": "releases/changes/2026-10-15T16-59-55-523Z-6b2fa9d1-d57a-47b2-840e-370755cc8f23.json",
+    "sha256": "0b100c8f461c03cc6d15c491a9a379044c965168ff78c488d8c68d792dcb6291",
+    "sha1": "13c38d39c1709fcf75a90d5f606cf06e00fc8994",
+    "bytes": 3290
+  },
+  {
+    "file": "releases/changes/2026-10-15T17-42-22-659Z-2c799190-a0b0-4765-9f9c-0e889c676d8c.json",
+    "sha256": "c1e8ac9678ad49407ad44ddf9562625cccd19b95bb5221d99508e469234364b7",
+    "sha1": "1ff088484c305eb03e81cf467f991723f7756946",
+    "bytes": 6156
+  },
+  {
+    "file": "releases/changes/2026-10-15T17-45-59-776Z-391ea378-f94f-4293-ac2d-20db9d95531c.json",
+    "sha256": "58302b71e46a5389697f88cd46b8949d4cd0610d44c75df10e77218c26208387",
+    "sha1": "bd16cac803c27dc0e26e5bcbccb9e18d2b53b699",
+    "bytes": 4522
   },
   {
     "file": "releases/history/2026-10-15T03-17-17-031Z-b21240c4-ef5a-44a5-b9f9-9f4b515ecac4.json",
@@ -10606,6 +10714,12 @@
     "sha256": "e1ae76d43fa57fa21d61633423828146014016cc9fade3af79e12d45c35e6f64",
     "sha1": "08e36c19d8c22c867a8de9cccd4572eebc04f5d0",
     "bytes": 5708
+  },
+  {
+    "file": "supabase/migrations/20261015051000_business_claim_lookup_indexes.sql",
+    "sha256": "805f050f26bc71b4354cd762f5a09e5b7458452664b21126e61555f272cc8c16",
+    "sha1": "c63edca70af948eae7667c2cc232d18c7d0e792b",
+    "bytes": 4377
   },
   {
     "file": "tsconfig.json",

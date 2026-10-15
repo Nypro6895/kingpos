@@ -1,0 +1,32 @@
+{
+  "changeId": "workspace-switch-navigation-20261015",
+  "channels": [
+    "web"
+  ],
+  "dependencies": [
+    "salon-claim-create-fix-20261015"
+  ],
+  "status": "working",
+  "files": [
+    "app/navigation-shell.tsx",
+    "app/my-place/my-place-client.tsx",
+    "app/quick-workspace-panel.tsx",
+    "lib/workspace-navigation.ts"
+  ],
+  "kind": "change",
+  "summary": "Fix workspace switching race in account menus and My Place while retaining server authorization",
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Authenticated workspace switching and permission checks"
+    }
+  ],
+  "source": {
+    "commit": "282bf429a4c9869b2f66e862a3194372e5c4c11d"
+  },
+  "id": "f9c4eba2-3b2a-464b-840f-d909275a47fc",
+  "recordedAt": "2026-10-15T16:44:42.102Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-claim-create-fix\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

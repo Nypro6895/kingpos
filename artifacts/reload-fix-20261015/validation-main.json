@@ -1,5 +1,5 @@
 {
-  "exitCode": 0,
+  "exitCode": 1,
   "files": [
     "tests/bounded-get-runtime.test.mjs",
     "tests/auth-read-availability.test.mjs",
@@ -12,7 +12,6 @@
     "tests/experience-media-cache.test.mjs",
     "tests/experience-cache-lifecycle.test.mjs",
     "tests/experience-route-policies.test.mjs",
-    "tests/experience-scope-ui.test.mjs",
     "tests/use-experience-resource-runtime.test.mjs",
     "tests/live-workspace-experience.test.mjs",
     "tests/live-workspace-experience-ui.test.mjs",
@@ -38,7 +37,6 @@
     "tests/app-startup-shell-ui.test.mjs",
     "tests/ios-client.test.mjs",
     "tests/ios-startup.test.mjs",
-    "tests/ios-startup-ui.test.mjs",
     "tests/explore-query-ssr-runtime.test.mjs",
     "tests/explore-search-refresh-runtime.test.mjs",
     "tests/explore-search-context-ui-runtime.test.mjs",
@@ -50,8 +48,9 @@
     "tests/explore-gps-experience-cache.test.mjs",
     "tests/explore-experience-refresh.test.mjs"
   ],
-  "tests": 195,
-  "passed": 195,
-  "failed": 0,
-  "skipped": 0
+  "tests": 193,
+  "passed": 189,
+  "failed": 4,
+  "skipped": 0,
+  "checkedAt": "2026-10-15T16:47:02.874Z"
 }

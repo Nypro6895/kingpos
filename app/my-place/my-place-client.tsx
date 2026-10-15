@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AccountProfileEditor } from "@/app/account/account-profile-editor";
 import { QueryErrorDialog } from "@/app/query-error-dialog";
-import { switchWorkspaceDestination } from "@/app/salons/actions";
+import { navigateToWorkspace } from "@/lib/workspace-navigation";
 import type {
   CurrentWorkspaceAction,
   CurrentWorkspaceOption as Workspace,
@@ -124,14 +124,7 @@ export function MyPlaceClient({
     setPendingId(workspace.id);
     startTransition(async () => {
       try {
-        const result = await switchWorkspaceDestination({
-          workspaceId: workspace.id,
-          destinationHref: action.href,
-        });
-        if (!result.ok) setNotice({ text: result.message, error: true });
-        else {
-          router.push(result.href);
-        }
+        navigateToWorkspace(workspace.id, action.href);
       } catch {
         setNotice({
           text: "Unable to open this workspace. Please try again.",

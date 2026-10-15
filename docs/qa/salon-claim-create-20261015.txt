@@ -1,0 +1,33 @@
+KIỂM TRA VÀ SỬA CLAIM / TẠO SALON — 15/10/2026
+
+Trạng thái: mã đã sửa và kiểm thử trên môi trường riêng; CHƯA DEPLOY hoặc áp dụng migration lên production.
+Nguồn triển khai tham chiếu: 34ea63589e7e8caf5718bf4ffe54e403eab6775a (deployment dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6 ở lần kiểm tra trước).
+Worktree: C:/Users/giuse/.codex/worktrees/salon-claim-create-fix/kingpos
+
+Nguyên nhân và bản sửa:
+- find_business_claim_matches cũ duyệt/chuẩn hóa cả danh bạ, kể cả khi chỉ có tên và không thể có kết quả hợp lệ; production đã tái hiện SQLSTATE 57014 khoảng 8 giây.
+- Migration mới thêm ba index đúng hàm chuẩn hóa, tìm ứng viên theo phone/address/city trước khi xét quyền hiển thị và xếp hạng. Giữ thứ tự điểm, chuẩn hóa, điều kiện suite và salon công khai/active/đã xuất bản.
+- Gợi ý trên form chuyển từ Server Action POST sang GET xác thực, private/no-store. POST trước đây bị global fetch monitor xem là mutation rồi làm Activity reset form; kết quả/lỗi có thể bị mất. Hủy lượt tìm cũ, bỏ kết quả hết hiệu lực và giới hạn thời gian chờ.
+- Open salon management dùng đường handoff workspace đã có xác thực bằng document navigation. Tránh action đổi cookie làm reload trang claim trước khi router.push chạy; quyền hiện tại vẫn được kiểm tra.
+- Tích hợp logging an toàn từ task chẩn đoán trước, không ghi input, token hoặc nguyên văn SQL lỗi.
+
+Kết quả kiểm thử:
+- 13 kiểm tra tự động PASS; ESLint và kiểm tra routing tạo salon PASS; production build PASS.
+- So sánh kết quả matcher cũ/mới trên 14 nhóm đầu vào và visibility/ranking/permission. 30.000 salon giả: truy vấn mới khoảng 1–12 ms trong PGlite; đây không phải đo trên production.
+- Dựng backend Supabase độc lập, replay nguyên 261 migration của baseline, áp dụng migration mới và chạy business-claims.integration.sql trong transaction rollback: PASS.
+- Auth password thật + JWT người dùng: tạo salon, retry cùng key không tạo thêm, tùy chọn Owner làm staff, không được tạo dưới account không có quyền: PASS.
+- Trình duyệt đăng nhập qua form thật. Giả lập lookup 503/57014: giữ nội dung form và báo lỗi, không tạo salon. Tắt lỗi và bấm thử lại: hiện Salon created successfully; có đúng một QA Browser Salon, quyền Owner và không tạo staff khi bỏ chọn.
+- Điền tên/city salon tồn tại: hiện gợi ý claim, không tạo salon trùng. Đi từ gợi ý, gửi support claim, nhận waiting và liên kết hội thoại riêng.
+- Applicant tự duyệt bị từ chối. Reviewer giả riêng duyệt bằng review_business_claim_with_message; không thử giao diện admin.
+- Từ Personal account trên localhost, bấm Open salon management trên claim approved: đến /salon-profile đúng QA Claim Salon, sidebar Owner, các điều khiển quản lý hiện đúng. Booking của fixture vẫn tắt.
+- HTTP lookup trên backend riêng sau khi bỏ overhead Docker mỗi request: 21–24 ms.
+
+Giới hạn / việc còn lại:
+- Chưa deploy web/SQL nên lỗi live chỉ được xác nhận nguyên nhân, chưa được tuyên bố đã hết trên production. Lần deploy phải lấy baseline live mới, ghép thay đổi và guard alias theo release-policy.
+- Không gửi SMS/voice/OTP thật, không kiểm tra email signup hoặc payment trên iPhone thật; không submit App Store hay thay đổi giá/pháp lý/privacy.
+- Đây là thay đổi web + SQL tương thích app hiện tại; không sửa Swift, bundled assets, cấu hình hay bridge nên không yêu cầu native build cho riêng patch này.
+- Ghi nhận ngoài phạm vi patch: chuyển từ trang salon-profile về Personal account bằng menu hiện tại có thể quay về My Place kèm lỗi Choose a valid salon workspace. Chưa sửa cơ chế chuyển workspace toàn cục; link sau claim đã được kiểm tra độc lập thành công.
+- Môi trường thử ban đầu có overhead docker exec mỗi request gây timeout giả; đã dùng relay thường trực trong network nội bộ. Bắt đầu bằng 127.0.0.1 dẫn đến redirect localhost không chia sẻ cookie; bài thử chuyển workspace sau claim được chạy lại nhất quán trên localhost và thành công.
+- Một lần lặp kiểm tra account không có quyền sau khi claim đã duyệt dùng account nay đã thuộc QA, nên kỳ vọng từ chối không còn đúng. Harness đã dùng account độc lập mới; kiểm tra từ chối đúng quyền PASS.
+
+Bằng chứng JSON/log ở cùng thư mục: backend.log, backend-create-result.json, approval-result.json, ui-database-verification.json, runtime-evidence.json, build-final.log. Ảnh UI đã hiển thị trong hội thoại, không lưu thành file.

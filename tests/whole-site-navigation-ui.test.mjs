@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
 import { join } from 'node:path';
-import { chromium } from 'playwright-core';
+import { chromium, webkit } from 'playwright-core';
+const isWebKit = process.env.TEST_BROWSER_ENGINE === 'webkit';
+const launchBrowser = () => isWebKit ? webkit.launch({ headless: true }) : chromium.launch({ args: ['--no-proxy-server'], executablePath: process.env.TEST_BROWSER_PATH, headless: true });
 
 test('production Next navigation retains Market and legal pages without reloading the document or existing assets', { skip: !process.env.TEST_APP_URL || !process.env.TEST_BROWSER_PATH }, async () => {
-  const browser = await chromium.launch({ args: ['--no-proxy-server'], executablePath: process.env.TEST_BROWSER_PATH, headless: true });
+  const browser = await launchBrowser();
   const measurements = [];
   try {
     for (const width of [390, 412, 1280]) {
@@ -19,11 +21,22 @@ test('production Next navigation retains Market and legal pages without reloadin
       });
       page.on('pageerror', error => errors.push(error.message));
       await page.goto(`${process.env.TEST_APP_URL}/market`);
-      await page.getByRole('textbox', { name: 'Search features', exact: true }).fill('Payroll');
+      // The progressive startup shell intentionally gives way to the final
+      // Market component. Test Activity retention of that final component;
+      // startup interactivity and handoff have separate focused coverage.
+      await page.waitForFunction(() => !document.querySelector('[data-market-startup]') && document.querySelector('[data-reylumi-shell-ready="true"]') && document.querySelector('input[aria-label="Search features"]')?.getClientRects().length);
+      // Real keyboard events let selective hydration attach the leaf's input
+      // handler before editing; a single fill can mutate streamed DOM only.
+      await page.getByRole('textbox', { name: 'Search features', exact: true }).pressSequentially('Payroll', { delay: 25 });
+      await page.getByRole('button', { name: 'Clear search', exact: true }).waitFor();
+      assert.equal(await page.getByRole('textbox', { name: 'Search features', exact: true }).inputValue(), 'Payroll', 'the final Market component accepted the edit before navigation');
       await page.evaluate(() => { window.originalDocument = document; window.originalMarket = document.querySelector('input[aria-label="Search features"]'); });
       const loadedAssets = new Set(assets);
       await page.getByRole('link', { name: 'Privacy', exact: true }).click();
       await page.getByRole('heading', { name: 'Privacy Policy', exact: true }).waitFor();
+      // LegalLayout first streams the page in an auth-unresolved fallback.
+      // Its final guest shell exposes Login; retain that resolved page node.
+      await page.locator('[data-testid="guest-navigation-shell"]').filter({ visible: true }).getByRole('link', { name: 'Login', exact: true }).waitFor();
       await page.getByRole('heading', { name: 'Privacy Policy', exact: true }).evaluate(element => { window.originalPrivacy = element; });
       const start = performance.now();
       await page.goBack();
@@ -48,12 +61,12 @@ test('production Next navigation retains Market and legal pages without reloadin
     }
     const output = process.env.TEST_NAVIGATION_ARTIFACT_DIR || 'artifacts/experience-cache';
     mkdirSync(output, { recursive: true });
-    writeFileSync(join(output, 'whole-site-navigation-measurements.json'), JSON.stringify({ environment: 'local production build, desktop Chromium mobile viewports', measurements }, null, 2));
+    writeFileSync(join(output, 'whole-site-navigation-measurements.json'), JSON.stringify({ environment: `production build, desktop ${isWebKit ? 'WebKit' : 'Chromium'} mobile viewports`, measurements }, null, 2));
   } finally { await browser.close(); }
 });
 
 test('production sensitive form return clears credentials and receives a fresh server revision', { skip: !process.env.TEST_APP_URL || !process.env.TEST_BROWSER_PATH }, async () => {
-  const browser = await chromium.launch({ args: ['--no-proxy-server'], executablePath: process.env.TEST_BROWSER_PATH, headless: true });
+  const browser = await launchBrowser();
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];

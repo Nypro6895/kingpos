@@ -1,0 +1,47 @@
+{
+  "verified": true,
+  "checkedAt": "2026-10-15T17:32:12.879Z",
+  "buildId": "cug6GJRTWuDOiOajuoEB4",
+  "scope": "Normal built navigation, retained DOM/query, sensitive form reset and optional memory race on the final workspace/reload assembly",
+  "results": [
+    {
+      "engine": "chromium",
+      "exitCode": 0,
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "validation-assembled-chromium.log"
+    },
+    {
+      "engine": "webkit",
+      "exitCode": 0,
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "validation-assembled-webkit.log"
+    }
+  ],
+  "sourceHashes": {
+    "components/experience-scope.tsx": "1577f54e831948da9f39e45384a6e9dc5315f85c95de9d2bf0d4fb971b9bf8e1",
+    "components/session-expiry-prompt.tsx": "b8934afeb2dbe203dcf6518e7a28e377e20bd1201efed691a1808f572becb564",
+    "lib/experience-mutations.ts": "e35dbcc187e3e423ca9f5d6fe9af3f2a831305977293d9c8ea9a7203f442a07c",
+    "lib/experience-reload.ts": "f82c32591dc34230ecad90ba24d5e507ee9144b8d403c99e2c7101db30ec656b",
+    "app/navigation-shell.tsx": "4b73e2de91db0bd80aedf6069e3d61021331f94beef8dea900741db310d12ec8",
+    "app/my-place/my-place-client.tsx": "c3462cae2b016593b04260207266ba6149fa589a7e2bec6c961bcce5c8ad24ff",
+    "app/quick-workspace-panel.tsx": "fa5c60112c204802de5577a365ad0095d7d7f34ffee8286f94320d2fe2ff880b",
+    "lib/workspace-navigation.ts": "3db897693d0d09dae80a40f3f2582fd7c021feb1aed9f9a4100dd42c3a890b3d",
+    "tests/whole-site-navigation-ui.test.mjs": "291c401242107f9ec863ce1fe94d524ace52942f72c341c2ab0c6885b056d589",
+    "tests/market-navigation-race-ui.test.mjs": "d0b121ea026cca9e2112ae2873efce0607280034da3caa37c633923840851acf"
+  },
+  "serverBuildIdentity": {
+    "url": "http://127.0.0.1:3098/market",
+    "expectedBuildId": "cug6GJRTWuDOiOajuoEB4",
+    "htmlIncludesExpected": true,
+    "checkedAt": "2026-10-15T17:37:53.824Z",
+    "listenerProcessId": 23736,
+    "previousServerProcessId": 21332,
+    "serverRestartExecSession": 85576
+  }
+}

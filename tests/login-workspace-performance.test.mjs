@@ -103,6 +103,7 @@ function workspaceFixture({ authenticated = true, allowed = true } = {}) {
       setNormalizedWorkspaceContext: async option => calls.push(`cookie:${option.id}`),
     },
     "@/lib/permissions": {}, "@/lib/routes": { routes: {} }, "@/lib/supabase/server": {},
+    "@/lib/business-claim-diagnostics": { withBusinessClaimLookupDiagnostics: () => assert.fail("Workspace switching must not run a claim lookup") },
     "next/cache": { revalidatePath: (path, type) => calls.push(`invalidate:${path}:${type}`), refresh: () => calls.push("refresh") },
     "next/navigation": {},
   });

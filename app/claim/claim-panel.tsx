@@ -3,7 +3,7 @@
 import {useState,useTransition,useEffect} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
-import {beginBusinessClaimAction,confirmBusinessClaimAction,requestBusinessClaimSupportAction,openClaimedSalonAction} from './actions';
+import {beginBusinessClaimAction,confirmBusinessClaimAction,requestBusinessClaimSupportAction} from './actions';
 import type {BusinessClaimRequest} from '@/lib/business-claims';
 
 const button='rounded-xl bg-zinc-950 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50';
@@ -29,13 +29,13 @@ export function ClaimPanel({salonId,phone,unclaimed,messagingReady,deliveryMetho
  if(result.error)setError(result.error);else {setStatus(result.status);router.refresh();if(result.status==='approved')window.dispatchEvent(new Event('windows-pos:claim-approved'));}
  }catch{setError('Could not confirm your code. Please try again.');}});
  }
- function openSalon() {
- setError(null);startTransition(async()=>{try{const result=await openClaimedSalonAction(salonId);if(result.error)setError(result.error);else router.push('/salon-profile');}catch{setError('Could not open your salon. Please try again.');}});
- }
+ // Use the existing authorized workspace handoff as a document navigation.
+ // A cookie-changing action can reload this page during scope validation before
+ // a subsequent client router.push runs. The handoff verifies current membership.
  return <div className="mt-5 grid gap-4">
  {error?<p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800">{error}</p>:null}
  {initialRequest?.support_report_id?<Link href={`/support/${initialRequest.support_report_id}`} className="rounded-xl border border-zinc-300 p-4 text-sm font-semibold underline">View request, decision & conversation</Link>:null}
- {['needs_info','rejected','expired'].includes(status??'') && initialRequest?.support_report_id?<div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-950"><p className="font-semibold">{status==='needs_info'?'More information is needed':status==='rejected'?'Your ownership claim was not approved':'This request is no longer active'}</p><p className="mt-2 whitespace-pre-wrap">{initialRequest.review_reason}</p><p className="mt-2">{status==='needs_info'?'Open the conversation to send the requested details or documents.':status==='rejected'?'Open the conversation to submit new evidence and request reconsideration.':'Contact support through the conversation if you still need help.'}</p></div>:status==='approved'?<><p className="rounded-xl bg-green-50 p-4 text-sm text-green-900">Your claim is approved. You can manage this salon.</p><button className={button} disabled={pending} onClick={openSalon}>Open salon management</button></>:
+ {['needs_info','rejected','expired'].includes(status??'') && initialRequest?.support_report_id?<div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-950"><p className="font-semibold">{status==='needs_info'?'More information is needed':status==='rejected'?'Your ownership claim was not approved':'This request is no longer active'}</p><p className="mt-2 whitespace-pre-wrap">{initialRequest.review_reason}</p><p className="mt-2">{status==='needs_info'?'Open the conversation to send the requested details or documents.':status==='rejected'?'Open the conversation to submit new evidence and request reconsideration.':'Contact support through the conversation if you still need help.'}</p></div>:status==='approved'?<><p className="rounded-xl bg-green-50 p-4 text-sm text-green-900">Your claim is approved. You can manage this salon.</p><a className={button} href={`/workspace/open?${new URLSearchParams({workspace_id:`manage:${salonId}`,destination:"/salon-profile"})}`}>Open salon management</a></>:
  status==='waiting'?<><p role="status" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-950">Your request is waiting for ownership review. We will notify you when there is a decision or more information is needed.</p><p className="text-sm text-zinc-600">{initialRequest?.support_reason || 'Our team will review your authority to manage this salon.'}</p><Link href={`/explore/salons/${salonId}`} className="text-sm underline">Back to salon</Link><button type="button" className="justify-self-start text-sm underline" onClick={()=>setSupport(!support)} aria-expanded={support}>Add supporting information</button>{support?<label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={authorized} onChange={event=>setAuthorized(event.target.checked)} className="mt-1 size-4"/>I own this salon or am authorized to manage it.</label>:null}</>:
  <>
  {initialRequest?.review_reason && status==='rejected'?<p className="text-sm text-zinc-600">Previous decision: {initialRequest.review_reason}</p>:null}

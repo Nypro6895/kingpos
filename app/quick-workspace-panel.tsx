@@ -3,7 +3,7 @@
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ActionDialog } from "@/app/action-dialog";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
-import { switchWorkspaceDestination } from "@/app/salons/actions";
+import { navigateToWorkspace } from "@/lib/workspace-navigation";
 import {
   CurrentWorkspaceCard,
   HubIcon,
@@ -201,19 +201,9 @@ export function QuickWorkspacePanel({
         return;
       }
 
-      const result = await switchWorkspaceDestination({
-        destinationHref: action.href,
-        workspaceId: workspace.id,
-      });
-
-      if (!result.ok) {
-        setError(result.message);
-        setPendingKey(null);
-        return;
-      }
+      navigateToWorkspace(workspace.id, action.href);
 
       closeAndFocus();
-      router.push(result.href);
       setPendingKey(null);
     });
   };
