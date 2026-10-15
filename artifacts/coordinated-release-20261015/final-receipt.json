@@ -1,0 +1,312 @@
+{
+  "releaseId": "coordinated-release-20261015",
+  "completedAt": "2026-10-15T04:19:19.491Z",
+  "web": {
+    "status": "published",
+    "verified": true,
+    "deploymentId": "dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6",
+    "baselineDeploymentId": "dpl_2kiu8uiZSBMHpjAmhTnLdVysNARU",
+    "sourceSha256": "81dbb3429069ab2edf8b91df216bf02fc33eab5d243e63a81b3db4c326d93a33",
+    "overlaySha256": "aa9b975bdbaf3963cfade64e0110379af885fc3fb29a7c027c37ca96eb41f00d",
+    "commit": "34ea63589e7e8caf5718bf4ffe54e403eab6775a",
+    "url": "https://reylumi.com",
+    "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\final-receipt.json"
+  },
+  "webReleaseEvent": "6a5f56a4-537e-42e3-9875-6d5c8e17d401",
+  "selectedWebEvents": [
+    "ce7f04df-5333-4e65-92e0-77c6b67ce53d",
+    "80b17b4f-e34e-4f23-b7dd-d42fd9081003",
+    "23eecbec-5dcc-437f-a030-163ac75a6478",
+    "19eae303-672f-41c0-9f3e-11f2758b691b",
+    "d286fc90-496c-4ca3-aa09-b792d70ee99d",
+    "e1c69074-dea4-493b-b90c-d106f1b8e867",
+    "145823cc-a295-4e59-8b27-8a2dc08b0fef"
+  ],
+  "baselineSourceSha256": "861ae4c68e8ece9cea8ba04d8616bdfd91854dd529320e10d4fd952930bec463",
+  "sourceFiles": 1825,
+  "promotion": {
+    "deploymentId": "dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6",
+    "baselineDeploymentId": "dpl_2kiu8uiZSBMHpjAmhTnLdVysNARU",
+    "startedAt": "2026-10-15T04:13:33.761Z",
+    "guard": {
+      "exitCode": 0,
+      "output": "Production baseline verified: dpl_2kiu8uiZSBMHpjAmhTnLdVysNARU\n",
+      "checkedAt": "2026-10-15T04:13:38.969Z"
+    },
+    "promotion": {
+      "exitCode": 0,
+      "finishedAt": "2026-10-15T04:13:47.249Z",
+      "output": "Vercel CLI 64.2.0 (Node.js 24.18.0)\nFetching deployment \"https://kingpos-ii8q4w2g0-kingpos.vercel.app\" in kingpos…\n> Fetching deployment \"https://kingpos-ii8q4w2g0-kingpos.vercel.app\" in kingpos…\nPromote in progress…\nPromote in progress…\nPromote in progress…\nPromote in progress…\n> Promote in progress…\n> Success! kingpos was promoted to kingpos-ii8q4w2g0-kingpos.vercel.app (dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6) [2s]\n"
+    }
+  },
+  "sourceVerification": {
+    "id": "dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6",
+    "url": "kingpos-ii8q4w2g0-kingpos.vercel.app",
+    "state": "READY",
+    "errorCode": null,
+    "errorMessage": null,
+    "checkedAt": "2026-10-15T04:13:58.084Z",
+    "sourceFilesVerified": 1825,
+    "sourceSha256": "81dbb3429069ab2edf8b91df216bf02fc33eab5d243e63a81b3db4c326d93a33",
+    "exactSourceMatch": true
+  },
+  "checks": {
+    "build": "Production webpack build and TypeScript passed; 219 routes",
+    "web": {
+      "exitCode": 0,
+      "files": [
+        "tests/bounded-get-runtime.test.mjs",
+        "tests/auth-read-availability.test.mjs",
+        "tests/auth-session-parallel-validation.test.mjs",
+        "tests/experience-auth-availability.test.mjs",
+        "tests/experience-context.test.mjs",
+        "tests/experience-state.test.mjs",
+        "tests/experience-resource-cache.test.mjs",
+        "tests/experience-reset.test.mjs",
+        "tests/experience-media-cache.test.mjs",
+        "tests/experience-cache-lifecycle.test.mjs",
+        "tests/experience-route-policies.test.mjs",
+        "tests/experience-scope-ui.test.mjs",
+        "tests/use-experience-resource-runtime.test.mjs",
+        "tests/live-workspace-experience.test.mjs",
+        "tests/live-workspace-experience-ui.test.mjs",
+        "tests/login-workspace-performance.test.mjs",
+        "tests/business-context-performance.test.mjs",
+        "tests/loading-routes-runtime.test.mjs",
+        "tests/market-experience.test.mjs",
+        "tests/market-parallel-reads.test.mjs",
+        "tests/market-startup.test.mjs",
+        "tests/market-startup-ui.test.mjs",
+        "tests/lazy-payment-sdk-ui.test.mjs",
+        "tests/today-progressive.test.mjs",
+        "tests/today-progressive-ui.test.mjs",
+        "tests/today-dashboard-contract.test.mjs",
+        "tests/today-metrics-ui.test.mjs",
+        "tests/today-activity-buckets.test.mjs",
+        "tests/today-metric-assessment.test.mjs",
+        "tests/today-sales-comparison.test.mjs",
+        "tests/staff-today-refresh.test.mjs",
+        "tests/staff-today-change-events.test.mjs",
+        "tests/render-permissions.test.mjs",
+        "tests/optional-app-startup.test.mjs",
+        "tests/app-startup-shell-ui.test.mjs",
+        "tests/ios-client.test.mjs",
+        "tests/ios-startup.test.mjs",
+        "tests/ios-startup-ui.test.mjs",
+        "tests/explore-query-ssr-runtime.test.mjs",
+        "tests/explore-search-refresh-runtime.test.mjs",
+        "tests/explore-search-context-ui-runtime.test.mjs",
+        "tests/explore-auto-load-runtime.test.mjs",
+        "tests/explore-social-service-runtime.test.mjs",
+        "tests/explore-progressive-startup.test.mjs",
+        "tests/explore-progressive-startup-ui.test.mjs",
+        "tests/nail-discovery-runtime.test.mjs",
+        "tests/explore-gps-experience-cache.test.mjs",
+        "tests/explore-experience-refresh.test.mjs"
+      ],
+      "tests": 195,
+      "passed": 195,
+      "failed": 0,
+      "skipped": 0
+    },
+    "regression": {
+      "exitCode": 0,
+      "files": [
+        "tests/account-deletion-flow-contract.test.mjs",
+        "tests/explore-continuation-runtime.test.mjs",
+        "tests/explore-search-recommendations-runtime.test.mjs",
+        "tests/explore-empty-recommendations-runtime.test.mjs",
+        "tests/explore-social-feed-runtime.test.mjs",
+        "tests/market-safari-booking-deposit-ui.test.mjs",
+        "tests/booking-deposit-market-flow.test.mjs",
+        "tests/public-booking-cache-scope-ui.test.mjs",
+        "tests/guest-manage-ui.test.mjs",
+        "tests/mobile-landscape-legal-runtime.test.mjs"
+      ],
+      "tests": 59,
+      "passed": 59,
+      "failed": 0,
+      "skipped": 0
+    },
+    "productionBrowser": {
+      "exitCode": 0,
+      "files": [
+        "tests/whole-site-navigation-ui.test.mjs",
+        "tests/production-startup-stream-ui.test.mjs",
+        "tests/market-navigation-race-ui.test.mjs"
+      ],
+      "tests": 4,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "bootstrap": {
+      "exitCode": 0,
+      "files": [
+        "tests/portable-custom-service-migration.integration.test.mjs"
+      ],
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "live": {
+      "deploymentId": "dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6",
+      "environment": "https://reylumi.com, production Chromium mobile and desktop viewports",
+      "checkedAt": "2026-10-15T04:16:12.011Z",
+      "pages": [
+        {
+          "route": "/market",
+          "status": 200,
+          "bytes": 104015,
+          "url": "https://reylumi.com/market"
+        },
+        {
+          "route": "/privacy",
+          "status": 200,
+          "bytes": 200535,
+          "url": "https://reylumi.com/privacy"
+        },
+        {
+          "route": "/community",
+          "status": 200,
+          "bytes": 141270,
+          "url": "https://reylumi.com/community"
+        },
+        {
+          "route": "/login",
+          "status": 200,
+          "bytes": 78183,
+          "url": "https://reylumi.com/login"
+        },
+        {
+          "route": "/explore",
+          "status": 200,
+          "bytes": 197560,
+          "url": "https://reylumi.com/explore"
+        }
+      ],
+      "exitCode": 0,
+      "files": [
+        "tests/whole-site-navigation-ui.test.mjs",
+        "tests/market-navigation-race-ui.test.mjs"
+      ],
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "native": {
+      "tests": 17,
+      "failed": 0,
+      "simulator": "passed",
+      "unsignedArchive": "passed",
+      "signedArchive": "passed",
+      "upload": "accepted"
+    }
+  },
+  "database": {
+    "migration": "20261015010000_booking_concurrency_guards.sql",
+    "applied": true,
+    "verifiedAt": "2026-10-15T03:27:21.432Z",
+    "dataOperations": "No data modifications; transactional CREATE OR REPLACE function guards",
+    "ownerAclSecurityDefinerAndSearchPathPreserved": true,
+    "functions": [
+      {
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+        "body_hash": "c9735a7b6e4113df8546af1f609ae76f79a2db2728588ea2520aaec0ab7bd243",
+        "config": [
+          "search_path=public"
+        ],
+        "create_guard": false,
+        "name": "create_pos_portable_appointment_v2",
+        "owner": "postgres",
+        "pos_guard": true,
+        "reschedule_guard": false,
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "body_hash": "e63ee94af937667d1b8176393477a19d298a3b657549253ceab5c95453766e22",
+        "config": [
+          "search_path=public"
+        ],
+        "create_guard": true,
+        "name": "create_public_booking_without_deposit",
+        "owner": "postgres",
+        "pos_guard": false,
+        "reschedule_guard": false,
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+        "body_hash": "c975430aeb71aac1382e7e6a2dcbabdadd9b1b9b77d3585ec07d995a6713162e",
+        "config": [
+          "search_path=public, extensions"
+        ],
+        "create_guard": false,
+        "name": "reschedule_public_booking_by_manage_token",
+        "owner": "postgres",
+        "pos_guard": false,
+        "reschedule_guard": true,
+        "security_definer": true
+      }
+    ],
+    "isolatedPostgresTests": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "C:/Users/giuse/Documents/Codex/2026-10-14/task/booking-lock-order-after.log"
+    }
+  },
+  "ios": {
+    "status": "testflight-available",
+    "verified": true,
+    "version": "1.0.1",
+    "build": "14.1",
+    "commit": "cc53062ca58795e37ab62269655bea73f4902241",
+    "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\native-upload\\reylumi-testflight-14-1",
+    "baselineCommit": "ffbcd24513cd991a8c7a883a53d6ac360f3ff137",
+    "appleBuildId": "d9b87d07-b8aa-4ea8-9716-f24cf756a465"
+  },
+  "apple": {
+    "build": "14.1",
+    "buildId": "d9b87d07-b8aa-4ea8-9716-f24cf756a465",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "checkedAt": "2026-10-15T02:56:42.133Z",
+    "operation": "Read-only; no tester invitations or group changes"
+  },
+  "pending": [
+    {
+      "changeId": "salon-claim-lookup-diagnostics-20261014",
+      "eventId": "a7ea3983-4ead-4c03-81a2-7aec9928f7f6",
+      "status": "blocked",
+      "pendingChannels": [
+        "web"
+      ],
+      "summary": "Local diagnostics implemented and tested at both lookup call sites. Authenticated reproduction blocked by browser runtime startup failure (0x80070003); root cause remains unconfirmed. No release authorized."
+    }
+  ],
+  "appStore": {
+    "status": "PREPARE_FOR_SUBMISSION",
+    "published": false,
+    "reason": "First listing still needs owner copyright, review contact/demo, App Privacy, age/content rights, pricing decision and physical-device payment verification; existing authorized distribution is TestFlight."
+  },
+  "preserved": [
+    "Current Explore continuous recommendations and nearby salons",
+    "Real local-post priority, comments and watermark",
+    "Safari/native booking-deposit checkout",
+    "Privacy/account deletion",
+    "Local fonts and admin/support"
+  ],
+  "rollback": {
+    "performed": false,
+    "baselineDeploymentId": "dpl_2kiu8uiZSBMHpjAmhTnLdVysNARU",
+    "rule": "Before any rollback verify alias still points to this release; never overwrite an external newer deployment."
+  },
+  "limitations": [
+    "No real payment, messaging, customer-data mutation or physical iPhone purchase was performed during verification.",
+    "TestFlight availability does not mean App Store publication or installation on every device."
+  ]
+}

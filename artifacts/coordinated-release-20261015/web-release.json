@@ -1,0 +1,85 @@
+{
+  "kind": "release",
+  "summary": "Production web: progressive page retention/startup, mobile navigation/payroll layout, booking cache and concurrency guards; preserve current Explore, Safari checkout, privacy and admin. Exact source and live browser checks passed.",
+  "changes": [
+    "ce7f04df-5333-4e65-92e0-77c6b67ce53d",
+    "80b17b4f-e34e-4f23-b7dd-d42fd9081003",
+    "23eecbec-5dcc-437f-a030-163ac75a6478",
+    "19eae303-672f-41c0-9f3e-11f2758b691b",
+    "d286fc90-496c-4ca3-aa09-b792d70ee99d",
+    "e1c69074-dea4-493b-b90c-d106f1b8e867",
+    "145823cc-a295-4e59-8b27-8a2dc08b0fef"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6",
+      "baselineDeploymentId": "dpl_2kiu8uiZSBMHpjAmhTnLdVysNARU",
+      "sourceSha256": "81dbb3429069ab2edf8b91df216bf02fc33eab5d243e63a81b3db4c326d93a33",
+      "overlaySha256": "aa9b975bdbaf3963cfade64e0110379af885fc3fb29a7c027c37ca96eb41f00d",
+      "commit": "34ea63589e7e8caf5718bf4ffe54e403eab6775a",
+      "url": "https://reylumi.com",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\coordinated-release-20261015\\final-receipt.json"
+    }
+  },
+  "database": {
+    "migration": "20261015010000_booking_concurrency_guards.sql",
+    "applied": true,
+    "verifiedAt": "2026-10-15T03:27:21.432Z",
+    "dataOperations": "No data modifications; transactional CREATE OR REPLACE function guards",
+    "ownerAclSecurityDefinerAndSearchPathPreserved": true,
+    "functions": [
+      {
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+        "body_hash": "c9735a7b6e4113df8546af1f609ae76f79a2db2728588ea2520aaec0ab7bd243",
+        "config": [
+          "search_path=public"
+        ],
+        "create_guard": false,
+        "name": "create_pos_portable_appointment_v2",
+        "owner": "postgres",
+        "pos_guard": true,
+        "reschedule_guard": false,
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "body_hash": "e63ee94af937667d1b8176393477a19d298a3b657549253ceab5c95453766e22",
+        "config": [
+          "search_path=public"
+        ],
+        "create_guard": true,
+        "name": "create_public_booking_without_deposit",
+        "owner": "postgres",
+        "pos_guard": false,
+        "reschedule_guard": false,
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+        "body_hash": "c975430aeb71aac1382e7e6a2dcbabdadd9b1b9b77d3585ec07d995a6713162e",
+        "config": [
+          "search_path=public, extensions"
+        ],
+        "create_guard": false,
+        "name": "reschedule_public_booking_by_manage_token",
+        "owner": "postgres",
+        "pos_guard": false,
+        "reschedule_guard": true,
+        "security_definer": true
+      }
+    ],
+    "isolatedPostgresTests": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "C:/Users/giuse/Documents/Codex/2026-10-14/task/booking-lock-order-after.log"
+    }
+  },
+  "nativeReleaseEvent": "b21240c4-ef5a-44a5-b9f9-9f4b515ecac4",
+  "id": "6a5f56a4-537e-42e3-9875-6d5c8e17d401",
+  "recordedAt": "2026-10-15T04:19:19.105Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "filePath": "C:\\Users\\giuse\\kingpos\\releases\\history\\2026-10-15T04-19-19-105Z-6a5f56a4-537e-42e3-9875-6d5c8e17d401.json"
+}

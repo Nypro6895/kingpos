@@ -1,0 +1,29 @@
+PHÁT HÀNH REYLUMI — 14/10/2026 (America/Chicago)
+
+Web: https://reylumi.com
+Source commit: 34ea63589e7e8caf5718bf4ffe54e403eab6775a
+Deployment: dpl_C2uxwr42BXUMr4Lvm1xPhFdDTGn6
+Baseline: dpl_2kiu8uiZSBMHpjAmhTnLdVysNARU
+Source SHA256: 81dbb3429069ab2edf8b91df216bf02fc33eab5d243e63a81b3db4c326d93a33
+Overlay SHA256: aa9b975bdbaf3963cfade64e0110379af885fc3fb29a7c027c37ca96eb41f00d
+
+Đã phát hành:
+- Cache giữ trang/trạng thái khi điều hướng; tải từng phần Explore, Market, Today và khởi động app.
+- Thanh menu mobile nền đặc, hạ 6px; bố cục ngang; sửa phần output Payroll che nội dung.
+- Booking: cache slot theo dịch vụ/nhân viên/múi giờ, ngày sớm nhất và đổi lịch khách; khóa chống yêu cầu trùng và tranh chấp tạo/đổi lịch; thứ tự khóa POS.
+- Sửa helper tùy chọn cho bootstrap database mới. Production chỉ áp dụng migration 20261015010000, không chạy lại migration cũ.
+- Quy tắc/nhật ký phát hành và 7 revision web được ghi nhận chính xác.
+- Giữ các tính năng Explore hiện hành, thanh toán Safari, quyền riêng tư/xóa tài khoản, fonts và admin/support.
+
+App iPhone: Reylumi 1.0.1 (14.1), TestFlight.
+Native commit: cc53062ca58795e37ab62269655bea73f4902241
+Apple: VALID / IN_BETA_TESTING. Không phải bản đã phát hành App Store.
+
+Kiểm tra: production build/TypeScript đạt; 195 kiểm tra chính, 59 regression, 4 trình duyệt production local, 3 SQL bootstrap; 17 XCTest và archive/sign/upload đạt. Live: 5 trang HTTP 200, 3 bài trình duyệt đạt trên viewport mobile/desktop. Nguồn Vercel khớp 1.825 file. Guard xác nhận baseline ngay trước promotion.
+
+Chưa phát hành:
+- salon-claim-lookup-diagnostics-20261014: đang blocked; chưa xác minh nguyên nhân qua luồng đăng nhập thật nên không đưa diagnostic patch lên production.
+- App Store listing đầu tiên: còn copyright, thông tin review/demo, khai báo privacy/độ tuổi/quyền nội dung, quyết định giá và kiểm tra thanh toán iPhone thật. Không tự khai thông tin hoặc quyết định pháp lý/giá thay chủ app.
+
+Không còn revision ready nào trong journal chưa phát hành ở thời điểm chốt. Các nhánh cũ đã bị thay thế được đối chiếu trong release-audit.json, không ghi đè tính năng đang live.
+Chi tiết: final-receipt.json; release-audit.json; pending-after-release.json.

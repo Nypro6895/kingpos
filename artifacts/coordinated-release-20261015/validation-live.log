@@ -1,0 +1,11 @@
+✔ production Market retains fast edits when Activity hides before the remembered snapshot is ready (7025.0803ms)
+✔ production Next navigation retains Market and legal pages without reloading the document or existing assets (8852.3023ms)
+✔ production sensitive form return clears credentials and receives a fresh server revision (2110.1387ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18873.0596

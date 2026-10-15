@@ -1,0 +1,23 @@
+{
+  "environment": "https://reylumi.com production, desktop Chromium with mobile and desktop viewports",
+  "measurements": [
+    {
+      "viewportWidth": 390,
+      "marketBackVisibleMs": 27,
+      "documentRequests": 1,
+      "duplicateInitialAssetRequests": 0
+    },
+    {
+      "viewportWidth": 412,
+      "marketBackVisibleMs": 59,
+      "documentRequests": 1,
+      "duplicateInitialAssetRequests": 0
+    },
+    {
+      "viewportWidth": 1280,
+      "marketBackVisibleMs": 21,
+      "documentRequests": 1,
+      "duplicateInitialAssetRequests": 0
+    }
+  ]
+}

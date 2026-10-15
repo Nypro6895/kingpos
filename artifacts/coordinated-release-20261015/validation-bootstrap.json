@@ -1,0 +1,10 @@
+{
+  "exitCode": 0,
+  "files": [
+    "tests/portable-custom-service-migration.integration.test.mjs"
+  ],
+  "tests": 3,
+  "passed": 3,
+  "failed": 0,
+  "skipped": 0
+}
