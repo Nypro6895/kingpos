@@ -1,22 +1,50 @@
-name: Reylumi TestFlight Status
+name: Reylumi TestFlight Status (read only)
 on:
   workflow_dispatch:
-  push:
-    branches: [codex/reylumi-ios-webview]
-    paths: ['ios/scripts/testflight-status.mjs', '.github/workflows/reylumi-testflight-status.yml']
+    inputs:
+      build:
+        description: Exact uploaded CFBundleVersion
+        required: true
+        type: string
+      baseline_build:
+        description: Previous verified build used by the existing group
+        default: '19.1'
+        required: true
+        type: string
+      marketing_version:
+        default: '1.0.1'
+        required: true
+        type: string
+      existing_group_id:
+        description: Optional exact existing internal group ID
+        default: ''
+        type: string
 permissions:
   contents: read
 jobs:
   status:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Check processing and prepare internal testing
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read exact build and existing group availability
         env:
+          EXPECTED_BUILD: ${{ inputs.build }}
+          BASELINE_BUILD: ${{ inputs.baseline_build }}
+          EXPECTED_MARKETING_VERSION: ${{ inputs.marketing_version }}
+          EXISTING_GROUP_ID: ${{ inputs.existing_group_id }}
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           APP_STORE_CONNECT_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_APP_ID: ${{ vars.APP_STORE_CONNECT_APP_ID }}
-          TESTFLIGHT_TESTER_EMAIL: ${{ secrets.TESTFLIGHT_TESTER_EMAIL }}
-        run: node ios/scripts/testflight-status.mjs
+        run: node ios/scripts/check-testflight-availability.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reylumi-availability-${{ github.run_number }}
+          path: build/testflight-availability.json
+          if-no-files-found: error
+          retention-days: 7
