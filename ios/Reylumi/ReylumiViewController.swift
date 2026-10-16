@@ -32,6 +32,22 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     private let offlineRoutes: ReylumiOfflineRouteStore
     private let initialURL: URL?
     private var offlineEpoch = 0
+    var onUsableDestination: ((URL) -> Void)?
+    private var notifiedDestination: String?
+    var hostedNavigationIdentity: String { startup.nonce + "|" + (webView?.url?.absoluteString ?? "") }
+    private func notifyUsableDestination() {
+        guard startup.didCommit, startup.hasUsablePage, !startup.isWaiting, !startup.isSecurityChallenge,
+              let url = webView?.url, policy.isInternal(url), !policy.isExcluded(url),
+              notifiedDestination != hostedNavigationIdentity else { return }
+        notifiedDestination = hostedNavigationIdentity
+        onUsableDestination?(url)
+    }
+    func permitsHostedReturn() async throws -> Bool {
+        guard let webView else { return false }
+        // A visitor may start typing while fresh access is being checked.
+        // Keep that hosted editor rather than dismissing its unsent input.
+        return try await webView.evaluateJavaScript("(()=>{const e=document.activeElement;return !(e&&e.getClientRects().length&&(e.matches('input:not([type=button]):not([type=submit]):not([type=reset]),textarea')||e.isContentEditable))})()") as? Bool == true
+    }
 
     init(origin: URL? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil, initialURL: URL? = nil) {
         let origin = origin ?? URL(string: Bundle.main.object(forInfoDictionaryKey: "ReylumiServerURL") as? String ?? "https://reylumi.com")!
@@ -393,6 +409,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         // WebKit may create its pinch recognizer only after the first document loads.
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         finishLoading()
+        notifyUsableDestination()
     }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { showLoadError(error, navigation: navigation) }
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { showLoadError(error, navigation: navigation) }
@@ -467,6 +484,13 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
             guard let nonce = body["nonce"] as? String, let generation = body["generation"] as? Int,
                   startup.ready(nonce: nonce, generation: generation) else { return }
             finishLoading()
+            notifyUsableDestination()
+        case "route-ready":
+            guard body["nonce"] as? String == startup.nonce,
+                  body["generation"] as? Int == startup.generation,
+                  let current = webView.url,
+                  body["path"] as? String == current.path + (current.query.map { "?" + $0 } ?? "") + (current.fragment.map { "#" + $0 } ?? "") else { return }
+            notifyUsableDestination()
         case "open-market-website":
             UIApplication.shared.open(policy.origin.appendingPathComponent("market"), options: [:])
         case "open-payment":

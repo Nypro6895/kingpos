@@ -54,6 +54,26 @@ actor AppLocalFixtureHTTP: ReylumiLocalHTTPClient {
 
 final class LocalAppTransportTests: XCTestCase {
     @MainActor
+    func testRequestedContextPathProofAndCachedPortableDisplayAuthorityAreExact() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP(), store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.path-proof." + UUID().uuidString)
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: UserDefaults(suiteName: "reylumi.tests.path-proof." + UUID().uuidString)!, cookies: { [] })
+        var eventPath: String?
+        transport.onEvent = { name, value in if name == "reylumi:app-local-context" { eventPath = value["contextPath"] as? String } }
+        let fresh = try await transport.freshContext(path: "/help/check-in")
+        XCTAssertEqual(fresh["contextPath"] as? String, "/help/check-in"); XCTAssertEqual(eventPath, "/help/check-in")
+        let cached = try await transport.context(path: "/explore")
+        XCTAssertEqual(cached["contextPath"] as? String, "/explore"); XCTAssertEqual(cached["offline"] as? Bool, true)
+        await http.configureContextUnavailable()
+        let portable = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.portableContext(generation: transport.generation), generation: transport.generation))
+        await store.accept(portable)
+        let display = try await transport.context(path: "/pos/customer-display")
+        XCTAssertEqual(display["contextPath"] as? String, "/pos/customer-display")
+        XCTAssertEqual((display["displayAuthority"] as? [String: String])?["kind"], "portable")
+        XCTAssertEqual((display["context"] as? [String: Any])?["scope"] as? String, portable.scope)
+        await transport.reset()
+    }
+    @MainActor
     func testSameScopeStaffMarketStaffRetainsDOMAuthorityAndStaffCacheUntilBindingChanges() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
         let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP(), store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.additive." + UUID().uuidString)

@@ -2,6 +2,20 @@ import XCTest
 @testable import Reylumi
 
 final class LocalReadStoreTests: XCTestCase {
+    func testBareCustomerDisplaySelectsDeviceLeaseWithoutBorrowingOwnerOrPublicTokenAuthority() async throws {
+        let generation = UUID().uuidString, directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let store = ReylumiLocalReadStore(origin: URL(string: "https://reylumi.com")!, directory: directory, service: "reylumi.tests.display." + UUID().uuidString)
+        let portable = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.portableContext(generation: generation), generation: generation))
+        let owner = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: generation), generation: generation))
+        await store.accept(portable); await store.accept(owner)
+        let display = await store.session(generation: generation, path: "/pos/customer-display")
+        XCTAssertEqual(display?.scope, portable.scope); XCTAssertEqual(display?.authority, "portable")
+        XCTAssertFalse(portable.compatible(path: "/pos/customer-display?token=public-display-capability"))
+        XCTAssertFalse(portable.compatible(path: "/pos/customer-display/setup"))
+        await store.revoke(scope: nil, authority: "portable")
+        let locked = await store.session(generation: generation, path: "/pos/customer-display"); XCTAssertNil(locked)
+        await store.clear(); try? FileManager.default.removeItem(at: directory)
+    }
     func testPortableAuthorityIsExactDeviceScopeAndCannotImpersonateAnAccountLease() throws {
         let generation = UUID().uuidString, object = AppLocalTestFixture.portableContext(generation: generation)
         let session = try XCTUnwrap(ReylumiLocalSession.verified(object, generation: generation))

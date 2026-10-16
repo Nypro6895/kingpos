@@ -25,6 +25,12 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     private lazy var frameTarget = ReylumiLocalFrameTarget(self)
     var onOpenOnline: ((String) -> Void)?
     var onOpenExternal: ((URL) -> Void)?
+    var onReady: (() -> Void)?
+    private var reportedReady = false
+    private var hostedReturnToken: String?
+    private var hostedReturnEpoch: Int?
+    var currentPath: String { webView?.url.map { $0.path + ($0.query.map { "?" + $0 } ?? "") } ?? startPath }
+    private func reportReady() { if !reportedReady { reportedReady = true; onReady?() } }
 
     init(bundle: ReylumiLocalBundle, origin: URL = URL(string: "https://reylumi.com")!, startPath: String = "/explore", transport: ReylumiLocalAppTransport? = nil) {
         self.bundle = bundle; self.origin = origin; self.startPath = bundle.routeExists(startPath) ? startPath : "/explore"
@@ -49,6 +55,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        if hostedReturnToken != nil { webView?.evaluateJavaScript("window.dispatchEvent(new Event('reylumi:app-local-return-visible'))", completionHandler: nil) }
         guard webView == nil, startupFrameLink == nil else { return }
         let link = CADisplayLink(target: frameTarget, selector: #selector(ReylumiLocalFrameTarget.tick(_:)))
         startupFrameLink = link; firstFrame = nil; link.add(to: .main, forMode: .common)
@@ -114,6 +121,42 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         let path = webView.url?.path ?? startPath
         Task { @MainActor [weak self] in _ = try? await self?.transport.freshContext(path: path) }
     }
+    func prepareHostedReturn(path: String, context: [String: Any]) async throws {
+        guard let webView, let host = context["host"] as? [String: Any], host["nonce"] as? String == transport.nonce,
+              let data = try? JSONSerialization.data(withJSONObject: ["context": context, "path": path]),
+              let json = String(data: data, encoding: .utf8) else { throw URLError(.cancelled) }
+        let token = UUID().uuidString
+        hostedReturnToken = token; hostedReturnEpoch = transport.scopeEpoch; launchPanel.showLoading()
+        // A covered WKWebView may pause RAF. Keep the bundled public cover
+        // until its first visible frame, rather than awaiting a hidden frame.
+        _ = try await webView.evaluateJavaScript("""
+        (()=>{
+          const v=\(json),token='\(token)';
+          window.__reylumiHostedReturnCleanup?.();
+          window.__reylumiAppLocalContext=v.context.host;
+          window.dispatchEvent(new CustomEvent('reylumi:app-local-context',{detail:v.context}));
+          window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate',{detail:{path:v.path}}));
+          window.__reylumiHostedReturn=token;
+          let scheduled=false;
+          const cleanup=()=>{document.removeEventListener('visibilitychange',visible);window.removeEventListener('reylumi:app-local-return-visible',visible)};
+          const visible=()=>{
+            if(window.__reylumiHostedReturn!==token){cleanup();return}
+            if(document.visibilityState==='hidden'||scheduled)return;
+            scheduled=true;
+            requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>{
+              scheduled=false;
+              if(document.visibilityState==='hidden'||window.__reylumiHostedReturn!==token)return;
+              cleanup();
+              void window.__reylumiAppLocalTransport.request({id:token,kind:'cache',name:'hosted-return-ready',args:{token}}).catch(()=>{});
+            },0)));
+          };
+          window.__reylumiHostedReturnCleanup=cleanup;
+          document.addEventListener('visibilitychange',visible);
+          window.addEventListener('reylumi:app-local-return-visible',visible);
+          return true;
+        })()
+        """)
+    }
     private func emit(_ name: String, _ detail: [String: Any]) {
         guard webView != nil, let data = try? JSONSerialization.data(withJSONObject: ["name": name, "detail": detail]), let json = String(data: data, encoding: .utf8) else { return }
         webView.evaluateJavaScript("(()=>{const e=\(json);if(e.name==='reylumi:app-local-reset')window.__reylumiAppLocalContext=e.detail;if(e.name==='reylumi:app-local-context'&&e.detail.host)window.__reylumiAppLocalContext=e.detail.host;window.dispatchEvent(new CustomEvent(e.name,{detail:e.detail}));})()", completionHandler: nil)
@@ -125,7 +168,11 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
               let id = body["id"] as? String, UUID(uuidString: id) != nil, let kind = body["kind"] as? String,
               pending[id] == nil, pending.count < 100 else { replyHandler(["__hostError": ["status": 403, "message": "App request is not available."]], nil); return }
         let name = body["name"] as? String ?? "", args = body["args"] as? [String: Any] ?? [:]
-        if kind == "cache", name == "ready" { launchPanel.finishLoading(); replyHandler(["ok": true], nil); return }
+        if kind == "cache", name == "hosted-return-ready" {
+            guard let token = args["token"] as? String, token == hostedReturnToken, hostedReturnEpoch == transport.scopeEpoch else { replyHandler(["ok": false], nil); return }
+            hostedReturnToken = nil; hostedReturnEpoch = nil; launchPanel.finishLoading(); replyHandler(["ok": true], nil); return
+        }
+        if kind == "cache", name == "ready" { launchPanel.finishLoading(); reportReady(); replyHandler(["ok": true], nil); return }
         if kind == "cache", name == "cancel", let target = args["requestId"] as? String {
             if let operation = pending[target], operation.kind == "read" || operation.kind == "context" { operation.task.cancel() }
             replyHandler(["ok": true], nil); return
@@ -218,6 +265,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         launchPanel.finishLoading()
+        reportReady()
         if let path = pendingNavigation { pendingNavigation = nil; navigate(path) }
     }
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { if (error as NSError).code != NSURLErrorCancelled { launchPanel.showError() } }
@@ -297,17 +345,30 @@ private final class ReylumiLocalFrameTarget: NSObject {
 @MainActor
 final class ReylumiAppContainer: UIViewController {
     private let origin: URL
-    private var local: ReylumiLocalAppViewController?
+    private let installedBundle: ReylumiLocalBundle?
+    private let offlineRoutes: ReylumiOfflineRouteStore
+    private let localTransport: ReylumiLocalAppTransport?
+    private(set) var local: ReylumiLocalAppViewController?
     private var hosted: ReylumiViewController?
+    private var handoffTask: Task<Void, Never>?
+    private var handoffID: UUID?
     private var marketReturnSequence = 0
-    init(origin: URL = URL(string: "https://reylumi.com")!) { self.origin = origin; super.init(nibName: nil, bundle: nil) }
+    init(origin: URL = URL(string: "https://reylumi.com")!, bundle: ReylumiLocalBundle? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil, transport: ReylumiLocalAppTransport? = nil) {
+        self.origin = origin; self.installedBundle = bundle; self.offlineRoutes = offlineRoutes ?? ReylumiOfflineRouteStore(origin: origin); self.localTransport = transport
+        super.init(nibName: nil, bundle: nil)
+    }
     required init?(coder: NSCoder) { fatalError("Use init(origin:)") }
     override func viewDidLoad() {
         super.viewDidLoad(); view.backgroundColor = .white
-        if let bundle = try? ReylumiLocalBundle.installed(), bundle.manifest.productionReady == true {
-            let hint = ReylumiOfflineRouteStore(origin: origin).restored()?.path ?? "/explore"
-            let controller = ReylumiLocalAppViewController(bundle: bundle, origin: origin, startPath: hint)
-            local = controller; controller.onOpenOnline = { [weak self] path in self?.openOnline(path) }; embed(controller)
+        if let bundle = installedBundle ?? (try? ReylumiLocalBundle.installed()), bundle.manifest.productionReady == true {
+            let hint = offlineRoutes.restored()?.path ?? "/explore"
+            let controller = ReylumiLocalAppViewController(bundle: bundle, origin: origin, startPath: hint, transport: localTransport)
+            local = controller; controller.onOpenOnline = { [weak self] path in self?.openOnline(path) }
+            if !bundle.routeExists(hint), ReylumiOfflineRoute.protectedPaths.contains(hint) || ReylumiOfflineRoute.publicPaths.contains(hint),
+               let url = URL(string: hint, relativeTo: origin), NavigationPolicy(origin: origin).isInternal(url), !NavigationPolicy(origin: origin).isExcluded(url) {
+                controller.onReady = { [weak self] in self?.openOnline(hint) }
+            }
+            embed(controller)
         } else { let controller = ReylumiViewController(origin: origin); hosted = controller; embed(controller) }
     }
     private func embed(_ controller: UIViewController) {
@@ -315,16 +376,49 @@ final class ReylumiAppContainer: UIViewController {
         NSLayoutConstraint.activate([controller.view.topAnchor.constraint(equalTo: view.topAnchor), controller.view.bottomAnchor.constraint(equalTo: view.bottomAnchor), controller.view.leadingAnchor.constraint(equalTo: view.leadingAnchor), controller.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)])
         controller.didMove(toParent: self)
     }
-    private func openOnline(_ path: String) {
+    func openOnline(_ path: String) {
         guard presentedViewController == nil, let url = URL(string: path, relativeTo: origin)?.absoluteURL,
               NavigationPolicy(origin: origin).isInternal(url), !NavigationPolicy(origin: origin).isExcluded(url) else { return }
         let controller = ReylumiViewController(origin: origin, initialURL: url)
+        controller.onUsableDestination = { [weak self, weak controller] url in
+            guard let self, let controller, let destination = self.local?.bundle.hostedReturnPath(url, origin: self.origin) else { return }
+            self.returnToInstalledApp(path: destination, from: controller)
+        }
         let navigation = UINavigationController(rootViewController: controller)
         controller.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(closeOnline))
         navigation.modalPresentationStyle = .fullScreen
         present(navigation, animated: true)
     }
-    @objc private func closeOnline() { dismiss(animated: true) { [weak self] in self?.local?.foreground() } }
+    @objc private func closeOnline() {
+        guard let controller = (presentedViewController as? UINavigationController)?.viewControllers.first as? ReylumiViewController, let local else { return }
+        returnToInstalledApp(path: local.currentPath, from: controller)
+    }
+    func returnToInstalledApp(path: String, from controller: ReylumiViewController) {
+        guard let local, let navigation = presentedViewController as? UINavigationController,
+              navigation.viewControllers.first === controller else { return }
+        let identity = controller.hostedNavigationIdentity, id = UUID()
+        handoffTask?.cancel(); handoffID = id
+        handoffTask = Task { @MainActor [weak self, weak controller, weak navigation] in
+            guard let self else { return }
+            defer { if self.handoffID == id { self.handoffTask = nil; self.handoffID = nil } }
+            do {
+                let contextPath = URLComponents(string: path)?.path ?? path
+                let value = try await local.transport.freshContext(path: contextPath)
+                guard let context = value["context"] as? [String: Any], context["scope"] as? String != nil,
+                      self.handoffID == id, !Task.isCancelled,
+                      value["offline"] as? Bool == false, let checked = value["onlineValidatedAt"] as? Double,
+                      abs(Date().timeIntervalSince1970 * 1000 - checked) <= 30000,
+                      context["authenticated"] as? Bool == true || ReylumiOfflineRoute.publicPaths.contains(path) || path == "/help" || path.hasPrefix("/help/") || ["/legal", "/terms", "/privacy", "/community", "/business-terms"].contains(path) || ReylumiLocalSession.verified(value, generation: local.transport.generation)?.compatible(path: path) == true,
+                      let controller, let navigation, self.presentedViewController === navigation,
+                      controller.hostedNavigationIdentity == identity else { return }
+                guard try await controller.permitsHostedReturn() else { return }
+                try await local.prepareHostedReturn(path: path, context: value)
+                guard self.handoffID == id, !Task.isCancelled, self.presentedViewController === navigation, controller.hostedNavigationIdentity == identity,
+                      try await controller.permitsHostedReturn() else { return }
+                self.dismiss(animated: true)
+            } catch { /* Keep the working hosted flow visible when verification fails. */ }
+        }
+    }
     func returnToMarket(sequence: Int) {
         guard sequence > marketReturnSequence else { return }; marketReturnSequence = sequence
         loadViewIfNeeded()

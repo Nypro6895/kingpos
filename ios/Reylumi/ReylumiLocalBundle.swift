@@ -103,6 +103,18 @@ struct ReylumiLocalBundle {
             }
         }
     }
+    /// A hosted auth flow may return only to a complete ordinary installed
+    /// route. Keep one-use returns, security settings and open forms hosted.
+    func hostedReturnPath(_ url: URL, origin: URL) -> String? {
+        let policy = NavigationPolicy(origin: origin)
+        guard policy.isInternal(url), !policy.isExcluded(url), url.query == nil, url.fragment == nil,
+              Self.safeRoute(url.path), routeExists(url.path) else { return nil }
+        let path = url.path.lowercased()
+        let prefixes = ["/api", "/auth", "/login", "/signup", "/account-recovery", "/forgot-password", "/reset-password", "/security-check", "/accept-invite", "/ownership/invite", "/staff/invite", "/booking", "/booking-payment", "/book", "/check-in", "/visit", "/claim", "/deletion-status", "/support/guest", "/market/payment-return", "/market/orders", "/market/booking-deposit/payment", "/market/booking-deposit/settings", "/settings/login-security", "/pos/customer-display"]
+        guard !prefixes.contains(where: { path == $0 || path.hasPrefix($0 + "/") }),
+              !path.split(separator: "/").contains(where: { ["new", "create", "edit", "setup", "delete", "remove", "cancel", "confirm", "checkout", "transfer", "accept", "reset"].contains(String($0)) }) else { return nil }
+        return url.path
+    }
     func resource(for url: URL) throws -> (Data, String) {
         guard owns(url), (url.query?.utf8.count ?? 0) <= 8192,
               let components = URLComponents(url: url, resolvingAgainstBaseURL: false),

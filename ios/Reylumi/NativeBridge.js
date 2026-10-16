@@ -17,6 +17,9 @@
   let screenReady = false;
   let sentNonce = null;
   let readyScheduled = false;
+  let routeReady = false;
+  let routeReadyScheduled = false;
+  let sentRoute = null;
   let preparedRoute = null;
   let clearOffline = false;
   const sendOfflineState = () => {
@@ -50,6 +53,19 @@
     // Let the mounted core UI paint before the native shell fades away.
     requestAnimationFrame(() => requestAnimationFrame(sendReady));
   };
+  const scheduleRouteReady = () => {
+    if (routeReadyScheduled) return;
+    routeReadyScheduled = true;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      routeReadyScheduled = false;
+      if (!navigationContext || !routeReady || document.visibilityState === 'hidden' || excluded(location.pathname)) return;
+      const path = location.pathname + location.search + location.hash;
+      const key = navigationContext.nonce + '|' + path;
+      if (sentRoute === key) return;
+      sentRoute = key;
+      send({ action: 'route-ready', path, nonce: navigationContext.nonce, generation: navigationContext.generation, origin: location.origin });
+    }));
+  };
   window.__reylumiStartup = Object.freeze({
     setNavigationContext: (context) => {
       const secure = location.protocol === 'https:' || (location.protocol === 'http:' && location.hostname === 'localhost' && window.__reylumiDebugLocalOrigin === location.origin);
@@ -60,10 +76,12 @@
       navigationContext = { nonce: context.nonce, generation: context.generation };
       sendOfflineState();
       scheduleReady();
+      if (screenReady || hasReadyShell()) routeReady = true;
+      scheduleRouteReady();
       return true;
     },
   });
-  window.addEventListener?.('reylumi:screen-ready', () => { screenReady = true; scheduleReady(); });
+  window.addEventListener?.('reylumi:screen-ready', () => { screenReady = true; routeReady = true; scheduleReady(); scheduleRouteReady(); });
   // This ACK is emitted only after the web worker has committed its complete
   // shell and the web authorization layer has verified the expiring grant.
   // The ordinary screen-ready/public loading shell never qualifies.
@@ -93,7 +111,7 @@
     },
     drain: (scope) => typeof scope === 'string' && sendSync('background-drain', { scope }),
   });
-  document.addEventListener('visibilitychange', scheduleReady);
+  document.addEventListener('visibilitychange', () => { scheduleReady(); scheduleRouteReady(); });
   let scheduled = false;
   new MutationObserver(() => {
     if (scheduled) return;
@@ -109,9 +127,13 @@
         send({ action: 'excluded' });
         return;
       }
-      return original.apply(this, arguments);
+      const before = location.href;
+      const result = original.apply(this, arguments);
+      if (location.href !== before) { routeReady = false; sentRoute = null; }
+      return result;
     };
   }
+  window.addEventListener?.('popstate', () => { routeReady = false; sentRoute = null; });
   if (typeof navigator.share !== 'function') {
     navigator.share = async ({ title, text, url }) => send({ action: 'share', text: [title, text, url].filter(Boolean).join('\n') });
   }

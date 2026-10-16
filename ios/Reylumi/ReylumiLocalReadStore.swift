@@ -75,6 +75,7 @@ struct ReylumiLocalSession: Codable {
     }
     func compatible(path: String) -> Bool {
         if path.hasPrefix("/pos/portable") { return authority == "portable" }
+        if path == "/pos/customer-display" { return authority == "portable" }
         if ["/staff/my-work", "/staff/workday", "/staff/appointments"].contains(path) { return authority == "staff" }
         if path == "/pos" || path.hasPrefix("/pos/") || path == "/payroll" || path == "/staff/today" { return authority == "owner" }
         return authority != "staff" && authority != "portable"

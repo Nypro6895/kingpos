@@ -49,6 +49,18 @@ sys.exit("No available iPhone Simulator is installed in this Xcode environment."
 PY
 )"
 
+# Overlap the cold Simulator boot with compilation. Do not shorten any runtime
+# capability test or replace it with a source assertion to make CI faster.
+task_simulator_state="$(python3 - "$task_run_dir/devices.json" "$task_simulator_id" <<'PY'
+import json, sys
+devices = json.loads(open(sys.argv[1]).read())["devices"]
+print(next(item["state"] for group in devices.values() for item in group if item["udid"] == sys.argv[2]))
+PY
+)"
+if [[ "$task_simulator_state" == "Shutdown" ]]; then
+  xcrun simctl boot "$task_simulator_id"
+fi
+
 # Simulator Keychain access still requires the host's signed application ID.
 # Ad-hoc signing needs no device certificate/profile, and this entitlements file
 # applies only to these simulator commands, never the Release/device archive.
@@ -113,6 +125,7 @@ assert entitlements.get("keychain-access-groups") == [identifier], "Simulator Ke
 print("Ad-hoc signature and actual embedded Simulator application/own Keychain entitlements verified; runtime Keychain preflight follows.")
 PY
 
+xcrun simctl bootstatus "$task_simulator_id" -b
 xcodebuild test-without-building \
   -project Reylumi.xcodeproj -scheme Reylumi -configuration Debug \
   -destination "platform=iOS Simulator,id=$task_simulator_id" \

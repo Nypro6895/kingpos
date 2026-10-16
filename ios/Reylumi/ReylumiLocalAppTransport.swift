@@ -195,6 +195,7 @@ final class ReylumiLocalAppTransport {
             }
             var object = try self.decode(data, response: response)
             guard object["schemaVersion"] as? Int == 1, let context = object["context"] as? [String: Any], let scope = context["scope"] as? String else { throw self.failure(502, "App access could not be checked.") }
+            object["contextPath"] = path
             await self.loadSession(); try self.ensureCurrent(epoch)
             let next = ReylumiLocalSession.verified(object, generation: expectedGeneration)
             let stored = await self.store.session(generation: expectedGeneration)
@@ -242,7 +243,8 @@ final class ReylumiLocalAppTransport {
             }
             session = cached; loadedSession = true
             var object = cached.object
-            object["host"] = metadata; object["offline"] = true
+            object["host"] = metadata; object["offline"] = true; object["contextPath"] = path
+            if path == "/pos/customer-display", cached.authority == "portable", cached.compatible(path: path) { object["displayAuthority"] = ["kind": "portable"] }
             Task { @MainActor [weak self] in _ = try? await self?.freshContext(path: path) }
             return object
         }
