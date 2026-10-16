@@ -1,0 +1,473 @@
+{
+  "releaseId": "local-first-pos-staff-20261016",
+  "verifiedAt": "2026-10-16T05:54:15.509Z",
+  "summary": "Prepared authorized pages open from local storage; POS drafts survive app restart and reconcile without duplicate receipts; staff offline access requires explicit owner confirmation. Financial calculations preserved. Native1.0.1(19.1) TestFlight available.",
+  "baseline": {
+    "deploymentId": "dpl_5BqbU7VSpmSgfuH3w1t94taaWRQL",
+    "commit": "342bb4a2e614d7a7c10bbff365a5f3c8023ad915",
+    "sourceSha256": "af1e29c3245e49f19c02669d02fdc93784862e3dc5f732d2181c9ddb079edf0f"
+  },
+  "web": {
+    "deploymentId": "dpl_3ayR1ZKNggz4XmwhCAQjp1cC7Fye",
+    "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52",
+    "sourceSha256": "12fd9dd20a5a280bf28726be1c22f8a0dae40797d02e976158dd0dd79eb0232c",
+    "deploySourceSha256": "578a0c657b2d92bfe0dd42f4c1753b0d940b888f6e2739451694aefb052efe62",
+    "overlaySha256": "1e27612bf793c63df7a5602225ce9a1a560300d6ce2b83f43b8556685f3a5878",
+    "verified": true,
+    "sourceFiles": 2144,
+    "protectedExploreFiles": 108,
+    "events": [
+      "f069cbe4-0b03-448d-bd49-74adce8cabf9",
+      "1ce5d235-3571-4a00-9322-bf31cf86a070",
+      "b403d870-b7cb-4e1d-b49c-5845e352393f",
+      "2ad33ccb-d644-48fc-8dd9-7269e121ee99"
+    ]
+  },
+  "ios": {
+    "commit": "5365cdd300e4851a9f89ce0e2371287a0931b6fd",
+    "bundle": "com.reylumi.ios",
+    "version": "1.0.1",
+    "build": "19.1",
+    "xcode": "Xcode 26.3\nBuild version 17C529",
+    "upload": "accepted",
+    "signedArchivePlistReceipt": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\native-upload\\testflight-receipt.json",
+    "sourceFilesVerified": 33,
+    "signedRuntimeFilesVerified": 18,
+    "sourceMatchesFrozenManifest": true,
+    "sourceMatchesPinnedGitCommit": true,
+    "status": "testflight-available",
+    "apple": {
+      "build": "19.1",
+      "buildId": "3043310c-e3dc-40d9-a745-d54f092df9af",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "checkedAt": "2026-10-16T04:35:59.794Z",
+      "operation": "Read-only; no tester invitations or group changes",
+      "receipt": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\native-upload\\testflight-processing.json",
+      "evidence": "Fresh read-only Apple GETs in the successful pinned upload workflow after upload. Same delivery UUID/buildId matched.",
+      "laterIndependentQuery": false,
+      "laterIndependentQueryLimit": "Local Apple credentials are not configured; the existing standalone status workflow mutates tester/group state and was not run."
+    },
+    "tests": {
+      "passed": 41,
+      "failed": 0,
+      "actualSimulatorKeychainPassed": true,
+      "actualColdOfflineWebViewWithDurableDraftPassed": true
+    },
+    "newNativeRequired": true
+  },
+  "checks": {
+    "webAndCache": 125,
+    "preparedReadRefresh": 4,
+    "realAuthPostgrestRls": 11,
+    "nativeXCTest": 41,
+    "productionBuild": "226 routes; TypeScript passed; complete deployment-scoped asset manifest",
+    "lint": "80 selected files; 0 errors; 3 pre-existing warnings",
+    "localNext": [
+      {
+        "name": "Market → Explore → Back retains the actual Market input DOM and unsent query",
+        "passed": true
+      },
+      {
+        "name": "Warm navigation retains one main document",
+        "passed": true,
+        "mainDocuments": 1,
+        "returnMs": 48
+      },
+      {
+        "name": "Worker ACK requires the actual Market document and every build asset",
+        "passed": true,
+        "ok": true,
+        "scope": "v3:ee186805b0580fc519d843488aa4e47c6605780cd2f6ccfdfa05047ded1c6738",
+        "generation": "bcee5d77-a80d-4a6b-997d-fb332e73b689",
+        "expiresAt": 1792215254250,
+        "assetCount": 407,
+        "entryAssetCount": 454,
+        "cachedAssetCount": 454,
+        "missingAssets": [],
+        "guardedHead": true,
+        "hasActualMarket": true,
+        "validContext": true,
+        "durationMs": 3671
+      },
+      {
+        "name": "New browser process with server stopped receives the prepared document from the real worker",
+        "passed": true
+      },
+      {
+        "name": "Cold offline actual Next SSR hydrates into usable search and category controls",
+        "passed": true,
+        "usableMs": 717
+      },
+      {
+        "name": "Valid offline boot grant releases the head guard",
+        "passed": true
+      },
+      {
+        "name": "Offline lazy probe was never observed as a script before process restart",
+        "passed": true,
+        "path": "/_next/static/chunks/2012-851cf95caca0e342.js",
+        "bytes": 8342,
+        "onlineResourceObserved": false,
+        "codeShape": "Only webpack module registration; no entrypoint"
+      },
+      {
+        "name": "Unknown asset query cannot borrow cached executable code",
+        "passed": true,
+        "event": "error",
+        "loaded": false
+      },
+      {
+        "name": "Another deployment ID cannot borrow cached executable code",
+        "passed": true,
+        "event": "error",
+        "loaded": false
+      },
+      {
+        "name": "Never-observed hashed lazy JS loads offline with the exact manifest deployment query",
+        "passed": true,
+        "path": "/_next/static/chunks/2012-851cf95caca0e342.js",
+        "bytes": 8342,
+        "onlineResourceObserved": false,
+        "codeShape": "Only webpack module registration; no entrypoint",
+        "deploymentId": "dpl_local-first-r2-fixture",
+        "event": "load",
+        "loaded": true,
+        "status": 200,
+        "fromServiceWorker": true
+      },
+      {
+        "name": "Stale-generation cached SSR stays hidden before paint and after hydration",
+        "passed": true,
+        "guard": "not all",
+        "visibility": "visible",
+        "samples": 79,
+        "visibleMarketSamples": 0,
+        "oldMarketNodes": 4,
+        "cssGuarded": false,
+        "activityGuarded": true
+      },
+      {
+        "name": "Actual Next online and cold offline flows have zero uncaught page errors",
+        "passed": true,
+        "count": 0
+      },
+      {
+        "name": "No business mutation was issued by the smoke flow",
+        "passed": true,
+        "count": 0,
+        "readOnlyFeedPosts": 0
+      }
+    ],
+    "live": [
+      {
+        "name": "Anonymous read-only /login is available",
+        "passed": true,
+        "status": 200,
+        "finalPath": "/login"
+      },
+      {
+        "name": "Anonymous read-only /help is available",
+        "passed": true,
+        "status": 200,
+        "finalPath": "/help"
+      },
+      {
+        "name": "Anonymous read-only /privacy is available",
+        "passed": true,
+        "status": 200,
+        "finalPath": "/privacy"
+      },
+      {
+        "name": "Anonymous /pos remains behind login",
+        "passed": true,
+        "finalPath": "/login"
+      },
+      {
+        "name": "Anonymous /pos/book remains behind login",
+        "passed": true,
+        "finalPath": "/login"
+      },
+      {
+        "name": "Anonymous /pos/ticket remains behind login",
+        "passed": true,
+        "finalPath": "/login"
+      },
+      {
+        "name": "Anonymous /pos/check-in remains behind login",
+        "passed": true,
+        "finalPath": "/login"
+      },
+      {
+        "name": "Anonymous /pos/report remains behind login",
+        "passed": true,
+        "finalPath": "/login"
+      },
+      {
+        "name": "Market → Explore → Back retains the same DOM input and unsent query",
+        "passed": true
+      },
+      {
+        "name": "Warm return preserves the URL query and original main document",
+        "passed": true,
+        "mainDocuments": 1
+      },
+      {
+        "name": "Public chunks identify the exact promoted deployment",
+        "passed": true,
+        "observed": [
+          "dpl_3ayR1ZKNggz4XmwhCAQjp1cC7Fye",
+          "dpl_cache_smoke_other_deployment"
+        ]
+      },
+      {
+        "name": "Offline asset API is the actual enabled 307 redirect",
+        "passed": true,
+        "status": 307,
+        "location": "/experience-build-assets.json",
+        "flag": "enabled"
+      },
+      {
+        "name": "Asset manifest is bound to the exact promoted deployment",
+        "passed": true,
+        "deploymentId": "dpl_3ayR1ZKNggz4XmwhCAQjp1cC7Fye"
+      },
+      {
+        "name": "Published manifest contains the bounded complete build file records",
+        "passed": true,
+        "version": "b041635a977a11e6194cdc730db618dfa2129851efb27b4e6a4145db3a04fff8",
+        "assetCount": 404,
+        "totalBytes": 8026102
+      },
+      {
+        "name": "Root worker ACK commits actual Market plus every original SHA256-verified build byte",
+        "passed": true,
+        "completeAck": true,
+        "assetCount": 404,
+        "entryAssetCount": 451,
+        "cachedAssetCount": 451,
+        "verifiedBytes": 8026102,
+        "expiresAt": "2026-10-17T05:53:56.595Z",
+        "kind": "public",
+        "guardedHead": true,
+        "actualMarket": true
+      },
+      {
+        "name": "A new offline Chromium process loads the prepared document from the worker",
+        "passed": true,
+        "status": 200,
+        "fromServiceWorker": true
+      },
+      {
+        "name": "Actual cold offline Market search and category controls remain usable",
+        "passed": true
+      },
+      {
+        "name": "The verified offline lease releases the head guard",
+        "passed": true
+      },
+      {
+        "name": "Offline lazy probe was never observed as a script before process restart",
+        "passed": true,
+        "path": "/_next/static/chunks/4912-96380fcb9ede68e8.js",
+        "bytes": 8343,
+        "onlineResourceObserved": false,
+        "codeShape": "Only webpack module registration; no entrypoint"
+      },
+      {
+        "name": "Unknown asset query cannot borrow cached executable code",
+        "passed": true,
+        "event": "error",
+        "loaded": false
+      },
+      {
+        "name": "Another deployment ID cannot borrow cached executable code",
+        "passed": true,
+        "event": "error",
+        "loaded": false
+      },
+      {
+        "name": "Never-observed hashed lazy JS loads offline with the exact manifest deployment query",
+        "passed": true,
+        "path": "/_next/static/chunks/4912-96380fcb9ede68e8.js",
+        "bytes": 8343,
+        "onlineResourceObserved": false,
+        "codeShape": "Only webpack module registration; no entrypoint",
+        "deploymentId": "dpl_3ayR1ZKNggz4XmwhCAQjp1cC7Fye",
+        "event": "load",
+        "loaded": true,
+        "status": 200,
+        "fromServiceWorker": true
+      },
+      {
+        "name": "Read-only live and cold-offline flows have zero uncaught page errors",
+        "passed": true,
+        "count": 0
+      },
+      {
+        "name": "No account, payment or business mutation was permitted",
+        "passed": true,
+        "allowedReadOnlyFeedPosts": 1,
+        "blockedNetworkMutations": 0
+      }
+    ],
+    "finalFoundation": {
+      "tests": 23,
+      "pass": 23,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "browserCompatibility": {
+      "tests": 3,
+      "pass": 3,
+      "fail": 0
+    },
+    "finalAssetOwnerContracts": {
+      "exitCode": 0,
+      "count": 3,
+      "log": "artifacts/local-first-20261016/asset-contract-r2-tests.log",
+      "at": "2026-10-16T05:06:01.4622684Z"
+    },
+    "candidateAssets": {
+      "at": "2026-10-16T05:53:34.622Z",
+      "deploymentId": "dpl_3ayR1ZKNggz4XmwhCAQjp1cC7Fye",
+      "readOnly": true,
+      "providerAccess": "Official Vercel curl automatic authenticated deployment access; no application credentials or business calls",
+      "manifestVersion": "b041635a977a11e6194cdc730db618dfa2129851efb27b4e6a4145db3a04fff8",
+      "assets": 404,
+      "runtime": "/_next/static/chunks/webpack-82c60889bce2ba8b.js",
+      "originalBytes": 5148,
+      "servedBytes": 5609,
+      "originalSha256": "e5102f9a4dca9e193acad4b7617186e510e5d61ade14fa913f05658f79e53638",
+      "exactKnownFooter": true,
+      "unrecognizedBytesAllowed": false
+    },
+    "testHarnessCorrection": {
+      "cause": "Windows nested Chromium profile caused native CacheStorage UnknownError; identical deployed code passed after moving only the owned test profile to a short temporary path.",
+      "productSourceChanged": false,
+      "liveChecksPassed": 24,
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\live-cache-backend-diagnosis.json"
+    }
+  },
+  "securityMigration": {
+    "at": "2026-10-16T04:55:53.333Z",
+    "authorizedBy": "Direct owner approval in this chat for staff binding repair and explicit owner reconfirmation",
+    "version": "20261016080000",
+    "sourceSha256": "19dc1fd476b3488bb89efabe617a3b75129a1336638f42ef043c1249c1c1efad",
+    "submissionSha256": "71666414d5fc31a82649e1e203b737eb0cd8fc9a71eeb6b3dbeb21ea79ae5467",
+    "atomic": true,
+    "businessDataDeleted": false,
+    "historicalConsentBackfilled": false,
+    "repair": {
+      "inviteAuthorityTable": true,
+      "offlineTable": true,
+      "participantWriteClosed": true,
+      "sourceSha256": "19dc1fd476b3488bb89efabe617a3b75129a1336638f42ef043c1249c1c1efad",
+      "version": "20261016080000"
+    },
+    "independentMetadataReadback": {
+      "broadWriteAbsent": true,
+      "functions": [
+        {
+          "anonExecute": false,
+          "authenticatedExecute": true,
+          "name": "attest_staff_offline_binding"
+        },
+        {
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "name": "authorize_owner_staff_invite"
+        },
+        {
+          "anonExecute": false,
+          "authenticatedExecute": true,
+          "name": "get_my_staff_offline_binding"
+        },
+        {
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "name": "require_owner_authorized_staff_invite"
+        },
+        {
+          "anonExecute": false,
+          "authenticatedExecute": false,
+          "name": "revoke_changed_staff_offline_binding"
+        },
+        {
+          "anonExecute": false,
+          "authenticatedExecute": true,
+          "name": "revoke_staff_offline_binding"
+        }
+      ],
+      "managerPolicyExists": true,
+      "rpcHashes": {
+        "apply_staff_connection_invite_decision": "be618046d255b197a4586d140d094293",
+        "resend_staff_connection_invite": "2070328c2ca403fd00f54fd958b1850f",
+        "review_staff_salon_application": "71653909d23fa964b50937c7215887c0"
+      },
+      "tables": [
+        {
+          "authenticatedInsert": false,
+          "authenticatedUpdate": false,
+          "name": "staff_invite_owner_authorizations",
+          "rls": true
+        },
+        {
+          "authenticatedInsert": false,
+          "authenticatedUpdate": false,
+          "name": "staff_offline_bindings",
+          "rls": true
+        }
+      ]
+    }
+  },
+  "releaseEvent": "756cfe4f-3a46-479d-bc07-e36f9ab9fff8",
+  "excludedChanges": [
+    {
+      "changeId": "phone-claim-conflicts-20261015",
+      "reason": "Blocked separate ownership policy decision; not a cache change"
+    },
+    {
+      "changeId": "help-local-draft-20261015",
+      "reason": "Blocked older draft; completed frozen bilingual Help selected instead"
+    },
+    {
+      "changeId": "payroll-period-ledger-20261015",
+      "reason": "Separate ledger/automatic closing changes excluded to preserve existing financial behavior in this cache release"
+    },
+    {
+      "changeId": "staff-invite-preflight-20261016",
+      "reason": "Separate unfinished creation flow; new scoped binding repair selected and tested instead"
+    },
+    {
+      "changeId": "payroll-release-help-alignment-20261016",
+      "reason": "Blocked separate payroll audit; does not establish publication of its ledger"
+    }
+  ],
+  "limits": [
+    "Initial install/unprepared pages require an online preparation; bounded display leases expire after at most24h",
+    "Owner must explicitly reconfirm staff account for offline protected staff reads; historical pending invites need owner resend",
+    "iOS background scheduling is best effort and read-only; no continuous asleep realtime or offline card processing promised",
+    "Simulator and Chromium evidence; physical iPhone/Android speed not measured",
+    "TestFlight available; no App Store publication or user installation established",
+    "No production transaction/account/message writes used for testing"
+  ],
+  "evidence": {
+    "source": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\live-source-verification.json",
+    "build": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\production-build.log",
+    "tests": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\final-tests.log",
+    "native": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\native-upload-verification.json",
+    "migration": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\security-migration-receipt.json"
+  },
+  "rollback": {
+    "deploymentId": "dpl_5BqbU7VSpmSgfuH3w1t94taaWRQL",
+    "rule": "Only after checking live alias is still this release; do not overwrite an external newer release. Additive security repair is retained."
+  },
+  "initialBaseline": {
+    "deploymentId": "dpl_GSM2JMJnitw6i9LGCUiX1H5Xr9Pm",
+    "commit": "94f0b1408b83cc15ef64acbdf401ec72a5f79369",
+    "sourceSha256": "b5fb20ef4ab6bafeb18adf4f6f5091b4064e6980c5123a05b5319537f9e5adaf"
+  },
+  "revision": 3
+}

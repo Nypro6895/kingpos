@@ -1,0 +1,57 @@
+{
+  "kind": "release",
+  "summary": "Verified local-first web release and iOS1.0.1(19.1) TestFlight. Complete scoped prepared documents, POS recovery, partial staff/customer refresh, explicit owner-confirmed staff offline rights and completed bilingual Help; financial rules preserved.",
+  "changes": [
+    "f069cbe4-0b03-448d-bd49-74adce8cabf9",
+    "1ce5d235-3571-4a00-9322-bf31cf86a070",
+    "b403d870-b7cb-4e1d-b49c-5845e352393f",
+    "2ad33ccb-d644-48fc-8dd9-7269e121ee99"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_3ayR1ZKNggz4XmwhCAQjp1cC7Fye",
+      "baselineDeploymentId": "dpl_5BqbU7VSpmSgfuH3w1t94taaWRQL",
+      "sourceSha256": "12fd9dd20a5a280bf28726be1c22f8a0dae40797d02e976158dd0dd79eb0232c",
+      "overlaySha256": "1e27612bf793c63df7a5602225ce9a1a560300d6ce2b83f43b8556685f3a5878",
+      "commit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\release-receipt.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "19.1",
+      "commit": "5365cdd300e4851a9f89ce0e2371287a0931b6fd",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\native-upload-verification.json"
+    }
+  },
+  "baselineSourceSha256": "af1e29c3245e49f19c02669d02fdc93784862e3dc5f732d2181c9ddb079edf0f",
+  "deploySourceSha256": "578a0c657b2d92bfe0dd42f4c1753b0d940b888f6e2739451694aefb052efe62",
+  "excludedChanges": [
+    {
+      "changeId": "phone-claim-conflicts-20261015",
+      "reason": "Blocked separate ownership policy decision; not a cache change"
+    },
+    {
+      "changeId": "help-local-draft-20261015",
+      "reason": "Blocked older draft; completed frozen bilingual Help selected instead"
+    },
+    {
+      "changeId": "payroll-period-ledger-20261015",
+      "reason": "Separate ledger/automatic closing changes excluded to preserve existing financial behavior in this cache release"
+    },
+    {
+      "changeId": "staff-invite-preflight-20261016",
+      "reason": "Separate unfinished creation flow; new scoped binding repair selected and tested instead"
+    },
+    {
+      "changeId": "payroll-release-help-alignment-20261016",
+      "reason": "Blocked separate payroll audit; does not establish publication of its ledger"
+    }
+  ],
+  "id": "756cfe4f-3a46-479d-bc07-e36f9ab9fff8",
+  "recordedAt": "2026-10-16T05:54:15.851Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos"
+}
