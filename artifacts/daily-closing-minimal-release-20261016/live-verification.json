@@ -1,0 +1,58 @@
+{
+  "verifiedAt": "2026-10-16T01:24:32.442Z",
+  "alias": "reylumi.com",
+  "deploymentId": "dpl_7e8b3hzk36m7sS7CFa6io6svJsbF",
+  "sourceCommit": "305a33e12bea0c0f5c787d0a44fbb8c1cf5d8834",
+  "sourceSha256": "9514a69205411a16d55eb08f1512f888ae816d299693aafe7346ecf832e0d5f3",
+  "exactSourceMatch": true,
+  "smoke": [
+    {
+      "route": "/",
+      "status": 200,
+      "redirect": null,
+      "checkedAt": "2026-10-16T01:24:15.069Z"
+    },
+    {
+      "route": "/login",
+      "status": 200,
+      "redirect": null,
+      "checkedAt": "2026-10-16T01:24:15.434Z"
+    },
+    {
+      "route": "/help",
+      "status": 200,
+      "redirect": null,
+      "checkedAt": "2026-10-16T01:24:15.799Z"
+    },
+    {
+      "route": "/salons/new",
+      "status": 200,
+      "redirect": null,
+      "checkedAt": "2026-10-16T01:24:16.129Z"
+    },
+    {
+      "route": "/reports",
+      "status": 200,
+      "redirect": null,
+      "checkedAt": "2026-10-16T01:24:16.560Z"
+    },
+    {
+      "route": "/api/pos/owner/reports?date=2026-10-16",
+      "status": 401,
+      "redirect": null,
+      "checkedAt": "2026-10-16T01:24:17.014Z"
+    },
+    {
+      "route": "/api/pos/portable/workspace?resource=report&date=2026-10-16",
+      "status": 503,
+      "redirect": null,
+      "checkedAt": "2026-10-16T01:24:17.212Z"
+    }
+  ],
+  "schemaMetadataUnchanged": true,
+  "migrationApplied": false,
+  "rootHeadAndIndexUnchanged": true,
+  "realSalonWrites": false,
+  "authenticatedProductionUiNotRun": true,
+  "nativeBuildRequired": false
+}

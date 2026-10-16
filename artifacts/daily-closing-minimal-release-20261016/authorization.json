@@ -1,0 +1,6 @@
+{
+  "source": "User ok to deploy Daily Closing separately, then requested dependency review. Review and 42 checks completed; parent supplied transcript and instructed hotfix-only release.",
+  "thread": "01a13c51-18ce-773d-a498-b64252b8f0ca",
+  "scope": "Review, clean source, commit/push, web candidate and reylumi.com promotion. No database migration, function, grants, security change, real closing edit, or other feature release.",
+  "oldDeniedMigrationNotRetried": true
+}

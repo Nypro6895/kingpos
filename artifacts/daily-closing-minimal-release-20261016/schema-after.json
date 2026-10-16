@@ -1,0 +1,327 @@
+{
+  "checkedAt": "2026-10-16T01:24:32.308Z",
+  "projectRef": "bowkoiprvqwjilwaxhda",
+  "readOnly": true,
+  "review": {
+    "constraints": [
+      {
+        "definition": "PRIMARY KEY (id)",
+        "name": "payroll_runs_pkey",
+        "table": "payroll_runs"
+      },
+      {
+        "definition": "PRIMARY KEY (id)",
+        "name": "payroll_staff_daily_totals_pkey",
+        "table": "payroll_staff_daily_totals"
+      },
+      {
+        "definition": "PRIMARY KEY (id)",
+        "name": "payroll_staff_lines_pkey",
+        "table": "payroll_staff_lines"
+      },
+      {
+        "definition": "PRIMARY KEY (id)",
+        "name": "pos_daily_closings_pkey",
+        "table": "pos_daily_closings"
+      },
+      {
+        "definition": "UNIQUE (salon_id, report_date)",
+        "name": "pos_daily_closings_salon_id_report_date_key",
+        "table": "pos_daily_closings"
+      }
+    ],
+    "functions": [
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+        "body_md5": "e697489491d27451cfae2adfcafb9adb",
+        "config": [
+          "search_path=public"
+        ],
+        "name": "get_pos_portable_report_data",
+        "security_definer": true,
+        "signature": "get_pos_portable_report_data(uuid,text,date)"
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "body_md5": "0f29835ca234c8d8653a9d92bc132fe9",
+        "config": [
+          "search_path=public"
+        ],
+        "name": "replay_pos_owner_operation",
+        "security_definer": true,
+        "signature": "replay_pos_owner_operation(uuid,uuid,timestamp with time zone,jsonb)"
+      },
+      {
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+        "body_md5": "e021340a8d62a53800ce96ef5f433547",
+        "config": [
+          "search_path=public"
+        ],
+        "name": "replay_pos_portable_operation",
+        "security_definer": true,
+        "signature": "replay_pos_portable_operation(uuid,text,uuid,text,timestamp with time zone,jsonb)"
+      },
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+        "body_md5": "1d71bf21bf6d19763898f4c8cf25d814",
+        "config": [
+          "search_path=public"
+        ],
+        "name": "save_pos_portable_report_closing",
+        "security_definer": true,
+        "signature": "save_pos_portable_report_closing(uuid,text,date,numeric,numeric,numeric,text)"
+      },
+      {
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+        "body_md5": "773fa02942833d8c74b9616f69205543",
+        "config": [
+          "search_path=public"
+        ],
+        "name": "save_pos_workspace_report_closing",
+        "security_definer": true,
+        "signature": "save_pos_workspace_report_closing(uuid,text,date,numeric,numeric,numeric,text,jsonb)"
+      }
+    ],
+    "indexes": [
+      {
+        "indexdef": "CREATE UNIQUE INDEX payroll_runs_pkey ON public.payroll_runs USING btree (id)",
+        "indexname": "payroll_runs_pkey",
+        "schemaname": "public",
+        "tablename": "payroll_runs",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE UNIQUE INDEX pos_daily_closings_pkey ON public.pos_daily_closings USING btree (id)",
+        "indexname": "pos_daily_closings_pkey",
+        "schemaname": "public",
+        "tablename": "pos_daily_closings",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE UNIQUE INDEX pos_daily_closings_salon_id_report_date_key ON public.pos_daily_closings USING btree (salon_id, report_date)",
+        "indexname": "pos_daily_closings_salon_id_report_date_key",
+        "schemaname": "public",
+        "tablename": "pos_daily_closings",
+        "tablespace": null
+      }
+    ],
+    "new_migration_applied": false,
+    "payroll_save_functions": [],
+    "policies": [
+      {
+        "cmd": "SELECT",
+        "permissive": "PERMISSIVE",
+        "policyname": "payroll_manager_read_runs",
+        "qual": "user_has_salon_permission(salon_id, ARRAY['payroll.view'::text, 'payroll.manage'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "schemaname": "public",
+        "tablename": "payroll_runs",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "permissive": "PERMISSIVE",
+        "policyname": "payroll_manager_write_runs",
+        "qual": "user_has_salon_permission(salon_id, ARRAY['payroll.manage'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "schemaname": "public",
+        "tablename": "payroll_runs",
+        "with_check": "user_has_salon_permission(salon_id, ARRAY['payroll.manage'::text])"
+      },
+      {
+        "cmd": "SELECT",
+        "permissive": "PERMISSIVE",
+        "policyname": "tax_connected_runs",
+        "qual": "((status = ANY (ARRAY['printed'::text, 'paid'::text])) AND tax_company_has_access(salon_id))",
+        "roles": [
+          "authenticated"
+        ],
+        "schemaname": "public",
+        "tablename": "payroll_runs",
+        "with_check": null
+      },
+      {
+        "cmd": "SELECT",
+        "permissive": "PERMISSIVE",
+        "policyname": "payroll_manager_or_staff_read_daily_totals",
+        "qual": "(user_has_salon_permission(salon_id, ARRAY['payroll.view'::text, 'payroll.manage'::text]) OR (staff_id = current_user_staff_id_for_salon(salon_id)))",
+        "roles": [
+          "authenticated"
+        ],
+        "schemaname": "public",
+        "tablename": "payroll_staff_daily_totals",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "permissive": "PERMISSIVE",
+        "policyname": "payroll_manager_write_daily_totals",
+        "qual": "user_has_salon_permission(salon_id, ARRAY['payroll.manage'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "schemaname": "public",
+        "tablename": "payroll_staff_daily_totals",
+        "with_check": "user_has_salon_permission(salon_id, ARRAY['payroll.manage'::text])"
+      },
+      {
+        "cmd": "SELECT",
+        "permissive": "PERMISSIVE",
+        "policyname": "payroll_manager_or_staff_read_lines",
+        "qual": "(user_has_salon_permission(salon_id, ARRAY['payroll.view'::text, 'payroll.manage'::text]) OR (staff_id = current_user_staff_id_for_salon(salon_id)))",
+        "roles": [
+          "authenticated"
+        ],
+        "schemaname": "public",
+        "tablename": "payroll_staff_lines",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "permissive": "PERMISSIVE",
+        "policyname": "payroll_manager_write_lines",
+        "qual": "user_has_salon_permission(salon_id, ARRAY['payroll.manage'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "schemaname": "public",
+        "tablename": "payroll_staff_lines",
+        "with_check": "user_has_salon_permission(salon_id, ARRAY['payroll.manage'::text])"
+      },
+      {
+        "cmd": "SELECT",
+        "permissive": "PERMISSIVE",
+        "policyname": "tax_connected_lines",
+        "qual": "(tax_company_has_access(salon_id) AND (EXISTS ( SELECT 1\n   FROM payroll_runs r\n  WHERE ((r.id = payroll_staff_lines.payroll_run_id) AND (r.salon_id = payroll_staff_lines.salon_id) AND (r.status = ANY (ARRAY['printed'::text, 'paid'::text]))))))",
+        "roles": [
+          "authenticated"
+        ],
+        "schemaname": "public",
+        "tablename": "payroll_staff_lines",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "permissive": "PERMISSIVE",
+        "policyname": "financial_manager_write_daily_closings",
+        "qual": "user_has_salon_permission(salon_id, ARRAY['tickets.manage'::text, 'financial_corrections.apply'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "schemaname": "public",
+        "tablename": "pos_daily_closings",
+        "with_check": "user_has_salon_permission(salon_id, ARRAY['tickets.manage'::text, 'financial_corrections.apply'::text])"
+      },
+      {
+        "cmd": "SELECT",
+        "permissive": "PERMISSIVE",
+        "policyname": "financial_member_read_daily_closings",
+        "qual": "user_has_salon_permission(salon_id, ARRAY['reports.view'::text, 'tickets.view'::text, 'payroll.view'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "schemaname": "public",
+        "tablename": "pos_daily_closings",
+        "with_check": null
+      }
+    ],
+    "tables": [
+      {
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=arwd/postgres,service_role=arwdDxtm/postgres}",
+        "name": "payroll_runs",
+        "rls": true
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=arwd/postgres,service_role=arwdDxtm/postgres}",
+        "name": "payroll_staff_daily_totals",
+        "rls": true
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=arwd/postgres,service_role=arwdDxtm/postgres}",
+        "name": "payroll_staff_lines",
+        "rls": true
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres,authenticated=arwd/postgres,service_role=arwdDxtm/postgres}",
+        "name": "pos_daily_closings",
+        "rls": true
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres}",
+        "name": "pos_owner_operations",
+        "rls": true
+      },
+      {
+        "acl": "{postgres=arwdDxtm/postgres}",
+        "name": "pos_portable_operations",
+        "rls": true
+      }
+    ],
+    "triggers": [
+      {
+        "definition": "CREATE TRIGGER enforce_operational_salon_write BEFORE INSERT OR DELETE OR UPDATE ON public.payroll_runs FOR EACH ROW EXECUTE FUNCTION prevent_non_operational_salon_write('salon_id')",
+        "name": "enforce_operational_salon_write",
+        "table": "payroll_runs"
+      },
+      {
+        "definition": "CREATE TRIGGER set_payroll_runs_updated_at BEFORE UPDATE ON public.payroll_runs FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+        "name": "set_payroll_runs_updated_at",
+        "table": "payroll_runs"
+      },
+      {
+        "definition": "CREATE TRIGGER staff_today_changed AFTER INSERT OR DELETE OR UPDATE ON public.payroll_runs FOR EACH ROW EXECUTE FUNCTION notify_pos_workspace_change('settings', 'id')",
+        "name": "staff_today_changed",
+        "table": "payroll_runs"
+      },
+      {
+        "definition": "CREATE TRIGGER enforce_operational_salon_write BEFORE INSERT OR DELETE OR UPDATE ON public.payroll_staff_daily_totals FOR EACH ROW EXECUTE FUNCTION prevent_non_operational_salon_write('salon_id')",
+        "name": "enforce_operational_salon_write",
+        "table": "payroll_staff_daily_totals"
+      },
+      {
+        "definition": "CREATE TRIGGER set_payroll_staff_daily_totals_updated_at BEFORE UPDATE ON public.payroll_staff_daily_totals FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+        "name": "set_payroll_staff_daily_totals_updated_at",
+        "table": "payroll_staff_daily_totals"
+      },
+      {
+        "definition": "CREATE TRIGGER staff_today_changed AFTER INSERT OR DELETE OR UPDATE ON public.payroll_staff_daily_totals FOR EACH ROW EXECUTE FUNCTION notify_pos_workspace_change('settings', 'staff_id')",
+        "name": "staff_today_changed",
+        "table": "payroll_staff_daily_totals"
+      },
+      {
+        "definition": "CREATE TRIGGER enforce_operational_salon_write BEFORE INSERT OR DELETE OR UPDATE ON public.payroll_staff_lines FOR EACH ROW EXECUTE FUNCTION prevent_non_operational_salon_write('salon_id')",
+        "name": "enforce_operational_salon_write",
+        "table": "payroll_staff_lines"
+      },
+      {
+        "definition": "CREATE TRIGGER set_payroll_staff_lines_updated_at BEFORE UPDATE ON public.payroll_staff_lines FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+        "name": "set_payroll_staff_lines_updated_at",
+        "table": "payroll_staff_lines"
+      },
+      {
+        "definition": "CREATE TRIGGER staff_today_changed AFTER INSERT OR DELETE OR UPDATE ON public.payroll_staff_lines FOR EACH ROW EXECUTE FUNCTION notify_pos_workspace_change('settings', 'staff_id')",
+        "name": "staff_today_changed",
+        "table": "payroll_staff_lines"
+      },
+      {
+        "definition": "CREATE TRIGGER enforce_operational_salon_write BEFORE INSERT OR DELETE OR UPDATE ON public.pos_daily_closings FOR EACH ROW EXECUTE FUNCTION prevent_non_operational_salon_write('salon_id')",
+        "name": "enforce_operational_salon_write",
+        "table": "pos_daily_closings"
+      },
+      {
+        "definition": "CREATE TRIGGER pos_workspace_changed AFTER INSERT OR DELETE OR UPDATE ON public.pos_daily_closings FOR EACH ROW EXECUTE FUNCTION notify_pos_workspace_change('report', 'id')",
+        "name": "pos_workspace_changed",
+        "table": "pos_daily_closings"
+      },
+      {
+        "definition": "CREATE TRIGGER set_pos_daily_closings_updated_at BEFORE UPDATE ON public.pos_daily_closings FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+        "name": "set_pos_daily_closings_updated_at",
+        "table": "pos_daily_closings"
+      }
+    ]
+  }
+}

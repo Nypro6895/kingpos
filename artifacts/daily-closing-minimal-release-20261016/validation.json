@@ -1,0 +1,1133 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "name": "final-build",
+      "startedAt": "2026-10-16T01:10:44.753Z",
+      "finishedAt": "2026-10-16T01:15:34.630Z",
+      "exitCode": 0,
+      "log": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-release-20261016\\final-build.log"
+    },
+    {
+      "name": "money-tests",
+      "startedAt": "2026-10-16T01:15:34.636Z",
+      "finishedAt": "2026-10-16T01:15:35.295Z",
+      "exitCode": 0,
+      "log": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-release-20261016\\money-tests.log"
+    },
+    {
+      "name": "scoped-lint",
+      "startedAt": "2026-10-16T01:15:35.297Z",
+      "finishedAt": "2026-10-16T01:15:42.312Z",
+      "exitCode": 0,
+      "log": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-release-20261016\\scoped-lint.log"
+    },
+    {
+      "name": "browser-tests",
+      "startedAt": "2026-10-16T01:15:42.317Z",
+      "finishedAt": "2026-10-16T01:16:26.678Z",
+      "exitCode": 0,
+      "log": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-release-20261016\\browser-tests.log"
+    }
+  ],
+  "browser": 19,
+  "money": 3,
+  "isolatedDatabase": 20,
+  "databaseEvidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-minimal-20261016\\evidence\\dependencies-r4\\results.json",
+  "dependencies": [
+    {
+      "file": "lib/payroll.ts",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "lib/payroll-overview-analytics.ts",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "app/payroll/data-download-actions.ts",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "app/reports/actions.ts",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240001_account_salon_baseline.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240002_account_avatar_storage.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240003_fix_staff_connection_dashboard_ambiguity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240004_staff_contact_address.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240005_staff_pos_enabled.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240006_portable_pos_access.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240007_pos_settings_and_portable_sessions.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240008_public_profile_salon_name.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240009_staff_invite_direct_signup.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240010_pos_live_draft_realtime_customer_display.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240011_fix_live_draft_reset_version_ambiguity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240012_keep_portable_live_draft_token_stable.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240013_customer_display_branding_payload.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240014_fix_customer_display_branding_settings_table.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240015_customer_display_idle_activity_reset.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607240016_customer_display_default_ad_copy.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607250001_portable_shell_views.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607250002_portable_ticket_view.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607250003_portable_report_closing.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607250004_portable_report_fix_defaults.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202607250005_staff_check_in_and_turn_adjustment.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608100001_customer_activity_history.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608100002_customer_activity_history_permissions.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608100003_customer_identity_claims.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608100004_customer_phone_otp_verification.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608100005_beauty_profile_social_timeline.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608100006_beauty_profile_cover_media_path_backfill.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608110001_public_salon_profile_staff_rpc_hardening.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608110002_public_salon_profile_reviews_rpc_hardening.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608110003_public_explore_beauty_posts.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608110004_fix_beauty_create_post_verification_state_ambiguity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608110005_beauty_salon_publication_approval.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608140001_public_booking_account_notifications.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608140002_booking_change_notifications.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608140003_beauty_customer_relationship_resolver.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608140004_beauty_customer_profile_state.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608150001_today_quick_access_preferences.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608150002_today_quick_access_preferences_grants.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608150003_fix_staff_queue_increment_bootstrap.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608150004_customer_visits_waiting_list.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608150005_tighten_customer_visit_helper_grants.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608150006_fix_customer_visit_live_draft_reset_ambiguity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608150007_canonical_waiting_queue_identity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608150008_customer_visit_requested_services.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608150009_portable_live_draft_handoff_marker.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608160001_portable_receipt_staff_earnings.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608170001_public_explore_beauty_post_verification_booking.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608170002_staff_workspace_context_rls.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608180001_beauty_post_booking_public_surfaces.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608180002_staff_booking_confirm_controls.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608180003_public_booking_direct_link_visibility.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608180004_staff_booking_line_transitions.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608180005_staff_booking_confirmation_notification_resolution.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608180006_staff_connection_phone_identity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608180007_booking_rls_recursion_fix.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608180008_backfill_staff_public_booking_notifications.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608180009_unified_staff_profile_public_presentation.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608190001_portable_check_in_presentation.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608190002_portable_ticket_line_table.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608190003_public_salon_profile_staff_visibility_source.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608190004_portable_ticket_edit.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608190005_portable_pos_staff_avatar_presentation.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608190006_portable_ticket_edit_optional_service.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608200001_operational_report_indexes.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210001_account_salon_lifecycle_foundation.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210002_explore_beauty_post_salon_logo.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210003_account_deletion_flow.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210004_account_beauty_following.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210005_account_saved_post_targets.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210006_account_lifecycle_phase3.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210007_account_post_saves_permissions.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210008_account_post_save_counts.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210009_fix_owner_transfer_invite_uuid_lookup.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210010_harden_lifecycle_export_rls.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210011_block_direct_lifecycle_table_writes.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210012_add_salon_lifecycle_event_types.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210013_revoke_lifecycle_table_maintenance_grants.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210014_harden_lifecycle_function_grants.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210015_wrap_beauty_media_storage_rls.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608210016_complete_owner_transfer_account_membership.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608280001_unified_post_comments.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608280002_smart_search_foundation.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608300001_account_login_security.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608300002_post_comments_realtime_threading.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608300003_customer_visit_experience_backend.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608300004_platform_admin_current_schema.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608300005_platform_admin_current_schema_lint_repair.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608300006_platform_admin_business_profile_legacy_param_repair.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202608300007_salon_operating_status.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609220001_salon_operating_status_table_grants.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609220002_portable_reference_data.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609220003_portable_context_brand.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609220004_portable_shell_timezone.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609220005_portable_appointment_create.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609220006_portable_book_range.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609230001_portable_draft_outbox.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609230003_portable_operations.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609230004_my_place_management.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609230005_portable_customer_checkin.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609230006_portable_waiting_refresh.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609230007_portable_visit_operations.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609230008_portable_leave_context.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609230009_portable_custom_service_snapshot.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240001_booking_time_policy.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240002_booking_scheduler_touch.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240003_booking_notifications.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240004_booking_lifecycle_policy.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240005_portable_booking_edit.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240006_portable_booking_ticket.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240007_booking_service_staff.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240008_booking_front_desk.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240009_pos_workspace_sync.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240010_pos_workspace_corrections.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609240011_pos_workspace_booking_edits.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609250001_staff_daily_snapshot.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609250002_staff_greeting_context.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609250003_staff_analysis_snapshot.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609250004_staff_today_change_events.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609250005_staff_paystub_history.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609260001_portable_booking_notifications.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202609280001_portable_unbounded_offline.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610010001_booking_no_show_classification.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610010002_customer_history_links.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610010003_staff_read_payroll_schedule.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610020001_staff_booking_preferences.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610020002_staff_appointment_details.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610020003_notification_center.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610020004_notification_center_actions.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610020005_notification_following_and_arrivals.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610020006_staff_create_appointments.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610020007_staff_booking_customer_suggestions.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610020008_salon_profile_preferences.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610020009_salon_profile_layout.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610020010_staff_profile_content_media.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610030001_salon_profile_featured_visibility.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610030002_salon_profile_review_highlights.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610030003_salon_website_feature_selection.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050001_lumi_trust_return_evidence.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050002_salon_identity_verification.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050003_public_service_display_prices.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050004_booking_ticket_completion.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050005_precreated_salon_profiles.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050006_business_claims.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050007_twilio_admin_settings.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050008_owner_transfer_inbox.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050009_salon_owner_roster_and_leave.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050010_delete_unused_staff_services.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050011_owner_as_staff.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610050012_restore_my_place_owner_inbox.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610060001_unified_notification_feed.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610060002_explore_advertising.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610060003_explore_reference_favorites.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610060004_classify_staff_service_deletion.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610060005_protect_posted_pos_deletion.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070001_owner_pos_attendance.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070002_windows_pos_download_prompt.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070003_admin_control_center.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070004_explore_search_relevance.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070005_advertising_insights.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070006_support_inbox.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070007_post_safety.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070008_abuse_prevention.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070009_report_persistence.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070010_admin_post_review.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070011_admin_attention_dashboard.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070012_existing_guest_report_identity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070013_admin_dashboard_followups.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070014_post_review_workspace.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070015_review_search_reason_labels.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070016_report_author_identity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070017_user_support_cases.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070018_admin_users_workspace.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070019_support_active_identity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070020_admin_users_workspace_complete.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610070021_admin_store_presentation.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610080001_admin_business_workspace.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610080002_owner_campaigns.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610080003_payroll_data_plugin.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610080004_campaign_market_credits.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610080005_campaign_credit_scheduler.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610080006_explore_state_boundaries.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610080006_vietnamese_market_plugin.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610080007_checkin_receipt_plugin.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610080007_explore_large_directory_search.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610080008_checkin_receipt_billing_access.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261008223001_explore_read_model.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261008223002_directory_import_suppression.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261008223003_explore_browse_fast_path.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261008230001_explore_reputation_batch.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261008233001_review_case_communication.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261008233002_review_communication_hardening.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261008235941_explore_personal_cursor.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610090001_explore_state_category_filter.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610090002_explore_cursor_jit.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610090003_public_profile_updates_index.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009000417_explore_home_index_paths.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009010001_salon_post_attribution.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009020001_deleted_salon_post_attribution.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009023001_admin_support_activity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009031017_explore_indexed_text_search.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009052031_explore_search_sessions.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009062031_explore_booking_rank_gate.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009064031_explore_region_index_predicates.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009065531_explore_session_publication_cutoff.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009071031_explore_candidate_seek_paths.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009080031_explore_social_discovery.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009083031_explore_social_personal_interests.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009090031_explore_home_candidate_cache.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009091031_explore_inspiration_cursor_projection.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009092031_explore_directory_references.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009093031_explore_operating_public_runner.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009094031_lumi_trust_selected_read_cost.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009095031_explore_favorite_identity_cursor.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009096031_explore_canonical_public_bounds.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009097031_explore_exact_content_booking.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009098031_explore_selected_directory_hydration.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009099031_explore_selected_directory_events.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009100031_explore_session_restore_guard.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009110002_explore_activity_region.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009120031_explore_organic_content_search.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009121031_explore_query_area_lookup.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009122031_directory_geocode_worker.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009123031_explore_gps_address_context.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009124031_directory_geocode_yield_locks.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009125031_explore_negative_fuzzy_guard.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009126031_explore_ranked_search.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009127031_explore_coordinate_validity.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009128031_explore_search_suggestions.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009129031_explore_ranking_scheduler.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009129032_explore_rank_safe_update.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009129033_explore_rank_batch_proof.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009129034_explore_decision_selected_seek.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009130031_booking_policy_plugin.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009140031_booking_deposit_plugin.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009150031_service_relay.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009150032_service_relay_phone_checkin.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009150033_service_relay_pos_projection.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009150034_service_relay_notifications.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009150035_service_relay_pos_guard.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009150036_service_relay_receipt_visit.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009160001_market_commerce_configuration.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009170001_checkin_receipt_checkout_lifecycle.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009180001_market_bank_billing.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009190001_phone_checkin_name.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261009210001_tax_company_plugin.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610100001_admin_report_workflow.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610100002_admin_business_workspace_load_fix.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261010210001_market_card_system.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261011010001_market_automatic_tax.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261011020001_report_content_context.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261011110001_tax_company_workspace.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261011120001_tax_company_card_bridge.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261011130001_system_messaging_booksms.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261012010001_salon_reports.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261012020001_explore_social_layout.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610130001_explore_reference_post_hydration.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610140001_market_safari_checkout.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610140002_user_blocking.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610140003_account_erasure.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/202610140004_explore_look_salon_keywords.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261015010000_booking_concurrency_guards.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261015050000_booking_access_guards.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261015051000_business_claim_lookup_indexes.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261015163000_customer_booking_privacy.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261015173000_booking_notification_access_guards.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261015190000_signup_admission_retries.sql",
+      "unchangedFromTestedBaseline": true
+    },
+    {
+      "file": "supabase/migrations/20261015200000_confirmed_social_identity.sql",
+      "unchangedFromTestedBaseline": true
+    }
+  ],
+  "allOtherLiveFilesPreserved": true,
+  "sqlMigrationsChanged": 0,
+  "nativeBuildRequired": false,
+  "limitations": [
+    "No durable receipt or exactly-once semantics; timeout does not cancel a server action.",
+    "Readback confirms current nonzero values only. Absent vs recorded zero is ambiguous in legacy read; preserve explicit zero Save and keep zero recovery uncertain.",
+    "A fresh page can perform a same-value zero update; existing DB trigger behavior is unchanged.",
+    "Existing Owner lock-precheck/ABA and legacy Portable core-RPC limitations remain.",
+    "No production root-cause trace or physical Safari testing."
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "branch": "codex/daily-closing-minimal-20261016",
+  "commit": "305a33e12bea0c0f5c787d0a44fbb8c1cf5d8834",
+  "parent": "7101aaba39c4d16c9ddc4f43450ce3621bb2ce93",
+  "tree": "1e9dc6e88604f268b19d28844d43065a63a4e27a",
+  "files": [
+    "app/(app)/reports/page.tsx",
+    "app/api/pos/owner/reports/route.ts",
+    "app/pos/portable/actions.ts",
+    "app/pos/portable/report/portable-report-closing-form.tsx",
+    "app/reports/closing-save-notice.tsx",
+    "app/reports/daily-closing-form.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "artifacts/daily-closing-minimal-release-20261016/prepublish-evidence.json",
+    "lib/daily-closing-input.ts",
+    "lib/daily-closing-save.ts",
+    "lib/daily-pos-report.ts",
+    "releases/changes/2026-10-16T00-31-03-720Z-ff60b4a0-fcd5-4049-aec9-1e3f47ba5625.json",
+    "releases/changes/2026-10-16T00-57-37-886Z-841e77c3-683c-4f0f-a2f9-baf6e27c44d4.json",
+    "tests/daily-closing-input.test.mjs"
+  ],
+  "sourceSha256": "9514a69205411a16d55eb08f1512f888ae816d299693aafe7346ecf832e0d5f3",
+  "overlaySha256": "b3867667e32aaa6ae15fdc4d9904eb9d34cbd9e4eb3c7553353cb19e92ac4584"
+}
