@@ -1,0 +1,14 @@
+{
+  "Staff account access": "Quyền truy cập của nhân viên",
+  "This account is confirmed for this staff member.": "Tài khoản này đã được xác nhận thuộc về nhân viên này.",
+  "Review the connected account above before confirming it.": "Kiểm tra tài khoản đã liên kết ở trên trước khi xác nhận.",
+  "This staff member can view their previously loaded work and pay without connecting for up to 24 hours. Removing access takes effect when they reconnect or that time expires. Payments and other changes still need their usual confirmation.": "Nhân viên có thể xem công việc và thu nhập đã mở trước đó khi mất mạng, tối đa 24 giờ. Việc thu hồi quyền có hiệu lực khi kết nối lại hoặc hết thời gian này. Thanh toán và các thay đổi khác vẫn cần xác nhận như hiện tại.",
+  "I confirm this account belongs to this staff member.": "Tôi xác nhận tài khoản này thuộc về nhân viên này.",
+  "Remove device access": "Thu hồi quyền xem trên thiết bị",
+  "Confirm account": "Xác nhận tài khoản",
+  "Staff account confirmed.": "Đã xác nhận tài khoản nhân viên.",
+  "Device access removed. Online staff access is unchanged.": "Đã thu hồi quyền xem trên thiết bị. Nhân viên vẫn có thể xem trực tuyến.",
+  "Updating…": "Đang cập nhật…",
+  "You're offline. Your entries are kept. Reconnect to continue.": "Bạn đang mất mạng. Nội dung đang nhập vẫn được giữ. Kết nối lại để tiếp tục.",
+  "Connect to open this view. Your current ticket has been kept.": "Kết nối mạng để mở màn hình này. Phiếu đang nhập vẫn được giữ."
+}

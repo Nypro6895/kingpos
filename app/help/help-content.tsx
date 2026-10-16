@@ -1,6 +1,8 @@
-import Link from "next/link";
+import { HelpLink as Link, HelpShell } from "./help-language";
+import { HelpIllustration } from "./help-illustration";
+import type { HelpLanguage } from "@/lib/help-language";
 import { HelpText as WorkspaceText, HelpElement as WorkspaceElement } from "./help-language";
-import { HELP_GUIDES, HELP_QUICK_STARTS, findHelpGuide, type HelpGuide, type HelpScreenshot } from "@/lib/help-guides";
+import { HELP_GUIDES, HELP_QUICK_STARTS, findHelpGuide, type HelpGuide } from "@/lib/help-guides";
 import { isHelpAvailable } from "@/lib/help-draft";
 import { HelpCatalog } from "./help-catalog";
 import styles from "./help.module.css";
@@ -9,8 +11,8 @@ export function HelpSupportEntry() {
   if (!isHelpAvailable()) return null;
   return <p className="mb-6 text-sm"><Link href="/help" prefetch={false} className="font-semibold text-orange-800 underline underline-offset-4"><WorkspaceText text="Browse the Help guides" /></Link></p>;
 }
-export function HelpHome() {
-  return <main lang="vi" className={styles.shell}>
+export function HelpHome({ language = "vi" }: { language?: HelpLanguage }) {
+  return <HelpShell language={language}>
     <header className={styles.hero}><h1><WorkspaceText text="Reylumi Help" /></h1><p><WorkspaceText text="Follow the guides in order, or jump to the task you need." /></p></header>
     
     <section className={styles.section} aria-labelledby="quick-start-heading">
@@ -26,13 +28,13 @@ export function HelpHome() {
     <HelpCatalog />
     <aside className={styles.planned}><h2><WorkspaceText text="Planned: Rewards" /></h2><p><WorkspaceText text="Rewards is a research item. There is no verified usage guide or launch commitment here." /></p></aside>
     <p className={styles.support}><Link href="/support?from=%2Fhelp" prefetch={false}><WorkspaceText text="Contact support" /></Link></p>
-  </main>;
+  </HelpShell>;
 }
-export function HelpArticle({ guide }: { guide: HelpGuide }) {
+export function HelpArticle({ guide, language = "vi" }: { guide: HelpGuide; language?: HelpLanguage }) {
   const nextGuide = HELP_GUIDES[HELP_GUIDES.indexOf(guide) + 1];
   const inlineIds = new Set(guide.sections.flatMap(section => section.illustrationId ? [section.illustrationId] : []));
   const remainingScreens = guide.evidence.screenshots.filter(screen => !inlineIds.has(screen.id));
-  return <main lang="vi" className={styles.shell}>
+  return <HelpShell language={language}>
     <Link className={styles.back} href="/help" prefetch={false}>← <WorkspaceText text="Back to all guides" /></Link>
     <header className={styles.hero}><h1><WorkspaceText text={guide.title} /></h1><p><WorkspaceText text={guide.summary} /></p></header>
     <WorkspaceElement as="nav" aria-label="Guide contents" className={styles.contents}>
@@ -48,7 +50,7 @@ export function HelpArticle({ guide }: { guide: HelpGuide }) {
     </section>
     <section id="walkthroughs" className={styles.section} aria-labelledby="walkthroughs-heading">
       <h2 id="walkthroughs-heading"><WorkspaceText text="Detailed walkthroughs" /></h2>
-      <nav className={styles.sectionLinks} aria-label="Các mục trong bài">{guide.sections.map(section => <a href={`#${section.id}`} key={section.id}><WorkspaceText text={section.title} /></a>)}</nav>
+      <WorkspaceElement as="nav" className={styles.sectionLinks} aria-label="Article sections">{guide.sections.map(section => <a href={`#${section.id}`} key={section.id}><WorkspaceText text={section.title} /></a>)}</WorkspaceElement>
       {guide.sections.map(section => <section id={section.id} key={section.id} className={styles.walkthrough} aria-labelledby={`heading-${section.id}`}>
         <h3 id={`heading-${section.id}`}><WorkspaceText text={section.title} /></h3>
         <ol>{section.steps.map(step => <li key={step}><WorkspaceText text={step} /></li>)}</ol>
@@ -64,12 +66,6 @@ export function HelpArticle({ guide }: { guide: HelpGuide }) {
       <p><WorkspaceText text="Need help with this task?" /> <Link href={`/support?from=${encodeURIComponent(`/help/${guide.slug}`)}`} prefetch={false}><WorkspaceText text="Contact support" /></Link></p>
       {nextGuide ? <p><WorkspaceText text="Continue learning" />: <Link href={`/help/${nextGuide.slug}`} prefetch={false}><WorkspaceText text={nextGuide.title} /></Link></p> : null}
     </footer>
-  </main>;
+  </HelpShell>;
 }
 
-function HelpIllustration({ screen }: { screen: HelpScreenshot }) {
-  return <figure className={styles.figure}>
-    <picture><source media="(max-width: 720px)" srcSet={screen.mobile.src} width={screen.mobile.width} height={screen.mobile.height} /><WorkspaceElement as="img" src={screen.desktop.src} width={screen.desktop.width} height={screen.desktop.height} alt={screen.alt} loading="lazy" decoding="async" /></picture>
-    <figcaption><span className={styles.demoLabel}><WorkspaceText text="Illustration" /></span><strong><WorkspaceText text={screen.caption} /></strong><span className={styles.imageLinks}><a href={screen.desktop.src}><WorkspaceText text="View full desktop image" /></a><a href={screen.mobile.src}><WorkspaceText text="View full mobile image" /></a></span></figcaption>
-  </figure>;
-}

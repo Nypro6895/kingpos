@@ -504,5 +504,7 @@
   "Sync tickets, count actual collections, compare the terminal report and save the correct business-day report.": "Đồng bộ phiếu, kiểm đếm thực thu, đối chiếu máy thẻ và lưu báo cáo đúng ngày kinh doanh.",
   "A $50 service plus a $10 tip totals $60 before any other charges. If $20 was cash and $40 was charged successfully on the terminal, record $20 Cash and $40 Credit Card, not two $60 payments.": "Dịch vụ $50 cộng tip $10 thành $60 trước các khoản khác. Nếu nhận $20 tiền mặt và máy thẻ thu thành công $40, ghi $20 Cash và $40 Credit Card, không ghi hai khoản $60.",
   "From opening POS to checking the money at the end of the day.": "Từ mở POS đến kiểm tiền cuối ngày.",
-  "Open the owner walkthrough": "Xem hướng dẫn dành cho chủ tiệm"
+  "Open the owner walkthrough": "Xem hướng dẫn dành cho chủ tiệm",
+  "Help language": "Ngôn ngữ hướng dẫn",
+  "Article sections": "Các mục trong bài"
 }

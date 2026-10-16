@@ -1,6 +1,8 @@
 "use client";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { useExperienceScope } from "@/components/experience-scope";
+import { useScopedUiDraft } from "@/lib/use-scoped-ui-draft";
 import { usePayrollEdits } from "./payroll-edit-boundary";
 import { usePayrollRefreshBatch } from "./use-payroll-refresh-batch";
 import {
@@ -87,6 +89,21 @@ export function StaffIncomeAutosaveInputs({
   );
   const initialSignature = `${normalizeBonus(bonusAmount)}|${normalizeCheckNumber(checkNumber)}`;
   const [values, setValues] = useState({ bonus: bonusAmount.toFixed(2), check: checkNumber ?? "", source: initialSignature });
+  const experience = useExperienceScope();
+  const [needsReview, setNeedsReview] = useState(false);
+  const localDraft = useScopedUiDraft({
+    scope: experience?.context.authenticated ? experience.context.scope : undefined,
+    domain: "payroll-input", params: { staffId, periodStart, periodEnd, cycleType },
+    value: { bonus: values.bonus, check: values.check }, dirty: localStatus !== "saved", enabled: canManage,
+    validate: (value: unknown): value is { bonus: string; check: string } => {
+      const item = value as { bonus?: string; check?: string } | null;
+      return Boolean(item && typeof item.bonus === "string" && item.bonus.length <= 50 && /^\d*(\.\d{0,2})?$/.test(item.bonus) && typeof item.check === "string" && item.check.length <= 200);
+    },
+    onRestore: saved => {
+      if (pending) return;
+      setValues({ ...saved, source: initialSignature }); setLocalStatus("dirty"); setNeedsReview(true);
+    },
+  });
   // Accept fresh server values only when this row has no pending local edits.
   if (!pending && localStatus === "saved" && values.source !== initialSignature) {
     setValues({ bonus: bonusAmount.toFixed(2), check: checkNumber ?? "", source: initialSignature });
@@ -110,8 +127,8 @@ export function StaffIncomeAutosaveInputs({
     )}`;
   }, []);
 
-  const submitIfChanged = useCallback(() => {
-    if (!canManage || pending || !formRef.current) {
+  const submitIfChanged = useCallback((reviewed = false) => {
+    if (!canManage || pending || !formRef.current || needsReview && !reviewed || !navigator.onLine) {
       return;
     }
 
@@ -128,10 +145,11 @@ export function StaffIncomeAutosaveInputs({
       return;
     }
 
+    if (reviewed) setNeedsReview(false);
     submittedSignatureRef.current=signature;
     setLocalStatus("submitted");
     formRef.current.requestSubmit();
-  }, [canManage, pending, readSignature]);
+  }, [canManage, pending, readSignature, needsReview]);
 
   const scheduleSave = useCallback(() => {
     if (!canManage) {
@@ -217,13 +235,13 @@ export function StaffIncomeAutosaveInputs({
             id={`bonus-amount-${staffId}`}
             min="0"
             name="bonus_amount"
-            onBlur={submitIfChanged}
+            onBlur={() => submitIfChanged()}
             onChange={event => {
               const value = event.currentTarget.value;
               // A focused number input keeps its old default in React. Keep the
               // browser's form reset from restoring a value predating this edit.
               event.currentTarget.defaultValue = value;
-              setValues(current => ({ ...current, bonus: value })); scheduleSave();
+              localDraft.markEdited(); setValues(current => ({ ...current, bonus: value })); scheduleSave();
             }}
             step="0.01"
             type="number"
@@ -242,8 +260,8 @@ export function StaffIncomeAutosaveInputs({
           disabled={!canManage}
           id={`check-number-${staffId}`}
           name="check_number"
-          onBlur={submitIfChanged}
-          onChange={event => { const value = event.currentTarget.value; event.currentTarget.defaultValue = value; setValues(current => ({ ...current, check: value })); scheduleSave(); }}
+          onBlur={() => submitIfChanged()}
+          onChange={event => { localDraft.markEdited(); const value = event.currentTarget.value; event.currentTarget.defaultValue = value; setValues(current => ({ ...current, check: value })); scheduleSave(); }}
         />
       </div>
 
@@ -258,7 +276,8 @@ export function StaffIncomeAutosaveInputs({
           <WorkspaceText text={displayStatus === "error" ? state.message ?? "Could not save. Try again." : localStatus === "dirty" ? "Unsaved changes" : statusLabel} />
         </p>
       ) : null}
-      {canManage && displayStatus === "error" && <button type="button" className="min-h-11 rounded border px-3 text-sm" onClick={submitIfChanged}><WorkspaceText text="Try again" /></button>}
+      {canManage && needsReview && localStatus !== "saved" && <button type="button" className="min-h-11 rounded border px-3 text-sm" onClick={() => submitIfChanged(true)}><WorkspaceText text="Save changes" /></button>}
+      {canManage && displayStatus === "error" && <button type="button" className="min-h-11 rounded border px-3 text-sm" onClick={() => submitIfChanged(true)}><WorkspaceText text="Try again" /></button>}
     </form>
   );
 }

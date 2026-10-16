@@ -1008,7 +1008,8 @@ function CustomerContextSheet({
               <Icon name="gear" />
               <span><WorkspaceText text="All Settings" /></span>
             </Link>
-            <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Help & support" /></span></Link>
+            <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Report / Contact" /></span></Link>
+        <Link href="/help" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="book" /><span><WorkspaceText text="Help" /></span></Link>
             <LogoutButton className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60">
               <Icon name="log-out" />
               <span><WorkspaceText text="Log out" /></span>
@@ -1546,7 +1547,8 @@ function CustomerDesktopWorkspaceSwitcher({
               <Icon name="gear" />
               <span><WorkspaceText text="All Settings" /></span>
             </Link>
-            <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Help & support" /></span></Link>
+            <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Report / Contact" /></span></Link>
+        <Link href="/help" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="book" /><span><WorkspaceText text="Help" /></span></Link>
             <LogoutButton className="grid min-h-10 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-xl px-2.5 text-sm font-medium text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60">
               <Icon name="log-out" />
               <span><WorkspaceText text="Log out" /></span>
@@ -2415,7 +2417,8 @@ function ProfileMenu({
           <Icon name="user" />
           <WorkspaceText text="All Settings" />
         </Link>
-        <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Help & support" /></span></Link>
+        <Link href="/support" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="message" /><span><WorkspaceText text="Report / Contact" /></span></Link>
+        <Link href="/help" className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-zinc-100"><Icon name="book" /><span><WorkspaceText text="Help" /></span></Link>
             <LogoutButton />
       </div>
     </details>

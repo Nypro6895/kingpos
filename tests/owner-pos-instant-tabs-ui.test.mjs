@@ -50,7 +50,7 @@ function CheckoutProbe(){const[value,setValue]=useState('50');const[busy,setBusy
 function Panel({route}){const[draft,setDraft]=useState('');const[busy,setBusy]=useState(false);return <article data-route-probe={route}><h1>{route} content</h1><input aria-label={'Draft '+route} value={draft} onChange={event=>setDraft(event.target.value)}/><button disabled={busy} onClick={()=>setBusy(true)}>Work {route}</button><a href="/pos-tickets?date=2026-10-06">Legacy ticket date</a><form action="/reports" method="get"><input name="date" defaultValue="2026-10-06"/><button>Filter report</button></form><a href="/pos/book" download>Download bypass</a><a href="https://example.invalid/pos/report">External bypass</a></article>;}
 function App(){const path=usePathname();return <OwnerWorkspaceFrame salonName="Fixture salon" checkout={${actualCheckout ? '<OwnerPosClient scope="owner:fixture:viewer" salonId="fixture" salonName="Fixture salon" initial={{staff:[],services:[],today:"2026-10-15",defaults:{staffCheckInEnabled:false,largeTurnThreshold:25,tipSuggestions:[10,15,20,25]}}}/>' : '<CheckoutProbe/>'}}><div data-route-outlet>{['/pos/ticket','/pos/book','/pos/check-in','/pos/report'].map(route=><Activity key={route} mode={path===route?'visible':'hidden'}><Panel route={route}/></Activity>)}</div></OwnerWorkspaceFrame>;}
 document.addEventListener('click',event=>{if(event.target.closest?.('[data-owner-more-popover],a[download],a[href^="https:"]'))event.preventDefault();});
-createRoot(document.getElementById('root')).render(<App/>);
+const appRoot=createRoot(document.getElementById('root'));window.unmountWorkspace=()=>appRoot.unmount();appRoot.render(<App/>);
 `;
   const bundle = await build({
     stdin: { resolveDir: root, loader: 'tsx', contents },
@@ -61,6 +61,7 @@ createRoot(document.getElementById('root')).render(<App/>);
       builder.onResolve({ filter: /(?:^|\/)workspace-language$/ }, () => ({ path: 'language', namespace: 'fixture' }));
       builder.onResolve({ filter: /(?:^|\/)role-more-content$/ }, () => ({ path: 'more', namespace: 'fixture' }));
       builder.onResolve({ filter: /pos-workspace-sync$/ }, () => ({ path: 'refresh', namespace: 'fixture' }));
+      builder.onResolve({ filter: /experience-offline-client$/ }, () => ({ path: 'offline', namespace: 'fixture' }));
       builder.onResolve({ filter: /service-relay\/desk-relay$/ }, () => ({ path: 'relay', namespace: 'fixture' }));
       builder.onResolve({ filter: /^\.\/actions$/ }, args => args.importer.endsWith('owner-pos-client.tsx') ? { path: 'actions', namespace: 'fixture' } : undefined);
       builder.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({ loader: 'tsx', resolveDir: root, contents: ({
@@ -70,6 +71,7 @@ createRoot(document.getElementById('root')).render(<App/>);
         language: 'export const WorkspaceText=({text})=>text;export function useWorkspaceTranslation(){return value=>value;}',
         more: 'export function RoleMoreContent(){return <a href="/pos/report">More report</a>;}',
         refresh: 'export function usePosResourceRefresh(){}',
+        offline: 'export async function hasPreparedExperiencePath(){if(window.holdOfflinePreparation)return new Promise(resolve=>{window.preparedChecks??=[];window.preparedChecks.push(resolve)});return false}',
         relay: 'export function DeskRelay(){return null;}',
         actions: 'export async function searchPosDeskCustomers(){return[];}',
       })[args.path] }));
@@ -95,8 +97,9 @@ createRoot(document.getElementById('root')).render(<App/>);
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   // Browser storage and checkout are real; the fixture stays offline so a
   // locally queued receipt can never become an external money operation.
-  if (actualCheckout) await context.addInitScript(() => Object.defineProperty(Navigator.prototype, 'onLine', { get: () => false }));
+  if (actualCheckout) await context.addInitScript(() => Object.defineProperty(Navigator.prototype, 'onLine', { configurable: true, get: () => false }));
   const page = await context.newPage();
+  if (actualCheckout) await page.route('**/api/pos/owner/operations', route => route.abort());
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const origin = `http://127.0.0.1:${server.address().port}`;
@@ -243,6 +246,14 @@ test('real POS checkout retains exact money draft and one durable receipt across
     await amount.fill('125.75');
     const secondDraft = await page.evaluate(() => { window.moneyInput = [...document.querySelectorAll('[aria-label="Amount"]')].find(input => input.getBoundingClientRect().width); return JSON.parse(localStorage.getItem('kingpos:owner-cart:v1:owner:fixture:viewer')).cart; });
 
+    // The offline guard keeps a ticket usable when a view was never prepared.
+    await tab(page, 'Book').click();
+    await page.getByText('Connect to open this view. Your current ticket has been kept.').waitFor();
+    assert.equal(await amount.inputValue(), '125.75');
+    assert.equal(await page.evaluate(() => window.transport.requests.length), 0);
+    // Warm routing below is independent of receipt upload. The fixture still
+    // prevents every non-local request and the outbox is not awakened here.
+    await page.evaluate(() => Object.defineProperty(Navigator.prototype, 'onLine', { configurable: true, get: () => true }));
     await tab(page, 'Book').click();
     const book = await lastRequest(page);
     await frames(page);
@@ -271,7 +282,26 @@ test('real POS checkout retains exact money draft and one durable receipt across
   } finally { await app.close(); }
 });
 
-test('owner server bootstrap guards first, starts desk and preferences together, and renders only a complete authorized result', { skip: !process.env.ESBUILD_MODULE_PATH }, async () => {
+test('late offline preparation cannot navigate after leaving the POS workspace', { skip, timeout: 60_000 }, async () => {
+  const app = await fixture();
+  try {
+    const original = app.page.url();
+    await app.page.getByLabel('Draft amount', { exact: true }).waitFor();
+    await app.page.evaluate(() => {
+      Object.defineProperty(Navigator.prototype, 'onLine', { configurable: true, get: () => false });
+      window.holdOfflinePreparation = true;
+    });
+    await tab(app.page, 'Book').click();
+    await app.page.waitForFunction(() => window.preparedChecks?.length === 1);
+    await app.page.evaluate(() => { window.unmountWorkspace(); window.preparedChecks[0](true); });
+    await frames(app.page);
+    assert.equal(app.page.url(), original);
+    assert.equal(await app.page.locator('[data-owner-workspace]').count(), 0);
+    assert.deepEqual(app.errors, []);
+  } finally { await app.close(); }
+});
+
+test('owner bootstrap reveals guarded navigation before desk reads, and checkout still waits for complete authorized data', { skip: !process.env.ESBUILD_MODULE_PATH }, async () => {
   const { build } = await import(pathToFileURL(process.env.ESBUILD_MODULE_PATH).href);
   const imports = {
     '@/lib/route-context-guards': 'export function requireSalonManagePageContext(path){return globalThis.ownerBootstrap.guard(path)}',
@@ -280,6 +310,8 @@ test('owner server bootstrap guards first, starts desk and preferences together,
     '@/lib/pos-workspace-preferences': 'export function normalizeWorkspacePreferences(value){return globalThis.ownerBootstrap.normalize(value)}',
     '@/app/pos/owner-pos-client': 'export function OwnerPosClient(){throw Error("Checkout must remain a React element until rendering")}',
     '@/app/pos/owner-workspace-frame': 'export function OwnerWorkspaceFrame(){throw Error("Frame must remain a React element until rendering")}',
+    '@/app/pos/owner-pos-tabs': 'export function OwnerPosTabs(){return null}',
+    '@/app/pos/pos-tab-placeholder': 'export function PosTabPlaceholder(){return null}',
   };
   const bundle = await build({
     entryPoints: [resolve('app/(app)/pos/(workspace)/layout.tsx')],
@@ -334,25 +366,33 @@ test('owner server bootstrap guards first, starts desk and preferences together,
     pending.then(() => { finished = true; });
     assert.deepEqual(success.events, [['guard', '/pos']]);
     success.guard.resolve(context);
+    const element = await pending;
+    await tick();
+    assert.equal(finished, true, 'navigation no longer waits for the desk or preferences');
+    assert.deepEqual(success.events, [['guard', '/pos']]);
+    assert.equal(element.type.name, 'OwnerWorkspaceFrame');
+    assert.equal(element.props.salonName, 'Selected salon');
+    assert.equal(element.props.children, 'existing route child');
+    const checkoutElement = element.props.checkout.props.children;
+    let checkoutFinished = false;
+    const checkoutPending = checkoutElement.type(checkoutElement.props);
+    checkoutPending.then(() => { checkoutFinished = true; });
     await tick();
     assert.deepEqual(success.events.map(event => event[0]), ['guard', 'desk', 'auth'], 'neither read waits for the other after the manage guard');
     assert.equal(success.events[1][1].context, context);
     assert.equal(success.events[1][1].includeCustomers, false);
-    assert.equal(finished, false);
+    assert.equal(success.events[1][1].includeWaitingVisits, false);
+    assert.equal(checkoutFinished, false);
     success.desk.resolve(data);
     await tick();
-    assert.equal(finished, false, 'desk completion does not expose checkout while authenticated preferences are pending');
+    assert.equal(checkoutFinished, false, 'desk completion does not expose checkout while authenticated preferences are pending');
     success.auth.resolve(success.client);
     await tick();
     assert.deepEqual(success.events.slice(3), [['from', 'pos_settings'], ['select', 'workspace_preferences'], ['eq', 'salon_id', 'selected-salon'], ['settings']]);
-    assert.equal(finished, false);
+    assert.equal(checkoutFinished, false);
     const preferences = { showStaff: true, idleMinutes: 45 };
     success.settings.resolve({ data: { workspace_preferences: preferences } });
-    const element = await pending;
-    assert.equal(element.type.name, 'OwnerWorkspaceFrame');
-    assert.equal(element.props.salonName, 'Selected salon');
-    assert.equal(element.props.children, 'existing route child');
-    const checkout = element.props.checkout;
+    const checkout = await checkoutPending;
     assert.equal(checkout.type.name, 'OwnerPosClient');
     assert.equal(checkout.key, 'selected-salon:owner-user');
     assert.equal(checkout.props.scope, 'owner:selected-salon:owner-user');
@@ -375,12 +415,15 @@ test('owner server bootstrap guards first, starts desk and preferences together,
     const failed = scenario();
     const failedResult = Layout({ children: null });
     failed.guard.resolve(context);
+    const failedFrame = await failedResult;
+    const failedCheckout = failedFrame.props.checkout.props.children;
+    const failedCheckoutResult = failedCheckout.type(failedCheckout.props);
     await tick();
     assert.deepEqual(failed.events.map(event => event[0]), ['guard', 'desk', 'auth']);
     failed.auth.resolve(failed.client);
     await tick();
     failed.desk.reject(new Error('desk unavailable'));
-    await assert.rejects(failedResult, /desk unavailable/);
+    await assert.rejects(failedCheckoutResult, /desk unavailable/);
     failed.settings.resolve({ data: { workspace_preferences: preferences } });
     await tick();
     assert.equal(failed.events.some(event => event[0] === 'normalize'), false, 'a failed read cannot render a partial checkout');

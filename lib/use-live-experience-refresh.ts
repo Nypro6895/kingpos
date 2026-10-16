@@ -24,7 +24,7 @@ export function useLiveExperienceRefresh(salonId: string, resources: readonly Po
     }
     const unsubscribe = subscribePosChanges(salonId, change => {
       if (!resources.includes(change.resource)) return;
-      if (change.reason && change.reason !== "reconnect" && Date.now() - lastRefresh < 10000) return;
+      if (change.reason && !["reconnect", "foreground"].includes(change.reason) && Date.now() - lastRefresh < 10000) return;
       pending = true; schedule();
     });
     window.addEventListener("online", schedule);

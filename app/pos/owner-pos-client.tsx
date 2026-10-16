@@ -17,6 +17,7 @@ import { SingleWorkspaceWindow } from './single-workspace-window';
 import { OwnerPosIcon } from './owner-pos-icon';
 import { parsePosAmountInput } from '@/lib/pos-desk-amounts';
 import { getStaffTurnToneLevel } from '@/lib/pos-staff-turn-tone';
+import { fetchOwnerWorkspace } from '@/lib/owner-workspace-client';
 type Line = { id:string;staffId:string|null;staffName:string;serviceId:string|null;serviceLabel:string;total:number;amountInput:string;amountParts:number[] };
 type Step = 'staff'|'services'|'amount';
 type Cart = { inputTarget?:'amount'|'tip'|'discount'; activeLineId?:string|null; step?:Step; id:string;amount:string;staffId:string|null;serviceId:string|null;customer:PosDeskCustomer|null;lines:Line[];tip:string;discount:string };
@@ -89,17 +90,16 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     return()=>{alive=false;clearTimeout(timer);};
   },[panel,query]);
   usePosResourceRefresh(salonId,'staff',async(ids)=>{
-    const response=await fetch('/api/pos/owner/workspace?resource=staff'+(ids?.length?'&ids='+encodeURIComponent(ids.join(',')):''),{cache:'no-store',signal:AbortSignal.timeout(8000)});
-    if(!response.ok)return;const next=await response.json();
+    const next=await fetchOwnerWorkspace<{today:string;staff:PosDeskStaff[]}>(scope,'staff',ids);
     if(Array.isArray(next.staff))setReference(previous=>({...previous,today:next.today,staff:ids?.length?[...previous.staff.filter(s=>!ids.includes(s.id)),...next.staff]:next.staff}));
   },{initialReconcile:false,snapshotAt});
   usePosResourceRefresh(salonId,'catalog',async()=>{
-    const response=await fetch('/api/pos/owner/workspace?resource=catalog',{cache:'no-store',signal:AbortSignal.timeout(8000)});
-    if(!response.ok)return;const data=await response.json();if(Array.isArray(data.services))setReference(previous=>({...previous,services:data.services}));
+    const data=await fetchOwnerWorkspace<{services:PosDeskService[]}>(scope,'catalog');
+    if(Array.isArray(data.services))setReference(previous=>({...previous,services:data.services}));
   },{initialReconcile:false,snapshotAt});
   usePosResourceRefresh(salonId,'settings',async()=>{
-    const r=await fetch('/api/pos/owner/workspace?resource=settings',{cache:'no-store',signal:AbortSignal.timeout(10000)});if(!r.ok)return;
-    const data=await r.json();if(data.salonId!==salonId)return;
+    const data=await fetchOwnerWorkspace<{salonId:string;preferences:PosWorkspacePreferences;defaults:PosDeskDefaults}>(scope,'settings');
+    if(data.salonId!==salonId)return;
     setPreferences(data.preferences);pendingDefaults.current=data.defaults;
     setReference(previous=>({...previous,defaults:data.defaults}));
     if(!current.current?.lines.length&&!current.current?.amount)setTicketDefaults(data.defaults);

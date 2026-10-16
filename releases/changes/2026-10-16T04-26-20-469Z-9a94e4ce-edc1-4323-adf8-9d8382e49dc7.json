@@ -1,0 +1,45 @@
+{
+  "kind": "change",
+  "changeId": "local-first-native-runtime-20261016",
+  "status": "working",
+  "summary": "Separate the completed native portion of the authorized local-first POS/staff task for pinned signing/upload while web integration completes.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/README.md",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/NativeBridge.js",
+    "ios/Reylumi/NavigationPolicy.swift",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/project.yml",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/Reylumi/ReylumiAppDelegate.swift",
+    "ios/Reylumi/ReylumiBackgroundSync.swift",
+    "ios/Reylumi/ReylumiOfflineRoute.swift",
+    "ios/ReylumiTests/BackgroundSyncTests.swift",
+    "ios/ReylumiTests/OfflineRouteTests.swift",
+    "ios/ReylumiTests/OfflineWebViewTests.swift",
+    "ios/scripts/native-offline-bridge.test.mjs",
+    "ios/scripts/check-build.sh",
+    "ios/ReylumiTests/Simulator.entitlements"
+  ],
+  "source": {
+    "commit": "5365cdd300e4851a9f89ce0e2371287a0931b6fd",
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\native-frozen"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Exact native simulator tests and unsigned archive",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos\\artifacts\\local-first-20261016\\native-ci\\reylumi-ios-check-25\\build-receipt.json"
+    }
+  ],
+  "id": "9a94e4ce-edc1-4323-adf8-9d8382e49dc7",
+  "recordedAt": "2026-10-16T04:26:20.469Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

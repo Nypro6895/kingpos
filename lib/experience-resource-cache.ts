@@ -277,6 +277,7 @@ export function createExperienceResourceCache(options: {
 
   return {
     get, seed, load, reset, invalidate, suspend, resume, subscribe,
+    isLoading: (context: ExperienceResourceContext) => pending.has(getExperienceResourceIdentity(context)),
     isAvailable: (context: ExperienceResourceContext) => available(normalizeContext(context)),
     getRevision: () => revision,
     stats: () => { prune(); return { entries: entries.size, bytes, pending: pending.size, suspended, revokedScopes: revokedScopes.size }; },

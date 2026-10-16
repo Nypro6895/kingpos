@@ -4,6 +4,7 @@ import { getStaffPortalIdentity } from "@/lib/staff-portal-identity";
 import { loadStaffMyWorkResource } from "@/lib/staff-my-work-resource-server";
 import { connection } from "next/server";
 import { headers } from "next/headers";
+import { getTrustedStaffOfflineBinding } from "@/lib/staff-offline-binding-server";
 
 const failure = (error: string, status: number) => Response.json({ error }, { status, headers: { "Cache-Control": "private, no-store" } });
 
@@ -17,6 +18,7 @@ export async function GET(request: Request) {
     const query = new URL(request.url).searchParams;
     if (query.get("scope") !== getExperienceContext(identity.context).scope) return failure("Workspace changed", 409);
     if (query.get("staffId") !== identity.staff.id) return failure("Staff profile changed", 409);
+    if (request.headers.get("X-Reylumi-Background-Read") === "1" && !await getTrustedStaffOfflineBinding({ context: identity.context, staff: identity.staff })) return failure("Staff account approval required", 403);
     const tab = query.get("tab") ?? "daily";
     if (!["daily", "payroll", "analysis"].includes(tab)) return failure("Invalid tab", 400);
     const payPeriodStart = query.get("payPeriodStart") ?? undefined;

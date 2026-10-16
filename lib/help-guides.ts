@@ -5,9 +5,9 @@ export type HelpSection = {id: string; title: string; illustrationId?: string; s
 export type HelpGuide = {slug: string; title: string; summary: string; roles: HelpRole[]; entry: {href: string; label: string}; prerequisite: string; steps: {title: string; body: string}[]; sections: HelpSection[]; notes: string[]; evidence: {sourceFiles: string[]; sourceReviewed: boolean; productionFlowVerified: boolean; screenshots: HelpScreenshot[]}};
 
 export const HELP_VERSION = {
-  "version": "2026-10-15.3",
-  "reviewedAt": "2026-10-15",
-  "sourceRevision": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f",
+  "version": "2026-10-16.1",
+  "reviewedAt": "2026-10-16",
+  "sourceRevision": "dpl_GSM2JMJnitw6i9LGCUiX1H5Xr9Pm",
   "publicationStatus": "ready",
   "screenshotsStatus": "illustrated"
 } as const;

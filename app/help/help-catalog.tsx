@@ -1,7 +1,7 @@
 "use client";
-import Link from "next/link";
+import { HelpLink as Link } from "./help-language";
 import { useState } from "react";
-import { HelpText as WorkspaceText, translateHelp } from "./help-language";
+import { HelpText as WorkspaceText, useHelpTranslation } from "./help-language";
 import { type HelpRole } from "@/lib/help-guides";
 import { searchHelpGuides } from "@/lib/help-search";
 import styles from "./help.module.css";
@@ -10,7 +10,7 @@ const roles: {id: HelpRole | "all"; label: string}[] = [
   {id: "owner", label: "Salon owners"}, {id: "staff", label: "Staff members"},
 ];
 export function HelpCatalog() {
-  const t = translateHelp;
+  const t = useHelpTranslation();
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<HelpRole | "all">("all");
   const matches = searchHelpGuides(query, role);

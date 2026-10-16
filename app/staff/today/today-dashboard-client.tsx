@@ -23,6 +23,7 @@ export function TodayDashboardClient({ initialSnapshot, scope, salonId, requeste
     // A partial first frame must never replace a retained complete dashboard.
     initialUpdatedAt: initialSnapshot.data.pendingSections?.details ? 0 : Date.parse(initialSnapshot.updatedAt), initialEtag: `"${initialSnapshot.revision}"`,
     freshForMs: 10000, retainForMs: 30 * 60 * 1000, enabled: !initialSnapshot.data.noAccess,
+    persistence: { domain: "owner-today", endpoint, params: { date: initialSnapshot.data.date }, retainForMs: 24 * 60 * 60 * 1000 },
     fetcher: fetchLiveExperienceResource<TodayDashboard>(endpoint, scope),
   });
   useLiveExperienceRefresh(salonId, resources, refresh, available && !initialSnapshot.data.noAccess);

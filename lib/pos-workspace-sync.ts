@@ -4,7 +4,7 @@ import { createSupabaseBrowserClient } from "./supabase/browser";
 import { getPosStaffRealtimeChannel } from "./pos-staff-realtime";
 
 export type PosResource = "staff" | "tickets" | "booking" | "report" | "waiting" | "settings" | "catalog";
-export type PosChange = { resource: PosResource; ids?: string[]; reason?: "poll" | "resume" | "reconnect" };
+export type PosChange = { resource: PosResource; ids?: string[]; reason?: "poll" | "resume" | "reconnect" | "foreground" };
 const all: PosResource[] = ["staff", "tickets", "booking", "report", "waiting", "settings", "catalog"];
 const sourceResources: Record<string, PosResource[]> = {
   attendance: ["staff"], staff: ["staff"], turn_adjust: ["staff", "report"],
@@ -22,6 +22,9 @@ export function subscribePosChanges(salonId: string, listener: Listener) {
     const listeners = new Set<Listener>();
     const emit = (change: PosChange) => { for (const callback of listeners) callback(change); };
     const wake = () => { if (navigator.onLine && document.visibilityState === "visible") all.forEach(resource => emit({ resource, reason: "resume" })); };
+    // WebKit can miss focus/visibility notifications while its process sleeps.
+    // A native resume must repair those gaps even after a short background stay.
+    const foreground = () => { if (navigator.onLine && document.visibilityState === "visible") all.forEach(resource => emit({ resource, reason: "foreground" })); };
     let ticks = 0, subscribed = false;
     const poll = () => {
       ticks++;
@@ -57,7 +60,8 @@ export function subscribePosChanges(salonId: string, listener: Listener) {
     if (local) local.onmessage = event => receive(event.data ?? {});
     const timer = setInterval(poll, 60000);
     window.addEventListener("online", wake); window.addEventListener("focus", wake); document.addEventListener("visibilitychange", wake);
-    broker = { listeners, close() { clearInterval(timer); local?.close(); if (channel) void supabase?.removeChannel(channel); window.removeEventListener("online", wake); window.removeEventListener("focus", wake); document.removeEventListener("visibilitychange", wake); } };
+    window.addEventListener("reylumi:foreground", foreground);
+    broker = { listeners, close() { clearInterval(timer); local?.close(); if (channel) void supabase?.removeChannel(channel); window.removeEventListener("online", wake); window.removeEventListener("focus", wake); document.removeEventListener("visibilitychange", wake); window.removeEventListener("reylumi:foreground", foreground); } };
     brokers.set(salonId, broker);
   }
   broker.listeners.add(listener);
@@ -83,7 +87,7 @@ export function usePosResourceRefresh(salonId: string | null | undefined, resour
     }
     const unsubscribe = subscribePosChanges(salonId, change => {
       if (change.resource !== resource) return;
-      if (change.reason && change.reason !== "reconnect" && Date.now() - lastRefresh < 10000) return;
+      if (change.reason && !["reconnect", "foreground"].includes(change.reason) && Date.now() - lastRefresh < 10000) return;
       pending = true;
       if (!change.ids?.length) full = true; else change.ids.forEach(id => ids.add(id));
       if (!running && !timer) timer = setTimeout(run, 100);

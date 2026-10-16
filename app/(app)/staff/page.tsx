@@ -28,6 +28,9 @@ import {
 import { InviteLinkTools } from "@/app/staff/copy-invite-link-button";
 import { StaffPublicProfileEditor } from "@/app/staff/staff-public-profile-editor";
 import { StaffSlideOver } from "@/app/staff/staff-slide-over";
+import { StaffOfflineBindingControl } from "@/app/staff/staff-offline-binding-control";
+import { getManagedStaffOfflineBinding } from "@/lib/staff-offline-binding-server";
+import { getExperienceContext } from "@/lib/experience-context";
 import { safeAccountAvatarUrl } from "@/lib/account-avatar";
 import { isOwnerMembership } from "@/lib/current-context";
 import { hasPermission } from "@/lib/permissions";
@@ -1163,6 +1166,8 @@ function DetailActions({
 }
 
 function StaffDetailDrawer({
+  offlineBinding,
+  experienceScope,
   bookingSetup,
   canManagePayroll,
   closeHref,
@@ -1171,6 +1176,8 @@ function StaffDetailDrawer({
   member,
   requests,
 }: {
+  offlineBinding: { viewerId: string; revision: string } | null;
+  experienceScope: string;
   bookingSetup: BookingSetupData;
   canManagePayroll: boolean;
   closeHref: string;
@@ -1317,6 +1324,7 @@ function StaffDetailDrawer({
             member={member}
             requests={requests}
           />
+          {connectedUser?.id || member.account_user_id ? <StaffOfflineBindingControl key={`${member.id}:${connectedUser?.id ?? member.account_user_id}`} staffId={member.id} viewerId={connectedUser?.id ?? member.account_user_id!} scope={experienceScope} initialRevision={offlineBinding?.viewerId === (connectedUser?.id ?? member.account_user_id) ? offlineBinding.revision : null} /> : null}
         </div>
       </DetailSection>
 
@@ -1893,6 +1901,7 @@ async function StaffPage({ searchParams }: StaffPageProps) {
   const selectedMember = selectedStaffId
     ? directory.staff.find((member) => member.id === selectedStaffId)
     : null;
+  const offlineBinding = canManageStaff && selectedMember ? await getManagedStaffOfflineBinding(context, selectedMember.id) : null;
   const profileHrefByStaffId = Object.fromEntries(
     matchingStaff.map((member) => [
       member.id,
@@ -1973,6 +1982,8 @@ async function StaffPage({ searchParams }: StaffPageProps) {
       ) : null}
       {canManageStaff && selectedMember ? (
         <StaffDetailDrawer
+          offlineBinding={offlineBinding}
+          experienceScope={getExperienceContext(context).scope}
           bookingSetup={bookingSetup}
           canManagePayroll={canManagePayroll}
           closeHref={closeHref}

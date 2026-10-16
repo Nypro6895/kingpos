@@ -146,7 +146,7 @@ export function StaffPortalLoadError({ label = "Staff Portal" }: { label?: strin
   );
 }
 
-export function StaffMyWorkView({ resource, params }: { resource: StaffMyWorkResource; params: StaffMyWorkSearchParams }) {
+export function StaffMyWorkView({ resource, params, scope }: { resource: StaffMyWorkResource; params: StaffMyWorkSearchParams; scope?: string }) {
   const { salonId, staff, today, workTickets, excludedTicketCount, workStatus, workStatusLabel,
     salonTimezone, greetingHistory, staffDisplayName, staffAvatarUrl, payrollData, analysisData, generatedAt } = resource;
   const activeTab = getActiveTab(params.tab);
@@ -194,7 +194,7 @@ export function StaffMyWorkView({ resource, params }: { resource: StaffMyWorkRes
         {activeTab === "daily" ? (
           <>
             <StaffDailyMetrics activity={activity} completedTickets={workTickets.filter(ticket => ticket.status === "closed" && ticket.hasEarning).length} />
-            <StaffRelay salonId={salonId} />
+            <StaffRelay salonId={salonId} scope={scope} />
             <section>
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h2 className="text-base font-semibold text-zinc-950"><WorkspaceText text="Your tickets" /> <span className="ml-2 text-xs font-normal text-zinc-500">{workTickets.length}</span></h2>

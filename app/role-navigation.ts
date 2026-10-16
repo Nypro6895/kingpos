@@ -203,11 +203,11 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
       navigationIcon: "receipt",
     },
     {
-      description: "Get help and continue your support conversations.",
+      description: "Report a problem, contact us and continue your support conversations.",
       href: "/support",
       icon: "flag",
       id: "personal-reports",
-      label: "Help & support",
+      label: "Report / Contact",
       navigationIcon: "list",
     },
   ],
@@ -338,8 +338,12 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
   ],
 };
 
+for (const kind of ["personal", "owner", "staff"] as const) {
+  ROLE_MORE_ITEMS[kind].push({id:`${kind}-help`,href:"/help",icon:"gear",navigationIcon:"list",label:"Help",description:"Read guides for customers, salon owners and staff."});
+}
+
 for (const kind of ["owner", "staff"] as const) {
-  ROLE_MORE_ITEMS[kind].push({id:`${kind}-support`,href:"/support",icon:"gear",navigationIcon:"message",label:"Help & support",description:"Get help and view your requests."});
+  ROLE_MORE_ITEMS[kind].push({id:`${kind}-support`,href:"/support",icon:"gear",navigationIcon:"message",label:"Report / Contact",description:"Get help and view your requests."});
 }
 
 function moreNavigationLinks(kind: RoleNavigationKind): NavigationLink[] {

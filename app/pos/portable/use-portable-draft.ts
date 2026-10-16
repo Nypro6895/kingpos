@@ -6,6 +6,7 @@ import { portableCheckpoint } from "@/lib/portable-operations";
 import { desktopDevice, portableDeviceStorage } from "@/lib/portable-device-storage";
 import { publishLocalDisplaySnapshot } from "@/lib/pos-local-display";
 import type { PosLiveDraftCustomer, PosLiveDraftReceiptLine } from "@/types/pos-desk";
+import { acquirePortableRecoveryWriter, isNativePortableDevice, portableRecoveryStorageKey } from "@/lib/portable-recovery-key";
 
 export type PortableDraftPayload = {
   token: string; selectedStaffId: string | null; staffLines: PosLiveDraftReceiptLine[];
@@ -14,7 +15,6 @@ export type PortableDraftPayload = {
 };
 export const PORTABLE_DRAFT_STATE_CHANGED = "kingpos:draft-state";
 export const portableDraftStates = new Map<string, { pending: boolean; attention: boolean }>();
-const PREFIX = "kingpos:portable-draft:v1:";
 
 export function clearPortableLocalDrafts(event?: { preventDefault: () => void }) {
   if (!navigator.onLine) {
@@ -54,9 +54,14 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
   }, [recovery]);
 
   useEffect(() => {
+    // Activity may keep prior state while releasing effects and its writer.
+    // Reacquire authority before enabling any edits in a retained view.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronize the UI with external Web Lock ownership before enabling edits.
+    setReady(false);
     if (!scope) return;
     let active = true;
-    let cleanup = () => {};
+    let releaseWriter: (() => void) | null = null;
+    let cleanup = () => { releaseWriter?.(); };
     const initialize = async () => {
     let key: string | null = null;
     let restored: DraftOutboxState<PortableDraftPayload> | undefined;
@@ -64,7 +69,13 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
     try {
       let tabId = sessionStorage.getItem("kingpos:portable-tab");
       if (!tabId) { tabId = crypto.randomUUID(); sessionStorage.setItem("kingpos:portable-tab", tabId); }
-      key = desktopDevice() && operationScope ? PREFIX + operationScope + ":desktop" : PREFIX + scope + ":" + tabId;
+      const native = isNativePortableDevice();
+      key = portableRecoveryStorageKey({ scope, operationScope, tabId, desktop: Boolean(desktopDevice()), native, storage: portableDeviceStorage });
+      if (native) {
+        releaseWriter = await acquirePortableRecoveryWriter(key);
+        if (!active) { releaseWriter?.(); return; }
+        if (!releaseWriter) { setReady(false); setStatus("POS is already open in another window. Continue there or close it first."); setNeedsReview(true); return; }
+      }
       recoveryKey.current = key;
       const submittedAt = operationScope ? await portableCheckpoint(operationScope, key) : 0;
       if (!active) return;
@@ -147,7 +158,7 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
     };
     window.addEventListener("kingpos:desktop-flush", flushDesktop);
     const reconnect = () => { update(); outbox.wake(0); };
-    const lock = () => { outbox.stop(); persistRecovery.current = null; };
+    const lock = () => { outbox.stop(); persistRecovery.current = null; setReady(false); };
     discardRef.current = () => {
       outbox.stop(); persistRecovery.current = null;
       try { if (key) portableDeviceStorage.removeItem(key); } catch { /* Reload still works. */ }
@@ -155,6 +166,7 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
     };
     window.addEventListener("kingpos:portable-lock", lock);
     window.addEventListener("online", reconnect);
+    window.addEventListener("reylumi:foreground", reconnect);
     window.addEventListener("offline", update);
     checkpointRef.current = () => {
       // Recovery is replaced synchronously before any in-flight acknowledgment
@@ -164,10 +176,12 @@ export function usePortableDraft<Recovery>({ scope, operationScope, version, rec
     queueMicrotask(() => { if (active) { update(); setReady(true); outbox.wake(); } });
     cleanup = () => {
       outbox.stop(); unsubscribe(); persistRecovery.current = null; queue.current = null;
+      releaseWriter?.(); releaseWriter = null;
       discardRef.current = null;
       window.removeEventListener("kingpos:portable-lock", lock);
       window.removeEventListener("kingpos:desktop-flush", flushDesktop);
       window.removeEventListener("online", reconnect); window.removeEventListener("offline", update);
+      window.removeEventListener("reylumi:foreground", reconnect);
     };
     };
     void initialize();

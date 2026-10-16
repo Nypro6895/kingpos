@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { REYLUMI_METADATA_BASE } from "@/lib/reylumi-config";
 import { AppStartupShell } from "@/components/app-startup-shell";
 import ExperienceMediaCache from "@/components/experience-media-cache";
+import { ExperienceOfflineBootstrap } from "@/components/experience-offline-bootstrap";
 import "./globals.css";
 import "@/components/settings-style.css";
 
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
 /** A single document root keeps fonts, assets and router state across all shells. */
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} h-full bg-white antialiased`}>
+    <head><ExperienceOfflineBootstrap /></head>
     <body className="min-h-full bg-white text-zinc-950">
       <Suspense fallback={null}><ExperienceMediaCache supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""} /></Suspense>
       <Suspense fallback={<AppStartupShell />}>{children}</Suspense>

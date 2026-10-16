@@ -3,10 +3,23 @@ import { useState,useRef,useEffect,type ComponentProps } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePosResourceRefresh } from '@/lib/pos-workspace-sync';
 import { BookingWorkspaceClient } from './booking-workspace-client';
+import { useExperienceScope } from '@/components/experience-scope';
+import { usePersistentReadView } from '@/lib/use-persistent-read-view';
 export function OwnerLiveBookingWorkspace({salonId,snapshotAt,...initial}:ComponentProps<typeof BookingWorkspaceClient>&{salonId:string;snapshotAt?:number}){
- const [live,setLive]=useState<{base:typeof initial.bookings;data:typeof initial}|null>(null);
+ const [live,setLive]=useState<{base:typeof initial.bookings;data:typeof initial;updatedAt:number}|null>(null);
  const data=live?.base===initial.bookings?live.data:initial;
  const params=useSearchParams();
+ const context=useExperienceScope();
+ usePersistentReadView({
+   scope:context?.context.authenticated?context.context.scope:undefined,
+   domain:'owner-bookings',params:params.toString(),data,
+   updatedAt:live?.base===initial.bookings?live.updatedAt:snapshotAt??0,
+   validate:(value:unknown):value is typeof initial=>{
+     const item=value as Partial<typeof initial>|null;
+     return Boolean(item&&Array.isArray(item.bookings)&&Array.isArray(item.requests)&&item.options&&item.filters&&typeof item.timezone==='string'&&typeof item.canManageBookings==='boolean');
+   },
+   onRestore:(value,updatedAt)=>setLive({base:initial.bookings,data:value,updatedAt}),
+ });
  const inFlight=useRef(new Map<string,Promise<void>>());
  const generation=useRef(0);
  useEffect(()=>{generation.current+=1;},[initial.bookings]);
@@ -19,7 +32,7 @@ export function OwnerLiveBookingWorkspace({salonId,snapshotAt,...initial}:Compon
    if(!response.ok)return;const next=await response.json();
    if(next.salonId===salonId && startedGeneration===generation.current)setLive(current=>{
      const previous=current?.base===initial.bookings?current.data:initial;
-     return {base:initial.bookings,data:{...previous,...next.workspace,
+     return {base:initial.bookings,updatedAt:Date.now(),data:{...previous,...next.workspace,
        bookings:ids?.length?[...previous.bookings.filter(booking=>!ids.includes(booking.id)),...next.workspace.bookings]:next.workspace.bookings,
        options:configuration?next.workspace.options:{...previous.options,timeBlocks:next.workspace.timeBlocks},
      }};

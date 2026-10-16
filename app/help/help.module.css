@@ -82,3 +82,8 @@
 .walkthrough .figure { margin:1.25rem 0; }
 .result,.example { padding:.8rem 1rem; margin:1rem 0 !important; border-radius:.5rem; background:#fafaf9; }
 .result { border-left:3px solid #0f766e; }
+
+.languages { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; padding:.5rem 0; }
+.languages > span { margin-right:.3rem; font-size:.85rem; color:#52525b; }
+.languages button { min-height:2.75rem; padding:.55rem .85rem; border:1px solid #a1a1aa; border-radius:.6rem; background:#fff; cursor:pointer; }
+.languages button[aria-pressed="true"] { background:#7c2d12; border-color:#7c2d12; color:#fff; }

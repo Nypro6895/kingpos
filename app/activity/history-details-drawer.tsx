@@ -1,7 +1,7 @@
 "use client";
 import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { historyBookingLabel } from "@/lib/booking-history";
@@ -13,6 +13,13 @@ import { BookingDetailActions } from "@/app/my-bookings/[bookingId]/booking-deta
 import bookingStyles from "@/components/booking-ui/booking-theme.module.css";
 import type { CustomerActivity, CustomerActivityReceipt } from "@/lib/customer-activity";
 import type { CustomerBookingDetail } from "@/lib/customer-bookings";
+import { useExperienceScope } from "@/components/experience-scope";
+import { usePersistentReadView } from "@/lib/use-persistent-read-view";
+import { loadCustomerHistoryRead } from "@/lib/customer-history-client";
+
+function subscribeConnection(change: () => void) { window.addEventListener("online", change); window.addEventListener("offline", change); return () => { window.removeEventListener("online", change); window.removeEventListener("offline", change); }; }
+const onlineSnapshot = () => navigator.onLine;
+const serverOnline = () => true;
 
 export function HistoryDetailsDrawer({ activity, onClose }: { activity: CustomerActivity; onClose: () => void }) {
   useCloseOnNavigation(onClose);
@@ -20,12 +27,26 @@ export function HistoryDetailsDrawer({ activity, onClose }: { activity: Customer
   const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
   useEffect(() => { let active = true; queueMicrotask(() => { if (active) setPortalHost(document.body); }); return () => { active = false; }; }, []);
   const [data, setData] = useState<{ booking: CustomerBookingDetail | null; receipt: CustomerActivityReceipt | null } | null>(activity.type === "visit" ? { booking: null, receipt: null } : null);
+  const [updatedAt, setUpdatedAt] = useState(0);
+  const experience = useExperienceScope();
+  const resourceScope = experience?.context.authenticated ? experience.context.scope : undefined;
+  const online = useSyncExternalStore(subscribeConnection, onlineSnapshot, serverOnline);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   const [now] = useState(() => Date.now());
   const [activeBookingId, setActiveBookingId] = useState<string>();
   const bookingId = activeBookingId ?? (activity.type === "booking" ? activity.bookingId : activity.type === "purchase" ? activity.bookingId : undefined);
   const ticketId = activity.type === "purchase" ? activity.ticketId : undefined;
+  usePersistentReadView({
+    scope: resourceScope,
+    domain: "customer-history-detail", params: { bookingId: bookingId ?? null, ticketId: ticketId ?? null },
+    data, updatedAt,
+    validate: (value: unknown): value is NonNullable<typeof data> => {
+      const item = value as Partial<NonNullable<typeof data>> | null;
+      return Boolean(item && "booking" in item && "receipt" in item && (item.booking === null || item.booking?.id === bookingId) && (item.receipt === null || item.receipt?.ticketId === ticketId));
+    },
+    onRestore: (value, timestamp) => { setError(""); setData(value); setUpdatedAt(timestamp); },
+  });
   useEffect(() => {
     if (!portalHost) return;
     const previousOverflow = document.body.style.overflow;
@@ -36,14 +57,16 @@ export function HistoryDetailsDrawer({ activity, onClose }: { activity: Customer
   }, [portalHost]);
   useEffect(() => {
     if (activity.type === "visit") return;
+    if (!online) return;
     let active = true;
-    loadHistoryDetailsAction({ bookingId, ticketId }).then(result => {
+    const read = resourceScope ? loadCustomerHistoryRead(resourceScope, { bookingId, ticketId }) : loadHistoryDetailsAction({ bookingId, ticketId });
+    read.then(result => {
       if (!active) return;
       if (result.error) setError(result.error);
-      else { setError(""); setData({ booking: result.booking ?? null, receipt: result.receipt ?? null }); }
+      else { setError(""); setData({ booking: result.booking ?? null, receipt: result.receipt ?? null }); setUpdatedAt(Date.now()); }
     }).catch(() => { if (active) setError("Details could not be loaded. Please try again."); });
     return () => { active = false; };
-  }, [activity.type, bookingId, ticketId, retry]);
+  }, [activity.type, bookingId, ticketId, retry, online, resourceScope]);
   const booking = data?.booking;
   const receipt = data?.receipt;
   const timezone = booking?.salon_timezone_snapshot ?? activity.timezone ?? "America/Chicago";
@@ -89,7 +112,7 @@ export function HistoryDetailsDrawer({ activity, onClose }: { activity: Customer
           </div>
         </div>
       </section>
-      {!data && !error ? <p role="status" className="py-3 text-xs">Loading details...</p> : null}
+      {!data && !error ? <p role="status" className="py-3 text-xs">{online ? "Loading details..." : "Reconnect to view these details."}</p> : null}
       {error ? <div role="alert" className="py-3"><p>{error}</p><button className="min-h-10 text-brand-teal" onClick={() => { setError(""); setRetry(retry+1); }} type="button">Try again</button></div> : null}
       <section className="border-b border-border-subtle py-3">
         <p className="text-lg font-semibold">{day}</p>

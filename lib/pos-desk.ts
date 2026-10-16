@@ -111,7 +111,7 @@ function requireCurrentAccountAndSalon(context: CurrentBusinessContext) {
   };
 }
 
-export async function getCurrentSalonPosDeskData({includeCustomers=true,context:providedContext}:{includeCustomers?:boolean;context?:CurrentBusinessContext} = {}) {
+export async function getCurrentSalonPosDeskData({includeCustomers=true,includeWaitingVisits=true,context:providedContext}:{includeCustomers?:boolean;includeWaitingVisits?:boolean;context?:CurrentBusinessContext} = {}) {
   const context = providedContext ?? await getCurrentBusinessContext();
 
   if (!context.user) {
@@ -172,11 +172,11 @@ export async function getCurrentSalonPosDeskData({includeCustomers=true,context:
         .eq("pos_enabled", true)
         .order("display_name", { ascending: true })
         .returns<PosDeskStaffRow[]>(),
-      getCustomerVisitQueueForSalonOrEmpty({
+      includeWaitingVisits ? getCustomerVisitQueueForSalonOrEmpty({
         limit: 25,
         salonId: salon.id,
         supabase,
-      }),
+      }) : Promise.resolve([]),
       loadPosDeskWorkdays(supabase, {
         salonId: salon.id,
         workDate: today,

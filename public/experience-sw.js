@@ -1,4 +1,6 @@
-/* Silent visited-image cache. HTML, RSC, APIs and mutations always use the network. */
+/* Public images plus explicitly prepared authorized offline documents. */
+importScripts('/experience-offline-worker.js');
+self.installExperienceOfflineShell();
 const MEDIA_CACHE = "reylumi-experience-media-v1";
 const INDEX_KEY = new URL("/__experience-media__/index", self.location.origin).href;
 const MAX_ENTRIES = 160;

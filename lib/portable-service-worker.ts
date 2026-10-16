@@ -1,21 +1,12 @@
-/** Resolve the POS worker from its own registration, independent of a root worker. */
-export async function registerPortableServiceWorker(): Promise<ServiceWorker | null> {
-  const registration = await navigator.serviceWorker.register("/portable-sw.js", { scope: "/pos/" });
-  if (registration.active) return registration.active;
-  const pending = registration.installing ?? registration.waiting;
-  if (!pending) return null;
+import { getExperienceOfflineWorker } from "./experience-offline-client";
+import { getExperienceDeviceGeneration } from "./experience-persistent-cache";
 
-  return new Promise((resolve) => {
-    const changed = () => {
-      if (registration.active?.state === "activated") {
-        pending.removeEventListener("statechange", changed);
-        resolve(registration.active);
-      } else if (pending.state === "redundant") {
-        pending.removeEventListener("statechange", changed);
-        resolve(null);
-      }
-    };
-    pending.addEventListener("statechange", changed);
-    changed();
-  });
+/** Legacy display preparation also receives the current device generation. */
+export async function registerPortableServiceWorker(): Promise<Pick<ServiceWorker, "postMessage"> | null> {
+  const worker = await getExperienceOfflineWorker("/pos/portable");
+  return worker ? { postMessage(message: unknown, transferOrOptions?: Transferable[] | StructuredSerializeOptions) {
+    const value = message && typeof message === "object" ? { ...message, generation: getExperienceDeviceGeneration() } : message;
+    if (Array.isArray(transferOrOptions)) worker.postMessage(value, transferOrOptions);
+    else worker.postMessage(value, transferOrOptions);
+  } } : null;
 }

@@ -3267,7 +3267,7 @@ export function PosDeskClient({
   return (
     <>
       {editingVisit && <div className="fixed inset-0 z-[80] grid place-items-center bg-black/30" role="dialog" aria-label={__vt("Edit waiting customer")} aria-modal="true">
-        <form className="grid gap-3 rounded-xl bg-white p-6 shadow-xl" autoComplete="off" onSubmit={event => { event.preventDefault(); void changeLocalVisit(editingVisit, "edit"); }}>
+        <form data-offline-local-submit={localFirstDraft ? "true" : undefined} className="grid gap-3 rounded-xl bg-white p-6 shadow-xl" autoComplete="off" onSubmit={event => { event.preventDefault(); void changeLocalVisit(editingVisit, "edit"); }}>
           <h2 className="font-semibold"><WorkspaceText text="Edit customer" /></h2>
           <label><WorkspaceText text="Name" /><input className="block border p-2" value={visitEditName} onChange={event => setVisitEditName(event.target.value)} autoComplete="off" maxLength={120} /></label>
           <label><WorkspaceText text="Phone" /><input className="block border p-2" value={visitEditPhone} onChange={event => setVisitEditPhone(event.target.value)} autoComplete="off" inputMode="tel" /></label>

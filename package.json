@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "build": "next build --webpack && node scripts/build-offline-assets.mjs",
     "start": "next start",
     "lint": "eslint",
     "db:validate-account-salon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate-account-salon-foundation.ps1",

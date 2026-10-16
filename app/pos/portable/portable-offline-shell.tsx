@@ -1,6 +1,6 @@
 "use client";
 import { desktopDevice } from "@/lib/portable-device-storage";
-import { registerPortableServiceWorker } from "@/lib/portable-service-worker";
+import { lockExperienceOffline, prepareExperienceOfflinePath } from "@/lib/experience-offline-client";
 import { useEffect } from "react";
 import { usePortableWorkspaceState } from "./portable-workspace-state";
 
@@ -19,19 +19,14 @@ export function PortableOfflineShell() {
           await native.prepare(scope, performance.getEntriesByType("resource").map(entry => entry.name));
           return;
         }
-        if (!("serviceWorker" in navigator)) return;
-        const worker = await registerPortableServiceWorker();
-        if (!active) return;
-        worker?.postMessage({ kind: "portable-prepare", scope,
-          assets: performance.getEntriesByType("resource").map(entry => entry.name) });
+        await prepareExperienceOfflinePath(location.pathname + location.search, { scope });
       } catch { /* Local commands still work if shell caching is unavailable. */ }
       finally { running = false; }
     };
     const lock = () => {
       active = false;
       native?.lock();
-      navigator.serviceWorker.controller?.postMessage({kind:"portable-lock"});
-      void caches.delete("kingpos-portable-shell-v1");
+      lockExperienceOffline();
     };
     const timer = setTimeout(() => { void prepare(); }, 3000);
     const retry = setInterval(() => { void prepare(); }, 60000);
@@ -39,5 +34,5 @@ export function PortableOfflineShell() {
     window.addEventListener("kingpos:portable-lock", lock);
     return () => { active = false; clearTimeout(timer); clearInterval(retry); window.removeEventListener("online", prepare); window.removeEventListener("kingpos:portable-lock", lock); };
   }, [scope]);
-  return null;
+  return scope ? <span hidden data-experience-offline-scope={scope} /> : null;
 }

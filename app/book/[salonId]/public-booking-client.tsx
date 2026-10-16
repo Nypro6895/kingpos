@@ -1,5 +1,7 @@
 "use client";
 import "@/components/booking-ui/public-booking.css";
+import { useExperienceScope } from "@/components/experience-scope";
+import { useScopedUiDraft } from "@/lib/use-scoped-ui-draft";
 
 import {
   createPublicBookingAction,
@@ -811,6 +813,8 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
   const [slotError, setSlotError] = useState(false);
   const [availabilityRetry, setAvailabilityRetry] = useState(0);
   const bookingDraftKey = draftStorageKey(data);
+  const experienceScope = useExperienceScope();
+  const sessionRestoredScope = useRef<string | null>(null);
   const restoredDraftScope = useRef<string | null>(null);
   const [draftReadyScope, setDraftReadyScope] = useState<string | null>(null);
   const restoredSlotStart = useRef<string | null>(null);
@@ -1157,6 +1161,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
         setDraftReadyScope(bookingDraftKey);
         return;
       }
+      sessionRestoredScope.current = bookingDraftKey;
       const firstService = mainServices.find(
         (service) => service.id === draft.selectedServiceIds[0],
       );
@@ -1210,6 +1215,31 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
     mainServices,
     initialServiceIds,
   ]);
+
+  const durableBookingDraft = useScopedUiDraft<BookingDraftSelection>({
+    scope: data.currentUser?.id && experienceScope?.context.viewerId === data.currentUser.id ? experienceScope.context.scope : undefined,
+    domain: "public-booking", params: { salonId: data.salon?.salonId, intent: bookingDraftContext(data) },
+    enabled: data.state === "ready" && draftReadyScope === bookingDraftKey,
+    value: { date, identityMode, inspirationRemoved, lineStaffByKey, notes: customer.notes.slice(0, 2000), selectedAddOnSelections, selectedServiceIds, selectedSlotStart, staffId, staffMode, step: Math.min(STEP_REVIEW, step) },
+    dirty: step < STEP_DONE && !result && (selectedServiceIds.length > 0 || Boolean(customer.notes)),
+    validate: (value: unknown): value is BookingDraftSelection => {
+      const item = value as Partial<BookingDraftSelection> | null;
+      return Boolean(item && typeof item.date === "string" && typeof item.notes === "string" && item.notes.length <= 2000 && typeof item.staffId === "string" && typeof item.selectedSlotStart === "string" && Number.isInteger(item.step) &&
+        ["any", "specific", "split"].includes(item.staffMode ?? "") && Array.isArray(item.selectedServiceIds) && item.selectedServiceIds.length <= 100 && item.selectedServiceIds.every(id => typeof id === "string") &&
+        Array.isArray(item.selectedAddOnSelections) && item.selectedAddOnSelections.length <= 100 && item.selectedAddOnSelections.every(line => line && typeof line.parentServiceId === "string" && typeof line.serviceId === "string") && item.lineStaffByKey && typeof item.lineStaffByKey === "object");
+    },
+    onRestore: saved => {
+      if (sessionRestoredScope.current === bookingDraftKey || draftCompleted.current || isPending || result || payment || step >= STEP_DONE || !data.salon) return;
+      const draft = normalizeStoredBookingDraft({ ...saved, accountId: data.currentUser?.id ?? null, authHandoff: false, context: bookingDraftContext(data), salonId: data.salon.salonId, savedAt: Date.now(), version: 3 }, data);
+      setSelectedServiceIds(draft.selectedServiceIds); setSelectedAddOnSelections(draft.selectedAddOnSelections); setStaffMode(draft.staffMode); setStaffId(draft.staffId); setLineStaffByKey(draft.lineStaffByKey);
+      manualDate.current = true; setDate(draft.date); restoredSlotStart.current = draft.selectedSlotStart;
+      initialSlotsLoaded.current = true; slotCache.current.clear(); hintCache.current.clear();
+      setSlotResult({ signature: "", slots: [] }); setSelectedSlotStart("");
+      setInspirationRemoved(draft.inspirationRemoved === true);
+      setCustomer(current => ({ ...current, notes: draft.notes })); setIdentityMode(data.currentUser ? "choice" : draft.identityMode ?? "choice");
+      setStep(Math.min(STEP_REVIEW, Math.max(STEP_SERVICES, draft.step)));
+    },
+  });
 
   useEffect(() => {
     if (!bookingDraftKey || draftReadyScope !== bookingDraftKey || data.state !== "ready" || draftCompleted.current || step >= STEP_DONE || isPending) return;
@@ -1656,7 +1686,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
 
   if (payment) return <main className={`${compact.root} ${embedded ? compact.embedded : ""}`}><section className={compact.shell}><header className={compact.header}><div><strong>{data.salon.name}</strong><p>Appointment payment</p></div>{embedded ? <button type="button" aria-label="Close payment" onClick={onClose}>×</button> : null}</header><div className="p-4"><BookingCardPayment payment={payment} /></div></section></main>;
 
-  return <main className={`${compact.root} ${embedded ? compact.embedded : ""}`} data-booking-surface="public" data-booking-complete={step === STEP_DONE ? "true" : undefined} data-booking-flow-state={bookingFlowState} data-testid="public-booking-root">
+  return <main className={`${compact.root} ${embedded ? compact.embedded : ""}`} data-booking-surface="public" onInputCapture={durableBookingDraft.markEdited} onClickCapture={durableBookingDraft.markEdited} data-booking-complete={step === STEP_DONE ? "true" : undefined} data-booking-flow-state={bookingFlowState} data-testid="public-booking-root">
     <section className={compact.shell} data-testid="public-booking-shell">
       {embedded ? <header className={compact.quickHeader}><strong>{step === STEP_SERVICES ? "Choose services" : step === STEP_PROFESSIONAL ? "Choose staff" : step === STEP_TIME ? "Choose a time" : step === STEP_REVIEW ? "Confirm booking" : confirmationTitle}</strong><button className={compact.icon} onClick={onClose} aria-label="Close booking" type="button">&times;</button></header> : <header className={compact.header}>
         {step > STEP_SERVICES && step < STEP_DONE ? <button className={compact.icon} type="button" aria-label="Back to previous step" onClick={goBack}>&larr;</button> : <a className={compact.icon} aria-label="Back to Explore" href="/explore">&larr;</a>}
