@@ -1,0 +1,72 @@
+{
+  "kind": "change",
+  "changeId": "salon-setup-review-20261016",
+  "status": "needs-integration",
+  "summary": "Small reproduced salon setup UX fixes: gate public links on server availability, private/lifecycle/booking copy, page titles, shared existing readiness policies, map fallback and draft-safe save feedback. No deploy; business-rule consolidation and layout redesign remain proposals.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/salon-settings.ts",
+    "lib/salon-profile.ts",
+    "app/settings/salon-settings-panels.tsx",
+    "app/settings/direct-settings-ui.tsx",
+    "app/settings/direct-settings-actions.ts",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/salon-list-panel.tsx",
+    "app/settings/ownership-lifecycle-panels.tsx",
+    "app/salons/salon-management-page.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/(app)/salon-profile/page.tsx",
+    "app/(app)/salon-settings/page.tsx",
+    "app/(app)/settings/page.tsx",
+    "lib/location/salon-map-location.ts",
+    "lib/vietnamese-dictionary.ts",
+    "lib/salon-publication-readiness.ts",
+    "lib/vietnamese-salon-setup.json",
+    "components/salon-publication-status.tsx",
+    "app/salon-profile/publication-panel.tsx",
+    "tests/salon-setup-readiness.test.mjs"
+  ],
+  "deletedFiles": [],
+  "source": {
+    "snapshot": "artifacts/salon-setup-review-20261016/source",
+    "patch": "artifacts/salon-setup-review-20261016/task-only.patch",
+    "patchSha256": "7c6776befe3b98e767fb449c59f0ad91024709fe4aeb58c43d21cd09d4d19ad7",
+    "hashManifest": "artifacts/salon-setup-review-20261016/source-hashes.json",
+    "hashManifestSha256": "0f37283627bb55f9ca9b4fb8dc6d52b46dc03d78d7da7611c599c038be6c9444",
+    "baseline": "Task-start uncommitted workspace snapshots in before/. Not a production release baseline; integrate task-only.patch, never overlay entire source wholesale."
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Targeted settings/readiness/create/context/lifecycle/booking contract tests, 35/35",
+      "result": "passed",
+      "evidence": "artifacts/salon-setup-review-20261016/final-tests.log"
+    },
+    {
+      "name": "TypeScript and changed-file lint; final copied-source production build",
+      "result": "passed",
+      "evidence": "artifacts/salon-setup-review-20261016/build.log; artifacts/salon-setup-review-20261016/typecheck-final.log; artifacts/salon-setup-review-20261016/lint-final.log; artifacts/salon-setup-review-20261016/lint-final-followup.log"
+    },
+    {
+      "name": "Isolated actual-component desktop/mobile slow/save failure/reload and 404 title QA",
+      "result": "passed",
+      "evidence": "artifacts/salon-setup-review-20261016/verification.json; artifacts/salon-setup-review-20261016/report.html; artifacts/salon-setup-review-20261016/screenshots"
+    },
+    {
+      "name": "Broader suite: existing untouched social-post revalidatePath assertion (21 pass, 1 fail)",
+      "result": "failed",
+      "evidence": "artifacts/salon-setup-review-20261016/regressions.log"
+    },
+    {
+      "name": "Owner review, canonical business-policy/layout decision, production baseline integration and live verification",
+      "result": "pending",
+      "evidence": "artifacts/salon-setup-review-20261016/report.html"
+    }
+  ],
+  "id": "93efb5f9-b54e-4c8d-88bf-5e42485d1ca1",
+  "recordedAt": "2026-10-16T19:40:17.084Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "supersedesEvents": []
+}

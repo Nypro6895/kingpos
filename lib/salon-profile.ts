@@ -5,6 +5,8 @@ import { resolveNailCoverImage } from "@/lib/default-nail-images";
 import { getPublicSalonDirectoryListing } from "@/lib/salon-directory";
 import { EMPTY_SALON_IDENTITY } from "@/lib/salon-identity";
 import "server-only";
+import { getSalonProfileReadiness } from "@/lib/salon-publication-readiness";
+export { getSalonProfileReadiness } from "@/lib/salon-publication-readiness";
 import { cache } from "react";
 import { claimedSalonContent, visibleSalonPosts } from "@/lib/salon-profile-content";
 import { getLumiTrustEvidenceBySalonId } from "@/lib/lumi-trust-data";
@@ -811,126 +813,6 @@ function mapUpdateRelations(
         }
       : null,
   }));
-}
-
-function hasText(value: string | null | undefined) {
-  return Boolean(value?.trim());
-}
-
-function getLocationLabel(setting: SalonProfileSetting) {
-  return [
-    setting.address_line1,
-    setting.city,
-    setting.state,
-    setting.postal_code,
-  ].filter(hasText);
-}
-
-export function getSalonProfileReadiness(input: {
-  looks: SalonProfileLook[];
-  services: Service[];
-  setting: SalonProfileSetting;
-  staff: Staff[];
-}): SalonProfileReadiness {
-  const publishedLookCount = input.looks.filter(
-    (look) => look.status === "published",
-  ).length;
-  const activeServiceCount = input.services.filter(
-    (service) => service.is_active,
-  ).length;
-  const activeStaffCount = input.staff.filter((member) => member.is_active).length;
-  const requiredItems = [
-    {
-      complete: hasText(input.setting.business_name),
-      id: "business-name",
-      label: "Public business name",
-      required: true,
-    },
-    {
-      complete: hasText(input.setting.public_profile_tagline),
-      id: "tagline",
-      label: "Tagline",
-      required: false,
-    },
-    {
-      complete: hasText(input.setting.public_profile_logo_path),
-      id: "logo",
-      label: "Logo",
-      required: true,
-    },
-    {
-      complete: hasText(input.setting.public_profile_cover_path),
-      id: "cover",
-      label: "Cover image",
-      required: true,
-    },
-    {
-      complete: getLocationLabel(input.setting).length >= 4 && hasText(input.setting.phone),
-      id: "location-contact",
-      label: "Valid location and contact",
-      required: true,
-    },
-    {
-      complete: activeServiceCount > 0,
-      id: "active-service",
-      label: "At least one active service",
-      required: true,
-    },
-    {
-      complete: publishedLookCount > 0,
-      id: "published-look",
-      label: "At least one published look",
-      required: true,
-    },
-  ];
-  const optionalItems = [
-    {
-      complete: hasText(input.setting.public_profile_story),
-      id: "story",
-      label: "Salon story",
-      required: false,
-    },
-    {
-      complete: hasText(input.setting.website),
-      id: "website",
-      label: "Website",
-      required: false,
-    },
-    {
-      complete: publishedLookCount >= 3,
-      id: "three-looks",
-      label: "Three or more published looks",
-      required: false,
-    },
-    {
-      complete: activeStaffCount > 0,
-      id: "team",
-      label: "Active team members",
-      required: false,
-    },
-  ];
-  const items = [...requiredItems, ...optionalItems];
-  const completedCount = items.filter((item) => item.complete).length;
-  const missingRequiredItems = requiredItems
-    .filter((item) => !item.complete)
-    .map((item) => item.label);
-  const canPublish = missingRequiredItems.length === 0;
-  const isPublished = input.setting.public_discovery_enabled && canPublish;
-
-  return {
-    canPublish,
-    completionPercent: Math.round((completedCount / items.length) * 100),
-    isExploreEligible: isPublished,
-    items,
-    missingRequiredItems,
-    status: isPublished
-      ? "published"
-      : canPublish
-        ? "ready"
-        : hasText(input.setting.business_name)
-          ? "draft"
-          : "incomplete",
-  };
 }
 
 async function getExistingSalonProfileSetting(context: CurrentBusinessContext) {

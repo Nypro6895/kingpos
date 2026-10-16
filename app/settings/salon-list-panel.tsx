@@ -238,6 +238,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
             >
               {!createOnly ? <h3 className="font-semibold"><WorkspaceText text="Add salon" /></h3> : null}
               <SalonFields busy={busy} />
+              <p className="text-sm text-zinc-600"><WorkspaceText text="Only the salon name is required. After creation, add your salon details, services and team in Settings. Your salon stays private until you publish it." /></p>
               <label className="flex items-start gap-2 text-sm">
                 <input
                   type="checkbox"

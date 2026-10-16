@@ -134,13 +134,13 @@ function statusCopy(status: SalonMapLocationStatus) {
     case "failed":
       return {
         description:
-          "We could not update the map location. Your salon can still be found by city, state, and ZIP.",
+          "We could not update the map location. You can still save your address. Location search also requires a public profile.",
         label: "Needs refresh",
       };
     case "mapped":
       return {
         description:
-          "Your salon is located on the map and can appear in nearby search results.",
+          "This address has a map pin. Nearby discovery also requires a public profile.",
         label: "Mapped",
       };
     case "pending":
@@ -158,7 +158,7 @@ function statusCopy(status: SalonMapLocationStatus) {
     case "provider_unavailable":
       return {
         description:
-          "Map location lookup is temporarily unavailable. Your salon can still be found by city, state, and ZIP.",
+          "Map location lookup is temporarily unavailable. You can still save your address. Contact Reylumi support if this continues.",
         label: "Map lookup unavailable",
       };
   }

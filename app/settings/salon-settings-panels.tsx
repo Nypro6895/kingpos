@@ -2,6 +2,7 @@
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { BookingDepositPanel } from "@/app/market/booking-deposit-panel";
 import { TimeZoneSelect } from "@/components/time-zone-select";
+import { SalonPublicationStatus } from "@/components/salon-publication-status";
 import { useState } from "react";
 import {
   saveDirectSalonProfile,
@@ -53,6 +54,16 @@ function OperatingHours({
   const [windows, setWindows] = useState<
     SalonOperatingHoursSettings["weeklyHours"]
   >(data.hours.weeklyHours);
+  const [hoursChanged, setHoursChanged] = useState(false);
+  const [loadedHours, setLoadedHours] = useState(data.hours.weeklyHours);
+  if (loadedHours !== data.hours.weeklyHours && !hoursChanged) {
+    setLoadedHours(data.hours.weeklyHours);
+    setWindows(data.hours.weeklyHours);
+  }
+  function updateWindows(value: typeof windows | ((current: typeof windows) => typeof windows)) {
+    setWindows(value);
+    setHoursChanged(true);
+  }
   return (
     <InlineForm
       save={(form) =>
@@ -61,10 +72,12 @@ function OperatingHours({
           weeklyHours: windows,
         })
       }
-      onSaved={onSaved}
-      onCancel={() => setWindows(data.hours.weeklyHours)}
+      onSaved={async () => { setLoadedHours(data.hours.weeklyHours); setHoursChanged(false); await onSaved(); }}
+      onCancel={() => { setWindows(data.hours.weeklyHours); setHoursChanged(false); }}
+      changed={hoursChanged}
       label={__vt("Save opening hours")}
     >
+      <p className="text-sm text-zinc-600"><WorkspaceText text="Opening hours tell customers when the salon is open. Booking hours and staff availability are managed separately in Booking rules & availability." /></p>
       <label className="grid gap-1 text-sm"><WorkspaceText text="Time zone" /><TimeZoneSelect name="timezone" className={inputClass} defaultValue={data.hours.timeZone} required /></label>
       {days.map((day, dayOfWeek) => (
         <div className="grid gap-2 border-t border-zinc-100 pt-3" key={day}>
@@ -74,7 +87,7 @@ function OperatingHours({
               type="button"
               className={buttonClass}
               onClick={() =>
-                setWindows([
+                updateWindows([
                   ...windows,
                   {
                     dayOfWeek,
@@ -103,7 +116,7 @@ function OperatingHours({
                     <WorkspaceText text={key === "opensAtLocal" ? "Opens" : "Closes"} />
                     <input className={inputClass} type="time" required
                       value={window[key].slice(0, 5)}
-                      onChange={(event) => setWindows((current) => current.map((item, i) => i === index ? {...item, [key]: event.target.value} : item))} />
+                      onChange={(event) => updateWindows((current) => current.map((item, i) => i === index ? {...item, [key]: event.target.value} : item))} />
                   </label>
                 ))}
                 <button
@@ -111,7 +124,7 @@ function OperatingHours({
                   type="button"
                   aria-label={__vt(`Remove ${day} hours`)}
                   onClick={() =>
-                    setWindows(windows.filter((_, i) => i !== index))
+                    updateWindows(windows.filter((_, i) => i !== index))
                   }
                 >
                   <WorkspaceText text="Remove" />
@@ -152,6 +165,9 @@ export function SalonDetailsPanel({
   if (data.kind === "public-profile")
     return (
       <div className="grid gap-4">
+        {data.publicProfileAvailable === null ? <p role="status" className="text-sm text-zinc-600"><WorkspaceText text="Public visibility could not be checked. Reload this section before sharing a link." /></p>
+          : data.publicProfileAvailable || !s.public_discovery_enabled ? <SalonPublicationStatus publicHref={data.publicProfileAvailable ? `/explore/salons/${encodeURIComponent(data.salonId)}` : null} />
+          : <p role="status" className="text-sm text-amber-800"><WorkspaceText text="Public visibility is enabled, but the profile is unavailable. Check the salon status before sharing a link." /></p>}
         <PublicIdentity data={data} onSaved={onSaved}/>
         {data.canManageSalon?<InlineForm
           save={(form) =>
@@ -171,7 +187,7 @@ export function SalonDetailsPanel({
         >
           <Check
             name="public_discovery_enabled"
-            label={__vt("Show salon in Explore")}
+            label={__vt("Make profile public & visible in Explore")}
             checked={s.public_discovery_enabled}
           />
           <Check
@@ -179,18 +195,17 @@ export function SalonDetailsPanel({
             label={__vt("Allow staff applications")}
             checked={s.allow_staff_applications}
           />
-          {!data.readiness.canEnable && (
-            <p className="text-sm text-amber-800">
-              <WorkspaceText text="Required before enabling Explore:" />{" "}
-              <WorkspaceText text={data.readiness.missingLabels.join(", ")} />.
-            </p>
-          )}
+          <p className="text-sm text-zinc-600"><WorkspaceText text="Publishing makes this profile public and allows it to appear in Explore. Booking is configured separately." /></p>
+          <details open={!data.readiness.canEnable}><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Required when enabling visibility from Settings" /></summary>
+            <ul className="mt-2 grid gap-2 text-sm">{data.readiness.items.map(item => <li key={item.id} className="flex flex-wrap justify-between gap-2"><WorkspaceText text={item.label} /><span className={item.complete ? "text-emerald-800" : "text-amber-800"}><WorkspaceText text={item.complete ? "Done" : "Missing"} /></span></li>)}</ul>
+          </details>
         </InlineForm>:null}
         <SalonProfilePreferencesPanel expectedSalonId={data.salonId} />
       </div>
     );
   return (
     <div className="grid gap-4">
+      <p className="text-sm text-zinc-600"><WorkspaceText text="An active salon is available in your workspace. Public visibility and booking are configured separately." /></p>
       <InlineForm
         save={(form) =>
           saveDirectSalonProfile(data.salonId, {
@@ -243,10 +258,11 @@ export function SalonDetailsPanel({
         </div>
       </InlineForm>
       <details><summary className="cursor-pointer text-sm font-semibold"><WorkspaceText text="Map location" /></summary><div className="mt-3">
-        <InlineForm save={()=>refreshSettingsMap(data.salonId)} onSaved={onSaved} label={__vt("Update map from saved address")}>
+        <InlineForm disabled={!data.mapLocation.refreshEnabled} save={()=>refreshSettingsMap(data.salonId)} onSaved={onSaved} label={__vt("Update map from saved address")}>
           <p className="text-sm">{[s.address_line1,s.city,s.state,s.postal_code].filter(Boolean).join(", ")}</p>
           {data.mapLocation.coordinates?<p className="text-xs text-zinc-500"><WorkspaceText text="Latitude" /> {data.mapLocation.coordinates.latitude} <WorkspaceText text="· Longitude" /> {data.mapLocation.coordinates.longitude}</p>:null}
-          <p className="text-sm">{data.mapLocation.statusDescription}</p>
+          <p className="text-sm"><WorkspaceText text={data.mapLocation.statusDescription} /></p>
+          <p className="text-sm text-zinc-600"><WorkspaceText text="Save your address above before updating the map." /></p>
         </InlineForm>
       </div></details>
       <details>
@@ -255,7 +271,6 @@ export function SalonDetailsPanel({
         </summary>
         <div className="mt-3">
           <OperatingHours
-            key={JSON.stringify(data.hours.weeklyHours)}
             data={data}
             onSaved={onSaved}
           />
@@ -345,6 +360,7 @@ export function BookingSettingsPanel({
   const s = data.settings;
   return (
     <div className="grid gap-4">
+      <p className="text-sm text-zinc-600"><WorkspaceText text="Booking needs its own enabled settings, bookable services and available staff. Public visibility or opening hours alone do not make appointments available." /></p>
       {data.canManage ? (
         <InlineForm
           className="settings-booking-form"

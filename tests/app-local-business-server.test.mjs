@@ -25,7 +25,7 @@ async function fixture() {
     'pos-portable-access': 'export async function getCurrentSalonPortablePosAccessState(){globalThis.businessFixture.calls.push("portable-access");return{keys:[],schemaReady:true,setupMessage:null}}',
     'windows-pos-release': 'export async function getWindowsPosRelease(){return{href:"https://reylumi.com/verified-installer.exe",version:"1.2.3",edition:"release"}}',
     'supabase/server': 'export async function createAuthenticatedSupabaseServerClient(){return{from:table=>({select:columns=>({eq:()=>({maybeSingle:async()=>{const s=globalThis.businessFixture;s.calls.push({table,columns});return{data:s.raw,error:s.rowError}}})})})}}',
-    'salon-profile': 'export const getSalonProfileHref=id=>"/explore/salons/"+id;export const getSalonProfileMediaUrl=value=>value??null;export const buildSalonProfileFeed=()=>[];export const getPublicSalonProfileData=async()=>{globalThis.businessFixture.calls.push("public-profile");return null};export async function getCurrentSalonProfileManageData(){const s=globalThis.businessFixture;s.calls.push("managed-profile");return s.profile??{context:s.context,canViewProfile:true,canCreateContent:false,canManageIdentity:false,canManageContent:false,setting:s.setting,looks:[],updates:[],staff:[],services:[],readiness:{}}}',
+    'salon-profile': 'export const getSalonProfileHref=id=>"/explore/salons/"+id;export const getSalonProfileMediaUrl=value=>value??null;export const buildSalonProfileFeed=()=>[];export const getPublicSalonProfileData=async()=>{globalThis.businessFixture.calls.push("public-profile");return globalThis.businessFixture.publicProfile??null};export async function getCurrentSalonProfileManageData(){const s=globalThis.businessFixture;s.calls.push("managed-profile");return s.profile??{context:s.context,canViewProfile:true,canCreateContent:false,canManageIdentity:false,canManageContent:false,setting:s.setting,looks:[],updates:[],staff:[],services:[],readiness:{}}}',
     'salon-operating-status-core': 'export const defaultSalonOperatingStatus=()=>({kind:"open"});',
     'salon-profile-team': 'export const isPublicSalonProfileTeamEligible=()=>true;',
     'salon-post-attribution': 'export const loadSalonPostAttribution=async()=>new Map();',
@@ -93,7 +93,8 @@ test('Salon Settings keeps the original conditional owner/staff reads and never 
 test('the full profile projection carries only original server-confirmed edit/publication capabilities', async () => {
   const { state, read } = await fixture();
   const result = await read('owner.salon-profile', {}, { scope: 'owner-a' });
-  assert.equal(result.data.data.profile.name, 'My salon'); assert.equal(result.data.manageData.publicHref, '/explore/salons/salon-a');
+  assert.equal(result.data.data.profile.name, 'My salon'); assert.equal(result.data.manageData.publicHref, null);
+  assert.equal(result.data.capabilities.canBook, false);
   assert.equal(result.data.capabilities.canPublish, false); assert.equal(result.data.capabilities.canManageContent, false);
   state.profile = { canViewProfile: false };
   const count = state.calls.filter(call => call === 'public-profile').length;
@@ -109,3 +110,16 @@ test('cancelling a pending settings activation discards its late snapshot withou
   await assert.rejects(pending, { name: 'AbortError' });
   assert.equal(state.calls.filter(call => call === 'pos-settings').length, 1);
 });
+
+ test('public links appear only after the existing public profile loader returns a profile', async () => {
+ const {state,read}=await fixture();
+ const preview=await read('owner.salon-profile',{}, {scope:'owner-a'});
+ state.publicProfile=preview.data.data;
+ const live=await read('owner.salon-profile',{}, {scope:'owner-a'});
+ assert.equal(live.data.manageData.publicHref,'/explore/salons/salon-a');
+ assert.equal(live.data.capabilities.canBook,true);
+ state.publicProfile=null;
+ const privateAgain=await read('owner.salon-profile',{}, {scope:'owner-a'});
+ assert.equal(privateAgain.data.manageData.publicHref,null);
+ assert.equal(privateAgain.data.capabilities.canBook,false);
+ });

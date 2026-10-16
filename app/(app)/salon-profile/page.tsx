@@ -1,4 +1,6 @@
 import { withExperiencePage } from "@/components/experience-page";
+import { SalonPublicationStatus } from "@/components/salon-publication-status";
+export const metadata = { title: "Salon profile | Reylumi" };
 import { loadSalonPostAttribution } from "@/lib/salon-post-attribution";
 import { WorkspaceText } from "@/components/workspace-language";
 import { SalonProfileView } from "@/app/salon-profile/salon-profile-view";
@@ -354,13 +356,14 @@ async function SalonProfilePage({
 
   return (
     <main>
+      {isSalonManageContext(context) ? <div className="mx-auto max-w-6xl px-4 pt-4"><SalonPublicationStatus publicHref={publicData ? getSalonProfileHref(data.setting.salon_id) : null} /></div> : null}
       <SalonProfileView
         capabilities={capabilities}
         data={viewData}
         error={error}
         manageData={{
           ownedLookIds: data.looks.filter(look => (look.created_by_user_id ?? look.author_user_id) === context.user?.id).map(look=>look.id),
-          publicHref: getSalonProfileHref(data.setting.salon_id),
+          publicHref: publicData ? getSalonProfileHref(data.setting.salon_id) : null,
           readiness: data.readiness,
           setting: data.setting,
         }}

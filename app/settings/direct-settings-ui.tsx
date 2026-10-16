@@ -101,6 +101,7 @@ export function InlineForm({
   label = "Save changes",
   danger = false,
   disabled = false,
+  changed = false,
   className = "",
 }: {
   children: ReactNode;
@@ -110,20 +111,23 @@ export function InlineForm({
   label?: string;
   danger?: boolean;
   disabled?: boolean;
+  changed?: boolean;
   className?: string;
 }) {
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
+    [refreshFailed, setRefreshFailed] = useState(false),
     [inviteUrl, setInviteUrl] = useState("");
   const lock = useRef(false),
     formRef = useRef<HTMLFormElement>(null);
   return (
     <form
       ref={formRef}
+      aria-busy={busy}
       className={`settings-inline-form grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 ${className}`}
-      onChange={() => setDirty(true)}
+      onChange={() => { setDirty(true); setMessage(""); setError(""); }}
       onSubmit={async (event) => {
         event.preventDefault();
         if (lock.current || disabled) return;
@@ -132,6 +136,7 @@ export function InlineForm({
         setError("");
         setMessage("");
         setInviteUrl("");
+        setRefreshFailed(false);
         const form = new FormData(event.currentTarget);
         try {
           const result = await save(form);
@@ -151,13 +156,13 @@ export function InlineForm({
           try {
             await onSaved();
           } catch {
-            setError(
-              "Saved, but this panel could not refresh. Reload it to see the latest values.",
-            );
+            setRefreshFailed(true);
           }
         } catch (e) {
           setError(
-            e instanceof Error
+            e instanceof TypeError
+              ? "Could not connect. Your changes are still here. Try saving again."
+              : e instanceof Error
               ? e.message
               : "Could not save. Your changes are still here.",
           );
@@ -175,11 +180,22 @@ export function InlineForm({
           <WorkspaceText text={error} />
         </p>
       )}
-      {message && (
+      {message && !dirty && !changed && (
         <p role="status" className="text-sm text-emerald-700">
           <WorkspaceText text={message} />
         </p>
       )}
+      {refreshFailed && <div role="status" className="grid gap-2 text-sm text-amber-800">
+        <p><WorkspaceText text="Saved, but the latest values could not be loaded. Retry loading without saving again." /></p>
+        {dirty || changed ? <p><WorkspaceText text="You have new edits. Save or cancel them before reloading saved values." /></p> : null}
+        <button type="button" className={`${buttonClass} w-fit`} disabled={busy || dirty || changed} onClick={async () => {
+          if (lock.current) return;
+          lock.current = true;
+          setBusy(true);
+          try { await onSaved(); setRefreshFailed(false); } catch { /* Keep the retry and all drafts. */ }
+          finally { lock.current = false; setBusy(false); }
+        }}><WorkspaceText text="Reload saved values" /></button>
+      </div>}
       {inviteUrl && (
         <label className="grid gap-1 text-sm">
           <WorkspaceText text="Invitation link" />
@@ -192,7 +208,7 @@ export function InlineForm({
         </label>
       )}
       <div className="settings-form-actions flex gap-2">
-        <p role="status"><WorkspaceText text={dirty ? "Unsaved changes in this group" : "Changes apply to this group only"} /></p>
+        <p role="status"><WorkspaceText text={dirty || changed ? "Unsaved changes in this group" : "Changes apply to this group only"} /></p>
         <button
           disabled={busy || disabled}
           className={`${buttonClass} ${danger ? "!border-red-700 !bg-red-700" : "!border-zinc-950 !bg-zinc-950"} !text-white`}
@@ -210,6 +226,7 @@ export function InlineForm({
             setInviteUrl("");
             setError("");
             setMessage("");
+            setRefreshFailed(false);
           }}
         >
           <WorkspaceText text="Cancel" />

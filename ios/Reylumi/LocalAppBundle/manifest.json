@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "bb391378d9a9b5a6ab3a8e00ff042abdcf10e379c8954db7c902d71ce3caa963",
+  "buildId": "61adc0b68693f669f96ba293ba82fc9c7116a89e2dd747c113d279f6bb0423d2",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,32 +17,32 @@
     },
     {
       "path": "app.css",
-      "bytes": 563768,
-      "sha256": "106a67781343df827be2411f95344b55ec3d5238ab39e1a8f2114c6ffceed5b9",
+      "bytes": 558591,
+      "sha256": "5d40105478265810baf445b1696fe23c2e776b69bfe657020b9b2591ef4bd14d",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4057534,
-      "sha256": "da99084ba347e504788e9404ada89f91e5667edb667da015c8b87f27627c931a",
+      "bytes": 4067971,
+      "sha256": "a0673f09eefd5e6a861d109aa2c3da3ed8047d6e831104a907f8b4cf68e81440",
       "mime": "text/javascript"
     },
     {
       "path": "brand/reylumi-app-192.png",
-      "bytes": 16110,
-      "sha256": "4ba4bed5a2347dca50330686b3d95d24368ca070fa40d91983251a9782a7354f",
+      "bytes": 87724,
+      "sha256": "affae267c226c80f087c20e137a92471c111e2bbd5dcc307a9dd4f38e40b7843",
       "mime": "image/png"
     },
     {
       "path": "brand/reylumi-app-512.png",
-      "bytes": 51798,
-      "sha256": "37a19cf40149b1cf6483018333c63370816783e0d911e9a03608c250df4883d9",
+      "bytes": 541521,
+      "sha256": "812acf9e4257ae833fb3d093e5ff19a63f2c78db565a8efaffb485e4b472b397",
       "mime": "image/png"
     },
     {
       "path": "brand/reylumi-favicon.png",
-      "bytes": 17900,
-      "sha256": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+      "bytes": 288765,
+      "sha256": "5b0e664fd83473b099ee9bb6f8e8f6547afa31209e1ea0ae2ea798c6184d4a71",
       "mime": "image/png"
     },
     {
@@ -1475,8 +1475,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 533,
-      "sha256": "ea7b9950b5cbff575cb810276b2de67f4b4871eb3be89f1ba58dc1402fe6472d",
+      "bytes": 535,
+      "sha256": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
       "mime": "text/html"
     },
     {
