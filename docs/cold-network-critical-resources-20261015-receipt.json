@@ -1,0 +1,215 @@
+{
+  "releaseId": "cold-network-critical-resources-20261015",
+  "verifiedAt": "2026-10-16T01:46:08.976Z",
+  "summary": "Web resource optimization published; retains current Daily Closing, fast POS/action feedback and restored native Lumi. Native1.0.1(18.1) remains available on TestFlight.",
+  "baseline": {
+    "deploymentId": "dpl_7e8b3hzk36m7sS7CFa6io6svJsbF",
+    "commit": "305a33e12bea0c0f5c787d0a44fbb8c1cf5d8834",
+    "sourceSha256": "f6dcbf71ac6ac91396d65a2538572540871e7e566fe253535b83024cc11ecf42"
+  },
+  "web": {
+    "deploymentId": "dpl_GSM2JMJnitw6i9LGCUiX1H5Xr9Pm",
+    "commit": "94f0b1408b83cc15ef64acbdf401ec72a5f79369",
+    "sourceSha256": "fd5ff73c85a1928814170cd979e6bf7b4466788ddd44b067fd7edc7b679d74a7",
+    "deploySourceSha256": "b5fb20ef4ab6bafeb18adf4f6f5091b4064e6980c5123a05b5319537f9e5adaf",
+    "overlaySha256": "2c5397b736911a931f8288c249022e142d7efefa2f098e90be4264d2046befaa",
+    "verified": true,
+    "sourceFiles": 1975,
+    "protectedExploreFiles": 108,
+    "events": [
+      "f9087825-7684-4619-b412-9b9f98a139f4"
+    ]
+  },
+  "ios": {
+    "version": "1.0.1",
+    "build": "18.1",
+    "commit": "9215fe50d2249597df82aa291a3c52ad63438604",
+    "status": "testflight-available",
+    "newNativeRequired": false,
+    "appleCheckedAt": "2026-10-16T00:44:08.971Z",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING"
+  },
+  "checks": {
+    "webAndCache": 98,
+    "nativeXCTest": 28,
+    "layoutComparisons": 6,
+    "build": "passed;222routes and TypeScript; exact latest live baseline preserved",
+    "lint": "20files;0errors/0warnings",
+    "liveSmoke": {
+      "at": "2026-10-16T01:45:49.783Z",
+      "origin": "https://reylumi.com",
+      "environment": "Anonymous Chromium390x844; no physical device/authenticated production actions",
+      "checks": [
+        {
+          "name": "Market → Explore → Back restores Market without document reload",
+          "passed": true,
+          "documentRequestsAfterReturn": 0,
+          "elapsedMs": 42
+        },
+        {
+          "name": "Document identity survives return",
+          "passed": true
+        },
+        {
+          "name": "Original Market input DOM and browsing query retained",
+          "passed": true
+        },
+        {
+          "name": "/login read-only navigation",
+          "status": 200,
+          "finalPath": "/login",
+          "passed": true
+        },
+        {
+          "name": "/help read-only navigation",
+          "status": 200,
+          "finalPath": "/help",
+          "passed": true
+        },
+        {
+          "name": "/privacy read-only navigation",
+          "status": 200,
+          "finalPath": "/privacy",
+          "passed": true
+        },
+        {
+          "name": "/pos read-only navigation",
+          "status": 200,
+          "finalPath": "/pos",
+          "passed": true
+        },
+        {
+          "name": "/pos/portable read-only navigation",
+          "status": 200,
+          "finalPath": "/pos/portable",
+          "passed": true
+        }
+      ],
+      "errors": [],
+      "suppressedWrites": 0
+    }
+  },
+  "benchmark": {
+    "before": [
+      {
+        "path": "/explore",
+        "slow": false,
+        "elapsedMs": 1162,
+        "fcpMs": 796,
+        "ttfbMs": 157.59999999776483,
+        "shellReadyMs": 1144,
+        "transferredBytes": 910027,
+        "scriptRequests": 30,
+        "longTaskMs": 377,
+        "lumiVisible": false,
+        "errors": []
+      },
+      {
+        "path": "/market",
+        "slow": false,
+        "elapsedMs": 1068,
+        "fcpMs": 1004,
+        "ttfbMs": 260.5,
+        "shellReadyMs": 1044.1000000014901,
+        "transferredBytes": 930643,
+        "scriptRequests": 27,
+        "longTaskMs": 271,
+        "lumiVisible": false,
+        "errors": []
+      },
+      {
+        "path": "/explore",
+        "slow": true,
+        "elapsedMs": 18487,
+        "fcpMs": 9260,
+        "ttfbMs": 170.39999999850988,
+        "shellReadyMs": 18469.199999999255,
+        "transferredBytes": 1268523,
+        "scriptRequests": 30,
+        "longTaskMs": 2901,
+        "lumiVisible": false,
+        "errors": []
+      }
+    ],
+    "after": [
+      {
+        "path": "/explore",
+        "slow": false,
+        "elapsedMs": 1662,
+        "fcpMs": 1236,
+        "ttfbMs": 161.20000000298023,
+        "shellReadyMs": 1636.8000000044703,
+        "transferredBytes": 540760,
+        "scriptRequests": 27,
+        "fontRequests": 0,
+        "cssRequests": 5,
+        "longTaskMs": 191,
+        "lumiVisible": false,
+        "errors": []
+      },
+      {
+        "path": "/market",
+        "slow": false,
+        "elapsedMs": 1299,
+        "fcpMs": 556,
+        "ttfbMs": 243.30000000447035,
+        "shellReadyMs": 1257.7000000029802,
+        "transferredBytes": 559666,
+        "scriptRequests": 24,
+        "fontRequests": 0,
+        "cssRequests": 6,
+        "longTaskMs": 413,
+        "lumiVisible": false,
+        "errors": []
+      },
+      {
+        "path": "/explore",
+        "slow": true,
+        "elapsedMs": 10806,
+        "fcpMs": 7472,
+        "ttfbMs": 180.59999999403954,
+        "shellReadyMs": 10768.5,
+        "transferredBytes": 545334,
+        "scriptRequests": 27,
+        "fontRequests": 0,
+        "cssRequests": 5,
+        "longTaskMs": 3432,
+        "lumiVisible": false,
+        "errors": []
+      }
+    ],
+    "caveat": "Individual anonymous Chromium390x844 samples; weak network150ms/76800Bps/CPU4x; not physical iPhone timing or a universal percentage guarantee."
+  },
+  "nativePublicationEvent": "b1f0198a-2d57-4f12-8207-307952ce4d60",
+  "webPublicationEvent": "57f4651b-9895-4b99-9f78-978a47377085",
+  "preserved": "Current shipped Daily Closing source and108Explore/location files preserved byte-for-byte outside intended7file resource overlay",
+  "excludedChanges": [
+    {
+      "changeId": "phone-claim-conflicts-20261015",
+      "reason": "Blocked ownership/privacy policy decision"
+    },
+    {
+      "changeId": "help-local-draft-20261015",
+      "reason": "Blocked early draft; completed Help already live"
+    },
+    {
+      "changeId": "payroll-period-ledger-20261015",
+      "reason": "Still working at frozen cutoff"
+    }
+  ],
+  "limits": [
+    "Anonymous Chromium/Simulator checks; no physical iPhone/Android timing claim",
+    "No production transaction/message/account mutations for testing",
+    "Cold samples are individual observations, not universal guarantees",
+    "TestFlight available; App Store publication/user installation not established"
+  ],
+  "evidence": {
+    "source": "C:\\Users\\giuse\\kingpos\\artifacts\\cold-network-20261015\\live-source-verification.json",
+    "build": "C:\\Users\\giuse\\kingpos\\artifacts\\cold-network-20261015\\production-build.log",
+    "tests": "C:\\Users\\giuse\\kingpos\\artifacts\\cold-network-20261015\\final-tests.log",
+    "layout": "C:\\Users\\giuse\\kingpos\\artifacts\\cold-network-20261015\\layout-comparison.json",
+    "baselineProfile": "C:\\Users\\giuse\\kingpos\\artifacts\\cold-network-20261015\\live-waterfall.json",
+    "native": "C:/Users/giuse/kingpos/artifacts/performance-release-20261015/native-live-verification.json"
+  }
+}
