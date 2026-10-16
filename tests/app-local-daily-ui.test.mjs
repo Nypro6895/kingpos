@@ -8,7 +8,7 @@ import { chromium } from 'playwright-core';
 const executablePath = process.env.TEST_BROWSER_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const skip = !existsSync(executablePath);
 let bundle;
-async function fixture(path, data = {}, context = null) {
+async function fixture(path, data = {}, context = null, options = {}) {
   bundle ??= build({ stdin: { resolveDir: process.cwd(), loader: 'tsx', contents: `
 import React,{useState}from'react';import{createRoot}from'react-dom/client';import{getAppLocalDailyPage as getAppLocalPage}from'./lib/app-local-daily-registry';import{OfflineNetworkFormGuard}from'./components/offline-network-form-guard';
 import{resetAppLocalResources,seedAppLocalResource}from'./lib/app-local-resource';
@@ -29,7 +29,8 @@ createRoot(document.getElementById('root')).render(<App/>);
       'server-only': '',
       'app-local-data-policy':`export const appLocalReadIsDurable=name=>name==='owner.ticket-detail';`,
       'experience-scope': `export const useExperienceScope=()=>window.fixture.context?{context:window.fixture.context.context}:null;`,
-      'app-local-host': `export function getAppLocalHost(){return{isNative:false,cache:async()=>null,read:async(name,args,options)=>{window.fixture.reads.push({name,args,options});if(window.fixture.responses?.[name])return{schemaVersion:1,status:200,scope:options.scope,etag:'r1',updatedAt:Date.now(),data:window.fixture.responses[name]};throw Error('Offline')},openOnline:async path=>{window.fixture.onlineOpens.push(path)}}}`,
+      'app-local-host': `export function getAppLocalHost(){return{isNative:false,cache:async()=>null,read:async(name,args,options)=>{window.fixture.reads.push({name,args,options});if(window.fixture.holdRead)return new Promise((resolve,reject)=>{window.fixture.resolveRead=data=>resolve({schemaVersion:1,status:200,scope:options.scope,etag:'r1',updatedAt:Date.now(),data});window.fixture.rejectRead=message=>reject(Error(message))});if(window.fixture.responses?.[name])return{schemaVersion:1,status:200,scope:options.scope,etag:'r1',updatedAt:Date.now(),data:window.fixture.responses[name]};throw Error('Offline')},openOnline:async path=>{window.fixture.onlineOpens.push(path)}}}`,
+      'portable-sync-indicator': `import React from'react';export function PortableSyncIndicator({scope}){return <span data-fixture-sync-scope={scope}/>}`,
       'experience-persistent-cache': `export const getExperienceOfflineGrant=()=>window.fixture.context?.grant;export const isExperienceSnapshotAuthorized=scope=>scope===window.fixture.context?.context.scope;export const isExperienceSnapshotContextAuthorized=({scope})=>isExperienceSnapshotAuthorized(scope);export const EXPERIENCE_OFFLINE_AUTHORIZATION_EVENT='reylumi:offline-authorization';export const readExperienceSnapshot=async({scope,domain,params})=>{if(!isExperienceSnapshotAuthorized(scope))return null;return window.fixture.data[JSON.stringify([scope,domain,params||{}])]??null};export const writeExperienceSnapshot=async()=>{};export const removeExperienceSnapshot=async()=>{};`,
     };
     builder.onResolve({ filter: /.*/ }, args => { const key = Object.keys(modules).find(key => args.path === key || args.path.endsWith('/' + key)); return key ? { path: key, namespace: 'fixture' } : undefined; });
@@ -42,7 +43,7 @@ createRoot(document.getElementById('root')).render(<App/>);
       return { loader: 'js', contents: names.map(name => `export async function ${name}(...args){window.fixture.actions.push({name:${JSON.stringify(name)},args});return window.fixture.results?.[${JSON.stringify(name)}]??{}}`).join('\n') };
     });
   } }] });
-  const output = await bundle, errors = [], seed = JSON.stringify({ path, context, data }).replaceAll('<', '\\u003c');
+  const output = await bundle, errors = [], seed = JSON.stringify({ path, context, data, ...options }).replaceAll('<', '\\u003c');
   const server = createServer((request, response) => {
     if (request.url === '/bundle.js') { response.setHeader('Content-Type', 'text/javascript'); response.end(output.outputFiles[0].text); }
     else if (request.url?.startsWith('/api/')) { response.statusCode = 500; response.end('No live service'); }
@@ -61,6 +62,41 @@ const saved = (scope, domain, args, data) => ({ [JSON.stringify([scope, domain, 
 
 const ticketId='11111111-1111-4111-8111-111111111111';
 function ticketData(){return{salon:{id:'salon-a',name:'My salon',phone:'5125550100'},canManageTickets:true,canVoidTickets:true,options:{services:[{id:'service-a',name:'Manicure',base_price:35}],staff:[]},ticket:{id:ticketId,salon_id:'salon-a',ticket_number:'T-42',status:'open',created_at:'2026-10-16T12:00:00Z',opened_at:'2026-10-16T12:00:00Z',closed_at:null,source_booking_id:null,customer:{id:'customer-a',name:'Existing customer',phone:'5125550100',email:'customer@example.invalid'},discount_type:'fixed_amount',discount_value:0,tax_rate:0,tip_type:'fixed_amount',tip_value:0,audit_logs:[],payments:[],ticket_items:[{id:'item-a',quantity:1,unit_price:35,line_total:35,service_name_snapshot:'Manicure',service:{id:'service-a',name:'Manicure',base_price:35,duration_minutes:30},assigned_staff:null,source_kind:'manual',created_at:'2026-10-16T12:00:00Z'}]}}}
+test('canonical installed owner ticket detail keeps one original POS navigation during held, failed and successful reads; legacy keeps its general shell', {skip,timeout:40000},async()=>{
+  const owner=context();owner.context.salonId='salon-a';owner.access={ownerWorkspace:true,staffWorkspace:false};
+  const app=await fixture('/pos/ticket/'+ticketId,{},owner,{online:true,holdRead:true});
+  try{
+    const nav=app.page.locator('[data-owner-navigation]');await nav.waitFor();
+    assert.equal(await nav.count(),1);assert.equal(await nav.locator('a[data-owner-tab=ticket]').getAttribute('aria-current'),'page');
+    assert.equal(await nav.locator('[data-fixture-sync-scope]').getAttribute('data-fixture-sync-scope'),'owner:salon-a:viewer-a');
+    await nav.evaluate(node=>window.originalNavigation=node);
+    await app.page.waitForFunction(()=>fixture.rejectRead);assert.equal(await app.page.getByRole('heading',{name:'Receipt Preview',exact:true}).count(),0);
+    await app.page.evaluate(()=>fixture.rejectRead('The ticket read failed.'));
+    await app.page.getByText('The ticket read failed.',{exact:true}).waitFor();
+    assert.equal(await nav.evaluate(node=>node===window.originalNavigation),true);
+    await app.page.evaluate(data=>{fixture.holdRead=false;fixture.responses={'owner.ticket-detail':data}},ticketData());
+    await app.page.getByRole('button',{name:'Try again',exact:true}).click();
+    await app.page.getByRole('heading',{name:'Receipt Preview',exact:true}).waitFor();
+    assert.equal(await nav.count(),1);assert.equal(await nav.evaluate(node=>node===window.originalNavigation),true);
+    await app.page.getByRole('button',{name:'More',exact:true}).click();await app.page.locator('[data-owner-more-popover] a[href="/payroll"]').waitFor();
+    await app.page.keyboard.press('Escape');
+    await app.page.evaluate(id=>window.navigate('/pos-tickets/'+id),ticketId);
+    await app.page.waitForFunction(()=>!document.querySelector('[data-owner-navigation]'));
+    await app.page.getByRole('heading',{name:'Receipt Preview',exact:true}).waitFor();
+    assert.deepEqual(await app.page.evaluate(()=>fixture.actions),[]);
+  }finally{await app.close()}
+});
+test('ticket detail navigation uses the admitted owner gate without changing the original sign-in/read guard', {skip,timeout:40000},async()=>{
+  const customer=context(),app=await fixture('/pos/ticket/'+ticketId,{},customer);
+  try{
+    await app.page.getByRole('heading',{name:'POS Ticket',exact:true}).waitFor();assert.equal(await app.page.locator('[data-owner-navigation]').count(),0);
+    await app.page.evaluate(()=>window.switchAccount({schemaVersion:1,context:{scope:'scope-b',viewerId:'owner-b',salonId:'salon-b',authenticated:true},grant:{kind:'owner'},offline:true,display:{name:'Owner',language:'en',role:'owner'}}));
+    await app.page.locator('[data-owner-navigation]').waitFor();assert.equal(await app.page.locator('[data-fixture-sync-scope]').getAttribute('data-fixture-sync-scope'),'owner:salon-b:owner-b');
+    await app.page.evaluate(()=>window.switchAccount({schemaVersion:1,context:{scope:'scope-c',authenticated:false},grant:null,display:{name:'',language:'en',role:'guest'}}));
+    await app.page.getByRole('button',{name:'Sign in',exact:true}).waitFor();assert.equal(await app.page.locator('[data-owner-navigation]').count(),0);
+    assert.deepEqual(await app.page.evaluate(()=>fixture.actions),[]);
+  }finally{await app.close()}
+});
 test('complete retained ticket detail keeps payment entries during quiet reads and requires an explicit online confirmation', {skip,timeout:40000},async()=>{
   const data=ticketData(),app=await fixture('/pos/ticket/'+ticketId,saved('scope-a','owner-ticket-detail',{ticketId},data),context());
   try{

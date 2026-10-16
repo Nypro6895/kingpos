@@ -2,6 +2,7 @@
 
 import { type ReactNode } from "react";
 import { AppLocalTicketDetail } from "@/components/app-local-ticket-detail";
+import { OwnerPosNavigation } from "@/app/pos/owner-pos-tabs";
 import { AppLocalTaxSalons, AppLocalTaxReport, AppLocalTaxInstall } from "@/components/app-local-tax-company";
 import { getAppLocalHost } from "./app-local-host";
 import { useAppLocalResource } from "./app-local-resource";
@@ -17,7 +18,12 @@ function ReadView<T>({ name, args, title, children, ...props }: AppLocalPageProp
 }
 function TicketPage(props: AppLocalPageProps) {
   const url = new URL(props.path, "https://reylumi.com"), ticketId = url.pathname.split("/").at(-1)!;
-  return <ReadView<AppLocalTicketDetailData> {...props} title="POS Ticket" name="owner.ticket-detail" args={{ ticketId }}>{data => <AppLocalTicketDetail key={`${props.context?.context.scope}:${ticketId}`} data={data} error={url.searchParams.get("error") ?? undefined} />}</ReadView>;
+  const owner = props.context?.grant?.kind === "owner" || Boolean(props.context && !props.context.offline && props.context.access?.ownerWorkspace);
+  const ownerScope = `owner:${props.context?.context.salonId}:${props.context?.context.viewerId}`;
+  return <>
+    {url.pathname.startsWith("/pos/ticket/") && owner ? <OwnerPosNavigation active="ticket" syncScope={ownerScope} /> : null}
+    <ReadView<AppLocalTicketDetailData> {...props} title="POS Ticket" name="owner.ticket-detail" args={{ ticketId }}>{data => <AppLocalTicketDetail key={`${props.context?.context.scope}:${ticketId}`} data={data} error={url.searchParams.get("error") ?? undefined} />}</ReadView>
+  </>;
 }
 function TaxPage(props: AppLocalPageProps) {
   const url = new URL(props.path, "https://reylumi.com"), salonId = url.pathname.split("/")[2], query = { message: url.searchParams.get("message") ?? undefined };
