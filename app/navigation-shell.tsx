@@ -30,7 +30,8 @@ import {
 } from "@/app/role-navigation";
 import { navigateToWorkspace } from "@/lib/workspace-navigation";
 import Image from "next/image";
-import Link from "next/link";
+import Link, { NavigationProgress } from "@/components/feedback-link";
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type {
   CurrentWorkspaceAction,
@@ -41,6 +42,7 @@ import type {
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   useTransition,
@@ -723,6 +725,46 @@ function CustomerWorkspaceRow({
   );
 }
 
+function useWorkspaceNavigationFeedback() {
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const [documentPending, setDocumentPending] = useState(false);
+  const [routePending, startTransition] = useTransition();
+  const pendingKind = useRef<"document" | "route" | null>(null);
+  const active = useRef(false);
+  const reset = useCallback(() => {
+    pendingKind.current = null;
+    setPendingKey(null);
+    setDocumentPending(false);
+  }, []);
+
+  useLayoutEffect(() => {
+    active.current = true;
+    window.addEventListener("pageshow", reset);
+    return () => {
+      active.current = false;
+      window.removeEventListener("pageshow", reset);
+      reset();
+    };
+  }, [reset]);
+
+  useEffect(() => {
+    if (!routePending && pendingKind.current === "route") reset();
+  }, [reset, routePending]);
+
+  function run(key: string, documentNavigation: boolean, navigate: () => void, onError: () => void) {
+    if (!active.current || pendingKind.current) return;
+    pendingKind.current = documentNavigation ? "document" : "route";
+    setPendingKey(key);
+    setDocumentPending(documentNavigation);
+    startTransition(() => {
+      try { navigate(); }
+      catch { reset(); onError(); }
+    });
+  }
+
+  return { pendingKey, pending: pendingKey !== null && (routePending || documentPending), run };
+}
+
 function CustomerContextSheet({
   accountAvatarUrl,
   accountEmail,
@@ -736,8 +778,8 @@ function CustomerContextSheet({
 
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [pendingKey, setPendingKey] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const navigation = useWorkspaceNavigationFeedback();
+  const { pendingKey } = navigation;
   const sheetRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const currentWorkspaceId = currentWorkspace?.id ?? null;
@@ -812,67 +854,35 @@ function CustomerContextSheet({
   }, [closeAndFocus, isOpen]);
 
   if (!isOpen) {
-    return null;
+    return <NavigationProgress pending={navigation.pending} />;
   }
 
   const runAction: RunWorkspaceAction = (workspace, action) => {
-    const key = actionKey(workspace, action);
-
-    if (pendingKey) {
-      return;
-    }
-
-    setError(null);
-    setPendingKey(key);
-    startTransition(async () => {
-      try {
-        if (workspace.id === currentWorkspaceId) {
-          closeAndFocus();
-          router.push(action.href);
-          router.refresh();
-          setPendingKey(null);
-          return;
-        }
-
-        navigateToWorkspace(workspace.id, action.href);
-
+    navigation.run(actionKey(workspace, action), workspace.id !== currentWorkspaceId, () => {
+      setError(null);
+      if (workspace.id === currentWorkspaceId) {
         closeAndFocus();
-        setPendingKey(null);
-      } catch {
-        setError(WORKSPACE_SWITCH_ERROR);
-        setPendingKey(null);
+        router.push(action.href);
+        router.refresh();
+        return;
       }
-    });
+      navigateToWorkspace(workspace.id, action.href);
+      closeAndFocus();
+    }, () => setError(WORKSPACE_SWITCH_ERROR));
   };
 
   const runWorkspaceSwitch: RunWorkspaceAction = (workspace, action) => {
-    const key = actionKey(workspace, action);
-
-    if (pendingKey) {
-      return;
-    }
-
-    setError(null);
-    setPendingKey(key);
-    startTransition(async () => {
-      try {
-        if (workspace.id === currentWorkspaceId) {
-          closeAndFocus();
-          router.push(action.href);
-          router.refresh();
-          setPendingKey(null);
-          return;
-        }
-
-        navigateToWorkspace(workspace.id);
-
+    navigation.run(actionKey(workspace, action), workspace.id !== currentWorkspaceId, () => {
+      setError(null);
+      if (workspace.id === currentWorkspaceId) {
         closeAndFocus();
-        setPendingKey(null);
-      } catch {
-        setError(WORKSPACE_SWITCH_ERROR);
-        setPendingKey(null);
+        router.push(action.href);
+        router.refresh();
+        return;
       }
-    });
+      navigateToWorkspace(workspace.id);
+      closeAndFocus();
+    }, () => setError(WORKSPACE_SWITCH_ERROR));
   };
 
   return (
@@ -884,6 +894,7 @@ function CustomerContextSheet({
         }
       }}
     >
+      <NavigationProgress pending={navigation.pending} />
       <aside
         aria-describedby="customer-context-description"
         aria-labelledby="customer-context-title"
@@ -1298,8 +1309,8 @@ function CustomerDesktopWorkspaceSwitcher({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setOpen] = useState(false);
-  const [pendingKey, setPendingKey] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const navigation = useWorkspaceNavigationFeedback();
+  const { pendingKey } = navigation;
   const panelRef = useRef<HTMLDivElement | null>(null);
   const shouldRestoreFocusRef = useRef(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -1375,63 +1386,31 @@ function CustomerDesktopWorkspaceSwitcher({
   }, [closeMenu, isOpen]);
 
   const runAction: RunWorkspaceAction = (workspace, action) => {
-    const key = actionKey(workspace, action);
-
-    if (pendingKey) {
-      return;
-    }
-
-    setError(null);
-    setPendingKey(key);
-    startTransition(async () => {
-      try {
-        if (workspace.id === currentWorkspaceId) {
-          router.push(action.href);
-          router.refresh();
-          setOpen(false);
-          setPendingKey(null);
-          return;
-        }
-
-        navigateToWorkspace(workspace.id, action.href);
-
+    navigation.run(actionKey(workspace, action), workspace.id !== currentWorkspaceId, () => {
+      setError(null);
+      if (workspace.id === currentWorkspaceId) {
+        router.push(action.href);
+        router.refresh();
         setOpen(false);
-        setPendingKey(null);
-      } catch {
-        setError(WORKSPACE_SWITCH_ERROR);
-        setPendingKey(null);
+        return;
       }
-    });
+      navigateToWorkspace(workspace.id, action.href);
+      setOpen(false);
+    }, () => setError(WORKSPACE_SWITCH_ERROR));
   };
 
   const runWorkspaceSwitch: RunWorkspaceAction = (workspace, action) => {
-    const key = actionKey(workspace, action);
-
-    if (pendingKey) {
-      return;
-    }
-
-    setError(null);
-    setPendingKey(key);
-    startTransition(async () => {
-      try {
-        if (workspace.id === currentWorkspaceId) {
-          router.push(action.href);
-          router.refresh();
-          setOpen(false);
-          setPendingKey(null);
-          return;
-        }
-
-        navigateToWorkspace(workspace.id);
-
+    navigation.run(actionKey(workspace, action), workspace.id !== currentWorkspaceId, () => {
+      setError(null);
+      if (workspace.id === currentWorkspaceId) {
+        router.push(action.href);
+        router.refresh();
         setOpen(false);
-        setPendingKey(null);
-      } catch {
-        setError(WORKSPACE_SWITCH_ERROR);
-        setPendingKey(null);
+        return;
       }
-    });
+      navigateToWorkspace(workspace.id);
+      setOpen(false);
+    }, () => setError(WORKSPACE_SWITCH_ERROR));
   };
 
   const workspaceRows = [
@@ -1444,6 +1423,7 @@ function CustomerDesktopWorkspaceSwitcher({
 
   return (
     <section className="relative" aria-label={__vt("Account switcher")}>
+      <NavigationProgress pending={navigation.pending} />
       <button
         aria-controls={CUSTOMER_DESKTOP_ACCOUNT_MENU_ID}
         aria-expanded={isOpen}
@@ -2066,9 +2046,9 @@ function WorkspaceOptionButton({
   const subtitle = customerWorkspaceSubtitle(workspace);
 
   return (
-    <form action="/workspace/open" method="get">
+    <NavigationForm action="/workspace/open" method="get">
       <input name="workspace_id" type="hidden" value={workspace.id} />
-      <button
+      <NavigationSubmitButton
         className={[
           "grid min-h-14 w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 disabled:cursor-default",
           isCurrent
@@ -2101,8 +2081,8 @@ function WorkspaceOptionButton({
             <WorkspaceText text={subtitle} />
           </span>
         </span>
-      </button>
-    </form>
+      </NavigationSubmitButton>
+    </NavigationForm>
   );
 }
 
@@ -2168,9 +2148,9 @@ function ModeSwitch({
         }
 
         return (
-          <form action="/workspace/open" method="get" key={mode}>
+          <NavigationForm action="/workspace/open" method="get" key={mode}>
             <input name="workspace_id" type="hidden" value={option.id} />
-            <button
+            <NavigationSubmitButton
               aria-pressed={isActive}
               className={[
                 "w-full rounded-md px-3 py-1.5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950",
@@ -2182,8 +2162,8 @@ function ModeSwitch({
               type="submit"
             >
               {mode === "staff" ? <WorkspaceText text="Staff" /> : <WorkspaceText text="Owner" />}
-            </button>
-          </form>
+            </NavigationSubmitButton>
+          </NavigationForm>
         );
       })}
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { SubmitButton } from "@/components/submit-button";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -1302,7 +1303,7 @@ export function PortableFloatingNav({
                 key={item.action.id}
                 style={commonStyle}
               >
-                <button
+                <SubmitButton
                   aria-label={__vt(item.action.label)}
                   className={commonClass.replace("absolute ", "")}
                   data-orbit-angle={item.angle.toFixed(2)}
@@ -1319,11 +1320,12 @@ export function PortableFloatingNav({
                     width: "100%",
                   }}
                   title={__vt(item.action.label)}
+                  pendingLabel=""
                   type="submit"
                 >
                   <Icon icon={item.action.icon} />
                   <span className="sr-only"><WorkspaceText text={item.action.label} /></span>
-                </button>
+                </SubmitButton>
               </form>
             );
           })}

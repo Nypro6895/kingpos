@@ -3,6 +3,7 @@
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { ActionFeedback } from "@/components/action-feedback";
 import { portableDeviceStorage } from "@/lib/portable-device-storage";
 
 type Saved<T> = { id: string; at: number; label: string; value: T };
@@ -20,6 +21,8 @@ export function PortableDraftControls<T>({ scope, active, activity, value, label
   useEffect(() => { savedChange.current = onSavedChange; }, [onSavedChange]);
   useEffect(() => { savedChange.current?.(saved.map(row => row.value)); }, [saved]);
   const [open, setOpen] = useState(false);
+  const [parking, setParking] = useState(false);
+  const parkingRef = useRef(false);
   const [deadline, setDeadline] = useState<number | null>(null);
   const [seconds, setSeconds] = useState(60);
   const [error, setError] = useState("");
@@ -53,11 +56,21 @@ export function PortableDraftControls<T>({ scope, active, activity, value, label
     catch { setError("Unable to save on this device. Your ticket is still open."); return false; }
   }
   async function park() {
-    // Save first; never clear the working receipt after a storage failure.
-    if (!persist([...saved, { id: crypto.randomUUID(), at: Date.now(), label, value: current.current.value }])) {
-      setDeadline(null); setTick(t => t + 1); return;
+    if (parkingRef.current) return;
+    parkingRef.current = true;
+    setParking(true);
+    try {
+      // Save first; never clear the working receipt after a storage failure.
+      if (!persist([...saved, { id: crypto.randomUUID(), at: Date.now(), label, value: current.current.value }])) {
+        setDeadline(null); setTick(t => t + 1); return;
+      }
+      setDeadline(null); await current.current.reset();
+    } catch {
+      setError("Ticket saved for later. The current ticket could not be reset.");
+    } finally {
+      parkingRef.current = false;
+      setParking(false);
     }
-    setDeadline(null); await current.current.reset();
   }
   function handleOpenSaved(row: Saved<T>, currentTicket?: Saved<T>) {
     let rows = saved;
@@ -73,11 +86,11 @@ export function PortableDraftControls<T>({ scope, active, activity, value, label
   return <>
     <div className="grid grid-cols-2 gap-2" data-pos-customer-shortcuts>
       {leading}
-      <button type="button" aria-label={__vt(`Saved tickets (${saved.length})`)} aria-expanded={open} onClick={() => setOpen(!open)} className="flex min-h-20 min-w-0 items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 text-left transition hover:border-teal-300 hover:bg-teal-50 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-teal-700">
+      <button type="button" aria-label={__vt(`Saved tickets (${saved.length})`)} aria-expanded={open} disabled={parking} onClick={() => setOpen(!open)} className="flex min-h-20 min-w-0 items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 text-left transition hover:border-teal-300 hover:bg-teal-50 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-teal-700">
         <svg aria-hidden="true" className="h-5 w-5 shrink-0 text-teal-800" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6"/></svg>
         <span className="min-w-0"><span className="block text-sm font-semibold"><WorkspaceText text="Saved tickets" /></span><span className="mt-1 block text-xs text-zinc-500"><WorkspaceText text={saved.length ? `${saved.length} saved` : "None saved"} /></span></span>
       </button>
-      {active && <button type="button" onClick={() => void park()} className={button + " col-span-2 !min-h-10 !rounded-lg !shadow-none text-teal-800"}><WorkspaceText text="Save for later" /></button>}
+      {active && <button type="button" disabled={parking} aria-busy={parking} onClick={() => void park()} className={button + " col-span-2 !min-h-10 !rounded-lg !shadow-none text-teal-800"}><ActionFeedback pending={parking} pendingLabel="Saving…"><WorkspaceText text="Save for later" /></ActionFeedback></button>}
     </div>
     {error && !pending && <p role="alert" className="text-sm text-red-700"><WorkspaceText text={error} /></p>}
     {open && createPortal(<div className="fixed inset-0 z-[85] bg-black/20" onClick={() => setOpen(false)}>
@@ -109,7 +122,7 @@ export function PortableDraftControls<T>({ scope, active, activity, value, label
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"><h2 className="text-lg font-semibold"><WorkspaceText text="Keep this ticket?" /></h2>
         <p className="mb-5 mt-2 text-sm leading-6 text-zinc-600"><WorkspaceText text="You haven’t used this ticket for" /> {idleMinutes} <WorkspaceText text="minutes. Save it for later or continue working. It will be cleared in" /> <strong className="tabular-nums">{seconds}s</strong>.</p>
         <div className="flex flex-wrap gap-3">
-          <button type="button" className={button.replace("bg-white", "bg-teal-700").replace("hover:bg-zinc-50", "hover:bg-teal-800") + " border-teal-700 text-white"} onClick={() => void park()}><WorkspaceText text="Save for later" /></button>
+          <button type="button" className={button.replace("bg-white", "bg-teal-700").replace("hover:bg-zinc-50", "hover:bg-teal-800") + " border-teal-700 text-white"} disabled={parking} aria-busy={parking} onClick={() => void park()}><ActionFeedback pending={parking} pendingLabel="Saving…"><WorkspaceText text="Save for later" /></ActionFeedback></button>
           <button type="button" className={button} onClick={() => { setDeadline(null); setTick(t => t + 1); }}><WorkspaceText text="Continue" /></button>
           <button type="button" className={button + " text-red-700 hover:border-red-200 hover:bg-red-50"} onClick={() => { setDeadline(null); void current.current.reset(); }}><WorkspaceText text="Discard" /></button>
         </div>

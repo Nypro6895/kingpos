@@ -1,0 +1,108 @@
+RÀ SOÁT TỐC ĐỘ VÀ PHẢN HỒI THAO TÁC REYLUMI
+Ngày bắt đầu: 2026-10-15 (America/Chicago). Phạm vi: web và giao diện web trong app.
+
+KẾT LUẬN
+Chưa có cơ sở xác nhận mọi trang và mọi thao tác đều đã nhanh trên thiết bị thật.
+Vòng này phát hiện và sửa nhiều khoảng chờ không có phản hồi. Phản hồi ngay khi
+bấm, giữ trạng thái nhập, và thời gian lấy nội dung là ba tiêu chí kiểm tra riêng.
+Thanh tiến trình/spinner không phải bằng chứng API, cache hoặc cold startup nhanh.
+Không đưa phần trăm tối ưu chung từ số file, route, nút hoặc số kiểm tra đạt.
+
+NGUỒN VÀ PHẠM VI KIỂM KÊ
+Nguồn làm việc: worktree codex/pos-instant-tabs-20261015, tiếp nối e4e4deb.
+Baseline nguồn web đã đối chiếu: c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f.
+Live alias được kiểm tra chỉ đọc vẫn là dpl_9ZKEwHw43kFAeqx1kyNUDcGkJNNW.
+Không có lệnh deploy trong lượt này. Các sửa đổi dưới đây chưa có trên live.
+
+Kiểm kê AST ban đầu: 131 trang; 1.534 vị trí nút; 667 liên kết; 204 form
+và 187 vị trí wrapper form tùy biến. Số lượng phản ánh mã nguồn, không phải
+1.534 thao tác người dùng độc lập hay 131 ca chạy thực tế đã được kiểm thử.
+Các component dùng chung và nhánh chỉ hiện theo quyền có thể được tính ở nhiều
+route. Candidate do heuristic phát hiện cần đọc lại; nhiều nút quản trị đã có
+AdminActionForm/DashboardActionForm/SubmitButton nên không cần sửa.
+Ma trận route: docs/action-feedback-route-matrix.txt. Danh sách thiếu sót đã xác
+định: docs/action-feedback-open-findings.json. Bằng chứng chạy nằm trong
+artifacts/action-feedback-audit-20261015.
+
+ĐÃ SỬA
+1. Đăng nhập, MFA, đăng ký, tạo tài khoản từ lời mời nhân viên:
+   - Phản hồi ngay khi gửi; sau xác thực giữ trạng thái mở tài khoản tới chuyển trang.
+   - Chặn gửi trùng trong cùng lượt bấm; lỗi cho phép người dùng thử lại rõ ràng.
+   - Khi rời/ẩn form, bỏ qua phản hồi cũ và dọn trạng thái cục bộ; giữ trường nhập.
+   - Giữ nguyên kiểm tra quyền, API, xác thực hai bước, callback đăng nhập nhúng
+     và một lần thử lại do người dùng hoàn tất SecurityChallenge.
+   - Không tự gửi lại POST hoặc tự coi người dùng đã đăng nhập trước xác thực.
+2. Điều hướng chung:
+   - Dùng trạng thái thực của Next Link để hiện tiến trình khi đường dẫn còn chờ.
+   - Giữ ref, thuộc tính, prefetch, hành vi hủy, mở tab mới và legacyBehavior.
+   - Không làm xê dịch grid/liên kết; hiệu ứng tách khỏi bố cục trang.
+   - Khi trang được giữ rồi ẩn bởi React Activity, hiệu ứng phủ trang cũng được ẩn.
+   - Đổi workspace giữ phản hồi cả lúc menu đã đóng, đến khi route sẵn sàng hoặc
+     document chuyển; khôi phục đúng khi quay lại bằng BFCache/pageshow.
+   - Giữ server handoff và quyền workspace; không thay phiên trong request nền.
+3. POS, lịch hẹn, nhân viên:
+   - Submit/Reset, xác nhận điều chỉnh lượt, lưu lịch hẹn, đổi trạng thái lịch,
+     Check In, xác nhận lịch của nhân viên, tùy chọn lịch và nghỉ phép có phản hồi.
+   - Thao tác liên quan từng hàng chỉ đánh dấu hàng đang chạy.
+   - Check In và lưu vé để dùng sau có chặn nhấn lặp đồng bộ.
+   - Lưu vé vẫn ghi thành công trước khi reset; lỗi giữ vé làm việc.
+   - Nút khóa POS dùng trạng thái form thật; không sửa logout/action/payload.
+   - Giữ phần chuyển tab tức thời và giữ tiền/draft của thay đổi POS trước đó.
+4. Hồ sơ, Market, hỗ trợ và thuế/lương:
+   - Lưu/công bố hồ sơ, thêm/ngắt kết nối Tax Company, lưu lịch lương và đổi POS ID
+     có trạng thái form pending.
+   - Kiểm tra thanh toán hiển thị Checking; không đổi công thức hoặc giao dịch.
+   - Lưu quy tắc và plugin tiếng Việt bắt lỗi mạng, giữ bản nhập, không tự retry.
+   - Upload, làm mới cuộc trò chuyện và đánh dấu đã đọc có phản hồi riêng.
+   - Giữ file/nội dung tin nhắn đang nhập khi lỗi; không thêm gửi tin tự động.
+5. Tìm kiếm/lọc và thao tác công khai:
+   - Chín form GET gốc: payroll (3), tax payroll (2), ticket portable (1), startup
+     (1), startup Market (2); thêm form tìm kiếm guest và handoff workspace.
+   - Giữ action, method, trường ẩn, query và name/value của nút submit; không vô
+     hiệu hóa native submitter trước lúc trình duyệt thu thập dữ liệu.
+   - Không thay Next Form đang điều hướng trong ứng dụng thành tải lại document.
+   - Chia sẻ/copy liên kết có phản hồi và chặn lặp; hủy bảng chia sẻ vẫn im lặng.
+   - Bấm quảng cáo có tiến trình trong khoảng chờ ghi nhận click và chuyển trang;
+     giữ logic đo click và giới hạn chờ 1.200 ms hiện có.
+
+PHÂN BIỆT DỮ LIỆU VÀ TRẠNG THÁI
+Khung trang, menu, tiêu đề, cột, biểu tượng, CSS, danh mục ít đổi: tận dụng cache
+asset/prefetch/khung đã giữ; không chờ toàn bộ live data mới phản hồi thao tác.
+Dịch vụ, nhân viên, cài đặt, mô tả plugin: dữ liệu tham chiếu theo workspace;
+cập nhật khi nghiệp vụ thay đổi hoặc hết hạn phù hợp, không dùng chung giữa tài khoản.
+Check-in, lịch, ticket, thu nhập, quyền và trạng thái thanh toán: cập nhật đúng phạm vi;
+có thể giữ kết quả trước trong lúc đọc lại, nhưng không coi số cũ là xác nhận mới.
+Số tiền và draft chưa gửi: giữ cục bộ đúng phạm vi; không ghi đè khi đổi tab hoặc
+refresh. Chỉ hiển thị thành công sau xác nhận phù hợp của luồng hiện có.
+Không thêm thông báo kỹ thuật như “đã cache” hoặc “có nội dung mới” vào sản phẩm.
+
+PHẦN CHƯA THỂ GỌI LÀ HOÀN TẤT
+- Một số Next Form GET tìm kiếm/phân trang quản trị và bộ lọc ticket owner còn
+  thiếu trạng thái chờ riêng ở nút. Đây là thiếu sót đã xác định, không phải đã sửa.
+  Cần dùng đúng vòng đời điều hướng Next Form; không đổi sang reload để che lỗi.
+- Chọn ngày Today, lọc ngày báo cáo portable và Save New Statement của payroll
+  còn thiếu trạng thái chờ tại nút. Năm nhóm P2 này được liệt kê đầy đủ cùng
+  vị trí mã trong action-feedback-open-findings.json để không bị bỏ sót.
+- FeedbackLink mới áp dụng ở điều hướng dùng chung/admin/startup; nhiều liên kết
+  trong nội dung vẫn dùng Next Link trực tiếp. Không coi mọi liên kết đã có hint.
+- Copy invite link chưa có thông báo lỗi khi clipboard bị từ chối; Undo tùy chọn
+  xã hội có khóa ghi nhưng nút Undo chưa có nhãn đang xử lý riêng (ưu tiên thấp).
+- Đọc panel portable lần đầu vẫn đi qua hàng đợi Server Action hiện có. Cần tách
+  API đọc có xác thực nếu đo đạc xác nhận bị xếp sau tác vụ khác; giữ quyền và scope.
+- Khởi động lạnh app, khôi phục phiên, truy vấn live đầu tiên và tải feed Explore
+  vẫn cần đo và tối ưu riêng. Giữ/hiện khung không chứng minh các bước đó đã nhanh.
+- Quảng cáo vẫn có thể chờ ghi nhận click tới 1.200 ms; lượt này bổ sung phản hồi,
+  không tự thay đổi cách ghi nhận có liên quan tới thống kê/billing.
+- Không có bằng chứng chạy toàn bộ nghiệp vụ đăng nhập thật theo từng quyền hoặc
+  đo trên iPhone/Android vật lý. Fixture Chromium có màn hình nhỏ không thay thế việc này.
+
+KIỂM TRA VÀ ĐIỀU KIỆN PHÁT HÀNH
+Các ca chậm có chủ đích giữ request chưa hoàn tất để kiểm tra phản hồi trước dữ liệu;
+bao gồm lỗi mạng, bấm lặp, đổi tab liên tiếp, giữ/ẩn trang, BFCache, bỏ qua phản hồi
+cũ, giữ tiền/draft, GET submitter và hủy điều hướng. Không phát sinh thanh toán,
+tin nhắn hoặc thay đổi tài khoản thật. Kết quả cuối cùng và hash nguồn cố định
+được lưu trong implementation-receipt.json cùng thư mục bằng chứng.
+Production build/TypeScript phải đạt trước khi đánh dấu revision ready.
+Thay đổi tương thích web; không sửa Swift, bundled assets, permissions hoặc bridge.
+Chưa yêu cầu native build mới chỉ vì sửa phản hồi web. Việc publish là bước riêng,
+theo docs/release-policy.txt, kiểm tra lại nguồn production tại thời điểm phát hành.

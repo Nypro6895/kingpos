@@ -3,7 +3,7 @@
 import { SettingsIcon } from "@/components/settings-icon";
 
 import { AdminIcon, ADMIN_ICON_PATHS, type AdminIconName } from "./admin-icon";
-import Link from "next/link";
+import Link from "@/components/feedback-link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 

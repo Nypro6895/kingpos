@@ -1,6 +1,7 @@
 "use client";
 
 import { WorkspaceText } from "@/components/workspace-language";
+import { SubmitButton } from "@/components/submit-button";
 import { useActionState } from "react";
 import {
   forgetPortablePosAccessIdAction,
@@ -98,12 +99,12 @@ export function PortablePosLoginForm({
 
       {hasRememberedId ? (
         <form action={forgetPortablePosAccessIdAction} className="mt-3 text-center">
-          <button
+          <SubmitButton pendingLabel="Opening…"
             className="text-sm font-semibold text-zinc-600 underline-offset-4 hover:text-zinc-950 hover:underline"
             type="submit"
           >
             <WorkspaceText text="Use different POS ID" />
-          </button>
+          </SubmitButton>
         </form>
       ) : null}
     </div>

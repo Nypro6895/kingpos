@@ -1,5 +1,6 @@
 "use client";
 import {openMarketPayment} from "@/lib/open-market-payment";
+import { ActionFeedback } from "@/components/action-feedback";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setVietnamesePlugin, vietnamesePaymentAction } from "./vietnamese-actions";
@@ -13,20 +14,31 @@ export function VietnamesePluginPanel({ initialState, onChange, paymentsAvailabl
   const [portable, setPortable] = useState(state.portable_enabled);
   const [message, setMessage] = useState("");
   const [busy, startTransition] = useTransition();
+  const [operation, setOperation] = useState<"save" | "remove" | "payment" | null>(null);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(timer); }, []);
   function save(installed: boolean) {
+    setOperation(installed ? "save" : "remove");
+    setMessage("");
     startTransition(async () => {
-      const result = await setVietnamesePlugin(installed, staff, portable);
-      if (result.error) setMessage(result.error);
-      else if (result.state) { setState(result.state); onChange(result.state); setMessage(installed ? "Đã lưu tùy chọn tiếng Việt." : "Đã gỡ plugin. Thuê bao sẽ dừng gia hạn vào cuối kỳ nếu có."); router.refresh(); }
+      try {
+        const result = await setVietnamesePlugin(installed, staff, portable);
+        if (result.error) setMessage(result.error);
+        else if (result.state) { setState(result.state); onChange(result.state); setMessage(installed ? "Đã lưu tùy chọn tiếng Việt." : "Đã gỡ plugin. Thuê bao sẽ dừng gia hạn vào cuối kỳ nếu có."); router.refresh(); }
+      } catch { setMessage("Chưa xác nhận được thay đổi. Các tùy chọn vẫn được giữ. Kiểm tra lại trước khi thử lại."); }
+      finally { setOperation(null); }
     });
   }
   function payment() {
+    setOperation("payment");
+    setMessage("");
     startTransition(async () => {
-      const result = await vietnamesePaymentAction(state.has_subscription);
-      if (result.url) openMarketPayment(result.url);
-      else setMessage(result.error ?? "Không thể mở thanh toán.");
+      try {
+        const result = await vietnamesePaymentAction(state.has_subscription);
+        if (result.url) openMarketPayment(result.url);
+        else setMessage(result.error ?? "Không thể mở thanh toán.");
+      } catch { setMessage("Không thể xác nhận thanh toán. Kiểm tra thuê bao trước khi thử lại."); }
+      finally { setOperation(null); }
     });
   }
   const trial = state.trial_ends_at && Date.parse(state.trial_ends_at) > now;
@@ -44,9 +56,9 @@ export function VietnamesePluginPanel({ initialState, onChange, paymentsAvailabl
     {!bankCheckout && !paymentsAvailable && !state.has_subscription && <p>Thanh toán thuê bao hiện chưa sẵn sàng. Chuyển khoản ngân hàng chưa được hỗ trợ.</p>}
     {prepaid && <p>Bạn vẫn có quyền sử dụng đến hết kỳ đã thanh toán. Có thể đăng ký lại khi kỳ này kết thúc.</p>}
     <div className={styles.languageActions}>
-      <button className={styles.primary} disabled={busy} onClick={() => save(true)}>{busy ? "Đang cập nhật…" : state.installed ? "Lưu tùy chọn" : state.trial_ends_at ? "Thêm lại plugin" : "Dùng thử miễn phí 5 ngày"}</button>
-      {state.installed && <button className={styles.secondary} disabled={busy} onClick={() => save(false)}>Gỡ plugin</button>}
-      {(state.has_subscription || (!bankCheckout && state.installed && !trial)) && <button className={styles.secondary} disabled={busy || (!state.has_subscription && (!paymentsAvailable || prepaid))} onClick={payment}>{state.has_subscription ? "Quản lý thuê bao" : "Đăng ký $3.99 / tháng"}</button>}
+      <button className={styles.primary} disabled={busy} aria-busy={busy && operation === "save"} onClick={() => save(true)}><ActionFeedback pending={busy && operation === "save"} pendingLabel="Đang lưu…">{state.installed ? "Lưu tùy chọn" : state.trial_ends_at ? "Thêm lại plugin" : "Dùng thử miễn phí 5 ngày"}</ActionFeedback></button>
+      {state.installed && <button className={styles.secondary} disabled={busy} aria-busy={busy && operation === "remove"} onClick={() => save(false)}><ActionFeedback pending={busy && operation === "remove"} pendingLabel="Đang gỡ…">Gỡ plugin</ActionFeedback></button>}
+      {(state.has_subscription || (!bankCheckout && state.installed && !trial)) && <button className={styles.secondary} disabled={busy || (!state.has_subscription && (!paymentsAvailable || prepaid))} aria-busy={busy && operation === "payment"} onClick={payment}><ActionFeedback pending={busy && operation === "payment"} pendingLabel="Đang mở…">{state.has_subscription ? "Quản lý thuê bao" : "Đăng ký $3.99 / tháng"}</ActionFeedback></button>}
     </div>
     {!bankCheckout && !state.has_subscription && <p>Không cần thẻ để dùng thử. Hết 5 ngày, bạn có thể đăng ký thanh toán hàng tháng. Không tự động thu tiền trong thời gian dùng thử.</p>}
   </section>;

@@ -1,6 +1,7 @@
 "use client";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { ActionFeedback } from "@/components/action-feedback";
 import { SettingsIcon } from "@/components/settings-icon";
 
 import {
@@ -303,6 +304,7 @@ export function StaffBookingSettings({
   const [preferences, setPreferences] = useState<{ online: boolean; notifications: boolean } | null>(null);
   const [preferenceError, setPreferenceError] = useState("");
   const [preferencePending, startPreferenceTransition] = useTransition();
+  const [savingPreference, setSavingPreference] = useState<string | null>(null);
   const [showTimeOffForm, setShowTimeOffForm] = useState(false);
   const preferenceReadVersion = useRef(0);
   async function requestPreferences(change?: { preference: "online" | "notifications"; enabled: boolean }) {
@@ -328,7 +330,8 @@ export function StaffBookingSettings({
     else setPreferenceError(response.error ?? "Unable to save preferences.");
   }
   function togglePreference(preference: "online" | "notifications") {
-    if (!preferences) return;
+    if (!preferences || preferencePending) return;
+    setSavingPreference(preference);
     preferenceReadVersion.current++;
     setPreferenceError("");
     startPreferenceTransition(async () => {
@@ -353,6 +356,7 @@ export function StaffBookingSettings({
     useState<BookingSetupActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isTimeOffPending, startTimeOffTransition] = useTransition();
+  const [savingTimeOff, setSavingTimeOff] = useState<string | null>(null);
   const nextDate = useMemo(() => nextLocalDate(timezone), [timezone]);
   const [timeOffStartDate, setTimeOffStartDate] = useState(nextDate);
   const [timeOffEndDate, setTimeOffEndDate] = useState(nextDate);
@@ -391,6 +395,7 @@ export function StaffBookingSettings({
   }
 
   function saveWeek() {
+    if (isPending) return;
     const allIntervals = DAYS.flatMap(day => week[day.id].working);
     if (!allIntervals.length) {
       setResult({ ok: false, error: "Add a booking day, or switch online booking off to pause all days." });
@@ -438,6 +443,7 @@ export function StaffBookingSettings({
   }
 
   function createTimeOff(overrideConflicts = false) {
+    if (isTimeOffPending) return;
     if (!timeOffStartDate || !timeOffEndDate || timeOffStartDate > timeOffEndDate) {
       setTimeOffResult({
         error: "Time off start date must be before end date.",
@@ -446,6 +452,7 @@ export function StaffBookingSettings({
       return;
     }
 
+    setSavingTimeOff(overrideConflicts ? "override" : "create");
     setTimeOffResult(null);
     startTimeOffTransition(async () => {
       const response = await createStaffTimeBlockAction({
@@ -469,6 +476,8 @@ export function StaffBookingSettings({
   }
 
   function cancelTimeOff(blockId: string) {
+    if (isTimeOffPending) return;
+    setSavingTimeOff(blockId);
     setTimeOffResult(null);
     startTimeOffTransition(async () => {
       const response = await cancelStaffTimeBlockAction({ blockId });
@@ -549,7 +558,7 @@ export function StaffBookingSettings({
                   <h3><WorkspaceText text="Online booking" /></h3>
                   <p><WorkspaceText text={status.body} /></p>
                 </div>
-                <button type="button" role="switch" aria-label={__vt("Online booking")} aria-checked={preferences?.online ?? staff.onlineBookingEnabled} disabled={!preferences || preferencePending} className="staff-settings-switch" onClick={() => togglePreference("online")}><span aria-hidden="true" /><WorkspaceText text={(preferences?.online ?? staff.onlineBookingEnabled) ? "On" : "Off"} /></button>
+                <button type="button" role="switch" aria-label={__vt("Online booking")} aria-checked={preferences?.online ?? staff.onlineBookingEnabled} disabled={!preferences || preferencePending} className="staff-settings-switch" aria-busy={preferencePending && savingPreference === "online"} onClick={() => togglePreference("online")}><span aria-hidden="true" /><em className="not-italic"><ActionFeedback pending={preferencePending && savingPreference === "online"} pendingLabel="Saving…"><WorkspaceText text={(preferences?.online ?? staff.onlineBookingEnabled) ? "On" : "Off"} /></ActionFeedback></em></button>
               </section>
 
               {preferenceError ? <p role="alert" className="staff-booking-settings-message staff-booking-settings-message--error"><WorkspaceText text={preferenceError} /></p> : null}
@@ -562,10 +571,11 @@ export function StaffBookingSettings({
                   <button
                     className="staff-appointments-primary-button disabled:opacity-50"
                     disabled={!weekDirty || isPending}
+                    aria-busy={isPending}
                     onClick={saveWeek}
                     type="button"
                   >
-                    {isPending ? "Saving" : <WorkspaceText text="Save hours" />}
+                    <ActionFeedback pending={isPending} pendingLabel="Saving…"><WorkspaceText text="Save hours" /></ActionFeedback>
                   </button>
                 </div>
                 <Message result={result} />
@@ -619,10 +629,11 @@ export function StaffBookingSettings({
                         <button
                           className="staff-booking-settings-link staff-booking-settings-link--danger"
                           disabled={isTimeOffPending}
+                          aria-busy={isTimeOffPending && savingTimeOff === block.id}
                           onClick={() => cancelTimeOff(block.id)}
                           type="button"
                         >
-                          <WorkspaceText text="Remove" />
+                          <ActionFeedback pending={isTimeOffPending && savingTimeOff === block.id} pendingLabel="Removing…"><WorkspaceText text="Remove" /></ActionFeedback>
                         </button>
                       </div>
                     ))
@@ -644,20 +655,22 @@ export function StaffBookingSettings({
                   <button
                     className="staff-appointments-primary-button disabled:opacity-50"
                     disabled={isTimeOffPending}
+                    aria-busy={isTimeOffPending && savingTimeOff === "create"}
                     onClick={() => createTimeOff(false)}
                     type="button"
                   >
-                    <WorkspaceText text="Add time off" />
+                    <ActionFeedback pending={isTimeOffPending && savingTimeOff === "create"} pendingLabel="Saving…"><WorkspaceText text="Add time off" /></ActionFeedback>
                   </button>
                 </div> : null}
                 {showTimeOffForm && !timeOffResult?.ok && timeOffResult?.conflicts?.length ? (
                   <button
                     className="staff-appointments-secondary-button staff-booking-settings-override disabled:opacity-50"
                     disabled={isTimeOffPending}
+                    aria-busy={isTimeOffPending && savingTimeOff === "override"}
                     onClick={() => createTimeOff(true)}
                     type="button"
                   >
-                    <WorkspaceText text="Save time off with override" />
+                    <ActionFeedback pending={isTimeOffPending && savingTimeOff === "override"} pendingLabel="Saving…"><WorkspaceText text="Save time off with override" /></ActionFeedback>
                   </button>
                 ) : null}
               </section>
@@ -668,7 +681,7 @@ export function StaffBookingSettings({
               </section>
               <section className="staff-booking-settings-section">
                 <div><h3><WorkspaceText text="Booking notifications" /></h3><p><WorkspaceText text="New bookings and changes. Existing notifications are kept." /></p></div>
-                <button type="button" role="switch" aria-label={__vt("Booking notifications")} aria-checked={preferences?.notifications ?? true} disabled={!preferences || preferencePending} className="staff-settings-switch" onClick={() => togglePreference("notifications")}><span aria-hidden="true" /><WorkspaceText text={preferences ? preferences.notifications ? "On" : "Off" : "…"} /></button>
+                <button type="button" role="switch" aria-label={__vt("Booking notifications")} aria-checked={preferences?.notifications ?? true} disabled={!preferences || preferencePending} className="staff-settings-switch" aria-busy={preferencePending && savingPreference === "notifications"} onClick={() => togglePreference("notifications")}><span aria-hidden="true" /><em className="not-italic"><ActionFeedback pending={preferencePending && savingPreference === "notifications"} pendingLabel="Saving…"><WorkspaceText text={preferences ? preferences.notifications ? "On" : "Off" : "…"} /></ActionFeedback></em></button>
               </section>
             </div>
           </aside>

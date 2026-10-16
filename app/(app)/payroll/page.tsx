@@ -1,3 +1,4 @@
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { withExperiencePage } from "@/components/experience-page";
 import { isOwnerMembership } from "@/lib/current-context";
 import { taxCompanySettings } from "@/lib/tax-company";
@@ -776,7 +777,7 @@ function PeriodSelector({
   return (
     <div className="min-w-0 space-y-2">
     <PayrollFilterToolbar summary={<WorkspaceElement as="p" className="truncate" title={period.label}><WorkspaceText text={period.label} /></WorkspaceElement>} periodLabel={period.label} active={period.preset === "custom"}>
-      <form
+      <NavigationForm
         action="/payroll"
         className="flex flex-wrap items-end gap-3"
       >
@@ -839,16 +840,16 @@ function PeriodSelector({
             </select>
           </label>
         ) : null}
-        <button className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
+        <NavigationSubmitButton pendingLabel="Loading…" className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
           <WorkspaceText text="Apply" />
-        </button>
-      </form>
+        </NavigationSubmitButton>
+      </NavigationForm>
 
       <details>
         <summary className="cursor-pointer text-sm font-medium text-zinc-600">
           <WorkspaceText text="Advanced custom range" />
         </summary>
-        <form action="/payroll" className="mt-3 flex flex-wrap items-end gap-3">
+        <NavigationForm action="/payroll" className="mt-3 flex flex-wrap items-end gap-3">
           <input name="tab" type="hidden" value={activeTab} />
           <input name="preset" type="hidden" value="custom" />
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
@@ -869,10 +870,10 @@ function PeriodSelector({
               type="date"
             />
           </label>
-          <button className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">
+          <NavigationSubmitButton pendingLabel="Loading…" className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">
             <WorkspaceText text="Apply Custom" />
-          </button>
-        </form>
+          </NavigationSubmitButton>
+        </NavigationForm>
       </details>
     </PayrollFilterToolbar>
       {missingBiweeklyAnchor ? (
@@ -1091,7 +1092,7 @@ function OverviewFilters({
         <WorkspaceElement as="span" className="hidden min-w-0 truncate text-xs text-zinc-500 sm:block" title={period.label}><WorkspaceText text={period.label} /></WorkspaceElement>
       </div>}
     >
-        <form action="/payroll" className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+        <NavigationForm action="/payroll" className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
           <input name="tab" type="hidden" value="overview" />
           <input name="preset" type="hidden" value="custom" />
           <input name="overviewTrend" type="hidden" value={filters.trendMode} />
@@ -1150,11 +1151,11 @@ function OverviewFilters({
               ))}
             </select>
           </label>
-          <button className="h-9 rounded-md bg-zinc-950 px-3 text-sm font-medium text-white">
+          <NavigationSubmitButton pendingLabel="Loading…" className="h-9 rounded-md bg-zinc-950 px-3 text-sm font-medium text-white">
             <WorkspaceText text="Apply" />
-          </button>
+          </NavigationSubmitButton>
 
-        </form>
+        </NavigationForm>
         {filters.staffId || filters.serviceId ? (
           <span className="min-w-0 max-w-full break-words py-3 text-xs text-teal-700">
             {[lines.find((line) => line.staff_id === filters.staffId)?.staff_display_name_snapshot,

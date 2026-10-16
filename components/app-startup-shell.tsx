@@ -1,6 +1,8 @@
 "use client";
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 
-import Link from "next/link";
+
+import Link from "@/components/feedback-link";
 import { StartupReady } from "./startup-ready";
 import styles from "./app-startup-shell.module.css";
 
@@ -15,11 +17,11 @@ export function AppStartupShell({ retry }: { retry?: () => void }) {
     <StartupReady />
     <header className={styles.header}>
       <Link href="/explore" prefetch={false} className={styles.brand} aria-label="Reylumi Explore">Reylumi<span aria-hidden="true">✦</span></Link>
-      <form action="/explore" method="get" role="search" className={styles.search}>
+      <NavigationForm action="/explore" method="get" role="search" className={styles.search}>
         <label htmlFor="startup-search" className="sr-only">Search salons, services, or locations</label>
         <input id="startup-search" name="q" type="search" maxLength={200} placeholder="Search salons, services, or locations" autoComplete="off" onChange={event => rememberExploreStartupDraft(event.currentTarget.value, true)} onFocus={event => rememberExploreStartupDraft(event.currentTarget.value, true)} onBlur={event => rememberExploreStartupDraft(event.currentTarget.value, false)} />
-        <button type="submit" aria-label="Search">⌕</button>
-      </form>
+        <NavigationSubmitButton pendingLabel="Loading…" type="submit" aria-label="Search">⌕</NavigationSubmitButton>
+      </NavigationForm>
     </header>
     <main className={styles.main}>
       <p className={styles.eyebrow}>YOUR NEXT BEAUTY MOMENT</p>

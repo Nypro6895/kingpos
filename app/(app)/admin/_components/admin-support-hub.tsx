@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminIcon } from "./admin-icon";
+import { ActionFeedback } from "@/components/action-feedback";
 import { AdminConversationChat } from "./admin-conversation-chat";
 import type { SupportConversation } from "@/lib/support-cases";
 import { ADMIN_SUPPORT_OPEN } from "@/lib/admin-support-client";
@@ -19,6 +20,7 @@ export function AdminSupportHub() {
   const [chatError, setChatError] = useState("");
   const [incoming, setIncoming] = useState<Activity | null>(null);
   const [minimized,setMinimized]=useState(false);
+  const [marking,setMarking]=useState(0);
   const cache=useRef(new Map<string,{data:SupportConversation;etag:string;at:number}>());
   const requests=useRef(new Map<string,Promise<void>>());
   const current = useRef<string | null>(null), draft = useRef(false), seen = useRef<Set<string> | null>(null), running = useRef(false), loadVersion = useRef(0);
@@ -83,17 +85,19 @@ export function AdminSupportHub() {
   }, [open, refresh]);
   async function mark(ids: string[]) {
     if (!ids.length) return;
+    setMarking(count=>count+1);
     try {
       const response = await fetch("/admin/api/support-activity", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids }) });
       if (!response.ok) throw Error("Could not mark notifications read.");
       void refresh();
     } catch { setError("Could not mark notifications read. Please retry."); }
+    finally { setMarking(count=>Math.max(0,count-1)); }
   }
   function choose(item: Activity) { void mark([item.id]); if (item.can_chat && item.report_id) open(item.report_id); else setNotificationsOpen(false); }
   const close = () => { if (draft.current && !window.confirm("Discard the unsent reply?")) return; current.current = null; draft.current = false; loadVersion.current++; setReportId(null); setConversation(null); };
   return <div className="admin-support-hub">
     <button type="button" aria-label="Team notifications" aria-expanded={notificationsOpen} className="dashboard-icon-button admin-team-bell" onClick={() => { setNotificationsOpen(value => !value); void refresh(); }}><AdminIcon name="notifications" size={20} />{feed.unread_count > 0 && <span className="admin-team-count">{feed.unread_count > 99 ? "99+" : feed.unread_count}</span>}</button>
-    {notificationsOpen && <section className="admin-team-feed" aria-label="Team notifications"><header><strong>Team notifications</strong><button type="button" aria-label="Close team notifications" onClick={() => setNotificationsOpen(false)}>×</button></header><p className="admin-team-hint">New requests, replies and evidence · refreshes every 5 seconds</p>{error && <p role="alert">{error} <button type="button" onClick={() => void refresh()}>Retry</button></p>}<div className="admin-team-events">{feed.items.map(item => item.can_chat ? <button type="button" key={item.id} className={item.unread ? "is-unread" : ""} onClick={() => choose(item)}><strong>{item.title}</strong><small>{new Date(item.created_at).toLocaleString()}</small></button> : <Link key={item.id} className={item.unread ? "is-unread" : ""} href={item.href} onClick={() => choose(item)}><strong>{item.title}</strong><small>{new Date(item.created_at).toLocaleString()}</small></Link>)}{!feed.items.length && <p>No team notifications.</p>}</div><footer><button type="button" onClick={() => void mark(feed.items.filter(item => item.unread).map(item => item.id))}>Mark shown as read</button><Link href="/admin/reports">All support cases</Link></footer></section>}
+    {notificationsOpen && <section className="admin-team-feed" aria-label="Team notifications"><header><strong>Team notifications</strong><button type="button" aria-label="Close team notifications" onClick={() => setNotificationsOpen(false)}>×</button></header><p className="admin-team-hint">New requests, replies and evidence · refreshes every 5 seconds</p>{error && <p role="alert">{error} <button type="button" onClick={() => void refresh()}>Retry</button></p>}<div className="admin-team-events">{feed.items.map(item => item.can_chat ? <button type="button" key={item.id} className={item.unread ? "is-unread" : ""} onClick={() => choose(item)}><strong>{item.title}</strong><small>{new Date(item.created_at).toLocaleString()}</small></button> : <Link key={item.id} className={item.unread ? "is-unread" : ""} href={item.href} onClick={() => choose(item)}><strong>{item.title}</strong><small>{new Date(item.created_at).toLocaleString()}</small></Link>)}{!feed.items.length && <p>No team notifications.</p>}</div><footer><button type="button" disabled={marking>0} aria-busy={marking>0} onClick={() => void mark(feed.items.filter(item => item.unread).map(item => item.id))}><ActionFeedback pending={marking>0} pendingLabel="Marking as read…">Mark shown as read</ActionFeedback></button><Link href="/admin/reports">All support cases</Link></footer></section>}
     {incoming && <div role="status" className="admin-support-incoming"><strong>{incoming.title}</strong><button type="button" onClick={() => choose(incoming)}>Open conversation</button><button type="button" aria-label="Dismiss new reply" onClick={() => setIncoming(null)}>×</button></div>}
     {reportId && <aside role="dialog" aria-label="Reporter conversation" className={`admin-support-chat ${minimized?"is-minimized":""}`}><header><strong>Support conversation</strong><button type="button" aria-label={minimized?"Restore conversation":"Minimize conversation"} onClick={()=>setMinimized(v=>!v)}>{minimized?"□":"−"}</button><button type="button" aria-label="Close conversation" onClick={close}>×</button></header><div className="admin-support-chat-body">{chatError && <p role="alert">{chatError} <button type="button" onClick={() => void loadConversation(reportId)}>Retry</button></p>}{conversation ? <AdminConversationChat key={reportId} conversation={conversation} onRefresh={async()=>{await loadConversation(reportId);void refresh();}} onDraftChange={draftChanged} /> : !chatError && <p role="status">Loading conversation…</p>}</div><footer><Link href={conversation?.review?.kind === "claim" ? "/admin/claims?status=all" : `/admin/reports/${reportId}`}>Open case in Platform Admin</Link></footer></aside>}
   </div>;

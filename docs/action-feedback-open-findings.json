@@ -1,0 +1,119 @@
+{
+  "recordedAt": "2026-10-16T00:08:26.127Z",
+  "sourceInventory": "Local isolated worktree e4e4deb plus shared pending edits; exact file hashes in inventory.json. Not production evidence.",
+  "scope": "Verified source findings; no native execution claimed",
+  "remaining": [
+    {
+      "id": "admin-next-form-pending",
+      "severity": "P2",
+      "state": "open-source-verified",
+      "routes": [
+        "/admin/**"
+      ],
+      "refs": [
+        {
+          "file": "app/(app)/admin/_components/admin-ui.tsx",
+          "line": 426
+        },
+        {
+          "file": "app/(app)/admin/_components/workspace-controls.tsx",
+          "line": 18
+        }
+      ],
+      "issue": "Shared Next Form searches/filter/pagination submits retain their labels and provide no local pending component. Keep Next Form; add useFormStatus/useLinkStatus-compatible feedback rather than replacing it with a native form."
+    },
+    {
+      "id": "owner-ticket-next-form-pending",
+      "severity": "P2",
+      "state": "open-source-verified",
+      "routes": [
+        "/pos-tickets",
+        "/pos/ticket"
+      ],
+      "refs": [
+        {
+          "file": "app/pos-tickets/owner-live-tickets.tsx",
+          "line": 276
+        }
+      ],
+      "issue": "Owner ticket filter uses Next Form with an ordinary Search submit. Preserve its router/cache behavior and add form feedback."
+    },
+    {
+      "id": "today-native-date-pending",
+      "severity": "P2",
+      "state": "open-source-verified",
+      "routes": [
+        "/staff/today"
+      ],
+      "refs": [
+        {
+          "file": "app/staff/today/today-dashboard-view.tsx",
+          "line": 181
+        }
+      ],
+      "issue": "Choose date Apply remains a native GET with no pending owner in this control. Existing date links are separate controls."
+    },
+    {
+      "id": "portable-report-date-pending",
+      "severity": "P2",
+      "state": "open-source-verified",
+      "routes": [
+        "/pos/portable/report"
+      ],
+      "refs": [
+        {
+          "file": "app/(app)/pos/portable/report/page.tsx",
+          "line": 82
+        }
+      ],
+      "issue": "Portable report date filter retains a plain GET submit, outside the nine native forms migrated in this task."
+    },
+    {
+      "id": "payroll-new-statement-pending",
+      "severity": "P2",
+      "state": "open-source-verified",
+      "routes": [
+        "/payroll"
+      ],
+      "refs": [
+        {
+          "file": "app/(app)/payroll/page.tsx",
+          "line": 908
+        }
+      ],
+      "issue": "Difference banner Save New Statement remains a plain action submit without form pending. Financial action itself was deliberately unchanged."
+    },
+    {
+      "id": "copy-invite-rejection",
+      "severity": "P3",
+      "state": "open-source-verified",
+      "routes": [
+        "/staff",
+        "/salons"
+      ],
+      "refs": [
+        {
+          "file": "app/staff/copy-invite-link-button.tsx",
+          "line": 21
+        }
+      ],
+      "issue": "Copy invite link shows Copied on success but does not catch clipboard rejection; denial has no inline result."
+    },
+    {
+      "id": "social-undo-pending",
+      "severity": "P3",
+      "state": "open-source-verified",
+      "routes": [
+        "/explore",
+        "/explore/salons/[salonId]"
+      ],
+      "refs": [
+        {
+          "file": "components/explore-social.tsx",
+          "line": 74
+        }
+      ],
+      "issue": "Undo waits for the preference action before changing its notice; underlying lock guards concurrent writes, but the Undo control has no pending label."
+    }
+  ]
+}

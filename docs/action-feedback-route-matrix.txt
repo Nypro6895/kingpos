@@ -1,0 +1,1184 @@
+Source capture: 2026-10-16T00:06:39.940Z; HEAD e4e4deb20d2611b49d7e1696f8e200b5e4e4b04c; index 1dec929fb2b6bcf89662cac46269e64dfd0a9a3a6f0d06d4c4f670373098beb1
+
+131 route source matrix. Import reachability is not runtime coverage. Local source only, not live production.
+
+Shared layout controls live outside this page import graph: navigation-shell, admin-navigation and AppStartupShell were reviewed separately.
+
+/
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/accept-invite
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/accept-invite/page.tsx
+  controls: 5; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/accept-invite/page.tsx:4, app/accept-invite/accept-invite-form.tsx:18, app/accept-invite/accept-invite-form.tsx:23
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/account
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/account/page.tsx
+  controls: 78; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/account-profile-editor.tsx:246, app/account/account-profile-editor.tsx:341, app/account/account-profile-editor.tsx:372, app/account/account-profile-editor.tsx:389, app/account/account-profile-editor.tsx:418, app/account/account-profile-editor.tsx:426, app/account/account-profile-editor.tsx:866, app/account/account-profile-editor.tsx:866, app/account/account-profile-editor.tsx:894, app/account/account-profile-editor.tsx:900; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/account-recovery
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/account-recovery/page.tsx
+  controls: 8; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account-recovery/account-recovery-form.tsx:78, app/account-recovery/account-recovery-form.tsx:175, app/account-recovery/account-recovery-form.tsx:193, app/account-recovery/account-recovery-form.tsx:199, app/(app)/account-recovery/page.tsx:28, app/(app)/account-recovery/page.tsx:56
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/activity
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/activity/page.tsx
+  controls: 46; protections: transition-or-action-state-owner
+  refs: components/booking-deposit-receipt.tsx:9, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/activity/visit-experience-prompt.tsx:70, app/activity/visit-experience-prompt.tsx:99, app/activity/visit-experience-prompt.tsx:115, app/activity/visit-experience-prompt.tsx:123, app/activity/visit-experience-prompt.tsx:135, app/activity/visit-experience-prompt.tsx:144, app/activity/visit-experience-prompt.tsx:152, app/activity/history-link-control.tsx:38, app/activity/history-link-control.tsx:46; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/activity/receipts/[ticketId]
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/activity/receipts/[ticketId]/page.tsx
+  controls: 10; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/activity/visit-experience-prompt.tsx:70, app/activity/visit-experience-prompt.tsx:99, app/activity/visit-experience-prompt.tsx:115, app/activity/visit-experience-prompt.tsx:123, app/activity/visit-experience-prompt.tsx:135, app/activity/visit-experience-prompt.tsx:144, app/activity/visit-experience-prompt.tsx:152, app/(app)/activity/receipts/[ticketId]/page.tsx:213
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/page.tsx
+  controls: 173; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/admin/_components/retry.tsx:7, app/(app)/admin/_components/notification-composer.tsx:12, app/(app)/admin/_components/notification-composer.tsx:24, app/(app)/admin/_components/notification-composer.tsx:24, app/(app)/admin/_components/entity-picker.tsx:28, app/(app)/admin/_components/entity-picker.tsx:30, app/(app)/admin/_components/action-form.tsx:16, app/(app)/admin/verification/attachment-button.tsx:6, app/(app)/admin/page.tsx:34, app/(app)/admin/page.tsx:34; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: candidate-058 app/(app)/admin/dashboard/dashboard-secondary.tsx:27, candidate-059 app/(app)/admin/dashboard/dashboard-secondary.tsx:27, candidate-060 app/(app)/admin/dashboard/dashboard-secondary.tsx:32, candidate-061 app/(app)/admin/dashboard/dashboard-secondary.tsx:32, candidate-062 app/(app)/admin/dashboard/dashboard-workspace.tsx:85
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin/advertising
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/advertising/page.tsx
+  controls: 29; protections: transition-or-action-state-owner
+  refs: components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/explore-advertising.tsx:452, components/explore-advertising.tsx:475, components/explore-advertising.tsx:499, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/admin/advertising/advertising-insights.tsx:179, app/(app)/admin/advertising/advertising-insights.tsx:218, app/(app)/admin/advertising/campaign-form.tsx:193, app/(app)/admin/advertising/campaign-form.tsx:197, app/(app)/admin/advertising/campaign-form.tsx:294; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin/attention
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/attention/page.tsx
+  controls: 68; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/retry.tsx:7; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/audit
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/audit/page.tsx
+  controls: 54; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/entity-picker.tsx:28; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/businesses
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/businesses/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin/businesses/[businessId]
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/businesses/[businessId]/page.tsx
+  controls: 63; protections: form-pending-component, transition-or-action-state-owner, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/retry.tsx:7; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/claims
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/claims/page.tsx
+  controls: 61; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/review-queue-filters.tsx:3; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/inbox
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/inbox/page.tsx
+  controls: 56; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/admin-ui.tsx:120; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/inbox/[threadId]
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/inbox/[threadId]/page.tsx
+  controls: 64; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/admin-ui.tsx:120; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/locations
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/locations/page.tsx
+  controls: 150; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/admin/_components/notification-composer.tsx:12, app/(app)/admin/_components/notification-composer.tsx:24, app/(app)/admin/_components/notification-composer.tsx:24, app/(app)/admin/_components/entity-picker.tsx:28, app/(app)/admin/_components/entity-picker.tsx:30, app/(app)/admin/_components/action-form.tsx:16, app/(app)/admin/verification/attachment-button.tsx:6, app/(app)/admin/locations/businesses-workspace.tsx:234, app/(app)/admin/locations/businesses-workspace.tsx:246, app/(app)/admin/locations/businesses-workspace.tsx:259; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: candidate-050 app/(app)/admin/locations/businesses-workspace.tsx:316
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin/locations/[locationId]
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/locations/[locationId]/page.tsx
+  controls: 73; protections: form-pending-component, transition-or-action-state-owner, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/retry.tsx:7; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/market
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/market/page.tsx
+  controls: 106; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/admin-ui.tsx:120; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/market/tax
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/market/tax/page.tsx
+  controls: 27; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/admin/_components/action-form.tsx:16, app/(app)/admin/market/tax/tax-workspace.tsx:33, app/(app)/admin/market/tax/tax-workspace.tsx:65, app/(app)/admin/market/tax/tax-workspace.tsx:70, app/(app)/admin/market/tax/tax-workspace.tsx:80, app/(app)/admin/market/tax/tax-workspace.tsx:96, app/(app)/admin/market/tax/tax-workspace.tsx:97, app/(app)/admin/market/tax/tax-workspace.tsx:117, app/(app)/admin/market/tax/tax-workspace.tsx:117, app/(app)/admin/market/tax/tax-workspace.tsx:122; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: candidate-067 app/(app)/admin/market/tax/tax-workspace.tsx:159
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin/notifications
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/notifications/page.tsx
+  controls: 58; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/notification-composer.tsx:12; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/post-safety
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/post-safety/page.tsx
+  controls: 47; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/admin/_components/notification-composer.tsx:12, app/(app)/admin/_components/notification-composer.tsx:24, app/(app)/admin/_components/notification-composer.tsx:24, app/(app)/admin/_components/entity-picker.tsx:28, app/(app)/admin/_components/entity-picker.tsx:30, app/(app)/admin/_components/action-form.tsx:16, app/(app)/admin/post-safety/case-card.tsx:30, app/(app)/admin/post-safety/case-card.tsx:52, app/(app)/admin/post-safety/case-card.tsx:58, app/(app)/admin/post-safety/case-card.tsx:58; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin/post-safety/spam
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/post-safety/spam/page.tsx
+  controls: 71; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/admin-ui.tsx:120; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/recovery
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/recovery/page.tsx
+  controls: 58; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/settings/recovery-back-office/recovery-back-office-panel.tsx:263, app/settings/recovery-back-office/recovery-back-office-panel.tsx:332, app/settings/recovery-back-office/recovery-back-office-panel.tsx:339, app/settings/recovery-back-office/recovery-back-office-panel.tsx:351; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/reports
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/reports/page.tsx
+  controls: 60; protections: form-pending-component, transition-or-action-state-owner, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/retry.tsx:7; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/reports/[reportId]
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/reports/[reportId]/page.tsx
+  controls: 31; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/admin/_components/action-form.tsx:16, app/(app)/admin/dashboard/dashboard-action-form.tsx:25, app/(app)/admin/dashboard/dashboard-action-form.tsx:34, app/(app)/admin/dashboard/dashboard-action-form.tsx:34, app/(app)/admin/reports/report-case-view.tsx:33, app/(app)/admin/reports/report-case-view.tsx:42, app/(app)/admin/reports/report-case-view.tsx:42, app/(app)/admin/reports/report-case-view.tsx:42, app/(app)/admin/reports/report-case-view.tsx:43, app/(app)/admin/reports/report-case-view.tsx:44; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin/search
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/search/page.tsx
+  controls: 54; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/retry.tsx:7; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/settings
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/settings/page.tsx
+  controls: 106; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/admin-ui.tsx:120; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/settings/support-email
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/settings/support-email/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin/settings/twilio
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/settings/twilio/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin/team
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/team/page.tsx
+  controls: 60; protections: form-pending-component, transition-or-action-state-owner, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/entity-picker.tsx:28; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/users
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/users/page.tsx
+  controls: 76; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/admin/_components/entity-picker.tsx:28, app/(app)/admin/_components/entity-picker.tsx:30, app/(app)/admin/users/users-workspace.tsx:66, app/(app)/admin/users/users-workspace.tsx:66, app/(app)/admin/users/users-workspace.tsx:66, app/(app)/admin/users/users-workspace.tsx:66, app/(app)/admin/users/users-workspace.tsx:67, app/(app)/admin/users/users-workspace.tsx:74, app/(app)/admin/users/users-workspace.tsx:74, app/(app)/admin/users/users-workspace.tsx:76; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: candidate-049 app/(app)/admin/users/users-workspace.tsx:74
+  evidence: Source import graph and context triage only; full route not executed
+
+/admin/users/[userId]
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/users/[userId]/page.tsx
+  controls: 91; protections: form-pending-component, transition-or-action-state-owner, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/retry.tsx:7; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/admin/verification
+  role: Platform admin; capability-gated actions
+  page: app/(app)/admin/verification/page.tsx
+  controls: 61; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/logout-button.tsx:36, app/(app)/admin/_components/workspace-controls.tsx:11, app/(app)/admin/_components/workspace-controls.tsx:15, app/(app)/admin/_components/workspace-controls.tsx:20, app/(app)/admin/_components/review-queue-filters.tsx:3; full refs in inventory-review.json
+  remaining: P2:admin-next-form-pending
+  candidateRefs: candidate-042 app/(app)/admin/_components/admin-ui.tsx:454, candidate-043 app/(app)/admin/_components/admin-ui.tsx:464, candidate-044 app/(app)/admin/_components/admin-ui.tsx:507, candidate-045 app/(app)/admin/_components/admin-ui.tsx:510
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/beauty
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/beauty/page.tsx
+  controls: 109; protections: transition-or-action-state-owner
+  refs: components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/auth-intent-prompt.tsx:98, components/auth-intent-prompt.tsx:110, components/auth-intent-prompt.tsx:123, components/auth-intent-prompt.tsx:132, components/auth-intent-prompt.tsx:142, components/auth-intent-prompt.tsx:154, components/auth-intent-prompt.tsx:160, components/salon-report-dialog.tsx:60, components/salon-report-dialog.tsx:64; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/book/[salonId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/book/[salonId]/page.tsx
+  controls: 41; protections: transition-or-action-state-owner
+  refs: components/booking-payment-status.tsx:24, components/booking-payment-status.tsx:25, components/booking-payment-status.tsx:26, components/booking-payment-status.tsx:26, components/booking-card-payment.tsx:26, app/book/[salonId]/public-booking-client.tsx:551, app/book/[salonId]/public-booking-client.tsx:605, app/book/[salonId]/public-booking-client.tsx:631, app/book/[salonId]/public-booking-client.tsx:643, app/book/[salonId]/public-booking-client.tsx:650, app/book/[salonId]/public-booking-client.tsx:657, app/book/[salonId]/public-booking-client.tsx:1325; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/booking-payment/[token]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/booking-payment/[token]/page.tsx
+  controls: 6; protections: source-only/static or delegated
+  refs: components/booking-payment-status.tsx:24, components/booking-payment-status.tsx:25, components/booking-payment-status.tsx:26, components/booking-payment-status.tsx:26, components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/booking/manage/[token]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/booking/manage/[token]/page.tsx
+  controls: 18; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/booking/manage/[token]/guest-manage-client.tsx:16, app/booking/manage/[token]/guest-manage-client.tsx:80, app/booking/manage/[token]/guest-manage-client.tsx:81, app/booking/manage/[token]/guest-manage-client.tsx:81, app/booking/manage/[token]/guest-manage-client.tsx:81, app/booking/manage/[token]/guest-manage-client.tsx:86, app/booking/manage/[token]/guest-manage-client.tsx:86, app/booking/manage/[token]/guest-manage-client.tsx:87, app/booking/manage/[token]/guest-manage-client.tsx:87, app/booking/manage/[token]/guest-manage-client.tsx:87; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/bookings
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/bookings/page.tsx
+  controls: 146; protections: transition-or-action-state-owner, inline-action-feedback
+  refs: components/booking-deposit-receipt.tsx:9, components/contextual-support.tsx:13, components/experience-scope.tsx:204, components/experience-scope.tsx:207, components/booking-ui/schedule-picker.tsx:16, components/booking-ui/schedule-picker.tsx:16, components/booking-ui/schedule-picker.tsx:22, components/booking-ui/schedule-picker.tsx:26, components/booking-ui/schedule-picker.tsx:27, components/booking-ui/schedule-picker.tsx:31, app/activity/history-link-control.tsx:38, app/activity/history-link-control.tsx:46; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/business-terms
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(legal)/business-terms/page.tsx
+  controls: 8; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/legal/legal-table-of-contents.tsx:77, app/legal/legal-components.tsx:74, app/legal/legal-components.tsx:103, app/legal/legal-components.tsx:217, app/legal/legal-components.tsx:314, app/legal/legal-components.tsx:335
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/businesses
+  role: Compatibility redirect to salons route
+  page: app/(app)/businesses/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/businesses/create
+  role: Compatibility redirect to salons route
+  page: app/(app)/businesses/create/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/businesses/new
+  role: Compatibility redirect to salons route
+  page: app/(app)/businesses/new/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/campaigns
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/campaigns/page.tsx
+  controls: 30; protections: transition-or-action-state-owner
+  refs: components/owner-campaign-dialog.tsx:54, components/owner-campaign-dialog.tsx:60, components/owner-campaign-dialog.tsx:60, components/owner-campaign-dialog.tsx:63, components/owner-campaign-dialog.tsx:68, components/owner-campaign-dialog.tsx:69, components/owner-campaign-dialog.tsx:71, components/owner-campaign-dialog.tsx:71, components/owner-campaign-dialog.tsx:76, components/owner-campaign-dialog.tsx:76, components/owner-campaign-dialog.tsx:77, components/owner-campaign-dialog.tsx:77; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/check-in/[entry]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/check-in/[entry]/page.tsx
+  controls: 4; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/check-in/[entry]/phone-checkin.tsx:10, app/check-in/[entry]/phone-checkin.tsx:16
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/claim/[salonId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/claim/[salonId]/page.tsx
+  controls: 14; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/claim/claim-panel.tsx:37, app/claim/claim-panel.tsx:38, app/claim/claim-panel.tsx:39, app/claim/claim-panel.tsx:39, app/claim/claim-panel.tsx:48, app/claim/claim-panel.tsx:48, app/claim/claim-panel.tsx:50, app/claim/claim-panel.tsx:50, app/claim/claim-panel.tsx:52, app/claim/claim-panel.tsx:54; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/claim/customer
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/claim/customer/page.tsx
+  controls: 8; protections: form-pending-component
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/claim/customer/page.tsx:105, app/(app)/claim/customer/page.tsx:112, app/(app)/claim/customer/page.tsx:201, app/(app)/claim/customer/page.tsx:203, app/(app)/claim/customer/page.tsx:209
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/community
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(legal)/community/page.tsx
+  controls: 8; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/legal/legal-table-of-contents.tsx:77, app/legal/legal-components.tsx:74, app/legal/legal-components.tsx:103, app/legal/legal-components.tsx:217, app/legal/legal-components.tsx:314, app/legal/legal-components.tsx:335
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/contact-support
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(legal)/contact-support/page.tsx
+  controls: 8; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(legal)/contact-support/page.tsx:9, app/(legal)/contact-support/page.tsx:9, app/(legal)/contact-support/contact-form.tsx:13, app/(legal)/contact-support/contact-form.tsx:13, app/(legal)/contact-support/contact-form.tsx:14, app/(legal)/contact-support/contact-form.tsx:33
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/customers
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/customers/page.tsx
+  controls: 16; protections: form-pending-component
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/customers/page.tsx:126, app/(app)/customers/page.tsx:136, app/(app)/customers/page.tsx:143, app/(app)/customers/page.tsx:161, app/(app)/customers/page.tsx:247, app/(app)/customers/page.tsx:285, app/(app)/customers/page.tsx:292, app/(app)/customers/page.tsx:314, app/(app)/customers/page.tsx:325; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/customers/[customerId]
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/customers/[customerId]/page.tsx
+  controls: 11; protections: source-only/static or delegated
+  refs: components/booking-deposit-receipt.tsx:9, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/customers/[customerId]/page.tsx:202, app/(app)/customers/[customerId]/page.tsx:233, app/(app)/customers/[customerId]/page.tsx:272, app/(app)/customers/[customerId]/page.tsx:314, app/(app)/customers/[customerId]/page.tsx:398, app/(app)/customers/[customerId]/page.tsx:405, app/(app)/customers/[customerId]/page.tsx:439, app/(app)/customers/[customerId]/page.tsx:460
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/customers/[customerId]/edit
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/customers/[customerId]/edit/page.tsx
+  controls: 8; protections: form-pending-component
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/customers/customer-form.tsx:46, app/customers/customer-form.tsx:123, app/customers/customer-form.tsx:129, app/(app)/customers/[customerId]/edit/page.tsx:42, app/(app)/customers/[customerId]/edit/page.tsx:49
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/customers/new
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/customers/new/page.tsx
+  controls: 8; protections: form-pending-component
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/customers/customer-form.tsx:46, app/customers/customer-form.tsx:123, app/customers/customer-form.tsx:129, app/(app)/customers/new/page.tsx:30, app/(app)/customers/new/page.tsx:32
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/deletion-status/[token]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(legal)/deletion-status/[token]/page.tsx
+  controls: 3; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(legal)/deletion-status/[token]/page.tsx:23
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/explore
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/explore/page.tsx
+  controls: 159; protections: transition-or-action-state-owner
+  refs: components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/auth-intent-prompt.tsx:98, components/auth-intent-prompt.tsx:110, components/auth-intent-prompt.tsx:123, components/auth-intent-prompt.tsx:132, components/auth-intent-prompt.tsx:142, components/auth-intent-prompt.tsx:154, components/auth-intent-prompt.tsx:160, components/salon-trust-line.tsx:20, components/salon-trust-line.tsx:20; full refs in inventory-review.json
+  remaining: P3:social-undo-pending
+  candidateRefs: candidate-002 components/explore-social.tsx:74, candidate-003 components/explore-social.tsx:115, candidate-019 app/explore/explore-search-toolbar.tsx:159
+  evidence: Source import graph and context triage only; full route not executed
+
+/explore/beauty/[profileId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/explore/beauty/[profileId]/page.tsx
+  controls: 32; protections: transition-or-action-state-owner, inline-action-feedback
+  refs: components/auth-intent-prompt.tsx:98, components/auth-intent-prompt.tsx:110, components/auth-intent-prompt.tsx:123, components/auth-intent-prompt.tsx:132, components/auth-intent-prompt.tsx:142, components/auth-intent-prompt.tsx:154, components/auth-intent-prompt.tsx:160, components/post-share-button.tsx:47, components/explore-account-actions.tsx:157, components/explore-account-actions.tsx:179, components/explore-account-actions.tsx:197, components/explore-account-actions.tsx:205; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/explore/beauty/[profileId]/posts/[postId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/explore/beauty/[profileId]/posts/[postId]/page.tsx
+  controls: 58; protections: transition-or-action-state-owner, inline-action-feedback
+  refs: components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/auth-intent-prompt.tsx:98, components/auth-intent-prompt.tsx:110, components/auth-intent-prompt.tsx:123, components/auth-intent-prompt.tsx:132, components/auth-intent-prompt.tsx:142, components/auth-intent-prompt.tsx:154, components/auth-intent-prompt.tsx:160, components/salon-trust-line.tsx:20, components/salon-trust-line.tsx:20; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/explore/campaigns/[campaignId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/explore/campaigns/[campaignId]/page.tsx
+  controls: 5; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/explore/campaigns/[campaignId]/page.tsx:12, app/(app)/explore/campaigns/[campaignId]/page.tsx:12, app/(app)/explore/campaigns/[campaignId]/page.tsx:12
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/explore/favorites
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/explore/favorites/page.tsx
+  controls: 36; protections: source-only/static or delegated
+  refs: components/auth-intent-prompt.tsx:98, components/auth-intent-prompt.tsx:110, components/auth-intent-prompt.tsx:123, components/auth-intent-prompt.tsx:132, components/auth-intent-prompt.tsx:142, components/auth-intent-prompt.tsx:154, components/auth-intent-prompt.tsx:160, components/saved-salon-list.tsx:10, components/saved-salon-list.tsx:10, components/saved-salon-list.tsx:10, components/explore-account-actions.tsx:157, components/explore-account-actions.tsx:179; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/explore/inspiration/[lookId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/explore/inspiration/[lookId]/page.tsx
+  controls: 28; protections: source-only/static or delegated
+  refs: components/auth-intent-prompt.tsx:98, components/auth-intent-prompt.tsx:110, components/auth-intent-prompt.tsx:123, components/auth-intent-prompt.tsx:132, components/auth-intent-prompt.tsx:142, components/auth-intent-prompt.tsx:154, components/auth-intent-prompt.tsx:160, components/explore-account-actions.tsx:157, components/explore-account-actions.tsx:179, components/explore-account-actions.tsx:197, components/explore-account-actions.tsx:205, components/explore-account-actions.tsx:246; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/explore/looks/[lookId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/explore/looks/[lookId]/page.tsx
+  controls: 26; protections: source-only/static or delegated
+  refs: components/auth-intent-prompt.tsx:98, components/auth-intent-prompt.tsx:110, components/auth-intent-prompt.tsx:123, components/auth-intent-prompt.tsx:132, components/auth-intent-prompt.tsx:142, components/auth-intent-prompt.tsx:154, components/auth-intent-prompt.tsx:160, components/explore-account-actions.tsx:157, components/explore-account-actions.tsx:179, components/explore-account-actions.tsx:197, components/explore-account-actions.tsx:205, components/explore-account-actions.tsx:246; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/explore/salons/[salonId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/explore/salons/[salonId]/page.tsx
+  controls: 215; protections: form-pending-component, transition-or-action-state-owner, inline-action-feedback
+  refs: components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/auth-intent-prompt.tsx:98, components/auth-intent-prompt.tsx:110, components/auth-intent-prompt.tsx:123, components/auth-intent-prompt.tsx:132, components/auth-intent-prompt.tsx:142, components/auth-intent-prompt.tsx:154, components/auth-intent-prompt.tsx:160, components/salon-trust-line.tsx:20, components/salon-trust-line.tsx:20; full refs in inventory-review.json
+  remaining: P3:social-undo-pending
+  candidateRefs: (none from selected heuristic)
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/explore/wisconsin
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/explore/wisconsin/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/explore/wisconsin/[businessId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/explore/wisconsin/[businessId]/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/forgot-password
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/forgot-password/page.tsx
+  controls: 7; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/forgot-password/forgot-password-form.tsx:78, app/forgot-password/forgot-password-form.tsx:107, app/forgot-password/forgot-password-form.tsx:124, app/(app)/forgot-password/page.tsx:28, app/(app)/forgot-password/page.tsx:55
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/legal
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(legal)/legal/page.tsx
+  controls: 8; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/legal/legal-table-of-contents.tsx:77, app/legal/legal-components.tsx:74, app/legal/legal-components.tsx:103, app/legal/legal-components.tsx:217, app/legal/legal-components.tsx:314, app/legal/legal-components.tsx:335
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/login
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/login/page.tsx
+  controls: 25; protections: source-only/static or delegated
+  refs: components/legal-footer.tsx:23, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/login/login-form.tsx:255, app/login/login-form.tsx:293, app/login/login-form.tsx:309, app/login/login-form.tsx:323, app/login/login-form.tsx:353, app/login/login-form.tsx:370, app/login/login-form.tsx:390; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/market
+  role: Public browsing where permitted; authenticated salon authority for purchase/configuration
+  page: app/(app)/market/page.tsx
+  controls: 57; protections: transition-or-action-state-owner, inline-action-feedback, native-get-pending-owner
+  refs: components/navigation-form.tsx:27, components/navigation-form.tsx:46, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(legal)/contact-support/contact-form.tsx:13, app/(legal)/contact-support/contact-form.tsx:13, app/(legal)/contact-support/contact-form.tsx:14, app/(legal)/contact-support/contact-form.tsx:33, app/market/vietnamese-preview.tsx:21, app/market/vietnamese-preview.tsx:28; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: candidate-023 app/market/market-startup-view.tsx:43
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/market/booking-deposit
+  role: Public browsing where permitted; authenticated salon authority for purchase/configuration
+  page: app/(app)/market/booking-deposit/page.tsx
+  controls: 8; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/market/booking-deposit-product.tsx:57, app/market/booking-deposit-product.tsx:64, app/market/booking-deposit-product.tsx:75, app/market/booking-deposit-product.tsx:78, app/market/booking-deposit-product.tsx:78, app/market/booking-deposit-product.tsx:78
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/market/booking-deposit/payment
+  role: Public browsing where permitted; authenticated salon authority for purchase/configuration
+  page: app/(app)/market/booking-deposit/payment/page.tsx
+  controls: 4; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/market/booking-deposit-payment-return.tsx:47, app/market/booking-deposit-payment-return.tsx:48
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/market/booking-deposit/settings
+  role: Public browsing where permitted; authenticated salon authority for purchase/configuration
+  page: app/(app)/market/booking-deposit/settings/page.tsx
+  controls: 9; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/market/booking-deposit-panel.tsx:19, app/market/booking-deposit-panel.tsx:27, app/market/booking-deposit-panel.tsx:27, app/market/booking-deposit-panel.tsx:27, app/market/booking-deposit-panel.tsx:27, app/(app)/market/booking-deposit/settings/page.tsx:20, app/(app)/market/booking-deposit/settings/page.tsx:24
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/market/orders/[orderId]
+  role: Public browsing where permitted; authenticated salon authority for purchase/configuration
+  page: app/(app)/market/orders/[orderId]/page.tsx
+  controls: 5; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/market/orders/[orderId]/print-button.tsx:3, app/(app)/market/orders/[orderId]/page.tsx:26, app/(app)/market/orders/[orderId]/page.tsx:26
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/market/payment-return
+  role: Public browsing where permitted; authenticated salon authority for purchase/configuration
+  page: app/(legal)/market/payment-return/page.tsx
+  controls: 4; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(legal)/market/payment-return/page.tsx:6, app/(legal)/market/payment-return/page.tsx:6
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/more
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/more/page.tsx
+  controls: 5; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/more/page.tsx:243, app/(app)/more/page.tsx:312, app/(app)/more/page.tsx:318
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/more/[section]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/more/[section]/page.tsx
+  controls: 26; protections: form-pending-component
+  refs: components/workspace-link.tsx:11, components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/more/[section]/page.tsx:223, app/(app)/more/[section]/page.tsx:242, app/(app)/more/[section]/page.tsx:257, app/(app)/more/[section]/page.tsx:276, app/(app)/more/[section]/page.tsx:280, app/(app)/more/[section]/page.tsx:287, app/(app)/more/[section]/page.tsx:302, app/(app)/more/[section]/page.tsx:314; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/my-bookings
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/my-bookings/page.tsx
+  controls: 49; protections: transition-or-action-state-owner
+  refs: components/booking-deposit-receipt.tsx:9, components/contextual-support.tsx:13, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/activity/visit-experience-prompt.tsx:70, app/activity/visit-experience-prompt.tsx:99, app/activity/visit-experience-prompt.tsx:115, app/activity/visit-experience-prompt.tsx:123, app/activity/visit-experience-prompt.tsx:135, app/activity/visit-experience-prompt.tsx:144, app/activity/visit-experience-prompt.tsx:152, app/activity/history-link-control.tsx:38; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/my-bookings/[bookingId]
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/my-bookings/[bookingId]/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/my-place
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/my-place/page.tsx
+  controls: 56; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/account/account-profile-editor.tsx:246, app/account/account-profile-editor.tsx:341, app/account/account-profile-editor.tsx:372, app/account/account-profile-editor.tsx:389, app/account/account-profile-editor.tsx:418, app/account/account-profile-editor.tsx:426, app/account/account-profile-editor.tsx:866, app/account/account-profile-editor.tsx:866, app/account/account-profile-editor.tsx:894, app/account/account-profile-editor.tsx:900; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/notifications
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/notifications/page.tsx
+  controls: 18; protections: form-pending-component
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/notifications/notification-list.tsx:117, app/notifications/notification-list.tsx:122, app/notifications/notification-list.tsx:131, app/notifications/notification-list.tsx:133, app/notifications/notification-list.tsx:139, app/notifications/notification-list.tsx:193, app/notifications/notification-list.tsx:202, app/notifications/notification-list.tsx:234, app/notifications/notification-list.tsx:245; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/notifications/visits/[visitId]
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/notifications/visits/[visitId]/page.tsx
+  controls: 5; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/notifications/visits/[visitId]/page.tsx:37, app/(app)/notifications/visits/[visitId]/page.tsx:45, app/(app)/notifications/visits/[visitId]/page.tsx:53
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/ownership/invite/[token]
+  role: Token recipient; authentication/invitation flow
+  page: app/(app)/ownership/invite/[token]/page.tsx
+  controls: 5; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/ownership/owner-transfer-acceptance-panel.tsx:45, app/(app)/ownership/invite/[token]/page.tsx:29, app/(app)/ownership/invite/[token]/page.tsx:35
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/payroll
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/payroll/page.tsx
+  controls: 61; protections: form-pending-component, native-get-pending-owner, inline-action-feedback, transition-or-action-state-owner
+  refs: components/contextual-support.tsx:13, components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/navigation-form.tsx:27, components/navigation-form.tsx:46, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/payroll/staff-payroll-setting-inline-edit.tsx:346, app/payroll/staff-payroll-setting-inline-edit.tsx:405; full refs in inventory-review.json
+  remaining: P2:payroll-new-statement-pending
+  candidateRefs: candidate-033 app/payroll/payroll-schedule-form.tsx:76, candidate-046 app/(app)/payroll/page.tsx:996
+  evidence: Source import graph and context triage only; full route not executed
+
+/payroll/tax-company
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/payroll/tax-company/page.tsx
+  controls: 18; protections: native-get-pending-owner, inline-action-feedback, form-pending-component
+  refs: components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/navigation-form.tsx:27, components/navigation-form.tsx:46, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/payroll/tax-company-table.tsx:112, app/payroll/paystub-upload-control.tsx:11, app/payroll/paystub-upload-control.tsx:53, app/payroll/paystub-upload-control.tsx:70; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/payroll/tax-company/settings
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/payroll/tax-company/settings/page.tsx
+  controls: 16; protections: form-pending-component
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/tax-company/owner-credentials.tsx:11, app/tax-company/owner-credentials.tsx:12, app/tax-company/owner-credentials.tsx:13, app/tax-company/owner-credentials.tsx:13, app/tax-company/owner-credentials.tsx:13, app/(app)/payroll/tax-company/settings/page.tsx:12, app/(app)/payroll/tax-company/settings/page.tsx:14, app/(app)/payroll/tax-company/settings/page.tsx:16, app/(app)/payroll/tax-company/settings/page.tsx:26; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/permissions
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/permissions/page.tsx
+  controls: 5; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/permissions/page.tsx:80, app/(app)/permissions/page.tsx:227, app/(app)/permissions/page.tsx:233
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos/(workspace)/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos-tickets
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos-tickets/page.tsx
+  controls: 29; protections: form-pending-component
+  refs: components/contextual-support.tsx:13, components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/pos-tickets/closed-ticket-correction-form.tsx:406, app/pos-tickets/closed-ticket-correction-form.tsx:416, app/pos-tickets/closed-ticket-correction-form.tsx:440, app/pos-tickets/closed-ticket-correction-form.tsx:461, app/pos-tickets/closed-ticket-correction-form.tsx:516, app/pos-tickets/closed-ticket-correction-form.tsx:1498; full refs in inventory-review.json
+  remaining: P2:owner-ticket-next-form-pending
+  candidateRefs: candidate-039 app/pos-tickets/owner-live-tickets.tsx:288, candidate-040 app/pos-tickets/owner-live-tickets.tsx:311
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos-tickets/[ticketId]
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos-tickets/[ticketId]/page.tsx
+  controls: 35; protections: form-pending-component
+  refs: components/contextual-support.tsx:13, components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/pos-tickets/[ticketId]/page.tsx:130, app/(app)/pos-tickets/[ticketId]/page.tsx:146, app/(app)/pos-tickets/[ticketId]/page.tsx:168, app/(app)/pos-tickets/[ticketId]/page.tsx:183, app/(app)/pos-tickets/[ticketId]/page.tsx:205, app/(app)/pos-tickets/[ticketId]/page.tsx:251, app/(app)/pos-tickets/[ticketId]/page.tsx:274, app/(app)/pos-tickets/[ticketId]/page.tsx:287; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/book
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos/(workspace)/book/page.tsx
+  controls: 146; protections: transition-or-action-state-owner, inline-action-feedback
+  refs: components/booking-deposit-receipt.tsx:9, components/contextual-support.tsx:13, components/experience-scope.tsx:204, components/experience-scope.tsx:207, components/booking-ui/schedule-picker.tsx:16, components/booking-ui/schedule-picker.tsx:16, components/booking-ui/schedule-picker.tsx:22, components/booking-ui/schedule-picker.tsx:26, components/booking-ui/schedule-picker.tsx:27, components/booking-ui/schedule-picker.tsx:31, app/activity/history-link-control.tsx:38, app/activity/history-link-control.tsx:46; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/check-in
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos/(workspace)/check-in/page.tsx
+  controls: 8; protections: inline-action-feedback
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/pos/portable/portable-workspace-state.tsx:180, app/pos/portable/check-in/portable-check-in-client.tsx:595, app/pos/portable/check-in/portable-check-in-client.tsx:722, app/pos/portable/check-in/portable-check-in-client.tsx:760, app/pos/portable/check-in/portable-check-in-client.tsx:779, app/pos/portable/check-in/portable-check-in-client.tsx:787
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/customer-display
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos/customer-display/page.tsx
+  controls: 30; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/pos/customer-display/customer-display-client.tsx:361, app/pos/customer-display/customer-display-client.tsx:526, app/pos/customer-display/customer-display-client.tsx:603, app/pos/customer-display/customer-display-client.tsx:615, app/pos/customer-display/customer-display-client.tsx:629, app/pos/customer-display/customer-display-client.tsx:639, app/pos/customer-display/customer-display-client.tsx:742, app/pos/customer-display/customer-display-client.tsx:763, app/pos/customer-display/customer-display-client.tsx:787, app/pos/customer-display/customer-display-client.tsx:858; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/customer-display/setup
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos/customer-display/setup/page.tsx
+  controls: 8; protections: form-pending-component, transition-or-action-state-owner
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/pos/portable/portable-login-form.tsx:33, app/pos/portable/portable-login-form.tsx:91, app/pos/portable/portable-login-form.tsx:101, app/pos/portable/portable-login-form.tsx:102, app/(app)/pos/customer-display/setup/page.tsx:39
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/portable
+  role: Portable device session and permitted capabilities
+  page: app/(app)/pos/portable/page.tsx
+  controls: 107; protections: transition-or-action-state-owner, inline-action-feedback
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/service-relay/desk-relay.tsx:20, app/service-relay/desk-relay.tsx:21, app/service-relay/desk-relay.tsx:34, app/pos/single-workspace-window.tsx:29, app/pos/custom-service-dialog.tsx:28, app/pos/custom-service-dialog.tsx:30, app/pos/custom-service-dialog.tsx:31, app/pos/custom-service-dialog.tsx:32, app/pos/custom-service-dialog.tsx:33, app/pos/custom-service-dialog.tsx:37; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/portable/book
+  role: Portable device session and permitted capabilities
+  page: app/(app)/pos/portable/book/page.tsx
+  controls: 53; protections: transition-or-action-state-owner, inline-action-feedback
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/pos/portable/portable-workspace-state.tsx:180, app/pos/portable/book/portable-book-workspace.tsx:360, app/pos/portable/book/portable-book-workspace.tsx:361, app/pos/portable/book/portable-book-workspace.tsx:363, app/pos/portable/book/portable-book-workspace.tsx:382, app/pos/portable/book/portable-book-workspace.tsx:386, app/pos/portable/book/portable-book-workspace.tsx:387, app/pos/portable/book/portable-book-workspace.tsx:389, app/pos/portable/book/portable-book-workspace.tsx:408, app/pos/portable/book/portable-book-workspace.tsx:408; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/portable/check-in
+  role: Portable device session and permitted capabilities
+  page: app/(app)/pos/portable/check-in/page.tsx
+  controls: 8; protections: inline-action-feedback
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/pos/portable/portable-workspace-state.tsx:180, app/pos/portable/check-in/portable-check-in-client.tsx:595, app/pos/portable/check-in/portable-check-in-client.tsx:722, app/pos/portable/check-in/portable-check-in-client.tsx:760, app/pos/portable/check-in/portable-check-in-client.tsx:779, app/pos/portable/check-in/portable-check-in-client.tsx:787
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/portable/report
+  role: Portable device session and permitted capabilities
+  page: app/(app)/pos/portable/report/page.tsx
+  controls: 10; protections: transition-or-action-state-owner
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/pos/portable/report/portable-report-closing-form.tsx:247, app/pos/portable/report/portable-report-closing-form.tsx:247, app/pos/portable/report/portable-report-closing-form.tsx:269, app/pos/portable/report/portable-report-closing-form.tsx:383, app/pos/portable/portable-workspace-state.tsx:180, app/(app)/pos/portable/report/page.tsx:68, app/(app)/pos/portable/report/page.tsx:80, app/(app)/pos/portable/report/page.tsx:95
+  remaining: P2:portable-report-date-pending
+  candidateRefs: candidate-048 app/(app)/pos/portable/report/page.tsx:80
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/portable/ticket
+  role: Portable device session and permitted capabilities
+  page: app/(app)/pos/portable/ticket/page.tsx
+  controls: 27; protections: native-get-pending-owner, inline-action-feedback, form-pending-component
+  refs: components/navigation-form.tsx:27, components/navigation-form.tsx:46, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/pos-tickets/closed-ticket-correction-form.tsx:406, app/pos-tickets/closed-ticket-correction-form.tsx:416, app/pos-tickets/closed-ticket-correction-form.tsx:440, app/pos-tickets/closed-ticket-correction-form.tsx:461, app/pos-tickets/closed-ticket-correction-form.tsx:516, app/pos-tickets/closed-ticket-correction-form.tsx:1498; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/portable/today
+  role: Portable device session and permitted capabilities
+  page: app/(app)/pos/portable/today/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/report
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos/(workspace)/report/page.tsx
+  controls: 25; protections: transition-or-action-state-owner
+  refs: components/contextual-support.tsx:13, components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/my-place/place-ui.tsx:203, app/my-place/place-ui.tsx:227, app/my-place/place-ui.tsx:248, app/reports/report-controls.tsx:17, app/reports/report-controls.tsx:64, app/reports/report-controls.tsx:134, app/reports/report-controls.tsx:177; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/settings
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos/settings/page.tsx
+  controls: 35; protections: transition-or-action-state-owner, form-pending-component
+  refs: components/windows-pos-download.tsx:37, components/windows-pos-download.tsx:37, components/windows-pos-download.tsx:80, components/windows-pos-download.tsx:86, components/windows-pos-download.tsx:86, components/windows-pos-download.tsx:86, components/role-more-content.tsx:22, components/role-more-content.tsx:29, components/role-more-content.tsx:46, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: candidate-041 app/pos/settings/customer-display-install-panel.tsx:108
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/ticket
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos/(workspace)/ticket/page.tsx
+  controls: 29; protections: form-pending-component
+  refs: components/contextual-support.tsx:13, components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/pos-tickets/closed-ticket-correction-form.tsx:406, app/pos-tickets/closed-ticket-correction-form.tsx:416, app/pos-tickets/closed-ticket-correction-form.tsx:440, app/pos-tickets/closed-ticket-correction-form.tsx:461, app/pos-tickets/closed-ticket-correction-form.tsx:516, app/pos-tickets/closed-ticket-correction-form.tsx:1498; full refs in inventory-review.json
+  remaining: P2:owner-ticket-next-form-pending
+  candidateRefs: candidate-039 app/pos-tickets/owner-live-tickets.tsx:288, candidate-040 app/pos-tickets/owner-live-tickets.tsx:311
+  evidence: Source import graph and context triage only; full route not executed
+
+/pos/ticket/[ticketId]
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/pos/(workspace)/ticket/[ticketId]/page.tsx
+  controls: 35; protections: form-pending-component
+  refs: components/contextual-support.tsx:13, components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/pos-tickets/[ticketId]/page.tsx:130, app/(app)/pos-tickets/[ticketId]/page.tsx:146, app/(app)/pos-tickets/[ticketId]/page.tsx:168, app/(app)/pos-tickets/[ticketId]/page.tsx:183, app/(app)/pos-tickets/[ticketId]/page.tsx:205, app/(app)/pos-tickets/[ticketId]/page.tsx:251, app/(app)/pos-tickets/[ticketId]/page.tsx:274, app/(app)/pos-tickets/[ticketId]/page.tsx:287; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/privacy
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(legal)/privacy/page.tsx
+  controls: 8; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/legal/legal-table-of-contents.tsx:77, app/legal/legal-components.tsx:74, app/legal/legal-components.tsx:103, app/legal/legal-components.tsx:217, app/legal/legal-components.tsx:314, app/legal/legal-components.tsx:335
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/reports
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/reports/page.tsx
+  controls: 25; protections: transition-or-action-state-owner
+  refs: components/contextual-support.tsx:13, components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/my-place/place-ui.tsx:203, app/my-place/place-ui.tsx:227, app/my-place/place-ui.tsx:248, app/reports/report-controls.tsx:17, app/reports/report-controls.tsx:64, app/reports/report-controls.tsx:134, app/reports/report-controls.tsx:177; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/reset-password
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/reset-password/page.tsx
+  controls: 7; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/reset-password/reset-password-form.tsx:211, app/reset-password/reset-password-form.tsx:258, app/reset-password/reset-password-form.tsx:275, app/(app)/reset-password/page.tsx:28, app/(app)/reset-password/page.tsx:54
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/roles
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/roles/page.tsx
+  controls: 6; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/roles/page.tsx:90, app/(app)/roles/page.tsx:165, app/(app)/roles/page.tsx:171, app/(app)/roles/page.tsx:177
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/salon-profile
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/salon-profile/page.tsx
+  controls: 215; protections: form-pending-component, transition-or-action-state-owner, inline-action-feedback
+  refs: components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/auth-intent-prompt.tsx:98, components/auth-intent-prompt.tsx:110, components/auth-intent-prompt.tsx:123, components/auth-intent-prompt.tsx:132, components/auth-intent-prompt.tsx:142, components/auth-intent-prompt.tsx:154, components/auth-intent-prompt.tsx:160, components/salon-trust-line.tsx:20, components/salon-trust-line.tsx:20; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/salon-profile/client-transformations
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/salon-profile/client-transformations/page.tsx
+  controls: 8; protections: form-pending-component
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/salon-profile/client-transformations/review-action-button.tsx:25, app/(app)/salon-profile/client-transformations/page.tsx:355, app/(app)/salon-profile/client-transformations/page.tsx:361, app/(app)/salon-profile/client-transformations/page.tsx:367, app/(app)/salon-profile/client-transformations/page.tsx:373, app/(app)/salon-profile/client-transformations/page.tsx:433
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/salon-settings
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/salon-settings/page.tsx
+  controls: 48; protections: form-pending-component, transition-or-action-state-owner
+  refs: components/contextual-support.tsx:13, components/submit-button.tsx:15, components/salon-operating-status-badge.tsx:85, components/salon-operating-status-badge.tsx:87, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/action-dialog.tsx:53, app/action-dialog.tsx:60, app/action-dialog.tsx:171, app/staff/appointments/staff-customer-fields.tsx:60, app/staff/appointments/staff-create-appointment.tsx:20, app/staff/appointments/staff-create-appointment.tsx:24; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/salons
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/salons/page.tsx
+  controls: 20; protections: form-pending-component, transition-or-action-state-owner
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/action-dialog.tsx:53, app/action-dialog.tsx:60, app/action-dialog.tsx:171, app/salons/salon-management-page.tsx:88, app/salons/salon-management-page.tsx:132, app/salons/salon-management-page.tsx:133, app/salons/salon-management-page.tsx:156, app/salons/salon-management-page.tsx:185, app/salons/salon-management-page.tsx:213; full refs in inventory-review.json
+  remaining: P3:copy-invite-rejection
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/salons/new
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/salons/new/page.tsx
+  controls: 20; protections: form-pending-component, transition-or-action-state-owner
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/action-dialog.tsx:53, app/action-dialog.tsx:60, app/action-dialog.tsx:171, app/salons/salon-management-page.tsx:88, app/salons/salon-management-page.tsx:132, app/salons/salon-management-page.tsx:133, app/salons/salon-management-page.tsx:156, app/salons/salon-management-page.tsx:185, app/salons/salon-management-page.tsx:213; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/security-check
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/security-check/page.tsx
+  controls: 9; protections: source-only/static or delegated
+  refs: components/security-challenge.tsx:182, components/security-challenge.tsx:215, components/security-challenge.tsx:224, components/security-challenge.tsx:227, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/security-check/security-check.tsx:14, app/(app)/security-check/security-check.tsx:15, app/(app)/security-check/security-check.tsx:20
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/services
+  role: Selected salon owner/manager or explicit role capability
+  page: app/(app)/services/page.tsx
+  controls: 19; protections: transition-or-action-state-owner
+  refs: components/contextual-support.tsx:13, components/compact-filters.tsx:37, components/compact-filters.tsx:44, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/settings/delete-unused-button.tsx:20, app/settings/delete-unused-button.tsx:28, app/settings/delete-unused-button.tsx:29, app/services/services-manager.tsx:146, app/services/services-manager.tsx:614, app/services/services-manager.tsx:625, app/services/services-manager.tsx:745; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/settings
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/settings/page.tsx
+  controls: 481; protections: transition-or-action-state-owner, form-pending-component, inline-action-feedback
+  refs: components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/block-user-button.tsx:12, components/auth-intent-prompt.tsx:98, components/auth-intent-prompt.tsx:110, components/auth-intent-prompt.tsx:123, components/auth-intent-prompt.tsx:132, components/auth-intent-prompt.tsx:142, components/auth-intent-prompt.tsx:154, components/auth-intent-prompt.tsx:160, components/contextual-support.tsx:13, components/compact-filters.tsx:37; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: candidate-028 app/salon-profile/salon-profile-studio.tsx:803
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/settings/login-security
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/settings/login-security/page.tsx
+  controls: 50; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/settings/login-security/login-security-quick-editor.tsx:214, app/settings/login-security/login-security-quick-editor.tsx:260, app/settings/login-security/login-security-quick-editor.tsx:264, app/settings/login-security/login-security-quick-editor.tsx:295, app/settings/login-security/login-security-quick-editor.tsx:368, app/settings/login-security/login-security-quick-editor.tsx:884, app/settings/login-security/login-security-quick-editor.tsx:894, app/settings/login-security/login-security-quick-editor.tsx:925, app/settings/login-security/login-security-quick-editor.tsx:932, app/settings/login-security/login-security-quick-editor.tsx:946; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/settings/recovery-back-office
+  role: Signed-in personal account; salon authority where needed
+  page: app/(app)/settings/recovery-back-office/page.tsx
+  controls: 10; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/settings/recovery-back-office/recovery-back-office-panel.tsx:263, app/settings/recovery-back-office/recovery-back-office-panel.tsx:332, app/settings/recovery-back-office/recovery-back-office-panel.tsx:339, app/settings/recovery-back-office/recovery-back-office-panel.tsx:351, app/settings/recovery-back-office/recovery-back-office-panel.tsx:356, app/settings/recovery-back-office/recovery-back-office-panel.tsx:381, app/(app)/settings/recovery-back-office/page.tsx:31, app/(app)/settings/recovery-back-office/page.tsx:59
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/signup
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/signup/page.tsx
+  controls: 17; protections: source-only/static or delegated
+  refs: components/security-challenge.tsx:182, components/security-challenge.tsx:215, components/security-challenge.tsx:224, components/security-challenge.tsx:227, components/legal-footer.tsx:23, components/feedback-link.tsx:37, components/feedback-link.tsx:39, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/signup/signup-form.tsx:161, app/signup/signup-form.tsx:215, app/signup/signup-form.tsx:237; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/staff
+  role: Selected salon staff membership
+  page: app/(app)/staff/page.tsx
+  controls: 83; protections: form-pending-component, transition-or-action-state-owner
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/staff/staff-slide-over.tsx:48, app/staff/staff-slide-over.tsx:66, app/staff/staff-public-profile-editor.tsx:280, app/staff/staff-public-profile-editor.tsx:312, app/staff/staff-public-profile-editor.tsx:366, app/staff/staff-public-profile-editor.tsx:376, app/staff/staff-public-profile-editor.tsx:439, app/staff/staff-directory-editor.tsx:171, app/staff/staff-directory-editor.tsx:183; full refs in inventory-review.json
+  remaining: P3:copy-invite-rejection
+  candidateRefs: candidate-014 app/staff/copy-invite-link-button.tsx:38
+  evidence: Source import graph and context triage only; full route not executed
+
+/staff/appointments
+  role: Selected salon staff membership
+  page: app/(app)/staff/appointments/page.tsx
+  controls: 52; protections: inline-action-feedback, transition-or-action-state-owner
+  refs: components/workspace-link.tsx:11, components/experience-scope.tsx:204, components/experience-scope.tsx:207, components/booking-ui/schedule-picker.tsx:16, components/booking-ui/schedule-picker.tsx:16, components/booking-ui/schedule-picker.tsx:22, components/booking-ui/schedule-picker.tsx:26, components/booking-ui/schedule-picker.tsx:27, components/booking-ui/schedule-picker.tsx:31, app/staff/appointments/time-off-range-picker.tsx:41, app/staff/appointments/time-off-range-picker.tsx:46, app/staff/appointments/time-off-range-picker.tsx:46; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/staff/connections
+  role: Selected salon staff membership
+  page: app/(app)/staff/connections/page.tsx
+  controls: 15; protections: form-pending-component
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/staff/connections/page.tsx:140, app/(app)/staff/connections/page.tsx:142, app/(app)/staff/connections/page.tsx:149, app/(app)/staff/connections/page.tsx:151, app/(app)/staff/connections/page.tsx:193, app/(app)/staff/connections/page.tsx:195, app/(app)/staff/connections/page.tsx:203, app/(app)/staff/connections/page.tsx:229, app/(app)/staff/connections/page.tsx:247; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/staff/invite/[token]
+  role: Token recipient; authentication/invitation flow
+  page: app/(app)/staff/invite/[token]/page.tsx
+  controls: 12; protections: form-pending-component, inline-action-feedback
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/staff/invite/[token]/staff-invite-signup-form.tsx:89, app/staff/invite/[token]/staff-invite-signup-form.tsx:130, app/(app)/staff/invite/[token]/page.tsx:159, app/(app)/staff/invite/[token]/page.tsx:174, app/(app)/staff/invite/[token]/page.tsx:181, app/(app)/staff/invite/[token]/page.tsx:191, app/(app)/staff/invite/[token]/page.tsx:193, app/(app)/staff/invite/[token]/page.tsx:200, app/(app)/staff/invite/[token]/page.tsx:202
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/staff/my-work
+  role: Selected salon staff membership
+  page: app/(app)/staff/my-work/page.tsx
+  controls: 24; protections: transition-or-action-state-owner
+  refs: components/contextual-support.tsx:13, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/staff/staff-public-profile-editor.tsx:280, app/staff/staff-public-profile-editor.tsx:312, app/staff/staff-public-profile-editor.tsx:366, app/staff/staff-public-profile-editor.tsx:376, app/staff/staff-public-profile-editor.tsx:439, app/staff/my-work/staff-profile-settings-drawer.tsx:40, app/staff/my-work/staff-profile-settings-drawer.tsx:60, app/staff/my-work/staff-pay-analysis.tsx:57, app/staff/my-work/staff-my-work-view.tsx:103; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/staff/today
+  role: Selected salon staff membership
+  page: app/(app)/staff/today/page.tsx
+  controls: 27; protections: transition-or-action-state-owner
+  refs: components/workspace-link.tsx:11, components/owner-market-promo.tsx:8, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/staff/today/today-dashboard-view.tsx:157, app/staff/today/today-dashboard-view.tsx:163, app/staff/today/today-dashboard-view.tsx:170, app/staff/today/today-dashboard-view.tsx:178, app/staff/today/today-dashboard-view.tsx:194, app/staff/today/today-dashboard-view.tsx:711, app/staff/today/today-dashboard-view.tsx:769, app/staff/today/today-dashboard-view.tsx:875; full refs in inventory-review.json
+  remaining: P2:today-native-date-pending
+  candidateRefs: candidate-010 app/staff/today/today-dashboard-view.tsx:194
+  evidence: Source import graph and context triage only; full route not executed
+
+/staff/workday
+  role: Selected salon staff membership
+  page: app/(app)/staff/workday/page.tsx
+  controls: 9; protections: form-pending-component
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/staff/workday/page.tsx:193, app/(app)/staff/workday/page.tsx:194, app/(app)/staff/workday/page.tsx:210, app/(app)/staff/workday/page.tsx:212, app/(app)/staff/workday/page.tsx:221, app/(app)/staff/workday/page.tsx:222
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/support
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/support/page.tsx
+  controls: 18; protections: transition-or-action-state-owner, inline-action-feedback
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/support/support-ui.tsx:15, app/support/support-ui.tsx:23, app/support/support-ui.tsx:35, app/support/support-ui.tsx:36, app/support/support-ui.tsx:40, app/support/support-ui.tsx:41, app/support/support-ui.tsx:41, app/support/support-ui.tsx:42, app/support/support-ui.tsx:44, app/support/support-ui.tsx:44; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/support/[caseId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/support/[caseId]/page.tsx
+  controls: 14; protections: transition-or-action-state-owner, inline-action-feedback
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/support/support-ui.tsx:15, app/support/support-ui.tsx:23, app/support/support-ui.tsx:35, app/support/support-ui.tsx:36, app/support/support-ui.tsx:40, app/support/support-ui.tsx:41, app/support/support-ui.tsx:41, app/support/support-ui.tsx:42, app/support/support-ui.tsx:44, app/support/support-ui.tsx:44; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/support/guest/[threadId]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(app)/support/guest/[threadId]/page.tsx
+  controls: 15; protections: transition-or-action-state-owner, inline-action-feedback
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/support/support-ui.tsx:15, app/support/support-ui.tsx:23, app/support/support-ui.tsx:35, app/support/support-ui.tsx:36, app/support/support-ui.tsx:40, app/support/support-ui.tsx:41, app/support/support-ui.tsx:41, app/support/support-ui.tsx:42, app/support/support-ui.tsx:44, app/support/support-ui.tsx:44; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/tax-company
+  role: Personal account and connected-salon authority; install screen public
+  page: app/(app)/tax-company/page.tsx
+  controls: 12; protections: form-pending-component
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/(app)/tax-company/page.tsx:12, app/(app)/tax-company/page.tsx:12, app/(app)/tax-company/page.tsx:16, app/(app)/tax-company/page.tsx:16, app/(app)/tax-company/page.tsx:19, app/(app)/tax-company/page.tsx:19, app/(app)/tax-company/page.tsx:19, app/(app)/tax-company/page.tsx:21, app/(app)/tax-company/page.tsx:21
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/tax-company/[salonId]
+  role: Personal account and connected-salon authority; install screen public
+  page: app/(app)/tax-company/[salonId]/page.tsx
+  controls: 15; protections: form-pending-component, transition-or-action-state-owner
+  refs: components/submit-button.tsx:15, components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/tax-company/note-editor.tsx:14, app/tax-company/note-editor.tsx:16, app/tax-company/note-editor.tsx:27, app/tax-company/note-editor.tsx:27, app/(app)/tax-company/[salonId]/page.tsx:16, app/(app)/tax-company/[salonId]/page.tsx:22, app/(app)/tax-company/[salonId]/page.tsx:32, app/(app)/tax-company/[salonId]/page.tsx:32, app/payroll/tax-company-table.tsx:112; full refs in inventory-review.json
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Relevant component fixture/contract tested; this full route was not executed
+
+/tax-company/install
+  role: Personal account and connected-salon authority; install screen public
+  page: app/(app)/tax-company/install/page.tsx
+  controls: 4; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/tax-company/install-control.tsx:20, app/(app)/tax-company/install/page.tsx:4
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/terms
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/(legal)/terms/page.tsx
+  controls: 8; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207, app/legal/legal-table-of-contents.tsx:77, app/legal/legal-components.tsx:74, app/legal/legal-components.tsx:103, app/legal/legal-components.tsx:217, app/legal/legal-components.tsx:314, app/legal/legal-components.tsx:335
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed
+
+/visit/[pass]
+  role: Public/guest view; login, token or owner authority for privileged actions
+  page: app/visit/[pass]/page.tsx
+  controls: 2; protections: source-only/static or delegated
+  refs: components/experience-scope.tsx:204, components/experience-scope.tsx:207
+  remaining: no confirmed local finding in selected review; unresolved candidates may remain
+  candidateRefs: (none from selected heuristic)
+  evidence: Source import graph and context triage only; full route not executed

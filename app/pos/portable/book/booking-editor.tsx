@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionFeedback } from "@/components/action-feedback";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useEffect, useRef, useState } from "react";
 import type { PortableBookAppointment, PortableBookData, PortableBookingSlot, PortableStaffOption } from "../actions";
@@ -101,7 +102,7 @@ export function BookingEditor(p: Props) {
       {p.stale && <p role="alert" className={styles.editorError}><WorkspaceText text="This appointment changed on another device. Close and reopen it before saving. Your current inputs have been kept." /></p>}
       {p.error && <p role="alert" className={styles.editorError}><WorkspaceText text={p.error} /></p>}
       <div className={styles.editorTotal}><span>{minutes} <WorkspaceText text="min ·" /> {rows.length} <WorkspaceText text="services" /><WorkspaceText text={!p.selectedSlot ? " · estimated" : ""} /></span><strong>${total.toFixed(2)}</strong></div>
-      <div className={styles.editorSave}><button type="button" disabled={!p.editing || !p.onStatus || p.stale || p.busy || !!picker} onClick={p.onStatus}>{p.editing?.status === "scheduled" ? <WorkspaceText text="Confirmed" /> : p.editing?.status || "New booking"}<WorkspaceText text={p.onStatus ? " ▾" : ""} /></button><button type="button" disabled={p.stale || p.busy || !p.customerName.trim() || !rows.length || !startInstant || missingStaff || !!picker || (!!p.editing && !p.customerId)} onClick={()=>{dismissPortableKeyboard();p.onSave();}}>{p.busy ? <WorkspaceText text="Saving…" /> : p.editing ? <WorkspaceText text="Save changes" /> : "Create appointment"}</button></div>
+      <div className={styles.editorSave}><button type="button" disabled={!p.editing || !p.onStatus || p.stale || p.busy || !!picker} onClick={p.onStatus}>{p.editing?.status === "scheduled" ? <WorkspaceText text="Confirmed" /> : p.editing?.status || "New booking"}<WorkspaceText text={p.onStatus ? " ▾" : ""} /></button><button type="button" disabled={p.stale || p.busy || !p.customerName.trim() || !rows.length || !startInstant || missingStaff || !!picker || (!!p.editing && !p.customerId)} aria-busy={p.busy} onClick={()=>{dismissPortableKeyboard();p.onSave();}}><ActionFeedback pending={p.busy} pendingLabel="Saving…">{p.editing ? <WorkspaceText text="Save changes" /> : <WorkspaceText text="Create appointment" />}</ActionFeedback></button></div>
       <small><WorkspaceText text="Messages follow salon settings." /></small>
     </footer>
     {picker && <section className={styles.editorPicker} aria-label={__vt("Quick edit")} inert={p.busy}>

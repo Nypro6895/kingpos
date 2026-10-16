@@ -4,6 +4,7 @@ import { taxCompanySettings } from "@/lib/tax-company";
 import { updateTaxSettings } from "@/app/tax-company/actions";
 import { OwnerTaxCredentials } from "@/app/tax-company/owner-credentials";
 import styles from "@/app/tax-company/tax-company.module.css";
+import { SubmitButton } from "@/components/submit-button";
 
 async function TaxSettings({ searchParams }: { searchParams: Promise<{ message?: string }> }) {
   const query = await searchParams;
@@ -22,7 +23,7 @@ async function TaxSettings({ searchParams }: { searchParams: Promise<{ message?:
             const initials = name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
             return <div key={connection.user_id} className={styles.accountRow}><span className={styles.avatar} aria-hidden="true">{initials}</span><div className={styles.accountInfo}><strong>{name}</strong><p>{connection.email || connection.phone || `Account ${connection.user_id}`}</p><p className={styles.muted}>Connected {new Date(connection.connected_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}</p></div><span className={connection.account_active && state.active && state.enabled ? styles.badge : styles.inactive}>{connection.account_active && state.active && state.enabled ? "Can manage tax" : "Access inactive"}</span></div>;
           }) : <p className={styles.empty}>No tax professional is connected yet. Share your salon login with your tax company to get started.</p>}
-          {state.enabled && <div className={styles.foot}><p className={styles.help}>Disconnect to stop tax company access. Your salon and staff keep their uploaded paystubs.</p><form action={updateTaxSettings}><input type="hidden" name="disconnect" value="true" /><button className={styles.danger}>Disconnect all accounts</button></form></div>}
+          {state.enabled && <div className={styles.foot}><p className={styles.help}>Disconnect to stop tax company access. Your salon and staff keep their uploaded paystubs.</p><form action={updateTaxSettings}><input type="hidden" name="disconnect" value="true" /><SubmitButton className={styles.danger} pendingLabel="Disconnecting…">Disconnect all accounts</SubmitButton></form></div>}
         </section>
       </div>
       <aside className={styles.stack}>

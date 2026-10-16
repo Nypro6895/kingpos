@@ -1,6 +1,7 @@
 "use client";
 
 import { WorkspaceText } from "@/components/workspace-language";
+import { SubmitButton } from "@/components/submit-button";
 import { useState } from "react";
 
 type PayrollScheduleFormProps = {
@@ -68,9 +69,9 @@ export function PayrollScheduleForm({
       ) : (
         null
       )}
-      <button className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
+      <SubmitButton pendingLabel="Saving…" className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
         <WorkspaceText text="Save" />
-      </button>
+      </SubmitButton>
       {isDirty ? (
         <button
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800"

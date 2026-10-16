@@ -1,5 +1,7 @@
 "use client";
 import { ContentViewer } from "@/components/content-viewer";
+import { ActionFeedback } from "@/components/action-feedback";
+import { useFormStatus } from "react-dom";
 import { MediaUploadProgress } from "@/components/media-upload-progress";
 import type { MediaUploadPhase } from "@/lib/media-upload-progress";
 import { PostIdentity } from "@/components/post-identity";
@@ -766,6 +768,8 @@ function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "subtle" | "brand";
 }) {
+  const { pending: formPending } = useFormStatus();
+  const pending = props.type === "submit" && formPending;
   const styles = {
     brand: "bg-brand-orange text-white hover:bg-brand-orange-hover disabled:bg-brand-orange/50",
     primary:
@@ -784,8 +788,10 @@ function Button({
       ].join(" ")}
       type="button"
       {...props}
+      disabled={props.disabled || pending}
+      aria-busy={pending || props["aria-busy"]}
     >
-      {children}
+      <ActionFeedback pending={pending} pendingLabel="Saving…">{children}</ActionFeedback>
     </button>
   );
 }

@@ -10,7 +10,8 @@ import { ExploreSearchInput } from "@/app/explore/explore-search-input";
 import type { ExploreSearchSuggestion } from "@/lib/explore-search-suggestions";
 import { sanitizeAuthReturnPath } from "@/lib/auth-routing";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/feedback-link";
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -138,7 +139,7 @@ export function GuestNavigationShell({ children, authenticated = false }: { chil
           <div className={`flex min-w-0 flex-1 items-center gap-2 sm:gap-3 ${pathname === "/explore" ? "justify-between" : ""}`}>
             <ReylumiLogo prefetch={isExploreBrowsePage ? false : undefined} />
             {pathname === "/explore" ? <ExploreHeaderSearchSlot /> : null}
-            {pathname !== "/explore" ? <form
+            {pathname !== "/explore" ? <NavigationForm
               action="/explore"
               className="relative min-w-0 flex-1"
               method="get"
@@ -173,13 +174,14 @@ export function GuestNavigationShell({ children, authenticated = false }: { chil
                 onSuggestionSelect={selectSuggestion}
                 placeholder={__vt("Search salons, cities, or nail ideas")}
               />
-              <button
+              <NavigationSubmitButton
                 className="absolute right-1.5 top-1/2 hidden min-h-8 -translate-y-1/2 items-center justify-center rounded-full bg-brand-black px-4 text-xs font-semibold text-white transition hover:bg-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:inline-flex"
+                pendingLabel="Searching…"
                 type="submit"
               >
                 <WorkspaceText text="Search" />
-              </button>
-            </form> : null}
+              </NavigationSubmitButton>
+            </NavigationForm> : null}
             {isExploreBrowsePage && authenticated === false ? (
               <Link
                 className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-brand-orange px-3 text-sm font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange sm:px-5"

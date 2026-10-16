@@ -1,10 +1,11 @@
 "use client";
 
 import { readAuthResponse } from "@/lib/auth-response";
+import { AUTH_OFFLINE_MESSAGE } from "@/lib/supabase/auth-errors";
 import { SecurityChallenge, type SecurityChallengeHandle } from "@/components/security-challenge";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 
 const inputClassName =
   "mt-2 min-h-[52px] w-full rounded-2xl border bg-white px-4 text-base font-semibold text-text-primary outline-none transition placeholder:font-normal placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10 motion-reduce:transition-none";
@@ -62,6 +63,7 @@ export function SignupForm({ nextPath = "/explore", initialError }: { nextPath?:
   const initialChallenge = initialError?.includes("/security-check") ?? false;
   const [error, setError] = useState<string | null>(initialChallenge ? null : initialError ?? null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [challengeRequired, setChallengeRequired] = useState(initialChallenge);
   const form = useRef<HTMLFormElement>(null);
@@ -70,20 +72,26 @@ export function SignupForm({ nextPath = "/explore", initialError }: { nextPath?:
   const request = useRef<AbortController | null>(null);
   const mounted = useRef(true);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
       request.current?.abort();
+      request.current = null;
       // Activity can hide this form without discarding its state. Returning must
       // keep the entered fields while allowing an explicit fresh attempt.
       submitting.current = false;
       setIsSubmitting(false);
+      setIsNavigating(false);
     };
   }, []);
 
   async function createAccount() {
-    if (submitting.current || !form.current || !form.current.reportValidity()) return;
+    if (submitting.current || !mounted.current || !form.current || !form.current.reportValidity()) return;
+    if (!navigator.onLine) {
+      setError(AUTH_OFFLINE_MESSAGE);
+      return;
+    }
     // Keep credentials only in this mounted form, including after verification.
     const body = new FormData(form.current);
     const controller = new AbortController();
@@ -91,6 +99,7 @@ export function SignupForm({ nextPath = "/explore", initialError }: { nextPath?:
     submitting.current = true;
     setError(null);
     setIsSubmitting(true);
+    setIsNavigating(false);
     let navigating = false;
 
     try {
@@ -103,7 +112,7 @@ export function SignupForm({ nextPath = "/explore", initialError }: { nextPath?:
         signal: controller.signal,
       });
       const result = await readAuthResponse(response, "Unable to create account.");
-      if (controller.signal.aborted || !mounted.current) return;
+      if (controller.signal.aborted || !mounted.current || request.current !== controller) return;
 
       if (!response.ok || result.error) {
         if (result.challengeRequired === true || result.code === "security_check_required" || result.error?.includes("/security-check")) {
@@ -115,14 +124,18 @@ export function SignupForm({ nextPath = "/explore", initialError }: { nextPath?:
       }
 
       navigating = true;
+      setIsNavigating(true);
       router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
-      if (!controller.signal.aborted && mounted.current) setError("Unable to create account. Please check your connection and try again.");
+      navigating = false;
+      if (!controller.signal.aborted && mounted.current && request.current === controller) setError(navigator.onLine ? "Unable to create account. Please check your connection and try again." : AUTH_OFFLINE_MESSAGE);
     } finally {
-      if (!controller.signal.aborted && mounted.current && !navigating) {
+      if (!controller.signal.aborted && mounted.current && request.current === controller && !navigating) {
+        request.current = null;
         submitting.current = false;
         setIsSubmitting(false);
+        setIsNavigating(false);
       }
     }
   }
@@ -150,6 +163,7 @@ export function SignupForm({ nextPath = "/explore", initialError }: { nextPath?:
         data-signup-security-check={challengeRequired || undefined}
         action="/api/auth/signup"
         aria-describedby={error ? "signup-form-error" : undefined}
+        aria-busy={isSubmitting}
         className="relative z-10 mt-6 space-y-5 pointer-events-auto"
         method="post"
         onSubmit={handleSubmit}
@@ -233,7 +247,7 @@ export function SignupForm({ nextPath = "/explore", initialError }: { nextPath?:
               isSubmitting ? "animate-spin motion-reduce:animate-none" : "hidden",
             ].join(" ")}
           />
-          {isSubmitting ? "Creating..." : "Create account"}
+          {isNavigating ? "Opening your account..." : isSubmitting ? "Creating..." : "Create account"}
         </button>}
         <p className="text-xs leading-5 text-text-secondary">
           By creating an account, you agree to ReyLUMI&apos;s{" "}

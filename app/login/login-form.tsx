@@ -6,7 +6,7 @@ import { PortableTouchKeyboard } from "@/app/pos/portable/touch-keyboard";
 import { AUTH_OFFLINE_MESSAGE, SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE } from "@/lib/supabase/auth-errors";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 
 const inputClassName =
   "mt-2 min-h-[52px] w-full rounded-2xl border bg-white px-4 text-base font-semibold text-text-primary outline-none transition placeholder:text-text-muted focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10 motion-reduce:transition-none";
@@ -84,21 +84,41 @@ export function LoginForm({
   const [showRecoveryHelp, setShowRecoveryHelp] = useState(
     showRecoveryHelpInitially,
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionPhase, setSubmissionPhase] = useState<"login" | "verify" | "opening" | null>(null);
+  const isSubmitting = submissionPhase !== null;
   const [mfaChallenge, setMfaChallenge] = useState<AuthResponse["mfa"] | null>(
     null,
   );
   const [showPassword, setShowPassword] = useState(false);
+  const submitting = useRef(false);
+  const request = useRef<AbortController | null>(null);
+  const mounted = useRef(true);
+
+  useLayoutEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      request.current?.abort();
+      request.current = null;
+      submitting.current = false;
+      setSubmissionPhase(null);
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting.current || !mounted.current) return;
     if (!navigator.onLine) {
       setError(AUTH_OFFLINE_MESSAGE);
       return;
     }
     setError(null);
-    setIsSubmitting(true);
+    const controller = new AbortController();
+    request.current = controller;
+    submitting.current = true;
+    setSubmissionPhase("login");
     setMfaChallenge(null);
+    let navigating = false;
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -107,8 +127,10 @@ export function LoginForm({
         },
         method: "POST",
         body: new FormData(event.currentTarget),
+        signal: controller.signal,
       });
       const result = await readAuthResponse(response, "Unable to log in.");
+      if (controller.signal.aborted || !mounted.current || request.current !== controller) return;
 
       if (!response.ok || result.error) {
         setError(result.error ?? "Unable to log in.");
@@ -127,18 +149,28 @@ export function LoginForm({
         router.refresh();
         return;
       }
+      navigating = true;
+      setSubmissionPhase("opening");
       router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
-      setError(navigator.onLine ? SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE : AUTH_OFFLINE_MESSAGE);
-      setShowRecoveryHelp(true);
+      navigating = false;
+      if (!controller.signal.aborted && mounted.current && request.current === controller) {
+        setError(navigator.onLine ? SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE : AUTH_OFFLINE_MESSAGE);
+        setShowRecoveryHelp(true);
+      }
     } finally {
-      setIsSubmitting(false);
+      if (!controller.signal.aborted && mounted.current && request.current === controller && !navigating) {
+        request.current = null;
+        submitting.current = false;
+        setSubmissionPhase(null);
+      }
     }
   }
 
   async function handleMfaSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting.current || !mounted.current) return;
     if (!navigator.onLine) {
       setError(AUTH_OFFLINE_MESSAGE);
       return;
@@ -150,7 +182,11 @@ export function LoginForm({
     }
 
     setError(null);
-    setIsSubmitting(true);
+    const controller = new AbortController();
+    request.current = controller;
+    submitting.current = true;
+    setSubmissionPhase("verify");
+    let navigating = false;
 
     try {
       const formData = new FormData(event.currentTarget);
@@ -164,11 +200,13 @@ export function LoginForm({
         },
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
       const result = await readAuthResponse(
         response,
         "Unable to verify two-factor code.",
       );
+      if (controller.signal.aborted || !mounted.current || request.current !== controller) return;
 
       if (!response.ok || result.error) {
         setError(result.error ?? "Unable to verify two-factor code.");
@@ -181,13 +219,22 @@ export function LoginForm({
         router.refresh();
         return;
       }
+      navigating = true;
+      setSubmissionPhase("opening");
       router.push(result.redirectTo ?? "/explore");
       router.refresh();
     } catch {
-      setError(navigator.onLine ? SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE : AUTH_OFFLINE_MESSAGE);
-      setShowRecoveryHelp(true);
+      navigating = false;
+      if (!controller.signal.aborted && mounted.current && request.current === controller) {
+        setError(navigator.onLine ? SUPABASE_AUTH_CONNECTION_ERROR_MESSAGE : AUTH_OFFLINE_MESSAGE);
+        setShowRecoveryHelp(true);
+      }
     } finally {
-      setIsSubmitting(false);
+      if (!controller.signal.aborted && mounted.current && request.current === controller && !navigating) {
+        request.current = null;
+        submitting.current = false;
+        setSubmissionPhase(null);
+      }
     }
   }
 
@@ -208,6 +255,7 @@ export function LoginForm({
         <form
           key="mfa"
           aria-describedby={error ? "login-form-error" : undefined}
+          aria-busy={isSubmitting}
           className="relative z-10 mt-6 space-y-5"
           onSubmit={handleMfaSubmit}
         >
@@ -255,7 +303,7 @@ export function LoginForm({
                 isSubmitting ? "animate-spin motion-reduce:animate-none" : "hidden",
               ].join(" ")}
             />
-            <WorkspaceText text={isSubmitting ? "Verifying..." : "Verify and log in"} />
+            <WorkspaceText text={submissionPhase === "opening" ? "Opening your account..." : isSubmitting ? "Verifying..." : "Verify and log in"} />
           </button>
 
           <button
@@ -265,6 +313,7 @@ export function LoginForm({
               setMfaChallenge(null);
               setShowRecoveryHelp(false);
             }}
+            disabled={isSubmitting}
             type="button"
           >
             <WorkspaceText text="Use a different account" />
@@ -275,6 +324,7 @@ export function LoginForm({
         key="login"
         action="/api/auth/login"
         aria-describedby={error ? "login-form-error" : undefined}
+        aria-busy={isSubmitting}
         className="relative z-10 mt-6 space-y-5"
         method="post"
         onSubmit={handleSubmit}
@@ -350,7 +400,7 @@ export function LoginForm({
               isSubmitting ? "animate-spin motion-reduce:animate-none" : "hidden",
             ].join(" ")}
           />
-          <WorkspaceText text={isSubmitting ? "Logging in..." : "Log in"} />
+          <WorkspaceText text={submissionPhase === "opening" ? "Opening your account..." : isSubmitting ? "Logging in..." : "Log in"} />
         </button>
         </form>
       )}

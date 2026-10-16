@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@/components/action-feedback";
 import { BookingDepositReceipt } from "@/components/booking-deposit-receipt";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { TimeZoneSelect } from "@/components/time-zone-select";
@@ -4877,6 +4878,7 @@ function DetailDrawer({
   const __vt = useWorkspaceTranslation();
 
   const [booking]=useState(serverBooking);
+  const [pendingAction, setPendingAction] = useState("");
   
   const [result, setResult] = useState<BookingActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -4905,6 +4907,8 @@ function DetailDrawer({
     booking.posTicket.paymentStatus !== "paid";
 
   function runStatus(command: Parameters<typeof runBookingStatusAction>[0]["command"]) {
+    if (isPending) return;
+    setPendingAction("status:" + command);
     setResult(null);
     startTransition(async () => {
       const response = await runBookingStatusAction({
@@ -4924,6 +4928,8 @@ function DetailDrawer({
 
   function runReschedule(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isPending) return;
+    setPendingAction("reschedule");
     setResult(null);
     startTransition(async () => {
       const response = await rescheduleOwnerBookingAction({
@@ -4944,6 +4950,8 @@ function DetailDrawer({
 
   function runReassign(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isPending) return;
+    setPendingAction("reassign");
     setResult(null);
     startTransition(async () => {
       const response = await reassignOwnerBookingAction({
@@ -4965,6 +4973,8 @@ function DetailDrawer({
   }
 
   function createTicket() {
+    if (isPending) return;
+    setPendingAction("ticket");
     setResult(null);
     startTransition(async () => {
       const response = await createBookingPosTicketAction({
@@ -5136,10 +5146,11 @@ function DetailDrawer({
               <button
                 className="min-h-10 rounded-md bg-[#f26f3d] px-3 text-sm font-semibold text-white disabled:opacity-60"
                 disabled={isPending || ticketConversionBlocked}
+                aria-busy={isPending && pendingAction === "ticket"}
                 onClick={createTicket}
                 type="button"
               >
-                <WorkspaceText text="Create POS ticket" />
+                <ActionFeedback pending={isPending && pendingAction === "ticket"} pendingLabel="Creating…"><WorkspaceText text="Create POS ticket" /></ActionFeedback>
               </button>
             ) : null}
           </div>
@@ -5255,10 +5266,11 @@ function DetailDrawer({
                   className="min-h-10 rounded-md bg-[#f26f3d] px-3 text-sm font-semibold text-white disabled:opacity-60"
                   disabled={isPending || ((action.command === "mark_no_show" || action.command === "mark_no_show_excused") && booking.normalizedStatus !== "no_show" && Date.parse(booking.start_at) > noShowClock)}
                   key={action.command}
+                  aria-busy={isPending && pendingAction === "status:" + action.command}
                   onClick={() => runStatus(action.command)}
                   type="button"
                 >
-                  <WorkspaceText text={action.label} />
+                  <ActionFeedback pending={isPending && pendingAction === "status:" + action.command} pendingLabel="Updating…"><WorkspaceText text={action.label} /></ActionFeedback>
                 </button>
               ))}
             </div>
@@ -5298,9 +5310,10 @@ function DetailDrawer({
               <button
                 className="w-fit min-h-10 rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950 disabled:opacity-60"
                 disabled={isPending}
+                aria-busy={isPending && pendingAction === "reschedule"}
                 type="submit"
               >
-                <WorkspaceText text="Save time" />
+                <ActionFeedback pending={isPending && pendingAction === "reschedule"} pendingLabel="Saving…"><WorkspaceText text="Save time" /></ActionFeedback>
               </button>
             </form></details>
 
@@ -5336,9 +5349,10 @@ function DetailDrawer({
               <button
                 className="w-fit min-h-10 rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950 disabled:opacity-60"
                 disabled={isPending}
+                aria-busy={isPending && pendingAction === "reassign"}
                 type="submit"
               >
-                <WorkspaceText text="Save assignment" />
+                <ActionFeedback pending={isPending && pendingAction === "reassign"} pendingLabel="Saving…"><WorkspaceText text="Save assignment" /></ActionFeedback>
               </button>
             </form></details>
           </section>

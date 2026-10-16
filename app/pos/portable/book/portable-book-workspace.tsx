@@ -1,5 +1,6 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { ActionFeedback } from "@/components/action-feedback";
 import { useBookingClock } from "@/components/booking-ui/use-booking-clock";
 import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
 import { bookingStatusLabel } from "@/lib/booking-no-show";
@@ -121,6 +122,7 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
   },[hoursAction,selectedDate]);
   const requestRef = useRef<{ requestId: string; requestedAt: string } | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [customerId, setCustomerId] = useState<string | undefined>();
   const [customerName, setCustomerName] = useState("");
@@ -215,7 +217,8 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
   }
 
   function changeStatus(next: "confirm" | "cancel" | "mark_no_show" | "mark_no_show_excused") {
-    if (!manageAction || !latestStatusTarget) return;
+    if (!manageAction || !latestStatusTarget || isPending) return;
+    setPendingStatus(next);
     setError("");
     startTransition(async () => {
       try {
@@ -304,7 +307,7 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
   }, [appointments, data.timezone, query, range, selectedDate, status, view]);
 
   function submitAppointment() {
-    if (editingChanged) return;
+    if (editingChanged || isPending) return;
     setError("");
     startTransition(async () => {
       try {
@@ -385,6 +388,7 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
           </div>
           {data.canCreate && <button className={styles.create} type="button" onClick={()=>openCreate()}><WorkspaceText text="+ New appointment" /></button>}
         </div>
+        {isPending && !showCreate && !latestStatusTarget ? <p role="status" className="px-3 py-2 text-sm text-zinc-600"><ActionFeedback pending pendingLabel="Opening appointment…">{null}</ActionFeedback></p> : null}
         {data.setupMessage ? <p className="px-3 py-2 text-sm text-amber-800" role="status"><WorkspaceText text={data.setupMessage} /></p> : null}
         {error && !showCreate && !statusTarget && <p role="alert" className="px-3 py-2 text-sm text-red-700"><WorkspaceText text={error} /></p>}
         <div className={styles.bookingBody} data-editing={showCreate}><div className={styles.bookingContent}><BookingViews focusRequest={calendarFocusRequest} openingHours={openingHours} actions={manageAction ? { edit: data.canCreate ? (item, field) => loadAppointment(item, "edit", field) : undefined, status: data.canCreate || data.canCancel ? item => loadAppointment(item, "status") : undefined, ticket: data.canCreateTicket ? item => loadAppointment(item, "ticket") : undefined } : undefined} appointments={visible} data={data} date={selectedDate} view={view} showDates={range !== "day"} /></div>
@@ -401,7 +405,7 @@ export function PortableBookWorkspace({ action, data, searchCustomersAction, slo
         </div>
       </section>
 
-      {latestStatusTarget && <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4" style={{bottom:"var(--portable-keyboard-height, 0px)"}} role="dialog" aria-modal="true" aria-label={__vt("Appointment status")}><div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl"><h2 className="text-lg font-semibold">{latestStatusTarget.customerName} · <WorkspaceText text={bookingStatusLabel(latestStatusTarget.status, latestStatusTarget.noShowKind)} /></h2><label className="mt-3 grid gap-1 text-sm"><WorkspaceText text="Note (optional)" /><input className="h-11 rounded border px-3" value={cancelReason} onChange={e => setCancelReason(e.target.value)} /></label>{error && <p role="alert" className="mt-3 text-red-700"><WorkspaceText text={error} /></p>}<div className="mt-4 flex flex-wrap gap-2">{data.canCreate && !latestStatusTarget.ticketId && latestStatusTarget.status === "pending" && <button type="button" className="rounded bg-teal-700 px-4 py-3 text-white" disabled={isPending} onClick={() => changeStatus("confirm")}><WorkspaceText text="Confirm appointment" /></button>}{data.canCancel && !latestStatusTarget.ticketId && ["pending","scheduled","confirmed","checked_in"].includes(latestStatusTarget.status) && <button type="button" className="rounded border border-red-300 px-4 py-3 text-red-700" disabled={isPending} onClick={() => changeStatus("cancel")}><WorkspaceText text="Cancel appointment" /></button>}{data.canCancel && !latestStatusTarget.ticketId && ["scheduled","confirmed","no_show"].includes(latestStatusTarget.status) && (latestStatusTarget.status === "no_show" || Date.parse(latestStatusTarget.startAt) <= noShowClock) && <><button type="button" className="min-h-11 rounded border border-orange-300 px-4 py-3 text-orange-800" disabled={isPending} onClick={() => changeStatus("mark_no_show")}><WorkspaceText text="No-show" /></button><button type="button" className="min-h-11 rounded border px-4 py-3" disabled={isPending} onClick={() => changeStatus("mark_no_show_excused")}><WorkspaceText text="No-show with reason" /></button></>}<button type="button" className="rounded border px-4 py-3" disabled={isPending} onClick={() => {setStatusTarget(null);setError("");}}><WorkspaceText text="Close" /></button></div></div></div>}
+      {latestStatusTarget && <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4" style={{bottom:"var(--portable-keyboard-height, 0px)"}} role="dialog" aria-modal="true" aria-label={__vt("Appointment status")}><div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl"><h2 className="text-lg font-semibold">{latestStatusTarget.customerName} · <WorkspaceText text={bookingStatusLabel(latestStatusTarget.status, latestStatusTarget.noShowKind)} /></h2><label className="mt-3 grid gap-1 text-sm"><WorkspaceText text="Note (optional)" /><input className="h-11 rounded border px-3" value={cancelReason} onChange={e => setCancelReason(e.target.value)} /></label>{error && <p role="alert" className="mt-3 text-red-700"><WorkspaceText text={error} /></p>}<div className="mt-4 flex flex-wrap gap-2">{data.canCreate && !latestStatusTarget.ticketId && latestStatusTarget.status === "pending" && <button type="button" className="rounded bg-teal-700 px-4 py-3 text-white" disabled={isPending} aria-busy={isPending && pendingStatus === "confirm"} onClick={() => changeStatus("confirm")}><ActionFeedback pending={isPending && pendingStatus === "confirm"} pendingLabel="Confirming…"><WorkspaceText text="Confirm appointment" /></ActionFeedback></button>}{data.canCancel && !latestStatusTarget.ticketId && ["pending","scheduled","confirmed","checked_in"].includes(latestStatusTarget.status) && <button type="button" className="rounded border border-red-300 px-4 py-3 text-red-700" disabled={isPending} aria-busy={isPending && pendingStatus === "cancel"} onClick={() => changeStatus("cancel")}><ActionFeedback pending={isPending && pendingStatus === "cancel"} pendingLabel="Cancelling…"><WorkspaceText text="Cancel appointment" /></ActionFeedback></button>}{data.canCancel && !latestStatusTarget.ticketId && ["scheduled","confirmed","no_show"].includes(latestStatusTarget.status) && (latestStatusTarget.status === "no_show" || Date.parse(latestStatusTarget.startAt) <= noShowClock) && <><button type="button" className="min-h-11 rounded border border-orange-300 px-4 py-3 text-orange-800" disabled={isPending} aria-busy={isPending && pendingStatus === "mark_no_show"} onClick={() => changeStatus("mark_no_show")}><ActionFeedback pending={isPending && pendingStatus === "mark_no_show"} pendingLabel="Saving…"><WorkspaceText text="No-show" /></ActionFeedback></button><button type="button" className="min-h-11 rounded border px-4 py-3" disabled={isPending} aria-busy={isPending && pendingStatus === "mark_no_show_excused"} onClick={() => changeStatus("mark_no_show_excused")}><ActionFeedback pending={isPending && pendingStatus === "mark_no_show_excused"} pendingLabel="Saving…"><WorkspaceText text="No-show with reason" /></ActionFeedback></button></>}<button type="button" className="rounded border px-4 py-3" disabled={isPending} onClick={() => {setStatusTarget(null);setError("");}}><WorkspaceText text="Close" /></button></div></div></div>}
 
     </section>
   );

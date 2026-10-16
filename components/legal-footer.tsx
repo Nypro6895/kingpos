@@ -4,7 +4,7 @@ import {
   REYLUMI_APP_NAME,
   REYLUMI_COPYRIGHT_YEAR,
 } from "@/lib/reylumi-config";
-import Link from "next/link";
+import Link from "@/components/feedback-link";
 
 export function LegalFooter({ className = "" }: { className?: string }) {
   return (

@@ -7,6 +7,7 @@ import { disconnectTaxSalon } from "@/app/tax-company/actions";
 import { TaxCompanyNoteEditor } from "@/app/tax-company/note-editor";
 import { TaxPeriodPicker } from "@/app/tax-company/period-picker";
 import styles from "@/app/tax-company/tax-company.module.css";
+import { SubmitButton } from "@/components/submit-button";
 
 async function TaxSalonPage({ params, searchParams }: { params: Promise<{ salonId: string }>; searchParams: Promise<{ run?: string; period?: string; message?: string }> }) {
   const { salonId } = await params, query = await searchParams;
@@ -28,7 +29,7 @@ async function TaxSalonPage({ params, searchParams }: { params: Promise<{ salonI
     {query.message && <p role="alert" className={styles.notice}>{query.message}</p>}
     {!data.run ? <div className={styles.panel}><p className={styles.empty}>The salon has not printed a payroll statement for this period yet. Paystubs can be uploaded when the statement is ready.</p></div> : <TaxCompanyLinesTable lines={data.lines} payrollRunId={data.run.id} returnPath={returnPath} taxSalonId={salonId} />}
     <TaxCompanyCalculationGuide />
-    <footer className={styles.header}><p className={styles.muted}>Paystubs are shared with the salon owner and the relevant staff member.</p><form action={disconnectTaxSalon}><input name="salon_id" value={salonId} type="hidden" /><button className={styles.button}>Sign out this salon</button></form></footer>
+    <footer className={styles.header}><p className={styles.muted}>Paystubs are shared with the salon owner and the relevant staff member.</p><form action={disconnectTaxSalon}><input name="salon_id" value={salonId} type="hidden" /><SubmitButton className={styles.button} pendingLabel="Signing out…">Sign out this salon</SubmitButton></form></footer>
   </main>;
 }
 

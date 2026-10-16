@@ -1,4 +1,6 @@
 "use client";
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
+
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { usePathname } from "next/navigation";
 import { subscribePosChanges } from "@/lib/pos-workspace-sync";
@@ -310,7 +312,7 @@ function PortableWorkLogFilters({
   const __vt = useWorkspaceTranslation();
 
   return (
-    <form
+    <NavigationForm
       action="/pos/portable/ticket"
       className="mt-4 grid gap-3 border-b border-zinc-200 pb-4 sm:grid-cols-[180px_minmax(260px,1fr)_auto_auto]"
       method="get"
@@ -334,19 +336,19 @@ function PortableWorkLogFilters({
           type="search"
         />
       </label>
-      <button
+      <NavigationSubmitButton pendingLabel="Loading…"
         className="h-10 self-end rounded bg-zinc-950 px-4 text-sm font-medium text-white"
         type="submit"
       >
         <WorkspaceText text="Search" />
-      </button>
+      </NavigationSubmitButton>
       <Link
         className="inline-flex h-10 items-center self-end rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
         href={todayHref}
       >
         <WorkspaceText text="Today" />
       </Link>
-    </form>
+    </NavigationForm>
   );
 }
 

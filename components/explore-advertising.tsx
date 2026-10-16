@@ -1,11 +1,13 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { NavigationProgress } from "@/components/feedback-link";
 /* eslint-disable @next/next/no-img-element -- Preserve uploaded GIF animation and intrinsic campaign dimensions. */
 
 import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useState,
   useRef,
   useId,
@@ -30,6 +32,46 @@ const Context = createContext<{
   claimFeed: (id: string, slot: string) => boolean;
   record: (campaign: Campaign, event: "view" | "click") => Promise<boolean>;
 }>({ campaigns: [], claimFeed: () => true, record: async () => true });
+
+function useAdNavigation(record: (campaign: Campaign, event: "view" | "click") => Promise<boolean>) {
+  const [pending, setPending] = useState(false);
+  const busy = useRef(false);
+  const generation = useRef(0);
+  const mounted = useRef(true);
+  useLayoutEffect(() => {
+    mounted.current = true;
+    const reset = () => {
+      generation.current += 1;
+      busy.current = false;
+      setPending(false);
+    };
+    window.addEventListener("pageshow", reset);
+    return () => {
+      mounted.current = false;
+      window.removeEventListener("pageshow", reset);
+      reset();
+    };
+  }, [record]);
+  async function navigate(campaign: Campaign) {
+    if (busy.current || !mounted.current) return;
+    busy.current = true;
+    const attempt = ++generation.current;
+    setPending(true);
+    try {
+      await Promise.race([
+        record(campaign, "click"),
+        new Promise((resolve) => setTimeout(resolve, 1200)),
+      ]);
+      if (mounted.current && generation.current === attempt) window.location.assign(campaign.href);
+    } catch {
+      if (mounted.current && generation.current === attempt) {
+        busy.current = false;
+        setPending(false);
+      }
+    }
+  }
+  return { pending, navigate };
+}
 function select(campaigns: Campaign[], kind: Campaign["kind"]) {
   let previous: string | null = null;
   try {
@@ -55,6 +97,7 @@ export function ImageAd({
   const __vt = useWorkspaceTranslation();
 
   const { record } = useContext(Context);
+  const navigation = useAdNavigation(record);
   const Tag = campaign.href && !preview ? "a" : "div";
   return (
     <Tag
@@ -73,11 +116,7 @@ export function ImageAd({
                 return;
               }
               event.preventDefault();
-              await Promise.race([
-                record(campaign, "click"),
-                new Promise((resolve) => setTimeout(resolve, 1200)),
-              ]);
-              window.location.assign(campaign.href);
+              await navigation.navigate(campaign);
             },
           }
         : {})}
@@ -94,6 +133,7 @@ export function ImageAd({
         </div>
       ) : null}
       <span className={styles.sponsored}><WorkspaceText text="Sponsored" /></span>
+      <NavigationProgress pending={navigation.pending} />
     </Tag>
   );
 }
@@ -230,6 +270,7 @@ export function ExploreAdvertising({
   );
   const [popup, setPopup] = useState<Campaign | null>(null);
   const [ticker, setTicker] = useState<Campaign | null>(null);
+  const navigation = useAdNavigation(record);
   useEffect(() => {
     if (!active || !device) return;
     feedClaims.current.clear();
@@ -389,6 +430,7 @@ export function ExploreAdvertising({
     <Context.Provider
       value={{ campaigns: active ? placement : [], claimFeed, record }}
     >
+      <NavigationProgress pending={navigation.pending} />
       <div
         className={
           active && ticker
@@ -415,11 +457,7 @@ export function ExploreAdvertising({
                       return;
                     }
                     event.preventDefault();
-                    await Promise.race([
-                      record(ticker, "click"),
-                      new Promise((resolve) => setTimeout(resolve, 1200)),
-                    ]);
-                    window.location.assign(ticker.href);
+                    await navigation.navigate(ticker);
                   }}
                   style={{ animationDuration: `${ticker.speedSeconds}s` }}
                 >

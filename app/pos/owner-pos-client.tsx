@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@/components/action-feedback";
 import { DeskRelay } from "@/app/service-relay/desk-relay";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { useCallback,useEffect, useRef, useState } from "react";
@@ -235,7 +236,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
           </div>
           <div className="owner-keypad">{['1','2','3','4','5','6','7','8','9','⌫','0','/'].map(n=><button key={n} data-key={n==='⌫'?'backspace':n} aria-label={__vt(n==='⌫'?'Backspace':n)} disabled={busy||(n==='/'&&inputTarget!=='amount')} onClick={()=>pressKey(n)}>{n==='⌫'?<OwnerPosIcon name="backspace"/>:n}</button>)}</div>
           <div className="owner-keypad-edit"><button disabled={busy} onClick={()=>void reset()}><WorkspaceText text="Reset" /></button><button disabled={busy} onClick={()=>{replaceAmount.current=true;if(inputTarget==='amount')setAmount('');else update({[inputTarget]:''});}}><WorkspaceText text="Clear" /></button><button onClick={()=>setPanel('ticket')}><WorkspaceText text="Edit line" /></button></div>
-          <div className="owner-submit"><button disabled={busy} onClick={add}><WorkspaceText text="+ Add another" /></button><button disabled={busy} onClick={()=>void submit()}>{busy?<WorkspaceText text="Saving…" />:'Submit'}</button></div>
+          <div className="owner-submit"><button disabled={busy} onClick={add}><WorkspaceText text="+ Add another" /></button><button disabled={busy} aria-busy={busy} onClick={()=>void submit()}><ActionFeedback pending={busy} pendingLabel="Saving…"><WorkspaceText text="Submit" /></ActionFeedback></button></div>
         </section>
       </div>
     </>:<p><WorkspaceText text="Opening your saved workspace…" /></p>}

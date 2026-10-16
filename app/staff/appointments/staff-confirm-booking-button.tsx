@@ -1,6 +1,7 @@
 "use client";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { ActionFeedback } from "@/components/action-feedback";
 import { useRef, useState } from "react";
 import { useStaffConfirmation } from "./staff-schedule-interactions";
 import { confirmNoShowHistory } from "@/components/booking-ui/no-show-confirmation";
@@ -23,7 +24,7 @@ export function StaffConfirmBookingButton({bookingId, disabled, label = "Confirm
   }
   if (confirmation?.noShows.has(bookingId)) return null;
   return <div>
-    <button className="staff-appointments-primary-button disabled:opacity-50" disabled={disabled || pending || confirmed} type="button" onClick={async () => {
+    <button className="staff-appointments-primary-button disabled:opacity-50" disabled={disabled || pending || confirmed} aria-busy={pending} type="button" onClick={async () => {
       if (inFlight.current || confirmed) return;
       inFlight.current = true;
       setPending(true);
@@ -45,7 +46,7 @@ export function StaffConfirmBookingButton({bookingId, disabled, label = "Confirm
         inFlight.current = false;
         setPending(false);
       }
-    }}>{pending ? "Confirming…" : confirmed ? <WorkspaceText text="Confirmed" /> : label}</button>
+    }}><ActionFeedback pending={pending} pendingLabel="Confirming…">{confirmed ? <WorkspaceText text="Confirmed" /> : label}</ActionFeedback></button>
     {error ? <p className="mt-2 text-sm text-red-700" role="alert"><WorkspaceText text={error} /></p> : null}
   </div>;
 }

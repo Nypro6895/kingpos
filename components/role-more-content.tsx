@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/feedback-link";
 import { ROLE_MORE_ITEMS, type RoleNavigationKind } from "@/app/role-navigation";
 import { useCampaignPlugin } from "@/components/campaign-plugin-context";
 import { WorkspaceText } from "@/components/workspace-language";

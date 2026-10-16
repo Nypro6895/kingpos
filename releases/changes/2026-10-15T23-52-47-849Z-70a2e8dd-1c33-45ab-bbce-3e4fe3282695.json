@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "whole-site-action-feedback-20261015",
+  "status": "working",
+  "occurredAt": "2026-10-15T23:48:03.000Z",
+  "summary": "Rà soát phản hồi thao tác toàn web/app: đăng nhập tới khi mở trang, điều hướng, form và nút POS/booking/Market/support; sửa trạng thái chờ và chống gửi lặp phù hợp, giữ logic nghiệp vụ.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/action-feedback.tsx",
+    "components/feedback-link.tsx",
+    "components/navigation-form.tsx",
+    "app/navigation-shell.tsx",
+    "app/guest-navigation-shell.tsx",
+    "components/role-more-content.tsx",
+    "components/legal-footer.tsx",
+    "app/login/login-form.tsx",
+    "app/signup/signup-form.tsx",
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/pos-desk-client.tsx",
+    "app/pos/portable/check-in/portable-check-in-client.tsx",
+    "app/pos/portable/book/portable-book-workspace.tsx",
+    "app/pos/portable/book/booking-editor.tsx",
+    "app/pos/portable/portable-draft-controls.tsx",
+    "app/bookings/booking-workspace-client.tsx",
+    "app/staff/appointments/staff-confirm-booking-button.tsx",
+    "app/staff/appointments/staff-booking-settings-client.tsx",
+    "app/(app)/tax-company/page.tsx",
+    "app/(app)/tax-company/[salonId]/page.tsx",
+    "app/(app)/payroll/tax-company/settings/page.tsx",
+    "app/salon-profile/salon-profile-view.tsx",
+    "app/support/support-ui.tsx",
+    "app/admin/admin-support-hub.tsx",
+    "app/market/card-checkout-panel.tsx",
+    "app/market/booking-policy-panel.tsx",
+    "app/market/vietnamese-plugin-panel.tsx",
+    "tests/auth-action-feedback-ui.test.mjs",
+    "tests/pos-action-feedback-ui.test.mjs",
+    "tests/secondary-action-feedback-ui.test.mjs",
+    "tests/shared-action-feedback-ui.test.mjs",
+    "docs/action-feedback-audit.txt"
+  ],
+  "source": {
+    "commit": "e4e4deb20d2611b49d7e1696f8e200b5e4e4b04c",
+    "snapshot": "C:/Users/giuse/kingpos/work/pos-instant-tabs-2026-10-15T23-31-34-156Z"
+  },
+  "dependencies": [
+    "pos-instant-tab-navigation-20261015"
+  ],
+  "validation": [
+    {
+      "name": "Focused fixtures, regressions, lint and assembled production build",
+      "result": "pending"
+    }
+  ],
+  "notes": [
+    "Implementation only; no deployment requested. Exact final file scope recorded in separate completion event.",
+    "No production payments, account writes, messages or transactions during verification."
+  ],
+  "id": "70a2e8dd-1c33-45ab-bbce-3e4fe3282695",
+  "recordedAt": "2026-10-15T23:52:47.849Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-instant-tabs\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -1,5 +1,6 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { ActionFeedback } from "@/components/action-feedback";
 import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
 import { PORTABLE_BOOKING_TICKET, type BookingTicketRequest } from "@/lib/portable-booking-ticket";
 import { CustomerName } from "@/components/customer-name";
@@ -3592,9 +3593,10 @@ export function PosDeskClient({
                 className="min-h-11 rounded-md bg-zinc-950 px-3 py-2 font-semibold text-white disabled:bg-zinc-300"
                 disabled={isPending || turnAdjustDelta === 0}
                 onClick={submitTurnAdjustment}
+                aria-busy={isPending}
                 type="button"
               >
-                {isPending ? "Confirming" : <WorkspaceText text="Confirm" />}
+                <ActionFeedback pending={isPending} pendingLabel="Confirming…"><WorkspaceText text="Confirm" /></ActionFeedback>
               </button>
             </div>
           </div>
@@ -4510,17 +4512,19 @@ export function PosDeskClient({
               className="rounded-lg border border-zinc-200 bg-white/80 px-3 py-3 font-semibold text-zinc-700 shadow-sm transition hover:bg-white active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2"
               disabled={(!localFirstDraft && isPending) || isResetting || isSubmitting || (localFirstDraft && !portableDraftReady)}
               onClick={cancelActiveSession}
+              aria-busy={isResetting}
               type="button"
             >
-              {isResetting ? "Resetting" : <WorkspaceText text="Reset" />}
+              <ActionFeedback pending={isResetting} pendingLabel="Resetting…"><WorkspaceText text="Reset" /></ActionFeedback>
             </button>
             <button
               className="rounded-lg border border-brand-orange bg-gradient-to-b from-brand-orange via-[#ef5d28] to-brand-orange-hover px-3 py-3 font-bold text-white shadow-[0_16px_30px_rgba(242,111,61,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_34px_rgba(242,111,61,0.34)] active:translate-y-px disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2"
               disabled={(!localFirstDraft && isPending) || isResetting || isSubmitting || (localFirstDraft && !portableDraftReady)}
               onClick={submitReceipt}
+              aria-busy={isSubmitting}
               type="button"
             >
-              <WorkspaceText text={isSubmitting ? "Submitting" : "Submit"} />
+              <ActionFeedback pending={isSubmitting} pendingLabel="Submitting…"><WorkspaceText text="Submit" /></ActionFeedback>
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { SubmitButton } from "@/components/submit-button";
 
 import Image from "next/image";
 import Link, { useLinkStatus } from "next/link";
@@ -293,14 +294,15 @@ export function PortableWorkspaceTabs({
         <DesktopTools />
         <PortableFullscreenButton />
         <form action={logoutPortablePosAction} onSubmit={clearPortableLocalDrafts} className="shrink-0">
-          <button
+          <SubmitButton
             aria-label={__vt("Lock POS")}
             className="grid h-10 w-10 place-items-center rounded-lg text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
             title={__vt("Lock POS")}
+            pendingLabel=""
             type="submit"
           >
             <PortableNavIcon name="lock" />
-          </button>
+          </SubmitButton>
         </form>
         </div>
       </div>

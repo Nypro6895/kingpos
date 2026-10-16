@@ -1,3 +1,4 @@
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { withExperiencePage } from "@/components/experience-page";
 import { PayrollFilterToolbar } from "@/app/payroll/payroll-filter-toolbar";
 import styles from "@/app/payroll/payroll-mobile.module.css";
@@ -113,7 +114,7 @@ function PeriodSelector({
 
   return (
     <PayrollFilterToolbar summary={<WorkspaceText text={period.label} />} periodLabel={period.label} active={period.preset === "custom"}>
-      <form
+      <NavigationForm
         action="/payroll/tax-company"
         className="flex flex-wrap items-end gap-3"
       >
@@ -176,10 +177,10 @@ function PeriodSelector({
             </select>
           </label>
         ) : null}
-        <button className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
+        <NavigationSubmitButton pendingLabel="Loading…" className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white">
           <WorkspaceText text="Apply" />
-        </button>
-      </form>
+        </NavigationSubmitButton>
+      </NavigationForm>
       {missingBiweeklyAnchor ? (
         <p className="text-sm text-amber-700">
           <WorkspaceText text="Every-2-weeks payroll needs an anchor date. Update it in Payroll Settings." />
@@ -189,7 +190,7 @@ function PeriodSelector({
         <summary className="cursor-pointer text-sm font-medium text-zinc-600">
           <WorkspaceText text="Advanced custom range" />
         </summary>
-        <form
+        <NavigationForm
           action="/payroll/tax-company"
           className="mt-3 flex flex-wrap items-end gap-3"
         >
@@ -213,10 +214,10 @@ function PeriodSelector({
               type="date"
             />
           </label>
-          <button className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">
+          <NavigationSubmitButton pendingLabel="Loading…" className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-800">
             <WorkspaceText text="Apply Custom" />
-          </button>
-        </form>
+          </NavigationSubmitButton>
+        </NavigationForm>
       </details>
     </PayrollFilterToolbar>
   );
