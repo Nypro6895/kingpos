@@ -3,7 +3,7 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import { CompactFilters } from "@/components/compact-filters";
 import { toolbarStyles } from "@/components/workspace-toolbar";
 import { ReportRangeFilter } from "./report-controls";
-import {useState,useEffect,useRef,useCallback} from 'react';
+import {useState,useEffect,useRef,useCallback,useMemo} from 'react';
 import {useSearchParams,usePathname} from 'next/navigation';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 import {ClosingDateForm,ReportTabs} from './report-controls';
@@ -146,11 +146,12 @@ function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
 }
 
 
-type Props={viewerId:string;snapshotAt?:number;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:OperationalReportData;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
+type Props={viewerId:string;snapshotAt?:number;query?:string;managedRead?:boolean;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:OperationalReportData;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
 export function OwnerLiveReports(initial:Props){
   const __vt = useWorkspaceTranslation();
 
- const [live,setLive]=useState<{base:Props;data:Props}|null>(null);const params=useSearchParams();
+ const [live,setLive]=useState<{base:Props;data:Props}|null>(null);const routeParams=useSearchParams();
+ const params=useMemo(()=>initial.query===undefined?routeParams:new URLSearchParams(initial.query),[initial.query,routeParams]);
  const data=live?.base===initial?live.data:initial;
  const generation=useRef(0);
  useEffect(()=>{generation.current++;},[initial]);
@@ -186,7 +187,7 @@ export function OwnerLiveReports(initial:Props){
  usePosResourceRefresh(salonId,'report',async()=>{
    dirtyViews.current.overview=true;dirtyViews.current.closing=true;
    await refreshView();
- },{initialReconcile:false,snapshotAt:initial.snapshotAt});
+ },{enabled:!initial.managedRead,initialReconcile:false,snapshotAt:initial.snapshotAt});
   return (
     <main className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-4 text-zinc-950 sm:px-6">
       <ReportTabs

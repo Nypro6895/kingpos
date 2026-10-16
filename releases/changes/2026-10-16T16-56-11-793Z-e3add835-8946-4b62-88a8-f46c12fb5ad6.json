@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "app-local-bounded-file-uploads",
+  "status": "working",
+  "summary": "Stage only the three existing Support/Payroll file uploads through an expiring private signed upload and single-use authorized finalization, retaining original handlers and limits.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-upload-policy.ts",
+    "lib/app-local-upload-client.ts",
+    "lib/app-local-upload-server.ts",
+    "supabase/migrations/20261016170000_app_local_upload_sessions.sql",
+    "tests/app-local-upload-runtime.test.mjs",
+    "tests/app-local-upload-client.test.mjs"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Original authority, storage and file validators inspected; implementation pending",
+      "result": "pending"
+    }
+  ],
+  "id": "e3add835-8946-4b62-88a8-f46c12fb5ad6",
+  "recordedAt": "2026-10-16T16:56:11.793Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

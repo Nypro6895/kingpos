@@ -1789,12 +1789,16 @@ export function CustomerDisplayClient({
   serviceCatalog,
   settings:initialSettings,
   token,
+  initialSnapshot,
 }: {
   serviceCatalog: CustomerDisplayService[];
   settings: CustomerDisplaySettings;
   token: string;
+  /** Server-confirmed, scoped paired-device snapshot; ordinary web callers keep the existing live initialization. */
+  initialSnapshot?: PosLiveDraftView | null;
 }) {
-  const [liveDraft, setLiveDraft] = useState<PosLiveDraftView | null>(null);
+  const seededSnapshot = initialSnapshot?.token === token ? initialSnapshot : null;
+  const [liveDraft, setLiveDraft] = useState<PosLiveDraftView | null>(seededSnapshot);
   const [settings,setSettings]=useState(initialSettings);
   usePosResourceRefresh(liveDraft?.salon_id,'settings',async()=>{
     const response=await fetch('/api/pos/customer-display/settings?token='+encodeURIComponent(token),{cache:'no-store',signal:AbortSignal.timeout(8000)});
@@ -1836,11 +1840,11 @@ export function CustomerDisplayClient({
   const lastSubmittedPhoneRef = useRef("");
   const [localPreviewMode, setLocalPreviewMode] = useState(false);
   const localPreview = useRef<{ value: LocalReceiptPreview; receivedAt: number } | null>(null);
-  const liveDraftRef = useRef<PosLiveDraftView | null>(null);
+  const liveDraftRef = useRef<PosLiveDraftView | null>(seededSnapshot);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const serverOffsetRef = useRef(0);
   const lastCustomerInteractionServerMsRef = useRef<number | null>(null);
-  const versionRef = useRef<number | null>(null);
+  const versionRef = useRef<number | null>(seededSnapshot?.version ?? null);
   const completedResetInFlightRef = useRef(false);
 
   const attractImages = useMemo(
@@ -2021,6 +2025,8 @@ export function CustomerDisplayClient({
       return;
     }
 
+    if (initialSnapshot && !navigator.onLine) return;
+
     const result = await getPosLiveDraft(token);
     if (localPreview.current && Date.now() - localPreview.current.receivedAt < 2000) return;
 
@@ -2039,7 +2045,13 @@ export function CustomerDisplayClient({
     }
 
     setError(null);
-  }, [applySnapshot, token]);
+  }, [applySnapshot, initialSnapshot, token]);
+
+  useEffect(() => {
+    if (initialSnapshot?.token !== token) return;
+    const timer = window.setTimeout(() => applySnapshot(initialSnapshot), 0);
+    return () => window.clearTimeout(timer);
+  }, [applySnapshot, initialSnapshot, token]);
 
   useEffect(() => subscribeLocalDisplay(token, applySnapshot), [token, applySnapshot]);
   useEffect(() => {
@@ -2356,6 +2368,7 @@ export function CustomerDisplayClient({
     let cancelled = false;
 
     async function loadTipOptions() {
+      if (initialSnapshot && !navigator.onLine) return;
       const result = await getCustomerDisplayLiveDraftTipOptions({ token });
 
       if (cancelled) {
@@ -2378,6 +2391,7 @@ export function CustomerDisplayClient({
     liveDraft?.total,
     liveDraft?.total_before_tip,
     liveDraftStatus,
+    initialSnapshot,
     token,
   ]);
 

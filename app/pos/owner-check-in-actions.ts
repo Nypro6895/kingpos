@@ -1,18 +1,11 @@
 "use server";
 import {requireSalonManagePageContext} from '@/lib/route-context-guards';
 import {createAuthenticatedSupabaseServerClient} from '@/lib/supabase/server';
-import {getCurrentSalonStaffTodayBoard} from '@/lib/staff-workdays';
-import {getCurrentSalonPosDeskData} from '@/lib/pos-desk';
-import {getContextBusinessTimezone} from '@/lib/salon-business-clock';
+import {loadOwnerCheckInData} from '@/lib/owner-pos-read-model';
 import {broadcastPosStaffChange} from '@/lib/pos-staff-realtime-server';
 import {revalidatePath} from 'next/cache';
 import type {PortableCheckInData,PortableAttendanceEventInput,PortableAttendanceEventUpdate} from './portable/actions';
-export async function getOwnerCheckInData():Promise<PortableCheckInData>{
- const context=await requireSalonManagePageContext('/pos/check-in');
- const [board,desk]=await Promise.all([getCurrentSalonStaffTodayBoard(context),getCurrentSalonPosDeskData({context,includeCustomers:false})]);
- return {salonId:context.currentSalon.id,salonName:context.currentSalon.name,salonLogoUrl:null,timezone:await getContextBusinessTimezone(context),today:board.today,checkInEnabled:desk.defaults.staffCheckInEnabled,
- staff:board.staff.filter(s=>s.pos_enabled).map(s=>({id:s.id,displayName:s.display_name,jobTitle:s.job_title,avatarUrl:null,isPasscodeDefault:Boolean(s.passcode_is_default),status:s.today_status,checkInAt:s.today_workday?.check_in_at??null,checkInSequence:s.today_workday?.check_in_sequence??null,queueTurnCount:s.today_workday?.queue_turn_count??0}))};
-}
+export async function getOwnerCheckInData():Promise<PortableCheckInData>{return loadOwnerCheckInData();}
 export async function ownerSubmitAttendance(input:PortableAttendanceEventInput):Promise<{ok:true;data:PortableAttendanceEventUpdate}|{ok:false;error:string}>{
  try{
  const context=await requireSalonManagePageContext('/pos/check-in');

@@ -1,0 +1,58 @@
+{
+  "validation": [
+    {
+      "name": "8 focused controlled original-read and actual Chromium tests; clean lint",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/explore-progressive-validation.json"
+    }
+  ],
+  "status": "ready",
+  "kind": "change",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/(app)/explore/page.tsx",
+    "lib/explore-page-resource-server.ts",
+    "lib/explore-discovery-presentation.ts",
+    "lib/app-local-explore-types.ts",
+    "lib/app-local-explore-registry.tsx",
+    "lib/app-local-explore-server.ts",
+    "lib/app-local-explore-http-client.ts",
+    "lib/app-local-explore-metadata.ts",
+    "tests/app-local-explore.test.mjs",
+    "tests/app-local-explore-ui.test.mjs",
+    "tests/app-local-explore-progressive.test.mjs",
+    "lib/explore-showcase-content.ts"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\explore-progressive-frozen-source"
+  },
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "changeId": "app-local-explore-20261016",
+  "summary": "Render original Explore core before independent full rails, utility and feed; preserve real input and discovery cursor with scoped staged resources",
+  "supersedesEvents": [
+    "0fbb820b-0c2d-45b6-8c8b-b342f02b39c5"
+  ],
+  "id": "3c5c0e27-368d-4cdb-8bbc-de5bc46158ea",
+  "recordedAt": "2026-10-16T17:38:49.034Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/(app)/explore/page.tsx": "1e92f834db4923c00aca02088b27e766d71c49122c6ec1e9e81b2bb2c3838010",
+    "lib/explore-page-resource-server.ts": "40175654ba86b6b10b2a52f9cac59f4fd044fa450c8046386cb5e422fcdfc2fc",
+    "lib/explore-discovery-presentation.ts": "ddcd4c03c552b4c283e4b0ca02440deb4bf5132cb272443f363683e564c47c9b",
+    "lib/app-local-explore-types.ts": "250bcc500a37bb7f16a39337bb776c6c3610e872a36deea2903f059cd904d65b",
+    "lib/app-local-explore-registry.tsx": "f6ff34ab9d5513720192916c96e2ce12e49b1c5937fafabd1842a520fe0e368c",
+    "lib/app-local-explore-server.ts": "435307b084751f05afaf9381c83aa871dd03e1c14d2db23fd4f0118982aece40",
+    "lib/app-local-explore-http-client.ts": "95424e6de57960d5d081487abb66515b93e958d4cd7a70dcdb17192a28a8c711",
+    "lib/app-local-explore-metadata.ts": "ebade63350ad6c4315ba3c14525a88cc8822c0174c7d77aad097acebd301b3c7",
+    "tests/app-local-explore.test.mjs": "6a51fb4817f64ec74992a5999fa3e454b516d724d0ca22f1f64fe85e2eed9cb4",
+    "tests/app-local-explore-ui.test.mjs": "a6d9456587950a580432d5d0b002e1eb6dda4eacda3bd95b10a31e91d43ce08b",
+    "tests/app-local-explore-progressive.test.mjs": "5047e8fbe381c99994df1ef7af6d0dde17e908e72a5b02d21a9033df69845885",
+    "lib/explore-showcase-content.ts": "aec7c05486a783d6b263488e098a810c2b1745a8c4577aa79e22ac844201885a"
+  }
+}

@@ -6,7 +6,7 @@ import { getExperienceRoutePolicy } from "@/lib/experience-route-policies";
 import { useExperienceScope } from "@/components/experience-scope";
 import { PageLoadingSkeleton } from "@/components/loading-feedback";
 
-const RESOURCE_VIEWS = new Set(["/market", "/notifications", "/staff/today", "/staff/my-work", "/bookings", "/reports"]);
+const RESOURCE_VIEWS = new Set(["/market", "/notifications", "/staff/today", "/staff/my-work", "/staff/appointments", "/staff/workday", "/activity", "/bookings", "/reports"]);
 
 /** Activity cleans effects when hidden; keep browsing state but reset action flows. */
 export function ExperiencePageBoundary({ children, admin = false, renderRevision = "" }: { children: ReactNode; admin?: boolean; renderRevision?: string }) {

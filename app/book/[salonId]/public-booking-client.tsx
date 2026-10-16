@@ -1,4 +1,5 @@
 "use client";
+import { browserPublicOrigin } from "@/lib/browser-public-origin";
 import "@/components/booking-ui/public-booking.css";
 import { useExperienceScope } from "@/components/experience-scope";
 import { useScopedUiDraft } from "@/lib/use-scoped-ui-draft";
@@ -1403,7 +1404,7 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
       : null;
   const guestManageHref =
     result?.manageToken && typeof window !== "undefined"
-      ? `${window.location.origin}/booking/manage/${result.manageToken}`
+      ? `${browserPublicOrigin()}/booking/manage/${result.manageToken}`
       : result?.manageToken
         ? `/booking/manage/${result.manageToken}`
         : null;

@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "app-local-native-foundation",
+  "status": "working",
+  "summary": "Persist original Portable lock in the HTTPS cookie store and revoke only its native display lease; preserve same-viewer/same-scope staff/base route DOM while retaining per-authority cache and binding revocation.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh",
+    "ios/.gitattributes"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Exact r5 runtime still pending; r6 adds lock/cache-domain regressions before parent macOS run",
+      "result": "pending"
+    }
+  ],
+  "id": "584bc7d4-6262-4e03-9af2-fad9cd1936d7",
+  "recordedAt": "2026-10-16T17:21:11.873Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

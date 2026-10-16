@@ -1,0 +1,40 @@
+{
+  "kind": "change",
+  "changeId": "app-local-owner-http-20261016",
+  "status": "ready",
+  "summary": "Bridge original owner workspace/connection/closing GETs and original receipt outbox without changing authority, money logic or retry",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-http-client.ts",
+    "lib/app-local-http-server.ts",
+    "tests/app-local-http-adapters.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\owner-http-r2-frozen-source"
+  },
+  "validation": [
+    {
+      "name": "7 original-handler transport and authority tests plus clean lint",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/owner-http-r2-validation.json"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "supersedesEvents": [
+    "d14c03d6-9940-4f9d-a7d7-76a24e6dc0f3"
+  ],
+  "id": "88ea2278-6725-471a-b064-e67057c2be86",
+  "recordedAt": "2026-10-16T16:19:13.944Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "lib/app-local-http-client.ts": "545a88b1ff43d8f6a58fa039ae1c81b1127aba3bedca42e143d3db76e899d3f9",
+    "lib/app-local-http-server.ts": "006729c80d9c9b066a3c46cdc13f6f84646284e5c2a85caed1056268f1bea61a",
+    "tests/app-local-http-adapters.test.mjs": "bd93f62f2db11a286df87fca098664fdc50fa155356edf9d2ff11a07e8732af6"
+  }
+}

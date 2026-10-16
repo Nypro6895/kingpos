@@ -1,0 +1,53 @@
+{
+  "kind": "change",
+  "changeId": "app-local-business-reference-20261016",
+  "status": "ready",
+  "summary": "Bundle the actual salon profile, complete salon/POS settings and salon list/create interfaces with exact guarded read models; keep existing online server confirmations.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-business-registry.tsx",
+    "lib/app-local-business-server.ts",
+    "lib/app-local-business-metadata.ts",
+    "components/app-local-salon-settings.tsx",
+    "components/app-local-pos-settings.tsx",
+    "components/app-local-salons.tsx",
+    "tests/app-local-business-server.test.mjs",
+    "tests/app-local-business-ui.test.mjs"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016",
+    "app-local-role-renderers-20261016"
+  ],
+  "validation": [
+    {
+      "name": "6 server authority/projection/cancel and3 real business UI conflict/draft/reset tests",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/business-tests.json"
+    },
+    {
+      "name": "Targeted lint and final whole TypeScript",
+      "result": "passed"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\frozen-business-20261016T1640"
+  },
+  "id": "9d920902-442b-4f38-ac9d-9d2f7d715048",
+  "recordedAt": "2026-10-16T16:42:39.423Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-business-registry.tsx": "847f7aaedb9f37d841f5ddb5a3b588ad0c16cdfc779e424d39ef6d02cba0ab5c",
+    "lib/app-local-business-server.ts": "c523842fd08f1f632506d49c704fd73780ccbde45e1a7208e3d72128256f09b0",
+    "lib/app-local-business-metadata.ts": "481d0a99b294c5f1f0c31970090fb974b3c8118549044bdc760c5a8e0c051b53",
+    "components/app-local-salon-settings.tsx": "ffe8b7805e05447a5bbdddd85711e3f107f0a5dcd55944a6466f8e0075e27cf7",
+    "components/app-local-pos-settings.tsx": "51e4ab78d348884b7299e29935500d5839f88aebc40ffeb8768bd984a1118200",
+    "components/app-local-salons.tsx": "6fbb8a18360f7774c92a91c415588601f857d483c35ddc35eaf4852a8139d2e7",
+    "tests/app-local-business-server.test.mjs": "0fab85336fd3bd901a810f9443d9c4f588be4b2ab1eb666672d4e9bceefa6d6e",
+    "tests/app-local-business-ui.test.mjs": "a2f927efcf5482cdaeaa533ae1315bd9121102746d6124ceb268bd51f41f0cb6"
+  }
+}

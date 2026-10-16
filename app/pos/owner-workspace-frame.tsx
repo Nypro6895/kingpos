@@ -1,11 +1,13 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { OwnerPosTabs } from "./owner-pos-tabs";
 import { PosTabPlaceholder, type PosWorkspaceTab } from "./pos-tab-placeholder";
 import { hasPreparedExperiencePath } from "@/lib/experience-offline-client";
 import { WorkspaceText } from "@/components/workspace-language";
+import { OwnerLocalWorkspace } from "./owner-local-workspace";
+import { ownerLocalHref } from "@/lib/owner-local-workspace";
 
 function workspaceHref(href: string) {
   return href.replace(/^\/pos-tickets(?=\/|\?|#|$)/, "/pos/ticket")
@@ -22,17 +24,22 @@ function workspaceTab(path: string): PosWorkspaceTab | null {
   return null;
 }
 
-export function OwnerWorkspaceFrame({ checkout, children }: {
-  checkout: ReactNode; children: ReactNode; salonName?: string;
-}) {
+type Props = { checkout: ReactNode; children: ReactNode; localPanels?: ReactNode; salonName?: string; owner?: { scope: string; ownerScope: string; salonId: string } };
+const locationEvent = "reylumi:owner-location";
+function subscribeLocation(changed: () => void) { window.addEventListener("popstate", changed); window.addEventListener(locationEvent, changed); return () => { window.removeEventListener("popstate", changed); window.removeEventListener(locationEvent, changed); }; }
+export function OwnerWorkspaceFrame(props: Props) {
+  return props.owner ? <OwnerLocalWorkspace key={props.owner.scope + props.owner.ownerScope} {...props.owner}><WorkspaceFrame {...props} /></OwnerLocalWorkspace> : <WorkspaceFrame {...props} />;
+}
+function WorkspaceFrame({ checkout, children, owner, localPanels }: Props) {
   const path = usePathname();
   const router = useRouter();
   const [intent, setIntent] = useState<{ from: string; target: string } | null>(null);
   const navigation = useRef(0);
   const [offlineMessage, setOfflineMessage] = useState(false);
+  const localHref = useSyncExternalStore(subscribeLocation, () => location.pathname + location.search, () => null);
   // Clear old intent before Back can revisit the route where it was created.
   if (intent && intent.from !== path) setIntent(null);
-  const destination = intent?.from === path ? intent.target : path;
+  const destination = intent?.from === path ? intent.target : owner && localHref && ownerLocalHref(path) ? localHref.split("?")[0] : path;
   const active = workspaceTab(destination) ?? "pos";
   const pending = !!intent && intent.from === path && intent.target !== path;
 
@@ -51,6 +58,12 @@ export function OwnerWorkspaceFrame({ checkout, children }: {
     const sequence = ++navigation.current;
     const next = new URL(target, location.href);
     setOfflineMessage(false);
+    const local = owner && ownerLocalHref(next.pathname + next.search);
+    if (local) {
+      setIntent(null);
+      if (next.pathname + next.search + next.hash !== location.pathname + location.search + location.hash) window.history.pushState(null, "", local + next.hash);
+      window.dispatchEvent(new Event(locationEvent)); return;
+    }
     setIntent(workspaceTab(next.pathname) && next.pathname !== path
       ? { from: path, target: next.pathname } : null);
     if (!navigator.onLine) {
@@ -75,7 +88,7 @@ export function OwnerWorkspaceFrame({ checkout, children }: {
     const original = url.pathname + url.search + url.hash;
     const target = workspaceHref(original);
     const isWorkspaceTab = link.hasAttribute("data-owner-tab") && workspaceTab(url.pathname);
-    if (target !== original || isWorkspaceTab) {
+    if (target !== original || isWorkspaceTab || owner && ownerLocalHref(target)) {
       event.preventDefault(); event.stopPropagation(); void navigate(target);
     }
   }} onSubmitCapture={event => {
@@ -84,7 +97,7 @@ export function OwnerWorkspaceFrame({ checkout, children }: {
     const url = new URL(form.action, location.href);
     if (url.origin !== location.origin) return;
     const target = workspaceHref(url.pathname);
-    if (target !== url.pathname) {
+    if (target !== url.pathname || owner && ownerLocalHref(target)) {
       event.preventDefault(); event.stopPropagation();
       const params = new URLSearchParams();
       new FormData(form).forEach((value, key) => { if (typeof value === "string") params.append(key, value); });
@@ -97,7 +110,8 @@ export function OwnerWorkspaceFrame({ checkout, children }: {
     <section className="owner-workspace-panel" hidden={active === "pos"} style={active === "pos" ? { display: "none" } : undefined}>
       <OwnerPosTabs active={active} />
       <div className="owner-workspace-content">
-        <div hidden={pending}>{children}</div>
+        {owner && localHref ? localPanels : null}
+        <div hidden={pending || Boolean(owner && localHref && ownerLocalHref(localHref))}>{children}</div>
         {pending ? <div data-owner-tab-pending={active}><PosTabPlaceholder tab={active} /></div> : null}
       </div>
     </section>

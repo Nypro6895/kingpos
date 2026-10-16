@@ -1,0 +1,55 @@
+{
+  "kind": "change",
+  "changeId": "app-local-role-policy-20261016",
+  "status": "ready",
+  "summary": "Add complete standalone EN/VI Help and public Support instructions renderer alongside actual route inventory and authorized named customer/staff read adapters.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-route-policy.ts",
+    "lib/app-local-route-inventory.generated.json",
+    "scripts/generate-app-local-routes.mjs",
+    "lib/app-local-reference-content.ts",
+    "components/app-local-help.tsx",
+    "lib/app-local-role-resources.ts",
+    "lib/app-local-role-resources-server.ts",
+    "tests/app-local-route-policy.test.mjs",
+    "tests/app-local-role-resources.test.mjs",
+    "tests/app-local-help-ui.test.mjs"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Actual 133-page inventory, read authority/ETag/cancel tests, complete offline Help runtime: 9 passed",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/role-policy-tests.json"
+    },
+    {
+      "name": "Targeted ESLint all owned modules",
+      "result": "passed"
+    }
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\frozen-role-policy-20261016T1600"
+  },
+  "id": "a3e724ea-de44-450d-8d27-912c05bb0c6a",
+  "recordedAt": "2026-10-16T15:54:29.398Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-route-policy.ts": "11a770ed551c41a35ed055c7bd7e3060573e1c51f601dee6825a7a19ec1921d7",
+    "lib/app-local-route-inventory.generated.json": "97980c0efe53315fd1bf59428d4e1b2fdc9043761c10ab356431a4aa4a32980e",
+    "scripts/generate-app-local-routes.mjs": "ee4264eea1c3409559c62a53da2b82d0985a134aef349dfe5260d6186eabc0ae",
+    "lib/app-local-reference-content.ts": "fa6656c3e0979dd606186049d9ce32270d3ec22240b4e071d64c98048d7c1127",
+    "components/app-local-help.tsx": "8d391dfb76799e1d5fe818c8964f523c4ff5783f30026ff4e93df7985183aba9",
+    "lib/app-local-role-resources.ts": "8a593586e281cdf1b8efaa200f55893de05136c3d4e09d602bff45eb34f561f6",
+    "lib/app-local-role-resources-server.ts": "3c0d8207ca8c461946616ecd103529c9320a2b9a1dbe99822ccde515a9a9a727",
+    "tests/app-local-route-policy.test.mjs": "657803664c5d68ee213ad3b31da2ded63d2d1d3c3eb795e72b641b9e215b3057",
+    "tests/app-local-role-resources.test.mjs": "f1b85503466b38e6f52038fda288456300233639603a788bbc03d07205ffb460",
+    "tests/app-local-help-ui.test.mjs": "a492506d207e0854048983336eba6897b95deef43d14a1cdcc8bad4f910b8678"
+  }
+}

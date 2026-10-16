@@ -144,17 +144,9 @@ async function PendingNotificationSummary({context}:{context:CurrentBusinessCont
   return <WorkspaceSummarySeed summary={__vt(summary)} scope={`${context.user?.id}:${context.currentWorkspace?.id ?? "personal"}`}/>;
 }
 
-export async function SalonSwitcher({
-  children,
-  context,
-}: {
-  children: React.ReactNode;
-  context: CurrentBusinessContext;
-}) {
-  if (!context.user) {
-    return <GuestNavigationShell>{children}</GuestNavigationShell>;
-  }
-
+/** The existing web shell and installed shell share the exact permission-filtered props. */
+export async function getSalonSwitcherProps(context: CurrentBusinessContext) {
+  if (!context.user) return null;
   const isOwner = isOwnerMembership(context.currentMembership);
   const isManageContext = isSalonManageContext(context);
   const [
@@ -235,38 +227,31 @@ export async function SalonSwitcher({
       canManagePos ||
       canViewTickets);
 
-  return (
-    <NavigationShell
-      accountAvatarUrl={context.user.avatar_url}
-      accountEmail={context.user.email}
-      accountLabel={context.user.display_name ?? context.user.email ?? "Account"}
-      canManageStaff={canManageStaff}
-      canSwitchManageSalon={canSwitchManageSalon}
-      currentManageSalonId={
-        context.salonMode === "manage" ? (context.currentSalon?.id ?? null) : null
-      }
-      currentManageSalonName={
-        context.salonMode === "manage" ? (context.currentSalon?.name ?? null) : null
-      }
-      currentAccountName={context.accountName}
-      currentUserId={context.user.id}
-      currentStaffSalonId={
-        context.salonMode === "staff" ? (context.currentSalon?.id ?? null) : null
-      }
-      currentStaffSalonName={
-        context.salonMode === "staff" ? (context.currentSalon?.name ?? null) : null
-      }
-      currentWorkspace={context.currentWorkspace}
-      manageSalons={context.availableManageSalons.map(salonOption)}
-      notificationSummary={notifications}
-      staffSalons={context.availableStaffSalons.map(salonOption)}
-      workspaceOptions={context.workspaceOptions}
-      workspaceSections={workspaceSections}
-      workspaceType={context.workspaceType}
-      salonMode={context.salonMode}
-    >
-      {children}
-      <Suspense fallback={null}><PendingNotificationSummary context={context}/></Suspense>
-    </NavigationShell>
-  );
+  return {
+    accountAvatarUrl: context.user.avatar_url,
+    accountEmail: context.user.email,
+    accountLabel: context.user.display_name ?? context.user.email ?? "Account",
+    canManageStaff,
+    canSwitchManageSalon,
+    currentManageSalonId: context.salonMode === "manage" ? context.currentSalon?.id ?? null : null,
+    currentManageSalonName: context.salonMode === "manage" ? context.currentSalon?.name ?? null : null,
+    currentAccountName: context.accountName,
+    currentUserId: context.user.id,
+    currentStaffSalonId: context.salonMode === "staff" ? context.currentSalon?.id ?? null : null,
+    currentStaffSalonName: context.salonMode === "staff" ? context.currentSalon?.name ?? null : null,
+    currentWorkspace: context.currentWorkspace,
+    manageSalons: context.availableManageSalons.map(salonOption),
+    notificationSummary: notifications,
+    staffSalons: context.availableStaffSalons.map(salonOption),
+    workspaceOptions: context.workspaceOptions,
+    workspaceSections,
+    workspaceType: context.workspaceType,
+    salonMode: context.salonMode,
+  };
+}
+
+export async function SalonSwitcher({ children, context }: { children: React.ReactNode; context: CurrentBusinessContext }) {
+  const props = await getSalonSwitcherProps(context);
+  if (!props) return <GuestNavigationShell>{children}</GuestNavigationShell>;
+  return <NavigationShell {...props}>{children}<Suspense fallback={null}><PendingNotificationSummary context={context}/></Suspense></NavigationShell>;
 }

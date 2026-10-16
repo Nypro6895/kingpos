@@ -1,14 +1,15 @@
 "use client";
-import { useState,useRef,useEffect,type ComponentProps } from 'react';
+import { useState,useRef,useEffect,useMemo,type ComponentProps } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePosResourceRefresh } from '@/lib/pos-workspace-sync';
 import { BookingWorkspaceClient } from './booking-workspace-client';
 import { useExperienceScope } from '@/components/experience-scope';
 import { usePersistentReadView } from '@/lib/use-persistent-read-view';
-export function OwnerLiveBookingWorkspace({salonId,snapshotAt,...initial}:ComponentProps<typeof BookingWorkspaceClient>&{salonId:string;snapshotAt?:number}){
+export function OwnerLiveBookingWorkspace({salonId,snapshotAt,query,managedRead=false,...initial}:ComponentProps<typeof BookingWorkspaceClient>&{salonId:string;snapshotAt?:number;query?:string;managedRead?:boolean}){
  const [live,setLive]=useState<{base:typeof initial.bookings;data:typeof initial;updatedAt:number}|null>(null);
  const data=live?.base===initial.bookings?live.data:initial;
- const params=useSearchParams();
+ const routeParams=useSearchParams();
+ const params=useMemo(()=>query===undefined?routeParams:new URLSearchParams(query),[query,routeParams]);
  const context=useExperienceScope();
  usePersistentReadView({
    scope:context?.context.authenticated?context.context.scope:undefined,
@@ -44,8 +45,8 @@ export function OwnerLiveBookingWorkspace({salonId,snapshotAt,...initial}:Compon
    const request=load(ids,configuration).finally(()=>inFlight.current.delete(key));
    inFlight.current.set(key,request);return request;
  };
- usePosResourceRefresh(salonId,'booking',ids=>refresh(ids),{initialReconcile:false,snapshotAt});
- usePosResourceRefresh(salonId,'settings',()=>refresh(undefined,true),{initialReconcile:false,snapshotAt});
- usePosResourceRefresh(salonId,'catalog',()=>refresh(undefined,true),{initialReconcile:false,snapshotAt});
+ usePosResourceRefresh(salonId,'booking',ids=>refresh(ids),{enabled:!managedRead,initialReconcile:false,snapshotAt});
+ usePosResourceRefresh(salonId,'settings',()=>refresh(undefined,true),{enabled:!managedRead,initialReconcile:false,snapshotAt});
+ usePosResourceRefresh(salonId,'catalog',()=>refresh(undefined,true),{enabled:!managedRead,initialReconcile:false,snapshotAt});
  return <BookingWorkspaceClient {...data}/>;
 }

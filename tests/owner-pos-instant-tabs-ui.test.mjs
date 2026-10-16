@@ -308,6 +308,10 @@ test('owner bootstrap reveals guarded navigation before desk reads, and checkout
     '@/lib/pos-desk': 'export function getCurrentSalonPosDeskData(options){return globalThis.ownerBootstrap.desk(options)}',
     '@/lib/supabase/server': 'export function createAuthenticatedSupabaseServerClient(){return globalThis.ownerBootstrap.auth()}',
     '@/lib/pos-workspace-preferences': 'export function normalizeWorkspacePreferences(value){return globalThis.ownerBootstrap.normalize(value)}',
+    '@/lib/experience-context': 'export const getExperienceContext=()=>({scope:"scope-bootstrap"})',
+    '@/lib/salon-business-clock': 'export const getContextBusinessTimezone=async()=>"America/Chicago"',
+    '@/app/pos/owner-local-workspace': 'export function OwnerReferenceSeed(){return null}',
+    '@/app/pos/owner-local-panels': 'export function OwnerLocalPanelsOutlet(){return null}',
     '@/app/pos/owner-pos-client': 'export function OwnerPosClient(){throw Error("Checkout must remain a React element until rendering")}',
     '@/app/pos/owner-workspace-frame': 'export function OwnerWorkspaceFrame(){throw Error("Frame must remain a React element until rendering")}',
     '@/app/pos/owner-pos-tabs': 'export function OwnerPosTabs(){return null}',
@@ -392,7 +396,12 @@ test('owner bootstrap reveals guarded navigation before desk reads, and checkout
     assert.equal(checkoutFinished, false);
     const preferences = { showStaff: true, idleMinutes: 45 };
     success.settings.resolve({ data: { workspace_preferences: preferences } });
-    const checkout = await checkoutPending;
+    const result = await checkoutPending;
+    const [reference, checkout] = result.props.children;
+    assert.equal(reference.type.name, 'OwnerReferenceSeed');
+    assert.equal(reference.props.data.ownerScope, 'owner:selected-salon:owner-user');
+    assert.equal(reference.props.data.timezone, 'America/Chicago');
+    assert.equal(reference.props.data.staff, data.staff);
     assert.equal(checkout.type.name, 'OwnerPosClient');
     assert.equal(checkout.key, 'selected-salon:owner-user');
     assert.equal(checkout.props.scope, 'owner:selected-salon:owner-user');

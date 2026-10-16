@@ -1,0 +1,56 @@
+{
+  "kind": "change",
+  "changeId": "app-local-daily-reference-20261016",
+  "status": "ready",
+  "summary": "Complete original ticket detail and Tax Company list/report/install local UI, with original guarded actions and exact readonly salon-claim suggestions bridge. Tax data is explicitly not retained under workspace grants.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-daily-registry.tsx",
+    "lib/app-local-daily-server.ts",
+    "lib/app-local-daily-metadata.ts",
+    "components/app-local-ticket-detail.tsx",
+    "lib/app-local-business-http-client.ts",
+    "lib/app-local-business-http-server.ts",
+    "lib/app-local-business-http-metadata.ts",
+    "tests/app-local-daily-server.test.mjs",
+    "tests/app-local-daily-ui.test.mjs",
+    "tests/app-local-business-http.test.mjs",
+    "components/app-local-tax-company.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\frozen-daily-20261016T1730"
+  },
+  "validation": [
+    {
+      "name": "12 scoped reader/HTTP and original UI browser regressions",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/daily-tests.json"
+    },
+    {
+      "name": "targeted eslint and complete TypeScript checks",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/daily-tests.json"
+    }
+  ],
+  "id": "8ee09165-1492-4624-b201-b73417700145",
+  "recordedAt": "2026-10-16T16:54:08.970Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "lib/app-local-daily-registry.tsx": "bee340b47ecf7896de57e7ffdfbda4d7171abe87c7d474f545883bb628ab5a0c",
+    "lib/app-local-daily-server.ts": "d98687394f0c3a34a8cfe0e051ef558f6a7601fdb0682fd7e7127b8aaed3a582",
+    "lib/app-local-daily-metadata.ts": "ac175280c27efb3afb2ac9bee9e83267afa46b12d6b590c2028d95f54b8a0090",
+    "components/app-local-ticket-detail.tsx": "2ec509cf7875d343d8d1ca6624e6a35eb0764f45759e8ae56a4749ce24655ff1",
+    "lib/app-local-business-http-client.ts": "4bfc7c78e8e9bc9152efa3138997341cc8d9da49bf4c13d9dfca9aa9f1de49ac",
+    "lib/app-local-business-http-server.ts": "faaabaa326fab8cbfce5323795bc7683638406d5817ce902a26955c2caf69800",
+    "lib/app-local-business-http-metadata.ts": "e442fb38b3baef277450b111b2f2f204fd8a97454c87417f2be953fe3860d106",
+    "tests/app-local-daily-server.test.mjs": "2741499d6c13ebc635601056ba8c0e8ee21e3a268c56b51a3082a4bb460eab49",
+    "tests/app-local-daily-ui.test.mjs": "6818cc745b36d484b7414e027021a805ce135e6625c0c7bb4a4246f1f9ffc14d",
+    "tests/app-local-business-http.test.mjs": "9df0cf5e060425dceb4407f12688d3348e5998c6d19d291e4f5b89ad77788bf1",
+    "components/app-local-tax-company.tsx": "8fa5a0d2a995624df30a2f3ad96822fb96dd861e4af155863fee38706879cab0"
+  }
+}

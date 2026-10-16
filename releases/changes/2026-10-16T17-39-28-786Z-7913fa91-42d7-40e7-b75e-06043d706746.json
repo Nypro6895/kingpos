@@ -1,0 +1,26 @@
+{
+  "kind": "change",
+  "changeId": "app-local-authority-navigation-20261016",
+  "status": "working",
+  "summary": "Gate new app-local route-family reads/commands on an exact admitted context while preserving retained pages and checkout drafts; reject stale provider validation callbacks.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "app/local-app/scope.tsx",
+    "tests/app-local-authority-navigation.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "controlled cross-family context and retained DOM regressions",
+      "result": "pending"
+    }
+  ],
+  "id": "7913fa91-42d7-40e7-b75e-06043d706746",
+  "recordedAt": "2026-10-16T17:39:28.786Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

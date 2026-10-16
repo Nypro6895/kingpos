@@ -1,0 +1,42 @@
+{
+  "kind": "change",
+  "changeId": "app-local-native-foundation",
+  "status": "working",
+  "summary": "Repair actual NSURLSession delegate teardown crash; preserve bundled document on route assignment, explicit fresh context/logout ACK, and strict original Portable device authority in the installed host.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh",
+    "ios/.gitattributes"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "Actual CI r3 crash diagnosed from NSURLSession invalidation delegate stack; next complete runtime run required",
+      "result": "pending",
+      "evidence": "artifacts/app-local-platform-20261016/native-r3-crash-index.json"
+    }
+  ],
+  "id": "8f12258d-44e2-42c6-9f26-5c502c109740",
+  "recordedAt": "2026-10-16T17:09:23.395Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

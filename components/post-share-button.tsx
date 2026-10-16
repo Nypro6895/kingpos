@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { ActionFeedback } from "@/components/action-feedback";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { browserPublicOrigin } from "@/lib/browser-public-origin";
 
 export function PostShareButton({ href, title = "Reylumi" }: { href: string; title?: string }) {
   const translate = useWorkspaceTranslation();
@@ -28,7 +29,7 @@ export function PostShareButton({ href, title = "Reylumi" }: { href: string; tit
     setPending(true);
     setMessage("");
     try {
-      const url = new URL(href, window.location.origin).href;
+      const url = new URL(href, browserPublicOrigin()).href;
       if (navigator.share) await navigator.share({ title, url });
       else {
         await navigator.clipboard.writeText(url);

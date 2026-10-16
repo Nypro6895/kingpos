@@ -2,7 +2,7 @@
 import { ActionFeedback } from "@/components/action-feedback";
 import { DeskRelay } from "@/app/service-relay/desk-relay";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import { useCallback,useEffect, useRef, useState } from "react";
+import { Activity, useCallback,useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { PosDeskCustomer, PosDeskService, PosDeskStaff } from "@/types/pos-desk";
 import type { PosDeskDefaults } from "@/lib/pos-settings";
@@ -18,6 +18,7 @@ import { OwnerPosIcon } from './owner-pos-icon';
 import { parsePosAmountInput } from '@/lib/pos-desk-amounts';
 import { getStaffTurnToneLevel } from '@/lib/pos-staff-turn-tone';
 import { fetchOwnerWorkspace } from '@/lib/owner-workspace-client';
+import { useOwnerLocalWorkspace } from './owner-local-workspace';
 type Line = { id:string;staffId:string|null;staffName:string;serviceId:string|null;serviceLabel:string;total:number;amountInput:string;amountParts:number[] };
 type Step = 'staff'|'services'|'amount';
 type Cart = { inputTarget?:'amount'|'tip'|'discount'; activeLineId?:string|null; step?:Step; id:string;amount:string;staffId:string|null;serviceId:string|null;customer:PosDeskCustomer|null;lines:Line[];tip:string;discount:string };
@@ -25,13 +26,16 @@ const empty = ():Cart=>({id:crypto.randomUUID(),amount:"",staffId:null,serviceId
 const money=(n:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
 const amountPreview=(value:string)=>value.split('/').reduce((sum,part)=>sum+(Number(part)||0),0);
 const amountPattern=/^\d*(\.\d{0,2})?(\/\d*(\.\d{0,2})?)*$/;
-export function OwnerPosClient(props:Parameters<typeof OwnerPosWorkspace>[0]) {
-  return <SingleWorkspaceWindow id={props.scope}><OwnerPosWorkspace {...props}/></SingleWorkspaceWindow>;
+export function OwnerPosClient({active=true,...props}:Parameters<typeof OwnerPosWorkspace>[0]&{active?:boolean}) {
+  // The exclusive writer lease stays mounted while another role page is shown;
+  // hidden operational effects must not read or sync under that page's scope.
+  return <SingleWorkspaceWindow id={props.scope}><Activity mode={active?"visible":"hidden"}><OwnerPosWorkspace {...props}/></Activity></SingleWorkspaceWindow>;
 }
 function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initialPreferences=DEFAULT_WORKSPACE_PREFERENCES}:{
   snapshotAt?:number;scope:string;salonId:string;salonName:string;initial:{staff:PosDeskStaff[];services:PosDeskService[];defaults:PosDeskDefaults;today:string};preferences?:PosWorkspacePreferences;
 }) {
   const __vt = useWorkspaceTranslation();
+  const workspace=useOwnerLocalWorkspace();
 
   useEffect(()=>{
     const resize=()=>{
@@ -44,8 +48,11 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     return()=>{window.removeEventListener('resize',resize);window.visualViewport?.removeEventListener('resize',resize);};
   },[]);
   const key=`kingpos:owner-cart:v1:${scope}`;
-  const [reference,setReference]=useState(initial);
-  const [preferences,setPreferences]=useState(initialPreferences);
+  const [localReference,setReference]=useState(initial);
+  const [localPreferences,setPreferences]=useState(initialPreferences);
+  const shared=workspace?.reference?.ownerScope===scope&&workspace.reference.salonId===salonId?workspace.reference:undefined;
+  const reference=shared??localReference;
+  const preferences=shared?.preferences??localPreferences;
   const [cart,setCart]=useState<Cart|null>(null);
   const current=useRef<Cart|null>(null);
   const busyRef=useRef(false);
@@ -67,6 +74,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   const [query,setQuery]=useState(''),[customers,setCustomers]=useState<PosDeskCustomer[]>([]);
   const pendingDefaults=useRef(initial.defaults);
   const [ticketDefaults,setTicketDefaults]=useState(initial.defaults);
+  useEffect(()=>{if(shared)pendingDefaults.current=shared.defaults;},[shared]);
   const persist=useCallback((next:Cart)=>{
     try { localStorage.setItem(key,JSON.stringify({savedAt:Date.now(),cart:next})); current.current=next;setCart(next);setError('');return true; }
     catch {setError('Unable to save on this device. Keep this ticket open.');return false;}
@@ -91,17 +99,18 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   },[panel,query]);
   usePosResourceRefresh(salonId,'staff',async(ids)=>{
     const next=await fetchOwnerWorkspace<{today:string;staff:PosDeskStaff[]}>(scope,'staff',ids);
-    if(Array.isArray(next.staff))setReference(previous=>({...previous,today:next.today,staff:ids?.length?[...previous.staff.filter(s=>!ids.includes(s.id)),...next.staff]:next.staff}));
+    if(Array.isArray(next.staff)){const staff=ids?.length?[...reference.staff.filter(s=>!ids.includes(s.id)),...next.staff]:next.staff;setReference({...reference,today:next.today,staff});workspace?.updateReference({today:next.today,staff});}
   },{initialReconcile:false,snapshotAt});
   usePosResourceRefresh(salonId,'catalog',async()=>{
     const data=await fetchOwnerWorkspace<{services:PosDeskService[]}>(scope,'catalog');
-    if(Array.isArray(data.services))setReference(previous=>({...previous,services:data.services}));
+    if(Array.isArray(data.services)){setReference(previous=>({...previous,services:data.services}));workspace?.updateReference({services:data.services});}
   },{initialReconcile:false,snapshotAt});
   usePosResourceRefresh(salonId,'settings',async()=>{
     const data=await fetchOwnerWorkspace<{salonId:string;preferences:PosWorkspacePreferences;defaults:PosDeskDefaults}>(scope,'settings');
     if(data.salonId!==salonId)return;
     setPreferences(data.preferences);pendingDefaults.current=data.defaults;
     setReference(previous=>({...previous,defaults:data.defaults}));
+    workspace?.updateReference({defaults:data.defaults,preferences:data.preferences});
     if(!current.current?.lines.length&&!current.current?.amount)setTicketDefaults(data.defaults);
   },{initialReconcile:false,snapshotAt});
   const update=(patch:Partial<Cart>)=>{if(current.current&&!busyRef.current)persist({...current.current,...patch});};

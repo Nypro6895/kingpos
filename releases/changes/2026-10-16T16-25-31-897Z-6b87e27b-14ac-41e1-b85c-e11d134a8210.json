@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "app-local-business-reference-20261016",
+  "status": "working",
+  "summary": "Bundle the actual salon profile, complete salon/POS settings and salon list/create interfaces with exact guarded read models; keep existing online server confirmations.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-business-registry.tsx",
+    "lib/app-local-business-server.ts",
+    "lib/app-local-business-metadata.ts",
+    "components/app-local-salon-settings.tsx",
+    "components/app-local-pos-settings.tsx",
+    "components/app-local-salons.tsx",
+    "tests/app-local-business-server.test.mjs",
+    "tests/app-local-business-ui.test.mjs"
+  ],
+  "dependencies": [
+    "app-local-platform-20261016",
+    "app-local-role-renderers-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Original props/read-scope/settings-conflict and real client rendering tests",
+      "result": "pending"
+    }
+  ],
+  "id": "6b87e27b-14ac-41e1-b85c-e11d134a8210",
+  "recordedAt": "2026-10-16T16:25:31.897Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

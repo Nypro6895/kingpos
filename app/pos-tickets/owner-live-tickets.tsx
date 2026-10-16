@@ -396,8 +396,8 @@ function DailyWorkLog({
 }
 
 
-type Props=Omit<Parameters<typeof DailyWorkLog>[0],'groups'|'dailyNumbers'>&{snapshotAt?:number;salonId:string;initialTickets:PosTicketWithRelations[];bounds:{openedFrom:string;openedTo:string};searchQuery:string};
-export function OwnerLiveTickets({snapshotAt,salonId,initialTickets,bounds,searchQuery,...props}:Props){
+type Props=Omit<Parameters<typeof DailyWorkLog>[0],'groups'|'dailyNumbers'>&{snapshotAt?:number;managedRead?:boolean;salonId:string;initialTickets:PosTicketWithRelations[];bounds:{openedFrom:string;openedTo:string};searchQuery:string};
+export function OwnerLiveTickets({snapshotAt,salonId,initialTickets,bounds,searchQuery,managedRead=false,...props}:Props){
  const [live,setLive]=useState<{base:PosTicketWithRelations[];tickets:PosTicketWithRelations[]}|null>(null);
  const tickets=live?.base===initialTickets?live.tickets:initialTickets;
  const generation=useRef(0);
@@ -411,7 +411,7 @@ export function OwnerLiveTickets({snapshotAt,salonId,initialTickets,bounds,searc
      const current=previous?.base===initialTickets?previous.tickets:initialTickets;
      return {base:initialTickets,tickets:(ids?.length?[...current.filter(t=>!ids.includes(t.id)),...next.tickets]:next.tickets).sort((a:PosTicketWithRelations,b:PosTicketWithRelations)=>b.opened_at.localeCompare(a.opened_at))};
    });
- },{initialReconcile:false,snapshotAt});
+ },{enabled:!managedRead,initialReconcile:false,snapshotAt});
  const dailyNumbers=buildDailyTicketNumbers(tickets);const groups=groupTicketsByDate(filterTicketsBySearch(tickets,searchQuery,dailyNumbers));
  return <DailyWorkLog {...props} groups={groups} dailyNumbers={dailyNumbers}/>;
 }

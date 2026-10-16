@@ -7,25 +7,27 @@ import { loadServiceRelay, respondServiceRelay, saveServiceRelay, findServiceRel
 import type { RelayTicket, RelayOffer, RelayWorkspace } from "@/types/service-relay";
 import styles from "./service-relay.module.css";
 
-export function StaffRelay({ salonId, scope }: { salonId: string; scope?: string }) {
-  const [data, setData] = useState<RelayWorkspace | null>(null);
+export function StaffRelay({ salonId, scope, initialData, managedRead = false, refreshResource }: { salonId: string; scope?: string; initialData?: RelayWorkspace; managedRead?: boolean; refreshResource?: () => Promise<void> }) {
+  const [data, setData] = useState<RelayWorkspace | null>(initialData ?? null);
+  const [source, setSource] = useState(initialData);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [finding, setFinding] = useState(false);
   const [code, setCode] = useState("");
+  if (managedRead && initialData && source !== initialData) { setSource(initialData); setData(initialData); setError(""); }
   const loading = useRef(false);
   const refresh = useCallback(async () => {
     if (loading.current) return;
     loading.current = true;
-    try { const result = await loadServiceRelay(); if (result.data) { setData(result.data); setError(""); } else setError(result.error ?? "Could not refresh."); }
+    try { if (managedRead && refreshResource) { await refreshResource(); return; } const result = await loadServiceRelay(); if (result.data) { setData(result.data); setError(""); } else setError(result.error ?? "Could not refresh."); }
     catch { setError("Reconnect to see your next customer. Your current entries are kept."); }
     finally { loading.current = false; }
-  }, []);
+  }, [managedRead, refreshResource]);
   useEffect(() => {
-    const timer = setTimeout(() => { void refresh(); }, 0);
+    const timer = !managedRead ? setTimeout(() => { void refresh(); }, 0) : undefined;
     const unsubscribe = subscribePosChanges(salonId, change => { if (["staff", "waiting", "tickets"].includes(change.resource)) void refresh(); });
-    return () => { clearTimeout(timer); unsubscribe(); };
-  }, [salonId, refresh]);
+    return () => { if(timer !== undefined) clearTimeout(timer); unsubscribe(); };
+  }, [salonId, refresh, managedRead]);
   useEffect(() => {
     if (!data?.installed) return;
     const timer = setInterval(() => { if (navigator.onLine && document.visibilityState === "visible") void refresh(); }, 15000);

@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "app-local-payroll-tax-reference-20261016",
+  "status": "working",
+  "summary": "Exact existing Payroll Tax Company report and connection settings local UI; original guards and confirmations, no retained credentials or paystub capabilities.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-payroll-tax-registry.tsx",
+    "lib/app-local-payroll-tax-server.ts",
+    "lib/app-local-payroll-tax-metadata.ts",
+    "components/app-local-payroll-tax.tsx",
+    "components/app-local-payroll-tax-settings.tsx",
+    "tests/app-local-payroll-tax-server.test.mjs",
+    "tests/app-local-payroll-tax-ui.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "original report/settings controlled scope and UI tests",
+      "result": "pending"
+    }
+  ],
+  "id": "97ca4583-3ddc-4701-b5b7-edd8caefe26a",
+  "recordedAt": "2026-10-16T16:55:31.693Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

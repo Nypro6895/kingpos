@@ -39,6 +39,10 @@ type ActionResult<T> =
   | { data?: never; error: string; ok: false };
 
 type PortableCheckInClientProps = {
+  managedRead?: boolean;
+  businessDate?: string;
+  onAttendanceSettled?: () => void;
+  onDataChange?: (data: PortableCheckInData, pending: boolean) => void;
   workspacePath?: string;
   staffEndpoint?: string;
   action: (
@@ -230,6 +234,10 @@ function usePortableClock(timezone: string) {
 }
 
 export function PortableCheckInClient({
+  managedRead = false,
+  businessDate: managedBusinessDate,
+  onAttendanceSettled,
+  onDataChange,
   workspacePath="/pos/portable/check-in",
   staffEndpoint="/api/pos/portable/staff",
   action,
@@ -244,6 +252,7 @@ export function PortableCheckInClient({
   const localAttendancePendingCountRef = useRef(0);
   const lastLocalAttendanceAtRef = useRef(0);
   const [localData, setLocalData] = useState<PortableCheckInData | null>(null);
+  const localDataBase = useRef(data);
   const [modal, setModal] = useState<ModalState>(null);
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
@@ -252,13 +261,18 @@ export function PortableCheckInClient({
   const savingStaffIdsRef = useRef(new Set<string>());
   const modalSaving = Boolean(modal && savingStaffIds.includes(modal.staff.id));
   const sourceData = localData ?? data;
-  const businessDate = workspaceState?.businessDate || "";
+  useEffect(() => {
+    if (managedRead && !savingStaffIds.length && localDataBase.current !== data) setLocalData(null);
+  }, [data, managedRead, savingStaffIds.length]);
+  useEffect(() => { onDataChange?.(sourceData, savingStaffIds.length > 0); }, [sourceData, savingStaffIds.length, onDataChange]);
+  const businessDate = workspaceState?.businessDate || managedBusinessDate || "";
   const modalDay = useRef("");
   const viewData = { ...sourceData, today: businessDate || sourceData.today, staff: sourceData.staff.map(member => ({ ...member,
-    ...(workspaceState && (sourceData.today !== businessDate || (member.checkInAt && portableBusinessDate(sourceData.timezone, member.checkInAt) !== businessDate)) ? { status: "not_checked_in", checkInAt: null, checkInSequence: null, queueTurnCount: 0, leaveCohortStaffIds: [], leaveBaselineTurnCount: null } : {}),
+    ...((workspaceState || managedRead && businessDate) && (sourceData.today !== businessDate || (member.checkInAt && portableBusinessDate(sourceData.timezone, member.checkInAt) !== businessDate)) ? { status: "not_checked_in", checkInAt: null, checkInSequence: null, queueTurnCount: 0, leaveCohortStaffIds: [], leaveBaselineTurnCount: null } : {}),
     ...(workspaceState?.attendanceByStaffId[member.id] ?? {}) })) };
   const scope = workspaceState?.offlineEnabled ? workspaceState.scope : undefined;
   useEffect(() => {
+    if (managedRead) return;
     let active = true;
     let loading = false;
     let again=false;
@@ -279,7 +293,7 @@ export function PortableCheckInClient({
     void refresh();
     document.addEventListener("visibilitychange", wake);
     return () => { active = false; unsubscribe(); document.removeEventListener("visibilitychange", wake); };
-  }, [scope, data.salonId, data.today, data.timezone, businessDate, pathname, workspacePath, staffEndpoint]);
+  }, [scope, data.salonId, data.today, data.timezone, businessDate, pathname, workspacePath, staffEndpoint, managedRead]);
   useEffect(() => {
     setStaffRoster?.(sourceData.staff.map(member => ({ id: member.id, display_name: member.displayName,
       job_title: member.jobTitle, is_active: true, avatar_url: member.avatarUrl,
@@ -395,6 +409,7 @@ export function PortableCheckInClient({
     const staff = viewData.staff.find(member => member.id === modal.staff.id) ?? modal.staff;
     const staffName = staff.displayName;
     const submittedPasscode = passcode;
+    localDataBase.current = data;
     savingStaffIdsRef.current.add(staff.id);
     setSavingStaffIds((current) => [...current, staff.id]);
     if (scope) {
@@ -523,6 +538,7 @@ export function PortableCheckInClient({
         setSavingStaffIds((current) =>
           current.filter((staffId) => staffId !== staff.id),
         );
+        onAttendanceSettled?.();
       }
     })();
   }

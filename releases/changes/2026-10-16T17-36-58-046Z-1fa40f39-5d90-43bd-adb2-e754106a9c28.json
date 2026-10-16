@@ -1,0 +1,47 @@
+{
+  "kind": "change",
+  "changeId": "app-local-native-foundation",
+  "status": "working",
+  "summary": "Preserve permitted unsupported cold hints through HTTPS and return usable ordinary hosted login destinations to installed UI only after fresh matching context; preserve sensitive flows and stale navigation guards.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/AppLocalBridge.js",
+    "ios/Reylumi/ReylumiApp.swift",
+    "ios/Reylumi/ReylumiViewController.swift",
+    "ios/Reylumi/Info.plist",
+    "ios/Reylumi/Info-Debug.plist",
+    "ios/project.yml",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/scripts/check-build.sh",
+    "ios/.gitattributes",
+    "ios/Reylumi/NativeBridge.js",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift"
+  ],
+  "dependencies": [
+    "app-local-platform"
+  ],
+  "validation": [
+    {
+      "name": "New hosted return and cold hint tests",
+      "result": "pending"
+    },
+    {
+      "name": "Actual macOS XCTest and archive",
+      "result": "pending"
+    }
+  ],
+  "id": "1fa40f39-5d90-43bd-adb2-e754106a9c28",
+  "recordedAt": "2026-10-16T17:36:58.046Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

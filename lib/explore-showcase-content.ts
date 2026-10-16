@@ -829,9 +829,9 @@ export function enrichExploreShowcaseContent(input: {
   homeContent: ExploreHomeContent;
   initialFeed: ExploreFeedPage;
   searchResponse: ExploreSearchResponse;
-}) {
+}, enabled?: boolean) {
   // Demo content must never mask an empty or failed live query by default.
-  if (process.env.EXPLORE_ENABLE_DEMO_CONTENT !== "true") return input;
+  if (!(enabled ?? process.env.EXPLORE_ENABLE_DEMO_CONTENT === "true")) return input;
   const currentSalonCount =
     input.homeContent.recommendedSalons.length + input.homeContent.newSalons.length;
   const currentFeedSalons = new Set(

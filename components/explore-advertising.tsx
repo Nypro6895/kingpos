@@ -219,14 +219,16 @@ export function ExploreAdSlot({
 export function ExploreAdvertising({
   children,
   audience = "guest",
+  enabled = true,
 }: {
   children: ReactNode;
   audience?: CampaignAudience;
+  enabled?: boolean;
 }) {
   const __vt = useWorkspaceTranslation();
 
   const pathname = usePathname();
-  const active = !pathname.startsWith("/admin");
+  const active = enabled && !pathname.startsWith("/admin");
   const [device, setDevice] = useState<"desktop" | "mobile" | null>(null);
   useEffect(() => {
     const query = window.matchMedia("(min-width: 1280px)");

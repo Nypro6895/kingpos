@@ -1,0 +1,56 @@
+{
+  "files": [
+    "app/salon-switcher.tsx",
+    "components/app-local-shell.tsx",
+    "lib/app-local-shell-metadata.ts",
+    "lib/app-local-shell-server.ts",
+    "lib/app-local-shell-http-client.ts",
+    "lib/app-local-shell-workspace-navigation.ts",
+    "tests/app-local-shell.test.mjs",
+    "tests/app-local-shell-ui.test.mjs",
+    "components/explore-advertising.tsx",
+    "components/app-local-session-expiry-prompt.tsx",
+    "components/abuse-notice.tsx",
+    "components/abuse-notice-view.tsx"
+  ],
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "status": "ready",
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\shell-frozen-source"
+  },
+  "kind": "change",
+  "validation": [
+    {
+      "name": "11 scoped server/browser cases and clean lint",
+      "result": "passed",
+      "evidence": "artifacts/app-local-platform-20261016/shell-validation.json"
+    }
+  ],
+  "dependencies": [
+    "app-local-platform-20261016"
+  ],
+  "changeId": "app-local-original-shell-20261016",
+  "summary": "Preserve original installed role/workspace shell and paid locale/account/booking runtimes without remounting retained page drafts",
+  "id": "999d3411-c4d4-418b-a64c-5189d78d42dc",
+  "recordedAt": "2026-10-16T17:21:26.931Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/salon-switcher.tsx": "bef1b1bce52ded0297740a714bff6f485ba75744938a15c6ef63e28610c85175",
+    "components/app-local-shell.tsx": "8cc0ac69d40b2e7555ed039ec8c6099a98465984cea3fdc81614ce1177d143f0",
+    "lib/app-local-shell-metadata.ts": "85e9a56d4168f71a1386024567a231ad2b8d9190e1efa4850ef976940d14bb76",
+    "lib/app-local-shell-server.ts": "70b26e1e096566ebcb4f8069f9eebe8259305f700ada0555d3b934d4c9fcaf4d",
+    "lib/app-local-shell-http-client.ts": "3eb8194681b4af7aad15eaedd198fdb56f0b983b660e3324278d4989dd349a80",
+    "lib/app-local-shell-workspace-navigation.ts": "694ea85a49137fa42e52eb22b505c25ec3300f89ecb46ca5208b85d87da5c1b0",
+    "tests/app-local-shell.test.mjs": "2bbb17c8e6a29daf2864cf1a9791e9875582b386c4ee04f7630c3e26ba9b6b6a",
+    "tests/app-local-shell-ui.test.mjs": "752384740f59df89ded31a1b4a54041af64ca52bfb5bc7ffc2e9b3e09c39f4e1",
+    "components/explore-advertising.tsx": "507ddb3d572d8aad2a24b763d94523c4ce33f6a5dfb07feb16bd1184bd35eb62",
+    "components/app-local-session-expiry-prompt.tsx": "9f50fdd3bfcf60678a5f8c932b68ea63dcab7e36ab344007621da6a7428e374c",
+    "components/abuse-notice.tsx": "78518f77128db2434abe9ae51a5359daefd8cf78d2d90acd7b2cdfbc7a128ed1",
+    "components/abuse-notice-view.tsx": "b32ed6d3e1122c9ead838a84202f479e970a6dd67d6dbc0a9f773b009845c240"
+  }
+}
