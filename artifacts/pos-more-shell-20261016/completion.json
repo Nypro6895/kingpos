@@ -1,0 +1,48 @@
+{
+  "rootEvent": "6b0d34bb-5b3f-4046-be45-bf5596001978",
+  "fixEvent": "3ec292bd-d1a0-4fde-a968-b5f46911b067",
+  "sourceCommit": "9d8e8def836cdb56644e8c5c8675061106553984",
+  "sourceSha256": "8b19a6af8ec523065bf90a23f936fac8ac2219d45bd26877126930fa2c628626",
+  "patchSha256": "7f3907930b77d4aa9dc71542747e9b75611d7e4c01cd2be0b9bb0741d87fd71c",
+  "componentEvents": [
+    "49e2505b-71f1-46c9-8af6-b617d716b3e0",
+    "06c27386-c1ef-4206-9318-d0c453647b17",
+    "270039d9-9785-43d0-ab31-6ce70068e6ea",
+    "13651a77-36f3-4bf6-aeac-0fd802636dd5",
+    "88ea2278-6725-471a-b064-e67057c2be86",
+    "d579aee5-93e8-4934-8310-fcb883cc2f96",
+    "3c5c0e27-368d-4cdb-8bbc-de5bc46158ea",
+    "bbdfc0a1-19e9-408e-bba5-87f0ab3864d5",
+    "9d920902-442b-4f38-ac9d-9d2f7d715048",
+    "f6ab0797-5a04-4c26-a838-d88fcede1498",
+    "8ee09165-1492-4624-b201-b73417700145",
+    "2bf07c7b-cb67-4ded-808a-c57f917ebbcf",
+    "73eb9a6b-542a-416a-b018-ad6191290da2",
+    "71667a66-8710-426b-9f00-3d44bba1fa41",
+    "1b7eed93-251e-404e-94db-b9b08f5f30c7",
+    "1e2d51e9-7192-422f-836b-a929a899840e",
+    "d198a438-3ce5-4730-b508-abe98050923f",
+    "ee009ae6-8928-42de-8b98-bb7bd974c5c3",
+    "5e0bb548-66a0-4a1a-912d-fa1e171d36fa",
+    "7bb7eaa0-54a3-47d6-a393-af2bb069bf88",
+    "3886822f-d0d7-4757-84a3-142cc6dc0d24",
+    "3ec292bd-d1a0-4fde-a968-b5f46911b067"
+  ],
+  "refreshedComponents": [
+    "app-local-public-profiles-20261016",
+    "app-local-original-shell-20261016",
+    "app-local-authority-navigation-20261016"
+  ],
+  "createdJournalFiles": [
+    "releases/changes/2026-10-16T19-15-47-973Z-3ec292bd-d1a0-4fde-a968-b5f46911b067.json",
+    "releases/changes/2026-10-16T19-15-48-292Z-f6ab0797-5a04-4c26-a838-d88fcede1498.json",
+    "releases/changes/2026-10-16T19-15-49-421Z-73eb9a6b-542a-416a-b018-ad6191290da2.json",
+    "releases/changes/2026-10-16T19-15-50-103Z-5e0bb548-66a0-4a1a-912d-fa1e171d36fa.json",
+    "releases/changes/2026-10-16T19-15-50-870Z-6b0d34bb-5b3f-4046-be45-bf5596001978.json"
+  ],
+  "publication": {
+    "web": false,
+    "iosUpload": false,
+    "appStore": false
+  }
+}
