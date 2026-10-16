@@ -2,6 +2,40 @@ import XCTest
 @testable import Reylumi
 
 final class LocalReadStoreTests: XCTestCase {
+    func testPortableAuthorityIsExactDeviceScopeAndCannotImpersonateAnAccountLease() throws {
+        let generation = UUID().uuidString, object = AppLocalTestFixture.portableContext(generation: generation)
+        let session = try XCTUnwrap(ReylumiLocalSession.verified(object, generation: generation))
+        XCTAssertTrue(session.permitsPrivateReads)
+        XCTAssertEqual((session.object["grant"] as? [String: Any])?["localCommands"] as? Bool, false, "A display cache must not enable the separate offline command flag")
+        for field in ["scope", "salonId", "workspaceId", "permissionRevision", "authenticated"] {
+            var invalid = object, context = object["context"] as! [String: Any]
+            context[field] = field == "authenticated" ? true : "wrong"; invalid["context"] = context
+            XCTAssertNil(ReylumiLocalSession.verified(invalid, generation: generation), field)
+        }
+        var account = object, grant = object["grant"] as! [String: Any]
+        grant["kind"] = "owner"; account["grant"] = grant
+        XCTAssertNil(ReylumiLocalSession.verified(account, generation: generation))
+    }
+    func testPairedDisplayCapabilityCanOnlyPersistInExactEncryptedPortableWorkspace() async throws {
+        let generation = UUID().uuidString, object = AppLocalTestFixture.portableContext(generation: generation), directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let session = try XCTUnwrap(ReylumiLocalSession.verified(object, generation: generation))
+        let store = ReylumiLocalReadStore(origin: URL(string: "https://reylumi.com")!, directory: directory, service: "reylumi.tests.portable." + UUID().uuidString)
+        await store.accept(session)
+        let envelope: [String: Any] = ["schemaVersion": 1, "status": 200, "scope": session.scope, "data": ["liveDraft": ["salon_id": "00000000-0000-4000-8000-000000000002", "token": String(repeating: "a", count: 32), "total": 44.25]]]
+        let payload = try JSONSerialization.data(withJSONObject: envelope)
+        XCTAssertFalse(ReylumiLocalReadStore.isSafeJSON(envelope))
+        await store.put("workspace", payload: payload, session: session, resourceName: "portable.workspace")
+        let restored = await store.get("workspace", session: session); XCTAssertEqual(restored, payload)
+        await store.put("wrong-resource", payload: payload, session: session, resourceName: "owner.workspace")
+        let denied = await store.get("wrong-resource", session: session); XCTAssertNil(denied)
+        for field in ["salon_id", "access_token"] {
+            var changed = envelope, data = changed["data"] as! [String: Any], draft = data["liveDraft"] as! [String: Any]
+            draft[field] = "wrong"; data["liveDraft"] = draft; changed["data"] = data
+            await store.put(field, payload: try JSONSerialization.data(withJSONObject: changed), session: session, resourceName: "portable.workspace")
+            let rejected = await store.get(field, session: session); XCTAssertNil(rejected)
+        }
+        await store.clear(); try? FileManager.default.removeItem(at: directory)
+    }
     func testEncryptedColdReadIsGrantScopeRevisionGenerationAndExpiryBound() async throws {
         let origin = URL(string: "https://reylumi.com")!, directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let service = "com.reylumi.tests.local-reads." + UUID().uuidString

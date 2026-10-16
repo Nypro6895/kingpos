@@ -4,11 +4,19 @@ import CryptoKit
 
 enum AppLocalTestFixture {
     static let scope = "v3:" + String(repeating: "a", count: 64)
+    static func portableContext(generation: String, localCommands: Bool = false) -> [String: Any] {
+        let salon = "00000000-0000-4000-8000-000000000002", key = "00000000-0000-4000-8000-000000000003", scope = salon + ":" + key
+        var object = context(generation: generation, scope: scope, kind: "portable", workspace: key)
+        var context = object["context"] as! [String: Any], grant = object["grant"] as! [String: Any]
+        context["authenticated"] = false; context["permissionRevision"] = "revision-a"
+        grant["workspaceId"] = key; grant["scope"] = scope; grant["localCommands"] = localCommands; grant["path"] = "/pos/portable"
+        object["context"] = context; object["grant"] = grant; return object
+    }
     static func context(generation: String, scope: String = AppLocalTestFixture.scope, revision: String = "revision-a", now: Date = Date(), kind: String = "owner", viewer: String = "00000000-0000-4000-8000-000000000001", workspace: String = "fixture-workspace", primaryScope: String? = nil) -> [String: Any] {
         let salon = "00000000-0000-4000-8000-000000000002"
         var grant: [String: Any] = ["version": 1, "scope": primaryScope ?? scope, "scopes": Array(Set([scope, primaryScope ?? scope])), "generation": generation, "viewerId": viewer, "grantRevision": revision, "issuedAt": now.timeIntervalSince1970 * 1000, "expiresAt": now.addingTimeInterval(3600).timeIntervalSince1970 * 1000, "kind": kind, "path": "/help", "salonId": salon]
         if kind == "staff" { grant["staffBinding"] = ["version": 1, "staffId": "00000000-0000-4000-8000-000000000003", "viewerId": viewer, "salonId": salon, "revision": "00000000-0000-4000-8000-000000000004", "approvedAt": ISO8601DateFormatter().string(from: now)] }
-        return ["schemaVersion": 1, "context": ["scope": scope, "authenticated": true, "viewerId": viewer, "workspaceId": workspace, "salonId": salon], "grant": grant,
+        return ["schemaVersion": 1, "context": ["scope": scope, "authenticated": true, "viewerId": viewer, "workspaceId": workspace, "salonId": salon, "permissionRevision": "permissions-a"], "grant": grant,
          "display": ["name": "Fixture", "language": "vi", "role": kind], "onlineValidatedAt": now.timeIntervalSince1970 * 1000]
     }
     static func bundle(mapEnabled: Bool = false) throws -> (ReylumiLocalBundle, URL) {
@@ -24,8 +32,8 @@ enum AppLocalTestFixture {
         }
         let manifest: [String: Any] = ["version": 1, "buildId": "native-test-bundle", "productionReady": false, "entry": "index.html", "files": files, "mapOrigins": mapEnabled ? ["https://api.maptiler.com"] : [],
             "routes": [["path": "/explore", "adapter": "explore", "access": "public"], ["path": "/help", "adapter": "help", "access": "public"], ["path": "/help/:slug", "adapter": "help.article", "access": "public"]],
-            "reads": [["name": "fixture.roster", "path": "/api/app-local/read", "argumentKeys": ["date"], "access": "scoped", "cacheable": true]],
-            "commands": [["name": "fixture.save", "path": "/api/app-local/command", "argumentKeys": ["id"]]]]
+            "reads": [["name": "fixture.roster", "path": "/api/app-local/read", "argumentKeys": ["date"], "access": "scoped", "cacheable": true], ["name": "staff.my-work", "path": "/api/app-local/read", "argumentKeys": [], "access": "scoped", "cacheable": true]],
+            "commands": [["name": "fixture.save", "path": "/api/app-local/command", "argumentKeys": ["id"]], ["name": "shell.logout", "path": "/api/app-local/command", "argumentKeys": []]]]
         try JSONSerialization.data(withJSONObject: manifest).write(to: directory.appendingPathComponent("manifest.json"))
         return (try ReylumiLocalBundle(directory: directory), directory)
     }
@@ -40,8 +48,10 @@ final class LocalBundleTests: XCTestCase {
         XCTAssertGreaterThan((help["slugs"] as? [String] ?? []).count, 3)
         XCTAssertTrue((help["languages"] as? [String] ?? []).contains("vi"))
         for file in bundle.manifest.files {
-            let (data, mime) = try bundle.resource(for: URL(string: "reylumi-app://bundle/" + file.path)!)
-            XCTAssertEqual(data.count, file.bytes, file.path); XCTAssertEqual(mime, file.mime, file.path)
+            do {
+                let (data, mime) = try bundle.resource(for: URL(string: "reylumi-app://bundle/" + file.path)!)
+                XCTAssertEqual(data.count, file.bytes, file.path); XCTAssertEqual(mime, file.mime, file.path)
+            } catch { XCTFail("Installed resource failed integrity: \(file.path): \(error)"); throw error }
         }
     }
     func testManifestResourcesAndActualRouteAreVerifiedWithoutNetwork() throws {

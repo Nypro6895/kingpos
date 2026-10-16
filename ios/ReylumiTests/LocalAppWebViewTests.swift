@@ -10,6 +10,71 @@ private actor AppLocalUnavailableHTTP: ReylumiLocalHTTPClient {
 
 final class LocalAppWebViewTests: XCTestCase {
     @MainActor
+    func testExplicitFreshContextDoesNotReplyWithPreviousCachedWorkspace() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP(), nextScope = "v3:" + String(repeating: "b", count: 64)
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.fresh." + UUID().uuidString), client: http, defaults: UserDefaults(suiteName: "reylumi.tests.fresh." + UUID().uuidString)!, cookies: { [] })
+        _ = try await transport.freshContext(path: "/help")
+        await http.configureContext(path: "/help", scope: nextScope, kind: "owner")
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help", transport: transport)
+        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
+        controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
+        try await wait("window.fixtureLocal === true", in: web)
+        let fresh = try await evaluateAsync("window.__reylumiAppLocalTransport.request({id:'00000000-0000-4000-8000-000000000098',kind:'context',name:'context',args:{path:'/help',fresh:true}}).then(reply=>reply.context.scope==='\(nextScope)'&&reply.offline===false&&reply.host.nonce===window.__reylumiAppLocalContext.nonce)", in: web) as? Bool
+        XCTAssertEqual(fresh, true)
+    }
+    @MainActor
+    func testProgrammaticLocalNavigationRetainsSameDocumentAndUnsentInput() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
+        controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
+        try await wait("window.fixtureLocal === true", in: web)
+        _ = try await web.evaluateJavaScript("window.retainedInput=document.createElement('input');retainedInput.value='Unsent 44.25';document.body.append(retainedInput);window.addEventListener('reylumi:app-local-navigate',e=>{window.retainedEvent=e.detail.path;history.pushState({},'',e.detail.path)});window.location.assign('/help/check-in?q=draft')")
+        try await wait("window.retainedEvent==='/help/check-in?q=draft' && location.pathname==='/help/check-in'", in: web)
+        let retained = try await web.evaluateJavaScript("window.retainedInput?.isConnected && window.retainedInput?.value==='Unsent 44.25'") as? Bool
+        XCTAssertEqual(retained, true)
+    }
+    @MainActor
+    func testProgrammaticHostedCheckoutAndSignInKeepTheirOriginalNativeBoundary() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
+        var external: URL?, online: String?
+        controller.onOpenExternal = { external = $0 }; controller.onOpenOnline = { online = $0 }
+        controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
+        try await wait("window.fixtureLocal === true", in: web)
+        _ = try await web.evaluateJavaScript("window.location.assign('https://checkout.stripe.com/c/pay/fixture-no-transaction')")
+        for _ in 0..<100 { if external != nil { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        XCTAssertEqual(external?.host, "checkout.stripe.com"); XCTAssertEqual(web.url?.scheme, "reylumi-app")
+        _ = try await web.evaluateJavaScript("window.location.assign('https://reylumi.com/login?next=%2Fmarket')")
+        for _ in 0..<100 { if online != nil { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        XCTAssertEqual(online, "/login?next=%2Fmarket")
+        external = nil
+        _ = try await web.evaluateJavaScript("window.location.assign('http://unsafe.invalid/')")
+        try await Task.sleep(nanoseconds: 100_000_000); XCTAssertNil(external)
+    }
+    @MainActor
+    func testLogoutAcknowledgesNewMetadataAndClearsPrivateLeaseBeforeOfflineContext() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP(), store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.logout." + UUID().uuidString)
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: UserDefaults(suiteName: "reylumi.tests.logout." + UUID().uuidString)!, cookies: { [] })
+        _ = try await transport.freshContext(path: "/help")
+        _ = try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope)
+        let oldGeneration = transport.generation
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help", transport: transport)
+        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
+        controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
+        try await wait("window.fixtureLocal === true", in: web)
+        _ = try await evaluateAsync("window.__reylumiAppLocalTransport.request({id:'00000000-0000-4000-8000-000000000099',kind:'command',name:'shell.logout',args:{scope:'\(AppLocalTestFixture.scope)'}}).then(reply=>{window.logoutReply=reply;return reply.signedOut===true&&reply.host.generation===window.__reylumiAppLocalContext.generation})", in: web)
+        XCTAssertNotEqual(transport.generation, oldGeneration)
+        await http.configureContextUnavailable()
+        let cached = try await transport.cached(name: "fixture.roster", args: [:], requestedScope: AppLocalTestFixture.scope); XCTAssertNil(cached)
+        do { _ = try await transport.context(path: "/help"); XCTFail("A successful logout must never restore its old private context") } catch {}
+        let requests = await http.requests
+        XCTAssertEqual(requests.filter { $0.url?.path == "/api/app-local/command" }.count, 1)
+    }
+    @MainActor
     func testInstalledClassicClientWorksWithoutAnySuccessfulNetworkRead() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
         let http = AppLocalUnavailableHTTP()

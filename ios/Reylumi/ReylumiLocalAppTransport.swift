@@ -6,16 +6,27 @@ protocol ReylumiLocalHTTPClient {
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse)
 }
 
-private final class ReylumiLocalURLClient: NSObject, ReylumiLocalHTTPClient, URLSessionTaskDelegate {
-    private lazy var session: URLSession = {
+private final class ReylumiLocalRedirectGuard: NSObject, URLSessionTaskDelegate {
+    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) { completionHandler(nil) }
+}
+
+private final class ReylumiLocalURLClient: ReylumiLocalHTTPClient {
+    private let lock = NSLock()
+    private var session: URLSession?
+    private func activeSession() -> URLSession {
+        lock.lock(); defer { lock.unlock() }
+        if let session { return session }
         let configuration = URLSessionConfiguration.ephemeral
         configuration.httpCookieStorage = nil; configuration.urlCredentialStorage = nil; configuration.urlCache = nil
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
         configuration.timeoutIntervalForRequest = 12; configuration.timeoutIntervalForResource = 20
-        return URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
-    }()
+        // The session owns a separate stateless delegate. It must never retain
+        // a client which is already deinitializing during invalidation.
+        let session = URLSession(configuration: configuration, delegate: ReylumiLocalRedirectGuard(), delegateQueue: nil)
+        self.session = session; return session
+    }
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
-        let (stream, response) = try await session.bytes(for: request)
+        let (stream, response) = try await activeSession().bytes(for: request)
         guard let response = response as? HTTPURLResponse else { throw URLError(.badServerResponse) }
         var data = Data()
         for try await byte in stream {
@@ -24,8 +35,9 @@ private final class ReylumiLocalURLClient: NSObject, ReylumiLocalHTTPClient, URL
         }
         return (data, response)
     }
-    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) { completionHandler(nil) }
-    deinit { session.invalidateAndCancel() }
+    // Referencing a lazy session here used to create networking from deinit,
+    // with a dangling delegate. An unused client now has nothing to invalidate.
+    deinit { session?.invalidateAndCancel() }
 }
 
 @MainActor
@@ -83,6 +95,43 @@ final class ReylumiLocalAppTransport {
         ReylumiBackgroundSync.shared.clear()
         onEvent?("reylumi:app-local-reset", metadata)
         await store.clear()
+    }
+    func lockPortable() async {
+        if session?.authority == "portable" {
+            scopeEpoch += 1; nonce = UUID().uuidString
+            freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil
+            session = nil; onlineContext = nil; onlineCheckedAt = .distantPast
+            onEvent?("reylumi:app-local-reset", metadata)
+        }
+        await store.revoke(scope: nil, authority: "portable")
+        // The original web implementation cannot write this HTTPS cookie from
+        // a custom origin. Persist that same local lock natively, not a new PIN
+        // or credential. Original re-entry clears it after fresh authentication.
+        let secure = origin.scheme == "https" ? "; Secure" : ""
+        for cookie in HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie": "kingpos-portable-local-lock=1; Path=/; Max-Age=31536000; SameSite=Lax" + secure], for: origin) { await setCookie(cookie) }
+    }
+    private func additiveAuthority(_ previous: ReylumiLocalSession, _ next: ReylumiLocalSession) -> Bool {
+        let pair = Set([previous.authority, next.authority])
+        guard previous.scope == next.scope, let viewer = previous.viewerId, viewer == next.viewerId,
+              previous.authority != next.authority, pair.contains("staff"), pair.isSubset(of: ["staff", "owner", "customer"]),
+              let old = previous.object["context"] as? [String: Any], let current = next.object["context"] as? [String: Any],
+              let permission = old["permissionRevision"] as? String, !permission.isEmpty,
+              current["permissionRevision"] as? String == permission else { return false }
+        return true
+    }
+    private func readLease(name: String, scope: String?, privateOnly: Bool) async -> ReylumiLocalSession? {
+        let authority: String?
+        if name.hasPrefix("staff.") { authority = "staff" }
+        else if name.hasPrefix("portable.") || name.hasPrefix("http.portable.") { authority = "portable" }
+        else if name.hasPrefix("owner.") || name.hasPrefix("page.owner-") { authority = "owner" }
+        else { authority = nil }
+        if let authority { return await store.session(generation: generation, scope: scope, privateOnly: privateOnly, authority: authority) }
+        // General customer/public resources must not borrow a staff binding or
+        // Portable device lease merely because its scope happens to match.
+        for kind in ["customer", "owner", "public"] {
+            if let lease = await store.session(generation: generation, scope: scope, privateOnly: privateOnly, authority: kind) { return lease }
+        }
+        return nil
     }
     private func ensureCurrent(_ epoch: Int) throws { guard scopeEpoch == epoch, !Task.isCancelled else { throw failure(409, "Your access has changed. Please try again.") } }
     func matchesCachedScope(_ scope: String) async -> Bool { await store.session(generation: generation, scope: scope) != nil }
@@ -153,7 +202,13 @@ final class ReylumiLocalAppTransport {
             let previous = self.session ?? stored
             let viewer = context["viewerId"] as? String
             let viewerChanged = previous != nil && previous?.viewerId != viewer
-            if let previous, viewerChanged || previous.scope != scope || next?.grantRevision != previous.grantRevision || previous.authority != next?.authority {
+            let priorAuthority: ReylumiLocalSession?
+            if let next { priorAuthority = await self.store.session(generation: expectedGeneration, scope: scope, authority: next.authority) }
+            else { priorAuthority = nil }
+            try self.ensureCurrent(epoch)
+            let authorityChanged = next != nil && priorAuthority != nil && next?.grantRevision != priorAuthority?.grantRevision
+            let additive = previous != nil && next != nil && self.additiveAuthority(previous!, next!) && !authorityChanged
+            if let previous, !additive && (viewerChanged || previous.scope != scope || next?.grantRevision != previous.grantRevision || previous.authority != next?.authority) || authorityChanged {
                 // Invalidate deliveries for the old visible authority, while
                 // retaining other unexpired same-viewer display leases.
                 self.scopeEpoch += 1; self.nonce = UUID().uuidString
@@ -181,7 +236,7 @@ final class ReylumiLocalAppTransport {
         let cached = await store.session(generation: expectedGeneration, path: path)
         try ensureCurrent(epoch)
         if let cached {
-            if let previous = session, previous.key != cached.key {
+            if let previous = session, previous.key != cached.key, !additiveAuthority(previous, cached) {
                 scopeEpoch += 1; nonce = UUID().uuidString; onlineContext = nil; onlineCheckedAt = .distantPast
                 onEvent?("reylumi:app-local-reset", metadata)
             }
@@ -207,7 +262,7 @@ final class ReylumiLocalAppTransport {
         guard let rule = manifest.reads.first(where: { $0.name == name }), rule.cacheable else { return nil }
         let args = try arguments(args, keys: rule.argumentKeys)
         let epoch = scopeEpoch
-        guard let session = await store.session(generation: generation, scope: requestedScope ?? session?.scope, privateOnly: rule.access != "public"),
+        guard let session = await readLease(name: name, scope: requestedScope ?? session?.scope, privateOnly: rule.access != "public"),
               let data = await store.get(try cacheKey(name: name, args: args), session: session),
               var object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
         try ensureCurrent(epoch)
@@ -217,7 +272,7 @@ final class ReylumiLocalAppTransport {
     func removeCached(name: String, args: [String: Any], requestedScope: String? = nil) async throws {
         guard let rule = manifest.reads.first(where: { $0.name == name }), rule.cacheable else { return }
         let args = try arguments(args, keys: rule.argumentKeys)
-        if let session = await store.session(generation: generation, scope: requestedScope ?? session?.scope) { await store.remove(try cacheKey(name: name, args: args), session: session) }
+        if let session = await readLease(name: name, scope: requestedScope ?? session?.scope, privateOnly: rule.access != "public") { await store.remove(try cacheKey(name: name, args: args), session: session) }
     }
     func backgroundRegistration(_ args: [String: Any]) async throws -> ReylumiSyncRegistration {
         await loadSession()
@@ -279,7 +334,7 @@ final class ReylumiLocalAppTransport {
                   Self.validUpdatedAt(object["updatedAt"]), requestedScope == nil || requestedScope == scope,
                   rule.access == "public" || scope == ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) else { throw failure(409, "App access could not be checked.") }
             try ensureCurrent(epoch)
-            if rule.cacheable, let lease = await store.session(generation: generation, scope: scope, privateOnly: rule.access != "public") { await store.put(key, payload: data, session: lease) }
+            if rule.cacheable, let lease = await readLease(name: name, scope: scope, privateOnly: rule.access != "public") { await store.put(key, payload: data, session: lease, resourceName: name) }
             try ensureCurrent(epoch); object["offline"] = false
             return object
         } catch {

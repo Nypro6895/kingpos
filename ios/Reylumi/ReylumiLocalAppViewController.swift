@@ -16,12 +16,15 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     private var foregroundObserver: NSObjectProtocol?
     private var resetObserver: NSObjectProtocol?
     private var pendingNavigation: String?
+    private var expectedDocumentNavigation: URL?
+    private var documentCommitted = false
     private var downloads: [ObjectIdentifier: URL] = [:]
     private var startupFrameLink: CADisplayLink?
     private var firstFrame: CFTimeInterval?
     private var lastProcessRecovery: Date?
     private lazy var frameTarget = ReylumiLocalFrameTarget(self)
     var onOpenOnline: ((String) -> Void)?
+    var onOpenExternal: ((URL) -> Void)?
 
     init(bundle: ReylumiLocalBundle, origin: URL = URL(string: "https://reylumi.com")!, startPath: String = "/explore", transport: ReylumiLocalAppTransport? = nil) {
         self.bundle = bundle; self.origin = origin; self.startPath = bundle.routeExists(startPath) ? startPath : "/explore"
@@ -96,6 +99,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     private func loadBundle(path: String? = nil) {
         let destination = path ?? startPath
         guard let url = URL(string: "\(ReylumiLocalBundle.scheme)://\(ReylumiLocalBundle.host)\(destination)"), bundle.owns(url), bundle.routeExists(url.path) else { return }
+        expectedDocumentNavigation = url; documentCommitted = false
         webView.load(URLRequest(url: url))
     }
     func navigate(_ path: String) {
@@ -132,11 +136,13 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
             defer { self.pending[id] = nil }
             do {
                 let result: Any
+                var acknowledgedLogout = false
                 switch kind {
                 case "context":
                     let path = args["path"] as? String ?? self.webView.url?.path ?? self.startPath
                     guard let parsed = URL(string: path, relativeTo: URL(string: "reylumi-app://bundle")), self.bundle.owns(parsed), self.bundle.routeExists(parsed.path) else { throw NSError(domain: "ReylumiLocalApp", code: 400) }
-                    result = try await self.transport.context(path: parsed.path)
+                    if args["fresh"] as? Bool == true { result = try await self.transport.freshContext(path: parsed.path) }
+                    else { result = try await self.transport.context(path: parsed.path) }
                 case "read":
                     var original = args; original.removeValue(forKey: "etag"); original.removeValue(forKey: "scope")
                     result = try await self.transport.read(name: name, args: original, etag: body["etag"] as? String ?? args["etag"] as? String, requestedScope: args["scope"] as? String)
@@ -144,8 +150,16 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
                     var original = args; original.removeValue(forKey: "scope")
                     let reply = try await self.transport.command(name: name, args: original, requestID: id, path: self.webView.url?.path ?? self.startPath, requestedScope: args["scope"] as? String)
                     guard reply["ok"] as? Bool == true else { throw NSError(domain: "ReylumiLocalApp", code: 400, userInfo: [NSLocalizedDescriptionKey: reply["error"] as? String ?? "The change could not be confirmed."]) }
-                    result = reply["data"] ?? NSNull()
+                    if name == "shell.logout", var wire = reply["data"] as? [String: Any], let status = wire["status"] as? Int, (200..<300).contains(status) {
+                        // Clear encrypted display authority before delivering a
+                        // successful logout, even if the next context GET fails.
+                        // Existing JS receipt drafts/outbox are never touched.
+                        await self.transport.reset()
+                        wire["signedOut"] = true; wire["host"] = self.transport.metadata
+                        result = wire; acknowledgedLogout = true
+                    } else { result = reply["data"] ?? NSNull() }
                 case "cache":
+                    if name == "portable.lock" { await self.transport.lockPortable(); result = ["ok": true]; break }
                     if name == "background.register" {
                         let registration = try await self.transport.backgroundRegistration(args)
                         await ReylumiBackgroundSync.shared.register(registration); result = ["ok": true]; break
@@ -168,7 +182,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
                     self.onOpenOnline?(path); result = ["ok": true]
                 default: throw NSError(domain: "ReylumiLocalApp", code: 400)
                 }
-                guard kind == "context" || self.transport.scopeEpoch == epoch, !Task.isCancelled else { throw NSError(domain: "ReylumiLocalApp", code: 409) }
+                guard kind == "context" || acknowledgedLogout || kind == "cache" && name == "portable.lock" || self.transport.scopeEpoch == epoch, !Task.isCancelled else { throw NSError(domain: "ReylumiLocalApp", code: 409) }
                 replyHandler(result, nil)
             } catch { replyHandler(["__hostError": ["status": (error as NSError).code, "message": error.localizedDescription]], nil) }
         }
@@ -176,14 +190,31 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     }
     func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = action.request.url else { decisionHandler(.cancel); return }
-        if bundle.owns(url) || url.absoluteString.hasPrefix("blob:reylumi-app://bundle/") || url.absoluteString == "about:blank" { decisionHandler(action.shouldPerformDownload ? .download : .allow); return }
+        if bundle.owns(url) {
+            if action.shouldPerformDownload { decisionHandler(.download); return }
+            if action.targetFrame?.isMainFrame == true {
+                if expectedDocumentNavigation == url { expectedDocumentNavigation = nil; decisionHandler(.allow); return }
+                if documentCommitted, action.sourceFrame.isMainFrame, let source = action.sourceFrame.request.url, bundle.owns(source) {
+                    decisionHandler(.cancel)
+                    let path = url.path + (url.query.map { "?" + $0 } ?? "") + (url.fragment.map { "#" + $0 } ?? "")
+                    if bundle.routeExists(url.path) { emit("reylumi:app-local-navigate", ["path": path]) }
+                    else if !NavigationPolicy(origin: origin).isExcluded(origin.appendingPathComponent(url.path)) { onOpenOnline?(path) }
+                    return
+                }
+            }
+            decisionHandler(.allow); return
+        }
+        if url.absoluteString.hasPrefix("blob:reylumi-app://bundle/") || url.absoluteString == "about:blank" { decisionHandler(action.shouldPerformDownload ? .download : .allow); return }
         decisionHandler(.cancel)
         let policy = NavigationPolicy(origin: origin)
-        guard action.targetFrame?.isMainFrame != false, action.navigationType == .linkActivated, !policy.isExcluded(url), policy.isExternalAllowed(url), presentedViewController == nil else { return }
+        let installedSource = action.sourceFrame.isMainFrame && action.sourceFrame.request.url.map(bundle.owns) == true
+        guard action.targetFrame?.isMainFrame != false, (action.navigationType == .linkActivated || installedSource), !policy.isExcluded(url), policy.isExternalAllowed(url), presentedViewController == nil else { return }
         if policy.isInternal(url) { onOpenOnline?(url.path + (url.query.map { "?" + $0 } ?? "")) }
+        else if let onOpenExternal { onOpenExternal(url) }
         else if policy.isSafariPayment(url) || url.scheme != "https" { UIApplication.shared.open(url) }
         else { present(SFSafariViewController(url: url), animated: true) }
     }
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) { documentCommitted = true }
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         launchPanel.finishLoading()

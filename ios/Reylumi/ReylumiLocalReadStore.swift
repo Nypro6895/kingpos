@@ -12,7 +12,6 @@ struct ReylumiLocalSession: Codable {
     static func verified(_ envelope: [String: Any], generation: String, now: Date = Date()) -> ReylumiLocalSession? {
         guard envelope["schemaVersion"] as? Int == 1,
               let context = envelope["context"] as? [String: Any], let scope = context["scope"] as? String,
-              scope.range(of: "^v3:[a-f0-9]{64}$", options: .regularExpression) != nil,
               let grant = envelope["grant"] as? [String: Any], grant["version"] as? Int == 1,
               let primaryScope = grant["scope"] as? String, (grant["scopes"] as? [String])?.contains(primaryScope) == true,
               (grant["scopes"] as? [String])?.contains(scope) == true,
@@ -24,10 +23,21 @@ struct ReylumiLocalSession: Codable {
               ReylumiLocalReadStore.isSafeJSON(envelope), JSONSerialization.isValidJSONObject(envelope),
               let data = try? JSONSerialization.data(withJSONObject: envelope), data.count <= 1024 * 1024 else { return nil }
         guard ["owner", "staff", "customer", "portable", "public"].contains(grant["kind"] as? String ?? "") else { return nil }
+        if grant["kind"] as? String == "portable" {
+            let parts = scope.split(separator: ":", omittingEmptySubsequences: false).map(String.init)
+            guard parts.count == 2, UUID(uuidString: parts[0]) != nil, UUID(uuidString: parts[1]) != nil,
+                  primaryScope == scope, context["authenticated"] as? Bool == false,
+                  context["salonId"] as? String == parts[0], grant["salonId"] as? String == parts[0],
+                  context["workspaceId"] as? String == parts[1], grant["workspaceId"] as? String == parts[1],
+                  context["permissionRevision"] as? String == revision,
+                  (context["viewerId"] as? String) == (grant["viewerId"] as? String),
+                  (grant["localCommands"] as? Bool) != nil else { return nil }
+        } else {
+            guard scope.range(of: "^v3:[a-f0-9]{64}$", options: .regularExpression) != nil else { return nil }
+        }
         if ["owner", "staff", "customer"].contains(grant["kind"] as? String ?? "") {
             guard context["authenticated"] as? Bool == true, let viewer = context["viewerId"] as? String, viewer == grant["viewerId"] as? String else { return nil }
         }
-        if grant["kind"] as? String == "portable", grant["localCommands"] as? Bool != true { return nil }
         if grant["kind"] as? String == "staff" {
             guard let binding = grant["staffBinding"] as? [String: Any], binding["version"] as? Int == 1,
                   binding["revoked"] as? Bool != true,
@@ -49,7 +59,9 @@ struct ReylumiLocalSession: Codable {
         guard let value = try? JSONSerialization.jsonObject(with: envelope) as? [String: Any],
               let grant = value["grant"] as? [String: Any], let context = value["context"] as? [String: Any],
               let kind = grant["kind"] as? String, ["owner", "staff", "customer", "portable"].contains(kind) else { return false }
-        if kind == "portable" { return grant["localCommands"] as? Bool == true }
+        // A valid device display lease can restore its existing read model.
+        // localCommands remains the original separate outbox/write policy.
+        if kind == "portable" { return true }
         guard let viewer = context["viewerId"] as? String, viewer == grant["viewerId"] as? String else { return false }
         return context["authenticated"] as? Bool == true
     }
@@ -146,11 +158,11 @@ actor ReylumiLocalReadStore {
         state?.rows.removeAll { $0.key == key && $0.sessionKey == session.key }; state?.rows.append(row)
         return row.payload
     }
-    func put(_ key: String, payload: Data, session: ReylumiLocalSession, now: Date = Date()) {
+    func put(_ key: String, payload: Data, session: ReylumiLocalSession, resourceName: String? = nil, now: Date = Date()) {
         load()
         guard key.utf8.count <= 16384, payload.count <= 4 * 1024 * 1024, session.valid(generation: session.generation, at: now),
               state?.sessions.contains(where: { $0.key == session.key && $0.grantRevision == session.grantRevision && $0.generation == session.generation }) == true,
-              let object = try? JSONSerialization.jsonObject(with: payload), Self.isSafeJSON(object) else { return }
+              let object = try? JSONSerialization.jsonObject(with: payload), Self.isSafeReadPayload(object, resourceName: resourceName, session: session) else { return }
         state?.rows.removeAll { $0.key == key && $0.sessionKey == session.key }
         state?.rows.append(Row(key: key, sessionKey: session.key, revision: session.grantRevision, payload: payload, receivedAt: now))
         while (state?.rows.count ?? 0) > Self.maximumSnapshots || (state?.rows.reduce(0, { $0 + $1.payload.count }) ?? 0) > Self.maximumBytes { state?.rows.removeFirst() }
@@ -181,5 +193,19 @@ actor ReylumiLocalReadStore {
         }
         if let array = value as? [Any] { return array.count <= 20000 && array.allSatisfy { isSafeJSON($0, depth: depth + 1) } }
         return value is String || value is NSNumber || value is NSNull
+    }
+    nonisolated static func isSafeReadPayload(_ value: Any, resourceName: String?, session: ReylumiLocalSession) -> Bool {
+        if isSafeJSON(value) { return true }
+        // The original Portable draft already durably holds this paired-display
+        // capability. Permit it only in its exact device-leased workspace DTO,
+        // encrypted at rest; auth/session tokens remain forbidden everywhere.
+        guard resourceName == "portable.workspace", session.authority == "portable", session.permitsPrivateReads,
+              var root = value as? [String: Any], root["scope"] as? String == session.scope,
+              var data = root["data"] as? [String: Any], var draft = data["liveDraft"] as? [String: Any],
+              let token = draft["token"] as? String,
+              token.range(of: "^(?:[a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$", options: [.regularExpression, .caseInsensitive]) != nil,
+              let salon = (session.object["grant"] as? [String: Any])?["salonId"] as? String, draft["salon_id"] as? String == salon else { return false }
+        draft.removeValue(forKey: "token"); data["liveDraft"] = draft; root["data"] = data
+        return isSafeJSON(root)
     }
 }

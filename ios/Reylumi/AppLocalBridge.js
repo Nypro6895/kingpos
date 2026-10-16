@@ -13,7 +13,8 @@
     }
     // Adopt native metadata before resolving a context promise. The parallel
     // DOM event can arrive later than the reply on a busy WebKit process.
-    const host = input.kind === 'context' ? reply?.host : null;
+    const logout = input.kind === 'command' && input.name === 'shell.logout' && reply?.signedOut === true && reply.status >= 200 && reply.status < 300;
+    const host = input.kind === 'context' || logout ? reply?.host : null;
     if (host?.version === 1 && typeof host.nonce === 'string' && typeof host.generation === 'string' && Number.isSafeInteger(host.scopeEpoch) && host.scopeEpoch >= window.__reylumiAppLocalContext.scopeEpoch) window.__reylumiAppLocalContext = host;
     return reply;
   };
@@ -26,6 +27,11 @@
   window.__reylumiBackgroundSync = Object.freeze({
     register: (args) => request({ id: requestID(), kind: 'cache', name: 'background.register', args }),
     drain: (scope) => request({ id: requestID(), kind: 'cache', name: 'background.drain', args: { scope } }),
+  });
+  window.addEventListener('kingpos:portable-lock', () => {
+    // Revoke native display authority too; never delete the original receipt
+    // queue or resubmit an unfinished command when the UI is locked.
+    void request({ id: requestID(), kind: 'cache', name: 'portable.lock', args: {} }).catch(() => {});
   });
   const nativeUI = window.webkit?.messageHandlers?.reylumi;
   if (nativeUI) {

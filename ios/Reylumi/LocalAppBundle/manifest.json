@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": false,
-  "buildId": "097cb67b9afacb045f8f4be147735a8678280915662270741d55eb5f4126c948",
+  "buildId": "06029387b7ef2ac5fbc551fe1a11306a2d2206bfae9e84e13790aa6536e78912",
   "entry": "index.html",
   "connectOrigins": [],
   "mapOrigins": [],
@@ -14,14 +14,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 519486,
-      "sha256": "f92f3b175726bac68647a02fa8c8032ceaa9974c1b8e161815f8b5745056b230",
+      "bytes": 558122,
+      "sha256": "036b08c338ab62e46b3865fdbd4ced4083e902ae14626c755114fb5af322e7de",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 3450119,
-      "sha256": "d2f975ec111867c3503cdb4be1bdc4f2a0b8b99ec5376c7ab2c52b16fb1aedce",
+      "bytes": 3987522,
+      "sha256": "ea46cb683a2e169562b3488da35ffe62218d90ab1d10470ab91edc5820bba5b5",
       "mime": "text/javascript"
     },
     {
@@ -2348,6 +2348,161 @@
       "access": "scoped"
     },
     {
+      "path": "/pos-tickets/:ticketId",
+      "adapter": "/pos-tickets/:ticketId",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/ticket/:ticketId",
+      "adapter": "/pos/ticket/:ticketId",
+      "access": "scoped"
+    },
+    {
+      "path": "/tax-company",
+      "adapter": "/tax-company",
+      "access": "scoped"
+    },
+    {
+      "path": "/tax-company/:salonId",
+      "adapter": "/tax-company/:salonId",
+      "access": "scoped"
+    },
+    {
+      "path": "/tax-company/install",
+      "adapter": "/tax-company/install",
+      "access": "scoped"
+    },
+    {
+      "path": "/",
+      "adapter": "/",
+      "access": "scoped"
+    },
+    {
+      "path": "/bookings",
+      "adapter": "/bookings",
+      "access": "scoped"
+    },
+    {
+      "path": "/reports",
+      "adapter": "/reports",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos-tickets",
+      "adapter": "/pos-tickets",
+      "access": "scoped"
+    },
+    {
+      "path": "/businesses/create",
+      "adapter": "/businesses/create",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/looks/:lookId",
+      "adapter": "/explore/looks/:lookId",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/wisconsin",
+      "adapter": "/explore/wisconsin",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/wisconsin/:businessId",
+      "adapter": "/explore/wisconsin/:businessId",
+      "access": "scoped"
+    },
+    {
+      "path": "/notifications/visits/:visitId",
+      "adapter": "/notifications/visits/:visitId",
+      "access": "scoped"
+    },
+    {
+      "path": "/salon-profile/client-transformations",
+      "adapter": "/salon-profile/client-transformations",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/memberships",
+      "adapter": "/more/memberships",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/reviews",
+      "adapter": "/more/reviews",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/gift-cards",
+      "adapter": "/more/gift-cards",
+      "access": "scoped"
+    },
+    {
+      "path": "/more/reports",
+      "adapter": "/more/reports",
+      "access": "scoped"
+    },
+    {
+      "path": "/payroll/tax-company",
+      "adapter": "/payroll/tax-company",
+      "access": "scoped"
+    },
+    {
+      "path": "/payroll/tax-company/settings",
+      "adapter": "/payroll/tax-company/settings",
+      "access": "scoped"
+    },
+    {
+      "path": "/campaigns",
+      "adapter": "/campaigns",
+      "access": "scoped"
+    },
+    {
+      "path": "/market/booking-deposit/settings",
+      "adapter": "/market/booking-deposit/settings",
+      "access": "scoped"
+    },
+    {
+      "path": "/market/orders/:orderId",
+      "adapter": "/market/orders/:orderId",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/campaigns/:campaignId",
+      "adapter": "/explore/campaigns/:campaignId",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable",
+      "adapter": "/pos/portable",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable/check-in",
+      "adapter": "/pos/portable/check-in",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable/book",
+      "adapter": "/pos/portable/book",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable/ticket",
+      "adapter": "/pos/portable/ticket",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable/today",
+      "adapter": "/pos/portable/today",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/portable/report",
+      "adapter": "/pos/portable/report",
+      "access": "scoped"
+    },
+    {
       "path": "/staff",
       "adapter": "/staff",
       "access": "scoped"
@@ -2726,7 +2881,185 @@
       "cacheable": true
     },
     {
+      "name": "owner.ticket-detail",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "ticketId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "customer.tax-salons",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "customer.tax-report",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "run",
+        "period"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.business-claims.matches",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "name",
+        "phone",
+        "address",
+        "unit",
+        "city",
+        "state"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "customer.visit",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "visitId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.transformations",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "public.directory",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "businessId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.payroll-tax-report",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "end",
+        "month",
+        "payPeriodStart",
+        "preset",
+        "segment",
+        "start"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "owner.payroll-tax-settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "owner.campaigns",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.deposit-settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.market-order",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "orderId"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "public.campaign",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "campaignId"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "portable.workspace",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "portable.check-in",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "portable.book",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "portable.ticket",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "portable.report",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
       "name": "page.explore",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.explore-extras",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.explore-feed",
       "path": "/api/app-local/read",
       "argumentKeys": [
         "query"
@@ -2849,6 +3182,67 @@
       "cacheable": false
     },
     {
+      "name": "shell.navigation",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "shell.configuration",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "shell.summary",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "shell.notice",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "http.shell.session",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.shell.quick-booking",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "inspiration",
+        "lookId",
+        "serviceId",
+        "staffId",
+        "date",
+        "startAt",
+        "source"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.shell.advertising",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "path",
+        "device"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
       "name": "staff.relay",
       "path": "/api/app-local/read",
       "argumentKeys": [
@@ -2925,6 +3319,42 @@
       ],
       "access": "scoped",
       "cacheable": true
+    },
+    {
+      "name": "portable.http.workspace",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "resource",
+        "ids",
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "portable.http.staff",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "ids"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "portable.http.tickets",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "date"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "portable.http.connection",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": false
     }
   ],
   "commands": [
@@ -2936,7 +3366,70 @@
       ]
     },
     {
+      "name": "action.d06245d954e31f5b8be168de",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8c6144966289f5c73446fee7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.491f716a916c74d93c6523f0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c31772f1c4eca38298bbfdb3",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.38a40647dd7273051f3a4999",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d84730935b14a9ad0d9d42ef",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d18579cec4fb4921100be388",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.bb94214f0d3f0d2a38d0d32f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8f7e6d39a400851675090333",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3e744ce93fbdc7844bc697ca",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -3097,6 +3590,34 @@
       ]
     },
     {
+      "name": "action.ccbccf17275333ff61b5ce2c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4ff7e121d64b42b9f97b3182",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e99bfbac281b2f0040bd797b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.911d2ccb0632ffea258384de",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.80572fb89ff72f23c1192523",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -3104,7 +3625,63 @@
       ]
     },
     {
+      "name": "action.125ecdd528c2160f9bc23c90",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.dc79aee24bdbcf715ad1ddeb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.bbb59baefab3741154789163",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.a06d5a6b1fadcb4acf5e751f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.73cb3c0c50601c0fbdfd99eb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.98eb8d678c30460a4b49a5d6",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c2f9d5d2b7eee4a4fbcee253",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ef3781c2eb3fbba71f06f6de",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2f6f64620a3c5535b79da7d5",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -3420,6 +3997,20 @@
     },
     {
       "name": "action.895262798ea1dce5bbde13b6",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d0fa95b0f3376950cec2b4da",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9abfdadd0e98c80705d212f8",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -4427,6 +5018,13 @@
       ]
     },
     {
+      "name": "action.54072c2407a11cc75bd91fe7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.ed1af3e056bd899837687d6f",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -4463,6 +5061,272 @@
     },
     {
       "name": "action.28078aa8561c157e9b45c7b7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cdf06dd2801e948acf28a01f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4119499ccbab7ccf2ffd2d33",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.eff48cf4c7e753de7c119c6b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.08072b94c3dd3f5b1d6154ab",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.805ee4ab28a6954dd0389212",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f2e75fe0fff43ccafa597013",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f6c9fc9f70a538ca476fd067",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.393ea0f1c971c7c63be45469",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.76baa008cdde8ba0dbb909e4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.aea9486dc01af87281803902",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6e26f508d8f1900bf1b294ee",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.dc68d24d69dfd38458d98c38",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.43868b737ff7fd87908af008",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ee11d447d1154d3e1ff376fb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.df00c997ca86dc0f6e4d98f4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2e671786f0d60d166a740406",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.873dd44c9cae0c2e2c122111",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3328f976642407d3bb758851",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e1c71ae1f667bfa62cac8bfa",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0b43f27dcc5613ae950c92e0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9c003c514393eb0c40456d6d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3470ba5f84cd735396917ac1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.dbbf589caa638c4b301f50dd",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.9226c3e659b438d3631fb5f4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.65b74daa544272e68a6971b1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0af210864589a26446f777d6",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c0312284ce4561de83547d1a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.37163ef18027d9a42141b764",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e0180c8c1867ee8bdc0e937f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e380ac00aecc3d65f25a1f54",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.5f59a9dc86edf620500faea2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8932ff3a79e278527019c086",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e9dd5ea7780ddceb2d7e53ba",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.889b535531e80a4b8b649de8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6fd7b5830eab4d395e5fe2cd",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cb40b4e47805aac83680fba2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.1bfbdc4d83449f475b758906",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.12f5502676580d765e7cb609",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -4518,6 +5382,58 @@
       ]
     },
     {
+      "name": "upload.prepare",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "action",
+        "fields",
+        "file",
+        "files"
+      ]
+    },
+    {
+      "name": "upload.finalize",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "sessionId"
+      ]
+    },
+    {
+      "name": "upload.status",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "sessionId"
+      ]
+    },
+    {
+      "name": "upload.cancel",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "sessionId"
+      ]
+    },
+    {
+      "name": "portable.http.operations",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "portable.http.draft",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "portable.http.prepare-device",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
       "name": "http.explore.feed-events",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -4526,6 +5442,26 @@
     },
     {
       "name": "http.public-booking.confirm",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "shell.switch-workspace",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "workspaceId",
+        "destination"
+      ]
+    },
+    {
+      "name": "shell.logout",
+      "path": "/api/app-local/command",
+      "argumentKeys": []
+    },
+    {
+      "name": "http.shell.advertising-event",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "input"
@@ -4556,9 +5492,8 @@
   },
   "coverage": {
     "total": 133,
-    "bundled": 61,
+    "bundled": 92,
     "missing": [
-      "/",
       "/accept-invite",
       "/account-recovery",
       "/admin",
@@ -4590,51 +5525,25 @@
       "/admin/verification",
       "/booking-payment/:token",
       "/booking/manage/:token",
-      "/bookings",
-      "/businesses/create",
-      "/campaigns",
       "/check-in/:entry",
       "/claim/:salonId",
       "/claim/customer",
       "/contact-support",
       "/deletion-status/:token",
-      "/explore/campaigns/:campaignId",
-      "/explore/looks/:lookId",
-      "/explore/wisconsin",
-      "/explore/wisconsin/:businessId",
       "/forgot-password",
       "/login",
       "/market/booking-deposit/payment",
-      "/market/booking-deposit/settings",
-      "/market/orders/:orderId",
       "/market/payment-return",
       "/more/:section",
-      "/notifications/visits/:visitId",
       "/ownership/invite/:token",
-      "/payroll/tax-company",
-      "/payroll/tax-company/settings",
-      "/pos-tickets",
-      "/pos-tickets/:ticketId",
       "/pos/customer-display",
       "/pos/customer-display/setup",
-      "/pos/portable",
-      "/pos/portable/book",
-      "/pos/portable/check-in",
-      "/pos/portable/report",
-      "/pos/portable/ticket",
-      "/pos/portable/today",
-      "/pos/ticket/:ticketId",
-      "/reports",
       "/reset-password",
-      "/salon-profile/client-transformations",
       "/security-check",
       "/settings/recovery-back-office",
       "/signup",
       "/staff/invite/:token",
       "/support/guest/:threadId",
-      "/tax-company",
-      "/tax-company/:salonId",
-      "/tax-company/install",
       "/visit/:pass"
     ]
   }

@@ -11,6 +11,21 @@ command -v xcodegen >/dev/null || { echo "Install XcodeGen before running this c
 # These tests exercise the real installed client, not only a generated fixture.
 test -f Reylumi/LocalAppBundle/manifest.json
 test -f Reylumi/AppLocalBridge.js
+verify_local_package() {
+  python3 - "$1" <<'PY'
+import hashlib, json, pathlib, sys
+root = pathlib.Path(sys.argv[1])
+manifest = json.loads((root / 'manifest.json').read_bytes())
+for row in manifest['files']:
+    file = root / row['path']
+    data = file.read_bytes()
+    assert len(data) == row['bytes'] and hashlib.sha256(data).hexdigest() == row['sha256'], 'Bundled resource integrity mismatch: ' + row['path']
+print('Exact installed bundle bytes verified:', len(manifest['files']), 'resources, build', manifest['buildId'])
+PY
+}
+# Catch checkout line-ending normalization before a costly Simulator run, and
+# verify the same bytes again after Xcode copies/signs the resource directory.
+verify_local_package Reylumi/LocalAppBundle
 mkdir -p build
 # A distinct run directory keeps old test results from interfering with a rerun.
 task_run_dir="$(mktemp -d "$PWD/build/check.XXXXXX")"
@@ -49,6 +64,7 @@ xcodebuild build-for-testing \
 task_simulator_app="$task_run_dir/DerivedData/Build/Products/Debug-iphonesimulator/Reylumi.app"
 test -f "$task_simulator_app/LocalAppBundle/manifest.json"
 test -f "$task_simulator_app/AppLocalBridge.js"
+verify_local_package "$task_simulator_app/LocalAppBundle"
 codesign --verify --deep --strict "$task_simulator_app"
 codesign -d --entitlements :- "$task_simulator_app" > "$task_run_dir/SimulatorSignatureEntitlements.plist" 2> "$task_run_dir/SimulatorSigning.log"
 xcrun otool -l "$task_simulator_app/Reylumi" > "$task_run_dir/SimulatorLoadCommands.txt"
@@ -116,6 +132,7 @@ test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/AppViewport.js"
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/AppLocalBridge.js"
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle/manifest.json"
+verify_local_package "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle"
 python3 - "$task_run_dir" "$task_simulator_id" <<'PY'
 import hashlib, json, os, pathlib, plistlib, subprocess, sys
 root = pathlib.Path.cwd()

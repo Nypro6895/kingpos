@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-16T17:22:49.672Z",
+  "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\native-frozen-r6",
+  "sourceSha256": "673251e701e50ade28b6f6580388b564b04da6b9664602a99af35745e4e4db60",
+  "newXCTests": 31,
+  "files": {
+    "ios/Reylumi/ReylumiLocalBundle.swift": "e729e118b10b02e6cb8088cc7cf3b62370aafc776f65c5441e424298c4d5499e",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "f34b7e2d79aadd74ebfbed100d84748897f745a75acf821a22710ed7ab9a35d6",
+    "ios/Reylumi/ReylumiLocalReadStore.swift": "d63a5644632f5947f138ff6dafd7527f104ce7767bfd3b684a210cd8efa79daf",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "c13d29faa874205ba7e2fd2304f21577bbadd875888dbf3ef2fb157e334ffbb4",
+    "ios/Reylumi/AppLocalBridge.js": "853c08413657ba16fc0fd653a1ef29a6749fdab2a55901e409ce92d96806d4b0",
+    "ios/Reylumi/ReylumiApp.swift": "f0e806ca4c385a326be02ed55006322fe4d778d61a9da18c8994dc94e02a9234",
+    "ios/Reylumi/ReylumiViewController.swift": "5290f56ac358c97eba001350d34191724dd4f47bb5c47b5c2c6ac26e4a3dd992",
+    "ios/Reylumi/Info.plist": "0019752ae493f6be3f0b0d27cdb92a4df1ebe255b016d042975c992d9b968d59",
+    "ios/Reylumi/Info-Debug.plist": "d10e4d1b24f85a2c815f57117ab9fca0466073c694229f62c95ccc7f788066ee",
+    "ios/project.yml": "ed0a80996b4b6bd0b3079017439fb4790ff7315486a1db1332cfbf1380175354",
+    "ios/ReylumiTests/LocalBundleTests.swift": "fb29a877822f0c4e3c1161ef4b5d43361190023e89c57f77f9e13855b3ba9290",
+    "ios/ReylumiTests/LocalAppTransportTests.swift": "cfe0caf39dfc5ab2cfc329dada5338109fe908b66ab726d895968b4d9fe7ee85",
+    "ios/ReylumiTests/LocalReadStoreTests.swift": "9b5f12623d4eb821308d0f610df7526dfb2c66adfe35908e8e1160baad077118",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "2558a70be6ef0dbe8f08e7c5cdacd447bfd410cea37478e7627bd2ca2cbc0102",
+    "ios/scripts/check-build.sh": "65f478ead97739448679e8edf915c05b2417d9cfe0ff1ef9215a153086f355b2",
+    "ios/.gitattributes": "296b42f98fd9e4e8963c986f61e593674f7ac0c5d3268603d77db0a927c2795c"
+  }
+}
