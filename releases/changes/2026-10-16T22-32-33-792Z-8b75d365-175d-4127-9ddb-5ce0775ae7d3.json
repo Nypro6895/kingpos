@@ -1,0 +1,32 @@
+{
+  "kind": "change",
+  "changeId": "salon-address-booking-release-integration-20261016",
+  "status": "working",
+  "summary": "Integrate the approved text-address/setup handoff with the exact current production source and regenerate the required installed app bundle.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "commit": "ac824ab0e7cf9905554143796b4c0f38a63c56d1"
+  },
+  "dependencies": [
+    "salon-address-booking-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Production build and native parity",
+      "result": "pending"
+    }
+  ],
+  "id": "8b75d365-175d-4127-9ddb-5ce0775ae7d3",
+  "recordedAt": "2026-10-16T22:32:33.792Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

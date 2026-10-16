@@ -1,0 +1,70 @@
+{
+  "kind": "change",
+  "changeId": "salon-address-booking-20261016",
+  "status": "ready",
+  "summary": "Validated text-only address fallback and salon-specific setup/booking handoff against exact production dpl_4tFutRf2NBkU91JsH5W1mRuPjS9i. Full production build and 35 targeted checks passed; no business-rule or access changes.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "components/salon-address-summary.tsx",
+    "app/settings/salon-list-actions.ts",
+    "app/settings/salon-list-panel.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "app/settings/salon-settings-panels.tsx",
+    "app/(app)/salon-settings/page.tsx",
+    "components/app-local-salon-settings.tsx",
+    "lib/vietnamese-workspace-copy.json",
+    "tests/settings-salon-list.test.mjs"
+  ],
+  "fileHashes": {
+    "components/salon-address-summary.tsx": "c15eaab28dc05182e5572f3ec17e0799a844ba2f820488bc6ee7769e92f575b6",
+    "app/settings/salon-list-actions.ts": "67a41063a39112f5f2f4536e9a0823ef0988dc93a372ec98afb661727647e6c2",
+    "app/settings/salon-list-panel.tsx": "3725aa8d574423ba110797fb8e840411e1cef59ffb53b11c3669f715f9e50e4c",
+    "app/settings/settings-hub-client.tsx": "74719f179641c6c441b77273c7d98a8098d1b7c2e7f9487b0e21b853b7e5cd2e",
+    "app/settings/salon-settings-panels.tsx": "9030de7769f1d994be9867e84d5393ca1131a6e49c60ec4b21b1e61fb4f85c25",
+    "app/(app)/salon-settings/page.tsx": "57f8f03a1be4a0df67261658e8097da332204493bde936b05dd055f2973d0c99",
+    "components/app-local-salon-settings.tsx": "f9432b36c0256fbf0709394c83ebd86b2c53b4ab6f00d3c254c0a8bbafc893d6",
+    "lib/vietnamese-workspace-copy.json": "d7f21eb5b5a128184f7f78f0659f9150b4c904222af12134d3cbdc784c82a12c",
+    "tests/settings-salon-list.test.mjs": "fc859ceb435b4c47aa8601f992a254b25cc94177461dde63d35c627c7a5b1fd6"
+  },
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-address-booking-20261016\\source",
+    "commit": "ac824ab0e7cf9905554143796b4c0f38a63c56d1",
+    "baseCommit": "cbc0ee69194e6de0c297ed3dae326544e72ab115",
+    "sourceSha256": "fb5598101990a06510e5b66e908742fd64cfb5271a033052b3b312a5b7502910",
+    "overlaySha256": "0bada24d769efc9d89c508bf1358a5e0927295d38fdbaac88cbe3b04059a317a",
+    "patch": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-address-booking-20261016\\change.patch"
+  },
+  "dependencies": [
+    "salon-setup-review-20261016"
+  ],
+  "validation": [
+    {
+      "name": "Exact current production source preserved outside the nine approved files",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-address-booking-release-20261016\\baseline-branch-verification.json"
+    },
+    {
+      "name": "Production build with TypeScript and all 229 pages",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-address-booking-release-20261016\\production-build.log"
+    },
+    {
+      "name": "35 focused setup, context, save and booking regressions",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-address-booking-release-20261016\\web-tests.log"
+    },
+    {
+      "name": "Actual component desktop/mobile, slow and failed save fixture",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-20261016/ui-verification.json"
+    }
+  ],
+  "scope": "Approved web deployment. No MapTiler config or production data mutations.",
+  "id": "4bc939e7-bd8d-42e2-8b71-1107666ddda0",
+  "recordedAt": "2026-10-16T22:37:36.480Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
