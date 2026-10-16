@@ -90,7 +90,7 @@
 .owner-checkout[data-owner-reference] .owner-submit button:last-child:hover,.owner-checkout[data-owner-reference] .owner-mode-tabs button[aria-pressed=true]:hover{background:var(--brand-orange-hover)}
 .owner-checkout[data-owner-reference] button:focus-visible,.owner-menu-dialog a:focus-visible,.owner-picker-dialog button:focus-visible{outline:2px solid var(--brand-orange);outline-offset:2px}
 @media(max-width:979px){
- html:has(.owner-checkout[data-owner-reference]),body:has(.owner-checkout[data-owner-reference]){height:100dvh;overflow:hidden}
+ html:has([data-owner-pos-shell=true]),body:has([data-owner-pos-shell=true]){height:100dvh;overflow:hidden}
  .owner-checkout[data-owner-reference]{padding:6px 8px;gap:6px;background:var(--surface-muted);color:var(--text-primary)}
  .owner-checkout[data-owner-reference] .owner-heading{display:flex;min-height:24px}
  .owner-checkout[data-owner-reference] .owner-heading h1{font-size:12px}
@@ -165,10 +165,10 @@
 .owner-workspace-panel{height:calc(100dvh - 8px);display:flex;flex-direction:column;gap:8px;padding:8px;background:var(--surface-muted);overflow:hidden}
 .owner-workspace-panel>.owner-heading{min-height:30px;flex-shrink:0}.owner-workspace-panel h1{font-size:15px}
 .owner-workspace-content{flex:1;min-height:0;overflow:auto}
-[data-testid="customer-desktop-shell"]:has([data-owner-workspace]){grid-template-columns:minmax(0,1fr)!important}
-[data-testid="customer-desktop-shell"]:has([data-owner-workspace])>[data-desktop-sidebar-slot],
-[data-testid="customer-desktop-shell"]:has([data-owner-workspace])>div>div:has(>header),
-[data-testid="customer-desktop-shell"]:has([data-owner-workspace])>div>div:has(>nav){display:none!important}
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]{grid-template-columns:minmax(0,1fr)!important}
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>[data-desktop-sidebar-slot],
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>header),
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>nav){display:none!important}
 
 @media(min-width:980px){
  .owner-top-nav{align-items:center;padding:6px 0;gap:4px}

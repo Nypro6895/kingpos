@@ -77,6 +77,7 @@ export type RoleNavigationConfig = {
 export const SHARED_CONTEXT_ROUTE_PREFIXES = [
   "/account",
   "/explore",
+  "/help",
   "/more",
   "/market",
   "/my-place",

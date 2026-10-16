@@ -175,6 +175,7 @@ function createNotificationStore(
 export function useNotificationSummary(
   initial: CustomerNotificationSummary,
   scope: string,
+  enabled = true,
 ) {
   const store = useMemo(
     () => createNotificationStore(initial, scope),
@@ -186,6 +187,7 @@ export function useNotificationSummary(
     store.serverSnapshot,
   );
   useEffect(() => {
+    if (!enabled) return;
     listenForReset();
     store.activate();
     const refresh = (event?: Event) => {
@@ -222,7 +224,7 @@ export function useNotificationSummary(
       window.clearInterval(poll);
       store.dispose();
     };
-  }, [store]);
+  }, [store, enabled]);
   return snapshot;
 }
 

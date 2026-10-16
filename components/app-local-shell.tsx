@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { NavigationShell } from "@/app/navigation-shell";
 import { GuestNavigationShell } from "@/app/guest-navigation-shell";
 import { ActionDialog } from "@/app/action-dialog";
@@ -21,10 +21,12 @@ import type { AppLocalContext } from "@/lib/app-local-host";
 import type { AppLocalShellNavigation, AppLocalShellConfiguration, AppLocalShellSummary, AppLocalShellNotice } from "@/lib/app-local-shell-metadata";
 
 /** One shell around the retained page registry, never a shell per hidden page. */
-export function AppLocalShell({ context, children, path }: { context: AppLocalContext | null; children: ReactNode; path?: string }) {
+export function AppLocalShell({ context, presentationContext, children, path }: { context: AppLocalContext | null; presentationContext?: AppLocalContext | null; children: ReactNode; path?: string }) {
   const pathname = usePathname();
-  const scope = context?.context.scope;
+  const router = useRouter();
   const route = (path ?? pathname).split("?")[0];
+  const presentationOnly = !context && /^\/help(?:\/|$)/.test(route) && Boolean(presentationContext?.context.authenticated);
+  const scope = context?.context.scope ?? (presentationOnly ? presentationContext?.context.scope : undefined);
   const deviceContext = context?.grant?.kind === "portable" || route === "/pos/portable" || route.startsWith("/pos/portable/");
   const publicInitial = !context && /^\/(?:help(?:\/|$)|legal$|privacy$|terms$|community$|business-terms$)/.test(route);
   const accountEnabled = !publicInitial && !deviceContext;
@@ -53,13 +55,29 @@ export function AppLocalShell({ context, children, path }: { context: AppLocalCo
     <CampaignPluginProvider scope={scope ?? ""} installed={config?.campaign.installed ?? false}>
       <OverlayDismissal />
       <AppLocalSessionExpiryPrompt authenticated={context ? context.context.authenticated : null} scope={scope} enabled={!publicInitial} />
-      {menu ? <OwnerQueueRuntime scope={menu.ownerQueueScope} /> : null}
-      {menu && pendingSummary ? <WorkspaceSummarySeed scope={pendingSummary.notificationScope} summary={pendingSummary.summary} /> : null}
+      {!publicInitial && menu ? <OwnerQueueRuntime scope={menu.ownerQueueScope} /> : null}
+      {!publicInitial && menu && pendingSummary ? <WorkspaceSummarySeed scope={pendingSummary.notificationScope} summary={pendingSummary.summary} /> : null}
       {notice.data?.scope === scope ? <AbuseNoticeView mode={notice.data?.mode ?? null} /> : null}
-      {config?.campaign.runtime ? <OwnerCampaignRuntime {...config.campaign.runtime} /> : null}
+      {!publicInitial && config?.campaign.runtime ? <OwnerCampaignRuntime {...config.campaign.runtime} /> : null}
       <ExploreAccountActionsProvider authenticated={context?.context.authenticated ?? false}>
         <ExploreAdvertising audience={menu?.audience ?? "guest"} enabled={!publicInitial}>
-          {menu?.navigation ? <NavigationShell {...menu.navigation}>{body}</NavigationShell> : <GuestNavigationShell authenticated={context?.context.authenticated ?? false}>{body}</GuestNavigationShell>}
+          <div className="contents" onClickCapture={event => {
+            if (!presentationOnly || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !(event.target instanceof Element) || bodyHost?.contains(event.target)) return;
+            const control = event.target.closest("button,summary,input[type=submit]");
+            if (!control || control.hasAttribute("data-more-menu-target")) return;
+            const notification = control.closest("details")?.querySelector("summary[data-app-notification-trigger]");
+            const account = control.matches('[aria-controls="customer-context-sheet"],[aria-controls="customer-desktop-account-menu"],[data-testid="customer-desktop-account-trigger"]')
+              || control.closest("#customer-context-sheet,#customer-desktop-account-menu");
+            if (!notification && !account) return;
+            event.preventDefault(); event.stopPropagation();
+            router.push(notification ? "/notifications" : "/my-place");
+          }} onSubmitCapture={event => {
+            if (!presentationOnly || !(event.target instanceof HTMLFormElement) || bodyHost?.contains(event.target)
+              || event.target.method.toLowerCase() === "get" || !event.target.closest("#customer-context-sheet,#customer-desktop-account-menu")) return;
+            event.preventDefault(); event.stopPropagation(); router.push("/my-place");
+          }}>
+            {menu?.navigation ? <NavigationShell {...menu.navigation} passive={presentationOnly}>{body}</NavigationShell> : <GuestNavigationShell authenticated={context?.context.authenticated ?? false}>{body}</GuestNavigationShell>}
+          </div>
           {bodyHost ? createPortal(children, bodyHost) : children}
         </ExploreAdvertising>
         {!publicInitial ? <QuickBooking /> : null}

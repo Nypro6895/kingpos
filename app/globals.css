@@ -517,7 +517,7 @@ body {
 
 .settings-permissions>summary{font-size:13px;color:#a64b1c;cursor:pointer;padding:10px 0}.settings-permissions[open]>summary{border-bottom:1px solid #f0edeb}
 
-@media(max-width:767px){html:has(.owner-checkout),body:has(.owner-checkout){height:100dvh;overflow:hidden}}
+@media(max-width:767px){html:has([data-owner-pos-shell=true]),body:has([data-owner-pos-shell=true]){height:100dvh;overflow:hidden}}
 @media(max-width:767px) and (max-height:700px){
  .owner-checkout{padding:4px 8px}.owner-heading{margin-bottom:4px}.owner-heading nav{padding:2px}.owner-heading nav a{min-height:30px;padding:5px 14px;font-size:12px}.owner-tools{gap:4px;margin-bottom:4px}.owner-summary{padding:4px 8px}.owner-summary b{font-size:18px}.owner-summary small{font-size:10px;margin-top:1px}.owner-tools [data-pos-customer-shortcuts]>button{min-height:28px!important;padding:3px 8px}.owner-steps{margin-bottom:6px;padding:2px}.owner-steps button{min-height:28px}.owner-amount>.owner-section-heading{display:none}.owner-amount-field{padding:4px 10px;margin-bottom:6px}.owner-amount-field>span{display:none}.owner-amount-field input{font-size:28px}.owner-adjustments,.owner-submit{margin-top:5px}.owner-adjustments button{min-height:28px;font-size:12px}.owner-submit button{min-height:40px}
 }
@@ -546,7 +546,7 @@ body {
 
 /* Keep the owner checkout focused; Settings restores the normal owner navigation. */
 [data-owner-pos-shell=true]{padding-left:0!important}[data-owner-pos-shell=true]>header,[data-owner-pos-shell=true]>nav,[data-owner-pos-shell=true]>aside{display:none!important}[data-owner-pos-shell=true]>div.min-h-screen{padding-bottom:0!important}
-[data-testid=customer-desktop-shell]:has(.owner-checkout){grid-template-columns:minmax(0,1fr)!important}[data-testid=customer-desktop-shell]:has(.owner-checkout)>aside,[data-testid=customer-desktop-shell]:has(.owner-checkout)>div>header{display:none!important}
+[data-testid=customer-desktop-shell][data-owner-pos-shell=true]{grid-template-columns:minmax(0,1fr)!important}[data-testid=customer-desktop-shell][data-owner-pos-shell=true]>aside,[data-testid=customer-desktop-shell][data-owner-pos-shell=true]>div>header{display:none!important}
 .owner-workbench{min-height:calc(100dvh - 140px)}
 @media(max-width:767px){.owner-workbench{min-height:0}.owner-checkout{height:var(--owner-height,100dvh)}}
 
@@ -560,8 +560,8 @@ body {
  .owner-inline-rows>div:not([data-selected=true]) .owner-inline-money input{border-color:transparent}
 }
 
-/* The checkout owns the full viewport; navigation slots contain no page copy. */
-[data-testid="customer-desktop-shell"]:has(.owner-checkout){grid-template-columns:minmax(0,1fr)!important}
-[data-testid="customer-desktop-shell"]:has(.owner-checkout)>[data-desktop-sidebar-slot],
-[data-testid="customer-desktop-shell"]:has(.owner-checkout)>div>div:has(>header),
-[data-testid="customer-desktop-shell"]:has(.owner-checkout)>div>div:has(>nav){display:none!important}
+/* Only the active POS route owns the viewport; retained hidden POS stays inert. */
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]{grid-template-columns:minmax(0,1fr)!important}
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>[data-desktop-sidebar-slot],
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>header),
+[data-testid="customer-desktop-shell"][data-owner-pos-shell=true]>div>div:has(>nav){display:none!important}

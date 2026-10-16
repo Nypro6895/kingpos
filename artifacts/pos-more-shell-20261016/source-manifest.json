@@ -1,0 +1,37 @@
+{
+  "baseline": "c295bc3bb61e44f91bcf5787d05f2d1c14f76840",
+  "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-more-shell-20261016\\frozen-source",
+  "files": [
+    "app/globals.css",
+    "app/local-app/entry.tsx",
+    "app/navigation-shell.tsx",
+    "app/pos/owner-pos.css",
+    "app/role-navigation.ts",
+    "components/app-local-shell.tsx",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "lib/notification-client.ts",
+    "public/experience-build-assets.json",
+    "tests/app-local-authority-navigation.test.mjs",
+    "tests/app-local-public-ui.test.mjs",
+    "tests/app-local-shell-ui.test.mjs"
+  ],
+  "hashes": {
+    "app/globals.css": "03d349aefbc6d0e0d88be14a319a36f3287d09383d856a995a90541796dc33cf",
+    "app/local-app/entry.tsx": "727c6c92bd05e2740d437d82d45af0747c1f86f597d2a2a868db2f7bb29bb975",
+    "app/navigation-shell.tsx": "ca8a7eddc4bc87603ea1f665db763453bae55cad450f33815e7fc18c235e0495",
+    "app/pos/owner-pos.css": "024a56ab355ea25de76f663b1a39c1018ff86b7f9e8dcadcbaf06681a035a96f",
+    "app/role-navigation.ts": "d2fcfffcdf8d02f4d85329c4894df1c58125a88da2490d33f70fd491b1ec41f1",
+    "components/app-local-shell.tsx": "6a1f0a7992e742adf24d6d8d2d0366d1e40290f7f8220d772e173c8a32bc367d",
+    "ios/Reylumi/LocalAppBundle/app.css": "106a67781343df827be2411f95344b55ec3d5238ab39e1a8f2114c6ffceed5b9",
+    "ios/Reylumi/LocalAppBundle/app.js": "da99084ba347e504788e9404ada89f91e5667edb667da015c8b87f27627c931a",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "6dea1b04422f777ca9b66096aca5bbd592b73f1cd3bf6ebeafcbc0ac1087fc5e",
+    "lib/notification-client.ts": "48b9c3db80ae94966d3f903183c555c89793b8da5045cac2e3de839d5d076b42",
+    "public/experience-build-assets.json": "0270882d5b024aad7ea229fe472bdb670e0361d72619463730ae347cc599a966",
+    "tests/app-local-authority-navigation.test.mjs": "200b4e862af55d23b9489cd797eab0157d023f6ef5fad001ffd808748efc5836",
+    "tests/app-local-public-ui.test.mjs": "b40d79a130b2ee7afce57d5304244c0850567cbe9375a4dfea76af014c136b0a",
+    "tests/app-local-shell-ui.test.mjs": "8dd5c80f0db4b9f26776b42cc35437915ed47daa578b68da7849bc0191f7823b"
+  },
+  "sourceSha256": "7f3907930b77d4aa9dc71542747e9b75611d7e4c01cd2be0b9bb0741d87fd71c"
+}

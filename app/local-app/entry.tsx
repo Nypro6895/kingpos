@@ -69,6 +69,7 @@ function PublicPage({ path, navigate }: { path: string; navigate: (href: string)
   return null;
 }
 function isPublic(path: string) { const pathname = path.split("?")[0]; return pathname === "/help" || pathname.startsWith("/help/") || pathname === "/legal" || pathname in legalByPath; }
+function isHelp(path: string) { const pathname = path.split("?")[0]; return pathname === "/help" || pathname.startsWith("/help/"); }
 type AuthorityFamily = "account" | "staff.portal" | "staff.workday" | "portable" | "display";
 type Admission = { value: AppLocalContext; generation?: string };
 /** Mirror the context endpoint's original staff/portable resolution, not a permission rule. */
@@ -116,6 +117,7 @@ class PageBoundary extends Component<{ children: ReactNode; recover(): void }, {
 function App() {
   const [path, setPath] = useState(() => appLocalPath(location.pathname === "/index.html" ? "/help" : location.pathname + location.search));
   const [admissions, setAdmissions] = useState<Partial<Record<AuthorityFamily, Admission>>>({}), [error, setError] = useState(false), [visited, setVisited] = useState<string[]>([]);
+  const [helpPresentation, setHelpPresentation] = useState<Admission | null>(null);
   const current = useRef(path), admitted = useRef(admissions), contextEpoch = useRef(0), request = useRef<AbortController | null>(null);
   useLayoutEffect(() => { current.current = path; }, [path]);
   const accept = useCallback((value: AppLocalContext, requestedPath: string) => {
@@ -141,6 +143,13 @@ function App() {
   }, [accept]);
   const transition = useCallback((destination: string) => {
     const previous = current.current;
+    if (isHelp(destination)) {
+      if (!isHelp(previous)) {
+        const outgoing = admitted.current[authorityFamily(previous)];
+        setHelpPresentation(!isPublic(previous) && usable(outgoing) && outgoing.value.context.authenticated
+          && authorityFamily(previous) !== "portable" && authorityFamily(previous) !== "display" ? outgoing : null);
+      }
+    } else setHelpPresentation(null);
     if (previous !== destination) { contextEpoch.current++; request.current?.abort(); setError(false); }
     current.current = destination;
     const target = admitted.current[authorityFamily(destination)];
@@ -160,25 +169,37 @@ function App() {
   useEffect(() => {
     const nav = (event: Event) => { const value = (event as CustomEvent<{ path?: string }>).detail?.path; if (value) navigate(value); };
     const fresh = (event: Event) => { const value = (event as CustomEvent<AppLocalContext & { contextPath?: string }>).detail; if (typeof value?.contextPath === "string") accept(value, value.contextPath); };
-    const reset = () => { contextEpoch.current++; request.current?.abort(); alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setVisited([]); };
+    const reset = () => { contextEpoch.current++; request.current?.abort(); alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); };
     const pop = () => transition(appLocalPath(location.pathname + location.search));
     window.addEventListener("reylumi:app-local-navigate", nav); window.addEventListener("reylumi:app-local-context", fresh); window.addEventListener("reylumi:app-local-reset", reset); window.addEventListener("reylumi:app-local-access-changed", reset); window.addEventListener("popstate", pop);window.addEventListener("reylumi:app-local-history",pop);
     window.addEventListener("online", verify); window.addEventListener("reylumi:foreground", verify);
     return () => { window.removeEventListener("reylumi:app-local-navigate", nav); window.removeEventListener("reylumi:app-local-context", fresh); window.removeEventListener("reylumi:app-local-reset", reset); window.removeEventListener("reylumi:app-local-access-changed", reset); window.removeEventListener("popstate", pop);window.removeEventListener("reylumi:app-local-history",pop); window.removeEventListener("online", verify); window.removeEventListener("reylumi:foreground", verify); };
   }, [navigate, accept, verify, transition]);
   const activeAdmission = admissions[authorityFamily(path)], context = !isPublic(path) && usable(activeAdmission) ? activeAdmission.value : null;
+  // Help can display the already admitted role chrome, but receives no account
+  // context or command scope. A cold public launch never manufactures one.
+  const presentationContext = isHelp(path) && usable(helpPresentation ?? undefined) ? helpPresentation!.value : null;
   useEffect(() => {
     if (!context?.grant) return;
     const remaining = context.grant.expiresAt - Date.now();
     const timer = setTimeout(() => { window.dispatchEvent(new Event("reylumi:app-local-access-changed")); void verify(); }, Math.max(0, Math.min(remaining, 2147483647)));
     return () => clearTimeout(timer);
   }, [context, verify]);
+  useEffect(() => {
+    if (!presentationContext || !helpPresentation) return;
+    const captured = helpPresentation;
+    const remaining = (presentationContext.grant?.expiresAt ?? presentationContext.onlineValidatedAt + 30_000) - Date.now();
+    // Decorative Help chrome cannot revoke another retained workspace or its
+    // draft. Actual authority is checked independently before that page returns.
+    const timer = setTimeout(() => setHelpPresentation(previous => previous === captured ? null : previous), Math.max(0, Math.min(remaining, 2147483647)));
+    return () => clearTimeout(timer);
+  }, [presentationContext, helpPresentation]);
   useLayoutEffect(() => { window.dispatchEvent(new Event("reylumi:screen-ready")); }, [path]);
   const ownerAdmission = admissions.account, ownerContext = ownerAdmission?.value;
   const owner = ownerContext?.grant?.kind === "owner" || Boolean(ownerContext && !ownerContext.offline && ownerContext.access?.ownerWorkspace);
   const windows=new Map<string,string>();for(const href of [...visited,path])if(!isPublic(href)&&getAppLocalPage(href))windows.set(pageKey(href),href);
   const ownerVisited=ownerPaths.has(path.split("?")[0])||visited.some(href=>ownerPaths.has(href.split("?")[0]));
-  return <AppLocalNavigationProvider value={{ path, navigate, refresh: () => void verify() }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} path={path}>
+  return <AppLocalNavigationProvider value={{ path, navigate, refresh: () => void verify() }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path}>
     <div className="app-local-body" data-app-local-ready="true">
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} /></div> : null}
       {!isPublic(path) && !context && getAppLocalPage(path)?.requiresContext !== false ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{error ? "Please check your connection and try again." : "Opening your workspace…"}</p>{error ? <button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button> : null}</section> : null}

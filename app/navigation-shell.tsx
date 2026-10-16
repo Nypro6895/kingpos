@@ -85,6 +85,7 @@ type NavigationShellProps = {
   currentWorkspace: CurrentWorkspaceOption | null;
   manageSalons: NavigationSalon[];
   notificationSummary: NotificationSummary;
+  passive?: boolean;
   salonMode: SalonMode | null;
   staffSalons: NavigationSalon[];
   workspaceOptions: CurrentWorkspaceOption[];
@@ -1741,6 +1742,7 @@ function NotificationDropdown({
       <summary
         aria-current={isActive ? "page" : undefined}
         aria-label={__vt("Notifications")}
+        data-app-notification-trigger="true"
         className={[triggerClassName, "cursor-pointer list-none"].join(" ")}
       >
         <span className={bottom ? "relative grid h-7 w-7 shrink-0 place-items-center" : "relative"}>
@@ -2710,12 +2712,13 @@ export function NavigationShell({
   currentUserId,
   currentWorkspace,
   notificationSummary: initialNotificationSummary,
+  passive = false,
   salonMode,
   workspaceOptions,
   workspaceSections,
   workspaceType,
 }: NavigationShellProps) {
-  const notificationSummary = useNotificationSummary(initialNotificationSummary, `${currentUserId}:${currentWorkspace?.id ?? "personal"}`);
+  const notificationSummary = useNotificationSummary(initialNotificationSummary, `${currentUserId}:${currentWorkspace?.id ?? "personal"}`, !passive);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isWorkspacePanelOpen, setWorkspacePanelOpen] = useState(false);
@@ -2732,6 +2735,7 @@ export function NavigationShell({
     return <><ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" /></>;
   }
 
+  const isOwnerPosRoute = pathname === "/pos" || /^\/pos\/(ticket|book|check-in|report)(\/|$)/.test(pathname);
   const routeWorkspaceKind = getRouteWorkspaceKind(pathname);
   const routeNavigation = routeNavigationForWorkspaceKind({
     routeWorkspaceKind,
@@ -2785,15 +2789,15 @@ export function NavigationShell({
         ? "xl:grid xl:grid-cols-[14rem_minmax(0,1fr)] 2xl:grid-cols-[15rem_minmax(0,1fr)]"
         : "xl:grid xl:grid-cols-[16.25rem_minmax(0,1fr)] 2xl:grid-cols-[18rem_minmax(0,1fr)]";
     return <>
-      <AppNotificationInvalidation userId={currentUserId} />
+      {!passive ? <AppNotificationInvalidation userId={currentUserId} /> : null}
       <CustomerShellContextProvider isCustomerShell notificationSummary={notificationSummary}>
-        <div className={`min-h-screen bg-white text-text-primary ${gridClass}`} data-testid="customer-desktop-shell">
+        <div className={`min-h-screen bg-white text-text-primary ${gridClass}`} data-testid="customer-desktop-shell" data-owner-pos-shell={isOwnerPosRoute ? "true" : undefined}>
           <div className={desktopDisplay} data-desktop-sidebar-slot>
             <CustomerDesktopSidebar accountAvatarUrl={accountAvatarUrl} accountEmail={accountEmail}
               accountLabel={accountLabel} currentWorkspace={routeCurrentWorkspace} navigation={routeNavigation}
               notificationSummary={notificationSummary} pathname={pathname} searchParams={searchParams} workspaceOptions={workspaceOptions} />
           </div>
-          <div className="min-w-0" data-owner-pos-shell={(pathname === "/pos" || /^\/pos\/(ticket|book|check-in|report)(\/|$)/.test(pathname)) ? "true" : undefined}>
+          <div className="min-w-0" data-owner-pos-shell={isOwnerPosRoute ? "true" : undefined}>
             <div className={desktopDisplay}>
               <CustomerDesktopHeader accountAvatarUrl={accountAvatarUrl} accountLabel={accountLabel}
                 currentWorkspace={routeCurrentWorkspace} notificationSummary={notificationSummary} pathname={pathname} searchParams={searchParams} />
@@ -2818,13 +2822,13 @@ export function NavigationShell({
 
   return (
     <>
-      <AppNotificationInvalidation userId={currentUserId} />
+      {!passive ? <AppNotificationInvalidation userId={currentUserId} /> : null}
       <CustomerShellContextProvider
         isCustomerShell={false}
         notificationSummary={notificationSummary}
       >
         <div
-          data-owner-pos-shell={(pathname === "/pos" || /^\/pos\/(ticket|book|check-in|report)(\/|$)/.test(pathname)) ? "true" : undefined}
+          data-owner-pos-shell={isOwnerPosRoute ? "true" : undefined}
           className={[
             "min-h-screen bg-white",
             baseShellPaddingClass,
