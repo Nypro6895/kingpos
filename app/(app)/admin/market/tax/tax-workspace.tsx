@@ -2,6 +2,7 @@
 
 import { useId, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { AdminActionForm } from "../../_components/action-form";
 import { checkAutomaticTaxConnection, saveAutomaticTaxProduct, saveAutomaticTaxSettings } from "./actions";
 import type { MarketTaxAdminState, MarketTaxCodeOption, MarketTaxProduct } from "@/types/market-tax";
@@ -146,7 +147,7 @@ function TaxLedger({ state }: { state: MarketTaxAdminState }) {
   return <div className="space-y-5">
     <Panel title="Tax ledger" description="Reylumi’s cash ledger shows tax collected on paid plugins and refunds matched to linked credit notes and successful refund records. All figures are in USD; the filter uses full UTC calendar days.">
       <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm leading-6 text-blue-950"><p className="font-semibold">Filing reference: Stripe Tax reports</p><p className="mt-1">Use Stripe Tax reports when preparing filings. They can include finalized invoices before payment and direct refund adjustments before this cash ledger is updated. Pending or failed refunds and issued credit notes can also differ in timing.</p><div className="mt-3 flex flex-wrap gap-4"><ExternalLink href="https://dashboard.stripe.com/tax/locations">Open Stripe Tax reports</ExternalLink><ExternalLink href="https://docs.stripe.com/tax/reports">Reporting guidance</ExternalLink><ExternalLink href="https://docs.stripe.com/tax/invoicing/refunds">Refund adjustment rules</ExternalLink></div></div>
-      <form method="get" action="/admin/market/tax" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
+      <NavigationForm method="get" action="/admin/market/tax" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
         <input type="hidden" name="view" value="ledger" />
         <label className="block text-sm font-medium text-zinc-800">Month shortcut<input type="month" className={`${field} mt-1.5`} aria-label="Choose tax month" onChange={event => {
           const value = event.target.value;
@@ -156,8 +157,8 @@ function TaxLedger({ state }: { state: MarketTaxAdminState }) {
         }} /></label>
         <label className="block text-sm font-medium text-zinc-800">From<input className={`${field} mt-1.5`} type="date" name="from" value={from} onChange={event => setFrom(event.target.value)} max={to || undefined} /></label>
         <label className="block text-sm font-medium text-zinc-800">To<input className={`${field} mt-1.5`} type="date" name="to" value={to} onChange={event => setTo(event.target.value)} min={from || undefined} /></label>
-        <button type="submit" className={button}>Apply dates</button>
-      </form>
+        <NavigationSubmitButton pendingLabel="Applying…" type="submit" className={button}>Apply dates</NavigationSubmitButton>
+      </NavigationForm>
       <div className="mt-3 flex flex-wrap items-center gap-4 text-sm"><Link href="/admin/market/tax?view=ledger" className="text-zinc-600 underline underline-offset-4">Clear dates</Link><a className="font-medium text-zinc-900 underline underline-offset-4" href={`/admin/market/tax/export${appliedQuery ? `?${appliedQuery}` : ""}`}>Export current ledger CSV</a>{exportQuery !== appliedQuery && <span className="text-xs text-amber-700">Apply dates to update totals and the export.</span>}</div>
     </Panel>
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{[

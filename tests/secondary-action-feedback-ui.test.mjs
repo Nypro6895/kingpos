@@ -22,6 +22,8 @@ function bundle() {
       import{BookingPolicyPanel}from'./app/market/booking-policy-panel';import{VietnamesePluginPanel}from'./app/market/vietnamese-plugin-panel';
       import{CardCheckoutPanel}from'./app/market/card-checkout-panel';import{SupportConversationPanel}from'./app/support/support-ui';
       import{AdminSupportHub}from'./app/(app)/admin/_components/admin-support-hub';
+      import{BusinessesWorkspace}from'./app/(app)/admin/locations/businesses-workspace';
+      import{StartupSearchForm}from'./components/startup-controls';
       ${button.getText(ast)}
       window.calls=[];window.tasks=[];window.opened=[];window.refreshes=0;
       window.action=(name,args=[])=>new Promise((resolve,reject)=>{window.calls.push({name,args:args.map(value=>value instanceof FormData?Object.fromEntries([...value].map(([key,value])=>[key,value instanceof File?value.name:value])):value)});window.tasks.push({name,resolve,reject,settled:false});});
@@ -30,7 +32,8 @@ function bundle() {
       const conversation={id:'fixture-case',summary:'Fixture conversation',reference:'CASE-1',status:'open',context:{},messages:[],attachments:[],admin_view:false};
       const billing={salon_id:'fixture',catalog:[{plugin_id:'booking-policy',published:true,fulfillment_ready:true,price_cents:99}],settings:{tax_bps:0,fee_bps:0,fixed_fee_cents:0}};
       const language={installed:true,active:false,has_subscription:true,staff_enabled:true,portable_enabled:false,trial_ends_at:null};
-      function App(){const screen=location.pathname;return screen==='/market'?<><BookingPolicyPanel state={{active:false,subscribed:false,content:'Original rules',published:false}}/><VietnamesePluginPanel initialState={language} onChange={()=>{window.languageChanged=true}}/><CardCheckoutPanel pluginId='booking-policy' pluginName='Booking rules' billingState={billing} hasActiveSubscription={false} ready onStateChange={()=>{}}/></>:screen==='/support'?<SupportConversationPanel conversation={conversation} embedded onRefresh={()=>window.action('supportRefresh')}/>:screen==='/admin'?<AdminSupportHub/>:<form action={data=>window.action('profileSave',[data])}><input name='business_name' aria-label='Salon name' defaultValue='Original salon'/><Button>Preview</Button><Button type='submit' variant='primary'>Save changes</Button></form>;}
+      const businesses={items:[],total:0,page:3,counts:{all:0,active:0,new:0,unclaimed:0,review:0,followup:0},cities:['Milwaukee'],reviews:[],review_total:0,missing_contact_total:0,missing_contacts:[],followup_due_total:0,followups:[]};
+      function App(){const screen=location.pathname;return screen==='/startup'?<><StartupSearchForm/><iframe name='startup-result' title='Startup GET result'/></>:screen==='/businesses'?<BusinessesWorkspace data={businesses} permissions={[]} actorId='fixture-admin'/>:screen==='/market'?<><BookingPolicyPanel state={{active:false,subscribed:false,content:'Original rules',published:false}}/><VietnamesePluginPanel initialState={language} onChange={()=>{window.languageChanged=true}}/><CardCheckoutPanel pluginId='booking-policy' pluginName='Booking rules' billingState={billing} hasActiveSubscription={false} ready onStateChange={()=>{}}/></>:screen==='/support'?<SupportConversationPanel conversation={conversation} embedded onRefresh={()=>window.action('supportRefresh')}/>:screen==='/admin'?<AdminSupportHub/>:<form action={data=>window.action('profileSave',[data])}><input name='business_name' aria-label='Salon name' defaultValue='Original salon'/><Button>Preview</Button><Button type='submit' variant='primary'>Save changes</Button></form>;}
       createRoot(document.getElementById('root')).render(<App/>);
     ` },
     bundle: true, write: false, format: 'iife', jsx: 'automatic', alias: { '@': process.cwd() }, define: { 'process.env.NODE_ENV': '"production"' },
@@ -41,6 +44,8 @@ function bundle() {
       builder.onResolve({ filter: /(?:booking-policy-actions|vietnamese-actions|card-payment-actions)$/ }, args => ({ path: args.path, namespace: 'fixture' }));
       builder.onResolve({ filter: /^\.\/actions$/ }, args => args.importer.endsWith('/support/support-ui.tsx') || args.importer.endsWith('\\support\\support-ui.tsx') ? { path: 'support-actions', namespace: 'fixture' } : undefined);
       builder.onResolve({ filter: /(?:open-market-payment|market-checkout-url|ios-client)$/ }, args => ({ path: args.path, namespace: 'fixture' }));
+      builder.onResolve({ filter: /(?:^|\/)(?:admin-icon|dashboard-detail|dashboard-action-form|account-actions|workspace-actions)$/ }, args => ({ path: args.path, namespace: 'fixture' }));
+      builder.onResolve({ filter: /^\.\.\/actions$/ }, args => args.importer.endsWith('businesses-workspace.tsx') ? { path: 'admin-location-actions', namespace: 'fixture' } : undefined);
       builder.onResolve({ filter: /\.\/admin-(?:icon|conversation-chat)$/ }, args => ({ path: args.path, namespace: 'fixture' }));
       builder.onResolve({ filter: /^@stripe\/stripe-js\/pure$/ }, () => ({ path: 'stripe', namespace: 'fixture' }));
       builder.onLoad({ filter: /.*/, namespace: 'fixture' }, args => {
@@ -48,8 +53,8 @@ function bundle() {
         let contents;
         if (name === 'css') contents = 'export default new Proxy({},{get:(_,key)=>String(key)})';
         else if (name === 'language') contents = 'export const WorkspaceText=({text})=>text;export const useWorkspaceTranslation=()=>value=>value;';
-        else if (name === 'next/navigation') contents = 'const router={refresh(){window.refreshes++},push(){}};export const useRouter=()=>router;';
-        else if (name === 'next/link') contents = 'export default function Link({children,...props}){return <a {...props}>{children}</a>}';
+        else if (name === 'next/navigation') contents = 'import{startTransition}from"react";const router={refresh(){window.refreshes++},push(href,options){if(location.pathname==="/businesses")startTransition(async()=>{await window.action("businessNavigation",[href,options]);});}};export const useRouter=()=>router;export const useSearchParams=()=>new URLSearchParams(location.search);';
+        else if (name === 'next/link') contents = 'export default function Link({children,...props}){return <a {...props}>{children}</a>}export const useLinkStatus=()=>({pending:false});';
         else if (name.endsWith('booking-policy-actions')) contents = 'export const saveBookingPolicy=(...args)=>window.action("saveRules",args);export const bookingPolicyPaymentAction=(...args)=>window.action("rulesPayment",args);';
         else if (name.endsWith('vietnamese-actions')) contents = 'export const setVietnamesePlugin=(...args)=>window.action("saveLanguage",args);export const vietnamesePaymentAction=(...args)=>window.action("languagePayment",args);';
         else if (name.endsWith('card-payment-actions')) contents = 'export const startCardCheckout=(...args)=>window.action("startCard",args);export const refreshCardPurchase=(...args)=>window.action("checkCard",args);';
@@ -57,7 +62,12 @@ function bundle() {
         else if (name.endsWith('open-market-payment')) contents = 'export const openMarketPayment=url=>window.opened.push(url);';
         else if (name.endsWith('market-checkout-url')) contents = 'export const isMarketCheckoutURL=()=>true;';
         else if (name.endsWith('ios-client')) contents = 'export const isReylumiIOSClient=()=>false;';
-        else if (name === './admin-icon') contents = 'export const AdminIcon=()=>null;';
+        else if (name.endsWith('admin-icon')) contents = 'export const AdminIcon=()=>null;';
+        else if (name.endsWith('dashboard-detail')) contents = 'export const DashboardDetailPanel=()=>null;';
+        else if (name.endsWith('dashboard-action-form')) contents = 'export const DashboardActionForm=()=>null;';
+        else if (name.endsWith('account-actions')) contents = 'export const dashboardAccountAction=()=>{throw Error("Unexpected admin mutation")};export const saveDashboardFollowupAction=dashboardAccountAction;';
+        else if (name.endsWith('workspace-actions')) contents = 'export const takeBusinessReviewAction=()=>{throw Error("Unexpected admin mutation")};export const bulkBusinessFollowupAction=takeBusinessReviewAction;export const businessStatusAction=takeBusinessReviewAction;';
+        else if (name === 'admin-location-actions') contents = 'export const updateAdminLocationProfileAction=()=>{throw Error("Unexpected admin mutation")};export const createAdminNoteAction=updateAdminLocationProfileAction;';
         else if (name === './admin-conversation-chat') contents = 'export const AdminConversationChat=()=>null;';
         else if (name === 'stripe') contents = 'export const loadStripe=()=>{throw Error("External SDK must not run in this fixture")};';
         else throw Error('Unknown fixture dependency: ' + name);
@@ -69,8 +79,10 @@ function bundle() {
 }
 async function fixture(screen) {
   const compiled = await bundle();
+  const nativeGets = [];
   const server = createServer((request, response) => {
     if (request.url === '/bundle.js') { response.setHeader('Content-Type', 'text/javascript'); response.end(compiled.outputFiles[0].text); }
+    else if (request.url.startsWith('/explore?')) { nativeGets.push({ method: request.method, url: request.url }); response.setHeader('Content-Type', 'text/html'); response.end('<p>Native startup search received</p>'); }
     else { response.setHeader('Content-Type', 'text/html'); response.end('<div id="root"></div><script src="/bundle.js"></script>'); }
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -81,7 +93,7 @@ async function fixture(screen) {
   const origin = `http://127.0.0.1:${server.address().port}`;
   await page.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
   await page.goto(origin + screen);
-  return { page, errors, async close() { await browser.close(); await new Promise(resolve => server.close(resolve)); } };
+  return { page, errors, nativeGets, async close() { await browser.close(); await new Promise(resolve => server.close(resolve)); } };
 }
 const finish = (page, name, value, reject = false) => page.evaluate(({ name, value, reject }) => window.finish(name, value, reject), { name, value, reject });
 const calls = (page, name) => page.evaluate(name => window.calls.filter(call => call.name === name), name);
@@ -247,13 +259,32 @@ test('native GET feedback preserves every original form action, method, hidden s
     visit(source);
     return forms;
   }
+  let total = 0;
+  const formAttributes = ['action', 'method', 'encType', 'target', 'acceptCharset', 'noValidate', 'id'];
+  const fieldAttributes = ['name', 'type', 'value', 'defaultValue', 'checked', 'defaultChecked', 'disabled', 'multiple', 'selected', 'form', 'formAction', 'formMethod', 'formEncType', 'formNoValidate', 'formTarget', 'readOnly', 'required', 'min', 'max', 'step', 'maxLength', 'minLength', 'pattern', 'accept', 'id'];
+  const pick = (attributes, names) => Object.fromEntries(Object.entries(attributes).filter(([name]) => names.includes(name)));
+  const payload = form => ({
+    attributes: { method: '"get"', ...pick(form.attributes, formAttributes) },
+    fields: form.fields.map(field => ({ tag: field.tag, attributes: { ...(field.tag === 'button' ? { type: '"submit"' } : {}), ...pick(field.attributes, fieldAttributes) } })),
+  });
   for (const { file, action, forms } of expected.files) {
-    const current = signatures(file, readFileSync(file, 'utf8'), action);
+    const composition = file === 'components/app-startup-shell.tsx';
+    if (composition) {
+      const shell = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
+      assert.ok(shell.statements.some(node => ts.isImportDeclaration(node) && node.moduleSpecifier.text === './startup-controls' && node.importClause?.namedBindings?.elements.some(element => element.name.text === 'StartupSearchForm')), 'public shell imports its lightweight search island');
+      let rendered = false;
+      function visit(node) { if (ts.isJsxSelfClosingElement(node) && node.tagName.getText() === 'StartupSearchForm') rendered = true; ts.forEachChild(node, visit); }
+      visit(shell);
+      assert.equal(rendered, true, 'the public shell still renders the native search form through composition');
+    }
+    const sourceFile = composition ? 'components/startup-controls.tsx' : file;
+    const current = signatures(sourceFile, readFileSync(sourceFile, 'utf8'), action);
     assert.equal(current.length, forms.length, file);
-    assert.ok(current.every(form => form.component === 'NavigationForm'), `${file} uses the native navigation pending owner`);
-    const payload = form => ({ attributes: form.attributes, fields: form.fields });
-    assert.deepEqual(current.map(payload), forms, `${file} preserves original GET serialization and filters`);
+    assert.ok(current.every(form => form.component === (composition ? 'form' : 'NavigationForm')), `${file} uses its native navigation pending owner`);
+    assert.deepEqual(current.map(payload), forms.map(payload), `${file} preserves original GET serialization and filters`);
+    total += current.length;
   }
+  assert.equal(total, 9, 'all nine native GET forms remain covered');
 });
 
 test('schedule save and changing a remembered POS ID preserve their server actions and use form pending feedback', () => {
@@ -277,4 +308,56 @@ test('schedule save and changing a remembered POS ID preserve their server actio
     visit(source);
     assert.equal(found, true, `${file} retains the original action`);
   }
+});
+
+test('lightweight startup search keeps its native GET query and draft while showing pending and guarding repeats', { skip, timeout: 60000 }, async () => {
+  const app = await fixture('/startup');
+  try {
+    const { page } = app;
+    await page.getByRole('searchbox').fill('Nails near Milwaukee');
+    assert.equal(await page.evaluate(() => window.__reylumiStartupSearch.query), 'Nails near Milwaukee');
+    assert.equal(await page.evaluate(() => window.__reylumiStartupSearch.route), '/startup');
+    await page.getByRole('search').evaluate(form => { form.target = 'startup-result'; });
+    await page.getByRole('button', { name: 'Search', exact: true }).click();
+    await page.frameLocator('iframe').getByText('Native startup search received').waitFor();
+    assert.equal(app.nativeGets.length, 1);
+    assert.equal(app.nativeGets[0].method, 'GET');
+    assert.deepEqual(Object.fromEntries(new URL(app.nativeGets[0].url, 'http://fixture.invalid').searchParams), { q: 'Nails near Milwaukee' });
+    assert.equal(await page.getByRole('search').getAttribute('aria-busy'), 'true');
+    assert.equal(await page.getByRole('button', { name: 'Search', exact: true }).getAttribute('aria-disabled'), 'true');
+    await page.getByRole('search').evaluate(form => { form.requestSubmit(); form.requestSubmit(); });
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    assert.equal(app.nativeGets.length, 1);
+    assert.equal(await page.getByRole('searchbox').inputValue(), 'Nails near Milwaukee');
+    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    assert.equal(await page.getByRole('search').getAttribute('aria-busy'), 'false');
+    assert.deepEqual(app.errors, []);
+  } finally { await app.close(); }
+});
+
+test('business directory search follows its existing route transition and preserves query filters and unsent edits', { skip, timeout: 60000 }, async () => {
+  const app = await fixture('/businesses?status=active&city=Milwaukee&page=3');
+  try {
+    const { page } = app;
+    await page.getByRole('textbox', { name: 'Search businesses', exact: true }).fill('Sunset salon');
+    await page.evaluate(() => { window.originalBusinessSearch = document.querySelector('input[name=q]'); });
+    await page.getByRole('button', { name: 'Search', exact: true }).click();
+    await page.getByRole('button', { name: 'Searching…', exact: true }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Searching…', exact: true }).isDisabled(), true);
+    assert.equal(await page.getByRole('button', { name: 'Searching…', exact: true }).getAttribute('aria-busy'), 'true');
+    const navigation = await calls(page, 'businessNavigation');
+    assert.equal(navigation.length, 1);
+    const url = new URL(navigation[0].args[0], 'http://fixture.invalid');
+    assert.equal(url.pathname, '/admin/locations');
+    assert.deepEqual(Object.fromEntries(url.searchParams), { status: 'active', city: 'Milwaukee', q: 'Sunset salon' });
+    assert.deepEqual(navigation[0].args[1], { scroll: false });
+    await page.getByRole('textbox', { name: 'Search businesses', exact: true }).fill('Further edit not submitted');
+    await finish(page, 'businessNavigation', undefined);
+    await page.getByRole('button', { name: 'Search', exact: true }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Search', exact: true }).isEnabled(), true);
+    assert.equal(await page.getByRole('textbox', { name: 'Search businesses', exact: true }).inputValue(), 'Further edit not submitted');
+    assert.equal(await page.evaluate(() => document.querySelector('input[name=q]') === window.originalBusinessSearch), true);
+    assert.deepEqual((await page.evaluate(() => window.calls)).map(call => call.name), ['businessNavigation'], 'search never invokes an admin mutation');
+    assert.deepEqual(app.errors, []);
+  } finally { await app.close(); }
 });

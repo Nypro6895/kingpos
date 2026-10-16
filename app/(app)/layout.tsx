@@ -14,7 +14,7 @@ import { QuickBooking } from "@/components/quick-booking";
 import { SessionExpiryPrompt } from "@/components/session-expiry-prompt";
 import { ExploreAdvertising } from "@/components/explore-advertising";
 import { ExploreAccountActionsProvider } from "@/components/explore-account-actions";
-import { WorkspaceLanguageProvider } from "@/components/workspace-language";
+import { WorkspaceLanguageConfiguration, WorkspaceLanguageProvider } from "@/components/workspace-language";
 import { vietnamesePluginState } from "@/lib/vietnamese-plugin";
 import { ExperienceCacheLifecycle } from "@/components/experience-cache-lifecycle";
 import { ExperienceNavigation } from "@/components/experience-navigation";
@@ -41,6 +41,14 @@ async function OptionalCampaignWallet({ context, scope }: { context: CurrentBusi
   </>;
 }
 
+async function OptionalLanguageConfiguration({ context, scope }: { context: CurrentBusinessContext; scope: string }) {
+  const salonId = context.workspaceType === "salon" ? (context.salonMode === "staff" ? context.currentStaffSalon?.id : context.currentSalon?.id) : null;
+  const languagePlugin = salonId ? await runReadWithDeadline(vietnamesePluginState(salonId), 8_000).catch(() => null) : null;
+  const enabled = Boolean(languagePlugin?.active && (context.salonMode === "manage" || (context.salonMode === "staff" && languagePlugin.staff_enabled)));
+  const expiresAt = languagePlugin ? [languagePlugin.trial_ends_at, languagePlugin.paid_until].filter((value): value is string => Boolean(value)).sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null : null;
+  return <WorkspaceLanguageConfiguration scope={scope} enabled={enabled} portableEnabled={Boolean(languagePlugin?.active && languagePlugin.portable_enabled)} expiresAt={expiresAt} />;
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -48,17 +56,14 @@ export default async function RootLayout({
 }>) {
   const context = await getCurrentBusinessContext();
   const experience = getExperienceContext(context);
-  const languageSalonId = context.workspaceType === "salon" ? (context.salonMode === "staff" ? context.currentStaffSalon?.id : context.currentSalon?.id) : null;
   const isOwner = isSalonManageContext(context) && isOwnerMembership(context.currentMembership);
-  const languagePlugin = await runReadWithDeadline(vietnamesePluginState(languageSalonId ?? null).catch(() => null), 8_000);
-  const languageEnabled = Boolean(languagePlugin?.active && (context.salonMode === "manage" || (context.salonMode === "staff" && languagePlugin.staff_enabled)));
-  const languageExpiry = languagePlugin ? [languagePlugin.trial_ends_at, languagePlugin.paid_until].filter((value): value is string => Boolean(value)).sort((a, b) => Date.parse(b) - Date.parse(a))[0] ?? null : null;
 
   return (
     <ExperienceScopeProvider key={experience.scope} context={experience}>
         <ExperienceCacheLifecycle scope={experience.scope} viewerId={experience.viewerId} workspace={experience.workspaceId} permissionRevision={experience.permissionRevision} />
         <Suspense fallback={null}><ExperienceNavigation scope={experience.scope} /></Suspense>
-        <WorkspaceLanguageProvider enabled={languageEnabled} portableEnabled={Boolean(languagePlugin?.active && languagePlugin.portable_enabled)} expiresAt={languageExpiry}>
+        <WorkspaceLanguageProvider scope={experience.scope} enabled={false} portableEnabled={false} expiresAt={null}>
+        <Suspense fallback={null}><OptionalLanguageConfiguration context={context} scope={experience.scope} /></Suspense>
         <AbuseNotice userId={context.user?.id ?? null} />
         <OverlayDismissal />
         <WindowsPosDownloadPrompt authenticated={Boolean(context.user)} />

@@ -1,5 +1,5 @@
 "use client";
-import Form from "next/form";
+import { FeedbackSearchForm } from "@/components/feedback-search-form";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -17,5 +17,5 @@ export function AdminResetFilters() {
 
 export function AdminSearchContainer({ children }: { children: ReactNode }) {
   const search = useSearchParams();
-  return <Form key={search.toString()} action="" className="admin-search-form mt-5 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">{children}</Form>;
+  return <FeedbackSearchForm key={search.toString()} action="" className="admin-search-form mt-5 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">{children}</FeedbackSearchForm>;
 }

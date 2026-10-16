@@ -1,3 +1,5 @@
+FOLLOW-UP 2026-10-15: All seven listed feedback groups are now fixed and fixture-verified; see docs/performance-release-20261015.txt. The original dated audit below is retained as historical evidence. Release/live verification is recorded separately.
+
 Source capture: 2026-10-16T00:06:39.940Z; HEAD e4e4deb20d2611b49d7e1696f8e200b5e4e4b04c; index 1dec929fb2b6bcf89662cac46269e64dfd0a9a3a6f0d06d4c4f670373098beb1
 
 131 route source matrix. Import reachability is not runtime coverage. Local source only, not live production.

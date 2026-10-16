@@ -1861,7 +1861,7 @@ function CustomerDesktopHeader({
       <div className={exploreHeader ? "flex items-center justify-end gap-4" : compactStaffHeader ? "flex items-center justify-between gap-4" : "grid grid-cols-[minmax(24rem,1fr)_auto] items-center gap-5"}>
         {exploreHeader ? <ExploreHeaderSearchSlot /> : null}
         {compactStaffHeader ? <span className="text-sm text-zinc-500"><WorkspaceText text="Staff workspace" /></span> : null}
-        {!compactStaffHeader && !exploreHeader && <form action="/explore" className="relative" role="search"
+        {!compactStaffHeader && !exploreHeader && <NavigationForm action="/explore" className="relative" role="search"
           onSubmit={(event) => {
             if (!nearYouEnabled || pathname !== "/explore") return;
             event.preventDefault();
@@ -1895,13 +1895,14 @@ function CustomerDesktopHeader({
             <Icon name="compass" />
             <span><WorkspaceText text={nearYouPending ? "Locating… ×" : nearYouEnabled ? "Near you · On ×" : "Any location"} /></span>
           </button>
-          <button
+          <NavigationSubmitButton
             className="absolute right-2 top-1/2 inline-flex min-h-10 -translate-y-1/2 items-center justify-center rounded-full bg-brand-orange px-5 text-xs font-semibold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange"
+            pendingLabel="Searching…"
             type="submit"
           >
             <WorkspaceText text="Search" />
-          </button>
-        </form>}
+          </NavigationSubmitButton>
+        </NavigationForm>}
         <div className="flex items-center gap-3">
           {compactStaffHeader && <Link href="/explore" aria-label={__vt("Search salons and services")} className={customerDesktopSoftButtonClass()}><Icon name="search" /></Link>}
           <NotificationDropdown

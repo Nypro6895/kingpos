@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { Fragment, useState } from "react";
 import { adminAuditTargetHref, readableAdminAction } from "@/lib/admin-dashboard-model";
 import { PLATFORM_ADMIN_PERMISSIONS as P, type PlatformAdminAuditLogItem, type PlatformAdminPermission } from "@/types/platform-admin";
@@ -24,11 +25,11 @@ export function DashboardQuickActions({ permissions }: { permissions: string[] }
   return <section className="dashboard-quick-actions" aria-labelledby="dashboard-quick-title"><div className="dashboard-section-heading"><h2 id="dashboard-quick-title">Quick actions</h2></div>
     {can(P.businessesUpdate) && <Link href={routes.salons.create()} className="dashboard-quick-action"><span><strong>Add business</strong><small>Register a salon in your owner workspace</small></span><span aria-hidden="true">→</span></Link>}
     {can(P.usersRead) && <button type="button" className="dashboard-quick-action" aria-expanded={panel === "user"} aria-controls="dashboard-find-user" onClick={() => setPanel(panel === "user" ? null : "user")}><span>Find user</span><span aria-hidden="true">{panel === "user" ? "−" : "→"}</span></button>}
-    {panel === "user" && <form id="dashboard-find-user" action="/admin/users" className="dashboard-quick-panel"><label>Search user<input name="q" type="search" minLength={2} maxLength={100} required autoFocus placeholder="Name, email, or phone…" /></label><button className="dashboard-button dashboard-button-primary">Find user</button></form>}
+    {panel === "user" && <NavigationForm id="dashboard-find-user" action="/admin/users" className="dashboard-quick-panel"><label>Search user<input name="q" type="search" minLength={2} maxLength={100} required autoFocus placeholder="Name, email, or phone…" /></label><NavigationSubmitButton pendingLabel="Searching…" className="dashboard-button dashboard-button-primary">Find user</NavigationSubmitButton></NavigationForm>}
     {can(P.notificationsSend) && can(P.usersRead) && <button type="button" className="dashboard-quick-action" aria-expanded={panel === "notification"} aria-controls="dashboard-send-notification" onClick={() => setPanel(panel === "notification" ? null : "notification")}><span>Send notification</span><span aria-hidden="true">{panel === "notification" ? "−" : "→"}</span></button>}
     {panel === "notification" && <div id="dashboard-send-notification" className="dashboard-quick-panel"><NotificationComposer /></div>}
     {can(P.reportsCreate) && <Link className="dashboard-quick-action" href="/admin/reports?compose=1#create-case"><span>Create support case</span><span aria-hidden="true">→</span></Link>}
     {can(P.businessesRead) && <Link className="dashboard-quick-action" href="/admin/businesses"><span>Manage businesses</span><span aria-hidden="true">→</span></Link>}
-    {can(P.usersRead) && <details className="dashboard-quick-panel"><summary className="dashboard-link">Open a specific user</summary><form className="dashboard-form" action={form => { const id = String(form.get("user_id") || ""); if (/^[0-9a-f-]{36}$/i.test(id)) window.location.assign(`/admin/users/${id}`); }}><EntityPicker kind="user" name="user_id" label="User" required /><button className="dashboard-button">Open profile</button></form></details>}
+    {can(P.usersRead) && <details className="dashboard-quick-panel"><summary className="dashboard-link">Open a specific user</summary><NavigationForm className="dashboard-form" onSubmit={event => { if (!/^[0-9a-f-]{36}$/i.test(String(new FormData(event.currentTarget).get("user_id") || ""))) event.preventDefault(); }} action={form => { const id = String(form.get("user_id") || ""); if (/^[0-9a-f-]{36}$/i.test(id)) window.location.assign(`/admin/users/${id}`); }}><EntityPicker kind="user" name="user_id" label="User" required /><NavigationSubmitButton className="dashboard-button">Open profile</NavigationSubmitButton></NavigationForm></details>}
   </section>;
 }

@@ -995,12 +995,12 @@ function DifferenceBanner({
           </Link>
           <form action={savePayrollStatementAction}>
             <HiddenPeriodFields period={period} returnPath={returnPath} />
-            <button
+            <SubmitButton pendingLabel="Saving statement…"
               className="rounded-md border border-zinc-950 bg-white px-3 py-2 font-medium text-zinc-950 disabled:cursor-not-allowed disabled:border-zinc-300 disabled:text-zinc-400"
               disabled={!canManage}
             >
               <WorkspaceText text="Save New Statement" />
-            </button>
+            </SubmitButton>
           </form>
           <DismissPayrollMismatchButton targetId="payroll-differences" />
         </div>

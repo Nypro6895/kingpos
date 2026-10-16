@@ -1,4 +1,5 @@
 "use client";
+import { ActionFeedback } from "@/components/action-feedback";
 import { AdminIcon, type AdminIconName } from "../_components/admin-icon";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -313,7 +314,7 @@ export function BusinessesWorkspace({
                   aria-label="Search businesses"
                   placeholder="Search business, owner, phone or address…"
                 />
-                <button type="submit">Search</button>
+                <button type="submit" disabled={pending} aria-busy={pending}><ActionFeedback pending={pending} pendingLabel="Searching…">Search</ActionFeedback></button>
               </label>
               <div className={s.selects}>
                 <select

@@ -1,6 +1,6 @@
 "use client";
 import { AdminIcon } from "../_components/admin-icon";
-import Form from "next/form";
+import { FeedbackSearchForm, SearchSubmitButton } from "@/components/feedback-search-form";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -64,15 +64,15 @@ export function UsersWorkspace({users,context,query,initialUserId,initialTab='pr
   <div className={`${styles.body} ${open?styles.withDrawer:''}`}>
    <div className={styles.list}>
     <header className={styles.header}><h1>Users</h1><div className={styles.actions}><button type="button" className={styles.button} onClick={()=>{if(guard())router.refresh();}}><AdminIcon name="refresh" />Refresh</button><a className={styles.button} href={`/admin/users/export?${filterParams}`}><AdminIcon name="download" />Export CSV</a>{can(P.usersCreate)&&<><button className={styles.button} disabled={!identityReady} onClick={()=>newUser('invite')}><AdminIcon name="plus" />Invite</button><button className={styles.primary} disabled={!identityReady} onClick={()=>newUser('create')}><AdminIcon name="plus" />Create user</button></>}</div></header>
-    <Form action="/admin/users" key={JSON.stringify(query)} className={styles.toolbar} onSubmit={e=>{if(!guard())e.preventDefault();}}>
+    <FeedbackSearchForm action="/admin/users" key={JSON.stringify(query)} className={styles.toolbar} onSubmit={e=>{if(!guard())e.preventDefault();}}>
      <label className={styles.search}><span className="sr-only">Search users</span><input type="search" name="q" defaultValue={query.q} maxLength={100} placeholder="Name, email, phone, ID"/></label>
      <label><span className="sr-only">Status</span><select name="status" defaultValue={query.status??''}><option value="">Status · All</option>{['active','inactive','suspended','pending_deletion','deleted'].map(s=><option key={s} value={s}>{s.replaceAll('_',' ')}</option>)}</select></label>
      <label><span className="sr-only">Role</span><select name="role" defaultValue={query.role??''}><option value="">Role · All</option>{['owner','manager','staff','customer','platform_admin'].map(s=><option key={s} value={s}>{s.replaceAll('_',' ')}</option>)}</select></label>
      <div className={styles.businessFilter}><EntityPicker kind="location" label="Business" name="businessId" defaultValue={query.businessId} defaultLabel={query.businessId?'Selected business':''}/></div>
      <label><span className="sr-only">Sort</span><select name="sort" defaultValue={query.sort??'created_desc'}><option value="created_desc">Sort · Newest</option><option value="name_asc">Name A–Z</option><option value="last_login_desc">Last login</option></select></label>
      <label className={styles.rowsFilter}><span className="sr-only">Rows</span><select name="pageSize" defaultValue={String(users.page_size)}>{[...new Set([25,50,100,users.page_size])].sort((a,b)=>a-b).map(n=><option key={n} value={n}>Rows {n}</option>)}</select></label>
-     <button className={styles.button} type="submit">Apply</button>{['q','status','role','businessId'].some(k=>query[k])&&<Link className={styles.ghost} href="/admin/users" onClick={e=>{if(!guard())e.preventDefault();}}>Reset</Link>}
-    </Form>
+     <SearchSubmitButton pendingLabel="Applying…" className={styles.button} type="submit">Apply</SearchSubmitButton>{['q','status','role','businessId'].some(k=>query[k])&&<Link className={styles.ghost} href="/admin/users" onClick={e=>{if(!guard())e.preventDefault();}}>Reset</Link>}
+    </FeedbackSearchForm>
     {chosen.length>0&&<div className={styles.bulkBar}><strong>{chosen.length} selected</strong>{can(P.usersSuspend)&&<button className={styles.button} onClick={()=>setBulk(bulk==='suspend'?null:'suspend')}><AdminIcon name="lock" />Suspend</button>}{can(P.usersRestore)&&<button className={styles.button} onClick={()=>setBulk(bulk==='restore'?null:'restore')}>Restore</button>}<a className={styles.button} href={`/admin/users/export?ids=${chosen.join(',')}`}><AdminIcon name="download" />Export selected</a><button className={styles.ghost} onClick={()=>{setSelected([]);setBulk(null);}}>Clear selection</button></div>}
     {bulk&&chosen.length>0&&<UserOperationForm operation={bulk} action={bulkUserAccessAction} onResult={r=>{setNotice(r);if(r.results){setSelected(r.results.filter(v=>!v.ok).map(v=>v.id));setBulk(null);router.refresh();if(current&&(r.ok||r.requestStatus))setRevision(v=>v+1);}}} label={`${bulk==='suspend'?'Suspend':'Restore'} ${chosen.length} users`} confirm={`Apply ${bulk} to ${chosen.length} selected users? Each result will be recorded separately.`} onCancel={()=>setBulk(null)}><input type="hidden" name="selection" value={JSON.stringify(chosen)}/><UserReason/></UserOperationForm>}
     {notice&&(!open||notice.results)&&<div className={notice.ok?styles.success:styles.error} role={notice.ok?'status':'alert'}>{notice.message}<button className={styles.ghost} aria-label="Dismiss result" onClick={()=>setNotice(null)}><AdminIcon name="close" /></button>{notice.results&&<ul>{notice.results.map(r=><li key={r.id}>{userName(users.items.find(u=>u.id===r.id)??{display_name:r.id})} · {r.message}</li>)}</ul>}</div>}

@@ -4,8 +4,7 @@ import { WorkspaceToolbar, toolbarStyles } from "@/components/workspace-toolbar"
 import { ContextualSupport } from "@/components/contextual-support";
 import { CompactFilters } from "@/components/compact-filters";
 
-import { SubmitButton } from "@/components/submit-button";
-import Form from "next/form";
+import { FeedbackSearchForm, SearchSubmitButton } from "@/components/feedback-search-form";
 import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import {OwnerLiveTickets} from '@/app/pos-tickets/owner-live-tickets';
 import { DailyPosTicketCard } from "@/app/pos-tickets/closed-ticket-correction-form";
@@ -314,8 +313,9 @@ function WorkLogFilters({
       <WorkspaceElement as="span" className={toolbarStyles.summary} title={query || selectedDate}>{selectedDate}{query ? ` · ${query}` : ""}</WorkspaceElement>
       <div className="ml-auto flex shrink-0 items-center gap-2">
       <CompactFilters label="Work log filters" active={Boolean(query)}>
-    <Form
+    <FeedbackSearchForm
       action="/pos-tickets"
+      actionByPath={{ prefix: "/pos/ticket", action: "/pos/ticket" }}
       className="grid gap-3 sm:grid-cols-2"
     >
       <label className="block">
@@ -337,19 +337,19 @@ function WorkLogFilters({
           type="search"
         />
       </label>
-      <SubmitButton pendingLabel="Processing…"
+      <SearchSubmitButton
         className="h-10 self-end rounded bg-zinc-950 px-4 text-sm font-medium text-white"
         type="submit"
       >
         <WorkspaceText text="Search" />
-      </SubmitButton>
+      </SearchSubmitButton>
       <Link
         className="inline-flex h-10 items-center self-end rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
         href={todayHref}
       >
         <WorkspaceText text="Today" />
       </Link>
-    </Form>
+    </FeedbackSearchForm>
       </CompactFilters>
       <ContextualSupport />
       </div>

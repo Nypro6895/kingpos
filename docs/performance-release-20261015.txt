@@ -1,0 +1,16 @@
+REYLUMI — HOÀN THIỆN PHẢN HỒI VÀ KHỞI ĐỘNG
+Ngày: 2026-10-15 America/Chicago.
+
+Bảy nhóm còn lại đã sửa: tìm kiếm/phân trang quản trị, lọc Ticket owner, chọn ngày Today, báo cáo Portable, Save New Statement, copy link mời và Undo. Giữ Next Form prefetch/điều hướng trong app, query/submitter/replace/scroll; giữ tiền/draft của POS và không đổi nghiệp vụ/quyền/giao dịch.
+
+Khởi động web: cấu hình ngôn ngữ tùy chọn được stream sau gate xác thực/ngữ cảnh. Màn hình công khai có tìm kiếm/điều hướng hoạt động, không nhập cả dictionary vào entrypoint fallback. So sánh dependency JavaScript có kiểm soát: 644362→5863 byte; gzip148260→2375 byte, không bao gồm framework/CSS và không phải phần trăm tăng tốc toàn app.
+
+Logo Lumi cũ còn mã vẽ nhưng chưa được dùng. Đã khôi phục orbit trong native shell và vùng web đang tải; không ép thời gian chờ. Native shell hiện trước việc tạo WKWebView; giữ ý định tìm kiếm/điều hướng mới nhất và giao thức ready hiện có.
+
+Baseline chính xác: dpl_9ZKEwHw43kFAeqx1kyNUDcGkJNNW; commit c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f; nguồn1869file SHA256c5f51f6bccd7b8625027990cbee7bc7a6b8e0daff6588b743cdf3f9aa35e92db. Native baseline thực đã upload1.0.1(16.1), commit e4be37f0aa3d6e43767b3d7bc2573145f477d708.
+
+Kiểm tra mới: 5 ca feedback +3 ca cold web đã đạt; 5 XCTest native mới đang chạy trong macOS CI trước signing/upload. Build nguồn ghép, benchmark thực, alias guard, nguồn candidate/live và trạng thái Apple được ghi trong release receipt; không suy ra đã live từ tài liệu này. Bảo toàn các Explore/location modules đã ship và các thay đổi hoàn tất đã chọn qua journal; các task tài chính/claim bị blocked hoặc đang làm không được ghép.
+
+Đo baseline Chromium anonymous mạng yếu150ms,76800byte/s,CPU4x: ExploreFCP8628ms/shell17893ms (một mẫu; không phải iPhone thật). Đo lại cùng phương pháp sau build/phát hành; không gọi spinner là giảm thời gian tải. Không sửa Swift bridge, quyền thiết bị, thanh toán Safari hay ghi dữ liệu production để thử nghiệm.
+
+Lượt rà soát cuối bổ sung: Search quản trị Users/queue/Tax, Open Profile, Search Business, header desktop và xóa ảnh hồ sơ. Có phản hồi ngay, chặn bấm lặp và kết quả muộn sai salon/màn hình. Các query/submitter và quyền hành động được giữ nguyên. 5 kiểm tra bổ sung và 9 kiểm tra secondary đã đạt ở fixture thật; kiểm tra tổng hợp nguồn ghép và kết quả native thực ghi riêng trong receipt.

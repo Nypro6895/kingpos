@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AuthIntentPrompt } from "@/components/auth-intent-prompt";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import { WorkspaceText } from "@/components/workspace-language";
+import { ActionFeedback } from "@/components/action-feedback";
 import { ExploreBookButton } from "@/components/explore-account-actions";
 import { PostActions } from "@/app/salon-profile/post-actions";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
@@ -71,7 +72,7 @@ function SocialProvider({ viewerId, children }: { viewerId: string | null; child
   }
   return <Context.Provider value={{ states, busy, register, change, authenticated: Boolean(viewerId), viewerId }}>
     {children}
-    {message ? <div role="status" className={styles.notice}><WorkspaceText text={message} />{undo ? <button type="button" onClick={() => void change(undo, "hidden", false)}><WorkspaceText text="Undo" /></button> : null}<button type="button" aria-label="Dismiss" onClick={() => setMessage("")}>×</button></div> : null}
+    {message || (undo && busy.has(undo)) ? <div role="status" className={styles.notice}><WorkspaceText text={message} />{undo ? <button type="button" disabled={busy.has(undo)} aria-busy={busy.has(undo)} onClick={() => void change(undo, "hidden", false)}><ActionFeedback pending={busy.has(undo)} pendingLabel="Updating…"><WorkspaceText text="Undo" /></ActionFeedback></button> : null}<button type="button" aria-label="Dismiss" onClick={() => setMessage("")}>×</button></div> : null}
     {prompt ? <AuthIntentPrompt kicker="Your salons" title="Keep your favorites together" onClose={() => setPrompt(false)}><WorkspaceText text="Sign in to love, follow or save this salon." /></AuthIntentPrompt> : null}
   </Context.Provider>;
 }

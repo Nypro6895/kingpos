@@ -1,4 +1,5 @@
 import { withExperiencePage } from "@/components/experience-page";
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { WorkspaceText } from "@/components/workspace-language";
 import { getPortableReportData } from "@/app/pos/portable/actions";
 import { PortableReportClosingForm } from "@/app/pos/portable/report/portable-report-closing-form";
@@ -65,7 +66,7 @@ async function PortableReportPage({
           <p className="text-sm font-medium text-zinc-600">
             {data.salonName} / <WorkspaceText text={formatDate(data.reportDate, data.timezone)} />
           </p>
-          <form className="flex items-end gap-2" method="get">
+          <NavigationForm className="flex items-end gap-2" method="get">
             <label className="block">
               <span className="text-xs font-semibold uppercase text-zinc-500">
                 <WorkspaceText text="Date" />
@@ -77,13 +78,13 @@ async function PortableReportPage({
                 type="date"
               />
             </label>
-            <button
+            <NavigationSubmitButton pendingLabel="Loading…"
               className="h-10 rounded-md bg-zinc-950 px-4 text-sm font-semibold text-white"
               type="submit"
             >
               <WorkspaceText text="Load" />
-            </button>
-          </form>
+            </NavigationSubmitButton>
+          </NavigationForm>
         </header>
 
         {data.setupMessage ? (

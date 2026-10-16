@@ -1,9 +1,11 @@
+import helpCopy from "@/lib/vietnamese-help-copy.json";
 import payrollMobileCopy from "@/lib/vietnamese-payroll-mobile.json";
 import loadingCopy from "@/lib/vietnamese-loading-copy.json";
 import workspaceCopy from "@/lib/vietnamese-workspace-copy.json";
 import bookingDepositMarketCopy from "@/lib/vietnamese-booking-deposit-market.json";
 // UI copy only. Names, services, customer notes and financial values stay as entered.
 export const VIETNAMESE_UI: Record<string, string> = {
+  ...helpCopy,
   ...workspaceCopy,
   ...payrollMobileCopy,
   ...loadingCopy,
@@ -15,8 +17,6 @@ export const VIETNAMESE_UI: Record<string, string> = {
   "Hide this salon": "Ẩn tiệm này",
   "Show salon again": "Hiện lại tiệm",
   "Comment public": "Bình luận công khai",
-  "Comment as": "Bình luận với tư cách",
-  "Reply as": "Trả lời với tư cách",
   "Salon hidden from your Explore.": "Đã ẩn tiệm khỏi Explore của bạn.",
   "Salon is visible again.": "Đã hiện lại tiệm.",
   "Salon saved to your favorites.": "Đã lưu tiệm vào danh sách yêu thích.",

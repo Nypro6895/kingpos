@@ -1,4 +1,5 @@
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
+import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import { backlogTone, type MetricTone } from "@/lib/today-metric-assessment";
 import { OwnerMarketPromo } from "@/components/owner-market-promo";
 
@@ -175,7 +176,7 @@ function DayViewControl({ dayView }: { dayView: TodayDayView }) {
               </Link>
             ) : null}
           </div>
-          <form className="mt-3 border-t border-zinc-100 pt-3" method="get">
+          <NavigationForm className="mt-3 border-t border-zinc-100 pt-3" method="get">
             <label
               className="text-xs font-semibold uppercase tracking-normal text-zinc-500"
               htmlFor="today-date"
@@ -191,14 +192,14 @@ function DayViewControl({ dayView }: { dayView: TodayDayView }) {
                 name="date"
                 type="date"
               />
-              <button
+              <NavigationSubmitButton pendingLabel="Loading…"
                 className="min-h-11 rounded-md bg-amber-600 px-3 text-sm font-semibold text-white transition hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
                 type="submit"
               >
                 <WorkspaceText text="Apply" />
-              </button>
+              </NavigationSubmitButton>
             </div>
-          </form>
+          </NavigationForm>
         </div>
       </details>
       {dayView.invalidDate ? (

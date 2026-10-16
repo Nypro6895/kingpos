@@ -3,7 +3,7 @@ import { LogoutButton } from "@/app/account/logout-button";
 import { DashboardIcon } from "../dashboard/dashboard-icons";
 import { CompactFilters } from "@/components/compact-filters";
 
-import Form from "next/form";
+import { FeedbackSearchForm, SearchSubmitButton } from "@/components/feedback-search-form";
 import { SubmitButton as PendingSubmitButton } from "@/components/submit-button";
 import Image from "next/image";
 import Link from "next/link";
@@ -451,17 +451,17 @@ export function SearchForm({
             type="search"
           />
         </label>
-        <button
+        <SearchSubmitButton
           className="rounded-md bg-orange-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-orange-700"
           type="submit"
         >
           <DashboardIcon name="search" />{actionLabel}
-        </button>
+        </SearchSubmitButton>
         <AdminResetFilters />
         {filterContent ? <div className="admin-filter-trigger">
         <CompactFilters label="Search filters">
           {filterContent ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{filterContent}</div> : null}
-          <button type="submit" className="mt-3 min-h-11 rounded-md bg-orange-600 px-4 text-sm font-semibold text-white">Apply filters</button>
+          <SearchSubmitButton pendingLabel="Applying…" type="submit" className="mt-3 min-h-11 rounded-md bg-orange-600 px-4 text-sm font-semibold text-white">Apply filters</SearchSubmitButton>
         </CompactFilters>
         </div> : null}
       </div>
@@ -504,11 +504,11 @@ export function Pagination({
         {total === 0 ? "0 results" : `${(page-1)*pageSize+1}–${Math.min(page*pageSize,total)} of ${total}`} · Page {page}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <Form action={basePath} className="admin-page-size flex items-center gap-2">
+        <FeedbackSearchForm action={basePath} className="admin-page-size flex items-center gap-2">
           {Object.entries(query ?? {}).filter(([key, value]) => value && key !== "page" && key !== "pageSize").map(([key, value]) => <input key={key} type="hidden" name={key} value={value!} />)}
           <label className="flex items-center gap-2">Rows<select aria-label="Rows per page" name="pageSize" defaultValue={String(pageSize)}>{[...new Set([10,25,50,100,pageSize])].sort((a,b) => a-b).map(size => <option key={size} value={size}>{size}</option>)}</select></label>
-          <button type="submit" className="dashboard-button">Apply</button>
-        </Form>
+          <SearchSubmitButton pendingLabel="Applying…" type="submit" className="dashboard-button">Apply</SearchSubmitButton>
+        </FeedbackSearchForm>
         {hasPrevious ? (
           <Link
             className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 font-bold text-zinc-800"

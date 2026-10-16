@@ -1,3 +1,5 @@
+FOLLOW-UP 2026-10-15: All seven listed feedback groups are now fixed and fixture-verified; see docs/performance-release-20261015.txt. The original dated audit below is retained as historical evidence. Release/live verification is recorded separately.
+
 RÀ SOÁT TỐC ĐỘ VÀ PHẢN HỒI THAO TÁC REYLUMI
 Ngày bắt đầu: 2026-10-15 (America/Chicago). Phạm vi: web và giao diện web trong app.
 

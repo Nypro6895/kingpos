@@ -1,7 +1,8 @@
 "use client";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import { useState } from "react";
+import { ActionFeedback } from "@/components/action-feedback";
+import { useEffect, useRef, useState } from "react";
 
 function resolveInviteUrl(value: string) {
   if (typeof window === "undefined") {
@@ -13,35 +14,51 @@ function resolveInviteUrl(value: string) {
 
 export function CopyInviteLinkButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
+  const [copying, setCopying] = useState(false);
+  const [error, setError] = useState("");
+  const lifetime = useRef({ active: false, generation: 0, pending: false });
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const state = lifetime.current;
+    state.active = true;
+    return () => {
+      state.active = false; state.generation++; state.pending = false;
+      if (timer.current) clearTimeout(timer.current);
+      setCopying(false); setCopied(false); setError("");
+    };
+  }, [value]);
 
   async function copyLink() {
-    const resolvedValue = resolveInviteUrl(value);
-
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(resolvedValue);
-    } else {
-      const textArea = document.createElement("textarea");
-      textArea.value = resolvedValue;
-      textArea.style.position = "fixed";
-      textArea.style.opacity = "0";
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-    }
-
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    const state = lifetime.current, generation = state.generation;
+    if (!state.active || state.pending) return;
+    const current = () => state.active && state.generation === generation;
+    state.pending = true; setCopying(true); setCopied(false); setError("");
+    if (timer.current) clearTimeout(timer.current);
+    try {
+      const resolvedValue = resolveInviteUrl(value);
+      if (navigator.clipboard) await navigator.clipboard.writeText(resolvedValue);
+      else {
+        const textArea = document.createElement("textarea");
+        textArea.value = resolvedValue; textArea.style.position = "fixed"; textArea.style.opacity = "0";
+        document.body.appendChild(textArea); textArea.select();
+        try { if (!document.execCommand("copy")) throw Error("Copy unavailable"); }
+        finally { textArea.remove(); }
+      }
+      if (current()) { setCopied(true); timer.current = setTimeout(() => { if (current()) setCopied(false); }, 2000); }
+    } catch { if (current()) setError("Could not copy the link. Please try again."); }
+    finally { if (current()) { state.pending = false; setCopying(false); } }
   }
 
   return (
-    <button
+    <><button
       className="inline-flex min-h-9 items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-950"
       onClick={copyLink}
+      disabled={copying}
+      aria-busy={copying}
       type="button"
     >
-      {copied ? "Copied" : <WorkspaceText text="Copy link" />}
-    </button>
+      <ActionFeedback pending={copying} pendingLabel="Copying…">{copied ? "Copied" : <WorkspaceText text="Copy link" />}</ActionFeedback>
+    </button>{error ? <span role="alert" className="text-sm text-red-700"><WorkspaceText text={error} /></span> : null}</>
   );
 }
 

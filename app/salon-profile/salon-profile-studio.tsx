@@ -1,5 +1,6 @@
 "use client";
 import { MediaUploadProgress } from "@/components/media-upload-progress";
+import { ActionFeedback } from "@/components/action-feedback";
 
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { SubmitButton } from "@/components/submit-button";
@@ -39,6 +40,7 @@ import type { Staff } from "@/types/staff";
 import Link from "next/link";
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   useTransition,
@@ -527,9 +529,21 @@ export function SalonMediaUploader({
   const [progress, setProgress] = useState(0);
   const [state, setState] = useState<UploadState>("idle");
   const [uploadedPath, setUploadedPath] = useState<string | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const removeBusy = useRef(false);
+  const removalGeneration = useRef(0);
   const [adjustment, setAdjustment] = useState({ offsetX: 0, offsetY: 0, zoom: 1 });
-  const busy = state === "processing" || state === "uploading";
+  const busy = state === "processing" || state === "uploading" || removing;
   const limit = SALON_PROFILE_IMAGE_LIMITS[kind];
+
+  useLayoutEffect(() => {
+    removalGeneration.current += 1;
+    return () => {
+      removalGeneration.current += 1;
+      removeBusy.current = false;
+      setRemoving(false);
+    };
+  }, [expectedSalonId, currentPath, currentUrl]);
 
   useEffect(() => {
     onUploadStateChange?.(busy);
@@ -544,6 +558,7 @@ export function SalonMediaUploader({
   }, [previewUrl]);
 
   async function acceptFile(nextFile: File | null) {
+    if (removeBusy.current) return;
     setError(null);
     setUploadedPath(null);
     onUploaded(null);
@@ -635,25 +650,37 @@ export function SalonMediaUploader({
   }
 
   async function removeUploaded() {
-    if (uploadedPath) {
-      try {
-        await deleteSalonProfileMediaAction(uploadedPath, expectedSalonId);
-      } catch {
-        // The server validates ownership again; a failed cleanup should not
-        // leave the form blocked.
+    if (disabled || busy || removeBusy.current) return;
+    removeBusy.current = true;
+    setRemoving(true);
+    setError(null);
+    const generation = removalGeneration.current;
+    let cleanupFailed = false;
+    try {
+      if (uploadedPath) {
+        try {
+          await deleteSalonProfileMediaAction(uploadedPath, expectedSalonId);
+        } catch {
+          // Keep the existing best-effort cleanup: removing a draft image may
+          // continue even when its separately uploaded file could not be deleted.
+          cleanupFailed = true;
+        }
       }
-    }
-
-    setUploadedPath(null);
-    setFile(null);
-    setProcessedFile(null);
-    setProgress(0);
-    setState("idle");
-    setPreviewUrl(null);
-    onUploaded(null);
-
-    if (currentPath) {
-      onRemoveExisting?.();
+      if (generation !== removalGeneration.current) return;
+      setUploadedPath(null);
+      setFile(null);
+      setProcessedFile(null);
+      setProgress(0);
+      setState("idle");
+      setPreviewUrl(null);
+      if (cleanupFailed) setError("The uploaded file could not be deleted. You can continue editing.");
+      onUploaded(null);
+      if (currentPath) onRemoveExisting?.();
+    } finally {
+      if (generation === removalGeneration.current) {
+        removeBusy.current = false;
+        setRemoving(false);
+      }
     }
   }
 
@@ -784,7 +811,7 @@ export function SalonMediaUploader({
         </div>
       ) : null}
 
-      {busy ? <MediaUploadProgress phase={state === "processing" ? "preparing" : "uploading"} progress={progress} /> : uploadedPath ? <MediaUploadProgress phase="complete" progress={100} /> : null}
+      {busy && !removing ? <MediaUploadProgress phase={state === "processing" ? "preparing" : "uploading"} progress={progress} /> : uploadedPath && !removing ? <MediaUploadProgress phase="complete" progress={100} /> : null}
       {error ? (
         <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
           <div className="flex items-start justify-between gap-3">
@@ -799,13 +826,15 @@ export function SalonMediaUploader({
           </div>
         </div>
       ) : null}
-      {(uploadedPath || currentPath || previewUrl) && !busy ? (
+      {(uploadedPath || currentPath || previewUrl) && (!busy || removing) ? (
         <button
           className="w-fit rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold text-zinc-950"
           onClick={() => void removeUploaded()}
+          disabled={disabled || removing}
+          aria-busy={removing}
           type="button"
         >
-          <WorkspaceText text="Remove" />
+          <ActionFeedback pending={removing} pendingLabel="Removing…"><WorkspaceText text="Remove" /></ActionFeedback>
         </button>
       ) : null}
     </div>
