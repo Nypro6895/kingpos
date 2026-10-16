@@ -17,6 +17,7 @@ struct ReylumiLocalBundle {
         let version: Int
         let productionReady: Bool?
         let connectOrigins: [String]?
+        let mapOrigins: [String]?
         let buildId: String
         let entry: String
         let files: [File]
@@ -51,6 +52,8 @@ struct ReylumiLocalBundle {
                   guard let url = URL(string: value) else { return false }
                   return ["https", "wss"].contains(url.scheme ?? "") && url.host?.hasSuffix(".supabase.co") == true && url.port == nil && url.user == nil && url.password == nil && url.query == nil && url.fragment == nil && url.path.isEmpty
               }), Set(connections.compactMap { URL(string: $0)?.host }).count <= 1 else { throw ReylumiLocalBundleError.invalidManifest }
+        let maps = manifest.mapOrigins ?? []
+        guard maps.isEmpty || maps == ["https://api.maptiler.com"] else { throw ReylumiLocalBundleError.invalidManifest }
         self.manifest = manifest
         self.files = Dictionary(uniqueKeysWithValues: manifest.files.map { ($0.path, $0) })
     }
@@ -69,6 +72,9 @@ struct ReylumiLocalBundle {
         value.hasPrefix("/api/app-local/") && safeRoute(value) && !value.contains(":")
     }
     static func mime(for path: String) -> String? {
+        // Keep the existing MapLibre vendor URL; no arbitrary extensionless
+        // script can be introduced by a downloaded or caller-provided URL.
+        if path == "api/vendor/maplibre-gl" { return "text/javascript" }
         switch (path as NSString).pathExtension.lowercased() {
         case "html": return "text/html"
         case "js": return "text/javascript"
@@ -122,9 +128,11 @@ final class ReylumiLocalSchemeHandler: NSObject, WKURLSchemeHandler {
         do {
             guard urlSchemeTask.request.httpMethod == "GET", let url = urlSchemeTask.request.url else { throw ReylumiLocalBundleError.invalidPath }
             let (data, mime) = try bundle.resource(for: url)
-            let connections = bundle.manifest.connectOrigins ?? []
+            let maps = bundle.manifest.mapOrigins ?? []
+            let connections = (bundle.manifest.connectOrigins ?? []) + maps
             let connect = (["'self'"] + connections).joined(separator: " ")
-            let headers = ["Content-Type": mime, "Content-Length": String(data.count), "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store", "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src \(connect); frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"]
+            let workers = maps.isEmpty ? "'none'" : "'self' blob:"
+            let headers = ["Content-Type": mime, "Content-Length": String(data.count), "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store", "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src \(connect); worker-src \(workers); frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"]
             guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: headers) else { throw ReylumiLocalBundleError.unavailable }
             urlSchemeTask.didReceive(response)
             urlSchemeTask.didReceive(data)

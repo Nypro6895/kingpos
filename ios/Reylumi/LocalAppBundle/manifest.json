@@ -1,20 +1,27 @@
 {
   "version": 1,
   "productionReady": false,
-  "buildId": "90aac86694dcd2326ec73183e70e247cf870ce29d60458dc1ac44dba15234d03",
+  "buildId": "097cb67b9afacb045f8f4be147735a8678280915662270741d55eb5f4126c948",
   "entry": "index.html",
   "connectOrigins": [],
+  "mapOrigins": [],
   "files": [
     {
+      "path": "api/vendor/maplibre-gl",
+      "bytes": 1056837,
+      "sha256": "45a9b07a9189ce56054c620a947ccf41e291e58c95e9b61533b740aaa65ee5cb",
+      "mime": "text/javascript"
+    },
+    {
       "path": "app.css",
-      "bytes": 458273,
-      "sha256": "36ca769f6c8baa2f051efbdc1fb8400da98a027ec44dae3729667403effbbc7a",
+      "bytes": 519486,
+      "sha256": "f92f3b175726bac68647a02fa8c8032ceaa9974c1b8e161815f8b5745056b230",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 2532641,
-      "sha256": "cb0732f9b5d839c438595c4463969a65d21dfc115457c683232de269a11e8e73",
+      "bytes": 3450119,
+      "sha256": "d2f975ec111867c3503cdb4be1bdc4f2a0b8b99ec5376c7ab2c52b16fb1aedce",
       "mime": "text/javascript"
     },
     {
@@ -2264,6 +2271,111 @@
       "path": "/staff/today",
       "adapter": "/staff/today",
       "access": "scoped"
+    },
+    {
+      "path": "/beauty",
+      "adapter": "/beauty",
+      "access": "scoped"
+    },
+    {
+      "path": "/notifications",
+      "adapter": "/notifications",
+      "access": "scoped"
+    },
+    {
+      "path": "/salon-profile",
+      "adapter": "/salon-profile",
+      "access": "scoped"
+    },
+    {
+      "path": "/salon-settings",
+      "adapter": "/salon-settings",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/settings",
+      "adapter": "/pos/settings",
+      "access": "scoped"
+    },
+    {
+      "path": "/salons",
+      "adapter": "/salons",
+      "access": "scoped"
+    },
+    {
+      "path": "/businesses",
+      "adapter": "/businesses",
+      "access": "scoped"
+    },
+    {
+      "path": "/salons/new",
+      "adapter": "/salons/new",
+      "access": "scoped"
+    },
+    {
+      "path": "/businesses/new",
+      "adapter": "/businesses/new",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore",
+      "adapter": "/explore",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/salons/:salonId",
+      "adapter": "/explore/salons/:salonId",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/beauty/:profileId",
+      "adapter": "/explore/beauty/:profileId",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/beauty/:profileId/posts/:postId",
+      "adapter": "/explore/beauty/:profileId/posts/:postId",
+      "access": "scoped"
+    },
+    {
+      "path": "/explore/inspiration/:lookId",
+      "adapter": "/explore/inspiration/:lookId",
+      "access": "scoped"
+    },
+    {
+      "path": "/book/:salonId",
+      "adapter": "/book/:salonId",
+      "access": "scoped"
+    },
+    {
+      "path": "/staff",
+      "adapter": "/staff",
+      "access": "scoped"
+    },
+    {
+      "path": "/customers",
+      "adapter": "/customers",
+      "access": "scoped"
+    },
+    {
+      "path": "/customers/new",
+      "adapter": "/customers/new",
+      "access": "scoped"
+    },
+    {
+      "path": "/customers/:customerId",
+      "adapter": "/customers/:customerId",
+      "access": "scoped"
+    },
+    {
+      "path": "/customers/:customerId/edit",
+      "adapter": "/customers/:customerId/edit",
+      "access": "scoped"
+    },
+    {
+      "path": "/payroll",
+      "adapter": "/payroll",
+      "access": "scoped"
     }
   ],
   "reads": [
@@ -2464,7 +2576,7 @@
         "caseId"
       ],
       "access": "scoped",
-      "cacheable": true
+      "cacheable": false
     },
     {
       "name": "owner.workspace",
@@ -2556,6 +2668,263 @@
       "argumentKeys": [],
       "access": "scoped",
       "cacheable": false
+    },
+    {
+      "name": "page.beauty",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.notifications",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "filter"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "http.notifications.feed",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "filter",
+        "limit",
+        "before",
+        "id"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "owner.salon-profile",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.salon-settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "owner.pos-settings",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "customer.salons",
+      "path": "/api/app-local/read",
+      "argumentKeys": [],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.explore",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "http.explore.search",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.feed-page",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.feed-updates",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.feed-validate",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.area",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.suggestions",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "q",
+        "location",
+        "category"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "public.salon",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "public.beauty",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "profileId",
+        "customerId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "public.beauty-post",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "profileId",
+        "postId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "public.inspiration",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "lookId",
+        "location"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "public.booking",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "salonId",
+        "query"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "http.public-booking.availability",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "input"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "staff.relay",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "staffId"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.owner-staff",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "add",
+        "connection_error",
+        "connection_notice",
+        "error",
+        "filter",
+        "invite_email",
+        "invite_phone",
+        "invite_request",
+        "q",
+        "setup",
+        "staff"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.owner-customers",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "page",
+        "q"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.owner-customer-detail",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "customerId",
+        "group"
+      ],
+      "access": "scoped",
+      "cacheable": true
+    },
+    {
+      "name": "page.owner-customer-form",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "customerId"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "page.owner-payroll",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "end",
+        "month",
+        "overviewRange",
+        "overviewService",
+        "overviewServiceRank",
+        "overviewStaff",
+        "overviewTrend",
+        "payPeriodStart",
+        "editStaff",
+        "preset",
+        "segment",
+        "start",
+        "tab"
+      ],
+      "access": "scoped",
+      "cacheable": true
     }
   ],
   "commands": [
@@ -2833,7 +3202,70 @@
       ]
     },
     {
+      "name": "action.6ab67ce57face0c17c6ca51b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.65f6ddfec4bcc7176c3f7202",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.40084b43686b6b73dc4dc79b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cb1c59ec1593cd442d3308b6",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.36b2f4cad54893e52ab798a1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d94d6b6fffa7661a78432671",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.147475f1747e29fc780d6db7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7fe4e45b099411edb1ef649d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.2d917d2c3d746842918f595d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a6b9d77f7d5ddbff1458f2b2",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -2847,7 +3279,42 @@
       ]
     },
     {
+      "name": "action.b230f0fee30cdc438f5883a2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8e15707f4f804f1d6aefafb9",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.cbc887d5f2340a7ec02fba0d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.585d774096576fe78b903850",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.df095b8f4d9c78a567439f03",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a0d827a7eb03ab154db34ed9",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -3064,6 +3531,20 @@
       ]
     },
     {
+      "name": "action.5041cef8ca37ef016a7fc9cd",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.427b872b42d18da1a038c5e3",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.d7a13ea8ac314a10a1929d50",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -3071,7 +3552,42 @@
       ]
     },
     {
+      "name": "action.104aa6ce78b263569b2f6d59",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.57b3af811bc182f185af8788",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.bf1d73e6c144acfd6d7de892",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e17521b389c256c86c8a2694",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.361866e4f3fe481645af55b8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.1bbc090e1fab7a9ed086799d",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -3358,6 +3874,27 @@
       ]
     },
     {
+      "name": "action.f4f4c3af1540449da2953dbc",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.978c6e7fae8c6123fea05a78",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.df7703d2d3f5bd5171e9895b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.dfbd0ef1bedbce850df01029",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -3372,6 +3909,69 @@
       ]
     },
     {
+      "name": "action.691278ea4f3fecddeb802668",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0033ad6758bbc0015a26a901",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f43d51531c07527d3a5f5c12",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b0a00bd67f29e0624454828d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7bad2f653b11224353df34f3",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.85186aff501259dbe8342b90",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f800612a0d9d66f726d969d2",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.825603ad31c4241a9c79b42c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a8f1c838509e61d9f044b61c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.92d145c80e5f9d463eca943b",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -3380,6 +3980,55 @@
     },
     {
       "name": "action.cc2d6383a9be0f5bc0c73073",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.42ccd944a3464d4808044597",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c6373d95c41587e9ba708a5f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4c6503087b4c6812381e3af0",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7bb22aeea8fa8b285822e26b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.554b39a5b738a00fd864175d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.3bfa142e6386689d39bc253a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f49fa1248a6270a7292cfcda",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -3456,7 +4105,28 @@
       ]
     },
     {
+      "name": "action.f0183755b41ce958178dcfd5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.0b1e0a58e14816ae5b2c1e9a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7855235fbaecc8c8cf078e80",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8a3d20bfd007c6b1453dd008",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -3617,6 +4287,188 @@
       ]
     },
     {
+      "name": "action.b4f7fee0733bda6dd9ed9d20",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.e0d374c1726cbbd6f12f70c9",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f46bef51991e77f23bb9e8a5",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.91c83c32fc47ef4896ce524b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.21f97cf3eddd78bc22de9c23",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.58b59a8a8771f1228fa5cd60",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8be7bf84ff8fb6f897fd884d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f1a8a4d76e98b29494cf02b1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.8f157255a920779473921117",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.4fefd2e488e7935d48711994",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.679e3f19640c070acd05fa0b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.f72f2736bc2b4a4b67e4427d",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7607cb1fb252b8d6ed53be98",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.31c0ae2688c16a3f26bff44e",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ef89640c5a541203067e783a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ef6399bcf1eddc328eb44797",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b5b64d90f59ce6877ece778a",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a890d694f2aca2511bb67039",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c0bb39386d1a305646380e0b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ba18d75b34029fc53e80470b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ed1af3e056bd899837687d6f",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ff25d55a5fc31b661bcf3275",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.37e2e1f79d45912d6b2af4f1",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.a8527452c40f032c2c2f683c",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c1d80e9ad712381210d676e8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.28078aa8561c157e9b45c7b7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "owner.receipt-operation",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -3657,6 +4509,27 @@
       "argumentKeys": [
         "input"
       ]
+    },
+    {
+      "name": "http.notifications.viewed",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.explore.feed-events",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
+    },
+    {
+      "name": "http.public-booking.confirm",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "input"
+      ]
     }
   ],
   "help": {
@@ -3683,7 +4556,7 @@
   },
   "coverage": {
     "total": 133,
-    "bundled": 40,
+    "bundled": 61,
     "missing": [
       "/",
       "/accept-invite",
@@ -3715,31 +4588,18 @@
       "/admin/users",
       "/admin/users/:userId",
       "/admin/verification",
-      "/beauty",
-      "/book/:salonId",
       "/booking-payment/:token",
       "/booking/manage/:token",
       "/bookings",
-      "/businesses",
       "/businesses/create",
-      "/businesses/new",
       "/campaigns",
       "/check-in/:entry",
       "/claim/:salonId",
       "/claim/customer",
       "/contact-support",
-      "/customers",
-      "/customers/:customerId",
-      "/customers/:customerId/edit",
-      "/customers/new",
       "/deletion-status/:token",
-      "/explore",
-      "/explore/beauty/:profileId",
-      "/explore/beauty/:profileId/posts/:postId",
       "/explore/campaigns/:campaignId",
-      "/explore/inspiration/:lookId",
       "/explore/looks/:lookId",
-      "/explore/salons/:salonId",
       "/explore/wisconsin",
       "/explore/wisconsin/:businessId",
       "/forgot-password",
@@ -3749,10 +4609,8 @@
       "/market/orders/:orderId",
       "/market/payment-return",
       "/more/:section",
-      "/notifications",
       "/notifications/visits/:visitId",
       "/ownership/invite/:token",
-      "/payroll",
       "/payroll/tax-company",
       "/payroll/tax-company/settings",
       "/pos-tickets",
@@ -3765,19 +4623,13 @@
       "/pos/portable/report",
       "/pos/portable/ticket",
       "/pos/portable/today",
-      "/pos/settings",
       "/pos/ticket/:ticketId",
       "/reports",
       "/reset-password",
-      "/salon-profile",
       "/salon-profile/client-transformations",
-      "/salon-settings",
-      "/salons",
-      "/salons/new",
       "/security-check",
       "/settings/recovery-back-office",
       "/signup",
-      "/staff",
       "/staff/invite/:token",
       "/support/guest/:threadId",
       "/tax-company",

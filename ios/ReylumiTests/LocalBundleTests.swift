@@ -11,7 +11,7 @@ enum AppLocalTestFixture {
         return ["schemaVersion": 1, "context": ["scope": scope, "authenticated": true, "viewerId": viewer, "workspaceId": workspace, "salonId": salon], "grant": grant,
          "display": ["name": "Fixture", "language": "vi", "role": kind], "onlineValidatedAt": now.timeIntervalSince1970 * 1000]
     }
-    static func bundle() throws -> (ReylumiLocalBundle, URL) {
+    static func bundle(mapEnabled: Bool = false) throws -> (ReylumiLocalBundle, URL) {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("reylumi-local-fixture-" + UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let resources = ["index.html": "<!doctype html><html><head><meta name='viewport' content='width=device-width'><link rel='stylesheet' href='/app.css'></head><body><main><h1>Fixture Help</h1><button id='next'>Read guide</button><p id='guide'></p></main><script src='/app.js'></script></body></html>",
@@ -22,7 +22,7 @@ enum AppLocalTestFixture {
             let data = Data(text.utf8); try data.write(to: directory.appendingPathComponent(path))
             files.append(["path": path, "bytes": data.count, "sha256": SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined(), "mime": ReylumiLocalBundle.mime(for: path)!])
         }
-        let manifest: [String: Any] = ["version": 1, "buildId": "native-test-bundle", "productionReady": false, "entry": "index.html", "files": files,
+        let manifest: [String: Any] = ["version": 1, "buildId": "native-test-bundle", "productionReady": false, "entry": "index.html", "files": files, "mapOrigins": mapEnabled ? ["https://api.maptiler.com"] : [],
             "routes": [["path": "/explore", "adapter": "explore", "access": "public"], ["path": "/help", "adapter": "help", "access": "public"], ["path": "/help/:slug", "adapter": "help.article", "access": "public"]],
             "reads": [["name": "fixture.roster", "path": "/api/app-local/read", "argumentKeys": ["date"], "access": "scoped", "cacheable": true]],
             "commands": [["name": "fixture.save", "path": "/api/app-local/command", "argumentKeys": ["id"]]]]
@@ -67,5 +67,14 @@ final class LocalBundleTests: XCTestCase {
         object["reads"] = [["name": "unsafe", "path": "https://evil.invalid/private", "argumentKeys": [], "access": "scoped", "cacheable": true]]
         try JSONSerialization.data(withJSONObject: object).write(to: url)
         XCTAssertThrowsError(try ReylumiLocalBundle(directory: directory))
+        object["reads"] = []
+        object["mapOrigins"] = ["https://unapproved-map.invalid"]
+        try JSONSerialization.data(withJSONObject: object).write(to: url)
+        XCTAssertThrowsError(try ReylumiLocalBundle(directory: directory))
+        object["mapOrigins"] = ["https://api.maptiler.com"]
+        try JSONSerialization.data(withJSONObject: object).write(to: url)
+        XCTAssertNoThrow(try ReylumiLocalBundle(directory: directory))
+        XCTAssertEqual(ReylumiLocalBundle.mime(for: "api/vendor/maplibre-gl"), "text/javascript")
+        XCTAssertNil(ReylumiLocalBundle.mime(for: "api/vendor/other"))
     }
 }

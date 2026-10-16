@@ -160,6 +160,43 @@ final class LocalAppWebViewTests: XCTestCase {
         XCTAssertEqual(exclusive, true, "Do not replace the POS money-writer exclusion with a single-page JavaScript flag")
     }
     @MainActor
+    func testOriginalLocalPhotoProcessingCanLoadItsTemporaryBlobImage() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
+        controller.initializeWebContentIfNeeded()
+        let web = try XCTUnwrap(controller.webView)
+        try await wait("window.fixtureLocal === true", in: web)
+        let supported = try await evaluateAsync("""
+        (async()=>{
+          const canvas=document.createElement('canvas');canvas.width=canvas.height=1;canvas.getContext('2d').fillRect(0,0,1,1);
+          const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+          if(!blob)throw Error('Photo fixture could not be created');
+          const url=URL.createObjectURL(blob);
+          try{return await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image.naturalWidth===1);image.onerror=()=>reject(Error('Local photo preview blocked'));image.src=url})}
+          finally{URL.revokeObjectURL(url)}
+        })()
+        """, in: web) as? Bool
+        XCTAssertEqual(supported, true)
+    }
+    @MainActor
+    func testExistingMapProviderCanUseItsLocalBlobWorkerWithoutRemoteScripts() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(mapEnabled: true); defer { try? FileManager.default.removeItem(at: directory) }
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
+        controller.initializeWebContentIfNeeded()
+        let web = try XCTUnwrap(controller.webView)
+        try await wait("window.fixtureLocal === true", in: web)
+        let supported = try await evaluateAsync("""
+        (async()=>{
+          const url=URL.createObjectURL(new Blob(['self.onmessage=e=>self.postMessage(e.data+1)'],{type:'text/javascript'}));
+          let worker;try{worker=new Worker(url);return await new Promise((resolve,reject)=>{worker.onmessage=e=>resolve(e.data===2);worker.onerror=()=>reject(Error('Existing map worker blocked'));worker.postMessage(1)})}
+          finally{worker?.terminate();URL.revokeObjectURL(url)}
+        })()
+        """, in: web) as? Bool
+        XCTAssertEqual(supported, true)
+    }
+    @MainActor
     func testNotReadyManifestPreservesOriginalHTTPSController() throws {
         let container = ReylumiAppContainer(origin: URL(string: "https://reylumi.com")!)
         // The assembled app keeps productionReady=false until actual route
@@ -171,9 +208,21 @@ final class LocalAppWebViewTests: XCTestCase {
     }
     @MainActor
     private func evaluateAsync(_ source: String, in web: WKWebView) async throws -> Any? {
-        // evaluateJavaScript cannot marshal a Promise. Await the real operation
-        // with WebKit's public async-function API; a hung capability must fail.
-        try await web.callAsyncJavaScript("return await Promise.race([(\(source)),new Promise((_,reject)=>setTimeout(()=>reject(Error('Installed capability timed out')),12000))]);", arguments: [:], in: nil, contentWorld: .page)
+        // Never return a Promise as an Objective-C result. A per-test result
+        // slot awaits the actual operation without linking the newer Swift
+        // WebKit overlay absent from supported older Simulator runtimes.
+        let key = "__reylumiTestResult" + UUID().uuidString.replacingOccurrences(of: "-", with: "")
+        let operation = "Promise.race([(\(source)),new Promise((_,reject)=>setTimeout(()=>reject(Error('Installed capability timed out')),12000))])"
+        _ = try await web.evaluateJavaScript("window.\(key)={done:false};Promise.resolve().then(()=>\(operation)).then(value=>window.\(key)={done:true,value},error=>window.\(key)={done:true,error:String(error?.message??error)});true")
+        defer { web.evaluateJavaScript("delete window.\(key)", completionHandler: nil) }
+        for _ in 0..<700 {
+            if let result = try await web.evaluateJavaScript("window.\(key)") as? [String: Any], result["done"] as? Bool == true {
+                if let message = result["error"] as? String { throw NSError(domain: "InstalledWebKitCapability", code: 1, userInfo: [NSLocalizedDescriptionKey: message]) }
+                return result["value"]
+            }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        throw URLError(.timedOut)
     }
     @MainActor
     private func makeWindow(_ controller: UIViewController) -> UIWindow {

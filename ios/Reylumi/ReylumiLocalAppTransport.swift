@@ -199,7 +199,10 @@ final class ReylumiLocalAppTransport {
               (try JSONSerialization.data(withJSONObject: args)).count <= 256 * 1024 else { throw failure(400, "Unsupported app request.") }
         return args
     }
-    private func cacheKey(name: String, args: [String: Any]) throws -> String { name + ":" + String(decoding: try JSONSerialization.data(withJSONObject: args, options: [.sortedKeys]), as: UTF8.self) }
+    private func cacheKey(name: String, args: [String: Any]) throws -> String {
+        let data = try JSONSerialization.data(withJSONObject: args, options: [.sortedKeys])
+        return name + ":" + SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    }
     func cached(name: String, args: [String: Any], requestedScope: String? = nil) async throws -> [String: Any]? {
         guard let rule = manifest.reads.first(where: { $0.name == name }), rule.cacheable else { return nil }
         let args = try arguments(args, keys: rule.argumentKeys)
@@ -243,10 +246,24 @@ final class ReylumiLocalAppTransport {
         guard let rule = manifest.reads.first(where: { $0.name == name }) else { throw failure(400, "Unsupported app request.") }
         let args = try arguments(raw, keys: rule.argumentKeys), key = try cacheKey(name: name, args: args), epoch = scopeEpoch
         let json = String(decoding: try JSONSerialization.data(withJSONObject: args, options: [.sortedKeys]), as: UTF8.self)
+        guard json.utf8.count <= 32768 else { throw failure(400, "Unsupported page filters.") }
         do {
             var query = [URLQueryItem(name: "name", value: name), URLQueryItem(name: "args", value: json)]
             if let requestedScope { query.append(URLQueryItem(name: "scope", value: requestedScope)) }
-            let (data, response) = try await send(path: rule.path, query: query, etag: etag, epoch: epoch)
+            var candidate = URLComponents(url: origin, resolvingAgainstBaseURL: false)!
+            candidate.path = rule.path; candidate.queryItems = query
+            let useBody = (candidate.url?.absoluteString.utf8.count ?? Int.max) > 1800
+            // This POST is the same compile-pinned read, never a command or
+            // outbox operation. Avoid truncating filters in a long GET URL.
+            let body: [String: Any]? = useBody ? ["name": name, "args": args, "scope": requestedScope ?? ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) ?? session?.scope ?? ""] : nil
+            let (data, response) = try await send(path: rule.path, query: useBody ? [] : query, body: body, etag: etag, epoch: epoch)
+            if response.statusCode == 404 {
+                // A fresh missing/private relationship response revokes this
+                // exact read only. Other drafts and scoped resources survive.
+                try await removeCached(name: name, args: args, requestedScope: requestedScope)
+                try ensureCurrent(epoch)
+                throw failure(404, "This item is no longer available.")
+            }
             if [403, 409].contains(response.statusCode) {
                 await revokeDisplay(scope: requestedScope ?? session?.scope, staffFamily: name.hasPrefix("staff."))
                 throw failure(response.statusCode, "Please reconnect and check your access.")

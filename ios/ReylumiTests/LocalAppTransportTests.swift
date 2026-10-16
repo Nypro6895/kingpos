@@ -30,7 +30,7 @@ actor AppLocalFixtureHTTP: ReylumiLocalHTTPClient {
             scope = config?["scope"] ?? scope
             object = AppLocalTestFixture.context(generation: query.first(where: { $0.name == "generation" })!.value!, scope: scope, kind: config?["kind"] ?? "owner", primaryScope: config?["primaryScope"])
         }
-        else if request.httpMethod == "POST" { object = ["ok": true, "data": ["saved": true]] }
+        else if url.path == "/api/app-local/command" { object = ["ok": true, "data": ["saved": true]] }
         else { object = ["schemaVersion": 1, "status": 200, "scope": scope, "etag": "fixture-etag", "updatedAt": Date().timeIntervalSince1970 * 1000, "data": ["staff": [["name": "Mai"]]]] }
         return (try JSONSerialization.data(withJSONObject: object), HTTPURLResponse(url: url, statusCode: url.path == "/api/app-local/read" ? readStatus : 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!)
     }
@@ -104,6 +104,43 @@ final class LocalAppTransportTests: XCTestCase {
         let denied = await store.session(generation: transport.generation, scope: staffScope)
         let owner = await store.session(generation: transport.generation, scope: AppLocalTestFixture.scope, authority: "owner")
         XCTAssertNil(denied); XCTAssertNotNil(owner)
+        await transport.reset()
+    }
+    @MainActor
+    func testAuthoritative404EvictsOnlyExactReadBut503RetainsOtherSnapshot() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP()
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest,
+            store: ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.missing." + UUID().uuidString), client: http, defaults: UserDefaults(suiteName: "reylumi.tests." + UUID().uuidString)!, cookies: { [] })
+        _ = try await transport.freshContext(path: "/help")
+        for date in ["2026-10-15", "2026-10-16"] { _ = try await transport.read(name: "fixture.roster", args: ["date": date], etag: nil, requestedScope: AppLocalTestFixture.scope) }
+        await http.configureReadStatus(404)
+        do { _ = try await transport.read(name: "fixture.roster", args: ["date": "2026-10-15"], etag: nil, requestedScope: AppLocalTestFixture.scope); XCTFail("A deleted relationship must not return its cached data") } catch {}
+        let missing = try await transport.cached(name: "fixture.roster", args: ["date": "2026-10-15"], requestedScope: AppLocalTestFixture.scope)
+        let other = try await transport.cached(name: "fixture.roster", args: ["date": "2026-10-16"], requestedScope: AppLocalTestFixture.scope)
+        XCTAssertNil(missing); XCTAssertNotNil(other)
+        await http.configureReadStatus(503)
+        do { _ = try await transport.read(name: "fixture.roster", args: ["date": "2026-10-16"], etag: nil, requestedScope: AppLocalTestFixture.scope) } catch {}
+        let retained = try await transport.cached(name: "fixture.roster", args: ["date": "2026-10-16"], requestedScope: AppLocalTestFixture.scope); XCTAssertNotNil(retained)
+        await transport.reset()
+    }
+    @MainActor
+    func testLongNamedReadUsesBoundedSameOriginJSONPostWithoutCommandReplay() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP()
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest,
+            store: ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.longread." + UUID().uuidString), client: http, defaults: UserDefaults(suiteName: "reylumi.tests." + UUID().uuidString)!, cookies: { [] })
+        _ = try await transport.freshContext(path: "/help")
+        let filters = String(repeating: "fixture-filter", count: 160)
+        _ = try await transport.read(name: "fixture.roster", args: ["date": filters], etag: "read-only-r1", requestedScope: AppLocalTestFixture.scope)
+        let requests = await http.requests, request = try XCTUnwrap(requests.last)
+        XCTAssertEqual(request.url?.path, "/api/app-local/read"); XCTAssertNil(request.url?.query); XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Origin"), "https://reylumi.com"); XCTAssertEqual(request.value(forHTTPHeaderField: "If-None-Match"), "read-only-r1")
+        let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: Any])
+        XCTAssertEqual(body["name"] as? String, "fixture.roster"); XCTAssertEqual((body["args"] as? [String: Any])?["date"] as? String, filters); XCTAssertEqual(body["scope"] as? String, AppLocalTestFixture.scope)
+        XCTAssertEqual(requests.filter { $0.url?.path == "/api/app-local/read" }.count, 1); XCTAssertEqual(requests.filter { $0.url?.path == "/api/app-local/command" }.count, 0)
+        do { _ = try await transport.read(name: "fixture.roster", args: ["date": String(repeating: "x", count: 32769)], etag: nil, requestedScope: AppLocalTestFixture.scope); XCTFail("Oversized filters must fail before sending") } catch {}
+        let bounded = await http.requests; XCTAssertEqual(bounded.count, requests.count)
         await transport.reset()
     }
 }
