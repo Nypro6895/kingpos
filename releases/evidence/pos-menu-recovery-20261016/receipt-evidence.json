@@ -1,0 +1,92 @@
+{
+  "recordedAt": "2026-10-16T22:15:36.064Z",
+  "backendLiveDeploymentId": "dpl_4tFutRf2NBkU91JsH5W1mRuPjS9i",
+  "webInterface": "unchanged; full repair interface held for owner physical-iPhone acceptance",
+  "nativeVersion": "1.0.1",
+  "nativeBuild": "23.1",
+  "nativeCommit": "89e16562ed1929e73dfa0ea76baf497cdff233f5",
+  "nativeSourceSha256": "c08ca531aa9fa1c8424b623dc03907da2776be6868d714e35a6a6f42e09b3799",
+  "nativeOverlaySha256": "bf64163e9483b2bb22a688e00d44205400d9f59a11b90226ed90f6b374196c86",
+  "bundleBuildId": "60927e307762f8858b0da521679e2d5f14e340544d4fc215ee22dc35014681aa",
+  "source": {
+    "signedEntries": 368,
+    "ciEntries": 390,
+    "allHashesMatch": true
+  },
+  "tests": {
+    "expectedCount": 90,
+    "count": 90,
+    "failures": 0,
+    "failedCases": 0,
+    "reportedPassed": true,
+    "executionSucceeded": true,
+    "passed": true
+  },
+  "archives": {
+    "unsignedPassed": true,
+    "signedPassed": true,
+    "exportPassed": true
+  },
+  "uploadAccepted": true,
+  "apple": {
+    "checkedAt": "2026-10-16T22:12:11.981Z",
+    "build": "23.1",
+    "buildId": "e7fc7090-d53d-414e-9c62-9b49718d301b",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "matched": true,
+    "valid": true
+  },
+  "testFlight": {
+    "checkedAt": "2026-10-16T22:14:11.513Z",
+    "availableToExistingInternalGroup": true,
+    "status": "available-to-existing-internal-group",
+    "groups": [
+      {
+        "id": "afe80011-9371-4a4c-afda-025b624f3275",
+        "name": "Reylumi Internal",
+        "associationConfirmed": true
+      },
+      {
+        "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+        "name": "Reylumi support",
+        "associationConfirmed": true
+      }
+    ]
+  },
+  "files": {
+    "backendLiveSource": {
+      "file": "artifacts/pos-menu-recovery-release-20261016/backend-first-2145/backend-live-source-verification.json",
+      "sha256": "25c7bdbc622b6c9458c0c8ecaf4221bf2ddf22706fc20c01cc4bd7d2cff4c541"
+    },
+    "backendHttp": {
+      "file": "artifacts/pos-menu-recovery-release-20261016/backend-first-2145/live-http-verification.json",
+      "sha256": "ce9c0dca0fcc87115b58b177d7d36a87ef92d77d1401b569eed0f55c11ddb8f6"
+    },
+    "stagedCompatibilityReview": {
+      "file": "artifacts/pos-menu-recovery-release-20261016/backend-first-2145/backend-staged-compatibility-review.json",
+      "sha256": "1bb9b54ab06509fda18caafdbc60f499ac1bba3689ef281183bac908e7ad810d"
+    },
+    "nativeUpload": {
+      "file": "artifacts/pos-menu-recovery-release-20261016/backend-first-2145/native-final-verification.json",
+      "sha256": "94373c2039a252d3734ffdfaceb9c15c5f77b780508ecbb954c3ce9ff22d714a"
+    },
+    "acceptanceCoverage": {
+      "file": "artifacts/pos-menu-recovery-release-20261016/backend-first-2145/final-acceptance-coverage.json",
+      "sha256": "20634190557a0af3d6e879b94031ddc1f7f1dfc0dd36aca40a12ddf0b42c0ae5"
+    }
+  },
+  "physicalIPhone": "pending owner TestFlight test; no real-device speed or all-functions conclusion",
+  "originalStorageException": "Exact cause on the reported physical iPhone remains unproven; recovery/draft-preservation tests passed in controlled environments.",
+  "truncatedScreenshotBanner": "Unidentified This app is… red banner was not blindly suppressed; verify full message during phone trial if it recurs.",
+  "businessWritesDuringQa": 0,
+  "appStorePublication": "not performed",
+  "selectedEventIds": [
+    "4e421c05-8df0-43b5-9373-918584565ff6",
+    "aae368e4-89c7-46f8-b584-5c4068b73242",
+    "a055a60d-7c8e-45db-a5e6-1ed4d3a777b5",
+    "cde30072-e238-470d-bd2f-6745721a12c0",
+    "f461a39c-e300-4189-b385-c120fb9d4fad"
+  ],
+  "futurePublication": "Read latest receipts, obtain owner physical-iPhone result, acquire release lock, recapture current live source, merge/verify exact intended source and normal runtime configuration. Do not promote the background-disabled UI preview as-is."
+}

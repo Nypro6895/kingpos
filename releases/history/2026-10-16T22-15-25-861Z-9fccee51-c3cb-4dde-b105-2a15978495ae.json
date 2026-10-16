@@ -1,0 +1,166 @@
+{
+  "kind": "release",
+  "summary": "POS/menu/cache repair candidate signed, uploaded, Apple VALID and available through existing TestFlight groups. Owner physical-iPhone acceptance and full web UI publication remain pending.",
+  "changes": [
+    "4e421c05-8df0-43b5-9373-918584565ff6",
+    "aae368e4-89c7-46f8-b584-5c4068b73242",
+    "a055a60d-7c8e-45db-a5e6-1ed4d3a777b5",
+    "cde30072-e238-470d-bd2f-6745721a12c0",
+    "f461a39c-e300-4189-b385-c120fb9d4fad"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "23.1",
+      "commit": "89e16562ed1929e73dfa0ea76baf497cdff233f5",
+      "workflowRunId": 38973006922,
+      "workflowUrl": "https://github.com/Nypro6895/kingpos/actions/runs/38973006922",
+      "nativeBaselineCommit": "da426d42a3d15fa1508dc478a4da51cfe2673500",
+      "nativeBaselineBuild": "22.1",
+      "sourceSha256": "c08ca531aa9fa1c8424b623dc03907da2776be6868d714e35a6a6f42e09b3799",
+      "overlaySha256": "bf64163e9483b2bb22a688e00d44205400d9f59a11b90226ed90f6b374196c86",
+      "bundleBuildId": "60927e307762f8858b0da521679e2d5f14e340544d4fc215ee22dc35014681aa",
+      "signedSourceHashEntries": 368,
+      "ciSourceHashEntries": 390,
+      "allSourceHashesMatch": true,
+      "simulatorTests": {
+        "count": 90,
+        "failures": 0
+      },
+      "archives": {
+        "unsignedPassed": true,
+        "signedPassed": true,
+        "exportPassed": true
+      },
+      "uploadAccepted": true,
+      "apple": {
+        "checkedAt": "2026-10-16T22:12:11.981Z",
+        "build": "23.1",
+        "buildId": "e7fc7090-d53d-414e-9c62-9b49718d301b",
+        "processingState": "VALID",
+        "internalBuildState": "IN_BETA_TESTING",
+        "matched": true,
+        "valid": true
+      },
+      "existingGroups": [
+        {
+          "id": "afe80011-9371-4a4c-afda-025b624f3275",
+          "name": "Reylumi Internal",
+          "associationConfirmed": true
+        },
+        {
+          "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+          "name": "Reylumi support",
+          "associationConfirmed": true
+        }
+      ],
+      "physicalIPhoneAcceptance": "pending owner TestFlight trial",
+      "appStorePublication": "not performed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-first-2145\\native-final-verification.json"
+    }
+  },
+  "backendPrerequisite": {
+    "releaseEvent": "703bda85-8e67-41fc-b9c6-0a6ad2414420",
+    "deploymentId": "dpl_4tFutRf2NBkU91JsH5W1mRuPjS9i",
+    "sourceCommit": "d337f59a15c716a879d28498edb9604e14b9956b",
+    "verified": true
+  },
+  "frozenSelection": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\release-selection.json",
+  "selectedFileHashes": [
+    {
+      "eventId": "4e421c05-8df0-43b5-9373-918584565ff6",
+      "fileHashes": {
+        "app/local-app/entry.tsx": "23948c44fd53b55e450777ce5470efa4c26148e80f8e5f674cee8c0d5fd37ad8",
+        "lib/app-local-resource.ts": "e81b9228fa322f098ee26d17a733d89c910a6959de3d9e2f80cf23faadfba250",
+        "lib/app-local-resource-invalidation.ts": "65c25d7e4a564a74ea4f38ea3f96ed49e2256f9ee55f50f47832495206c2410d",
+        "lib/app-local-command-client.ts": "2859c6f89372b7a25465032d726c3445b7489ef36848d6e6853286da3f574497",
+        "scripts/build-app-local-bundle.mjs": "68b899ef6df3ebb84b36583437ccfbdb7425f901675f5c1c95ddd093edbca0cf",
+        "tests/app-local-authority-navigation.test.mjs": "ff61d4177f701df512e63a19a06b83a9f8ea0d12b9d8dcabe7c63e0e573803e6",
+        "tests/app-local-resource-refresh.test.mjs": "a3df55e0b27010f487e72e527f78199c28ed804f62ffe31bdf70b252afe4e225",
+        "ios/Reylumi/LocalAppBundle/app.js": "23a230e2da60305b9a66366b273ab0f4bdb97ac6b0f933e86313771e8e56652b",
+        "ios/Reylumi/LocalAppBundle/app.css": "3ef0567d160abcdc384e4ee470053042edb9d9826c3907a4608d381ef37abd5c",
+        "ios/Reylumi/LocalAppBundle/index.html": "ea7b9950b5cbff575cb810276b2de67f4b4871eb3be89f1ba58dc1402fe6472d",
+        "ios/Reylumi/LocalAppBundle/manifest.json": "79568c5508476b8ced9e8c1dccb5213cecc92780ecdbf8d6ed478ed56dbab5ba"
+      }
+    },
+    {
+      "eventId": "aae368e4-89c7-46f8-b584-5c4068b73242",
+      "fileHashes": {
+        "ios/Reylumi/ReylumiLocalAppTransport.swift": "163e077aad9297968cefd1a847625f274283f78ef6acd2992ba76c4b52f21387",
+        "ios/Reylumi/ReylumiLocalAppViewController.swift": "f7940b2398527c4fd4462521cc63d3ed807de6decd93e43f1e176c536b14a243",
+        "ios/Reylumi/ReylumiLocalBundle.swift": "3f2a59f299f402e0b9cf0452549535956a669bf07aa54327fdd928798f808b06",
+        "ios/Reylumi/ReylumiLocalReadStore.swift": "cd5cb51e9d1518a715d73695834f15239456bfeb827751484c9cb3f163487946",
+        "ios/ReylumiTests/LocalAppTransportTests.swift": "15bb5db91f70e53935360ee5c7e49efe77610f0b2a34a44dec9a129c1b32100b",
+        "ios/ReylumiTests/LocalAppWebViewTests.swift": "f2ca8714b161b4213993938b0794fb840002ebc0b7e697bc8427b4aee0deb8df",
+        "ios/ReylumiTests/LocalBundleTests.swift": "67c24b517f9202d52a9a59f591e336a61fd51478298cb62548324941515ce9c8",
+        "ios/ReylumiTests/LocalReadStoreTests.swift": "91f7d436e75f9a764e96f9195f92318cb5b479b42da35e07d98b152e2d6e452c"
+      }
+    },
+    {
+      "eventId": "a055a60d-7c8e-45db-a5e6-1ed4d3a777b5",
+      "fileHashes": {
+        "lib/app-local-explore-http-client.ts": "f7ec335328336cc081aa58c56ab3ec521d5224190b712e7ab88430354bac2265",
+        "lib/app-local-explore-metadata.ts": "9292ed6d3effdc18995fcea3e76c9de8a03c8cac665e7de98644a2d5f0fbec9e",
+        "lib/app-local-explore-server.ts": "f66a2e9e61dffd1eb89f8296e7ecaff7ce732684fc3908daf8f68e580a115518",
+        "app/market/market-client.tsx": "cb5ce7eb5202ca850e2b1a470609a48854116783ad0a7b914dd3928e9c7f3b28",
+        "components/app-local-help.tsx": "c0bcc380b87d9f68fb1469cf7c9a63e9e730514fc4cfcd0752e987253658d212",
+        "tests/app-local-public-search-retention.test.mjs": "0bb640ed1c1a8f2dd252b687a6d5b27f8c57687f11011c5c638c106b92bc53ca",
+        "tests/app-local-salon-social-bridge.test.mjs": "d1e6cb7b414d78c2785c46c2582b14ad1b0047e3983be0424f8ad0228bf50b30",
+        "tests/app-local-explore.test.mjs": "92eef1c1679d1266e67b8f89a0ec80ac033f3f7bf82fa7edac1843123d75b730",
+        "tests/app-local-explore-progressive.test.mjs": "3ddff40b22416612b5164c4d06b51f1a3923e83d57d9f6865cda604d57b5ca49",
+        "lib/use-remembered-experience.ts": "a997e973c7b0e2d07accaf2ccd8897d0bd33de61c59aa14cfd542359d64f154e"
+      }
+    },
+    {
+      "eventId": "cde30072-e238-470d-bd2f-6745721a12c0",
+      "fileHashes": {
+        "app/pos/owner-pos-client.tsx": "3d58d49daea2a72cb809ed0d3f38180e238a54c6ff6b869135b04d26fb41df9e",
+        "app/pos/owner-pos-tabs.tsx": "aaab2692444cc5afc0babaf09e414085870f8d195a22ddf887af467ae9cfd629",
+        "app/pos/owner-pos.css": "baa0876b4d67d5f3cab38b3a9c2738a50cab26d8871396355faab02a932283ee",
+        "app/pos/owner-local-panels.tsx": "0ed2d76fd641e621d21a69001a6614a6aa5766887969e4286f6a373ce9a0c104",
+        "app/pos/portable/check-in/portable-check-in-client.tsx": "e147de30982538db27429f97b62eac50bd0a0807372672f6e42473ff8aa88022",
+        "lib/owner-cart-startup.ts": "11ab9192b91381c189c2d5b07d477e87381b3866f7cb9724cea9744696cd61d0",
+        "tests/owner-pos-recovery-ui.test.mjs": "5e4f1a1b5475f5dd4684c1c540c978502c283c0302a6d8ad915380cd941dc73c"
+      }
+    },
+    {
+      "eventId": "f461a39c-e300-4189-b385-c120fb9d4fad",
+      "fileHashes": {
+        "lib/app-local-daily-registry.tsx": "d630d5e5ac382b81ce92fd68bc97fb1aa575d38851bf51ab2cf304edca67b55e",
+        "tests/app-local-daily-ui.test.mjs": "d596f7e7664c549bbf0b2db8dafc541ce20d929f8b7977e629035442aef4f40f"
+      }
+    }
+  ],
+  "compiledNavigation": {
+    "evidence": "artifacts/pos-menu-recovery-20261016/final-compiled-menu-tests.json",
+    "viewportWidths": [
+      390,
+      820,
+      1440
+    ],
+    "menuTransitionsPerWidth": 31,
+    "fivePosTabsTransitionsPerWidth": 12,
+    "amountInputPreserved": true,
+    "javaScriptErrors": 0,
+    "realBusinessCommands": 0,
+    "limitation": "Additional More fixtures cover opening/error chrome, not every business form."
+  },
+  "pending": [
+    "Owner tests actual iPhone startup, POS/CheckIn transitions, More/detail menus and draft retention.",
+    "Full web UI remains unchanged until physical-iPhone acceptance; recapture and merge current production source before eventual promotion."
+  ],
+  "limitations": [
+    "No physical-device speed/frame-time/reload result has been asserted.",
+    "No real financial, attendance, booking or payroll mutations were performed as tests.",
+    "No tester/group/invitation or App Store distribution changes were performed."
+  ],
+  "rollback": {
+    "performed": false,
+    "strategy": "Retain compatible backend; evaluate exact latest production/native state before any subsequent action. Preserve unsynced drafts."
+  },
+  "id": "9fccee51-c3cb-4dde-b105-2a15978495ae",
+  "recordedAt": "2026-10-16T22:15:25.861Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos"
+}
