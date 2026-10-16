@@ -125,6 +125,7 @@ private final class ReylumiURLTransport: ReylumiReadTransport {
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("ReylumiIOS/1.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("1", forHTTPHeaderField: "X-Reylumi-Background-Read")
         let applicable = cookies.filter { cookie in
             let domain = cookie.domain.hasPrefix(".") ? String(cookie.domain.dropFirst()) : cookie.domain
             return url.host?.lowercased() == domain.lowercased() && url.path.hasPrefix(cookie.path)

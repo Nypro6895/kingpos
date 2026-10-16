@@ -45,17 +45,51 @@ xcodebuild build-for-testing \
 
 task_simulator_app="$task_run_dir/DerivedData/Build/Products/Debug-iphonesimulator/Reylumi.app"
 codesign --verify --deep --strict "$task_simulator_app"
-codesign -d --entitlements :- "$task_simulator_app" > "$task_run_dir/SimulatorEntitlements.plist" 2> "$task_run_dir/SimulatorSigning.log"
-python3 - "$task_simulator_app/Info.plist" "$task_run_dir/SimulatorEntitlements.plist" <<'PY'
+codesign -d --entitlements :- "$task_simulator_app" > "$task_run_dir/SimulatorSignatureEntitlements.plist" 2> "$task_run_dir/SimulatorSigning.log"
+xcrun otool -l "$task_simulator_app/Reylumi" > "$task_run_dir/SimulatorLoadCommands.txt"
+python3 - "$task_simulator_app" "$task_run_dir" <<'PY'
 import pathlib, plistlib, re, sys
-info = plistlib.loads(pathlib.Path(sys.argv[1]).read_bytes())
-entitlements = plistlib.loads(pathlib.Path(sys.argv[2]).read_bytes())
+app, run = map(pathlib.Path, sys.argv[1:])
+info = plistlib.loads((app / "Info.plist").read_bytes())
+# Simulator APIs use the Mach-O __TEXT,__entitlements section. Xcode's ordinary
+# ad-hoc code-signature entitlements can be {}, which is not an access failure.
+sections, current = [], None
+for line in (run / "SimulatorLoadCommands.txt").read_text().splitlines():
+    if line.strip() == "Section" or line.strip().startswith("Load command "):
+        if current:
+            sections.append(current)
+        current = None
+        continue
+    fields = line.strip().split(None, 1)
+    if len(fields) != 2:
+        continue
+    key, value = fields
+    if key == "sectname":
+        if current:
+            sections.append(current)
+        current = {key: value}
+    elif current is not None and key in ("segname", "offset", "size"):
+        current[key] = value
+if current:
+    sections.append(current)
+matches = [item for item in sections if item.get("sectname") == "__entitlements" and item.get("segname") == "__TEXT"]
+assert len(matches) == 1, "Simulator host must embed exactly one own entitlement section"
+section = matches[0]
+offset, size = int(section["offset"], 0), int(section["size"], 0)
+binary = (app / info["CFBundleExecutable"]).read_bytes()
+assert size > 0 and offset >= 0 and offset + size <= len(binary), "Invalid Simulator entitlement section bounds"
+embedded = binary[offset:offset + size].rstrip(b"\0")
+entitlements = plistlib.loads(embedded)
+(run / "SimulatorEntitlements.plist").write_bytes(plistlib.dumps(entitlements))
+packaged = list((run / "DerivedData/Build/Intermediates.noindex").rglob("Reylumi.app-Simulated.xcent"))
+assert len(packaged) == 1, "Simulator host's packaged entitlements are missing or ambiguous"
+assert plistlib.loads(packaged[0].read_bytes()) == entitlements, "Actual host Mach-O entitlements differ from the packaged Simulator inputs"
 team = entitlements.get("com.apple.developer.team-identifier", "")
 assert re.fullmatch(r"[A-Z0-9]{10}", team), "Simulator host has no valid signing team entitlement"
 identifier = team + "." + info["CFBundleIdentifier"]
 assert entitlements.get("application-identifier") == identifier, "Simulator host has no own application-identifier entitlement"
 assert entitlements.get("keychain-access-groups") == [identifier], "Simulator Keychain group must be the host app's own identifier only"
-print("Ad-hoc Simulator host signature and own Keychain entitlement verified.")
+print("Ad-hoc signature and actual embedded Simulator application/own Keychain entitlements verified; runtime Keychain preflight follows.")
 PY
 
 xcodebuild test-without-building \
