@@ -52,6 +52,15 @@ test('duplicate matches stop creation until explicitly acknowledged', async () =
   draft.set('duplicate_acknowledged', 'yes'); assert.equal((await f.api.createSettingsSalon('a', key, draft)).ok, true);
   assert.equal(f.rpcs.at(-1).input.p_create_request_key, key);
 });
+test('name-only creation returns the saved salon ID for setup without switching workspace', async () => {
+  const f = fixture();
+  const result = await f.api.createSettingsSalon('a', key, form());
+  assert.equal(result.ok, true);
+  assert.equal(result.salonId, 'new');
+  assert.equal(f.switches.length, 0);
+  assert.equal(f.rpcs.at(-1).input.p_address_line1, null);
+  assert.equal(f.rpcs.at(-1).input.p_create_request_key, key);
+});
 test('failed duplicate check or missing owner access cannot create a salon', async () => {
   const f = fixture({ matchError: { message: 'offline' } }); assert.equal((await f.api.createSettingsSalon('a', key, form())).ok, false); assert.equal(f.rpcs.length, 1);
   const denied = fixture({ owner: false }); assert.equal((await denied.api.createSettingsSalon('a', key, form())).ok, false); assert.equal(denied.rpcs.length, 0);

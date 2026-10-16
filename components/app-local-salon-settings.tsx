@@ -1,4 +1,5 @@
 "use client";
+import { SalonAddressSummary } from "@/components/salon-address-summary";
 // Full presentation extracted from the shipped Salon Settings page.
 import {WorkspaceText,WorkspaceElement,useWorkspaceTranslation}from"@/components/workspace-language";
 import {TimeZoneSelect}from"@/components/time-zone-select";
@@ -165,6 +166,9 @@ function MapLocationSection({
     process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim(),
   );
   const mapUnavailable = !mapLocation.providerConfigured || !publicMapConfigured;
+  if (mapUnavailable) {
+    return <div className="px-4 py-4"><SalonAddressSummary address={mapLocation.address} /></div>;
+  }
   const statusClass =
     mapLocation.status === "mapped"
       ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
