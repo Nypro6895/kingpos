@@ -62,7 +62,7 @@ final class LocalAppWebViewTests: XCTestCase {
         _ = try await web.evaluateJavaScript("window.oldAppContext={...window.__reylumiAppLocalContext}")
         await controller.transport.reset()
         try await wait("window.__reylumiAppLocalContext.scopeEpoch > window.oldAppContext.scopeEpoch", in: web)
-        let accepted = try await web.evaluateJavaScript("window.webkit.messageHandlers.appLocal.postMessage({version:1,id:window.oldAppContext.nonce,kind:'cache',name:'ready',args:{},...window.oldAppContext}).then(x=>!x.__hostError)") as? Bool
+        let accepted = try await evaluateAsync("window.webkit.messageHandlers.appLocal.postMessage({version:1,id:window.oldAppContext.nonce,kind:'cache',name:'ready',args:{},...window.oldAppContext}).then(x=>!x.__hostError)", in: web) as? Bool
         XCTAssertEqual(accepted, false)
     }
     @MainActor
@@ -89,7 +89,7 @@ final class LocalAppWebViewTests: XCTestCase {
           db.close();return true;
         })()
         """
-        let stored = try await web!.evaluateJavaScript(setup) as? Bool; XCTAssertEqual(stored, true)
+        let stored = try await evaluateAsync(setup, in: web!) as? Bool; XCTAssertEqual(stored, true)
         weak var old = web
         window.rootViewController = nil; web?.stopLoading(); web?.removeFromSuperview(); web = nil; controller = nil
         for _ in 0..<100 { if old == nil { break }; try await Task.sleep(nanoseconds: 20_000_000) }
@@ -107,7 +107,7 @@ final class LocalAppWebViewTests: XCTestCase {
           localStorage.removeItem(name);await new Promise((resolve,reject)=>{const r=indexedDB.deleteDatabase(name);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});return valid;
         })()
         """
-        let durable = try await restored.evaluateJavaScript(check) as? Bool
+        let durable = try await evaluateAsync(check, in: restored) as? Bool
         XCTAssertEqual(durable, true, "A bundled shell is insufficient if the original financial draft storage cannot survive a cold WebView")
     }
     @MainActor
@@ -132,8 +132,32 @@ final class LocalAppWebViewTests: XCTestCase {
           return sealed.byteLength===256&&new TextDecoder().decode(await crypto.subtle.decrypt({name:'RSA-OAEP'},pair.privateKey,sealed))==='fixture-only';
         })()
         """
-        let supported = try await web.evaluateJavaScript(algorithms) as? Bool
+        let supported = try await evaluateAsync(algorithms, in: web) as? Bool
         XCTAssertEqual(supported, true, "Never enable offline staff financial commands with missing or substituted cryptography")
+    }
+    @MainActor
+    func testCustomOriginHasActualExclusiveWebLocksForOriginalPOSWriterGuard() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
+        controller.initializeWebContentIfNeeded()
+        let web = try XCTUnwrap(controller.webView)
+        try await wait("window.fixtureLocal === true", in: web)
+        let script = """
+        (async()=>{
+          if(typeof navigator.locks?.request!=='function')throw Error('Original POS requires actual exclusive Web Locks');
+          const name='reylumi-fixture-pos-writer';let release,entered;
+          const held=new Promise(resolve=>release=resolve),ready=new Promise(resolve=>entered=resolve);
+          const first=navigator.locks.request(name,{mode:'exclusive'},async lock=>{if(!lock)throw Error('Missing first lock');entered();await held});
+          await ready;
+          const second=await navigator.locks.request(name,{mode:'exclusive',ifAvailable:true},lock=>lock===null);
+          release();await first;
+          const third=await navigator.locks.request(name,{mode:'exclusive',ifAvailable:true},lock=>!!lock);
+          return second&&third;
+        })()
+        """
+        let exclusive = try await evaluateAsync(script, in: web) as? Bool
+        XCTAssertEqual(exclusive, true, "Do not replace the POS money-writer exclusion with a single-page JavaScript flag")
     }
     @MainActor
     func testNotReadyManifestPreservesOriginalHTTPSController() throws {
@@ -144,6 +168,12 @@ final class LocalAppWebViewTests: XCTestCase {
             container.loadViewIfNeeded()
             XCTAssertTrue(container.children.contains { $0 is ReylumiViewController })
         }
+    }
+    @MainActor
+    private func evaluateAsync(_ source: String, in web: WKWebView) async throws -> Any? {
+        // evaluateJavaScript cannot marshal a Promise. Await the real operation
+        // with WebKit's public async-function API; a hung capability must fail.
+        try await web.callAsyncJavaScript("return await Promise.race([(\(source)),new Promise((_,reject)=>setTimeout(()=>reject(Error('Installed capability timed out')),12000))]);", arguments: [:], in: nil, contentWorld: .page)
     }
     @MainActor
     private func makeWindow(_ controller: UIViewController) -> UIWindow {

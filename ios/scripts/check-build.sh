@@ -47,6 +47,8 @@ xcodebuild build-for-testing \
   "${task_simulator_signing[@]}" 2>&1 | tee build/test-build.log
 
 task_simulator_app="$task_run_dir/DerivedData/Build/Products/Debug-iphonesimulator/Reylumi.app"
+test -f "$task_simulator_app/LocalAppBundle/manifest.json"
+test -f "$task_simulator_app/AppLocalBridge.js"
 codesign --verify --deep --strict "$task_simulator_app"
 codesign -d --entitlements :- "$task_simulator_app" > "$task_run_dir/SimulatorSignatureEntitlements.plist" 2> "$task_run_dir/SimulatorSigning.log"
 xcrun otool -l "$task_simulator_app/Reylumi" > "$task_run_dir/SimulatorLoadCommands.txt"
