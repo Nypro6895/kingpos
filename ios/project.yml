@@ -29,7 +29,9 @@ targets:
   ReylumiTests:
     type: bundle.unit-test
     platform: iOS
-    sources: [ReylumiTests]
+    sources:
+      - path: ReylumiTests
+        excludes: [Simulator.entitlements]
     dependencies:
       - target: Reylumi
     settings:

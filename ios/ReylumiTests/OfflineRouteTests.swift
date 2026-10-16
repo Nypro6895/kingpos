@@ -1,8 +1,21 @@
 import XCTest
 import WebKit
+import Security
 @testable import Reylumi
 
 final class OfflineRouteTests: XCTestCase {
+    func testHostAppCanUseItsOwnDeviceProtectedKeychain() {
+        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
+                                   kSecAttrService as String: "com.reylumi.tests.keychain-preflight.\(UUID().uuidString)",
+                                   kSecAttrAccount as String: "fixture"]
+        var insert = query
+        insert[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        insert[kSecValueData as String] = Data("fixture-only".utf8)
+        defer { SecItemDelete(query as CFDictionary) }
+        let status = SecItemAdd(insert as CFDictionary, nil)
+        XCTAssertEqual(status, errSecSuccess, "Device-protected Keychain unavailable. OSStatus \(status): \(SecCopyErrorMessageString(status, nil) as String? ?? "unknown status"). Check the actual host app signature/entitlements; never substitute unprotected storage.")
+    }
+
     func testOnlyExactPublicAndPreparedRoleRoutesCanBeRestored() {
         let now = Date()
         for path in ReylumiOfflineRoute.protectedPaths.union(ReylumiOfflineRoute.publicPaths) {

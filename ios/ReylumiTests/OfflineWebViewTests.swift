@@ -107,12 +107,11 @@ private final class OfflineFixtureServer {
 
     func start() async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            var completed = false
+            let completion = FixtureStartupCompletion(continuation)
             listener.stateUpdateHandler = { state in
-                guard !completed else { return }
                 switch state {
-                case .ready: completed = true; continuation.resume()
-                case .failed(let error): completed = true; continuation.resume(throwing: error)
+                case .ready: completion.finish()
+                case .failed(let error): completion.finish(error: error)
                 default: break
                 }
             }
@@ -191,5 +190,19 @@ private final class OfflineFixtureServer {
         })().catch(error=>{document.body.dataset.error=String(error);});
         </script></body></html>
         """
+    }
+}
+
+private final class FixtureStartupCompletion: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Void, Error>?
+    init(_ continuation: CheckedContinuation<Void, Error>) { self.continuation = continuation }
+    func finish(error: Error? = nil) {
+        lock.lock()
+        let next = continuation
+        continuation = nil
+        lock.unlock()
+        guard let next else { return }
+        if let error { next.resume(throwing: error) } else { next.resume() }
     }
 }

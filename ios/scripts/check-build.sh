@@ -31,12 +31,39 @@ sys.exit("No available iPhone Simulator is installed in this Xcode environment."
 PY
 )"
 
-xcodebuild test \
-  -project Reylumi.xcodeproj -scheme Reylumi \
+# Simulator Keychain access still requires the host's signed application ID.
+# Ad-hoc signing needs no device certificate/profile, and this entitlements file
+# applies only to these simulator commands, never the Release/device archive.
+task_simulator_signing=(CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES
+  CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=-
+  "CODE_SIGN_ENTITLEMENTS=$PWD/ReylumiTests/Simulator.entitlements")
+xcodebuild build-for-testing \
+  -project Reylumi.xcodeproj -scheme Reylumi -configuration Debug \
+  -destination "platform=iOS Simulator,id=$task_simulator_id" \
+  -derivedDataPath "$task_run_dir/DerivedData" \
+  "${task_simulator_signing[@]}" 2>&1 | tee build/test-build.log
+
+task_simulator_app="$task_run_dir/DerivedData/Build/Products/Debug-iphonesimulator/Reylumi.app"
+codesign --verify --deep --strict "$task_simulator_app"
+codesign -d --entitlements :- "$task_simulator_app" > "$task_run_dir/SimulatorEntitlements.plist" 2> "$task_run_dir/SimulatorSigning.log"
+python3 - "$task_simulator_app/Info.plist" "$task_run_dir/SimulatorEntitlements.plist" <<'PY'
+import pathlib, plistlib, re, sys
+info = plistlib.loads(pathlib.Path(sys.argv[1]).read_bytes())
+entitlements = plistlib.loads(pathlib.Path(sys.argv[2]).read_bytes())
+team = entitlements.get("com.apple.developer.team-identifier", "")
+assert re.fullmatch(r"[A-Z0-9]{10}", team), "Simulator host has no valid signing team entitlement"
+identifier = team + "." + info["CFBundleIdentifier"]
+assert entitlements.get("application-identifier") == identifier, "Simulator host has no own application-identifier entitlement"
+assert entitlements.get("keychain-access-groups") == [identifier], "Simulator Keychain group must be the host app's own identifier only"
+print("Ad-hoc Simulator host signature and own Keychain entitlement verified.")
+PY
+
+xcodebuild test-without-building \
+  -project Reylumi.xcodeproj -scheme Reylumi -configuration Debug \
   -destination "platform=iOS Simulator,id=$task_simulator_id" \
   -derivedDataPath "$task_run_dir/DerivedData" \
   -resultBundlePath "$task_run_dir/SimulatorTests.xcresult" \
-  CODE_SIGNING_ALLOWED=NO 2>&1 | tee build/test.log
+  "${task_simulator_signing[@]}" 2>&1 | tee build/test.log
 
 xcodebuild archive \
   -project Reylumi.xcodeproj -scheme Reylumi -configuration Release \
@@ -49,7 +76,7 @@ xcodebuild archive \
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/NativeBridge.js"
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/AppViewport.js"
 python3 - "$task_run_dir" "$task_simulator_id" <<'PY'
-import hashlib, json, os, pathlib, subprocess, sys
+import hashlib, json, os, pathlib, plistlib, subprocess, sys
 root = pathlib.Path.cwd()
 run = pathlib.Path(sys.argv[1])
 paths = [root / "project.yml"]
@@ -60,6 +87,8 @@ receipt = {
     "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
     "xcode": subprocess.check_output(["xcodebuild", "-version"], text=True).strip(),
     "simulator": sys.argv[2], "simulatorTests": "passed", "deviceArchive": "unsigned",
+    "simulatorSigning": "ad-hoc; own application-identifier and Keychain access group verified",
+    "simulatorEntitlements": plistlib.loads((run / "SimulatorEntitlements.plist").read_bytes()),
     "installableOnIPhone": False, "runDirectory": str(run.relative_to(root)),
     "githubRun": os.environ.get("GITHUB_RUN_ID"), "sourceSHA256": hashes,
 }
