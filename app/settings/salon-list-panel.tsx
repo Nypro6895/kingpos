@@ -59,6 +59,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
   const lock = useRef(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [createdSalonId, setCreatedSalonId] = useState<string | null>(null);
   const [editor, setEditor] = useState<string | null>(initialCreate ? "new" : null);
   const [query, setQuery] = useState("");
   const [matches, setMatches] = useState<BusinessClaimMatch[]>([]);
@@ -81,7 +82,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
 
   async function run(
     operation: () => Promise<
-      | { ok: true }
+      | { ok: true; salonId?: string }
       | { ok: false; error: string; matches?: BusinessClaimMatch[] }
     >,
     message: string,
@@ -100,6 +101,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
         return;
       }
       setNotice(message);
+      setCreatedSalonId(result.salonId ?? null);
       if (closeEditor) {
         setEditor(null);
         setMatches([]);
@@ -161,6 +163,15 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
           <WorkspaceText text={notice} />
         </p>
       )}
+      {createdSalonId && (
+        <div className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4">
+          <p className="text-sm"><WorkspaceText text="Next, review your salon details, add services and staff, then set booking hours and rules." /></p>
+          <div className="flex flex-wrap gap-2">
+            <a className={primary} href={`/settings?section=${encodeURIComponent(`salon-${createdSalonId}-salon-profile`)}`}><WorkspaceText text="Continue salon setup" /></a>
+            <a className={button} href={`/settings?section=${encodeURIComponent(`salon-${createdSalonId}-booking`)}`}><WorkspaceText text="Set up booking" /></a>
+          </div>
+        </div>
+      )}
       {!data ? (
         !error && (
           <p role="status" className="text-sm text-zinc-500">
@@ -185,6 +196,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                     setQuery("");
                     setError("");
                     setNotice("");
+                    setCreatedSalonId(null);
                   }}
                 >
                   {data.accounts.map((a) => (
@@ -202,6 +214,8 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                 aria-expanded={editor === "new"}
                 onClick={() => {
                   setEditor(editor === "new" ? null : "new");
+                  setCreatedSalonId(null);
+                  setNotice("");
                   setMatches([]);
                   setError("");
                 }}
@@ -327,7 +341,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="font-semibold"><a href={`/explore/salons/${salon.id}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange">{salon.name}</a></h3>
+                    <h3 className="font-semibold"><a href={`/settings?section=${encodeURIComponent(`salon-${salon.id}-salon-profile`)}`} className="hover:underline focus-visible:outline-2 focus-visible:outline-brand-orange">{salon.name}</a></h3>
                     <p className="mt-1 text-sm text-zinc-500">
                       {[
                         salon.address_line1,
@@ -341,6 +355,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                     </p>
                     <div className="mt-2 flex gap-2 text-xs">
                       <span className="rounded-md bg-zinc-100 px-2 py-1 capitalize">
+                        <WorkspaceText text="Salon status:" />{" "}
                         <WorkspaceText text={salon.status.replaceAll("_", " ")} />
                       </span>
                       {salon.isCurrent && (

@@ -16,7 +16,7 @@ import Link from "next/link";
 import {BlockedUsersPanel} from "./blocked-users-panel";
 
 const manageItems: {kind:DirectSettingsKind;label:string;permission?:string;owner?:boolean}[]=[
- {kind:"salon-profile",label:"Salon information, opening hours & map",permission:"salon_settings.view"},
+ {kind:"salon-profile",label:"Salon information & opening hours",permission:"salon_settings.view"},
  {kind:"public-profile",label:"Public profile, website & publishing",permission:"salon_profile.view"},
  {kind:"services",label:"Services, prices & booking staff",permission:"services.view"},
  {kind:"booking",label:"Booking rules & availability",permission:"booking.view"},

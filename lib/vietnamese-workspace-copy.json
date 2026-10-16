@@ -5494,5 +5494,13 @@
   "Good evening": "Chào buổi tối",
   "Hello": "Xin chào",
   "Today Performance": "Hiệu quả hôm nay",
-  "Day Performance": "Hiệu quả trong ngày"
+  "Day Performance": "Hiệu quả trong ngày",
+  "Salon information & opening hours": "Thông tin tiệm & giờ mở cửa",
+  "No address saved yet.": "Chưa lưu địa chỉ.",
+  "Saved salon address": "Địa chỉ tiệm đã lưu",
+  "Your address is shown as text. A map is not required to set up your salon or booking.": "Địa chỉ được hiển thị bằng chữ. Không cần bản đồ để cài đặt tiệm hoặc thiết lập đặt lịch.",
+  "Next, review your salon details, add services and staff, then set booking hours and rules.": "Tiếp theo, kiểm tra thông tin tiệm, thêm dịch vụ và nhân viên, rồi cài giờ và quy tắc nhận lịch.",
+  "Continue salon setup": "Tiếp tục cài đặt tiệm",
+  "Set up booking": "Thiết lập đặt lịch",
+  "Start in Services, prices & booking staff: enable online services and assign staff. Then set staff working hours and time off below. A public booking link also requires a published profile; a map is not required.": "Bắt đầu ở Dịch vụ, giá & nhân viên nhận lịch: bật dịch vụ trực tuyến và phân công nhân viên. Sau đó cài giờ làm việc và thời gian nghỉ bên dưới. Link đặt lịch công khai còn cần hồ sơ đã xuất bản; không cần bản đồ."
 }
