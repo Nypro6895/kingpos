@@ -1,0 +1,49 @@
+{
+  "kind": "change",
+  "changeId": "pos-menu-social-bridge-staging-20261016",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-explore-server.ts",
+    "lib/app-local-explore-metadata.ts"
+  ],
+  "deletedFiles": [],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\assembled-backend",
+    "commit": "d337f59a15c716a879d28498edb9604e14b9956b",
+    "baselineDeploymentId": "dpl_EW3mj5c8bzs8kw48X4cJDvKvhUuX",
+    "sourceSha256": "b5e5a658fe05c16b7d022f9dd8dbe13becd191c4ee72d43df6460555a4ad70f9",
+    "overlaySha256": "7d15a66a0bdc25425c0e787aacd300545f6b60732c52b286bfd48641ab60d7db",
+    "manifest": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-assembled-source.json"
+  },
+  "scope": "Add only the pinned http.explore.salon-social GET read, forwarding to the original salon-social route after the existing fresh account-scope check. No generic proxy, mutation, price/PIN/payment/financial-rule change, UI replacement or durable social payload.",
+  "publicationGate": "Backend-first sequence explicitly authorized; full web UI still awaits physical iPhone acceptance.",
+  "partialImplementationOf": "app-local-public-repair-20261016",
+  "omittedParentFiles": [
+    "lib/app-local-explore-http-client.ts",
+    "app/market/market-client.tsx",
+    "components/app-local-help.tsx",
+    "tests/app-local-public-search-retention.test.mjs",
+    "tests/app-local-salon-social-bridge.test.mjs",
+    "tests/app-local-explore.test.mjs",
+    "tests/app-local-explore-progressive.test.mjs",
+    "lib/use-remembered-experience.ts"
+  ],
+  "parentPublicationDisposition": "This two-file subset does not publish or supersede the other eight files, the parent ready event, the installed bundle, or the remaining POS/native repairs.",
+  "nativeAssessment": "This subset changes only server read dispatch and metadata; no Swift, LocalAppBundle, native permission or bridge source changes. Existing web UI and installed clients remain unchanged.",
+  "status": "working",
+  "summary": "Begin owner-authorized backend-first rollout of the exact compatible two-file named social read; keep existing interface until physical-iPhone acceptance.",
+  "validation": [
+    {
+      "name": "Exact two-file subset, named GET regression evidence and backend production validation",
+      "result": "pending"
+    }
+  ],
+  "ownerDecision": "Cập nhật riêng máy chủ trước; giao diện chờ kiểm tra iPhone",
+  "id": "14b092a1-f19e-4ab0-b0ca-20fd1e712969",
+  "recordedAt": "2026-10-16T21:47:22.008Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos"
+}

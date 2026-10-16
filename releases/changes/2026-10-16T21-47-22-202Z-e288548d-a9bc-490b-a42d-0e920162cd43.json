@@ -1,0 +1,85 @@
+{
+  "kind": "change",
+  "changeId": "pos-menu-social-bridge-staging-20261016",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-explore-server.ts",
+    "lib/app-local-explore-metadata.ts"
+  ],
+  "deletedFiles": [],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\assembled-backend",
+    "commit": "d337f59a15c716a879d28498edb9604e14b9956b",
+    "baselineDeploymentId": "dpl_EW3mj5c8bzs8kw48X4cJDvKvhUuX",
+    "sourceSha256": "b5e5a658fe05c16b7d022f9dd8dbe13becd191c4ee72d43df6460555a4ad70f9",
+    "overlaySha256": "7d15a66a0bdc25425c0e787aacd300545f6b60732c52b286bfd48641ab60d7db",
+    "manifest": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-assembled-source.json",
+    "freshBaselineManifest": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-first-2145/baseline-manifest.json"
+  },
+  "scope": "Add only the pinned http.explore.salon-social GET read, forwarding to the original salon-social route after the existing fresh account-scope check. No generic proxy, mutation, price/PIN/payment/financial-rule change, UI replacement or durable social payload.",
+  "publicationGate": "Backend-first sequence explicitly authorized; full web UI still awaits physical iPhone acceptance.",
+  "partialImplementationOf": "app-local-public-repair-20261016",
+  "omittedParentFiles": [
+    "lib/app-local-explore-http-client.ts",
+    "app/market/market-client.tsx",
+    "components/app-local-help.tsx",
+    "tests/app-local-public-search-retention.test.mjs",
+    "tests/app-local-salon-social-bridge.test.mjs",
+    "tests/app-local-explore.test.mjs",
+    "tests/app-local-explore-progressive.test.mjs",
+    "lib/use-remembered-experience.ts"
+  ],
+  "parentPublicationDisposition": "This two-file subset does not publish or supersede the other eight files, the parent ready event, the installed bundle, or the remaining POS/native repairs.",
+  "nativeAssessment": "This subset changes only server read dispatch and metadata; no Swift, LocalAppBundle, native permission or bridge source changes. Existing web UI and installed clients remain unchanged.",
+  "status": "ready",
+  "summary": "Frozen additive salon-social named GET backend subset: original authorization/handler semantics preserved, transient nonretained response, existing web UI unchanged. Two files locally validated; not deployed.",
+  "fileHashes": {
+    "lib/app-local-explore-server.ts": "f66a2e9e61dffd1eb89f8296e7ecaff7ce732684fc3908daf8f68e580a115518",
+    "lib/app-local-explore-metadata.ts": "9292ed6d3effdc18995fcea3e76c9de8a03c8cac665e7de98644a2d5f0fbec9e"
+  },
+  "validation": [
+    {
+      "name": "17 focused public/Explore regressions, including the exact named salon-social GET bridge",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\experience-regression-21-1\\public-repair-final-validation.json",
+      "detail": "17/17, zero production calls or business writes. Includes actual bridge→named reader→original GET fixture, scopes/statuses/cancellation and UI-state regressions; does not claim all17 are backend-only tests. These two source hashes match the frozen tested files."
+    },
+    {
+      "name": "Exact assembled backend production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-build-receipt.json",
+      "detail": "Exit0; sourceDrift []; background dispatch disabled; no runtime business mutation."
+    },
+    {
+      "name": "Frozen backend bytes/SHA256/SHA1/size plus required Explore/location source",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-frozen-source-verification.json",
+      "detail": "2760/2760 source files match; source commit and all source hashes unchanged."
+    },
+    {
+      "name": "Vercel deployment dry-run SHA1, exclusions and exact source identity",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-deployable-source.json",
+      "detail": "2760 deployment files, zero omitted; no forbidden environment/dependency/build/artifact/work source."
+    },
+    {
+      "name": "Independent source-verifier positive and rejection fixtures",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\verify-source.test.mjs",
+      "detail": "6/6: byte/hash drift, omission, forbidden path, wrong project/commit/deployment, nonREADY, live alias and tampered deployable manifest are rejected."
+    },
+    {
+      "name": "Fresh lock-protected production capture matches exact previously built baseline byte-for-byte",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-first-2145/baseline-manifest.json"
+    }
+  ],
+  "ownerDecision": "Cập nhật riêng máy chủ trước; giao diện chờ kiểm tra iPhone",
+  "id": "e288548d-a9bc-490b-a42d-0e920162cd43",
+  "recordedAt": "2026-10-16T21:47:22.202Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos"
+}
