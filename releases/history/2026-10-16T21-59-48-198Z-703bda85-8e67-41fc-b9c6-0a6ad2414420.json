@@ -1,0 +1,52 @@
+{
+  "kind": "release",
+  "summary": "Owner-authorized backend-first compatible social bridge is live; existing web interface remains unchanged pending physical-iPhone TestFlight acceptance.",
+  "changes": [
+    "e288548d-a9bc-490b-a42d-0e920162cd43"
+  ],
+  "ownerDecision": "Cập nhật riêng máy chủ trước; giao diện chờ kiểm tra iPhone",
+  "source": {
+    "commit": "d337f59a15c716a879d28498edb9604e14b9956b",
+    "baselineCommit": "9ee5daa9394f60e1e28d60423ea73145b74b99e3",
+    "baselineSourceSha256": "f388e0ab8e6bf1dc817c6f117230a56fe6f019ed0a803d03ef07645f43559462",
+    "selectedFileHashes": {
+      "lib/app-local-explore-server.ts": "f66a2e9e61dffd1eb89f8296e7ecaff7ce732684fc3908daf8f68e580a115518",
+      "lib/app-local-explore-metadata.ts": "9292ed6d3effdc18995fcea3e76c9de8a03c8cac665e7de98644a2d5f0fbec9e"
+    }
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_4tFutRf2NBkU91JsH5W1mRuPjS9i",
+      "baselineDeploymentId": "dpl_EW3mj5c8bzs8kw48X4cJDvKvhUuX",
+      "sourceSha256": "b5e5a658fe05c16b7d022f9dd8dbe13becd191c4ee72d43df6460555a4ad70f9",
+      "overlaySha256": "7d15a66a0bdc25425c0e787aacd300545f6b60732c52b286bfd48641ab60d7db",
+      "evidence": {
+        "liveSource": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-first-2145\\backend-live-source-verification.json",
+        "http": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-first-2145\\live-http-verification.json",
+        "runtimeFlags": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-first-2145\\exact-baseline-flags-review.json"
+      }
+    }
+  },
+  "checks": {
+    "exactSourceFiles": 2760,
+    "sourceHashesMatch": true,
+    "anonymousReadOnlyHttp": true,
+    "businessCommands": 0,
+    "build": "passed",
+    "priorProductionRuntimeConfigurationPreserved": true
+  },
+  "pending": [
+    "Full web UI awaits owner physical-iPhone acceptance",
+    "TestFlight candidate upload and Apple availability verification",
+    "Physical iPhone validation has not yet occurred"
+  ],
+  "rollback": {
+    "deploymentId": "dpl_EW3mj5c8bzs8kw48X4cJDvKvhUuX",
+    "conditions": "Capture current alias before any rollback; never overwrite an external newer release."
+  },
+  "id": "703bda85-8e67-41fc-b9c6-0a6ad2414420",
+  "recordedAt": "2026-10-16T21:59:48.198Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos"
+}
