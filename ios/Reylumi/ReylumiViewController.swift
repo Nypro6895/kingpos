@@ -28,7 +28,18 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     private let connectionNotice = UIStackView()
     private let connectionMessage = UILabel()
     private let connectionRetry = UIButton(type: .system)
-    private let policy = NavigationPolicy(origin: URL(string: Bundle.main.object(forInfoDictionaryKey: "ReylumiServerURL") as? String ?? "https://reylumi.com")!)
+    private let policy: NavigationPolicy
+    private let offlineRoutes: ReylumiOfflineRouteStore
+    private var offlineEpoch = 0
+
+    init(origin: URL? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil) {
+        let origin = origin ?? URL(string: Bundle.main.object(forInfoDictionaryKey: "ReylumiServerURL") as? String ?? "https://reylumi.com")!
+        self.policy = NavigationPolicy(origin: origin)
+        self.offlineRoutes = offlineRoutes ?? ReylumiOfflineRouteStore(origin: origin)
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError("Use init(origin:offlineRoutes:)") }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,7 +63,8 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         ])
         launchPanel.showLoading()
         configureConnectionNotice()
-        openPublicDestination("/explore")
+        let path = offlineRoutes.restored()?.path ?? "/explore"
+        loadRequest(URLRequest(url: policy.origin.appendingPathComponent(String(path.dropFirst())), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15))
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -100,6 +112,9 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         cancelPendingWebStartup()
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .default()
+        // Enable persistent service workers only for our own top-level origin.
+        // External browsing and hosted payment remain in Safari below.
+        configuration.limitsNavigationsToAppBoundDomains = true
         configuration.applicationNameForUserAgent = "ReylumiIOS/1.0"
         configuration.allowsInlineMediaPlayback = true
         // The app uses a fixed, responsive viewport rather than browser page zoom.
@@ -108,7 +123,14 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         configuration.userContentController.add(WeakMessageHandler(self), name: "reylumi")
         for resource in ["AppViewport", "NativeBridge"] {
             if let scriptURL = Bundle.main.url(forResource: resource, withExtension: "js"),
-               let script = try? String(contentsOf: scriptURL, encoding: .utf8) {
+               var script = try? String(contentsOf: scriptURL, encoding: .utf8) {
+                #if DEBUG
+                if resource == "NativeBridge", policy.origin.scheme == "http", policy.origin.host == "localhost",
+                   let data = try? JSONSerialization.data(withJSONObject: [policy.origin.absoluteString]),
+                   let json = String(data: data, encoding: .utf8) {
+                    script = "window.__reylumiDebugLocalOrigin = \(json)[0];\n" + script
+                }
+                #endif
                 configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
             }
         }
@@ -396,6 +418,48 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         guard message.frameInfo.isMainFrame, let url = message.frameInfo.request.url,
               policy.isInternal(url), !policy.isExcluded(url), let body = message.body as? [String: Any] else { return }
         switch body["action"] as? String {
+        case "offline-ready":
+            guard let nonce = body["nonce"] as? String, let generation = body["generation"] as? Int,
+                  generation == startup.generation, nonce == startup.nonce, startup.didCommit,
+                  let path = body["path"] as? String, let current = webView.url,
+                  policy.isInternal(current), current.path == path, current.query == nil, current.fragment == nil,
+                  body["version"] as? Int == 1,
+                  let expiry = body["expiresAt"] as? String,
+                  let expiresAt = ReylumiOfflineRoute.expiry(from: expiry),
+                  let route = ReylumiOfflineRoute(path: path, expiresAt: expiresAt) else { return }
+            offlineRoutes.save(route)
+        case "offline-clear":
+            guard body["nonce"] as? String == startup.nonce,
+                  body["generation"] as? Int == startup.generation, startup.didCommit else { return }
+            offlineRoutes.clear()
+            offlineEpoch += 1
+            ReylumiBackgroundSync.shared.clear()
+        case "background-register":
+            guard body["nonce"] as? String == startup.nonce, body["generation"] as? Int == startup.generation,
+                  startup.didCommit, let scope = body["scope"] as? String, let key = body["key"] as? String,
+                  let endpoint = body["endpoint"] as? String, let expiry = body["expiresAt"] as? String,
+                  let expiresAt = ReylumiOfflineRoute.expiry(from: expiry),
+                  let registration = ReylumiSyncRegistration(scope: scope, key: key, endpoint: endpoint, expiresAt: expiresAt, origin: policy.origin) else { return }
+            let epoch = offlineEpoch
+            Task { @MainActor [weak self] in
+                guard let self, self.offlineEpoch == epoch else { return }
+                await ReylumiBackgroundSync.shared.register(registration)
+            }
+        case "background-drain":
+            guard body["nonce"] as? String == startup.nonce, body["generation"] as? Int == startup.generation,
+                  startup.didCommit, let scope = body["scope"] as? String else { return }
+            let nonce = startup.nonce
+            let generation = startup.generation
+            let epoch = offlineEpoch
+            Task { @MainActor [weak self] in
+                let snapshots = await ReylumiBackgroundSync.shared.drain(scope: scope)
+                guard let self, self.offlineEpoch == epoch, self.startup.nonce == nonce, self.startup.generation == generation,
+                      self.startup.didCommit, let current = self.webView?.url,
+                      self.policy.isInternal(current), !self.policy.isExcluded(current), !snapshots.isEmpty,
+                      let data = try? JSONSerialization.data(withJSONObject: ["scope": scope, "snapshots": snapshots]),
+                      let json = String(data: data, encoding: .utf8) else { return }
+                self.webView.evaluateJavaScript("window.dispatchEvent(new CustomEvent('reylumi:native-snapshots', {detail:\(json)}));", completionHandler: nil)
+            }
         case "screen-ready":
             guard let nonce = body["nonce"] as? String, let generation = body["generation"] as? Int,
                   startup.ready(nonce: nonce, generation: generation) else { return }

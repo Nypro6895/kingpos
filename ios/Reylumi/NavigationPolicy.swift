@@ -4,8 +4,16 @@ struct NavigationPolicy {
     let origin: URL
 
     func isInternal(_ url: URL) -> Bool {
-        url.scheme == "https" && url.host?.lowercased() == origin.host?.lowercased()
+        let sameOrigin = url.host?.lowercased() == origin.host?.lowercased()
             && url.port == origin.port && url.user == nil && url.password == nil
+        #if DEBUG
+        // Only the simulator fixture opts into HTTP localhost. Release builds
+        // and the production HTTPS origin keep the original HTTPS restriction.
+        if origin.scheme == "http", origin.host == "localhost" {
+            return sameOrigin && url.scheme == "http"
+        }
+        #endif
+        return sameOrigin && url.scheme == "https"
     }
 
     func isExcluded(_ url: URL) -> Bool {

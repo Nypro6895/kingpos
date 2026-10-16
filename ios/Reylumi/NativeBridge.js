@@ -17,6 +17,21 @@
   let screenReady = false;
   let sentNonce = null;
   let readyScheduled = false;
+  let preparedRoute = null;
+  let clearOffline = false;
+  const sendOfflineState = () => {
+    if (!navigationContext || excluded(location.pathname)) return;
+    const context = { nonce: navigationContext.nonce, generation: navigationContext.generation, origin: location.origin };
+    if (clearOffline) {
+      clearOffline = false;
+      send({ action: 'offline-clear', ...context });
+    }
+    if (!preparedRoute) return;
+    const route = preparedRoute;
+    preparedRoute = null;
+    if (route.path !== location.pathname || location.search || location.hash || Date.parse(route.expiresAt) <= Date.now()) return;
+    send({ action: 'offline-ready', ...context, ...route });
+  };
   const hasReadyShell = () => {
     const shells = document.querySelectorAll?.('[data-reylumi-shell-ready="true"]') ?? [];
     return Array.from(shells).some(shell => shell.getClientRects().length > 0);
@@ -37,16 +52,47 @@
   };
   window.__reylumiStartup = Object.freeze({
     setNavigationContext: (context) => {
-      if (!context || context.origin !== location.origin || location.protocol !== 'https:' || excluded(location.pathname) ||
+      const secure = location.protocol === 'https:' || (location.protocol === 'http:' && location.hostname === 'localhost' && window.__reylumiDebugLocalOrigin === location.origin);
+      if (!context || context.origin !== location.origin || !secure || excluded(location.pathname) ||
           !Number.isSafeInteger(context.generation) || context.generation < 1 ||
           typeof context.nonce !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(context.nonce)) return false;
       if (navigationContext && context.generation < navigationContext.generation) return false;
       navigationContext = { nonce: context.nonce, generation: context.generation };
+      sendOfflineState();
       scheduleReady();
       return true;
     },
   });
   window.addEventListener?.('reylumi:screen-ready', () => { screenReady = true; scheduleReady(); });
+  // This ACK is emitted only after the web worker has committed its complete
+  // shell and the web authorization layer has verified the expiring grant.
+  // The ordinary screen-ready/public loading shell never qualifies.
+  window.addEventListener?.('reylumi:offline-ready', (event) => {
+    const detail = event.detail;
+    if (!detail || detail.version !== 1 || typeof detail.path !== 'string' || detail.path !== location.pathname ||
+        location.search || location.hash || typeof detail.expiresAt !== 'string' || !Number.isFinite(Date.parse(detail.expiresAt)) ||
+        Date.parse(detail.expiresAt) <= Date.now() || excluded(location.pathname)) return;
+    preparedRoute = { path: detail.path, version: 1, expiresAt: detail.expiresAt };
+    sendOfflineState();
+  });
+  window.addEventListener?.('reylumi:offline-clear', () => {
+    preparedRoute = null;
+    clearOffline = true;
+    sendOfflineState();
+  });
+  const sendSync = (action, detail) => {
+    if (!navigationContext || excluded(location.pathname)) return false;
+    send({ ...detail, action, nonce: navigationContext.nonce, generation: navigationContext.generation, origin: location.origin });
+    return true;
+  };
+  window.__reylumiBackgroundSync = Object.freeze({
+    register: (detail) => {
+      if (!detail || typeof detail.scope !== 'string' || typeof detail.key !== 'string' ||
+          typeof detail.endpoint !== 'string' || typeof detail.expiresAt !== 'string') return false;
+      return sendSync('background-register', { scope: detail.scope, key: detail.key, endpoint: detail.endpoint, expiresAt: detail.expiresAt });
+    },
+    drain: (scope) => typeof scope === 'string' && sendSync('background-drain', { scope }),
+  });
   document.addEventListener('visibilitychange', scheduleReady);
   let scheduled = false;
   new MutationObserver(() => {

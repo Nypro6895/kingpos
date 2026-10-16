@@ -2,6 +2,8 @@ import SwiftUI
 
 @main
 struct ReylumiApp: App {
+    @UIApplicationDelegateAdaptor(ReylumiAppDelegate.self) private var appDelegate
+    @Environment(\.scenePhase) private var scenePhase
     @State private var marketReturnSequence = 0
     var body: some Scene {
         WindowGroup {
@@ -12,6 +14,9 @@ struct ReylumiApp: App {
                 .onOpenURL { url in
                     if NavigationPolicy.isMarketReturn(url) { marketReturnSequence += 1 }
                 }
+        }
+        .onChange(of: scenePhase) { phase in
+            if phase == .background { ReylumiBackgroundSync.shared.schedule() }
         }
     }
 }

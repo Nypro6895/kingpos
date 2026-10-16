@@ -23,7 +23,8 @@ Máy Windows không có Xcode nên chưa biên dịch Swift, chạy Simulator ha
 - Session dùng kho cookie WebKit bền vững; vuốt để quay lại, xử lý mất kết nối có nút thử lại, chia sẻ native, AirPrint và tải file qua WKDownload rồi mở bảng Save/Share.
 - Trang trong app cố định tỷ lệ 1:1: không pinch zoom hay zoom khi chạm hai lần. `AppViewport.js` giữ viewport qua mỗi lần chuyển trang, nâng chữ trong ô nhập nhỏ lên tối thiểu 16px, giữ cửa sổ thao tác trong màn hình và cho phép cuộn nội dung dài. Bàn phím mở sẽ thu chiều cao WebView để các nút vẫn có thể tiếp cận. Thao tác bản đồ và các vùng cuộn riêng vẫn dùng sự kiện chạm của web.
 - Chọn ảnh/camera dùng input file sẵn có của web. Vị trí chỉ được yêu cầu khi web gọi geolocation; không dùng API quyền vị trí beta.
-- Không bổ sung APNs/push nền hay chế độ offline mới. Các tính năng phụ thuộc internet và giới hạn thiết bị của web vẫn áp dụng. Máy in chuyên dụng của bản Windows không trở thành máy in Bluetooth iOS.
+- Trang đã được chuẩn bị đầy đủ có thể mở lại bằng service worker và kho WebKit bền vững. App chỉ nhớ đường dẫn đơn, không có query/token, sau ACK `reylumi:offline-ready` kèm thời hạn quyền offline tối đa 24 giờ. Giao diện web kiểm tra lại quyền trước khi hiện dữ liệu riêng; tín hiệu `screen-ready` của màn hình công khai không cấp quyền offline. Đăng xuất, khóa POS hoặc đổi quyền xóa gợi ý khởi động và dữ liệu đọc nền native; hàng đợi thao tác POS vẫn theo cơ chế hiện có.
+- `BGAppRefresh` chỉ làm GET cho dữ liệu Today/My Work đã đăng ký từ phiên có quyền, kiểm tra lại scope hiện tại, tối đa 4 bản đọc/2 MiB và 20 giây mỗi đợt. Bản đọc được mã hóa bằng khóa Keychain chỉ trên thiết bị, không sao lưu, không lưu cookie/token. Khi trở lại app, web kiểm tra quyền mới trước khi nhận bản đọc nền. iOS quyết định có chạy nền hay không; đồng bộ khi mở lại/kết nối lại vẫn cần thiết. Không bổ sung APNs, thông báo xin quyền hoặc tự gửi lại giao dịch. Máy in chuyên dụng của bản Windows không trở thành máy in Bluetooth iOS.
 
 Native app chặn đường dẫn admin và client routing; `proxy.ts` chặn thêm request có user-agent `ReylumiIOS/1.0`, Settings không tải các công cụ quản trị. Đây là giới hạn giao diện của app, không thay thế phân quyền Supabase/server.
 
@@ -41,6 +42,8 @@ Trên Mac:
 xcodegen generate
 xcodebuild -project Reylumi.xcodeproj -scheme Reylumi -destination 'platform=iOS Simulator,name=iPhone 17' test
 ```
+
+Các kiểm tra `OfflineWebViewTests` dùng HTTP localhost chỉ trong cấu hình Debug: chuẩn bị HTML/JS POS và nháp IDB qua service worker, hủy WebView, cho máy chủ trả 503 rồi mở lại bằng WebView mới. Bản Release chỉ khai báo `reylumi.com` trong App Bound Domains và giữ HTTPS; localhost và ATS local networking không có trong cấu hình phát hành. `BackgroundSyncTests` dùng cookie/payload giả và transport GET nội bộ, không chạm tài khoản hay giao dịch thật. Kiểm tra bridge chạy được trên Windows bằng `node --test ios/scripts/native-offline-bridge.test.mjs`.
 
 Dùng tên Simulator có sẵn trong Xcode. Sau khi kiểm tra, chọn Generic iOS Device → Product → Archive để tạo bản phân phối qua TestFlight/App Store; cần Apple Developer Team và cấu hình App Store Connect của chủ app. Chưa phát hành lên TestFlight/App Store từ workspace này. Cần hoàn thiện khai báo quyền riêng tư/App Privacy theo dữ liệu thực của web và kiểm tra App Review trước khi gửi duyệt.
 
