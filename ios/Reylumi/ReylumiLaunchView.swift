@@ -7,7 +7,7 @@ final class ReylumiLaunchView: UIView, UITextFieldDelegate {
     private let status = UILabel()
     private let retry = UIButton(type: .system)
     private let search = UISearchTextField()
-    private let activity = UIActivityIndicatorView(style: .medium)
+    private let orbit = ReylumiOrbitView()
     private(set) var isLoading = false
     var onRetry: (() -> Void)?
     var onNavigate: ((String, [URLQueryItem]) -> Void)?
@@ -36,15 +36,14 @@ final class ReylumiLaunchView: UIView, UITextFieldDelegate {
         retry.configuration?.cornerStyle = .capsule
         retry.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 24, bottom: 12, trailing: 24)
         retry.addTarget(self, action: #selector(retryTapped), for: .touchUpInside)
-        let logo = UIImageView(image: UIImage(named: "LoadingLogo"))
-        logo.contentMode = .scaleAspectFit
-        logo.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([logo.widthAnchor.constraint(equalToConstant: 36), logo.heightAnchor.constraint(equalToConstant: 36)])
+        orbit.translatesAutoresizingMaskIntoConstraints = false
+        orbit.accessibilityIdentifier = "reylumi.launch.orbit"
+        NSLayoutConstraint.activate([orbit.widthAnchor.constraint(equalToConstant: 64), orbit.heightAnchor.constraint(equalToConstant: 64)])
         let brand = UILabel()
         brand.text = "Reylumi"
         brand.font = .systemFont(ofSize: 28, weight: .bold)
         brand.textColor = ReylumiOrbitView.teal
-        let header = UIStackView(arrangedSubviews: [logo, brand, UIView()])
+        let header = UIStackView(arrangedSubviews: [orbit, brand, UIView()])
         header.axis = .horizontal
         header.alignment = .center
         header.spacing = 10
@@ -112,7 +111,7 @@ final class ReylumiLaunchView: UIView, UITextFieldDelegate {
         navigation.accessibilityIdentifier = "reylumi.launch.navigation"
         activity.hidesWhenStopped = true
         activity.color = ReylumiOrbitView.teal
-        let connection = UIStackView(arrangedSubviews: [activity, status, retry])
+        let connection = UIStackView(arrangedSubviews: [status, retry])
         connection.axis = .horizontal
         connection.alignment = .center
         connection.spacing = 10
@@ -149,7 +148,7 @@ final class ReylumiLaunchView: UIView, UITextFieldDelegate {
         revealDeferred = false
         retry.isHidden = true
         status.text = vietnamese ? "Đang mở trang…" : "Opening your page…"
-        activity.startAnimating()
+        orbit.setLoading(true)
         let work = DispatchWorkItem { [weak self] in
             guard let self, self.isLoading else { return }
             self.status.text = self.vietnamese ? "Kết nối lâu hơn bình thường. Bạn có thể thử lại." : "Taking a little longer. You can try again."
@@ -167,7 +166,7 @@ final class ReylumiLaunchView: UIView, UITextFieldDelegate {
         isHidden = false
         isLoading = false
         revealDeferred = false
-        activity.stopAnimating()
+        orbit.setLoading(false)
         status.text = vietnamese ? "Chưa mở được trang. Bạn có thể thử lại hoặc chọn Khám phá." : "Couldn't open this page. Try again or choose Explore."
         retry.setTitle(vietnamese ? "Thử lại" : "Try again", for: .normal)
         retry.isHidden = false
@@ -177,7 +176,9 @@ final class ReylumiLaunchView: UIView, UITextFieldDelegate {
     func finishLoading() {
         slowLoad?.cancel()
         isLoading = false
-        activity.stopAnimating()
+        orbit.setLoading(false)
+        status.text = nil
+        retry.isHidden = true
         // Network readiness must not replace a search the user is actively typing.
         if search.isFirstResponder { revealDeferred = true; return }
         revealDeferred = false
@@ -230,48 +231,69 @@ final class ReylumiLaunchView: UIView, UITextFieldDelegate {
 
 final class ReylumiOrbitView: UIView {
     static let teal = UIColor(red: 29 / 255.0, green: 128 / 255.0, blue: 124 / 255.0, alpha: 1)
-    private let orbit = UIView(frame: CGRect(x: 0, y: 0, width: 112, height: 112))
+    private let orbit = UIView()
+    private let logo = UIImageView(image: UIImage(named: "LoadingLogo"))
+    private let star = UIImageView(image: UIImage(systemName: "sparkle"))
     private let track = CAShapeLayer()
-    private var loading = false
+    private var segments: [CAShapeLayer] = []
+    private(set) var isLoading = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         isAccessibilityElement = false
-        let image = UIImageView(image: UIImage(named: "LoadingLogo"))
-        image.contentMode = .scaleAspectFit
-        image.frame = CGRect(x: 26, y: 26, width: 60, height: 60)
-        addSubview(image)
-        track.path = UIBezierPath(ovalIn: CGRect(x: 5, y: 5, width: 102, height: 102)).cgPath
+        logo.contentMode = .scaleAspectFit
+        addSubview(logo)
         track.fillColor = UIColor.clear.cgColor
         track.strokeColor = Self.teal.withAlphaComponent(0.12).cgColor
-        track.lineWidth = 1
         layer.addSublayer(track)
         addSubview(orbit)
-        // Short, overlapping segments form a fading comet trail, without a timer.
+        // Core Animation rotates a small, reusable trail without a timer.
         for index in 0..<20 {
             let segment = CAShapeLayer()
-            let start = -CGFloat.pi / 2 - 1.75 + CGFloat(index) * 1.75 / 20
-            segment.path = UIBezierPath(arcCenter: CGPoint(x: 56, y: 56), radius: 51, startAngle: start, endAngle: start + 0.10, clockwise: true).cgPath
             segment.strokeColor = Self.teal.withAlphaComponent(CGFloat(index + 1) / 20).cgColor
             segment.fillColor = UIColor.clear.cgColor
-            segment.lineWidth = 2
             orbit.layer.addSublayer(segment)
+            segments.append(segment)
         }
-        let star = UIImageView(image: UIImage(systemName: "sparkle"))
         star.tintColor = Self.teal
-        star.frame = CGRect(x: 47, y: -4, width: 18, height: 18)
         orbit.addSubview(star)
         NotificationCenter.default.addObserver(self, selector: #selector(updateMotion), name: UIAccessibility.reduceMotionStatusDidChangeNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(updateMotion), name: UIApplication.didBecomeActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(pauseMotion), name: UIApplication.willResignActiveNotification, object: nil)
+        setLoading(false)
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     deinit { NotificationCenter.default.removeObserver(self) }
     override func didMoveToWindow() { super.didMoveToWindow(); updateMotion() }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let side = min(bounds.width, bounds.height)
+        let center = CGPoint(x: bounds.midX, y: bounds.midY)
+        let headSize = min(18, max(8, side * 0.16))
+        let lineWidth = max(1, min(2, side / 56))
+        // The sparkle's corners stay inside the view at every rotation angle.
+        let radius = max(0, side / 2 - headSize / sqrt(2) - lineWidth)
+        let logoSize = max(0, side * 0.5)
+        logo.frame = CGRect(x: center.x - logoSize / 2, y: center.y - logoSize / 2, width: logoSize, height: logoSize)
+        orbit.frame = bounds
+        star.frame = CGRect(x: center.x - headSize / 2, y: center.y - radius - headSize / 2, width: headSize, height: headSize)
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        track.path = UIBezierPath(arcCenter: center, radius: radius, startAngle: 0, endAngle: .pi * 2, clockwise: true).cgPath
+        track.lineWidth = lineWidth / 2
+        for (index, segment) in segments.enumerated() {
+            let start = -CGFloat.pi / 2 - 1.75 + CGFloat(index) * 1.75 / 20
+            segment.path = UIBezierPath(arcCenter: center, radius: radius, startAngle: start, endAngle: start + 0.10, clockwise: true).cgPath
+            segment.lineWidth = lineWidth
+        }
+        CATransaction.commit()
+        updateMotion()
+    }
+
     func setLoading(_ value: Bool) {
-        loading = value
+        isLoading = value
         orbit.isHidden = !value
         track.isHidden = !value
         updateMotion()
@@ -280,7 +302,7 @@ final class ReylumiOrbitView: UIView {
     @objc private func pauseMotion() { orbit.layer.removeAnimation(forKey: "reylumi.orbit") }
     @objc private func updateMotion() {
         pauseMotion()
-        guard loading, window != nil, !UIAccessibility.isReduceMotionEnabled,
+        guard isLoading, window != nil, !UIAccessibility.isReduceMotionEnabled,
               UIApplication.shared.applicationState == .active else { return }
         let animation = CABasicAnimation(keyPath: "transform.rotation.z")
         animation.fromValue = 0

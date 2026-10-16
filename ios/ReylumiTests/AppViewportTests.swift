@@ -8,6 +8,7 @@ final class AppViewportTests: XCTestCase {
     func testNativePageZoomAndKeyboardLayout() throws {
         let controller = ReylumiViewController()
         controller.loadViewIfNeeded()
+        controller.initializeWebContentIfNeeded()
         let webView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
         webView.stopLoading()
         XCTAssertFalse(webView.configuration.ignoresViewportScaleLimits)
@@ -33,6 +34,7 @@ final class AppViewportTests: XCTestCase {
     func testBundledViewportInWebKit() async throws {
         let controller = ReylumiViewController()
         controller.loadViewIfNeeded()
+        controller.initializeWebContentIfNeeded()
         let configuredView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
         configuredView.stopLoading()
         // Keep the bundled configuration, but isolate this local HTML fixture

@@ -8,6 +8,7 @@ final class SecurityChallengeWebViewTests: XCTestCase {
     func testProviderDocumentIsVisibleAtCommitWithoutAppReadinessOrDidFinish() throws {
         let controller = ReylumiViewController()
         controller.loadViewIfNeeded()
+        controller.initializeWebContentIfNeeded()
         let webView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
         let launch = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? ReylumiLaunchView }.first)
         webView.stopLoading()
@@ -41,6 +42,7 @@ final class SecurityChallengeWebViewTests: XCTestCase {
     func testOrdinaryErrorStillCancelsAndCannotRevealThroughLateCompletion() throws {
         let controller = ReylumiViewController()
         controller.loadViewIfNeeded()
+        controller.initializeWebContentIfNeeded()
         let webView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
         let launch = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? ReylumiLaunchView }.first)
         webView.stopLoading()

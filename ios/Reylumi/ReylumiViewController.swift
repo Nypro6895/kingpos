@@ -8,9 +8,12 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         guard sequence > marketReturnSequence else { return }
         marketReturnSequence = sequence
         loadViewIfNeeded()
-        webView.load(URLRequest(url: policy.origin.appendingPathComponent("market")))
+        openPublicDestination("/market")
     }
     private var webView: WKWebView!
+    private var startupDisplayLink: CADisplayLink?
+    private var firstPresentedFrame: CFTimeInterval?
+    private lazy var startupFrameTarget = ReylumiStartupFrameTarget(self)
     private var progress = UIProgressView(progressViewStyle: .bar)
     private var progressObservation: NSKeyValueObservation?
     private var downloads: [ObjectIdentifier: URL] = [:]
@@ -20,6 +23,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     private var activeNavigation: WKNavigation?
     private var retiredNavigations: [WKNavigation] = []
     private var pendingRequest: URLRequest?
+    var queuedStartupURL: URL? { webView == nil ? pendingRequest?.url : nil }
     private var navigationWatchdog: DispatchWorkItem?
     private let connectionNotice = UIStackView()
     private let connectionMessage = UILabel()
@@ -29,15 +33,78 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     override func viewDidLoad() {
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(paymentForeground), name: UIApplication.didBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(cancelPendingWebStartup), name: UIApplication.willResignActiveNotification, object: nil)
         overrideUserInterfaceStyle = .light
         view.backgroundColor = .white
+        launchPanel.translatesAutoresizingMaskIntoConstraints = false
+        launchPanel.onRetry = { [weak self] in self?.retryLoad() }
+        launchPanel.onNavigate = { [weak self] path, query in self?.openPublicDestination(path, query: query) }
+        launchPanel.onEditingFinished = { [weak self] in
+            guard let self, self.startup.hasUsablePage, !self.startup.isWaiting else { return }
+            self.launchPanel.finishLoading()
+        }
+        view.addSubview(launchPanel)
+        NSLayoutConstraint.activate([
+            launchPanel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            launchPanel.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+            launchPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            launchPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        launchPanel.showLoading()
+        configureConnectionNotice()
+        openPublicDestination("/explore")
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        scheduleWebStartupAfterFirstFrame()
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        cancelPendingWebStartup()
+    }
+
+    private func scheduleWebStartupAfterFirstFrame() {
+        guard webView == nil, startupDisplayLink == nil, viewIfLoaded?.window != nil else { return }
+        firstPresentedFrame = nil
+        let link = CADisplayLink(target: startupFrameTarget, selector: #selector(ReylumiStartupFrameTarget.tick(_:)))
+        startupDisplayLink = link
+        link.add(to: .main, forMode: .common)
+    }
+
+    fileprivate func startupFrame(_ link: CADisplayLink) {
+        guard webView == nil, viewIfLoaded?.window != nil,
+              UIApplication.shared.applicationState == .active else { return }
+        guard let firstPresentedFrame else {
+            // This callback prepares the upcoming frame. Wait until that frame
+            // was presented before doing WebKit construction on the main thread.
+            self.firstPresentedFrame = link.targetTimestamp
+            return
+        }
+        guard link.timestamp >= firstPresentedFrame else { return }
+        initializeWebContentIfNeeded()
+    }
+
+    @objc private func cancelPendingWebStartup() {
+        startupDisplayLink?.invalidate()
+        startupDisplayLink = nil
+        firstPresentedFrame = nil
+    }
+
+    // Kept explicit so native tests can inspect the first shell independently.
+    // Production reaches this once after its first visible display frame.
+    func initializeWebContentIfNeeded() {
+        loadViewIfNeeded()
+        guard webView == nil else { return }
+        cancelPendingWebStartup()
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .default()
         configuration.applicationNameForUserAgent = "ReylumiIOS/1.0"
         configuration.allowsInlineMediaPlayback = true
         // The app uses a fixed, responsive viewport rather than browser page zoom.
         configuration.ignoresViewportScaleLimits = false
-        // Register in viewDidLoad and unregister when the controller is destroyed.
+        // Register with the WebView and unregister when the controller is destroyed.
         configuration.userContentController.add(WeakMessageHandler(self), name: "reylumi")
         for resource in ["AppViewport", "NativeBridge"] {
             if let scriptURL = Bundle.main.url(forResource: resource, withExtension: "js"),
@@ -64,8 +131,8 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         progress.progressTintColor = ReylumiOrbitView.teal
         progress.trackTintColor = .clear
         progress.isHidden = true
-        view.addSubview(webView)
-        view.addSubview(progress)
+        view.insertSubview(webView, at: 0)
+        view.insertSubview(progress, belowSubview: launchPanel)
         NSLayoutConstraint.activate([
             webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             // Resize the page when the keyboard opens so dialogs and actions stay reachable.
@@ -80,29 +147,15 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
             self?.progress.progress = Float(webView.estimatedProgress)
             self?.progress.isHidden = self?.hasLoadedPage != true || webView.estimatedProgress >= 1
         }
-        launchPanel.translatesAutoresizingMaskIntoConstraints = false
-        launchPanel.onRetry = { [weak self] in self?.retryLoad() }
-        launchPanel.onNavigate = { [weak self] path, query in self?.openPublicDestination(path, query: query) }
-        launchPanel.onEditingFinished = { [weak self] in
-            guard let self, self.startup.hasUsablePage, !self.startup.isWaiting else { return }
-            self.launchPanel.finishLoading()
-        }
-        view.addSubview(launchPanel)
-        NSLayoutConstraint.activate([
-            launchPanel.topAnchor.constraint(equalTo: webView.topAnchor),
-            launchPanel.bottomAnchor.constraint(equalTo: webView.bottomAnchor),
-            launchPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            launchPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-        configureConnectionNotice()
-        openPublicDestination("/explore")
+        let request = pendingRequest ?? URLRequest(url: policy.origin.appendingPathComponent("explore"), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15)
+        loadRequest(request)
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         // On a short landscape viewport the indicator sits beside the bottom
         // navigation. Keep native scrolling, without that floating overlay.
-        webView.scrollView.showsVerticalScrollIndicator = view.bounds.width <= view.bounds.height
+        webView?.scrollView.showsVerticalScrollIndicator = view.bounds.width <= view.bounds.height
     }
 
     @objc private func retryLoad() {
@@ -123,6 +176,14 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     }
 
     private func loadRequest(_ request: URLRequest) {
+        guard webView != nil else {
+            // Public shell taps before WebKit starts replace the queued GET;
+            // only the visitor's latest destination is loaded.
+            pendingRequest = request
+            launchPanel.showLoading()
+            scheduleWebStartupAfterFirstFrame()
+            return
+        }
         navigationWatchdog?.cancel()
         retireCurrentNavigation()
         activeNavigation = nil
@@ -187,7 +248,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         [connectionMessage, connectionRetry, dismiss].forEach { connectionNotice.addArrangedSubview($0) }
         view.addSubview(connectionNotice)
         NSLayoutConstraint.activate([
-            connectionNotice.topAnchor.constraint(equalTo: webView.topAnchor, constant: 8),
+            connectionNotice.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
             connectionNotice.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
             connectionNotice.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12)
         ])
@@ -326,6 +387,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     }
 
     @objc private func paymentForeground() {
+        if webView == nil { scheduleWebStartupAfterFirstFrame(); return }
         guard let url = webView?.url, policy.isInternal(url), !policy.isExcluded(url) else { return }
         webView.evaluateJavaScript("window.dispatchEvent(new Event('reylumi:foreground'))", completionHandler: nil)
     }
@@ -391,7 +453,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         alert("Unable to download this file. Please try again.")
     }
 
-    deinit { navigationWatchdog?.cancel() }
+    deinit { startupDisplayLink?.invalidate(); navigationWatchdog?.cancel() }
 }
 
 private final class WeakMessageHandler: NSObject, WKScriptMessageHandler {
@@ -400,4 +462,11 @@ private final class WeakMessageHandler: NSObject, WKScriptMessageHandler {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         delegate?.userContentController(userContentController, didReceive: message)
     }
+}
+
+@MainActor
+private final class ReylumiStartupFrameTarget: NSObject {
+    weak var controller: ReylumiViewController?
+    init(_ controller: ReylumiViewController) { self.controller = controller }
+    @objc func tick(_ link: CADisplayLink) { controller?.startupFrame(link) }
 }
