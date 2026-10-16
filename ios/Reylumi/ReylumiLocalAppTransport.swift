@@ -62,6 +62,8 @@ final class ReylumiLocalAppTransport {
     private var freshContextID: UUID?
     private var freshContextPath: String?
     private var commandIDs = Set<String>()
+    private var cookieCommitTask: Task<[HTTPCookie], Error>?
+    private var cookieCommitID: UUID?
     var onEvent: ((String, [String: Any]) -> Void)?
 
     init(origin: URL, manifest: ReylumiLocalBundle.Manifest, store: ReylumiLocalReadStore? = nil,
@@ -73,12 +75,66 @@ final class ReylumiLocalAppTransport {
         self.generation = defaults.string(forKey: generationKey) ?? UUID().uuidString
         defaults.set(generation, forKey: generationKey)
         self.cookies = cookies ?? { await withCheckedContinuation { continuation in WKWebsiteDataStore.default().httpCookieStore.getAllCookies { continuation.resume(returning: $0) } } }
-        self.setCookie = setCookie ?? { cookie in await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in WKWebsiteDataStore.default().httpCookieStore.setCookie(cookie) { continuation.resume() } } }
+        self.setCookie = setCookie ?? { cookie in
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                let store = WKWebsiteDataStore.default().httpCookieStore
+                if Self.removesCookie(cookie) { store.delete(cookie) { continuation.resume() } }
+                else { store.setCookie(cookie) { continuation.resume() } }
+            }
+        }
     }
     var metadata: [String: Any] { ["version": 1, "nonce": nonce, "scopeEpoch": scopeEpoch, "generation": generation] }
     private func failure(_ status: Int, _ message: String) -> NSError { NSError(domain: "ReylumiLocalApp", code: status, userInfo: [NSLocalizedDescriptionKey: message]) }
+    private func cookieKey(_ cookie: HTTPCookie) -> String {
+        [cookie.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased(), cookie.path, cookie.name].joined(separator: "\u{0}")
+    }
     private func cookieIdentity(_ values: [HTTPCookie]) -> [String] {
-        values.filter { $0.name.hasPrefix("sb-") || $0.name.hasPrefix("reylumi") || $0.name.hasPrefix("kingpos") }.map { [$0.domain, $0.path, $0.name, $0.value].joined(separator: "\u{0}") }.sorted()
+        values.filter { $0.name.hasPrefix("sb-") || $0.name.hasPrefix("reylumi") || $0.name.hasPrefix("kingpos") }.map { cookieKey($0) + "\u{0}" + $0.value }.sorted()
+    }
+    private static func removesCookie(_ cookie: HTTPCookie) -> Bool {
+        if let expiry = cookie.expiresDate, expiry <= Date() { return true }
+        if let value = cookie.properties?[.maximumAge], let age = Double(String(describing: value)), age <= 0 { return true }
+        return false
+    }
+    private func responseCookieSet(_ original: [HTTPCookie], updates: [HTTPCookie]) -> [HTTPCookie] {
+        var candidate = original
+        for cookie in updates {
+            candidate.removeAll { cookieKey($0) == cookieKey(cookie) }
+            if !Self.removesCookie(cookie) { candidate.append(cookie) }
+        }
+        return candidate
+    }
+    private func reconcileCookies(original: [HTTPCookie]?, updates: [HTTPCookie], epoch: Int) async throws -> [HTTPCookie] {
+        let previous = cookieCommitTask, id = UUID()
+        cookieCommitID = id
+        let task = Task { @MainActor [weak self] () throws -> [HTTPCookie] in
+            guard let self else { throw CancellationError() }
+            // Only cookie delivery is serialized. Reads still run in parallel;
+            // no observer sees half of another response's auth rotation.
+            if let previous { _ = try? await previous.value }
+            try self.ensureCurrent(epoch)
+            let currentCookies = await self.cookies()
+            try self.ensureCurrent(epoch)
+            // Capture outgoing headers through the same short queue, so a new
+            // request cannot start from half of a multi-cookie refresh.
+            guard let original else { return currentCookies }
+            let expected = self.cookieIdentity(self.responseCookieSet(original, updates: updates))
+            let current = self.cookieIdentity(currentCookies)
+            guard current == self.cookieIdentity(original) || current == expected else {
+                await self.reset(); throw self.failure(409, "Your access has changed. Please try again.")
+            }
+            for cookie in updates { await self.setCookie(cookie); try self.ensureCurrent(epoch) }
+            let committedCookies = await self.cookies(), committed = self.cookieIdentity(committedCookies)
+            try self.ensureCurrent(epoch)
+            guard committed == expected else {
+                await self.reset(); throw self.failure(409, "Your access has changed. Please try again.")
+            }
+            try self.ensureCurrent(epoch)
+            return committedCookies
+        }
+        cookieCommitTask = task
+        defer { if cookieCommitID == id { cookieCommitTask = nil; cookieCommitID = nil } }
+        return try await task.value
     }
     private func loadSession() async {
         guard !loadedSession else { return }; loadedSession = true
@@ -150,7 +206,7 @@ final class ReylumiLocalAppTransport {
         var components = URLComponents(url: origin, resolvingAgainstBaseURL: false)!
         components.path = path; components.queryItems = query.isEmpty ? nil : query; components.fragment = nil
         guard let url = components.url, NavigationPolicy(origin: origin).isInternal(url), path.hasPrefix("/api/app-local/") else { throw failure(400, "Unsupported app request.") }
-        let originalCookies = await cookies(); try ensureCurrent(epoch)
+        let originalCookies = try await reconcileCookies(original: nil, updates: [], epoch: epoch); try ensureCurrent(epoch)
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 12)
         request.httpMethod = body == nil ? "GET" : "POST"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -166,10 +222,10 @@ final class ReylumiLocalAppTransport {
         HTTPCookie.requestHeaderFields(with: applicable).forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         let (data, response) = try await client.send(request)
         try ensureCurrent(epoch)
-        guard cookieIdentity(await cookies()) == cookieIdentity(originalCookies) else { await reset(); throw failure(409, "Your access has changed. Please try again.") }
         guard response.url == url, data.count <= 4 * 1024 * 1024 else { throw failure(502, "Couldn't read this page. Please try again.") }
         let fields = response.allHeaderFields.reduce(into: [String: String]()) { result, entry in if let key = entry.key as? String, let value = entry.value as? String { result[key] = value } }
-        for cookie in HTTPCookie.cookies(withResponseHeaderFields: fields, for: url) where cookie.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased() == origin.host?.lowercased() { await setCookie(cookie) }
+        let updates = HTTPCookie.cookies(withResponseHeaderFields: fields, for: url).filter { $0.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased() == origin.host?.lowercased() }
+        _ = try await reconcileCookies(original: originalCookies, updates: updates, epoch: epoch)
         try ensureCurrent(epoch)
         if response.statusCode == 401 { await reset(); throw failure(401, "Please reconnect and check your access.") }
         return (data, response)

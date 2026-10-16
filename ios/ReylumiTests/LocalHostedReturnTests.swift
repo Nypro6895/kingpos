@@ -82,12 +82,17 @@ final class LocalHostedReturnTests: XCTestCase {
         _ = try await installed.evaluateJavaScript("window.retainedDraft=document.createElement('input');retainedDraft.value='44.25';document.body.append(retainedDraft);window.addEventListener('reylumi:app-local-context',e=>window.acceptedPath=e.detail.contextPath);window.addEventListener('reylumi:app-local-navigate',e=>{history.pushState({},'',e.detail.path);window.returnedPath=e.detail.path});true")
         container.openOnline("/login")
         let navigation = try XCTUnwrap(container.presentedViewController as? UINavigationController), hosted = try XCTUnwrap(navigation.viewControllers.first as? ReylumiViewController)
+        var destinations: [String] = []
+        let originalDestination = hosted.onUsableDestination
+        hosted.onUsableDestination = { url in destinations.append(url.path); originalDestination?(url) }
         hosted.initializeWebContentIfNeeded()
         let web = try XCTUnwrap(hosted.view.subviews.compactMap { $0 as? WKWebView }.first)
         try await wait("document.getElementById('route') != null", in: web)
+        for _ in 0..<250 { if destinations.contains("/login"), !navigation.isBeingPresented { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        XCTAssertTrue(destinations.contains("/login"), "Wait for the actual hosted native usable callback before simulating user input")
         _ = try await web.evaluateJavaScript("document.getElementById('draft').value='Unsent login';document.getElementById('route').click();true")
         for _ in 0..<150 { if await http.isHeld() { break }; try await Task.sleep(nanoseconds: 10_000_000) }
-        let held = await http.isHeld(); XCTAssertTrue(held); XCTAssertTrue(container.presentedViewController === navigation)
+        let held = await http.isHeld(); XCTAssertTrue(held, "Automatic return must validate context; callbacks=\(destinations), current=\(hosted.hostedNavigationIdentity)"); XCTAssertTrue(container.presentedViewController === navigation)
         await http.releaseFailure()
         try await Task.sleep(nanoseconds: 150_000_000)
         XCTAssertTrue(container.presentedViewController === navigation)
@@ -130,7 +135,10 @@ final class LocalHostedReturnTests: XCTestCase {
         for _ in 0..<150 { if container.presentedViewController != nil { break }; try await Task.sleep(nanoseconds: 10_000_000) }
         XCTAssertEqual(local.webView.url?.path, "/explore")
         let hosted = try XCTUnwrap((container.presentedViewController as? UINavigationController)?.viewControllers.first as? ReylumiViewController)
-        XCTAssertTrue(hosted.queuedStartupURL?.path == "/staff/my-work" || hosted.hostedNavigationIdentity.hasSuffix("/staff/my-work"))
+        hosted.initializeWebContentIfNeeded()
+        let web = try XCTUnwrap(hosted.view.subviews.compactMap { $0 as? WKWebView }.first)
+        try await wait("location.pathname==='/staff/my-work' && document.getElementById('route') != null", in: web)
+        XCTAssertEqual(web.url?.path, "/staff/my-work", "The permitted saved hint must reach the actual HTTPS-hosted document")
     }
 
     private func readyBundle() throws -> (ReylumiLocalBundle, URL) {

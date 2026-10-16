@@ -7,6 +7,39 @@ actor AppLocalCookieBox {
     func append(_ cookie: HTTPCookie) { values.append(cookie) }
 }
 
+private actor RotationCookieJar {
+    private(set) var values: [HTTPCookie]
+    init(_ values: [HTTPCookie]) { self.values = values }
+    func put(_ cookie: HTTPCookie) {
+        values.removeAll { $0.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased() == cookie.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased() && $0.path == cookie.path && $0.name == cookie.name }
+        if (cookie.expiresDate ?? .distantFuture) > Date(), String(describing: cookie.properties?[.maximumAge] ?? "") != "0" { values.append(cookie) }
+    }
+    func removeAll() { values = [] }
+}
+
+private actor ConcurrentRotationHTTP: ReylumiLocalHTTPClient {
+    static let updates = "sb-access-token=refreshed-access; Path=/; Secure; SameSite=Lax, sb-refresh-token=refreshed-refresh; Path=/; Secure; SameSite=Lax, sb-old-chunk=; Path=/; Max-Age=0; Secure"
+    private var held: [(URLRequest, CheckedContinuation<(Data, HTTPURLResponse), Error>)] = []
+    private(set) var readRequests = 0
+    private(set) var commandRequests = 0
+    func heldCount() -> Int { held.count }
+    func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let url = request.url!, query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        let object: [String: Any]
+        if url.path == "/api/app-local/read" { readRequests += 1; return try await withCheckedThrowingContinuation { held.append((request, $0)) } }
+        if url.path == "/api/app-local/context" { object = AppLocalTestFixture.context(generation: query.first { $0.name == "generation" }!.value!) }
+        else { commandRequests += 1; object = ["ok": true, "data": ["saved": true]] }
+        return (try JSONSerialization.data(withJSONObject: object), HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!)
+    }
+    func releaseAll() throws {
+        let pending = held; held = []
+        for (request, continuation) in pending {
+            let value: [String: Any] = ["schemaVersion": 1, "status": 200, "scope": AppLocalTestFixture.scope, "etag": "refreshed", "updatedAt": Date().timeIntervalSince1970 * 1000, "data": ["staff": [["name": "Mai"]]]]
+            continuation.resume(returning: (try JSONSerialization.data(withJSONObject: value), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json", "Set-Cookie": Self.updates])!))
+        }
+    }
+}
+
 actor AppLocalFixtureHTTP: ReylumiLocalHTTPClient {
     private(set) var requests: [URLRequest] = []
     var scope = AppLocalTestFixture.scope
@@ -53,6 +86,64 @@ actor AppLocalFixtureHTTP: ReylumiLocalHTTPClient {
 }
 
 final class LocalAppTransportTests: XCTestCase {
+    @MainActor
+    func testConcurrentExactResponseCookieRotationsPreserveReadsAndHonorRemovedChunks() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = ConcurrentRotationHTTP()
+        let original = HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie": "sb-access-token=original-access; Path=/; Secure, sb-refresh-token=original-refresh; Path=/; Secure, sb-old-chunk=old; Path=/; Secure, kingpos-workspace=one; Path=/; Secure"], for: origin)
+        XCTAssertEqual(original.count, 4); XCTAssertEqual(HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie": ConcurrentRotationHTTP.updates], for: origin).count, 3)
+        let jar = RotationCookieJar(original)
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.rotation." + UUID().uuidString), client: http, defaults: UserDefaults(suiteName: "reylumi.tests.rotation." + UUID().uuidString)!, cookies: { await jar.values }, setCookie: { cookie in try? await Task.sleep(nanoseconds: 5_000_000); await jar.put(cookie) })
+        var resets = 0; transport.onEvent = { name, _ in if name == "reylumi:app-local-reset" { resets += 1 } }
+        _ = try await transport.freshContext(path: "/help")
+        let first = Task { @MainActor in try await transport.read(name: "fixture.roster", args: ["date": "one"], etag: nil, requestedScope: AppLocalTestFixture.scope) }
+        let second = Task { @MainActor in try await transport.read(name: "fixture.roster", args: ["date": "two"], etag: nil, requestedScope: AppLocalTestFixture.scope) }
+        for _ in 0..<150 { if await http.heldCount() == 2 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        let held = await http.heldCount(); XCTAssertEqual(held, 2)
+        try await http.releaseAll()
+        let a = try await first.value, b = try await second.value
+        XCTAssertEqual(a["status"] as? Int, 200); XCTAssertEqual(b["status"] as? Int, 200); XCTAssertEqual(resets, 0)
+        let cookies = await jar.values
+        XCTAssertEqual(cookies.first { $0.name == "sb-access-token" }?.value, "refreshed-access")
+        XCTAssertEqual(cookies.first { $0.name == "sb-refresh-token" }?.value, "refreshed-refresh")
+        XCTAssertNil(cookies.first { $0.name == "sb-old-chunk" })
+        XCTAssertEqual(cookies.first { $0.name == "kingpos-workspace" }?.value, "one")
+        _ = try await transport.command(name: "fixture.save", args: ["id": "one-attempt"], requestID: UUID().uuidString, path: "/help", requestedScope: AppLocalTestFixture.scope)
+        let commandRequests = await http.commandRequests; XCTAssertEqual(commandRequests, 1)
+        await transport.reset()
+    }
+    @MainActor
+    func testResponseCookieProofRejectsUnrelatedWorkspaceAccountAndLogoutChanges() async throws {
+        for change in ["workspace", "account", "logout", "commit-workspace"] {
+            let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+            let origin = URL(string: "https://reylumi.com")!, http = ConcurrentRotationHTTP()
+            let original = HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie": "sb-access-token=original-access; Path=/; Secure, sb-refresh-token=original-refresh; Path=/; Secure, kingpos-workspace=one; Path=/; Secure"], for: origin)
+            let jar = RotationCookieJar(original)
+            let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.rotation-deny." + UUID().uuidString), client: http, defaults: UserDefaults(suiteName: "reylumi.tests.rotation-deny." + UUID().uuidString)!, cookies: { await jar.values }, setCookie: { cookie in
+                await jar.put(cookie)
+                if change == "commit-workspace", cookie.name == "sb-access-token" {
+                    for external in HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie": "kingpos-workspace=two; Path=/; Secure"], for: origin) { await jar.put(external) }
+                }
+            })
+            _ = try await transport.freshContext(path: "/help")
+            var resets = 0; transport.onEvent = { name, _ in if name == "reylumi:app-local-reset" { resets += 1 } }
+            let read = Task { @MainActor in try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope) }
+            for _ in 0..<150 { if await http.heldCount() == 1 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+            if change == "logout" { await jar.removeAll() }
+            else if change != "commit-workspace" {
+                let header = change == "workspace" ? "kingpos-workspace=two; Path=/; Secure" : "sb-access-token=different-account; Path=/; Secure"
+                for cookie in HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie": header], for: origin) { await jar.put(cookie) }
+            }
+            try await http.releaseAll()
+            do { _ = try await read.value; XCTFail("An exact response refresh must not forgive an unrelated \(change) change") }
+            catch { XCTAssertEqual((error as NSError).code, 409, change) }
+            XCTAssertEqual(resets, 1, change)
+            let values = await jar.values
+            if change == "commit-workspace" { XCTAssertEqual(values.first { $0.name == "kingpos-workspace" }?.value, "two", "The final guard must catch an external change during cookie delivery") }
+            else { XCTAssertFalse(values.contains { $0.value == "refreshed-access" }, "Rejected old responses cannot overwrite current identity") }
+            let cached = try await transport.cached(name: "fixture.roster", args: [:], requestedScope: AppLocalTestFixture.scope); XCTAssertNil(cached)
+        }
+    }
     @MainActor
     func testRequestedContextPathProofAndCachedPortableDisplayAuthorityAreExact() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
