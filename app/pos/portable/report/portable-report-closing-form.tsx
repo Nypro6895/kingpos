@@ -1,4 +1,7 @@
 "use client";
+import { ClosingSaveNotice } from "@/app/reports/closing-save-notice";
+import { parseClosingCents } from "@/lib/daily-closing-input";
+import { useDailyClosingSave } from "@/lib/daily-closing-save";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { usePathname } from "next/navigation";
 import { posUserMessage } from "@/lib/pos-user-messages";
@@ -11,16 +14,9 @@ import {
   type PortableReportData,
 } from "@/app/pos/portable/actions";
 import type { KeyboardEvent } from "react";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { usePortableWorkspaceState } from "@/app/pos/portable/portable-workspace-state";
-
-type ClosingValues = {
-  cashAmount: string;
-  creditCardAmount: string;
-  note: string;
-  otherAmount: string;
-};
 
 const RECONCILIATION_LABELS = {
   balanced: "Du / Balanced",
@@ -35,29 +31,7 @@ function formatMoney(value: number) {
   }).format(value);
 }
 
-function formatInputMoney(value: number) {
-  return value === 0 ? "" : value.toFixed(2);
-}
-
-function parseInputCents(value: string) {
-  const normalized = value.trim().replaceAll(",", "").replace(/^\$/, "");
-
-  if (!normalized) {
-    return 0;
-  }
-
-  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) {
-    return null;
-  }
-
-  const amount = Number(normalized);
-
-  if (!Number.isFinite(amount) || amount < 0) {
-    return null;
-  }
-
-  return Math.round(amount * 100);
-}
+const parseInputCents = parseClosingCents;
 
 function fromCents(value: number) {
   return Math.round(value) / 100;
@@ -65,24 +39,6 @@ function fromCents(value: number) {
 
 function toCents(value: number) {
   return Math.round(value * 100);
-}
-
-function getInitialValues(data: PortableReportData): ClosingValues {
-  return {
-    cashAmount: formatInputMoney(data.closingInputs.cashAmount),
-    creditCardAmount: formatInputMoney(data.closingInputs.creditCardAmount),
-    note: data.closingInputs.note ?? "",
-    otherAmount: formatInputMoney(data.closingInputs.otherAmount),
-  };
-}
-
-function getSnapshot(values: ClosingValues) {
-  return JSON.stringify({
-    cashAmount: values.cashAmount.trim(),
-    creditCardAmount: values.creditCardAmount.trim(),
-    note: values.note.trim(),
-    otherAmount: values.otherAmount.trim(),
-  });
 }
 
 function getReconciliationStatus(differenceCents: number) {
@@ -105,7 +61,7 @@ function statusClass(status: keyof typeof RECONCILIATION_LABELS) {
   return "border-amber-200 bg-amber-50 text-amber-800";
 }
 
-export function PortableReportClosingForm({
+function PortableClosingEditor({
   data: initialData,
 }: {
   data: PortableReportData;
@@ -115,29 +71,41 @@ export function PortableReportClosingForm({
   const pathname=usePathname();
   const workspace = usePortableWorkspaceState();
   const [data,setData]=useState(initialData);
-  const [baseline,setBaseline]=useState(initialData.closingInputs);
+  const scope = workspace?.scope ?? initialData.closingScope ?? "";
+  const active = useRef(true);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   const [pendingCount,setPendingCount]=useState(0);
-  const closingChanged=JSON.stringify(baseline)!==JSON.stringify(data.closingInputs);
   usePosResourceRefresh(workspace?.scope.split(':')[0],'report',async()=>{
     const response=await fetch('/api/pos/portable/workspace?resource=report&date='+encodeURIComponent(initialData.reportDate),{cache:'no-store',signal:AbortSignal.timeout(10000)});
-    if(response.ok){const next=await response.json();if(next.reportDate===initialData.reportDate)setData(next);}
+    if(response.ok){const next=await response.json();if(active.current && next.closingScope===scope && next.reportDate===initialData.reportDate && !next.setupMessage)setData(next);}
   },{enabled:pathname==="/pos/portable/report"});
   useEffect(()=>{
     if(!workspace)return;let active=true;
     const refresh=()=>{void listPortableOperations(workspace.scope).then(rows=>{if(active)setPendingCount(rows.filter(row=>row.kind==='receipt'&&row.state!=='synced'&&row.state!=='cancelled').length);});};
     refresh();window.addEventListener(PORTABLE_OPERATIONS_CHANGED,refresh);return()=>{active=false;window.removeEventListener(PORTABLE_OPERATIONS_CHANGED,refresh);};
   },[workspace?.scope]);
-  const storageKey = workspace ? `kingpos:report-inputs:${workspace.scope}:${data.reportDate}` : null;
-  const [isPending, startTransition] = useTransition();
-  const [values, setValues] = useState(() => getInitialValues(data));
-  const [savedSnapshot, setSavedSnapshot] = useState(() =>
-    getSnapshot(getInitialValues(data)),
-  );
-  const [saveState, setSaveState] = useState<"error" | "idle" | "saved">(
-    "idle",
-  );
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const isReadOnly = data.lock.isLocked || Boolean(data.setupMessage);
+  const closing = useDailyClosingSave({
+    initial: data.closingInputs, readOnly: !scope || data.lock.isLocked || Boolean(data.setupMessage),
+    storageKey: 'kingpos:report-inputs:' + scope + ':' + data.reportDate,
+    storage: portableDeviceStorage,
+    save: async (values, expectedClosing) => {
+      const result = await savePortableReportClosing({ ...values, expectedClosing, expectedScope: scope, reportDate: data.reportDate });
+      if (!result.ok) throw new Error(posUserMessage(result.error));
+      if (result.data.closingScope !== scope || result.data.reportDate !== data.reportDate || result.data.setupMessage) throw new Error('Could not confirm saved amounts for this salon session.');
+      return result.data.closingInputs;
+    },
+    read: async () => {
+      const response = await fetch('/api/pos/portable/workspace?resource=report&date=' + encodeURIComponent(data.reportDate), { cache: 'no-store', signal: AbortSignal.timeout(10000) });
+      if (!response.ok) throw new Error('Could not load the saved report.');
+      const result = await response.json() as PortableReportData;
+      if (result.closingScope !== scope || result.reportDate !== data.reportDate || result.setupMessage) throw new Error('Could not confirm saved amounts for this salon session.');
+      return { closingInputs: result.closingInputs, readOnly: result.lock.isLocked };
+    },
+  });
+  const { values, updateValue } = closing;
+  const isPending = closing.phase === 'saving';
+  const saveState = closing.phase;
+  const isReadOnly = closing.readOnly || closing.phase === 'loading';
   const cashCents = parseInputCents(values.cashAmount);
   const creditCardCents = parseInputCents(values.creditCardAmount);
   const otherCents = parseInputCents(values.otherAmount);
@@ -158,93 +126,19 @@ export function PortableReportClosingForm({
         ? `Missing ${formatMoney(Math.abs(fromCents(differenceCents)))}`
         : `Over ${formatMoney(fromCents(differenceCents))}`;
 
-  useEffect(() => {
-    if (!storageKey || isReadOnly) return;
-    const timer = setTimeout(() => {
-      try {
-        const saved = JSON.parse(portableDeviceStorage.getItem(storageKey) ?? "null");
-        const entries=saved?.values??saved;
-        if (entries && ["cashAmount", "creditCardAmount", "otherAmount", "note"].every(key => typeof entries[key] === "string")) {setValues(entries);if(saved.baseline)setBaseline(saved.baseline);}
-      } catch { /* Keep server values if the device draft is unavailable. */ }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [storageKey, isReadOnly]);
-
-  function updateValue(key: keyof ClosingValues, value: string) {
-    const next = { ...values, [key]: value };
-    if (storageKey) {
-      try { portableDeviceStorage.setItem(storageKey, JSON.stringify({values:next,baseline})); }
-      catch { setErrorMessage("Unable to save on this device. Keep this window open.");setValues(next);return; }
-    }
-    setValues(next);
-    setSaveState("idle");
-    setErrorMessage(null);
-  }
-
-  function save(force = false) {
-    if(closingChanged){setErrorMessage('Closing amounts changed on another screen. Choose which amounts to keep below.');return;}
-    if (!navigator.onLine) {
-      setSaveState("error");
-      setErrorMessage("Entries saved on this device. Connect to finalize the report.");
-      return;
-    }
-    if (isReadOnly || isPending) {
-      return;
-    }
-
-    const snapshot = getSnapshot(values);
-
-    if (!force && snapshot === savedSnapshot) {
-      return;
-    }
-
-    if (hasInvalidAmount) {
-      setSaveState("error");
-      setErrorMessage("Enter an amount of 0 or more, with up to 2 decimal places.");
-      return;
-    }
-
-    startTransition(async () => {
-      const result = await savePortableReportClosing({
-        expectedClosing: baseline,
-        cashAmount: values.cashAmount,
-        creditCardAmount: values.creditCardAmount,
-        note: values.note,
-        otherAmount: values.otherAmount,
-        reportDate: data.reportDate,
-      });
-
-      if (!result.ok) {
-        setSaveState("error");
-        setErrorMessage(posUserMessage(result.error));
-        return;
-      }
-
-      if (storageKey) portableDeviceStorage.removeItem(storageKey);
-      setData(result.data);setBaseline(result.data.closingInputs);
-      const savedValues = getInitialValues(result.data);
-
-      setValues(savedValues);
-      setSavedSnapshot(getSnapshot(savedValues));
-      setSaveState("saved");
-      setErrorMessage(null);
-    });
-  }
-
   function handleEnter(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== "Enter") {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) {
       return;
     }
 
     event.preventDefault();
     event.currentTarget.blur();
-    save();
+    void closing.save();
   }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
       {pendingCount>0?<p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900 lg:col-span-2">{pendingCount} <WorkspaceText text="ticket(s) on this device are not uploaded yet. Report totals will update after they are uploaded. Check the sync icon for details." /></p>:null}
-      {closingChanged?<div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm lg:col-span-2"><p className="font-semibold"><WorkspaceText text="Closing amounts changed on another screen." /></p><p className="mt-1"><WorkspaceText text="Your entries have been kept. Latest saved total:" /> {formatMoney(data.closingInputs.cashAmount+data.closingInputs.creditCardAmount+data.closingInputs.otherAmount)}.</p><div className="mt-3 flex flex-wrap gap-2"><button className="min-h-11 rounded-lg border bg-white px-4" onClick={()=>{setValues(getInitialValues(data));setSavedSnapshot(getSnapshot(getInitialValues(data)));setBaseline(data.closingInputs);}}><WorkspaceText text="Use saved amounts" /></button><button className="min-h-11 rounded-lg border bg-white px-4" onClick={()=>{setBaseline(data.closingInputs);setErrorMessage(null);}}><WorkspaceText text="Keep my entries for review" /></button></div></div>:null}
       <section className="rounded-lg border border-zinc-200 bg-white p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -260,8 +154,8 @@ export function PortableReportClosingForm({
               <span className="font-medium text-zinc-600"><WorkspaceText text="Saving" /></span>
             ) : saveState === "saved" ? (
               <span className="font-medium text-emerald-700"><WorkspaceText text="Saved" /></span>
-            ) : saveState === "error" ? (
-              <span className="font-medium text-red-700"><WorkspaceText text="Error" /></span>
+            ) : saveState === "unknown" || saveState === "error" ? (
+              <span className="font-medium text-red-700"><WorkspaceText text="Save not confirmed" /></span>
             ) : null}
           </div>
         </div>
@@ -270,9 +164,10 @@ export function PortableReportClosingForm({
           className="mt-5 space-y-4"
           onSubmit={(event) => {
             event.preventDefault();
-            save(true);
+            void closing.save(true);
           }}
         >
+          <ClosingSaveNotice {...closing} />
           <div className="grid gap-4 sm:grid-cols-3">
             <label className="block">
               <span className="text-xs font-medium uppercase text-zinc-500">
@@ -283,13 +178,8 @@ export function PortableReportClosingForm({
                 disabled={isReadOnly}
                 inputMode="decimal"
                 placeholder={__vt("0.00")}
-                onFocus={(event) => {
-                  if (Number(event.currentTarget.value) === 0) {
-                    const key = event.currentTarget.dataset.amount as keyof ClosingValues;
-                    updateValue(key, "");
-                  } else event.currentTarget.select();
-                }}
-                onBlur={() => save()}
+                onFocus={(event) => event.currentTarget.select()}
+                onBlur={() => closing.blurMoney("cashAmount")}
                 onChange={(event) => updateValue("cashAmount", event.target.value)}
                 onKeyDown={handleEnter}
                 data-amount="cashAmount"
@@ -305,13 +195,8 @@ export function PortableReportClosingForm({
                 disabled={isReadOnly}
                 inputMode="decimal"
                 placeholder={__vt("0.00")}
-                onFocus={(event) => {
-                  if (Number(event.currentTarget.value) === 0) {
-                    const key = event.currentTarget.dataset.amount as keyof ClosingValues;
-                    updateValue(key, "");
-                  } else event.currentTarget.select();
-                }}
-                onBlur={() => save()}
+                onFocus={(event) => event.currentTarget.select()}
+                onBlur={() => closing.blurMoney("creditCardAmount")}
                 onChange={(event) =>
                   updateValue("creditCardAmount", event.target.value)
                 }
@@ -329,13 +214,8 @@ export function PortableReportClosingForm({
                 disabled={isReadOnly}
                 inputMode="decimal"
                 placeholder={__vt("0.00")}
-                onFocus={(event) => {
-                  if (Number(event.currentTarget.value) === 0) {
-                    const key = event.currentTarget.dataset.amount as keyof ClosingValues;
-                    updateValue(key, "");
-                  } else event.currentTarget.select();
-                }}
-                onBlur={() => save()}
+                onFocus={(event) => event.currentTarget.select()}
+                onBlur={() => closing.blurMoney("otherAmount")}
                 onChange={(event) =>
                   updateValue("otherAmount", event.target.value)
                 }
@@ -353,17 +233,13 @@ export function PortableReportClosingForm({
             <textarea
               className="mt-1 min-h-24 w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
               disabled={isReadOnly}
-              onBlur={() => save()}
+              onBlur={() => void closing.save()}
               onChange={(event) => updateValue("note", event.target.value)}
               value={values.note}
             />
           </label>
 
-          {errorMessage ? (
-            <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-              <WorkspaceText text={errorMessage} />
-            </p>
-          ) : null}
+
 
           {data.lock.isLocked ? (
             <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -382,7 +258,7 @@ export function PortableReportClosingForm({
             </div>
             <button
               className="h-10 rounded bg-zinc-950 px-4 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-              disabled={isReadOnly || isPending}
+              disabled={isReadOnly || closing.blocked || hasInvalidAmount}
               type="submit"
             >
               {isPending ? "Saving" : <WorkspaceText text="Save" />}
@@ -434,4 +310,9 @@ export function PortableReportClosingForm({
       </section>
     </div>
   );
+}
+
+export function PortableReportClosingForm({ data }: { data: PortableReportData }) {
+  const workspace = usePortableWorkspaceState();
+  return <PortableClosingEditor key={(workspace?.scope ?? data.closingScope ?? '') + ':' + data.reportDate} data={data}/>;
 }

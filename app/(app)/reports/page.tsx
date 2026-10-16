@@ -59,7 +59,7 @@ async function ReportsPage({ searchParams }: ReportsPageProps) {
 
   // Server response timestamp is intentionally request-specific.
   // eslint-disable-next-line react-hooks/purity
-  return <OwnerLiveReports snapshotAt={Date.now()} key={JSON.stringify(params)} salonId={context.currentSalon.id} salonName={context.currentSalon.name} today={today} report={report} reportOverview={reportOverview} canEdit={canEdit} canApplyCorrection={canApplyCorrection} canRequestCorrection={canRequestCorrection}/>;
+  return <OwnerLiveReports snapshotAt={Date.now()} key={JSON.stringify(params)} viewerId={context.user.id} salonId={context.currentSalon.id} salonName={context.currentSalon.name} today={today} report={report} reportOverview={reportOverview} canEdit={canEdit} canApplyCorrection={canApplyCorrection} canRequestCorrection={canRequestCorrection}/>;
 }
 
 export default withExperiencePage(ReportsPage);

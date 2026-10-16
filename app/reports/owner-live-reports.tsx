@@ -146,7 +146,7 @@ function StaffReportTable({ rows }: { rows: DailyPosReportStaffRow[] }) {
 }
 
 
-type Props={snapshotAt?:number;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:OperationalReportData;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
+type Props={viewerId:string;snapshotAt?:number;salonId:string;salonName:string;today:string;report:DailyPosReport;reportOverview:OperationalReportData;canEdit:boolean;canApplyCorrection:boolean;canRequestCorrection:boolean};
 export function OwnerLiveReports(initial:Props){
   const __vt = useWorkspaceTranslation();
 
@@ -171,7 +171,7 @@ export function OwnerLiveReports(initial:Props){
    query.set('view',view);
    try {
      const response=await fetch('/api/pos/owner/reports?'+query.toString(),{cache:'no-store',signal:AbortSignal.timeout(15000)});
-     if(response.ok){const next=await response.json();if(next.salonId===salonId&&snapshotGeneration===generation.current){
+     if(response.ok){const next=await response.json();if(next.closingScope===`${salonId}:${initial.viewerId}`&&snapshotGeneration===generation.current){
        setLive(previous=>({base:initial,data:{...(previous?.base===initial?previous.data:initial),...next}}));dirtyViews.current[view]=false;
      }}
    } finally {running.current=false;}
@@ -234,6 +234,7 @@ export function OwnerLiveReports(initial:Props){
           ) : null}
 
           <DailyClosingForm
+            scope={`${salonId}:${data.viewerId}`}
             adjustmentTotals={report.adjustmentTotals}
             canApplyCorrection={canApplyCorrection}
             canEdit={canEdit}
@@ -241,7 +242,7 @@ export function OwnerLiveReports(initial:Props){
             closingInputs={report.closingInputs}
             corrections={report.corrections}
             expectedTotal={report.totals.expectedTotal}
-            key={report.reportDate}
+            key={`${salonId}:${data.viewerId}:${report.reportDate}`}
             lock={report.lock}
             reportDate={report.reportDate}
             snapshotTotals={report.snapshotTotals}

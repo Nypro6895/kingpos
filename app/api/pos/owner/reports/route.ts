@@ -16,7 +16,7 @@ export async function GET(request:Request){
    view==='overview'?Promise.resolve(null):canEditDailyPosClosing(context),
    view==='overview'?Promise.resolve(null):canApplyFinancialCorrections(context),
  ]);
- return NextResponse.json({salonId:context.currentSalon.id,
+ return NextResponse.json({salonId:context.currentSalon.id,closingScope:`${context.currentSalon.id}:${context.user.id}`,
    ...(report?{report,canEdit:canEditPermission&&!report.lock.isLocked,canApplyCorrection}:{}),
    ...(reportOverview?{reportOverview}:{}),
  },{headers:{'Cache-Control':'no-store'}});

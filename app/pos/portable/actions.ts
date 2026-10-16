@@ -351,6 +351,7 @@ export type PortableCreateAppointmentInput = {
 };
 
 export type PortableReportData = {
+  closingScope?: string;
   closingInputs: {
     cashAmount: number;
     creditCardAmount: number;
@@ -381,6 +382,7 @@ export type PortableReportData = {
 };
 
 export type PortableReportClosingSaveInput = {
+  expectedScope?: string;
   expectedClosing?: PortableReportData["closingInputs"];
   cashAmount: string;
   creditCardAmount: string;
@@ -2236,6 +2238,7 @@ export async function getPortableReportData(
     }
 
     return {
+    closingScope: `${portableSession.salon_id}:${keyId}`,
       closingInputs: {
         cashAmount: 0,
         creditCardAmount: 0,
@@ -2277,6 +2280,7 @@ export async function getPortableReportData(
   const totals = payload.totals ?? {};
 
   return {
+    closingScope: `${portableSession.salon_id}:${keyId}`,
     closingInputs: normalizePortableReportClosingInputs(payload.closingInputs),
     lock: normalizePortableReportLock(payload.lock),
     reportDate,
@@ -2308,9 +2312,12 @@ export async function savePortableReportClosing(
       throw new Error("Report date is required.");
     }
 
-    const { keyId, signature, supabase } = await requirePortableCapability(
+    const { keyId, portableSession, signature, supabase } = await requirePortableCapability(
       PORTABLE_POS_CAPABILITIES.reportView,
     );
+    if (input.expectedScope && input.expectedScope !== `${portableSession.salon_id}:${keyId}`) {
+      throw new Error("The Portable salon session changed. Reopen this report before saving.");
+    }
     const cashAmountCents = parsePortableCurrencyToCents(
       input.cashAmount,
       "Cash",

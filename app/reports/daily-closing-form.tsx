@@ -1,5 +1,8 @@
 "use client";
 
+import { ClosingSaveNotice } from "@/app/reports/closing-save-notice";
+import { parseClosingCents } from "@/lib/daily-closing-input";
+import { closingSessionStorage, useDailyClosingSave } from "@/lib/daily-closing-save";
 import { WorkspaceText } from "@/components/workspace-language";
 import {
   saveDailyPosClosing,
@@ -20,6 +23,7 @@ import type { KeyboardEvent } from "react";
 import { useMemo, useState, useTransition } from "react";
 
 type DailyClosingFormProps = {
+  scope: string;
   adjustmentTotals: DailyClosingAdjustmentTotals;
   canApplyCorrection: boolean;
   canEdit: boolean;
@@ -33,13 +37,6 @@ type DailyClosingFormProps = {
   lock: DailyClosingLockInfo;
   reportDate: string;
   snapshotTotals: DailyClosingSnapshotTotals | null;
-};
-
-type ClosingFormValues = {
-  cashAmount: string;
-  creditCardAmount: string;
-  note: string;
-  otherAmount: string;
 };
 
 const RECONCILIATION_LABELS: Record<DailyPosReconciliationStatus, string> = {
@@ -94,34 +91,7 @@ function fromCents(value: number) {
   return Math.round(value) / 100;
 }
 
-function parseInputCents(value: string) {
-  const normalized = value.trim().replaceAll(",", "").replace(/^\$/, "");
-
-  if (!normalized) {
-    return 0;
-  }
-
-  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) {
-    return null;
-  }
-
-  const amount = Number(normalized);
-
-  if (!Number.isFinite(amount) || amount < 0) {
-    return null;
-  }
-
-  return Math.round(amount * 100);
-}
-
-function getSnapshot(values: ClosingFormValues) {
-  return JSON.stringify({
-    cashAmount: values.cashAmount.trim(),
-    creditCardAmount: values.creditCardAmount.trim(),
-    note: values.note.trim(),
-    otherAmount: values.otherAmount.trim(),
-  });
-}
+const parseInputCents = parseClosingCents;
 
 function getReconciliationStatus(
   differenceCents: number,
@@ -143,17 +113,6 @@ function getStatusClass(status: DailyPosReconciliationStatus) {
   }
 
   return "border-amber-200 bg-amber-50 text-amber-800";
-}
-
-function getInitialValues(
-  closingInputs: DailyPosClosingInputs,
-): ClosingFormValues {
-  return {
-    cashAmount: formatInputMoney(closingInputs.cashAmount),
-    creditCardAmount: formatInputMoney(closingInputs.creditCardAmount),
-    note: closingInputs.note ?? "",
-    otherAmount: formatInputMoney(closingInputs.otherAmount),
-  };
 }
 
 function getCurrentFieldValue(
@@ -370,6 +329,7 @@ function SnapshotSummary({
 }
 
 export function DailyClosingForm({
+  scope,
   adjustmentTotals,
   canApplyCorrection,
   canEdit,
@@ -382,18 +342,28 @@ export function DailyClosingForm({
   snapshotTotals,
 }: DailyClosingFormProps) {
   const router = useRouter();
-  const [isSavePending, startSaveTransition] = useTransition();
   const [isCorrectionPending, startCorrectionTransition] = useTransition();
-  const [values, setValues] = useState(() => getInitialValues(closingInputs));
-  const [baseline,setBaseline]=useState(closingInputs);
-  const closingChanged=JSON.stringify(baseline)!==JSON.stringify(closingInputs);
-  const [lastSavedSnapshot, setLastSavedSnapshot] = useState(() =>
-    getSnapshot(getInitialValues(closingInputs)),
-  );
-  const [saveState, setSaveState] = useState<"idle" | "saved" | "error">(
-    "idle",
-  );
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const closing = useDailyClosingSave({
+    initial: closingInputs, readOnly: !canEdit,
+    storageKey: 'kingpos:owner-closing:' + scope + ':' + reportDate,
+    storage: closingSessionStorage,
+    save: async (values, expectedClosing) => {
+      const result = await saveDailyPosClosing({ ...values, expectedClosing, expectedScope: scope, reportDate });
+      if (!result.ok) throw new Error(result.error);
+      return result.closingInputs;
+    },
+    read: async () => {
+      const response = await fetch('/api/pos/owner/reports?view=closing&date=' + encodeURIComponent(reportDate), { cache: 'no-store', signal: AbortSignal.timeout(10000) });
+      if (!response.ok) throw new Error('Could not load the saved report.');
+      const result = await response.json();
+      if (result.closingScope !== scope || result.report?.reportDate !== reportDate) throw new Error('The selected salon, account or date changed. Reopen this report.');
+      return { closingInputs: result.report.closingInputs as DailyPosClosingInputs, readOnly: !result.canEdit || result.report.lock.isLocked };
+    },
+    onSaved: () => router.refresh(),
+  });
+  const { values, updateValue } = closing;
+  const isSavePending = closing.phase === 'saving';
+  const saveState = closing.phase;
   const [isCorrectionOpen, setIsCorrectionOpen] = useState(false);
   const [correctionField, setCorrectionField] =
     useState<DailyClosingCorrectionField>("cash_amount");
@@ -402,7 +372,7 @@ export function DailyClosingForm({
   );
   const [correctionReason, setCorrectionReason] = useState("");
   const [correctionError, setCorrectionError] = useState<string | null>(null);
-  const isReadOnly = !canEdit;
+  const isReadOnly = !canEdit || closing.readOnly || closing.phase === "loading";
   const cashCents = parseInputCents(values.cashAmount);
   const creditCardCents = parseInputCents(values.creditCardAmount);
   const otherCents = parseInputCents(values.otherAmount);
@@ -423,65 +393,14 @@ export function DailyClosingForm({
   const correctionMoneyInvalid =
     correctionField !== "note" && parseInputCents(requestedValue) === null;
 
-  function updateValue(key: keyof ClosingFormValues, value: string) {
-    setValues((current) => ({ ...current, [key]: value }));
-    setSaveState("idle");
-    setErrorMessage(null);
-  }
-
-  function saveIfNeeded(force = false) {
-    if(closingChanged){setErrorMessage('Closing amounts changed on another screen. Review the saved amounts below.');return;}
-    if (!canEdit || isSavePending) {
-      return;
-    }
-
-    const snapshot = getSnapshot(values);
-
-    if (!force && snapshot === lastSavedSnapshot) {
-      return;
-    }
-
-    if (hasInvalidAmount) {
-      setSaveState("error");
-      setErrorMessage("Enter an amount of 0 or more, with up to 2 decimal places.");
-      return;
-    }
-
-    startSaveTransition(async () => {
-      const result = await saveDailyPosClosing({
-        expectedClosing:baseline,
-        cashAmount: values.cashAmount,
-        creditCardAmount: values.creditCardAmount,
-        note: values.note,
-        otherAmount: values.otherAmount,
-        reportDate,
-      });
-
-      if (!result.ok) {
-        setSaveState("error");
-        setErrorMessage(result.error);
-        return;
-      }
-
-      const savedValues = getInitialValues(result.closingInputs);
-
-      setValues(savedValues);
-      setBaseline(result.closingInputs);
-      setLastSavedSnapshot(getSnapshot(savedValues));
-      setSaveState("saved");
-      setErrorMessage(null);
-      router.refresh();
-    });
-  }
-
   function handleEnter(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== "Enter") {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) {
       return;
     }
 
     event.preventDefault();
     event.currentTarget.blur();
-    saveIfNeeded();
+    void closing.save();
   }
 
   function openCorrection() {
@@ -560,8 +479,8 @@ export function DailyClosingForm({
                 <span className="font-medium text-zinc-600"><WorkspaceText text="Saving" /></span>
               ) : saveState === "saved" ? (
                 <span className="font-medium text-emerald-700"><WorkspaceText text="Saved" /></span>
-              ) : saveState === "error" ? (
-                <span className="font-medium text-red-700"><WorkspaceText text="Error" /></span>
+              ) : saveState === "unknown" || saveState === "error" ? (
+                <span className="font-medium text-red-700"><WorkspaceText text="Save not confirmed" /></span>
               ) : null}
             </div>
           </div>
@@ -570,10 +489,10 @@ export function DailyClosingForm({
             className="mt-5 space-y-4"
             onSubmit={(event) => {
               event.preventDefault();
-              saveIfNeeded(true);
+              void closing.save(true);
             }}
           >
-            {closingChanged?<div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm"><p><WorkspaceText text="Closing amounts were updated on another screen. Your entries have been kept." /></p><p className="mt-2">Saved: Cash {formatMoney(closingInputs.cashAmount)} <WorkspaceText text="· Card" /> {formatMoney(closingInputs.creditCardAmount)} <WorkspaceText text="· Other" /> {formatMoney(closingInputs.otherAmount)}</p><div className="mt-3 flex gap-2"><button type="button" className="min-h-11 rounded-lg border bg-white px-3" onClick={()=>{setValues(getInitialValues(closingInputs));setBaseline(closingInputs);}}><WorkspaceText text="Use saved amounts" /></button><button type="button" className="min-h-11 rounded-lg border bg-white px-3" onClick={()=>setBaseline(closingInputs)}><WorkspaceText text="Keep my entries for review" /></button></div></div>:null}
+            <ClosingSaveNotice {...closing} />
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="block">
                 <span className="text-xs font-medium uppercase text-zinc-500">
@@ -584,7 +503,9 @@ export function DailyClosingForm({
                   disabled={isReadOnly}
                   inputMode="decimal"
                   name="cash_amount"
-                  onBlur={() => saveIfNeeded()}
+                  placeholder="0.00"
+                  onFocus={(event) => event.currentTarget.select()}
+                  onBlur={() => closing.blurMoney("cashAmount")}
                   onChange={(event) =>
                     updateValue("cashAmount", event.target.value)
                   }
@@ -601,7 +522,9 @@ export function DailyClosingForm({
                   disabled={isReadOnly}
                   inputMode="decimal"
                   name="credit_card_amount"
-                  onBlur={() => saveIfNeeded()}
+                  placeholder="0.00"
+                  onFocus={(event) => event.currentTarget.select()}
+                  onBlur={() => closing.blurMoney("creditCardAmount")}
                   onChange={(event) =>
                     updateValue("creditCardAmount", event.target.value)
                   }
@@ -618,7 +541,9 @@ export function DailyClosingForm({
                   disabled={isReadOnly}
                   inputMode="decimal"
                   name="other_amount"
-                  onBlur={() => saveIfNeeded()}
+                  placeholder="0.00"
+                  onFocus={(event) => event.currentTarget.select()}
+                  onBlur={() => closing.blurMoney("otherAmount")}
                   onChange={(event) =>
                     updateValue("otherAmount", event.target.value)
                   }
@@ -636,17 +561,13 @@ export function DailyClosingForm({
                 className="mt-1 min-h-20 w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
                 disabled={isReadOnly}
                 name="note"
-                onBlur={() => saveIfNeeded()}
+                onBlur={() => void closing.save()}
                 onChange={(event) => updateValue("note", event.target.value)}
                 value={values.note}
               />
             </label>
 
-            {errorMessage ? (
-              <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-                <WorkspaceText text={errorMessage} />
-              </p>
-            ) : null}
+  
 
             {lock.isLocked ? (
               <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -682,7 +603,7 @@ export function DailyClosingForm({
                 {!lock.isLocked ? (
                   <button
                     className="h-10 rounded bg-zinc-950 px-4 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-                    disabled={!canEdit || isSavePending}
+                    disabled={isReadOnly || closing.blocked || hasInvalidAmount}
                     type="submit"
                   >
                     {isSavePending ? "Saving" : <WorkspaceText text="Save" />}

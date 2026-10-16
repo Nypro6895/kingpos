@@ -183,6 +183,7 @@ type FinancialAdjustmentRow = {
 };
 
 export type SaveDailyPosClosingInput = {
+  expectedScope?: string;
   expectedClosing: DailyPosClosingInputs;
   cashAmount: string;
   creditCardAmount: string;
@@ -2205,6 +2206,10 @@ export async function upsertDailyPosClosing(input: SaveDailyPosClosingInput) {
 
   const { context, Account, salon, supabase, user } =
     await requireReportContext(DAILY_POS_REPORT_PERMISSIONS.edit);
+
+  if (input.expectedScope && input.expectedScope !== `${salon.id}:${user.id}`) {
+    throw new Error("The selected salon or account changed. Reopen this report before saving.");
+  }
 
   await assertFinancialDateMutable(input.reportDate, context, {
     requireEditPermission: false,
