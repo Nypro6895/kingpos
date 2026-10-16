@@ -1,0 +1,48 @@
+{
+  "kind": "change",
+  "changeId": "salon-address-booking-release-integration-20261016",
+  "status": "ready",
+  "summary": "Regenerated and verified the installed app bundle on the exact uploaded 23.1 native baseline, preserving all native fixes. Web source remains separately based on current production.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\salon-address-booking-release-20261016\\native-frozen-source",
+    "commit": "e26bf766e3bd072421340adfa022a7652ebb6243"
+  },
+  "validation": [
+    {
+      "name": "45 native JavaScript/setup/booking boundary regressions",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-release-20261016/native-js-tests.log"
+    },
+    {
+      "name": "344 bundled assets verified and latest uploaded native foundation preserved",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-release-20261016/native-source.json"
+    },
+    {
+      "name": "90 simulator tests, unsigned/signed archive, exact uploaded source and Apple availability",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-release-20261016/native-final-verification.json"
+    }
+  ],
+  "dependencies": [
+    "salon-address-booking-20261016"
+  ],
+  "id": "67961de5-e612-4f34-83ee-9199cf40139b",
+  "recordedAt": "2026-10-16T22:50:52.713Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/LocalAppBundle/app.css": "a2ea1bbdb1ba91d90d3ea9a1b209fecfbd6e306f75469ba07f5df1ac04bd7997",
+    "ios/Reylumi/LocalAppBundle/app.js": "9897589e7817021dfcd377bfe1dc8aa2a09052970fc269ed90ea7fdf9f4a04bd",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "ac781f071e3cc962aa760d44149a1feced5d349926df83673600fa4c01587ae1"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "kind": "release",
+  "summary": "Published the approved text-address and create-salon setup/booking handoff to Reylumi; exact baseline and source hashes verified. No production data or MapTiler configuration changes. Matching iPhone release remains in its separate upload/verification flow.",
+  "changes": [
+    "4bc939e7-bd8d-42e2-8b71-1107666ddda0"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "url": "https://reylumi.com",
+      "deploymentId": "dpl_GFYtc7Ju9PijSyxe4EyXwwyGSTwF",
+      "baselineDeploymentId": "dpl_4tFutRf2NBkU91JsH5W1mRuPjS9i",
+      "sourceSha256": "4a9ee34e12ccb06a25ee21b8131c9c55ab09e981dc7c71a38b8c9828e7ff9cee",
+      "overlaySha256": "5f673fbb23ea95cc1b4247394936879e2a7c25cdfd842aaf6ae64a1bc02cf809",
+      "deploySourceSha256": "47401bb87c03ce7dc30c58a3bdcf65c93909e1be6d8f8a36f70ba3a0c6aeec92",
+      "commit": "ac824ab0e7cf9905554143796b4c0f38a63c56d1",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-release-20261016/live-source-verification.json"
+    }
+  },
+  "verification": {
+    "productionBuild": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-release-20261016/production-build.log",
+    "targetedTests": 35,
+    "localHttpChecks": 12,
+    "liveHttpChecks": 12,
+    "liveBrowser": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-release-20261016/live-ui-verification.json"
+  },
+  "source": {
+    "manifest": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-release-20261016/assembled-source.json"
+  },
+  "pendingDisposition": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-release-20261016/pending-disposition.json",
+  "id": "ffcad251-be8d-439f-bb92-c74cdc76dcf1",
+  "recordedAt": "2026-10-16T22:48:39.843Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos"
+}

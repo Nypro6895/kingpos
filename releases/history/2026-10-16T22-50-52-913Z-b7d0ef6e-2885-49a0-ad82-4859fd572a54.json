@@ -1,0 +1,68 @@
+{
+  "kind": "release",
+  "summary": "Uploaded and verified the matching salon setup update through the existing TestFlight distribution, preserving the latest actually uploaded native source. No App Store publication or physical-device installation is claimed.",
+  "changes": [
+    "e7376a43-ee52-4adc-b75e-c223a173868e",
+    "67961de5-e612-4f34-83ee-9199cf40139b"
+  ],
+  "targets": {
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "24.1",
+      "commit": "e26bf766e3bd072421340adfa022a7652ebb6243",
+      "baselineCommit": "89e16562ed1929e73dfa0ea76baf497cdff233f5",
+      "baselineBuild": "23.1",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-release-20261016/native-final-verification.json"
+    }
+  },
+  "verification": {
+    "tests": {
+      "expectedCount": 90,
+      "count": 90,
+      "failures": 0,
+      "failedCases": 0,
+      "reportedPassed": true,
+      "executionSucceeded": true,
+      "passed": true
+    },
+    "archives": {
+      "unsignedPassed": true,
+      "signedPassed": true,
+      "exportPassed": true
+    },
+    "apple": {
+      "checkedAt": "2026-10-16T22:48:41.629Z",
+      "build": "24.1",
+      "buildId": "171e3bee-89fe-4774-8ce2-d0cdfc9630d0",
+      "processingState": "VALID",
+      "internalBuildState": "IN_BETA_TESTING",
+      "matched": true,
+      "valid": true
+    },
+    "testFlight": {
+      "checkedAt": "2026-10-16T22:49:32.981Z",
+      "availableToExistingInternalGroup": true,
+      "status": "available-to-existing-internal-group",
+      "groups": [
+        {
+          "id": "afe80011-9371-4a4c-afda-025b624f3275",
+          "name": "Reylumi Internal",
+          "associationConfirmed": true
+        },
+        {
+          "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+          "name": "Reylumi support",
+          "associationConfirmed": true
+        }
+      ]
+    }
+  },
+  "source": {
+    "manifest": "C:/Users/giuse/kingpos/artifacts/salon-address-booking-release-20261016/native-source.json"
+  },
+  "id": "b7d0ef6e-2885-49a0-ad82-4859fd572a54",
+  "recordedAt": "2026-10-16T22:50:52.913Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos"
+}
