@@ -1,0 +1,257 @@
+{
+  "completedAt": "2026-10-16T18:22:48.911Z",
+  "sourceCommit": "260e26849b807f841046edef634246aeec49ff84",
+  "sourceSha256": "969fc71454b72a626770f1fd67e112c54215fc560ebf76d2566719878067fe86",
+  "sourceFiles": 566,
+  "behavior": {
+    "tests": 173,
+    "passed": 173,
+    "failed": 0,
+    "skipped": 0,
+    "environment": "Controlled isolated original-component/server-authority fixtures in local Chromium and Node; not physical iPhone timing"
+  },
+  "web": {
+    "productionBuild": "passed",
+    "nextVersion": "16.2.9",
+    "assetCount": 411,
+    "backgroundDispatchDisabled": true
+  },
+  "ios": {
+    "status": "tests-and-unsigned-archive-passed",
+    "runId": "38945864401",
+    "url": "https://github.com/Nypro6895/kingpos/actions/runs/38945864401",
+    "commit": "260e26849b807f841046edef634246aeec49ff84",
+    "tests": 81,
+    "failures": 0,
+    "bundleBuildId": "66786d65173470ea0e6f00b830d9a48ac1c12c3d5abbc878bd98aff1c30ab73e",
+    "nativeSourceSha256": "e7a7e2a0de59085e37e2e6c59a15c3256cd89b7be3b175c91eff4649ad2172b5"
+  },
+  "coverage": {
+    "total": 133,
+    "bundled": 85,
+    "ordinaryEligible": 85,
+    "registeredPatterns": 95,
+    "missing": [],
+    "online": [
+      {
+        "path": "/accept-invite",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/account-recovery",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/admin",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/advertising",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/attention",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/audit",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/businesses",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/businesses/:businessId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/claims",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/inbox",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/inbox/:threadId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/locations",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/locations/:locationId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/market",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/market/tax",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/notifications",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/post-safety",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/post-safety/spam",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/recovery",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/reports",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/reports/:reportId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/search",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/settings",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/settings/support-email",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/settings/twilio",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/team",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/users",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/users/:userId",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/admin/verification",
+        "reason": "Existing administrative permission boundary; these routes are excluded from the distributed iOS product."
+      },
+      {
+        "path": "/booking-payment/:token",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/booking/manage/:token",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/check-in/:entry",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/claim/:salonId",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/claim/customer",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/contact-support",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/deletion-status/:token",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/forgot-password",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/login",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/market/booking-deposit/payment",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/market/payment-return",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/ownership/invite/:token",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/reset-password",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/security-check",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/settings/recovery-back-office",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/signup",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/staff/invite/:token",
+        "reason": "Original HTTPS identity, CAPTCHA, recovery, or invitation authority; credential links do not enter an installed local URL."
+      },
+      {
+        "path": "/support/guest/:threadId",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      },
+      {
+        "path": "/visit/:pass",
+        "reason": "Original HTTPS payment or secret-capability flow; cached UI cannot confirm a payment, guest identity, or receipt capability."
+      }
+    ],
+    "boundedFamilies": {
+      "/more/:section": [
+        "/more/saved-post",
+        "/more/saved-posts",
+        "/more/saved-designs",
+        "/more/following",
+        "/more/favorite-shop",
+        "/more/favorite-customer",
+        "/more/memberships",
+        "/more/reviews",
+        "/more/gift-cards",
+        "/more/reports"
+      ]
+    }
+  },
+  "publication": {
+    "web": false,
+    "iosUpload": false,
+    "appStore": false,
+    "migrationApplied": false
+  },
+  "releaseRequirements": {
+    "newNativeBinary": true,
+    "webBeforeIos": true,
+    "migration": "supabase/migrations/20261016170000_app_local_upload_sessions.sql",
+    "staffAttestationMigrationAlreadyApplied": true,
+    "version": "Choose a newer build from the latest actually uploaded Apple source when deploying; do not infer it from this unsigned check"
+  }
+}
