@@ -10,9 +10,11 @@ private actor AppLocalUnavailableHTTP: ReylumiLocalHTTPClient {
 
 /// All authority and DTOs are synthetic. No request reaches a business server.
 private actor InstalledPOSFixtureHTTP: ReylumiLocalHTTPClient {
+    struct Command: Sendable { let name: String; let values: [Bool]?; let scope: String? }
+    static let relayLoader = "action.5290c94f98ce780e04f5d9ad"
     let viewer = UUID().uuidString.lowercased()
     let salon = "00000000-0000-4000-8000-000000000002"
-    private(set) var commands = 0
+    private(set) var commands: [Command] = []
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let url = try XCTUnwrap(request.url)
         let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
@@ -34,8 +36,18 @@ private actor InstalledPOSFixtureHTTP: ReylumiLocalHTTPClient {
                 "staff": [staff], "services": [], "defaults": defaults, "preferences": preferences
             ]
             object = ["schemaVersion": 1, "status": 200, "scope": AppLocalTestFixture.scope, "etag": "fixture-owner-r1", "updatedAt": now.timeIntervalSince1970 * 1000, "data": ["view": "workspace", "props": reference]]
+        } else if url.path == "/api/app-local/command" {
+            let body = (try? JSONSerialization.jsonObject(with: request.httpBody ?? Data())) as? [String: Any]
+            let name = body?["name"] as? String ?? "", args = body?["args"] as? [String: Any]
+            let values = args?["values"] as? [Bool], scope = body?["scope"] as? String
+            commands.append(Command(name: name, values: values, scope: scope))
+            // DeskRelay mounts its original loader once per WebView. Its real
+            // server action may dispatch relay work; never call it in a test.
+            // Simulate only its exact request with a noninstalled fixture.
+            if request.httpMethod == "POST", name == Self.relayLoader, values == [true], scope == AppLocalTestFixture.scope {
+                object = ["ok": true, "data": ["value": ["data": ["installed": false, "tickets": [], "services": []]]]]
+            } else { status = 503; object = ["error": "Fixture forbids all other business commands"] }
         } else {
-            if url.path == "/api/app-local/command" { commands += 1 }
             status = 503; object = ["error": "Fixture has no other network or business actions"]
         }
         return (try JSONSerialization.data(withJSONObject: object), HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!)
@@ -237,6 +249,8 @@ final class LocalAppWebViewTests: XCTestCase {
         """, in: web!) as? String
         let cartID = try XCTUnwrap(prepared)
         try await wait("JSON.parse(localStorage.getItem(\(parameters).key))?.cart?.amount==='44.25'", in: web!)
+        for _ in 0..<100 { if await http.commands.count >= 1 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        let firstMountCommands = await http.commands; XCTAssertEqual(firstMountCommands.count, 1)
         weak var old = web
         window.rootViewController = nil; web?.stopLoading(); web?.removeFromSuperview(); web = nil; controller = nil
         for _ in 0..<100 { if old == nil { break }; try await Task.sleep(nanoseconds: 20_000_000) }
@@ -259,7 +273,10 @@ final class LocalAppWebViewTests: XCTestCase {
         })()
         """, in: restored) as? Bool
         XCTAssertEqual(durable, true, "Actual POS, submission checkpoint, cryptography and saved outbox must survive a cold installed origin")
-        let commands = await http.commands; XCTAssertEqual(commands, 0, "Initializer/reopen must not manufacture or replay a business command")
+        for _ in 0..<100 { if await http.commands.count >= 2 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        let commands = await http.commands
+        XCTAssertEqual(commands.map(\.name), [InstalledPOSFixtureHTTP.relayLoader, InstalledPOSFixtureHTTP.relayLoader], "One original DeskRelay loader per mount; no financial action or queued operation may be replayed")
+        XCTAssertTrue(commands.allSatisfy { $0.values == [true] && $0.scope == AppLocalTestFixture.scope }, "The synthetic loader cannot stand in for a different action/arguments/workspace")
     }
     @MainActor
     func testNativeResetUpdatesBridgeEpochAndRejectsOldEnvelope() async throws {

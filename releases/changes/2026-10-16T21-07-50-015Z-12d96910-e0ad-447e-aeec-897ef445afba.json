@@ -1,0 +1,31 @@
+{
+  "kind": "change",
+  "changeId": "ios-21-1-runtime-repairs-20261016",
+  "status": "working",
+  "summary": "Correct only the actual installed POS XCTest fixture: model its existing DeskRelay loadServiceRelay server-action transport with synthetic installed:false, record exact names/arguments, and reject every other command. Preserve the initial90-test run failure and all product bytes.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/ReylumiTests/LocalAppWebViewTests.swift"
+  ],
+  "source": {
+    "commit": "06947486a1fc902c25a9ddba82dc7fff3732f82f"
+  },
+  "validation": [
+    {
+      "name": "Actual first Mac CI90 cases:89 passed,1 fixture command-count failure",
+      "result": "failed",
+      "evidence": "artifacts/pos-menu-recovery-release-20261016/native-check-38965888458-failed.log"
+    },
+    {
+      "name": "Pinned macOS rerun after narrow fixture correction",
+      "result": "pending"
+    }
+  ],
+  "id": "12d96910-e0ad-447e-aeec-897ef445afba",
+  "recordedAt": "2026-10-16T21:07:50.015Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
