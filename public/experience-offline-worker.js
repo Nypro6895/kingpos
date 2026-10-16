@@ -42,6 +42,22 @@ self.installExperienceOfflineShell = function () {
   const read = (url, timeout = 15000) => fetch(url, { cache: 'no-store', credentials: 'same-origin', signal: AbortSignal.timeout(timeout), priority: 'low' });
   const htmlAttribute = value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll("'", '&#x27;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   function assetUrl(value) { try { const url = new URL(value, self.location.origin); return url.origin === self.location.origin && url.pathname.startsWith('/_next/static/') && !url.hash && !url.username && !url.password && !/%2f|%5c|\.\./i.test(url.pathname) ? url.href : null; } catch { return null; } }
+  function deployedAsset(value) {
+    try {
+      const url = new URL(value, self.location.origin), id = url.searchParams.get('dpl'), name = url.pathname.split('/').pop();
+      if (!assetUrl(url.href) || url.searchParams.size !== 1 || !/^[\w-]{1,32}$/.test(id || '') || !/\.(?:m?js|css|woff2?|ttf|otf)$/i.test(name) || !/(?:^|[-.])[a-f0-9]{8,64}(?=[-.]|$)/i.test(name)) return null;
+      url.search = ''; return { url: url.href, deploymentId: id };
+    } catch { return null; }
+  }
+  // Vercel can append this opt-in toolbar after Next generated its manifest.
+  // Recognize only that exact deployment-bound suffix; never cache/execute it.
+  function originalAsset(body, expected, path, deploymentId) {
+    if (body.byteLength === expected.bytes) return body;
+    if (!/^\/_next\/static\/chunks\/webpack-[a-f0-9]+\.js$/.test(path) || !/^dpl_[A-Za-z0-9]+$/.test(deploymentId || '')) throw new Error('Unexpected build asset bytes');
+    const suffix = new TextEncoder().encode('\n;(function(){try{if(typeof document==="undefined"||!/(?:^|;\\s)__vercel_toolbar=1(?:;|$)/.test(document.cookie))return;}catch(e){return;}var s=document.createElement(\'script\');s.src=\'https://vercel.live/_next-live/feedback/feedback.js\';s.setAttribute("data-explicit-opt-in","true");s.setAttribute("data-cookie-opt-in","true");s.setAttribute("data-deployment-id",' + JSON.stringify(deploymentId) + ');((document.head||document.documentElement).appendChild(s))})();');
+    if (body.byteLength !== expected.bytes + suffix.byteLength || !suffix.every((value, index) => new Uint8Array(body)[expected.bytes + index] === value)) throw new Error('Unexpected build asset suffix');
+    return body.slice(0, expected.bytes);
+  }
   async function completeEntry(entry, path, generation) {
     if (!entry || !valid(entry.grant, entry.authorityPath || path, generation) || !Array.isArray(entry.assets) || !entry.assets.length || !(await caches.keys()).includes(entry.assetCache)) return false;
     const cache = await caches.open(entry.assetCache), present = new Set((await cache.keys()).map(key => key.url));
@@ -79,6 +95,7 @@ self.installExperienceOfflineShell = function () {
     if (html.length * 2 > 8 * 1024 * 1024 || !html.includes(display ? 'data-customer-display-shell' : 'data-experience-offline-scope="' + htmlAttribute(grant.scope) + '"')) return null;
     const manifest = await manifestResponse.json();
     if (typeof manifest.version !== 'string' || !/^[\w-]{8,128}$/.test(manifest.version) || !Array.isArray(manifest.assets) || !manifest.assets.length || manifest.assets.length > 600 || !Number.isFinite(manifest.totalBytes) || manifest.totalBytes > MAX_BYTES || !Array.isArray(manifest.files) || manifest.files.length !== manifest.assets.length) return null;
+    if (manifest.deploymentId !== undefined && (typeof manifest.deploymentId !== 'string' || !/^[\w-]{1,32}$/.test(manifest.deploymentId))) return null;
     const files = new Map(manifest.files.map(file => [new URL(file.path, self.location.origin).pathname, file]));
     if (manifest.files.some(file => !assetUrl(file.path) || !Number.isFinite(file.bytes) || file.bytes <= 0 || !/^[a-f0-9]{64}$/.test(file.sha256))) return null;
     const assets = new Set(manifest.assets.map(assetUrl));
@@ -94,11 +111,12 @@ self.installExperienceOfflineShell = function () {
         const existing = await assetCache.match(url);
         if (existing && existing.headers.get('x-reylumi-sha256') === expected.sha256 && Number(existing.headers.get('x-reylumi-bytes')) === expected.bytes) { bytes += expected.bytes; if (bytes > MAX_BYTES) throw new Error('Asset budget exceeded'); continue; }
         const file = existing || await read(url, 30000); if (!file.ok || file.type === 'opaque') throw new Error('Required asset unavailable');
-        const body = await file.arrayBuffer(); bytes += body.byteLength; if (bytes > MAX_BYTES) throw new Error('Asset budget exceeded');
+        const received = await file.arrayBuffer(), body = originalAsset(received, expected, new URL(url).pathname, manifest.deploymentId); bytes += body.byteLength; if (bytes > MAX_BYTES) throw new Error('Asset budget exceeded');
         const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', body))].map(value => value.toString(16).padStart(2, '0')).join('');
         if (body.byteLength !== expected.bytes || digest !== expected.sha256) throw new Error('Required asset does not match the verified build');
         if (started !== epoch) throw new Error('Preparation superseded');
         const fileHeaders = new Headers(file.headers); fileHeaders.delete('content-encoding'); fileHeaders.delete('content-length'); fileHeaders.set('x-reylumi-bytes', String(body.byteLength)); fileHeaders.set('x-reylumi-sha256', digest);
+        if (body !== received) fileHeaders.delete('etag');
         await assetCache.put(url, new Response(body, { status: 200, headers: fileHeaders }));
       }
     }));
@@ -116,7 +134,7 @@ self.installExperienceOfflineShell = function () {
       if (started !== epoch) { await caches.delete(pageName); return null; }
       meta = await metadata(); if (started !== epoch) { await caches.delete(pageName); return null; }
       const entries = Object.fromEntries(Object.entries(meta.entries || {}).filter(([, row]) => valid(row.grant, row.grant.path, input.generation)));
-      entries[path] = { cache: pageName, assetCache: assetName, grant, authorityPath, assets: [...assets], preparedAt: Date.now(), bytes: html.length * 2 };
+      entries[path] = { cache: pageName, assetCache: assetName, grant, authorityPath, deploymentId: manifest.deploymentId, assets: [...assets], preparedAt: Date.now(), bytes: html.length * 2 };
       const ordered = Object.entries(entries).sort((a, b) => b[1].preparedAt - a[1].preparedAt);
       let htmlBytes = ordered.reduce((sum, [, row]) => sum + (row.bytes || 0), 0);
       while (ordered.length > 1 && (ordered.length > 16 || htmlBytes > 32 * 1024 * 1024)) htmlBytes -= ordered.pop()[1].bytes || 0;
@@ -158,8 +176,12 @@ self.installExperienceOfflineShell = function () {
     event.respondWith((async () => {
       try {
       if (asset) {
-        for (const name of (await caches.keys()).filter(name => name.startsWith(ASSETS)).reverse()) { const response = await (await caches.open(name)).match(request); if (response) return response; }
-        return fetch(request);
+        const deployed = deployedAsset(url.href), allowed = deployed ? new Set(Object.values((await metadata()).entries).filter(row => row.deploymentId === deployed.deploymentId).map(row => row.assetCache)) : new Set();
+        for (const name of (await caches.keys()).filter(name => name.startsWith(ASSETS)).reverse()) {
+          const cache = await caches.open(name), exact = await cache.match(request); if (exact) return exact;
+          if (deployed && allowed.has(name)) { const response = await cache.match(deployed.url); if (response && /^[a-f0-9]{64}$/.test(response.headers.get('x-reylumi-sha256') || '')) return response; }
+        }
+        return self.navigator.onLine === false ? Response.error() : fetch(request);
       }
       const local = await prepared(path);
       if (local) {
