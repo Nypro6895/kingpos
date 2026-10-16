@@ -26,6 +26,10 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     var onOpenOnline: ((String) -> Void)?
     var onOpenExternal: ((URL) -> Void)?
     var onReady: (() -> Void)?
+    #if DEBUG
+    var confirmationPresenterForTesting: ((String, @escaping (Bool) -> Void) -> Void)?
+    var configureWebViewForTesting: ((WKWebViewConfiguration) -> Void)?
+    #endif
     private var reportedReady = false
     private var hostedReturnToken: String?
     private var hostedReturnEpoch: Int?
@@ -83,9 +87,13 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
             if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" }
         }
         configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        #if DEBUG
+        configureWebViewForTesting?(configuration)
+        #endif
         webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = self
         webView.uiDelegate = self
+        webView.allowsBackForwardNavigationGestures = true
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.isOpaque = false; webView.backgroundColor = .white; webView.scrollView.backgroundColor = .white
         webView.scrollView.contentInsetAdjustmentBehavior = .never
@@ -241,6 +249,11 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
             if action.shouldPerformDownload { decisionHandler(.download); return }
             if action.targetFrame?.isMainFrame == true {
                 if expectedDocumentNavigation == url { expectedDocumentNavigation = nil; decisionHandler(.allow); return }
+                if action.navigationType == .backForward, bundle.routeExists(url.path), (action.request.httpMethod ?? "GET") == "GET" {
+                    // Let WebKit restore its real history item/popstate instead
+                    // of converting Back into a fresh pushState navigation.
+                    decisionHandler(.allow); return
+                }
                 if documentCommitted, action.sourceFrame.isMainFrame, let source = action.sourceFrame.request.url, bundle.owns(source) {
                     decisionHandler(.cancel)
                     let path = url.path + (url.query.map { "?" + $0 } ?? "") + (url.fragment.map { "#" + $0 } ?? "")
@@ -308,6 +321,16 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         guard frame.isMainFrame, let url = frame.request.url, bundle.owns(url), presentedViewController == nil else { completionHandler(); return }
         let controller = UIAlertController(title: "Reylumi", message: message, preferredStyle: .alert)
         controller.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler() }); present(controller, animated: true)
+    }
+    func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
+        guard frame.isMainFrame, let url = frame.request.url, bundle.owns(url), presentedViewController == nil else { completionHandler(false); return }
+        #if DEBUG
+        if let presenter = confirmationPresenterForTesting { presenter(message, completionHandler); return }
+        #endif
+        let controller = UIAlertController(title: "Reylumi", message: message, preferredStyle: .alert)
+        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completionHandler(false) })
+        controller.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler(true) })
+        present(controller, animated: true)
     }
     func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) { download.delegate = self }
     func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) { download.delegate = self }

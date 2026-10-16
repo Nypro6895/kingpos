@@ -19,6 +19,7 @@ import { setPayrollDataPlugin } from "./plugin-actions";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { invalidateExperienceResources } from "@/lib/experience-resource-cache";
 import { useRememberedExperience } from "@/lib/use-remembered-experience";
+import { clearExperienceState } from "@/lib/experience-state";
 import { rankMarketApps } from "@/lib/market-ranking";
 import { sampleApps, type MarketApp } from "./sample-apps";
 import { CardCheckoutPanel as BankCheckoutPanel } from "./card-checkout-panel";
@@ -36,6 +37,7 @@ import { EMPTY_VIETNAMESE_PLUGIN, type VietnamesePluginState } from "@/types/vie
 import { takeMarketStartupDraft, MARKET_CATEGORIES, type MarketBrowse } from "./market-browse";
 
 const categories = MARKET_CATEGORIES;
+const browseResetEvents = ["reylumi:experience-reset", "reylumi:app-local-reset", "reylumi:app-local-access-changed", "reylumi:experience-access-changed", "reylumi:offline-clear"];
 
 type MarketExperience = { query: string; category: string; view: "discover" | "my-apps" };
 function isMarketExperience(value: unknown): value is MarketExperience {
@@ -65,6 +67,23 @@ export function MarketClient({ automaticTax, cardReady = false, booksms, experie
   const [view, setView] = useState<"discover" | "my-apps">("discover");
   const browseRestorationFinished = useRef(false);
   const startupDraftTaken = useRef(false);
+  const browseKey = JSON.stringify(initialBrowse ?? null);
+  const [browseSource, setBrowseSource] = useState({ scope: experienceScope, key: browseKey });
+  const previousBrowseScope = useRef(experienceScope);
+  if (browseSource.scope !== experienceScope || browseSource.key !== browseKey) {
+    setBrowseSource({ scope: experienceScope, key: browseKey });
+    // An unscoped startup can hand its input to its first authorized view.
+    // A previous account/workspace cannot seed the next account's search.
+    if (browseSource.scope !== experienceScope && browseSource.scope !== undefined || browseSource.key !== browseKey && initialBrowse) {
+      setQuery(initialBrowse?.query ?? ""); setCategory(initialBrowse?.category ?? "All features"); setView("discover");
+    }
+  }
+  useLayoutEffect(() => {
+    if (previousBrowseScope.current !== experienceScope && previousBrowseScope.current !== undefined) {
+      browseRestorationFinished.current = false; startupDraftTaken.current = false;
+    }
+    previousBrowseScope.current = experienceScope;
+  }, [experienceScope]);
   const searchInput = useRef<HTMLInputElement>(null);
   useLayoutEffect(() => {
     if (startupDraftTaken.current) return;
@@ -87,6 +106,7 @@ export function MarketClient({ automaticTax, cardReady = false, booksms, experie
   }, [experienceScope]);
   useRememberedExperience({ namespace: "market", scope: experienceScope ?? "unscoped", key: "browse" }, {
     enabled: Boolean(experienceScope) && !paymentReturn,
+    restoreOnVisit: true,
     value: { query: query.slice(0, 200), category, view },
     validate: isMarketExperience,
     onEmpty() {
@@ -103,6 +123,15 @@ export function MarketClient({ automaticTax, cardReady = false, booksms, experie
       setQuery(state.query); setCategory(state.category); setView(state.view);
     },
   });
+  useEffect(() => {
+    const reset = () => {
+      clearExperienceState({ namespace: "market" });
+      browseRestorationFinished.current = true; startupDraftTaken.current = true;
+      setQuery(""); setCategory("All features"); setView("discover");
+    };
+    for (const event of browseResetEvents) window.addEventListener(event, reset);
+    return () => { for (const event of browseResetEvents) window.removeEventListener(event, reset); };
+  }, []);
   const [installed, setInstalled] = useState(payrollDownloadInstalled);
   const [installationSource, setInstallationSource] = useState({ serviceRelayInstalled, campaignInstalled, payrollDownloadInstalled });
   if (installationSource.serviceRelayInstalled !== serviceRelayInstalled || installationSource.campaignInstalled !== campaignInstalled || installationSource.payrollDownloadInstalled !== payrollDownloadInstalled) {

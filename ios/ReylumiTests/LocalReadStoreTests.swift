@@ -2,6 +2,44 @@ import XCTest
 @testable import Reylumi
 
 final class LocalReadStoreTests: XCTestCase {
+    func testConcurrentSnapshotsShareOneDurableCommitAndIdenticalLeaseDoesNotRewriteIt() async throws {
+        let origin = URL(string: "https://reylumi.com")!, directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let service = "reylumi.tests.batched-reads." + UUID().uuidString, generation = UUID().uuidString
+        let lease = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: generation), generation: generation))
+        let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: service)
+        await store.accept(lease)
+        let initialWrites = await store.successfulSaves; XCTAssertEqual(initialWrites, 1)
+        await store.accept(lease)
+        let duplicateWrites = await store.successfulSaves; XCTAssertEqual(duplicateWrites, initialWrites)
+        let a = Data("{\"staff\":[{\"name\":\"Mai\"}]}".utf8), b = Data("{\"services\":[{\"name\":\"Manicure\"}]}".utf8)
+        async let first: Void = store.put("roster", payload: a, session: lease)
+        async let second: Void = store.put("services", payload: b, session: lease)
+        _ = await (first, second)
+        let writes = await store.successfulSaves; XCTAssertEqual(writes, initialWrites + 1)
+        let cold = ReylumiLocalReadStore(origin: origin, directory: directory, service: service)
+        let restoredA = await cold.get("roster", session: lease), restoredB = await cold.get("services", session: lease)
+        XCTAssertEqual(restoredA, a); XCTAssertEqual(restoredB, b, "Both awaited reads must be durable before either caller finishes")
+        await store.put("services", payload: b, session: lease)
+        let identicalWrites = await store.successfulSaves; XCTAssertEqual(identicalWrites, writes)
+        await store.clear()
+    }
+    func testClearDuringBatchedCommitCannotResurrectPrivateData() async throws {
+        let origin = URL(string: "https://reylumi.com")!, directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let service = "reylumi.tests.batch-clear." + UUID().uuidString, generation = UUID().uuidString
+        let lease = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: generation), generation: generation))
+        let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: service)
+        await store.accept(lease)
+        let pending = Task { await store.put("roster", payload: Data("{\"staff\":[]}".utf8), session: lease) }
+        for _ in 0..<100 { if await store.get("roster", session: lease) != nil { break }; try await Task.sleep(nanoseconds: 100_000) }
+        await store.clear(); await pending.value
+        try await Task.sleep(nanoseconds: 40_000_000)
+        let cold = ReylumiLocalReadStore(origin: origin, directory: directory, service: service)
+        let restored = await cold.session(generation: generation); XCTAssertNil(restored)
+        let bytes = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
+        XCTAssertTrue(bytes.isEmpty)
+    }
     func testBareCustomerDisplaySelectsDeviceLeaseWithoutBorrowingOwnerOrPublicTokenAuthority() async throws {
         let generation = UUID().uuidString, directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let store = ReylumiLocalReadStore(origin: URL(string: "https://reylumi.com")!, directory: directory, service: "reylumi.tests.display." + UUID().uuidString)

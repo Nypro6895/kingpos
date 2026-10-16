@@ -6,14 +6,14 @@ enum ReylumiLocalBundleError: Error { case missing, invalidManifest, invalidPath
 
 /// All executable resources come from the signed application bundle. The
 /// manifest is generated together with the client app, never downloaded.
-struct ReylumiLocalBundle {
+struct ReylumiLocalBundle: Sendable {
     static let scheme = "reylumi-app"
     static let host = "bundle"
-    struct File: Codable { let path: String; let bytes: Int; let sha256: String; let mime: String }
-    struct Route: Codable { let path: String; let adapter: String; let access: String }
-    struct Read: Codable { let name: String; let path: String; let argumentKeys: [String]; let access: String; let cacheable: Bool }
-    struct Command: Codable { let name: String; let path: String; let argumentKeys: [String] }
-    struct Manifest: Codable {
+    struct File: Codable, Sendable { let path: String; let bytes: Int; let sha256: String; let mime: String }
+    struct Route: Codable, Sendable { let path: String; let adapter: String; let access: String }
+    struct Read: Codable, Sendable { let name: String; let path: String; let argumentKeys: [String]; let access: String; let cacheable: Bool }
+    struct Command: Codable, Sendable { let name: String; let path: String; let argumentKeys: [String] }
+    struct Manifest: Codable, Sendable {
         let version: Int
         let productionReady: Bool?
         let connectOrigins: [String]?
@@ -115,14 +115,19 @@ struct ReylumiLocalBundle {
               !path.split(separator: "/").contains(where: { ["new", "create", "edit", "setup", "delete", "remove", "cancel", "confirm", "checkout", "transfer", "accept", "reset"].contains(String($0)) }) else { return nil }
         return url.path
     }
-    func resource(for url: URL) throws -> (Data, String) {
+    func resourcePath(for url: URL) throws -> String {
         guard owns(url), (url.query?.utf8.count ?? 0) <= 8192,
               let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
               !components.percentEncodedPath.lowercased().contains("%2f"), !components.percentEncodedPath.lowercased().contains("%5c"),
               let decoded = components.percentEncodedPath.removingPercentEncoding else { throw ReylumiLocalBundleError.invalidPath }
         let relative = String(decoded.dropFirst())
         let path = files[relative] != nil && url.query == nil ? relative : files[relative] == nil && routeExists(decoded) ? manifest.entry : ""
-        guard Self.safePath(path), let expected = files[path] else { throw ReylumiLocalBundleError.unavailable }
+        guard Self.safePath(path), files[path] != nil else { throw ReylumiLocalBundleError.unavailable }
+        return path
+    }
+    func resource(for url: URL) throws -> (Data, String) {
+        let path = try resourcePath(for: url)
+        guard let expected = files[path] else { throw ReylumiLocalBundleError.unavailable }
         let file = directory.appendingPathComponent(path).resolvingSymlinksInPath().standardizedFileURL
         guard file.path.hasPrefix(directory.path + "/"),
               let size = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize, size == expected.bytes,
@@ -132,14 +137,55 @@ struct ReylumiLocalBundle {
     }
 }
 
+/// The installed, signed public resources are immutable for this bundle's
+/// lifetime. Verify once per retained core asset, off the UI actor. Never pin
+/// every image or the complete application package in memory.
+actor ReylumiLocalResourceCache {
+    struct Statistics: Sendable { let entries: Int; let bytes: Int; let verifiedReads: Int; let uiThreadReads: Int }
+    private let bundle: ReylumiLocalBundle
+    private let maximumBytes: Int
+    private let maximumEntries: Int
+    private var cached: [String: (Data, String)] = [:]
+    private var order: [String] = []
+    private var bytes = 0
+    private var reads = 0
+    private var uiReads = 0
+    init(bundle: ReylumiLocalBundle, maximumBytes: Int = 8 * 1024 * 1024, maximumEntries: Int = 24) {
+        self.bundle = bundle; self.maximumBytes = maximumBytes; self.maximumEntries = maximumEntries
+    }
+    func resource(for url: URL) throws -> (Data, String) {
+        try Task.checkCancellation()
+        let path = try bundle.resourcePath(for: url)
+        if let value = cached[path] { order.removeAll { $0 == path }; order.append(path); return value }
+        reads += 1; if Thread.isMainThread { uiReads += 1 }
+        let value = try bundle.resource(for: url)
+        try Task.checkCancellation()
+        let core = ["text/html", "text/css", "text/javascript", "font/woff", "font/woff2"].contains(value.1)
+        if core, value.0.count <= maximumBytes, maximumEntries > 0 {
+            while (!order.isEmpty && (bytes + value.0.count > maximumBytes || cached.count >= maximumEntries)) {
+                let oldest = order.removeFirst(); bytes -= (cached.removeValue(forKey: oldest)?.0.count ?? 0)
+            }
+            cached[path] = value; order.append(path); bytes += value.0.count
+        }
+        return value
+    }
+    func statistics() -> Statistics { Statistics(entries: cached.count, bytes: bytes, verifiedReads: reads, uiThreadReads: uiReads) }
+}
+
+@MainActor
 final class ReylumiLocalSchemeHandler: NSObject, WKURLSchemeHandler {
     let bundle: ReylumiLocalBundle
-    init(bundle: ReylumiLocalBundle) { self.bundle = bundle }
+    private let resources: ReylumiLocalResourceCache
+    private var active: [ObjectIdentifier: (UUID, Task<Void, Never>)] = [:]
+    init(bundle: ReylumiLocalBundle) { self.bundle = bundle; self.resources = ReylumiLocalResourceCache(bundle: bundle) }
     func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
-        // Delivery is synchronous: no callback can outlive stopURLSchemeTask.
-        do {
-            guard urlSchemeTask.request.httpMethod == "GET", let url = urlSchemeTask.request.url else { throw ReylumiLocalBundleError.invalidPath }
-            let (data, mime) = try bundle.resource(for: url)
+        guard urlSchemeTask.request.httpMethod == "GET", let url = urlSchemeTask.request.url else { urlSchemeTask.didFailWithError(ReylumiLocalBundleError.invalidPath); return }
+        let id = ObjectIdentifier(urlSchemeTask), token = UUID(), resources = resources
+        let task: Task<Void, Never> = Task { @MainActor [weak self] in
+          defer { if self?.active[id]?.0 == token { self?.active.removeValue(forKey: id) } }
+          do {
+            let (data, mime) = try await resources.resource(for: url)
+            guard let self, self.active[id]?.0 == token, !Task.isCancelled else { return }
             let maps = bundle.manifest.mapOrigins ?? []
             let connections = (bundle.manifest.connectOrigins ?? []) + maps
             let connect = (["'self'"] + connections).joined(separator: " ")
@@ -149,7 +195,14 @@ final class ReylumiLocalSchemeHandler: NSObject, WKURLSchemeHandler {
             urlSchemeTask.didReceive(response)
             urlSchemeTask.didReceive(data)
             urlSchemeTask.didFinish()
-        } catch { urlSchemeTask.didFailWithError(error) }
+          } catch {
+            guard self?.active[id]?.0 == token, !Task.isCancelled else { return }
+            urlSchemeTask.didFailWithError(error)
+          }
+        }
+        active[id] = (token, task)
     }
-    func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {}
+    func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
+        active.removeValue(forKey: ObjectIdentifier(urlSchemeTask))?.1.cancel()
+    }
 }

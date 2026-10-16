@@ -94,6 +94,9 @@ actor ReylumiLocalReadStore {
     private let account: String
     private var state: State?
     private var loaded = false
+    private var pendingSave: Task<Void, Never>?
+    private var pendingSaveID: UUID?
+    private(set) var successfulSaves = 0
 
     init(origin: URL, directory: URL? = nil, service: String = "com.reylumi.local-app-reads.v1") {
         self.service = service; self.account = origin.absoluteString
@@ -129,7 +132,24 @@ actor ReylumiLocalReadStore {
             try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
             try encrypted.write(to: file, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
             var url = file; var values = URLResourceValues(); values.isExcludedFromBackup = true; try url.setResourceValues(values)
+            successfulSaves += 1
         } catch { /* Reads remain usable in memory; unavailable disk cannot grant access. */ }
+    }
+    private func cancelPendingSave() { pendingSave?.cancel(); pendingSave = nil; pendingSaveID = nil }
+    private func finishSave(_ id: UUID) {
+        guard pendingSaveID == id, !Task.isCancelled else { return }
+        pendingSave = nil; pendingSaveID = nil; save()
+    }
+    private func saveTogether() async {
+        if let pendingSave { await pendingSave.value; return }
+        let id = UUID(); pendingSaveID = id
+        let task: Task<Void, Never> = Task { [weak self] in
+            // Concurrent shell/roster responses share one atomic encrypted
+            // commit. Callers still await persistence before receiving data.
+            do { try await Task.sleep(nanoseconds: 25_000_000) } catch { return }
+            await self?.finishSave(id)
+        }
+        pendingSave = task; await task.value
     }
     func session(generation: String, scope: String? = nil, path: String? = nil, privateOnly: Bool = false, authority: String? = nil, now: Date = Date()) -> ReylumiLocalSession? {
         load()
@@ -137,9 +157,12 @@ actor ReylumiLocalReadStore {
             candidate.valid(generation: generation, at: now) && (scope == nil || candidate.scope == scope) && (path == nil || candidate.compatible(path: path!)) && (!privateOnly || candidate.permitsPrivateReads) && (authority == nil || candidate.authority == authority)
         }
     }
-    func accept(_ session: ReylumiLocalSession) {
+    func accept(_ session: ReylumiLocalSession) async {
         load()
         guard session.valid(generation: session.generation) else { return }
+        if state?.sessions.contains(where: { $0.key == session.key && $0.envelope == session.envelope }) == true {
+            if let pendingSave { await pendingSave.value }; return
+        }
         if state == nil || state?.sessions.contains(where: { $0.viewerId != session.viewerId || $0.generation != session.generation }) == true { state = State(version: 2, sessions: [], rows: []) }
         let replaced = Set((state?.sessions ?? []).filter { $0.group == session.group && $0.grantRevision != session.grantRevision }.map(\.key))
         state?.rows.removeAll { replaced.contains($0.sessionKey) }
@@ -147,7 +170,7 @@ actor ReylumiLocalReadStore {
         state?.sessions.append(session)
         while (state?.sessions.count ?? 0) > 16 { state?.sessions.removeFirst() }
         let retained = Set((state?.sessions ?? []).map(\.key)); state?.rows.removeAll { !retained.contains($0.sessionKey) }
-        save()
+        await saveTogether()
     }
     func get(_ key: String, session: ReylumiLocalSession, now: Date = Date()) -> Data? {
         load()
@@ -159,26 +182,29 @@ actor ReylumiLocalReadStore {
         state?.rows.removeAll { $0.key == key && $0.sessionKey == session.key }; state?.rows.append(row)
         return row.payload
     }
-    func put(_ key: String, payload: Data, session: ReylumiLocalSession, resourceName: String? = nil, now: Date = Date()) {
+    func put(_ key: String, payload: Data, session: ReylumiLocalSession, resourceName: String? = nil, now: Date = Date()) async {
         load()
         guard key.utf8.count <= 16384, payload.count <= 4 * 1024 * 1024, session.valid(generation: session.generation, at: now),
               state?.sessions.contains(where: { $0.key == session.key && $0.grantRevision == session.grantRevision && $0.generation == session.generation }) == true,
               let object = try? JSONSerialization.jsonObject(with: payload), Self.isSafeReadPayload(object, resourceName: resourceName, session: session) else { return }
+        if state?.rows.contains(where: { $0.key == key && $0.sessionKey == session.key && $0.revision == session.grantRevision && $0.payload == payload }) == true {
+            if let pendingSave { await pendingSave.value }; return
+        }
         state?.rows.removeAll { $0.key == key && $0.sessionKey == session.key }
         state?.rows.append(Row(key: key, sessionKey: session.key, revision: session.grantRevision, payload: payload, receivedAt: now))
         while (state?.rows.count ?? 0) > Self.maximumSnapshots || (state?.rows.reduce(0, { $0 + $1.payload.count }) ?? 0) > Self.maximumBytes { state?.rows.removeFirst() }
-        save()
+        await saveTogether()
     }
-    func clear() { loaded = true; state = nil; try? FileManager.default.removeItem(at: file); SecItemDelete(query as CFDictionary) }
+    func clear() { cancelPendingSave(); loaded = true; state = nil; try? FileManager.default.removeItem(at: file); SecItemDelete(query as CFDictionary) }
     func remove(_ key: String, session: ReylumiLocalSession) {
         load()
         guard state?.sessions.contains(where: { $0.key == session.key && $0.grantRevision == session.grantRevision && $0.generation == session.generation }) == true else { return }
-        state?.rows.removeAll { $0.key == key && $0.sessionKey == session.key }; save()
+        state?.rows.removeAll { $0.key == key && $0.sessionKey == session.key }; cancelPendingSave(); save()
     }
     func revoke(scope: String?, authority: String? = nil) {
         load()
         let removed = Set((state?.sessions ?? []).filter { (scope == nil || $0.scope == scope) && (authority == nil || $0.authority == authority) }.map(\.key))
-        state?.sessions.removeAll { removed.contains($0.key) }; state?.rows.removeAll { removed.contains($0.sessionKey) }; save()
+        state?.sessions.removeAll { removed.contains($0.key) }; state?.rows.removeAll { removed.contains($0.sessionKey) }; cancelPendingSave(); save()
     }
 
     nonisolated static func isSafeJSON(_ value: Any, depth: Int = 0) -> Bool {

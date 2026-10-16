@@ -1,5 +1,6 @@
 import XCTest
 import CryptoKit
+import WebKit
 @testable import Reylumi
 
 enum AppLocalTestFixture {
@@ -40,6 +41,29 @@ enum AppLocalTestFixture {
 }
 
 final class LocalBundleTests: XCTestCase {
+    func testCoreResourcesAreVerifiedOffMainThreadOnceAndOnlyWithinMemoryBounds() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let cache = ReylumiLocalResourceCache(bundle: bundle)
+        let script = URL(string: "reylumi-app://bundle/app.js")!
+        let first = try await cache.resource(for: script), second = try await cache.resource(for: script)
+        XCTAssertEqual(first.0, second.0)
+        let stats = await cache.statistics()
+        XCTAssertEqual(stats.verifiedReads, 1); XCTAssertEqual(stats.uiThreadReads, 0)
+        XCTAssertLessThanOrEqual(stats.bytes, 8 * 1024 * 1024)
+        do { _ = try await cache.resource(for: URL(string: "reylumi-app://bundle/app.js?unrecognized=1")!); XCTFail("A cached core asset cannot bypass URL validation") } catch {}
+        let bounded = ReylumiLocalResourceCache(bundle: bundle, maximumBytes: 1, maximumEntries: 1)
+        _ = try await bounded.resource(for: script); _ = try await bounded.resource(for: script)
+        let limited = await bounded.statistics(); XCTAssertEqual(limited.entries, 0); XCTAssertEqual(limited.bytes, 0); XCTAssertEqual(limited.verifiedReads, 2)
+    }
+    @MainActor
+    func testStoppedSchemeTaskCannotReceiveLateAssetCallbacks() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let handler = ReylumiLocalSchemeHandler(bundle: bundle), web = WKWebView(frame: .zero)
+        let task = LocalStoppedSchemeTask()
+        handler.webView(web, start: task); handler.webView(web, stop: task)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(task.callbacks, 0)
+    }
     func testActualInstalledManifestAndEveryDeclaredResourceAreComplete() throws {
         let bundle = try ReylumiLocalBundle.installed()
         let object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: bundle.directory.appendingPathComponent("manifest.json"))) as? [String: Any])
@@ -87,4 +111,14 @@ final class LocalBundleTests: XCTestCase {
         XCTAssertEqual(ReylumiLocalBundle.mime(for: "api/vendor/maplibre-gl"), "text/javascript")
         XCTAssertNil(ReylumiLocalBundle.mime(for: "api/vendor/other"))
     }
+}
+
+@MainActor
+private final class LocalStoppedSchemeTask: NSObject, WKURLSchemeTask {
+    let request = URLRequest(url: URL(string: "reylumi-app://bundle/app.js")!)
+    private(set) var callbacks = 0
+    func didReceive(_ response: URLResponse) { callbacks += 1 }
+    func didReceive(_ data: Data) { callbacks += 1 }
+    func didFinish() { callbacks += 1 }
+    func didFailWithError(_ error: Error) { callbacks += 1 }
 }

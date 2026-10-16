@@ -6,6 +6,7 @@ import { readExperienceState, writeExperienceState, type ExperienceStateContext 
 type RememberedExperience<T> = { value: T; scrollY: number };
 const HISTORY_MARKER = "__reylumiExperienceEntry";
 const DOCUMENT_MARKER = "__reylumiExperienceDocument";
+const RESET_EVENTS = ["reylumi:experience-reset", "reylumi:app-local-reset", "reylumi:app-local-access-changed", "reylumi:experience-access-changed", "reylumi:offline-clear"];
 // PerformanceNavigationTiming describes the document load, even after SPA
 // navigation. A new document must skip old reload scroll; later Back entries
 // from this document can still restore it.
@@ -123,7 +124,7 @@ export function useRememberedExperience<T>(context: ExperienceStateContext, opti
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("pagehide", flush);
     document.addEventListener("visibilitychange", onVisibilityChange);
-    window.addEventListener("reylumi:experience-reset", reset);
+    for (const event of RESET_EVENTS) window.addEventListener(event, reset);
     for (const event of ["pointerdown", "touchstart", "wheel", "keydown", "input", "change"]) window.addEventListener(event, onInteraction, { passive: true });
     return () => {
       flush();
@@ -137,7 +138,7 @@ export function useRememberedExperience<T>(context: ExperienceStateContext, opti
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("pagehide", flush);
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      window.removeEventListener("reylumi:experience-reset", reset);
+      for (const event of RESET_EVENTS) window.removeEventListener(event, reset);
       for (const event of ["pointerdown", "touchstart", "wheel", "keydown", "input", "change"]) window.removeEventListener(event, onInteraction);
     };
   }, [namespace, scope, key, enabled, marker]);

@@ -42,6 +42,12 @@ async function fixture(start = '/pos', installClock = false) {
       '@/app/bookings/owner-live-booking-workspace': 'export const OwnerLiveBookingWorkspace=()=>null;', '@/app/reports/owner-live-reports': 'export const OwnerLiveReports=()=>null;', '@/app/pos-tickets/owner-live-tickets': 'export const OwnerLiveTickets=()=>null;',
       '@/lib/portable-operations': `export const PORTABLE_OPERATIONS_CHANGED='fixture:operations';export const portableCheckpoint=async()=>0;export const listPortableOperations=async()=>[];export const syncPortableOperations=async()=>{window.syncCalls++};export const cancelPortableOperation=async()=>{};export const retryPortableOperation=async()=>{};export const canCancelPortableOperation=()=>false;export const savePortableOperation=async()=>{throw Error('No operation may be created')};`,
     };
+    // Exercise authority recovery through the actual resource/entry lifecycle,
+    // while keeping all network and business commands inside this fixture.
+    stubs['app-local-host'] = stubs['app-local-host']
+      .replace('window.contextRequests=[];', 'window.contextRequests=[];window.freshRequests=[];window.rejectReads=0;window.rejectContext=false;')
+      .replace('window.contextRequests.push(path);', 'window.contextRequests.push(path);if(options?.fresh)window.freshRequests.push(path);if(window.rejectContext)throw Object.assign(Error("Access rejected"),{status:403});')
+      .replace('window.reads.push({name,scope:options.scope});', 'window.reads.push({name,scope:options.scope});if(window.rejectReads>0){window.rejectReads--;throw Object.assign(Error("Access must be checked"),{status:409})}');
     builder.onResolve({ filter: /.*/ }, args => { const name = Object.keys(stubs).find(name => args.path === name || args.path.endsWith('/' + name)); return name ? { path: name, namespace: 'fixture' } : undefined; });
     builder.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({ loader: 'tsx', resolveDir: process.cwd(), contents: stubs[args.path] }));
     builder.onLoad({ filter: /\.css$/ }, () => ({ loader: 'js', contents: 'export default {};' }));
@@ -50,6 +56,35 @@ async function fixture(start = '/pos', installClock = false) {
   return serve((await entryBundle).outputFiles[0].text, seed(), start, installClock);
 }
 const navigate = (page, path) => page.evaluate(path => window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate', { detail: { path } })), path);
+
+test('one rejected read forces fresh authority recovery and restores the saved money draft', { skip, timeout: 40000 }, async () => {
+  const app = await fixture('/pos', true); try {
+    const amount = app.page.locator('.owner-amount-field input[aria-label=Amount]'); await amount.fill('118.75');
+    await app.page.evaluate(() => { window.rejectReads = 1; window.dispatchEvent(new CustomEvent('reylumi:app-local-command-complete', { detail: { scope: window.fixture.scope.account } })); });
+    await app.page.waitForFunction(() => window.resets === 1 && window.freshRequests.length === 1 && window.commandScope === window.fixture.scope.account);
+    await amount.waitFor(); assert.equal(await amount.inputValue(), '118.75');
+    const requests = await app.page.evaluate(() => window.contextRequests.length); await app.page.clock.fastForward(20000);
+    assert.equal(await app.page.evaluate(() => window.contextRequests.length), requests);
+    assert.equal(await app.page.evaluate(() => window.wrongScope), 0); assert.deepEqual(await app.page.evaluate(() => window.apiCalls), []);
+  } finally { await app.close(); }
+});
+
+test('persistent read rejection stops after one fresh recovery and exposes retry instead of an infinite opening screen', { skip, timeout: 40000 }, async () => {
+  const app = await fixture('/pos', true); try {
+    await app.page.locator('.owner-amount-field input[aria-label=Amount]').waitFor();
+    await app.page.evaluate(() => { window.rejectReads = 100; window.dispatchEvent(new CustomEvent('reylumi:app-local-command-complete', { detail: { scope: window.fixture.scope.account } })); });
+    await app.page.waitForFunction(() => window.resets === 1 && window.freshRequests.length === 1 && window.commandScope === window.fixture.scope.account);
+    await app.page.locator('.owner-amount-field input[aria-label=Amount]').waitFor();
+    await app.page.evaluate(() => window.dispatchEvent(new CustomEvent('reylumi:app-local-command-complete', { detail: { scope: window.fixture.scope.account } })));
+    await app.page.waitForFunction(() => window.resets === 2 && window.freshRequests.length === 1 && window.commandScope === undefined);
+    await app.page.getByRole('button', { name: 'Try again', exact: true }).waitFor();
+    const requests = await app.page.evaluate(() => window.contextRequests.length); await app.page.clock.fastForward(60000);
+    assert.equal(await app.page.evaluate(() => window.contextRequests.length), requests);
+    assert.equal(await app.page.locator('[data-actual-entry-shell]').getAttribute('data-active-scope'), null);
+    assert.equal(await app.page.getByText('Opening your workspace…', { exact: true }).count(), 0);
+    assert.deepEqual(await app.page.evaluate(() => window.apiCalls), []);
+  } finally { await app.close(); }
+});
 
 test('cold installed Help uses no context, account resource, cache or command scope', { skip, timeout: 30000 }, async () => {
   const app = await fixture('/help'); try {

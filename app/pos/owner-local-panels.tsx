@@ -17,10 +17,10 @@ import { saveOwnerLocalSnapshot, useOwnerLocalWorkspace } from "./owner-local-wo
 type Navigate = (href: string) => void;
 type AttendanceAction = typeof ownerSubmitAttendance;
 /** Serializable DTO in, existing business view out. Native can inject its named action. */
-export function OwnerLocalPanelBody({ data, snapshotAt, query, navigate, attendanceAction = ownerSubmitAttendance, onAttendanceSettled }: { data: OwnerLocalPanelData; snapshotAt: number; query: string; navigate: Navigate; attendanceAction?: AttendanceAction; onAttendanceSettled?: () => void }) {
+export function OwnerLocalPanelBody({ data, snapshotAt, query, navigate, attendanceAction = ownerSubmitAttendance, onAttendanceSettled, active=true }: { data: OwnerLocalPanelData; snapshotAt: number; query: string; navigate: Navigate; attendanceAction?: AttendanceAction; onAttendanceSettled?: () => void; active?: boolean }) {
   const workspace = useOwnerLocalWorkspace();
   if (data.view === "denied") return <p className="p-6"><WorkspaceText text={data.message} /></p>;
-  if (data.view === "check-in") return <PortableCheckInClient data={data.props.data} action={attendanceAction} workspacePath="/pos/check-in" staffEndpoint="/api/pos/owner/check-in" managedRead businessDate={workspace?.businessDate} onDataChange={workspace?.attendance} onAttendanceSettled={onAttendanceSettled} />;
+  if (data.view === "check-in") return <PortableCheckInClient data={data.props.data} action={attendanceAction} workspacePath="/pos/check-in" staffEndpoint="/api/pos/owner/check-in" managedRead businessDate={workspace?.businessDate} onDataChange={workspace?.attendance} onAttendanceSettled={onAttendanceSettled} active={active} />;
   if (data.view === "bookings") return <OwnerLiveBookingWorkspace {...data.props} managedRead query={query} snapshotAt={snapshotAt} />;
   if (data.view === "reports") return <OwnerLiveReports {...data.props} managedRead query={query} snapshotAt={snapshotAt} />;
   if (data.view === "tickets") return <main className="mx-auto w-full max-w-7xl px-4 py-4 text-zinc-950 sm:px-6">
@@ -54,7 +54,7 @@ function OwnerPanel({ href, active, scope, salonId, navigate, attendanceAction }
   usePosResourceRefresh(salonId, "settings", async () => { await resource.refresh(); }, { enabled: name === "owner.bookings", initialReconcile: false });
   usePosResourceRefresh(salonId, "catalog", async () => { await resource.refresh(); }, { enabled: name === "owner.bookings", initialReconcile: false });
   return <div hidden={!active} data-owner-local-panel={href}>
-    {resource.data ? <OwnerLocalPanelBody data={resource.data} snapshotAt={resource.updatedAt} query={query} navigate={navigate} attendanceAction={attendanceAction} onAttendanceSettled={() => { void resource.refresh(); }} /> : <section className="p-6" aria-busy={resource.loading || resource.refreshing}>
+    {resource.data ? <OwnerLocalPanelBody data={resource.data} snapshotAt={resource.updatedAt} query={query} navigate={navigate} attendanceAction={attendanceAction} onAttendanceSettled={() => { void resource.refresh(); }} active={active} /> : <section className="p-6" aria-busy={resource.loading || resource.refreshing}>
       <h1 className="text-xl font-semibold"><WorkspaceText text={name === "owner.check-in" ? "Check In" : name === "owner.bookings" ? "Bookings" : name === "owner.tickets" ? "Tickets" : "Reports"} /></h1>
       <p className="mt-4 text-sm text-zinc-600"><WorkspaceText text={resource.error || typeof navigator !== "undefined" && !navigator.onLine ? "Connect to open this view. Your current ticket has been kept." : "Opening this view…"} /></p>
       {resource.error ? <button type="button" className="mt-3 rounded border px-4 py-2" onClick={() => void resource.refresh()}><WorkspaceText text="Try again" /></button> : null}

@@ -8,7 +8,79 @@ private actor AppLocalUnavailableHTTP: ReylumiLocalHTTPClient {
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) { attempts += 1; throw URLError(.notConnectedToInternet) }
 }
 
+/// All authority and DTOs are synthetic. No request reaches a business server.
+private actor InstalledPOSFixtureHTTP: ReylumiLocalHTTPClient {
+    let viewer = UUID().uuidString.lowercased()
+    let salon = "00000000-0000-4000-8000-000000000002"
+    private(set) var commands = 0
+    func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let url = try XCTUnwrap(request.url)
+        let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        var object: [String: Any], status = 200
+        if url.path == "/api/app-local/context" {
+            let generation = query.first { $0.name == "generation" }?.value ?? ""
+            object = AppLocalTestFixture.context(generation: generation, viewer: viewer, workspace: salon)
+            var grant = object["grant"] as! [String: Any]; grant["workspaceId"] = salon; object["grant"] = grant
+            object["display"] = ["name": "Fixture owner", "language": "en", "role": "OWNER"]
+            object["access"] = ["ownerWorkspace": true, "staffWorkspace": false]
+        } else if url.path == "/api/app-local/read", query.first(where: { $0.name == "name" })?.value == "owner.workspace" {
+            let now = Date(), today = String(ISO8601DateFormatter().string(from: now).prefix(10))
+            let turns: [String: Int] = ["queueTurns": 2, "largeTurns": 2, "smallTurns": 0, "totalTurns": 2, "receiptLargeTurns": 0]
+            let staff: [String: Any] = ["id": "00000000-0000-4000-8000-000000000003", "display_name": "Alice", "is_active": true, "job_title": "Technician", "today_status": "working", "turns": turns]
+            let defaults: [String: Any] = ["adsFooter": "", "largeTurnThreshold": 25, "showServiceName": true, "showStaffName": true, "staffCheckInEnabled": false, "taxEnabled": false, "tipSuggestions": [10, 15, 20]]
+            let preferences: [String: Any] = ["showStaff": true, "showServices": true, "showCustomer": true, "showTip": true, "showDiscount": true, "idleMinutes": 3, "idleWarningSeconds": 60]
+            let reference: [String: Any] = [
+                "ownerScope": "owner:" + salon + ":" + viewer, "salonId": salon, "salonName": "Fixture salon", "timezone": "America/Chicago", "today": today,
+                "staff": [staff], "services": [], "defaults": defaults, "preferences": preferences
+            ]
+            object = ["schemaVersion": 1, "status": 200, "scope": AppLocalTestFixture.scope, "etag": "fixture-owner-r1", "updatedAt": now.timeIntervalSince1970 * 1000, "data": ["view": "workspace", "props": reference]]
+        } else {
+            if url.path == "/api/app-local/command" { commands += 1 }
+            status = 503; object = ["error": "Fixture has no other network or business actions"]
+        }
+        return (try JSONSerialization.data(withJSONObject: object), HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!)
+    }
+}
+
+@MainActor
+private final class LocalConfirmationProbe {
+    var message: String?
+    var reply: ((Bool) -> Void)?
+}
+
 final class LocalAppWebViewTests: XCTestCase {
+    @MainActor
+    func testInstalledJavaScriptConfirmDeliversBothUserChoicesInsteadOfImplicitCancel() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help"), probe = LocalConfirmationProbe()
+        controller.confirmationPresenterForTesting = { message, reply in probe.message = message; probe.reply = reply }
+        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
+        controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
+        try await wait("window.fixtureLocal === true", in: web)
+        for accepted in [true, false] {
+            probe.message = nil; probe.reply = nil
+            _ = try await web.evaluateJavaScript("window.confirmResult=null;setTimeout(()=>{window.confirmResult=window.confirm('Keep this draft?')},0);true")
+            for _ in 0..<100 { if probe.reply != nil { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+            XCTAssertEqual(probe.message, "Keep this draft?")
+            let reply = try XCTUnwrap(probe.reply); probe.reply = nil; reply(accepted)
+            try await wait("window.confirmResult === \(accepted ? "true" : "false")", in: web)
+        }
+    }
+    @MainActor
+    func testNativeBackForwardRestoresActualHistoryWithoutReplacingTheDraftDocument() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/help")
+        let window = makeWindow(controller); defer { window.isHidden = true; window.rootViewController = nil }
+        controller.initializeWebContentIfNeeded(); let web = try XCTUnwrap(controller.webView)
+        try await wait("window.fixtureLocal === true", in: web)
+        XCTAssertTrue(web.allowsBackForwardNavigationGestures)
+        _ = try await web.evaluateJavaScript("window.backDraft=document.createElement('input');backDraft.value='Unsent 44.25';document.body.append(backDraft);window.nativeNavigations=0;window.pops=0;window.addEventListener('reylumi:app-local-navigate',()=>nativeNavigations++);window.addEventListener('popstate',()=>pops++);history.pushState({},'','/help/one');history.pushState({},'','/help/two');true")
+        XCTAssertTrue(web.canGoBack); web.goBack()
+        try await wait("location.pathname==='/help/one'&&window.pops===1", in: web)
+        web.goForward(); try await wait("location.pathname==='/help/two'&&window.pops===2", in: web)
+        let retained = try await web.evaluateJavaScript("backDraft.isConnected&&backDraft.value==='Unsent 44.25'&&nativeNavigations===0") as? Bool
+        XCTAssertEqual(retained, true)
+    }
     @MainActor
     func testExplicitFreshContextDoesNotReplyWithPreviousCachedWorkspace() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
@@ -115,6 +187,79 @@ final class LocalAppWebViewTests: XCTestCase {
         XCTAssertNotNil(article); XCTAssertNotEqual(initial, article)
         let networkResources = try await web.evaluateJavaScript("performance.getEntriesByType('resource').map(x=>x.name).filter(x=>!x.startsWith('reylumi-app://bundle/'))") as? [String] ?? []
         XCTAssertTrue(networkResources.isEmpty, "Help text, CSS, images and runtime must come from the installed app: \(networkResources)")
+    }
+    @MainActor
+    func testActualInstalledPOSInitializerRetainsMoneyAndOutboxAcrossColdWebView() async throws {
+        let bundle = try ReylumiLocalBundle.installed(), http = InstalledPOSFixtureHTTP()
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("reylumi-pos-init-" + UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, viewer = await http.viewer, salon = await http.salon
+        let scope = "owner:" + salon + ":" + viewer, key = "kingpos:owner-cart:v1:" + scope, operation = UUID().uuidString
+        let parameters = String(decoding: try JSONSerialization.data(withJSONObject: ["scope": scope, "key": key, "operation": operation]), as: UTF8.self)
+        let defaults = UserDefaults(suiteName: "reylumi.tests.actual-pos." + UUID().uuidString)!
+        let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.actual-pos." + UUID().uuidString)
+        // Installed app.js, storage, checkpoint and cryptography stay real. Only
+        // external network is disabled; the native transport above is synthetic.
+        let isolation = """
+        window.__posExternalAttempts=0;
+        window.fetch=()=>{window.__posExternalAttempts++;return Promise.reject(new TypeError('Fixture blocks external fetch'))};
+        window.WebSocket=class extends EventTarget{static CONNECTING=0;static OPEN=1;static CLOSING=2;static CLOSED=3;readyState=3;constructor(){super();window.__posExternalAttempts++}send(){}close(){}};
+        Object.defineProperty(crypto,'randomUUID',{value:undefined,configurable:true,writable:true});
+        window.__posUUIDAbsentBeforeEntry=typeof crypto.randomUUID==='undefined';
+        """
+        func makeController() -> ReylumiLocalAppViewController {
+            let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: defaults, cookies: { [] })
+            let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: "/pos", transport: transport)
+            controller.configureWebViewForTesting = { configuration in
+                configuration.userContentController.addUserScript(WKUserScript(source: isolation, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+            }
+            return controller
+        }
+        var controller: ReylumiLocalAppViewController? = makeController()
+        let window = makeWindow(controller!); defer { window.isHidden = true; window.rootViewController = nil }
+        controller!.initializeWebContentIfNeeded()
+        var web: WKWebView? = try XCTUnwrap(controller?.webView)
+        let ready = "!!document.querySelector('.owner-amount-field input[aria-label=Amount]')"
+        try await wait(ready, in: web!)
+        let prepared = try await evaluateAsync("""
+        (async()=>{
+          const p=\(parameters),saved=JSON.parse(localStorage.getItem(p.key));
+          if(!window.__posUUIDAbsentBeforeEntry||typeof crypto.randomUUID!=='function'||!/^[a-f0-9-]{36}$/i.test(saved?.cart?.id))throw Error('Actual bootstrap/cart initialization failed');
+          const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('fixture-only'));
+          if(digest.byteLength!==32)throw Error('Actual WebCrypto failed');
+          window.__posInitialCartId=saved.cart.id;
+          const input=document.querySelector('.owner-amount-field input[aria-label=Amount]');
+          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,'44.25');input.dispatchEvent(new Event('input',{bubbles:true}));
+          const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('kingpos-portable-operations',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+          await new Promise((resolve,reject)=>{const t=db.transaction(['operations','meta'],'readwrite',{durability:'strict'});t.objectStore('operations').add({id:p.operation,scope:p.scope,kind:'receipt',occurredAt:new Date().toISOString(),payload:{fixtureOnly:true,localDraftKey:p.key},state:'attention',error:'Fixture review'});t.objectStore('meta').put(1,`receipt:${p.scope}:${p.key}`);t.oncomplete=resolve;t.onabort=t.onerror=()=>reject(t.error)});
+          db.close();return saved.cart.id;
+        })()
+        """, in: web!) as? String
+        let cartID = try XCTUnwrap(prepared)
+        try await wait("JSON.parse(localStorage.getItem(\(parameters).key))?.cart?.amount==='44.25'", in: web!)
+        weak var old = web
+        window.rootViewController = nil; web?.stopLoading(); web?.removeFromSuperview(); web = nil; controller = nil
+        for _ in 0..<100 { if old == nil { break }; try await Task.sleep(nanoseconds: 20_000_000) }
+        XCTAssertNil(old, "Cold initialization must construct a new WebView")
+        let cold = makeController(); window.rootViewController = cold; cold.initializeWebContentIfNeeded()
+        let restored = try XCTUnwrap(cold.webView); try await wait(ready, in: restored)
+        let expectedID = String(decoding: try JSONSerialization.data(withJSONObject: [cartID]), as: UTF8.self)
+        let durable = try await evaluateAsync("""
+        (async()=>{
+          const p=\(parameters),saved=JSON.parse(localStorage.getItem(p.key));
+          const input=document.querySelector('.owner-amount-field input[aria-label=Amount]');
+          const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('kingpos-portable-operations',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+          const rows=await new Promise((resolve,reject)=>{const r=db.transaction('operations').objectStore('operations').getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+          const checkpoint=await new Promise((resolve,reject)=>{const r=db.transaction('meta').objectStore('meta').get(`receipt:${p.scope}:${p.key}`);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+          const own=rows.filter(row=>row.id===p.operation&&row.scope===p.scope);
+          const valid=saved.cart.id===\(expectedID)[0]&&saved.cart.amount==='44.25'&&input?.value==='44.25'&&checkpoint===1&&own.length===1&&own[0].state==='attention'&&!document.querySelector('[data-owner-cart-state=failed]');
+          // Delete only this test's unique draft/row, never another outbox.
+          if(own.length===1)await new Promise((resolve,reject)=>{const t=db.transaction(['operations','meta'],'readwrite',{durability:'strict'});t.objectStore('operations').delete(own[0].sequence);t.objectStore('meta').delete(`receipt:${p.scope}:${p.key}`);t.oncomplete=resolve;t.onabort=t.onerror=()=>reject(t.error)});
+          db.close();localStorage.removeItem(p.key);return valid;
+        })()
+        """, in: restored) as? Bool
+        XCTAssertEqual(durable, true, "Actual POS, submission checkpoint, cryptography and saved outbox must survive a cold installed origin")
+        let commands = await http.commands; XCTAssertEqual(commands, 0, "Initializer/reopen must not manufacture or replay a business command")
     }
     @MainActor
     func testNativeResetUpdatesBridgeEpochAndRejectsOldEnvelope() async throws {

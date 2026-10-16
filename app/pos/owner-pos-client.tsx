@@ -9,30 +9,39 @@ import type { PosDeskDefaults } from "@/lib/pos-settings";
 import { DEFAULT_WORKSPACE_PREFERENCES, type PosWorkspacePreferences } from "@/lib/pos-workspace-preferences";
 import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
 import { listPortableOperations, portableCheckpoint, savePortableOperation } from "@/lib/portable-operations";
-import { PortableSyncIndicator } from "./portable/portable-sync-indicator";
 import { PortableDraftControls } from "./portable/portable-draft-controls";
 import { searchPosDeskCustomers } from "./actions";
-import { OwnerPosTabs } from "./owner-pos-tabs";
+import { OwnerPosNavigation } from "./owner-pos-tabs";
 import { SingleWorkspaceWindow } from './single-workspace-window';
 import { OwnerPosIcon } from './owner-pos-icon';
 import { parsePosAmountInput } from '@/lib/pos-desk-amounts';
 import { getStaffTurnToneLevel } from '@/lib/pos-staff-turn-tone';
 import { fetchOwnerWorkspace } from '@/lib/owner-workspace-client';
 import { useOwnerLocalWorkspace } from './owner-local-workspace';
+import { appLocalRequestId } from '@/lib/app-local-host';
+import { openOwnerCart, ownerCartStartupDiagnostic } from '@/lib/owner-cart-startup';
 type Line = { id:string;staffId:string|null;staffName:string;serviceId:string|null;serviceLabel:string;total:number;amountInput:string;amountParts:number[] };
 type Step = 'staff'|'services'|'amount';
 type Cart = { inputTarget?:'amount'|'tip'|'discount'; activeLineId?:string|null; step?:Step; id:string;amount:string;staffId:string|null;serviceId:string|null;customer:PosDeskCustomer|null;lines:Line[];tip:string;discount:string };
-const empty = ():Cart=>({id:crypto.randomUUID(),amount:"",staffId:null,serviceId:null,customer:null,lines:[],tip:"",discount:""});
+const empty = ():Cart=>({id:appLocalRequestId(),amount:"",staffId:null,serviceId:null,customer:null,lines:[],tip:"",discount:""});
 const money=(n:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
 const amountPreview=(value:string)=>value.split('/').reduce((sum,part)=>sum+(Number(part)||0),0);
 const amountPattern=/^\d*(\.\d{0,2})?(\/\d*(\.\d{0,2})?)*$/;
+function isCart(value:unknown):value is Cart {
+  if(!value||typeof value!=='object')return false;
+  const row=value as Partial<Cart>,id=(value:unknown)=>value===null||typeof value==='string';
+  return typeof row.id==='string'&&row.id.length>0&&typeof row.amount==='string'&&amountPattern.test(row.amount)
+    &&id(row.staffId)&&id(row.serviceId)&&typeof row.tip==='string'&&typeof row.discount==='string'
+    &&(row.customer===null||Boolean(row.customer&&typeof row.customer.id==='string'&&typeof row.customer.name==='string'))
+    &&Array.isArray(row.lines)&&row.lines.every(line=>Boolean(line&&typeof line.id==='string'&&id(line.staffId)&&id(line.serviceId)&&typeof line.staffName==='string'&&typeof line.serviceLabel==='string'&&Number.isFinite(line.total)&&typeof line.amountInput==='string'&&Array.isArray(line.amountParts)&&line.amountParts.every(part=>Number.isFinite(part))));
+}
 export function OwnerPosClient({active=true,...props}:Parameters<typeof OwnerPosWorkspace>[0]&{active?:boolean}) {
   // The exclusive writer lease stays mounted while another role page is shown;
   // hidden operational effects must not read or sync under that page's scope.
   return <SingleWorkspaceWindow id={props.scope}><Activity mode={active?"visible":"hidden"}><OwnerPosWorkspace {...props}/></Activity></SingleWorkspaceWindow>;
 }
-function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initialPreferences=DEFAULT_WORKSPACE_PREFERENCES}:{
-  snapshotAt?:number;scope:string;salonId:string;salonName:string;initial:{staff:PosDeskStaff[];services:PosDeskService[];defaults:PosDeskDefaults;today:string};preferences?:PosWorkspacePreferences;
+function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initialPreferences=DEFAULT_WORKSPACE_PREFERENCES,showNavigation=true}:{
+  snapshotAt?:number;scope:string;salonId:string;salonName:string;initial:{staff:PosDeskStaff[];services:PosDeskService[];defaults:PosDeskDefaults;today:string};preferences?:PosWorkspacePreferences;showNavigation?:boolean;
 }) {
   const __vt = useWorkspaceTranslation();
   const workspace=useOwnerLocalWorkspace();
@@ -55,6 +64,11 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
   const preferences=shared?.preferences??localPreferences;
   const [cart,setCart]=useState<Cart|null>(null);
   const current=useRef<Cart|null>(null);
+  const openedKey=useRef<string|null>(null);
+  const [startup,setStartup]=useState<'opening'|'ready'|'failed'>('opening');
+  const [startupDiagnostic,setStartupDiagnostic]=useState<string>();
+  const startupFailure=useRef<unknown>(null);
+  const [openAttempt,retryOpen]=useState(0);
   const busyRef=useRef(false);
   const replaceAmount=useRef(true);
   const entries=useRef<HTMLDivElement>(null);
@@ -80,17 +94,17 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     catch {setError('Unable to save on this device. Keep this ticket open.');return false;}
   },[key]);
   useEffect(()=>{
-    let alive=true;
+    if(openedKey.current===key&&current.current)return;
+    const controller=new AbortController();
     void (async()=>{
       try {
-        const raw=JSON.parse(localStorage.getItem(key)??'null');
-        const checkpoint=await portableCheckpoint(scope,key);
-        if(!alive)return;
-        const next=raw?.savedAt>checkpoint&&Array.isArray(raw?.cart?.lines)?raw.cart:empty();
-        localStorage.setItem(key,JSON.stringify({savedAt:Date.now(),cart:next}));current.current=next;setCart(next);
-      }catch{if(alive)setError('Unable to open saved work on this device. Please try again.');}
-    })();return()=>{alive=false;};
-  },[key,scope]);
+        const next=await openOwnerCart({key,scope,storage:{getItem:name=>localStorage.getItem(name),setItem:(name,value)=>localStorage.setItem(name,value)},checkpoint:portableCheckpoint,create:empty,isCart,signal:controller.signal});
+        if(controller.signal.aborted)return;
+        startupFailure.current=null;setStartupDiagnostic(undefined);
+        openedKey.current=key;current.current=next;setCart(next);setStartup('ready');
+      }catch(failure){if(!controller.signal.aborted){startupFailure.current=failure;setStartupDiagnostic(ownerCartStartupDiagnostic(failure));setStartup('failed');}}
+    })();return()=>controller.abort();
+  },[key,scope,openAttempt]);
   useEffect(()=>{if(panel)dialog.current?.showModal();else dialog.current?.close();},[panel]);
   useEffect(()=>{
     if(panel!=='customer'||query.trim().length<2)return;
@@ -121,7 +135,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     if(ticketDefaults.staffCheckInEnabled&&(!member||member.today_status!=='working')){setError('Choose a staff member who is checked in.');setPanel('staff');return null;}
     if(cart.staffId&&!member){setError('This staff member is no longer available. Choose another.');return null;}
     const service=reference.services.find(s=>s.id===cart.serviceId);
-    return{id:crypto.randomUUID(),staffId:member?.id??null,staffName:member?.display_name??'Unassigned',serviceId:service?.id??null,serviceLabel:service?.name??'Service',total:amount,amountInput:cart.amount,amountParts:parsed.parts};
+    return{id:appLocalRequestId(),staffId:member?.id??null,staffName:member?.display_name??'Unassigned',serviceId:service?.id??null,serviceLabel:service?.name??'Service',total:amount,amountInput:cart.amount,amountParts:parsed.parts};
   };
   const add=()=>{if(!cart)return;const line=cart.amount?makeLine():null;if(cart.amount&&!line)return;replaceAmount.current=true;update({lines:line?[...cart.lines,line]:cart.lines,amount:'',staffId:null,serviceId:null,activeLineId:null,inputTarget:'amount',step:firstStep});};
   const reset=async()=>{if(busyRef.current)return; if(persist(empty()))setTicketDefaults(pendingDefaults.current);};
@@ -212,8 +226,7 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
     {currentEntry?<div data-selected={inputTarget==='amount'&&!selectedLine}><button className="owner-desktop-line" aria-label={__vt("Edit current entry")} onClick={()=>selectLine(null)}><span><strong>{reference.services.find(s=>s.id===cart.serviceId)?.name??'Service'}</strong><small>{reference.staff.find(s=>s.id===cart.staffId)?.display_name??'Unassigned'} <WorkspaceText text="· Current entry" /></small></span><strong>{money(amountPreview(cart.amount))}</strong></button></div>:null}
   </div>:null;
   return <main className="owner-checkout" data-pos-owner-page data-owner-reference="true" data-step="amount">
-    <div className="owner-sync-status"><PortableSyncIndicator scope={scope}/></div>
-    <OwnerPosTabs active="pos"/>
+    {showNavigation?<OwnerPosNavigation active="pos" syncScope={scope}/>:null}
     <DeskRelay salonId={salonId}/>
     {error?<p role="alert" className="owner-error"><WorkspaceText text={error} /></p>:null}
     {cart?<>
@@ -248,7 +261,9 @@ function OwnerPosWorkspace({snapshotAt,scope,salonId,initial,preferences:initial
           <div className="owner-submit"><button disabled={busy} onClick={add}><WorkspaceText text="+ Add another" /></button><button disabled={busy} aria-busy={busy} onClick={()=>void submit()}><ActionFeedback pending={busy} pendingLabel="Saving…"><WorkspaceText text="Submit" /></ActionFeedback></button></div>
         </section>
       </div>
-    </>:<p><WorkspaceText text="Opening your saved workspace…" /></p>}
+    </>:<section className="owner-cart-startup" data-owner-cart-state={startup} data-owner-cart-error={startup==='failed'?startupDiagnostic:undefined} aria-busy={startup==='opening'}>
+      {startup==='failed'?<><p role="alert"><WorkspaceText text="Unable to open saved work on this device. Your saved work has not been changed." /></p><button type="button" onClick={()=>{setStartup('opening');retryOpen(attempt=>attempt+1);}}><WorkspaceText text="Try again" /></button></>:<p role="status"><ActionFeedback pending pendingLabel="Opening your saved workspace…">{null}</ActionFeedback></p>}
+    </section>}
     <dialog ref={dialog} aria-labelledby="owner-picker-title" onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)setPanel(null);}}} onCancel={()=>setPanel(null)} className="owner-picker-dialog">
       <header><h2 id="owner-picker-title">{panel==='staff'?'Employees':panel==='services'?<WorkspaceText text="Services" />:panel==='customer'?<WorkspaceText text="Customer" />:<WorkspaceText text="Ticket" />}</h2><button onClick={()=>setPanel(null)}><WorkspaceText text="Done" /></button></header>
       {panel==='ticket'?<><div className="owner-ticket-actions"><button onClick={()=>openPicker('staff')}><WorkspaceText text="Employees" /></button><button onClick={()=>openPicker('services')}><WorkspaceText text="Services" /></button>{selectedLine?<button onClick={()=>{update({lines:cart!.lines.filter(l=>l.id!==selectedLine.id),activeLineId:null});setPanel(null);}}><WorkspaceText text="Remove line" /></button>:null}{preferences.showCustomer?<button onClick={()=>setPanel('customer')}><WorkspaceText text="Customer" /></button>:null}</div>{linesView}<div className="owner-total"><span><WorkspaceText text="Total" /></span><strong>{money(total)}</strong></div><Link href="/pos-tickets" className="owner-skip"><WorkspaceText text="Ticket history →" /></Link></>:null}

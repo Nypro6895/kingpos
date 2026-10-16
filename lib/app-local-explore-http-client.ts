@@ -22,13 +22,14 @@ export function createAppLocalExploreHttpFetch(options: { scope: () => string | 
     const host = (options.host ?? getAppLocalHost)(); if (!host.isNative) return original(input, init);
     const request = input instanceof Request ? input : undefined, url = localUrl(request?.url ?? String(input));
     const method = (init?.method ?? request?.method ?? "GET").toUpperCase();
-    if (!url || !(method === "GET" && url.pathname === "/api/explore/suggestions" || method === "POST" && ["/api/explore/search", "/api/explore/feed", "/api/explore/area"].includes(url.pathname))) return original(input, init);
+    if (!url || !(method === "GET" && ["/api/explore/suggestions", "/api/explore/salon-social"].includes(url.pathname) || method === "POST" && ["/api/explore/search", "/api/explore/feed", "/api/explore/area"].includes(url.pathname))) return original(input, init);
     const signal = init?.signal ?? request?.signal; cancelled(signal);
     const scope = options.scope(); if (!scope) throw new Error("Connect to open Explore.");
     let name: string, args: Record<string, unknown>;
     if (method === "GET") {
-      if ([...url.searchParams].some(([key, value]) => !["q", "location", "category"].includes(key) || value.length > 512 || url.searchParams.getAll(key).length !== 1)) throw new Error("Unsupported Explore suggestions");
-      name = "http.explore.suggestions"; args = Object.fromEntries(url.searchParams);
+      const social = url.pathname === "/api/explore/salon-social", keys = social ? ["ids"] : ["q", "location", "category"];
+      if ([...url.searchParams].some(([key, value]) => !keys.includes(key) || value.length > (social ? 8192 : 512) || url.searchParams.getAll(key).length !== 1)) throw new Error("Unsupported Explore request");
+      name = social ? "http.explore.salon-social" : "http.explore.suggestions"; args = Object.fromEntries(url.searchParams);
     } else {
       if (url.search) throw new Error("Unsupported Explore request");
       const text = init?.body !== undefined ? typeof init.body === "string" ? init.body : null : request ? await request.clone().text() : null;

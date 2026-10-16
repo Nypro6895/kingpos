@@ -9,6 +9,7 @@ export const APP_LOCAL_EXPLORE_READS = [
   { name: "http.explore.feed-validate", path: "/api/explore/feed", method: "POST", mode: "validate", argumentKeys: ["input"], retain: false },
   { name: "http.explore.area", path: "/api/explore/area", method: "POST", argumentKeys: ["input"], retain: false },
   { name: "http.explore.suggestions", path: "/api/explore/suggestions", method: "GET", argumentKeys: ["q", "location", "category"], retain: false },
+  { name: "http.explore.salon-social", path: "/api/explore/salon-social", method: "GET", argumentKeys: ["ids"], retain: false },
 ] as const;
 export const APP_LOCAL_EXPLORE_COMMANDS = [
   { name: "http.explore.feed-events", path: "/api/explore/feed", method: "POST", mode: "events", argumentKeys: ["input"], replay: "never" },

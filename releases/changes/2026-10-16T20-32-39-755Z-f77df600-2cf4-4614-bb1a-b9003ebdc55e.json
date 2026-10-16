@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "pos-menu-recovery-core-20261016",
+  "status": "working",
+  "summary": "Repair installed owner navigation integration, bounded authority recovery, unchanged-resource freshness and active selective invalidation. Prepare candidate only; physical iPhone TestFlight acceptance is required before publication.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "source": {
+    "commit": "c3fd44aa19731f90ac2ecf52c5a358e88d18a834"
+  },
+  "files": [
+    "app/local-app/entry.tsx",
+    "lib/app-local-resource.ts",
+    "lib/app-local-command-client.ts",
+    "lib/app-local-resource-invalidation.ts",
+    "tests/app-local-authority-navigation.test.mjs",
+    "tests/app-local-resource-refresh.test.mjs"
+  ],
+  "validation": [
+    {
+      "name": "Actual iPhone acceptance before publication",
+      "result": "pending",
+      "detail": "Owner will test the staged candidate via TestFlight. Windows host has no physical-device control."
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [],
+  "id": "f77df600-2cf4-4614-bb1a-b9003ebdc55e",
+  "recordedAt": "2026-10-16T20:32:39.755Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": []
+}

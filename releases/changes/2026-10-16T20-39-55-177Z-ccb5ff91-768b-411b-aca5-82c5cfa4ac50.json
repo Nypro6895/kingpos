@@ -1,0 +1,41 @@
+{
+  "kind": "change",
+  "changeId": "app-local-public-repair-20261016",
+  "status": "working",
+  "summary": "Repair pinned salon social GET and scoped Market/Help navigation state; extend existing Explore test fixtures for the newly declared original GET import.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-explore-http-client.ts",
+    "lib/app-local-explore-metadata.ts",
+    "lib/app-local-explore-server.ts",
+    "app/market/market-client.tsx",
+    "components/app-local-help.tsx",
+    "tests/app-local-public-search-retention.test.mjs",
+    "tests/app-local-salon-social-bridge.test.mjs",
+    "tests/app-local-explore.test.mjs",
+    "tests/app-local-explore-progressive.test.mjs"
+  ],
+  "source": {
+    "commit": "d1347e535a43e953b57cd2d1ea89c3b63767078e"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "New focused runtime suites",
+      "result": "passed",
+      "evidence": "tests/app-local-public-search-retention.test.mjs and tests/app-local-salon-social-bridge.test.mjs: 6/6"
+    },
+    {
+      "name": "Existing Explore/Help regressions and lint",
+      "result": "pending"
+    }
+  ],
+  "id": "ccb5ff91-768b-411b-aca5-82c5cfa4ac50",
+  "recordedAt": "2026-10-16T20:39:55.177Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

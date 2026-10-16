@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { RoleMoreContent } from "@/components/role-more-content";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { OwnerPosIcon, type OwnerPosIconName } from "./owner-pos-icon";
+import { PortableSyncIndicator } from "./portable/portable-sync-indicator";
 import "./owner-pos.css";
 
 const shortcuts: { id: string; href: string; label: string; icon: OwnerPosIconName }[] = [
@@ -90,7 +91,17 @@ function OwnerMoreMenu() {
   </>;
 }
 
-export function OwnerPosTabs({ active }: { active: "pos" | "ticket" | "book" | "checkIn" | "report" | "settings" }) {
+type OwnerTab = "pos" | "ticket" | "book" | "checkIn" | "report" | "settings";
+
+/** The installed host keeps this outside the retained, CSS-hidden checkout. */
+export function OwnerPosNavigation({ active, syncScope }: { active: OwnerTab; syncScope?: string }) {
+  return <div className="owner-navigation" data-owner-navigation>
+    <OwnerPosTabs active={active} />
+    {syncScope ? <div className="owner-sync-status"><PortableSyncIndicator scope={syncScope} /></div> : null}
+  </div>;
+}
+
+export function OwnerPosTabs({ active }: { active: OwnerTab }) {
   const translate = useWorkspaceTranslation();
   const pathname = usePathname();
   if (active === "settings") return <nav aria-label={translate("Owner POS")}><Link className="owner-switch" href="/pos" aria-label={translate("Back to POS")} title={translate("Back to POS")}><OwnerPosIcon name="pos" /></Link></nav>;

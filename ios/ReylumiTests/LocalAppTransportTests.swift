@@ -1,11 +1,36 @@
 import XCTest
 import WebKit
+import CryptoKit
 @testable import Reylumi
 
 actor AppLocalCookieBox {
     private(set) var values: [HTTPCookie] = []
     func append(_ cookie: HTTPCookie) { values.append(cookie) }
 }
+
+private actor CachedFirstContextHTTP: ReylumiLocalHTTPClient {
+    private var held: (URL, String, CheckedContinuation<(Data, HTTPURLResponse), Error>)?
+    private(set) var reads = 0
+    func isContextHeld() -> Bool { held != nil }
+    func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let url = request.url!
+        if url.path == "/api/app-local/context" {
+            let generation = URLComponents(url: url, resolvingAgainstBaseURL: false)!.queryItems!.first { $0.name == "generation" }!.value!
+            return try await withCheckedThrowingContinuation { held = (url, generation, $0) }
+        }
+        reads += 1
+        let value: [String: Any] = ["schemaVersion": 1, "status": 200, "scope": AppLocalTestFixture.scope, "etag": "current", "updatedAt": Date().timeIntervalSince1970 * 1000, "data": ["staff": [["name": "Current fixture roster"]]]]
+        return (try JSONSerialization.data(withJSONObject: value), HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!)
+    }
+    func releaseContext(status: Int = 200) throws {
+        guard let (url, generation, continuation) = held else { return }; held = nil
+        let value = AppLocalTestFixture.context(generation: generation)
+        continuation.resume(returning: (try JSONSerialization.data(withJSONObject: value), HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!))
+    }
+}
+
+@MainActor
+private final class CachedReadProbe { var completed = false }
 
 private actor RotationCookieJar {
     private(set) var values: [HTTPCookie]
@@ -86,6 +111,56 @@ actor AppLocalFixtureHTTP: ReylumiLocalHTTPClient {
 }
 
 final class LocalAppTransportTests: XCTestCase {
+    @MainActor
+    func testColdCachedContextWaitsForFreshAuthorityWhenPrivateReadFinishesFirst() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = CachedFirstContextHTTP()
+        let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.cached-first." + UUID().uuidString)
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: UserDefaults(suiteName: "reylumi.tests.cached-first." + UUID().uuidString)!, cookies: { [] })
+        let lease = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: transport.generation), generation: transport.generation))
+        await store.accept(lease)
+        var resets = 0; transport.onEvent = { name, _ in if name == "reylumi:app-local-reset" { resets += 1 } }
+        let cached = try await transport.context(path: "/help"); XCTAssertEqual(cached["offline"] as? Bool, true)
+        for _ in 0..<200 { if await http.isContextHeld() { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        let held = await http.isContextHeld(); XCTAssertTrue(held)
+        let probe = CachedReadProbe()
+        let read = Task { @MainActor in defer { probe.completed = true }; return try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: lease.scope) }
+        for _ in 0..<200 { if await http.reads == 1 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        try await Task.sleep(nanoseconds: 30_000_000)
+        XCTAssertFalse(probe.completed, "A cached display lease is not a fresh online read authorization")
+        XCTAssertEqual(resets, 0, "An ordinary response ordering cannot clear menus/drafts")
+        try await http.releaseContext()
+        let response = try await read.value
+        XCTAssertEqual(response["status"] as? Int, 200); XCTAssertEqual(resets, 0)
+        let saved = try await transport.cached(name: "fixture.roster", args: [:], requestedScope: lease.scope); XCTAssertNotNil(saved)
+        await transport.reset()
+    }
+    @MainActor
+    func testUnavailableContextKeepsCachedReadButExplicitDenialStillRevokesIt() async throws {
+        for status in [503, 403] {
+            let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+            let origin = URL(string: "https://reylumi.com")!, http = CachedFirstContextHTTP()
+            let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.cached-denial." + UUID().uuidString)
+            let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: UserDefaults(suiteName: "reylumi.tests.cached-denial." + UUID().uuidString)!, cookies: { [] })
+            let lease = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: transport.generation), generation: transport.generation))
+            await store.accept(lease)
+            let key = "fixture.roster:" + SHA256.hash(data: Data("{}".utf8)).map { String(format: "%02x", $0) }.joined()
+            let payload: [String: Any] = ["schemaVersion": 1, "status": 200, "scope": lease.scope, "updatedAt": Date().timeIntervalSince1970 * 1000, "data": ["draft": "Unsent 44.25"]]
+            await store.put(key, payload: try JSONSerialization.data(withJSONObject: payload), session: lease)
+            var resets = 0; transport.onEvent = { name, _ in if name == "reylumi:app-local-reset" { resets += 1 } }
+            _ = try await transport.context(path: "/help")
+            for _ in 0..<200 { if await http.isContextHeld() { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+            let read = Task { @MainActor in try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: lease.scope) }
+            for _ in 0..<200 { if await http.reads == 1 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+            try await http.releaseContext(status: status)
+            do { _ = try await read.value; XCTFail("Unconfirmed or revoked authority cannot deliver a fresh private payload") }
+            catch { XCTAssertEqual((error as NSError).code, status == 503 ? 503 : 409) }
+            let saved = try await transport.cached(name: "fixture.roster", args: [:], requestedScope: lease.scope)
+            if status == 503 { XCTAssertNotNil(saved); XCTAssertEqual(resets, 0) }
+            else { XCTAssertNil(saved); XCTAssertEqual(resets, 1) }
+            await transport.reset()
+        }
+    }
     @MainActor
     func testConcurrentExactResponseCookieRotationsPreserveReadsAndHonorRemovedChunks() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }

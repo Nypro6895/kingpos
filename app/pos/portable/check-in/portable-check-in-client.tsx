@@ -39,6 +39,7 @@ type ActionResult<T> =
   | { data?: never; error: string; ok: false };
 
 type PortableCheckInClientProps = {
+  active?: boolean;
   managedRead?: boolean;
   businessDate?: string;
   onAttendanceSettled?: () => void;
@@ -198,10 +199,11 @@ function availableEvents(status: string): PortableAttendanceEventInput["eventTyp
   return ["CHECK_IN"];
 }
 
-function usePortableClock(timezone: string) {
+function usePortableClock(timezone: string, active: boolean) {
   const [clock, setClock] = useState({ date: "", time: "" });
 
   useEffect(() => {
+    if (!active) return;
     function updateClock() {
       const now = new Date();
       setClock({
@@ -228,12 +230,13 @@ function usePortableClock(timezone: string) {
       window.clearTimeout(timeoutId);
       window.clearInterval(intervalId);
     };
-  }, [timezone]);
+  }, [timezone, active]);
 
   return clock;
 }
 
 export function PortableCheckInClient({
+  active = true,
   managedRead = false,
   businessDate: managedBusinessDate,
   onAttendanceSettled,
@@ -310,7 +313,7 @@ export function PortableCheckInClient({
     window.addEventListener("online", refresh);
     return () => { clearInterval(timer); window.removeEventListener("online", refresh); };
   }, [scope]);
-  const clock = usePortableClock(viewData.timezone);
+  const clock = usePortableClock(viewData.timezone, active);
   const selectedEvents = useMemo(
     () => (modal ? availableEvents(modal.staff.status) : []),
     [modal],

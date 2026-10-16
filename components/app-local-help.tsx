@@ -1,17 +1,42 @@
 "use client";
 
-import { useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { APP_LOCAL_HELP_GUIDES, APP_LOCAL_HELP_QUICK_STARTS, APP_LOCAL_SUPPORT_INSTRUCTIONS, getAppLocalHelpGuide } from "@/lib/app-local-reference-content";
 import { searchHelpGuides } from "@/lib/help-search";
 import { translateHelp, helpHref, type HelpLanguage } from "@/lib/help-language";
 import type { HelpGuide, HelpRole } from "@/lib/help-guides";
+import { useRememberedExperience } from "@/lib/use-remembered-experience";
+import { clearExperienceState } from "@/lib/experience-state";
+import { getExperienceDeviceGeneration } from "@/lib/experience-persistent-cache";
 import styles from "@/app/help/help.module.css";
 
-type Props = { slug?: string; language?: HelpLanguage; support?: boolean; navigate: (href: string) => void };
+type Props = { slug?: string; language?: HelpLanguage; support?: boolean; experienceScope?: string; navigate: (href: string) => void };
+const browseResetEvents = ["reylumi:experience-reset", "reylumi:app-local-reset", "reylumi:app-local-access-changed", "reylumi:experience-access-changed", "reylumi:offline-clear"];
+type Browse = { query: string; role: HelpRole | "all" };
+function isBrowse(value: unknown): value is Browse {
+  if (!value || typeof value !== "object") return false;
+  const state = value as Browse;
+  return typeof state.query === "string" && state.query.length <= 200 && ["all", "customer", "owner", "staff"].includes(state.role);
+}
 /** Complete public guides work without Next routing, private DTOs or a network. */
-export function AppLocalHelp({ slug, language = "vi", support = false, navigate }: Props) {
+export function AppLocalHelp({ slug, language = "vi", support = false, experienceScope, navigate }: Props) {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<HelpRole | "all">("all");
+  const scope = experienceScope ?? `public:${getExperienceDeviceGeneration()}`;
+  const [browseOwner, setBrowseOwner] = useState(scope);
+  const restored = useRef<string | null>(null);
+  if (browseOwner !== scope) { setBrowseOwner(scope); setQuery(""); setRole("all"); }
+  useRememberedExperience({ namespace: "help", scope, key: "catalog-search" }, {
+    enabled: !support, restoreOnVisit: true,
+    value: { query: query.slice(0, 200), role }, validate: isBrowse,
+    onRestore(value) { if (restored.current !== scope) { restored.current = scope; setQuery(value.query); setRole(value.role); } },
+    onEmpty() { restored.current = scope; },
+  });
+  useEffect(() => {
+    const reset = () => { clearExperienceState({ namespace: "help" }); restored.current = scope; setQuery(""); setRole("all"); };
+    for (const event of browseResetEvents) window.addEventListener(event, reset);
+    return () => { for (const event of browseResetEvents) window.removeEventListener(event, reset); };
+  }, [scope]);
   const t = (text: string) => translateHelp(text, language);
   const link = (href: string, children: ReactNode, className?: string) => <a href={helpHref(href, language)} className={className} onClick={(event: MouseEvent<HTMLAnchorElement>) => {
     if (event.button || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || href.startsWith("#")) return;
@@ -23,7 +48,7 @@ export function AppLocalHelp({ slug, language = "vi", support = false, navigate 
     const matches = searchHelpGuides(query, role);
     return <main lang={language} className={styles.shell}>{languages}<header className={styles.hero}><h1>{t("Reylumi Help")}</h1><p>{t("Follow the guides in order, or jump to the task you need.")}</p></header>
       <section className={styles.section}><h2>{t("Choose a quick start")}</h2><div className={styles.roles}>{APP_LOCAL_HELP_QUICK_STARTS.map(item => <section key={item.id} className={styles.card}><h3>{t(item.title)}</h3><p>{t(item.summary)}</p><ol>{item.slugs.map(id => { const guide = getAppLocalHelpGuide(id, language); return guide ? <li key={id}>{link(`/help/${id}`, guide.title)}</li> : null; })}</ol></section>)}</div></section>
-      <section className={styles.section}><h2>{t("All guides")}</h2><div role="search" className={styles.search}><label htmlFor="app-local-help-search">{t("Search the guides")}</label><input id="app-local-help-search" type="search" value={query} onChange={event => setQuery(event.target.value)} /></div>
+      <section className={styles.section}><h2>{t("All guides")}</h2><div role="search" className={styles.search}><label htmlFor="app-local-help-search">{t("Search the guides")}</label><input id="app-local-help-search" type="search" value={query} onChange={event => { restored.current = scope; setQuery(event.target.value.slice(0, 200)); }} /></div>
         <div className={styles.filters} role="group" aria-label={t("Filter by role")}>{(["all", "customer", "owner", "staff"] as const).map(value => <button key={value} type="button" aria-pressed={role === value} onClick={() => setRole(value)}>{t(({ all: "All roles", customer: "Customers", owner: "Salon owners", staff: "Staff members" })[value])}</button>)}</div>
         <p role="status">{t("Guides found")}: {matches.length}</p><ol className={styles.catalog}>{matches.map(item => { const guide = getAppLocalHelpGuide(item.slug, language)!; return <li key={guide.slug}>{link(`/help/${guide.slug}`, <><strong>{guide.title}</strong><span>{guide.summary}</span></>, styles.catalogLink)}</li>; })}</ol>
         {!matches.length ? <p>{t("No matching guides. Try a shorter phrase or another role.")}</p> : null}{query || role !== "all" ? <button type="button" onClick={() => { setQuery(""); setRole("all"); }}>{t("Reset search")}</button> : null}

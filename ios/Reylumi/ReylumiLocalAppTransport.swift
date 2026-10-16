@@ -189,7 +189,11 @@ final class ReylumiLocalAppTransport {
         }
         return nil
     }
-    private func ensureCurrent(_ epoch: Int) throws { guard scopeEpoch == epoch, !Task.isCancelled else { throw failure(409, "Your access has changed. Please try again.") } }
+    private func ensureCurrent(_ epoch: Int) throws {
+        guard scopeEpoch == epoch else { throw failure(409, "Your access has changed. Please try again.") }
+        // Leaving a page cancels a read; it does not revoke the account.
+        try Task.checkCancellation()
+    }
     func matchesCachedScope(_ scope: String) async -> Bool { await store.session(generation: generation, scope: scope) != nil }
     func invalidatePage() { scopeEpoch += 1; nonce = UUID().uuidString; freshContextTask?.cancel(); freshContextTask = nil; freshContextID = nil; freshContextPath = nil }
     private func revokeDisplay(scope: String?, staffFamily: Bool = false) async {
@@ -389,8 +393,8 @@ final class ReylumiLocalAppTransport {
             var object = try decode(data, response: response)
             guard object["schemaVersion"] as? Int == 1, object["status"] as? Int == 200,
                   let scope = object["scope"] as? String, object["data"] != nil,
-                  Self.validUpdatedAt(object["updatedAt"]), requestedScope == nil || requestedScope == scope,
-                  rule.access == "public" || scope == ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) else { throw failure(409, "App access could not be checked.") }
+                  Self.validUpdatedAt(object["updatedAt"]), requestedScope == nil || requestedScope == scope else { throw failure(409, "App access could not be checked.") }
+            if rule.access != "public" { try await awaitReadContext(scope: scope, epoch: epoch) }
             try ensureCurrent(epoch)
             if rule.cacheable, let lease = await readLease(name: name, scope: scope, privateOnly: rule.access != "public") { await store.put(key, payload: data, session: lease, resourceName: name) }
             try ensureCurrent(epoch); object["offline"] = false
@@ -399,6 +403,26 @@ final class ReylumiLocalAppTransport {
             try ensureCurrent(epoch)
             if error is URLError, let cached = try await cached(name: name, args: args, requestedScope: requestedScope) { return cached }
             throw error
+        }
+    }
+    private func awaitReadContext(scope: String, epoch: Int) async throws {
+        if scope == ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) { return }
+        // A cold cached lease is delivered before its background authorization
+        // GET completes. The data GET can finish first; keep the original fresh
+        // context barrier rather than treating that ordinary ordering as a 409.
+        if let pending = freshContextTask {
+            do { _ = try await pending.value }
+            catch {
+                try ensureCurrent(epoch)
+                if error is CancellationError { throw error }
+                throw failure(503, "Please reconnect to update this page.")
+            }
+        }
+        try ensureCurrent(epoch)
+        guard scope == ((onlineContext?["context"] as? [String: Any])?["scope"] as? String) else {
+            // A response for a page left behind must not clear a newer view.
+            if onlineContext != nil { throw CancellationError() }
+            throw failure(503, "Please reconnect to update this page.")
         }
     }
     private static func validUpdatedAt(_ value: Any?) -> Bool {
