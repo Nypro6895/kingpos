@@ -39,7 +39,7 @@ async function bundle() {
       args.path === 'language' ? 'export const WorkspaceText=({text})=>text;export const WorkspaceElement=({as:Tag,...props})=><Tag {...props}/>;export const useWorkspaceTranslation=()=>value=>value;' :
       args.path === 'css' ? 'export default new Proxy({},{get:(_,key)=>String(key)});' :
       args.path.endsWith('entity-picker') ? 'export const EntityPicker=({name,label,required,defaultValue})=><label>{label}<input name={name} required={required} defaultValue={defaultValue??""}/></label>;' :
-      /actions$/.test(args.path) ? 'const unused=()=>{throw Error("Unexpected mutation")};export const bulkUserAccessAction=unused;export const createSalonProfileLookAction=unused,createSalonProfileUpdateAction=unused,deleteSalonProfileLookAction=unused,pinSalonProfileLookAction=unused,setSalonProfileLookStatusAction=unused,setSalonProfilePublicationAction=unused,updateSalonProfileIdentityAction=unused;export const deleteSalonProfileMediaAction=(...input)=>new Promise((resolve,reject)=>window.deletes.push({input,resolve,reject,done:false}));export const getSalonProfileMediaUploadSessionAction=(...input)=>{window.uploadSessions.push(input);return Promise.resolve({path:"draft/logo.webp",accessToken:"fixture-only",anonKey:"fixture-only",bucket:"fixture",supabaseUrl:location.origin})};' :
+      /actions$/.test(args.path) ? 'const unused=()=>{throw Error("Unexpected mutation")};export const bulkUserAccessAction=unused;export const createSalonProfileLookAction=unused,createSalonProfileUpdateAction=unused,deleteSalonProfileLookAction=unused,pinSalonProfileLookAction=unused,setSalonProfileLookStatusAction=unused,setSalonProfilePublicationAction=unused,updateSalonProfileIdentityAction=unused;export const deleteSalonProfileMediaAction=(...input)=>new Promise((resolve,reject)=>window.deletes.push({input,resolve,reject,done:false}));export const getSalonProfileMediaUploadSessionAction=(...input)=>{window.uploadSessions.push(input);return Promise.resolve({path:window.uploadSessions.length===1?"draft/logo.webp":"draft/logo-"+window.uploadSessions.length+".webp",accessToken:"fixture-only",anonKey:"fixture-only",bucket:"fixture",supabaseUrl:location.origin})};' :
       'export const UserOperationForm=({children})=><div>{children}</div>;export const UserReason=()=>null;export const UserDrawerContent=()=>null;export const userDate=value=>value;export const userName=value=>value.display_name??"User";export const NotificationComposer=()=>null;export const useCloseOnNavigation=()=>{};export const useOverlayPortalHost=()=>null;export const SalonProfileView=()=>null;' }));
   } }], });
 }
@@ -66,11 +66,11 @@ async function fixture(screen) {
 }
 
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aD9sAAAAASUVORK5CYII=', 'base64');
-async function upload(page) {
+async function upload(page, expectedPath = 'draft/logo.webp') {
   await page.locator('input[type=file]').setInputFiles({ name: 'fixture.png', mimeType: 'image/png', buffer: png });
   await page.getByRole('button', { name: 'Upload', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Upload', exact: true }).click();
-  await page.waitForFunction(() => window.uploaded.at(-1) === 'draft/logo.webp');
+  await page.waitForFunction(expected => window.uploaded.at(-1) === expected, expectedPath);
 }
 
 test('rendered independent user search tracks actual Next transition and preserves every filter', { skip, timeout: 60000 }, async () => {
@@ -136,7 +136,7 @@ test('media removal visibly holds one request and preserves best-effort cleanup 
   } finally { await app.close(); }
 });
 
-test('late media removal after Activity hide or salon change cannot clear another editing context', { skip, timeout: 60000 }, async () => {
+test('successful media deletion while hidden reconciles the same retained draft exactly once on reveal', { skip, timeout: 60000 }, async () => {
   const app = await fixture('/media');
   try {
     await upload(app.page);
@@ -146,15 +146,59 @@ test('late media removal after Activity hide or salon change cannot clear anothe
     await app.page.locator('[data-visible]').filter({ hasText: 'hidden' }).waitFor();
     const count = await app.page.evaluate(() => window.uploaded.length);
     await app.page.evaluate(() => window.finishDelete());
+    assert.equal(await app.page.evaluate(() => window.uploaded.length), count, 'hidden completion waits for the matching editing view');
     await app.page.evaluate(() => window.show());
-    await app.page.getByRole('button', { name: 'Remove', exact: true }).waitFor();
-    assert.equal(await app.page.evaluate(() => window.uploaded.length), count);
+    await app.page.waitForFunction(() => window.uploaded.at(-1) === null);
+    assert.equal(await app.page.evaluate(() => window.uploaded.length), count + 1);
+    assert.equal(await app.page.getByRole('button', { name: 'Remove', exact: true }).count(), 0, 'deleted path cannot remain in the selectable draft');
+    await app.page.evaluate(() => window.hide());
+    await app.page.locator('[data-visible]').filter({ hasText: 'hidden' }).waitFor();
+    await app.page.evaluate(() => window.show());
+    await app.page.locator('[data-visible]').filter({ hasText: 'visible' }).waitFor();
+    assert.equal(await app.page.evaluate(() => window.uploaded.length), count + 1, 'reveal never replays the completion callback');
+    assert.equal(await app.page.evaluate(() => window.deletes.length), 1, 'reveal never replays the delete');
+    assert.deepEqual(app.errors, []);
+  } finally { await app.close(); }
+});
+
+test('media deletion stays pending across hide/reveal until the original operation finishes', { skip, timeout: 60000 }, async () => {
+  const app = await fixture('/media');
+  try {
+    await upload(app.page);
+    await app.page.getByRole('button', { name: 'Remove', exact: true }).click();
+    await app.page.getByRole('button', { name: 'Removing…', exact: true }).waitFor();
+    await app.page.evaluate(() => window.hide());
+    await app.page.locator('[data-visible]').filter({ hasText: 'hidden' }).waitFor();
+    await app.page.evaluate(() => window.show());
+    await app.page.getByRole('button', { name: 'Removing…', exact: true }).waitFor();
+    assert.equal(await app.page.locator('input[type=file]').isDisabled(), true);
+    assert.equal(await app.page.evaluate(() => window.deletes.length), 1);
+    await app.page.evaluate(() => window.finishDelete());
+    await app.page.waitForFunction(() => window.uploaded.at(-1) === null);
+    assert.equal(await app.page.locator('input[type=file]').isDisabled(), false);
+    assert.equal(await app.page.evaluate(() => window.deletes.length), 1);
+    assert.deepEqual(app.errors, []);
+  } finally { await app.close(); }
+});
+
+test('obsolete media deletion cannot clear a new salon or its newly uploaded image', { skip, timeout: 60000 }, async () => {
+  const app = await fixture('/media');
+  try {
+    await upload(app.page);
     await app.page.getByRole('button', { name: 'Remove', exact: true }).click();
     await app.page.getByRole('button', { name: 'Removing…', exact: true }).waitFor();
     await app.page.evaluate(() => window.changeSalon());
     await app.page.getByRole('button', { name: 'Remove', exact: true }).waitFor();
+    await upload(app.page, 'draft/logo-2.webp');
+    const count = await app.page.evaluate(() => window.uploaded.length);
     await app.page.evaluate(() => window.finishDelete());
     assert.equal(await app.page.evaluate(() => window.uploaded.length), count);
+    assert.equal(await app.page.evaluate(() => window.uploaded.at(-1)), 'draft/logo-2.webp');
+    await app.page.getByRole('button', { name: 'Remove', exact: true }).click();
+    await app.page.getByRole('button', { name: 'Removing…', exact: true }).waitFor();
+    assert.deepEqual(await app.page.evaluate(() => window.deletes[1].input), ['draft/logo-2.webp', 'salon-two']);
+    await app.page.evaluate(() => window.finishDelete());
+    await app.page.waitForFunction(() => window.uploaded.at(-1) === null);
     assert.equal(await app.page.evaluate(() => window.deletes.length), 2);
     assert.deepEqual(app.errors, []);
   } finally { await app.close(); }

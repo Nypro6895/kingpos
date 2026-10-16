@@ -531,19 +531,28 @@ export function SalonMediaUploader({
   const [uploadedPath, setUploadedPath] = useState<string | null>(null);
   const [removing, setRemoving] = useState(false);
   const removeBusy = useRef(false);
-  const removalGeneration = useRef(0);
+  const removalContext = JSON.stringify([expectedSalonId ?? null, currentPath, currentUrl, intent, kind]);
+  const activeRemovalContext = useRef(removalContext);
+  const removalVisible = useRef(false);
+  const removal = useRef<{ context: string; complete?: () => void } | null>(null);
   const [adjustment, setAdjustment] = useState({ offsetX: 0, offsetY: 0, zoom: 1 });
   const busy = state === "processing" || state === "uploading" || removing;
   const limit = SALON_PROFILE_IMAGE_LIMITS[kind];
 
   useLayoutEffect(() => {
-    removalGeneration.current += 1;
-    return () => {
-      removalGeneration.current += 1;
+    removalVisible.current = true;
+    if (activeRemovalContext.current !== removalContext) {
+      activeRemovalContext.current = removalContext;
+      removal.current = null;
       removeBusy.current = false;
       setRemoving(false);
-    };
-  }, [expectedSalonId, currentPath, currentUrl]);
+    } else {
+      // Activity hides effects, not the draft. A completed delete must clear
+      // its matching selection once that same editing context is revealed.
+      removal.current?.complete?.();
+    }
+    return () => { removalVisible.current = false; };
+  }, [removalContext]);
 
   useEffect(() => {
     onUploadStateChange?.(busy);
@@ -654,19 +663,24 @@ export function SalonMediaUploader({
     removeBusy.current = true;
     setRemoving(true);
     setError(null);
-    const generation = removalGeneration.current;
+    const operation: { context: string; complete?: () => void } = { context: removalContext };
+    removal.current = operation;
     let cleanupFailed = false;
-    try {
-      if (uploadedPath) {
-        try {
-          await deleteSalonProfileMediaAction(uploadedPath, expectedSalonId);
-        } catch {
-          // Keep the existing best-effort cleanup: removing a draft image may
-          // continue even when its separately uploaded file could not be deleted.
-          cleanupFailed = true;
-        }
+    if (uploadedPath) {
+      try {
+        await deleteSalonProfileMediaAction(uploadedPath, expectedSalonId);
+      } catch {
+        // Keep the existing best-effort cleanup: removing a draft image may
+        // continue even when its separately uploaded file could not be deleted.
+        cleanupFailed = true;
       }
-      if (generation !== removalGeneration.current) return;
+    }
+    if (removal.current !== operation || activeRemovalContext.current !== operation.context) return;
+    operation.complete = () => {
+      if (!removalVisible.current || removal.current !== operation || activeRemovalContext.current !== operation.context) return;
+      removal.current = null;
+      removeBusy.current = false;
+      setRemoving(false);
       setUploadedPath(null);
       setFile(null);
       setProcessedFile(null);
@@ -676,12 +690,8 @@ export function SalonMediaUploader({
       if (cleanupFailed) setError("The uploaded file could not be deleted. You can continue editing.");
       onUploaded(null);
       if (currentPath) onRemoveExisting?.();
-    } finally {
-      if (generation === removalGeneration.current) {
-        removeBusy.current = false;
-        setRemoving(false);
-      }
-    }
+    };
+    operation.complete();
   }
 
   return (
