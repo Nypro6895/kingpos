@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-16T18:00:29.405Z",
+  "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\app-local-platform-20261016\\native-frozen-r10",
+  "sourceSha256": "ff716c18804cf4846ef0b70ac46804d5dd4e3d0df222b8d24a446fafc0321d9e",
+  "newXCTests": 38,
+  "files": {
+    "ios/Reylumi/ReylumiLocalBundle.swift": "ff901099bf51cc34625bc2639b0604561a4474d6c83d21a93d1b2d270499b101",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "52db8f54a75608c18cd1689d15f605d0098cb074a19e39c682015d6d5264389b",
+    "ios/Reylumi/ReylumiLocalReadStore.swift": "e511ce597416763b6700b616b90c8815e578f88e202e6bbd02ac1fe579d12c2d",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "1886ff9b3162cf663e92d9005c2cc57f3ae1138671efc53d0889ac4043c949e3",
+    "ios/Reylumi/AppLocalBridge.js": "853c08413657ba16fc0fd653a1ef29a6749fdab2a55901e409ce92d96806d4b0",
+    "ios/Reylumi/ReylumiApp.swift": "36076e94ec0d7ab895ec505086d9e7704233d412551ef1b968a50bc5652037c6",
+    "ios/Reylumi/ReylumiViewController.swift": "070542b93c1d3312f27833e9ac26b09b552a4fbd765017a5d01a6a2d6fc6e93c",
+    "ios/Reylumi/Info.plist": "0019752ae493f6be3f0b0d27cdb92a4df1ebe255b016d042975c992d9b968d59",
+    "ios/Reylumi/Info-Debug.plist": "d10e4d1b24f85a2c815f57117ab9fca0466073c694229f62c95ccc7f788066ee",
+    "ios/project.yml": "ed0a80996b4b6bd0b3079017439fb4790ff7315486a1db1332cfbf1380175354",
+    "ios/ReylumiTests/LocalBundleTests.swift": "fb29a877822f0c4e3c1161ef4b5d43361190023e89c57f77f9e13855b3ba9290",
+    "ios/ReylumiTests/LocalAppTransportTests.swift": "bf2d5d5a4023fd5d99ebb52029e9b433747ae4bc43d99f46ac32beb600105c3f",
+    "ios/ReylumiTests/LocalReadStoreTests.swift": "140b99015e78487f59729b7533079f76d4b1f08a5d1ec0b35743b6a84fadf8d9",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "2558a70be6ef0dbe8f08e7c5cdacd447bfd410cea37478e7627bd2ca2cbc0102",
+    "ios/scripts/check-build.sh": "98ca602a21a6003620ecc0920a22983bea79160bc0108fb54d3c28e6808dda66",
+    "ios/.gitattributes": "296b42f98fd9e4e8963c986f61e593674f7ac0c5d3268603d77db0a927c2795c",
+    "ios/Reylumi/NativeBridge.js": "55c49eed46f96ac6edb95dfb240b9134fe6ae09425b07dd707f3bc3ef0804f2f",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "6f7980b9b6c63e01c5d5a6573ae84f31622d68dfd0469d52a116bac739bd6f16",
+    "ios/Reylumi/ReylumiAppDelegate.swift": "825ad30ca5f6220a563d58efd82abf89e4e3f3a3fc377f21af7af779aa169a10"
+  }
+}

@@ -486,10 +486,13 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
             finishLoading()
             notifyUsableDestination()
         case "route-ready":
-            guard body["nonce"] as? String == startup.nonce,
-                  body["generation"] as? Int == startup.generation,
-                  let current = webView.url,
-                  body["path"] as? String == current.path + (current.query.map { "?" + $0 } ?? "") + (current.fragment.map { "#" + $0 } ?? "") else { return }
+            guard let nonce = body["nonce"] as? String, nonce == startup.nonce,
+                  let generation = body["generation"] as? Int, generation == startup.generation,
+                  let current = webView.url, let reportedPath = body["path"] as? String else { return }
+            var currentPath: String = current.path
+            if let query = current.query { currentPath += "?" + query }
+            if let fragment = current.fragment { currentPath += "#" + fragment }
+            guard reportedPath == currentPath else { return }
             notifyUsableDestination()
         case "open-market-website":
             UIApplication.shared.open(policy.origin.appendingPathComponent("market"), options: [:])
