@@ -1,0 +1,92 @@
+{
+  "kind": "release",
+  "summary": "Verified POS/menu/cache repair candidates prepared against exact production and latest uploaded native source. No live UI promotion or TestFlight upload: owner staging sequence answer and physical-iPhone acceptance remain pending.",
+  "changes": [
+    "4e421c05-8df0-43b5-9373-918584565ff6",
+    "aae368e4-89c7-46f8-b584-5c4068b73242",
+    "a055a60d-7c8e-45db-a5e6-1ed4d3a777b5",
+    "cde30072-e238-470d-bd2f-6745721a12c0",
+    "f461a39c-e300-4189-b385-c120fb9d4fad"
+  ],
+  "targets": {
+    "web": {
+      "status": "partial",
+      "verified": false,
+      "deploymentId": "dpl_FcWvzDRK7VuCfEszP8ZZ7qMoQmgs",
+      "baselineDeploymentId": "dpl_EW3mj5c8bzs8kw48X4cJDvKvhUuX",
+      "sourceSha256": "c08ca531aa9fa1c8424b623dc03907da2776be6868d714e35a6a6f42e09b3799",
+      "overlaySha256": "bf64163e9483b2bb22a688e00d44205400d9f59a11b90226ed90f6b374196c86",
+      "deploySourceSha256": "8f8ae321cbaf7805c425581a116157fd24ba1f6fad227fd41b2031ba3d6f254d",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\full-candidate-source-verification.json",
+      "liveAliasDeploymentId": "dpl_EW3mj5c8bzs8kw48X4cJDvKvhUuX",
+      "liveAliasChanged": false,
+      "protectedCandidateOnly": true,
+      "promotableAsIs": false,
+      "configuration": "Background dispatch disabled for testing; use normal preserved production runtime settings for an eventual promotion."
+    },
+    "ios": {
+      "status": "partial",
+      "verified": false,
+      "commit": "89e16562ed1929e73dfa0ea76baf497cdff233f5",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\native-check-final-verification.json",
+      "nativeBaselineCommit": "da426d42a3d15fa1508dc478a4da51cfe2673500",
+      "nativeBuildRequired": true,
+      "simulatorTests": {
+        "count": 90,
+        "failures": 0
+      },
+      "archive": "unsigned; not installable",
+      "signed": false,
+      "uploadAccepted": false,
+      "appleAvailability": "not uploaded by this task",
+      "physicalIPhoneAcceptance": "pending owner TestFlight trial"
+    }
+  },
+  "selectedSourceFiles": 38,
+  "frozenSelection": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\release-selection.json",
+  "backendCandidate": {
+    "deploymentId": "dpl_DKECWGrWGXUuPtCAuD4AQaEvKn6B",
+    "sourceCommit": "d337f59a15c716a879d28498edb9604e14b9956b",
+    "changedProductFiles": [
+      "lib/app-local-explore-server.ts",
+      "lib/app-local-explore-metadata.ts"
+    ],
+    "sourceEvidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-candidate-source-verification.json",
+    "interface": "unchanged from captured production",
+    "promotableAsIs": false,
+    "backgroundDispatch": "disabled for preview",
+    "separateSubsetEventManifests": [
+      "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-stage-start-manifest.json",
+      "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\backend-stage-ready-manifest.json"
+    ]
+  },
+  "pendingDecision": "Owner has chosen physical testing through TestFlight, but has not answered whether the compatible two-file backend may publish first or a separate test origin is required. No time-based approval is inferred.",
+  "nextSteps": [
+    "Obtain pending staging sequence answer; do not promote these background-disabled previews as-is.",
+    "Reacquire release coordination lock and recapture/guard current live source and actual latest uploaded native source before publication.",
+    "For backend-first choice, register only the validated two-file subset, prepare normal production configuration and verify its exact source before promotion.",
+    "Sign/upload the compatible final native candidate through the existing TestFlight channel; verify Apple processing and access to the existing group without invitations.",
+    "Owner tests real iPhone startup, POS/CheckIn reversals, More/detail menus and draft retention before full web UI/official publication."
+  ],
+  "checks": {
+    "productionBuild": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\full-build-receipt.json",
+    "native": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\native-check-final-verification.json",
+    "compiledNavigation": "artifacts/pos-menu-recovery-20261016/final-compiled-menu-tests.json",
+    "anonymousCandidateHTTP": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\full-candidate-http-check.json",
+    "exactEventsAndOverlays": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\release-selection.json"
+  },
+  "excludedPendingWork": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\pending-disposition-review-2026-10-16T21-04-55-909Z.json",
+  "limitations": [
+    "No real-device speed, frame-time or reload outcome has been claimed.",
+    "Extra More fixtures verify chrome in opening/error states, not every business form.",
+    "Original local-storage exception was discarded by the previous build, so its exact device cause is unproven.",
+    "No real financial/staff/booking/support mutations, invitations or App Store publication were performed."
+  ],
+  "rollback": {
+    "performed": false,
+    "reason": "Production alias remains the captured deployment; no live changes from this task."
+  },
+  "id": "1bcf6600-ff1f-4592-95be-9c81bb6d9c54",
+  "recordedAt": "2026-10-16T21:34:38.179Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos"
+}

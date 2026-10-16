@@ -1,0 +1,75 @@
+{
+  "kind": "change",
+  "changeId": "ios-21-1-runtime-repairs-20261016",
+  "status": "ready",
+  "summary": "Verified installed-client native repairs: preserve cached menus/drafts while fresh authority is checked, restore confirmation/Back behavior, verify assets off the UI actor within8MiB and coalesce encrypted read commits. Actual installed POS cold-WK regression retains money/cart/checkpoint/outbox with only its exact synthetic existing relay-loader requests.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift",
+    "ios/Reylumi/ReylumiLocalBundle.swift",
+    "ios/Reylumi/ReylumiLocalReadStore.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift",
+    "ios/ReylumiTests/LocalBundleTests.swift",
+    "ios/ReylumiTests/LocalReadStoreTests.swift"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\experience-regression-21-1\\native-repair-source-r2",
+    "commit": "89e16562ed1929e73dfa0ea76baf497cdff233f5",
+    "manifest": "artifacts/experience-regression-21-1/native-repair-source-manifest-r2.json",
+    "sha256": "427b591e578638d39546a1ba9c0ce32896e7cd2940a74d02861ce1d0ac96c51d"
+  },
+  "validation": [
+    {
+      "name": "Exact CI source/run and unsigned-only receipt",
+      "result": "passed",
+      "evidence": "artifacts\\pos-menu-recovery-release-20261016\\native-check-final-verification.json"
+    },
+    {
+      "name": "Every receipt source hash matches raw Git blobs",
+      "result": "passed",
+      "evidence": "artifacts\\pos-menu-recovery-release-20261016\\native-check-final-verification.json"
+    },
+    {
+      "name": "All8 frozen native source/test files match receipt and raw Git",
+      "result": "passed",
+      "evidence": "artifacts\\pos-menu-recovery-release-20261016\\native-check-final-verification.json"
+    },
+    {
+      "name": "All90 actual XCTest and unsigned archive succeeded",
+      "result": "passed",
+      "evidence": "artifacts\\pos-menu-recovery-release-20261016\\native-check-final-verification.json"
+    },
+    {
+      "name": "Actual archived bundle, every asset and all3 bridge resources match exact source",
+      "result": "passed",
+      "evidence": "artifacts\\pos-menu-recovery-release-20261016\\native-check-final-verification.json"
+    }
+  ],
+  "priorFailedValidation": {
+    "run": 38965888458,
+    "tests": 90,
+    "passed": 89,
+    "failed": 1,
+    "diagnosis": "Fixture treated the existing DeskRelay loader server-action transport as forbidden. Only that exact synthetic request is now allowed; original money/cart/checkpoint/outbox assertions and product bytes were unchanged.",
+    "evidence": "artifacts/pos-menu-recovery-release-20261016/native-check-38965888458-failed.log"
+  },
+  "id": "aae368e4-89c7-46f8-b584-5c4068b73242",
+  "recordedAt": "2026-10-16T21:32:51.021Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "163e077aad9297968cefd1a847625f274283f78ef6acd2992ba76c4b52f21387",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "f7940b2398527c4fd4462521cc63d3ed807de6decd93e43f1e176c536b14a243",
+    "ios/Reylumi/ReylumiLocalBundle.swift": "3f2a59f299f402e0b9cf0452549535956a669bf07aa54327fdd928798f808b06",
+    "ios/Reylumi/ReylumiLocalReadStore.swift": "cd5cb51e9d1518a715d73695834f15239456bfeb827751484c9cb3f163487946",
+    "ios/ReylumiTests/LocalAppTransportTests.swift": "15bb5db91f70e53935360ee5c7e49efe77610f0b2a34a44dec9a129c1b32100b",
+    "ios/ReylumiTests/LocalAppWebViewTests.swift": "f2ca8714b161b4213993938b0794fb840002ebc0b7e697bc8427b4aee0deb8df",
+    "ios/ReylumiTests/LocalBundleTests.swift": "67c24b517f9202d52a9a59f591e336a61fd51478298cb62548324941515ce9c8",
+    "ios/ReylumiTests/LocalReadStoreTests.swift": "91f7d436e75f9a764e96f9195f92318cb5b479b42da35e07d98b152e2d6e452c"
+  }
+}

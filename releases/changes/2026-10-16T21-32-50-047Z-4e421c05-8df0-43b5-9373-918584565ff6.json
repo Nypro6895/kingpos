@@ -1,0 +1,94 @@
+{
+  "kind": "change",
+  "changeId": "pos-menu-recovery-core-20261016",
+  "status": "ready",
+  "summary": "Freeze verified shared owner navigation, bounded authority recovery, unchanged-read freshness, scoped active invalidation and held-response fencing, including the exact repaired installed bundle. Existing money and access rules preserved.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "lib/app-local-resource.ts",
+    "lib/app-local-resource-invalidation.ts",
+    "lib/app-local-command-client.ts",
+    "scripts/build-app-local-bundle.mjs",
+    "tests/app-local-authority-navigation.test.mjs",
+    "tests/app-local-resource-refresh.test.mjs",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/index.html",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\root-ready-git89-source",
+    "commit": "89e16562ed1929e73dfa0ea76baf497cdff233f5",
+    "sha256": "5db19f7dcfca56f135f71cf985126b887c6db420bfd401a08f0bf6b8b415ea2b"
+  },
+  "dependencies": [
+    "owner-pos-menu-startup-recovery-20261016",
+    "app-local-public-repair-20261016",
+    "ios-21-1-runtime-repairs-20261016",
+    "installed-owner-ticket-detail-navigation-20261016"
+  ],
+  "validation": [
+    {
+      "name": "10 actual-entry authority and retained draft tests",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/authority-tests-r2.log"
+    },
+    {
+      "name": "5 freshness/invalidation/held-read race tests",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/resource-tests-r2.log"
+    },
+    {
+      "name": "Offline outbox reload, stable retry identity, PIN and scope isolation",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/offline-operations-tests.log"
+    },
+    {
+      "name": "Targeted lint",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/root-lint-r2.log"
+    },
+    {
+      "name": "Exact latest production baseline assembled and production-built without source drift",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\full-build-receipt.json"
+    },
+    {
+      "name": "Final compiled POS/More/detail navigation and same money draft at390/820/1440",
+      "result": "passed",
+      "evidence": "artifacts/pos-menu-recovery-20261016/final-compiled-menu-tests.json"
+    },
+    {
+      "name": "Exact90 native XCTest, unsigned archive and actual344-asset packaged source hashes",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\native-check-final-verification.json"
+    }
+  ],
+  "publicationGate": "Owner physical-iPhone acceptance remains required. Backend staging choice is pending. This ready component is not a live web release or TestFlight upload.",
+  "limitations": [
+    "Synthetic navigation fixtures verify shell/state retention, not every business form or real-device frame time.",
+    "The original screenshot discarded its storage exception; exact device cause is not proven."
+  ],
+  "id": "4e421c05-8df0-43b5-9373-918584565ff6",
+  "recordedAt": "2026-10-16T21:32:50.047Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "23948c44fd53b55e450777ce5470efa4c26148e80f8e5f674cee8c0d5fd37ad8",
+    "lib/app-local-resource.ts": "e81b9228fa322f098ee26d17a733d89c910a6959de3d9e2f80cf23faadfba250",
+    "lib/app-local-resource-invalidation.ts": "65c25d7e4a564a74ea4f38ea3f96ed49e2256f9ee55f50f47832495206c2410d",
+    "lib/app-local-command-client.ts": "2859c6f89372b7a25465032d726c3445b7489ef36848d6e6853286da3f574497",
+    "scripts/build-app-local-bundle.mjs": "68b899ef6df3ebb84b36583437ccfbdb7425f901675f5c1c95ddd093edbca0cf",
+    "tests/app-local-authority-navigation.test.mjs": "ff61d4177f701df512e63a19a06b83a9f8ea0d12b9d8dcabe7c63e0e573803e6",
+    "tests/app-local-resource-refresh.test.mjs": "a3df55e0b27010f487e72e527f78199c28ed804f62ffe31bdf70b252afe4e225",
+    "ios/Reylumi/LocalAppBundle/app.js": "23a230e2da60305b9a66366b273ab0f4bdb97ac6b0f933e86313771e8e56652b",
+    "ios/Reylumi/LocalAppBundle/app.css": "3ef0567d160abcdc384e4ee470053042edb9d9826c3907a4608d381ef37abd5c",
+    "ios/Reylumi/LocalAppBundle/index.html": "ea7b9950b5cbff575cb810276b2de67f4b4871eb3be89f1ba58dc1402fe6472d",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "79568c5508476b8ced9e8c1dccb5213cecc92780ecdbf8d6ed478ed56dbab5ba"
+  }
+}
