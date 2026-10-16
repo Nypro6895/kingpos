@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "61adc0b68693f669f96ba293ba82fc9c7116a89e2dd747c113d279f6bb0423d2",
+  "buildId": "9bc8d9479b0999423625c6d3a67c02b7a6acafd9321f348e8b8c3c93d15cb9d5",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 558591,
-      "sha256": "5d40105478265810baf445b1696fe23c2e776b69bfe657020b9b2591ef4bd14d",
+      "bytes": 564189,
+      "sha256": "3ef0567d160abcdc384e4ee470053042edb9d9826c3907a4608d381ef37abd5c",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4067971,
-      "sha256": "a0673f09eefd5e6a861d109aa2c3da3ed8047d6e831104a907f8b4cf68e81440",
+      "bytes": 4084678,
+      "sha256": "2b97e00d12e9a1e0b8dd715ddc5341a2604551bf427c71307a9cbde2d49213ca",
       "mime": "text/javascript"
     },
     {
@@ -1475,8 +1475,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 535,
-      "sha256": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
+      "bytes": 533,
+      "sha256": "ea7b9950b5cbff575cb810276b2de67f4b4871eb3be89f1ba58dc1402fe6472d",
       "mime": "text/html"
     },
     {
@@ -3169,6 +3169,15 @@
         "q",
         "location",
         "category"
+      ],
+      "access": "scoped",
+      "cacheable": false
+    },
+    {
+      "name": "http.explore.salon-social",
+      "path": "/api/app-local/read",
+      "argumentKeys": [
+        "ids"
       ],
       "access": "scoped",
       "cacheable": false
