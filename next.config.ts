@@ -83,6 +83,8 @@ const nextConfig: NextConfig = {
   // Allow an isolated production check while the development tunnel is running.
   distDir: process.env.KINGPOS_BUILD_OUTPUT || ".next",
   experimental: {
+    // Keep unrelated route styles out of the first frame and cache each asset.
+    cssChunking: false,
     serverActions: { bodySizeLimit: "16mb" },
     // Use the build's unique ID consistently; serverless runtime does not rerun
     // this config to populate the NEXT_DEPLOYMENT_ID environment variable.

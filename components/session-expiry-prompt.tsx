@@ -1,13 +1,62 @@
 "use client";
 
 import { WorkspaceText } from "@/components/workspace-language";
-import { LoginForm } from "@/app/login/login-form";
-import { useEffect, useRef, useState } from "react";
+import type { LoginForm as SessionLoginForm } from "@/app/login/login-form";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { resetExperienceCaches } from "@/lib/reset-experience-cache";
 import { invalidateExperienceResources } from "@/lib/experience-resource-cache";
 import { createPortal } from "react-dom";
 import { useExperienceScope } from "@/components/experience-scope";
 import { classifyExperienceResponse, experienceMutationTags } from "@/lib/experience-mutations";
+
+type SignInComponent = typeof SessionLoginForm;
+type SignInLoad = { promise: Promise<SignInComponent>; failed: boolean };
+let signInLoad: SignInLoad | null = null;
+
+function loadSessionSignIn() {
+  if (!signInLoad) {
+    const load: SignInLoad = {
+      promise: import("@/app/login/login-form").then((module) => module.LoginForm),
+      failed: false,
+    };
+    load.promise = load.promise.catch((error) => {
+      load.failed = true;
+      throw error;
+    });
+    signInLoad = load;
+  }
+  return signInLoad;
+}
+
+function ExpiredSessionSignIn(props: Parameters<SignInComponent>[0]) {
+  const [Form, setForm] = useState<SignInComponent | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const request = useRef<SignInLoad | null>(null);
+
+  useLayoutEffect(() => {
+    let active = true;
+    const load = loadSessionSignIn();
+    request.current = load;
+    void load.promise.then((component) => {
+      if (active) setForm(() => component);
+    }, () => {
+      if (active) setFailed(true);
+    });
+    return () => { active = false; };
+  }, [attempt]);
+
+  if (Form) return <Form {...props} />;
+  if (failed) return <div className="mt-4 grid gap-3">
+    <p role="alert"><WorkspaceText text="Sign-in could not be opened. Please try again." /></p>
+    <button className="min-h-11 rounded-xl bg-zinc-950 px-4 font-semibold text-white" type="button" onClick={() => {
+      if (signInLoad === request.current && signInLoad?.failed) signInLoad = null;
+      setFailed(false);
+      setAttempt((value) => value + 1);
+    }}><WorkspaceText text="Try again" /></button>
+  </div>;
+  return <p className="mt-4" role="status"><WorkspaceText text="Opening sign-in…" /></p>;
+}
 
 export function SessionExpiryPrompt({ authenticated }: { authenticated: boolean }) {
   const scopeId = useExperienceScope()?.context.scope;
@@ -146,7 +195,7 @@ export function SessionExpiryPrompt({ authenticated }: { authenticated: boolean 
       <p id="session-expiry-description" className="mt-2 text-sm text-text-secondary">
         <WorkspaceText text="Your session has expired. Please log in to continue." />
       </p>
-      <LoginForm nextPath={nextPath} onAuthenticated={() => {
+      <ExpiredSessionSignIn key={scopeId ?? "public"} nextPath={nextPath} onAuthenticated={() => {
         sessionGeneration.current += 1;
         hadSession.current = true;
         invalidated.current = false;

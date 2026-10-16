@@ -5,6 +5,7 @@ export const geistSans = localFont({
   variable: "--font-geist-sans",
   weight: "100 900",
   display: "swap",
+  preload: false,
 });
 
 export const geistMono = localFont({
@@ -12,6 +13,7 @@ export const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
   display: "swap",
+  preload: false,
 });
 
 export const manrope = localFont({
@@ -19,4 +21,5 @@ export const manrope = localFont({
   variable: "--font-booking-sans",
   weight: "200 800",
   display: "swap",
+  preload: false,
 });
