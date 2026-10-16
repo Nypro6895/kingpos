@@ -8,6 +8,9 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   exit 1
 fi
 command -v xcodegen >/dev/null || { echo "Install XcodeGen before running this check." >&2; exit 1; }
+# These tests exercise the real installed client, not only a generated fixture.
+test -f Reylumi/LocalAppBundle/manifest.json
+test -f Reylumi/AppLocalBridge.js
 mkdir -p build
 # A distinct run directory keeps old test results from interfering with a rerun.
 task_run_dir="$(mktemp -d "$PWD/build/check.XXXXXX")"
@@ -109,6 +112,8 @@ xcodebuild archive \
 # Confirm that the bridge is actually bundled, rather than testing JS source alone.
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/NativeBridge.js"
 test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/AppViewport.js"
+test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/AppLocalBridge.js"
+test -f "$task_run_dir/Reylumi-unsigned.xcarchive/Products/Applications/Reylumi.app/LocalAppBundle/manifest.json"
 python3 - "$task_run_dir" "$task_simulator_id" <<'PY'
 import hashlib, json, os, pathlib, plistlib, subprocess, sys
 root = pathlib.Path.cwd()

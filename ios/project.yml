@@ -16,7 +16,11 @@ targets:
     platform: iOS
     sources:
       - path: Reylumi
-        excludes: [Info.plist, Info-Debug.plist]
+        excludes: [Info.plist, Info-Debug.plist, LocalAppBundle]
+    resources:
+      - path: Reylumi/LocalAppBundle
+        type: folder
+        optional: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.reylumi.ios

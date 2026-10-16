@@ -1,0 +1,320 @@
+import UIKit
+import WebKit
+import SafariServices
+
+/// Owns the installed client app. Hosted authentication/payment is deliberately
+/// handled by the original HTTPS controller, without replacing the local DOM.
+@MainActor
+final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandlerWithReply, WKDownloadDelegate {
+    let bundle: ReylumiLocalBundle
+    let transport: ReylumiLocalAppTransport
+    private let origin: URL
+    private(set) var webView: WKWebView!
+    private let launchPanel = ReylumiLaunchView()
+    private let startPath: String
+    private var pending: [String: (kind: String, task: Task<Void, Never>)] = [:]
+    private var foregroundObserver: NSObjectProtocol?
+    private var resetObserver: NSObjectProtocol?
+    private var pendingNavigation: String?
+    private var downloads: [ObjectIdentifier: URL] = [:]
+    private var startupFrameLink: CADisplayLink?
+    private var firstFrame: CFTimeInterval?
+    private var lastProcessRecovery: Date?
+    private lazy var frameTarget = ReylumiLocalFrameTarget(self)
+    var onOpenOnline: ((String) -> Void)?
+
+    init(bundle: ReylumiLocalBundle, origin: URL = URL(string: "https://reylumi.com")!, startPath: String = "/explore", transport: ReylumiLocalAppTransport? = nil) {
+        self.bundle = bundle; self.origin = origin; self.startPath = bundle.routeExists(startPath) ? startPath : "/explore"
+        self.transport = transport ?? ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest)
+        super.init(nibName: nil, bundle: nil)
+    }
+    required init?(coder: NSCoder) { fatalError("Use init(bundle:)") }
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .white
+        launchPanel.translatesAutoresizingMaskIntoConstraints = false
+        launchPanel.onNavigate = { [weak self] path, query in
+            var components = URLComponents(); components.path = path; components.queryItems = query.isEmpty ? nil : query
+            self?.navigate(components.string ?? path)
+        }
+        launchPanel.onRetry = { [weak self] in if self?.webView == nil { self?.initializeWebContentIfNeeded() } else { self?.loadBundle() } }
+        launchPanel.onEditingFinished = { [weak self] in self?.launchPanel.finishLoading() }
+        view.addSubview(launchPanel); launchPanel.showLoading()
+        NSLayoutConstraint.activate([
+            launchPanel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor), launchPanel.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor), launchPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor), launchPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+    }
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard webView == nil, startupFrameLink == nil else { return }
+        let link = CADisplayLink(target: frameTarget, selector: #selector(ReylumiLocalFrameTarget.tick(_:)))
+        startupFrameLink = link; firstFrame = nil; link.add(to: .main, forMode: .common)
+    }
+    override func viewDidDisappear(_ animated: Bool) { super.viewDidDisappear(animated); startupFrameLink?.invalidate(); startupFrameLink = nil; firstFrame = nil }
+    fileprivate func startupFrame(_ link: CADisplayLink) {
+        guard webView == nil, viewIfLoaded?.window != nil, UIApplication.shared.applicationState == .active else { return }
+        guard let firstFrame else { self.firstFrame = link.targetTimestamp; return }
+        if link.timestamp >= firstFrame { initializeWebContentIfNeeded() }
+    }
+    func initializeWebContentIfNeeded() {
+        loadViewIfNeeded()
+        guard webView == nil else { return }
+        startupFrameLink?.invalidate(); startupFrameLink = nil
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .default()
+        configuration.limitsNavigationsToAppBoundDomains = true
+        configuration.applicationNameForUserAgent = "ReylumiIOS/1.0"
+        configuration.setURLSchemeHandler(ReylumiLocalSchemeHandler(bundle: bundle), forURLScheme: ReylumiLocalBundle.scheme)
+        configuration.userContentController.addScriptMessageHandler(ReylumiWeakLocalMessageHandler(self), contentWorld: .page, name: "appLocal")
+        configuration.userContentController.add(ReylumiWeakLocalUIHandler(self), name: "reylumi")
+        let metadata = (try? JSONSerialization.data(withJSONObject: transport.metadata)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
+        var script = "window.__reylumiAppLocalContext=\(metadata);\n"
+        for name in ["AppViewport", "AppLocalBridge"] {
+            if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" }
+        }
+        configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.navigationDelegate = self
+        webView.uiDelegate = self
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        webView.isOpaque = false; webView.backgroundColor = .white; webView.scrollView.backgroundColor = .white
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
+        webView.scrollView.pinchGestureRecognizer?.isEnabled = false
+        view.insertSubview(webView, belowSubview: launchPanel)
+        NSLayoutConstraint.activate([
+            webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor), webView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor), webView.leadingAnchor.constraint(equalTo: view.leadingAnchor), webView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        transport.onEvent = { [weak self] name, detail in self?.emit(name, detail) }
+        foregroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.foreground() }
+        }
+        resetObserver = NotificationCenter.default.addObserver(forName: ReylumiLocalAppTransport.sessionResetNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in await self?.transport.reset() }
+        }
+        loadBundle()
+    }
+    private func loadBundle(path: String? = nil) {
+        let destination = path ?? startPath
+        guard let url = URL(string: "\(ReylumiLocalBundle.scheme)://\(ReylumiLocalBundle.host)\(destination)"), bundle.owns(url), bundle.routeExists(url.path) else { return }
+        webView.load(URLRequest(url: url))
+    }
+    func navigate(_ path: String) {
+        guard let url = URL(string: path, relativeTo: URL(string: "reylumi-app://bundle")), bundle.owns(url), bundle.routeExists(url.path) else { return }
+        let destination = url.path + (url.query.map { "?" + $0 } ?? "")
+        if webView?.isLoading != false { pendingNavigation = destination; return }
+        emit("reylumi:app-local-navigate", ["path": destination])
+    }
+    func foreground() {
+        guard webView != nil else { return }
+        emit("reylumi:foreground", [:])
+        let path = webView.url?.path ?? startPath
+        Task { @MainActor [weak self] in _ = try? await self?.transport.freshContext(path: path) }
+    }
+    private func emit(_ name: String, _ detail: [String: Any]) {
+        guard webView != nil, let data = try? JSONSerialization.data(withJSONObject: ["name": name, "detail": detail]), let json = String(data: data, encoding: .utf8) else { return }
+        webView.evaluateJavaScript("(()=>{const e=\(json);if(e.name==='reylumi:app-local-reset')window.__reylumiAppLocalContext=e.detail;if(e.name==='reylumi:app-local-context'&&e.detail.host)window.__reylumiAppLocalContext=e.detail.host;window.dispatchEvent(new CustomEvent(e.name,{detail:e.detail}));})()", completionHandler: nil)
+    }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage, replyHandler: @escaping (Any?, String?) -> Void) {
+        guard message.frameInfo.isMainFrame, let url = message.frameInfo.request.url, bundle.owns(url),
+              let body = message.body as? [String: Any], body["version"] as? Int == 1,
+              body["nonce"] as? String == transport.nonce, body["scopeEpoch"] as? Int == transport.scopeEpoch,
+              let id = body["id"] as? String, UUID(uuidString: id) != nil, let kind = body["kind"] as? String,
+              pending[id] == nil, pending.count < 100 else { replyHandler(["__hostError": ["status": 403, "message": "App request is not available."]], nil); return }
+        let name = body["name"] as? String ?? "", args = body["args"] as? [String: Any] ?? [:]
+        if kind == "cache", name == "ready" { launchPanel.finishLoading(); replyHandler(["ok": true], nil); return }
+        if kind == "cache", name == "cancel", let target = args["requestId"] as? String {
+            if let operation = pending[target], operation.kind == "read" || operation.kind == "context" { operation.task.cancel() }
+            replyHandler(["ok": true], nil); return
+        }
+        let epoch = transport.scopeEpoch
+        let task = Task { @MainActor [weak self] in
+            guard let self else { replyHandler(nil, "App view closed."); return }
+            defer { self.pending[id] = nil }
+            do {
+                let result: Any
+                switch kind {
+                case "context":
+                    let path = args["path"] as? String ?? self.webView.url?.path ?? self.startPath
+                    guard let parsed = URL(string: path, relativeTo: URL(string: "reylumi-app://bundle")), self.bundle.owns(parsed), self.bundle.routeExists(parsed.path) else { throw NSError(domain: "ReylumiLocalApp", code: 400) }
+                    result = try await self.transport.context(path: parsed.path)
+                case "read":
+                    var original = args; original.removeValue(forKey: "etag"); original.removeValue(forKey: "scope")
+                    result = try await self.transport.read(name: name, args: original, etag: body["etag"] as? String ?? args["etag"] as? String, requestedScope: args["scope"] as? String)
+                case "command":
+                    var original = args; original.removeValue(forKey: "scope")
+                    let reply = try await self.transport.command(name: name, args: original, requestID: id, path: self.webView.url?.path ?? self.startPath, requestedScope: args["scope"] as? String)
+                    guard reply["ok"] as? Bool == true else { throw NSError(domain: "ReylumiLocalApp", code: 400, userInfo: [NSLocalizedDescriptionKey: reply["error"] as? String ?? "The change could not be confirmed."]) }
+                    result = reply["data"] ?? NSNull()
+                case "cache":
+                    if name == "background.register" {
+                        let registration = try await self.transport.backgroundRegistration(args)
+                        await ReylumiBackgroundSync.shared.register(registration); result = ["ok": true]; break
+                    }
+                    if name == "background.drain" {
+                        guard let scope = args["scope"] as? String, await self.transport.matchesCachedScope(scope) else { throw NSError(domain: "ReylumiLocalApp", code: 403) }
+                        _ = try await self.transport.freshContext(path: self.webView.url?.path ?? self.startPath)
+                        guard self.transport.backgroundDrainAllowed(scope) else { throw NSError(domain: "ReylumiLocalApp", code: 403) }
+                        let snapshots = await ReylumiBackgroundSync.shared.drain(scope: scope)
+                        guard self.transport.scopeEpoch == epoch else { throw NSError(domain: "ReylumiLocalApp", code: 409) }
+                        self.emit("reylumi:native-snapshots", ["scope": scope, "snapshots": snapshots]); result = ["ok": true]; break
+                    }
+                    if let scope = args["scope"] as? String, !scope.isEmpty, !(await self.transport.matchesCachedScope(scope)) { throw NSError(domain: "ReylumiLocalApp", code: 403) }
+                    let original = args["arguments"] as? [String: Any] ?? [:]
+                    if args["op"] as? String == "get" { result = (try await self.transport.cached(name: name, args: original, requestedScope: args["scope"] as? String)) as Any? ?? NSNull() }
+                    else if args["op"] as? String == "remove" { try await self.transport.removeCached(name: name, args: original, requestedScope: args["scope"] as? String); result = ["ok": true] }
+                    else { throw NSError(domain: "ReylumiLocalApp", code: 400) }
+                case "online":
+                    guard let path = args["path"] as? String, path.hasPrefix("/"), !path.hasPrefix("//"), !path.contains("\\"), path.utf8.count <= 8192 else { throw NSError(domain: "ReylumiLocalApp", code: 400) }
+                    self.onOpenOnline?(path); result = ["ok": true]
+                default: throw NSError(domain: "ReylumiLocalApp", code: 400)
+                }
+                guard kind == "context" || self.transport.scopeEpoch == epoch, !Task.isCancelled else { throw NSError(domain: "ReylumiLocalApp", code: 409) }
+                replyHandler(result, nil)
+            } catch { replyHandler(["__hostError": ["status": (error as NSError).code, "message": error.localizedDescription]], nil) }
+        }
+        pending[id] = (kind, task)
+    }
+    func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        guard let url = action.request.url else { decisionHandler(.cancel); return }
+        if bundle.owns(url) || url.absoluteString.hasPrefix("blob:reylumi-app://bundle/") || url.absoluteString == "about:blank" { decisionHandler(action.shouldPerformDownload ? .download : .allow); return }
+        decisionHandler(.cancel)
+        let policy = NavigationPolicy(origin: origin)
+        guard action.targetFrame?.isMainFrame != false, action.navigationType == .linkActivated, !policy.isExcluded(url), policy.isExternalAllowed(url), presentedViewController == nil else { return }
+        if policy.isInternal(url) { onOpenOnline?(url.path + (url.query.map { "?" + $0 } ?? "")) }
+        else if policy.isSafariPayment(url) || url.scheme != "https" { UIApplication.shared.open(url) }
+        else { present(SFSafariViewController(url: url), animated: true) }
+    }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        webView.scrollView.pinchGestureRecognizer?.isEnabled = false
+        launchPanel.finishLoading()
+        if let path = pendingNavigation { pendingNavigation = nil; navigate(path) }
+    }
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { if (error as NSError).code != NSURLErrorCancelled { launchPanel.showError() } }
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { self.webView(webView, didFail: navigation, withError: error) }
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        let path = webView.url.map { $0.path + ($0.query.map { "?" + $0 } ?? "") } ?? startPath
+        for operation in pending.values where operation.kind != "command" { operation.task.cancel() }
+        transport.invalidatePage()
+        webView.configuration.userContentController.removeAllUserScripts()
+        let metadata = (try? JSONSerialization.data(withJSONObject: transport.metadata)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
+        var script = "window.__reylumiAppLocalContext=\(metadata);\n"
+        for name in ["AppViewport", "AppLocalBridge"] { if let url = Bundle.main.url(forResource: name, withExtension: "js"), let resource = try? String(contentsOf: url, encoding: .utf8) { script += resource + "\n" } }
+        webView.configuration.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        guard lastProcessRecovery.map({ Date().timeIntervalSince($0) >= 60 }) ?? true else { launchPanel.showError(); return }
+        lastProcessRecovery = Date()
+        loadBundle(path: path)
+    }
+    fileprivate func nativeUI(_ message: WKScriptMessage) {
+        guard message.frameInfo.isMainFrame, let url = message.frameInfo.request.url, bundle.owns(url),
+              let value = message.body as? [String: Any], presentedViewController == nil else { return }
+        switch value["action"] as? String {
+        case "print":
+            let controller = UIPrintInteractionController.shared
+            controller.printFormatter = webView.viewPrintFormatter(); controller.present(animated: true, completionHandler: nil)
+        case "share":
+            guard let text = value["text"] as? String, text.utf8.count <= 64000 else { return }
+            let controller = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+            controller.popoverPresentationController?.sourceView = view
+            controller.popoverPresentationController?.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1)
+            present(controller, animated: true)
+        case "open-payment":
+            guard let text = value["url"] as? String, let url = URL(string: text), NavigationPolicy(origin: origin).isSafariPayment(url) else { return }
+            UIApplication.shared.open(url)
+        case "open-market-website": UIApplication.shared.open(origin.appendingPathComponent("market"))
+        case "offline-clear": Task { @MainActor in await transport.reset() }
+        default: break
+        }
+    }
+    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        guard frame.isMainFrame, let url = frame.request.url, bundle.owns(url), presentedViewController == nil else { completionHandler(); return }
+        let controller = UIAlertController(title: "Reylumi", message: message, preferredStyle: .alert)
+        controller.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler() }); present(controller, animated: true)
+    }
+    func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) { download.delegate = self }
+    func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) { download.delegate = self }
+    func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let name = (suggestedFilename as NSString).lastPathComponent
+            let destination = directory.appendingPathComponent(name.isEmpty ? "Reylumi-export" : name)
+            downloads[ObjectIdentifier(download)] = destination; completionHandler(destination)
+        } catch { completionHandler(nil) }
+    }
+    func downloadDidFinish(_ download: WKDownload) {
+        guard let url = downloads.removeValue(forKey: ObjectIdentifier(download)), presentedViewController == nil else { return }
+        let controller = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        controller.popoverPresentationController?.sourceView = view
+        controller.popoverPresentationController?.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1)
+        present(controller, animated: true)
+    }
+    func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) { downloads.removeValue(forKey: ObjectIdentifier(download)) }
+    deinit {
+        startupFrameLink?.invalidate()
+        if let foregroundObserver { NotificationCenter.default.removeObserver(foregroundObserver) }
+        if let resetObserver { NotificationCenter.default.removeObserver(resetObserver) }
+    }
+}
+
+@MainActor
+private final class ReylumiLocalFrameTarget: NSObject {
+    weak var controller: ReylumiLocalAppViewController?
+    init(_ controller: ReylumiLocalAppViewController) { self.controller = controller }
+    @objc func tick(_ link: CADisplayLink) { controller?.startupFrame(link) }
+}
+
+@MainActor
+final class ReylumiAppContainer: UIViewController {
+    private let origin: URL
+    private var local: ReylumiLocalAppViewController?
+    private var hosted: ReylumiViewController?
+    private var marketReturnSequence = 0
+    init(origin: URL = URL(string: "https://reylumi.com")!) { self.origin = origin; super.init(nibName: nil, bundle: nil) }
+    required init?(coder: NSCoder) { fatalError("Use init(origin:)") }
+    override func viewDidLoad() {
+        super.viewDidLoad(); view.backgroundColor = .white
+        if let bundle = try? ReylumiLocalBundle.installed(), bundle.manifest.productionReady == true {
+            let hint = ReylumiOfflineRouteStore(origin: origin).restored()?.path ?? "/explore"
+            let controller = ReylumiLocalAppViewController(bundle: bundle, origin: origin, startPath: hint)
+            local = controller; controller.onOpenOnline = { [weak self] path in self?.openOnline(path) }; embed(controller)
+        } else { let controller = ReylumiViewController(origin: origin); hosted = controller; embed(controller) }
+    }
+    private func embed(_ controller: UIViewController) {
+        addChild(controller); controller.view.translatesAutoresizingMaskIntoConstraints = false; view.addSubview(controller.view)
+        NSLayoutConstraint.activate([controller.view.topAnchor.constraint(equalTo: view.topAnchor), controller.view.bottomAnchor.constraint(equalTo: view.bottomAnchor), controller.view.leadingAnchor.constraint(equalTo: view.leadingAnchor), controller.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)])
+        controller.didMove(toParent: self)
+    }
+    private func openOnline(_ path: String) {
+        guard presentedViewController == nil, let url = URL(string: path, relativeTo: origin)?.absoluteURL,
+              NavigationPolicy(origin: origin).isInternal(url), !NavigationPolicy(origin: origin).isExcluded(url) else { return }
+        let controller = ReylumiViewController(origin: origin, initialURL: url)
+        let navigation = UINavigationController(rootViewController: controller)
+        controller.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(closeOnline))
+        navigation.modalPresentationStyle = .fullScreen
+        present(navigation, animated: true)
+    }
+    @objc private func closeOnline() { dismiss(animated: true) { [weak self] in self?.local?.foreground() } }
+    func returnToMarket(sequence: Int) {
+        guard sequence > marketReturnSequence else { return }; marketReturnSequence = sequence
+        loadViewIfNeeded()
+        if let local { if presentedViewController != nil { dismiss(animated: true) }; local.navigate("/market") }
+        else { hosted?.returnToMarket(sequence: sequence) }
+    }
+}
+
+@MainActor
+private final class ReylumiWeakLocalMessageHandler: NSObject, WKScriptMessageHandlerWithReply {
+    weak var delegate: ReylumiLocalAppViewController?
+    init(_ delegate: ReylumiLocalAppViewController) { self.delegate = delegate }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage, replyHandler: @escaping (Any?, String?) -> Void) {
+        guard let delegate else { replyHandler(nil, "App view closed."); return }
+        delegate.userContentController(userContentController, didReceive: message, replyHandler: replyHandler)
+    }
+}
+
+@MainActor
+private final class ReylumiWeakLocalUIHandler: NSObject, WKScriptMessageHandler {
+    weak var delegate: ReylumiLocalAppViewController?
+    init(_ delegate: ReylumiLocalAppViewController) { self.delegate = delegate }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) { delegate?.nativeUI(message) }
+}

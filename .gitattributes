@@ -1,0 +1,2 @@
+# The signed local package's manifest hashes exact bytes on every platform.
+ios/Reylumi/LocalAppBundle/** -text

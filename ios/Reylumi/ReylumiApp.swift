@@ -23,10 +23,10 @@ struct ReylumiApp: App {
 
 struct ReylumiView: UIViewControllerRepresentable {
     var marketReturnSequence: Int
-    func makeUIViewController(context: Context) -> ReylumiViewController {
-        ReylumiViewController()
+    func makeUIViewController(context: Context) -> ReylumiAppContainer {
+        ReylumiAppContainer()
     }
-    func updateUIViewController(_ controller: ReylumiViewController, context: Context) {
+    func updateUIViewController(_ controller: ReylumiAppContainer, context: Context) {
         controller.returnToMarket(sequence: marketReturnSequence)
     }
 }

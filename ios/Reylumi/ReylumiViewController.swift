@@ -30,12 +30,14 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
     private let connectionRetry = UIButton(type: .system)
     private let policy: NavigationPolicy
     private let offlineRoutes: ReylumiOfflineRouteStore
+    private let initialURL: URL?
     private var offlineEpoch = 0
 
-    init(origin: URL? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil) {
+    init(origin: URL? = nil, offlineRoutes: ReylumiOfflineRouteStore? = nil, initialURL: URL? = nil) {
         let origin = origin ?? URL(string: Bundle.main.object(forInfoDictionaryKey: "ReylumiServerURL") as? String ?? "https://reylumi.com")!
         self.policy = NavigationPolicy(origin: origin)
         self.offlineRoutes = offlineRoutes ?? ReylumiOfflineRouteStore(origin: origin)
+        self.initialURL = initialURL.flatMap { NavigationPolicy(origin: origin).isInternal($0) && !NavigationPolicy(origin: origin).isExcluded($0) ? $0 : nil }
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -64,7 +66,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         launchPanel.showLoading()
         configureConnectionNotice()
         let path = offlineRoutes.restored()?.path ?? "/explore"
-        loadRequest(URLRequest(url: policy.origin.appendingPathComponent(String(path.dropFirst())), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15))
+        loadRequest(URLRequest(url: initialURL ?? policy.origin.appendingPathComponent(String(path.dropFirst())), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15))
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -434,6 +436,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
             offlineRoutes.clear()
             offlineEpoch += 1
             ReylumiBackgroundSync.shared.clear()
+            NotificationCenter.default.post(name: ReylumiLocalAppTransport.sessionResetNotification, object: nil)
         case "background-register":
             guard body["nonce"] as? String == startup.nonce, body["generation"] as? Int == startup.generation,
                   startup.didCommit, let scope = body["scope"] as? String, let key = body["key"] as? String,
