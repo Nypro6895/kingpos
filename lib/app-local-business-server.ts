@@ -107,7 +107,7 @@ async function loadManagedSalonProfile(context: CurrentBusinessContext): Promise
   };
   return { capabilities, data: viewData, manageData: {
     ownedLookIds: data.looks.filter(look => (look.created_by_user_id ?? look.author_user_id) === context.user?.id).map(look => look.id),
-    publicHref: getSalonProfileHref(data.setting.salon_id), readiness: data.readiness, setting: data.setting,
+    publicHref: publicData ? getSalonProfileHref(data.setting.salon_id) : null, readiness: data.readiness, setting: data.setting,
   } };
 }
 

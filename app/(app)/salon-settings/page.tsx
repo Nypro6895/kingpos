@@ -1,4 +1,5 @@
 import { withExperiencePage } from "@/components/experience-page";
+export const metadata = { title: "Salon settings | Reylumi" };
 import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { TimeZoneSelect } from "@/components/time-zone-select";
@@ -205,10 +206,7 @@ function MapLocationSection({
   const publicMapConfigured = Boolean(
     process.env.NEXT_PUBLIC_MAPTILER_KEY?.trim(),
   );
-  const missingConfiguration = [
-    ...mapLocation.providerMissingConfiguration,
-    ...(publicMapConfigured ? [] : ["NEXT_PUBLIC_MAPTILER_KEY"]),
-  ];
+  const mapUnavailable = !mapLocation.providerConfigured || !publicMapConfigured;
   const statusClass =
     mapLocation.status === "mapped"
       ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
@@ -243,9 +241,9 @@ function MapLocationSection({
           .
         </p>
       ) : null}
-      {missingConfiguration.length > 0 ? (
+      {mapUnavailable ? (
         <p className="mt-2 text-xs font-medium text-zinc-500">
-          <WorkspaceText text="Configure" /> {missingConfiguration.join(" and ")} <WorkspaceText text="to enable geocoding and map tiles." />
+          <WorkspaceText text="The map is temporarily unavailable. You can still save your address. Contact Reylumi support if this continues." />
         </p>
       ) : null}
       {mapLocation.providerConfigured &&
@@ -552,13 +550,9 @@ function SalonSettingsForm({
     canManageSettings &&
     (discoveryReadiness.canEnable || setting.public_discovery_enabled);
   const discoveryStatus =
-    setting.public_discovery_enabled && discoveryReadiness.canEnable
-      ? "Published"
-      : discoveryReadiness.canEnable
-        ? "Ready"
-        : "Missing info";
+    setting.public_discovery_enabled ? "Public visibility enabled" : "Not public";
   const discoveryStatusClass =
-    setting.public_discovery_enabled && discoveryReadiness.canEnable
+    setting.public_discovery_enabled
       ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
       : discoveryReadiness.canEnable
         ? "bg-sky-50 text-sky-700 ring-sky-200"
@@ -938,7 +932,7 @@ async function SalonSettingsPage({
               </div>
               <div className="flex shrink-0 items-center gap-3"><ContextualSupport /><StatusPill
                 className="bg-zinc-100 text-zinc-700 ring-zinc-200"
-                label={__vt(lifecycle.lifecycleStatus.replace("_", " "))}
+                label={`${__vt("Salon status:")} ${__vt(lifecycle.lifecycleStatus.replaceAll("_", " "))}`}
               /></div>
             </div>
           </header>

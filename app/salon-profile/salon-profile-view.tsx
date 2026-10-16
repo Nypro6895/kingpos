@@ -1,4 +1,5 @@
 "use client";
+import { PublicationPanel } from "./publication-panel";
 import { ContentViewer } from "@/components/content-viewer";
 import { ActionFeedback } from "@/components/action-feedback";
 import { useFormStatus } from "react-dom";
@@ -137,7 +138,7 @@ type SalonProfileViewProps = {
   error?: string;
   manageData?: {
     ownedLookIds?: string[];
-    publicHref: string;
+    publicHref: string | null;
     readiness: SalonProfileReadiness;
     setting: SalonProfileSetting;
   };
@@ -3302,90 +3303,16 @@ function StaffDetailDialog({
   );
 }
 
-function PublicationDrawer({
-  onClose,
-  publicHref,
-  readiness,
-  setting,
-}: {
+function PublicationDrawer({ onClose, publicHref, readiness, setting }: {
   onClose: () => void;
-  publicHref: string;
+  publicHref: string | null;
   readiness: SalonProfileReadiness;
   setting: SalonProfileSetting;
 }) {
-  const __vt = useWorkspaceTranslation();
-
-  const nextEnabled = !setting.public_discovery_enabled;
-
-  return (
-    <Modal onClose={onClose} title={__vt("Publication settings")}>
-      <div className="grid gap-5">
-        <div>
-          <p className="text-sm text-zinc-600">
-            {readiness.completionPercent}<WorkspaceText text="% complete" />
-          </p>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-100">
-            <div
-              className="h-full rounded-full bg-emerald-500"
-              style={{ width: `${readiness.completionPercent}%` }}
-            />
-          </div>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {readiness.items.map((item) => (
-            <div
-              className="rounded-lg border border-zinc-200 bg-white p-3"
-              key={item.id}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-semibold text-zinc-950"><WorkspaceText text={item.label} /></p>
-                <span
-                  className={[
-                    "rounded-md px-2 py-1 text-xs font-semibold",
-                    item.complete
-                      ? "bg-emerald-50 text-emerald-800"
-                      : "bg-amber-50 text-amber-800",
-                  ].join(" ")}
-                >
-                  {item.complete ? <WorkspaceText text="Done" /> : "Missing"}
-                </span>
-              </div>
-              <p className="mt-1 text-xs text-zinc-500">
-                <WorkspaceText text={item.required ? "Required" : "Optional"} />
-              </p>
-            </div>
-          ))}
-        </div>
-        <a
-          className="inline-flex min-h-10 w-max items-center rounded-md border border-zinc-300 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-50"
-          href={publicHref}
-        >
-          <WorkspaceText text="View public route" />
-        </a>
-        <form action={setSalonProfilePublicationAction} className="grid gap-2 border-t border-zinc-200 pt-4">
-          <input name="salon_id" type="hidden" value={setting.salon_id} />
-          <input
-            name="public_discovery_enabled"
-            type="hidden"
-            value={nextEnabled ? "true" : "false"}
-          />
-          <Button
-            className="w-full sm:w-auto"
-            disabled={nextEnabled && !readiness.canPublish}
-            type="submit"
-            variant={nextEnabled ? "primary" : "secondary"}
-          >
-            <WorkspaceText text={nextEnabled ? "Publish profile" : "Unpublish profile"} />
-          </Button>
-          {nextEnabled && !readiness.canPublish ? (
-            <p className="mt-2 text-sm text-zinc-500">
-              <WorkspaceText text="Complete the required items before publishing." />
-            </p>
-          ) : null}
-        </form>
-      </div>
-    </Modal>
-  );
+  const t = useWorkspaceTranslation();
+  return <Modal onClose={onClose} title={t("Publication settings")}>
+    <PublicationPanel publicHref={publicHref} readiness={readiness} setting={setting} action={setSalonProfilePublicationAction} />
+  </Modal>;
 }
 
 export function SalonProfileView({

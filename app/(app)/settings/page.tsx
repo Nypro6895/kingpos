@@ -1,4 +1,5 @@
 import { withExperiencePage } from "@/components/experience-page";
+export const metadata = { title: "Settings | Reylumi" };
 import { redirect } from "next/navigation";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import { loadSettingsHub } from "@/app/settings/settings-hub-actions";

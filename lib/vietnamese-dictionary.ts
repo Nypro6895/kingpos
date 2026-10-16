@@ -1,4 +1,5 @@
 import helpCopy from "@/lib/vietnamese-help-copy.json";
+import salonSetupCopy from "@/lib/vietnamese-salon-setup.json";
 import payrollMobileCopy from "@/lib/vietnamese-payroll-mobile.json";
 import loadingCopy from "@/lib/vietnamese-loading-copy.json";
 import workspaceCopy from "@/lib/vietnamese-workspace-copy.json";
@@ -7,6 +8,7 @@ import localFirstCopy from "@/lib/vietnamese-local-first-copy.json";
 // UI copy only. Names, services, customer notes and financial values stay as entered.
 export const VIETNAMESE_UI: Record<string, string> = {
   ...helpCopy,
+  ...salonSetupCopy,
   ...workspaceCopy,
   ...payrollMobileCopy,
   ...loadingCopy,

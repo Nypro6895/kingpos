@@ -2,6 +2,7 @@
 
 import { type ReactNode } from "react";
 import { SalonProfileView } from "@/app/salon-profile/salon-profile-view";
+import { SalonPublicationStatus } from "@/components/salon-publication-status";
 import { AppLocalSalonSettings } from "@/components/app-local-salon-settings";
 import { AppLocalPosSettings } from "@/components/app-local-pos-settings";
 import { AppLocalSalons } from "@/components/app-local-salons";
@@ -20,7 +21,7 @@ function View<T>({ name, title, children, ...props }: AppLocalPageProps & { name
 const urlFor = (path: string) => new URL(path, "https://reylumi.com");
 function ProfilePage(props: AppLocalPageProps) {
   const query = urlFor(props.path).searchParams;
-  return <View<AppLocalSalonProfileData> {...props} name="owner.salon-profile" title="Salon Profile">{data => <main><SalonProfileView {...data} key={props.context?.context.scope} error={query.get("error") ?? undefined} notice={query.get("notice") ?? undefined} /></main>}</View>;
+  return <View<AppLocalSalonProfileData> {...props} name="owner.salon-profile" title="Salon Profile">{data => <main>{data.capabilities?.isOwnSalon && data.manageData ? <div className="mx-auto max-w-6xl px-4 pt-4"><SalonPublicationStatus publicHref={data.manageData.publicHref} /></div> : null}<SalonProfileView {...data} key={props.context?.context.scope} error={query.get("error") ?? undefined} notice={query.get("notice") ?? undefined} /></main>}</View>;
 }
 function SettingsPage(props: AppLocalPageProps) {
   const query = urlFor(props.path).searchParams;

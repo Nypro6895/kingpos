@@ -108,7 +108,7 @@ export function LifecycleSettingsPanel({
   return (
     <div className="grid gap-4">
       <p className="text-sm font-semibold">
-        <WorkspaceText text="Status:" /> <WorkspaceText text={status.replaceAll("_", " ")} />
+        <WorkspaceText text="Salon status:" /> <WorkspaceText text={status.replaceAll("_", " ")} />
       </p>
       <button
         type="button"
