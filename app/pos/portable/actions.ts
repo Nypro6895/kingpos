@@ -1,5 +1,14 @@
 "use server";
+import type { ClosingRequest } from "@/lib/daily-closing-server";
 import type { RelayWorkspace } from "@/types/service-relay";
+
+export async function portableDailyClosingRequest(input: ClosingRequest, write: boolean) {
+  const { keyId, signature, portableSession, supabase } = await requirePortableCapability(PORTABLE_POS_CAPABILITIES.reportView);
+  if (portableSession.salon_id !== input.salonId) return {data: null, error: {code: "42501", message: "Select the intended POS salon before saving."}};
+  return write
+    ? supabase.rpc("save_daily_closing_once", {p_salon: input.salonId, p_date: input.date, p_request: input.requestId, p_expected_revision: input.expectedRevision, p_values: input.values, p_key: keyId, p_signature: signature}).abortSignal(AbortSignal.timeout(12000))
+    : supabase.rpc("read_daily_closing_save_state", {p_salon: input.salonId, p_date: input.date, p_request: input.requestId ?? null, p_key: keyId, p_signature: signature}).abortSignal(AbortSignal.timeout(8000));
+}
 
 export async function portableLoadServiceRelay(): Promise<{ data?: RelayWorkspace; error?: string }> {
   try {

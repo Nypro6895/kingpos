@@ -2,7 +2,6 @@
 
 import { WorkspaceText } from "@/components/workspace-language";
 import {
-  saveDailyPosClosing,
   submitDailyClosingCorrection,
 } from "@/app/reports/actions";
 import type {
@@ -16,10 +15,14 @@ import type {
   DailyPosReconciliationStatus,
 } from "@/types/pos-daily-closing";
 import { useRouter } from "next/navigation";
-import type { KeyboardEvent } from "react";
 import { useMemo, useState, useTransition } from "react";
 
+import { useDailyClosingSave } from "@/lib/daily-closing-client";
+import { parseClosingCents as parseInputCents } from "@/lib/daily-closing-input";
+import { ClosingSaveNotice, ClosingSaveStatus } from "./closing-save-notice";
+
 type DailyClosingFormProps = {
+  salonId: string;
   adjustmentTotals: DailyClosingAdjustmentTotals;
   canApplyCorrection: boolean;
   canEdit: boolean;
@@ -33,13 +36,6 @@ type DailyClosingFormProps = {
   lock: DailyClosingLockInfo;
   reportDate: string;
   snapshotTotals: DailyClosingSnapshotTotals | null;
-};
-
-type ClosingFormValues = {
-  cashAmount: string;
-  creditCardAmount: string;
-  note: string;
-  otherAmount: string;
 };
 
 const RECONCILIATION_LABELS: Record<DailyPosReconciliationStatus, string> = {
@@ -94,35 +90,6 @@ function fromCents(value: number) {
   return Math.round(value) / 100;
 }
 
-function parseInputCents(value: string) {
-  const normalized = value.trim().replaceAll(",", "").replace(/^\$/, "");
-
-  if (!normalized) {
-    return 0;
-  }
-
-  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) {
-    return null;
-  }
-
-  const amount = Number(normalized);
-
-  if (!Number.isFinite(amount) || amount < 0) {
-    return null;
-  }
-
-  return Math.round(amount * 100);
-}
-
-function getSnapshot(values: ClosingFormValues) {
-  return JSON.stringify({
-    cashAmount: values.cashAmount.trim(),
-    creditCardAmount: values.creditCardAmount.trim(),
-    note: values.note.trim(),
-    otherAmount: values.otherAmount.trim(),
-  });
-}
-
 function getReconciliationStatus(
   differenceCents: number,
 ): DailyPosReconciliationStatus {
@@ -143,17 +110,6 @@ function getStatusClass(status: DailyPosReconciliationStatus) {
   }
 
   return "border-amber-200 bg-amber-50 text-amber-800";
-}
-
-function getInitialValues(
-  closingInputs: DailyPosClosingInputs,
-): ClosingFormValues {
-  return {
-    cashAmount: formatInputMoney(closingInputs.cashAmount),
-    creditCardAmount: formatInputMoney(closingInputs.creditCardAmount),
-    note: closingInputs.note ?? "",
-    otherAmount: formatInputMoney(closingInputs.otherAmount),
-  };
 }
 
 function getCurrentFieldValue(
@@ -370,6 +326,7 @@ function SnapshotSummary({
 }
 
 export function DailyClosingForm({
+  salonId,
   adjustmentTotals,
   canApplyCorrection,
   canEdit,
@@ -382,18 +339,10 @@ export function DailyClosingForm({
   snapshotTotals,
 }: DailyClosingFormProps) {
   const router = useRouter();
-  const [isSavePending, startSaveTransition] = useTransition();
   const [isCorrectionPending, startCorrectionTransition] = useTransition();
-  const [values, setValues] = useState(() => getInitialValues(closingInputs));
-  const [baseline,setBaseline]=useState(closingInputs);
-  const closingChanged=JSON.stringify(baseline)!==JSON.stringify(closingInputs);
-  const [lastSavedSnapshot, setLastSavedSnapshot] = useState(() =>
-    getSnapshot(getInitialValues(closingInputs)),
-  );
-  const [saveState, setSaveState] = useState<"idle" | "saved" | "error">(
-    "idle",
-  );
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const editor = useDailyClosingSave({mode: "owner", salonId, reportDate, initial: closingInputs, canEdit});
+  const {values, updateValue, handleEnter} = editor;
+  const isSavePending = editor.isPending;
   const [isCorrectionOpen, setIsCorrectionOpen] = useState(false);
   const [correctionField, setCorrectionField] =
     useState<DailyClosingCorrectionField>("cash_amount");
@@ -402,7 +351,7 @@ export function DailyClosingForm({
   );
   const [correctionReason, setCorrectionReason] = useState("");
   const [correctionError, setCorrectionError] = useState<string | null>(null);
-  const isReadOnly = !canEdit;
+  const isReadOnly = editor.locked;
   const cashCents = parseInputCents(values.cashAmount);
   const creditCardCents = parseInputCents(values.creditCardAmount);
   const otherCents = parseInputCents(values.otherAmount);
@@ -422,67 +371,6 @@ export function DailyClosingForm({
   );
   const correctionMoneyInvalid =
     correctionField !== "note" && parseInputCents(requestedValue) === null;
-
-  function updateValue(key: keyof ClosingFormValues, value: string) {
-    setValues((current) => ({ ...current, [key]: value }));
-    setSaveState("idle");
-    setErrorMessage(null);
-  }
-
-  function saveIfNeeded(force = false) {
-    if(closingChanged){setErrorMessage('Closing amounts changed on another screen. Review the saved amounts below.');return;}
-    if (!canEdit || isSavePending) {
-      return;
-    }
-
-    const snapshot = getSnapshot(values);
-
-    if (!force && snapshot === lastSavedSnapshot) {
-      return;
-    }
-
-    if (hasInvalidAmount) {
-      setSaveState("error");
-      setErrorMessage("Enter an amount of 0 or more, with up to 2 decimal places.");
-      return;
-    }
-
-    startSaveTransition(async () => {
-      const result = await saveDailyPosClosing({
-        expectedClosing:baseline,
-        cashAmount: values.cashAmount,
-        creditCardAmount: values.creditCardAmount,
-        note: values.note,
-        otherAmount: values.otherAmount,
-        reportDate,
-      });
-
-      if (!result.ok) {
-        setSaveState("error");
-        setErrorMessage(result.error);
-        return;
-      }
-
-      const savedValues = getInitialValues(result.closingInputs);
-
-      setValues(savedValues);
-      setBaseline(result.closingInputs);
-      setLastSavedSnapshot(getSnapshot(savedValues));
-      setSaveState("saved");
-      setErrorMessage(null);
-      router.refresh();
-    });
-  }
-
-  function handleEnter(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== "Enter") {
-      return;
-    }
-
-    event.preventDefault();
-    event.currentTarget.blur();
-    saveIfNeeded();
-  }
 
   function openCorrection() {
     const field: DailyClosingCorrectionField = "cash_amount";
@@ -556,13 +444,7 @@ export function DailyClosingForm({
               </p>
             </div>
             <div className="min-h-6 text-sm" aria-live="polite">
-              {isSavePending ? (
-                <span className="font-medium text-zinc-600"><WorkspaceText text="Saving" /></span>
-              ) : saveState === "saved" ? (
-                <span className="font-medium text-emerald-700"><WorkspaceText text="Saved" /></span>
-              ) : saveState === "error" ? (
-                <span className="font-medium text-red-700"><WorkspaceText text="Error" /></span>
-              ) : null}
+              <ClosingSaveStatus status={editor.status} />
             </div>
           </div>
 
@@ -570,10 +452,10 @@ export function DailyClosingForm({
             className="mt-5 space-y-4"
             onSubmit={(event) => {
               event.preventDefault();
-              saveIfNeeded(true);
+              editor.save(true);
             }}
           >
-            {closingChanged?<div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm"><p><WorkspaceText text="Closing amounts were updated on another screen. Your entries have been kept." /></p><p className="mt-2">Saved: Cash {formatMoney(closingInputs.cashAmount)} <WorkspaceText text="· Card" /> {formatMoney(closingInputs.creditCardAmount)} <WorkspaceText text="· Other" /> {formatMoney(closingInputs.otherAmount)}</p><div className="mt-3 flex gap-2"><button type="button" className="min-h-11 rounded-lg border bg-white px-3" onClick={()=>{setValues(getInitialValues(closingInputs));setBaseline(closingInputs);}}><WorkspaceText text="Use saved amounts" /></button><button type="button" className="min-h-11 rounded-lg border bg-white px-3" onClick={()=>setBaseline(closingInputs)}><WorkspaceText text="Keep my entries for review" /></button></div></div>:null}
+            <ClosingSaveNotice editor={editor} />
             <div className="grid gap-4 sm:grid-cols-3">
               <label className="block">
                 <span className="text-xs font-medium uppercase text-zinc-500">
@@ -584,7 +466,9 @@ export function DailyClosingForm({
                   disabled={isReadOnly}
                   inputMode="decimal"
                   name="cash_amount"
-                  onBlur={() => saveIfNeeded()}
+                  placeholder="0.00"
+                  onFocus={event => editor.focusMoney("cashAmount", event)}
+                  onBlur={() => editor.blurMoney("cashAmount")}
                   onChange={(event) =>
                     updateValue("cashAmount", event.target.value)
                   }
@@ -601,7 +485,9 @@ export function DailyClosingForm({
                   disabled={isReadOnly}
                   inputMode="decimal"
                   name="credit_card_amount"
-                  onBlur={() => saveIfNeeded()}
+                  placeholder="0.00"
+                  onFocus={event => editor.focusMoney("creditCardAmount", event)}
+                  onBlur={() => editor.blurMoney("creditCardAmount")}
                   onChange={(event) =>
                     updateValue("creditCardAmount", event.target.value)
                   }
@@ -618,7 +504,9 @@ export function DailyClosingForm({
                   disabled={isReadOnly}
                   inputMode="decimal"
                   name="other_amount"
-                  onBlur={() => saveIfNeeded()}
+                  placeholder="0.00"
+                  onFocus={event => editor.focusMoney("otherAmount", event)}
+                  onBlur={() => editor.blurMoney("otherAmount")}
                   onChange={(event) =>
                     updateValue("otherAmount", event.target.value)
                   }
@@ -636,17 +524,11 @@ export function DailyClosingForm({
                 className="mt-1 min-h-20 w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 disabled:bg-zinc-100 disabled:text-zinc-500"
                 disabled={isReadOnly}
                 name="note"
-                onBlur={() => saveIfNeeded()}
+                onBlur={() => editor.blurMoney()}
                 onChange={(event) => updateValue("note", event.target.value)}
                 value={values.note}
               />
             </label>
-
-            {errorMessage ? (
-              <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-                <WorkspaceText text={errorMessage} />
-              </p>
-            ) : null}
 
             {lock.isLocked ? (
               <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">

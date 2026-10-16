@@ -1,0 +1,89 @@
+{
+  "kind": "change",
+  "changeId": "daily-closing-saving-20261015",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Daily Closing: fix zero/nonzero money editing, bounded save with unknown-result recovery, persistent intent IDs, atomic idempotent receipts and stale-write protection for Owner/Portable. Validated locally only; no commit, push, migration or production deploy.",
+  "files": [
+    "app/reports/daily-closing-form.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/pos/portable/report/portable-report-closing-form.tsx",
+    "app/pos/portable/actions.ts",
+    "lib/daily-closing-input.ts",
+    "lib/daily-closing-client.ts",
+    "lib/daily-closing-server.ts",
+    "app/api/pos/closing/route.ts",
+    "supabase/migrations/20261015233000_daily_closing_idempotency.sql",
+    "tests/daily-closing-input.test.mjs",
+    "app/reports/closing-save-notice.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-20261015\\frozen",
+    "commit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f",
+    "hashManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-20261015\\frozen-manifest.json"
+  },
+  "validation": [
+    {
+      "name": "Baseline real-component browser reproduction",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-20261015\\evidence\\before-browser\\result.json",
+      "detail": "Zero appending, unresolved Saving, late response replacing newer draft reproduced in isolated real Owner component."
+    },
+    {
+      "name": "Actual Owner and Portable browser behavior",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-20261015\\evidence\\browser-r4\\result.json",
+      "detail": "16 checks. Chrome mobile emulation and desktop, controlled loopback transport. Not physical Safari."
+    },
+    {
+      "name": "PostgreSQL/Auth/PostgREST and API route",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-20261015\\evidence\\db-r3\\results.json",
+      "detail": "13 database plus 7 API checks. 5 concurrent identical requests yield one write/receipt; different same-revision writes permit one winner. Synthetic Drayko only."
+    },
+    {
+      "name": "Money parsing",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-20261015\\evidence\\test-r1-result.json",
+      "detail": "3 tests."
+    },
+    {
+      "name": "Scoped lint",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-20261015\\evidence\\lint-r1-result.json",
+      "detail": "No errors; baseline unused NoPermissionState warning in Owner live reports unchanged."
+    },
+    {
+      "name": "Next.js production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-20261015\\evidence\\build-r2-result.json",
+      "detail": "Synthetic configuration, outbound Node network blocked, background dispatch disabled. First attempt hit sandbox EPERM."
+    }
+  ],
+  "dependencies": [],
+  "limitations": [
+    "Browser HTTP loss and API RPC transport failure are controlled fixture faults, not a production outage test.",
+    "Owner draft uses tab session storage; Portable draft uses existing device persistence. If browser/device storage is unavailable, only in-memory draft recovery remains.",
+    "Existing correction-request/approval flows were not redesigned by this regular-save hotfix."
+  ],
+  "id": "fadc6c73-fc86-4f54-9f17-4c894a72aaff",
+  "recordedAt": "2026-10-15T23:35:21.792Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/reports/daily-closing-form.tsx": "72325fe0aab24e19f96b240f01f3e3cdd5139843bc4883e83579f9258384309b",
+    "app/reports/owner-live-reports.tsx": "b6a03196201be84bcff1c222f521cb5c40f2ab246e8fe5676802ccaef9e85ad2",
+    "app/pos/portable/report/portable-report-closing-form.tsx": "5e089e7e3f137402c7898d669e4a8e435d409325888f952a5b511a94a28671e4",
+    "app/pos/portable/actions.ts": "604b1b41580b20192041427e3e53be610c85d96360136afb2163337c74decf21",
+    "lib/daily-closing-input.ts": "4ccc136f32140507aea90eb01e837faab318b5d3816496e25b72f265b659f6ff",
+    "lib/daily-closing-client.ts": "ac1fc139b04065e83a08dda15e259f79778381067b384511e959164bc1cec4de",
+    "lib/daily-closing-server.ts": "72bb117c09bf1d1b46ca2784eac97abb15bf923161500e61533cd07ebc07b227",
+    "app/api/pos/closing/route.ts": "d34995ae7c617b55110775597248e3137133f985f4d16c3dd65b4147caa53071",
+    "supabase/migrations/20261015233000_daily_closing_idempotency.sql": "6515d5002133443c7c0877ff27a8e3d6ece0d2f5022b08a00b4953336b2145ad",
+    "tests/daily-closing-input.test.mjs": "e2ae9570e443ec3bb15b2b47e6b07196569e0d3bca72e8f738f5c1ec2fbc452c",
+    "app/reports/closing-save-notice.tsx": "7cf032d4ffc7c629723870381bd1addbc850b25ab02a959ca8f4b3de4c706c5b"
+  }
+}

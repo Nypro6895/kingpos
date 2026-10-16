@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "daily-closing-saving-20261015",
+  "status": "working",
+  "channels": [
+    "web"
+  ],
+  "summary": "Fix Daily Closing saving lifecycle and money input editing; test idempotent retries, lost responses, stale/concurrent updates in isolated fixtures. No production data edits or deployment.",
+  "files": [
+    "app/reports/daily-closing-form.tsx",
+    "app/reports/owner-live-reports.tsx",
+    "app/pos/portable/report/portable-report-closing-form.tsx",
+    "app/pos/portable/actions.ts",
+    "lib/daily-pos-report.ts",
+    "types/pos-daily-closing.ts",
+    "lib/daily-closing-input.ts",
+    "lib/daily-closing-client.ts",
+    "lib/daily-closing-server.ts",
+    "app/api/pos/closing/route.ts",
+    "supabase/migrations/20261015233000_daily_closing_idempotency.sql",
+    "tests/daily-closing-input.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\daily-closing-20261015\\candidate",
+    "commit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f"
+  },
+  "validation": [
+    {
+      "name": "Browser reproduction and isolated database/API integration",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "962e9947-6942-4129-954f-a6ea9459ae64",
+  "recordedAt": "2026-10-15T23:05:39.326Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

@@ -234,6 +234,7 @@ export function OwnerLiveReports(initial:Props){
           ) : null}
 
           <DailyClosingForm
+            salonId={salonId}
             adjustmentTotals={report.adjustmentTotals}
             canApplyCorrection={canApplyCorrection}
             canEdit={canEdit}
@@ -241,7 +242,7 @@ export function OwnerLiveReports(initial:Props){
             closingInputs={report.closingInputs}
             corrections={report.corrections}
             expectedTotal={report.totals.expectedTotal}
-            key={report.reportDate}
+            key={`${salonId}:${report.reportDate}`}
             lock={report.lock}
             reportDate={report.reportDate}
             snapshotTotals={report.snapshotTotals}
