@@ -1,0 +1,65 @@
+{
+  "recordedAt": "2026-10-16T19:34:14.907Z",
+  "status": "applied-and-metadata-verified",
+  "migrationVersion": "20261016170000",
+  "migrationSha256": "7e6d69fb697fc6863c6e6adb7ab200e48f4dab7a2d79ad030810729a02d6e524",
+  "executedSqlSha256": "f12faed4b678d0aec692de11331717468a65f4e781199726ff3164bee9ee33c0",
+  "historySourceSha256": "7e6d69fb697fc6863c6e6adb7ab200e48f4dab7a2d79ad030810729a02d6e524",
+  "productionMigrationCountBefore": 262,
+  "productionMigrationCountAfter": 263,
+  "existingStoragePolicyCount": 27,
+  "checks": [
+    {
+      "name": "exact reviewed SQL executed once successfully under unchanged coordinator lock",
+      "result": "passed"
+    },
+    {
+      "name": "one migration history record contains exact original source SHA256",
+      "result": "passed"
+    },
+    {
+      "name": "RLS enabled and table has no permissive browser policy or browser role privileges",
+      "result": "passed"
+    },
+    {
+      "name": "both function bodies byte-match original migration, invoker/search_path and service-only execution preserved",
+      "result": "passed"
+    },
+    {
+      "name": "private bucket has exact size/MIME bounds; existing Storage RLS/policies unchanged",
+      "result": "passed"
+    },
+    {
+      "name": "expected columns, indexes and CHECK constraints present",
+      "result": "passed"
+    }
+  ],
+  "passed": 6,
+  "failed": 0,
+  "functions": [
+    {
+      "name": "claim_app_local_upload",
+      "sourceSha256": "5be4d0e595a306824e29924dd0cad09f2b9079e13bddd06f57c17d2cc5a2c54a",
+      "definitionSha256": "958d8a54978a0ff1212effe505efa170debb7de4e26c6e69e8b8471005d1b7b4"
+    },
+    {
+      "name": "prepare_app_local_upload",
+      "sourceSha256": "4611f731966d705143f770c44d22ae7a78743cc890058caa68e106df4561aff8",
+      "definitionSha256": "7b1caa6e61cbeeceb8ba640afd63811f924eac9669e2809b27842e8b74a7e4f7"
+    }
+  ],
+  "applicationAttempts": 1,
+  "businessRowsWritten": 0,
+  "storageObjectsWritten": 0,
+  "productSourceEdits": 0,
+  "peerReview": "experience_state reviewed exact generated application SQL before execution; no blockers",
+  "evidence": [
+    "apply-upload-staging-atomic.sql",
+    "upload-staging-application-prepared.json",
+    "upload-staging-application-attempt.json",
+    "upload-staging-application-result.json",
+    "upload-staging-application-output.json",
+    "upload-staging-production-readback.json",
+    "upload-staging-readback-result.json"
+  ]
+}

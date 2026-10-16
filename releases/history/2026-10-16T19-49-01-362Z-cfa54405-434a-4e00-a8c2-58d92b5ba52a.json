@@ -1,0 +1,83 @@
+{
+  "kind": "release",
+  "releaseId": "cache-more-platform-20261016-web",
+  "summary": "Publish the completed cache/local-app web support and POS More header/menu fix; exact production baseline preserved and live read-only checks passed.",
+  "changes": [
+    "6b0d34bb-5b3f-4046-be45-bf5596001978",
+    "49e2505b-71f1-46c9-8af6-b617d716b3e0",
+    "06c27386-c1ef-4206-9318-d0c453647b17",
+    "13651a77-36f3-4bf6-aeac-0fd802636dd5",
+    "88ea2278-6725-471a-b064-e67057c2be86",
+    "d579aee5-93e8-4934-8310-fcb883cc2f96",
+    "3c5c0e27-368d-4cdb-8bbc-de5bc46158ea",
+    "bbdfc0a1-19e9-408e-bba5-87f0ab3864d5",
+    "9d920902-442b-4f38-ac9d-9d2f7d715048",
+    "f6ab0797-5a04-4c26-a838-d88fcede1498",
+    "8ee09165-1492-4624-b201-b73417700145",
+    "2bf07c7b-cb67-4ded-808a-c57f917ebbcf",
+    "73eb9a6b-542a-416a-b018-ad6191290da2",
+    "71667a66-8710-426b-9f00-3d44bba1fa41",
+    "1b7eed93-251e-404e-94db-b9b08f5f30c7",
+    "1e2d51e9-7192-422f-836b-a929a899840e",
+    "ee009ae6-8928-42de-8b98-bb7bd974c5c3",
+    "5e0bb548-66a0-4a1a-912d-fa1e171d36fa",
+    "7bb7eaa0-54a3-47d6-a393-af2bb069bf88",
+    "3886822f-d0d7-4757-84a3-142cc6dc0d24",
+    "3ec292bd-d1a0-4fde-a968-b5f46911b067"
+  ],
+  "source": {
+    "commit": "d1347e535a43e953b57cd2d1ea89c3b63767078e",
+    "branch": "codex/cache-more-release-20261016",
+    "baselineSourceCommit": "91a3d22abd8a9b5edefa8898279a40ac083dbf52",
+    "baselineSourceSha256": "578a0c657b2d92bfe0dd42f4c1753b0d940b888f6e2739451694aefb052efe62",
+    "deploySourceSha256": "40c1d6d1524c38ac31ccac3549d8ef774e2ac0506e08b6e3def7eb2657fa19e7",
+    "authorizedOverlaySha256": "8b19a6af8ec523065bf90a23f936fac8ac2219d45bd26877126930fa2c628626"
+  },
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_DzRmvhU35S4yYQigxeR3xwWhSMWd",
+      "baselineDeploymentId": "dpl_3ayR1ZKNggz4XmwhCAQjp1cC7Fye",
+      "sourceSha256": "2605de54cc52232486ba0451320e9acc100820c3fe556dffe2bb5c6cd9eb4167",
+      "overlaySha256": "69af70116058eae80c6d654efb4fe3a6d6801ebc8a28dd034e1c322052781f7f",
+      "evidence": "releases/evidence/cache-more-platform-20261016/web-verification.json"
+    }
+  },
+  "validation": [
+    {
+      "name": "179 implementation tests, assembled and remote production builds",
+      "result": "passed"
+    },
+    {
+      "name": "candidate and live read-only browsers24/24 each; source2747/2747",
+      "result": "passed"
+    },
+    {
+      "name": "upload migration atomic application and metadata readback6/6",
+      "result": "passed"
+    }
+  ],
+  "unpublished": [
+    {
+      "changeId": "reylumi-glass-app-logo-20261016",
+      "reason": "Separate unshipped logo assets outside explicit cache/More release scope; retained for later integration."
+    },
+    {
+      "changeId": "payroll-period-ledger-20261015",
+      "reason": "Separate financial ledger rules outside cache/More scope; existing financial behavior preserved."
+    },
+    {
+      "changeId": "help-local-draft-20261015",
+      "reason": "Obsolete blocked placeholder; newer shipped full bilingual Help is preserved."
+    }
+  ],
+  "native": {
+    "status": "in-progress",
+    "run": "https://github.com/Nypro6895/kingpos/actions/runs/38957477373",
+    "separateReceiptRequired": true
+  },
+  "id": "cfa54405-434a-4e00-a8c2-58d92b5ba52a",
+  "recordedAt": "2026-10-16T19:49:01.362Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos"
+}
