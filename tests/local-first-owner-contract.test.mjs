@@ -98,6 +98,12 @@ test('complete build manifest includes lazy code and fonts, changes with content
     await writeFile(path.join(root, '.next/static/chunks/lazy.js'), 'openNewTicket();');
     const next = await buildOfflineAssets(root);
     assert.notEqual(next.version, first.version);
+    const deployed = await buildOfflineAssets(root, '.next', 'dpl_fixture-deployment-one');
+    const deploymentManifest = JSON.parse(await readFile(path.join(root, 'public/experience-build-assets.json'), 'utf8'));
+    assert.equal(deploymentManifest.deploymentId, 'dpl_fixture-deployment-one');
+    const anotherDeployment = await buildOfflineAssets(root, '.next', 'dpl_fixture-deployment-two');
+    assert.notEqual(deployed.version, anotherDeployment.version, 'the same static filenames cannot borrow another deployment authority');
+    await assert.rejects(buildOfflineAssets(root, '.next', 'invalid deployment/identifier'), /Invalid static asset deployment/);
   } finally {
     assert.ok(path.resolve(root).startsWith(parent + path.sep));
     await rm(root, { recursive: true, force: true });

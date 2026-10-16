@@ -1,0 +1,28 @@
+{
+  "kind": "change",
+  "changeId": "local-first-pos-staff-20261016",
+  "status": "working",
+  "summary": "Add independent Safari16 offline-authorization transport regression alongside bounded GET compatibility repair.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/experience-offline-client.ts",
+    "tests/experience-offline-compatibility.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos"
+  },
+  "validation": [
+    {
+      "name": "Real browser missing-API renewal/revocation/cancel/deadline",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "25cca3ca-5d1f-4904-be3a-c6dbe26b1b3e",
+  "recordedAt": "2026-10-16T05:30:23.460Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

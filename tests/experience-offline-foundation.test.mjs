@@ -13,6 +13,12 @@ import { runInNewContext } from 'node:vm';
 
 const browserPath = process.env.TEST_BROWSER_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const skip = !existsSync(browserPath);
+// Captured verbatim from the live Vercel response, independently of the worker.
+const observedToolbarSuffix = '\n;(function(){try{if(typeof document==="undefined"||!/(?:^|;\\s)__vercel_toolbar=1(?:;|$)/.test(document.cookie))return;}catch(e){return;}var s=document.createElement(\'script\');s.src=\'https://vercel.live/_next-live/feedback/feedback.js\';s.setAttribute("data-explicit-opt-in","true");s.setAttribute("data-cookie-opt-in","true");s.setAttribute("data-deployment-id","dpl_5BqbU7VSpmSgfuH3w1t94taaWRQL");((document.head||document.documentElement).appendChild(s))})();';
+const futurePath = '/_next/static/chunks/future-cold-0123456789abcdef.js';
+const webpackPath = '/_next/static/chunks/webpack-0123456789abcdef.js';
+const webpackBody = 'window.__fixtureWebpackVerified=(window.__fixtureWebpackVerified||0)+1;';
+const futureBody = 'export const ready="Deployed local tool ready";';
 async function moduleFrom(file, plugins = []) {
   const result = await build({ entryPoints: [file], bundle: true, write: false, platform: 'node', format: 'esm', alias: { '@': process.cwd() }, plugins });
   return import('data:text/javascript;base64,' + Buffer.from(result.outputFiles[0].text).toString('base64'));
@@ -86,9 +92,9 @@ async function fixture(overrides = {}) {
     window.addEventListener('reylumi:offline-ready',event=>window.readyEvents.push(event.detail));window.addEventListener('reylumi:offline-clear',()=>window.clearEvents++);
     const context=window.SERVER_CONTEXT,scope=context.scope;
     function NativeReadProbe(){const seed={data:{amount:10},revision:'a'.repeat(64),sections:{amount:'a'.repeat(64)},updatedAt:new Date(window.SERVER_SEED).toISOString()};const view=useExperienceResource({scope,key:'native-resource',initialData:seed,initialUpdatedAt:window.SERVER_SEED,freshForMs:0,retainForMs:120000,persistence:{domain:'owner-today',endpoint:'/api/experience/today?date=2026-10-16'},fetcher:()=>new Promise(resolve=>{window.currentNativeGet={resolve}})});return <p data-native-read>{view.data?.data.amount}</p>}
-    function App(){const[money,setMoney]=useState(()=>localStorage.getItem('fixture-money')??'125.75');const[tool,setTool]=useState(false);
+    function App(){const[money,setMoney]=useState(()=>localStorage.getItem('fixture-money')??'125.75');const[tool,setTool]=useState(false);const[deployedTool,setDeployedTool]=useState('');
       const view=useExperienceResource({scope,key:'fixture-ui',initialData:{total:10},initialUpdatedAt:window.SERVER_SEED,freshForMs:0,retainForMs:120000,persistence:{domain:'owner-pos',params:{date:'2026-10-16'}},fetcher:async()=>{throw Error('Fixture live read held')}});
-      return <><input aria-label='Money draft' value={money} onChange={event=>{setMoney(event.target.value);localStorage.setItem('fixture-money',event.target.value)}}/><p data-readmodel>{view.data?.total}</p><button onClick={()=>import('/_next/static/lazy-extra.js').then(value=>setTool(value.ready))}>{tool?'Local tool ready':'Open local tool'}</button><a href='/staff/my-work'>My Work</a><div data-owner-workspace><div data-owner-more-popover><a href='/activity'>History in More</a></div></div>{window.NATIVE_PROBE?<NativeReadProbe/>:null}</>}
+      return <><input aria-label='Money draft' value={money} onChange={event=>{setMoney(event.target.value);localStorage.setItem('fixture-money',event.target.value)}}/><p data-readmodel>{view.data?.total}</p><button onClick={()=>import('/_next/static/lazy-extra.js').then(value=>setTool(value.ready))}>{tool?'Local tool ready':'Open local tool'}</button><button onClick={()=>import('/_next/static/chunks/future-cold-0123456789abcdef.js?dpl=dpl_fixture').then(value=>setDeployedTool(value.ready))}>{deployedTool||'Open deployed local tool'}</button><a href='/staff/my-work'>My Work</a><div data-owner-workspace><div data-owner-more-popover><a href='/activity'>History in More</a></div></div>{window.NATIVE_PROBE?<NativeReadProbe/>:null}</>}
     createRoot(document.getElementById('root')).render(<ExperienceScopeProvider context={context}><ExperienceCacheLifecycle viewerId={context.viewerId} workspace={context.workspaceId} permissionRevision={context.permissionRevision} scope={scope}/><App/></ExperienceScopeProvider>);
   ` }, bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic', alias: { '@': process.cwd() }, define: { 'process.env.NODE_ENV': '"production"' }, plugins: [{ name: 'browser-context-fixture', setup(builder) {
     builder.onResolve({ filter: /^\/_next\/static\// }, args => ({ path: args.path, external: true }));
@@ -101,20 +107,27 @@ async function fixture(overrides = {}) {
   const head = renderToStaticMarkup(React.createElement(bootstrap.ExperienceOfflineBootstrap));
   const seed = Date.now() - 1000;
   const context = { scope: 'scope-a', viewerId: 'viewer-a', workspaceId: 'salon-a', salonId: 'salon-a', permissionRevision: 'revision-a', authenticated: true, ...overrides };
-  const state = { grantStatus: 200, holdContext: false, contextResponses: [], heldAssets: [], assetHold: false, version: 'fixture-build-0001', failAsset: false, corruptAsset: false, hits: [], htmlStatus: 200, grantScope: context.scope, contextScope: context.scope, grantRevision: 'revision-a', grantKind: 'owner', staffBinding: undefined, offlineState: undefined, deniedPaths: [] };
+  const state = { grantStatus: 200, holdContext: false, contextResponses: [], heldAssets: [], assetHold: false, version: 'fixture-build-0001', failAsset: false, corruptAsset: false, hits: [], htmlStatus: 200, grantScope: context.scope, contextScope: context.scope, grantRevision: 'revision-a', grantKind: 'owner', staffBinding: undefined, offlineState: undefined, deniedPaths: [], deploymentId: undefined, includeFuture: false, includeWebpack: false, toolbarMode: null, appendFooterToFuture: false, workerLegacyApis: false };
   const server = createServer((request, response) => {
     state.hits.push({ method: request.method, path: request.url, at: Date.now(), mode: request.headers['sec-fetch-mode'], destination: request.headers['sec-fetch-dest'] }); const url = new URL(request.url, 'http://localhost');
     const json = (value, status = 200) => { response.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); response.end(JSON.stringify(value)); };
     if (url.pathname === '/api/experience/offline-context') return json({ version: 1, ...context, scope: state.grantScope, scopes: [state.grantScope], grantRevision: state.grantRevision, generation: url.searchParams.get('generation'), issuedAt: Date.now(), expiresAt: Date.now() + 86400000, path: url.searchParams.get('path'), kind: state.grantKind, staffBinding: state.staffBinding, localCommands: true, offlineState: state.offlineState }, state.deniedPaths.includes(url.searchParams.get('path')) ? 403 : state.grantStatus);
     if (url.pathname === '/api/experience/context') { if (state.holdContext) { state.contextResponses.push(response); return; } return json({ ...context, scope: state.contextScope }); }
     if (url.pathname === '/api/experience/offline-assets') {
-      const bodies = { '/_next/static/fixture-main.js': bundle, '/_next/static/styles.css': '@font-face{font-family:Fixture;src:url(/_next/static/fixture-font.woff2)}body{font:16px system-ui}', '/_next/static/lazy-extra.js': 'export const ready=true;', '/_next/static/fixture-font.woff2': 'fixture-font', ...(state.failAsset || state.assetHold || state.corruptAsset ? { '/_next/static/held-extra.js': 'export const held=true;' } : {}) };
+      const bodies = { '/_next/static/fixture-main.js': bundle, '/_next/static/styles.css': '@font-face{font-family:Fixture;src:url(/_next/static/fixture-font.woff2)}body{font:16px system-ui}', '/_next/static/lazy-extra.js': 'export const ready=true;', '/_next/static/fixture-font.woff2': 'fixture-font', ...(state.includeFuture ? { [futurePath]: futureBody } : {}), ...(state.includeWebpack ? { [webpackPath]: webpackBody } : {}), ...(state.failAsset || state.assetHold || state.corruptAsset ? { '/_next/static/held-extra.js': 'export const held=true;' } : {}) };
       const files = Object.entries(bodies).map(([path, body]) => ({ path, bytes: Buffer.byteLength(body), sha256: createHash('sha256').update(body).digest('hex') }));
-      return json({ version: state.version, totalBytes: files.reduce((sum, row) => sum + row.bytes, 0), assets: Object.keys(bodies), files });
+      return json({ version: state.version, deploymentId: state.deploymentId, totalBytes: files.reduce((sum, row) => sum + row.bytes, 0), assets: Object.keys(bodies), files });
     }
-    if (url.pathname === '/portable-sw.js' || url.pathname === '/experience-sw.js' || url.pathname === '/experience-offline-worker.js') { response.writeHead(200, { 'Content-Type': 'text/javascript', 'Service-Worker-Allowed': '/', 'Cache-Control': 'no-store' }); response.end(readFileSync(join('public', url.pathname.slice(1)))); return; }
+    if (url.pathname === '/portable-sw.js' || url.pathname === '/experience-sw.js' || url.pathname === '/experience-offline-worker.js') {
+      response.writeHead(200, { 'Content-Type': 'text/javascript', 'Service-Worker-Allowed': '/', 'Cache-Control': 'no-store' });
+      const legacy = state.workerLegacyApis && url.pathname === '/experience-offline-worker.js' ? `Reflect.deleteProperty(URLSearchParams.prototype,'size');Reflect.deleteProperty(Response,'json');self.addEventListener('message',event=>{if(event.data?.kind==='fixture-api-support')event.ports[0]?.postMessage({hasSize:'size' in URLSearchParams.prototype,hasResponseJson:typeof Response.json==='function'})});\n` : '';
+      response.end(legacy + readFileSync(join('public', url.pathname.slice(1)))); return;
+    }
     if (url.pathname === '/_next/static/fixture-main.js') { response.setHeader('Content-Type', 'text/javascript'); return response.end(bundle); }
     if (url.pathname === '/_next/static/lazy-extra.js') { response.setHeader('Content-Type', 'text/javascript'); return response.end('export const ready=true;'); }
+    const toolbar = observedToolbarSuffix.replace('dpl_5BqbU7VSpmSgfuH3w1t94taaWRQL', state.toolbarMode === 'wrong-deployment' ? 'dpl_another' : state.deploymentId);
+    if (url.pathname === futurePath) { response.setHeader('Content-Type', 'text/javascript'); return response.end(futureBody + (state.appendFooterToFuture ? toolbar : '')); }
+    if (url.pathname === webpackPath) { response.setHeader('Content-Type', 'text/javascript'); return response.end((state.toolbarMode === 'changed-prefix' ? 'x' + webpackBody.slice(1) : webpackBody) + (state.toolbarMode ? (state.toolbarMode === 'changed-footer' ? toolbar.replace('feedback.js', 'feedbacj.js') : toolbar) + (state.toolbarMode === 'extra-byte' ? '\n' : '') : '')); }
     if (url.pathname === '/_next/static/held-extra.js') { if (state.assetHold) { state.heldAssets.push(response); return; } response.statusCode = state.failAsset ? 503 : 200; return response.end(state.corruptAsset ? 'export const wrong=true;' : 'export const held=true;'); }
     if (url.pathname === '/_next/static/styles.css') { response.setHeader('Content-Type', 'text/css'); return response.end('@font-face{font-family:Fixture;src:url(/_next/static/fixture-font.woff2)}body{font:16px system-ui}'); }
     if (url.pathname === '/_next/static/fixture-font.woff2') { response.setHeader('Content-Type', 'font/woff2'); return response.end(Buffer.from('fixture-font')); }
@@ -478,5 +491,94 @@ test('an expiring display lease hides a retained private view offline without de
     await page.getByText('Please check your connection and try again.').waitFor();
     assert.equal(await page.getByLabel('Money draft').isVisible(), false);
     const rows = await page.evaluate(() => api.listPortableOperations('owner:salon-a:viewer-a')); assert.equal(rows.length, 1); assert.equal(rows[0].state, 'pending');
+  } finally { await app.close(); }
+});
+
+test('a never-observed hashed lazy module opens after cold restart with its matching dpl query, while other queries stay network-only', { skip, timeout: 90000 }, async () => {
+  const app = await fixture(); app.state.deploymentId = 'dpl_fixture'; app.state.includeFuture = true;
+  try {
+    let page = await app.launch(); await page.goto(app.origin + '/pos'); await page.getByLabel('Money draft').waitFor();
+    assert.equal(await page.evaluate(() => api.prepareExperienceOfflinePath('/pos', { scope: 'scope-a' }).then(Boolean)), true);
+    assert.equal(app.state.hits.some(row => row.path === futurePath + '?dpl=dpl_fixture'), false, 'the deployed lazy URL must never have been observed/preloaded');
+    page = await app.restart(true); const errors = []; page.on('pageerror', error => errors.push(error.message));
+    await page.goto(app.origin + '/pos'); await page.getByRole('button', { name: 'Open deployed local tool' }).click();
+    await page.getByRole('button', { name: 'Deployed local tool ready' }).waitFor();
+    const outcomes = await page.evaluate(async path => {
+      const fails = suffix => fetch(path + suffix).then(() => false, () => true);
+      return Promise.all([fails('?dpl=dpl_other'), fails('?dpl=dpl_fixture&unknown=1'), fails('?dpl=dpl_fixture&dpl=dpl_fixture'), fails('?token=credential'), fetch('/_next/static/lazy-extra.js?dpl=dpl_fixture').then(() => false, () => true)]);
+    }, futurePath);
+    assert.ok(outcomes.every(Boolean), 'fallback requires a matching prepared deployment, one dpl key and a content-hashed static filename: ' + JSON.stringify({ outcomes, hits: app.state.hits.filter(row => row.path.includes('?')) }));
+    assert.deepEqual(errors, []);
+    await page.context().setOffline(false);
+    const target = futurePath + '?dpl=dpl_fixture&unknown=1';
+    assert.equal(await page.evaluate(target => fetch(target).then(row => row.status), target), 200);
+    assert.ok(app.state.hits.some(row => row.path === target), 'unsupported query must reach the original network URL unchanged while online');
+  } finally { await app.close(); }
+});
+
+test('only the exact deployment-bound Vercel webpack footer can be discarded before full original SHA verification', { skip, timeout: 90000 }, async () => {
+  const app = await fixture(); app.state.deploymentId = 'dpl_fixture'; app.state.includeWebpack = true; app.state.toolbarMode = 'known';
+  try {
+    const page = await app.launch(); await page.goto(app.origin + '/pos'); await page.getByLabel('Money draft').waitFor();
+    assert.equal(await page.evaluate(() => api.prepareExperienceOfflinePath('/pos', { scope: 'scope-a' }).then(Boolean)), true);
+    const stored = await page.evaluate(async path => {
+      const response = await (await caches.open('reylumi-offline-assets-v1-fixture-build-0001')).match(path);
+      return { body: await response.text(), bytes: Number(response.headers.get('x-reylumi-bytes')), sha: response.headers.get('x-reylumi-sha256') };
+    }, webpackPath);
+    assert.equal(stored.body, webpackBody); assert.equal(stored.bytes, Buffer.byteLength(webpackBody)); assert.equal(stored.sha, createHash('sha256').update(webpackBody).digest('hex'));
+    for (const [index, mode] of ['extra-byte', 'changed-prefix', 'changed-footer', 'wrong-deployment'].entries()) {
+      app.state.toolbarMode = mode; app.state.version = 'fixture-toolbar-negative-' + index;
+      assert.equal(await page.evaluate(() => api.prepareExperienceOfflinePath('/pos/report', { scope: 'scope-a' })), null, mode + ' must fail closed');
+    }
+    app.state.toolbarMode = null; app.state.includeFuture = true; app.state.appendFooterToFuture = true; app.state.version = 'fixture-toolbar-non-webpack';
+    assert.equal(await page.evaluate(() => api.prepareExperienceOfflinePath('/pos/ticket', { scope: 'scope-a' })), null, 'the recognized suffix cannot be stripped from other script families');
+    assert.equal(await page.evaluate(() => api.hasPreparedExperiencePath('/pos')), true, 'failed new preparations retain the previous complete verified document');
+  } finally { await app.close(); }
+});
+
+test('active DOM A can open an unseen deployment-A tool after its page snapshot becomes B; the third public generation evicts A', { skip, timeout: 90000 }, async () => {
+  const app = await fixture(); app.state.deploymentId = 'dpl_fixture'; app.state.includeFuture = true;
+  try {
+    const page = await app.launch(); await page.goto(app.origin + '/pos'); await page.getByLabel('Money draft').fill('157.25');
+    await page.evaluate(() => { window.retainedMoneyInput = document.querySelector('input[aria-label="Money draft"]'); });
+    assert.equal(await page.evaluate(() => api.prepareExperienceOfflinePath('/pos', { scope: 'scope-a' }).then(Boolean)), true);
+    const expireShortcut = () => page.evaluate(async () => {
+      const cache = await caches.open('reylumi-offline-web-v1-index'), key = new URL('/__experience-offline__/web', location.origin), metadata = await (await cache.match(key)).json();
+      metadata.entries['/pos'].preparedAt = Date.now() - 61000; await cache.put(key, new Response(JSON.stringify(metadata)));
+    });
+    await expireShortcut(); app.state.deploymentId = 'dpl_fixtureB'; app.state.version = 'fixture-generation-B';
+    assert.equal(await page.evaluate(() => api.prepareExperienceOfflinePath('/pos', { scope: 'scope-a' }).then(Boolean)), true);
+    const prepared = await page.evaluate(async () => {
+      const metadata = await (await (await caches.open('reylumi-offline-web-v1-index')).match(new URL('/__experience-offline__/web', location.origin))).json();
+      return { solePage: Object.keys(metadata.entries), pageDeployment: metadata.entries['/pos'].deploymentId, caches: await caches.keys(), sameDraft: retainedMoneyInput === document.querySelector('input[aria-label="Money draft"]') && retainedMoneyInput.value === '157.25' };
+    });
+    assert.deepEqual(prepared.solePage, ['/pos']); assert.equal(prepared.pageDeployment, 'dpl_fixtureB'); assert.ok(prepared.caches.includes('reylumi-offline-assets-v1-fixture-build-0001')); assert.equal(prepared.sameDraft, true);
+    await page.context().setOffline(true); await page.getByRole('button', { name: 'Open deployed local tool' }).click();
+    await page.getByRole('button', { name: 'Deployed local tool ready' }).waitFor();
+    await expireShortcut(); app.state.deploymentId = 'dpl_fixtureC'; app.state.version = 'fixture-generation-C';
+    await page.context().setOffline(false);
+    assert.equal(await page.evaluate(() => api.prepareExperienceOfflinePath('/pos', { scope: 'scope-a' }).then(Boolean)), true);
+    await page.context().setOffline(true);
+    assert.equal(await page.evaluate(() => caches.keys().then(names => names.includes('reylumi-offline-assets-v1-fixture-build-0001'))), false);
+    assert.equal(await page.evaluate(path => fetch(path + '?dpl=dpl_fixture', { cache: 'no-store' }).then(() => false, () => true), futurePath), true, 'an evicted generation must fail instead of borrowing B/C bytes');
+  } finally { await app.close(); }
+});
+
+test('prepared cold boot and deployment lazy assets work without URLSearchParams.size or static Response.json', { skip, timeout: 90000 }, async () => {
+  const app = await fixture(); app.state.workerLegacyApis = true; app.state.deploymentId = 'dpl_fixture'; app.state.includeFuture = true;
+  try {
+    let page = await app.launch(); await page.goto(app.origin + '/pos'); await page.getByLabel('Money draft').fill('166.40');
+    assert.equal(await page.evaluate(() => api.prepareExperienceOfflinePath('/pos', { scope: 'scope-a' }).then(Boolean)), true);
+    await page.waitForFunction(() => navigator.serviceWorker.controller);
+    const status = await page.evaluate(() => new Promise(resolve => {
+      const channel = new MessageChannel(); channel.port1.onmessage = event => { channel.port1.close(); resolve(event.data); };
+      navigator.serviceWorker.controller.postMessage({ kind: 'fixture-api-support' }, [channel.port2]);
+    }));
+    assert.deepEqual(status, { hasSize: false, hasResponseJson: false }, 'the actual worker must exercise the absent APIs');
+    page = await app.restart(true); await page.goto(app.origin + '/pos');
+    assert.equal(await page.getByLabel('Money draft').inputValue(), '166.40');
+    await page.getByRole('button', { name: 'Open deployed local tool' }).click();
+    await page.getByRole('button', { name: 'Deployed local tool ready' }).waitFor();
+    assert.equal(await page.evaluate(path => fetch(path + '?dpl=dpl_fixture&dpl=dpl_fixture').then(() => false, () => true), futurePath), true, 'iterator counting must retain duplicate query keys');
   } finally { await app.close(); }
 });

@@ -2,6 +2,7 @@
 
 import { getExperienceOfflinePath, isExperienceOfflineGrant, type ExperienceOfflineGrant } from "./experience-offline-policy";
 import { acceptExperienceOfflineGrant, clearExperienceSnapshots, getExperienceDeviceGeneration, getExperienceOfflineGrant, loadExperienceOfflineGrant, markExperienceScopeOnlineValidated } from "./experience-persistent-cache";
+import { fetchBoundedGet } from "./bounded-get";
 
 const preparing = new Map<string, Promise<ExperienceOfflineGrant | null>>();
 let epoch = 0;
@@ -88,7 +89,7 @@ export async function refreshExperienceOfflineAuthorization(href: string, scope:
   const path = getExperienceOfflinePath(href, location.origin) ?? (href === location.pathname + location.search ? getExperienceOfflineAuthorizationPath() : null); if (!path || !navigator.onLine) return null;
   const started = epoch;
   try {
-    const response = await fetch(`/api/experience/offline-context?path=${encodeURIComponent(path)}&generation=${encodeURIComponent(getExperienceDeviceGeneration())}`, { cache: "no-store", credentials: "same-origin", signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(10000)]) : AbortSignal.timeout(10000) });
+    const response = await fetchBoundedGet(`/api/experience/offline-context?path=${encodeURIComponent(path)}&generation=${encodeURIComponent(getExperienceDeviceGeneration())}`, { cache: "no-store", credentials: "same-origin", signal }, { timeoutMs: 10_000, totalTimeoutMs: 10_000, maxAttempts: 1 });
     if (started !== epoch || signal?.aborted) return null;
     if (response.status === 401 || response.status === 403) { lockExperienceOffline({ status: response.status }); accessChanged(scope, response.status); return null; }
     if (!response.ok) {

@@ -1,0 +1,29 @@
+{
+  "kind": "change",
+  "changeId": "local-first-pos-staff-20261016",
+  "status": "working",
+  "summary": "Resolve actual Vercel static-asset preparation and unseen lazy deployment-query misses after post-promotion smoke; preserve the currently published source and financial logic.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "public/experience-offline-worker.js",
+    "tests/experience-offline-foundation.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+    "commit": "342bb4a2e614d7a7c10bbff365a5f3c8023ad915"
+  },
+  "validation": [
+    {
+      "name": "Actual Vercel worker preparation and cold offline lazy chunk hydration",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "1855acda-5062-4d42-a4f8-e0403739d75f",
+  "recordedAt": "2026-10-16T04:58:10.994Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\local-first-pos-staff\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
