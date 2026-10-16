@@ -109,8 +109,6 @@ final class ReylumiLaunchView: UIView, UITextFieldDelegate {
         navigation.spacing = 12
         navigation.distribution = .fillEqually
         navigation.accessibilityIdentifier = "reylumi.launch.navigation"
-        activity.hidesWhenStopped = true
-        activity.color = ReylumiOrbitView.teal
         let connection = UIStackView(arrangedSubviews: [status, retry])
         connection.axis = .horizontal
         connection.alignment = .center
