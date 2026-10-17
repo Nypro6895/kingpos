@@ -440,6 +440,20 @@
     ],
     "app/pos/checkin-receipt-actions.ts": [
       "issueCheckinReceipt"
+    ],
+    "app/payroll/ledger-actions.ts": [
+      "saveOwnerAdjustment",
+      "saveRecordedPayment",
+      "verifyPayrollIntent"
+    ],
+    "app/settings/plugin-market-status-actions.ts": [
+      "loadPluginMarketStatusAction"
+    ],
+    "app/settings/plugin-settings-actions.ts": [
+      "loadBookingRulesSettingsAction",
+      "saveBookingRulesSettingsAction",
+      "loadBookSmsSettingsAction",
+      "saveBookSmsSettingsAction"
     ]
   }
 }

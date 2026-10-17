@@ -1,0 +1,18 @@
+{
+  "capturedAt": "2026-10-16T22:31:14.51526+00:00",
+  "method": "Read-only production get_public_explore_query_entities metadata; no search sessions or private records",
+  "nailsNearMe": {
+    "areaCandidates": [], "areaStatus": "none", "exactOriginalSalonName": false,
+    "exactSalonName": true, "moreAreaCandidates": false, "version": 1
+  },
+  "kingNails": {
+    "areaCandidates": [], "areaStatus": "none", "exactOriginalSalonName": true,
+    "exactSalonName": true, "moreAreaCandidates": false, "version": 1
+  },
+  "combinedCapturedAt": "2026-10-16T22:40:09.287714+00:00",
+  "nailsMilwaukee": {
+    "areaCandidates": [{"city":"Milwaukee","kind":"city","label":"Milwaukee, WI","stateCode":"WI"}],
+    "areaStatus": "unique", "exactOriginalSalonName": false,
+    "exactSalonName": true, "moreAreaCandidates": false, "version": 1
+  }
+}

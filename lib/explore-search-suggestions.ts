@@ -51,7 +51,7 @@ export function mergeExploreSearchSuggestions(rows: unknown, input: { query: str
     for (const [category, label, text] of source) {
       if (selectedCategory && selectedCategory !== category.toLowerCase()) continue;
       if (!label.toLowerCase().startsWith(query) && !text.toLowerCase().startsWith(query)) continue;
-      local.push({ id: `${kind}:${text}`, kind, label, query: text, category, detail: kind === "idea" ? "Ideas" : "Services", target: kind === "idea" ? "posts" : "salons" });
+      local.push({ id: `${kind}:${text}`, kind, label, query: text, category, detail: kind === "idea" ? "Styles" : "Services", target: "salons" });
     }
   }
   const seen = new Set<string>();

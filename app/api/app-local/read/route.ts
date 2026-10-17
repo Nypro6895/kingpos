@@ -20,6 +20,7 @@ import { readAppLocalShellResource } from "@/lib/app-local-shell-server";
 import { readAppLocalPortableResource } from "@/lib/app-local-portable-server";
 import { readAppLocalPortableHttpResource } from "@/lib/app-local-portable-http-server";
 import { isAppLocalScopeId } from "@/lib/app-local-scope-id";
+import { runWithReadContext } from "@/lib/read-context-scope";
 import { readAppLocalDisplayResource } from "@/lib/app-local-display-server";
 
 async function readPage(request: Request) {
@@ -74,6 +75,6 @@ async function readPage(request: Request) {
     return Response.json({ error: status === 401 || status === 403 || status === 409 ? "Your access has changed. Please sign in again." : "Could not update this page. Please try again." }, { status, headers: responseHeaders });
   }
 }
-export async function GET(request:Request){return readPage(request);}
+export async function GET(request:Request){return runWithReadContext(() => readPage(request));}
 /** Large search windows are still named read-only resources; POST is only a transport. */
-export async function POST(request:Request){return readPage(request);}
+export async function POST(request:Request){return runWithReadContext(() => readPage(request));}

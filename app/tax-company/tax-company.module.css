@@ -1,4 +1,4 @@
-.page{max-width:1280px;margin:auto;padding:28px 24px 40px;color:#202923;display:grid;gap:24px}
+.page{max-width:1280px;margin:auto;padding:28px 24px 40px;color:#202923;display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
 .header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
 .header h1,.title{font-size:26px;font-weight:650;letter-spacing:-.6px;margin:4px 0 8px}
 .muted{color:#6b756f;font-size:13px;line-height:1.6}

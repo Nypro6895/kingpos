@@ -904,7 +904,7 @@ export function enrichExploreShowcaseContent(input: {
       ...input.initialFeed,
       items,
     },
-    searchResponse: shouldAddShowcase
+    searchResponse: shouldAddShowcase && input.searchResponse.searchVersion !== 3
       ? mergeSearchResults(input.searchResponse, samples)
       : input.searchResponse,
   };

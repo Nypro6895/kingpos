@@ -5,8 +5,8 @@ export type HelpSection = {id: string; title: string; illustrationId?: string; s
 export type HelpGuide = {slug: string; title: string; summary: string; roles: HelpRole[]; entry: {href: string; label: string}; prerequisite: string; steps: {title: string; body: string}[]; sections: HelpSection[]; notes: string[]; evidence: {sourceFiles: string[]; sourceReviewed: boolean; productionFlowVerified: boolean; screenshots: HelpScreenshot[]}};
 
 export const HELP_VERSION = {
-  "version": "2026-10-16.1",
-  "reviewedAt": "2026-10-16",
+  "version": "2026-10-17.1",
+  "reviewedAt": "2026-10-17",
   "sourceRevision": "dpl_GSM2JMJnitw6i9LGCUiX1H5Xr9Pm",
   "publicationStatus": "ready",
   "screenshotsStatus": "illustrated"
@@ -1221,7 +1221,7 @@ export const HELP_GUIDES: readonly HelpGuide[] = [
   {
     "slug": "payroll-and-tax",
     "title": "Review payroll, commission and tax records",
-    "summary": "Calculate and review records before handling staff pay or tax work.",
+    "summary": "Review current income, closed originals, owner adjustments and recorded payments.",
     "roles": [
       "owner"
     ],
@@ -1233,93 +1233,59 @@ export const HELP_GUIDES: readonly HelpGuide[] = [
     "steps": [
       {
         "title": "Select and review the period",
-        "body": "Select the payroll period and review staff, service income, tips and adjustments for that period. Check the underlying ticket records when a figure looks wrong."
+        "body": "Select the salon and payroll period. Compare services, tips, staff assignments and payroll settings with the underlying tickets. Open periods show estimated income."
       },
       {
-        "title": "Check calculation settings",
-        "body": "Review staff payroll and commission settings with the salon owner. Confirm that the intended settings apply before relying on calculated totals."
+        "title": "Understand automatic closing",
+        "body": "After the pay period ends in the salon time zone, payroll closes into an immutable original. A processing or review message means the verified original is not ready; reload later or contact support. Do not treat an estimate as a closed record."
       },
       {
-        "title": "Understand Current calculation and Saved",
-        "body": "Staff Income shows the current calculation. Saved v1 identifies the saved statement version. Save Statement is disabled when the app detects no changes to save; the disabled button alone does not indicate an error."
+        "title": "Review an owner adjustment",
+        "body": "Only the owner can adjust a closed original. Open Adjust income, review the staff member and amounts, enter a reason, and submit once. Reload to verify the recorded adjustment and before/after history. The original remains unchanged."
       },
       {
-        "title": "Save and verify the statement",
-        "body": "Review the amounts and payroll settings, then choose Save Statement when available. Wait for the response and reload the period to verify the saved version, staff lines and totals. If a save fails or the saved record is incomplete, stop and ask support; do not repeatedly submit."
+        "title": "Record a payment after it occurs",
+        "body": "After paying staff outside the app, use Record actual payment to record cash, check, date and note. Verify the result before retrying. This records evidence only: it does not move money, collect overpayments or deduct future wages."
       },
       {
-        "title": "Use Mark Paid after handling payment",
-        "body": "Mark Paid records the saved statement as paid; it does not transfer money. Verify the period, saved version, staff amounts and actual payment first. Avoid changing the period records at the same time. If the saved and current figures differ, or Changes need saving appears, resolve the difference before marking paid."
+        "title": "Compare original, adjusted and paid amounts",
+        "body": "Review Original income, Adjustment, Recorded as paid and Income minus recorded payments. A negative balance means recorded payments exceed current income. Older Paid flags are not imported as payment evidence; verify them before adding a payment record."
       },
       {
         "title": "Review the Tax Company record",
-        "body": "Tax Company reports use a saved statement. Check the selected period, statement version, legal names and paystubs before sharing or relying on the report. If Missing legal name appears or a corrected name is not reflected, ask the owner or support to verify the saved record."
+        "body": "Tax Company reports use the closed original with recorded adjustments. Verify the period, legal names, reported amounts and paystubs. Final check income is not proof that a check was received; check the payment records separately."
       }
     ],
     "notes": [
-      "Payroll calculates and records information. It does not mean money has been transferred to staff or taxes have been filed or paid.",
-      "Tax Company is based on a saved statement. A field labeled Actual Check Paid is not independent confirmation that a bank transfer or check was received. Verify actual payment separately."
+      "Payroll records do not transfer money or file or pay taxes. Staff can view only the payroll for their authorized linked identity."
     ],
     "evidence": {
       "sourceFiles": [
         "app/(app)/payroll/page.tsx",
         "app/(app)/payroll/tax-company/page.tsx",
-        "app/(app)/tax-company/page.tsx"
+        "app/(app)/tax-company/page.tsx",
+        "app/payroll/payroll-ledger-panel.tsx",
+        "lib/payroll-ledger.ts"
       ],
       "sourceReviewed": true,
-      "screenshots": [
-        {
-          "id": "payroll",
-          "caption": "Review current payroll and the saved version",
-          "alt": "Demo Staff Income screen with cash, check, current calculation and statement controls.",
-          "provenance": "source-grounded-simulation",
-          "status": "illustrated",
-          "desktop": {
-            "src": "/help/2026-10-15/payroll-desktop.jpg",
-            "width": 1440,
-            "height": 900
-          },
-          "mobile": {
-            "src": "/help/2026-10-15/payroll-mobile.jpg",
-            "width": 390,
-            "height": 1092
-          }
-        },
-        {
-          "id": "tax",
-          "caption": "Tax Company: selected saved-statement fields",
-          "alt": "Mockup of saved tax report fields with explicit example assumptions; no paystub file, tax filing or actual payment is shown.",
-          "provenance": "source-grounded-simulation",
-          "status": "illustrated",
-          "desktop": {
-            "src": "/help/2026-10-15/tax-desktop.jpg",
-            "width": 1440,
-            "height": 910
-          },
-          "mobile": {
-            "src": "/help/2026-10-15/tax-mobile.jpg",
-            "width": 390,
-            "height": 850
-          }
-        }
-      ],
+      "screenshots": [],
       "productionFlowVerified": false
     },
     "sections": [
       {
         "id": "commission-review",
-        "title": "Check the inputs behind staff income",
+        "title": "Reconcile one staff pay period",
         "steps": [
-          "Select the salon and payroll period. Review each staff profile’s payroll mode, rate and tip treatment in the available Payroll settings.",
-          "Compare service amounts, assigned staff and tips with the underlying tickets. Review any period input or approved correction before saving a statement.",
-          "In Staff Income, compare Current calculation with Saved. Follow the Save Statement and verification steps above; investigate differences before Mark Paid.",
-          "In Tax Company, verify the period, saved version, legal name, reported amounts and paystub for each intended staff member before sharing the report."
+          "Select the salon and payroll period. Compare services, tips, staff assignments and payroll settings with the underlying tickets. Open periods show estimated income.",
+          "After the pay period ends in the salon time zone, payroll closes into an immutable original. A processing or review message means the verified original is not ready; reload later or contact support. Do not treat an estimate as a closed record.",
+          "Only the owner can adjust a closed original. Open Adjust income, review the staff member and amounts, enter a reason, and submit once. Reload to verify the recorded adjustment and before/after history. The original remains unchanged.",
+          "After paying staff outside the app, use Record actual payment to record cash, check, date and note. Verify the result before retrying. This records evidence only: it does not move money, collect overpayments or deduct future wages."
         ],
-        "check": "The saved staff lines match the reviewed period and settings; the tax report refers to that intended saved statement.",
-        "example": "With a 60% service commission and no other adjustments, $100 of eligible services gives $60 service commission. Tips, deductions, guarantees and tax settings can change the final total, so compare the full breakdown.",
+        "check": "The staff identity, period, original, adjustments and recorded payment evidence agree. Review every adjustment reason and payment date before relying on the remaining balance.",
+        "example": "An original income of $600 plus a $20 owner adjustment gives $620. If $500 was actually paid and recorded, income minus recorded payments is $120. The app does not transfer that $120.",
         "issues": [
-          "A saved version or Paid label is a record in the app, not proof of a bank transfer, received check or tax filing. Check actual payment separately.",
-          "If Save Statement fails, a record is incomplete or a legal name is missing, stop repeated submissions and send the period and error to support."
+          "If a submission fails or its outcome is unclear, reload and verify the history before retrying. Keep the same draft; do not create a second payment to work around a pending result.",
+          "Payroll records do not transfer money or file or pay taxes. Staff can view only the payroll for their authorized linked identity."
         ]
       }
     ]

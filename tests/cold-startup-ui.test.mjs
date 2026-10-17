@@ -161,21 +161,18 @@ hydrateRoot(document.getElementById('root'),<App/>);`;
   return { page, errors, release: () => scripts.resolve(), async close() { scripts.resolve(); await browser.close(); await new Promise(resolve => server.close(resolve)); } };
 }
 
-test('weak startup presents useful public controls and CSS Lumi before JavaScript, then signals the painted frame without holding ready content', { skip: skipBrowser, timeout: 60_000 }, async () => {
+test('cold startup presents R and CSS Lumi before JavaScript without placeholder controls or holding ready content', { skip: skipBrowser, timeout: 60_000 }, async () => {
   const app = await browserFixture(); const { page } = app;
   try {
-    await page.getByRole('heading', { name: 'Find a little inspiration.', exact: true }).waitFor();
+    await page.getByRole('status', { name: 'Opening Reylumi' }).waitFor();
     assert.equal(await page.evaluate(() => window.hydrated), undefined, 'the first useful shell does not await hydration');
     assert.equal(await page.locator('[data-lumi-loading-mark]').isVisible(), true);
-    assert.equal(await page.getByRole('link', { name: 'Market', exact: true }).count(), 2);
-    await page.getByRole('searchbox').fill('typed before scripts');
+    assert.equal(await page.getByRole('searchbox').count(), 0);
+    assert.equal(await page.getByRole('link').count(), 0);
+    assert.equal(await page.locator('[data-lumi-loading-mark]').evaluate(n=>n.getBoundingClientRect().width),112);
     app.release();
     await page.waitForFunction(() => document.querySelector('[data-reylumi-shell-ready=true]'));
     assert.equal(await page.evaluate(() => window.screenReadyEvents), 1);
-    assert.equal(await page.getByRole('searchbox').inputValue(), 'typed before scripts', 'hydration preserves the live uncontrolled field');
-    await page.getByRole('searchbox').fill('draft after hydration');
-    assert.equal(await page.evaluate(() => window.__reylumiStartupSearch.query), 'draft after hydration');
-    assert.equal(await page.evaluate(() => window.__reylumiStartupSearch.route), '/market');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     assert.equal(await page.locator('[data-lumi-loading-mark] .comet').evaluate(node => getComputedStyle(node).animationName), 'none');
     await page.evaluate(() => window.showRealContent());

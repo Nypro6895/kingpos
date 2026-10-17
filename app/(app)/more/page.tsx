@@ -1,6 +1,5 @@
 import { withExperiencePage } from "@/components/experience-page";
 import { WorkspaceText } from "@/components/workspace-language";
-import { campaignWalletAction } from "@/app/campaigns/credit-actions";
 
 import { SettingsIconShape } from "@/components/settings-icon";
 import { getCurrentBusinessContext } from "@/lib/current-context";
@@ -278,8 +277,6 @@ async function MorePage() {
     workspaceType: context.workspaceType,
   });
   const more = roleMoreItems(roleKind);
-  const campaignInstalled = roleKind === "owner" ? await campaignWalletAction().then(wallet=>wallet.installed).catch(()=>false) : false;
-  for(const section of more.sections)section.items=section.items.filter(item=>item.id!=="owner-campaigns" || campaignInstalled);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-surface-muted px-4 py-5 sm:px-6 lg:px-8">

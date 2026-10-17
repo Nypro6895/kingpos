@@ -7,18 +7,26 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { ExploreBookButton, ExploreReferenceLove } from "@/components/explore-account-actions";
 import { NAIL_FACETS, type NailFacet, type NailFilters, type NailLook } from "@/lib/nail-inspiration-catalog";
-import { nailPhoneHref, nailSalonEligible, nailSalonHref, nailSalonSearchHref, nailSalonSearchInput, selectNailLooks, supportsNailInspiration } from "@/lib/nail-inspiration";
+import { nailPhoneHref, nailSalonEligible, nailSalonHref, nailSalonSearchHref, nailSalonSearchInput, selectNailLookForSalon, selectNailLooks, supportsNailInspiration } from "@/lib/nail-inspiration";
+import { isDefaultNailImage } from "@/lib/default-nail-images";
 import { fetchExploreSearchPage } from "@/lib/explore-search-client";
 import { referenceLoveStatesAction } from "@/app/explore/account-actions";
 import type { ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
 import type { ExploreSearchResult } from "@/types/explore";
 import { ExploreAutoLoad } from "@/app/explore/explore-auto-load";
 import { rankRelatedNailLooks } from "@/lib/explore-reference-recommendations";
-import { appendNailRecommendations, NAIL_INTEREST_EVENT, nailInterestStorageKey, normalizeNailViews, personalizeNailLooks, readNailViews, recordNailLookView, type NailLookView } from "@/lib/nail-inspiration-personalization";
+import { NAIL_INTEREST_EVENT, nailInterestStorageKey, normalizeNailViews, personalizeNailLooks, readNailViews, recordNailLookView, type NailLookView } from "@/lib/nail-inspiration-personalization";
 
 const label = (value: string) => value === "3d" ? "3D art" : value.replace(/(^|[- ])\w/g, letter => letter.toUpperCase()).replaceAll("-", " ");
 
-export function NailInspirationFilters({ filters, onChange }: { filters: NailFilters; onChange: (filters: NailFilters) => void }) {
+type NailSearchContext = { salons: ExploreSearchResult[]; discovery: ExploreFeedDiscoveryOptions };
+
+function nailSearchSalons({ salons, discovery }: NailSearchContext) {
+  if (!supportsNailInspiration(discovery.category) || discovery.trendingOnly || !selectNailLooks(discovery.query).length) return [];
+  return salons.filter(salon => nailSalonEligible(salon, discovery) && /nail|manicure|acrylic|pedicure/i.test([salon.name, ...salon.serviceCategories, ...salon.serviceNames].join(" ")));
+}
+
+export function NailInspirationFilters({ filters, onChange, search }: { filters: NailFilters; onChange: (filters: NailFilters) => void; search?: NailSearchContext }) {
   const activeCount = Object.values(filters).filter(Boolean).length;
   const panel = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
@@ -34,12 +42,15 @@ export function NailInspirationFilters({ filters, onChange }: { filters: NailFil
     document.addEventListener("keydown", escape);
     return () => { document.removeEventListener("pointerdown", dismiss); document.removeEventListener("keydown", escape); };
   }, []);
-  return <details ref={panel} className="relative justify-self-end">
-    <summary className="flex min-h-11 w-fit cursor-pointer list-none items-center gap-2 rounded-full px-3 text-sm font-medium text-text-secondary hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand-orange [&::-webkit-details-marker]:hidden">
-      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 7h16M4 17h16M9 4v6M15 14v6" /></svg>
+  if (search && !nailSearchSalons(search).length) return null;
+  return <details ref={panel} className={search ? "shrink-0 sm:relative" : "relative justify-self-end"} name={search ? "explore-search-refinement" : undefined}>
+    <summary className={search
+      ? "flex h-11 cursor-pointer list-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-divider-subtle bg-surface-elevated px-2.5 text-xs font-medium text-text-primary hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand-orange sm:px-3 sm:text-sm [&::-webkit-details-marker]:hidden"
+      : "flex min-h-11 w-fit cursor-pointer list-none items-center gap-2 rounded-full px-3 text-sm font-medium text-text-secondary hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand-orange [&::-webkit-details-marker]:hidden"}>
+      <svg className="shrink-0" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 7h16M4 17h16M9 4v6M15 14v6" /></svg>
       Refine looks{activeCount ? <span className="rounded-full bg-brand-orange-soft px-2 text-brand-orange">{activeCount}</span> : null}
     </summary>
-    <fieldset className="absolute right-0 top-full z-20 mt-1 grid w-[min(22rem,calc(100vw-3rem))] gap-2 rounded-2xl border border-divider-subtle bg-white p-4 shadow-lg" data-testid="nail-inspiration-filters">
+    <fieldset className={`absolute right-0 top-full z-20 mt-2 grid w-[min(22rem,calc(100vw-3rem))] gap-2 rounded-2xl border border-divider-subtle bg-white p-4 shadow-lg${search ? " sm:left-0 sm:right-auto" : ""}`} data-testid="nail-inspiration-filters">
     <legend className="sr-only">Refine nail inspiration</legend>
     <div className="flex flex-wrap items-center gap-2">
       {(Object.keys(NAIL_FACETS) as NailFacet[]).map(facet => <label key={facet} className="relative min-w-0">
@@ -67,15 +78,18 @@ export function NailInspirationCard({ look, salon, location = "", initialSaved, 
   </div> : <Link href={nailSalonSearchHref(location)} prefetch={false} className="inline-flex min-h-10 items-center rounded-full bg-brand-orange px-4 text-sm font-semibold text-white">Browse nail salons{location ? " in this area" : " nearby"}</Link>;
   return <article className="overflow-hidden rounded-2xl border border-divider-subtle bg-white" data-testid="nail-inspiration-post" data-nail-look={look.id} data-salon-id={salon?.id}>
     <div className="relative">
-      <button ref={opener} type="button" onClick={() => { onOpen?.(); setOpen(true); }} aria-label={`View ${look.title}${salon ? ` near ${salon.name}` : ""}`} className="relative block aspect-[4/5] w-full bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand-orange">
+      {salon ? <Link href={nailSalonHref(salon)} prefetch={false} onClick={onOpen} aria-label={`View ${salon.name}`} className="relative block aspect-[4/5] w-full bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand-orange">
+        <Image src={look.imageUrl} alt={`Suggested image for ${salon.name}; not actual salon work`} fill sizes="(max-width: 640px) 92vw, 600px" className="object-cover" />
+        <LumiAiWatermark className="absolute bottom-3 right-3" />
+      </Link> : <button ref={opener} type="button" onClick={() => { onOpen?.(); setOpen(true); }} aria-label={`View ${look.title}`} className="relative block aspect-[4/5] w-full bg-surface-muted focus-visible:outline-2 focus-visible:outline-brand-orange">
         <Image src={look.imageUrl} alt={look.alt} fill sizes="(max-width: 640px) 92vw, 600px" className="object-cover" />
         <LumiAiWatermark className="absolute bottom-3 right-3" />
-      </button>
-      <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white">Inspiration</span>
+      </button>}
+      <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs text-white">Suggested image</span>
       <div className="absolute right-3 top-3"><ExploreReferenceLove itemKey={`look:nail-${look.id}`} name={look.title} initialActive={initialSaved} className="!size-11 !text-2xl" /></div>
     </div>
     <div className="grid gap-3 p-4">
-      <div><Link href={detailHref} prefetch={false} onClick={onOpen} className="text-base font-semibold text-text-primary">{look.title}</Link><p className="mt-1 text-xs text-text-secondary">{tags.map(label).join(" · ")}</p></div>
+      <div>{!salon ? <Link href={detailHref} prefetch={false} onClick={onOpen} className="text-base font-semibold text-text-primary">{look.title}</Link> : null}<p className="mt-1 text-xs text-text-secondary">{tags.map(label).join(" · ")}</p></div>
       {salon ? <div className="grid gap-3 border-t border-divider-subtle pt-3">
         <p className="text-xs font-medium text-text-secondary">A salon to discuss this look</p>
         <Link href={nailSalonHref(salon)} prefetch={false} className="flex min-w-0 items-center gap-2.5">
@@ -125,12 +139,20 @@ export function useNailInspiration(discovery: ExploreFeedDiscoveryOptions, filte
   const selectionKey = JSON.stringify([viewerKey, seed, discovery.query, filters, salonInputKey, supported]);
   const [selection, setSelection] = useState<{ key: string; limit: number; looks: NailLook[] }>({ key: "", limit: initialCount, looks: [] });
   const current = selection.key === selectionKey ? selection : { key: selectionKey, limit: initialCount, looks: [] };
-  // Reference designs remain useful even when no local salon is available.
-  const visible = appendNailRecommendations(current.looks, looks, current.limit);
+  const uniqueSalons = [...new Map(salons.map(salon => [salon.id, salon])).values()].filter(salon =>
+    !salon.coverImageUrl || salon.imageProvenance === "suggested" || isDefaultNailImage(salon.coverImageUrl) || salon.coverImageUrl.startsWith("/inspiration/nails/"));
+  const suggestions = uniqueSalons.flatMap(salon => {
+    const look = selectNailLookForSalon(salon.id, discovery.query, filters);
+    return look ? [{ salon, look }] : [];
+  });
+  // Taste can order home suggestions; it never changes which reference belongs to a salon.
+  if (suppliedSalons === undefined) suggestions.sort((a, b) => looks.findIndex(look => look.id === a.look.id) - looks.findIndex(look => look.id === b.look.id));
+  const visibleSuggestions = suggestions.slice(0, current.limit);
+  const visible = visibleSuggestions.map(item => item.look);
   if (selection.key !== selectionKey || visible.length > current.looks.length) {
     setSelection({ ...current, looks: visible });
   }
-  const hasMore = visible.length > 0 && visible.length < looks.length;
+  const hasMore = visible.length > 0 && visible.length < suggestions.length;
   useEffect(() => {
     const load = () => setInterest({ key: viewerKey, views: readNailViews(viewerId) });
     const frame = requestAnimationFrame(load);
@@ -192,10 +214,7 @@ export function useNailInspiration(discovery: ExploreFeedDiscoveryOptions, filte
     return () => { controller.abort(); observer?.disconnect(); };
   }, [salonInputKey, attempt, canLoad, anchor, suppliedSalons]);
   const loadMore = () => setSelection(value => value.key === selectionKey ? { ...value, limit: Math.max(value.limit, current.limit + 6) } : value);
-  const posts = visible.map((look, index) => <div key={look.id} className="grid gap-3">
-    {related && index === 0 ? <p className="text-sm font-semibold text-brand-teal">Similar ideas inspired by your search</p> : null}
-    <NailInspirationCard look={look} salon={salons.length ? salons[index % salons.length] : undefined} location={discovery.location} initialSaved={savedKeys.includes(`look:nail-${look.id}`)} onOpen={() => recordNailLookView(look.id, viewerId)} />
-  </div>);
+  const posts = visibleSuggestions.map(({ look, salon }) => <NailInspirationCard key={salon.id} look={look} salon={salon} location={discovery.location} initialSaved={savedKeys.includes(`look:nail-${look.id}`)} onOpen={() => recordNailLookView(look.id, viewerId)} />);
   const footer = supported ? <div className="grid justify-items-center gap-2 py-3 text-center text-sm text-text-secondary" data-testid="nail-inspiration-status">
     {status === "loading" && canLoad ? <p role="status">Finding salons for your nail inspiration…</p> : null}
     {status === "error" && canLoad ? <><p role="status">{error}</p><button type="button" onClick={() => setAttempt(value => value + 1)} className="min-h-10 rounded-full bg-surface-muted px-4 font-semibold">Retry nearby inspiration</button></> : null}

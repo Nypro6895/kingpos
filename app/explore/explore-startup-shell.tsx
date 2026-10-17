@@ -13,8 +13,9 @@ export function ExploreStartupShell({ query, category, location, source, viewerI
   const router = useRouter(), search = useSearchParams();
   const [areaOpen, setAreaOpen] = useState(false);
   const navigate = (values: Record<string, string>) => {
-    const params = new URLSearchParams(search.toString()); params.delete("page");
+    const params = new URLSearchParams(search.toString()); params.delete("page"); params.delete("cursor");
     for (const [key, value] of Object.entries(values)) { if (value) params.set(key, value); else params.delete(key); }
+    params.set("type", "salons");
     router.push(`/explore${params.size ? `?${params}` : ""}`, { scroll: false });
   };
   return <main className="min-w-0 bg-white" data-explore-startup="">
@@ -24,10 +25,10 @@ export function ExploreStartupShell({ query, category, location, source, viewerI
         scopePolicy={search.get("scope") === "expandable" ? "expandable" : location ? "fixed" : "expandable"}
         locating={false} pending={false} message={null} areaOpen={areaOpen} onAreaOpenChange={setAreaOpen}
         onDraftChange={() => { /* Draft values are captured from the actual input above. */ }}
-        onSearch={value => navigate({ q: value, type: "auto" })}
+        onSearch={value => navigate({ q: value, type: "salons" })}
         onSuggestionSelect={suggestion => navigate({ q: suggestion.kind === "area" ? "" : suggestion.query,
           ...(suggestion.kind === "area" ? { location: suggestion.location ?? suggestion.query, locationSource: "manual", scope: "fixed" } : {}),
-          ...(suggestion.category ? { category: suggestion.category } : {}), type: suggestion.target })}
+          ...(suggestion.category ? { category: suggestion.category } : {}), type: "salons" })}
         onAreaApply={(value, scope) => navigate({ location: value, locationSource: "manual", scope })}
         onCurrentLocation={() => rememberExploreStartupInteraction(viewerId, { gps: true })} />
     </div>

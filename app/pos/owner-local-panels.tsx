@@ -11,6 +11,7 @@ import { useAppLocalResource, seedAppLocalResource } from "@/lib/app-local-resou
 import { usePosResourceRefresh } from "@/lib/pos-workspace-sync";
 import { mergeStaffRoster } from "@/lib/portable-staff-roster";
 import { WorkspaceText } from "@/components/workspace-language";
+import { LumiLoadingStatus } from "@/components/lumi-loading-status";
 import { WorkLogFilters } from "@/app/pos-tickets/work-log-filters";
 import { ownerLocalHref, ownerLocalReadArgs, ownerLocalReadName, type OwnerLocalPanelData } from "@/lib/owner-local-workspace";
 import { saveOwnerLocalSnapshot, useOwnerLocalWorkspace } from "./owner-local-workspace";
@@ -58,7 +59,7 @@ export function OwnerPanel({ href, active, scope, salonId, navigate, attendanceA
   return <div hidden={!active} data-owner-local-panel={href}>
     {resource.data ? <OwnerLocalPanelBody data={resource.data} snapshotAt={resource.updatedAt} query={query} navigate={navigate} attendanceAction={attendanceAction} onAttendanceSettled={() => { void resource.refresh(); }} active={active} ticketsPath={ticketsPath} /> : <section className="p-6" aria-busy={resource.loading || resource.refreshing}>
       <h1 className="text-xl font-semibold"><WorkspaceText text={name === "owner.check-in" ? "Check In" : name === "owner.bookings" ? "Bookings" : name === "owner.tickets" ? "Tickets" : "Reports"} /></h1>
-      <p className="mt-4 text-sm text-zinc-600"><WorkspaceText text={resource.error || typeof navigator !== "undefined" && !navigator.onLine ? "Connect to open this view. Your current ticket has been kept." : "Opening this view…"} /></p>
+      {resource.error || typeof navigator !== "undefined" && !navigator.onLine ? <p className="mt-4 text-sm text-zinc-600"><WorkspaceText text="Connect to open this view. Your current ticket has been kept." /></p> : <LumiLoadingStatus />}
       {resource.error ? <button type="button" className="mt-3 rounded border px-4 py-2" onClick={() => void resource.refresh()}><WorkspaceText text="Try again" /></button> : null}
     </section>}
   </div>;

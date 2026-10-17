@@ -12,8 +12,6 @@ export function DataDownloadPanel({ startDate, endDate }: { startDate: string; e
   const [files, setFiles] = useState<{ name: string; csv: string }[]>([]);
   return <section id="download" className="rounded-xl border border-zinc-200 bg-white p-5" aria-labelledby="download-title">
     <h2 id="download-title" className="text-lg font-semibold"><WorkspaceText text="Download" /></h2>
-    <p className="mt-1 text-sm text-zinc-600"><WorkspaceText text="Payroll Data Download · By Reylumi · Free" /></p>
-    <p className="mt-2 text-sm text-zinc-600"><WorkspaceText text="Choose up to one year of financial and staff payroll data. Customers includes profiles created within the selected dates (UTC)." /></p>
     <form className="mt-4 flex flex-wrap items-end gap-4" onSubmit={async event => {
       event.preventDefault(); setBusy(true); setMessage(""); setFiles([]);
       try {
@@ -25,13 +23,13 @@ export function DataDownloadPanel({ startDate, endDate }: { startDate: string; e
     }}>
       <label className="grid gap-1 text-sm"><WorkspaceText text="From" /><input className="min-h-11 rounded-md border p-2" type="date" required value={start} onChange={event => { setStart(event.target.value); setFiles([]); setMessage(""); }} /></label>
       <label className="grid gap-1 text-sm"><WorkspaceText text="To" /><input className="min-h-11 rounded-md border p-2" type="date" required min={start} value={end} onChange={event => { setEnd(event.target.value); setFiles([]); setMessage(""); }} /></label>
-      <fieldset className="flex flex-wrap gap-4"><legend className="mb-2 text-sm font-medium"><WorkspaceText text="Include" /></legend>{[ ["financial", "Salon financial"], ["staff", "Staff income"], ["customers", "Customers"] ].map(([id, label]) => <label key={id} className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={categories.includes(id)} onChange={event => { setFiles([]); setCategories(event.target.checked ? [...categories, id] : categories.filter(value => value !== id)); }} /><WorkspaceText text={label} /></label>)}</fieldset>
+      <fieldset className="flex flex-wrap gap-4"><legend className="mb-2 text-sm font-medium"><WorkspaceText text="Include" /></legend>{[ ["financial", "Salon financial"], ["staff", "Staff income"], ["customers", "Customers (created in range, UTC)"] ].map(([id, label]) => <label key={id} className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={categories.includes(id)} onChange={event => { setFiles([]); setCategories(event.target.checked ? [...categories, id] : categories.filter(value => value !== id)); }} /><WorkspaceText text={label} /></label>)}</fieldset>
       <button className="min-h-11 rounded-md bg-zinc-900 px-4 text-sm font-medium text-white disabled:opacity-40" disabled={busy || !categories.length}>{busy ? "Preparing…" : <WorkspaceText text="Prepare downloads" />}</button>
     </form>
-    <p role="status" className="mt-3 text-sm"><WorkspaceText text={message} /></p>
-    <div className="mt-2 flex flex-wrap gap-3">{files.map(file => <button key={file.name} className="min-h-11 rounded-md border px-3 text-sm" onClick={() => {
+    {message && <p role="status" className="mt-3 text-sm"><WorkspaceText text={message} /></p>}
+    {files.length > 0 && <div className="mt-2 flex flex-wrap gap-3">{files.map(file => <button key={file.name} className="min-h-11 rounded-md border px-3 text-sm" onClick={() => {
       const url = URL.createObjectURL(new Blob([file.csv], { type: "text/csv;charset=utf-8" }));
       const anchor = document.createElement("a"); anchor.href = url; anchor.download = file.name; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }}><WorkspaceText text="Download" /> {file.name.split("-")[1]} <WorkspaceText text="CSV" /></button>)}</div>
+    }}><WorkspaceText text="Download" /> {file.name.split("-")[1]} <WorkspaceText text="CSV" /></button>)}</div>}
   </section>;
 }

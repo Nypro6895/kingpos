@@ -255,7 +255,7 @@ export const ROLE_MORE_ITEMS: Record<RoleNavigationKind, RoleMoreItem[]> = {
     },
   ],
   owner: [
-    { description: "Reach more people, see your results and manage payment.", href: "/campaigns", icon: "flag", id: "owner-campaigns", label: "Campaigns", navigationIcon: "star" },
+    { description: "Run ads for your salon.", href: "/campaigns", icon: "flag", id: "owner-campaigns", label: "Advertising", navigationIcon: "star" },
     {
       description: "Add messaging, payroll, rewards, and more to Reylumi.",
       href: "/market",

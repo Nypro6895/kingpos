@@ -38,6 +38,16 @@ test('expired, processing and not-in-testing builds cannot pass', async () => {
 test('marketing version mismatch fails exact build resolution', async () => {
   await assert.rejects(run(fixture({ wrongMarketing: true })), /not uniquely visible/);
 });
+test('a new marketing version retains proof of access to the prior uploaded version', async () => {
+  const f=fixture();
+  const read=async endpoint=>{const response=await f.read(endpoint);const url=apiURL(endpoint);if(url.pathname==='/v1/builds'&&url.searchParams.get('filter[version]')==='21.1')response.included[0].attributes.version='1.1.0';return response;};
+  const input={build:'21.1',baselineBuild:'19.1',marketingVersion:'1.1.0',appId:'6821394475',now,read};
+  await assert.rejects(checkAvailability(input),/not uniquely visible/);
+  const result=await checkAvailability({...input,baselineMarketingVersion:'1.0.1'});
+  assert.equal(result.availableToExistingInternalGroup,true);
+  assert.equal(result.baselineMarketingVersion,'1.0.1');
+  assert.equal(result.groups[0].hadBaseline,true);
+});
 test('explicit existing group ID cannot silently fall back to another group', async () => {
   const f = fixture(), result = await checkAvailability({ build: '21.1', appId: '6821394475', groupId: 'different-group', now, read: f.read });
   assert.equal(result.groups.length, 0); assert.equal(result.availableToExistingInternalGroup, false);

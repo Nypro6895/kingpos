@@ -22,17 +22,25 @@ async function ExploreCorePage({ searchParams }: ExplorePageProps) {
   const hasLocationParam = params.location !== undefined;
   const category = clean(stringParam(params.category));
   const requestedTarget = stringParam(params.type);
-  const target = requestedTarget === "posts" || requestedTarget === "salons" ? requestedTarget : "auto";
+  const target = requestedTarget === "posts" || requestedTarget === "salons" ? "salons" : "auto";
+  const filters = {
+    ...Object.fromEntries((["shape", "length", "color", "finish", "tone", "season"] as const).flatMap(key => stringParam(params[key]) ? [[key, stringParam(params[key])!]] : [])),
+    ...(stringParam(params.maxPrice) ? { maxPrice: Number(stringParam(params.maxPrice)) } : {}),
+    ...(stringParam(params.bookableOnly) === "true" ? { bookableOnly: true } : {}),
+    ...(stringParam(params.newOnly) === "true" ? { newOnly: true } : {}),
+    ...(stringParam(params.trendingOnly) === "true" ? { trendingOnly: true } : {}),
+  };
   const page = parsePage(clean(stringParam(params.page)));
   if (page > 1) {
     const fresh = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) {
       if (key !== "page" && value !== undefined) fresh.set(key, stringParam(value) ?? "");
     }
+    if (fresh.has("type")) fresh.set("type", "salons");
     redirect(`/explore${fresh.size ? `?${fresh}` : ""}`);
   }
   const hasExplicitSearchParams = Boolean(
-    rawQuery || (requestedLocation && stringParam(params.browse) !== "1") || category || target !== "auto" || page > 1,
+    rawQuery || (requestedLocation && stringParam(params.browse) !== "1") || category || target !== "auto" || Object.keys(filters).length > 0 || page > 1,
   );
   const contextPromise = getCurrentBusinessContext();
   const homeContentPromise = hasExplicitSearchParams ? Promise.resolve(emptyHomeContent()) : runReadWithDeadline(getExploreHomeContent(), 10_000).catch(() => emptyHomeContent());
@@ -63,6 +71,7 @@ async function ExploreCorePage({ searchParams }: ExplorePageProps) {
     : undefined;
   const [searchResponse, homeContent] = await Promise.all([searchExploreSalons({
         category: routing.category,
+        filters,
         location: effectiveLocation,
         page,
         pageSize: hasExplicitSearchParams ? EXPLORE_PAGE_SIZE : 4,
@@ -106,6 +115,7 @@ async function ExploreCorePage({ searchParams }: ExplorePageProps) {
       key={[
         showcaseContent.searchResponse.target,
         showcaseContent.searchResponse.contentQuery,
+        JSON.stringify(showcaseContent.searchResponse.filters ?? {}),
         showcaseContent.searchResponse.displayQuery,
         showcaseContent.searchResponse.query,
         showcaseContent.searchResponse.location,
@@ -141,6 +151,7 @@ async function ExplorePage({ searchParams }: ExplorePageProps) {
   if (parsePage(clean(stringParam(params.page))) > 1) {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) if (key !== "page" && value !== undefined) query.set(key, stringParam(value) ?? "");
+    if (query.has("type")) query.set("type", "salons");
     redirect(`/explore${query.size ? `?${query}` : ""}`);
   }
   // Start the authoritative load before awaiting the shared identity. Returning

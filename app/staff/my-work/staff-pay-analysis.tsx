@@ -1,3 +1,4 @@
+import { PayrollAdjustmentHistory } from "@/app/payroll/payroll-ledger-panel";
 import { WorkspaceText, WorkspaceElement } from "@/components/workspace-language";
 import { StaffPayPeriodPicker } from "./staff-pay-period-picker";
 import type { StaffPayrollPortalData } from "@/lib/payroll";
@@ -41,11 +42,13 @@ export function StaffMyPay({ data }: { data: StaffPayrollView }) {
   return <section className={styles.portal}><Period data={data} tab="payroll" />
     {line ? <div data-continuous-surface className={`${styles.hero} ${styles.payHero}`}><div className={styles.total}><div><p><WorkspaceText text={estimated ? "Estimated take-home" : "Take-home pay"} /></p><small><WorkspaceText text={data.status.label} /><WorkspaceText text={paidAt ? ` · ${date(paidAt)}` : ""} /></small></div><strong>{money(line.final_staff_income)}</strong></div>
       <dl className={styles.split}><div><dt><WorkspaceText text="Cash payout" /></dt><dd>{money(line.final_cash_amount)}</dd></div><div><dt><WorkspaceText text="Check payout" /></dt><dd>{money(line.final_check_amount)}</dd></div></dl></div> : <p data-continuous-surface className={styles.empty}><WorkspaceText text="No payroll has been calculated for you in this period." /></p>}
+    {line?.ledger && <PayrollAdjustmentHistory ledger={line.ledger} />}
     <div className={styles.columns}>{line && <section><h2><WorkspaceText text="Pay breakdown" /></h2><dl>
       <div className={styles.row}><dt><WorkspaceText text="Service pay" /><small>{money(line.gross_sales)} <WorkspaceText text="in services" /></small></dt><dd>{money(line.staff_commission_gross)}</dd></div>
       <div className={styles.row}><dt><WorkspaceText text="Tips" /></dt><dd>{money(line.tip_amount)}</dd></div>
       {line.bonus_amount !== 0 && <div className={styles.row}><dt><WorkspaceText text="Bonus" /></dt><dd>{money(line.bonus_amount)}</dd></div>}
       <div className={styles.row}><dt><WorkspaceText text="Tax withheld" /></dt><dd>{line.tax_withheld > 0 ? "−" : ""}{money(Math.abs(line.tax_withheld))}</dd></div>
+      {line.ledger?.adjusted && <div className={styles.row}><dt>Owner adjustment (before tax change)</dt><dd>{money(line.ledger.delta + line.tax_withheld - line.ledger.original.tax_withheld)}</dd></div>}
       <div className={`${styles.row} ${styles.sum}`}><dt><WorkspaceText text="Take-home pay" /></dt><dd>{money(line.final_staff_income)}</dd></div>
     </dl></section>}
     <section><h2><WorkspaceText text="Details" /></h2><PayRules data={data} />
@@ -53,7 +56,7 @@ export function StaffMyPay({ data }: { data: StaffPayrollView }) {
         <p className={styles.note}><WorkspaceText text="Total = service pay + tip, before tax and period bonus." /></p>
         {rows.length ? <table className={styles.table}><thead><tr><th scope="col"><WorkspaceText text="Date" /></th><th scope="col"><WorkspaceText text="Tip" /></th><th scope="col"><WorkspaceText text="Total" /></th></tr></thead><tbody>{rows.map(row => <tr key={row.id}><td><WorkspaceText text={date(row.businessDate)} /></td><td>{money(row.tipAmount)}</td><td><strong>{money(row.commissionGross + row.tipAmount)}</strong></td></tr>)}</tbody><tfoot><tr><td><strong><WorkspaceText text="Total" /></strong></td><td><strong>{money(tipTotal)}</strong></td><td><strong>{money(dailyTotal)}</strong></td></tr></tfoot></table> : <p className={styles.note}><WorkspaceText text="No daily payroll entries yet." /></p>}
       </details>
-      <details className={styles.disclosure}><summary><WorkspaceText text="Payment details" /></summary><p className={styles.note}><WorkspaceText text={paidAt ? `Marked paid ${date(paidAt)}.` : "Payment has not been marked paid."} /><WorkspaceText text={line?.check_number ? ` Check #${line.check_number}.` : ""} /><WorkspaceText text={data.paystub ? "" : " Paystub not posted for this statement."} /></p>{line?.note && <p className={styles.note}>{line.note}</p>}</details>
+      <details className={styles.disclosure}><summary><WorkspaceText text="Payment details" /></summary><p className={styles.note}><WorkspaceText text={line?.ledger ? "See actual payment records above. Income is separate from recorded payments." : paidAt ? `Marked paid ${date(paidAt)}.` : "Payment has not been marked paid."} /><WorkspaceText text={line?.check_number ? ` Check #${line.check_number}.` : ""} /><WorkspaceText text={data.paystub ? "" : " Paystub not posted for this statement."} /></p>{line?.note && <p className={styles.note}>{line.note}</p>}</details>
       {data.paystub?.view_url ? <a className={styles.action} href={data.paystub.view_url} target="_blank" rel="noreferrer"><WorkspaceText text="View / download paystub →" /></a> : data.paystub ? <p className={styles.note}><WorkspaceText text="Paystub is posted, but its download is temporarily unavailable." /></p> : null}
     </section></div>
   </section>;

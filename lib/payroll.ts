@@ -1,3 +1,10 @@
+import { slicePayrollReportLine, groupPayrollReportLines, type PayrollReportLine } from "@/lib/payroll-range";
+import { PayrollWriteError, payrollWriteFailure } from "@/lib/payroll-write-result";
+import { completePayrollDailyIncome } from "@/lib/payroll-ledger";
+import { payrollLocalDate } from "@/lib/payroll-period-boundary";
+import { projectPayrollLedger, projectPayrollShopRows, type PayrollLedger, type PayrollAdjustmentValues } from "@/lib/payroll-ledger";
+import { isOwnerMembership } from "@/lib/current-context";
+import { fixedPayrollDayAmount } from "@/lib/payroll-money";
 import { savedTaxReportSource } from "@/lib/payroll-tax-report-source";
 import { getSalonBusinessTimezone } from "@/lib/salon-business-clock";
 import "server-only";
@@ -967,7 +974,7 @@ async function requirePayrollContext(
 
   return {
     access: {
-      canManagePayroll,
+      canManagePayroll: canManagePayroll && isOwnerMembership(context.currentMembership),
       canViewAllPayroll,
       canViewTaxCompany,
       linkedStaffId,
@@ -2122,6 +2129,16 @@ function buildShopDailyRows(input: {
     } satisfies PayrollShopDailyRow;
   });
 
+  const last=rows.at(-1);
+  if(last){
+    const targetNet=input.lines.reduce((sum,l)=>sum+numberValue(l.final_staff_income),0);
+    const targetTax=input.lines.reduce((sum,l)=>sum+numberValue(l.tax_withheld),0);
+    const netDelta=roundMoney(targetNet-rows.reduce((sum,r)=>sum+r.staffNetPay+r.tipsPaid,0));
+    const taxDelta=roundMoney(targetTax-rows.reduce((sum,r)=>sum+r.taxWithheld,0));
+    last.staffNetPay=roundMoney(last.staffNetPay+netDelta);last.taxWithheld=roundMoney(last.taxWithheld+taxDelta);
+    last.staffObligation=roundMoney(last.staffObligation+netDelta+taxDelta);last.shopShare=roundMoney(last.shopShare-netDelta-taxDelta);
+    if(last.shopNetIncome!==null)last.shopNetIncome=roundMoney(last.shopNetIncome-netDelta-taxDelta);
+  }
   return rows;
 }
 
@@ -2177,6 +2194,16 @@ async function calculateLivePayrollForAuth(
       loadPayrollPeriodStaffInputs(auth, period),
       loadPayrollPeriodStaffInputHistory(auth, period),
     ]);
+  const [corrections, closingRows] = await Promise.all([loadPayrollCorrections(auth, period, new Map(staffRows.map(row=>[row.id,row]))), loadDailyClosingRows(auth, period)]);
+  return calculatePayrollFromInputs({ accountId:auth.Account.id, salonId:auth.salon.id, period, staffRows, staffSettings, earnings, correctionDeltas, periodInputs, inputHistory, corrections, closingRows, linkedStaffId:!auth.access.canViewAllPayroll && !auth.access.canViewTaxCompany ? auth.access.linkedStaffId : null });
+}
+
+export type PayrollCalculationInputs = {
+  accountId:string; salonId:string; period:PayrollPeriod; staffRows:Staff[]; staffSettings:StaffPayrollSetting[];
+  earnings:StaffEarningRow[]; correctionDeltas:Map<string,number>; periodInputs:PayrollPeriodStaffInput[];
+  inputHistory:PayrollPeriodStaffInputHistory[]; corrections:PayrollCorrectionListItem[]; closingRows:DailyClosingRow[]; linkedStaffId:string|null;
+};
+export function calculatePayrollFromInputs({accountId,salonId,period,staffRows,staffSettings,earnings,correctionDeltas,periodInputs,inputHistory,corrections,closingRows,linkedStaffId}:PayrollCalculationInputs):PayrollLiveSnapshot {
   const staffById = new Map(staffRows.map((staff) => [staff.id, staff]));
   const settingMap = settingsByStaffId(staffSettings);
   const inputByStaffId = new Map(periodInputs.map((input) => [input.staff_id, input]));
@@ -2232,9 +2259,9 @@ async function calculateLivePayrollForAuth(
 
   for (const staff of staffRows) {
     const latestSetting = latestSettingForPeriod({
-      accountId: auth.Account.id,
+      accountId: accountId,
       period,
-      salonId: auth.salon.id,
+      salonId: salonId,
       settingsByStaffId: settingMap,
       staff,
       staffId: staff.id,
@@ -2250,12 +2277,10 @@ async function calculateLivePayrollForAuth(
   }
 
   if (
-    !auth.access.canViewAllPayroll &&
-    !auth.access.canViewTaxCompany &&
-    auth.access.linkedStaffId
+    linkedStaffId
   ) {
     for (const staffId of Array.from(staffIds)) {
-      if (staffId !== auth.access.linkedStaffId) {
+      if (staffId !== linkedStaffId) {
         staffIds.delete(staffId);
       }
     }
@@ -2268,9 +2293,9 @@ async function calculateLivePayrollForAuth(
     const staff = staffById.get(staffId);
     const input = inputByStaffId.get(staffId) ?? null;
     const latestSetting = latestSettingForPeriod({
-      accountId: auth.Account.id,
+      accountId: accountId,
       period,
-      salonId: auth.salon.id,
+      salonId: salonId,
       settingsByStaffId: settingMap,
       staff,
       staffId,
@@ -2301,8 +2326,8 @@ async function calculateLivePayrollForAuth(
     for (const businessDate of periodDates) {
       const setting = pickEffectiveSetting({
         businessDate,
-        accountId: auth.Account.id,
-        salonId: auth.salon.id,
+        accountId: accountId,
+        salonId: salonId,
         settingsByStaffId: settingMap,
         staff,
         staffId,
@@ -2311,7 +2336,7 @@ async function calculateLivePayrollForAuth(
       const earning = dailyEarningsByStaffDate.get(dailyKey);
       const fixedDailyAmount =
         setting.pay_type === "fixed"
-          ? numberValue(setting.fixed_pay_amount) / periodDates.length
+          ? fixedPayrollDayAmount(numberValue(setting.fixed_pay_amount), periodDates.length, periodDates.indexOf(businessDate))
           : 0;
       const correctionDelta = correctionDeltas.get(dailyKey) ?? 0;
       const shouldIncludeDaily =
@@ -2328,9 +2353,9 @@ async function calculateLivePayrollForAuth(
         correctionDelta,
         earning,
         fixedDailyAmount,
-        accountId: auth.Account.id,
+        accountId: accountId,
         payrollRunId: "",
-        salonId: auth.salon.id,
+        salonId: salonId,
         setting,
         staffId,
       });
@@ -2492,6 +2517,17 @@ async function calculateLivePayrollForAuth(
           ? Array.from(commissionRates)[0] ?? 0
           : 0,
       created_at: new Date().toISOString(),
+      dailyIncome: dailyResults.map(r=>({businessDate:r.dailyTotal.business_date,
+        gross_sales:r.dailyTotal.gross_sales,staff_commission_gross:r.staffPay,shop_share:roundMoney(r.dailyTotal.gross_sales-r.staffPay),
+        base_check_amount:r.baseCheckAmount,base_cash_amount:r.baseCashAmount,cash_amount:roundMoney(r.baseCashAmount+r.tipCashAmount),check_gross:r.checkGross,
+        tax_withheld:r.taxWithheld,check_net:r.checkNet,tip_amount:r.dailyTotal.tip_amount,tip_check_amount:r.tipCheckAmount,tip_cash_amount:r.tipCashAmount,
+        bonus_amount:0,bonus_check_amount:0,bonus_cash_amount:0,earned_amount:roundMoney(r.staffPay+r.dailyTotal.tip_amount),
+        final_check_amount:roundMoney(r.baseCheckAmount+r.tipCheckAmount),final_cash_amount:roundMoney(r.baseCashAmount+r.tipCashAmount),
+        final_staff_income:roundMoney(r.baseCheckAmount+r.tipCheckAmount+r.baseCashAmount+r.tipCashAmount),
+        tax_company_reported_wage_gross:r.taxCompanyReportedWageGross,tax_company_taxable_gross:r.taxCompanyTaxableGross,
+        tax_company_check_amount:taxCompanyReportable?roundMoney(r.baseCheckAmount+r.tipCheckAmount):0,tax_company_cash_amount:taxCompanyReportable?r.taxCompanyCashReported:0,
+        fixed_pay_amount_used:numberValue(r.dailyTotal.fixed_pay_amount_used),
+      })),
       dailyTotals: dailyResults
         .map((result) => result.dailyTotal)
         .sort((left, right) => left.business_date.localeCompare(right.business_date)),
@@ -2510,7 +2546,7 @@ async function calculateLivePayrollForAuth(
       payroll_run_id: "",
       paystub: null,
       period_staff_input_snapshot: serializeInput(input),
-      salon_id: auth.salon.id,
+      salon_id: salonId,
       settings_used_snapshot: settingsUsedSnapshot,
       shop_share: roundMoney(grossSales - staffCommissionGross),
       staff_commission_gross: staffCommissionGross,
@@ -2538,14 +2574,12 @@ async function calculateLivePayrollForAuth(
     });
   }
 
+  for (const line of lines) completePayrollDailyIncome(line,period.endDate);
+
   lines.sort((left, right) =>
     left.staff_display_name_snapshot.localeCompare(right.staff_display_name_snapshot),
   );
 
-  const [corrections, closingRows] = await Promise.all([
-    loadPayrollCorrections(auth, period, staffById),
-    loadDailyClosingRows(auth, period),
-  ]);
   const shopDailyRows = buildShopDailyRows({
     closingRows,
     corrections,
@@ -2813,14 +2847,13 @@ async function loadPayrollSnapshot(
     paystub: paystubByStaffId.get(line.staff_id) ?? null,
   }));
 
-  return {
-    lines: linesWithDetails,
-    paystubs,
-    run,
-    shopDailyRows,
-    shopSummary,
-    summary: calculateSummary({ corrections, lines: linesWithDetails }),
-  };
+  const ledger=await loadPeriodLedger(auth,{startDate:run.period_start,endDate:run.period_end});
+  if (ledger.state==="closed" && ledger.base?.id===run.id) {
+    const projected=projectPayrollLedger(ledger).map(line=>({...line,paystub:paystubByStaffId.get(line.staff_id)??null}));
+    const adjustedRows=projectPayrollShopRows(shopDailyRows,ledger);
+    return {ledger,lines:projected,paystubs,run,shopDailyRows:adjustedRows,shopSummary:buildShopSummary(adjustedRows),summary:calculateSummary({corrections,lines:projected})};
+  }
+  return {ledger,lines:linesWithDetails,paystubs,run,shopDailyRows,shopSummary,summary:calculateSummary({corrections,lines:linesWithDetails})};
 }
 
 async function loadLatestPayrollSnapshot(
@@ -2844,6 +2877,12 @@ async function buildTaxCompanyLinesForAuth(input: {
 }) {
   const latestStatement = input.latestStatement === undefined
     ? await loadLatestPayrollSnapshot(input.auth, input.period) : input.latestStatement;
+  if (!latestStatement && input.period.cycleType === "custom") {
+    const ledger = await loadPeriodLedger(input.auth, input.period);
+    const report = await calculatePayrollReportRange(input.auth, input.period, ledger, true);
+    const lines = ledger.state === "range" ? report.lines.filter(isTaxCompanyReportableLine) : [];
+    return {latestStatement: null, lines, source: ledger.state === "range" ? "closed_range" as const : "awaiting_statement" as const, summary: calculateSummary({corrections: [], lines})};
+  }
   const selected = savedTaxReportSource(latestStatement);
   const lines = selected.lines.filter(isTaxCompanyReportableLine);
 
@@ -2874,6 +2913,7 @@ export async function buildTaxCompanyLines(input: {
     preset: input.preset,
     segment: input.segment,
     salonSetting: salonPayrollSetting,
+    referenceDate: new Date(payrollLocalDate(new Date(),await getSalonBusinessTimezone(auth.salon.id))+"T12:00:00Z"),
     startDate: input.startDate,
   });
   const taxCompany = await buildTaxCompanyLinesForAuth({
@@ -3656,185 +3696,13 @@ function statementSettingsSnapshot(live: PayrollLiveSnapshot) {
   };
 }
 
-export async function savePayrollStatementFromLivePayroll(input: {
-  cycleType: PayrollCycleType;
-  endDate: string;
-  startDate: string;
-}) {
-  const auth = await requirePayrollManageContext();
-  const period = periodFromDates(input);
-  const live = await calculateLivePayrollForAuth(auth, period);
-  const { data: latestRun, error: latestRunError } = await auth.supabase
-    .from("payroll_runs")
-    .select("version")
-    .eq("salon_id", auth.salon.id)
-    .eq("period_start", period.startDate)
-    .eq("period_end", period.endDate)
-    .order("version", { ascending: false })
-    .limit(1)
-    .maybeSingle<{ version: number }>();
-
-  if (latestRunError) {
-    throw new Error(latestRunError.message);
-  }
-
-  const now = new Date().toISOString();
-  const nextVersion = numberValue(latestRun?.version) + 1 || 1;
-  const { data: run, error: runError } = await auth.supabase
-    .from("payroll_runs")
-    .insert({
-      correction_snapshot: live.corrections,
-      cycle_type: period.cycleType,
-      generated_at: now,
-      period_end: period.endDate,
-      period_start: period.startDate,
-      printed_at: now,
-      printed_by: auth.user.id,
-      salon_id: auth.salon.id,
-      settings_snapshot: statementSettingsSnapshot(live),
-      status: "printed",
-      version: nextVersion,
-    })
-    .select(PAYROLL_RUN_SELECT)
-    .single<PayrollRun>();
-
-  if (runError) {
-    throw new Error(runError.message);
-  }
-
-  const lineRows = live.lines.map((line) => ({
-    base_cash_amount: line.base_cash_amount,
-    base_check_amount: line.base_check_amount,
-    bonus_amount: line.bonus_amount,
-    bonus_cash_amount: line.bonus_cash_amount,
-    bonus_check_amount: line.bonus_check_amount,
-    bonus_payout_method_snapshot: line.bonus_payout_method_snapshot,
-    cash_amount: line.cash_amount,
-    cash_to_tax_company_snapshot: line.cash_to_tax_company_snapshot,
-    check_gross: line.check_gross,
-    check_net: line.check_net,
-    check_number: line.check_number,
-    check_rate_used: line.check_rate_used,
-    commission_rate_used: line.commission_rate_used,
-    earned_amount: line.earned_amount,
-    final_cash_amount: line.final_cash_amount,
-    final_check_amount: line.final_check_amount,
-    final_staff_income: line.final_staff_income,
-    fixed_pay_amount_used: line.fixed_pay_amount_used,
-    gross_sales: line.gross_sales,
-    is_mixed_rate: line.is_mixed_rate,
-    note: line.note,
-    pay_type_used: line.pay_type_used,
-    payroll_run_id: run.id,
-    period_staff_input_snapshot: line.period_staff_input_snapshot,
-    salon_id: auth.salon.id,
-    settings_used_snapshot: line.settings_used_snapshot,
-    shop_share: line.shop_share,
-    staff_commission_gross: line.staff_commission_gross,
-    staff_display_name_snapshot: line.staff_display_name_snapshot,
-    staff_id: line.staff_id,
-    staff_legal_name_snapshot: line.staff_legal_name_snapshot,
-    tax_bonus_snapshot: line.tax_bonus_snapshot,
-    tax_company_cash_amount: line.tax_company_cash_amount,
-    tax_company_check_amount: line.tax_company_check_amount,
-    tax_company_enabled_snapshot: line.tax_company_enabled_snapshot,
-    tax_company_reported_wage_gross: line.tax_company_reported_wage_gross,
-    tax_company_taxable_gross: line.tax_company_taxable_gross,
-    tax_rate_used: line.tax_rate_used,
-    tax_tips_snapshot: line.tax_tips_snapshot,
-    tax_withheld: line.tax_withheld,
-    tip_allocation_method: line.tip_allocation_method,
-    tip_amount: line.tip_amount,
-    tip_cash_amount: line.tip_cash_amount,
-    tip_check_amount: line.tip_check_amount,
-    tip_payout_method_snapshot: line.tip_payout_method_snapshot,
-  }));
-  const dailyRows = live.lines.flatMap((line) =>
-    line.dailyTotals.map((dailyTotal) => ({
-      business_date: dailyTotal.business_date,
-      check_rate_used: dailyTotal.check_rate_used,
-      commission_rate_used: dailyTotal.commission_rate_used,
-      correction_delta: dailyTotal.correction_delta,
-      fixed_pay_amount_used: dailyTotal.fixed_pay_amount_used,
-      gross_sales: dailyTotal.gross_sales,
-      note: dailyTotal.note,
-      pay_type_used: dailyTotal.pay_type_used,
-      payroll_run_id: run.id,
-      salon_id: auth.salon.id,
-      settings_used_snapshot: dailyTotal.settings_used_snapshot,
-      staff_id: dailyTotal.staff_id,
-      tax_rate_used: dailyTotal.tax_rate_used,
-      tip_amount: dailyTotal.tip_amount,
-    })),
-  );
-
-  if (lineRows.length > 0) {
-    const { error } = await auth.supabase.from("payroll_staff_lines").insert(lineRows);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  if (dailyRows.length > 0) {
-    const { error } = await auth.supabase
-      .from("payroll_staff_daily_totals")
-      .insert(dailyRows);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  return loadPayrollSnapshot(auth, run);
+export async function savePayrollStatementFromLivePayroll(_input: {cycleType:PayrollCycleType;endDate:string;startDate:string}):Promise<PayrollStatementSnapshot> {
+  await requirePayrollManageContext();
+  throw new Error("Payroll closes automatically after the scheduled period ends. Use an Owner adjustment for a closed period.");
 }
-
-export async function markPayrollStatementPaid(payrollRunId: string) {
-  if (!payrollRunId) {
-    throw new Error("Payroll statement is required.");
-  }
-
-  const auth = await requirePayrollManageContext();
-  const run = await loadPayrollRunById(auth, payrollRunId);
-
-  if (run.status === "paid") {
-    return run;
-  }
-
-  const period = periodFromDates({
-    cycleType: run.cycle_type,
-    startDate: run.period_start,
-    endDate: run.period_end,
-  });
-  const latest = await loadLatestPayrollSnapshot(auth, period);
-  if (!latest || latest.run.id !== run.id) {
-    throw new Error("Only the latest saved payroll statement can be marked paid.");
-  }
-  const live = await calculateLivePayrollForAuth(auth, period);
-  if (compareLivePayrollToStatement(live, latest).changed) {
-    throw new Error("Payroll has changed. Save a new statement before marking paid.");
-  }
-
-  const now = new Date().toISOString();
-  const { data, error } = await auth.supabase
-    .from("payroll_runs")
-    .update({
-      paid_at: now,
-      paid_by: auth.user.id,
-      printed_at: run.printed_at ?? now,
-      printed_by: run.printed_by ?? auth.user.id,
-      status: "paid",
-    })
-    .eq("id", run.id)
-    .eq("salon_id", auth.salon.id)
-    .select(PAYROLL_RUN_SELECT)
-    .single<PayrollRun>();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
+export async function markPayrollStatementPaid(_payrollRunId:string):Promise<PayrollRun> {
+  await requirePayrollManageContext();
+  throw new Error("Record the actual cash/check payment for each staff member. Income adjustments do not change paid cash.");
 }
 
 function sanitizeStorageFileName(value: string) {
@@ -4366,15 +4234,13 @@ export async function getPayrollPageData(input: {
     preset: input.preset,
     segment: input.segment,
     salonSetting: salonPayrollSetting,
+    referenceDate: new Date(payrollLocalDate(new Date(),await getSalonBusinessTimezone(auth.salon.id))+"T12:00:00Z"),
     startDate: input.startDate,
   });
-  // Share these reads only within this authorized request. The calculation and
-  // settings view need the same rows; neither needs a second database round trip.
   const staffRowsRequest = loadStaffRows(auth);
   const staffSettingsRequest = loadStaffPayrollSettings(auth);
-  const [live, latestStatement, staffRows, staffSettings, serviceAnalytics] =
+  const [statementRead, staffRows, staffSettings, serviceAnalytics, ledgerRead] =
     await Promise.all([
-      calculateLivePayrollForAuth(auth, period, { staffRows: staffRowsRequest, staffSettings: staffSettingsRequest }),
       loadLatestPayrollSnapshot(auth, period),
       auth.access.canViewAllPayroll ? staffRowsRequest : Promise.resolve([]),
       auth.access.canViewAllPayroll
@@ -4383,8 +4249,24 @@ export async function getPayrollPageData(input: {
       auth.access.canViewAllPayroll && input.includeAnalytics !== false
         ? loadPayrollServiceAnalytics(auth, period)
         : Promise.resolve(emptyPayrollServiceAnalytics()),
+      loadPeriodLedger(auth,period),
     ]);
-  const difference = compareLivePayrollToStatement(live, latestStatement);
+  let latestStatement = statementRead;
+  let ledger = latestStatement?.ledger?.state === "closed" ? latestStatement.ledger : ledgerRead;
+  // Publication can commit between the parallel reads. A closed screen must
+  // resolve to the immutable base, never fall back to current mutable inputs.
+  if (ledgerRead.state === "closed" && (latestStatement?.run.id !== ledgerRead.base?.id || latestStatement?.ledger?.revision !== ledgerRead.revision)) {
+    latestStatement = await loadLatestPayrollSnapshot(auth, period);
+    if (!latestStatement || latestStatement.ledger?.state !== "closed" || latestStatement.run.id !== ledgerRead.base?.id) {
+      throw new Error("Payroll closing is completing. Reload to view the verified original.");
+    }
+    ledger = latestStatement.ledger;
+  }
+  const emptyLive: PayrollLiveSnapshot = {lines:[],corrections:[],periodInputs:[],shopDailyRows:[],shopSummary:buildShopSummary([]),summary:calculateSummary({lines:[],corrections:[]})};
+  let live:PayrollLiveSnapshot = latestStatement?.ledger?.state === "closed" ? {corrections: [],lines:latestStatement.lines,periodInputs:[],shopDailyRows:latestStatement.shopDailyRows,shopSummary:latestStatement.shopSummary??buildShopSummary(latestStatement.shopDailyRows),summary:latestStatement.summary} : ledger.state === "open" ? await calculateLivePayrollForAuth(auth, period, {staffRows:staffRowsRequest, staffSettings:staffSettingsRequest}) : emptyLive;
+  if (period.cycleType === "custom" && ledger.state !== "closed") live=await calculatePayrollReportRange(auth,period,ledger);
+  if (["processing","schedule_review","legacy_review"].includes(ledger.state)) live=latestStatement ? {corrections:[],lines:latestStatement.lines,periodInputs:[],shopDailyRows:latestStatement.shopDailyRows,shopSummary:latestStatement.shopSummary??buildShopSummary(latestStatement.shopDailyRows),summary:latestStatement.summary} : {lines:[],corrections:[],periodInputs:[],shopDailyRows:[],shopSummary:buildShopSummary([]),summary:calculateSummary({lines:[],corrections:[]})};
+  const difference = ledger.state === "closed" || ledger.state === "range" ? {changed:false,actionItems:[],staffDifferences:[],summaryDifferences:{}} : compareLivePayrollToStatement(live, latestStatement);
   const taxCompany = await buildTaxCompanyLinesForAuth({
     auth,
     latestStatement,
@@ -4400,6 +4282,7 @@ export async function getPayrollPageData(input: {
     access: auth.access,
     context: auth.context,
     difference,
+    ledger,
     latestStatement,
     live,
     period,
@@ -4453,10 +4336,11 @@ export async function getCurrentStaffPayrollPortalData(input: StaffPeriodInput):
     publishedRun ? loadPayrollSnapshot(auth, publishedRun) : Promise.resolve(null), loadStaffPayrollSettings(auth),
   ]);
   const finalized = latestStatement && ["locked", "printed", "paid", "needs_review"].includes(latestStatement.run.status);
+  const periodLedger=latestStatement?.ledger??await loadPeriodLedger(auth,period);
   // Published statements must never show live recalculations under a Paid label.
   const line = finalized
     ? latestStatement.lines.find(item => item.staff_id === staff.id) ?? null
-    : (await calculateLivePayrollForAuth(auth, period, { staffRows: [staff], staffSettings: allSettings })).lines.find(item => item.staff_id === staff.id) ?? null;
+    : periodLedger.state==='open' ? (await calculateLivePayrollForAuth(auth, period, { staffRows: [staff], staffSettings: allSettings })).lines.find(item => item.staff_id === staff.id) ?? null : null;
   const settings = allSettings.filter(setting => setting.staff_id === staff.id && setting.effective_from <= (today < period.endDate ? today : period.endDate) && (!setting.effective_to || setting.effective_to >= period.startDate));
   const dailyRows = (line?.dailyTotals ?? []).map<StaffPayrollPortalDailyRow>(day => ({
     businessDate: day.business_date, commissionGross: dailyStaffPay(day), id: day.id,
@@ -4464,9 +4348,9 @@ export async function getCurrentStaffPayrollPortalData(input: StaffPeriodInput):
   }));
   const status: PayrollStatusView = finalized ? {
     kind: latestStatement.run.status === "paid" ? "paid" : "printed",
-    label: latestStatement.run.status === "paid" ? "Paid" : latestStatement.run.status === "needs_review" ? "Under review" : "Finalized",
+    label: line?.ledger ? (line.ledger.adjusted ? "Adjusted" : "Closed") : latestStatement.run.status === "paid" ? "Paid" : latestStatement.run.status === "needs_review" ? "Under review" : "Finalized",
     statementVersion: latestStatement.run.version,
-  } : emptyStatus;
+  } : periodLedger.state==='open'?emptyStatus:{kind:"live",label:periodLedger.state==='processing'?"Closing is processing":"Historical payroll needs review",statementVersion:null};
   return { context, staff, settings, dailyRows, latestStatement: finalized ? latestStatement : null,
     line, paystub: line?.paystub ?? null, period, periodOptions, salonPayrollSetting, status };
 }
@@ -4527,6 +4411,7 @@ export async function getPayrollTaxCompanyData(input: {
     preset: input.preset,
     segment: input.segment,
     salonSetting: salonPayrollSetting,
+    referenceDate: new Date(payrollLocalDate(new Date(),await getSalonBusinessTimezone(auth.salon.id))+"T12:00:00Z"),
     startDate: input.startDate,
   });
   const taxCompany = await buildTaxCompanyLinesForAuth({
@@ -4546,4 +4431,89 @@ export async function getPayrollTaxCompanyData(input: {
     source: taxCompany.source,
     summary: taxCompany.summary,
   };
+}
+
+export type FrozenPayrollPacket = Omit<PayrollCalculationInputs, "correctionDeltas" | "corrections" | "linkedStaffId"> & {
+  version: 1; timezone: string; financialAdjustments: FinancialAdjustmentRow[];
+  financialRequests: FinancialCorrectionRequestRow[];
+  ticketAdjustments: Array<TicketAdjustmentRow & {businessDate:string;ticketNumber:string|null}>;
+};
+export function calculateFrozenPayrollPublication(packet: FrozenPayrollPacket) {
+  if (packet.version !== 1 || !packet.period || !Array.isArray(packet.staffRows)) throw new Error("Unsupported frozen payroll input.");
+  const staffById = new Map(packet.staffRows.map(row=>[row.id,row]));
+  const correctionDeltas = new Map<string,number>();
+  for (const a of packet.financialAdjustments) {
+    if (!a.staff_id) continue;
+    const key = a.staff_id + ":" + a.business_date;
+    correctionDeltas.set(key,roundMoney((correctionDeltas.get(key)??0)+numberValue(a.service_delta)+numberValue(a.tip_delta)));
+  }
+  const corrections:PayrollCorrectionListItem[] = [
+    ...packet.financialRequests.map((r):PayrollCorrectionListItem=>{
+      const staffId=extractStaffIdFromCorrectionJson(r.requested_value_json);
+      return {id:r.id,businessDate:r.business_date,changedById:r.requested_by,changedByName:r.requested_by,correctionDate:r.requested_at,correctionRequestId:r.id,delta:numberValue(r.money_delta),note:r.admin_note?.trim()||r.reason?.trim()||null,newValue:summarizeCorrectionValue(r.requested_value_json),oldValue:summarizeCorrectionValue(r.old_value_json),rawNewValue:serializeCorrectionValue(r.requested_value_json),rawOldValue:serializeCorrectionValue(r.old_value_json),source:"financial_request",staffId,staffName:staffId?getStaffName(staffById.get(staffId),staffId):null,status:r.status,ticketId:r.target_type==="pos_ticket"?r.target_id:null,ticketNumber:null,type:r.correction_type};
+    }),
+    ...packet.financialAdjustments.map((a):PayrollCorrectionListItem=>({id:a.id,businessDate:a.business_date,changedById:a.created_by,changedByName:a.created_by,correctionDate:a.created_at,correctionRequestId:a.correction_request_id,delta:roundMoney(numberValue(a.actual_total_delta)+numberValue(a.expected_total_delta)),note:a.note,newValue:null,oldValue:null,rawNewValue:null,rawOldValue:null,source:"financial_adjustment",staffId:a.staff_id,staffName:a.staff_id?getStaffName(staffById.get(a.staff_id),a.staff_id):null,status:"applied",ticketId:a.ticket_id,ticketNumber:null,type:a.target_type})),
+    ...packet.ticketAdjustments.map((a):PayrollCorrectionListItem=>({id:a.id,businessDate:a.businessDate,changedById:a.created_by,changedByName:a.created_by,correctionDate:a.created_at,correctionRequestId:null,delta:null,note:a.reason,newValue:summarizeCorrectionValue(a.after_snapshot),oldValue:summarizeCorrectionValue(a.before_snapshot),rawNewValue:serializeCorrectionValue(a.after_snapshot),rawOldValue:serializeCorrectionValue(a.before_snapshot),source:"ticket_adjustment",staffId:null,staffName:null,status:"recorded",ticketId:a.ticket_id,ticketNumber:a.ticketNumber,type:a.action})),
+  ].sort((a,b)=>a.businessDate.localeCompare(b.businessDate)||a.correctionDate.localeCompare(b.correctionDate));
+  const live=calculatePayrollFromInputs({...packet,correctionDeltas,corrections,linkedStaffId:null,inputHistory:packet.inputHistory.map(normalizeInputHistory)});
+  return {lines:live.lines,settings_snapshot:statementSettingsSnapshot(live),corrections:live.corrections};
+}
+
+async function loadPeriodLedger(auth:PayrollAuthContext,period:{startDate:string;endDate:string}):Promise<PayrollLedger> {
+  const {data,error}=await auth.supabase.rpc("read_payroll_period_ledger",{p_salon:auth.salon.id,p_start:period.startDate,p_end:period.endDate});
+  if(error)throw new Error("Payroll closing status could not be verified. Please try again.");
+  return data as PayrollLedger;
+}
+export async function createOwnerPayrollAdjustment(input:{baseId:string;staffId:string;revision:number;requestId:string;expectedScope:string;values:PayrollAdjustmentValues;reason:string}) {
+  const auth=await requirePayrollManageContext();
+  if(input.expectedScope!==`${auth.salon.id}:${auth.user.id}`)throw new Error("The salon or account changed. Reopen payroll before recording this request.");
+  try {
+    const {data,error}=await auth.supabase.rpc("create_payroll_owner_adjustment",{p_base:input.baseId,p_staff:input.staffId,p_expected_revision:input.revision,p_request:input.requestId,p_values:input.values,p_reason:input.reason}).abortSignal(AbortSignal.timeout(12000));
+    if(error)throw payrollWriteFailure(error);return data;
+  } catch(error) { if(error instanceof PayrollWriteError)throw error;throw new PayrollWriteError("The adjustment result is not confirmed. Check the saved record before retrying.",true); }
+}
+export async function recordOwnerPayrollPayment(input:{baseId:string;staffId:string;revision:number;requestId:string;expectedScope:string;cash:number;check:number;paidAt:string;note:string}) {
+  const auth=await requirePayrollManageContext();
+  if(input.expectedScope!==`${auth.salon.id}:${auth.user.id}`)throw new Error("The salon or account changed. Reopen payroll before recording this request.");
+  try {
+    const {data,error}=await auth.supabase.rpc("record_payroll_payment",{p_base:input.baseId,p_staff:input.staffId,p_expected_revision:input.revision,p_request:input.requestId,p_cash:input.cash,p_check:input.check,p_paid_at:input.paidAt,p_note:input.note}).abortSignal(AbortSignal.timeout(12000));
+    if(error)throw payrollWriteFailure(error);return data;
+  } catch(error) { if(error instanceof PayrollWriteError)throw error;throw new PayrollWriteError("The payment result is not confirmed. Check the saved record before retrying.",true); }
+}
+export async function verifyOwnerPayrollRequest(input:{baseId:string;staffId:string;requestId:string;expectedScope:string;kind:"adjust"|"payment";start:string;end:string;expected:{values:PayrollAdjustmentValues;reason:string}|{cash:number;check:number;paidAt:string;note:string}}) {
+  const auth=await requirePayrollManageContext();
+  if(input.expectedScope!==`${auth.salon.id}:${auth.user.id}`)throw new Error("The salon or account changed. Reopen payroll before checking this request.");
+  const {data,error}=await auth.supabase.rpc("read_payroll_period_ledger",{p_salon:auth.salon.id,p_start:input.start,p_end:input.end}).abortSignal(AbortSignal.timeout(8000));
+  if(error)throw new Error("Unable to check the saved payroll result.");
+  const ledger=data as PayrollLedger;
+  if(ledger.base?.id!==input.baseId)throw new Error("Select the original payroll period before checking the result.");
+  const expected=input.expected;
+  const found='values' in expected
+    ? ledger.adjustments.some(entry=>entry.request_id===input.requestId&&entry.staff_id===input.staffId&&entry.actor_id===auth.user.id&&entry.reason===expected.reason&&Object.entries(expected.values).every(([key,value])=>entry.after_values[key as keyof PayrollAdjustmentValues]===value))
+    : ledger.payments.some(entry=>entry.request_id===input.requestId&&entry.staff_id===input.staffId&&entry.actor_id===auth.user.id&&entry.cash_amount===expected.cash&&entry.check_amount===expected.check&&Date.parse(entry.paid_at)===Date.parse(expected.paidAt)&&entry.note===expected.note);
+  return {found,revision:ledger.revision};
+}
+
+async function calculatePayrollReportRange(auth:PayrollAuthContext,period:PayrollPeriod,ledger:PayrollLedger,closedOnly=false):Promise<PayrollLiveSnapshot> {
+  const {data,error}=await auth.supabase.rpc("read_payroll_range_ledgers",{p_salon:auth.salon.id,p_start:period.startDate,p_end:period.endDate});
+  if(error)throw new Error("Payroll report history could not be verified.");
+  const ranges=data as {periods:PayrollLedger[];current:{start:string;end:string;cycle:PayrollCycleType}|null;pending:boolean;};
+  const parts:Array<{start:string;end:string;lines:PayrollStaffLineWithDailyTotals[];rows:PayrollShopDailyRow[]}> = ranges.periods.map(p=>({start:p.base!.periodStart,end:p.base!.periodEnd,lines:projectPayrollLedger(p),rows:projectPayrollShopRows(p.shopDailyRows??[],p)}));
+  if(!closedOnly && ranges.current && ranges.current.start<=period.endDate && ranges.current.end>=period.startDate){
+    const current=ranges.current;
+    const open=await calculateLivePayrollForAuth(auth,{startDate:current.start,endDate:current.end,cycleType:current.cycle,preset:'custom',label:current.start+' - '+current.end});
+    parts.push({start:current.start,end:current.end,lines:open.lines,rows:open.shopDailyRows});
+  }
+  const covered=new Set(parts.flatMap(p=>getDateRange(p.start,p.end)));
+  if(getDateRange(period.startDate,period.endDate).some(d=>!covered.has(d))) {
+    // Never label a reconstruction from today's mutable data as saved history.
+    ledger.state=ranges.pending || (closedOnly && Boolean(ranges.current)) ? 'processing' : 'legacy_review';
+    ledger.configurationIssue=ledger.state==='processing' ? 'This range includes a period that is not closed yet. Tax reports require completed original records.' : 'This report includes dates without a verified original. Select an available scheduled pay period or review historical records.';
+    return {lines:[],corrections:[],periodInputs:[],shopDailyRows:[],shopSummary:buildShopSummary([]),summary:calculateSummary({lines:[],corrections:[]})};
+  }
+  const reportLines:PayrollReportLine[]=parts.flatMap(part=>part.lines.map(line=>slicePayrollReportLine(line,{start:part.start,end:part.end},{start:period.startDate,end:period.endDate})));
+  const lines=groupPayrollReportLines(reportLines);
+  const rows=parts.flatMap(p=>p.rows).filter(r=>r.businessDate>=period.startDate&&r.businessDate<=period.endDate).sort((a,b)=>a.businessDate.localeCompare(b.businessDate));
+  ledger.state='range';ledger.canAdjust=false;
+  return {reportLines,lines,corrections:[],periodInputs:[],shopDailyRows:rows,shopSummary:buildShopSummary(rows),summary:calculateSummary({lines,corrections:[]})};
 }

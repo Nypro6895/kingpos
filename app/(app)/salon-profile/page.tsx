@@ -356,7 +356,7 @@ async function SalonProfilePage({
 
   return (
     <main>
-      {isSalonManageContext(context) ? <div className="mx-auto max-w-6xl px-4 pt-4"><SalonPublicationStatus publicHref={publicData ? getSalonProfileHref(data.setting.salon_id) : null} /></div> : null}
+      {isSalonManageContext(context) && !publicData ? <div className="mx-auto max-w-6xl px-4 pt-4"><SalonPublicationStatus publicHref={null} /></div> : null}
       <SalonProfileView
         capabilities={capabilities}
         data={viewData}

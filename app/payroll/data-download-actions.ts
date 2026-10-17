@@ -1,6 +1,7 @@
 "use server";
 import { marketPluginContext, payrollDataPluginInstalled } from "@/lib/market-plugins";
 import { getPayrollPageData } from "@/lib/payroll";
+import { PAYROLL_INCOME_COLUMNS,PAYROLL_ADJUSTMENT_COLUMNS,PAYROLL_PAYMENT_COLUMNS,PAYROLL_FINANCIAL_COLUMNS,payrollIncomeExport,payrollAdjustmentExport,payrollPaymentExport,payrollFinancialExport } from "@/lib/payroll-export";
 
 export async function downloadPayrollData(input: { start: string; end: string; categories: string[] }) {
   try {
@@ -21,8 +22,14 @@ export async function downloadPayrollData(input: { start: string; end: string; c
     if (input.categories.includes("financial") || input.categories.includes("staff")) {
       const data = await getPayrollPageData({ preset: "custom", startDate: input.start, endDate: input.end });
       if (!data.access.canViewAllPayroll) throw new Error("You do not have access to salon payroll data.");
-      if (input.categories.includes("financial")) addFile("financial", ["Date", "POS income", "Actual income", "Cash", "Card", "Other", "Over / short", "Staff net pay", "Tax withheld", "Shop net income"], data.live.shopDailyRows.map(row => [row.businessDate, row.posIncome, row.actualIncome, row.cashAmount, row.creditCardAmount, row.otherAmount, row.difference, row.staffNetPay, row.taxWithheld, row.shopNetIncome]));
-      if (input.categories.includes("staff")) addFile("staff", ["Staff", "Start", "End", "Gross sales", "Earned", "Tips", "Bonus", "Tax withheld", "Cash payout", "Check payout", "Final income"], data.live.lines.map(line => [line.staff_display_name_snapshot, input.start, input.end, line.gross_sales, line.earned_amount, line.tip_amount, line.bonus_amount, line.tax_withheld, line.final_cash_amount, line.final_check_amount, line.final_staff_income]));
+      if (["legacy_review","schedule_review","processing"].includes(data.ledger.state)) throw new Error(data.ledger.configurationIssue || "This range does not have a verified closed payroll original yet. Select an available scheduled period.");
+      if (input.categories.includes("financial")) addFile("financial",PAYROLL_FINANCIAL_COLUMNS,payrollFinancialExport(data.live.shopDailyRows));
+      if (input.categories.includes("staff")) {
+        const lines=data.live.reportLines??data.live.lines,period={start:input.start,end:input.end};
+        addFile("staff",PAYROLL_INCOME_COLUMNS,payrollIncomeExport(lines,period,data.ledger.state));
+        addFile("adjustments",PAYROLL_ADJUSTMENT_COLUMNS,payrollAdjustmentExport(lines,period));
+        addFile("actual-payments-for-source-periods",PAYROLL_PAYMENT_COLUMNS,payrollPaymentExport(lines,period));
+      }
     }
     if (input.categories.includes("customers")) {
       const rows: (string | number | null)[][] = [];

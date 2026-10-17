@@ -1,7 +1,6 @@
 "use client";
-
-// The original page JSX/helpers are preserved here; only its server loader is replaced by authorized DTO props.
 import type { AppLocalOwnerPayrollData, AppLocalOwnerPayrollParams } from "./app-local-owner-page-types";
+import { PayrollLedgerPanel } from "@/app/payroll/payroll-ledger-panel";
 import { NavigationForm, NavigationSubmitButton } from "@/components/navigation-form";
 import type { taxCompanySettings } from "@/lib/tax-company";
 import { PayrollDisclosure } from "@/app/payroll/payroll-disclosure";
@@ -11,6 +10,7 @@ import styles from "@/app/payroll/payroll-mobile.module.css";
 import { WorkspaceText, WorkspaceElement, useWorkspaceTranslation } from "@/components/workspace-language";
 import { ContextualSupport } from "@/components/contextual-support";
 import { DataDownloadPanel } from "@/app/payroll/data-download-panel";
+import { PluginActivationPrompt, PluginActivationButton } from "@/app/settings/plugin-settings-row";
 import { SubmitButton } from "@/components/submit-button";
 import { PayrollFilterToolbar } from "@/app/payroll/payroll-filter-toolbar";
 import {
@@ -867,56 +867,6 @@ function PeriodSelector({
   );
 }
 
-function StatementActions({
-  canManage,
-  hasData,
-  hasLiveDifference,
-  latestStatement,
-  period,
-  returnPath,
-}: {
-  canManage: boolean;
-  hasData: boolean;
-  hasLiveDifference: boolean;
-  latestStatement: Awaited<ReturnType<typeof getPayrollPageData>>["latestStatement"];
-  period: PayrollPeriod;
-  returnPath: string;
-}) {
-  const canMarkPaid = Boolean(latestStatement && latestStatement.run.status !== "paid" && !hasLiveDifference);
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {latestStatement ? <p className="basis-full text-xs text-zinc-500"><WorkspaceText text="Statement v" />{latestStatement.run.version} · {latestStatement.run.status === "paid" ? <WorkspaceText text="Paid" /> : hasLiveDifference ? "Changes need saving" : <WorkspaceText text="Saved" />}</p> : null}
-      <form action={savePayrollStatementAction}>
-        <HiddenPeriodFields period={period} returnPath={returnPath} />
-        <SubmitButton pendingLabel="Saving statement…"
-          className="min-h-11 rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-zinc-300"
-          disabled={!canManage || !hasData || Boolean(latestStatement && !hasLiveDifference)}>
-          <WorkspaceText text="Save Statement" />
-        </SubmitButton>
-      </form>
-      <form action={markLatestPayrollStatementPaidAction}>
-        <HiddenPeriodFields period={period} returnPath={returnPath} />
-        <input
-          name="payroll_run_id"
-          type="hidden"
-          value={latestStatement?.run.id ?? ""}
-        />
-        <MarkPaidButton
-          canManage={canManage}
-          canMarkPaid={canMarkPaid}
-          hasLiveDifference={hasLiveDifference}
-        />
-      </form>
-      {latestStatement && latestStatement.run.status !== "paid" && hasLiveDifference ? (
-        <p className="basis-full text-xs font-medium text-amber-700">
-          <WorkspaceText text="Review differences and save a new statement before marking paid." />
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
 function Tabs({ activeTab, canViewAllPayroll, period }: {
   activeTab: PayrollTab; canViewAllPayroll: boolean; period: PayrollPeriod;
 }) {
@@ -963,9 +913,9 @@ function DifferenceBanner({
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <p className="font-semibold"><WorkspaceText text="Live payroll has changed since last print." /></p>
+          <p className="font-semibold"><WorkspaceText text="Current calculations differ from this historical statement." /></p>
           <p>
-            <WorkspaceText text="The printed statement is outdated because payroll was changed after it was printed." />
+            <WorkspaceText text="Review the historical statement and supporting records. No original snapshot will be reconstructed automatically." />
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -975,15 +925,6 @@ function DifferenceBanner({
           >
             <WorkspaceText text="Review Staff Income" />
           </Link>
-          <form action={savePayrollStatementAction}>
-            <HiddenPeriodFields period={period} returnPath={returnPath} />
-            <SubmitButton pendingLabel="Saving statement…"
-              className="rounded-md border border-zinc-950 bg-white px-3 py-2 font-medium text-zinc-950 disabled:cursor-not-allowed disabled:border-zinc-300 disabled:text-zinc-400"
-              disabled={!canManage}
-            >
-              <WorkspaceText text="Save New Statement" />
-            </SubmitButton>
-          </form>
           <DismissPayrollMismatchButton targetId="payroll-differences" />
         </div>
       </div>
@@ -2166,6 +2107,10 @@ function TaxTab({ period, taxCompany, plugin, hasChanges, canManageConnection }:
 }) {
   const statement = taxCompany.latestStatement;
   const paystubs = taxCompany.lines.filter(line => line.paystub).length;
+  if (canManageConnection && plugin && !plugin.active) return <section className="grid gap-3">
+    <PluginActivationPrompt pluginName="Tax Company" label="Connect your tax company" />
+    {statement && <Link className={styles.action} href={getTaxCompanyHref(period)}><WorkspaceText text="View saved report and paystubs" /></Link>}
+  </section>;
   const connections = plugin?.connections.filter(connection => connection.account_active).length ?? 0;
   const status = !canManageConnection ? "Connection managed by salon owner" : !plugin ? "Connection status unavailable" : !plugin.active ? "Plugin inactive" : !plugin.enabled || !connections ? "Ready to connect" : "Sharing enabled";
   return <section className="grid gap-4">
@@ -2178,19 +2123,17 @@ function TaxTab({ period, taxCompany, plugin, hasChanges, canManageConnection }:
     </section>
     <div className={styles.tools}>
       {canManageConnection && <Link className={styles.toolLink} href="/payroll/tax-company/settings"><span><strong><WorkspaceText text="Connection and access" /></strong><small><WorkspaceText text="Manage your tax company connection" /></small></span><span aria-hidden="true">→</span></Link>}
-      <Link className={styles.toolLink} href="/tax-company/install"><span><strong><WorkspaceText text="Download / install app" /></strong><small>Tax Company</small></span><span aria-hidden="true">↗</span></Link>
-      {plugin && !plugin.active && <Link className={styles.toolLink} href="/market"><span><strong><WorkspaceText text="Open Market" /></strong><small><WorkspaceText text="Activate Tax Company" /></small></span><span aria-hidden="true">→</span></Link>}
     </div>
   </section>;
 }
 
-function ToolsTab({ period, downloadEnabled }: { period: PayrollPeriod; downloadEnabled: boolean }) {
+function ToolsTab({ period, downloadEnabled, canActivate }: { period: PayrollPeriod; downloadEnabled: boolean | null; canActivate: boolean }) {
   const links: { tab: PayrollTab; title: string; subtitle: string }[] = [
     { tab: "settings", title: "Payroll settings", subtitle: "Schedule, compensation and withholding" },
     { tab: "tax", title: "Tax Company", subtitle: "Connection, saved reports and paystubs" },
     ...(downloadEnabled ? [{ tab: "download" as const, title: "Download", subtitle: "Payroll Data Download" }] : []),
   ];
-  return <section className={styles.tools}>{links.map(link => <Link className={styles.toolLink} key={link.tab} href={getPayrollHref({ period, tab: link.tab })}><span><strong><WorkspaceText text={link.title} /></strong><small><WorkspaceText text={link.subtitle} /></small></span><span aria-hidden="true">→</span></Link>)}</section>;
+  return <section className={styles.tools}>{links.map(link => <Link className={styles.toolLink} key={link.tab} href={getPayrollHref({ period, tab: link.tab })}><span><strong><WorkspaceText text={link.title} /></strong><small><WorkspaceText text={link.subtitle} /></small></span><span aria-hidden="true">→</span></Link>)}{canActivate && downloadEnabled === false && <PluginActivationButton pluginName="Payroll Data Download" label="Download payroll data" buttonLabel="Download" />}</section>;
 }
 
 function SettingChip({ children }: { children: ReactNode }) {
@@ -2628,7 +2571,7 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
 
   return (
     <PayrollEditBoundary><PayrollLiveRefresh salonId={salonId} /><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
-      <header className={styles.heading}><div><h1>Payroll</h1><p className={styles.context}>{salonName}</p></div><span className={styles.status}><WorkspaceText text={data.difference.changed ? "Changes need saving" : data.latestStatement?.run.status === "paid" ? "Paid" : data.latestStatement ? "Saved" : "Current calculation"} />{data.latestStatement ? ` · v${data.latestStatement.run.version}` : ""}</span></header>
+      <header className={styles.heading}><div><h1>Payroll</h1><p className={styles.context}>{salonName}</p></div><span className={styles.status}><WorkspaceText text={data.ledger.state === "closed" ? (data.ledger.adjustments.length ? "Adjusted" : "Closed") : data.ledger.state === "open" ? "Current calculation" : "Needs review"} /></span></header>
       <Tabs
         activeTab={activeTab}
         canViewAllPayroll={data.access.canViewAllPayroll}
@@ -2661,6 +2604,7 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
         /></PayrollDisclosure>
       ) : null}
 
+      {activeTab !== "settings" && activeTab !== "tools" && <PayrollLedgerPanel ledger={data.ledger} lines={data.live.lines} scope={value.payrollScope} />}
       {activeTab === "overview" ? (
         <OverviewTab
           corrections={data.live.corrections}
@@ -2690,14 +2634,7 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
       {activeTab === "staff" || (activeTab === "shop" && data.access.canViewAllPayroll) ? (
         <footer className={styles.output} aria-label={__vt("Payroll output actions")}>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm"><span><WorkspaceText text="Total staff payout" /></span><strong>{formatMoney(data.live.lines.reduce((sum, line) => sum + line.final_staff_income, 0))}</strong></div>
-          {data.access.canManagePayroll ? <PayrollOutputGuard><StatementActions
-            canManage={data.access.canManagePayroll}
-            hasData={data.live.lines.length > 0 || data.live.shopDailyRows.some(row => row.posIncome !== 0 || row.actualIncome !== null)}
-            hasLiveDifference={data.difference.changed}
-            latestStatement={data.latestStatement}
-            period={data.period}
-            returnPath={returnPath}
-          /></PayrollOutputGuard> : null}
+          
 
         </footer>
       ) : null}
@@ -2713,9 +2650,10 @@ export function AppLocalOwnerPayrollView({ value, params }: { value: AppLocalOwn
           settings={data.staffPayrollSettings}
         />
       ) : null}
-      {activeTab === "tools" && data.access.canViewAllPayroll && <ToolsTab period={data.period} downloadEnabled={downloadEnabled} />}
-      {activeTab === "download" && !downloadEnabled && <p className={styles.panel}><WorkspaceText text="Install Payroll Data Download from Market to export data." /><Link href="/market" className="underline"><WorkspaceText text="Open Market" /></Link></p>}
+      {activeTab === "tools" && data.access.canViewAllPayroll && <ToolsTab period={data.period} downloadEnabled={downloadEnabled} canActivate={canManageConnection} />}
+      {activeTab === "download" && downloadEnabled === false && canManageConnection && <PluginActivationButton pluginName="Payroll Data Download" label="Download payroll data" buttonLabel="Download" />}
       {activeTab === "download" && downloadEnabled && data.access.canViewAllPayroll ? <DataDownloadPanel key={`${salonId}-${data.period.startDate}-${data.period.endDate}`} startDate={data.period.startDate} endDate={data.period.endDate} /> : null}
+      {canManageConnection && ["tools", "download"].includes(activeTab) && downloadEnabled === null && <p role="status" className="text-sm"><WorkspaceText text="Download status unavailable. Reload payroll." /></p>}
     </main></PayrollEditBoundary>
   );
 }

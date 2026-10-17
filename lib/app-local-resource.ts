@@ -99,14 +99,17 @@ export async function refreshAppLocalResource<T>(scope: string, name: string, ar
     if (appLocalReadIsDurable(name) && !host.isNative && !snapshot.offline && isExperienceSnapshotAuthorized(scope) && getExperienceOfflineGrant(scope)) await writeExperienceSnapshot({ scope, domain: resourceDomain(name), params: args, data: snapshot.data, revision: snapshot.etag, updatedAt: snapshot.updatedAt });
   })().catch(error => {
     if (epoch !== started || cell.revision !== revision || cell.controller?.signal.aborted || cells.get(key) !== cell) return;
-    if (error?.status === 401 || error?.status === 403 || error?.status === 409) { resetAppLocalResources(); window.dispatchEvent(new CustomEvent("reylumi:app-local-access-changed", { detail: { reason: "resource", status: error.status, scope } })); return; }
-    if (error?.status === 404) {
+    if (error?.status === 401 || error?.status === 409 || error?.status === 403 && name.startsWith("staff.")) { resetAppLocalResources(); window.dispatchEvent(new CustomEvent("reylumi:app-local-access-changed", { detail: { reason: "resource", status: error.status, scope } })); return; }
+    if (error?.status === 403 || error?.status === 404) {
       cell.revision++;
       // A confirmed deletion or revoked relationship cannot keep its old DTO
       // visible. A timeout leaves the last authorized snapshot available.
       emit(cell, { data: undefined, etag: undefined, updatedAt: 0, error: "This page is no longer available.", loading: false, refreshing: false });
       if (host.isNative) void host.cache("remove", { name, args, scope }).catch(() => {});
       else void removeExperienceSnapshot({ scope, domain: resourceDomain(name), params: args });
+      // Check whether the account's permissions changed, without remounting
+      // unrelated pages merely because one feature/relationship was denied.
+      if (error.status === 403) window.dispatchEvent(new CustomEvent("reylumi:app-local-revalidate-access", { detail: { scope } }));
       return;
     }
     emit(cell, { error: error instanceof Error ? error.message : "Could not update this page", loading: false, refreshing: false });

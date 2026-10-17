@@ -1,4 +1,5 @@
 import { normalizeExploreFeedDiscoveryOptions, type ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
+import { normalizeExploreSearchFilters } from "@/lib/explore-query-intent";
 import type { ExploreSearchInput, ExploreSearchResponse } from "@/types/explore";
 
 export type ExploreSearchSort = NonNullable<ExploreSearchInput["sort"]>;
@@ -58,6 +59,7 @@ export function buildExploreCommittedSearchContext(response: ExploreSearchRespon
   const locationOrigin = response.locationOrigin ?? (locationSource === "manual" ? "manual" : location ? "context" : "none");
   const scopePolicy = response.scope?.policy ?? (locationOrigin === "manual" || locationOrigin === "query" ? "fixed" : "expandable");
   const sortState = getExploreSearchSortState(response);
+  const filters = normalizeExploreSearchFilters({ ...response.filters, ...options.filters });
   const discovery = normalizeExploreFeedDiscoveryOptions({
     query: text(response.contentQuery),
     category: text(response.category),
@@ -66,17 +68,21 @@ export function buildExploreCommittedSearchContext(response: ExploreSearchRespon
     longitude: coordinates?.longitude,
     strictLocation: scopePolicy === "fixed",
     intent: options.intent,
-    maxPrice: options.filters?.maxPrice,
-    bookableOnly: options.filters?.bookableOnly,
-    newOnly: options.filters?.newOnly,
-    trendingOnly: options.filters?.trendingOnly,
+    maxPrice: filters.maxPrice,
+    bookableOnly: filters.bookableOnly,
+    newOnly: filters.newOnly,
+    trendingOnly: filters.trendingOnly,
   })!;
   const signature = JSON.stringify({
-    version: 1,
+    version: 3,
+    searchVersion: response.searchVersion ?? null,
     target: response.target ?? "salons",
     query: text(response.query),
     displayQuery: text(response.displayQuery ?? response.query),
     contentQuery: text(response.contentQuery),
+    queryKind: response.queryKind ?? null,
+    locationPriority: response.locationPriority === true,
+    filters,
     locationSource,
     locationOrigin,
     scopePolicy,
@@ -93,6 +99,7 @@ export function buildExploreCommittedSearchContext(response: ExploreSearchRespon
     coordinates,
     scopePolicy,
     discovery,
+    filters,
     sessionKey: "committed-search:" + signature,
   };
 }

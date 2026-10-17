@@ -45,10 +45,11 @@ async function exactBuild(version, marketingVersion, appId, read) {
   if (matches.length !== 1) throw Error('Exact app/marketing version/build is not uniquely visible: ' + version);
   return matches[0];
 }
-export async function checkAvailability({ build, baselineBuild = '19.1', marketingVersion = '1.0.1', appId, groupId, read, now = Date.now() }) {
+export async function checkAvailability({ build, baselineBuild = '19.1', marketingVersion = '1.0.1', baselineMarketingVersion = marketingVersion, appId, groupId, read, now = Date.now() }) {
   if (!/^\d+\.\d+$/.test(build ?? '') || !/^\d+\.\d+$/.test(baselineBuild) || !/^\d+\.\d+\.\d+$/.test(marketingVersion) || !/^\d+$/.test(appId ?? '')) throw Error('Exact app, marketing version and build numbers are required.');
   if (groupId && !/^[A-Za-z0-9_-]{1,200}$/.test(groupId)) throw Error('Invalid existing group ID.');
-  const current = await exactBuild(build, marketingVersion, appId, read), baseline = await exactBuild(baselineBuild, marketingVersion, appId, read);
+  if (!/^\d+\.\d+\.\d+$/.test(baselineMarketingVersion)) throw Error('Exact app, marketing version and build numbers are required.');
+  const current = await exactBuild(build, marketingVersion, appId, read), baseline = await exactBuild(baselineBuild, baselineMarketingVersion, appId, read);
   const beta = await read('builds/' + encodeURIComponent(current.id) + '/buildBetaDetail');
   const query = new URLSearchParams({ 'filter[app]': appId, 'filter[isInternalGroup]': 'true', 'fields[betaGroups]': 'name,createdDate,isInternalGroup,hasAccessToAllBuilds', limit: '200' });
   const found = await list('betaGroups?' + query, read);
@@ -67,7 +68,7 @@ export async function checkAvailability({ build, baselineBuild = '19.1', marketi
   const valid = current.attributes.processingState === 'VALID' && current.attributes.expired === false && Date.parse(current.attributes.expirationDate) > now;
   const internalBuildState = beta.data?.attributes?.internalBuildState;
   const available = valid && internalBuildState === 'IN_BETA_TESTING' && results.some(x => x.associationConfirmed);
-  return { checkedAt: new Date(now).toISOString(), operation, appId, marketingVersion,
+  return { checkedAt: new Date(now).toISOString(), operation, appId, marketingVersion, baselineMarketingVersion,
     build: current.attributes.version, buildId: current.id, baselineBuild, baselineBuildId: baseline.id, processingState: current.attributes.processingState,
     expired: current.attributes.expired, expirationDate: current.attributes.expirationDate, internalBuildState,
     availableToExistingInternalGroup: available, groups: results,
@@ -79,7 +80,7 @@ export async function main(env = process.env, { read = createAppleReader(env), n
   const marketingVersion = env.EXPECTED_MARKETING_VERSION ?? '1.0.1', appId = env.APP_STORE_CONNECT_APP_ID;
   let receipt;
   try {
-    receipt = await checkAvailability({ build, baselineBuild, marketingVersion, groupId: env.EXISTING_GROUP_ID || undefined, appId, read, now });
+    receipt = await checkAvailability({ build, baselineBuild, marketingVersion, baselineMarketingVersion: env.BASELINE_MARKETING_VERSION || marketingVersion, groupId: env.EXISTING_GROUP_ID || undefined, appId, read, now });
   } catch (error) {
     // Do not persist raw provider, crypto, or credential errors in public job artifacts.
     const safeMessage = /^(?:Apple read request failed: \d{3}|Apple read credentials are not configured\.|Exact app\/marketing version\/build is not uniquely visible: \d+\.\d+|Exact app, marketing version and build numbers are required\.|Invalid existing group ID\.|Unsupported Apple read endpoint\.|Apple (?:read response exceeded the expected limit|list response was incomplete|list pagination exceeded the bounded audit)\.|Too many internal groups for a bounded status audit\.)$/.test(error?.message ?? '')

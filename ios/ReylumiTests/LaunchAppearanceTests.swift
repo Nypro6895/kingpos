@@ -50,25 +50,21 @@ final class LaunchAppearanceTests: XCTestCase {
     }
 
     @MainActor
-    func testUsefulShellAndOrbitLayoutBeforeWebKitAtPhoneAndLandscapeSizes() throws {
+    func testBrandedOrbitFitsBeforeWebKitWithoutPlaceholderControls() throws {
         let controller = ReylumiViewController()
         controller.loadViewIfNeeded()
         let launch = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? ReylumiLaunchView }.first)
         let orbit = try XCTUnwrap(descendants(of: launch).compactMap { $0 as? ReylumiOrbitView }.first)
-        let search = try XCTUnwrap(descendants(of: launch).compactMap { $0 as? UISearchTextField }.first)
-        XCTAssertTrue(search.isEnabled)
         XCTAssertTrue(orbit.isLoading)
         XCTAssertEqual(orbit.accessibilityIdentifier, "reylumi.launch.orbit")
-        XCTAssertGreaterThanOrEqual(descendants(of: launch).compactMap { $0 as? UIButton }.count, 6)
+        XCTAssertTrue(descendants(of: launch).compactMap { $0 as? UITextField }.isEmpty)
+        XCTAssertEqual(descendants(of: launch).compactMap { $0 as? UIButton }.count, 1)
         for size in [CGSize(width: 320, height: 568), CGSize(width: 390, height: 844), CGSize(width: 412, height: 915), CGSize(width: 844, height: 390)] {
             controller.view.frame = CGRect(origin: .zero, size: size)
-            controller.view.setNeedsLayout()
-            controller.view.layoutIfNeeded()
-            launch.layoutIfNeeded()
-            let scroll = try XCTUnwrap(launch.subviews.compactMap { $0 as? UIScrollView }.first)
-            XCTAssertLessThanOrEqual(scroll.contentSize.width, scroll.bounds.width + 1)
-            XCTAssertGreaterThan(orbit.bounds.width, 0)
-            XCTAssertGreaterThan(search.bounds.width, 0)
+            controller.view.setNeedsLayout(); controller.view.layoutIfNeeded(); launch.layoutIfNeeded()
+            XCTAssertEqual(orbit.bounds.width, 112, accuracy: 0.01)
+            XCTAssertGreaterThan(launch.bounds.height, 112)
+            XCTAssertTrue(launch.bounds.contains(orbit.convert(orbit.bounds, to: launch)), "Orbit \(orbit.convert(orbit.bounds, to: launch)) must fit launch \(launch.bounds) at \(size)")
             XCTAssertFalse(controller.view.subviews.contains { $0 is WKWebView })
         }
     }
@@ -91,23 +87,18 @@ final class LaunchAppearanceTests: XCTestCase {
     }
 
     @MainActor
-    func testLatestPublicIntentWinsBeforeWebKitStartsAndInitializationIsOnceOnly() throws {
-        let controller = ReylumiViewController()
+    func testExplicitStartupAndReturnIntentsSurviveBrandedLoading() throws {
+        let home = ReylumiViewController()
+        home.loadViewIfNeeded()
+        XCTAssertEqual(home.queuedStartupURL, URL(string: "https://reylumi.com"))
+        let initial = URL(string: "https://reylumi.com/book/fixture?service=one")!
+        let controller = ReylumiViewController(initialURL: initial)
         controller.loadViewIfNeeded()
-        let launch = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? ReylumiLaunchView }.first)
-        let search = try XCTUnwrap(descendants(of: launch).compactMap { $0 as? UISearchTextField }.first)
-        XCTAssertEqual(controller.queuedStartupURL, URL(string: "https://reylumi.com"), "Cold launch starts at role home before an explicit public intent")
-        search.text = "  Nails & hair  "
-        XCTAssertTrue(launch.textFieldShouldReturn(search))
-        XCTAssertEqual(URLComponents(url: try XCTUnwrap(controller.queuedStartupURL), resolvingAgainstBaseURL: false)?.queryItems, [URLQueryItem(name: "q", value: "Nails & hair")])
+        XCTAssertEqual(controller.queuedStartupURL, initial)
         controller.returnToMarket(sequence: 1)
         XCTAssertEqual(controller.queuedStartupURL?.path, "/market")
-        search.text = "Spa"
-        XCTAssertTrue(launch.textFieldShouldReturn(search))
-        XCTAssertEqual(controller.queuedStartupURL?.path, "/explore")
-        XCTAssertEqual(URLComponents(url: try XCTUnwrap(controller.queuedStartupURL), resolvingAgainstBaseURL: false)?.queryItems, [URLQueryItem(name: "q", value: "Spa")])
         controller.returnToMarket(sequence: 1)
-        XCTAssertEqual(controller.queuedStartupURL?.path, "/explore", "A duplicate Safari return cannot replace a later search")
+        XCTAssertEqual(controller.queuedStartupURL?.path, "/market")
         controller.initializeWebContentIfNeeded()
         let web = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
         web.stopLoading()
@@ -140,31 +131,21 @@ final class LaunchAppearanceTests: XCTestCase {
     }
 
     @MainActor
-    func testReadinessStopsOrbitImmediatelyAndPreservesActiveSearch() throws {
+    func testReadinessStopsOrbitWithoutMinimumDelayAndRetryRestoresIt() throws {
         let launch = ReylumiLaunchView(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
-        let host = UIViewController()
-        host.view.addSubview(launch)
-        let window = UIWindow(frame: launch.frame)
-        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
-        window.rootViewController = host
-        window.isHidden = false
-        defer { window.isHidden = true }
-        let search = try XCTUnwrap(descendants(of: launch).compactMap { $0 as? UISearchTextField }.first)
         let orbit = try XCTUnwrap(descendants(of: launch).compactMap { $0 as? ReylumiOrbitView }.first)
+        UIView.setAnimationsEnabled(false)
+        defer { UIView.setAnimationsEnabled(true) }
         launch.showLoading()
-        search.text = "Unsent search"
-        XCTAssertTrue(search.becomeFirstResponder())
         launch.finishLoading()
         XCTAssertFalse(launch.isLoading)
         XCTAssertFalse(orbit.isLoading)
-        XCTAssertEqual(search.text, "Unsent search")
+        XCTAssertEqual(launch.alpha, 0, "Readiness has no minimum branding delay")
+        launch.showLoading()
+        XCTAssertTrue(launch.isLoading)
+        XCTAssertTrue(orbit.isLoading)
         XCTAssertEqual(launch.alpha, 1)
         XCTAssertFalse(launch.isHidden)
-        search.resignFirstResponder()
-        UIView.setAnimationsEnabled(false)
-        defer { UIView.setAnimationsEnabled(true) }
-        launch.finishLoading()
-        XCTAssertEqual(launch.alpha, 0, "Readiness has no minimum branding delay")
     }
 
     @MainActor

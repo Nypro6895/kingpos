@@ -1,5 +1,6 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
+import { PluginMarketSettings } from "./plugin-market-settings";
 import { WindowsPosDownloadLinks } from "@/components/windows-pos-download";
 import { parseLoginUserAgent } from "@/lib/account-security-shared";
 import { SettingsGroupForm } from "@/app/pos/settings/settings-group-form";
@@ -37,6 +38,7 @@ export function PosSettingsPanel({
   const save = (form: FormData) => saveDirectPosGroup(data.salonId, form);
   return (
     <div className="grid gap-4">
+      {data.canManagePlugins && <PluginMarketSettings key={data.salonId} salonId={data.salonId} group="pos" />}
       <details open>
         <summary className="cursor-pointer font-semibold">
           <WorkspaceText text="Staff check-in & turns" />

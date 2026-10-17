@@ -1,6 +1,7 @@
 import "server-only";
-import { cleanExploreQueryText, exploreQueryAreaLabel, exploreQueryStateCode, parseExploreQueryArea, parseExploreQueryIntent, type ExploreQueryTarget } from "@/lib/explore-query-intent";
+import { cleanExploreQueryText, exploreQueryAreaLabel, exploreQueryStateCode, exploreQueryStreetAddress, parseExploreQueryArea, parseExploreQueryIntent, type ExploreQueryTarget } from "@/lib/explore-query-intent";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { ExploreSearchQueryKind } from "@/types/explore";
 
 type LocationSource = "manual" | "gps" | "activity" | "saved" | "workspace" | "none";
 type RpcResult = { data: unknown; error: { code?: string | null } | null };
@@ -12,13 +13,16 @@ export type ExploreQueryRoutingInput = {
   scopePolicy?: "fixed" | "expandable"; target?: ExploreQueryTarget;
 };
 export type ExploreQueryRouting = {
-  target: "salons" | "posts"; query: string; contentQuery: string; displayQuery: string;
+  target: "salons"; queryKind: ExploreSearchQueryKind; query: string; contentQuery: string; displayQuery: string;
+  locationPriority: boolean;
   category: string; location: string; locationSource: LocationSource;
   locationOrigin: "manual" | "query" | "context" | "none";
   latitude: number | null; longitude: number | null; scopePolicy: "fixed" | "expandable";
   nearMe: boolean; requiresGps: boolean; areaAmbiguous: boolean;
   areaCandidates: ExploreQueryAreaCandidate[]; locationConflict: boolean; lookupFailed: boolean;
   queryLocationHint?: string;
+  addressStatus?: "resolved" | "ambiguous" | "unmatched";
+  addressQuery?: string;
 };
 function coordinate(value: unknown, max: number) { return typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= max ? value : null; }
 function record(value: unknown): Record<string, unknown> { return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {}; }
@@ -42,29 +46,31 @@ export async function resolveExploreQueryRouting(input: ExploreQueryRoutingInput
   const contextArea = parseExploreQueryArea(manual || contextLocation);
   const preferredState = contextArea?.stateCode || exploreQueryStateCode(input.contextState);
   let parsed = parseExploreQueryIntent(input.query ?? "", { target: input.target });
-  let lookup: Record<string, unknown> = {}, lookupFailed = false;
-  if (parsed.displayQuery && (parsed.query || parsed.cityQuery)) {
+  async function publicLookup(name: string, args: Record<string, unknown>): Promise<{ data: Record<string, unknown>; failed: boolean }> {
     try {
       const client = options.rpc ? null : createSupabaseServerClient();
       const runner = options.rpc ?? (client ? async (name: string, args: Record<string, unknown>) => {
         const request = client.rpc(name, args);
         return await (options.signal ? request.abortSignal(options.signal) : request) as RpcResult;
       } : null);
-      if (!runner) lookupFailed = true;
-      else {
-        const result = await runner("get_public_explore_query_entities", {
-          p_query: parsed.query || null, p_original_query: parsed.displayQuery || null,
-          p_city_query: parsed.cityQuery || null, p_preferred_state: preferredState || null,
-          p_state_constraint: parsed.locationArea?.kind === "city" ? parsed.locationArea.stateCode : null, p_limit: 8,
-        });
-        if (options.signal?.aborted) throw new DOMException("Request aborted", "AbortError");
-        lookup = result.error ? {} : record(result.data);
-        lookupFailed = Boolean(result.error) || lookup.version !== 1 || !Array.isArray(lookup.areaCandidates);
-      }
+      if (!runner) return { data: {}, failed: true };
+      const result = await runner(name, args);
+      if (options.signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+      const data = result.error ? {} : record(result.data);
+      return { data, failed: Boolean(result.error) || data.version !== 1 || !Array.isArray(data.areaCandidates) };
     } catch (error) {
       if (options.signal?.aborted || (error instanceof DOMException && error.name === "AbortError")) throw error;
-      lookupFailed = true;
+      return { data: {}, failed: true };
     }
+  }
+  let lookup: Record<string, unknown> = {}, lookupFailed = false;
+  if (parsed.displayQuery && (parsed.query || parsed.cityQuery)) {
+    const result = await publicLookup("get_public_explore_query_entities", {
+      p_query: parsed.query || null, p_original_query: parsed.displayQuery || null,
+      p_city_query: parsed.cityQuery || null, p_preferred_state: preferredState || null,
+      p_state_constraint: parsed.locationArea?.kind === "city" ? parsed.locationArea.stateCode : null, p_limit: 8,
+    });
+    lookup = result.data; lookupFailed = result.failed;
   }
   let candidates = areaCandidates(lookup.areaCandidates);
   let areaAmbiguous = candidates.length > 1 || lookup.moreAreaCandidates === true;
@@ -73,49 +79,63 @@ export async function resolveExploreQueryRouting(input: ExploreQueryRoutingInput
   const confirmedCity = candidates.length > 0;
   const clearCityLiteral = confirmedCity && !parsed.locationHint && !parsed.salonCue && !parsed.explicitName;
   // A verified complete brand takes priority over a tentative service/area split.
-  // Both checks share the same bounded metadata call; unknown cities keep the full text.
+  // A verified explicit area, or a generic service followed by a verified city,
+  // keeps its geographic meaning even when the whole phrase is a salon name.
   const possibleNameArea = !parsed.directArea || parsed.locationArea?.kind === "city" && !confirmedCity;
-  if (input.target !== "posts" && lookup.exactOriginalSalonName === true && !clearCityLiteral && possibleNameArea && (parsed.locationHint || parsed.nearMe)) {
+  const preserveArea = parsed.explicitLocation && Boolean(parsed.locationArea || confirmedCity) || parsed.categoryOnly && confirmedCity;
+  if (lookup.exactOriginalSalonName === true && !clearCityLiteral && !preserveArea && possibleNameArea && parsed.locationHint) {
     parsed = parseExploreQueryIntent(parsed.displayQuery, { target: "salons", ignoreArea: true });
     candidates = []; areaAmbiguous = false;
   } else if (parsed.tentativeArea && !confirmedCity && !lookupFailed) parsed = parseExploreQueryIntent(parsed.displayQuery, { target: input.target, ignoreArea: true });
   const exactBrand = lookup.exactOriginalSalonName === true && (!parsed.locationHint || parsed.tentativeArea && !confirmedCity) || lookup.exactSalonName === true;
-  const brand = input.target !== "posts" && exactBrand && (!parsed.categoryOnly || parsed.explicitName || input.target === "salons") && (parsed.salonCue || parsed.explicitName || !confirmedCity && !parsed.directArea);
-  if (brand) parsed = { ...parsed, target: "salons", contentQuery: "", categoryHint: "", cityQuery: "" };
-  const directoryRequest = /\b(?:salons?|shops?|studios?|places?|book|booking|appointments?)\b/i.test(parsed.query);
+  // A generic service plus location stays a category request even when a public
+  // salon has that generic name. Complete and quoted brands were kept above.
+  const broadLocatedService = parsed.categoryOnly && (parsed.nearMe || Boolean(parsed.locationHint || parsed.addressHint));
+  const brand = !broadLocatedService && exactBrand && (parsed.salonCue || parsed.explicitName || !confirmedCity && !parsed.directArea);
+  if (brand) parsed = { ...parsed, queryKind: "name", contentQuery: parsed.query, categoryHint: "", cityQuery: "" };
   // Confirm exact business names before reducing broad service words to a category.
   // Specific styles and services must retain their keyword constraints.
-  if (!brand && !lookupFailed && parsed.target === "salons" && parsed.categoryOnly) parsed = { ...parsed, query: "" };
-  let queryLocation = parsed.locationHint;
+  else if (!lookupFailed && parsed.categoryOnly) parsed = { ...parsed, query: "", contentQuery: "" };
+  let queryLocation = parsed.addressHint || parsed.locationHint;
   if (parsed.locationArea) queryLocation = exploreQueryAreaLabel(parsed.locationArea);
-  else if (queryLocation && confirmedCity) queryLocation = verifiedArea?.label ?? parsed.locationHint;
-  else if (!queryLocation && parsed.cityQuery && confirmedCity && !brand && input.target !== "posts") {
+  else if (!parsed.addressHint && queryLocation && confirmedCity) queryLocation = verifiedArea?.label ?? parsed.locationHint;
+  else if (!queryLocation && parsed.cityQuery && confirmedCity && !brand) {
     queryLocation = verifiedArea?.label ?? parsed.query;
-    parsed = { ...parsed, query: "", contentQuery: "" };
+    parsed = { ...parsed, query: "", contentQuery: "", queryKind: "service" };
   }
-  // Auto discovery is content-led after exact business names and areas are verified.
-  // An explicit Salons tab or directory request retains the indexed salon search.
-  if (input.target !== "salons" && input.target !== "posts" && !brand && !parsed.explicitName
-    && !directoryRequest && !lookupFailed && (parsed.categoryHint || !parsed.query)) {
-    const contentIntent = parseExploreQueryIntent(parsed.query, { target: "posts", ignoreArea: true });
-    parsed = { ...parsed, target: "posts", contentQuery: parsed.categoryOnly || !parsed.query ? "" : contentIntent.contentQuery };
+  // Resolve street inputs only from stored public salon addresses. A manual
+  // city still wins a conflicting query address, as it does a query city.
+  const manualAddress = exploreQueryStreetAddress(manual);
+  const contextAddress = exploreQueryStreetAddress(contextLocation);
+  const addressQuery = manual ? manualAddress : parsed.addressHint || (!queryLocation ? contextAddress : "");
+  let addressStatus: ExploreQueryRouting["addressStatus"];
+  if (addressQuery) {
+    const result = await publicLookup("get_public_explore_address_area", {
+      p_address: addressQuery, p_preferred_state: preferredState || null, p_limit: 8,
+    });
+    lookupFailed ||= result.failed;
+    candidates = areaCandidates(result.data.areaCandidates);
+    areaAmbiguous = candidates.length > 1 || result.data.moreAreaCandidates === true;
+    addressStatus = areaAmbiguous ? "ambiguous" : candidates.length === 1 ? "resolved" : "unmatched";
   }
   const rawLatitude = coordinate(input.latitude, 90), rawLongitude = coordinate(input.longitude, 180);
   const rawGps = rawLatitude !== null && rawLongitude !== null;
   const locationOrigin = manual ? "manual" : queryLocation ? "query" : contextLocation || rawGps ? "context" : "none";
-  const location = manual || queryLocation || contextLocation;
-  const latitude = locationOrigin === "manual" || locationOrigin === "query" ? null : rawLatitude;
-  const longitude = locationOrigin === "manual" || locationOrigin === "query" ? null : rawLongitude;
+  const location = manualAddress || manual || queryLocation || contextAddress || contextLocation;
+  const latitude = locationOrigin === "manual" || locationOrigin === "query" || addressQuery ? null : rawLatitude;
+  const longitude = locationOrigin === "manual" || locationOrigin === "query" || addressQuery ? null : rawLongitude;
   const hasGps = latitude !== null && longitude !== null;
   const selectedCategory = cleanExploreQueryText(input.category);
   return {
-    target: parsed.target, query: parsed.query, contentQuery: parsed.contentQuery, displayQuery: parsed.displayQuery,
+    target: "salons", queryKind: parsed.queryKind, query: parsed.query, contentQuery: parsed.contentQuery, displayQuery: parsed.displayQuery,
+    locationPriority: Boolean(location || hasGps || parsed.nearMe),
     category: selectedCategory && selectedCategory.toLowerCase() !== "all" ? selectedCategory : parsed.categoryHint,
     location, locationOrigin, locationSource: locationOrigin === "manual" || locationOrigin === "query" ? "manual" : contextLocation ? contextSource : hasGps ? "gps" : "none",
     latitude: hasGps ? latitude : null, longitude: hasGps ? longitude : null,
-    scopePolicy: input.scopePolicy ?? (locationOrigin === "manual" || locationOrigin === "query" ? "fixed" : "expandable"),
-    nearMe: parsed.nearMe, requiresGps: parsed.nearMe && !manual && !hasGps,
+    scopePolicy: input.scopePolicy ?? (locationOrigin === "manual" || locationOrigin === "query" || addressQuery ? "fixed" : "expandable"),
+    nearMe: parsed.nearMe, requiresGps: parsed.nearMe && !location && !hasGps,
     areaAmbiguous, areaCandidates: candidates, queryLocationHint: queryLocation,
     locationConflict: Boolean(manual && queryLocation && manual.toLowerCase() !== queryLocation.toLowerCase()), lookupFailed,
+    ...(addressQuery ? { addressQuery, addressStatus } : {}),
   };
 }

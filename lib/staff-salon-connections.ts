@@ -859,6 +859,11 @@ async function createExistingAccountInvite(
 
   const targetEmail = account.email;
   const targetPhone = account.phone;
+  await assertNoPendingInviteForAccount(auth, account.id);
+  await assertNoPendingInviteForContact(auth, {
+    email: targetEmail,
+    phone: targetPhone,
+  });
   const staff = input.staff_id
     ? await loadStaffForInvite(auth, input.staff_id)
     : await createUnconnectedStaffForInvite(auth, {
@@ -876,11 +881,6 @@ async function createExistingAccountInvite(
       });
 
   await assertNoPendingInviteForStaff(auth, staff.id);
-  await assertNoPendingInviteForAccount(auth, account.id);
-  await assertNoPendingInviteForContact(auth, {
-    email: targetEmail,
-    phone: targetPhone,
-  });
 
   const invite = await insertSalonInviteRequest({
     accountUserId: account.id,

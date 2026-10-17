@@ -1,3 +1,6 @@
+import type { ExploreSearchFilters, ExploreSearchQueryKind } from "@/types/explore";
+
+/** Legacy target values remain accepted; all queries return salon results. */
 export type ExploreQueryTarget = "auto" | "salons" | "posts";
 export type ExploreQueryArea = { city: string; stateCode: string; kind: "city" | "state" | "postal" };
 
@@ -25,13 +28,43 @@ function nailStylePhrase(value: string) {
 export function cleanExploreQueryText(value: unknown) {
   return typeof value === "string" ? value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 160) : "";
 }
+export function normalizeExploreSearchFilters(value: unknown): ExploreSearchFilters {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const input = value as Record<string, unknown>, filters: ExploreSearchFilters = {};
+  for (const key of ["shape", "length", "color", "finish", "tone", "season"] as const) {
+    const text = cleanExploreQueryText(input[key]).toLowerCase().slice(0, 40);
+    if (text) filters[key] = text;
+  }
+  if (typeof input.maxPrice === "number" && Number.isFinite(input.maxPrice) && input.maxPrice >= 0 && input.maxPrice <= 100000) filters.maxPrice = input.maxPrice;
+  for (const key of ["bookableOnly", "newOnly", "trendingOnly"] as const) if (input[key] === true) filters[key] = true;
+  return filters;
+}
+
+/** Facets constrain real searchable content; suggested images never establish a match. */
+export function exploreSearchContentTerms(contentQuery: string, filters: ExploreSearchFilters) {
+  const terms = [contentQuery, ...["shape", "length", "color", "finish", "tone", "season"].map(key => filters[key as keyof ExploreSearchFilters])]
+    .filter((value): value is string => typeof value === "string");
+  return [...new Set(terms.flatMap(words))].join(" ").slice(0, 160);
+}
 function words(value: string) { return value.toLowerCase().match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu) ?? []; }
 export function exploreQueryStateCode(value: unknown) {
   const text = cleanExploreQueryText(value);
   return STATES.has(text.toUpperCase()) ? text.toUpperCase() : STATE_CODES[text.toLowerCase()] ?? "";
 }
+/** Street syntax is only a hint; the server must verify it against public salon addresses. */
+export function exploreQueryStreetAddress(value: string, explicitAddress = false) {
+  const label = cleanExploreQueryText(value).replace(/[.!?]+$/, "");
+  explicitAddress ||= /^(?:at\s+address|address)\s+/i.test(label);
+  const address = label.replace(/^(?:at\s+(?:address\s+)?|address\s+)/i, "").trim();
+  if (!/^(?:\d+[a-z]?(?:[-/]\d+[a-z]?)?|[nsew]\d+(?:[nsew]\d+)?)\s+[\p{L}\p{N}]/iu.test(address)) return "";
+  const street = /\b(?:st|street|ave|avenue|rd|road|blvd|boulevard|dr|drive|ln|lane|way|ct|court|cir|circle|pkwy|parkway|hwy|highway|rte|route|pl|place|ter|terrace|sq|square|trl|trail|loop|pike)\b/i;
+  if (!street.test(address) && !(explicitAddress && /\s+\p{L}/u.test(address))) return "";
+  return address;
+}
 export function parseExploreQueryArea(value: string): ExploreQueryArea | null {
   const label = cleanExploreQueryText(value).replace(/[.!?]+$/, "");
+  // A street followed by WI is not a city named "8333 W Appleton Ave Milwaukee".
+  if (exploreQueryStreetAddress(label)) return null;
   if (/^\d{5}(?:-\d{4})?$/.test(label)) return { kind: "postal", city: label, stateCode: "" };
   const stateCode = exploreQueryStateCode(label);
   if (stateCode) return { kind: "state", city: "", stateCode };
@@ -64,12 +97,15 @@ function combinedServiceArea(value: string) {
 }
 
 export type ParsedExploreQueryIntent = {
-  target: "salons" | "posts";
+  target: "salons";
+  queryKind: ExploreSearchQueryKind;
   query: string;
   contentQuery: string;
   displayQuery: string;
   categoryHint: string;
   locationHint: string;
+  addressHint: string;
+  explicitLocation: boolean;
   locationArea: ExploreQueryArea | null;
   cityQuery: string;
   nearMe: boolean;
@@ -89,26 +125,44 @@ export function parseExploreQueryIntent(value: string, options: { target?: Explo
   const explicitName = Boolean(quoted || named);
   if (quoted) body = quoted[1].trim();
   else if (named) body = named[1].trim();
-  let locationHint = "", nearMe = false, tentativeArea = false, directArea = false;
+  let locationHint = "", addressHint = "", nearMe = false, tentativeArea = false, directArea = false, explicitLocation = false;
   if (!options.ignoreArea && !explicitName) {
+    // Correct the nearby typo only in a position that expresses proximity. A
+    // standalone brand such as "Nearly Perfect Nails" keeps its original text.
+    if (/(?:^|\s+)nearly\s+me$/i.test(body)) body = body.replace(/\bnearly\s+me$/i, "near me");
+    else {
+      const nearly = body.match(/^(.*?)\s+nearly$/i);
+      const terms = nearly ? words(nearly[1]) : [];
+      if (terms.some(term => CATEGORY_WORDS[term]) && terms.every(term => CATEGORY_WORDS[term] || GENERIC_SERVICE_WORDS.has(term))) body = `${nearly![1]} near me`;
+    }
     const nearby = body.match(/^(.*?)\s*(?:\bnear(?:\s+by)?\s+(?:me|here|my location|current location)|\bnear by|\baround me|\bclose to me|\bnearby)$/i);
     if (nearby) { body = nearby[1].trim(); nearMe = true; }
     else {
-      const place = body.match(/^(.*?)\s+\b(near(?:\s+by)?|around|nearby|in)\s+(.+)$/i);
-      const prefix = place ? null : body.match(/^(near(?:\s+by)?|around|in)\s+(.+)$/i);
+      const standaloneAddress = exploreQueryStreetAddress(body);
+      const place = standaloneAddress ? null : body.match(/^(.*?)\s+\b(near(?:\s+by)?|around|nearby|in|at(?:\s+address)?)\s+(.+)$/i);
+      const prefix = place || standaloneAddress ? null : body.match(/^(near(?:\s+by)?|around|in|at(?:\s+address)?|address)\s+(.+)$/i);
       const placeName = place?.[3] ?? prefix?.[2];
       if (placeName) {
         const candidate = placeName.replace(/[,.!?]+$/, "").trim();
+        const cue = (place?.[2] ?? prefix?.[1] ?? "").toLowerCase();
+        addressHint = exploreQueryStreetAddress(candidate, cue === "at" || cue.includes("address"));
         if (!CATEGORY_WORDS[candidate.toLowerCase()] && !["style", "fashion", "person"].includes(candidate.toLowerCase())) {
-          locationHint = candidate; body = place?.[1]?.trim() ?? ""; tentativeArea = (place?.[2] ?? prefix?.[1])?.toLowerCase() === "in" && !parseExploreQueryArea(candidate);
+          locationHint = addressHint ? "" : candidate; body = place?.[1]?.trim() ?? "";
+          explicitLocation = true;
+          tentativeArea = !addressHint && ["in", "at"].includes(cue) && !parseExploreQueryArea(candidate);
         }
       }
-      const combined = !locationHint ? combinedServiceArea(body) : null;
+      if (!locationHint && !addressHint) {
+        addressHint = exploreQueryStreetAddress(body);
+        if (addressHint) { body = ""; directArea = true; }
+      }
+      const combined = !locationHint && !addressHint ? combinedServiceArea(body) : null;
       if (combined) {
-        locationHint = combined.locationHint; body = combined.query;
-        tentativeArea = !parseExploreQueryArea(locationHint);
+        addressHint = exploreQueryStreetAddress(combined.locationHint);
+        locationHint = addressHint ? "" : combined.locationHint; body = combined.query;
+        tentativeArea = !addressHint && !parseExploreQueryArea(locationHint);
       } else {
-        const area = !locationHint && options.target !== "posts" ? parseExploreQueryArea(body) : null;
+        const area = !locationHint && !addressHint ? parseExploreQueryArea(body) : null;
         if (area) { locationHint = exploreQueryAreaLabel(area); body = ""; directArea = true; }
       }
     }
@@ -117,16 +171,17 @@ export function parseExploreQueryIntent(value: string, options: { target?: Explo
   const serviceWords = tokens.filter(token => CATEGORY_WORDS[token]);
   const category = serviceWords.length ? CATEGORY_WORDS[serviceWords[0]] : "";
   const hasContentCue = tokens.some(token => CONTENT_CUES.has(token)) || nailStylePhrase(body);
-  const target = options.target === "posts" ? "posts" : options.target === "salons" || explicitName ? "salons" : hasContentCue ? "posts" : "salons";
+  const target = "salons" as const;
   const genericService = serviceWords.length > 0 && tokens.every(token => CATEGORY_WORDS[token] || GENERIC_SERVICE_WORDS.has(token));
   const categoryOnly = !explicitName && serviceWords.length > 0 && tokens.every(token => CONTENT_CATEGORY_WORDS.has(token) || CONTENT_ROUTING_WORDS.has(token));
-  const categoryHint = target === "posts" || genericService ? category || (nailStylePhrase(body) ? "Nails" : "") : "";
+  const queryKind: ExploreSearchQueryKind = explicitName ? "name" : hasContentCue ? "style" : genericService || !tokens.length ? "service" : "name";
+  const categoryHint = !explicitName && (hasContentCue || genericService) ? category || (nailStylePhrase(body) ? "Nails" : "") : "";
   const theme = explicitName ? tokens : tokens.filter(token => !CONTENT_CATEGORY_WORDS.has(token) && !CONTENT_CUES.has(token) && !CONTENT_ROUTING_WORDS.has(token));
-  const contentQuery = target === "posts" ? (theme.join(" ") || tokens.find(token => CONTENT_CUES.has(token)) || tokens[0] || "") : "";
+  const contentQuery = queryKind === "name" ? body : categoryOnly ? "" : (theme.join(" ") || tokens.find(token => CONTENT_CUES.has(token)) || tokens[0] || "");
   const locationArea = parseExploreQueryArea(locationHint);
   return {
-    target, query: body, contentQuery, displayQuery, categoryHint, locationHint, locationArea,
-    cityQuery: locationHint ? locationArea?.kind === "city" ? locationArea.city : locationArea ? "" : locationHint : target === "salons" && !explicitName && !genericService ? body : "",
+    target, queryKind, query: body, contentQuery, displayQuery, categoryHint, locationHint, addressHint, explicitLocation, locationArea,
+    cityQuery: addressHint ? "" : locationHint ? locationArea?.kind === "city" ? locationArea.city : locationArea ? "" : locationHint : !explicitName && !genericService && !hasContentCue ? body : "",
     nearMe, tentativeArea, directArea, explicitName, categoryOnly, salonCue: serviceWords.length > 0 || tokens.some(token => GENERIC_SERVICE_WORDS.has(token)),
   };
 }

@@ -24,15 +24,16 @@ import { ExploreAutoLoad } from "@/app/explore/explore-auto-load";
 import { ExploreEditorialHeading } from "./explore-editorial";
 import { ExploreLookEditorial, ExploreSalonDirectory, ExploreBookingEditorial } from "./explore-editorial-sections";
 import { exploreEditorialHref } from "@/lib/explore-editorial";
-import { ExploreReferenceFeed } from "@/app/explore/explore-reference-feed";
-import { ExploreFeedSkeleton } from "@/app/explore/explore-feed";
-import { ExploreSearchRecommendations } from "@/app/explore/explore-search-recommendations";
+import { NailInspirationFilters } from "@/app/explore/nail-inspiration";
+import { useExploreSearchMedia } from "@/lib/use-explore-search-media";
+import type { NailFilters } from "@/lib/nail-inspiration-catalog";
+import { ExploreSearchOnwardActions, ExploreSearchRecommendations } from "@/app/explore/explore-search-recommendations";
 import { ExploreSearchContext } from "@/app/explore/explore-search-context";
 import { ExploreIntroHeadline, ExploreSalonPreview } from "@/app/explore/explore-intro";
 import { exploreAlternatingShortcuts, exploreShortcutDiscovery } from "@/lib/explore-entry-presentation";
 import { consumeExploreDocumentReload, EXPLORE_HOME_RESET_EVENT, exploreHomeUrl } from "@/lib/explore-entry-navigation";
 import { ExploreSearchToolbar } from "@/app/explore/explore-search-toolbar";
-import { buildExploreSearchRecommendations } from "@/lib/explore-search-recommendations";
+import { exploreSearchOnwardLink, groupExploreSearchRecommendations, isExplorePrimarySearchResult } from "@/lib/explore-search-recommendations";
 import { buildExploreCommittedSearchContext, type ExploreCommittedGpsContext } from "@/lib/explore-search-context";
 import type { ExploreSearchSuggestion } from "@/lib/explore-search-suggestions";
 import { fetchExploreSearchPage } from "@/lib/explore-search-client";
@@ -320,6 +321,7 @@ function buildUrl(input: {
   searchParams: URLSearchParams;
 }) {
   const params = new URLSearchParams(input.searchParams.toString());
+  if (params.has("type")) params.set("type", "salons");
   const category = cleanCategory(input.category);
 
   if (input.query.trim()) {
@@ -1406,13 +1408,14 @@ function resultSummary(input: {
   bestCount: number;
   category: string;
   hasAnyResults: boolean;
+  hasPrimaryResults: boolean;
   location: string;
   nearbyCount: number;
   query: string;
   recommendedCount: number;
 }) {
-  if (!input.hasAnyResults) return "No salons found";
   const location = input.location.trim();
+  if (!input.hasPrimaryResults) return "No results found";
   return input.query.trim() ? "Results for " + quotedQuery(input.query) + (location ? " in " + location : "") : location ? "Salons in " + location : "Recommended salons on Reylumi";
 }
 
@@ -1521,7 +1524,20 @@ function ResultSection({
   );
 }
 
+function SearchRecommendationSections({ results, location, renderCards }: {
+  results: ExploreSearchResult[];
+  location: string;
+  renderCards?: (results: ExploreSearchResult[]) => ReactNode;
+}) {
+  return groupExploreSearchRecommendations(results, location).map((group, index) => (
+    <ExploreSearchRecommendations key={`${group.key}:${index}`} title={group.title}>
+      {renderCards ? renderCards(group.results) : <ResultSection hideHeading rankKind="recommended" results={group.results} title={group.title} />}
+    </ExploreSearchRecommendations>
+  ));
+}
+
 function SearchRefinementBar({
+  children,
   category,
   location,
   mode,
@@ -1531,6 +1547,7 @@ function SearchRefinementBar({
   query,
   workspaceLocation,
 }: {
+  children?: ReactNode;
   category: string;
   location: string;
   mode: SearchOrderMode;
@@ -1584,6 +1601,7 @@ function SearchRefinementBar({
       className="flex flex-wrap items-start gap-2"
       data-testid="explore-search-refinement"
     >
+      {children}
       <select aria-label="Sort results" value={mode} onChange={event => onModeChange(event.target.value as SearchOrderMode)}
         className="min-h-11 rounded-full bg-surface-elevated px-3 text-sm font-medium text-text-primary outline-none ring-1 ring-divider-subtle focus:ring-brand-orange">
         {ordering.map(item => <option key={item.mode} value={item.mode}>{item.label}</option>)}
@@ -2172,7 +2190,7 @@ function ExploreDiscoveryResults({
           </div>
         )
       ) : null}
-      {!discovery ? <ExploreSearchRecommendations
+      {!discovery ? <ExploreDiscoveryFeed
         discovery={{ intent: "discover", category: selectedCategory, location, strictLocation, latitude: gpsCoordinates?.latitude, longitude: gpsCoordinates?.longitude }}
         sessionKey={`shortcut-continuation:${kind}:${selectedCategory}:${location}:${commentViewer.userId}`}
         viewer={commentViewer}
@@ -2895,11 +2913,11 @@ function ExploreNotice({
   );
 }
 
-function SearchContinuationFeed({ response, coordinates, continuation, errorContent }: {
+function SearchContinuationFeed({ response, coordinates, viewerId, onChooseArea }: {
   response: ExploreSearchResponse;
   coordinates: GpsCoordinates | null;
-  continuation: (salons: ExploreSearchResult[]) => ReactNode;
-  errorContent: ReactNode;
+  viewerId?: string | null;
+  onChooseArea?: () => void;
 }) {
   const [salons, setSalons] = useState<ExploreSearchResult[]>([]);
   const [page, setPage] = useState(response.page);
@@ -2913,6 +2931,8 @@ function SearchContinuationFeed({ response, coordinates, continuation, errorCont
   const alive = useRef(true);
   const seen = useRef(new Set(response.results.map((salon) => salon.id)));
   const emptyPages = useRef(0);
+  const visibleSalons = useExploreSearchMedia({ results: salons, response, coordinates, viewerId });
+  const onward = exploreSearchOnwardLink(response);
   useEffect(() => {
     alive.current = true;
     return () => { alive.current = false; activeRequest.current?.abort(); };
@@ -2928,7 +2948,10 @@ function SearchContinuationFeed({ response, coordinates, continuation, errorCont
     activeRequest.current = controller;
     try {
       const next = await fetchExploreSearchPage({
-        query: response.query, category: response.category, location: response.location,
+        query: response.query, category: response.category, location: response.location, filters: response.filters,
+        displayQuery: response.displayQuery, contentQuery: response.contentQuery,
+        queryKind: response.queryKind, locationPriority: response.locationPriority,
+        locationOrigin: response.locationOrigin, intent: response.intent,
         target: "salons", locationSource: response.locationSource,
         latitude: coordinates?.latitude, longitude: coordinates?.longitude,
         page: page + 1, pageSize: response.pageSize,
@@ -2957,30 +2980,31 @@ function SearchContinuationFeed({ response, coordinates, continuation, errorCont
     }
   }, [coordinates, cursor, hasMore, page, response]);
 
+  const renderSalon = (salon: ExploreSearchResult) => <div key={salon.id} className="space-y-3">
+    <div className="flex items-center gap-3 px-1">
+      <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-surface-muted"><SalonLogoContent salon={salon} size={40} /></div>
+      <div><p className="font-semibold text-text-primary">{salon.name}</p><p className="text-sm text-text-secondary">{formatSalonLocation(salon)}</p></div>
+    </div>
+    <SalonCard featured rankAriaLabel={isExplorePrimarySearchResult(salon) ? "Search match" : "Discover this salon"} rankLabel={isExplorePrimarySearchResult(salon) ? "Match" : "Discover"} salon={salon} />
+  </div>;
+
   return (
-    <section className="mx-auto w-full max-w-2xl space-y-6 py-3" aria-label="Keep exploring" data-testid="search-continuation-feed">
-      {salons.length > 0 ? <>
+    <section className="mx-auto w-full max-w-2xl space-y-6 py-8" aria-label="More salons" data-testid="search-continuation-feed">
+      {visibleSalons.length > 0 ? <>
         <div className="border-t border-divider-subtle pt-6">
           <h3 className="text-xl font-semibold text-text-primary">Keep exploring</h3>
           <p className="mt-1 text-sm text-text-secondary">More salons to discover as you scroll.</p>
         </div>
-        {salons.map((salon) => <div key={salon.id} className="space-y-3">
-          <div className="flex items-center gap-3 px-1">
-            <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-surface-muted"><SalonLogoContent salon={salon} size={40} /></div>
-            <div><p className="font-semibold text-text-primary">{salon.name}</p><p className="text-sm text-text-secondary">{formatSalonLocation(salon)}</p></div>
-          </div>
-          <SalonCard featured rankAriaLabel={salon.resultGroup === "best_match" ? "Search match" : "Discover this salon"} rankLabel={salon.resultGroup === "best_match" ? "Match" : "Discover"} salon={salon} />
-        </div>)}
+        {visibleSalons.filter(isExplorePrimarySearchResult).map(renderSalon)}
+        <SearchRecommendationSections results={visibleSalons.filter(salon => !isExplorePrimarySearchResult(salon))} location={response.location} renderCards={rows => <div className="space-y-6">{rows.map(renderSalon)}</div>} />
       </> : null}
       {hasMore ? <ExploreAutoLoad enabled={!loading && !error} onLoad={loadMore} progressKey={page} /> : null}
-      {hasMore || loading || error ? <div className="flex items-center justify-center" aria-live="polite">
+      <div className="flex items-center justify-center" aria-live="polite">
         {loading ? <p className="text-sm text-text-secondary">Loading more salons…</p> : hasMore ? <div className="text-center">
           {error ? <p className="mb-3 text-sm text-text-secondary">{error}</p> : null}
           <button type="button" onClick={() => errorKind === "cursor" ? window.location.reload() : void loadMore()} className={`${error ? "" : "sr-only focus:not-sr-only"} min-h-11 rounded-full bg-surface-muted px-6 py-3 text-sm font-semibold text-text-primary`}>{errorKind === "cursor" ? "Refresh search" : error ? "Try again" : "Load more salons"}</button>
-        </div> : null}
-      </div> : null}
-      {!hasMore && !loading && !error ? continuation(salons) : null}
-      {error ? errorContent : null}
+        </div> : <div className="text-center"><p className="text-sm text-text-secondary">You&apos;ve explored these salons.</p><ExploreSearchOnwardActions {...onward} onChooseArea={onChooseArea} /></div>}
+      </div>
     </section>
   );
 }
@@ -3134,28 +3158,45 @@ export function ExploreClient({
   const searchMode = explicitSearchMode || gpsActive;
   const activeResponse: ExploreSearchResponse =
     gpsActive && gpsResponse ? gpsResponse : sessionResponse;
-  const activeResults = activeResponse.results;
-  const activeSections = activeResponse.sections;
   const committedSearch = useMemo(() => buildExploreCommittedSearchContext(activeResponse, {
     viewerId: commentViewer.userId,
     gpsContext: committedGpsContext,
   }), [activeResponse, commentViewer.userId, committedGpsContext]);
+  const refreshedResults = useExploreSearchMedia({ results: activeResponse.results, response: activeResponse, coordinates: committedSearch.coordinates, viewerId: commentViewer.userId });
+  const activeSections = useMemo(() => {
+    const seen = new Set<string>();
+    const refreshedById = new Map(refreshedResults.map(salon => [salon.id, salon]));
+    const unique = (salons: ExploreSearchResult[]) => salons.flatMap(salon => {
+      const current = refreshedById.get(salon.id);
+      if (!current || seen.has(salon.id)) return [];
+      seen.add(salon.id); return [current];
+    });
+    return {
+      bestMatches: unique(activeResponse.sections.bestMatches),
+      nearby: unique(activeResponse.sections.nearby),
+      recommended: unique(activeResponse.sections.recommended),
+      reference: unique(activeResponse.sections.reference ?? []),
+    };
+  }, [activeResponse, refreshedResults]);
+  const activeResults = [...activeSections.bestMatches, ...activeSections.nearby, ...activeSections.recommended, ...activeSections.reference];
+  const referenceResults = activeResults.filter(salon => !isExplorePrimarySearchResult(salon));
+  const hasPrimaryResults = activeResults.some(isExplorePrimarySearchResult);
+  const onward = exploreSearchOnwardLink(activeResponse);
+  const [nailFilterSelection, setNailFilterSelection] = useState<{ sessionKey: string; filters: NailFilters }>({ sessionKey: committedSearch.sessionKey, filters: {} });
+  const nailFilters = nailFilterSelection.sessionKey === committedSearch.sessionKey ? { ...activeResponse.filters, ...nailFilterSelection.filters } : activeResponse.filters ?? {};
+  if (nailFilterSelection.sessionKey !== committedSearch.sessionKey) {
+    setNailFilterSelection({ sessionKey: committedSearch.sessionKey, filters: {} });
+  }
   const hasBestMatches = activeSections.bestMatches.length > 0;
   const hasNearbyResults = activeSections.nearby.length > 0;
   const hasRecommendedResults = activeSections.recommended.length > 0;
   const hasAnyResults =
-    hasBestMatches || hasNearbyResults || hasRecommendedResults;
+    hasBestMatches || hasNearbyResults || hasRecommendedResults || activeSections.reference.length > 0;
   const selectedCategory = category || "All";
   const normalizedCategory = cleanCategory(selectedCategory);
   const isSearching = isPending || gpsStatus === "searching" || gpsStatus === "locating";
-  const recommendations = useMemo(() => buildExploreSearchRecommendations(activeResponse, {
-    coordinates: committedSearch.coordinates,
-    viewerId: commentViewer.userId,
-  }), [activeResponse, committedSearch.coordinates, commentViewer.userId]);
-
   const nearbyHasDistance = hasMeasuredDistance(activeSections.nearby);
-  const contentSearchMode = searchMode && activeResponse.target === "posts";
-  const searchTarget = searchParams.get("type") === "posts" ? "posts" : searchParams.get("type") === "salons" ? "salons" : "auto";
+  const searchTarget = "salons";
   const discoveryResultMode = !searchMode && activeDiscoveryResult !== null;
   const homeMode = !searchMode && !discoveryResultMode;
   const hasDiscoveryRail = !homeMode && !searchMode && discoveryContent.shortcuts.length > 0;
@@ -3166,21 +3207,23 @@ export function ExploreClient({
       void rememberExplorePreferenceAction({ location: initialLocationSource === "manual" ? initialResponse.location : undefined, category: initialResponse.category }).catch(() => {});
     }
   }, [commentViewer.isAuthenticated, hasUrlLocation, initialSearchMode, initialLocationSource, initialResponse.location, initialResponse.category]);
-  const summaryText = activeResponse.error ? "Search is temporarily unavailable" : activeResponse.requiresGps ? "Choose a location to find salons near you" : resultSummary({
-    bestCount: activeResponse.groupCounts.bestMatches,
+  const searchUnavailable = Boolean(activeResponse.error || activeResponse.errorKind || activeResponse.lookupFailed);
+  const summaryText = searchUnavailable ? "Search is temporarily unavailable" : activeResponse.requiresGps ? "Choose a location to find salons near you" : !hasAnyResults && (isSearching || activeResponse.hasMore) ? "Loading results…" : resultSummary({
+    bestCount: activeSections.bestMatches.length,
     category: committedSearch.category,
     hasAnyResults,
+    hasPrimaryResults,
     location: formatDisplayLocation(committedSearch.location),
-    nearbyCount: activeResponse.groupCounts.nearby,
+    nearbyCount: activeSections.nearby.length,
     query: activeResponse.query,
-    recommendedCount: activeResponse.groupCounts.recommended,
+    recommendedCount: activeSections.recommended.length,
   });
 
   useEffect(() => {
     if (autoLocationChecked.current) return;
     let active = true;
     const restore = async () => {
-      const chosenArea = initialResponse.locationOrigin === "manual" || initialResponse.locationOrigin === "query";
+      const chosenArea = initialResponse.locationOrigin === "manual" || initialResponse.locationOrigin === "query" || initialLocationSource === "manual";
       if (chosenArea) { autoLocationChecked.current = true; return; }
       let preference = "";
       try { preference = window.sessionStorage.getItem(GPS_PREFERENCE_KEY) ?? ""; } catch { /* Optional preference. */ }
@@ -3219,7 +3262,11 @@ export function ExploreClient({
     if (response.sort && response.sort !== "relevance") params.set("sort", response.sort); else params.delete("sort");
     if (rawQuery.trim()) params.set("q", rawQuery.trim()); else params.delete("q");
     if (response.category) params.set("category", response.category); else params.delete("category");
-    if (target === "auto") params.delete("type"); else params.set("type", target);
+    params.set("type", "salons");
+    for (const key of ["shape", "length", "color", "finish", "tone", "season", "maxPrice", "bookableOnly", "newOnly", "trendingOnly"] as const) {
+      const value = response.filters?.[key];
+      if (value !== undefined && value !== false && value !== null && value !== "") params.set(key, String(value)); else params.delete(key);
+    }
     if (scope) params.set("scope", scope); else params.delete("scope");
     if (response.location) {
       params.set("location", response.location);
@@ -3242,16 +3289,18 @@ export function ExploreClient({
     scopePolicy: "fixed" | "expandable" = activeResponse.scope?.policy ?? "expandable",
   ) {
     const recoveryLocation = activeResponse.location;
+    const previousGpsContext = committedGpsContext?.response === activeResponse ? committedGpsContext : null;
     const recoverySource: ExploreLocationSource = !recoveryLocation ? "none"
       : activeResponse.locationOrigin === "query" ? "saved"
         : activeResponse.locationOrigin === "manual" ? "manual"
           : activeResponse.locationSource === "gps" ? "saved"
             : activeResponse.locationSource ?? locationSource;
-    setGpsCoordinates(null);
-    setGpsResponse(null);
+    setGpsCoordinates(previousGpsContext?.coordinates ?? null);
+    setGpsResponse(activeResponse === sessionResponse ? null : activeResponse);
+    setCommittedGpsContext(previousGpsContext);
     setNearYouSalons([]);
     setLocation(recoveryLocation);
-    setLocationSource(recoverySource);
+    setLocationSource(previousGpsContext ? activeResponse.locationSource ?? "gps" : recoverySource);
     setGpsMessage("We couldn't find your area. Choose a location or try again.");
     // A newly typed city must still reach the indexed intent resolver when the
     // upstream area provider is unavailable. Never keep it bound to failed GPS.
@@ -3259,7 +3308,7 @@ export function ExploreClient({
       const params = new URLSearchParams(searchParams.toString());
       for (const key of ["page", "cursor", "latitude", "longitude", "lat", "lng", "sort", "locationSource"]) params.delete(key);
       params.set("q", searchQuery);
-      if (target === "auto") params.delete("type"); else params.set("type", target);
+      params.set("type", "salons");
       params.set("scope", scopePolicy);
       if (searchCategory) params.set("category", searchCategory); else params.delete("category");
       params.set("location", recoveryLocation);
@@ -3282,6 +3331,7 @@ export function ExploreClient({
     searchCategory = normalizedCategory,
     target: "auto" | "salons" | "posts" = searchTarget,
     scopePolicy: "fixed" | "expandable" = activeResponse.scope?.policy ?? "expandable",
+    filters = activeResponse.filters,
   ) {
     prepareSearchTransition();
     const version = ++gpsRequestVersion.current;
@@ -3297,7 +3347,7 @@ export function ExploreClient({
       const area = await findGpsArea(coordinates, controller.signal);
       if (version !== gpsRequestVersion.current) return;
       const response = await fetchExploreSearchPage({
-        category: searchCategory, target,
+        category: searchCategory, target: "salons", filters,
         location: area.label, locationSource: "gps",
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
@@ -3316,7 +3366,7 @@ export function ExploreClient({
       setLocation(response.location);
       setLocationSource(response.locationSource ?? "gps");
       setCategory(response.category || "All");
-      if (response.locationOrigin === "query" || response.locationOrigin === "manual") setGpsCoordinates(null);
+      setGpsCoordinates(response.locationOrigin === "query" || response.locationOrigin === "manual" ? null : coordinates);
       setGpsStatus("idle");
       setExplicitSearchMode(true);
 
@@ -3346,7 +3396,6 @@ export function ExploreClient({
     try {
       const area = await findGpsArea(coordinates, controller.signal);
       if (version !== gpsRequestVersion.current) return;
-      setLocation(area.label);
       const response = await fetchExploreSearchPage({
         location: area.label, locationSource: "gps", target: "salons",
         latitude: coordinates.latitude,
@@ -3356,6 +3405,8 @@ export function ExploreClient({
       }, controller.signal);
       if (version !== gpsRequestVersion.current) return;
 
+      setLocation(response.location || area.label);
+      setGpsCoordinates(coordinates);
       if (!response.error) rememberSearchUrl(response, "", "auto");
       const salons: ExploreHomeSalon[] = response.results
         .filter(salon => salon.searchScope === "A" || salon.searchScope === "B" && salon.distanceMiles !== null && salon.distanceMiles <= 50)
@@ -3412,9 +3463,8 @@ export function ExploreClient({
           longitude: position.coords.longitude,
         };
 
-        setGpsResponse(null);
-        setLocationSource("gps");
-        setGpsCoordinates(coordinates);
+        // Keep the committed area, cards and cursor together until this GPS
+        // point has resolved and its matching search has completed.
         if (shouldRunSearch) {
           void runGpsSearch(coordinates, 1, currentSearchQuery, currentSearchQuery === query ? searchOrderMode : "relevance", normalizedCategory, currentTarget);
         } else {
@@ -3423,7 +3473,7 @@ export function ExploreClient({
       },
       (error) => {
         if (version !== gpsRequestVersion.current) return;
-        setGpsCoordinates(null);
+        setGpsCoordinates(committedGpsContext?.response === activeResponse ? committedGpsContext.coordinates : null);
         setGpsStatus(error.code === error.PERMISSION_DENIED ? "denied" : "error");
         setGpsMessage(
           error.code === error.PERMISSION_DENIED
@@ -3501,7 +3551,7 @@ export function ExploreClient({
       setQuery(searchQuery);
       if (detail.category !== undefined) setCategory(detail.category || "All");
       void runGpsSearch(gpsCoordinates, 1, searchQuery, searchOrderMode,
-        detail.category === undefined ? normalizedCategory : cleanCategory(detail.category), detail.target ?? searchTarget);
+        detail.category === undefined ? normalizedCategory : cleanCategory(detail.category), "salons");
     }
     window.addEventListener("kingpos:explore-clear-current-location", turnOffCurrentLocation);
     window.addEventListener("kingpos:explore-search-current-location", handleHeaderGpsSearch);
@@ -3604,7 +3654,7 @@ export function ExploreClient({
     const nextLocationSource = input.locationSource ?? (input.location === undefined ? locationSource : nextLocation.trim() ? "manual" : "none");
     if (gpsCoordinates && input.location === undefined) {
       setQuery(nextQuery); setCategory(nextCategory);
-      void runGpsSearch(gpsCoordinates, 1, nextQuery, "relevance", cleanCategory(nextCategory), input.target ?? searchTarget, input.scopePolicy);
+      void runGpsSearch(gpsCoordinates, 1, nextQuery, "relevance", cleanCategory(nextCategory), "salons", input.scopePolicy);
       return;
     }
     if (commentViewer.isAuthenticated) void rememberExplorePreferenceAction({ location: nextLocationSource === "manual" ? nextLocation : undefined, category: nextCategory }).catch(() => {});
@@ -3624,9 +3674,7 @@ export function ExploreClient({
 
     const shortcutParams = new URLSearchParams(searchParams.toString());
     for (const key of ["browse", "sort", "page", "cursor", "lat", "lng", "latitude", "longitude"]) shortcutParams.delete(key);
-    if (input.target) {
-      if (input.target === "auto") shortcutParams.delete("type"); else shortcutParams.set("type", input.target);
-    }
+    shortcutParams.set("type", "salons");
     if (input.location !== undefined) {
       if (nextLocation.trim()) shortcutParams.set("locationSource", nextLocationSource); else shortcutParams.delete("locationSource");
       shortcutParams.set("scope", input.scopePolicy ?? (nextLocation.trim() ? "fixed" : "expandable"));
@@ -3652,11 +3700,32 @@ export function ExploreClient({
     applySearchShortcut({
       query: area ? "" : suggestion.query,
       category: suggestion.kind === "service" && suggestion.category ? suggestion.category : selectedCategory,
-      target: suggestion.target,
+      target: "salons",
       ...(area ? { location: suggestion.location ?? suggestion.query, scopePolicy: "fixed" as const }
         : typedLocation.trim() !== location.trim() ? { location: typedLocation.trim(), scopePolicy }
           : activeResponse.locationOrigin === "query" ? { location, locationSource: "saved" as const, scopePolicy } : { scopePolicy }),
     });
+  }
+
+  function applyNailFilters(filters: NailFilters) {
+    setNailFilterSelection({ sessionKey: committedSearch.sessionKey, filters });
+    const nextFilters = { ...activeResponse.filters };
+    for (const key of ["shape", "length", "color", "finish", "tone", "season"] as const) {
+      if (filters[key]) nextFilters[key] = filters[key]; else delete nextFilters[key];
+    }
+    if (committedSearch.coordinates) {
+      void runGpsSearch(committedSearch.coordinates, 1, committedSearch.displayQuery, committedSearch.appliedSort, committedSearch.category, "salons", activeResponse.scope?.policy, nextFilters);
+      return;
+    }
+    prepareSearchTransition();
+    gpsRequestVersion.current += 1; gpsRequest.current?.abort();
+    setGpsStatus("idle");
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("page"); params.delete("cursor"); params.set("type", "salons");
+    for (const key of ["shape", "length", "color", "finish", "tone", "season"] as const) {
+      if (filters[key]) params.set(key, filters[key]); else params.delete(key);
+    }
+    startTransition(() => router.push(pathname + "?" + params, { scroll: false }));
   }
 
   function cancelTypedSearch() {
@@ -3670,12 +3739,12 @@ export function ExploreClient({
     searchQuery = searchQuery.trim();
     if (typedRequest.current === searchQuery) return;
     typedRequest.current = searchQuery;
-    const target = searchQuery === query ? searchTarget : "auto";
+    const target = "salons";
     setQuery(searchQuery);
     // The text now chooses the field; an invisible old category must not narrow it.
     setCategory("All");
     if (gpsCoordinates) {
-      await runGpsSearch(gpsCoordinates, 1, searchQuery, "relevance", "", target);
+      await runGpsSearch(gpsCoordinates, 1, searchQuery, "relevance", "", target, undefined, searchQuery === query ? activeResponse.filters : {});
       if (typedRequest.current === searchQuery) typedRequest.current = null;
       return;
     }
@@ -3689,7 +3758,7 @@ export function ExploreClient({
     const scope = activeResponse.scope?.policy ?? "expandable";
     try {
       const response = await fetchExploreSearchPage({
-        query: searchQuery, category: "", target, location,
+        query: searchQuery, category: "", target, location, filters: searchQuery === query ? activeResponse.filters : {},
         locationSource: activeResponse.locationOrigin === "query" ? "saved" : locationSource,
         scopePolicy: scope, sort: "relevance", page: 1, pageSize: initialResponse.pageSize,
       }, controller.signal);
@@ -3847,17 +3916,6 @@ export function ExploreClient({
                 strictLocation={hasUrlLocation}
               />
             </>
-          ) : contentSearchMode ? (
-            <section className="mx-auto grid w-full gap-4 px-4 py-4 sm:px-6 lg:pl-8 lg:pr-3" data-testid="explore-content-search" style={isSearching && pendingIdeasHeight ? { minHeight: pendingIdeasHeight } : undefined}>
-              <h2 className="text-xl font-semibold text-text-primary">{committedSearch.displayQuery ? <>Ideas for {quotedQuery(committedSearch.displayQuery)}</> : "Discover posts"}{committedSearch.location ? " in " + formatDisplayLocation(committedSearch.location) : ""}</h2>
-              {activeResponse.error ? <ExploreNotice title="Search is temporarily unavailable" tone="warning" action={<button type="button" onClick={() => void submitUnifiedSearch(query)} className="min-h-11 rounded-full bg-surface-muted px-4 font-semibold">Try again</button>}>{activeResponse.error}</ExploreNotice> : activeResponse.requiresGps ? <div className="grid justify-items-start gap-3 text-sm text-text-secondary"><p>{gpsMessage ?? "Choose a location to find ideas near you."}</p><button type="button" onClick={requestCurrentLocation} disabled={isSearching} className="rounded-full bg-brand-teal-soft px-4 py-2 font-semibold text-brand-teal">Use current location</button></div> : isSearching ? <ExploreFeedSkeleton /> : (
-                <ExploreDiscoveryFeed key={committedSearch.sessionKey}
-                  sessionKey={"ideas:" + committedSearch.sessionKey}
-                  discovery={committedSearch.discovery} viewer={commentViewer}
-                  />
-              )}
-              {!isSearching && (activeResponse.error || activeResponse.requiresGps) ? <ExploreReferenceFeed query={committedSearch.displayQuery} category={committedSearch.category} /> : null}
-            </section>
           ) : discoveryResultMode && activeDiscoveryResult ? (
             <ExploreDiscoveryResults
               content={homeContent}
@@ -3874,13 +3932,13 @@ export function ExploreClient({
             />
           ) : (
             <>
-              {hasAnyResults || isSearching || activeResponse.error ? <section className="mx-auto grid w-full max-w-none gap-3 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:pl-8 lg:pr-3">
+              <section className="mx-auto grid w-full max-w-none gap-3 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:pl-8 lg:pr-3">
                 <div>
                   <h2 className="text-xl font-semibold text-text-primary sm:text-2xl">
-                    {hasAnyResults || isSearching || activeResponse.error ? summaryText : "Explore ideas for you"}
+                    {summaryText}
                   </h2>
                   <p aria-live="polite" className="sr-only">
-                    {isSearching ? "Updating Explore results." : hasAnyResults ? summaryText : "Showing recommendations inspired by your search."}
+                    {isSearching ? "Updating Explore results." : summaryText}
                   </p>
                   {isSearching ? (
                     <p className="mt-1 text-sm text-text-secondary">
@@ -3888,18 +3946,39 @@ export function ExploreClient({
                     </p>
                   ) : null}
                 </div>
-              </section> : <p aria-live="polite" className="sr-only">Showing recommendations inspired by your search.</p>}
+              </section>
 
-              <section className="mx-auto grid w-full max-w-none gap-3 px-4 sm:px-6 lg:pl-8 lg:pr-3">
+              <section className="mx-auto grid w-full max-w-none gap-3 px-4 sm:px-6 lg:pl-8 lg:pr-3" data-testid="explore-content-search" style={isSearching && pendingIdeasHeight ? { minHeight: pendingIdeasHeight } : undefined}>
+                {searchMode ? (
+                  <SearchRefinementBar
+                    category={committedSearch.category || "All"}
+                    location={committedSearch.location}
+                    mode={committedSearch.appliedSort}
+                    onModeChange={changeSearchOrder}
+                    onClear={clearFilters}
+                    onShortcut={applySearchShortcut}
+                    query={committedSearch.displayQuery}
+                    workspaceLocation={workspaceLocation}
+                  >
+                    {!isSearching && !searchUnavailable && !activeResponse.requiresGps && hasAnyResults ? (
+                      <NailInspirationFilters
+                        key={committedSearch.sessionKey}
+                        filters={nailFilters}
+                        onChange={applyNailFilters}
+                        search={{ salons: activeResults, discovery: { ...committedSearch.discovery, query: activeResponse.query } }}
+                      />
+                    ) : null}
+                  </SearchRefinementBar>
+                ) : null}
                 {committedSearch.fallbackMessage && !isSearching ? <p className="text-sm text-text-secondary" role="status">{committedSearch.fallbackMessage}</p> : null}
 
-                {activeResponse.error ? (
+                {searchUnavailable ? (
                   <ExploreNotice
                     title={activeResponse.errorKind === "timeout" ? "Search took too long" : activeResponse.errorKind === "network" ? "Search connection interrupted" : activeResponse.errorKind === "cursor" ? "Search session expired" : "We couldn't load salons right now."}
                     tone="warning"
                     action={<button type="button" onClick={() => void submitUnifiedSearch(query)} className="min-h-11 rounded-full bg-surface-muted px-4 font-semibold">Try again</button>}
                   >
-                    {activeResponse.error}
+                    {activeResponse.error || "Please try again."}
                   </ExploreNotice>
                 ) : null}
 
@@ -3923,16 +4002,20 @@ export function ExploreClient({
                 ) : null}
 
 
-                {activeResponse.requiresGps && !activeResponse.error ? <button type="button" onClick={requestCurrentLocation} disabled={isSearching} className="w-fit rounded-full bg-brand-teal-soft px-4 py-2 font-semibold text-brand-teal">Use current location</button> : null}
-                {!isSearching && (activeResponse.error || activeResponse.requiresGps) ? <ExploreReferenceFeed query={committedSearch.displayQuery} category={committedSearch.category} /> : null}
-                {hasAnyResults ? <div className="grid gap-6">
+                {activeResponse.requiresGps && !searchUnavailable ? <><button type="button" onClick={requestCurrentLocation} disabled={isSearching} className="w-fit rounded-full bg-brand-teal-soft px-4 py-2 font-semibold text-brand-teal">Use current location</button><ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} /></> : null}
+                {!searchUnavailable && !activeResponse.requiresGps ? (!hasAnyResults && !activeResponse.hasMore && !isSearching ? (
+                  <div className="rounded-2xl border border-dashed border-divider-subtle bg-surface-elevated p-8 text-center shadow-[var(--shadow-soft)]">
+                    <ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} />
+                  </div>
+                ) : (
+                  <div className="grid gap-6">
                     <ResultSection
                       hideHeading
                       description={`${activeSections.bestMatches.length} result${
                         activeSections.bestMatches.length === 1 ? "" : "s"
                       }`}
                       rankKind="best"
-                      results={activeSections.bestMatches}
+                      results={activeSections.bestMatches.filter(isExplorePrimarySearchResult)}
                       title={
                         quotedQuery(committedSearch.displayQuery)
                           ? `Best matches for ${quotedQuery(committedSearch.displayQuery)}`
@@ -3947,7 +4030,7 @@ export function ExploreClient({
                         activeSections.nearby.length === 1 ? "" : "s"
                       }`}
                       rankKind="area"
-                      results={activeSections.nearby}
+                      results={activeSections.nearby.filter(isExplorePrimarySearchResult)}
                       title={
                         committedSearch.location
                           ? `Salons in ${formatDisplayLocation(committedSearch.location)}`
@@ -3962,18 +4045,22 @@ export function ExploreClient({
                         activeSections.recommended.length === 1 ? "" : "s"
                       }`}
                       rankKind="recommended"
-                      results={activeSections.recommended}
+                      results={activeSections.recommended.filter(isExplorePrimarySearchResult)}
                       title="Recommended for you"
                     />
-                  </div> : null}
+                    <SearchRecommendationSections results={referenceResults} location={formatDisplayLocation(committedSearch.location)} />
+                  </div>
+                )) : null}
 
-                {!activeResponse.error && !activeResponse.requiresGps && !isSearching ? (
+                {hasAnyResults && !activeResponse.hasMore && !searchUnavailable && !activeResponse.requiresGps && !isSearching ? <ExploreSearchOnwardActions {...onward} onChooseArea={() => setSearchAreaOpen(true)} /> : null}
+
+                {(activeResponse.hasMore ?? activeResponse.totalCount > activeResponse.pageSize) && !searchUnavailable && !activeResponse.requiresGps && !isSearching ? (
                   <SearchContinuationFeed
                     key={`${committedSearch.sessionKey}:${JSON.stringify(activeResponse.nextCursor)}`}
                     response={activeResponse}
                     coordinates={committedSearch.coordinates}
-                    continuation={more => <ExploreSearchRecommendations {...recommendations} viewer={commentViewer} excludeKeys={[...activeResponse.results, ...more].map(salon => "salon:" + salon.id)} />}
-                    errorContent={<ExploreReferenceFeed query={committedSearch.displayQuery} category={committedSearch.category} />}
+                     viewerId={commentViewer.userId}
+                    onChooseArea={() => setSearchAreaOpen(true)}
                   />
                 ) : null}
               </section>

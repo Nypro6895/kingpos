@@ -2,6 +2,7 @@ import { WorkspaceText } from "@/components/workspace-language";
 import { PaystubUploadControl } from "@/app/payroll/paystub-upload-control";
 import type { PayrollStaffLineWithDailyTotals } from "@/types/payroll";
 import styles from "./payroll-mobile.module.css";
+import { PayrollAdjustmentHistory } from "./payroll-ledger-panel";
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -146,10 +147,11 @@ export function TaxCompanyLinesTable({
           <p className="text-xs text-zinc-500">{line.staff_legal_name_snapshot || <WorkspaceText text="Missing legal name" />}</p>
           <dl className={styles.ledger}>
             <div><dt><WorkspaceText text="Reported Gross" /></dt><dd>{formatMoney(line.tax_company_taxable_gross)}</dd></div>
-            <div><dt><WorkspaceText text="Actual Check Paid" /></dt><dd className={line.final_check_amount < 0 ? "font-semibold text-rose-700" : "font-semibold"}>{formatMoney(line.final_check_amount)}</dd></div>
+            <div><dt><WorkspaceText text="Final check income" /></dt><dd className={line.final_check_amount < 0 ? "font-semibold text-rose-700" : "font-semibold"}>{formatMoney(line.final_check_amount)}</dd></div>
           </dl>
           {line.final_check_amount < 0 && <p className="mb-3 text-sm text-rose-700"><WorkspaceText text="Check amount negative" /></p>}
           <PaystubCell canUpload={canUpload} line={line} payrollRunId={payrollRunId} returnPath={returnPath} taxSalonId={taxSalonId} />
+          {line.ledger&&<PayrollAdjustmentHistory ledger={line.ledger}/>}
           <details><summary className="py-3"><WorkspaceText text="Calculation details" /></summary><dl className={styles.ledger}>
             <div><dt><WorkspaceText text="Cash Reported" /></dt><dd>{formatCashReported(line)}</dd></div>
             <div><dt><WorkspaceText text="Tip" /></dt><dd><AmountTaxCell amount={line.tip_amount} payoutMethod={line.tip_payout_method_snapshot} taxed={line.tax_tips_snapshot} /></dd></div>
@@ -170,7 +172,8 @@ export function TaxCompanyLinesTable({
               <th className="px-4 py-3 text-right"><WorkspaceText text="Bonus" /></th>
               <th className="px-4 py-3 text-right"><WorkspaceText text="Tax" /></th>
               <th className="px-4 py-3 text-right"><WorkspaceText text="Wage Check Net" /></th>
-              <th className="px-4 py-3 text-right"><WorkspaceText text="Actual Check Paid" /></th>
+              <th className="px-4 py-3 text-right"><WorkspaceText text="Final check income" /></th>
+              <th className="px-4 py-3"><WorkspaceText text="Original and adjustments" /></th>
               <th className="px-4 py-3"><WorkspaceText text="Paystub" /></th>
             </tr>
           </thead>
@@ -228,6 +231,9 @@ export function TaxCompanyLinesTable({
                       <WorkspaceText text="Check amount negative" />
                     </p>
                   ) : null}
+                </td>
+                <td className="px-4 py-3">
+                  {line.ledger?<details className="whitespace-normal min-w-56 max-w-sm"><summary><WorkspaceText text={line.ledger.adjusted?"Adjusted":"Original"}/></summary><PayrollAdjustmentHistory ledger={line.ledger}/></details>:<WorkspaceText text="Historical statement"/>}
                 </td>
                 <td className="px-4 py-3">
                   <PaystubCell

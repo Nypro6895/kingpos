@@ -1,6 +1,7 @@
 "use client";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import { BookingDepositPanel } from "@/app/market/booking-deposit-panel";
+import { BookingDepositSettings } from "./booking-deposit-settings";
+import { BookingRulesSettings, BookSmsSettings } from "./booking-plugin-settings";
 import { TimeZoneSelect } from "@/components/time-zone-select";
 import { SalonPublicationStatus } from "@/components/salon-publication-status";
 import { SalonAddressSummary } from "@/components/salon-address-summary";
@@ -432,7 +433,9 @@ export function BookingSettingsPanel({
           <WorkspaceText text="Booking rules are read-only for your role." />
         </p>
       )}
-      {data.canManage ? <BookingDepositPanel key={data.salonId} salonId={data.salonId} /> : null}
+      {data.canManage && data.canManagePlugins ? <BookingDepositSettings key={data.salonId} salonId={data.salonId} /> : null}
+      {data.canManage && data.canManagePlugins ? <BookingRulesSettings key={`rules-${data.salonId}`} salonId={data.salonId} /> : null}
+      {data.canManage && data.canManagePlugins ? <BookSmsSettings key={`sms-${data.salonId}`} salonId={data.salonId} /> : null}
       <details>
         <summary className="cursor-pointer text-sm font-semibold">
           <WorkspaceText text="Staff availability & time off" />

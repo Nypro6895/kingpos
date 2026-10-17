@@ -20,6 +20,16 @@ export type ExplorePageProps = {
     sort?: string | string[];
     type?: string | string[];
     locationSource?: string | string[];
+    shape?: string | string[];
+    length?: string | string[];
+    color?: string | string[];
+    finish?: string | string[];
+    tone?: string | string[];
+    season?: string | string[];
+    maxPrice?: string | string[];
+    bookableOnly?: string | string[];
+    newOnly?: string | string[];
+    trendingOnly?: string | string[];
   }>;
 };
 

@@ -1,31 +1,30 @@
 "use client";
 
-import { ExploreDiscoveryFeed } from "@/app/explore/explore-discovery-feed";
-import type { ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
-import type { PostCommentViewer } from "@/types/post-comments";
+import Link from "next/link";
+import type { ReactNode } from "react";
 
 export function ExploreSearchRecommendations({
-  discovery,
-  sessionKey,
-  viewer,
-  excludeKeys = [],
+  children,
+  title,
 }: {
-  discovery: ExploreFeedDiscoveryOptions;
-  sessionKey: string;
-  viewer: PostCommentViewer;
-  excludeKeys?: string[];
+  children: ReactNode;
+  title: string;
 }) {
   return (
-    <section className="grid gap-3" aria-label="Search recommendations" data-testid="explore-search-recommendations">
-      <ExploreDiscoveryFeed
-        discovery={discovery}
-        sessionKey={sessionKey}
-        viewer={viewer}
-        excludeKeys={excludeKeys}
-        firstHeading="Recommended for you"
-        allowRestore={false}
-        feedId="explore-search-recommendations-feed"
-      />
+    <section className="grid gap-4 pt-5" aria-label="Search recommendations" data-testid="explore-search-recommendations">
+      <h2 className="text-xl font-semibold text-text-primary">{title}</h2>
+      {children}
     </section>
   );
+}
+
+export function ExploreSearchOnwardActions({ href, label, onChooseArea }: {
+  href: string;
+  label: string;
+  onChooseArea?: () => void;
+}) {
+  return <div className="flex flex-wrap justify-center gap-2 py-3">
+    <Link prefetch={false} href={href} className="rounded-full bg-brand-teal-soft px-5 py-3 text-sm font-semibold text-brand-teal">{label}</Link>
+    {onChooseArea ? <button type="button" onClick={onChooseArea} className="min-h-11 rounded-full bg-surface-muted px-5 py-3 text-sm font-semibold text-text-primary">Choose another area</button> : null}
+  </div>;
 }

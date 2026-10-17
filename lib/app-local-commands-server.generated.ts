@@ -300,6 +300,14 @@ import {portableUpdatePosActiveDraft as action296} from "@/app/pos/portable/acti
 import {portableUpdatePosLiveDraftCustomer as action297} from "@/app/pos/portable/actions";
 import {savePortableReportClosing as action298} from "@/app/pos/portable/actions";
 import {issueCheckinReceipt as action299} from "@/app/pos/checkin-receipt-actions";
+import {saveOwnerAdjustment as action300} from "@/app/payroll/ledger-actions";
+import {saveRecordedPayment as action301} from "@/app/payroll/ledger-actions";
+import {verifyPayrollIntent as action302} from "@/app/payroll/ledger-actions";
+import {loadPluginMarketStatusAction as action303} from "@/app/settings/plugin-market-status-actions";
+import {loadBookingRulesSettingsAction as action304} from "@/app/settings/plugin-settings-actions";
+import {saveBookingRulesSettingsAction as action305} from "@/app/settings/plugin-settings-actions";
+import {loadBookSmsSettingsAction as action306} from "@/app/settings/plugin-settings-actions";
+import {saveBookSmsSettingsAction as action307} from "@/app/settings/plugin-settings-actions";
 const commands: Record<string,(values:unknown[])=>unknown>={
 "action.cd9e45d5fdc4291bdc97f8ad": (values: unknown[]) => (action0 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.d06245d954e31f5b8be168de": (values: unknown[]) => (action1 as unknown as (...args: unknown[]) => unknown)(...values),
@@ -601,5 +609,13 @@ const commands: Record<string,(values:unknown[])=>unknown>={
 "action.1bfbdc4d83449f475b758906": (values: unknown[]) => (action297 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.12f5502676580d765e7cb609": (values: unknown[]) => (action298 as unknown as (...args: unknown[]) => unknown)(...values),
 "action.424821f362cce37338ac2706": (values: unknown[]) => (action299 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.9fd4ab0baf110f64f1724bbc": (values: unknown[]) => (action300 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.b3c9e30ba50c20ac87db234e": (values: unknown[]) => (action301 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.0331240a42531083fcd3a4d7": (values: unknown[]) => (action302 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.0c401bb88ab58561433b2370": (values: unknown[]) => (action303 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.d14797e33bdffa7d9940f9f4": (values: unknown[]) => (action304 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.135d0e25e4ee7c14d97966da": (values: unknown[]) => (action305 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.71559420db869529e30eabcb": (values: unknown[]) => (action306 as unknown as (...args: unknown[]) => unknown)(...values),
+"action.c6936e7df92440098868ffc8": (values: unknown[]) => (action307 as unknown as (...args: unknown[]) => unknown)(...values),
 };
 export async function runAppLocalCommand(name:string, values:unknown[]){const action=commands[name];if(!action)throw Object.assign(new Error("Unsupported form"),{status:404});return await action(values);}

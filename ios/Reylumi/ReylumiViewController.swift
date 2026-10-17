@@ -67,15 +67,10 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         view.backgroundColor = .white
         launchPanel.translatesAutoresizingMaskIntoConstraints = false
         launchPanel.onRetry = { [weak self] in self?.retryLoad() }
-        launchPanel.onNavigate = { [weak self] path, query in self?.openPublicDestination(path, query: query) }
-        launchPanel.onEditingFinished = { [weak self] in
-            guard let self, self.startup.hasUsablePage, !self.startup.isWaiting else { return }
-            self.launchPanel.finishLoading()
-        }
         view.addSubview(launchPanel)
         NSLayoutConstraint.activate([
             launchPanel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            launchPanel.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+            launchPanel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             launchPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             launchPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])

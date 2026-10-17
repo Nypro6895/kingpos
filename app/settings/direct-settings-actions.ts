@@ -203,7 +203,7 @@ export async function loadDirectSettings(kind: DirectSettingsKind, targetSalonId
     } as const;
   }
   const { context, supabase, salon } = await salonContext();
-  const common = { salonId: salon.id, salonName: salon.name, salonStatus: salon.status };
+  const common = { salonId: salon.id, salonName: salon.name, salonStatus: salon.status, canManagePlugins: isOwnerMembership(context.currentMembership) && isSalonManageContext(context) && salon.status === "active" };
   switch (kind) {
     case "public-profile": {
       const setting=await getCurrentSalonProfileIdentitySettings(context);

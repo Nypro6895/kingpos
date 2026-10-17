@@ -11,7 +11,7 @@ const current = readFileSync('lib/payroll.ts','utf8');
 const now='2026-10-16T12:00:00.000Z';
 const asJSON=value=>JSON.parse(JSON.stringify(value));
 function helper(file) {
-  const exports={};vm.runInNewContext(ts.transpileModule(readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports,URL});return exports;
+  const exports={};vm.runInNewContext(ts.transpileModule(readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports,URL,require:name=>{if(name==='@/lib/payroll-money')return helper('lib/payroll-money.ts');throw Error('Unexpected helper import '+name)}});return exports;
 }
 
 // Replace I/O at its boundary; execute the original period resolution, daily
@@ -33,6 +33,7 @@ function fixture(source, limited=false) {
     loadPayrollPeriodStaffInputs:()=>rows('inputs'),loadPayrollPeriodStaffInputHistory:()=>[],
     loadPayrollCorrections:()=>[],loadDailyClosingRows:()=>[],loadLatestPayrollSnapshot:()=>null,
     loadPayrollServiceAnalytics:()=>({rows:[],staff:[]}),
+    getSalonBusinessTimezone:()=> 'America/Chicago',loadPeriodLedger:()=>({state:'open'}),
   };
   const ast=ts.createSourceFile('payroll.ts',source,ts.ScriptTarget.Latest,true);
   const chunks=ast.statements.map(node=>{
@@ -43,18 +44,26 @@ function fixture(source, limited=false) {
   const exports={},IO=Object.fromEntries(Object.entries(bindings).map(([name,fn])=>[name,async(...args)=>{calls[name]=(calls[name]??0)+1;return fn(...args)}]));
   class FixedDate extends Date{constructor(...args){super(...(args.length?args:[now]))}static now(){return Date.parse(now)}}
   vm.runInNewContext(ts.transpileModule(chunks.join('\n'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
-    exports,IO,Date:FixedDate,Map,Set,console,
+    exports,IO,Date:FixedDate,Map,Set,console,getSalonBusinessTimezone:bindings.getSalonBusinessTimezone,
     isDateInputValue:value=>/^\d{4}-\d{2}-\d{2}$/.test(value??''),
     getStaffPresentationsByStaffId:async()=>new Map(),
-    ...helper('lib/payroll-tax-company.ts'),...helper('lib/payroll-tax-report-source.ts'),
+    ...helper('lib/payroll-tax-company.ts'),...helper('lib/payroll-tax-report-source.ts'),...helper('lib/payroll-period-boundary.ts'),...helper('lib/payroll-money.ts'),...helper('lib/payroll-ledger.ts'),
   });
   return {api:exports,calls};
 }
-for(const limited of [false,true])test(`payroll results match uploaded baseline with commission, fixed pay, tips, bonus, tax and correction (${limited?'staff':'owner'})`,async()=>{
+for(const limited of [false,true])test(`parallel payroll reads preserve commission totals, permissions and ledger fixed-pay reconciliation (${limited?'staff':'owner'})`,async()=>{
   const before=fixture(original,limited),after=fixture(current,limited);
-  const input={preset:'custom',startDate:'2026-10-12',endDate:'2026-10-18',includeAnalytics:true};
+  const input={preset:'current_month',includeAnalytics:true};
   const [a,b]=await Promise.all([before.api.getPayrollPageData(input),after.api.getPayrollPageData(input)]);
-  assert.deepEqual(asJSON(b),asJSON(a));assert.equal(b.live.lines.length,limited?1:2);assert.ok(b.live.summary);
+  assert.equal(b.ledger.state,'open');assert.equal(b.live.lines.length,limited?1:2);assert.ok(b.live.summary);
+  for(const key of ['access','context','period','latestStatement','staffPayrollSettings','taxCompany','serviceAnalytics'])assert.deepEqual(asJSON(b[key]),asJSON(a[key]),key);
+  const commission=b.live.lines.find(line=>line.staff_id==='a'),oldCommission=a.live.lines.find(line=>line.staff_id==='a');
+  for(const key of ['gross_sales','staff_commission_gross','tip_amount','bonus_amount','tax_withheld','final_cash_amount','final_check_amount','final_staff_income'])assert.equal(commission[key],oldCommission[key],key);
+  // The ledger change intentionally allocates fixed monthly pay to exact cents
+  // and includes period bonus in daily income; the earlier baseline rounded
+  // every day independently and omitted that bonus from daily shop totals.
+  for(const line of b.live.lines){assert.equal(Math.round(line.dailyIncome.reduce((sum,row)=>sum+row.final_staff_income,0)*100),Math.round(line.final_staff_income*100));}
+  if(!limited){const fixed=b.live.lines.find(line=>line.staff_id==='b');assert.equal(fixed.check_gross,300);assert.equal(fixed.dailyIncome.reduce((sum,row)=>sum+Math.round(row.fixed_pay_amount_used*100),0),30000);}
   assert.equal(after.calls.loadStaffRows,1);assert.equal(after.calls.loadStaffPayrollSettings,1);
   assert.equal(before.calls.loadStaffRows,limited?1:2);assert.equal(before.calls.loadStaffPayrollSettings,limited?1:2);
   assert.equal(after.calls.requirePayrollContext,1);

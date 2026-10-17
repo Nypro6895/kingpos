@@ -1,5 +1,28 @@
 import { normalizeExploreFeedDiscoveryOptions, type ExploreFeedDiscoveryOptions } from "@/lib/explore-feed-discovery";
-import type { ExploreSearchResponse } from "@/types/explore";
+import type { ExploreSearchResponse, ExploreSearchResult } from "@/types/explore";
+
+export function isExplorePrimarySearchResult(result: ExploreSearchResult) {
+  return result.isPrimaryMatch ?? (!result.isReferenceMatch && result.resultGroup !== "reference");
+}
+
+/** Keep every suggestion in the server's order under one simple heading. */
+export function groupExploreSearchRecommendations(results: ExploreSearchResult[], selectedArea = "") {
+  return results.length ? [{ key: `suggestions:${selectedArea.trim()}`, title: "Suggestions", results }] : [];
+}
+
+/** A fresh category browse keeps the selected area without carrying a failed keyword. */
+export function exploreSearchOnwardLink(response: Pick<ExploreSearchResponse, "category" | "location" | "recommendationCategory">) {
+  const category = response.category.trim() || response.recommendationCategory?.trim() || "";
+  const params = new URLSearchParams({ type: "salons" });
+  if (category) params.set("category", category);
+  if (response.location.trim()) {
+    params.set("location", response.location);
+    params.set("locationSource", "manual");
+    params.set("scope", "fixed");
+  }
+  const label = category.toLowerCase() === "nails" ? "Browse nail salons" : category ? `Browse ${category.toLowerCase()} salons` : response.location ? "Browse salons in this area" : "Browse Explore";
+  return { href: category || response.location ? `/explore?${params}` : "/explore", label };
+}
 
 export type ExploreSearchRecommendationOptions = {
   coordinates?: { latitude: number; longitude: number } | null;

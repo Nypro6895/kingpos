@@ -28,12 +28,26 @@ export type ExploreLocationSource =
   | "saved"
   | "workspace";
 
-export type ExploreResultGroup = "best_match" | "nearby" | "recommended";
+export type ExploreResultGroup = "best_match" | "nearby" | "recommended" | "reference";
+export type ExploreSearchQueryKind = "service" | "style" | "name";
+export type ExploreSearchFilters = {
+  shape?: string; length?: string; color?: string; finish?: string; tone?: string; season?: string;
+  maxPrice?: number; bookableOnly?: boolean; newOnly?: boolean; trendingOnly?: boolean;
+};
+export type ExploreImageProvenance = "salon_post" | "customer_post" | "salon_cover" | "suggested" | "none";
+export type ExploreRecommendationReason = "related_in_area" | "matching_in_broader_area" | "related_in_broader_area" | "matching_in_other_areas" | "related_in_other_areas";
 
 export type ExploreSearchInput = {
   target?: "auto" | "salons" | "posts";
+  contentQuery?: string;
+  displayQuery?: string;
+  queryKind?: ExploreSearchQueryKind;
+  locationPriority?: boolean;
+  locationOrigin?: "manual" | "query" | "context" | "none";
+  filters?: ExploreSearchFilters;
   locationSource?: ExploreLocationSource;
   cursor?: Record<string, unknown> | null;
+  hydrateIds?: string[];
   category?: string;
   latitude?: number | null;
   location?: string;
@@ -74,6 +88,19 @@ export type ExploreSearchResult = Partial<SalonIdentity> & {
   bookingEnabled: boolean;
   bookingHref: string | null;
   coverImageUrl: string | null;
+  imageProvenance?: ExploreImageProvenance;
+  imageSourceSalonId?: string | null;
+  selectedContentKey?: string | null;
+  selectedContentId?: string | null;
+  selectedContentType?: string | null;
+  selectedMediaPath?: string | null;
+  selectedMediaBucket?: string | null;
+  mediaRevision?: string | null;
+  matchSource?: string;
+  isReferenceMatch?: boolean;
+  isPrimaryMatch?: boolean;
+  recommendationReason?: ExploreRecommendationReason | null;
+  recommendationAreaLabel?: string | null;
   featuredServiceCategory: string | null;
   featuredServiceName: string | null;
   hasPublicProfile: boolean;
@@ -441,16 +468,23 @@ export type ExploreSearchSections = {
   bestMatches: ExploreSearchResult[];
   nearby: ExploreSearchResult[];
   recommended: ExploreSearchResult[];
+  reference?: ExploreSearchResult[];
 };
 
 export type ExploreSearchGroupCounts = {
   bestMatches: number;
   nearby: number;
   recommended: number;
+  reference?: number;
 };
 
 export type ExploreSearchResponse = {
   target?: "salons" | "posts";
+  intent?: ExploreSearchInput["intent"];
+  searchVersion?: 3;
+  queryKind?: ExploreSearchQueryKind;
+  locationPriority?: boolean;
+  filters?: ExploreSearchFilters;
   contentQuery?: string;
   displayQuery?: string;
   locationOrigin?: "manual" | "query" | "context" | "none";
@@ -459,6 +493,8 @@ export type ExploreSearchResponse = {
   areaAmbiguous?: boolean;
   locationConflict?: boolean;
   queryLocationHint?: string;
+  addressStatus?: "resolved" | "ambiguous" | "unmatched";
+  addressQuery?: string;
   lookupFailed?: boolean;
   areaCandidates?: Array<{ kind: "city"; label: string; city: string; stateCode: string | null }>;
   appliedSort?: string;
@@ -466,16 +502,22 @@ export type ExploreSearchResponse = {
   sortFallbackReason?: string | null;
   rankVersion?: number | null;
   rankAsOf?: string | null;
-  rankingBasis?: "indexed_scope" | "candidate_pool";
+  rankingBasis?: "indexed_scope" | "candidate_pool" | "unified_indexed_scope";
   sort?: ExploreSearchInput["sort"];
   errorKind?: ExploreSearchErrorKind | null;
   countKind?: "exact" | "loaded";
   scope?: ExploreSearchScope;
   nextCursor?: Record<string, unknown> | null;
+  sessionCursor?: Record<string, unknown> | null;
   hasMore?: boolean;
   category: string;
   error: string | null;
   groupCounts: ExploreSearchGroupCounts;
+  /** Unique hydrated rows on this page, not an exact total of all matches. */
+  primaryCount?: number;
+  referenceCount?: number;
+  /** Server-derived suggestion category; never replaces the canonical category filter. */
+  recommendationCategory?: string | null;
   location: string;
   page: number;
   pageSize: number;

@@ -263,6 +263,15 @@ final class ReylumiLocalAppTransport {
             let previous = self.session ?? stored
             let viewer = context["viewerId"] as? String
             let viewerChanged = previous != nil && previous?.viewerId != viewer
+            let priorPermissions = (previous?.object["context"] as? [String: Any])?["permissionRevision"] as? String
+            // A temporary lease-service failure does not prove that an unchanged
+            // viewer lost access. Keep the existing lease's ORIGINAL expiry and
+            // freshness; commands still require a successful fresh context.
+            if next == nil, object["grantStatus"] as? Int == 503,
+               object["offlineState"] as? String != "unconfirmed",
+               previous == nil || (!viewerChanged && previous?.scope == scope && priorPermissions == context["permissionRevision"] as? String) {
+                throw self.failure(503, "Please reconnect to update this page.")
+            }
             let priorAuthority: ReylumiLocalSession?
             if let next { priorAuthority = await self.store.session(generation: expectedGeneration, scope: scope, authority: next.authority) }
             else { priorAuthority = nil }
@@ -381,7 +390,20 @@ final class ReylumiLocalAppTransport {
                 try ensureCurrent(epoch)
                 throw failure(404, "This item is no longer available.")
             }
-            if [403, 409].contains(response.statusCode) {
+            if response.statusCode == 403 {
+                // Staff reads depend on a revocable salon relationship. Keep
+                // the existing family-wide revocation for an explicit denial.
+                if name.hasPrefix("staff.") {
+                    await revokeDisplay(scope: requestedScope ?? session?.scope, staffFamily: true)
+                    throw failure(403, "Please reconnect and check your access.")
+                }
+                // This resource can be denied while the account and other
+                // resources remain valid. Never keep the denied snapshot.
+                try await removeCached(name: name, args: args, requestedScope: requestedScope)
+                try ensureCurrent(epoch)
+                throw failure(403, "This view is no longer available. Please check your access.")
+            }
+            if response.statusCode == 409 {
                 await revokeDisplay(scope: requestedScope ?? session?.scope, staffFamily: name.hasPrefix("staff."))
                 throw failure(response.statusCode, "Please reconnect and check your access.")
             }

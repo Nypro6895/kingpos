@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "28a05063fa851ab027c945f587e79488435de07d29f348aa56815d8d31783f32",
+  "buildId": "0c4f46545f149ccdce4e68dbb686bf7802ed5357c2829fd590491eb9a0af4203",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 559122,
-      "sha256": "b84cc60ae64c812dff78be33ae41f6a7d6e6d89d4c82c06da7e962beb0baf1e0",
+      "bytes": 563378,
+      "sha256": "6d4a07f96f6bac37cc0fcd4ba3f59ad5318dcebc2a109a49719472afb7ea5b6b",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4095581,
-      "sha256": "c6d12411abeabed0e2f3978ad893b158173e476a20b6b4d216071c260d0dfa09",
+      "bytes": 4146286,
+      "sha256": "fda3f71bc1b9f79757cdb562e2f4c0165a5cca032e7695c281a9166dfeecc72c",
       "mime": "text/javascript"
     },
     {
@@ -1475,8 +1475,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 535,
-      "sha256": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
+      "bytes": 4508,
+      "sha256": "104e04c6ddefa5229e241469ec0543f285dc6b2a7dd70d78c3210dfc997632b5",
       "mime": "text/html"
     },
     {
@@ -1799,20 +1799,20 @@
     },
     {
       "path": "market/features/booking-deposit.svg",
-      "bytes": 1263,
-      "sha256": "fd4420aa76362835330e8a4ecfd81f585373337071dd2c72acfcae4c57dd8b32",
+      "bytes": 1262,
+      "sha256": "d2cce8b1313c68a595c6f4ad824139893ce70f50559f4bc3f9588129e89b57c8",
       "mime": "image/svg+xml"
     },
     {
       "path": "market/features/booking-policy.svg",
-      "bytes": 954,
-      "sha256": "05575ff532858a48d7f5730ab8c0851d3a0b3ce08d2e4c74c074c54b06ab7c37",
+      "bytes": 953,
+      "sha256": "04a687a9ed08ed358433e820069879c781558c2cd36365f49f94e6d56909ac22",
       "mime": "image/svg+xml"
     },
     {
       "path": "market/features/campaigns.svg",
-      "bytes": 1282,
-      "sha256": "e6bd5e220a769adbb25f69df79adb2876063ff3afebd32c1e74515a39fb39394",
+      "bytes": 1281,
+      "sha256": "52d9baa88b224f5f34291b4b5a841e50188589e5cfbae527c2184e070dae55a5",
       "mime": "image/svg+xml"
     },
     {
@@ -1835,8 +1835,8 @@
     },
     {
       "path": "market/features/checkin-receipt.svg",
-      "bytes": 1120,
-      "sha256": "2003812370592af87f8af27ec852e6d65e2d9a855a96d6dd53b7f97be1ed09a1",
+      "bytes": 1119,
+      "sha256": "59c4867c4e8655fac5dc31251221dfd1a12b2b045f8b6260897330e3f9cec7b2",
       "mime": "image/svg+xml"
     },
     {
@@ -1889,8 +1889,8 @@
     },
     {
       "path": "market/features/payroll-data-download.svg",
-      "bytes": 2486,
-      "sha256": "67fedbff77fff537b9450d667b09320d8d447baf7ff2ae57168401e480c937cc",
+      "bytes": 2461,
+      "sha256": "dd2b6b567735d9dff4e4684fdfda4c7e19793d36f50bd58f70c495b4df872651",
       "mime": "image/svg+xml"
     },
     {
@@ -1943,8 +1943,8 @@
     },
     {
       "path": "market/features/service-relay.svg",
-      "bytes": 1632,
-      "sha256": "41f321ddb74af23046f9c199764ba2438991d7c272633dbe071db1d05ab51e7f",
+      "bytes": 1631,
+      "sha256": "51737fcbb9d5e1a8d07664e5264c927f2cfe3d2c91d171039d168139b98a1301",
       "mime": "image/svg+xml"
     },
     {
@@ -5117,20 +5117,6 @@
       ]
     },
     {
-      "name": "action.b5b64d90f59ce6877ece778a",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
-      "name": "action.a890d694f2aca2511bb67039",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
       "name": "action.c0bb39386d1a305646380e0b",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -5467,6 +5453,62 @@
       ]
     },
     {
+      "name": "action.9fd4ab0baf110f64f1724bbc",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.b3c9e30ba50c20ac87db234e",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0331240a42531083fcd3a4d7",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.0c401bb88ab58561433b2370",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.d14797e33bdffa7d9940f9f4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.135d0e25e4ee7c14d97966da",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.71559420db869529e30eabcb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.c6936e7df92440098868ffc8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "owner.receipt-operation",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -5603,7 +5645,7 @@
     }
   ],
   "help": {
-    "version": "2026-10-16.1:local-1",
+    "version": "2026-10-17.1:local-1",
     "slugs": [
       "overview",
       "owner-tips",

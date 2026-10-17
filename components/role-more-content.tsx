@@ -2,7 +2,6 @@
 
 import Link from "@/components/feedback-link";
 import { ROLE_MORE_ITEMS, type RoleNavigationKind } from "@/app/role-navigation";
-import { useCampaignPlugin } from "@/components/campaign-plugin-context";
 import { WorkspaceText } from "@/components/workspace-language";
 import { WorkspaceNavigationIcon as Icon } from "@/components/workspace-navigation-icon";
 
@@ -14,8 +13,7 @@ export function RoleMoreContent({ roleKind, activeItemIds, onNavigate, listClass
   listClassName?: string;
   workspace?: "standard" | "pos";
 }) {
-  const campaignsInstalled = useCampaignPlugin();
-  const items = ROLE_MORE_ITEMS[roleKind].filter(item => item.id !== "owner-campaigns" || campaignsInstalled);
+  const items = ROLE_MORE_ITEMS[roleKind];
   const destinations: Record<string, string> = workspace === "pos" ? { "/bookings": "/pos/book", "/reports": "/pos/report", "/pos-tickets": "/pos/ticket" } : {};
 
   return <>

@@ -47,16 +47,22 @@ function score(seed: string, id: string) {
 export function selectNailLooks(query = "", filters: NailFilters = {}, seed = "reylumi") {
   return NAIL_LOOKS.filter(look => matchesNailLook(look, query, filters)).sort((a, b) => score(seed, a.id) - score(seed, b.id));
 }
+/** A reference belongs to this result presentation, never proof of the salon's work. */
+export const NAIL_SUGGESTION_CATALOG_VERSION = "2026-10-16-v1";
+export function selectNailLookForSalon(salonId: string, query = "", filters: NailFilters = {}): NailLook | null {
+  const normalizedQuery = nailQueryTerms(query).sort().join(" ");
+  return selectNailLooks(query, filters, `${NAIL_SUGGESTION_CATALOG_VERSION}:salon:${salonId}:${normalizedQuery}`)[0] ?? null;
+}
 export function nailSalonSearchInput(discovery: ExploreFeedDiscoveryOptions): ExploreSearchInput {
   return { target: "salons", query: "", category: "Nails", location: discovery.location ?? "",
     locationSource: discovery.strictLocation ? "manual" : discovery.latitude != null && discovery.longitude != null ? "gps" : "activity",
     latitude: discovery.latitude, longitude: discovery.longitude, scopePolicy: discovery.strictLocation ? "fixed" : "expandable",
     sort: "closest", pageSize: 24, page: 1 };
 }
-/** Browse actual salons without sending a design phrase back through Ideas routing. */
+/** Preserve nearby intent so an absent area is resolved through GPS or area selection. */
 export function nailSalonSearchHref(location = "") {
   return `/explore?${new URLSearchParams({ type: "salons", category: "Nails", sort: "closest",
-    ...(location ? { location, locationSource: "manual" } : {}) })}`;
+    ...(location ? { location, locationSource: "manual" } : { q: "nails near me" }) })}`;
 }
 export function nailSalonEligible(salon: ExploreSearchResult, discovery: ExploreFeedDiscoveryOptions) {
   return /^[0-9a-f-]{36}$/i.test(salon.id) && !salon.id.startsWith("showcase-") &&

@@ -15,6 +15,10 @@ on:
         default: '1.0.1'
         required: true
         type: string
+      baseline_marketing_version:
+        default: '1.0.1'
+        required: true
+        type: string
       existing_group_id:
         description: Optional exact existing internal group ID
         default: ''
@@ -34,6 +38,7 @@ jobs:
         env:
           EXPECTED_BUILD: ${{ inputs.build }}
           BASELINE_BUILD: ${{ inputs.baseline_build }}
+          BASELINE_MARKETING_VERSION: ${{ inputs.baseline_marketing_version }}
           EXPECTED_MARKETING_VERSION: ${{ inputs.marketing_version }}
           EXISTING_GROUP_ID: ${{ inputs.existing_group_id }}
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}

@@ -74,6 +74,10 @@ actor AppLocalFixtureHTTP: ReylumiLocalHTTPClient {
     private var contexts: [String: [String: String]] = [:]
     private var contextUnavailable = false
     private var readStatus = 200
+    private var partialGrant = false
+    private var unconfirmed = false
+    private var permissionsChanged = false
+    func configurePartialGrant(unconfirmed: Bool = false, permissionsChanged: Bool = false) { partialGrant = true; self.unconfirmed = unconfirmed; self.permissionsChanged = permissionsChanged }
     func configureHold() { holdRead = true }
     func configureContext(path: String, scope: String, kind: String, primaryScope: String? = nil, revision: String = "revision-a") { contexts[path] = ["scope": scope, "kind": kind, "primaryScope": primaryScope ?? scope, "revision": revision] }
     func configureContextUnavailable() { contextUnavailable = true }
@@ -93,7 +97,10 @@ actor AppLocalFixtureHTTP: ReylumiLocalHTTPClient {
             if contextUnavailable { throw URLError(.notConnectedToInternet) }
             let config = contexts[query.first(where: { $0.name == "path" })?.value ?? ""]
             scope = config?["scope"] ?? scope
-            object = AppLocalTestFixture.context(generation: query.first(where: { $0.name == "generation" })!.value!, scope: scope, revision: config?["revision"] ?? "revision-a", kind: config?["kind"] ?? "owner", primaryScope: config?["primaryScope"])
+            var envelope = AppLocalTestFixture.context(generation: query.first(where: { $0.name == "generation" })!.value!, scope: scope, revision: config?["revision"] ?? "revision-a", kind: config?["kind"] ?? "owner", primaryScope: config?["primaryScope"])
+            if partialGrant { envelope["grant"] = NSNull(); envelope["grantStatus"] = 503; if unconfirmed { envelope["offlineState"] = "unconfirmed" } }
+            if permissionsChanged { var context = envelope["context"] as! [String: Any]; context["permissionRevision"] = "changed-permissions"; envelope["context"] = context }
+            object = envelope
         }
         else if url.path == "/api/app-local/command" {
             let body = (try? JSONSerialization.jsonObject(with: request.httpBody ?? Data())) as? [String: Any]
@@ -381,6 +388,50 @@ final class LocalAppTransportTests: XCTestCase {
         let retained = try await transport.cached(name: "fixture.roster", args: ["date": "2026-10-16"], requestedScope: AppLocalTestFixture.scope); XCTAssertNotNil(retained)
         await transport.reset()
     }
+    @MainActor
+    func testPartialLeaseFailurePreservesOnlyUnchangedAuthorityAndNeverAllowsCommands() async throws {
+        for scenario in ["temporary", "scope-change", "unconfirmed", "permission-change"] {
+            let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+            let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP()
+            let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.partial." + UUID().uuidString)
+            let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: UserDefaults(suiteName: "reylumi.tests.partial." + UUID().uuidString)!, cookies: { [] })
+            _ = try await transport.freshContext(path: "/help")
+            _ = try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope)
+            let original = await store.session(generation: transport.generation)
+            var resets = 0; transport.onEvent = { name, _ in if name == "reylumi:app-local-reset" { resets += 1 } }
+            if scenario == "scope-change" { await http.configureContext(path: "/help", scope: "v3:" + String(repeating: "b", count: 64), kind: "owner") }
+            await http.configurePartialGrant(unconfirmed: scenario == "unconfirmed", permissionsChanged: scenario == "permission-change")
+            do { _ = try await transport.freshContext(path: "/help"); XCTAssertNotEqual(scenario, "temporary") }
+            catch { XCTAssertEqual(scenario, "temporary"); XCTAssertEqual((error as NSError).code, 503) }
+            if scenario == "temporary" {
+                let cached = try await transport.cached(name: "fixture.roster", args: [:], requestedScope: AppLocalTestFixture.scope)
+                let retained = await store.session(generation: transport.generation)
+                XCTAssertNotNil(cached); XCTAssertEqual(resets, 0)
+                XCTAssertEqual(retained?.expiresAt, original?.expiresAt, "A failed refresh must never extend an offline lease")
+                do { _ = try await transport.command(name: "fixture.save", args: ["id": "one-attempt"], requestID: UUID().uuidString, path: "/help", requestedScope: AppLocalTestFixture.scope); XCTFail("Commands require fresh authority") } catch {}
+                let requests = await http.requests; XCTAssertFalse(requests.contains { $0.url?.path == "/api/app-local/command" })
+            } else { XCTAssertEqual(resets, 1, "A real authority change still invalidates the old visible session") }
+            await transport.reset()
+        }
+    }
+
+    @MainActor
+    func testForbiddenReadEvictsOnlyItsSnapshotWithoutResettingOtherPages() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP()
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.forbidden." + UUID().uuidString), client: http, defaults: UserDefaults(suiteName: "reylumi.tests.forbidden." + UUID().uuidString)!, cookies: { [] })
+        _ = try await transport.freshContext(path: "/help")
+        for date in ["one", "two"] { _ = try await transport.read(name: "fixture.roster", args: ["date": date], etag: nil, requestedScope: AppLocalTestFixture.scope) }
+        var resets = 0; transport.onEvent = { name, _ in if name == "reylumi:app-local-reset" { resets += 1 } }
+        await http.configureReadStatus(403)
+        do { _ = try await transport.read(name: "fixture.roster", args: ["date": "one"], etag: nil, requestedScope: AppLocalTestFixture.scope); XCTFail("Forbidden data must not be returned") }
+        catch { XCTAssertEqual((error as NSError).code, 403) }
+        let denied = try await transport.cached(name: "fixture.roster", args: ["date": "one"], requestedScope: AppLocalTestFixture.scope)
+        let other = try await transport.cached(name: "fixture.roster", args: ["date": "two"], requestedScope: AppLocalTestFixture.scope)
+        XCTAssertNil(denied); XCTAssertNotNil(other); XCTAssertEqual(resets, 0)
+        await transport.reset()
+    }
+
     @MainActor
     func testLongNamedReadUsesBoundedSameOriginJSONPostWithoutCommandReplay() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
