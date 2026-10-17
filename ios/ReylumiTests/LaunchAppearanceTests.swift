@@ -63,7 +63,8 @@ final class LaunchAppearanceTests: XCTestCase {
             controller.view.frame = CGRect(origin: .zero, size: size)
             controller.view.setNeedsLayout(); controller.view.layoutIfNeeded(); launch.layoutIfNeeded()
             XCTAssertEqual(orbit.bounds.width, 112, accuracy: 0.01)
-            XCTAssertTrue(launch.bounds.contains(orbit.convert(orbit.bounds, to: launch)))
+            XCTAssertGreaterThan(launch.bounds.height, 112)
+            XCTAssertTrue(launch.bounds.contains(orbit.convert(orbit.bounds, to: launch)), "Orbit \(orbit.convert(orbit.bounds, to: launch)) must fit launch \(launch.bounds) at \(size)")
             XCTAssertFalse(controller.view.subviews.contains { $0 is WKWebView })
         }
     }

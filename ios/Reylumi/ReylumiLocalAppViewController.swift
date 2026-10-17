@@ -49,7 +49,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         launchPanel.onRetry = { [weak self] in if self?.webView == nil { self?.initializeWebContentIfNeeded() } else { self?.loadBundle() } }
         view.addSubview(launchPanel); launchPanel.showLoading()
         NSLayoutConstraint.activate([
-            launchPanel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor), launchPanel.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor), launchPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor), launchPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            launchPanel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor), launchPanel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor), launchPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor), launchPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
     override func viewDidAppear(_ animated: Bool) {

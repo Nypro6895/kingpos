@@ -70,7 +70,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         view.addSubview(launchPanel)
         NSLayoutConstraint.activate([
             launchPanel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            launchPanel.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+            launchPanel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             launchPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             launchPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
