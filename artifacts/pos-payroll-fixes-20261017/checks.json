@@ -1,0 +1,362 @@
+{
+  "checkedAt": "2026-10-17T00:45:39.204Z",
+  "uniqueTests": 68,
+  "passed": 68,
+  "failed": 0,
+  "skipped": 0,
+  "tests": [
+    {
+      "name": "one rejected read forces fresh authority recovery and restores the saved money draft",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "persistent read rejection stops after one fresh recovery and exposes retry instead of an infinite opening screen",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "cold installed Help uses no context, account resource, cache or command scope",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "owner Help retains only presentation admission, never commands or background reads, and returning POS retains original money DOM",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "staff Help presents the actual admitted staff family and expires its unleased chrome without fetching public Help",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "staff Help chrome expiry keeps a separately admitted owner POS draft and single-writer lock intact",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "Help presentation cannot survive reset, changed device generation or expired owner grant",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "held staff-family context cannot send old-owner scoped reads or commands; original POS and Check-in DOM/lock survive",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "portal/workday/account remain distinct; unadmitted Market paints static content and rapid late context cannot win",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "scope validation from an old scope or hidden Activity cannot stamp the current provider as verified",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "full local POS settings retains the original group conflict workflow and does not resubmit on its own",
+      "passed": true,
+      "log": "business-retest.log"
+    },
+    {
+      "name": "a complete Create Salon draft has one stable request key through quiet reads and cannot restore another scope’s draft",
+      "passed": true,
+      "log": "business-retest.log"
+    },
+    {
+      "name": "the complete Salon Settings view includes operating, ownership, lifecycle and public-team sections without issuing writes",
+      "passed": true,
+      "log": "business-retest.log"
+    },
+    {
+      "name": "canonical installed owner ticket detail keeps one original POS navigation during held, failed and successful reads; legacy keeps its general shell",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "ticket detail navigation uses the admitted owner gate without changing the original sign-in/read guard",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "complete retained ticket detail keeps payment entries during quiet reads and requires an explicit online confirmation",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "closed read-only ticket preserves receipt/history while hiding payment and workflow forms",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "Tax Company uses its complete original report and retains an unsent note through a scoped quiet update without autosave",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "raw links dispatch local routes, preserve native gestures/cancelled handlers and send only declared HTTPS handoffs",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "actual Help image links open the signed local image viewer before Help routing, then close on hide/scope/reset without stale portals",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "actual customer edit form keeps unsent values through silent update and Activity hide/reveal without writes",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "actual staff account reconfirmation remains explicit and its original portal hides with the retained route",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "original authorization and exact requested scope gate every owner page read",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "staff keeps original approval/reconfirmation DTO, permission gates and account lookup",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "customer DTOs use original salon-bound getters and never bypass edit permission",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "payroll preserves original recorded totals/status and strips only private request context",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "unknown resource, arbitrary arguments, secrets and malformed IDs cannot select a getter",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "all original JSX and authority controls are preserved by the mechanical view extraction",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "confirmed deletion wins over a delayed disk read; a network timeout retains the last authorized view",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "successful unchanged validation prevents repeated reads and keeps the original draft DOM",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "attendance refreshes affected visible data and defers hidden data without fetching disabled or static shell cells",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "older command notifications retain conservative active refresh but never run disabled hooks",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "a pre-command read resolving while hidden cannot replace newer state or cancel the reveal reconciliation",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "visit and transformation reads use the original authorized loaders; deleted visits cannot return a retained DTO",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "local owner tabs keep actual checkout/Check-in DOM usable before held reads; PIN action remains one explicit call",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "same-account durable Check-in data survives process restart while fresh reads are held and keeps money draft",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "confirmed attendance invalidates an older held read and reconciles a later authoritative roster without replacing inputs",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "previous-day cached reference retains catalog but never treats old attendance or turns as current",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "POS tab intent paints before delayed route data, supersedes races, and preserves checkout and panel work",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "POS optimistic tabs preserve native link gestures, More links, and scoped legacy GET navigation",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "real POS checkout retains exact money draft and one durable receipt across delayed tab navigation",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "late offline preparation cannot navigate after leaving the POS workspace",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "owner bootstrap reveals guarded navigation before desk reads, and checkout still waits for complete authorized data",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "actual installed entry keeps one visible owner navigation across all five tabs, preserves checkout DOM/lease and separates the sync hit target",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "actual cashier opens with real IndexedDB when randomUUID is unavailable, and reload keeps the same unsent cart",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "failed checkpoint has an explicit safe retry and does not change the saved cart before a successful checkpoint",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "held checkpoint times out without a write; retry can recover and the older completion cannot replace the edited cart",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "corrupt saved record stays untouched and checkpointed submitted work never reappears as an editable draft",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "an aborted startup cannot commit after a later scope succeeds",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "startup diagnostics expose only fixed stage/code and preserve the original private cause internally",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "actual startup storage failures render only safe diagnostics and retry leaves the exact existing cart available",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "hidden real Check In pauses its clock while a failed held attendance still rolls back the shared POS roster",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "payroll coalesces related changes, defers refresh until edits settle, and isolates hidden/salon scopes",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "payroll results match uploaded baseline with commission, fixed pay, tips, bonus, tax and correction (owner)",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "payroll results match uploaded baseline with commission, fixed pay, tips, bonus, tax and correction (staff)",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "presentation filters share a payroll read; period and analytics/tax requirements remain separate",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "scoped draft ignores late restore after input, keeps Activity draft and restores only on true remount",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "scope change rejects old async draft; logout prevents late restore and subsequent writes",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "payroll ignores old stored drafts, autosaves new edits once and starts from server values on remount",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "payroll autosave protects new typing during an in-flight save and retries a failed save",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "staff service refuses cross-route stored data; offline unsent entries remain through Activity and reconnect without replay",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "offline network form guard retains fields, permits explicit local submit, and never replays on reconnect",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "persistent read restores newer authorized data but never replaces a newer server response or survives reset",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "regular Book/Report/Ticket preserve their navigation and ticket return/filter URLs",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "POS Settings and More keep POS links and expose an explicit exit to role home",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "neutral startup selects owner home",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "neutral startup selects staff home",
+      "passed": true,
+      "log": "tests-final.log"
+    },
+    {
+      "name": "neutral startup selects customer home",
+      "passed": true,
+      "log": "tests-final.log"
+    }
+  ],
+  "productionBuild": {
+    "passed": true,
+    "exitCode": 0,
+    "log": "build-final.log"
+  },
+  "bundle": {
+    "buildId": "a15b31ff1a6b6f6209a4ccf8311ef9710c872f84c9bf3d5782e100196c7c18c6",
+    "verifiedAssets": 344,
+    "log": "bundle-final.log"
+  },
+  "nativeXCTest": "pending: Xcode unavailable on Windows",
+  "deployment": false,
+  "productionWrites": false
+}

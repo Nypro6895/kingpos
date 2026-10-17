@@ -1,0 +1,11 @@
+✔ full local POS settings retains the original group conflict workflow and does not resubmit on its own (2040.3682ms)
+✔ a complete Create Salon draft has one stable request key through quiet reads and cannot restore another scope’s draft (1869.8634ms)
+✔ the complete Salon Settings view includes operating, ownership, lifecycle and public-team sections without issuing writes (1480.14ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5909.9665

@@ -1,0 +1,71 @@
+{
+  "createdAt": "2026-10-17T00:46:34.719Z",
+  "sourceCommit": "5e6c1c142977ea32fb420c868cff346c1c7049fa",
+  "nativeBaseline": {
+    "commit": "cd3885f09abd07ad1251bbe0d298d246de74602e",
+    "build": "25.1",
+    "receipt": "C:/Users/giuse/.codex/worktrees/reylumi-glass-logo/kingpos/releases/history/2026-10-17T00-17-12-963Z-4bff6c85-f650-4d89-9dc4-188a982eee99.json"
+  },
+  "auditedWebBaseline": {
+    "deploymentId": "dpl_AZySuHVMKVf3QpANrwZ5Yv24vB4y",
+    "commit": "de7f057c061a1f81f904b7cc72606a64139e5f77",
+    "requiresFreshCaptureBeforeRelease": true
+  },
+  "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos\\artifacts\\pos-payroll-fixes-20261017\\frozen-source",
+  "files": {
+    "app/(app)/payroll/page.tsx": "714fdd013cfa894a8b6f3892cb0f01f913e55c733ff98d5a9b0027b2bfff3f06",
+    "app/(app)/pos-tickets/page.tsx": "1b4c2e547206c53973694939d1f1104c2b38fb8c13e3256fedcb2053217ad332",
+    "app/(app)/pos/more/page.tsx": "a4a01c5a892da1b50e34e400999f28652bd4dcae9dd02fc0f91253dd29d55549",
+    "app/(app)/pos/settings/page.tsx": "41aebbfb5347452b8b841bbc2352af0e1eecd73b57faa284cc3ebc45c1fdffe5",
+    "app/navigation-shell.tsx": "628bb3527973e203bb88cfee81efb767bbd90030f297d9225812a6e07e5f9497",
+    "app/payroll/payroll-live-refresh.tsx": "1920d6e2eb7093ecb2c2a5ea28c63907136715db9fc028828bcac870477dc6ef",
+    "app/payroll/staff-income-autosave-inputs.tsx": "a8946b191dc3f39af624894afa14c598662d510239db72d9a30b436f1bfceb6f",
+    "app/payroll/use-payroll-refresh-batch.ts": "ac094b10f6229af3e5f68aa00f34ff980e0b31ddb417ce84ca16050c36eca2d4",
+    "app/pos-tickets/work-log-filters.tsx": "9b9519c486ef042db13cd382681e5afb6338321cde5c99766e3478fc3428b1c3",
+    "app/pos/owner-local-panels.tsx": "6c254ff0c654a3d6912bf9b6a526a7d831a522eb2ca6c78012e93e7d02ffb07a",
+    "app/pos/owner-pos-more.tsx": "ea8c693df01e6db49abe617d210103e3055b35851dfab1bcb2f7df4e8fc813c9",
+    "app/pos/owner-pos-tabs.tsx": "9081a8ea5d340dd978551762fc9ead1b3b0b92f0e89d0834824fbe0bbd15c2b6",
+    "app/pos/owner-pos.css": "94d700b1aa651347c5680d414ecd4b660569985ec249b0fc72f215f6d8c9e290",
+    "components/app-local-pos-settings.tsx": "7f89e982800e4a26c15ec09ea44eb9acfc7357d7b13408b008c094be9bc0570e",
+    "components/role-more-content.tsx": "8ff067506536492445d625b506fc78db5716205d779ae89a69cebdbb48dd4ce5",
+    "ios/Reylumi/LocalAppBundle/app.css": "b84cc60ae64c812dff78be33ae41f6a7d6e6d89d4c82c06da7e962beb0baf1e0",
+    "ios/Reylumi/LocalAppBundle/app.js": "b99a9b5ab37f138ba3b42fef7a04ea95baab70ac49a775c0a921879f0f74ab81",
+    "ios/Reylumi/LocalAppBundle/index.html": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "dae1c9626713f8fddaf9fb740f8a01182e4be656e1bec700054adeaa3ae78361",
+    "ios/Reylumi/ReylumiLocalAppViewController.swift": "3ead00b7f23f300e1e1d3c80f88e77524222e4309d8b927078a1b266c7488a70",
+    "ios/Reylumi/ReylumiLocalReadStore.swift": "1e5160db58071d9feef1ab7b92a565edac2fca40958ed2d13843607e6c756afa",
+    "ios/Reylumi/ReylumiViewController.swift": "38c466e7006051735bea1fd245b59b046bf1f71f33ce15197c0d56d37b451f6d",
+    "ios/ReylumiTests/LocalHostedReturnTests.swift": "3a277b6dced4a491104dbe65da9bd9da3b3d67f042ab4cac0872b5585243ee62",
+    "ios/ReylumiTests/LocalReadStoreTests.swift": "7fb9ca207298dfadf02f29509c2043286b650d149e833388264bc9799741d5fd",
+    "ios/ReylumiTests/OfflineRouteTests.swift": "b3ea2e8e9af44134cf7cb808b16b2b17568abd00d7a8ac2549911da9501c9821",
+    "ios/ReylumiTests/OfflineWebViewTests.swift": "c08195f354acd7e165bac6e889f70053a915cf20686e0bc82807606cda9d5ae1",
+    "lib/app-local-command-client.ts": "50a40e9d8837208bd6e9f86e25bac64d8be08053b2140a47441fe976f540baaf",
+    "lib/app-local-owner-page-registry.tsx": "256d56100ff005d62dc99b83d91d2babedb4b2992c7ba051e253c4381e17273c",
+    "lib/app-local-owner-payroll-view.tsx": "8f659cb27879db8b31d5d51f63bc48788ec750d177a5ed4f55dcf6ddbbdc4f55",
+    "lib/app-local-resource-invalidation.ts": "9810b16bbbb7fabf6bd060aa3a787b3421748f98f36028221fe2be984e546248",
+    "lib/app-local-resource.ts": "8116d729c05b6ad9e70e8d86278b5218bd69f18ee8bc8e2a7c0b66f8d2d88b6d",
+    "lib/app-local-secondary-metadata.ts": "7078ed32095a55888f6012579eae073bd632591e6bd82d4195b9d67b5f21bca7",
+    "lib/app-local-secondary-registry.tsx": "bbbcafe7b8d06f726c3f973ce72c272acd0c9d2398b48dbbf78083fdeb3a9afa",
+    "lib/payroll-read-args.ts": "6ef4d11d47e38ee8fcf03711162b9764338ae09619ead20338dfbfaf2210a3e8",
+    "lib/payroll.ts": "c734a1366b76a31f470549c2776e19cdca43d691d105a8fbaa8afb4278a99936",
+    "scripts/build-app-local-bundle.mjs": "c5ebf45cb544b30af857b2d6c7c66575820531929ddda506665880eebc20d5fe",
+    "tests/app-local-business-ui.test.mjs": "9b06af03c61322487a0eba431db5f5d4bcfd4679bbd679a68aa6500e14fbb29d",
+    "tests/app-local-resource-races.test.mjs": "3bd699a48c45751e5a5492eb81f3874ddebd94026bde5abafa7af8b039ad86eb",
+    "tests/app-local-resource-refresh.test.mjs": "d725b5114776eebe23d0cd3b3cf37b55c3c22d38a3681f2e384806e93ed3d90d",
+    "tests/owner-local-workspace-ui.test.mjs": "6035093f941ffec2653494eb40caac6bd814731d0684049e9694e0c29bde839f",
+    "tests/payroll-live-refresh-ui.test.mjs": "499c57c1ebabc073b1c39e25a63e923d1b825ffe0f7710416f8dd239e29fdc8f",
+    "tests/payroll-read-parity.test.mjs": "9d89708044af2b2d60b6784446e0fc9fe5c784ec466dc38860578e5755c48bcc",
+    "tests/scoped-ui-drafts-ui.test.mjs": "2003868399eafc4744a467096e00a8b2a00ff8548679089983bee2a818066bf9",
+    "tests/workspace-navigation-ui.test.mjs": "7f23d765f9552bbb74c8d48d6e187c1276790fd97d4462f2eab40caee76e73b1"
+  },
+  "sourceSha256": "63941035b3bf8b85e224ffe76496ccf8c080a2cfe7bab38ea34355674776dd31",
+  "publication": {
+    "web": false,
+    "ios": false
+  },
+  "integrationNotes": [
+    "Merge only these scoped changes onto a freshly captured production source; preserve unrelated features.",
+    "Carry lib/app-local-resource.ts, resource-invalidation.ts and command-client.ts from this frozen source; they contain the audited web cache fix already present on uploaded native 25.1.",
+    "Native changes require Xcode tests/archive and a new version/build before upload. Never treat this local bundle as a published release."
+  ]
+}
