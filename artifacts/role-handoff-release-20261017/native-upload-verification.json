@@ -1,0 +1,85 @@
+{
+  "at": "2026-10-17T17:49:59.803Z",
+  "mode": "upload",
+  "commit": "7b16aea3d2b600a9292c1dceeb6236c15fd8cc84",
+  "ciCommit": "7b16aea3d2b600a9292c1dceeb6236c15fd8cc84",
+  "xcode": "Xcode 26.3\nBuild version 17C529",
+  "sourceFiles": 390,
+  "sourcePassed": true,
+  "tests": {
+    "expected": 94,
+    "count": 94,
+    "failures": 0,
+    "passed": true
+  },
+  "bundle": {
+    "buildId": "9ccf4f9a997e6bf30500ae7a10803e32264688d3a80c45108f67f72dad7696a0",
+    "files": 344,
+    "passed": true
+  },
+  "unsignedArchive": true,
+  "passed": true,
+  "version": "1.1.0",
+  "build": "31.1",
+  "baselineBuild": "30.1",
+  "signedSourcePassed": true,
+  "signedArchive": true,
+  "exported": true,
+  "uploadAccepted": true,
+  "apple": {
+    "build": "31.1",
+    "buildId": "0338c09a-3554-428c-b064-195db281c018",
+    "processingState": "VALID",
+    "internalBuildState": "IN_BETA_TESTING",
+    "checkedAt": "2026-10-17T17:48:48.365Z",
+    "operation": "Read-only; no tester invitations or group changes"
+  },
+  "testFlight": {
+    "checkedAt": "2026-10-17T17:49:20.640Z",
+    "operation": "GET requests only; no groups/testers/invitations/notifications/metadata changes",
+    "appId": "6821394475",
+    "marketingVersion": "1.1.0",
+    "baselineMarketingVersion": "1.1.0",
+    "build": "31.1",
+    "buildId": "0338c09a-3554-428c-b064-195db281c018",
+    "baselineBuild": "30.1",
+    "baselineBuildId": "463a4318-920b-45bc-a030-067d54471792",
+    "processingState": "VALID",
+    "expired": false,
+    "expirationDate": "2027-01-15T09:47:31-08:00",
+    "internalBuildState": "IN_BETA_TESTING",
+    "availableToExistingInternalGroup": true,
+    "groups": [
+      {
+        "id": "afe80011-9371-4a4c-afda-025b624f3275",
+        "name": "Reylumi Internal",
+        "isInternalGroup": true,
+        "hasAccessToAllBuilds": true,
+        "hadBaseline": true,
+        "preexistingAutomaticGroup": true,
+        "hasNewBuild": true,
+        "existingDistributionGroup": true,
+        "associationConfirmed": true
+      },
+      {
+        "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+        "name": "Reylumi support",
+        "isInternalGroup": true,
+        "hasAccessToAllBuilds": true,
+        "hadBaseline": true,
+        "preexistingAutomaticGroup": true,
+        "hasNewBuild": true,
+        "existingDistributionGroup": true,
+        "associationConfirmed": true
+      }
+    ],
+    "status": "available-to-existing-internal-group",
+    "limitations": [
+      "This confirms Apple group access, not installation or automatic update on a particular phone.",
+      "An automatic-distribution flag without the new build association is not reported as confirmed availability.",
+      "External TestFlight and App Store publication are separate."
+    ]
+  },
+  "available": true,
+  "uploadVerified": true
+}

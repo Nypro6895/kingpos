@@ -1,0 +1,189 @@
+{
+  "at": "2026-10-17T17:46:02.290Z",
+  "origin": "https://reylumi.com",
+  "label": "live",
+  "operations": "Anonymous GET requests only. No settings, publication, booking or payment mutations.",
+  "checks": [
+    {
+      "route": "/explore",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": false,
+      "streamedNotFound": false,
+      "elapsedMs": 3084,
+      "title": "Reylumi",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/market",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": false,
+      "streamedNotFound": false,
+      "elapsedMs": 1619,
+      "title": "Market | Reylumi",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/help",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": false,
+      "streamedNotFound": false,
+      "elapsedMs": 370,
+      "title": "Hướng dẫn Reylumi",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/login",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": false,
+      "streamedNotFound": false,
+      "elapsedMs": 368,
+      "title": "Log in | ReyLUMI",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/settings",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": true,
+      "streamedNotFound": false,
+      "elapsedMs": 380,
+      "title": "Settings | Reylumi",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/pos/more",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": true,
+      "streamedNotFound": false,
+      "elapsedMs": 321,
+      "title": "Reylumi",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/pos/settings",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": true,
+      "streamedNotFound": false,
+      "elapsedMs": 324,
+      "title": "Reylumi",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/payroll",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": true,
+      "streamedNotFound": false,
+      "elapsedMs": 531,
+      "title": "Reylumi",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/pos-tickets",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": true,
+      "streamedNotFound": false,
+      "elapsedMs": 302,
+      "title": "Reylumi",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/salon-profile",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": true,
+      "streamedNotFound": false,
+      "elapsedMs": 275,
+      "title": "Salon profile | Reylumi",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/explore/salons/d5206780-179e-4a4b-9165-8f1a54a15ec9",
+      "status": 200,
+      "passed": true,
+      "streamedLoginRedirect": false,
+      "streamedNotFound": true,
+      "elapsedMs": 600,
+      "title": "Salon not found | Reylumi",
+      "location": null,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "route": "/api/public-booking/context?salonId=invalid",
+      "status": 400,
+      "passed": true,
+      "streamedLoginRedirect": false,
+      "streamedNotFound": false,
+      "elapsedMs": 220,
+      "title": null,
+      "location": null,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "route": "/api/app-local/context",
+      "status": 400,
+      "passed": true,
+      "streamedLoginRedirect": false,
+      "streamedNotFound": false,
+      "elapsedMs": 274,
+      "title": null,
+      "location": null,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "route": "/brand/reylumi-logo-horizontal.png",
+      "status": 200,
+      "sha256": "8dc0076108ce87279028f6563cc4aa0d610dd60b68913765f600431042e0ca45",
+      "passed": true
+    },
+    {
+      "route": "/brand/reylumi-logo-tagline.png",
+      "status": 200,
+      "sha256": "33845960dab5f30c0fb4383e4576eab347789a2e505613f07a805d98052534f4",
+      "passed": true
+    },
+    {
+      "route": "/brand/reylumi-logo-login.webp",
+      "status": 200,
+      "sha256": "ec8f81c49e7988eab0b3af7c0d70fff9c8ee09a8cdf9e7ee8ae55df6616f0bf6",
+      "passed": true
+    },
+    {
+      "route": "/brand/reylumi-app-192.png",
+      "status": 200,
+      "sha256": "4ba4bed5a2347dca50330686b3d95d24368ca070fa40d91983251a9782a7354f",
+      "passed": true
+    },
+    {
+      "route": "/brand/reylumi-app-512.png",
+      "status": 200,
+      "sha256": "37a19cf40149b1cf6483018333c63370816783e0d911e9a03608c250df4883d9",
+      "passed": true
+    },
+    {
+      "route": "/brand/reylumi-favicon.png",
+      "status": 200,
+      "sha256": "b50ea09e6bd0efcca4183d27a63bac02c308a97a6243a64229727940b8e0f15f",
+      "passed": true
+    }
+  ],
+  "passed": 19,
+  "failed": 0
+}

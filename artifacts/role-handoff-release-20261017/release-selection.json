@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-17T17:41:03.706Z",
+  "commit": "7b16aea3d2b600a9292c1dceeb6236c15fd8cc84",
+  "selectedEvents": [
+    "d52e2ca3-bab0-48fc-a80a-bb993746c804",
+    "01db4672-3127-4ca3-b9d7-c3c7e5bc568c",
+    "0e3e3005-933d-403f-9555-c60a30bc2494"
+  ],
+  "roleEvent": "d52e2ca3-bab0-48fc-a80a-bb993746c804",
+  "ticketEvent": "01db4672-3127-4ca3-b9d7-c3c7e5bc568c",
+  "journalEvent": "0e3e3005-933d-403f-9555-c60a30bc2494",
+  "disposition": [
+    {
+      "changeId": "phone-claim-conflicts-20261015",
+      "action": "Excluded; ownership policy approval remains blocked."
+    },
+    {
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "action": "Independent Site; excluded from reylumi.com/iOS."
+    },
+    {
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "action": "Independent Site; excluded from reylumi.com/iOS."
+    },
+    {
+      "changeId": "explore-preview-logos-20261017",
+      "action": "Preview-only harness; no application release."
+    }
+  ]
+}

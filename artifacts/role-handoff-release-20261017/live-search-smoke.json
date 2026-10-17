@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-17T17:46:05.346Z",
+  "origin": "https://reylumi.com",
+  "label": "live",
+  "operations": "Public salon search only; creates short-lived viewer search sessions. No customer, booking, money, or message mutations.",
+  "checks": [
+    {
+      "name": "Fresh public search uses version 3 and returns real results",
+      "status": 200,
+      "searchVersion": 3,
+      "resultCount": 10,
+      "primaryCount": 10,
+      "errorKind": null,
+      "passed": true
+    },
+    {
+      "name": "Viewer-bound search is private and not cached at the edge",
+      "cache": "private, no-store",
+      "passed": true
+    },
+    {
+      "name": "Canonical cursor continuation remains valid and avoids repeating salon IDs",
+      "status": 200,
+      "resultCount": 10,
+      "errorKind": null,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

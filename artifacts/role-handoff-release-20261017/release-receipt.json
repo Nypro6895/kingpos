@@ -1,0 +1,112 @@
+{
+  "kind": "release",
+  "summary": "Role switching and notification recovery published on exact preserved web baseline and verified TestFlight; diagnostic journal conflict repaired and completed compact ticket UI integrated.",
+  "changes": [
+    "d52e2ca3-bab0-48fc-a80a-bb993746c804",
+    "01db4672-3127-4ca3-b9d7-c3c7e5bc568c",
+    "0e3e3005-933d-403f-9555-c60a30bc2494"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "url": "https://reylumi.com",
+      "deploymentId": "dpl_Gheha59JRQyJT19pwwqrHEXgogbC",
+      "baselineDeploymentId": "dpl_FRuEJPP9YhnAbBHFUQ6GbxnhNwz9",
+      "sourceSha256": "74dc6038ebbc6d4e712b468ce758731a28862ac086de058b07df843b17991bb7",
+      "overlaySha256": "73192977ebdf870134313bc2ea986266395f3c7ba7a9220767924b0a4798c800",
+      "commit": "7b16aea3d2b600a9292c1dceeb6236c15fd8cc84",
+      "evidence": "C:/Users/giuse/.codex/worktrees/role-handoff-release/kingpos/artifacts/role-handoff-release-20261017/live-source-verification.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.1.0",
+      "build": "31.1",
+      "commit": "7b16aea3d2b600a9292c1dceeb6236c15fd8cc84",
+      "baselineBuild": "30.1",
+      "workflowRun": 39054529813,
+      "evidence": "C:/Users/giuse/.codex/worktrees/role-handoff-release/kingpos/artifacts/role-handoff-release-20261017/native-upload-verification.json"
+    }
+  },
+  "appStorePublication": "Not performed; existing TestFlight distribution only.",
+  "preservation": {
+    "passed": true,
+    "baselineFiles": 2870,
+    "preservedUnrelatedFiles": 2852,
+    "intendedChangedFiles": [
+      "app/(app)/pos-tickets/page.tsx",
+      "app/local-app/entry.tsx",
+      "app/notifications/actions.ts",
+      "app/pos-tickets/closed-ticket-correction-form.tsx",
+      "app/pos-tickets/owner-live-tickets.tsx",
+      "app/pos/portable/ticket/portable-ticket-client.tsx",
+      "components/app-local-shell.tsx",
+      "ios/Reylumi/LocalAppBundle/app.css",
+      "ios/Reylumi/LocalAppBundle/app.js",
+      "ios/Reylumi/LocalAppBundle/manifest.json",
+      "ios/Reylumi/ReylumiLocalAppTransport.swift",
+      "ios/Reylumi/ReylumiLocalAppViewController.swift",
+      "ios/ReylumiTests/LocalAppTransportTests.swift",
+      "lib/app-local-command-client.ts",
+      "lib/app-local-resource.ts",
+      "lib/app-local-shell-workspace-navigation.ts",
+      "scripts/build-app-local-bundle.mjs",
+      "scripts/release-journal.mjs"
+    ],
+    "unexpected": [],
+    "requiredExploreFiles": [
+      "app/api/explore/search/route.ts",
+      "app/api/explore/feed/route.ts",
+      "app/api/explore/area/route.ts",
+      "app/explore/explore-discovery-feed.tsx",
+      "lib/explore-search.ts",
+      "lib/explore-search-rpc.ts",
+      "lib/explore-search-client.ts",
+      "lib/explore-feed-client.ts",
+      "lib/explore-visitor.ts",
+      "lib/explore-feed-discovery.ts",
+      "lib/explore-social-feed.ts",
+      "lib/explore-social-feed-ranking.ts",
+      "lib/explore-query-intent.ts",
+      "lib/explore-query-routing.ts"
+    ],
+    "locationProvidersPreserved": true,
+    "nativeBaselineCommit": "f3f0a06d5acd07c9e15a7f804a55d3faa4f320af",
+    "bundleBuildId": "9ccf4f9a997e6bf30500ae7a10803e32264688d3a80c45108f67f72dad7696a0"
+  },
+  "validation": {
+    "passed": true,
+    "productionBuild": true,
+    "roleTests": 42,
+    "journalTests": 3,
+    "originalTicketContracts": 6,
+    "ticketBrowserQA": true,
+    "preservation": true,
+    "commit": "7b16aea3d2b600a9292c1dceeb6236c15fd8cc84"
+  },
+  "remaining": [
+    {
+      "changeId": "phone-claim-conflicts-20261015",
+      "action": "Excluded; ownership policy approval remains blocked."
+    },
+    {
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "action": "Independent Site; excluded from reylumi.com/iOS."
+    },
+    {
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "action": "Independent Site; excluded from reylumi.com/iOS."
+    },
+    {
+      "changeId": "explore-preview-logos-20261017",
+      "action": "Preview-only harness; no application release."
+    }
+  ],
+  "rollback": {
+    "webDeploymentId": "dpl_FRuEJPP9YhnAbBHFUQ6GbxnhNwz9",
+    "nativePreviousBuild": "30.1",
+    "policy": "Do not overwrite any later external deployment."
+  },
+  "completedAt": "2026-10-17T17:50:04.832Z"
+}

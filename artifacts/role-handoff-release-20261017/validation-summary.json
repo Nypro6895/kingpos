@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "productionBuild": true,
+  "roleTests": 42,
+  "journalTests": 3,
+  "originalTicketContracts": 6,
+  "ticketBrowserQA": true,
+  "preservation": true,
+  "commit": "7b16aea3d2b600a9292c1dceeb6236c15fd8cc84"
+}

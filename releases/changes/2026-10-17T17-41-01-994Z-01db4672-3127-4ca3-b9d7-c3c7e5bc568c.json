@@ -1,0 +1,65 @@
+{
+  "kind": "change",
+  "status": "ready",
+  "source": {
+    "commit": "7b16aea3d2b600a9292c1dceeb6236c15fd8cc84",
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\role-handoff-release\\kingpos\\artifacts\\role-handoff-release-20261017\\frozen-source"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Integrated production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\role-handoff-release\\kingpos\\artifacts\\role-handoff-release-20261017/production-build.log"
+    },
+    {
+      "name": "42 integrated role/UI/resource tests",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\role-handoff-release\\kingpos\\artifacts\\role-handoff-release-20261017/role-regression-final.log"
+    },
+    {
+      "name": "Exact production source preservation",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\role-handoff-release\\kingpos\\artifacts\\role-handoff-release-20261017/preservation.json"
+    },
+    {
+      "name": "6 correction contracts and responsive browser QA",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\role-handoff-release\\kingpos\\artifacts\\role-handoff-release-20261017/ticket-qa/qa-result.json"
+    }
+  ],
+  "changeId": "compact-ticket-layout-20261017",
+  "summary": "Integrate completed compact ticket UI with optimized live source; preserve managed-read, revision/correction checks and portable outbox. Ship regenerated native UI.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos-tickets/closed-ticket-correction-form.tsx",
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/(app)/pos-tickets/page.tsx",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/pos/portable/ticket/portable-ticket-client.tsx",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/index.html",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "originalEvent": "84f1715b-adab-43cd-a0e6-fd8f40c47d0c",
+  "id": "01db4672-3127-4ca3-b9d7-c3c7e5bc568c",
+  "recordedAt": "2026-10-17T17:41:01.994Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\role-handoff-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/pos-tickets/closed-ticket-correction-form.tsx": "be73d71e4ba3636df5fe5741e1eb77e70452d9445e9c60b75c6fb5f2ad32ed9e",
+    "app/pos-tickets/ticket-filters.tsx": "a1de80f44c6c1f36550a995fef7651007d1659faa678748b4317f5ed322e9b27",
+    "app/(app)/pos-tickets/page.tsx": "6c0923485b695dbbd191f9b649020da93297b83fd88fa596efbac1fc4fd9e6f9",
+    "app/pos-tickets/owner-live-tickets.tsx": "e3ce399661a8e2f6298ba72f7fc308659b2836c67023409a4959a1610f7c32f4",
+    "app/pos/portable/ticket/portable-ticket-client.tsx": "dd22814b05554eb9de647faecfb4a80146698a237e23b1ccdc64866f3d17c87e",
+    "ios/Reylumi/LocalAppBundle/app.js": "aa95b2e9caeb0d60dd6224e971e4f3c9f308a45c51cac2bcf537305acc7dee94",
+    "ios/Reylumi/LocalAppBundle/app.css": "9c58f066b919d4ed942b8e8346c94da33c86dba2275c312a8303f305b8f5acfd",
+    "ios/Reylumi/LocalAppBundle/index.html": "104e04c6ddefa5229e241469ec0543f285dc6b2a7dd70d78c3210dfc997632b5",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "02b52eae034e3f46e6bde0112da88d8108cc8934e0fc77143d1425cd0990ba20"
+  }
+}
