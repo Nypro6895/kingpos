@@ -1,5 +1,6 @@
 name: Reylumi retire old TestFlight builds
 on:
+  workflow_dispatch:
   push:
     branches: [codex/testflight-retire-others-20261017]
     paths:
