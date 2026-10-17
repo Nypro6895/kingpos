@@ -162,7 +162,9 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
     }
     private func emit(_ name: String, _ detail: [String: Any]) {
         guard webView != nil, let data = try? JSONSerialization.data(withJSONObject: ["name": name, "detail": detail]), let json = String(data: data, encoding: .utf8) else { return }
-        webView.evaluateJavaScript("(()=>{const e=\(json);if(e.name==='reylumi:app-local-reset')window.__reylumiAppLocalContext=e.detail;if(e.name==='reylumi:app-local-context'&&e.detail.host)window.__reylumiAppLocalContext=e.detail.host;window.dispatchEvent(new CustomEvent(e.name,{detail:e.detail}));})()", completionHandler: nil)
+        // Context promises and DOM events travel on separate WebKit queues.
+        // A late old event must never restore an obsolete nonce/authority.
+        webView.evaluateJavaScript("(()=>{const e=\(json);const host=e.name==='reylumi:app-local-reset'?e.detail:e.detail.host;if(host&&host.scopeEpoch<window.__reylumiAppLocalContext?.scopeEpoch)return;if(e.name==='reylumi:app-local-reset')window.__reylumiAppLocalContext=e.detail;if(e.name==='reylumi:app-local-context'&&e.detail.host)window.__reylumiAppLocalContext=e.detail.host;window.dispatchEvent(new CustomEvent(e.name,{detail:e.detail}));})()", completionHandler: nil)
     }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage, replyHandler: @escaping (Any?, String?) -> Void) {
         guard message.frameInfo.isMainFrame, let url = message.frameInfo.request.url, bundle.owns(url),

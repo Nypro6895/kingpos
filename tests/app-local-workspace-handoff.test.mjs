@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { build } from 'esbuild';
+import { readFileSync } from 'node:fs';
 async function load(file, stubs) {
   const out = await build({ entryPoints: [file], bundle: true, write: false, platform: 'node', format: 'esm', plugins: [{ name: 'role-handoff-fixture', setup(b) {
     b.onResolve({ filter: /.*/ }, a => {
@@ -77,4 +78,17 @@ test('web notification open defers role cookies to the guarded handoff and prese
     return target.pathname === '/workspace/open' && target.searchParams.get('workspace_id') === 'manage:salon-b' && target.searchParams.get('destination') === '/bookings';
   });
   assert.equal(state.writes, 0); assert.equal(state.markRead, 1);
+});
+test('native event delivery cannot roll back a host epoch already adopted by a context reply', () => {
+  const source=readFileSync('ios/Reylumi/ReylumiLocalAppViewController.swift','utf8');
+  const line=source.split('\n').find(line=>line.includes('evaluateJavaScript("(()=>{const e='));
+  const script=line.match(/evaluateJavaScript\("(.*)", completionHandler/)[1];
+  globalThis.window=new EventTarget();window.__reylumiAppLocalContext={scopeEpoch:5,nonce:'accepted'};
+  let resets=0;window.addEventListener('reylumi:app-local-reset',()=>resets++);
+  const deliver=(name,detail)=>new Function(script.replace('\\(json)',JSON.stringify({name,detail})))();
+  deliver('reylumi:app-local-reset',{scopeEpoch:4,nonce:'old'});
+  deliver('reylumi:app-local-context',{host:{scopeEpoch:4,nonce:'old'}});
+  assert.equal(window.__reylumiAppLocalContext.nonce,'accepted');assert.equal(resets,0);
+  deliver('reylumi:app-local-reset',{scopeEpoch:6,nonce:'new'});
+  assert.equal(window.__reylumiAppLocalContext.nonce,'new');assert.equal(resets,1);
 });
