@@ -4,6 +4,10 @@
   "buildCommand": "npm run build",
   "crons": [
     {
+      "path": "/api/payroll/close-due",
+      "schedule": "7 7 * * *"
+    },
+    {
       "path": "/api/security/cleanup",
       "schedule": "17 9 * * *"
     },
