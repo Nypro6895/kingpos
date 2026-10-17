@@ -2,6 +2,11 @@ name: Reylumi TestFlight Status (read only)
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: Read availability or audit version eligibility
+        default: availability
+        type: choice
+        options: [availability, version-preflight]
       build:
         description: Exact uploaded CFBundleVersion
         required: true
@@ -36,6 +41,7 @@ jobs:
           node-version: '22'
       - name: Read exact build and existing group availability
         env:
+          READ_OPERATION: ${{ inputs.operation }}
           EXPECTED_BUILD: ${{ inputs.build }}
           BASELINE_BUILD: ${{ inputs.baseline_build }}
           BASELINE_MARKETING_VERSION: ${{ inputs.baseline_marketing_version }}
@@ -45,11 +51,19 @@ jobs:
           APP_STORE_CONNECT_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_APP_ID: ${{ vars.APP_STORE_CONNECT_APP_ID }}
-        run: node ios/scripts/check-testflight-availability.mjs
+        run: |
+          if [ "$READ_OPERATION" = version-preflight ]; then
+            node ios/scripts/release-version-preflight.mjs
+          else
+            node ios/scripts/check-testflight-availability.mjs
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: reylumi-availability-${{ github.run_number }}
-          path: build/testflight-availability.json
+          path: |
+            build/testflight-availability.json
+            build/release-version-preflight.json
           if-no-files-found: error
           retention-days: 7
+
