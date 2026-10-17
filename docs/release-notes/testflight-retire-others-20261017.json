@@ -1,0 +1,222 @@
+{
+  "receipt": "508a8292-7224-4328-83e7-ef1ffbe5a1e8",
+  "checkedAt": "2026-10-17T23:02:23.867Z",
+  "workflow": {
+    "conclusion": "success",
+    "databaseId": 39077339014,
+    "headSha": "fa48aa27134daabbc896a0892010bf2a6e5bd4d3",
+    "status": "completed",
+    "url": "https://github.com/Nypro6895/kingpos/actions/runs/39077339014"
+  },
+  "source": [
+    {
+      "file": "ios/scripts/retire-other-testflight-builds.mjs",
+      "snapshotSha256": "614c72063264366ce40b92c68b414fda4a4b5032440f58326ede84280fcd694f",
+      "gitSha256": "614c72063264366ce40b92c68b414fda4a4b5032440f58326ede84280fcd694f"
+    },
+    {
+      "file": "ios/scripts/retire-other-testflight-builds.test.mjs",
+      "snapshotSha256": "9a3753ed5c4edb8c1ff57f47b06f556dfb7f68c2e50be9e06f2d920607a579ff",
+      "gitSha256": "9a3753ed5c4edb8c1ff57f47b06f556dfb7f68c2e50be9e06f2d920607a579ff"
+    },
+    {
+      "file": ".github/workflows/reylumi-testflight-retire-others.yml",
+      "snapshotSha256": "e9fbe6ec531bba4cc8dadf5d745e29cf730dc69830af4f6a444ef33f88ea9767",
+      "gitSha256": "e9fbe6ec531bba4cc8dadf5d745e29cf730dc69830af4f6a444ef33f88ea9767"
+    },
+    {
+      "file": ".github/testflight-retirement-20261017.json",
+      "snapshotSha256": "1059593382b5b55dcbdb82710c48157fc42bbb340211487936a180c8b6157930",
+      "gitSha256": "1059593382b5b55dcbdb82710c48157fc42bbb340211487936a180c8b6157930"
+    }
+  ],
+  "keptBuild": {
+    "id": "724004b8-8c9c-4998-b52a-f64cce84a726",
+    "version": "1.0.0",
+    "build": "33"
+  },
+  "expiredBuilds": [
+    {
+      "id": "c8da597f-f963-4650-8ed3-e0738b3572d4",
+      "version": "1.1.0",
+      "build": "32.1",
+      "uploadedDate": "2026-10-17T13:22:15-07:00",
+      "expired": true
+    },
+    {
+      "id": "0338c09a-3554-428c-b064-195db281c018",
+      "version": "1.1.0",
+      "build": "31.1",
+      "uploadedDate": "2026-10-17T10:47:31-07:00",
+      "expired": true
+    },
+    {
+      "id": "463a4318-920b-45bc-a030-067d54471792",
+      "version": "1.1.0",
+      "build": "30.1",
+      "uploadedDate": "2026-10-16T21:43:39-07:00",
+      "expired": true
+    },
+    {
+      "id": "b56e963a-00c1-49b0-8fbb-a3628c6b076a",
+      "version": "1.0.1",
+      "build": "27.1",
+      "uploadedDate": "2026-10-16T18:14:06-07:00",
+      "expired": true
+    },
+    {
+      "id": "90d76065-dcce-44b7-ab34-e9fb2ca9241e",
+      "version": "1.0.1",
+      "build": "26.1",
+      "uploadedDate": "2026-10-16T17:39:21-07:00",
+      "expired": true
+    },
+    {
+      "id": "48a551fd-9b2e-4c1b-a173-10e6f90ca195",
+      "version": "1.0.1",
+      "build": "25.1",
+      "uploadedDate": "2026-10-16T17:13:17-07:00",
+      "expired": true
+    },
+    {
+      "id": "171e3bee-89fe-4774-8ce2-d0cdfc9630d0",
+      "version": "1.0.1",
+      "build": "24.1",
+      "uploadedDate": "2026-10-16T15:47:15-07:00",
+      "expired": true
+    },
+    {
+      "id": "e7fc7090-d53d-414e-9c62-9b49718d301b",
+      "version": "1.0.1",
+      "build": "23.1",
+      "uploadedDate": "2026-10-16T15:10:56-07:00",
+      "expired": true
+    },
+    {
+      "id": "97e05784-1fd9-4255-a484-420a0e9e4b07",
+      "version": "1.0.1",
+      "build": "22.1",
+      "uploadedDate": "2026-10-16T13:22:26-07:00",
+      "expired": true
+    },
+    {
+      "id": "a0fcb221-1ebe-4b04-a22f-0de78709c06d",
+      "version": "1.0.1",
+      "build": "21.1",
+      "uploadedDate": "2026-10-16T13:03:23-07:00",
+      "expired": true
+    },
+    {
+      "id": "3043310c-e3dc-40d9-a745-d54f092df9af",
+      "version": "1.0.1",
+      "build": "19.1",
+      "uploadedDate": "2026-10-15T21:34:42-07:00",
+      "expired": true
+    },
+    {
+      "id": "4b9865ab-c24f-4b34-b211-c13ca99eec5c",
+      "version": "1.0.1",
+      "build": "18.1",
+      "uploadedDate": "2026-10-15T17:42:57-07:00",
+      "expired": true
+    },
+    {
+      "id": "21dd9118-3a74-40f9-837a-ecada85876fb",
+      "version": "1.0.1",
+      "build": "16.1",
+      "uploadedDate": "2026-10-15T11:19:04-07:00",
+      "expired": true
+    },
+    {
+      "id": "d9b87d07-b8aa-4ea8-9716-f24cf756a465",
+      "version": "1.0.1",
+      "build": "14.1",
+      "uploadedDate": "2026-10-14T19:55:54-07:00",
+      "expired": true
+    },
+    {
+      "id": "431d27bd-be85-4323-b04f-812013fc7434",
+      "version": "1.0.1",
+      "build": "5.1",
+      "uploadedDate": "2026-10-14T10:45:40-07:00",
+      "expired": true
+    },
+    {
+      "id": "487d1c82-c6db-4f2d-9bc3-faddf3bb4c54",
+      "version": "1.0.1",
+      "build": "4.1",
+      "uploadedDate": "2026-10-13T02:25:16-07:00",
+      "expired": true
+    },
+    {
+      "id": "77df5a1b-091c-4962-834e-247ded71e60e",
+      "version": "1.0.0",
+      "build": "3.1",
+      "uploadedDate": "2026-10-10T23:35:13-07:00",
+      "expired": true
+    },
+    {
+      "id": "66df5180-4209-4dfc-9901-be75db241846",
+      "version": "1.0.0",
+      "build": "2.1",
+      "uploadedDate": "2026-10-10T21:58:59-07:00",
+      "expired": true
+    },
+    {
+      "id": "6b7e98f3-4746-49f1-9d40-64270ee47fc6",
+      "version": "1.0.0",
+      "build": "1.2",
+      "uploadedDate": "2026-10-10T09:57:40-07:00",
+      "expired": true
+    }
+  ],
+  "remainingActiveCount": 1,
+  "availability": {
+    "checkedAt": "2026-10-17T23:01:39.363Z",
+    "operation": "GET requests only; no groups/testers/invitations/notifications/metadata changes",
+    "appId": "6821394475",
+    "marketingVersion": "1.0.0",
+    "baselineMarketingVersion": "1.1.0",
+    "build": "33",
+    "buildId": "724004b8-8c9c-4998-b52a-f64cce84a726",
+    "baselineBuild": "32.1",
+    "baselineBuildId": "c8da597f-f963-4650-8ed3-e0738b3572d4",
+    "processingState": "VALID",
+    "expired": false,
+    "expirationDate": "2027-01-15T14:24:14-08:00",
+    "internalBuildState": "IN_BETA_TESTING",
+    "availableToExistingInternalGroup": true,
+    "groups": [
+      {
+        "id": "afe80011-9371-4a4c-afda-025b624f3275",
+        "name": "Reylumi Internal",
+        "isInternalGroup": true,
+        "hasAccessToAllBuilds": true,
+        "hadBaseline": true,
+        "preexistingAutomaticGroup": true,
+        "hasNewBuild": true,
+        "existingDistributionGroup": true,
+        "associationConfirmed": true
+      },
+      {
+        "id": "d94e3e47-4837-485a-abbd-3681b6dfe3bc",
+        "name": "Reylumi support",
+        "isInternalGroup": true,
+        "hasAccessToAllBuilds": true,
+        "hadBaseline": true,
+        "preexistingAutomaticGroup": true,
+        "hasNewBuild": true,
+        "existingDistributionGroup": true,
+        "associationConfirmed": true
+      }
+    ],
+    "status": "available-to-existing-internal-group",
+    "limitations": [
+      "This confirms Apple group access, not installation or automatic update on a particular phone.",
+      "An automatic-distribution flag without the new build association is not reported as confirmed availability.",
+      "External TestFlight and App Store publication are separate."
+    ]
+  },
+  "nativeSourceUnchanged": true,
+  "verified": true
+}
