@@ -1,0 +1,56 @@
+SỬA LUỒNG VAI TRÒ — REYLUMI — 17/10/2026
+
+Nguồn: 18ca1abbaae5c5f6a3054d05f5e489bf7f69f49f
+Nhánh: codex/role-handoff-recovery-20261017
+Baseline: bản 1.1.0 (30.1), commit f3f0a06d5acd07c9e15a7f804a55d3faa4f320af,
+Vercel dpl_FRuEJPP9YhnAbBHFUQ6GbxnhNwz9 xác minh lúc bắt đầu sửa.
+
+ĐÃ SỬA
+- Selector và thông báo mở workspace dùng cùng handoff có kiểm tra quyền.
+- Chỉ xác minh và hiển thị destination sau khi bỏ admission của vai trò cũ.
+- Retry đọc context hiện tại, không gửi lại command có thể đã ghi thành công.
+- Đổi workspace không tự bị coi là logout do read cũ trả về sau cookie mới.
+- Context reset hợp lệ không tự hủy request đang xác minh chính nó.
+- Phản hồi native cũ không được khôi phục nonce/epoch đã lỗi thời.
+- Chưa xác minh context thì chưa quảng cáo trạng thái logout/Login/Create account.
+- Notification mark-read giữ nguyên cập nhật nhẹ; chỉ booking command có khả năng
+  đổi workspace được gắn cờ recheck, không reset mọi thao tác thông báo.
+
+GIỮ NGUYÊN
+Các route, menu, bố cục và quyền hiện có; tài khoản/tenant guard, kiểm tra 401/403/409,
+quyền staff/owner, xác nhận đặt hẹn, outbox POS, UUID/lần gửi command, thanh toán,
+ký iOS và kênh phân phối. Không migration, không sửa dữ liệu production.
+Điều hướng thường vẫn giữ DOM/ô nhập tiền POS và draft ở các trang đã kiểm thử.
+Chuyển vai trò xóa admission cũ để không hiện dữ liệu bằng quyền trước.
+
+KIỂM CHỨNG
+- Production build trên nguồn cố định: passed; TypeScript và ESLint: passed.
+- all-app-local-final.log: 189 tests, 180 passed, 9 failures.
+- baseline-existing-failures.log: cùng 9 failures trên nguồn 30.1 chưa sửa.
+  Các lỗi cũ gồm 2 Explore UI timeouts, 1 Explore extraction hash, 5 fixture Help
+  thiếu getExperienceDeviceGeneration, và 1 route inventory cũ thiếu /pos/more.
+  Không coi đây là một lượt full-suite sạch; không sửa Explore ngoài phạm vi.
+- Các test selector, thông báo, retry, old-account response, giữ draft, cold Help,
+  portable/POS isolation và shell ở 390/820/1440 px chạy riêng trong
+  role-regression-verified.log: 42/42 passed, không skip.
+- Bundle 344 assets, 96 route patterns, 317 commands; 341 assets giữ nguyên hash.
+  Chỉ app.js/app.css/index.html đổi trong danh sách asset; manifest khớp bytes.
+- source-manifest.json ghi hash overlay và snapshot; 41 file native dạng text trong
+  snapshot xác nhận được chuẩn hóa CRLF/LF theo đúng bytes trên CI. Toàn bộ 390 hash
+  native khớp receipt Xcode; LocalAppBundle khớp bytes chính xác, không chuẩn hóa.
+
+IOS
+Workflow test/unsigned archive: https://github.com/Nypro6895/kingpos/actions/runs/39052421711
+Kết quả: 94/94 Simulator tests passed, 0 failures; unsigned device archive passed.
+Receipt đúng commit và đủ 390 hash native được xác minh trong native-verification.json.
+Không upload TestFlight, không phát hành web, không chỉnh metadata Apple/tester.
+Thay đổi nằm trong JS đóng gói và Swift nên cần binary iOS mới khi phát hành;
+chỉ deploy web không thể đưa toàn bộ bản sửa vào app 30.1 đang cài.
+Khi phát hành cần ghép cả phần web notification action và gói native của change
+này; nguồn đã được giữ riêng và đăng ký ready trong release journal,
+event 2dc8ccc9-a6cc-4939-bb18-5c64fd42e1f0. Chưa kênh nào được đánh dấu published.
+
+GIỚI HẠN
+Chưa kiểm thử bằng tài khoản thật và iPhone của người dùng. Lỗi Campaigns riêng lẻ
+chưa có authenticated request/log để kết luận nguyên nhân; không tuyên bố đã sửa
+nguyên nhân Campaigns. Cơ chế phục hồi vai trò được sửa và kiểm tra độc lập.
