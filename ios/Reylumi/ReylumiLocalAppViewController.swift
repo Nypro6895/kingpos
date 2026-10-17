@@ -46,12 +46,7 @@ final class ReylumiLocalAppViewController: UIViewController, WKNavigationDelegat
         super.viewDidLoad()
         view.backgroundColor = .white
         launchPanel.translatesAutoresizingMaskIntoConstraints = false
-        launchPanel.onNavigate = { [weak self] path, query in
-            var components = URLComponents(); components.path = path; components.queryItems = query.isEmpty ? nil : query
-            self?.navigate(components.string ?? path)
-        }
         launchPanel.onRetry = { [weak self] in if self?.webView == nil { self?.initializeWebContentIfNeeded() } else { self?.loadBundle() } }
-        launchPanel.onEditingFinished = { [weak self] in self?.launchPanel.finishLoading() }
         view.addSubview(launchPanel); launchPanel.showLoading()
         NSLayoutConstraint.activate([
             launchPanel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor), launchPanel.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor), launchPanel.leadingAnchor.constraint(equalTo: view.leadingAnchor), launchPanel.trailingAnchor.constraint(equalTo: view.trailingAnchor)

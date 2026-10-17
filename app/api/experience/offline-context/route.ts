@@ -12,12 +12,17 @@ import { EXPERIENCE_OFFLINE_MAX_AGE, getExperienceOfflinePath, type ExperienceOf
 import { runReadWithDeadline } from "@/lib/bounded-get";
 import type { StaffOfflineBinding } from "@/lib/staff-offline-binding";
 import { getStaffOfflineBindingAuthorization } from "@/lib/staff-offline-binding-server";
+import { runWithReadContext } from "@/lib/read-context-scope";
 
 const hash = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const responseHeaders = { "Cache-Control": "private, no-store", Vary: "Cookie" };
 const failure = (status: number) => Response.json({ error: status === 503 ? "Please try again." : "Access must be checked again." }, { status, headers: responseHeaders });
 
 export async function GET(request: Request) {
+  return runWithReadContext(() => readOfflineContext(request));
+}
+
+async function readOfflineContext(request: Request) {
   await connection();
   const url = new URL(request.url);
   const path = getExperienceOfflinePath(url.searchParams.get("path") ?? "", url.origin);

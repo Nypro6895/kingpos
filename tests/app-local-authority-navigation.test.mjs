@@ -45,9 +45,9 @@ async function fixture(start = '/pos', installClock = false) {
     // Exercise authority recovery through the actual resource/entry lifecycle,
     // while keeping all network and business commands inside this fixture.
     stubs['app-local-host'] = stubs['app-local-host']
-      .replace('window.contextRequests=[];', 'window.contextRequests=[];window.freshRequests=[];window.rejectReads=0;window.rejectContext=false;')
+      .replace('window.contextRequests=[];', 'window.contextRequests=[];window.freshRequests=[];window.rejectReads=0;window.rejectReadStatus=409;window.rejectName=null;window.rejectContext=false;')
       .replace('window.contextRequests.push(path);', 'window.contextRequests.push(path);if(options?.fresh)window.freshRequests.push(path);if(window.rejectContext)throw Object.assign(Error("Access rejected"),{status:403});')
-      .replace('window.reads.push({name,scope:options.scope});', 'window.reads.push({name,scope:options.scope});if(window.rejectReads>0){window.rejectReads--;throw Object.assign(Error("Access must be checked"),{status:409})}');
+      .replace('window.reads.push({name,scope:options.scope});', 'window.reads.push({name,scope:options.scope});if(window.rejectReads>0&&(!window.rejectName||window.rejectName===name)){window.rejectReads--;throw Object.assign(Error("Access must be checked"),{status:window.rejectReadStatus})}');
     builder.onResolve({ filter: /.*/ }, args => { const name = Object.keys(stubs).find(name => args.path === name || args.path.endsWith('/' + name)); return name ? { path: name, namespace: 'fixture' } : undefined; });
     builder.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({ loader: 'tsx', resolveDir: process.cwd(), contents: stubs[args.path] }));
     builder.onLoad({ filter: /\.css$/ }, () => ({ loader: 'js', contents: 'export default {};' }));
@@ -219,5 +219,27 @@ test('scope validation from an old scope or hidden Activity cannot stamp the cur
     await app.page.evaluate(() => window.pending.shift()({ context: { scope: 'A' }, onlineValidatedAt: 12345 })); assert.equal(await app.page.evaluate(() => window.resultA), false); assert.equal(await app.page.evaluate(() => window.currentScope.checkedAt()), 0); assert.equal(await app.page.evaluate(() => window.currentScope.getValidationRevision()), 0);
     await app.page.evaluate(() => { window.resultB = window.currentScope.validate(); }); await app.page.evaluate(() => window.pending.shift()({ context: { scope: 'B' }, onlineValidatedAt: 22222 })); assert.equal(await app.page.evaluate(() => window.resultB), true); assert.equal(await app.page.evaluate(() => window.currentScope.checkedAt()), 22222);
     await app.page.evaluate(() => { window.hiddenValidation = window.currentScope.validate(); window.hide(); }); await app.page.waitForFunction(() => document.querySelector('[data-scope]')?.style.display === 'none'); await app.page.evaluate(() => window.pending.shift()({ context: { scope: 'B' }, onlineValidatedAt: 33333 })); assert.equal(await app.page.evaluate(() => window.hiddenValidation), false); assert.equal(await app.page.evaluate(() => window.currentScope.checkedAt()), 22222);
+  } finally { await app.close(); }
+});
+
+
+test('one page denied access rechecks authority without remounting POS or unrelated unsaved fields', { skip, timeout: 40000 }, async () => {
+  const app = await fixture('/pos'); try {
+    const amount = app.page.locator('.owner-amount-field input[aria-label=Amount]');
+    await amount.fill('118.75'); await amount.evaluate(node=>window.savedAmount=node);
+    await navigate(app.page,'/settings');
+    const field=app.page.getByRole('textbox',{name:'page.settings draft'});
+    await field.fill('unsaved ordinary input'); await field.evaluate(node=>window.savedSettings=node);
+    await app.page.evaluate(()=>{window.rejectReads=1;window.rejectReadStatus=403;window.rejectName='page.settings';window.dispatchEvent(new CustomEvent('reylumi:app-local-command-complete',{detail:{scope:window.fixture.scope.account}}));});
+    await app.page.waitForFunction(()=>window.rejectReads===0&&window.freshRequests.length===1);
+    assert.equal(await field.evaluate(node=>node===window.savedSettings),true);
+    assert.equal(await field.inputValue(),'unsaved ordinary input');
+    assert.equal(await app.page.evaluate(()=>window.resets),0);
+    await navigate(app.page,'/pos'); await amount.waitFor();
+    assert.equal(await amount.evaluate(node=>node===window.savedAmount),true);
+    assert.equal(await amount.inputValue(),'118.75');
+    await app.page.evaluate(()=>{window.fixture.owner.context.permissionRevision='changed-permission';window.fixture.owner.grant.grantRevision='changed-permission';window.dispatchEvent(new Event('reylumi:foreground'));});
+    await app.page.waitForFunction(()=>!window.savedAmount.isConnected);
+    assert.deepEqual(await app.page.evaluate(()=>window.apiCalls),[]);
   } finally { await app.close(); }
 });

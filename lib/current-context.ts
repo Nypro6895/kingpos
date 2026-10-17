@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { scopedBusinessContext } from "./scoped-business-context";
+import { memoizeReadContext } from "./read-context-scope";
 
 import { routes } from "@/lib/routes";
 import { loadMembershipPermissionCodes } from "@/lib/membership-permissions";
@@ -1469,13 +1470,14 @@ async function getCurrentBusinessContextAuth(
 }
 
 const getDefaultBusinessContext = cache(() => loadCurrentBusinessContext({}));
+const businessReadKey = Symbol("business-context");
 
 export function getCurrentBusinessContext(options: CurrentBusinessContextOptions = {}): Promise<CurrentBusinessContext> {
   const scoped = scopedBusinessContext();
   if (scoped && !options.accessToken && !options.cookieStore) return Promise.resolve(scoped);
   return options.accessToken || options.cookieStore
     ? loadCurrentBusinessContext(options)
-    : getDefaultBusinessContext();
+    : memoizeReadContext(businessReadKey, getDefaultBusinessContext);
 }
 
 async function loadCurrentBusinessContext(options: CurrentBusinessContextOptions): Promise<CurrentBusinessContext> {

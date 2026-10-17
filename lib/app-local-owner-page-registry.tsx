@@ -15,6 +15,7 @@ import type { AppLocalPage, AppLocalPageProps } from "./app-local-page-registry"
 import type { AppLocalOwnerStaffData, AppLocalOwnerCustomersData, AppLocalOwnerCustomerDetailData, AppLocalOwnerCustomerFormData, AppLocalOwnerPayrollData } from "./app-local-owner-page-types";
 import policy from "./app-local-owner-page-registry.json";
 import Link from "next/link";
+import { LumiLoadingStatus } from "@/components/lumi-loading-status";
 
 const urlFor = (path: string) => new URL(path, "https://reylumi.com");
 const query = (path: string) => Object.fromEntries(urlFor(path).searchParams);
@@ -28,7 +29,7 @@ function Read<T>({ context, host, path, title, name, args, children }: AppLocalP
   const state = useAppLocalResource<T>(scope, name, args, { enabled: allowed });
   if (!allowed) return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold"><WorkspaceText text={title} /></h1><p><WorkspaceText text="Open this page from a Business workspace." /></p><button type="button" onClick={() => void (host ?? getAppLocalHost()).openOnline(`/login?next=${encodeURIComponent(path)}`)}><WorkspaceText text="Sign in" /></button></main>;
   if (state.data !== undefined) return children(state.data, state.refresh);
-  return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold"><WorkspaceText text={title} /></h1>{state.error ? <div role="alert"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}><WorkspaceText text="Try again" /></button></div> : <p role="status"><WorkspaceText text="Opening…" /></p>}</main>;
+  return <main className="mx-auto grid max-w-5xl gap-4 p-6"><h1 className="text-2xl font-semibold"><WorkspaceText text={title} /></h1>{state.error ? <div role="alert"><p>{state.error}</p><button type="button" onClick={() => void state.refresh()}><WorkspaceText text="Try again" /></button></div> : <LumiLoadingStatus />}</main>;
 }
 function StaffPage(props: AppLocalPageProps) { return <Read<AppLocalOwnerStaffData> {...props} title="Staff" name="page.owner-staff" args={argsFor("page.owner-staff", props.path)}>{data => <AppLocalOwnerStaffView data={data} params={query(props.path)} />}</Read>; }
 function CustomersPage(props: AppLocalPageProps) { return <Read<AppLocalOwnerCustomersData> {...props} title="Customers" name="page.owner-customers" args={argsFor("page.owner-customers", props.path)}>{data => <AppLocalOwnerCustomersView data={data} params={query(props.path)} />}</Read>; }

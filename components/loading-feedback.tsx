@@ -1,6 +1,7 @@
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import { WorkspaceText } from "@/components/workspace-language";
 import styles from "./loading-feedback.module.css";
+import { LumiLoadingStatus } from "./lumi-loading-status";
 
 export function FeedLoadingSkeleton() {
   return <article className={styles.feed} aria-busy="true" aria-label="Loading posts">
@@ -20,9 +21,5 @@ export function LoadingStatus({ text = "Finding a little inspiration…" }: { te
 }
 
 export function PageLoadingSkeleton() {
-  return <div className={styles.page} aria-busy="true">
-    <LoadingStatus text="Getting things ready…" />
-    <div aria-hidden="true" className={`${styles.skeleton} ${styles.pageTitle}`} />
-    <div aria-hidden="true" className={`${styles.skeleton} ${styles.pageBlock}`} />
-  </div>;
+  return <LumiLoadingStatus text="Getting things ready…" />;
 }

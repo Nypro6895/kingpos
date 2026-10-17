@@ -8,8 +8,13 @@ import { getStaffPortalIdentity } from "@/lib/staff-portal-identity";
 import { getCurrentStaffBusinessContext, isSalonManageContext } from "@/lib/current-context";
 import { readAppLocalPortableContext } from "@/lib/app-local-portable-context-server";
 import { readAppLocalDisplayContext } from "@/lib/app-local-display-server";
+import { runWithReadContext } from "@/lib/read-context-scope";
 
 export async function GET(request: Request) {
+  return runWithReadContext(() => readContext(request));
+}
+
+async function readContext(request: Request) {
   await connection();
   const responseHeaders = { "Cache-Control": "private, no-store", Vary: "Cookie" };
   if ((await headers()).get("x-reylumi-auth-unavailable") === "1") return Response.json({ error: "Please try again" }, { status: 503, headers: responseHeaders });

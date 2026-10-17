@@ -269,14 +269,8 @@ test('native GET feedback preserves every original form action, method, hidden s
   });
   for (const { file, action, forms } of expected.files) {
     const composition = file === 'components/app-startup-shell.tsx';
-    if (composition) {
-      const shell = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
-      assert.ok(shell.statements.some(node => ts.isImportDeclaration(node) && node.moduleSpecifier.text === './startup-controls' && node.importClause?.namedBindings?.elements.some(element => element.name.text === 'StartupSearchForm')), 'public shell imports its lightweight search island');
-      let rendered = false;
-      function visit(node) { if (ts.isJsxSelfClosingElement(node) && node.tagName.getText() === 'StartupSearchForm') rendered = true; ts.forEachChild(node, visit); }
-      visit(shell);
-      assert.equal(rendered, true, 'the public shell still renders the native search form through composition');
-    }
+    // The startup placeholder no longer contains a search form. Keep testing
+    // the reusable search island's serialization independently of that removal.
     const sourceFile = composition ? 'components/startup-controls.tsx' : file;
     const current = signatures(sourceFile, readFileSync(sourceFile, 'utf8'), action);
     assert.equal(current.length, forms.length, file);

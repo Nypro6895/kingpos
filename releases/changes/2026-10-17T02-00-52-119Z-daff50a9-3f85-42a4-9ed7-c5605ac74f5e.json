@@ -1,0 +1,39 @@
+{
+  "kind": "change",
+  "changeId": "first-load-context-recovery-lumi-20261017",
+  "status": "working",
+  "summary": "Reduce duplicate cold-read context work, preserve unrelated views during resource failures, restore R/Lumi loading; validate web and Xcode, hold for later deployment.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/current-context.ts",
+    "lib/read-context-scope.ts",
+    "app/api/app-local/context/route.ts",
+    "app/api/app-local/read/route.ts",
+    "app/api/experience/offline-context/route.ts",
+    "lib/app-local-resource.ts",
+    "app/local-app/entry.tsx",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/Reylumi/ReylumiLaunchView.swift",
+    "components/app-startup-shell.tsx",
+    "app/local-app/index.html"
+  ],
+  "source": {
+    "commit": "dfbe432c417cc5e0740d7c6428359e4f8e885dfe"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Implementation, regression checks, production build and Xcode",
+      "result": "pending"
+    }
+  ],
+  "notes": "User explicitly requested implementation and Xcode only, with notes for later deployment. Preserve menu, business rules, POS drafts; bonus/check number remain autosave only. No promotion or TestFlight upload. Source audit: artifacts/first-load-audit-20261017/report.txt. Final file list will include tests and regenerated native bundle.",
+  "id": "daff50a9-3f85-42a4-9ed7-c5605ac74f5e",
+  "recordedAt": "2026-10-17T02:00:52.119Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

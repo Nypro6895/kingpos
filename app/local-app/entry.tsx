@@ -1,6 +1,7 @@
 import { Activity, Component, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { AppLocalHelp } from "@/components/app-local-help";
+import { LumiLoadingStatus } from "@/components/lumi-loading-status";
 import { LegalDocumentPage, LegalHub } from "@/app/legal/legal-components";
 import { legalDocuments } from "@/lib/legal-policies";
 import { getAppLocalHost, appLocalPath, appLocalRequestId, type AppLocalContext } from "@/lib/app-local-host";
@@ -109,7 +110,7 @@ function OwnerPages({ context, path, navigate, active }: { context: AppLocalCont
   return <OwnerLocalWorkspace scope={scope} salonId={salonId} ownerScope={ownerScope} active={active}>
     <Activity mode={active ? "visible" : "hidden"}><OwnerPosNavigation active={activeTab} syncScope={ownerScope} /></Activity>
     <div ref={checkout} hidden={path.split("?")[0] !== "/pos"}>
-      {reference ? <OwnerPosClient scope={ownerScope} salonId={salonId} salonName={reference.salonName} initial={reference} preferences={reference.preferences} snapshotAt={resource.updatedAt} active={active && path.split("?")[0] === "/pos"} showNavigation={false} /> : <section className="p-6" aria-busy={resource.loading || resource.refreshing}><h1 className="text-xl font-semibold">POS</h1><p className="mt-4">{resource.error ? "Please check your connection and try again." : "Opening your workspace…"}</p><button type="button" className="mt-4 rounded border px-4 py-2" onClick={() => void resource.refresh()}>Try again</button></section>}
+      {reference ? <OwnerPosClient scope={ownerScope} salonId={salonId} salonName={reference.salonName} initial={reference} preferences={reference.preferences} snapshotAt={resource.updatedAt} active={active && path.split("?")[0] === "/pos"} showNavigation={false} /> : <section className="p-6" aria-busy={resource.loading || resource.refreshing}><h1 className="text-xl font-semibold">POS</h1>{resource.error ? <><p className="mt-4">Please check your connection and try again.</p><button type="button" className="mt-4 rounded border px-4 py-2" onClick={() => void resource.refresh()}>Try again</button></> : <LumiLoadingStatus />}</section>}
     </div>
     <Activity mode={active ? "visible" : "hidden"}><OwnerLocalPanels scope={scope} salonId={salonId} activeHref={path} navigate={navigate} /></Activity>
   </OwnerLocalWorkspace>;
@@ -192,10 +193,17 @@ function App() {
       }
     };
     const resume = () => { void verify({ fresh: true }); };
+    let accessCheck: ReturnType<typeof setTimeout> | undefined;
+    const revalidateAccess = (event: Event) => {
+      const scope = (event as CustomEvent<{ scope?: string }>).detail?.scope;
+      if (isPublic(current.current) || admitted.current[authorityFamily(current.current)]?.value.context.scope !== scope || accessCheck) return;
+      accessCheck = setTimeout(() => { accessCheck = undefined; if (!isPublic(current.current) && admitted.current[authorityFamily(current.current)]?.value.context.scope === scope) void verify({ fresh: true }); }, 50);
+    };
     const pop = () => transition(appLocalPath(location.pathname + location.search));
     window.addEventListener("reylumi:app-local-navigate", nav); window.addEventListener("reylumi:app-local-context", fresh); window.addEventListener("reylumi:app-local-reset", reset); window.addEventListener("reylumi:app-local-access-changed", reset); window.addEventListener("popstate", pop);window.addEventListener("reylumi:app-local-history",pop);
     window.addEventListener("online", resume); window.addEventListener("reylumi:foreground", resume);
-    return () => { window.removeEventListener("reylumi:app-local-navigate", nav); window.removeEventListener("reylumi:app-local-context", fresh); window.removeEventListener("reylumi:app-local-reset", reset); window.removeEventListener("reylumi:app-local-access-changed", reset); window.removeEventListener("popstate", pop);window.removeEventListener("reylumi:app-local-history",pop); window.removeEventListener("online", resume); window.removeEventListener("reylumi:foreground", resume); };
+    window.addEventListener("reylumi:app-local-revalidate-access", revalidateAccess);
+    return () => { clearTimeout(accessCheck); window.removeEventListener("reylumi:app-local-revalidate-access", revalidateAccess); window.removeEventListener("reylumi:app-local-navigate", nav); window.removeEventListener("reylumi:app-local-context", fresh); window.removeEventListener("reylumi:app-local-reset", reset); window.removeEventListener("reylumi:app-local-access-changed", reset); window.removeEventListener("popstate", pop);window.removeEventListener("reylumi:app-local-history",pop); window.removeEventListener("online", resume); window.removeEventListener("reylumi:foreground", resume); };
   }, [navigate, accept, verify, transition]);
   const activeAdmission = admissions[authorityFamily(path)], context = !isPublic(path) && usable(activeAdmission) ? activeAdmission.value : null;
   // Help can display the already admitted role chrome, but receives no account
@@ -224,7 +232,7 @@ function App() {
   return <AppLocalNavigationProvider value={{ path, navigate, refresh: () => void verify() }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path}>
     <div className="app-local-body" data-app-local-ready="true">
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} experienceScope={presentationContext?.context.scope} /></div> : null}
-      {!isPublic(path) && !context && getAppLocalPage(path)?.requiresContext !== false ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">{error ? "Please check your connection and try again." : "Opening your workspace…"}</p>{error ? <button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button> : null}</section> : null}
+      {!isPublic(path) && !context && getAppLocalPage(path)?.requiresContext !== false ? <section className="p-6" aria-busy={!error}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">Please check your connection and try again.</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></> : <LumiLoadingStatus />}</section> : null}
       {context && !owner && ownerPaths.has(path.split("?")[0]) ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{path.startsWith("/pos/check-in") ? "Check In" : "POS"}</h1><p className="mt-4">{error || context.offline ? "Connect to verify access to this workspace." : "Opening your workspace…"}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></section> : null}
         {ownerContext && owner && ownerVisited && ownerContext.context.salonId ? <div className="app-local-page" hidden={!context || !ownerPaths.has(path.split("?")[0])}><ExperienceScopeProvider context={ownerContext.context} guardForms={false}><PageBoundary recover={() => void verify()}><OwnerPages context={ownerContext} path={path} navigate={navigate} active={Boolean(context && ownerPaths.has(path.split("?")[0]))} /></PageBoundary></ExperienceScopeProvider></div> : null}
         {!context && activeAdmission && getAppLocalPage(path)?.requiresContext === false ? (() => { const page = getAppLocalPage(path)!; return <div className="app-local-page"><page.Component context={null} path={path} navigate={navigate} /></div>; })() : null}
