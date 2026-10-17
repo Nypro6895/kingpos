@@ -85,13 +85,13 @@ function OwnerMoreMenu() {
     </button>
     {placement ? createPortal(
       <div id={id} ref={panel} className="owner-more-popover" style={placement} role="region" aria-label={translate("More")} data-owner-more-popover>
-        <RoleMoreContent roleKind="owner" activeItemIds={["owner-pos"]} onNavigate={() => setPlacement(null)} />
+        <RoleMoreContent roleKind="owner" activeItemIds={["owner-pos"]} workspace="pos" onNavigate={() => setPlacement(null)} />
       </div>, document.body,
     ) : null}
   </>;
 }
 
-type OwnerTab = "pos" | "ticket" | "book" | "checkIn" | "report" | "settings";
+type OwnerTab = "pos" | "ticket" | "book" | "checkIn" | "report" | "settings" | "more";
 
 /** The installed host keeps this outside the retained, CSS-hidden checkout. */
 export function OwnerPosNavigation({ active, syncScope }: { active: OwnerTab; syncScope?: string }) {
@@ -104,7 +104,6 @@ export function OwnerPosNavigation({ active, syncScope }: { active: OwnerTab; sy
 export function OwnerPosTabs({ active }: { active: OwnerTab }) {
   const translate = useWorkspaceTranslation();
   const pathname = usePathname();
-  if (active === "settings") return <nav aria-label={translate("Owner POS")}><Link className="owner-switch" href="/pos" aria-label={translate("Back to POS")} title={translate("Back to POS")}><OwnerPosIcon name="pos" /></Link></nav>;
   return <nav className="owner-top-nav" aria-label={translate("Owner POS")}>
     <OwnerMoreMenu key={pathname ?? active} />
     {shortcuts.map(item => <Link className="owner-nav-item" data-owner-tab={item.id} href={item.href} key={item.href} aria-label={translate(item.label)} aria-current={item.id === active ? "page" : undefined}><OwnerPosIcon name={item.icon} /><span><WorkspaceText text={item.label} /></span></Link>)}

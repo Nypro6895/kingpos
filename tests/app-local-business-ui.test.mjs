@@ -82,6 +82,12 @@ test('full local POS settings retains the original group conflict workflow and d
     const display = app.page.locator('details').filter({ has: app.page.locator('summary', { hasText: 'Customer Display' }) }); await display.locator('summary').click();
     assert.equal(await display.getByRole('link', { name: 'Install App', exact: true }).getAttribute('href'), 'https://reylumi.com/pos/customer-display/setup');
     assert.equal(await display.getByRole('link', { name: 'Open Customer Display', exact: true }).getAttribute('href'), 'https://reylumi.com/pos/customer-display');
+    await app.page.setViewportSize({width:390,height:844});
+    await app.page.addStyleTag({content:readFileSync('app/pos/owner-pos.css','utf8')});
+    await app.page.evaluate(()=>{document.getElementById('root').dataset.ownerPosShell='true';document.querySelectorAll('details').forEach(el=>el.open=true)});
+    const scroll=await app.page.locator('.owner-pos-document').evaluate(el=>{el.scrollTop=el.scrollHeight;return{offset:el.scrollTop,height:el.clientHeight,overflow:getComputedStyle(el).overflowY}});
+    assert.equal(scroll.overflow,'auto');assert.ok(scroll.offset>0);assert.ok(scroll.height<=844);
+    assert.equal(await app.page.getByRole('navigation',{name:'Owner POS'}).locator('a').count(),6);
   } finally { await app.close(); }
 });
 
@@ -109,7 +115,7 @@ test('a complete Create Salon draft has one stable request key through quiet rea
 
 test('the complete Salon Settings view includes operating, ownership, lifecycle and public-team sections without issuing writes', { skip, timeout: 40000 }, async () => {
   const status = { checkedAt: '2026-10-16T12:00:00Z', closesAtLocal: null, detail: null, isOpen: false, kind: 'hours_unset', label: 'Hours not set', localDate: '2026-10-16', nextOpensAtLocal: null, nextOpensLabel: null, reason: null, source: 'unset', timeZone: 'America/Chicago', tone: 'muted' };
-  const data = { setting: { salon_id: 'salon-a', business_name: 'My full salon', public_discovery_enabled: false, allow_staff_applications: false }, lifecycle: { name: 'My full salon', status: 'active', lifecycleStatus: 'active', disabled_at: null, closed_at: null }, operatingSettings: { timeZone: 'America/Chicago', weeklyHours: [], specialHours: [], status }, discoveryReadiness: { canEnable: false, activeServiceCount:0, items:[], missingLabels: ['Business address'] }, mapLocation: { address: { formattedAddress: '' }, coordinates: null, providerMissingConfiguration: [], refreshEnabled: false, status: 'unavailable', statusLabel: 'Location unavailable', statusDescription: 'Add a business address.' }, staffDirectory: { staff: [] }, ownerRoster: null, closureReview: null, isOwner: false, canManageSettings: true, canViewStaff: true, canManageLifecycle: false, canManageOwnership: false, salonId: 'salon-a', workspaceLabel: 'Salon workspace' };
+  const data = { setting: { salon_id: 'salon-a', business_name: 'My full salon', public_discovery_enabled: false, allow_staff_applications: false }, lifecycle: { name: 'My full salon', status: 'active', lifecycleStatus: 'active', disabled_at: null, closed_at: null }, operatingSettings: { timeZone: 'America/Chicago', weeklyHours: [], specialHours: [], status }, discoveryReadiness: { canEnable: false, activeServiceCount:0, items:[], missingLabels: ['Business address'] }, mapLocation: { address: { formattedAddress: '', missingParts: ['addressLine1'], city: null, state: null, postalCode: null }, coordinates: null, providerMissingConfiguration: [], refreshEnabled: false, status: 'unavailable', statusLabel: 'Location unavailable', statusDescription: 'Add a business address.' }, staffDirectory: { staff: [] }, ownerRoster: null, closureReview: null, isOwner: false, canManageSettings: true, canViewStaff: true, canManageLifecycle: false, canManageOwnership: false, salonId: 'salon-a', workspaceLabel: 'Salon workspace' };
   const app = await fixture('/salon-settings', saved('scope-a', 'owner-salon-settings', {}, data), context());
   try {
     await app.page.getByRole('heading', { name: 'Salon settings', exact: true }).waitFor();

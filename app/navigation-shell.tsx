@@ -2735,7 +2735,7 @@ export function NavigationShell({
     return <><ExploreAdSlot position="page-top" />{children}<ExploreAdSlot position="page-bottom" /></>;
   }
 
-  const isOwnerPosRoute = pathname === "/pos" || /^\/pos\/(ticket|book|check-in|report)(\/|$)/.test(pathname);
+  const isOwnerPosRoute = pathname === "/pos" || /^\/pos\/(ticket|book|check-in|report|settings|more)(\/|$)/.test(pathname);
   const routeWorkspaceKind = getRouteWorkspaceKind(pathname);
   const routeNavigation = routeNavigationForWorkspaceKind({
     routeWorkspaceKind,

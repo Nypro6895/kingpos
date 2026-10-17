@@ -6,7 +6,7 @@ import Network
 
 final class OfflineWebViewTests: XCTestCase {
     @MainActor
-    func testNewAppWebViewRestoresPreparedPOSAndDurableDraftWhileServerIsOffline() async throws {
+    func testExplicitPOSOpenRestoresDurableDraftAfterNewAppStartsAtHome() async throws {
         let server = try OfflineFixtureServer()
         try await server.start()
         defer { server.stop() }
@@ -45,10 +45,11 @@ final class OfflineWebViewTests: XCTestCase {
         server.isOffline = true
         let cold = ReylumiViewController(origin: origin, offlineRoutes: store)
         cold.loadViewIfNeeded()
-        XCTAssertEqual(cold.queuedStartupURL?.path, "/pos/portable")
+        XCTAssertTrue(["", "/"].contains(cold.queuedStartupURL?.path ?? "missing"))
         window.rootViewController = cold
         cold.initializeWebContentIfNeeded()
         let restored = try XCTUnwrap(cold.view.subviews.compactMap { $0 as? WKWebView }.first)
+        restored.load(URLRequest(url: origin.appendingPathComponent("pos/portable")))
         try await waitForJavaScript("location.pathname === '/pos/portable' && navigator.serviceWorker.controller != null && document.body?.dataset.pos === 'ready' && window.fixtureAsset === 'cached-pos-code' && window.fixtureDraft?.id === 'pending-op-1' && window.fixtureDraft?.amount === '127.50'", in: restored)
         XCTAssertEqual(store.restored()?.expiresAt, saved.expiresAt, "Offline boot must not renew the server-issued preparation lease")
         XCTAssertEqual(server.postRequests, 0, "Cold boot must never upload/replay a financial operation")

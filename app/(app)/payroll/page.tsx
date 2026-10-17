@@ -3,6 +3,7 @@ import { withExperiencePage } from "@/components/experience-page";
 import { isOwnerMembership } from "@/lib/current-context";
 import { taxCompanySettings } from "@/lib/tax-company";
 import { PayrollDisclosure } from "@/app/payroll/payroll-disclosure";
+import { PayrollLiveRefresh } from "@/app/payroll/payroll-live-refresh";
 import { PayrollEditBoundary, PayrollOutputGuard } from "@/app/payroll/payroll-edit-boundary";
 import styles from "@/app/payroll/payroll-mobile.module.css";
 import { getWorkspaceTranslation } from "@/lib/workspace-language-server";
@@ -2667,7 +2668,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
       : params.payroll_error;
 
   return (
-    <PayrollEditBoundary><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
+    <PayrollEditBoundary><PayrollLiveRefresh salonId={pageContext.currentSalon.id} /><main className={`${styles.page} mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8`}>
       <header className={styles.heading}><div><h1>Payroll</h1><p className={styles.context}>{pageContext.currentSalon.name}</p></div><span className={styles.status}><WorkspaceText text={data.difference.changed ? "Changes need saving" : data.latestStatement?.run.status === "paid" ? "Paid" : data.latestStatement ? "Saved" : "Current calculation"} />{data.latestStatement ? ` · v${data.latestStatement.run.version}` : ""}</span></header>
       <Tabs
         activeTab={activeTab}

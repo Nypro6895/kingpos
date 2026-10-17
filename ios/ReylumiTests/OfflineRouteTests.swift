@@ -59,17 +59,21 @@ final class OfflineRouteTests: XCTestCase {
     }
 
     @MainActor
-    func testColdStartupQueuesPreparedBareRouteBeforeConstructingWebKit() throws {
+    func testColdStartupQueuesHomeAndExplicitAuthReturnStillTakesPrecedence() throws {
         let store = ReylumiOfflineRouteStore(origin: URL(string: "https://reylumi.com")!, service: "com.reylumi.tests.queued.\(UUID().uuidString)")
         defer { store.clear() }
         store.save(try XCTUnwrap(ReylumiOfflineRoute(path: "/pos/portable", expiresAt: Date().addingTimeInterval(60))))
         let controller = ReylumiViewController(offlineRoutes: store)
         controller.loadViewIfNeeded()
-        XCTAssertEqual(controller.queuedStartupURL?.absoluteString, "https://reylumi.com/pos/portable")
+        XCTAssertEqual(controller.queuedStartupURL?.absoluteString, "https://reylumi.com")
         XCTAssertFalse(controller.view.subviews.contains { $0 is WKWebView })
         store.clear()
         let reset = ReylumiViewController(offlineRoutes: store)
         reset.loadViewIfNeeded()
-        XCTAssertEqual(reset.queuedStartupURL?.path, "/explore")
+        XCTAssertEqual(reset.queuedStartupURL?.absoluteString, "https://reylumi.com")
+        let next = URL(string: "https://reylumi.com/login?next=%2Fbook%2Ffixture")!
+        let login = ReylumiViewController(offlineRoutes: store, initialURL: next)
+        login.loadViewIfNeeded()
+        XCTAssertEqual(login.queuedStartupURL, next)
     }
 }

@@ -2,6 +2,17 @@ import XCTest
 @testable import Reylumi
 
 final class LocalReadStoreTests: XCTestCase {
+    func testNeutralHomeAdmitsAccountLeasesWithoutGrantingAnotherRoleOrDeviceAuthority() throws {
+        let generation = UUID().uuidString
+        for kind in ["owner", "staff", "customer"] {
+            let session = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.context(generation: generation, kind: kind), generation: generation))
+            XCTAssertTrue(session.compatible(path: "/"))
+            XCTAssertEqual(session.compatible(path: "/pos"), kind == "owner")
+            XCTAssertEqual(session.compatible(path: "/staff/my-work"), kind == "staff")
+        }
+        let portable = try XCTUnwrap(ReylumiLocalSession.verified(AppLocalTestFixture.portableContext(generation: generation), generation: generation))
+        XCTAssertFalse(portable.compatible(path: "/"))
+    }
     func testConcurrentSnapshotsShareOneDurableCommitAndIdenticalLeaseDoesNotRewriteIt() async throws {
         let origin = URL(string: "https://reylumi.com")!, directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }

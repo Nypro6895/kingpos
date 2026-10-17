@@ -27,7 +27,7 @@ async function fixture(){
  `},bundle:true,write:false,format:'iife',jsx:'automatic',platform:'browser',alias:{'@':process.cwd()},define:{'process.env.NODE_ENV':'"production"'},plugins:[{name:'authorized-local-owner-fixture',setup(b){
   const files={
    'next/navigation':`import{useSyncExternalStore}from'react';const event='fixture:navigate',original=history.pushState;history.pushState=function(...args){original.apply(history,args);window.dispatchEvent(new Event(event))};function subscribe(fn){window.addEventListener(event,fn);window.addEventListener('popstate',fn);return()=>{window.removeEventListener(event,fn);window.removeEventListener('popstate',fn)}}export const usePathname=()=>useSyncExternalStore(subscribe,()=>location.pathname);export const useSearchParams=()=>new URLSearchParams(location.search);export const useRouter=()=>({push(href){window.rscRequests.push(href)},replace(href){window.rscRequests.push(href)},refresh(){window.rscRequests.push('refresh')}});`,
-   'next/link':`export default function Link({prefetch,onNavigate,...props}){return <a {...props}/>}`,
+   'next/link':`export const useLinkStatus=()=>({pending:false});export default function Link({prefetch,onNavigate,...props}){return <a {...props}/>}`,
    'next/image':`export default function Image({fill,priority,unoptimized,...props}){return <img {...props}/>}`,
    'next/form':`export default function Form({replace,scroll,prefetch,...props}){return <form {...props}/>}`,
    '@/components/workspace-language':`export const WorkspaceText=({text})=>text;export const WorkspaceElement=({as:Tag='span',text,...props})=><Tag {...props}>{text}</Tag>;export const useWorkspaceTranslation=()=>x=>x;`,

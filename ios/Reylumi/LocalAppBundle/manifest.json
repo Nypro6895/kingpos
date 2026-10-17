@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "536d289d9370bfe177dfbe996e1bc065818ec80bb12c3874044b1bd02cc3265e",
+  "buildId": "a15b31ff1a6b6f6209a4ccf8311ef9710c872f84c9bf3d5782e100196c7c18c6",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 551981,
-      "sha256": "a2ea1bbdb1ba91d90d3ea9a1b209fecfbd6e306f75469ba07f5df1ac04bd7997",
+      "bytes": 559122,
+      "sha256": "b84cc60ae64c812dff78be33ae41f6a7d6e6d89d4c82c06da7e962beb0baf1e0",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4088518,
-      "sha256": "9897589e7817021dfcd377bfe1dc8aa2a09052970fc269ed90ea7fdf9f4a04bd",
+      "bytes": 4094816,
+      "sha256": "b99a9b5ab37f138ba3b42fef7a04ea95baab70ac49a775c0a921879f0f74ab81",
       "mime": "text/javascript"
     },
     {
@@ -1475,8 +1475,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 533,
-      "sha256": "ea7b9950b5cbff575cb810276b2de67f4b4871eb3be89f1ba58dc1402fe6472d",
+      "bytes": 535,
+      "sha256": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
       "mime": "text/html"
     },
     {
@@ -2378,6 +2378,11 @@
     {
       "path": "/",
       "adapter": "/",
+      "access": "scoped"
+    },
+    {
+      "path": "/pos/more",
+      "adapter": "/pos/more",
       "access": "scoped"
     },
     {
@@ -5623,7 +5628,7 @@
     "total": 133,
     "bundled": 85,
     "ordinaryEligible": 85,
-    "registeredPatterns": 95,
+    "registeredPatterns": 96,
     "missing": [],
     "online": [
       {

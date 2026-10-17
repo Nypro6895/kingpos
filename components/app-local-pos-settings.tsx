@@ -654,9 +654,9 @@ function DesktopDownloadPanel({release}:{release:AppLocalPosSettingsData['deskto
 
 export function AppLocalPosSettings({data,error,saved}:{data:AppLocalPosSettingsData;error?:string;saved?:string}){const __vt=useWorkspaceTranslation();const {portableAccessState,settings,snapshot,desktopRelease,canManageSettings}=data;const preferences=normalizeWorkspacePreferences(snapshot.workspace_preferences);
   return (
-    <div className="settings-style settings-style-page pos-settings-page"><main className="pos-settings mx-auto w-full max-w-5xl px-3 py-4 sm:px-6 sm:py-6">
+    <div className="settings-style settings-style-page pos-settings-page owner-pos-document"><main className="pos-settings mx-auto w-full max-w-5xl px-3 py-4 sm:px-6 sm:py-6">
       <SettingsSaveBroadcast saved={saved} />
-      <div className="settings-heading"><div><h1><WorkspaceText text="POS settings" /></h1><p><WorkspaceText text="Checkout, staff and devices" /></p></div><OwnerPosMenu /></div>
+      <OwnerPosMenu /><div className="settings-heading"><div><h1><WorkspaceText text="POS settings" /></h1><p><WorkspaceText text="Checkout, staff and devices" /></p></div></div>
 
       {error ? (
         <p className="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">

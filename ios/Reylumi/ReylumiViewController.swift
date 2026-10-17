@@ -81,8 +81,7 @@ final class ReylumiViewController: UIViewController, WKNavigationDelegate, WKUID
         ])
         launchPanel.showLoading()
         configureConnectionNotice()
-        let path = offlineRoutes.restored()?.path ?? "/explore"
-        loadRequest(URLRequest(url: initialURL ?? policy.origin.appendingPathComponent(String(path.dropFirst())), cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15))
+        loadRequest(URLRequest(url: initialURL ?? policy.origin, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15))
     }
 
     override func viewDidAppear(_ animated: Bool) {

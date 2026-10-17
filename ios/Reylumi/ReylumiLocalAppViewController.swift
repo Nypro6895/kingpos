@@ -384,13 +384,11 @@ final class ReylumiAppContainer: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad(); view.backgroundColor = .white
         if let bundle = installedBundle ?? (try? ReylumiLocalBundle.installed()), bundle.manifest.productionReady == true {
-            let hint = offlineRoutes.restored()?.path ?? "/explore"
+            // A new process starts at the role home. Foreground resumes this
+            // controller in place; explicit auth/payment returns keep their path.
+            let hint = "/"
             let controller = ReylumiLocalAppViewController(bundle: bundle, origin: origin, startPath: hint, transport: localTransport)
             local = controller; controller.onOpenOnline = { [weak self] path in self?.openOnline(path) }
-            if !bundle.routeExists(hint), ReylumiOfflineRoute.protectedPaths.contains(hint) || ReylumiOfflineRoute.publicPaths.contains(hint),
-               let url = URL(string: hint, relativeTo: origin), NavigationPolicy(origin: origin).isInternal(url), !NavigationPolicy(origin: origin).isExcluded(url) {
-                controller.onReady = { [weak self] in self?.openOnline(hint) }
-            }
             embed(controller)
         } else { let controller = ReylumiViewController(origin: origin); hosted = controller; embed(controller) }
     }

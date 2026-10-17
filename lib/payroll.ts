@@ -2159,7 +2159,7 @@ function buildShopSummary(rows: PayrollShopDailyRow[]) {
 async function calculateLivePayrollForAuth(
   auth: PayrollAuthContext,
   period: PayrollPeriod,
-  seed: { staffRows?: Staff[]; staffSettings?: StaffPayrollSetting[] } = {},
+  seed: { staffRows?: Staff[] | Promise<Staff[]>; staffSettings?: StaffPayrollSetting[] | Promise<StaffPayrollSetting[]> } = {},
 ): Promise<PayrollLiveSnapshot> {
   const [
     staffRows,
@@ -4368,13 +4368,17 @@ export async function getPayrollPageData(input: {
     salonSetting: salonPayrollSetting,
     startDate: input.startDate,
   });
+  // Share these reads only within this authorized request. The calculation and
+  // settings view need the same rows; neither needs a second database round trip.
+  const staffRowsRequest = loadStaffRows(auth);
+  const staffSettingsRequest = loadStaffPayrollSettings(auth);
   const [live, latestStatement, staffRows, staffSettings, serviceAnalytics] =
     await Promise.all([
-      calculateLivePayrollForAuth(auth, period),
+      calculateLivePayrollForAuth(auth, period, { staffRows: staffRowsRequest, staffSettings: staffSettingsRequest }),
       loadLatestPayrollSnapshot(auth, period),
-      auth.access.canViewAllPayroll ? loadStaffRows(auth) : Promise.resolve([]),
+      auth.access.canViewAllPayroll ? staffRowsRequest : Promise.resolve([]),
       auth.access.canViewAllPayroll
-        ? loadStaffPayrollSettings(auth)
+        ? staffSettingsRequest
         : Promise.resolve([]),
       auth.access.canViewAllPayroll && input.includeAnalytics !== false
         ? loadPayrollServiceAnalytics(auth, period)

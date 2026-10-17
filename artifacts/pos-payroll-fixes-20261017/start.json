@@ -1,0 +1,11 @@
+{
+  "kind": "change",
+  "changeId": "pos-payroll-audit-fixes-20261017",
+  "status": "working",
+  "summary": "Restore regular/POS navigation and cold-start home, preserve POS drafts, make Bonus/Check Number autosave-only, and reduce redundant POS/payroll reads without changing calculations.",
+  "channels": ["web", "ios"],
+  "files": ["lib/app-local-secondary-registry.tsx", "app/pos/owner-pos-tabs.tsx", "app/navigation-shell.tsx", "ios/Reylumi/ReylumiLocalAppViewController.swift", "app/payroll/staff-income-autosave-inputs.tsx", "lib/payroll.ts", "lib/app-local-resource.ts"],
+  "source": {"commit": "cd3885f09abd07ad1251bbe0d298d246de74602e"},
+  "dependencies": [],
+  "validation": [{"name": "Implementation and regression checks", "result": "pending"}]
+}

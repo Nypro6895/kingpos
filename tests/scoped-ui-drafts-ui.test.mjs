@@ -36,7 +36,7 @@ createRoot(document.getElementById('root')).render(<App/>);
       'payroll-edit-boundary': 'export const usePayrollEdits=()=>({update:()=>{}});',
       'use-payroll-refresh-batch': 'export function usePayrollRefreshBatch(){}',
       'pos-workspace-sync': 'export const subscribePosChanges=()=>()=>{};',
-      'payroll-actions': `export async function autosavePayrollPeriodStaffInputAction(previous,data){window.mutations.push({kind:'payroll',data:Object.fromEntries(data)});return{status:'saved',message:null,savedAt:'2026-10-16T00:00:00.000Z'}}`,
+      'payroll-actions': `export async function autosavePayrollPeriodStaffInputAction(previous,data){window.mutations.push({kind:'payroll',data:Object.fromEntries(data)});if(window.holdSave)await new Promise(resolve=>window.finishSave=resolve);if(window.failSave)return{status:'error',message:'Could not save fixture',savedAt:null};return{status:'saved',message:null,savedAt:String(window.mutations.length)}}`,
       'relay-actions': `export async function loadServiceRelay(){return{data:{installed:true,staffId:'staff-a',services:[{id:'service-a',name:'Manicure'}],tickets:[{id:'ticket-a',visitId:'visit-a',customerName:'Fixture customer',queueNumber:1,revision:2,lines:[],offers:[{id:'offer-a',staffId:'staff-a',serviceId:'service-a',status:'working'}]}]}}}export async function saveServiceRelay(value){window.mutations.push({kind:'relay',data:value});return{}}export async function respondServiceRelay(){throw Error('Unexpected response mutation')}export async function findServiceRelay(){throw Error('Unexpected find mutation')}`,
       style: 'export default {}',
     })[args.path] }));
@@ -86,17 +86,55 @@ test('scope change rejects old async draft; logout prevents late restore and sub
   } finally { await app.close(); }
 });
 
-test('recovered payroll draft never triggers the 700ms autosave or blur; explicit review saves once', { skip, timeout: 60_000 }, async () => {
-  const app = await fixture('payroll', { seed: { bonus: '45.50', check: 'fixture-123' } }); const { page } = app;
+test('payroll ignores old stored drafts, autosaves new edits once and starts from server values on remount', { skip, timeout: 60_000 }, async () => {
+  const app = await fixture('payroll', { seed: { bonus: '45.50', check: 'old-draft' } }); const { page } = app;
   try {
-    await page.waitForFunction(() => document.querySelector('[name=bonus_amount]').value === '45.50');
-    await page.getByLabel('Check #:').focus(); await page.getByLabel('Bonus:').focus();
-    await page.waitForTimeout(950);
-    assert.equal(await page.evaluate(() => window.mutations.length), 0);
-    await page.getByRole('button', { name: 'Save changes' }).click();
+    await page.getByLabel('Bonus:').waitFor();
+    assert.equal(await page.getByLabel('Bonus:').inputValue(), '0.00');
+    assert.equal(await page.getByLabel('Check #:').inputValue(), '');
+    assert.equal(await page.getByRole('button', { name: 'Save changes' }).count(), 0);
+    await page.getByLabel('Bonus:').fill('45.50');
     await page.waitForFunction(() => window.mutations.length === 1);
-    assert.equal(await page.evaluate(() => window.mutations[0].data.bonus_amount), '45.50');
-    await page.waitForFunction(() => window.removals.length > 0);
+    await page.getByText('saved', { exact: true }).waitFor();
+    await page.getByLabel('Check #:').fill('new-check');
+    await page.getByLabel('Bonus:').focus();
+    await page.waitForFunction(() => window.mutations.length === 2);
+    await page.getByText('saved', { exact: true }).waitFor();
+    await page.waitForTimeout(800);
+    assert.equal(await page.evaluate(() => window.mutations.length), 2);
+    assert.equal(await page.evaluate(() => window.mutations[1].data.check_number), 'new-check');
+    await page.evaluate(() => { window.online=false; });
+    await page.getByLabel('Bonus:').fill('99.50');
+    await page.evaluate(() => window.unmount());
+    await page.getByLabel('Bonus:').waitFor({ state: 'detached' });
+    await page.evaluate(() => window.remount());
+    assert.equal(await page.getByLabel('Bonus:').inputValue(), '0.00');
+    assert.equal(await page.evaluate(() => window.reads.length + window.writes.length), 0);
+  } finally { await app.close(); }
+});
+
+test('payroll autosave protects new typing during an in-flight save and retries a failed save', { skip, timeout: 60_000 }, async () => {
+  const app = await fixture('payroll'); const { page } = app;
+  try {
+    await page.evaluate(() => { window.holdSave=true; });
+    await page.getByLabel('Bonus:').fill('12.50');
+    await page.waitForFunction(() => window.mutations.length === 1 && window.finishSave);
+    await page.getByLabel('Bonus:').fill('27.75');
+    await page.evaluate(() => { window.holdSave=false; window.failSave=true; window.finishSave(); });
+    await page.getByRole('button', { name: 'Try again' }).waitFor();
+    assert.equal(await page.getByLabel('Bonus:').inputValue(), '27.75');
+    await page.evaluate(() => { window.failSave=false; });
+    await page.getByRole('button', { name: 'Try again' }).click();
+    await page.getByText('saved', { exact: true }).waitFor();
+    assert.equal(await page.evaluate(() => window.mutations.at(-1).data.bonus_amount), '27.75');
+    await page.evaluate(() => { window.online=false; });
+    await page.getByLabel('Check #:').fill('offline-check');
+    await page.waitForTimeout(850);
+    const count=await page.evaluate(() => window.mutations.length);
+    await page.getByText('Unsaved changes', { exact: true }).waitFor();
+    await page.evaluate(() => { window.online=true; window.dispatchEvent(new Event('online')); });
+    await page.getByText('saved', { exact: true }).waitFor();
+    assert.equal(await page.evaluate(() => window.mutations.length), count+1);
   } finally { await app.close(); }
 });
 

@@ -123,27 +123,26 @@ final class LocalHostedReturnTests: XCTestCase {
     }
 
     @MainActor
-    func testUnsupportedPermittedSavedHintLoadsExploreThenHandsOffToHTTPS() async throws {
+    func testColdLaunchIgnoresSavedRouteAndDoesNotOpenHostedModal() async throws {
         let (bundle, directory) = try readyBundle(); defer { try? FileManager.default.removeItem(at: directory) }
-        let server = try HostedReturnServer(); try await server.start(); defer { server.stop() }
-        let origin = try XCTUnwrap(server.origin), routes = ReylumiOfflineRouteStore(origin: origin, service: "reylumi.tests.hint." + UUID().uuidString)
+        let origin = URL(string: "https://reylumi.com")!, routes = ReylumiOfflineRouteStore(origin: origin, service: "reylumi.tests.hint." + UUID().uuidString)
         routes.save(try XCTUnwrap(ReylumiOfflineRoute(path: "/staff/my-work", expiresAt: Date().addingTimeInterval(3600)))); defer { routes.clear() }
         let container = ReylumiAppContainer(origin: origin, bundle: bundle, offlineRoutes: routes)
         let window = makeWindow(container); defer { window.isHidden = true; window.rootViewController = nil }
         let local = try XCTUnwrap(container.local); local.initializeWebContentIfNeeded()
         try await wait("window.fixtureLocal===true", in: XCTUnwrap(local.webView))
-        for _ in 0..<150 { if container.presentedViewController != nil { break }; try await Task.sleep(nanoseconds: 10_000_000) }
-        XCTAssertEqual(local.webView.url?.path, "/explore")
-        let hosted = try XCTUnwrap((container.presentedViewController as? UINavigationController)?.viewControllers.first as? ReylumiViewController)
-        hosted.initializeWebContentIfNeeded()
-        let web = try XCTUnwrap(hosted.view.subviews.compactMap { $0 as? WKWebView }.first)
-        try await wait("location.pathname==='/staff/my-work' && document.getElementById('route') != null", in: web)
-        XCTAssertEqual(web.url?.path, "/staff/my-work", "The permitted saved hint must reach the actual HTTPS-hosted document")
+        XCTAssertEqual(local.currentPath, "/")
+        XCTAssertNil(container.presentedViewController)
+        _ = try await local.webView.evaluateJavaScript("history.pushState({}, '', '/help'); true")
+        NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        XCTAssertEqual(local.currentPath, "/help", "Foreground must not apply the cold-start destination")
+        XCTAssertEqual(routes.restored()?.path, "/staff/my-work", "Changing startup must not delete persisted work or leases")
     }
 
     private func readyBundle() throws -> (ReylumiLocalBundle, URL) {
         let (_, directory) = try AppLocalTestFixture.bundle(), url = directory.appendingPathComponent("manifest.json")
         var value = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any]); value["productionReady"] = true
+        var routes = value["routes"] as! [[String: Any]]; routes.append(["path": "/", "adapter": "home", "access": "public"]); value["routes"] = routes
         try JSONSerialization.data(withJSONObject: value).write(to: url)
         return (try ReylumiLocalBundle(directory: directory), directory)
     }

@@ -74,6 +74,9 @@ struct ReylumiLocalSession: Codable {
         return authority + "|" + (context["workspaceId"] as? String ?? "") + "|" + (context["salonId"] as? String ?? "")
     }
     func compatible(path: String) -> Bool {
+        // The neutral launch route only resolves an account's own home. Device
+        // PIN authority remains separate and cannot become an account session.
+        if path == "/" { return authority != "portable" }
         if path.hasPrefix("/pos/portable") { return authority == "portable" }
         if path == "/pos/customer-display" { return authority == "portable" }
         if ["/staff/my-work", "/staff/workday", "/staff/appointments"].contains(path) { return authority == "staff" }

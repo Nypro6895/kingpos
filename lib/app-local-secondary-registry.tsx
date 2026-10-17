@@ -1,5 +1,8 @@
 "use client";
 import{useEffect}from"react";
+import{OwnerPanel}from"@/app/pos/owner-local-panels";
+import{OwnerPosMore}from"@/app/pos/owner-pos-more";
+import{ownerLocalHref}from"./owner-local-workspace";
 import Link from"next/link";
 import{WorkspaceText}from"@/components/workspace-language";
 import{AppLocalShowcaseLook}from"@/components/app-local-showcase-look";
@@ -12,7 +15,7 @@ import type{AppLocalTransformations as TransformationsData,AppLocalVisit}from"./
 const uuid=/^[a-f0-9-]{36}$/i;
 export function appLocalRouteAlias(path:string):string|null{
  const url=new URL(path,"https://reylumi.com");
- const target:Record<string,string>={"/bookings":"/pos/book","/reports":"/pos/report","/pos-tickets":"/pos/ticket","/businesses/create":"/salons/new"};
+ const target:Record<string,string>={"/businesses/create":"/salons/new"};
  if(target[url.pathname])return target[url.pathname]+url.search;
  if(url.pathname==="/explore/wisconsin"){
   const query=new URLSearchParams({location:url.searchParams.get("city")&&url.searchParams.get("city")!=="All"?`${url.searchParams.get("city")!.slice(0,160)}, WI`:"WI",scope:"fixed"});
@@ -21,6 +24,14 @@ export function appLocalRouteAlias(path:string):string|null{
   return"/explore?"+query;
  }
  return null;
+}
+const regularReadPaths: Record<string, string> = { "/bookings": "/pos/book", "/reports": "/pos/report", "/pos-tickets": "/pos/ticket" };
+function RegularBusinessPage({path,context,navigate}:AppLocalPageProps) {
+ if(!context?.context.authenticated || !context.access?.ownerWorkspace) return <main className="p-6"><WorkspaceText text="Open this page from a Business workspace." /></main>;
+ if(path.split("?")[0] === "/pos/more") return <OwnerPosMore />;
+ const url=new URL(path,"https://reylumi.com");
+ // Share the authorized DTO, while retaining the caller's navigation and return path.
+ return <OwnerPanel href={regularReadPaths[url.pathname]+url.search} active scope={context.context.scope} salonId={context.context.salonId ?? ""} navigate={navigate} ticketsPath="/pos-tickets" />;
 }
 function RedirectPage({path,context,navigate}:AppLocalPageProps){
  const destination=path==="/"?context?.home??(context?.access?.ownerWorkspace?"/staff/today":context?.access?.staffWorkspace?"/staff/my-work":"/explore"):appLocalRouteAlias(path);
@@ -53,6 +64,7 @@ export function getAppLocalSecondaryPage(path:string):AppLocalPage|null{
  try{
   if(!path.startsWith("/")||path.startsWith("//")||/[\\\u0000-\u001f]/.test(path))return null;
   const url=new URL(path,"https://reylumi.com");if(url.hash||[...url.searchParams].some(([key,value])=>/token|secret|password|payment/i.test(key)||value.length>512))return null;
+  if(url.pathname === "/pos/more" || regularReadPaths[url.pathname] && ownerLocalHref(regularReadPaths[url.pathname]+url.search))return{id:"business.regular:"+url.pathname,title:url.pathname==="/bookings"?"Book":url.pathname==="/reports"?"Report":url.pathname==="/pos/more"?"More":"Ticket",requiresContext:true,Component:RegularBusinessPage,features:["original-navigation-context","shared-authorized-resource"]};
   if(url.pathname==="/"||appLocalRouteAlias(path))return{id:"alias",title:"Reylumi",requiresContext:url.pathname==="/",Component:RedirectPage,features:["equivalent-original-destination"]};
   if(Object.hasOwn(moreContent,url.pathname.replace(/^\/more\//,"")))return{id:"more.static",title:"More",requiresContext:true,Component:StaticMorePage,features:["complete-existing-static-content","no-content-network-request"]};
   if(/^\/explore\/looks\/[a-z0-9-]{1,100}$/i.test(url.pathname))return{id:"showcase.look",title:"Explore look",requiresContext:false,Component:ShowcasePage,features:["complete-bundled-catalog-and-view"]};
