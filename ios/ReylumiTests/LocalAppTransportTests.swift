@@ -189,7 +189,7 @@ final class LocalAppTransportTests: XCTestCase {
     @MainActor
     func testActualInstalledExploreRecoversContextTimeoutAnd503OnlyAfterUserRetry() async throws {
         let bundle = try ReylumiLocalBundle.installed()
-        XCTAssertTrue(bundle.manifest.productionReady); XCTAssertTrue(bundle.routeExists("/explore"))
+        XCTAssertEqual(bundle.manifest.productionReady, true); XCTAssertTrue(bundle.routeExists("/explore"))
         let blockerID = "reylumi.tests.explore-no-network." + UUID().uuidString
         let rules = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<WKContentRuleList, Error>) in
             WKContentRuleListStore.default().compileContentRuleList(forIdentifier: blockerID, encodedContentRuleList: """
