@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "drako-settings-qa-fixes-20261016",
+  "status": "working",
+  "summary": "Fix targeted Booking Deposit settings and load failure UI, cancel salon drafts, and persist Settings group selection. Keep publication policy unchanged; no real booking/payment.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/market/booking-deposit-actions.ts",
+    "app/market/booking-deposit-panel.tsx",
+    "app/settings/salon-list-panel.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "tests/booking-deposit-settings-target.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\drako-qa-fixes-20261016\\before",
+    "commit": "7aba18c74106d888f6a02ba12a7d02b378b83d59"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Target authorization and regression tests; real-component UI; release build; live Drako QA",
+      "result": "pending"
+    }
+  ],
+  "id": "2645c640-379c-4e0a-b3ac-3730075c4607",
+  "recordedAt": "2026-10-17T00:17:22.100Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

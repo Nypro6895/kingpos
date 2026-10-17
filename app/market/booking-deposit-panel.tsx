@@ -8,10 +8,28 @@ import styles from "./booking-deposit.module.css";
 export function BookingDepositPanel({ initial, salonId, paymentsAvailable = true, bankCheckout = false, monthlyPrice = "$5.90 / month", settingsOnly = false }: { initial?: BookingDepositState; salonId?: string; paymentsAvailable?: boolean; bankCheckout?: boolean; monthlyPrice?: string; settingsOnly?: boolean }) {
   const [state, setState] = useState(initial ?? EMPTY_BOOKING_DEPOSIT);
   const [loading, setLoading] = useState(!initial), [message, setMessage] = useState("");
+  const [loadedTarget, setLoadedTarget] = useState<{ salonId?: string } | null>(initial ? { salonId } : null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [busy, startTransition] = useTransition();
   const router = useRouter();
-  useEffect(() => { if (initial) return; let active = true; loadBookingDepositAction(salonId).then(result => { if (!active) return; if (result.state) setState(result.state); else setMessage(result.error ?? "Settings could not load."); setLoading(false); }); return () => { active = false; }; }, [initial, salonId]);
+  useEffect(() => {
+    let active = true;
+    setMessage("");
+    if (initial) { setState(initial); setLoadedTarget({ salonId }); setLoading(false); return; }
+    setLoading(true); setLoadedTarget(null);
+    loadBookingDepositAction(salonId).then(result => {
+      if (!active) return;
+      if (result.state) { setState(result.state); setLoadedTarget({ salonId }); }
+      else setMessage(result.error ?? "Payment settings could not load. Please retry.");
+    }).catch(() => { if (active) setMessage("Could not connect. Retry loading payment settings."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [initial, salonId, loadAttempt]);
   function open(action: () => Promise<{ url?: string; error?: string }>) { startTransition(async () => { const result = await action(); if (result.url) openMarketPayment(result.url); else setMessage(result.error ?? "Please retry."); }); }
+  if (loading || !loadedTarget || loadedTarget.salonId !== salonId) return <section className={styles.panel} aria-label="Booking deposit settings" aria-busy={loading}>
+    <header><h3>Booking Deposit</h3></header>
+    {loading ? <p role="status">Loading payment settings…</p> : <><p role="alert">{message || "Payment settings could not load. Please retry."}</p><button type="button" onClick={() => { setLoading(true); setLoadAttempt(n => n + 1); }}>Retry loading</button></>}
+  </section>;
   return <section className={styles.panel} aria-label="Booking deposit settings" aria-busy={busy || loading}>
     <header><div><h3>Booking Deposit</h3>{!settingsOnly && <p>By Reylumi · {monthlyPrice} per salon</p>}</div><span className={styles.badge}>{state.testMode ? "Test mode · No charges" : state.active ? "Subscribed" : "Subscription needed"}</span></header>
     {!settingsOnly && <p>Collect a deposit or full payment before customers confirm their appointment.</p>}
@@ -24,7 +42,7 @@ export function BookingDepositPanel({ initial, salonId, paymentsAvailable = true
     <p className={styles.note}>Deposits never exceed the service price. The salon pays all Stripe processing, refund and dispute fees. The plugin subscription is separate. Cards are handled securely by Stripe.</p>
     <p>{state.testMode ? "No money moves in test mode. Live transaction setup is managed in Market Settings." : state.connected ? "✓ Stripe connected — payments go to your salon." : "Connect your salon's Stripe account to receive payments."}</p>
     <p>In the iOS app, Stripe account setup opens the Reylumi website. Sign in there to connect your salon securely.</p>
-    <div className={styles.actions}><button disabled={busy || loading || !state.installed} onClick={() => startTransition(async () => { const result = await saveBookingDepositAction(state, salonId); if (result.state) { setState(result.state); setMessage("Booking payment settings saved."); } else setMessage(result.error ?? "Could not save."); })}>Save settings</button>{!state.testMode ? <><button disabled={busy || loading} onClick={() => open(connectBookingStripeAction)}>{state.connected ? "Reconnect Stripe" : "Connect Stripe"}</button>{(!bankCheckout || state.subscribed) && <button disabled={busy || loading || (!state.subscribed && (!paymentsAvailable || state.active))} onClick={() => open(() => bookingDepositBillingAction(state.subscribed))}>{state.subscribed ? "Manage subscription" : "Subscribe · $5.90 / month"}</button>}</> : null}{state.testMode && state.subscribed && <button disabled={busy || loading} onClick={() => open(() => bookingDepositBillingAction(true))}>Manage subscription</button>}</div>
+    <div className={styles.actions}><button disabled={busy || loading || !state.installed} onClick={() => startTransition(async () => { const result = await saveBookingDepositAction(state, salonId); if (result.state) { setState(result.state); setMessage("Booking payment settings saved."); } else setMessage(result.error ?? "Could not save."); })}>Save settings</button>{!state.testMode ? <><button disabled={busy || loading} onClick={() => open(() => connectBookingStripeAction(salonId))}>{state.connected ? "Reconnect Stripe" : "Connect Stripe"}</button>{(!bankCheckout || state.subscribed) && <button disabled={busy || loading || (!state.subscribed && (!paymentsAvailable || state.active))} onClick={() => open(() => bookingDepositBillingAction(state.subscribed, salonId))}>{state.subscribed ? "Manage subscription" : "Subscribe · $5.90 / month"}</button>}</> : null}{state.testMode && state.subscribed && <button disabled={busy || loading} onClick={() => open(() => bookingDepositBillingAction(true, salonId))}>Manage subscription</button>}</div>
     <p role="status" aria-live="polite">{loading ? "Loading payment settings…" : busy ? "Updating…" : message}</p>
   </section>;
 }

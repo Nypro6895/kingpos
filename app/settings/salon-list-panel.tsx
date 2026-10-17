@@ -299,7 +299,7 @@ export function SalonListPanel({ initialCreate = false, createOnly = false, onCh
                   disabled={busy}
                   type="button"
                   onClick={() => {
-                    setEditor(createOnly ? "new" : null);
+                    setEditor(null);
                     setMatches([]);
                     setError("");
                   }}

@@ -42,7 +42,8 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
  const [mobileStep,setMobileStep]=useState<"home"|"sections"|"edit">(initialSection?"edit":"home");
  const [mobileGroup,setMobileGroup]=useState("personal");
  async function reload(){setBusy(true);setError("");try{setIndex(await loadSettingsHub());}catch(e){setError(e instanceof Error?e.message:"Could not reload your salons.");}finally{setBusy(false);}}
- function reveal(id:string){setQuery("");setSelection(id);setMobileStep("edit");window.history.replaceState(null,"",`/settings?section=${encodeURIComponent(id)}`);}
+ function selectSection(id:string){setQuery("");setSelection(id);window.history.replaceState(null,"",`/settings?section=${encodeURIComponent(id)}`);}
+ function reveal(id:string){selectSection(id);setMobileStep("edit");}
  const groups:SettingGroup[]=[{id:"personal",label:"Personal account",description:user.email||user.display_name||undefined,items:[
   {id:"personal-profile",label:"Profile & contact",content:<AccountProfileEditor user={user} createdAtLabel={createdAtLabel} embedded/>},
   {id:"personal-public",label:"Public profile & visibility",content:<PersonalPublicProfilePanel/>},
@@ -65,7 +66,7 @@ export function SettingsHubClient({user,createdAtLabel,index:initial,initialSect
  const activeItem=activeGroup.items.find(i=>i.id===activeId)||activeGroup.items[0];
  const search=query.trim().toLowerCase();
  const matching=(g:SettingGroup,i:SettingItem)=>[g.label,g.description||"",i.label].some(v=>v.toLowerCase().includes(search));
- function groupButton(g:SettingGroup){return <button key={g.id} type="button" aria-pressed={activeGroup.id===g.id} onClick={()=>{setMobileGroup(g.id);setMobileStep(g.items.length>1?"sections":"edit");setSelection(g.items[0]?.id||"personal-profile");setQuery("");}} className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${activeGroup.id===g.id?"font-semibold":"text-zinc-600 hover:bg-zinc-100"}`}><span className="block"><WorkspaceText text={g.label} /></span>{g.id.startsWith("salon-")||g.id.startsWith("staff-")?<span className="mt-0.5 block truncate text-xs font-normal text-zinc-500">{g.description}</span>:null}</button>;}
+ function groupButton(g:SettingGroup){return <button key={g.id} type="button" aria-pressed={activeGroup.id===g.id} onClick={()=>{setMobileGroup(g.id);setMobileStep(g.items.length>1?"sections":"edit");selectSection(g.items[0]?.id||"personal-profile");}} className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${activeGroup.id===g.id?"font-semibold":"text-zinc-600 hover:bg-zinc-100"}`}><span className="block"><WorkspaceText text={g.label} /></span>{g.id.startsWith("salon-")||g.id.startsWith("staff-")?<span className="mt-0.5 block truncate text-xs font-normal text-zinc-500">{g.description}</span>:null}</button>;}
  const chosenGroup=groups.find(g=>g.id===mobileGroup)||activeGroup;
  function sectionButton(g:SettingGroup,i:SettingItem){return <button key={i.id} type="button" aria-current={i.id===activeItem.id?"page":undefined} onClick={()=>reveal(i.id)} className="settings-section-link"><span><WorkspaceText text={i.label} /></span><span aria-hidden="true">›</span></button>;}
  return <div className="settings-hub" data-mobile-step={mobileStep}>
