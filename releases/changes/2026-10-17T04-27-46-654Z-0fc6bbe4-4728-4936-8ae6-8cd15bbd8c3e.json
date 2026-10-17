@@ -60,6 +60,5 @@
     "tests/explore-address-priority.integration.test.mjs": "478c6224ffdb230b8d2b0bc93c9ad6861003b5d75eab639db6148a928a675bfa",
     "tests/explore-anywhere-search.integration.test.mjs": "b64cea7aa03d5b6ee2f7768cf970536af9e456cd6b327ec88d80e6aa7e3b072f",
     "tests/fixtures/explore-unified-search-bootstrap.mjs": "d02fc5a3dfd3857e9d0ae2dd64b6f88482b59011e47ed4ff4dbb0e35bc2d9357"
-  },
-  "filePath": "C:\\Users\\giuse\\.codex\\worktrees\\full-release-1-1-0\\kingpos\\releases\\changes\\2026-10-17T04-27-46-654Z-0fc6bbe4-4728-4936-8ae6-8cd15bbd8c3e.json"
+  }
 }

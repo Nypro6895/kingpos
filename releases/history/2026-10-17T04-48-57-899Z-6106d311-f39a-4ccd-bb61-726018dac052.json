@@ -1,0 +1,44 @@
+{
+  "kind": "release",
+  "summary": "Reylumi 1.1.0 published to reylumi.com and verified available as TestFlight 1.1.0 (30.1); exact frozen web/native source matches commit f3f0a06d5acd07c9e15a7f804a55d3faa4f320af.",
+  "changes": [
+    "aa4a2d8a-64fe-4e6b-b8fc-c146c09d7761",
+    "251c8338-9223-48f3-ad57-7c18a554e093",
+    "4a5b52f9-202b-47e7-a096-0ac90b1f8a44",
+    "52c98014-3e93-4da1-9fb2-38018c38aa12",
+    "757a1eca-bccb-4342-b2ec-a029ac6d1350",
+    "5d4378b8-3283-4a5d-948f-e95d5402db2d",
+    "535b3054-657a-4022-ab69-abf9183dd02c",
+    "15f7569e-0548-4848-a0e3-abedf92a5224",
+    "46a001aa-b407-44bc-ac7a-eb8eba7694a0",
+    "4777cdd1-2a74-49f4-9364-d4c45d599d1d",
+    "9b1233af-2c14-419a-bf7a-4b3d43316bd8",
+    "d87bcc32-58cc-4082-b226-3f999660adf4",
+    "679ae167-0da6-48d3-9cd0-c6b467e6dc3b",
+    "0fc6bbe4-4728-4936-8ae6-8cd15bbd8c3e",
+    "013deeb7-063c-4418-99f0-3af079470a7e"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_FRuEJPP9YhnAbBHFUQ6GbxnhNwz9",
+      "baselineDeploymentId": "dpl_Ejji8CkeAdsjudkYHVpgR9Ycdmoj",
+      "sourceSha256": "d36aa99a943b200929e07ae6c63020cc83e376510db084fc28523da23ea3bd06",
+      "overlaySha256": "003212a4b2b3021ad3f3beee6cb21321e69e036a69d99be389a16f71607ab301",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/release-receipt.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.1.0",
+      "build": "30.1",
+      "commit": "f3f0a06d5acd07c9e15a7f804a55d3faa4f320af",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/native-upload-verification.json"
+    }
+  },
+  "receipt": "C:/Users/giuse/kingpos/artifacts/full-release-1-1-0-20261016/release-receipt.json",
+  "id": "6106d311-f39a-4ccd-bb61-726018dac052",
+  "recordedAt": "2026-10-17T04:48:57.899Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\full-release-1-1-0\\kingpos"
+}
