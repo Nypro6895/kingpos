@@ -1,0 +1,314 @@
+{
+  "kind": "release",
+  "releaseId": "release-audit-ios-1-0-0-20261017",
+  "summary": "Audit of 22 worktrees and recorded/unrecorded changes; nine completed groups integrated on exact current production source. Web published and matching iOS 1.0.0 available to existing TestFlight groups.",
+  "changes": [
+    "ea383ffb-2353-49a6-8791-9603f82f4570",
+    "3dd4110f-ceda-4ddc-a211-45136f598870",
+    "8da35f7e-f15f-468d-a4af-d8816b83b51c",
+    "0c03df31-342b-4968-9dde-f9c89929674b",
+    "d04c6051-dfe1-48a4-a033-18fa9cc27e72",
+    "8b278624-f921-427c-b1b5-db1e2781f2e5",
+    "dabb8849-233e-420f-961e-afdb40afadd9",
+    "8752e3f8-7266-4eed-8c62-3ac8cec939e4",
+    "03856547-737d-4b9e-99c8-84ba374bffd6",
+    "0d359561-e718-4b8c-ae63-e516fc04c71a"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "url": "https://reylumi.com",
+      "deploymentId": "dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+      "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+      "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+      "sourceSha256": "cdf0c73b3de5a124057c0afd1c6e2cbb8bccb568269eec6e9b0e830fe37e1191",
+      "deploySourceSha256": "d6fcfa9f5281d8fcc0dc4d7127916655e5a08538bc17b7df76f8960db05c2473",
+      "overlaySha256": "c224a42bb67ebbc4f1d535ff968e74f7fd9aeb9ba5909efe18476075dc734677",
+      "evidence": "artifacts/release-audit-ios-1-0-0-20261017/live-source-verification.json"
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.0",
+      "build": "33",
+      "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+      "baselineVersion": "1.1.0",
+      "baselineBuild": "32.1",
+      "workflowRun": 39073771504,
+      "evidence": "artifacts/release-audit-ios-1-0-0-20261017/native-final-verification.json"
+    }
+  },
+  "baseline": {
+    "deploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "commit": "c71e0e4ad3869b17dd6adc225bfd365f3051284d",
+    "sourceSha256": "3810e506a28c4ed5bfcecacc5496b13ebf2d702cabbd650855763a27b2b67d39"
+  },
+  "source": {
+    "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+    "branch": "codex/release-audit-ios-1-0-0-20261017",
+    "files": 3117,
+    "deployedFiles": 2928,
+    "sourceSha256": "cdf0c73b3de5a124057c0afd1c6e2cbb8bccb568269eec6e9b0e830fe37e1191",
+    "overlaySha256": "c224a42bb67ebbc4f1d535ff968e74f7fd9aeb9ba5909efe18476075dc734677",
+    "manifest": "artifacts/release-audit-ios-1-0-0-20261017/assembled-source.json",
+    "snapshot": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/frozen-source"
+  },
+  "selectedOriginalEvents": [
+    {
+      "eventId": "01653877-fee8-494b-8889-ee71dc6871e6",
+      "changeId": "explore-session-recovery-20261017",
+      "source": {
+        "commit": "698413f30b050292c91577f1a53e92c5386194e1",
+        "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\explore-session-recovery\\kingpos\\artifacts\\explore-session-recovery-20261017\\frozen-source",
+        "patch": "C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos/artifacts/explore-session-recovery-20261017/change.patch",
+        "sourceSha256": "c745cf574db26d191514af7b69b1d3db651197cad63930436241e3368eb35175",
+        "overlaySha256": "2f5d50d2869f7ff05e6568dc8850fd0ee5a949f30f2d0a554a6d6060edeb1b70"
+      }
+    },
+    {
+      "eventId": "92e86c63-a7a4-480e-abb5-35be35b2ed30",
+      "changeId": "ticket-edit-receipt-20261017",
+      "source": {
+        "snapshot": "artifacts/ticket-edit-receipt-20261017/source",
+        "patch": "artifacts/ticket-edit-receipt-20261017/change.patch",
+        "baselineSnapshot": "artifacts/ticket-edit-receipt-20261017/before",
+        "nativeAssessment": "Web compatible; no Swift, native assets/config or bridge changes; no binary required by this UI task."
+      }
+    },
+    {
+      "eventId": "fde68e0e-93a5-41cd-b394-26c288c444a3",
+      "changeId": "ticket-toolbar-20261017",
+      "source": {
+        "snapshot": "artifacts/ticket-toolbar-20261017/source",
+        "patch": "artifacts/ticket-toolbar-20261017/change.patch",
+        "baselineSnapshot": "artifacts/ticket-toolbar-20261017/before",
+        "nativeAssessment": "Web-compatible presentation only; no native binary required by this change."
+      }
+    },
+    {
+      "eventId": "b733528c-6118-44a8-ba80-579c340f3c96",
+      "changeId": "customer-compact-20261017",
+      "source": {
+        "snapshot": "artifacts/customer-compact-20261017/source",
+        "patch": "artifacts/customer-compact-20261017/change.patch",
+        "baselineSnapshot": "artifacts/customer-compact-20261017/before",
+        "nativeAssessment": "Web-compatible UI only, no native config/assets/bridge changes."
+      }
+    },
+    {
+      "eventId": "64572a22-ac21-458a-9143-76a8e9a32af8",
+      "changeId": "service-owned-addon-groups",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\service-addon-groups-20261017\\frozen",
+        "sourceSha256": "cfddc920acdacd8b949a0ab2cc6d7f759e7d485592907ba35e93441203f51b4d",
+        "overlaySha256": "0ce20973f6933a044afc23607d31ffb0a9c6f13c2b46e3b2257e6ff7f87218c2"
+      }
+    },
+    {
+      "eventId": "c1c136e4-1447-4956-918a-7da45abd2174",
+      "changeId": "customer-service-audit-20261017",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\customer-service-audit-20261017\\source",
+        "patch": "artifacts/customer-service-audit-20261017/change.patch",
+        "baselineSnapshot": "artifacts/customer-service-audit-20261017/before"
+      }
+    },
+    {
+      "eventId": "541cdfdd-821b-42f9-9d04-335778e89b38",
+      "changeId": "help-report-separation-20261017",
+      "source": {
+        "snapshot": "artifacts/help-report-separation/completed"
+      }
+    },
+    {
+      "eventId": "4c69fc24-6164-447b-91a5-238a4afd29a2",
+      "changeId": "my-place-compact-20261017",
+      "source": {
+        "snapshot": "artifacts/my-place-compact-20261017/source",
+        "patch": "artifacts/my-place-compact-20261017/change.patch",
+        "baselineSnapshot": "artifacts/my-place-compact-20261017/before",
+        "nativeAssessment": "Web-compatible presentation only; no native bridge, Swift, packaged assets or configuration changed."
+      }
+    },
+    {
+      "eventId": "8019fdf7-8361-4d63-957b-8dd5c79b44ee",
+      "changeId": "owner-campaign-workspace-20261017",
+      "source": {
+        "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\owner-campaign-workspace-20261017\\final-source",
+        "overlaySha256": "d7674b695401e1113e1f1018e349bb745a76f6eeccbcc4b32c2fab2897f734f5"
+      }
+    }
+  ],
+  "preservation": {
+    "requiredExploreFiles": [
+      "app/api/explore/search/route.ts",
+      "app/api/explore/feed/route.ts",
+      "app/api/explore/area/route.ts",
+      "app/explore/explore-discovery-feed.tsx",
+      "lib/explore-search.ts",
+      "lib/explore-search-rpc.ts",
+      "lib/explore-search-client.ts",
+      "lib/explore-feed-client.ts",
+      "lib/explore-visitor.ts",
+      "lib/explore-feed-discovery.ts",
+      "lib/explore-social-feed.ts",
+      "lib/explore-social-feed-ranking.ts",
+      "lib/explore-query-intent.ts",
+      "lib/explore-query-routing.ts",
+      "lib/location/address.ts",
+      "lib/location/area-provider-request.ts",
+      "lib/location/census-address-match.ts",
+      "lib/location/coordinate-validity.ts",
+      "lib/location/directory-geocode-worker.ts",
+      "lib/location/distance.ts",
+      "lib/location/explore-gps-area-client.ts",
+      "lib/location/explore-gps-area-data.ts",
+      "lib/location/explore-gps-area.ts",
+      "lib/location/geocoding-backfill.ts",
+      "lib/location/geocoding-service.ts",
+      "lib/location/providers/census-address-geocoder.ts",
+      "lib/location/providers/census-area-reverse.ts",
+      "lib/location/providers/maptiler-area-reverse.ts",
+      "lib/location/providers/maptiler-geocoder.ts",
+      "lib/location/salon-map-location.ts"
+    ],
+    "baselineFilesDeleted": 0,
+    "nativeAndWebUseSameFrozenCommit": true,
+    "existingBusinessRecordCountsUnchangedByMigrations": true,
+    "existingPaymentPricesBalancesAndConsentPreserved": true
+  },
+  "validation": {
+    "distinctIntegrationAndVersionChecks": 281,
+    "nativeTests": {
+      "expected": 97,
+      "count": 97,
+      "failures": 0,
+      "passed": true
+    },
+    "productionBuild": "Local and Vercel READY passed",
+    "liveHttpChecks": 16,
+    "mobileBrowserChecks": [
+      "Help defaults to English",
+      "English/Vietnamese toggle updates URL and rendered language",
+      "Report/Contact guest entry remains usable",
+      "No horizontal overflow on mobile",
+      "No browser runtime exceptions"
+    ],
+    "migrations": [
+      {
+        "version": "20261017210000",
+        "name": "owner_campaign_workspace",
+        "file": "supabase/migrations/20261017210000_owner_campaign_workspace.sql",
+        "sha256": "74ecb57bb27afcf4e302e2d5645ee2b702b4e14b05470077279018659aa762f3"
+      },
+      {
+        "version": "20261017220000",
+        "name": "service_owned_addon_groups",
+        "file": "supabase/migrations/20261017220000_service_owned_addon_groups.sql",
+        "sha256": "09527616821f204fdd7780ef23c3d1fcd2d7bc05b33608193ae291374a2daaf5"
+      }
+    ],
+    "sqlFunctionsVerified": 16,
+    "unrelatedSqlAuthoritiesPreserved": 7,
+    "sourceHashesVerified": true,
+    "paymentWebhook": {
+      "at": "2026-10-17T22:02:41.820Z",
+      "readOnly": true,
+      "configurationCount": 1,
+      "endpoints": [
+        {
+          "kind": "shared",
+          "id": "we_1UPD5FLju6kBRMfk2HhXRacK",
+          "url": "https://reylumi.com/api/payments/webhook",
+          "status": "enabled",
+          "livemode": true,
+          "events": [
+            "checkout.session.completed",
+            "checkout.session.expired",
+            "invoice.paid",
+            "invoice.payment_failed",
+            "customer.subscription.updated",
+            "customer.subscription.deleted",
+            "charge.refunded",
+            "payment_intent.succeeded",
+            "credit_note.created",
+            "credit_note.voided"
+          ],
+          "cardSetupEventEnabled": true
+        }
+      ]
+    },
+    "releaseStatusHelperTests": {
+      "passed": 16,
+      "evidence": "artifacts/release-audit-ios-1-0-0-20261017/integer-status-tests.log"
+    }
+  },
+  "pending": [
+    {
+      "eventId": "63485a4d-e396-460a-b3e4-46c7029c84dc",
+      "changeId": "phone-claim-conflicts-20261015",
+      "status": "blocked",
+      "reason": "Awaiting separate owner decision on stored/shared phone ownership policy"
+    },
+    {
+      "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+      "changeId": "facebook-nails-pilot-plugin-20261016",
+      "status": "blocked",
+      "reason": "Separate Facebook plugin product, outside Reylumi web/iOS"
+    },
+    {
+      "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+      "changeId": "nails-pilot-english-vision-bulk-20261016",
+      "status": "blocked",
+      "reason": "Separate Facebook plugin product, outside Reylumi web/iOS"
+    },
+    {
+      "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+      "changeId": "nails-pilot-graph-runtime-20261016",
+      "status": "ready",
+      "reason": "Separate Facebook plugin product, outside Reylumi web/iOS"
+    },
+    {
+      "eventId": "482469b7-4009-48f1-a0af-13a6c6a26f88",
+      "changeId": "nails-pilot-one-click-post-now-20261016",
+      "status": "ready",
+      "reason": "Separate Facebook plugin product, outside Reylumi web/iOS"
+    },
+    {
+      "eventId": "493385b7-012b-4d66-a589-5790acf7018a",
+      "changeId": "explore-preview-logos-20261017",
+      "status": "ready",
+      "reason": "Local verification harness only, no production product changes"
+    }
+  ],
+  "rollback": {
+    "webDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "nativePreviousVersion": "1.1.0",
+    "nativePreviousBuild": "32.1",
+    "policy": "Guard the current alias before any rollback. Preserve additive schema and all business records; never overwrite a later external release."
+  },
+  "limitations": [
+    "No physical iPhone verification",
+    "Authenticated business flows checked in isolated fixtures; no real booking, payment, advertising or messaging transactions created",
+    "App Store submission/publication not performed; current authorized distribution is TestFlight"
+  ],
+  "appStorePublicationClaimed": false,
+  "nativeWorkflow": {
+    "uploadRun": 39073771504,
+    "uploadRunConclusion": "failure",
+    "failureStage": "Post-upload read-only build-number parser; archive/export/upload succeeded",
+    "recoveryRun": 39075167375,
+    "recoveryCommit": "bdd16ff7369537c81a49e531df10490f72d2dbf0",
+    "statusRecoveryVerified": true
+  },
+  "verificationTool": {
+    "commit": "bdd16ff7369537c81a49e531df10490f72d2dbf0",
+    "branch": "codex/ios-integer-status-20261017",
+    "workflowRun": 39075167375,
+    "scope": "Read-only release tooling; not installed app code"
+  },
+  "id": "08ae896b-381d-4d8c-80d5-53b8ac3e82cb",
+  "recordedAt": "2026-10-17T22:30:02.897Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}

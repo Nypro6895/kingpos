@@ -1,0 +1,31 @@
+{
+  "kind": "release",
+  "summary": "Audited web release of nine completed groups; live source verified. Native 1.0.0 upload continues in CI 39073771504.",
+  "changes": [
+    "ea383ffb-2353-49a6-8791-9603f82f4570",
+    "3dd4110f-ceda-4ddc-a211-45136f598870",
+    "8da35f7e-f15f-468d-a4af-d8816b83b51c",
+    "0c03df31-342b-4968-9dde-f9c89929674b",
+    "d04c6051-dfe1-48a4-a033-18fa9cc27e72",
+    "8b278624-f921-427c-b1b5-db1e2781f2e5",
+    "dabb8849-233e-420f-961e-afdb40afadd9",
+    "8752e3f8-7266-4eed-8c62-3ac8cec939e4",
+    "03856547-737d-4b9e-99c8-84ba374bffd6",
+    "0d359561-e718-4b8c-ae63-e516fc04c71a"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "deploymentId": "dpl_BmjqwZcV4UqYd4vsVTUVjgWFZQYi",
+      "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+      "sourceSha256": "cdf0c73b3de5a124057c0afd1c6e2cbb8bccb568269eec6e9b0e830fe37e1191",
+      "overlaySha256": "c224a42bb67ebbc4f1d535ff968e74f7fd9aeb9ba5909efe18476075dc734677",
+      "commit": "64540a474fc2b0afe001437dda3c71c0e1f313a6",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/live-source-verification.json"
+    }
+  },
+  "id": "8f117f83-3fc4-4641-92ef-29c4db054bba",
+  "recordedAt": "2026-10-17T22:13:29.509Z",
+  "worktree": "C:\\Users\\giuse\\kingpos"
+}
