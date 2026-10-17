@@ -58,10 +58,17 @@ export async function readAppLocalOwnerResource(name: string, args: Record<strin
   } else if (name === "owner.workspace") {
     if (!await hasPermission(POS_TICKET_PERMISSIONS.manage, context)) data = denied("You do not have permission to use POS.");
     else {
-      const [desk, timezone, db] = await Promise.all([getCurrentSalonPosDeskData({ context, includeCustomers: false, includeWaitingVisits: false }), getContextBusinessTimezone(context), createAuthenticatedSupabaseServerClient({ throwOnUnavailable: true })]);
-      if (!db) fail(503, "The workspace is temporarily unavailable.");
-      const settings = await db.from("pos_settings").select("workspace_preferences").eq("salon_id", context.currentSalon.id).maybeSingle();
-      if (settings.error) fail(503, "The workspace settings are temporarily unavailable.");
+      const [desk, timezone, settings] = await Promise.all([
+        getCurrentSalonPosDeskData({ context, includeCustomers: false, includeWaitingVisits: false }),
+        getContextBusinessTimezone(context),
+        (async () => {
+          const db = await createAuthenticatedSupabaseServerClient({ throwOnUnavailable: true });
+          if (!db) fail(503, "The workspace is temporarily unavailable.");
+          const settings = await db.from("pos_settings").select("workspace_preferences").eq("salon_id", context.currentSalon.id).maybeSingle();
+          if (settings.error) fail(503, "The workspace settings are temporarily unavailable.");
+          return settings;
+        })(),
+      ]);
       data = { view: "workspace", props: { ownerScope, salonId: context.currentSalon.id, salonName: context.currentSalon.name, timezone, today: desk.today, staff: desk.staff, services: desk.services, defaults: desk.defaults, preferences: normalizeWorkspacePreferences(settings.data?.workspace_preferences) } };
     }
   } else if (name === "owner.bookings") {

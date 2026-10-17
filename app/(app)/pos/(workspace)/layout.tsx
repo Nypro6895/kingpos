@@ -14,7 +14,7 @@ import { OwnerLocalPanelsOutlet } from "@/app/pos/owner-local-panels";
 
 async function Checkout({context}:{context:Awaited<ReturnType<typeof requireSalonManagePageContext>>}) {
   const salon=context.currentSalon!,user=context.user!;
-  const [data,settings]=await Promise.all([
+  const [data,settings,timezone]=await Promise.all([
     // Checkout never consumes the waiting queue or the customer directory.
     getCurrentSalonPosDeskData({context,includeCustomers:false,includeWaitingVisits:false}),
     (async()=>{
@@ -22,11 +22,12 @@ async function Checkout({context}:{context:Awaited<ReturnType<typeof requireSalo
       const {data:settings}=await supabase!.from('pos_settings').select('workspace_preferences').eq('salon_id',salon.id).maybeSingle();
       return settings;
     })(),
+    getContextBusinessTimezone(context),
   ]);
   // Server response timestamp is intentionally request-specific.
   // eslint-disable-next-line react-hooks/purity
   const snapshotAt=Date.now(),preferences=normalizeWorkspacePreferences(settings?.workspace_preferences);
-  return <><OwnerReferenceSeed updatedAt={snapshotAt} data={{ownerScope:`owner:${salon.id}:${user.id}`,salonId:salon.id,salonName:salon.name,timezone:await getContextBusinessTimezone(context),staff:data.staff,services:data.services,defaults:data.defaults,today:data.today,preferences}}/><OwnerPosClient snapshotAt={snapshotAt} key={`${salon.id}:${user.id}`} scope={`owner:${salon.id}:${user.id}`} salonId={salon.id} salonName={salon.name} initial={{staff:data.staff,services:data.services,defaults:data.defaults,today:data.today}} preferences={preferences}/></>;
+  return <><OwnerReferenceSeed updatedAt={snapshotAt} data={{ownerScope:`owner:${salon.id}:${user.id}`,salonId:salon.id,salonName:salon.name,timezone,staff:data.staff,services:data.services,defaults:data.defaults,today:data.today,preferences}}/><OwnerPosClient snapshotAt={snapshotAt} key={`${salon.id}:${user.id}`} scope={`owner:${salon.id}:${user.id}`} salonId={salon.id} salonName={salon.name} initial={{staff:data.staff,services:data.services,defaults:data.defaults,today:data.today}} preferences={preferences}/></>;
 }
 
 export default async function OwnerWorkspaceLayout({children}:{children:React.ReactNode}) {

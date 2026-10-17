@@ -2621,6 +2621,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
   const params = await searchParams;
   const pageContext = await requireSalonManagePageContext("/payroll");
   let data: Awaited<ReturnType<typeof getPayrollPageData>>;
+  const downloadRead = payrollDataPluginInstalled().catch(() => false);
 
   try {
     data = await getPayrollPageData({
@@ -2638,8 +2639,7 @@ async function PayrollPage({ searchParams }: PayrollPageProps) {
   }
 
   const canManageConnection = isOwnerMembership(pageContext.currentMembership);
-  const taxPlugin = params.tab === "tax" && canManageConnection ? await taxCompanySettings().catch(() => null) : null;
-  const downloadEnabled = await payrollDataPluginInstalled().catch(() => false);
+  const [taxPlugin, downloadEnabled] = await Promise.all([params.tab === "tax" && canManageConnection ? taxCompanySettings().catch(() => null) : Promise.resolve(null), downloadRead]);
   const activeTab = getActiveTab(params.tab, data.access.canViewAllPayroll);
   const returnPath = getReturnPath(data.period, activeTab);
   const overviewRange = getOverviewRange(params.overviewRange);

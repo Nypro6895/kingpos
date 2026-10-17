@@ -24,9 +24,9 @@ const plugin = { name: 'original-getters-fixture-only', setup(builder) {
       './staff-offline-binding-server': 'export async function getManagedStaffOfflineBinding(c,id){F.calls.push(["binding",id]);return F.binding}',
       './customers': 'export async function getCurrentSalonCustomerList(args){F.calls.push(["customers",args]);return {context:F.resultContext??F.context,customers:F.customers,pagination:F.pagination}} export async function getCurrentSalonCustomerDetail(id,args){F.calls.push(["detail",id,args]);return {context:F.resultContext??F.context,data:F.detail}} export async function getCurrentSalonCustomer(id){F.calls.push(["customer",id]);return {context:F.resultContext??F.context,customer:F.customer}}',
       './beauty-relationship': 'export async function resolveBeautyProfileForSalonCustomer(args){F.calls.push(["beauty",args.customerId]);return F.beauty}',
-      './payroll': 'export async function getPayrollPageData(args){F.calls.push(["payroll",args]);return {...F.payroll,context:F.resultContext??F.context}}',
+      './payroll': 'export async function getPayrollPageData(args){F.calls.push(["payroll",args]);await F.payrollGate;if(F.payrollError)throw Error("payroll denied");return {...F.payroll,context:F.resultContext??F.context}}',
       './tax-company': 'export async function taxCompanySettings(){F.calls.push(["tax"]);return F.tax}',
-      './market-plugins': 'export async function payrollDataPluginInstalled(){return F.downloadEnabled}',
+      './market-plugins': 'export async function payrollDataPluginInstalled(){F.calls.push(["download"]);await F.downloadGate;if(F.downloadError)throw Error("optional download failed");return F.downloadEnabled}',
       './bounded-get': 'export async function runReadWithDeadline(value){return await value}',
     };
     return { contents: 'const F=globalThis.__appLocalOwnerFixture;\n' + (definitions[args.path] ?? ''), loader: 'js' };
@@ -93,4 +93,16 @@ test('all original JSX and authority controls are preserved by the mechanical vi
       assert.equal(normalize(match.getText()), normalize(source), `${original} helper changed: ${helper.name.text}`);
     }
   }
+});
+
+
+test('Payroll starts independent download configuration while totals load and does not delay tax behind it', async()=>{
+ const {F,read}=await fixture(); let totalsReady,downloadReady;
+ F.payrollGate=new Promise(resolve=>totalsReady=resolve);F.downloadGate=new Promise(resolve=>downloadReady=resolve);
+ const pending=read('page.owner-payroll',{tab:'tax'}); await new Promise(r=>setImmediate(r));
+ assert.ok(F.calls.some(([name])=>name==='payroll'));assert.ok(F.calls.some(([name])=>name==='download'));assert.ok(!F.calls.some(([name])=>name==='tax'));
+ totalsReady();await new Promise(r=>setImmediate(r));assert.ok(F.calls.some(([name])=>name==='tax'),'a slow optional download check cannot delay Tax Company');
+ downloadReady();const result=await pending;assert.deepEqual(result.data.payroll,F.payroll);assert.deepEqual(result.data.taxPlugin,F.tax);assert.equal(result.data.downloadEnabled,true);
+ F.downloadError=true;assert.equal((await read('page.owner-payroll')).data.downloadEnabled,false);
+ F.payrollError=true;await assert.rejects(read('page.owner-payroll'),/payroll denied/);
 });

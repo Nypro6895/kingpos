@@ -309,7 +309,7 @@ test('owner bootstrap reveals guarded navigation before desk reads, and checkout
     '@/lib/supabase/server': 'export function createAuthenticatedSupabaseServerClient(){return globalThis.ownerBootstrap.auth()}',
     '@/lib/pos-workspace-preferences': 'export function normalizeWorkspacePreferences(value){return globalThis.ownerBootstrap.normalize(value)}',
     '@/lib/experience-context': 'export const getExperienceContext=()=>({scope:"scope-bootstrap"})',
-    '@/lib/salon-business-clock': 'export const getContextBusinessTimezone=async()=>"America/Chicago"',
+    '@/lib/salon-business-clock': 'export const getContextBusinessTimezone=async()=>globalThis.ownerBootstrap.timezone()',
     '@/app/pos/owner-local-workspace': 'export function OwnerReferenceSeed(){return null}',
     '@/app/pos/owner-local-panels': 'export function OwnerLocalPanelsOutlet(){return null}',
     '@/app/pos/owner-pos-client': 'export function OwnerPosClient(){throw Error("Checkout must remain a React element until rendering")}',
@@ -346,6 +346,7 @@ test('owner bootstrap reveals guarded navigation before desk reads, and checkout
       guard(path) { events.push(['guard', path]); return guard.promise; },
       desk(options) { events.push(['desk', options]); return desk.promise; },
       auth() { events.push(['auth']); return auth.promise; },
+      timezone() { events.push(['timezone']); return 'America/Chicago'; },
       normalize(value) { events.push(['normalize', value]); return normalized; },
     };
     const client = { from(table) {
@@ -382,7 +383,7 @@ test('owner bootstrap reveals guarded navigation before desk reads, and checkout
     const checkoutPending = checkoutElement.type(checkoutElement.props);
     checkoutPending.then(() => { checkoutFinished = true; });
     await tick();
-    assert.deepEqual(success.events.map(event => event[0]), ['guard', 'desk', 'auth'], 'neither read waits for the other after the manage guard');
+    assert.deepEqual(success.events.map(event => event[0]), ['guard', 'desk', 'auth', 'timezone'], 'neither read waits for the other after the manage guard');
     assert.equal(success.events[1][1].context, context);
     assert.equal(success.events[1][1].includeCustomers, false);
     assert.equal(success.events[1][1].includeWaitingVisits, false);
@@ -392,7 +393,7 @@ test('owner bootstrap reveals guarded navigation before desk reads, and checkout
     assert.equal(checkoutFinished, false, 'desk completion does not expose checkout while authenticated preferences are pending');
     success.auth.resolve(success.client);
     await tick();
-    assert.deepEqual(success.events.slice(3), [['from', 'pos_settings'], ['select', 'workspace_preferences'], ['eq', 'salon_id', 'selected-salon'], ['settings']]);
+    assert.deepEqual(success.events.slice(4), [['from', 'pos_settings'], ['select', 'workspace_preferences'], ['eq', 'salon_id', 'selected-salon'], ['settings']]);
     assert.equal(checkoutFinished, false);
     const preferences = { showStaff: true, idleMinutes: 45 };
     success.settings.resolve({ data: { workspace_preferences: preferences } });
@@ -428,7 +429,7 @@ test('owner bootstrap reveals guarded navigation before desk reads, and checkout
     const failedCheckout = failedFrame.props.checkout.props.children;
     const failedCheckoutResult = failedCheckout.type(failedCheckout.props);
     await tick();
-    assert.deepEqual(failed.events.map(event => event[0]), ['guard', 'desk', 'auth']);
+    assert.deepEqual(failed.events.map(event => event[0]), ['guard', 'desk', 'auth', 'timezone']);
     failed.auth.resolve(failed.client);
     await tick();
     failed.desk.reject(new Error('desk unavailable'));

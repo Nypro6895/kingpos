@@ -81,10 +81,11 @@ export async function readAppLocalOwnerPageResource(name: string, input: Record<
       data = { customer: result.customer, canManageCustomers: true };
     } else data = { canManageCustomers: true };
   } else {
+    const downloadRead = payrollDataPluginInstalled().catch(() => false);
     const result = await runReadWithDeadline(getPayrollPageData({ includeAnalytics: !args.tab || args.tab === "overview" || !["staff", "shop", "tax", "settings", "tools", "download"].includes(args.tab), endDate: args.end, month: args.month, payPeriodStart: args.payPeriodStart, preset: args.preset, segment: args.segment, startDate: args.start }), 20000);
     verifyScope(result.context, scope);
     const canManageConnection = isOwnerMembership(context.currentMembership);
-    const [taxPlugin, downloadEnabled] = await Promise.all([args.tab === "tax" && canManageConnection ? taxCompanySettings().catch(() => null) : Promise.resolve(null), payrollDataPluginInstalled().catch(() => false)]);
+    const [taxPlugin, downloadEnabled] = await Promise.all([args.tab === "tax" && canManageConnection ? taxCompanySettings().catch(() => null) : Promise.resolve(null), downloadRead]);
     const { context: privateContext, ...payroll } = result;
     void privateContext;
     data = { payroll, salonId: context.currentSalon.id, salonName: context.currentSalon.name, canManageConnection, taxPlugin, downloadEnabled };

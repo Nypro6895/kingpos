@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "pos-payroll-read-parallel-20261017",
+  "status": "working",
+  "summary": "Next-priority POS and Payroll read-only waterfall reduction; keep results, authority and editing behavior unchanged, hold for later deployment.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "lib/app-local-owner-resources-server.ts",
+    "lib/app-local-owner-page-registry-server.ts",
+    "app/(app)/pos/(workspace)/layout.tsx",
+    "app/(app)/payroll/page.tsx"
+  ],
+  "source": {
+    "commit": "1ade93527c819f34e1401f59ecbd6f8ed3a1239a"
+  },
+  "dependencies": [
+    "first-load-context-recovery-lumi-20261017"
+  ],
+  "validation": [
+    {
+      "name": "Read ordering, unchanged output and production build",
+      "result": "pending"
+    }
+  ],
+  "notes": "First-priority source is frozen and undergoing Xcode validation. This separate server-only follow-on remains unpublished and will be marked ready only after both validation stages pass. No formula or command changes.",
+  "id": "1aec0867-2ab8-4de9-b2d9-b61a58e1d91e",
+  "recordedAt": "2026-10-17T02:29:23.238Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
