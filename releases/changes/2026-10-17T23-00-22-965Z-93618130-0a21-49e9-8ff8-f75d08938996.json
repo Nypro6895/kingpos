@@ -1,0 +1,44 @@
+{
+  "kind": "change",
+  "changeId": "testflight-retire-others-20261017",
+  "status": "ready",
+  "summary": "Owner explicitly requests removing all other TestFlight builds, retaining 1.0.0 (33). Prepare exact-list expiration with fresh keep-build availability verification and post-operation audit.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/retire-other-testflight-builds.mjs",
+    "ios/scripts/retire-other-testflight-builds.test.mjs",
+    ".github/workflows/reylumi-testflight-retire-others.yml",
+    ".github/testflight-retirement-20261017.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\testflight-retire-others-20261017\\frozen-source",
+    "baseCommit": "191c8d646b6601ac6abf4a8bbe2bc12fe6b94c4d",
+    "nativeAssessment": "Distribution maintenance only; preserve installed native source 64540a474fc2b0afe001437dda3c71c0e1f313a6."
+  },
+  "validation": [
+    {
+      "name": "Eight exact-scope expiration and protected-build regression tests",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/testflight-retire-others-20261017/tests.log"
+    },
+    {
+      "name": "Apple read-only inventory and positive existing-group availability",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/testflight-retire-others-20261017/plan/reylumi-retirement-39077244284/testflight-retirement-plan.json"
+    }
+  ],
+  "dependencies": [],
+  "id": "93618130-0a21-49e9-8ff8-f75d08938996",
+  "recordedAt": "2026-10-17T23:00:22.965Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\testflight-retire-others-20261017",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "ios/scripts/retire-other-testflight-builds.mjs": "614c72063264366ce40b92c68b414fda4a4b5032440f58326ede84280fcd694f",
+    "ios/scripts/retire-other-testflight-builds.test.mjs": "9a3753ed5c4edb8c1ff57f47b06f556dfb7f68c2e50be9e06f2d920607a579ff",
+    ".github/workflows/reylumi-testflight-retire-others.yml": "e9fbe6ec531bba4cc8dadf5d745e29cf730dc69830af4f6a444ef33f88ea9767",
+    ".github/testflight-retirement-20261017.json": "1059593382b5b55dcbdb82710c48157fc42bbb340211487936a180c8b6157930"
+  }
+}
