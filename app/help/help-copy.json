@@ -522,5 +522,14 @@
   "Reconcile one staff pay period": "Đối chiếu một kỳ lương của nhân viên",
   "The staff identity, period, original, adjustments and recorded payment evidence agree. Review every adjustment reason and payment date before relying on the remaining balance.": "Nhân viên, kỳ lương, bản gốc, điều chỉnh và chứng từ thanh toán phải khớp. Kiểm tra từng lý do điều chỉnh và ngày trả trước khi dùng số còn lại.",
   "An original income of $600 plus a $20 owner adjustment gives $620. If $500 was actually paid and recorded, income minus recorded payments is $120. The app does not transfer that $120.": "Thu nhập gốc 600 USD cộng điều chỉnh 20 USD của chủ tiệm thành 620 USD. Nếu đã trả thực tế và ghi nhận 500 USD, phần chênh lệch còn 120 USD. Ứng dụng không chuyển 120 USD này.",
-  "If a submission fails or its outcome is unclear, reload and verify the history before retrying. Keep the same draft; do not create a second payment to work around a pending result.": "Nếu gửi thất bại hoặc chưa rõ kết quả, tải lại và kiểm tra lịch sử trước khi thử lại. Giữ nguyên bản nháp; không tạo khoản thanh toán thứ hai để vượt qua kết quả đang chờ."
+  "If a submission fails or its outcome is unclear, reload and verify the history before retrying. Keep the same draft; do not create a second payment to work around a pending result.": "Nếu gửi thất bại hoặc chưa rõ kết quả, tải lại và kiểm tra lịch sử trước khi thử lại. Giữ nguyên bản nháp; không tạo khoản thanh toán thứ hai để vượt qua kết quả đang chờ.",
+  "Report / Contact": "Báo lỗi / Liên hệ",
+  "Report an issue and continue conversations with our team.": "Báo lỗi và tiếp tục trao đổi với đội ngũ hỗ trợ.",
+  "Send a request": "Gửi yêu cầu",
+  "Describe what you were doing, the intended salon, and what happened. Avoid passwords, passcodes and full payment details.": "Mô tả thao tác bạn đang thực hiện, tiệm liên quan và vấn đề đã xảy ra. Không gửi mật khẩu, mã bảo mật hoặc đầy đủ thông tin thanh toán.",
+  "Without signing in": "Không cần đăng nhập",
+  "Use the existing secure contact form. Previous guest conversations require their own secure access.": "Sử dụng biểu mẫu liên hệ bảo mật. Mỗi cuộc trao đổi trước đó của khách cần quyền truy cập riêng.",
+  "Account access": "Truy cập tài khoản",
+  "Use account recovery if you cannot sign in. Support instructions do not bypass account or salon permission checks.": "Dùng chức năng khôi phục tài khoản nếu bạn không đăng nhập được. Hướng dẫn hỗ trợ không thay thế việc kiểm tra quyền tài khoản hoặc quyền truy cập tiệm.",
+  "Sending a support request requires a connection and confirmation from the server.": "Gửi yêu cầu hỗ trợ cần kết nối mạng và xác nhận từ máy chủ."
 }

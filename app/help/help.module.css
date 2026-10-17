@@ -17,7 +17,7 @@
 .card p { margin: .5rem 0; color: #52525b; font-size: .9rem; }
 .card ol { padding-left: 1.2rem; list-style: decimal; margin: .75rem 0 0; }
 .card a { display: inline-block; padding: .3rem 0; text-decoration: underline; }
-.catalog { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); list-style: none; padding: 0; border-top: 1px solid #e4e4e7; }
+.catalog { display: grid; grid-template-columns: minmax(0, 1fr); list-style: none; padding: 0; border-top: 1px solid #e4e4e7; }
 .catalog > li { border-bottom: 1px solid #e4e4e7; }
 .shell .catalogLink { display: flex; align-items: flex-start; width: 100%; min-width: 0; gap: .75rem; height: 100%; padding: 1rem .8rem; }
 .catalogLink:hover { background: #fafaf9; }
@@ -92,3 +92,12 @@
 .catalogLink > .guideCopy { display: block; flex: 1 1 0%; min-width: 0; }
 .catalogLink > span:last-child { flex-shrink: 0; }
 .guideCopy .guideTitle, .guideCopy .summary { display: block; width: 100%; white-space: normal; word-break: normal; overflow-wrap: break-word; }
+
+/* Shared by the web and bundled iPhone catalog: one flexible text column. */
+.catalog > li { min-width: 0; }
+.shell .catalogLink { box-sizing: border-box; text-decoration: none; }
+.catalogLink > .guideCopy { align-self: stretch; }
+@media (max-width: 480px) {
+  .shell .catalogLink { gap: .6rem; padding: 1rem 0; }
+  .catalogLink > .number { flex-basis: 1.5rem; }
+}

@@ -4,13 +4,15 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { apiURL, createAppleReader, checkAvailability, main } from './check-testflight-availability.mjs';
 const now = Date.parse('2026-10-16T20:00:00Z');
-function fixture({ association = true, automatic = true, previous = true, expired = false, processing = 'VALID', beta = 'IN_BETA_TESTING', wrongMarketing = false } = {}) {
-  const calls = [], build = { type: 'builds', id: 'new-build', attributes: { version: '21.1', uploadedDate: '2026-10-16T19:00:00Z', expirationDate: '2027-01-10T00:00:00Z', expired, processingState: processing }, relationships: { preReleaseVersion: { data: { id: 'marketing' } } } }, old = { ...build, id: 'old-build', attributes: { ...build.attributes, version: '19.1', uploadedDate: '2026-10-16T04:00:00Z' } };
+function fixture({ association = true, automatic = true, previous = true, expired = false, processing = 'VALID', beta = 'IN_BETA_TESTING', wrongMarketing = false, buildNumber = '21.1', baselineNumber = '19.1' } = {}) {
+  const calls = [], build = { type: 'builds', id: 'new-build', attributes: { version: buildNumber, uploadedDate: '2026-10-16T19:00:00Z', expirationDate: '2027-01-10T00:00:00Z', expired, processingState: processing }, relationships: { preReleaseVersion: { data: { id: 'marketing' } } } }, old = { ...build, id: 'old-build', attributes: { ...build.attributes, version: baselineNumber, uploadedDate: '2026-10-16T04:00:00Z' } };
   const read = async endpoint => {
     const url = apiURL(endpoint); calls.push(url.pathname);
-    if (url.pathname === '/v1/builds') return { data: [url.searchParams.get('filter[version]') === '19.1' ? old : build], included: [{ type: 'preReleaseVersions', id: 'marketing', attributes: { version: wrongMarketing ? '1.0.0' : '1.0.1' } }] };
+    if (url.pathname === '/v1/builds') return { data: [url.searchParams.get('filter[version]') === baselineNumber ? old : build], included: [{ type: 'preReleaseVersions', id: 'marketing', attributes: { version: wrongMarketing ? '1.0.0' : '1.0.1' } }] };
     if (url.pathname.endsWith('/buildBetaDetail')) return { data: { attributes: { internalBuildState: beta } } };
     if (url.pathname === '/v1/betaGroups') return { data: [{ id: 'existing-group', attributes: { name: 'Reylumi Internal', isInternalGroup: true, hasAccessToAllBuilds: automatic, createdDate: '2026-01-01T00:00:00Z' } }] };
     if (url.pathname.endsWith('/builds')) return { data: [...(previous ? [old] : []), ...(association ? [build] : [])] };
@@ -19,6 +21,26 @@ function fixture({ association = true, automatic = true, previous = true, expire
   return { calls, read };
 }
 const run = f => checkAvailability({ build: '21.1', baselineBuild: '19.1', marketingVersion: '1.0.1', appId: '6821394475', now, read: f.read });
+test('integer builds retain exact identity and existing-group proof across legacy and integer baselines', async () => {
+  for (const [build, baselineBuild] of [['33', '32.1'], ['34', '33'], ['34.1.2', '34']]) {
+    const f = fixture({ buildNumber: build, baselineNumber: baselineBuild });
+    const result = await checkAvailability({ build, baselineBuild, marketingVersion: '1.0.1', appId: '6821394475', now, read: f.read });
+    assert.equal(result.build, build); assert.equal(result.baselineBuild, baselineBuild);
+    assert.equal(result.availableToExistingInternalGroup, true); assert.equal(result.groups[0].hadBaseline, true);
+  }
+});
+test('processing checker accepts integer builds before credential validation and rejects malformed identifiers', () => {
+  const env = { ...process.env }; delete env.APP_STORE_CONNECT_APP_ID;
+  const script = fileURLToPath(new URL('./check-build-status.mjs', import.meta.url));
+  for (const build of ['33', '32.1', '34.1.2']) {
+    const result = spawnSync(process.execPath, [script, build], { env, encoding: 'utf8', windowsHide: true });
+    assert.equal(result.status, 1); assert.match(result.stderr, /app ID is not configured/);
+  }
+  for (const build of ['', '33beta', '33.1.2.3', '33&filter[app]=1']) {
+    const result = spawnSync(process.execPath, [script, build], { env, encoding: 'utf8', windowsHide: true });
+    assert.equal(result.status, 1); assert.match(result.stderr, /exact TestFlight build number is required/);
+  }
+});
 test('positive existing-group association and fresh valid build prove availability', async () => {
   const f = fixture(), result = await run(f);
   assert.equal(result.availableToExistingInternalGroup, true); assert.equal(result.groups[0].hadBaseline, true);
@@ -73,13 +95,14 @@ test('failed or pending reads still write a sanitized nonconfirmed artifact', as
   const originalExitCode = process.exitCode;
   try {
     const output = path.join(directory, 'status.json');
-    const env = { EXPECTED_BUILD: '21.1', APP_STORE_CONNECT_APP_ID: '6821394475', AVAILABILITY_OUTPUT: output };
+    const env = { EXPECTED_BUILD: '33', BASELINE_BUILD: '32.1', APP_STORE_CONNECT_APP_ID: '6821394475', AVAILABILITY_OUTPUT: output };
     const failed = await main(env, { now, read: async () => { throw Error('PRIVATE PROVIDER RESPONSE: fixture-secret'); } });
     assert.equal(failed.availableToExistingInternalGroup, false);
     assert.equal(process.exitCode, 1);
     assert.equal(JSON.stringify(failed).includes('fixture-secret'), false);
+    assert.equal(failed.build, '33'); assert.equal(failed.baselineBuild, '32.1');
     assert.deepEqual(JSON.parse(await fs.readFile(output, 'utf8')), failed);
-    const pending = await main(env, { now, read: fixture({ processing: 'PROCESSING' }).read });
+    const pending = await main(env, { now, read: fixture({ buildNumber: '33', baselineNumber: '32.1', processing: 'PROCESSING' }).read });
     assert.equal(pending.status, 'not-yet-confirmed');
     assert.equal(JSON.parse(await fs.readFile(output, 'utf8')).processingState, 'PROCESSING');
   } finally {

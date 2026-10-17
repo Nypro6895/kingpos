@@ -70,6 +70,20 @@ test('actual installed package renders full Help and Market before account/data 
     const origin='http://127.0.0.1:'+server.address().port;
     await page.goto(origin+'/help?lang=en',{waitUntil:'domcontentloaded'});
     await page.getByRole('heading',{name:'Reylumi Help',exact:true}).waitFor();assert.equal(api.length,0);
+    for(const width of [320,390])for(const language of ['en','vi']){
+      await page.setViewportSize({width,height:844});
+      await page.getByRole('button',{name:language==='en'?'English':'Tiếng Việt',exact:true}).click();
+      await page.locator(`main[lang="${language}"]`).waitFor();
+      const rows=await page.locator('#help-results a').evaluateAll(links=>links.map(link=>{const title=link.querySelector('strong'),summary=link.querySelector('div > span');return {title:title.getBoundingClientRect().toJSON(),summary:summary.getBoundingClientRect().toJSON()}}));
+      assert.equal(rows.length,13);
+      for(const row of rows){assert(row.title.width>width*.5);assert(row.summary.y>=row.title.bottom-1);}
+      assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+      await mkdir('C:/Users/giuse/kingpos/artifacts/help-report-live-20261017/qa',{recursive:true});
+      await page.locator('#help-results').evaluate(e=>e.scrollIntoView({block:'start'}));
+      await page.screenshot({path:`C:/Users/giuse/kingpos/artifacts/help-report-live-20261017/qa/installed-help-${language}-${width}.png`});
+    }
+    await page.getByRole('button',{name:'English',exact:true}).click();
+
     await page.locator('a[href="/help/overview?lang=en"]').first().click();
     await page.getByRole('heading',{name:'Start with Reylumi',exact:true}).waitFor();
     await page.getByRole('heading',{name:'Detailed walkthroughs',exact:true}).waitFor();assert.equal(api.length,0);

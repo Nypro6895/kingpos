@@ -27,7 +27,7 @@ export function HelpCatalog() {
     <ol className={styles.catalog} id="help-results">{matches.map((guide, index) => <li key={guide.slug}>
       <Link href={`/help/${guide.slug}`} prefetch={false} className={styles.catalogLink}>
         <span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-        <span className={styles.guideCopy}><span className={styles.guideTitle}><WorkspaceText text={guide.title} /></span><span className={styles.summary}><WorkspaceText text={guide.summary} /></span></span>
+        <div className={styles.guideCopy}><span className={styles.guideTitle}><WorkspaceText text={guide.title} /></span><span className={styles.summary}><WorkspaceText text={guide.summary} /></span></div>
         <span aria-hidden="true">→</span>
       </Link>
     </li>)}</ol>

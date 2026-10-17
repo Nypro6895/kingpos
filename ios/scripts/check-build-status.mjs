@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 
 const version=process.argv[2];
-if(!/^\d+\.\d+$/.test(version??''))throw Error('An exact TestFlight build number is required.');
+if(!/^\d+(?:\.\d+){0,2}$/.test(version??''))throw Error('An exact TestFlight build number is required.');
 const app=process.env.APP_STORE_CONNECT_APP_ID;
 if(!/^\d+$/.test(app??''))throw Error('The App Store Connect app ID is not configured.');
 const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url');

@@ -9,7 +9,7 @@ export const APP_LOCAL_HELP_ILLUSTRATIONS = illustrations;
 const localizedImages: Record<string, Record<HelpLanguage, Pick<HelpGuide["evidence"]["screenshots"][number], "desktop" | "mobile">>> = illustrations;
 
 /** Complete guide data, translated with the same URL-scoped Help dictionary. */
-export function getAppLocalHelpGuide(slug: string, language: HelpLanguage = "vi"): HelpGuide | null {
+export function getAppLocalHelpGuide(slug: string, language: HelpLanguage = "en"): HelpGuide | null {
   const guide = HELP_GUIDES.find(item => item.slug === slug);
   if (!guide) return null;
   const text = (value: string) => translateHelp(value, language);
@@ -31,9 +31,8 @@ export const APP_LOCAL_REFERENCE_ASSETS = [...imagePaths].sort();
 /** Public instructions only; private support conversations are never bundled. */
 export const APP_LOCAL_SUPPORT_INSTRUCTIONS = {
   version: APP_LOCAL_REFERENCE_VERSION, title: "Report / Contact",
-  introduction: "Ask for help and continue conversations with our team.",
+  introduction: "Report an issue and continue conversations with our team.",
   sections: [
-    { title: "Find a guide", body: "Read the full customer, owner and staff guides before reporting an issue.", href: "/help" },
     { title: "Send a request", body: "Describe what you were doing, the intended salon, and what happened. Avoid passwords, passcodes and full payment details.", href: "/support" },
     { title: "Without signing in", body: "Use the existing secure contact form. Previous guest conversations require their own secure access.", href: "/contact-support" },
     { title: "Account access", body: "Use account recovery if you cannot sign in. Support instructions do not bypass account or salon permission checks.", href: "/account-recovery" },

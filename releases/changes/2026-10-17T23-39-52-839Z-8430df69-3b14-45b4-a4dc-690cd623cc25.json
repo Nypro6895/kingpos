@@ -1,0 +1,51 @@
+{
+  "kind": "change",
+  "changeId": "help-bilingual-mobile-20261017",
+  "status": "needs-integration",
+  "summary": "Verify and repair Help mobile layout in English and Vietnamese with explicit language selection",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/help/help-language.tsx",
+    "app/help/help-content.tsx",
+    "app/help/help-catalog.tsx",
+    "app/help/help.module.css",
+    "tests/help-draft.test.mjs",
+    "tests/help-bilingual-ui.test.mjs",
+    "lib/vietnamese-dictionary.ts",
+    "app/support/support-ui.tsx",
+    "app/(app)/support/page.tsx"
+  ],
+  "source": {
+    "snapshot": "artifacts/help-bilingual-20261017/completed"
+  },
+  "dependencies": [
+    "help-report-separation-20261017"
+  ],
+  "validation": [
+    {
+      "name": "Focused Help content and bilingual browser checks (7 tests)",
+      "result": "passed",
+      "evidence": "artifacts/help-bilingual-20261017/verification.json"
+    },
+    {
+      "name": "ESLint changed product modules",
+      "result": "passed"
+    },
+    {
+      "name": "Independent Vietnamese workspace runtime test",
+      "result": "failed",
+      "evidence": "Browser local-server navigation blocked: ERR_NETWORK_ACCESS_DENIED"
+    },
+    {
+      "name": "Production source integration and build; live verification",
+      "result": "pending"
+    }
+  ],
+  "id": "8430df69-3b14-45b4-a4dc-690cd623cc25",
+  "recordedAt": "2026-10-17T23:39:52.839Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
