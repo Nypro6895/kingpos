@@ -1,0 +1,133 @@
+{
+  "kind": "change",
+  "changeId": "owner-campaign-workspace-20261017",
+  "status": "ready",
+  "summary": "Approved borderless owner Campaigns workspace with compact two-row history, live result charts, credit limits and payments; owner More ordered by daily operations, management, growth and support",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/campaigns/page.tsx",
+    "app/campaigns/actions.ts",
+    "app/campaigns/campaign-entry.tsx",
+    "app/campaigns/campaign-modal.tsx",
+    "app/campaigns/campaign-results.tsx",
+    "app/campaigns/campaign-ui.module.css",
+    "app/campaigns/campaign-workspace.tsx",
+    "app/campaigns/credit-actions.ts",
+    "app/campaigns/credit-panel.tsx",
+    "components/owner-campaign-dialog.tsx",
+    "components/owner-campaign.module.css",
+    "components/owner-campaign-runtime.tsx",
+    "types/owner-campaign.ts",
+    "lib/campaign-credit-display.ts",
+    "lib/campaign-payments.ts",
+    "lib/market-card.ts",
+    "lib/notification-feed-items.ts",
+    "lib/vietnamese-campaign-copy.json",
+    "lib/vietnamese-dictionary.ts",
+    "app/market/market-client.tsx",
+    "app/market/sample-apps.ts",
+    "app/role-navigation.ts",
+    "app/(app)/more/page.tsx",
+    "app/api/campaigns/payment-webhook/route.ts",
+    "supabase/migrations/20261017210000_owner_campaign_workspace.sql",
+    "tests/campaign-market-credits.integration.test.mjs",
+    "tests/campaign-card-setup.test.mjs",
+    "tests/campaign-credit-display.test.mjs",
+    "tests/campaign-workspace-runtime.test.mjs",
+    "tests/owner-campaigns-runtime.test.mjs",
+    "tests/plugin-navigation-ui.test.mjs",
+    "tests/fixtures/plugin-navigation-preview.mjs",
+    "tests/navigation-shell-route-context.test.mjs",
+    "tests/unified-notification-feed.test.mjs",
+    "docs/owner-campaign-workspace-20261017.txt"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\owner-campaign-workspace-20261017\\final-source",
+    "overlaySha256": "d7674b695401e1113e1f1018e349bb745a76f6eeccbcc4b32c2fab2897f734f5"
+  },
+  "validation": [
+    {
+      "name": "Database, billing, targeting, source ownership, credit denomination, navigation and provider checks",
+      "result": "passed",
+      "evidence": "artifacts/owner-campaign-workspace-20261017/final-tests.log — 48 passed"
+    },
+    {
+      "name": "Real-component browser checks at 320/390/1280px plus existing campaign and activation regressions",
+      "result": "passed",
+      "evidence": "artifacts/owner-campaign-workspace-20261017/final-ui-tests.log — 3 passed"
+    },
+    {
+      "name": "Scoped ESLint",
+      "result": "passed",
+      "evidence": "artifacts/owner-campaign-workspace-20261017/lint.log"
+    },
+    {
+      "name": "Production build and Next.js TypeScript checks",
+      "result": "passed",
+      "evidence": "artifacts/owner-campaign-workspace-20261017/isolated-build.log; harness scoped to app/components/lib, without production credentials; 35 frozen files match the validated build"
+    }
+  ],
+  "dependencies": [],
+  "requiredMigrations": [
+    "202610080002_owner_campaigns.sql",
+    "202610080004_campaign_market_credits.sql",
+    "202610080005_campaign_credit_scheduler.sql",
+    "20261017210000_owner_campaign_workspace.sql"
+  ],
+  "publication": {
+    "status": "not-published",
+    "migrationAppliedToProduction": false
+  },
+  "nativeAssessment": {
+    "required": false,
+    "reason": "Web-only changes reuse the existing native payment bridge without a new bridge contract or bundled native assets"
+  },
+  "limitations": [
+    "Delivery supports named city, neighborhood, ZIP, state and country; arbitrary radius is intentionally not advertised without a verified viewer-coordinate contract."
+  ],
+  "notes": "Implementation overlay only. Coordinator must assemble against the exact current production baseline and publish migration plus UI together. No real payments, messages or provider-account changes were made.",
+  "id": "8019fdf7-8361-4d63-957b-8dd5c79b44ee",
+  "recordedAt": "2026-10-17T21:36:33.074Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/(app)/campaigns/page.tsx": "bb6734298470e48ff43169ccc0cd458657cec731b1f69564a3ec3de8df28f41e",
+    "app/campaigns/actions.ts": "5c62d907278fcab58ce5e7ed0587c6ef15eb4144700a810f1a25bfd2558f06c0",
+    "app/campaigns/campaign-entry.tsx": "1b9bc33bc73502e16222d325a89d82cb9cc408d1d19140e80cc3df559b2cef42",
+    "app/campaigns/campaign-modal.tsx": "3480f0a031ddef5ae4a3aebfa98e7b2a26ddaa7ded45d1a877399b8c6dd347e0",
+    "app/campaigns/campaign-results.tsx": "7529bf08dba24b06bed3d35d150080b762fb06b0b3e48042385f0f321c7fea8d",
+    "app/campaigns/campaign-ui.module.css": "c87116069ff4dd973afa8ffbca6ab7eac78def651eca2904003bbcb5c9adfb59",
+    "app/campaigns/campaign-workspace.tsx": "1aad5d0416fe83e54247b23e7c4c513af35ed1ff7d49433d6c4f66ffa0560a94",
+    "app/campaigns/credit-actions.ts": "314334633f4cb40b32cc0c8c40315c40f40bdcb5df2c63878d218ea7abd39bc2",
+    "app/campaigns/credit-panel.tsx": "8b958563457f5c298b6f21345d568a5a547b6b82531604a390601efa50756593",
+    "components/owner-campaign-dialog.tsx": "c4a8bdb70f4129ea137a6626d7c025c76c7c7c0a5d2c3142c52a1f4a9806b6dd",
+    "components/owner-campaign.module.css": "d14a873f21396fdbadfe51de24e93a9ea8ba1099c07a1f339f1e709b85b3a343",
+    "components/owner-campaign-runtime.tsx": "f906126fd23a9c1bde029de3f9c735eb028c1b0e6f3c64bc53f07e30ef343224",
+    "types/owner-campaign.ts": "8cdde54f7500427f3760c84b4f5c5010009902f4dbd5d5af8547329ddabe0bdb",
+    "lib/campaign-credit-display.ts": "b5774c16e0d572cff00be37a021b54417ad4c9184c99971b13b07fb7c4bc53ea",
+    "lib/campaign-payments.ts": "e0545d31d06612854a6bd17038996feed6ce279592a033f0a2f2d79eccd22fa5",
+    "lib/market-card.ts": "ed24b514fcee4851c7d17e3d422167ea8f96bc24574294059db195bc541fbe7a",
+    "lib/notification-feed-items.ts": "28ed5f1cf2dd9311cbe0576bcc12383ecdb1f505c8cc7b47e62793d3dcf8890c",
+    "lib/vietnamese-campaign-copy.json": "74085edfa2056b2c97ed12cd5f2d26945c18fb4e7f2e6f81b668208aec40f5c3",
+    "lib/vietnamese-dictionary.ts": "91c64308fd83d142101ed5fbe08a309ba6776a32ec263eb2598699d4e87f1337",
+    "app/market/market-client.tsx": "ac83ce51e55bda8f58337e739bbb496f2f48c7a35d274a7f0b4091986f42b764",
+    "app/market/sample-apps.ts": "b6d8d2ab58c69f96a4ecf11830d3491b681d25d958748db7f1d848cf1fb7d4df",
+    "app/role-navigation.ts": "94c7b0548b8876a450871c4650f6157c578a5a3ab518edd09657b48a784e7846",
+    "app/(app)/more/page.tsx": "13a230eedda3649e0b5409f7359aadd025cbe93987976a5e4564ce86832afe3e",
+    "app/api/campaigns/payment-webhook/route.ts": "76bc410ca63ad279a4f6217e9295116a907b78f73752488f47b30f0989fb1906",
+    "supabase/migrations/20261017210000_owner_campaign_workspace.sql": "74ecb57bb27afcf4e302e2d5645ee2b702b4e14b05470077279018659aa762f3",
+    "tests/campaign-market-credits.integration.test.mjs": "a7f191095a93977d7fd02a553d1cf773571ad1a4e20ef433e2280c081f1f37fa",
+    "tests/campaign-card-setup.test.mjs": "a8bb64d672c51759b3faa149c9681b9a36a6194a782d12a4b244c890efa6548c",
+    "tests/campaign-credit-display.test.mjs": "4a967f8c97b8d2819f45b6ba4107d8a3fd443e548976a6fd11024b06b98d902e",
+    "tests/campaign-workspace-runtime.test.mjs": "4b7a6b850ca853d699e1d16f98e6d3d2c7c1534df49cc1e5d1da053c756d8da4",
+    "tests/owner-campaigns-runtime.test.mjs": "9081b350a511a0c1c84768c22964a94ef068f751f7516e776fd5930308c7aa25",
+    "tests/plugin-navigation-ui.test.mjs": "a8e8275413301fc5f43e2b4ae47e0c1591f2c18e86eaf19778a051230687e0bd",
+    "tests/fixtures/plugin-navigation-preview.mjs": "c7d5b27c16b1ac902abe426daca67eb025b5d8e358d2d94e019a1c40732b74b0",
+    "tests/navigation-shell-route-context.test.mjs": "ae20672dad1dbf589c6f17bea716c0560298fb5f2cd37c4a75eb59e6fd690d67",
+    "tests/unified-notification-feed.test.mjs": "a5e0a20dfa44255e2aa91ac886d4096ee71921a4fb2caff96c972e63442d1063",
+    "docs/owner-campaign-workspace-20261017.txt": "c370114179ca457c66ac6a05591443a9feabb17dabb65e6a42db7540d47b0aad"
+  }
+}

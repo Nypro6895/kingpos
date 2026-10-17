@@ -1,0 +1,59 @@
+{
+  "kind": "change",
+  "changeId": "customer-service-audit-20261017",
+  "status": "ready",
+  "summary": "Resolved all three reported stale regression contracts without changing application behavior. Full-project TypeScript now passes on existing Services wiring; 37 CRM/privacy/waiting/add-on tests pass including real browser fixture tests. Offline booking fixture avoids loopback network dependency. No application or database logic changed; not deployed. Integrated and validated against dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ with iOS 1.0.0 package parity.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "tests/beauty-customer-relationship-contract.test.mjs",
+    "tests/customer-visits-contract.test.mjs",
+    "tests/service-addon-booking-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\release-audit-ios-1-0-0-20261017\\frozen-source",
+    "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "sourceEventId": "c1c136e4-1447-4956-918a-7da45abd2174"
+  },
+  "supersedesEvents": [
+    "c1c136e4-1447-4956-918a-7da45abd2174"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/web-build.log"
+    },
+    {
+      "name": "277 integration/browser regression cases; initial five fixture failures repaired and rerun, two Chrome-only tests explicitly executed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/validation-summary.json"
+    },
+    {
+      "name": "Actual native package and four version-preflight checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/final-package-tests.log"
+    },
+    {
+      "name": "Rollback-only actual-schema rehearsal, 16 functions and seven preserved authorities",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/database-rehearse.json"
+    },
+    {
+      "name": "Existing live Stripe webhook receives card setup event",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/payment-webhooks.json"
+    }
+  ],
+  "id": "8b278624-f921-427c-b1b5-db1e2781f2e5",
+  "recordedAt": "2026-10-17T22:06:58.105Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\release-audit-ios-1-0-0-20261017",
+  "deletedFiles": [],
+  "fileHashes": {
+    "tests/beauty-customer-relationship-contract.test.mjs": "36af90b1e3c77a9b053b3913557f5624df1bebc3e5c272d4abd4f9623d97bc8e",
+    "tests/customer-visits-contract.test.mjs": "1a12bf257b8cdda61f860feff02f8c72411620edc1f074b6dfd35e411fdb01c5",
+    "tests/service-addon-booking-ui.test.mjs": "b5998a64f8165f48639e4503ab71d25d0b638889e7069478ccc3ec5604e15bff"
+  }
+}

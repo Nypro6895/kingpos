@@ -47,4 +47,5 @@ jobs:
             ios/build/testflight-*.log
             ios/build/testflight-receipt.json
             ios/build/testflight-processing.json
+            ios/build/release-version-preflight.json
           retention-days: 7

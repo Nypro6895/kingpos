@@ -65,13 +65,13 @@ function Section({
   title: string;
 }) {
   return (
-    <section className="content-surface border-zinc-200 bg-white rounded-none border-y shadow-none">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 px-5 py-4">
-        <h2 className="text-lg font-semibold text-zinc-950"><WorkspaceText text={title} /></h2>
+    <details className="border-b border-zinc-200 bg-white">
+      <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-3 px-4 py-2">
+        <span className="text-sm font-normal text-zinc-600"><WorkspaceText text={title} /></span>
         {action}
-      </div>
-      <div className="p-5">{children}</div>
-    </section>
+      </summary>
+      <div className="px-4 pb-3">{children}</div>
+    </details>
   );
 }
 
@@ -99,7 +99,7 @@ function ReylumiProfileCard({
   if (!linked) {
     return (
       <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
-        <p className="text-sm font-semibold text-zinc-950">
+        <p className="text-sm font-normal text-zinc-950">
           <WorkspaceText text="No ReyLUMI profile linked" />
         </p>
         <p className="mt-1 text-sm text-zinc-600">
@@ -112,7 +112,7 @@ function ReylumiProfileCard({
   if (result?.ok && result.state === "unlinked") {
     return (
       <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
-        <p className="text-sm font-semibold text-zinc-950">
+        <p className="text-sm font-normal text-zinc-950">
           <WorkspaceText text="No ReyLUMI profile linked" />
         </p>
         <p className="mt-1 text-sm text-zinc-600">
@@ -125,7 +125,7 @@ function ReylumiProfileCard({
   if (result?.ok && result.state === "profile_not_created") {
     return (
       <div className="content-surface border-zinc-200 bg-zinc-50 p-4 rounded-none border-y shadow-none">
-        <p className="text-sm font-semibold text-zinc-950">
+        <p className="text-sm font-normal text-zinc-950">
           <WorkspaceText text="ReyLUMI account linked" />
         </p>
         <p className="mt-1 text-sm text-zinc-600">
@@ -167,7 +167,7 @@ function ReylumiProfileCard({
           )}
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-zinc-950">
+          <span className="block truncate text-sm font-normal text-zinc-950">
             {profile.displayName}
           </span>
           <span className="mt-1 inline-flex rounded-full bg-white px-2 py-1 text-[11px] font-semibold capitalize text-orange-700 ring-1 ring-orange-100">
@@ -186,7 +186,7 @@ function ReylumiProfileCard({
         </p>
       ) : null}
       <Link
-        className="inline-flex min-h-10 w-fit items-center justify-center rounded-md bg-[#f26f3d] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#e85f2b]"
+        className="inline-flex min-h-10 w-fit items-center justify-center rounded-md bg-[#f26f3d] px-4 text-sm font-normal text-white shadow-sm transition hover:bg-[#e85f2b]"
         href={profile.href}
       >
         <WorkspaceText text="View Beauty Profile" />
@@ -195,128 +195,44 @@ function ReylumiProfileCard({
   );
 }
 
-function BookingList({
-  empty,
-  items,
-}: {
-  empty: string;
-  items: CustomerBookingSummary[];
-}) {
-  if (items.length === 0) {
-    return (
-      <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
-        {empty}
-      </p>
-    );
-  }
-
-  return (
-    <ul className="divide-y divide-zinc-100">
-      {items.map((booking) => (
-        <li className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto]" key={booking.id}>
-          <BookingDepositReceipt booking={booking} />
-          <div className="min-w-0">
-            <Link
-              className="font-semibold text-zinc-950 underline"
-              href={`/bookings?date=${booking.start_at.slice(0, 10)}&bookingId=${booking.id}`}
-            >
-              <WorkspaceText text={formatDateTime(booking.start_at)} />
-            </Link>
-            <p className="mt-1 text-sm text-zinc-600">
-              <WorkspaceText text={booking.serviceNames.join(", ") || "No services"} /> /{" "}
-              <WorkspaceText text={booking.staff?.display_name ?? "Unassigned"} />
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 sm:justify-end">
-            <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold capitalize text-zinc-700">
-              <WorkspaceText text={bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)} />
-            </span>
-            <span className="rounded-md bg-zinc-950 px-2 py-1 text-xs font-semibold text-white">
-              {formatMoney(booking.subtotal)}
-            </span>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
+function BookingList({ empty, items }: { empty: string; items: CustomerBookingSummary[] }) {
+  return items.length ? <div>{items.map(booking => <details className="border-b border-zinc-100 text-sm font-normal" key={booking.id} data-history-record>
+    <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2 text-xs font-normal">
+      <span className="min-w-0 truncate"><WorkspaceText text={shortDate(booking.start_at)} /> · <WorkspaceText text={booking.serviceNames.join(", ") || "No services"} /> · <WorkspaceText text={bookingStatusLabel(booking.normalizedStatus, booking.no_show_kind)} /></span>
+      <span className="shrink-0 tabular-nums">{formatMoney(booking.subtotal)} ›</span>
+    </summary>
+    <div className="space-y-2 px-4 pb-4 text-sm font-normal" data-customer-receipt>
+      <div><WorkspaceText text={formatDateTime(booking.start_at)} /> · <WorkspaceText text={booking.staff?.display_name ?? "Unassigned"} /></div>
+      {booking.lines.map(line => <div key={line.id} className="flex justify-between gap-3"><span>{line.service_name_snapshot}</span><span>{formatMoney(Number(line.line_total))}</span></div>)}
+      <div className="flex justify-between border-t border-zinc-100 pt-2"><WorkspaceText text="Total" /><span>{formatMoney(booking.subtotal)}</span></div>
+      <BookingDepositReceipt booking={booking} />
+      <Link className="inline-flex min-h-11 items-center text-orange-700" href={`/bookings?date=${booking.start_at.slice(0, 10)}&bookingId=${booking.id}`}><WorkspaceText text="View appointment" /> ›</Link>
+    </div>
+  </details>)}</div> : <p className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text={empty} /></p>;
 }
 
 function TicketList({ items }: { items: CustomerTicketSummary[] }) {
-  if (items.length === 0) {
-    return (
-      <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
-        <WorkspaceText text="No linked POS tickets yet." />
-      </p>
-    );
-  }
-
-  return (
-    <ul className="divide-y divide-zinc-100">
-      {items.map((ticket) => (
-        <li className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto]" key={ticket.id}>
-          <div className="min-w-0">
-            <Link
-              className="font-semibold text-zinc-950 underline"
-              href={`/pos-tickets/${ticket.id}`}
-            >
-              {ticket.ticket_number}
-            </Link>
-            <p className="mt-1 text-sm text-zinc-600">
-              <WorkspaceText text={formatDateTime(ticket.opened_at)} />
-              <WorkspaceText text={ticket.source_booking_id ? " / From appointment" : ""} />
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 sm:justify-end">
-            <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold capitalize text-zinc-700">
-              <WorkspaceText text={ticket.status} />
-            </span>
-            <span className="rounded-md bg-zinc-950 px-2 py-1 text-xs font-semibold text-white">
-              {formatMoney(ticket.totals.total)}
-            </span>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
+  return items.length ? <div>{items.map(ticket => <details className="border-b border-zinc-100 text-sm font-normal" key={ticket.id} data-history-record>
+    <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2 text-xs font-normal">
+      <span className="min-w-0 truncate"><WorkspaceText text={shortDate(ticket.opened_at)} /> · {ticket.ticket_number} · <WorkspaceText text={ticket.status} /></span><span className="shrink-0 tabular-nums">{formatMoney(ticket.totals.total)} ›</span>
+    </summary>
+    <div className="space-y-2 px-4 pb-4 text-sm font-normal" data-customer-receipt>
+      <div>{ticket.ticket_number} · <WorkspaceText text={formatDateTime(ticket.opened_at)} /></div>
+      <div>{ticket.customer?.name ?? <WorkspaceText text="Walk-in Customer" />}</div>
+      {ticket.ticket_items.map(item => <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 border-t border-zinc-100 py-2"><span>{item.assigned_staff?.display_name ?? <WorkspaceText text="Unassigned" />}</span><span>{item.service?.name ?? item.service_name_snapshot ?? <WorkspaceText text="Service" />}</span><span className="tabular-nums">{formatMoney((item.turn_parts?.length ? item.turn_parts.reduce((total,part) => total + part.amount, 0) : item.line_total))}</span></div>)}
+      {ticket.totals.discount_amount > 0 ? <div className="flex justify-between"><WorkspaceText text="Discount" /><span>-{formatMoney(ticket.totals.discount_amount)}</span></div> : null}
+      {ticket.totals.tip_amount > 0 ? <div className="flex justify-between"><WorkspaceText text="Tip" /><span>{formatMoney(ticket.totals.tip_amount)}</span></div> : null}
+      {ticket.totals.tax_amount > 0 ? <div className="flex justify-between"><WorkspaceText text="Tax" /><span>{formatMoney(ticket.totals.tax_amount)}</span></div> : null}
+      <div className="flex justify-between border-t border-zinc-200 pt-2"><WorkspaceText text="Total" /><span>{formatMoney(ticket.totals.total)}</span></div>
+      <Link className="inline-flex min-h-11 items-center text-orange-700" href={`/pos-tickets/${ticket.id}`}><WorkspaceText text="View ticket" /> ›</Link>
+    </div>
+  </details>)}</div> : <p className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text="No linked POS tickets yet." /></p>;
 }
 
 function Timeline({ items }: { items: CustomerTimelineItem[] }) {
-  if (items.length === 0) {
-    return (
-      <p className="content-surface border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 rounded-none border-y shadow-none">
-        <WorkspaceText text="No timeline activity yet." />
-      </p>
-    );
-  }
-
-  return (
-    <ol className="border-l border-zinc-200">
-      {items.map((item) => (
-        <li className="relative pb-5 pl-5" key={item.id}>
-          <span className="absolute -left-1.5 top-1.5 h-3 w-3 rounded-full border border-zinc-300 bg-white" />
-          <div className="content-surface border-zinc-200 bg-white p-4 rounded-none border-y shadow-none">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              {item.href ? (
-                <Link className="text-sm font-semibold capitalize text-zinc-950 underline" href={item.href}>
-                  <WorkspaceText text={item.label} />
-                </Link>
-              ) : (
-                <p className="text-sm font-semibold capitalize text-zinc-950">
-                  <WorkspaceText text={item.label} />
-                </p>
-              )}
-              <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs font-semibold capitalize text-zinc-600">
-                {item.type}
-              </span>
-            </div>
-            <p className="mt-1 text-xs text-zinc-500">
-              <WorkspaceText text={formatDateTime(item.timestamp)} />
-            </p>
-          </div>
-        </li>
-      ))}
-    </ol>
-  );
+  return <ol>{items.map(item => <li key={item.id} className="border-b border-zinc-100 px-4 text-xs font-normal">
+    {item.href ? <Link className="flex min-h-11 items-center justify-between gap-2" href={item.href}><span className="truncate"><WorkspaceText text={shortDate(item.timestamp)} /> · <WorkspaceText text={item.label} /></span><span>›</span></Link> : <span className="flex min-h-11 items-center"><WorkspaceText text={shortDate(item.timestamp)} /> · <WorkspaceText text={item.label} /></span>}
+  </li>)}{!items.length ? <li className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text="No timeline activity yet." /></li> : null}</ol>;
 }
 
 function historyFilterHref(customerId: string, filter: string, group?: string) {
@@ -350,24 +266,24 @@ export function AppLocalOwnerCustomerDetailView({ value, params }: { value: AppL
   );
 
   return (
-    <main className="mx-auto grid w-full max-w-6xl gap-6 px-6 py-10">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <main className="mx-auto grid w-full max-w-6xl gap-2 py-3 sm:px-6">
+      <div className="flex items-center justify-between gap-2 px-4">
         <div className="flex min-w-0 flex-wrap items-center gap-3">
-          <span className="min-w-0 truncate text-sm font-semibold text-zinc-950">
+          <span className="min-w-0 truncate text-sm font-normal text-zinc-950">
             {customer.name}
           </span>
             <StatusBadge customer={customer} />
         </div>
         <div className="flex flex-wrap gap-3">
           <Link
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-950"
+            className="inline-flex min-h-11 items-center text-sm font-normal text-orange-600"
             href="/customers"
           >
             <WorkspaceText text="Customers" />
           </Link>
           {canManageCustomers && !data.isWalkingGroup ? (
             <Link
-              className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white"
+              className="inline-flex min-h-11 items-center px-2 text-sm font-normal text-orange-600"
               href={`/customers/${customer.id}/edit`}
             >
               <WorkspaceText text="Edit" />
@@ -389,8 +305,8 @@ export function AppLocalOwnerCustomerDetailView({ value, params }: { value: AppL
       ) : null}
 
       {data.duplicateCandidates.length > 0 ? (
-        <section className="content-surface border-amber-200 bg-amber-50 px-5 py-4 rounded-none border-y shadow-none">
-          <h2 className="text-base font-semibold text-amber-950">
+        <details className="border-y border-amber-200 bg-amber-50 px-4 py-2 text-sm"><summary className="min-h-7 cursor-pointer text-amber-900"><WorkspaceText text={data.isWalkingGroup ? "Walking group" : "Possible duplicate customer"} /> · {data.isWalkingGroup ? (data.groupedCustomerIds?.length ?? data.duplicateCandidates.length + 1) : data.duplicateCandidates.length}</summary>
+          <h2 className="sr-only">
             <WorkspaceText text={data.isWalkingGroup ? "Walking group" : "Possible duplicate customer"} />
           </h2>
           <p className="mt-1 text-sm text-amber-800">
@@ -409,12 +325,15 @@ export function AppLocalOwnerCustomerDetailView({ value, params }: { value: AppL
               </Link>
             ))}
           </div>
-        </section>
+        </details>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="grid content-start gap-6">
-          <div className="flex flex-wrap items-start gap-2">
+      <div className="flex justify-between gap-2 px-4 py-2 text-xs font-normal text-zinc-600">
+        <span>{data.upcomingBookings.length + data.bookingHistory.length} <WorkspaceText text="appts" /></span><span>{formatMoney(data.finalizedSpend)} <WorkspaceText text="Finalized POS spend" /></span>
+      </div>
+      <div className="grid min-w-0 gap-2">
+        <section className="grid min-w-0 content-start gap-1">
+          <div className="flex min-w-0 items-center justify-between border-b border-zinc-200 px-2">
             {[
               ["all", "All"],
               ["appointments", "Appointments"],
@@ -424,8 +343,8 @@ export function AppLocalOwnerCustomerDetailView({ value, params }: { value: AppL
               <Link
                 className={
                   historyFilter === value
-                    ? "inline-flex h-10 shrink-0 items-center rounded-md bg-zinc-950 px-3 text-sm font-semibold text-white"
-                    : "inline-flex h-10 shrink-0 items-center rounded-md border border-zinc-300 px-3 text-sm font-semibold text-zinc-950"
+                    ? "inline-flex h-11 items-center border-b-2 border-orange-500 px-2 text-sm font-normal text-orange-600"
+                    : "inline-flex h-11 items-center px-2 text-sm font-normal text-zinc-600"
                 }
                 href={historyFilterHref(customer.id, value, group)}
                 key={value}
@@ -435,38 +354,20 @@ export function AppLocalOwnerCustomerDetailView({ value, params }: { value: AppL
             ))}
           </div>
 
-          {showAppointments ? (
-            <>
-              <Section title={__vt("Upcoming Appointments")}>
-                <BookingList
-                  empty="No upcoming appointments."
-                  items={data.upcomingBookings}
-                />
-              </Section>
-
-              <Section title={__vt("Booking History")}>
-                <BookingList
-                  empty="No booking history yet."
-                  items={data.bookingHistory}
-                />
-              </Section>
-            </>
-          ) : null}
-
-          {showTickets ? (
-            <Section title={__vt("POS Ticket History")}>
-              <TicketList items={data.tickets} />
-            </Section>
-          ) : null}
-
-          {showTimeline ? (
-            <Section title={__vt("Timeline")}>
-              <Timeline items={data.timeline} />
-            </Section>
-          ) : null}
+          {historyFilter === "all" ? (
+            <div data-unified-history>{!data.upcomingBookings.length && !data.bookingHistory.length && !data.tickets.length ? <p className="px-4 py-2 text-xs text-zinc-500"><WorkspaceText text="No timeline activity yet." /></p> : null}{[
+              ...data.upcomingBookings.map(booking => ({ at: booking.start_at, key: `up-${booking.id}`, content: <BookingList empty="" items={[booking]} /> })),
+              ...data.bookingHistory.map(booking => ({ at: booking.start_at, key: `booking-${booking.id}`, content: <BookingList empty="" items={[booking]} /> })),
+              ...data.tickets.map(ticket => ({ at: ticket.opened_at, key: `ticket-${ticket.id}`, content: <TicketList items={[ticket]} /> })),
+            ].sort((a,b) => b.at.localeCompare(a.at)).map(row => <div key={row.key}>{row.content}</div>)}</div>
+          ) : <>
+            {showAppointments ? <><BookingList empty="No upcoming appointments." items={data.upcomingBookings} /><BookingList empty="No booking history yet." items={data.bookingHistory} /></> : null}
+            {showTickets ? <TicketList items={data.tickets} /> : null}
+            {showTimeline ? <Timeline items={data.timeline} /> : null}
+          </>}
         </section>
 
-        <aside className="grid h-fit gap-6">
+        <aside className="grid h-fit gap-1">
           <Section title={__vt("ReyLUMI Profile")}>
             <ReylumiProfileCard
               linked={Boolean(customer.customer_user_id)}
@@ -535,4 +436,8 @@ export function AppLocalOwnerCustomerDetailView({ value, params }: { value: AppL
       </div>
     </main>
   );
+}
+
+function shortDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }

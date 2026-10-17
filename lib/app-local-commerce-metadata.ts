@@ -9,7 +9,7 @@ export const APP_LOCAL_COMMERCE_READS={
  "owner.market-order":{argumentKeys:["orderId"],retention:"none"},
  "public.campaign":{argumentKeys:["campaignId"],retention:"none"},
 }as const;
-export type AppLocalCampaigns=ComponentProps<typeof CampaignWorkspace>;
+export type AppLocalCampaigns=ComponentProps<typeof CampaignWorkspace>&{wallet:NonNullable<ComponentProps<typeof CampaignWorkspace>["wallet"]>};
 export type AppLocalDepositSettings={salonId:string;state:BookingDepositState;paid:boolean};
 export type AppLocalMarketOrder={order:MarketBankOrder;business:{id:string;name:string}|null};
 export type AppLocalPublicCampaign={salonId:string;endsAt:string;title:string;caption:string;imageUrl:string|null};

@@ -11,7 +11,6 @@ import {
 } from "@/app/services/actions";
 import {
   validateServiceConfig,
-  wouldCreateServiceAddOnCycle,
 } from "@/lib/service-contract";
 import { normalizeSearchText, searchTextMatches } from "@/lib/search-normalization";
 import type {
@@ -21,6 +20,7 @@ import type {
   ServicesWorkspaceData,
   ServiceWorkspaceService,
 } from "@/types/service";
+import { ServiceAddOnGroups } from "./service-addon-groups";
 import { useRouter } from "next/navigation";
 import {
   type FormEvent,
@@ -42,6 +42,7 @@ type ServicesManagerProps = {
 };
 
 const EMPTY_CREATE_DRAFT: Omit<ServiceConfigInput, "serviceId"> = {
+  bookingAddOns: [],
   addOnServiceIds: [],
   basePrice: 0,
   bookingStaffIds: [],
@@ -66,6 +67,7 @@ function money(value: number) {
 
 function serviceConfig(service: ServiceWorkspaceService): ServiceConfigInput {
   return {
+    bookingAddOns: (service.bookingAddOns ?? []).map(item => ({...item})),
     addOnServiceIds: [...service.addOnServiceIds],
     basePrice: Number(service.base_price),
     bookingStaffIds: [...service.bookingStaffIds],
@@ -170,369 +172,38 @@ function FieldError({
   ) : null;
 }
 
-function ServiceEditor({
-  addOnIdsByServiceId,
-  canManage,
-  config,
-  data,
-  onChange,
-  service,
-}: {
-  addOnIdsByServiceId: Map<string, string[]>;
-  canManage: boolean;
-  config: ServiceConfigInput;
-  data: ServicesWorkspaceData;
+function ServiceEditor({canManage,config,data,onChange}: {
+  canManage: boolean; config: ServiceConfigInput; data: ServicesWorkspaceData;
   onChange: (patch: Partial<ServiceConfigInput>) => void;
-  service: ServiceWorkspaceService;
 }) {
-  const __vt = useWorkspaceTranslation();
-
-  const [staffQuery, setStaffQuery] = useState("");
-  const [addOnQuery, setAddOnQuery] = useState("");
+  const t = useWorkspaceTranslation();
   const errors = validateServiceConfig(config).fieldErrors;
-  const readiness = draftReadiness(config, data);
-  const visibleStaff = data.staff.filter(
-    (member) => searchTextMatches([member.displayName], staffQuery),
-  );
-  const visibleAddOns = data.services
-    .filter((candidate) => candidate.id !== service.id)
-    .filter(
-      (candidate) =>
-        searchTextMatches([candidate.name, candidate.category], addOnQuery),
-    )
-    .sort((left, right) => {
-      const leftSelected = config.addOnServiceIds.includes(left.id) ? 0 : 1;
-      const rightSelected = config.addOnServiceIds.includes(right.id) ? 0 : 1;
-      return leftSelected - rightSelected || left.name.localeCompare(right.name);
-    });
-
-  function toggleStaff(staffId: string, selected: boolean) {
-    onChange({
-      bookingStaffIds: selected
-        ? [...config.bookingStaffIds, staffId]
-        : config.bookingStaffIds.filter((id) => id !== staffId),
-    });
-  }
-
-  function toggleAddOn(addOnServiceId: string, selected: boolean) {
-    onChange({
-      addOnServiceIds: selected
-        ? [...config.addOnServiceIds, addOnServiceId]
-        : config.addOnServiceIds.filter((id) => id !== addOnServiceId),
-    });
-  }
-
-  return (
-    <div className="service-editor">
-      <section className="service-editor__section">
-        <div className="service-editor__heading">
-          <div>
-            <h3><WorkspaceText text="Service details" /></h3>
-            <p><WorkspaceText text="Available for salon operations and POS." /></p>
-          </div>
-        </div>
-
-        <div className="service-editor__fields">
-          <label className="services-field services-field--wide">
-            <span><WorkspaceText text="Name" /></span>
-            <input
-              disabled={!canManage}
-              maxLength={120}
-              onChange={(event) => onChange({ name: event.target.value })}
-              value={config.name}
-            />
-            <FieldError errors={errors} field="name" />
-          </label>
-
-          <label className="services-field">
-            <span><WorkspaceText text="Category" /></span>
-            <input
-              disabled={!canManage}
-              maxLength={80}
-              onChange={(event) =>
-                onChange({ category: event.target.value || null })
-              }
-              placeholder={__vt("Uncategorized")}
-              value={config.category ?? ""}
-            />
-            <FieldError errors={errors} field="category" />
-          </label>
-
-          <label className="services-field">
-            <span><WorkspaceText text="Price" /></span>
-            <span className="services-number-field">
-              <span aria-hidden="true">$</span>
-              <input
-                disabled={!canManage}
-                min="0"
-                onChange={(event) =>
-                  onChange({ basePrice: Number(event.target.value) })
-                }
-                step="0.01"
-                type="number"
-                value={config.basePrice}
-              />
-            </span>
-            <FieldError errors={errors} field="basePrice" />
-          </label>
-
-          <label className="services-field">
-            <span><WorkspaceText text="Duration" /></span>
-            <span className="services-number-field services-number-field--suffix">
-              <input
-                disabled={!canManage}
-                max="1440"
-                min="1"
-                onChange={(event) =>
-                  onChange({ durationMinutes: Number(event.target.value) })
-                }
-                step="1"
-                type="number"
-                value={config.durationMinutes}
-              />
-              <span aria-hidden="true"><WorkspaceText text="min" /></span>
-            </span>
-            <FieldError errors={errors} field="durationMinutes" />
-          </label>
-
-          <label className="services-field services-field--wide">
-            <span><WorkspaceText text="Description" /></span>
-            <textarea
-              disabled={!canManage}
-              maxLength={2000}
-              onChange={(event) =>
-                onChange({ description: event.target.value || null })
-              }
-              rows={3}
-              value={config.description ?? ""}
-            />
-            <FieldError errors={errors} field="description" />
-          </label>
-        </div>
-
-        <div className="service-editor__setting">
-          <div>
-            <strong><WorkspaceText text="Active in salon" /></strong>
-            <p><WorkspaceText text="Available for salon operations and POS." /></p>
-          </div>
-          <Toggle
-            checked={config.isActive}
-            disabled={!canManage}
-            label={__vt(`Set ${config.name || "service"} active state`)}
-            onChange={(checked) =>
-              onChange({
-                isActive: checked,
-                ...(checked ? {} : { onlineBookingEnabled: false }),
-              })
-            }
-          />
-        </div>
-      </section>
-
-      <section className="service-editor__section service-editor__section--online">
-        <div className="service-editor__heading service-editor__heading--online">
-          <div>
-            <h3><WorkspaceText text="Online booking" /></h3>
-            <p><WorkspaceText text="Allow customers to find and book this service online." /></p>
-          </div>
-          <Toggle
-            checked={config.onlineBookingEnabled}
-            disabled={!canManage || !config.isActive}
-            label={__vt(`Enable online booking for ${config.name || "service"}`)}
-            onChange={(checked) => onChange({ onlineBookingEnabled: checked })}
-          />
-        </div>
-
-        {!config.isActive ? (
-          <p className="services-inline-warning">
-            <WorkspaceText text="Activate this service before enabling online booking." />
-          </p>
-        ) : null}
-
-        <div className="booking-readiness" data-state={readiness.ready ? "ready" : "pending"}>
-          <div>
-            <span><WorkspaceText text="Booking readiness" /></span>
-            <strong><WorkspaceText text={readiness.label} /></strong>
-          </div>
-          <p>
-            <WorkspaceText text={readiness.ready
-              ? `${readiness.readyStaffCount} online-enabled professional${
-                  readiness.readyStaffCount === 1 ? "" : "s"
-                } selected.`
-              : config.onlineBookingEnabled
-                ? "Select at least one active professional with online booking on."
-                : "Online booking is currently off for this service."} />
-          </p>
-        </div>
-
-        {config.onlineBookingEnabled && config.bookingStaffIds.length === 0 ? (
-          <p className="services-inline-warning"><WorkspaceText text="No booking staff selected." /></p>
-        ) : null}
-
-        <div className="service-editor__subsection">
-          <div className="service-editor__subheading">
-            <div>
-              <h4><WorkspaceText text="Booking staff" /></h4>
-              <p><WorkspaceText text="Choose which professionals customers can book for this service." /></p>
-            </div>
-            <span>{config.bookingStaffIds.length} <WorkspaceText text="selected" /></span>
-          </div>
-          <label className="services-search services-search--compact">
-            <span className="sr-only"><WorkspaceText text="Search booking staff" /></span>
-            <input
-              onChange={(event) => setStaffQuery(event.target.value)}
-              placeholder={__vt("Search professionals")}
-              type="search"
-              value={staffQuery}
-            />
-          </label>
-          <div className="booking-option-list">
-            {visibleStaff.map((member) => {
-              const selected = config.bookingStaffIds.includes(member.id);
-              const disabled =
-                !canManage || (!member.isActive && !selected) || !config.isActive;
-
-              return (
-                <label
-                  className="booking-option-row"
-                  data-disabled={disabled || undefined}
-                  key={member.id}
-                >
-                  <input
-                    checked={selected}
-                    disabled={disabled}
-                    onChange={(event) =>
-                      toggleStaff(member.id, event.target.checked)
-                    }
-                    type="checkbox"
-                  />
-                  <span className="booking-option-row__avatar" aria-hidden="true">
-                    {member.avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img alt={__vt("")} src={member.avatarUrl} />
-                    ) : (
-                      initials(member.displayName)
-                    )}
-                  </span>
-                  <span className="booking-option-row__body">
-                    <strong>{member.displayName}</strong>
-                    <span>
-                      <WorkspaceText text={!member.isActive
-                        ? "Inactive professional"
-                        : member.bookingReady
-                          ? "Online booking enabled"
-                          : "Online booking off"} />
-                    </span>
-                  </span>
-                  <span
-                    className="services-readonly-status"
-                    data-state={
-                      !member.isActive
-                        ? "inactive"
-                        : member.bookingReady
-                          ? "ready"
-                          : "warning"
-                    }
-                  >
-                    {!member.isActive
-                      ? <WorkspaceText text="Inactive" />
-                      : member.bookingReady
-                        ? <WorkspaceText text="Enabled" />
-                        : "Booking off"}
-                  </span>
-                </label>
-              );
-            })}
-            {visibleStaff.length === 0 ? (
-              <p className="booking-option-list__empty"><WorkspaceText text="No professionals match." /></p>
-            ) : null}
-          </div>
-          <FieldError errors={errors} field="bookingStaffIds" />
-        </div>
-
-        <div className="service-editor__subsection">
-          <div className="service-editor__subheading">
-            <div>
-              <h4><WorkspaceText text="Booking add-ons" /></h4>
-              <p><WorkspaceText text="Add optional services customers can choose online." /></p>
-            </div>
-            <span>{config.addOnServiceIds.length} <WorkspaceText text="selected" /></span>
-          </div>
-          <label className="services-search services-search--compact">
-            <span className="sr-only"><WorkspaceText text="Search booking add-ons" /></span>
-            <input
-              onChange={(event) => setAddOnQuery(event.target.value)}
-              placeholder={__vt("Search add-ons")}
-              type="search"
-              value={addOnQuery}
-            />
-          </label>
-          <div className="booking-option-list">
-            {visibleAddOns.map((candidate) => {
-              const selected = config.addOnServiceIds.includes(candidate.id);
-              const createsCycle =
-                !selected &&
-                wouldCreateServiceAddOnCycle({
-                  addOnIdsByServiceId,
-                  addOnServiceId: candidate.id,
-                  parentServiceId: service.id,
-                });
-              const disabled =
-                !canManage ||
-                (!candidate.is_active && !selected) ||
-                createsCycle;
-
-              return (
-                <label
-                  className="booking-option-row booking-option-row--addon"
-                  data-disabled={disabled || undefined}
-                  key={candidate.id}
-                >
-                  <input
-                    checked={selected}
-                    disabled={disabled}
-                    onChange={(event) =>
-                      toggleAddOn(candidate.id, event.target.checked)
-                    }
-                    type="checkbox"
-                  />
-                  <span className="booking-option-row__body">
-                    <strong>{candidate.name}</strong>
-                    <span>
-                      +{money(Number(candidate.base_price))} · +
-                      {candidate.duration_minutes} <WorkspaceText text="min" />
-                    </span>
-                  </span>
-                  <span
-                    className="services-readonly-status"
-                    data-state={
-                      !candidate.is_active
-                        ? "inactive"
-                        : createsCycle
-                          ? "warning"
-                          : "neutral"
-                    }
-                  >
-                    {!candidate.is_active
-                      ? selected
-                        ? "Linked · inactive"
-                        : <WorkspaceText text="Inactive" />
-                      : createsCycle
-                        ? "Creates cycle"
-                        : candidate.category || "Service"}
-                  </span>
-                </label>
-              );
-            })}
-            {visibleAddOns.length === 0 ? (
-              <p className="booking-option-list__empty"><WorkspaceText text="No add-ons match." /></p>
-            ) : null}
-          </div>
-          <FieldError errors={errors} field="addOnServiceIds" />
-        </div>
-      </section>
-    </div>
-  );
+  const categories = [...new Set(data.services.map(item => item.category?.trim()).filter((item): item is string => Boolean(item)))];
+  return <div className="service-editor">
+    <section className="service-editor__section">
+      <h3><WorkspaceText text="Service details" /></h3>
+      <div className="service-editor__fields">
+        <label className="services-field"><span><WorkspaceText text="Name" />:</span><input disabled={!canManage} maxLength={120} value={config.name} onChange={event => onChange({name:event.target.value})}/><FieldError errors={errors} field="name" /></label>
+        <label className="services-field"><span><WorkspaceText text="Category" />:</span><input disabled={!canManage} maxLength={80} list={"service-categories-" + config.serviceId} value={config.category ?? ""} placeholder={t("Uncategorized")} onChange={event => onChange({category:event.target.value || null})}/><FieldError errors={errors} field="category" /></label>
+        <datalist id={"service-categories-" + config.serviceId}>{categories.map(category => <option value={category} key={category}/>)}</datalist>
+        <label className="services-field"><span><WorkspaceText text="Price" />:</span><span className="services-number-field"><span>$</span><input disabled={!canManage} type="number" min={0} step="0.01" value={config.basePrice} onChange={event => onChange({basePrice:Number(event.target.value)})}/></span><FieldError errors={errors} field="basePrice" /></label>
+        <label className="services-field"><span><WorkspaceText text="Duration" />:</span><span className="services-number-field services-number-field--suffix"><input disabled={!canManage} type="number" min={1} max={1440} step={1} value={config.durationMinutes} onChange={event => onChange({durationMinutes:Number(event.target.value)})}/><span><WorkspaceText text="min" /></span></span><FieldError errors={errors} field="durationMinutes" /></label>
+        <label className="services-field"><span><WorkspaceText text="Description" />:</span><textarea disabled={!canManage} rows={3} maxLength={2000} value={config.description ?? ""} onChange={event => onChange({description:event.target.value || null})}/><FieldError errors={errors} field="description" /></label>
+      </div>
+    </section>
+    <section className="service-editor__section">
+      <div className="service-editor__subheading"><h3><WorkspaceText text="Staff available" /></h3><span>{config.bookingStaffIds.length} <WorkspaceText text="selected" /></span></div>
+      <div className="booking-option-list">{data.staff.map(member => <label className="booking-option-row" key={member.id}>
+        <input type="checkbox" disabled={!canManage || (!member.isActive && !config.bookingStaffIds.includes(member.id))}
+          checked={config.bookingStaffIds.includes(member.id)} onChange={event => onChange({bookingStaffIds:event.target.checked ? [...config.bookingStaffIds,member.id] : config.bookingStaffIds.filter(id => id !== member.id)})}/>
+        <span className="booking-option-row__avatar" aria-hidden="true">{initials(member.displayName)}</span><span className="booking-option-row__body"><strong>{member.displayName}</strong><span><WorkspaceText text={member.bookingReady ? "Online booking enabled" : member.isActive ? "Online booking off" : "Inactive professional"}/></span></span>
+      </label>)}</div>
+      {config.onlineBookingEnabled && !config.bookingStaffIds.length ? <p className="services-inline-warning"><WorkspaceText text="No booking staff selected."/></p> : null}
+      <FieldError errors={errors} field="bookingStaffIds" />
+    </section>
+    <ServiceAddOnGroups items={config.bookingAddOns ?? []} disabled={!canManage} onChange={bookingAddOns => onChange({bookingAddOns})}/>
+    <FieldError errors={errors} field="addOnServiceIds" />
+  </div>;
 }
 
 function CreateServiceDrawer({
@@ -739,6 +410,8 @@ function CreateServiceDrawer({
                 }
               />
             </div>
+            <ServiceAddOnGroups items={draft.bookingAddOns ?? []} disabled={!canManage || isPending} onChange={bookingAddOns => setDraft(current => ({...current,bookingAddOns}))}/>
+            <FieldError errors={errors} field="addOnServiceIds" />
           </div>
 
           <footer className="service-drawer__footer">
@@ -800,16 +473,6 @@ export function ServicesManager({
         ]),
       ),
     [data.services, drafts],
-  );
-  const addOnIdsByServiceId = useMemo(
-    () =>
-      new Map(
-        data.services.map((service) => [
-          service.id,
-          effectiveConfigs.get(service.id)?.addOnServiceIds ?? [],
-        ]),
-      ),
-    [data.services, effectiveConfigs],
   );
   const categories = useMemo(
     () =>
@@ -920,6 +583,7 @@ export function ServicesManager({
   async function refreshAfterSave() {
     try {
       if (onSaved) await onSaved();
+      else router.refresh();
       setRefreshFailed(false);
     } catch {
       setRefreshFailed(true);
@@ -927,9 +591,10 @@ export function ServicesManager({
     }
   }
 
-  function saveAll() {
+  function saveAll(onlyServiceId?: string) {
+    const savingIds = onlyServiceId ? dirtyIds.filter(id => id === onlyServiceId) : dirtyIds;
     if (isPending || dirtyIds.length === 0) return;
-    const configs = dirtyIds.map((serviceId) => drafts[serviceId]);
+    const configs = savingIds.map((serviceId) => drafts[serviceId]);
     const firstInvalid = configs.find(
       (config) => !validateServiceConfig(config).valid,
     );
@@ -951,14 +616,14 @@ export function ServicesManager({
       setMessage(response);
 
       if (response.ok) {
-        setDrafts({});
-        setServiceErrors({});
+        setDrafts(current => Object.fromEntries(Object.entries(current).filter(([id]) => !savingIds.includes(id))));
+        setServiceErrors(current => Object.fromEntries(Object.entries(current).filter(([id]) => !savingIds.includes(id))));
         await refreshAfterSave();
       } else {
         setServiceErrors(
           response.serviceErrors ??
             Object.fromEntries(
-              dirtyIds.map((serviceId) => [serviceId, response.message]),
+              savingIds.map((serviceId) => [serviceId, response.message]),
             ),
         );
       }
@@ -1197,13 +862,19 @@ export function ServicesManager({
                     {expanded ? (
                       <>
                         <ServiceEditor
-                          addOnIdsByServiceId={addOnIdsByServiceId}
                           canManage={data.canManage && !isPending}
                           config={config}
                           data={data}
                           onChange={(patch) => updateService(service, patch)}
-                          service={service}
                         />
+                        {data.canManage ? <div className="service-editor__actions">
+                          <span aria-live="polite"><WorkspaceText text={dirty ? "Unsaved changes" : "All changes saved"}/></span>
+                          <div><button className="services-button services-button--secondary" type="button" disabled={isPending || !dirty} onClick={() => {
+                            setDrafts(current => {const next={...current};delete next[service.id];return next;});
+                            setServiceErrors(current => {const next={...current};delete next[service.id];return next;});setMessage(null);
+                          }}><WorkspaceText text="Cancel"/></button>
+                          <button className="services-button services-button--primary" type="button" disabled={isPending || !dirty} onClick={() => saveAll(service.id)}><WorkspaceText text={isPending ? "Saving..." : "Save changes"}/></button></div>
+                        </div> : null}
                         {data.canManage ? <DeleteUnusedButton expectedSalonId={expectedSalonId} kind="services" id={service.id} name={config.name} onDeleted={onSaved} disabled={dirty || isPending} /> : null}
                       </>
                     ) : null}
@@ -1229,12 +900,12 @@ export function ServicesManager({
                 onClick={discardAll}
                 type="button"
               >
-                <WorkspaceText text="Discard" />
+                <WorkspaceText text="Cancel" />
               </button>
               <button
                 className="services-button services-button--primary"
                 disabled={isPending}
-                onClick={saveAll}
+                onClick={() => saveAll()}
                 type="button"
               >
                 <WorkspaceText text={isPending ? "Saving..." : "Save all changes"} />

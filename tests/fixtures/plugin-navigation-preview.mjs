@@ -7,11 +7,12 @@ import tailwind from '@tailwindcss/postcss';
 // Real navigation/page markup with sample read results and no writable backend.
 export async function pluginNavigationPreview() {
   const stubs = {
+    '@/lib/campaign-payments': `export async function confirmCampaignCheckout(){return false};export async function cancelCampaignCheckout(){return true};`,
     '@/components/experience-page': `export const withExperiencePage=page=>page;`,
     'next/link': `export const useLinkStatus=()=>({pending:false});export default function Link({prefetch,onNavigate,...props}){return <a {...props}/>} `,
-    'next/navigation': `export function redirect(url){window.redirected=url;throw Error('redirect:'+url)}`,
-    '@/lib/current-context': `export async function getCurrentBusinessContext(){const role=new URLSearchParams(location.search).get('role');return{user:{id:'sample-owner'},salonMode:role==='staff'?'staff':'manage',workspaceType:role==='personal'?'personal':'salon'}}`,
-    '@/app/campaigns/credit-actions': `export async function campaignWalletAction(){window.reads.push('wallet');return{installed:new URLSearchParams(location.search).has('active')}}`,
+    'next/navigation': `export function useRouter(){return{refresh(){},push(){},replace(){}}};export function redirect(url){window.redirected=url;throw Error('redirect:'+url)}`,
+    '@/lib/current-context': `export const isSalonManageContext=c=>c.salonMode==='manage'&&c.workspaceType==='salon';export const isOwnerMembership=c=>!new URLSearchParams(location.search).has('denied');export async function getCurrentBusinessContext(){const role=new URLSearchParams(location.search).get('role');return{user:{id:'sample-owner'},salonMode:role==='staff'?'staff':'manage',workspaceType:role==='personal'?'personal':'salon'}}`,
+    '@/app/campaigns/credit-actions': `export async function completeCampaignCardAction(){};export async function campaignWalletAction(){window.reads.push('wallet');return{installed:new URLSearchParams(location.search).has('active')}}`,
     '@/lib/owner-campaigns': `export async function requireCampaignOwner(installed=true){window.reads.push('owner:'+installed);if(new URLSearchParams(location.search).has('denied'))throw Error('Owner required');return{context:{currentSalon:{city:'Houston',state:'TX',country:'United States'}}}};export async function ownerCampaignSettings(){window.reads.push('settings');return{}}`,
     '@/app/campaigns/actions': `export async function loadOwnerCampaignsAction(){window.reads.push('campaigns');return{campaigns:[]}}`,
     '@/app/campaigns/campaign-workspace': `export function CampaignWorkspace(){return <main data-installed-workspace>Existing campaign workspace</main>}`,
@@ -21,7 +22,7 @@ export async function pluginNavigationPreview() {
 import React,{Activity,useState}from'react';import{createRoot}from'react-dom/client';import More from'./app/(app)/more/page';import Campaigns from'./app/(app)/campaigns/page';import{RoleMoreContent}from'./components/role-more-content';
 window.reads=[];const params=new URLSearchParams(location.search);const root=createRoot(document.getElementById('root'));
 function Preview({node}){const[visible,setVisible]=useState(true);window.setPageVisible=setVisible;return <Activity mode={visible?'visible':'hidden'}>{node}</Activity>}
-const node=location.pathname==='/dropdown'?Promise.resolve(<div style={{width:360,margin:'24px auto'}}><RoleMoreContent roleKind={params.get('role')||'owner'} activeItemIds={[]} onNavigate={()=>{}}/></div>):(location.pathname==='/campaigns'?Campaigns:More)();
+const node=location.pathname==='/dropdown'?Promise.resolve(<div style={{width:360,margin:'24px auto'}}><RoleMoreContent roleKind={params.get('role')||'owner'} activeItemIds={[]} onNavigate={()=>{}}/></div>):(location.pathname==='/campaigns'?Campaigns({searchParams:Promise.resolve(Object.fromEntries(params))}):More());
 node.then(node=>root.render(<React.StrictMode><Preview node={node}/></React.StrictMode>)).catch(error=>{if(!window.redirected)throw error;document.getElementById('root').textContent='Redirected';});
 ` }, bundle: true, write: false, outdir: 'fixture', jsx: 'automatic', plugins: [{ name: 'sample-read-results', setup(b) {
     b.onResolve({ filter: /.*/ }, a => stubs[a.path] ? { path: a.path, namespace: 'sample' } : undefined);

@@ -19,7 +19,7 @@
 .card a { display: inline-block; padding: .3rem 0; text-decoration: underline; }
 .catalog { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); list-style: none; padding: 0; border-top: 1px solid #e4e4e7; }
 .catalog > li { border-bottom: 1px solid #e4e4e7; }
-.catalogLink { display: grid; grid-template-columns: 2rem minmax(0, 1fr) 1rem; gap: .75rem; height: 100%; padding: 1rem .8rem; }
+.shell .catalogLink { display: flex; align-items: flex-start; width: 100%; min-width: 0; gap: .75rem; height: 100%; padding: 1rem .8rem; }
 .catalogLink:hover { background: #fafaf9; }
 .number { color: #9a3412; font-size: .85rem; font-variant-numeric: tabular-nums; padding-top: .15rem; }
 .guideTitle { display: block; font-weight: 650; }
@@ -87,3 +87,8 @@
 .languages > span { margin-right:.3rem; font-size:.85rem; color:#52525b; }
 .languages button { min-height:2.75rem; padding:.55rem .85rem; border:1px solid #a1a1aa; border-radius:.6rem; background:#fff; cursor:pointer; }
 .languages button[aria-pressed="true"] { background:#7c2d12; border-color:#7c2d12; color:#fff; }
+
+.catalogLink > .number { flex: 0 0 2rem; }
+.catalogLink > .guideCopy { display: block; flex: 1 1 0%; min-width: 0; }
+.catalogLink > span:last-child { flex-shrink: 0; }
+.guideCopy .guideTitle, .guideCopy .summary { display: block; width: 100%; white-space: normal; word-break: normal; overflow-wrap: break-word; }

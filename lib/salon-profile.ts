@@ -1003,7 +1003,7 @@ export async function getCurrentSalonProfileManageData(
     }
   }
 
-  const services = servicesResult.data ?? [];
+  const services = (servicesResult.data ?? []).filter(service => !service.booking_parent_service_id);
   const staff = staffResult.data ?? [];
   const staffPresentations = await getStaffPresentationsByStaffId({
     staff,

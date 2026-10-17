@@ -87,6 +87,7 @@ export type PublicBookingService = {
   durationMinutes: number;
   id: string;
   isAddOnOnly: boolean;
+  addOnGroup?: "one" | "many";
   name: string;
 };
 
@@ -552,7 +553,8 @@ function parseContextPayload(payload: unknown): RawContext {
           Math.round(numberValue(service.duration_minutes, 30)),
         ),
         id: cleanUuid(service.id) ?? "",
-        isAddOnOnly: false,
+        isAddOnOnly: Boolean(cleanUuid(service.booking_parent_service_id)),
+        addOnGroup: service.booking_add_on_group === "one" ? "one" as const : "many" as const,
         name: nonEmptyString(service.name) ?? "Service",
       } satisfies PublicBookingService;
     })
@@ -964,6 +966,10 @@ function normalizedAddOnSelections(
       parentServiceId,
       serviceId: addOnServiceId,
     });
+    if (addOn.addOnGroup === "one" && selections.some(item => item.parentServiceId === parentServiceId &&
+      item.serviceId !== addOnServiceId && context.serviceMap.get(item.serviceId)?.addOnGroup === "one")) {
+      throw new Error("Choose at most one add-on from the single-choice group.");
+    }
   }
 
   return selections;

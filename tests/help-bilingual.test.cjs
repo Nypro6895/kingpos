@@ -11,8 +11,8 @@ function load(file){
  });return exports;
 }
 const {resolveHelpLanguage,translateHelp,helpHref}=load('lib/help-language.ts'),{HELP_GUIDES,HELP_QUICK_STARTS}=load('lib/help-guides.ts'),{searchHelpGuides}=load('lib/help-search.ts');
-test('Old deep links default to Vietnamese; only the explicit EN option enables English',()=>{
- for(const value of [null,undefined,'vi','fr','EN',['en'],''])assert.equal(resolveHelpLanguage(value),'vi');assert.equal(resolveHelpLanguage('en'),'en');
+test('Help defaults to English and preserves the explicit Vietnamese option',()=>{
+ for(const value of [null,undefined,'en','fr','EN',['en'],''])assert.equal(resolveHelpLanguage(value),'en');assert.equal(resolveHelpLanguage('vi'),'vi');
 });
 test('Language navigation preserves article anchor and unrelated query values; support source stays unchanged',()=>{
  assert.equal(helpHref('/help/owner-tips?from=menu#money','en'),'/help/owner-tips?from=menu&lang=en#money');

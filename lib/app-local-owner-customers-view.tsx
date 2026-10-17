@@ -88,7 +88,7 @@ function DuplicateMergeMenu({
       <summary className="inline-flex cursor-pointer list-none rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800 marker:hidden">
         <WorkspaceText text="Duplicate?" />
       </summary>
-      <div className="absolute left-0 z-20 mt-2 w-[min(360px,calc(100vw-48px))] rounded-lg border border-zinc-200 bg-white p-3 text-left shadow-xl">
+      <div className="absolute right-0 z-20 mt-2 w-[min(360px,calc(100vw-48px))] rounded-lg border border-zinc-200 bg-white p-3 text-left shadow-xl">
         <p className="text-sm font-semibold text-zinc-950">
           <WorkspaceText text="Matching customer records" />
         </p>
@@ -190,15 +190,7 @@ function CustomerList({
 
   return (
     <>
-      <div className="content-surface mt-4 overflow-visible border-zinc-200 bg-white rounded-none border-y shadow-none">
-        <div className="grid grid-cols-12 border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-xs font-medium uppercase text-zinc-500">
-          <div className="col-span-12 sm:col-span-3"><WorkspaceText text="Customer" /></div>
-          <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Upcoming" /></div>
-          <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Last visit" /></div>
-          <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="History" /></div>
-          <div className="hidden sm:col-span-2 sm:block"><WorkspaceText text="Spend" /></div>
-          <div className="hidden sm:col-span-1 sm:block"><WorkspaceText text="Actions" /></div>
-        </div>
+      <div className="mt-1 bg-white">
         <ul className="divide-y divide-zinc-200">
           {customers.map((customer) => {
             const riskCount =
@@ -208,86 +200,24 @@ function CustomerList({
               : `/customers/${customer.id}`;
 
             return (
-              <li className="grid grid-cols-12 gap-3 px-5 py-4" key={customer.id}>
-                <div className="col-span-12 sm:col-span-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold text-zinc-950">{customer.name}</p>
-                    <StatusBadge status={customer.status} />
-                    {customer.duplicate_signal ? (
-                      canManageCustomers ? (
-                        <DuplicateMergeMenu customer={customer} />
-                      ) : (
-                        <SignalBadge tone="amber"><WorkspaceText text="Duplicate?" /></SignalBadge>
-                      )
-                    ) : null}
-                  </div>
-                  <p className="mt-1 text-sm text-zinc-600">
-                    {customer.isWalkingGroup
-                      ? `${customer.groupedCustomerIds?.length ?? 1} walk-in records`
-                      : [customer.phone, customer.email].filter(Boolean).join(" / ") ||
-                        "No contact"}
-                  </p>
-                  <p className="mt-1 text-xs capitalize text-zinc-500">
-                    <WorkspaceText text={sourceLabel(customer.source)} />
-                  </p>
-                </div>
-                <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    <WorkspaceText text="Upcoming:" />{" "}
-                  </span>
-                  {customer.metrics.upcoming_start_at ? (
-                    <Link
-                      className="font-medium text-zinc-950 underline"
-                      href={`/bookings?bookingId=${customer.metrics.upcoming_booking_id}`}
-                    >
-                      <WorkspaceText text={formatDateTime(customer.metrics.upcoming_start_at)} />
-                    </Link>
-                  ) : (
-                    "-"
-                  )}
-                </div>
-                <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    <WorkspaceText text="Last visit:" />{" "}
-                  </span>
-                  <WorkspaceText text={formatDateTime(customer.metrics.last_visit_at)} />
-                </div>
-                <div className="col-span-12 flex flex-wrap gap-2 self-center sm:col-span-2">
-                  <SignalBadge tone="strong">
-                    {customer.metrics.appointment_count} <WorkspaceText text="appts" />
-                  </SignalBadge>
-                  {riskCount > 0 ? (
-                    <SignalBadge tone="amber">
-                      {riskCount} cancel/no-show
-                    </SignalBadge>
-                  ) : null}
-                </div>
-                <div className="col-span-12 self-center text-sm text-zinc-700 sm:col-span-2">
-                  <span className="font-medium text-zinc-500 sm:hidden">
-                    <WorkspaceText text="Finalized spend:" />{" "}
-                  </span>
-                  {formatMoney(customer.metrics.finalized_spend)}
-                  {customer.metrics.active_pos_ticket_count > 0 ? (
-                    <p className="mt-1 text-xs font-semibold text-amber-700">
-                      {customer.metrics.active_pos_ticket_count} <WorkspaceText text="open ticket" />
-                    </p>
-                  ) : null}
-                </div>
-                <div className="col-span-12 flex flex-wrap gap-2 self-center text-sm sm:col-span-1 sm:block sm:space-y-2">
-                  <Link
-                    className="font-medium text-zinc-950 underline"
-                    href={detailHref}
-                  >
-                    <WorkspaceText text="View" />
+              <li className="px-4 py-2 text-sm" key={customer.id} data-customer-row>
+                <div className="flex min-w-0 items-center gap-2">
+                  <Link className="min-w-0 flex-1 truncate py-1 text-zinc-950" href={detailHref}>
+                    <span className="font-medium">{customer.name}</span>
+                    {!customer.isWalkingGroup && customer.phone ? <span className="ml-2 text-xs text-zinc-500">{customer.phone}</span> : null}
+                    {customer.status !== "active" ? <span className="ml-2 text-xs text-zinc-500"><WorkspaceText text="Inactive" /></span> : null}
                   </Link>
-                  {canManageCustomers && !customer.isWalkingGroup ? (
-                    <Link
-                      className="font-medium text-zinc-950 underline sm:block"
-                      href={`/customers/${customer.id}/edit`}
-                    >
-                      <WorkspaceText text="Edit" />
-                    </Link>
-                  ) : null}
+                  {customer.duplicate_signal ? canManageCustomers ? <DuplicateMergeMenu customer={customer} /> : <SignalBadge tone="amber"><WorkspaceText text="Duplicate?" /></SignalBadge> : null}
+                  {riskCount > 0 ? <span className="text-xs text-amber-700" title="Cancel/no-show">{riskCount} !</span> : null}
+                  {canManageCustomers && !customer.isWalkingGroup ? <Link aria-label={`Edit ${customer.name}`} className="flex h-9 w-9 shrink-0 items-center justify-center text-zinc-500" href={`/customers/${customer.id}/edit`}><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m16 3 5 5M4 15 16 3a2 2 0 0 1 5 5L9 20l-6 1 1-6Z" /></svg></Link> : null}
+                </div>
+                <div className="flex min-w-0 items-center justify-between gap-2 text-xs text-zinc-500">
+                  <span className="min-w-0 truncate">
+                    {customer.isWalkingGroup ? `${customer.groupedCustomerIds?.length ?? 1} walk-ins · ` : ""}
+                    {customer.metrics.upcoming_start_at ? <Link className="text-orange-700 underline" href={`/bookings?bookingId=${customer.metrics.upcoming_booking_id}`}><WorkspaceText text="Upcoming" /> {formatDateTime(customer.metrics.upcoming_start_at)}</Link> : <WorkspaceText text={formatDateTime(customer.metrics.last_visit_at)} />}
+                    {" · "}{customer.metrics.appointment_count} <WorkspaceText text="appts" />
+                  </span>
+                  <Link className="shrink-0 tabular-nums text-zinc-700" href={detailHref}>{formatMoney(customer.metrics.finalized_spend)}{customer.metrics.active_pos_ticket_count > 0 ? ` · ${customer.metrics.active_pos_ticket_count} open` : ""}</Link>
                 </div>
               </li>
             );
@@ -358,21 +288,17 @@ export function AppLocalOwnerCustomersView({ data, params }: { data: AppLocalOwn
         </p>
       ) : null}
 
-      <WorkspaceToolbar>
+      <WorkspaceToolbar title="Customers">
           <Form className={toolbarStyles.search} action="/customers">
             <input
-              aria-label={__vt("Search customers")} className="h-11 w-full min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-zinc-950"
+              aria-label={__vt("Search customers")} className="h-11 w-full min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-3 text-base text-zinc-950 outline-none focus:border-zinc-950"
               defaultValue={q ?? ""}
               name="q"
               placeholder={__vt("Search name, phone, email")}
               type="search"
+              enterKeyHint="search"
             />
-            <SubmitButton pendingLabel="Processing…"
-              aria-label={__vt("Search customers")} className={toolbarStyles.icon}
-              type="submit"
-            >
-              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>
-            </SubmitButton>
+            <button className="sr-only" type="submit"><WorkspaceText text="Search customers" /></button>
             {q ? (
               <Link
                 aria-label={__vt("Clear customer search")} className="inline-flex h-11 shrink-0 items-center px-1 text-sm text-zinc-600"
@@ -384,15 +310,15 @@ export function AppLocalOwnerCustomersView({ data, params }: { data: AppLocalOwn
           </Form>
           {canManageCustomers ? (
             <Link
-              aria-label={__vt("Create customer")} className={toolbarStyles.primary}
+              aria-label={__vt("Create customer")} className="inline-flex h-11 shrink-0 items-center justify-center rounded-lg bg-orange-500 px-3 text-base text-white"
               href="/customers/new"
             >
-              <span className="sm:hidden"><WorkspaceText text="+ Customer" /></span><span className="hidden sm:inline"><WorkspaceText text="+ Create Customer" /></span>
+              <span className="sm:hidden" aria-hidden="true">+</span><span className="hidden sm:inline"><WorkspaceText text="+ Create Customer" /></span>
             </Link>
           ) : null}
       </WorkspaceToolbar>
 
-      <section className="pt-4">
+      <section>
         <CustomerList
           canManageCustomers={canManageCustomers}
           customers={customers}
@@ -403,3 +329,5 @@ export function AppLocalOwnerCustomersView({ data, params }: { data: AppLocalOwn
     </main>
   );
 }
+
+

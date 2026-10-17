@@ -13,6 +13,7 @@ import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-l
 import { checkinReceiptPaymentAction } from "./checkin-receipt-actions";
 import type { CheckinReceiptSubscription } from "@/types/checkin-receipt";
 import { setCampaignPluginAction } from "@/app/campaigns/credit-actions";
+import { formatCredits } from "@/lib/campaign-credit-display";
 import { useRouter } from "next/navigation";
 import { setPayrollDataPlugin } from "./plugin-actions";
 
@@ -150,6 +151,17 @@ export function MarketClient({ automaticTax, cardReady = false, booksms, experie
   const open = Boolean(selected || developer);
 
   useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("activate") !== "campaigns" || query.get("returnTo") !== "campaigns") return;
+    const frame = requestAnimationFrame(() => {
+      if (campaignInstalled) { router.replace("/campaigns"); return; }
+      const campaign = sampleApps.find(app => app.id === "campaigns");
+      if (campaign) setSelected(campaign);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [campaignInstalled, router]);
+
+  useEffect(() => {
     if (open && !dialog.current?.open) dialog.current?.showModal();
     if (!open && dialog.current?.open) dialog.current?.close();
   }, [open]);
@@ -184,7 +196,7 @@ export function MarketClient({ automaticTax, cardReady = false, booksms, experie
     }
     if (selected?.id === "campaigns") {
       setPluginBusy(true);setPluginMessage("");
-      try { const result = await setCampaignPluginAction(!campaignAdded); if(result.error)setPluginMessage(result.error);else{setCampaignAdded(Boolean(result.installed));setPluginMessage(result.installed ? `Campaigns added. ${result.credits?.toLocaleString()} credits are ready to use.` : "Campaigns removed. Your credits and results are kept; adding again does not grant another welcome gift.");marketChanged();router.refresh();} } catch {setPluginMessage("Campaigns could not be updated. Please try again.");} finally {setPluginBusy(false);}return;
+      try { const result = await setCampaignPluginAction(!campaignAdded); if(result.error)setPluginMessage(result.error);else{setCampaignAdded(Boolean(result.installed));setPluginMessage(result.installed ? `Campaigns added. ${formatCredits(result.credits??0)} credits are ready to use.` : "Campaigns removed. Your credits and results are kept; adding again does not grant another welcome gift.");marketChanged();const query=new URLSearchParams(window.location.search);if(result.installed&&query.get("returnTo")==="campaigns"){router.push("/campaigns");}else router.refresh();} } catch {setPluginMessage("Campaigns could not be updated. Please try again.");} finally {setPluginBusy(false);}return;
     }
     if (selected?.id !== "payroll-data-download") { setComingSoon(true); return; }
     setPluginBusy(true); setPluginMessage("");

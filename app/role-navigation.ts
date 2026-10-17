@@ -344,8 +344,20 @@ for (const kind of ["personal", "owner", "staff"] as const) {
 }
 
 for (const kind of ["owner", "staff"] as const) {
-  ROLE_MORE_ITEMS[kind].push({id:`${kind}-support`,href:"/support",icon:"gear",navigationIcon:"message",label:"Report / Contact",description:"Get help and view your requests."});
+  ROLE_MORE_ITEMS[kind].push({id:`${kind}-support`,href:"/support",icon:"gear",navigationIcon:"message",label:"Report / Contact",description:"Report an issue and view your requests."});
 }
+
+export const OWNER_MORE_GROUPS = [
+  { id: "daily", title: "Daily operations", summary: "Sales, tickets, and customer visits.", ids: ["owner-pos", "owner-ticket", "owner-customers"] },
+  { id: "business", title: "Business management", summary: "Performance, payroll, team, and services.", ids: ["owner-report", "owner-payroll", "owner-staff", "owner-services"] },
+  { id: "growth", title: "Grow your salon", summary: "Reach more customers and add useful features.", ids: ["owner-campaigns", "owner-market"] },
+  { id: "settings-support", title: "Settings & support", summary: "Salon setup, workspaces, and help.", ids: ["owner-setting", "owner-my-place", "owner-support", "owner-help"] },
+];
+const ownerPriority = OWNER_MORE_GROUPS.flatMap(group => group.ids);
+ROLE_MORE_ITEMS.owner.sort((a,b) => {
+  const ai=ownerPriority.indexOf(a.id),bi=ownerPriority.indexOf(b.id);
+  return (ai<0?ownerPriority.length:ai)-(bi<0?ownerPriority.length:bi);
+});
 
 function moreNavigationLinks(kind: RoleNavigationKind): NavigationLink[] {
   return ROLE_MORE_ITEMS[kind].map((item) => ({

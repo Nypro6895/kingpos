@@ -116,7 +116,8 @@ export function resolveAppNotificationDestination(
   const shouldOpenManageWorkspace =
     notification.recipient_kind === "owner_manager" &&
     Boolean(notification.salon_id) &&
-    (matchesPath(href, "/bookings") ||
+    (matchesPath(href, "/campaigns") ||
+      matchesPath(href, "/bookings") ||
       matchesPath(href, "/salon-profile") ||
       matchesPath(href, "/staff") ||
       matchesPath(href, "/salon-settings"));

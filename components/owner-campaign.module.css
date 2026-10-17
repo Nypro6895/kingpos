@@ -4,6 +4,9 @@
 
 .label textarea{font:inherit;border:1px solid #dce4df;border-radius:12px;padding:12px;resize:vertical;width:100%;min-height:110px}.creditBanner{background:#ecf5e9;border:1px solid #d7e7d0;border-radius:16px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.creditBanner strong{font-size:22px}.creditBanner p{font-size:12px;color:#69805f;margin:5px 0 0}
 
+/* Advertising uses a continuous surface; only form fields retain input outlines. */
+.dialog{border-radius:0;background:var(--surface,#fff);color:var(--text-primary,#23382d)}.example,.summary,.paymentNotice,.total{border:0;border-radius:0;background:var(--surface-muted,#f2f5ef)}.primary{background:var(--brand-orange,#d5592a);color:var(--brand-orange-foreground,#fff)}.secondary{border:0;background:var(--surface-muted,#f2f5ef);color:var(--text-primary,#23382d)}.muted,.note,.summary span{color:var(--text-secondary,#68756c)}.label input,.label select,.label textarea{background:var(--surface,#fff);color:var(--text-primary,#23382d)}@media(prefers-color-scheme:dark){.dialog{--surface:#19221d;--surface-muted:#111813;--text-primary:#eff6ef;--text-secondary:#b0bcb2;--brand-orange:#efad84;--brand-orange-foreground:#291c13}.choices button{background:#19221d;color:#eff6ef}.choices button[aria-pressed=true]{background:#38281e;color:#efad84}}
+
 @media(max-width:600px){.pageHeader{flex-wrap:wrap;gap:12px}.pageHeader>div{width:100%}.pageHeader>a,.pageHeader>button{flex:1!important;text-align:center}.creditBanner{flex-wrap:wrap;gap:12px}}
 
 @media(max-width:600px){.pageHeader{flex-wrap:wrap;gap:12px}.pageHeader>div{width:100%}.pageHeader>a,.pageHeader>button{flex:1!important;text-align:center}.creditBanner{flex-wrap:wrap;gap:12px}}

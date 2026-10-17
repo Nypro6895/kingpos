@@ -40,7 +40,10 @@ export type OwnerCampaign = {
   views: number; clicks: number; likes: number; comments: number; bookings: number;
   spent_cents: number; created_at: string; starts_at: string | null; ends_at: string | null;
   reserved_credits?: number; released_credits?: number; keep_running?: boolean;
+  cycle_credit_limit?: number | null; auto_fund?: boolean;
 };
 export type CampaignPrompt = { id: string; target: PostCommentTarget };
 export type CampaignCreativeTarget = Omit<PostCommentTarget, "sourceType"> & { sourceType: PostCommentTarget["sourceType"] | "custom" };
-export type CampaignWallet = { available_credits: number; reserved_credits: number; welcome_credits: number; installed: boolean; auto_topup_enabled: boolean; topup_credits: number; threshold_credits: number; monthly_limit_cents: number; payment_ready: boolean; has_payment_method: boolean };
+export type CampaignWallet = { available_credits: number; reserved_credits: number; welcome_credits: number; installed: boolean; auto_topup_enabled: boolean; topup_credits: number; threshold_credits: number; monthly_limit_cents: number; payment_ready: boolean; has_payment_method: boolean; payment_blocked?: boolean; low_credit_reminders?: boolean };
+export type CampaignDay = { day: string; views: number; likes: number; comments: number; bookings: number };
+export type CampaignLedgerEntry = { id: string; kind: "welcome" | "purchase" | "reserve" | "release"; credits: number; created_at: string };

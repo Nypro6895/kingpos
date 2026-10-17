@@ -3,6 +3,7 @@ import{useEffect,useState}from"react";
 import Link from"next/link";
 import Image from"next/image";
 import{CampaignWorkspace}from"@/app/campaigns/campaign-workspace";
+import{CampaignActivation}from"@/app/campaigns/campaign-entry";
 import{AppLocalMarketOrderView}from"@/components/app-local-market-order";
 import{AppLocalDepositSettingsView}from"@/components/app-local-deposit-settings";
 import styles from"@/components/owner-campaign.module.css";
@@ -29,7 +30,7 @@ function CommercePage({context,path,navigate}:AppLocalPageProps){
  useEffect(()=>{if(depositData&&(!depositData.paid||!depositData.state.installed))navigate("/market/booking-deposit");},[depositData,navigate]);
  const title=campaign?"Campaigns":deposit?"Booking Deposit":order?"Payment order":"Campaign";
  if(!resource.data)return <main className="p-6" aria-busy={resource.loading||resource.refreshing}><h1 className="text-2xl font-semibold">{title}</h1>{resource.error?<><p role="alert">{resource.error}</p><button className="mt-4 rounded border px-4 py-2" onClick={()=>void resource.refresh()}>Try again</button></>:<p role="status">Opening…</p>}</main>;
- if(campaign)return <CampaignWorkspace {...resource.data as AppLocalCampaigns}/>;
+ if(campaign){const data=resource.data as AppLocalCampaigns;return data.wallet.installed?<CampaignWorkspace {...data} initialTab={url.searchParams.get("tab")==="settings"?"settings":"campaigns"} initialCreditView={url.searchParams.get("payment")==="attention"?"payment":url.searchParams.get("credits")==="needed"&&!data.wallet.auto_topup_enabled?"add":undefined}/>:<CampaignActivation/>;}
   if(depositData){if(!depositData.paid||!depositData.state.installed)return <main className="p-6" aria-busy="true"><h1>Booking Deposit</h1></main>;if(url.searchParams.has("salon")&&url.searchParams.get("salon")!==depositData.salonId)return <main className="p-6"><h1>Booking Deposit</h1><p role="alert">Select the salon used for this purchase, then try again.</p><Link href="/market/booking-deposit">Back to plugin</Link></main>;return <AppLocalDepositSettingsView {...depositData} query={{}}/>;}
  if(order)return <PaymentOrder resource={resource as ReturnType<typeof useAppLocalResource<AppLocalMarketOrder>>}/>;
  return <CampaignDetail data={resource.data as AppLocalPublicCampaign}/>;

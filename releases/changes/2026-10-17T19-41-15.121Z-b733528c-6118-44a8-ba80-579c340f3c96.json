@@ -1,0 +1,55 @@
+{
+  "kind": "change",
+  "changeId": "customer-compact-20261017",
+  "status": "needs-integration",
+  "summary": "Completed compact Customers UI: two-line directory, regular single-line history, inline compact receipts, folded secondary details; CRM operations, privacy/profile states, merge forms, pagination, permissions and backend logic preserved. Pending deploy only.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/(app)/customers/page.tsx",
+    "app/(app)/customers/[customerId]/page.tsx"
+  ],
+  "source": {
+    "snapshot": "artifacts/customer-compact-20261017/source",
+    "patch": "artifacts/customer-compact-20261017/change.patch",
+    "baselineSnapshot": "artifacts/customer-compact-20261017/before",
+    "nativeAssessment": "Web-compatible UI only, no native config/assets/bridge changes."
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Full-project TypeScript",
+      "result": "failed",
+      "evidence": "No errors in the two changed customer pages; full-project check blocked by unrelated app/services/services-manager.tsx: addOnIdsByServiceId prop/identifier errors around line 866. Other concurrent workspace changes not modified."
+    },
+    {
+      "name": "ESLint two changed pages",
+      "result": "passed"
+    },
+    {
+      "name": "Customer browser fixture checks",
+      "result": "passed",
+      "evidence": "artifacts/customer-compact-20261017/qa-result.json"
+    },
+    {
+      "name": "Customer identity contracts",
+      "result": "passed",
+      "evidence": "8 tests passed"
+    },
+    {
+      "name": "Broader existing contracts",
+      "result": "failed",
+      "evidence": "Three existing failures reproduced against frozen before-task files; artifacts/customer-compact-20261017/contracts-comparison.json"
+    }
+  ],
+  "fileHashes": {
+    "app/(app)/customers/page.tsx": "7eaa338b64e12ca96365e5dc5ad030fb9322a2d58bbef6ffbf55a1d07dbf8ed2",
+    "app/(app)/customers/[customerId]/page.tsx": "8feddb0612b1065c228be402a66732ae876aa88a2329bdb969057c43a0363197"
+  },
+  "id": "b733528c-6118-44a8-ba80-579c340f3c96",
+  "recordedAt": "2026-10-17T19:41:15.121Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

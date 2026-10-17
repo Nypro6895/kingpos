@@ -1,5 +1,6 @@
 "use client";
 import { WorkspaceText } from "@/components/workspace-language";
+import { ContextualSupport } from "@/components/contextual-support";
 import { TicketFilters } from "./ticket-filters";
 import {useState,useEffect,useRef} from 'react';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
@@ -238,5 +239,5 @@ export function OwnerLiveTickets({selectedDate,snapshotAt,salonId,initialTickets
    });
  },{enabled:!managedRead,initialReconcile:false,snapshotAt});
  const dailyNumbers=buildDailyTicketNumbers(tickets);const groups=groupTicketsByDate(filterTicketsBySearch(tickets,query,dailyNumbers));
- return <><TicketFilters date={selectedDate} query={query} onQueryChange={setQuery}/><DailyWorkLog {...props} returnTo={getTicketFilterHref({date:selectedDate,q:query})} groups={groups} dailyNumbers={dailyNumbers}/></>;
+ return <><TicketFilters title="POS Tickets" actions={<ContextualSupport />} date={selectedDate} query={query} onQueryChange={setQuery}/><DailyWorkLog {...props} returnTo={getTicketFilterHref({date:selectedDate,q:query})} groups={groups} dailyNumbers={dailyNumbers}/></>;
 }

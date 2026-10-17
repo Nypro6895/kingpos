@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "975367dbbc7eb727020432d6e1da124d2022fe9ed8a8feaca26433a35d1d72e9",
+  "buildId": "3a0a29a3b3b391c2e602a0391eec0e3d3d9a60b3b989ad55b6d555a4843cb972",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 556689,
-      "sha256": "65301a64b1e3ef837ccd319bba11d4c1fd43b24a9aa8790baa6443c588bcbcc9",
+      "bytes": 565693,
+      "sha256": "97a445d3ebdc8bb5ba92c645ec40054ef2ffa5c709c25fb6d5b6c68b3a7385d6",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4152256,
-      "sha256": "04ff8ecbe6bf67d16dd164a4533ffe1c31a3cb22b313a8f48903d826e7d2482b",
+      "bytes": 4182021,
+      "sha256": "f3106cce7d053f74efc739bc5229f0b735b9d1205ff38e280e7da15244471751",
       "mime": "text/javascript"
     },
     {
@@ -4151,6 +4151,48 @@
       ]
     },
     {
+      "name": "action.feaf50863708b882d73df6bb",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.54da5d1347af7999836448bf",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7854dd5191eae68f4d73b6a8",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.045fc806fa064066635efc39",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.811cc7795324663f73872d92",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.7961ac2c910f7a2067d2f4a4",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.153a120996d5378acd17b4d7",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -5243,6 +5285,27 @@
       ]
     },
     {
+      "name": "action.e9bf91eb64c76739dbe11c91",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.6ee6652b9246e7b981bbf46b",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
+      "name": "action.ffb7ca22ac735acf50557145",
+      "path": "/api/app-local/command",
+      "argumentKeys": [
+        "values"
+      ]
+    },
+    {
       "name": "action.ee11d447d1154d3e1ff376fb",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -5639,9 +5702,9 @@
     ]
   },
   "coverage": {
-    "total": 133,
-    "bundled": 85,
-    "ordinaryEligible": 85,
+    "total": 134,
+    "bundled": 86,
+    "ordinaryEligible": 86,
     "registeredPatterns": 96,
     "missing": [],
     "online": [

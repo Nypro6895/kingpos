@@ -47,7 +47,10 @@ PROFILE_LEGACY="$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.m
 mkdir -p "$(dirname "$PROFILE_PATH")" "$(dirname "$PROFILE_LEGACY")"
 cp "$SIGNING/profile.mobileprovision" "$PROFILE_PATH"
 cp "$SIGNING/profile.mobileprovision" "$PROFILE_LEGACY"
-BUILD_VERSION="${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}"
+EXPECTED_MARKETING_VERSION=$(python3 -c 'import re,pathlib; print(re.search(r"MARKETING_VERSION: \"([^\"]+)\"", pathlib.Path("project.yml").read_text()).group(1))')
+export EXPECTED_MARKETING_VERSION
+node scripts/release-version-preflight.mjs
+BUILD_VERSION=$(python3 -c 'import json; print(json.load(open("build/release-version-preflight.json"))["nextBuild"])')
 xcodegen generate
 xcodebuild archive -project Reylumi.xcodeproj -scheme Reylumi -configuration Release -destination 'generic/platform=iOS' -archivePath "$ROOT/build/Reylumi.xcarchive" -derivedDataPath "$ROOT/build/DerivedData-signed" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" CURRENT_PROJECT_VERSION="$BUILD_VERSION" 2>&1 | tee build/testflight-archive.log
 codesign --verify --deep --strict "$ROOT/build/Reylumi.xcarchive/Products/Applications/Reylumi.app"

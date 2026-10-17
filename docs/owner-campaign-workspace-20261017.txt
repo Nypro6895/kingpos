@@ -1,0 +1,89 @@
+OWNER CAMPAIGNS — APPROVED WORKSPACE IMPLEMENTATION
+2026-10-17 · implementation only; no production publication or real payment tests
+
+Interface
+- One edge-to-edge surface. Compact heading and icon row: Running, History,
+  Settings, Create new. No enclosing card borders; status labels are plain text.
+- History has exactly two structural rows per campaign: title/status, then
+  location/date/credits with Details and the applicable action alongside.
+- Running campaigns show counters and daily result bars. Results combine actual
+  delivery events and attributed conversions; no example metrics are shipped.
+- Supported delivery locations remain city, neighborhood, ZIP, state, country.
+  The earlier preview's arbitrary radius is NOT claimed: delivery currently
+  matches named places and does not have a verified viewer-coordinate contract.
+
+Activation and creation
+- Uninstalled: explanation and OFF switch. Switching opens the existing Market
+  activation dialog. Campaigns remains free to install. Market opens the selected
+  plugin and returns to Campaigns after installation.
+- Installed: open the workspace directly. New photo/message or a published salon
+  post; audience, duration, view ceiling, explicit credit ceiling and review.
+- Run again creates a new campaign with a new id, reuses choices, revalidates the
+  source/current settings, and preserves the previous results and history.
+- Lower credit ceilings stop delivery early. Each future period must reserve
+  its own credits; automatic buying cannot raise a campaign's chosen ceiling.
+
+Credit denomination and billing
+- $1 = 12 displayed credits. Existing integer storage remains unchanged:
+  one old unit = 0.12 displayed credits. This preserves every balance, welcome
+  grant, pack price, ad-delivery price and previously authorized monthly limit.
+- No destructive balance conversion, price change, new subscription, currency
+  change or automatic-purchase opt-in is performed by this task.
+- Currency is displayed only inside Payment method and the explicit automatic
+  purchase confirmation. Campaigns, creation and credit history show credits.
+- Pack purchases, thresholds and monthly credit limits retain original server
+  validation and locking. Consent defaults OFF. Saved cards belong to their
+  authorizing owner. New periods need sufficient reserved credits.
+- A deliberate start with automatic purchases on may queue funding. It never
+  means that payment or review has succeeded. Stopping automatic purchases
+  cancels only unclaimed automatic orders and clears pending ad funding intents.
+- Block payments blocks new Reylumi requests, not the bank card itself. An
+  already processing payment may finish and still grants purchased credits.
+- Card setup is hosted by Stripe, verified against owner/salon and provider
+  completion; only a masked summary reaches the interface. Revision checks stop
+  stale checkouts or old setup tabs from replacing a newer/blocked card.
+- Provider callbacks also complete setup independently of Safari login cookies.
+  Replacing a card keeps automatic purchases OFF until explicitly reauthorized.
+- Cancelled manual checkout is expired at the provider before its pending order
+  is released. Return URL parameters alone never prove purchase success.
+
+Notifications
+- Low-credit reminders are optional and suppressed while automatic buying is on.
+- Automatic purchase success/failure and reaching the monthly cap have deduped
+  in-app notifications. Campaigns nearing the chosen credit cap can remind the
+  owner to review a next period; adding credits does not expand the cap.
+- Notification links select the correct owner salon workspace.
+- Existing scheduler cadence remains 15 minutes. Funding may therefore wait for
+  the next authorized worker pass. No new background dispatch is started here.
+
+Owner More (same priority in popup and All)
+POS > Ticket > Customers > Report > Payroll > Staff > Services > Advertising >
+Market > Salon Settings > My Place > Report / Contact > Help.
+
+Integration requirements
+- Apply 20261017210000_owner_campaign_workspace.sql after the existing owner
+  campaign, market-credit and scheduler migrations. No migration was applied to
+  production in this task. New UI and migration must be published together.
+- Preserve the current production baseline and assemble compatible changes per
+  docs/release-policy.txt. Source snapshots here are overlays, not a production
+  replacement baseline. Only this task's changes should be overlaid.
+- Shared and dedicated payment webhooks must receive checkout.session.completed
+  for card setup, in addition to the existing payment events. Provider settings
+  were not modified or tested with real accounts in this task.
+- Existing iOS payment bridge is reused; no native assets, permissions or bridge
+  contract changed. A new native binary is not required by these source changes.
+
+Validation evidence
+- Isolated database tests exercise real PostgreSQL functions with PGlite:
+  ownership, ceiling changes, refunds, idempotency, blocked charges, monthly
+  limits, delayed payment/card setup, actual daily conversions and role grants.
+- Browser tests render the real components with isolated server-action fixtures
+  at 320/390/1280px and exercise create/run again, insufficient credits, consent,
+  activation, history rows and navigation. No real provider calls are made.
+- Build harness omits historical artifacts and credentials. Its only temporary
+  configuration differences are outputFileTracingRoot and explicit Tailwind
+  sources for app/components/lib, preventing archives from being scanned. These
+  harness-only changes are not included in the product overlay.
+
+Provider reference: https://docs.stripe.com/api/checkout/sessions/create
+Provider reference: https://docs.stripe.com/api/setup_intents/retrieve

@@ -28,12 +28,16 @@ export async function readAppLocalCommerceResource(name:string,args:Record<strin
  }else{
   if(!context.user)fail(401,"Please sign in again.");
   if(name==="owner.campaigns"){
-   const owner=await requireCampaignOwner();if(owner.context.user?.id!==context.user.id||getExperienceContext(owner.context).scope!==options.scope)fail(409,"Your workspace changed.");
-   const[wallet,settings,result]=await Promise.all([campaignWalletAction(),ownerCampaignSettings(),owner.client.from("owner_campaigns").select("*").eq("salon_id",owner.salonId).order("created_at",{ascending:false}).limit(100)]);
-   if(result.error)fail(503,"Your campaigns could not load.");if(!wallet.installed)fail(403,"Add Campaigns from Market first.");
+   const owner=await requireCampaignOwner(false);if(owner.context.user?.id!==context.user.id||getExperienceContext(owner.context).scope!==options.scope)fail(409,"Your workspace changed.");
+   const[wallet,settings]=await Promise.all([campaignWalletAction(),ownerCampaignSettings()]);
+   const[result,active]=wallet.installed?await Promise.all([
+    owner.client.from("owner_campaigns").select("*").eq("salon_id",owner.salonId).order("created_at",{ascending:false}).order("id",{ascending:false}).range(0,49),
+    owner.client.from("owner_campaigns").select("*").eq("salon_id",owner.salonId).in("status",["awaiting_payment","pending_review","running","paused"]).order("created_at",{ascending:false}).order("id",{ascending:false}).range(0,49),
+   ]):[{data:[],error:null},{data:[],error:null}];
+   if(result.error||active.error)fail(503,"Your campaigns could not load.");
    // This projection never closes/reserves/charges credits. The original
    // CampaignWorkspace retains its exact named POST refresh and action checks.
-   data={wallet,settings,location:{city:owner.context.currentSalon?.city??"",state:owner.context.currentSalon?.state??"",country:owner.context.currentSalon?.country??"United States"},initialCampaigns:(result.data??[])as OwnerCampaign[],initialError:""}satisfies AppLocalCampaigns;
+   data={wallet,settings,location:{city:owner.context.currentSalon?.city??"",state:owner.context.currentSalon?.state??"",country:owner.context.currentSalon?.country??"United States"},initialCampaigns:(result.data??[])as OwnerCampaign[],initialActive:(active.data??[])as OwnerCampaign[],initialHasMore:result.data?.length===50,initialError:""}satisfies AppLocalCampaigns;
   }else{
    let market:Awaited<ReturnType<typeof marketPluginContext>>;try{market=await marketPluginContext();}catch{fail(403,"Open your owner workspace first.");}
    if(!context.currentSalon||context.currentSalon.id!==market.salonId)fail(409,"Your salon changed.");

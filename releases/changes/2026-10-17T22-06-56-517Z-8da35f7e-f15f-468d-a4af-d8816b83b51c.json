@@ -1,0 +1,60 @@
+{
+  "kind": "change",
+  "changeId": "ticket-toolbar-20261017",
+  "status": "ready",
+  "summary": "Completed one-row owner More ticket toolbar: small title over single clickable date, live Search and retained screen menu. Removed separate header and duplicate filter affordance; portable filters remain unchanged. Not deployed. Integrated and validated against dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ with iOS 1.0.0 package parity.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/pos-tickets/ticket-filters.tsx",
+    "app/pos-tickets/owner-live-tickets.tsx",
+    "app/(app)/pos-tickets/page.tsx"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\release-audit-ios-1-0-0-20261017\\frozen-source",
+    "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "sourceEventId": "fde68e0e-93a5-41cd-b394-26c288c444a3"
+  },
+  "supersedesEvents": [],
+  "dependencies": [
+    "compact-ticket-layout-20261017"
+  ],
+  "validation": [
+    {
+      "name": "Assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/web-build.log"
+    },
+    {
+      "name": "277 integration/browser regression cases; initial five fixture failures repaired and rerun, two Chrome-only tests explicitly executed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/validation-summary.json"
+    },
+    {
+      "name": "Actual native package and four version-preflight checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/final-package-tests.log"
+    },
+    {
+      "name": "Rollback-only actual-schema rehearsal, 16 functions and seven preserved authorities",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/database-rehearse.json"
+    },
+    {
+      "name": "Existing live Stripe webhook receives card setup event",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/payment-webhooks.json"
+    }
+  ],
+  "id": "8da35f7e-f15f-468d-a4af-d8816b83b51c",
+  "recordedAt": "2026-10-17T22:06:56.517Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\release-audit-ios-1-0-0-20261017",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos-tickets/ticket-filters.tsx": "ed442aa6db600444034893983435f33b35851d221767fd11d401ecb98b253013",
+    "app/pos-tickets/owner-live-tickets.tsx": "db91f5d9daa4256aa7faa7c5e19a4301c905bd9eb4a9c68574270100debc3a25",
+    "app/(app)/pos-tickets/page.tsx": "03cfb8ae309abdf419aef1761509bea2889788845ffb29b55c3bc46dd0b8ce73"
+  }
+}

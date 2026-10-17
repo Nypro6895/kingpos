@@ -1,0 +1,50 @@
+{
+  "kind": "change",
+  "changeId": "ticket-edit-receipt-20261017",
+  "status": "needs-integration",
+  "summary": "Completed shared receipt ticket editor in owner and portable POS: one header, editable staff/service/price rows, add line, applied adjustments, single total, Reason and Save. Preserved part editing/staff tips in More, correction history, validations, locked-date request/apply actions and original payloads. Not deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/pos-tickets/closed-ticket-correction-form.tsx"
+  ],
+  "source": {
+    "snapshot": "artifacts/ticket-edit-receipt-20261017/source",
+    "patch": "artifacts/ticket-edit-receipt-20261017/change.patch",
+    "baselineSnapshot": "artifacts/ticket-edit-receipt-20261017/before",
+    "nativeAssessment": "Web compatible; no Swift, native assets/config or bridge changes; no binary required by this UI task."
+  },
+  "dependencies": [
+    "compact-ticket-layout-20261017"
+  ],
+  "validation": [
+    {
+      "name": "TypeScript noEmit",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint changed component",
+      "result": "passed",
+      "evidence": "No errors or warnings"
+    },
+    {
+      "name": "Portable ticket edit contracts",
+      "result": "passed",
+      "evidence": "6 tests passed"
+    },
+    {
+      "name": "Chromium mobile browser checks",
+      "result": "passed",
+      "evidence": "artifacts/ticket-edit-receipt-20261017/qa-result.json"
+    }
+  ],
+  "fileHashes": {
+    "app/pos-tickets/closed-ticket-correction-form.tsx": "f710394b6c686bfe6042760546609500b1fe2a89f8eee1057d91dbb6531a229c"
+  },
+  "id": "92e86c63-a7a4-480e-abb5-35be35b2ed30",
+  "recordedAt": "2026-10-17T18:40:54.232Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

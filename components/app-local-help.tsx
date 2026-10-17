@@ -19,7 +19,7 @@ function isBrowse(value: unknown): value is Browse {
   return typeof state.query === "string" && state.query.length <= 200 && ["all", "customer", "owner", "staff"].includes(state.role);
 }
 /** Complete public guides work without Next routing, private DTOs or a network. */
-export function AppLocalHelp({ slug, language = "vi", support = false, experienceScope, navigate }: Props) {
+export function AppLocalHelp({ slug, language = "en", support = false, experienceScope, navigate }: Props) {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<HelpRole | "all">("all");
   const scope = experienceScope ?? `public:${getExperienceDeviceGeneration()}`;

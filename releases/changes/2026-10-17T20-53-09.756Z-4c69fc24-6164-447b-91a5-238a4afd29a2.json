@@ -1,0 +1,57 @@
+{
+  "kind": "change",
+  "changeId": "my-place-compact-20261017",
+  "status": "needs-integration",
+  "summary": "Completed presentation-only My Place: Personal/Businesses/Staff order, square full-width sections, flowing shortcuts without chevrons, Switch beside role, Find & apply label, per-salon separators, compact personal ellipsis and no redundant missing-phone label. All handlers preserved. No email-edit or scheduled-closure logic added; not deployed.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/my-place/my-place-client.tsx",
+    "app/my-place/place-ui.tsx",
+    "app/account/account-profile-editor.tsx"
+  ],
+  "dependencies": [],
+  "source": {
+    "snapshot": "artifacts/my-place-compact-20261017/source",
+    "patch": "artifacts/my-place-compact-20261017/change.patch",
+    "baselineSnapshot": "artifacts/my-place-compact-20261017/before",
+    "nativeAssessment": "Web-compatible presentation only; no native bridge, Swift, packaged assets or configuration changed."
+  },
+  "validation": [
+    {
+      "name": "Full-project TypeScript noEmit",
+      "result": "passed"
+    },
+    {
+      "name": "ESLint changed components and diff whitespace",
+      "result": "passed"
+    },
+    {
+      "name": "My Place offline browser fixture",
+      "result": "passed",
+      "evidence": "artifacts/my-place-compact-20261017/qa.log; multi-salon/staff, navigation, personal edit/phone verification, details dialogs and unsaved guards, lifecycle consent, create/edit retry drafts, membership/apply, search, 320/393/1024 widths. Mocked actions; no real writes."
+    },
+    {
+      "name": "Handler preservation",
+      "result": "passed",
+      "evidence": "34 named functions unchanged after newline normalization; logic-check.json"
+    }
+  ],
+  "fileHashes": {
+    "app/my-place/my-place-client.tsx": "a766a022f11352c59a5a6128605ff6135c397317a64abe5effea42581a2b6d12",
+    "app/my-place/place-ui.tsx": "85a0da476cd5ed373b71c15f1f01d84e225d732bef2f693c52aa74dfd64e4bb6",
+    "app/account/account-profile-editor.tsx": "f2dd1c79ad624aa077d5129169eb7cc7edb5f5457769c0d4758ffd337439b0a7"
+  },
+  "limitations": [
+    "Existing SQL integration test skipped because database environment unavailable; no schema or SQL changed.",
+    "Email remains read-only; adding email requires separate logic approval.",
+    "Date-range temporary closures require separate logic approval; existing activity review/confirmation retained.",
+    "Personal ellipsis opens the existing inline complete editor; no new drawer mechanism added without approval."
+  ],
+  "id": "4c69fc24-6164-447b-91a5-238a4afd29a2",
+  "recordedAt": "2026-10-17T20:53:09.756Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

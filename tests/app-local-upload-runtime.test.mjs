@@ -68,7 +68,8 @@ test('actual Creative original decodes5MiB image with sharp and preserves origin
  const {F,M}=await fixture(),{row}=await stageImages(F,M,'creative',[5*1024*1024]);
  const result=await M.runAppLocalUploadCommand('upload.finalize',{sessionId:row.id},scope);
  assert.equal(result.data.value.ok,true);assert.equal(result.data.value.target.sourceId,staffId);assert.equal(F.creativeRows.size,1);assert.equal(F.creativeRows.get(staffId).caption,'A normal message\nwith a second line');assert.equal([...F.finalObjects.values()][0].bucket,'campaign-creatives');assert.equal([...F.finalObjects.values()][0].options.contentType,'image/webp');
- await M.runAppLocalUploadCommand('upload.finalize',{sessionId:row.id},scope);assert.equal(F.creativeRows.size,1);assert.equal(F.finalObjects.size,1);assert.equal(F.claimCount,1);
+ const savedKeys=[...F.finalObjects.keys()].sort();assert.equal(savedKeys.length,3);assert.equal([...F.finalObjects.values()].every(x=>x.bucket==='campaign-creatives'&&x.options.contentType==='image/webp'),true);
+ await M.runAppLocalUploadCommand('upload.finalize',{sessionId:row.id},scope);assert.equal(F.creativeRows.size,1);assert.deepEqual([...F.finalObjects.keys()].sort(),savedKeys);assert.equal(F.claimCount,1);
 });
 test('actual POS original group gets three15MiB files once, exact expected snapshot and all existing display fields',async()=>{
  const {F,M}=await fixture(),{row,fields,output}=await stageImages(F,M,'posGroup',[15*1024*1024,15*1024*1024,15*1024*1024]);

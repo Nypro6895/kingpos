@@ -1,0 +1,29 @@
+{
+  "dependencies": [],
+  "summary": "Audit all registered and unregistered completed Reylumi changes, preserve exact live/native source, validate and release web plus requested iOS 1.0.0 if Apple state permits; sequential integer builds.",
+  "changeId": "release-audit-ios-1-0-0-20261017",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "ios/project.yml",
+    "ios/scripts/testflight.sh"
+  ],
+  "kind": "change",
+  "validation": [
+    {
+      "result": "pending",
+      "name": "Integrated build, tests, source and Apple version checks"
+    }
+  ],
+  "status": "working",
+  "source": {
+    "snapshot": "artifacts/release-audit-ios-1-0-0-20261017/assembled"
+  },
+  "id": "6951d8b3-64ef-4b15-9e25-1821f97d60fe",
+  "recordedAt": "2026-10-17T21:39:40.380Z",
+  "worktree": "C:\\Users\\giuse\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

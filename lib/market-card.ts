@@ -2,7 +2,7 @@ import 'server-only';
 import {marketServiceClient} from './market-payments';
 import {paymentConfig,paymentStripe} from './platform-payment';
 import {validCardQuote} from './market-card-rules';
-import {fulfillCreditPayment,expireCreditCheckout} from './campaign-payments';
+import {fulfillCreditPayment,expireCreditCheckout,fulfillCampaignCardSetup} from './campaign-payments';
 import {recordMarketTaxInvoice,validateMarketTaxInvoice} from './market-tax';
 export async function syncCardSubscription(subscriptionId:string) {
  if(!/^sub_[A-Za-z0-9]+$/.test(subscriptionId))throw Error('Invalid subscription.');
@@ -46,6 +46,7 @@ export async function processCardEvent(eventId:string) {
  const {error:logError}=await client.from('market_card_events').upsert({id:eventId,type:event.type,object_id:obj?.id??null,status:'pending',attempts:(prior?.attempts??0)+1,updated_at:new Date().toISOString()});if(logError)throw Error('Event could not be recorded.');
  try {
  if(event.type==='payment_intent.succeeded'&&obj.metadata?.campaign_credit_order)await fulfillCreditPayment(obj.id);
+ if(event.type==='checkout.session.completed'&&obj.metadata?.campaign_card_setup)await fulfillCampaignCardSetup(obj.id);
  if(event.type==='checkout.session.expired'&&obj.metadata?.campaign_credit_order)await expireCreditCheckout(obj.metadata.campaign_credit_order);
  let subscription=event.type.startsWith('customer.subscription.')?obj.id:obj.subscription;
  if((event.type==='charge.refunded'||event.type.startsWith('credit_note.'))&&obj.invoice)subscription=await syncCardInvoice(obj.invoice);

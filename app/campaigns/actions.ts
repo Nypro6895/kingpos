@@ -5,14 +5,17 @@ import type { CampaignArea, CampaignPrompt, OwnerCampaign } from "@/types/owner-
 import type { CampaignCreativeTarget } from "@/types/owner-campaign";
 import { revalidatePath } from "next/cache";
 
-export async function loadOwnerCampaignsAction() {
+export async function loadOwnerCampaignsAction(offset = 0, activeOnly = false) {
   const { client, salonId } = await requireCampaignOwner();
   const settings = await ownerCampaignSettings();
   const { error: refreshError } = await client.rpc("campaign_credit_close_expired", {p_salon:salonId});
   if (refreshError) throw new Error("Your campaigns could not load. Please try again.");
-  const { data, error } = await client.from("owner_campaigns").select("*").eq("salon_id", salonId).order("created_at", { ascending: false }).limit(100);
+  if (!Number.isSafeInteger(offset) || offset < 0 || offset > 100000) throw new Error("Reopen campaign history.");
+  let query = client.from("owner_campaigns").select("*").eq("salon_id", salonId);
+  if (activeOnly) query = query.in("status", ["awaiting_payment", "pending_review", "running", "paused"]);
+  const { data, error } = await query.order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + 49);
   if (error) throw new Error("Your campaigns could not load. Please try again.");
-  return { settings, campaigns: (data ?? []) as OwnerCampaign[] };
+  return { settings, campaigns: (data ?? []) as OwnerCampaign[], hasMore: data?.length === 50 };
 }
 export async function ownerCampaignPromptAction(): Promise<CampaignPrompt | null> {
   const { client, salonId, userId } = await requireCampaignOwner();
@@ -28,26 +31,31 @@ export async function dismissCampaignPromptAction(id: string) {
 }
 export async function createOwnerCampaignAction(input: {
   id: string; target: CampaignCreativeTarget; keepRunning?: boolean; area: CampaignArea; location: string;
-  country: string; state: string; city: string; dailyViews: number; days: number;
+  country: string; state: string; city: string; dailyViews: number; days: number; creditLimit?: number;
 }) {
   try {
     const { client, salonId, userId } = await requireCampaignOwner();
     const settings = await ownerCampaignSettings();
     if (!settings.enabled) throw new Error("New campaigns are temporarily unavailable.");
-    campaignQuote(settings, input.dailyViews, input.days, input.area);
+    const quote = campaignQuote(settings, input.dailyViews, input.days, input.area);
+    const limit = input.creditLimit ?? quote.totalCents;
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > quote.totalCents) throw new Error("Choose a credit limit within the estimate.");
     validateCampaignLocation(input.area, input.location, input.country, input.state, input.city);
     if (!/^[0-9a-f-]{36}$/i.test(input.id) || !/^[0-9a-f-]{36}$/i.test(input.target.sourceId)) throw new Error("Reopen this post and try again.");
-    const { data, error } = await client.rpc("owner_campaign_create", {
+    const { data: wallet, error: walletError } = await client.from("campaign_wallets").select("auto_topup_enabled,payment_blocked").eq("salon_id", salonId).single();
+    if (walletError) throw new Error("Your credit settings could not load. Please retry.");
+    const { data, error } = await client.rpc("campaign_create_with_limit", {
       p_id: input.id, p_salon: salonId, p_user: userId,
       p_type: input.target.sourceType, p_source: input.target.sourceId,
       p_area: input.area, p_location: input.location.trim(), p_country: input.country.trim(),
       p_state: input.state.trim(), p_city: input.city.trim(), p_views: input.dailyViews, p_days: input.days,
+      p_limit: limit, p_keep: input.keepRunning === true, p_auto: wallet.auto_topup_enabled && !wallet.payment_blocked,
     });
     if (error) throw new Error(error.message);
     const funded = await client.rpc("campaign_credit_fund", {p_id:data,p_salon:salonId,p_owner:userId,p_keep:input.keepRunning === true});
     if(funded.error)throw new Error(funded.error.message);
     revalidatePath("/campaigns");
-    return { ok: true, message: funded.data === "pending_review" ? "Your credits are set aside. Your ad will start after a quick review." : "Your ad is saved. Add credits to submit it for review.", id: String(data), status: funded.data };
+    return { ok: true, message: funded.data === "pending_review" ? "Your credits are set aside. Your ad will start after a quick review." : wallet.auto_topup_enabled&&!wallet.payment_blocked ? "Your ad is saved and waiting for automatic credits within your existing limit. It starts only after funding and review." : "Your ad is saved. Add credits to submit it for review.", id: String(data), status: funded.data };
   } catch (error) { return { ok: false, message: error instanceof Error ? error.message : "Your campaign could not be saved." }; }
 }
 export async function changeOwnerCampaignAction(id: string, action: "pause" | "resume" | "cancel") {
@@ -67,6 +75,45 @@ export async function fundSavedCampaignAction(id:string){
   if(!campaign)throw new Error("Ad not found.");
   const {data,error}=await client.rpc("campaign_credit_fund",{p_id:id,p_salon:salonId,p_owner:userId,p_keep:campaign.keep_running});
   if(error)throw new Error(error.message);
-  revalidatePath("/campaigns");return{ok:true,message:data==="pending_review"?"Credits reserved. Your ad is ready for review.":"Add enough credits to start your ad."};
+  let automatic=false;
+  if(data==="awaiting_payment") {
+    const { data: wallet, error: walletError }=await client.from("campaign_wallets").select("auto_topup_enabled,payment_blocked").eq("salon_id",salonId).single();
+    if(walletError)throw new Error("Credit settings could not load. Your saved ad has not started.");
+    if(wallet?.auto_topup_enabled&&!wallet.payment_blocked) {
+      automatic=true;
+      const { error: markError }=await client.from("owner_campaigns").update({auto_fund:true}).eq("id",id).eq("salon_id",salonId).eq("status","awaiting_payment");
+      if(markError)throw new Error("Your ad is saved. Please retry to continue with automatic credits.");
+    }
+  }
+  revalidatePath("/campaigns");return{ok:true,message:data==="pending_review"?"Credits reserved. Your ad is ready for review.":automatic?"Waiting for automatic credits within your existing limit. Your ad has not started yet.":"Add enough credits to start your ad."};
  }catch(error){return{ok:false,message:error instanceof Error?error.message:"Please try again."};}
+}
+
+export async function loadCampaignResultsAction(id: string, days = 7) {
+  const { client, salonId, userId } = await requireCampaignOwner();
+  if (!/^[0-9a-f-]{36}$/i.test(id) || ![7,30,90].includes(days)) throw new Error("Choose a valid result period.");
+  const { data, error } = await client.rpc("owner_campaign_daily_results", { p_salon: salonId, p_owner: userId, p_campaign: id, p_days: days });
+  if (error) throw new Error("Results could not load. Please retry.");
+  return (data ?? []).map((row: Record<string, unknown>) => ({ day: String(row.day), views: Number(row.views), likes: Number(row.likes), comments: Number(row.comments), bookings: Number(row.bookings) }));
+}
+
+export async function saveCampaignLimitAction(id: string, limit: number, keepRunning: boolean) {
+  try {
+    const { client, salonId, userId } = await requireCampaignOwner();
+    if (!/^[0-9a-f-]{36}$/i.test(id) || !Number.isSafeInteger(limit) || limit < 1 || typeof keepRunning !== "boolean") throw new Error("Choose a valid credit limit.");
+    const { error } = await client.rpc("campaign_set_credit_limit", { p_salon: salonId, p_owner: userId, p_campaign: id, p_limit: limit, p_keep: keepRunning });
+    if (error) throw new Error(error.message);
+    revalidatePath("/campaigns");
+    return { ok: true, message: "Campaign settings saved." };
+  } catch (error) { return { ok: false, message: error instanceof Error ? error.message : "Please retry." }; }
+}
+
+export async function loadCampaignPostsAction() {
+  const { client, salonId } = await requireCampaignOwner();
+  const results = await Promise.all((["salon_profile_looks", "salon_profile_updates"] as const).map(async (table) => {
+    const { data, error } = await client.from(table).select("id,title").eq("salon_id", salonId).eq("status", "published").is("deleted_at", null).eq("safety_hold", false).order("created_at", { ascending: false }).limit(50);
+    if (error) throw new Error("Published posts could not load. Please retry.");
+    return (data ?? []).map(row => ({ sourceId: row.id, sourceType: table === "salon_profile_looks" ? "salon_profile_look" as const : "salon_profile_update" as const, salonId, title: row.title || "Salon post" }));
+  }));
+  return results.flat();
 }

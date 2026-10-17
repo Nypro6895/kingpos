@@ -11,7 +11,7 @@ export function OwnerCampaignRuntime({ scope, settings, location, availableCredi
   location: { city: string; state: string; country: string };
 }) {
   const pathname = usePathname();
-  const excluded = pathname.startsWith("/pos/portable") || pathname.startsWith("/admin");
+  const excluded = pathname.startsWith("/pos/portable") || pathname.startsWith("/admin") || pathname.startsWith("/campaigns");
   const [prompt, setPrompt] = useState<CampaignPrompt | null>(null);
   useEffect(() => {
     if (excluded || !settings.enabled) return;

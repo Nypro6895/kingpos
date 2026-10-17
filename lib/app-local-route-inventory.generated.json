@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageCount": 133,
+  "pageCount": 134,
   "layoutCount": 16,
   "routes": [
     {
@@ -1918,10 +1918,18 @@
           "exports": [
             "CampaignWorkspace"
           ]
+        },
+        {
+          "source": "app/campaigns/campaign-entry.tsx",
+          "exports": [
+            "CampaignActivation",
+            "CampaignLoadError"
+          ]
         }
       ],
       "propsLoaders": [
         "@/app/campaigns/actions#loadOwnerCampaignsAction",
+        "@/lib/current-context#getCurrentBusinessContext",
         "@/lib/owner-campaigns#requireCampaignOwner"
       ],
       "ui": {
@@ -3723,6 +3731,12 @@
       "onlineReason": null,
       "clientModules": [
         {
+          "source": "app/payroll/payroll-ledger-panel.tsx",
+          "exports": [
+            "PayrollLedgerPanel"
+          ]
+        },
+        {
           "source": "components/navigation-form.tsx",
           "exports": [
             "NavigationForm",
@@ -3733,6 +3747,12 @@
           "source": "app/payroll/payroll-disclosure.tsx",
           "exports": [
             "PayrollDisclosure"
+          ]
+        },
+        {
+          "source": "app/payroll/payroll-live-refresh.tsx",
+          "exports": [
+            "PayrollLiveRefresh"
           ]
         },
         {
@@ -3759,6 +3779,13 @@
           "source": "app/payroll/data-download-panel.tsx",
           "exports": [
             "DataDownloadPanel"
+          ]
+        },
+        {
+          "source": "app/settings/plugin-settings-row.tsx",
+          "exports": [
+            "PluginActivationPrompt",
+            "PluginActivationButton"
           ]
         },
         {
@@ -3911,6 +3938,12 @@
           ]
         },
         {
+          "source": "app/settings/plugin-settings-row.tsx",
+          "exports": [
+            "PluginMarketStatus"
+          ]
+        },
+        {
           "source": "components/submit-button.tsx",
           "exports": [
             "SubmitButton"
@@ -4035,39 +4068,13 @@
         {
           "source": "components/workspace-language.tsx",
           "exports": [
-            "WorkspaceText",
-            "WorkspaceElement"
-          ]
-        },
-        {
-          "source": "components/contextual-support.tsx",
-          "exports": [
-            "ContextualSupport"
-          ]
-        },
-        {
-          "source": "components/compact-filters.tsx",
-          "exports": [
-            "CompactFilters"
-          ]
-        },
-        {
-          "source": "components/feedback-search-form.tsx",
-          "exports": [
-            "FeedbackSearchForm",
-            "SearchSubmitButton"
+            "WorkspaceText"
           ]
         },
         {
           "source": "app/pos-tickets/owner-live-tickets.tsx",
           "exports": [
             "OwnerLiveTickets"
-          ]
-        },
-        {
-          "source": "app/pos-tickets/closed-ticket-correction-form.tsx",
-          "exports": [
-            "DailyPosTicketCard"
           ]
         }
       ],
@@ -4326,6 +4333,49 @@
       "data": {
         "policy": "online-only",
         "scope": "none",
+        "requiresFreshServerAuthorityForWrites": true
+      },
+      "actions": "existing-online-confirmation",
+      "authority": "server-validated-context-and-resource-ownership"
+    },
+    {
+      "route": "/pos/more",
+      "source": "app/(app)/pos/more/page.tsx",
+      "layouts": [
+        "app/layout.tsx",
+        "app/(app)/layout.tsx"
+      ],
+      "classification": "live",
+      "roles": [
+        "owner",
+        "portable"
+      ],
+      "scope": "workspace",
+      "renderStrategy": "prepared-authorized-page",
+      "rendererId": "prepared:/pos/more",
+      "readResources": [],
+      "onlineReason": null,
+      "clientModules": [
+        {
+          "source": "app/pos/owner-pos-more.tsx",
+          "exports": [
+            "OwnerPosMore"
+          ]
+        }
+      ],
+      "propsLoaders": [
+        "@/lib/route-context-guards#requireSalonManagePageContext"
+      ],
+      "ui": {
+        "availability": "local-module-registration",
+        "source": "app/(app)/pos/more/page.tsx",
+        "bundledContent": false,
+        "rendererReady": false,
+        "note": "Only the actual client registry can establish a complete local renderer; inventory never reports a generic shell as done."
+      },
+      "data": {
+        "policy": "scoped-authorized-snapshot",
+        "scope": "workspace",
         "requiresFreshServerAuthorityForWrites": true
       },
       "actions": "existing-online-confirmation",

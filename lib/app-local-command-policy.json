@@ -155,7 +155,13 @@
     "app/campaigns/credit-actions.ts": [
       "buyCampaignCreditsAction",
       "saveCampaignTopupAction",
-      "setCampaignPluginAction"
+      "setCampaignPluginAction",
+      "campaignWalletAction",
+      "campaignPaymentControlAction",
+      "campaignCardSetupAction",
+      "loadCampaignCardAction",
+      "loadCampaignLedgerAction",
+      "saveCampaignRemindersAction"
     ],
     "app/market/plugin-actions.ts": [
       "setPayrollDataPlugin"
@@ -406,7 +412,10 @@
       "dismissCampaignPromptAction",
       "fundSavedCampaignAction",
       "loadOwnerCampaignsAction",
-      "ownerCampaignPromptAction"
+      "ownerCampaignPromptAction",
+      "loadCampaignResultsAction",
+      "saveCampaignLimitAction",
+      "loadCampaignPostsAction"
     ],
     "app/campaigns/creative-actions.ts": [
       "createCampaignCreativeAction"

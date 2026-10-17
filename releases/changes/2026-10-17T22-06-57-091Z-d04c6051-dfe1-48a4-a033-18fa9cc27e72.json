@@ -1,0 +1,86 @@
+{
+  "kind": "change",
+  "changeId": "service-owned-addon-groups",
+  "status": "ready",
+  "summary": "Compact service details with reachable Save/Cancel and independent owned optional add-on groups; booking structure preserved; price/time/staff availability verified. Not deployed. Integrated and validated against dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ with iOS 1.0.0 package parity.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/services/services-manager.tsx",
+    "app/services/services.css",
+    "app/services/service-addon-groups.tsx",
+    "lib/services.ts",
+    "lib/service-contract.ts",
+    "types/service.ts",
+    "lib/public-booking.ts",
+    "app/book/[salonId]/public-booking-client.tsx",
+    "app/book/[salonId]/booking-addon-groups.tsx",
+    "lib/salon-profile.ts",
+    "supabase/migrations/20261017220000_service_owned_addon_groups.sql",
+    "tests/service-owned-addons.integration.test.mjs",
+    "tests/service-addon-scheduling.test.mjs",
+    "tests/service-owned-addons-ui.test.mjs",
+    "tests/service-addon-booking-ui.test.mjs",
+    "docs/service-owned-addons-handoff-2026-10-17.md"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\release-audit-ios-1-0-0-20261017\\frozen-source",
+    "baselineDeploymentId": "dpl_29BL85oSYCGf7kUaZ2ksDsr8ZCNZ",
+    "sourceEventId": "64572a22-ac21-458a-9143-76a8e9a32af8"
+  },
+  "supersedesEvents": [
+    "64572a22-ac21-458a-9143-76a8e9a32af8"
+  ],
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Assembled production build",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/web-build.log"
+    },
+    {
+      "name": "277 integration/browser regression cases; initial five fixture failures repaired and rerun, two Chrome-only tests explicitly executed",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/validation-summary.json"
+    },
+    {
+      "name": "Actual native package and four version-preflight checks",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/final-package-tests.log"
+    },
+    {
+      "name": "Rollback-only actual-schema rehearsal, 16 functions and seven preserved authorities",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/database-rehearse.json"
+    },
+    {
+      "name": "Existing live Stripe webhook receives card setup event",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/release-audit-ios-1-0-0-20261017/payment-webhooks.json"
+    }
+  ],
+  "id": "d04c6051-dfe1-48a4-a033-18fa9cc27e72",
+  "recordedAt": "2026-10-17T22:06:57.091Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\release-audit-ios-1-0-0-20261017",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/services/services-manager.tsx": "e4b37e9ead3369949dace7d1463e1b7e7d8db33dc4f862f9c7c702dc25250584",
+    "app/services/services.css": "ff728144d23ef0bc7d421d89037bd09a8b908f35c6f0cc5cac988b3137479067",
+    "app/services/service-addon-groups.tsx": "f18aece85dba374eda29a1a4f0864c88a1f0c68e8f6897bf941d9c3c9090f791",
+    "lib/services.ts": "23471147e5ef147bbac9a466c9c2a3c49cc2306ad979d5b715f165c766bfcdc5",
+    "lib/service-contract.ts": "f143d1552f0b1c8cf2df33892cb2182b3b80e92f1c05fb791cddc0c3c85abb87",
+    "types/service.ts": "e54b32c6f93283566bea0395b98c5d7f52dc59af0ef7907c2cf781ba84ec0659",
+    "lib/public-booking.ts": "05f6fea3374d0a5601e2e836e0aed5e8eef77bf7707b2d3739e939f1b5b25d2d",
+    "app/book/[salonId]/public-booking-client.tsx": "ff51f421ead3c97b0475f2debc8367b20f9162fce3eaa78c67edccdf65f4732d",
+    "app/book/[salonId]/booking-addon-groups.tsx": "4f0042f3185f4d6978843f956781a5f7a7c8c73e5b85b07bbc9e3d2ab038f0f5",
+    "lib/salon-profile.ts": "ab363e2a389d8e83d3b3c54561ae9b117dca008e5729d35f0728ab418ab39dda",
+    "supabase/migrations/20261017220000_service_owned_addon_groups.sql": "09527616821f204fdd7780ef23c3d1fcd2d7bc05b33608193ae291374a2daaf5",
+    "tests/service-owned-addons.integration.test.mjs": "8dd5d40a66434fc17b6e64ab16123ed0043b57fad66d596f0590028a0f272e31",
+    "tests/service-addon-scheduling.test.mjs": "34de3e70f6de5074c68417c0829975e5d265ac87d6d80f5eedc4d6298c666c1f",
+    "tests/service-owned-addons-ui.test.mjs": "2c589a8f6b472634e02f977bf5c4d38f9fb0317874b01a0909325637c3c23a6b",
+    "tests/service-addon-booking-ui.test.mjs": "b5998a64f8165f48639e4503ab71d25d0b638889e7069478ccc3ec5604e15bff",
+    "docs/service-owned-addons-handoff-2026-10-17.md": "0bf4815ab602a70331f4b82b2a3779068cbbfd0ae3d8c9bd2645ec80a7aa7bd8"
+  }
+}

@@ -61,15 +61,29 @@ async function nativeRequest<T>(kind: AppLocalBridgeRequest["kind"], name: strin
   if (!bridge || !context || signal?.aborted) throw signal?.reason ?? new Error("The application connection is unavailable");
   const id = appLocalRequestId(), generation = context.generation, epoch = context.scopeEpoch;
   let cancel: (() => void) | undefined;
+  let deadline: ReturnType<typeof setTimeout> | undefined;
+  // Native HTTP has a 20s resource limit. A read may first validate its
+  // context, then fetch the page; allow both trips plus bridge delivery time.
+  // Lost WebKit callbacks still need to release the UI for an explicit retry.
+  const timeoutMs = kind === "read" ? 45_000 : kind === "context" || kind === "cache" && (args.op === "get" || args.op === "remove") ? 25_000 : undefined;
+  const cancelNativeRead = () => {
+    // A command may already be committed, and hosted navigation owns its
+    // lifecycle. Only read/context work can receive native cancellation.
+    if (kind !== "read" && kind !== "context") return;
+    try { void bridge.request({ version: 1, id: appLocalRequestId(), kind: "cache", name: "cancel", args: { requestId: id }, nonce: context.nonce, scopeEpoch: epoch }).catch(() => {}); } catch {}
+  };
   const operation = bridge.request<T>({ version: 1, id, kind, name, args, nonce: context.nonce, scopeEpoch: epoch });
   const aborted = new Promise<never>((_, reject) => {
     cancel = () => {
-      // Cancellation never retries or cancels a money command whose outcome may
-      // already have been committed. Only bounded read/context requests abort.
-      if (kind === "read" || kind === "context") void bridge.request({ version: 1, id: appLocalRequestId(), kind: "cache", name: "cancel", args: { requestId: id }, nonce: context.nonce, scopeEpoch: epoch }).catch(() => {});
+      cancelNativeRead();
       reject(signal?.reason ?? new DOMException("Request cancelled", "AbortError"));
     };
     signal?.addEventListener("abort", cancel, { once: true });
+    if (signal?.aborted) cancel();
+    if (timeoutMs !== undefined) deadline = setTimeout(() => {
+      cancelNativeRead();
+      reject(new DOMException("The application connection took too long. Please try again.", "TimeoutError"));
+    }, timeoutMs);
   });
   try {
     const value = await Promise.race([operation, aborted]);
@@ -79,7 +93,7 @@ async function nativeRequest<T>(kind: AppLocalBridgeRequest["kind"], name: strin
     const logoutAccepted=Boolean(current&&logout&&logout.scopeEpoch===current.scopeEpoch&&logout.nonce===current.nonce&&logout.generation===current.generation);
     if ((current?.generation !== generation || current?.scopeEpoch !== epoch) && !logoutAccepted && !(current?.generation===generation&&accepted?.scopeEpoch === current?.scopeEpoch && accepted?.nonce === current?.nonce && accepted?.generation === current?.generation)) throw new Error("Your account has changed. Please open the page again.");
     return value;
-  } finally { if (cancel) signal?.removeEventListener("abort", cancel); }
+  } finally { if (deadline !== undefined) clearTimeout(deadline); if (cancel) signal?.removeEventListener("abort", cancel); }
 }
 
 const webHost: AppLocalHost = {

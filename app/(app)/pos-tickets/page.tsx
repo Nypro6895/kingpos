@@ -1,7 +1,5 @@
 import { withExperiencePage } from "@/components/experience-page";
 import { WorkspaceText } from "@/components/workspace-language";
-import { WorkspaceToolbar } from "@/components/workspace-toolbar";
-import { ContextualSupport } from "@/components/contextual-support";
 
 import { getContextBusinessTimezone } from "@/lib/salon-business-clock";
 import {OwnerLiveTickets} from '@/app/pos-tickets/owner-live-tickets';
@@ -175,15 +173,6 @@ function getTicketFilterHref({
 
 
 
-function WorkLogFilters() {
-  return (
-    <WorkspaceToolbar title="POS Tickets">
-      <div className="ml-auto"><ContextualSupport /></div>
-    </WorkspaceToolbar>
-  );
-}
-
-
 async function PosTicketsPage({
   searchParams,
 }: PosTicketsPageProps) {
@@ -237,7 +226,6 @@ async function PosTicketsPage({
 
   return (
     <main className="mx-auto w-full max-w-7xl py-4 text-zinc-950 sm:px-6">
-      <WorkLogFilters />
 
       {error ? (
         <p className="mt-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">

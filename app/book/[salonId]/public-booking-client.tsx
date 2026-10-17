@@ -24,6 +24,7 @@ import type { PublicBookingActionResult } from "@/lib/public-booking";
 import { useRouter } from "next/navigation";
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import compact from "./booking-wizard.module.css";
+import { BookingAddOnGroups } from "./booking-addon-groups";
 
 type PublicBookingClientProps = {
   data: PublicBookingPageData;
@@ -1783,11 +1784,10 @@ export function PublicBookingClient({ data, embedded = false, onClose, onBusyCha
       {embedded && step === STEP_DONE && result?.ok ? <div className={compact.success} role="status"><ReylumiIcon name={bookingConfirmed ? "check" : "calendar"} className="h-4 w-4 shrink-0" /><span>{bookingConfirmed ? "Your appointment is confirmed." : "Awaiting salon confirmation."}</span><a href={result.accountLinked ? `/my-bookings?details=${encodeURIComponent(result.bookingId ?? "")}` : manageHref ?? "/my-bookings"}>View booking</a></div> : null}
       {step < STEP_DONE ? <footer className={compact.footer}><div className={compact.footerMeta} hidden={embedded && (step === STEP_TIME || step === STEP_REVIEW)}><div className={compact.footerSelection}><div className={compact.selectionTitle}><strong>{selectedServiceNames || "Choose services"}</strong>{step > STEP_SERVICES ? addMoreButton : null}</div><small>{minutes(totalMinutes)}</small></div><strong>{money(total)} est.</strong></div><button className={compact.primary} data-testid="public-booking-next" type="button" disabled={primaryActionDisabled} onClick={activatePrimaryAction}>{primaryActionLabel}</button></footer> : null}
       {optionsServiceId && optionsParent ? <dialog className={compact.dialog} ref={optionsDialog} aria-labelledby="service-options-title" onClose={() => setOptionsServiceId(null)} onClick={event => { if (event.target === event.currentTarget) optionsDialog.current?.close(); }}><div className={compact.dialogTitle}><h2 id="service-options-title">{optionsParent.name} options</h2><button type="button" className={compact.icon} aria-label="Close service options" onClick={() => optionsDialog.current?.close()}>&times;</button></div>
-        {addOnOptions.filter(option => option.parent.id === optionsServiceId).map(({parent,service}) => {
-          const selection = {parentServiceId:parent.id, serviceId:service.id};
-          const checked = selectedAddOnSelections.some(item => addOnKey(item) === addOnKey(selection));
-          return <div className={compact.service} key={service.id}><label><span><strong>{service.name}</strong><small className={compact.muted}>Adds {minutes(service.durationMinutes)}</small></span><span>{money(service.basePrice)}</span><input type="checkbox" className={compact.check} checked={checked} disabled={!checked && selectedAddOnSelections.length >= 6} aria-label={service.name} onChange={event => { const add = event.target.checked; setSelectedSlotStart(""); setSelectedAddOnSelections(current => add ? [...current.filter(item => addOnKey(item) !== addOnKey(selection)),selection] : current.filter(item => addOnKey(item) !== addOnKey(selection))); }} /></label></div>;
-        })}{selectedAddOnSelections.length >= 6 ? <p className={compact.muted}>Up to 6 extras per booking.</p> : null}<button type="button" className={compact.primary} onClick={() => optionsDialog.current?.close()}>Done</button>
+        <BookingAddOnGroups parentServiceId={optionsServiceId}
+          options={addOnOptions.filter(option => option.parent.id === optionsServiceId).map(option => option.service)}
+          selected={selectedAddOnSelections} onChange={next => {setSelectedSlotStart("");setSelectedAddOnSelections(next);}}/>
+        <button type="button" className={compact.primary} onClick={() => optionsDialog.current?.close()}>Done</button>
       </dialog> : null}
     </section>
   </main>;

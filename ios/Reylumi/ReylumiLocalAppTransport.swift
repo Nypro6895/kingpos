@@ -322,7 +322,9 @@ final class ReylumiLocalAppTransport {
         if let cached {
             if let previous = session, previous.key != cached.key, !additiveAuthority(previous, cached) {
                 scopeEpoch += 1; nonce = UUID().uuidString; onlineContext = nil; onlineCheckedAt = .distantPast
-                onEvent?("reylumi:app-local-reset", metadata)
+                // This context read is delivering the selected cached lease.
+                // Rotate old deliveries without cancelling its own admission.
+                onEvent?("reylumi:app-local-reset", metadata.merging(["reason": "context"]) { _, new in new })
             }
             session = cached; loadedSession = true
             var object = cached.object

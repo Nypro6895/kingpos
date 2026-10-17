@@ -5,6 +5,7 @@ import { SettingsIconShape } from "@/components/settings-icon";
 import { getCurrentBusinessContext } from "@/lib/current-context";
 import {
   ROLE_MORE_ITEMS,
+  OWNER_MORE_GROUPS,
   roleNavigationKindForContext,
   type RoleMoreIcon,
   type RoleMoreItem,
@@ -168,41 +169,7 @@ function personalMoreItems(): MoreContent {
 
 function roleMoreItems(roleKind: RoleNavigationKind): MoreContent {
   if (roleKind === "owner") {
-    return {
-      sections: [
-        {
-          id: "workspace",
-          items: pickMoreItems(ROLE_MORE_ITEMS.owner, ["owner-my-place"]),
-          summary: "Switch salons, staff workplaces, accounts, or Personal mode.",
-          title: "Workspace",
-        },
-        {
-          id: "front-desk",
-          items: pickMoreItems(ROLE_MORE_ITEMS.owner, [
-            "owner-pos",
-            "owner-ticket",
-            "owner-customers",
-            "owner-staff",
-            "owner-services",
-          ]),
-          summary: "Open daily tools for sales, tickets, customers, team, and services.",
-          title: "Front desk",
-        },
-        {
-          id: "business",
-          items: pickMoreItems(ROLE_MORE_ITEMS.owner, [
-            "owner-report",
-            "owner-payroll",
-            "owner-setting",
-            "owner-market",
-            "owner-campaigns",
-            "owner-support",
-          ]),
-          summary: "Review performance, payroll, and salon configuration.",
-          title: "Business",
-        },
-      ],
-    };
+    return { sections: OWNER_MORE_GROUPS.map(group => ({ id: group.id, title: group.title, summary: group.summary, items: pickMoreItems(ROLE_MORE_ITEMS.owner, group.ids) })) };
   }
 
   if (roleKind === "staff") {

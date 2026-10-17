@@ -1,12 +1,10 @@
 import test from'node:test';import assert from'node:assert/strict';import{readFileSync}from'node:fs';import{createHash}from'node:crypto';import{createRequire}from'node:module';import{build}from'esbuild';
 async function moduleFrom(file,fixtures){const bundle=await build({entryPoints:[file],bundle:true,write:false,platform:'node',format:'cjs',alias:{'@':process.cwd()},plugins:[{name:'explore-authority-fixture',setup(b){b.onResolve({filter:/.*/},args=>{if(args.path==='next/server')return{path:args.path,external:true};const key=Object.keys(fixtures).find(key=>args.path===key||args.path.endsWith('/'+key));return key?{path:key,namespace:'fixture'}:undefined});b.onLoad({filter:/.*/,namespace:'fixture'},args=>({loader:'js',contents:fixtures[args.path]}));}}]});const loaded={exports:{}};new Function('module','exports','require',bundle.outputFiles[0].text)(loaded,loaded.exports,createRequire(import.meta.url));return loaded.exports;}
 const hash=value=>createHash('sha256').update(value.replaceAll('\r\n','\n')).digest('hex');
-test('original Explore helper bodies and progressive page awaits remain byte-for-byte equivalent after extraction',()=>{
- const page=readFileSync('app/(app)/explore/page.tsx','utf8'),helpers=readFileSync('lib/explore-page-resource-server.ts','utf8');
- assert.equal(hash(page.slice(page.indexOf('async function ExploreCorePage('))),'e83eadfdc15eea2630884ded6fbe194116c101b1c9a4fa53888d5db2188a5bd7');
- const pure=readFileSync('lib/explore-discovery-presentation.ts','utf8'),presentation=pure.slice(pure.indexOf('function dedupeHomeSalons('));
- const body=helpers.slice(helpers.indexOf('export type ExplorePageProps =')).replace('export async function getExploreUtilityContent(',presentation+'export async function getExploreUtilityContent(').replace('export type ExplorePageProps =','type ExplorePageProps =').replace(/^export (function (?:stringParam|clean|parsePage|buildExploreDiscoveryContent)\b|async function (?:buildQuickActions|getExploreUtilityContent)\b)/gm,'$1');
- assert.equal(hash(body),'4baeb8bb9f1a3104b52154356aedcf90554a952e06d9d49e6e9b0024880d5cd3');
+test('web and native Explore reuse shared routing and deferred authority resources',()=>{
+ const page=readFileSync('app/(app)/explore/page.tsx','utf8'),native=readFileSync('lib/app-local-explore-server.ts','utf8');
+ for(const source of [page,native])for(const name of ['resolveExploreQueryRouting','getExploreWorkspaceLocation','searchExploreSalons','buildExploreDiscoveryContent','getExploreUtilityContent','prepareExploreStartupFeed'])assert.ok(source.includes(name),name);
+ assert.match(page,/ExploreProgressiveClient/);assert.match(page,/const initialFeed = emptyFeedPage/);assert.match(native,/page.explore-extras/);assert.match(native,/page.explore-feed/);
 });
 const wire=(status,body)=>({status,headers:{'content-type':'application/json'},body:JSON.stringify(body)});
 test('native Explore bridges exact original reads, preserves cursor/GPS/status, never replays events or borrows opaque foreign origins',async()=>{

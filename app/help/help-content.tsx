@@ -11,7 +11,7 @@ export function HelpSupportEntry() {
   if (!isHelpAvailable()) return null;
   return <p className="mb-6 text-sm"><Link href="/help" prefetch={false} className="font-semibold text-orange-800 underline underline-offset-4"><WorkspaceText text="Browse the Help guides" /></Link></p>;
 }
-export function HelpHome({ language = "vi" }: { language?: HelpLanguage }) {
+export function HelpHome({ language = "en" }: { language?: HelpLanguage }) {
   return <HelpShell language={language}>
     <header className={styles.hero}><h1><WorkspaceText text="Reylumi Help" /></h1><p><WorkspaceText text="Follow the guides in order, or jump to the task you need." /></p></header>
     
@@ -30,7 +30,7 @@ export function HelpHome({ language = "vi" }: { language?: HelpLanguage }) {
     <p className={styles.support}><Link href="/support?from=%2Fhelp" prefetch={false}><WorkspaceText text="Contact support" /></Link></p>
   </HelpShell>;
 }
-export function HelpArticle({ guide, language = "vi" }: { guide: HelpGuide; language?: HelpLanguage }) {
+export function HelpArticle({ guide, language = "en" }: { guide: HelpGuide; language?: HelpLanguage }) {
   const nextGuide = HELP_GUIDES[HELP_GUIDES.indexOf(guide) + 1];
   const inlineIds = new Set(guide.sections.flatMap(section => section.illustrationId ? [section.illustrationId] : []));
   const remainingScreens = guide.evidence.screenshots.filter(screen => !inlineIds.has(screen.id));

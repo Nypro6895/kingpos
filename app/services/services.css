@@ -1113,3 +1113,42 @@
 .services-toolbar .services-page__actions { grid-column: 3; grid-row: 1; }
 .services-toolbar .services-button { min-height: 44px; white-space: nowrap; padding-inline: 10px; }
 @media (max-width: 640px) { .services-toolbar { gap: 6px; } .services-toolbar .services-button { font-size: 12px; padding-inline: 8px; } }
+
+/* Compact, inline details with clearly separated blocks and reachable actions. */
+.service-editor__fields { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; }
+.service-editor .services-field,
+.service-drawer__content > .services-field,
+.service-drawer__two-columns .services-field {
+  display: grid; grid-template-columns: 105px minmax(0,1fr); align-items: start; gap: 8px;
+}
+.service-editor .services-field > span:first-child,
+.service-drawer__content .services-field > span:first-child { padding-top: 12px; font-size: 13px; font-weight: 500; }
+.service-editor .services-field :is(input,textarea),
+.service-drawer__content .services-field :is(input,textarea) { border: 0; border-radius: 0; padding-inline: 4px; background: transparent; font-size: 16px; }
+.service-editor .services-field :is(input,textarea):focus-visible,
+.service-drawer__content .services-field :is(input,textarea):focus-visible { outline: 2px solid #0f766e; outline-offset: 1px; }
+.service-editor .services-number-field,
+.service-drawer__content .services-number-field { border: 0; border-radius: 0; background: transparent; }
+.service-editor .services-field-error { grid-column: 2; }
+.service-editor__section + .service-editor__section { border-top: 7px solid #f5f6f4; }
+.service-editor h3 { margin: 0; font-size: 16px; }
+.service-editor .booking-option-list { max-height: none; overflow: visible; border: 0; border-radius: 0; }
+.service-addon-groups > p,.service-addon-group p { color: #71717a; font-size: 13px; margin: 5px 0; }
+.service-addon-group { margin-top: 20px; }
+.service-addon-group + .service-addon-group { border-top: 1px solid #e4e4e7; padding-top: 20px; }
+.service-addon-item { padding-block: 10px; border-bottom: 1px solid #eeeeef; }
+.service-addon-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.service-addon-summary > div { display: grid; min-width: 0; overflow-wrap: anywhere; }
+.service-addon-summary span { color: #71717a; font-size: 13px; }
+.service-editor__actions { position: sticky; bottom: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; border-top: 1px solid #e4e4e7; background: #fff; }
+.service-editor__actions > span { font-size: 13px; color: #71717a; }
+.service-editor__actions > div { display: flex; gap: 8px; }
+.services-save-bar { bottom: var(--app-bottom-nav-height, 0px); }
+@media(max-width:767px) {
+  .services-save-bar { bottom: var(--app-bottom-nav-height, calc(64px + env(safe-area-inset-bottom))); }
+  .services-page__content { padding-bottom: calc(240px + env(safe-area-inset-bottom)); }
+  .services-page__frame { width: 100%; }
+  .services-toolbar,.services-message { margin-inline: 12px; }
+  .services-list { border-inline: 0; border-radius: 0; }
+  .services-save-bar__inner { padding-inline: 16px; }
+}

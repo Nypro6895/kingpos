@@ -852,24 +852,24 @@ export function AccountProfileEditor({
   }
 
   return (
-    <div className="settings-style"><section
+    <div className={compact ? "settings-style bg-white px-4 py-3" : "settings-style"}><section
       className={`scroll-mt-6${embedded ? " settings-content-root" : ""}`}
       id="profile-contact"
       onKeyDown={onEditorKeyDown}
     >
-      {!embedded ? <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+      {!embedded ? <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-base font-semibold text-zinc-950">
             <WorkspaceText text={compact ? "Personal" : "Profile & contact"} />
           </h2>
         </div>
-        {compact ? <nav aria-label={__vt("Personal settings")} className="flex gap-4 text-xs font-medium text-zinc-500"><Link className="hover:text-[#d65c2b] hover:underline" href="/account"><WorkspaceText text="Account settings" /></Link><Link className="hover:text-[#d65c2b] hover:underline" href="/settings/login-security"><WorkspaceText text="Security" /></Link></nav> : null}
+
       </div> : null}
 
-      <div className="overflow-hidden rounded-lg border border-border-subtle bg-white">
-        <div className="flex flex-col gap-4 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-border-subtle bg-brand-orange-soft text-lg font-extrabold text-brand-orange">
+      <div className={compact ? "bg-white" : "overflow-hidden rounded-lg border border-border-subtle bg-white"}>
+        <div className={compact ? "relative flex min-w-0 items-start justify-between gap-2 py-1" : "flex flex-col gap-4 border-b border-zinc-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"}>
+          <div className={compact ? "flex min-w-0 flex-1 items-start gap-3" : "flex min-w-0 items-center gap-4"}>
+            <span className={compact ? "grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-orange-50 text-sm text-orange-700" : "grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full border border-border-subtle bg-brand-orange-soft text-lg font-extrabold text-brand-orange"}>
               {avatarPreviewUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -882,14 +882,14 @@ export function AccountProfileEditor({
               )}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xl font-semibold text-zinc-950">
+              <p className={compact ? "truncate text-sm font-medium text-zinc-950" : "truncate text-xl font-semibold text-zinc-950"}>
                 {currentName}
               </p>
-              <p className="mt-1 truncate text-sm font-semibold text-zinc-500">
+              <p className={compact ? "mt-1 truncate text-xs text-zinc-500" : "mt-1 truncate text-sm font-semibold text-zinc-500"}>
                 <WorkspaceText text={user.email ?? "Personal account"} />
               </p>
               {compact && !editing ? <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-                <span><WorkspaceText text={values.phone || "No phone number"} /></span>
+                {values.phone ? <span>{values.phone}</span> : null}
                 {values.phone && ((phoneVerified && values.phone === user.phone) || (phoneClaim?.status === "connected" && phoneClaim.normalizedPhone === values.phone)) ? <span className="rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700"><WorkspaceText text="Verified ✓" /></span>
                   : <button className="min-h-8 text-xs font-semibold text-[#d65c2b] hover:underline disabled:opacity-50" disabled={busy} type="button" onClick={values.phone ? saveProfile : beginEdit}><WorkspaceText text={busy ? "Checking…" : values.phone ? "Verify phone" : "Add phone"} /></button>}
               </div> : null}
@@ -899,10 +899,11 @@ export function AccountProfileEditor({
           {!editing ? (
             <button
               className="min-h-9 shrink-0 rounded-md px-2 text-sm font-semibold text-brand-orange transition hover:bg-brand-orange-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+              aria-label={compact ? __vt("Edit personal information") : undefined}
               onClick={beginEdit}
               type="button"
             >
-              <WorkspaceText text={compact ? "Edit info" : "Edit profile"} />
+              {compact ? <span aria-hidden="true">⋯</span> : <WorkspaceText text="Edit profile" />}
             </button>
           ) : (
             <div className="flex flex-wrap gap-2">
@@ -937,6 +938,7 @@ export function AccountProfileEditor({
           )}
         </div>
 
+        {compact ? <nav aria-label={__vt("Personal settings")} className="flex flex-wrap items-center gap-x-4 text-xs text-zinc-600"><Link className="inline-flex min-h-9 items-center hover:text-orange-600" href="/account"><WorkspaceText text="Account settings" /></Link><Link className="inline-flex min-h-9 items-center hover:text-orange-600" href="/settings/login-security"><WorkspaceText text="Security" /></Link></nav> : null}
         {editing ? (
           <>
             <div>

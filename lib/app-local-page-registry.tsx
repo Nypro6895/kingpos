@@ -43,17 +43,17 @@ const queryFor = (path: string, names: readonly string[]) => Object.fromEntries(
 const privatePage = (page: AppLocalPage): AppLocalPage => ({ ...page, Component(props) { return props.context?.context.authenticated ? <page.Component {...props} key={props.context.context.scope} /> : <main className="mx-auto max-w-4xl p-6"><h1 className="text-2xl font-semibold">{page.title}</h1><p>Sign in to view your account.</p><a href={`/login?next=${encodeURIComponent(props.path)}`} onClick={event => { if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); void (props.host ?? getAppLocalHost()).openOnline(`/login?next=${encodeURIComponent(props.path)}`); }}>Sign in</a></main>; } });
 
 function HelpPage(props: AppLocalPageProps) {
-  const url = urlFor(props.path), language = url.searchParams.get("lang") === "en" ? "en" : "vi";
+  const url = urlFor(props.path), language = url.searchParams.get("lang") === "vi" ? "vi" : "en";
   return <AppLocalHelp slug={url.pathname.startsWith("/help/") ? url.pathname.slice(6) : undefined} language={language} navigate={props.navigate} />;
 }
 function SupportPage(props: AppLocalPageProps) {
   if (props.context?.context.authenticated) return <ReadView<AppLocalSupportData> {...props} name="page.support" title="Report / Contact">{data => <AppLocalSupport data={data} from={urlFor(props.path).searchParams.get("from") ?? undefined} />}</ReadView>;
-  return <AppLocalHelp support language={urlFor(props.path).searchParams.get("lang") === "en" ? "en" : "vi"} navigate={href => {
+  return <AppLocalHelp support language={urlFor(props.path).searchParams.get("lang") === "vi" ? "vi" : "en"} navigate={href => {
     if (["/support", "/contact-support", "/account-recovery"].includes(urlFor(href).pathname)) void (props.host ?? getAppLocalHost()).openOnline(href);
     else props.navigate(href);
   }} />;
 }
-function SupportCasePage(props: AppLocalPageProps) { return <ReadView<AppLocalSupportCaseData> {...props} name="page.support-case" args={{ caseId: urlFor(props.path).pathname.split("/").at(-1)! }} title="Help & support">{(data, refresh) => <AppLocalSupportConversation data={data} refresh={refresh} />}</ReadView>; }
+function SupportCasePage(props: AppLocalPageProps) { return <ReadView<AppLocalSupportCaseData> {...props} name="page.support-case" args={{ caseId: urlFor(props.path).pathname.split("/").at(-1)! }} title="Report / Contact">{(data, refresh) => <AppLocalSupportConversation data={data} refresh={refresh} />}</ReadView>; }
 function MarketPage(props: AppLocalPageProps) {
   const browse = marketBrowseFromQuery(queryFor(props.path, ["q", "category"]));
   return <ReadView<MarketExperienceData> {...props} name="page.market" title="Market" publicView={scope => <MarketClient paymentsAvailable={false} experienceScope={scope} initialBrowse={browse} />} >{data => <MarketClient {...data} initialBrowse={browse} />}</ReadView>;
@@ -118,8 +118,8 @@ function TodayPage(props: AppLocalPageProps) { return <ReadView<{ dashboard: Tod
 
 const definitions = [
   { id: "help.home", title: "Help", requiresContext: false, Component: HelpPage, features: ["complete-guides", "search", "role-filters", "illustrations", "en-vi"] },
-  { id: "support", title: "Help & support", requiresContext: false, Component: SupportPage, features: ["public-instructions", "original-request-form", "scoped-inbox", "guest-history-online"] },
-  { id: "support.case", title: "Help & support", requiresContext: true, Component: SupportCasePage, features: ["original-conversation", "original-replies", "original-evidence-upload"] },
+  { id: "support", title: "Report / Contact", requiresContext: false, Component: SupportPage, features: ["public-instructions", "original-request-form", "scoped-inbox", "guest-history-online"] },
+  { id: "support.case", title: "Report / Contact", requiresContext: true, Component: SupportCasePage, features: ["original-conversation", "original-replies", "original-evidence-upload"] },
   { id: "market", title: "Market", requiresContext: false, Component: MarketPage, features: ["full-catalog", "search", "categories", "original-feature-panels"] },
   { id: "market.booking-deposit", title: "Booking Deposit", requiresContext: false, Component: DepositPage, features: ["full-product", "original-checkout"] },
   { id: "settings.hub", title: "All Settings", requiresContext: true, Component: SettingsPage, features: ["original-settings-hub", "original-panels", "original-online-confirmations"] },

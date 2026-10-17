@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createContext, createElement, useContext, type ComponentProps, type ReactNode } from "react";
 import { helpHref, translateHelp, type HelpLanguage } from "@/lib/help-language";
 import styles from "./help.module.css";
-const LanguageContext = createContext<HelpLanguage>("vi");
+const LanguageContext = createContext<HelpLanguage>("en");
 export function useHelpLanguage() { return useContext(LanguageContext); }
 export function useHelpTranslation() {
   const language = useHelpLanguage();

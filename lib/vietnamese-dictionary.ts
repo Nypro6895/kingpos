@@ -5,6 +5,7 @@ import loadingCopy from "@/lib/vietnamese-loading-copy.json";
 import workspaceCopy from "@/lib/vietnamese-workspace-copy.json";
 import bookingDepositMarketCopy from "@/lib/vietnamese-booking-deposit-market.json";
 import localFirstCopy from "@/lib/vietnamese-local-first-copy.json";
+import campaignCopy from "@/lib/vietnamese-campaign-copy.json";
 // UI copy only. Names, services, customer notes and financial values stay as entered.
 export const VIETNAMESE_UI: Record<string, string> = {
   ...helpCopy,
@@ -14,6 +15,7 @@ export const VIETNAMESE_UI: Record<string, string> = {
   ...loadingCopy,
   ...bookingDepositMarketCopy,
   ...localFirstCopy,
+  ...campaignCopy,
   "Advertising": "Quảng cáo",
   "Activate": "Kích hoạt",
   "Close dialog": "Đóng thông báo",
