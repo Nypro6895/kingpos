@@ -1,0 +1,11 @@
+✔ actual packaged Explore retries initial context failure and retains entered search across a failed foreground validation (2204.8634ms)
+✔ actual packaged Explore recovers by selecting the failed route again without command replay (1927.6621ms)
+✔ actual packaged Explore releases a lost context callback after its deadline and allows one explicit retry (2004.2036ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6799.1086

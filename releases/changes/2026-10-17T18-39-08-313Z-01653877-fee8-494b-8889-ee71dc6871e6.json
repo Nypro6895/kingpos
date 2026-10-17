@@ -1,0 +1,96 @@
+{
+  "kind": "change",
+  "changeId": "explore-session-recovery-20261017",
+  "status": "ready",
+  "summary": "Recover failed Explore session startup, same-page selection and cached iOS authority without UI changes or command replay. Owner requests holding for combined release.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "docs/explore-session-recovery-release-note-20261017.txt",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift",
+    "lib/app-local-host.ts",
+    "tests/app-local-bundle-session-recovery.test.mjs",
+    "tests/app-local-host-deadline.test.mjs",
+    "tests/app-local-session-recovery.test.mjs"
+  ],
+  "dependencies": [],
+  "source": {
+    "commit": "698413f30b050292c91577f1a53e92c5386194e1",
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\explore-session-recovery\\kingpos\\artifacts\\explore-session-recovery-20261017\\frozen-source",
+    "patch": "C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos/artifacts/explore-session-recovery-20261017/change.patch",
+    "sourceSha256": "c745cf574db26d191514af7b69b1d3db651197cad63930436241e3368eb35175",
+    "overlaySha256": "2f5d50d2869f7ff05e6568dc8850fd0ee5a949f30f2d0a554a6d6060edeb1b70"
+  },
+  "validation": [
+    {
+      "name": "Production web build and TypeScript",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos/artifacts/explore-session-recovery-20261017/production-build.log"
+    },
+    {
+      "name": "17 new recovery checks, including actual packaged JavaScript",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos/artifacts/explore-session-recovery-20261017/bundle-recovery-tests-final.log",
+      "detail": "6 Entry/Explore lifecycle, 8 bridge deadlines and 3 actual-bundle cases. Zero business command replay."
+    },
+    {
+      "name": "Existing role, authority, retained DOM and draft recovery",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos/artifacts/explore-session-recovery-20261017/existing-recovery-tests.log",
+      "detail": "23/23 passed; navigation regression 11/11 passed."
+    },
+    {
+      "name": "Unchanged existing Explore failure comparison",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos/artifacts/explore-session-recovery-20261017/baseline-existing-explore-tests.log",
+      "detail": "The broader UI batch has31 passes and3 failures; those same3 failures reproduce on unchanged shipped31.1 source. Not introduced by this patch; full suite is not claimed clean."
+    },
+    {
+      "name": "ESLint for product changes and new JavaScript tests",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos/artifacts/explore-session-recovery-20261017/lint-final.log"
+    },
+    {
+      "name": "97 iOS simulator tests, actual installed Explore timeout/503 recovery and unsigned archive",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos/artifacts/explore-session-recovery-20261017/native-check-verification.json",
+      "workflowRun": 39058390508
+    },
+    {
+      "name": "Exact frozen source and existing assets/contracts preservation",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos/artifacts/explore-session-recovery-20261017/source-manifest.json",
+      "detail": "343 existing bundle assets including CSS, images and fonts byte-identical. Routes/read/command contracts unchanged."
+    }
+  ],
+  "nativeBuildRequired": true,
+  "releaseIntent": "Hold for a future authorized combined web/TestFlight release; no publication or TestFlight upload performed by this task.",
+  "note": "docs/explore-session-recovery-release-note-20261017.txt",
+  "limitations": [
+    "Original iPhone reload trigger still requires device logs; recovery after a failed context is reproduced and covered.",
+    "Three existing broader Explore test failures remain baseline-identical."
+  ],
+  "id": "01653877-fee8-494b-8889-ee71dc6871e6",
+  "recordedAt": "2026-10-17T18:39:08.313Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\explore-session-recovery\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "50d9656004b86b9afe4c380f53827cd194a3bde8ca061fe79f00560b56526884",
+    "docs/explore-session-recovery-release-note-20261017.txt": "07fac550ae00bf3fcebd778c206318a7ae33acf18823d932ea81e9393045eb71",
+    "ios/Reylumi/LocalAppBundle/app.js": "24b60496eff4a91283517d50ec6e904cdcd046d3289fc52492b43eef59345ff1",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "08fe77b96261a775aa462662fae33bee2e8aea7254c35025e6be2fa1f7484f6f",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift": "e5a979da6e20c0d2bfb79c8c1ec7b94988b206ec8a3cd9f6f02df547838a1aec",
+    "ios/ReylumiTests/LocalAppTransportTests.swift": "9c3fd3d02a2b0ec755c12b4a5c243cb3938da12e838fee4101ca7f58f78c5bd8",
+    "lib/app-local-host.ts": "9d5b03b77ecd98167cc3063b4686c1546859f6a24a0ef84ff83edaa6472199e3",
+    "tests/app-local-bundle-session-recovery.test.mjs": "6d0f5e5f20f32d34e7f8c6b518af2739d176917befee8f45e712dabb1854e8ad",
+    "tests/app-local-host-deadline.test.mjs": "3bb8cdd6b46be979c5c0003e9d5a335b8422bbf02c7259660260799e617a9af6",
+    "tests/app-local-session-recovery.test.mjs": "86d457b0a9c9e52c05e4378eb0d939a68d8b259156647314331cafca20735f3a"
+  }
+}

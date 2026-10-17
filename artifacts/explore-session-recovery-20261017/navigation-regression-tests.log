@@ -1,0 +1,19 @@
+✔ raw links dispatch local routes, preserve native gestures/cancelled handlers and send only declared HTTPS handoffs (1773.5299ms)
+✔ actual Help image links open the signed local image viewer before Help routing, then close on hide/scope/reset without stale portals (1621.767ms)
+✔ role HTTP composes with the existing transport and bridges only exact native method/path pairs (135.121ms)
+✔ appointment cancellation and ambiguous network failures never replay a write, and scope changes reject late results (21.6748ms)
+✔ server role adapters validate the fresh scope before original handlers and preserve their failure response (45.2777ms)
+✔ custom local URLs cannot confuse another host with the null origin, and trusted same-viewer staff scopes retain their original endpoint access (48.2353ms)
+✔ server role writes reject foreign origins/extra paths and call only the pinned original action once (24.1979ms)
+✔ notification redirect uses original checked workspace switch exactly once; booking result recovers context without repeating save (96.9579ms)
+✔ uncertain workspace command failure recovers current admission without replay; a new account cannot be reset by its old failure (22.1477ms)
+✔ web notification open defers role cookies to the guarded handoff and preserves mark-read (62.1234ms)
+✔ native event delivery cannot roll back a host epoch already adopted by a context reply (1.9126ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4145.3663

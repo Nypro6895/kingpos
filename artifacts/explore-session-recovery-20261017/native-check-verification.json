@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-17T18:38:55.070Z",
+  "mode": "check",
+  "commit": "698413f30b050292c91577f1a53e92c5386194e1",
+  "ciCommit": "698413f30b050292c91577f1a53e92c5386194e1",
+  "xcode": "Xcode 26.3\nBuild version 17C529",
+  "sourceFiles": 390,
+  "sourcePassed": true,
+  "tests": {
+    "expected": 97,
+    "count": 97,
+    "failures": 0,
+    "passed": true
+  },
+  "bundle": {
+    "buildId": "f4c61f647c79c70fc8bba348f6fc389252a3c631fd3fea5b18eff011f752d682",
+    "files": 344,
+    "passed": true
+  },
+  "unsignedArchive": true,
+  "passed": true
+}

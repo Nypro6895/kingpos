@@ -1,0 +1,31 @@
+✔ workspace handoff gates old owner content, admits the destination family and survives native context reset (1943.1343ms)
+✔ failed handoff retries only destination context and user navigation supersedes the recovery (2240.371ms)
+✔ one rejected read forces fresh authority recovery and restores the saved money draft (2130.8376ms)
+✔ persistent read rejection stops after one fresh recovery and exposes retry instead of an infinite opening screen (1728.7478ms)
+✔ cold installed Help uses no context, account resource, cache or command scope (2052.3675ms)
+✔ owner Help retains only presentation admission, never commands or background reads, and returning POS retains original money DOM (2237.5575ms)
+✔ staff Help presents the actual admitted staff family and expires its unleased chrome without fetching public Help (1565.5913ms)
+✔ staff Help chrome expiry keeps a separately admitted owner POS draft and single-writer lock intact (1563.4493ms)
+✔ Help presentation cannot survive reset, changed device generation or expired owner grant (3824.2644ms)
+✔ held staff-family context cannot send old-owner scoped reads or commands; original POS and Check-in DOM/lock survive (1716.1617ms)
+✔ portal/workday/account remain distinct; unadmitted Market paints static content and rapid late context cannot win (1806.0534ms)
+✔ scope validation from an old scope or hidden Activity cannot stamp the current provider as verified (1806.9585ms)
+✔ one page denied access rechecks authority without remounting POS or unrelated unsaved fields (2598.5655ms)
+✔ confirmed 403 wins over a delayed disk read; a network timeout retains the last authorized view (1514.0926ms)
+✔ confirmed 404 wins over a delayed disk read; a network timeout retains the last authorized view (1825.7016ms)
+✔ successful unchanged validation prevents repeated reads and keeps the original draft DOM (2620.9646ms)
+✔ attendance refreshes affected visible data and defers hidden data without fetching disabled or static shell cells (2260.0865ms)
+✔ older command notifications retain conservative active refresh but never run disabled hooks (2072.8114ms)
+✔ a pre-command read resolving while hidden cannot replace newer state or cancel the reveal reconciliation (2119.1136ms)
+✔ notification redirect uses original checked workspace switch exactly once; booking result recovers context without repeating save (104.6894ms)
+✔ uncertain workspace command failure recovers current admission without replay; a new account cannot be reset by its old failure (24.9722ms)
+✔ web notification open defers role cookies to the guarded handoff and preserves mark-read (84.6185ms)
+✔ native event delivery cannot roll back a host epoch already adopted by a context reply (2.0351ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 27735.3813

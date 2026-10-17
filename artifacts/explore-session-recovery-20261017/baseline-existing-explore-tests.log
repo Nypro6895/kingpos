@@ -1,0 +1,57 @@
+✔ original core resolves while full home, personal utility, quick actions and feed are held; optional resources never repeat the core search (112.2353ms)
+{"errors":[],"body":"Search salons, services, cities, states, ZIP or ideas\nAnywhere⌄\n\nSalon search is temporarily unavailable. Please try again later.\n\nSearch is temporarily unavailable\n\nSearch is temporarily unavailable\n\nWe couldn't load salons right now.\nSalon search is temporarily unavailable. Please try again later.\nTry again","reads":[{"name":"page.explore","args":{"query":""}},{"name":"http.explore.feed-page","args":{"input":{"mode":"page","cursor":null,"discovery":{"category":"All","location":"","strictLocation":false}}}},{"name":"page.explore-extras","args":{"query":""}},{"name":"page.explore-feed","args":{"query":""}},{"name":"http.explore.suggestions","args":{"q":"Hair Dallas"}},{"name":"http.explore.search","args":{"input":{"query":"Hair Dallas","category":"","target":"salons","location":"","filters":{},"locationSource":"none","scopePolicy":"expandable","sort":"relevance","page":1,"pageSize":4}}},{"name":"http.explore.search","args":{"input":{"query":"Hair Dallas","category":"","target":"salons","location":"","locationSource":"none","scopePolicy":"expandable","sort":"relevance","page":1,"pageSize":4}}}]}
+✖ real Explore and resource hooks paint/search before optional replies; late extras/feed preserve input and do not loop core fetches (7543.8848ms)
+{"errors":[],"body":"Search salons, services, cities, states, ZIP or ideas\nChicago⌄\n\nSalon search is temporarily unavailable. Please try again later.\n\nSearch is temporarily unavailable\n\nSearch is temporarily unavailable\n\nWe couldn't load salons right now.\nSalon search is temporarily unavailable. Please try again later.\nTry again"}
+✖ real bundled Explore search and area controls keep their input and cursor across hidden return and background startup refresh (7187.2618ms)
+✖ original Explore helper bodies and progressive page awaits remain byte-for-byte equivalent after extraction (9.3465ms)
+✔ native Explore bridges exact original reads, preserves cursor/GPS/status, never replays events or borrows opaque foreign origins (101.9421ms)
+✔ Explore page DTO reuses shared search/location/discovery/home/feed authorities and matches scoped no-change version (91.0651ms)
+✔ original Explore POST read modes cannot invoke event writes, and guest events retain original one-attempt authority (30.7837ms)
+✔ unknown resources, old scope, temporary authority outage and secret filters return no viewer DTO (25.7657ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 5
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16453.7399
+
+✖ failing tests:
+
+test at tests\app-local-explore-progressive.test.mjs:33:1
+✖ real Explore and resource hooks paint/search before optional replies; late extras/feed preserve input and do not loop core fetches (7543.8848ms)
+  page.waitForFunction: Timeout 5000ms exceeded.
+      at TestContext.<anonymous> (C:\Users\giuse\.codex\worktrees\role-handoff-release\kingpos\tests\app-local-explore-progressive.test.mjs:44:389) {
+    name: 'TimeoutError',
+    log: []
+  }
+
+test at tests\app-local-explore-ui.test.mjs:3:1
+✖ real bundled Explore search and area controls keep their input and cursor across hidden return and background startup refresh (7187.2618ms)
+  page.waitForFunction: Timeout 5000ms exceeded.
+      at TestContext.<anonymous> (C:\Users\giuse\.codex\worktrees\role-handoff-release\kingpos\tests\app-local-explore-ui.test.mjs:26:356) {
+    name: 'TimeoutError',
+    log: []
+  }
+
+test at tests\app-local-explore.test.mjs:4:1
+✖ original Explore helper bodies and progressive page awaits remain byte-for-byte equivalent after extraction (9.3465ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '7e263dd3a669488c62fabd694c05d18496149fa53bb200ba1798ec8b7d85f9c0'
+  - 'e83eadfdc15eea2630884ded6fbe194116c101b1c9a4fa53888d5db2188a5bd7'
+  
+      at TestContext.<anonymous> (file:///C:/Users/giuse/.codex/worktrees/role-handoff-release/kingpos/tests/app-local-explore.test.mjs:6:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '7e263dd3a669488c62fabd694c05d18496149fa53bb200ba1798ec8b7d85f9c0',
+    expected: 'e83eadfdc15eea2630884ded6fbe194116c101b1c9a4fa53888d5db2188a5bd7',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

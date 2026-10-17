@@ -1,0 +1,16 @@
+{
+  "preservedExactAssets": [
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/index.html",
+    "ios/Reylumi/LocalAppBundle/market/features/booking-deposit.svg",
+    "ios/Reylumi/LocalAppBundle/market/features/booking-policy.svg",
+    "ios/Reylumi/LocalAppBundle/market/features/campaigns.svg",
+    "ios/Reylumi/LocalAppBundle/market/features/checkin-receipt.svg",
+    "ios/Reylumi/LocalAppBundle/market/features/payroll-data-download.svg",
+    "ios/Reylumi/LocalAppBundle/market/features/service-relay.svg"
+  ],
+  "cssDecision": "Source changes add no new CSS classes. Retain all shipped CSS rules and asset bytes; generator had removed unused space-y-8 rule and changed text-asset line endings.",
+  "buildId": "f4c61f647c79c70fc8bba348f6fc389252a3c631fd3fea5b18eff011f752d682",
+  "files": 344,
+  "productionReady": true
+}

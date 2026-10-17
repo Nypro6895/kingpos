@@ -1,0 +1,83 @@
+✔ original core resolves while full home, personal utility, quick actions and feed are held; optional resources never repeat the core search (79.1744ms)
+{"errors":[],"body":"Search salons, services, cities, states, ZIP or ideas\nAnywhere⌄\n\nSalon search is temporarily unavailable. Please try again later.\n\nSearch is temporarily unavailable\n\nSearch is temporarily unavailable\n\nWe couldn't load salons right now.\nSalon search is temporarily unavailable. Please try again later.\nTry again","reads":[{"name":"page.explore","args":{"query":""}},{"name":"http.explore.feed-page","args":{"input":{"mode":"page","cursor":null,"discovery":{"category":"All","location":"","strictLocation":false}}}},{"name":"page.explore-extras","args":{"query":""}},{"name":"page.explore-feed","args":{"query":""}},{"name":"http.explore.suggestions","args":{"q":"Hair Dallas"}},{"name":"http.explore.search","args":{"input":{"query":"Hair Dallas","category":"","target":"salons","location":"","filters":{},"locationSource":"none","scopePolicy":"expandable","sort":"relevance","page":1,"pageSize":4}}},{"name":"http.explore.search","args":{"input":{"query":"Hair Dallas","category":"","target":"salons","location":"","locationSource":"none","scopePolicy":"expandable","sort":"relevance","page":1,"pageSize":4}}}]}
+✖ real Explore and resource hooks paint/search before optional replies; late extras/feed preserve input and do not loop core fetches (7834.4089ms)
+{"errors":[],"body":"Search salons, services, cities, states, ZIP or ideas\nChicago⌄\n\nSalon search is temporarily unavailable. Please try again later.\n\nSearch is temporarily unavailable\n\nSearch is temporarily unavailable\n\nWe couldn't load salons right now.\nSalon search is temporarily unavailable. Please try again later.\nTry again"}
+✖ real bundled Explore search and area controls keep their input and cursor across hidden return and background startup refresh (6778.5549ms)
+✖ original Explore helper bodies and progressive page awaits remain byte-for-byte equivalent after extraction (9.5519ms)
+✔ native Explore bridges exact original reads, preserves cursor/GPS/status, never replays events or borrows opaque foreign origins (199.5534ms)
+✔ Explore page DTO reuses shared search/location/discovery/home/feed authorities and matches scoped no-change version (220.3624ms)
+✔ original Explore POST read modes cannot invoke event writes, and guest events retain original one-attempt authority (70.5996ms)
+✔ unknown resources, old scope, temporary authority outage and secret filters return no viewer DTO (48.9998ms)
+✔ full Help search, role filters, article sections and language navigation work without a network or Next router (3550.2853ms)
+✔ offline Support instructions show full public guidance and require explicit navigation for requests or recovery (2298.9418ms)
+✔ a lost native context callback times out once, cancels only its read work and releases listeners (141.5417ms)
+✔ a lost native read callback times out once, cancels only its read work and releases listeners (3.9671ms)
+✔ a lost cache get callback is bounded without issuing a native command or cancellation (4.2406ms)
+✔ a lost cache remove callback is bounded without issuing a native command or cancellation (3.152ms)
+✔ successful native context, read and cache replies clear their deadlines and abort listeners (3.2525ms)
+✔ native rejection and visitor cancellation release deadlines without retrying (2.6676ms)
+✔ business commands and hosted navigation have no new deadline, cancellation or replay (2.1248ms)
+✔ deadlines preserve epoch rejection and the exact acknowledged context transition (2.0963ms)
+✔ actual Market and Help controls retain searches on forward menu return and Back after true page unmount (3445.7049ms)
+✔ retained Market honors explicit URL including empty query and isolates same-instance account changes/reset (2517.2038ms)
+✔ cold Help remains zero API, bounds search, and separates public generation and verified-account UI state (2708.1231ms)
+✔ native reset followed by immediate unmount cannot write an outgoing search back after storage was cleared (9009.2385ms)
+✔ Explore context failure exposes retry without starting unauthorized page reads; retry restores the real resource lifecycle (2913.8711ms)
+✔ selecting the already open Explore page recovers missing authority instead of leaving the same skeleton (2174.9247ms)
+✔ malformed fulfilled context is a recoverable error, never an indefinite unadmitted Explore shell (2117.486ms)
+✔ an expired offline admission exposes retry and cannot issue Explore reads until a fresh context succeeds (2173.6942ms)
+✔ native reset followed by failed foreground verification remains recoverable and restarts only authorized reads (2318.1868ms)
+✔ a transient foreground failure preserves an already admitted Explore draft and restores fresh verification without commands (1630.3584ms)
+✔ actual Market input survives held shell menu, entitlement update and original shell route topology; account and quick booking context are real (3019.1827ms)
+✔ unconfirmed context does not advertise logout; workspace dialog retry requests verification (1938.2822ms)
+✔ initial packaged Help needs no context, shell, session, advertising or quick-booking request (1586.5242ms)
+✔ installed expiry never embeds an auth form; unavailable checks retain display and confirmed expiry opens original HTTPS sign-in (1998.8473ms)
+✔ device PIN workspace never runs account shell reads or treats owner-to-portable as session expiry (1642.2971ms)
+✔ real owner CSS restores role chrome after POS More navigation while retaining hidden checkout and document scrolling (16027.0455ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 31
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 55542.9517
+
+✖ failing tests:
+
+test at tests\app-local-explore-progressive.test.mjs:33:1
+✖ real Explore and resource hooks paint/search before optional replies; late extras/feed preserve input and do not loop core fetches (7834.4089ms)
+  page.waitForFunction: Timeout 5000ms exceeded.
+      at TestContext.<anonymous> (C:\Users\giuse\.codex\worktrees\explore-session-recovery\kingpos\tests\app-local-explore-progressive.test.mjs:44:389) {
+    name: 'TimeoutError',
+    log: []
+  }
+
+test at tests\app-local-explore-ui.test.mjs:3:1
+✖ real bundled Explore search and area controls keep their input and cursor across hidden return and background startup refresh (6778.5549ms)
+  page.waitForFunction: Timeout 5000ms exceeded.
+      at TestContext.<anonymous> (C:\Users\giuse\.codex\worktrees\explore-session-recovery\kingpos\tests\app-local-explore-ui.test.mjs:26:356) {
+    name: 'TimeoutError',
+    log: []
+  }
+
+test at tests\app-local-explore.test.mjs:4:1
+✖ original Explore helper bodies and progressive page awaits remain byte-for-byte equivalent after extraction (9.5519ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '7e263dd3a669488c62fabd694c05d18496149fa53bb200ba1798ec8b7d85f9c0'
+  - 'e83eadfdc15eea2630884ded6fbe194116c101b1c9a4fa53888d5db2188a5bd7'
+  
+      at TestContext.<anonymous> (file:///C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos/tests/app-local-explore.test.mjs:6:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '7e263dd3a669488c62fabd694c05d18496149fa53bb200ba1798ec8b7d85f9c0',
+    expected: 'e83eadfdc15eea2630884ded6fbe194116c101b1c9a4fa53888d5db2188a5bd7',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

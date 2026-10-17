@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-17T18:39:08.327Z",
+  "status": "ready-held-for-combined-release",
+  "published": false,
+  "testflightUploaded": false,
+  "eventId": "01653877-fee8-494b-8889-ee71dc6871e6",
+  "commit": "698413f30b050292c91577f1a53e92c5386194e1",
+  "branch": "codex/explore-session-recovery-20261017",
+  "sourceSha256": "c745cf574db26d191514af7b69b1d3db651197cad63930436241e3368eb35175",
+  "overlaySha256": "2f5d50d2869f7ff05e6568dc8850fd0ee5a949f30f2d0a554a6d6060edeb1b70",
+  "nativeWorkflowRun": 39058390508,
+  "tests": {
+    "newRecovery": 17,
+    "ios": 97,
+    "iosFailures": 0,
+    "existingRecovery": 23,
+    "navigation": 11,
+    "knownBaselineFailures": 3
+  },
+  "nativeBuildRequired": true,
+  "note": "docs/explore-session-recovery-release-note-20261017.txt"
+}
