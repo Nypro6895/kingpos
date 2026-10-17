@@ -47,6 +47,8 @@ private actor ConcurrentRotationHTTP: ReylumiLocalHTTPClient {
     private var held: [(URLRequest, CheckedContinuation<(Data, HTTPURLResponse), Error>)] = []
     private(set) var readRequests = 0
     private(set) var commandRequests = 0
+    private var workspaceCommit = false
+    func configureWorkspaceCommit() { workspaceCommit = true }
     func heldCount() -> Int { held.count }
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let url = request.url!, query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
@@ -54,7 +56,9 @@ private actor ConcurrentRotationHTTP: ReylumiLocalHTTPClient {
         if url.path == "/api/app-local/read" { readRequests += 1; return try await withCheckedThrowingContinuation { held.append((request, $0)) } }
         if url.path == "/api/app-local/context" { object = AppLocalTestFixture.context(generation: query.first { $0.name == "generation" }!.value!) }
         else { commandRequests += 1; object = ["ok": true, "data": ["saved": true]] }
-        return (try JSONSerialization.data(withJSONObject: object), HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!)
+        var fields = ["Content-Type": "application/json"]
+        if workspaceCommit, url.path == "/api/app-local/command" { fields["Set-Cookie"] = "kingpos-selected-workspace=manage:two; Path=/; Secure" }
+        return (try JSONSerialization.data(withJSONObject: object), HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: fields)!)
     }
     func releaseAll() throws {
         let pending = held; held = []
@@ -225,6 +229,29 @@ final class LocalAppTransportTests: XCTestCase {
             else { XCTAssertFalse(values.contains { $0.value == "refreshed-access" }, "Rejected old responses cannot overwrite current identity") }
             let cached = try await transport.cached(name: "fixture.roster", args: [:], requestedScope: AppLocalTestFixture.scope); XCTAssertNil(cached)
         }
+    }
+    @MainActor
+    func testLateReadAfterConfirmedWorkspaceCookieCommitIsDiscardedWithoutReset() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = ConcurrentRotationHTTP()
+        let original = HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie": "sb-access-token=original-access; Path=/; Secure, sb-refresh-token=original-refresh; Path=/; Secure, kingpos-selected-workspace=personal; Path=/; Secure"], for: origin)
+        let jar = RotationCookieJar(original)
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.workspace-commit." + UUID().uuidString), client: http, defaults: UserDefaults(suiteName: "reylumi.tests.workspace-commit." + UUID().uuidString)!, cookies: { await jar.values }, setCookie: { await jar.put($0) })
+        _ = try await transport.freshContext(path: "/help")
+        var resets = 0; transport.onEvent = { name, _ in if name == "reylumi:app-local-reset" { resets += 1 } }
+        let read = Task { @MainActor in try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope) }
+        for _ in 0..<150 { if await http.heldCount() == 1 { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        await http.configureWorkspaceCommit()
+        _ = try await transport.command(name: "fixture.save", args: ["id": "single-role-write"], requestID: UUID().uuidString, path: "/help", requestedScope: AppLocalTestFixture.scope)
+        try await http.releaseAll()
+        do { _ = try await read.value; XCTFail("An old response must not be delivered after a confirmed workspace commit") }
+        catch { XCTAssertTrue(error is CancellationError) }
+        XCTAssertEqual(resets, 0)
+        let values = await jar.values
+        XCTAssertEqual(values.first { $0.name == "kingpos-selected-workspace" }?.value, "manage:two")
+        XCTAssertEqual(values.first { $0.name == "sb-access-token" }?.value, "original-access", "The stale refresh response cannot overwrite cookies")
+        let count = await http.commandRequests; XCTAssertEqual(count, 1)
+        await transport.reset()
     }
     @MainActor
     func testRequestedContextPathProofAndCachedPortableDisplayAuthorityAreExact() async throws {

@@ -31,7 +31,7 @@ function App(){const[current,setPath]=useState(location.pathname),[context,setCo
       'next/dynamic': `import React,{lazy,Suspense}from'react';export default function dynamic(loader){const View=lazy(()=>loader().then(x=>({default:x.default??x})));return props=><Suspense fallback={null}><View {...props}/></Suspense>}`,
       '@/lib/app-local-host': `export const appLocalPath=x=>x;export const appLocalRequestId=()=>crypto.randomUUID();export const getAppLocalHost=()=>({isNative:true,async context(path,options){window.contextCalls.push({path,options:{fresh:options?.fresh}});if(!window.contextReply)throw Error('temporary unavailable');return window.contextReply},async openOnline(path){window.onlinePaths.push(path)}})`,
       '@/lib/supabase/browser': 'export const createSupabaseBrowserClient=()=>null', '@/components/experience-scope': 'export const useExperienceScope=()=>({context:{scope:"scope-a"},validate:async()=>true})',
-      '@/lib/portable-operations': 'export async function syncPortableOperations(scope){window.queueScopes.push(scope)}export const listPortableOperations=async()=>[];export const PORTABLE_OPERATIONS_CHANGED="kingpos:operations-changed"',
+      '@/lib/portable-operations': 'export async function syncPortableOperations(scope){window.queueScopes.push(scope)}export const listPortableOperations=async()=>[];export const cancelPortableOperation=async()=>{};export const canCancelPortableOperation=()=>false;export const retryPortableOperation=async()=>{};export const PORTABLE_OPERATIONS_CHANGED="kingpos:operations-changed"',
       '@/lib/workspace-navigation': 'export function navigateToWorkspace(...args){window.workspaceCalls.push(args)}',
       '@/lib/workspace-translator-client': `export async function loadWorkspaceTranslator(){window.translateLoads++;return text=>text==='Save'?'Lưu':text}`,
       '@/lib/app-local-resource': `export function useAppLocalResource(scope,name,args,options){window.resourceCalls.push({scope,name,enabled:options?.enabled});return{data:name==='shell.navigation'?window.shellMenu:name==='shell.configuration'?window.shellConfig:name==='shell.notice'?window.shellNotice:undefined,loading:false,refreshing:false,updatedAt:Date.now(),refresh:async()=>{}}}`,
@@ -125,7 +125,11 @@ test('real owner CSS restores role chrome after POS More navigation while retain
         await page.locator('[data-owner-more-popover] a[href="' + href + '"]').click();
         await page.waitForFunction(path => location.pathname === path, href);
       };
-      await openMore('/more');
+      // The shipped POS All link is /pos/more (focused POS chrome). Exercise
+      // its ordinary Market exit before the fixture's separate global More.
+      await openMore('/market');
+      await expectChrome(false, viewport.width + ' Market exit');
+      await page.evaluate(() => window.changePath('/more'));
       await expectChrome(false, viewport.width + ' More All');
       for (const href of ['/market', '/settings', '/reports', '/payroll', '/staff', '/services', '/customers', '/salon-settings', '/campaigns', '/support', '/help']) {
         if (href === '/help') await page.evaluate(() => { window.requests = []; window.resourceCalls = []; window.queueScopes = []; window.workspaceCalls = []; });
@@ -158,11 +162,12 @@ test('real owner CSS restores role chrome after POS More navigation while retain
         }
         await page.locator('[data-fixture-destination] a[href="/pos"]').click();
         await expectChrome(true, viewport.width + ' return POS');
-        await openMore('/more');
+        await openMore('/market');
+        await page.evaluate(() => window.changePath('/more'));
       }
       for (const href of ['/more/saved-post', '/more/following', '/pos/settings']) {
         await page.evaluate(path => window.changePath(path), href);
-        await expectChrome(false, viewport.width + ' ' + href);
+        await expectChrome(href === '/pos/settings', viewport.width + ' ' + href);
       }
       for (const href of ['/pos/check-in', '/pos/book', '/pos/ticket', '/pos/report', '/pos']) {
         await page.evaluate(path => window.changePath(path), href);

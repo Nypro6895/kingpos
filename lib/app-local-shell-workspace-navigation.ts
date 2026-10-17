@@ -1,8 +1,12 @@
 "use client";
-import { getAppLocalHost } from "./app-local-host";
+import { appLocalPath, getAppLocalHost } from "./app-local-host";
 import { getAppLocalCommandScope } from "./app-local-command-client";
 
 let pending = false;
+/** Entry owns the fresh admission and its retry. Never repeat a committed command. */
+export function completeWorkspaceHandoff(path: string) {
+  window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-handoff", { detail: { path: appLocalPath(path) } }));
+}
 /** Installed-build alias only. Web keeps its original document handoff. */
 export function navigateToWorkspace(workspaceId: string, destinationHref?: string) {
   const host = getAppLocalHost();
@@ -17,15 +21,11 @@ export function navigateToWorkspace(workspaceId: string, destinationHref?: strin
   void (async () => {
     const result = await host.command<{ path: string }>("shell.switch-workspace", { workspaceId, ...(destinationHref ? { destination: destinationHref } : {}) }, { scope });
     if (scope !== getAppLocalCommandScope()) return;
-    // A changed cookie jar is never paired with the old account's displayed DTO.
-    window.dispatchEvent(new Event("reylumi:app-local-reset"));
-    const fresh = await host.context(result.path, { fresh: true });
-    const activeScope = getAppLocalCommandScope();
-    if (activeScope && activeScope !== fresh.context.scope) return;
-    window.dispatchEvent(new CustomEvent("reylumi:app-local-context", { detail: fresh }));
-    window.dispatchEvent(new CustomEvent("reylumi:app-local-navigate", { detail: { path: result.path } }));
+    completeWorkspaceHandoff(result.path);
   })().catch(() => {
     window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-error", { detail: "Workspace context could not be updated. Try again." }));
-    window.dispatchEvent(new Event("pageshow"));
+    // The write may already have committed. Recovery checks the current role;
+    // it must not blindly submit the workspace-changing command a second time.
+    completeWorkspaceHandoff(location.pathname + location.search);
   }).finally(() => { pending = false; });
 }

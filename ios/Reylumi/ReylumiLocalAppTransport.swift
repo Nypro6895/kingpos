@@ -64,6 +64,8 @@ final class ReylumiLocalAppTransport {
     private var commandIDs = Set<String>()
     private var cookieCommitTask: Task<[HTTPCookie], Error>?
     private var cookieCommitID: UUID?
+    private var workspaceCookieRevision = 0
+    private let workspaceCookieNames: Set<String> = ["kingpos-selected-workspace", "kingpos-current-account-id", "kingpos-current-salon-id", "kingpos-current-manage-salon-id", "kingpos-current-staff-salon-id"]
     var onEvent: ((String, [String: Any]) -> Void)?
 
     init(origin: URL, manifest: ReylumiLocalBundle.Manifest, store: ReylumiLocalReadStore? = nil,
@@ -104,7 +106,7 @@ final class ReylumiLocalAppTransport {
         }
         return candidate
     }
-    private func reconcileCookies(original: [HTTPCookie]?, updates: [HTTPCookie], epoch: Int) async throws -> [HTTPCookie] {
+    private func reconcileCookies(original: [HTTPCookie]?, updates: [HTTPCookie], epoch: Int, workspaceRevision: Int? = nil) async throws -> [HTTPCookie] {
         let previous = cookieCommitTask, id = UUID()
         cookieCommitID = id
         let task = Task { @MainActor [weak self] () throws -> [HTTPCookie] in
@@ -121,6 +123,13 @@ final class ReylumiLocalAppTransport {
             let expected = self.cookieIdentity(self.responseCookieSet(original, updates: updates))
             let current = self.cookieIdentity(currentCookies)
             guard current == self.cookieIdentity(original) || current == expected else {
+                // A response launched before our own confirmed workspace write
+                // cannot overwrite its cookies or revoke the new authority.
+                // Account/token changes still take the full revocation path.
+                if let workspaceRevision, workspaceRevision != self.workspaceCookieRevision,
+                   self.cookieIdentity(currentCookies.filter { !self.workspaceCookieNames.contains($0.name) }) == self.cookieIdentity(original.filter { !self.workspaceCookieNames.contains($0.name) }) {
+                    throw CancellationError()
+                }
                 await self.reset(); throw self.failure(409, "Your access has changed. Please try again.")
             }
             for cookie in updates { await self.setCookie(cookie); try self.ensureCurrent(epoch) }
@@ -128,6 +137,10 @@ final class ReylumiLocalAppTransport {
             try self.ensureCurrent(epoch)
             guard committed == expected else {
                 await self.reset(); throw self.failure(409, "Your access has changed. Please try again.")
+            }
+            if updates.contains(where: { self.workspaceCookieNames.contains($0.name) }),
+               self.cookieIdentity(original.filter { self.workspaceCookieNames.contains($0.name) }) != self.cookieIdentity(committedCookies.filter { self.workspaceCookieNames.contains($0.name) }) {
+                self.workspaceCookieRevision += 1
             }
             try self.ensureCurrent(epoch)
             return committedCookies
@@ -211,6 +224,7 @@ final class ReylumiLocalAppTransport {
         components.path = path; components.queryItems = query.isEmpty ? nil : query; components.fragment = nil
         guard let url = components.url, NavigationPolicy(origin: origin).isInternal(url), path.hasPrefix("/api/app-local/") else { throw failure(400, "Unsupported app request.") }
         let originalCookies = try await reconcileCookies(original: nil, updates: [], epoch: epoch); try ensureCurrent(epoch)
+        let outgoingWorkspaceRevision = workspaceCookieRevision
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 12)
         request.httpMethod = body == nil ? "GET" : "POST"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -229,7 +243,7 @@ final class ReylumiLocalAppTransport {
         guard response.url == url, data.count <= 4 * 1024 * 1024 else { throw failure(502, "Couldn't read this page. Please try again.") }
         let fields = response.allHeaderFields.reduce(into: [String: String]()) { result, entry in if let key = entry.key as? String, let value = entry.value as? String { result[key] = value } }
         let updates = HTTPCookie.cookies(withResponseHeaderFields: fields, for: url).filter { $0.domain.trimmingCharacters(in: CharacterSet(charactersIn: ".")).lowercased() == origin.host?.lowercased() }
-        _ = try await reconcileCookies(original: originalCookies, updates: updates, epoch: epoch)
+        _ = try await reconcileCookies(original: originalCookies, updates: updates, epoch: epoch, workspaceRevision: outgoingWorkspaceRevision)
         try ensureCurrent(epoch)
         if response.statusCode == 401 { await reset(); throw failure(401, "Please reconnect and check your access.") }
         return (data, response)
@@ -283,7 +297,7 @@ final class ReylumiLocalAppTransport {
                 // retaining other unexpired same-viewer display leases.
                 self.scopeEpoch += 1; self.nonce = UUID().uuidString
                 self.session = nil; self.onlineContext = nil
-                self.onEvent?("reylumi:app-local-reset", self.metadata)
+                self.onEvent?("reylumi:app-local-reset", self.metadata.merging(["reason": "context"]) { _, new in new })
             }
             let acceptedEpoch = self.scopeEpoch
             if viewerChanged { await self.store.clear(); ReylumiBackgroundSync.shared.clear() }

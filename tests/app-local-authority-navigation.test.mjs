@@ -46,7 +46,7 @@ async function fixture(start = '/pos', installClock = false) {
     // while keeping all network and business commands inside this fixture.
     stubs['app-local-host'] = stubs['app-local-host']
       .replace('window.contextRequests=[];', 'window.contextRequests=[];window.freshRequests=[];window.rejectReads=0;window.rejectReadStatus=409;window.rejectName=null;window.rejectContext=false;')
-      .replace('window.contextRequests.push(path);', 'window.contextRequests.push(path);if(options?.fresh)window.freshRequests.push(path);if(window.rejectContext)throw Object.assign(Error("Access rejected"),{status:403});')
+      .replace('window.contextRequests.push(path);', 'window.contextRequests.push(path);if(options?.fresh)window.freshRequests.push(path);if(window.nativeContextReset){window.nativeContextReset=false;window.__reylumiAppLocalContext.scopeEpoch++;window.dispatchEvent(new CustomEvent("reylumi:app-local-reset",{detail:{reason:"context",scopeEpoch:window.__reylumiAppLocalContext.scopeEpoch}}));}if(window.rejectContext)throw Object.assign(Error("Access rejected"),{status:403});')
       .replace('window.reads.push({name,scope:options.scope});', 'window.reads.push({name,scope:options.scope});if(window.rejectReads>0&&(!window.rejectName||window.rejectName===name)){window.rejectReads--;throw Object.assign(Error("Access must be checked"),{status:window.rejectReadStatus})}');
     builder.onResolve({ filter: /.*/ }, args => { const name = Object.keys(stubs).find(name => args.path === name || args.path.endsWith('/' + name)); return name ? { path: name, namespace: 'fixture' } : undefined; });
     builder.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({ loader: 'tsx', resolveDir: process.cwd(), contents: stubs[args.path] }));
@@ -56,6 +56,47 @@ async function fixture(start = '/pos', installClock = false) {
   return serve((await entryBundle).outputFiles[0].text, seed(), start, installClock);
 }
 const navigate = (page, path) => page.evaluate(path => window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate', { detail: { path } })), path);
+
+test('workspace handoff gates old owner content, admits the destination family and survives native context reset', { skip, timeout: 40000 }, async () => {
+  const app = await fixture('/pos'); try {
+    await app.page.locator('.owner-amount-field input[aria-label=Amount]').fill('81.25');
+    await app.page.evaluate(() => {
+      window.nativeContextReset=true;
+      window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-handoff',{detail:{path:'/staff/my-work'}}));
+    });
+    await app.page.waitForFunction(()=>window.freshRequests.includes('/staff/my-work'));
+    assert.equal(await app.page.locator('.owner-amount-field input[aria-label=Amount]').count(),0);
+    assert.equal(await app.page.evaluate(()=>window.commandScope),undefined);
+    await app.page.evaluate(()=>window.releaseFamily('portal'));
+    await app.page.locator('[data-fixture-page="staff.my-work"]').waitFor();
+    assert.equal(await app.page.evaluate(()=>window.commandScope),scopes.portal);
+    // A queued native reset event delivered after the fresh reply is harmless.
+    await app.page.evaluate(()=>window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{reason:'context',scopeEpoch:window.__reylumiAppLocalContext.scopeEpoch}})));
+    assert.equal(await app.page.evaluate(()=>window.commandScope),scopes.portal);
+    assert.equal(await app.page.evaluate(()=>window.wrongScope),0);
+    assert.deepEqual(await app.page.evaluate(()=>window.apiCalls),[]);
+  } finally { await app.close(); }
+});
+
+test('failed handoff retries only destination context and user navigation supersedes the recovery', { skip, timeout: 40000 }, async () => {
+  const app = await fixture('/pos'); try {
+    await app.page.locator('.owner-amount-field input[aria-label=Amount]').fill('55.50');
+    await app.page.evaluate(()=>{window.rejectContext=true;window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-handoff',{detail:{path:'/staff/my-work'}}));});
+    await app.page.getByText('Please check your connection and try again.',{exact:true}).waitFor();
+    assert.equal(await app.page.evaluate(()=>window.commandScope),undefined);
+    await app.page.evaluate(()=>{window.rejectContext=false;window.held=[];});
+    await app.page.getByRole('button',{name:'Try again',exact:true}).click();
+    await app.page.locator('[data-fixture-page="staff.my-work"]').waitFor();
+    assert.equal(await app.page.evaluate(()=>window.commandScope),scopes.portal);
+    await app.page.evaluate(()=>{window.rejectContext=true;window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-handoff',{detail:{path:'/staff/workday'}}));});
+    await app.page.getByText('Please check your connection and try again.',{exact:true}).waitFor();
+    await app.page.evaluate(()=>{window.rejectContext=false;});
+    await navigate(app.page,'/settings');
+    await app.page.locator('[data-fixture-page="page.settings"]').waitFor();
+    assert.equal(await app.page.evaluate(()=>window.commandScope),scopes.account);
+    assert.deepEqual(await app.page.evaluate(()=>window.apiCalls),[]);
+  } finally { await app.close(); }
+});
 
 test('one rejected read forces fresh authority recovery and restores the saved money draft', { skip, timeout: 40000 }, async () => {
   const app = await fixture('/pos', true); try {

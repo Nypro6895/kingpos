@@ -40,7 +40,12 @@ export function resetAppLocalResources() {
   cells.clear();
 }
 if (typeof window !== "undefined") {
-  for (const event of ["reylumi:app-local-reset", "reylumi:experience-reset", "reylumi:offline-clear", "reylumi:offline-grant-invalidated", "reylumi:experience-access-changed"]) window.addEventListener(event, resetAppLocalResources);
+  for (const event of ["reylumi:app-local-reset", "reylumi:experience-reset", "reylumi:offline-clear", "reylumi:offline-grant-invalidated", "reylumi:experience-access-changed"]) window.addEventListener(event, value => {
+    // Entry sequences context rotations against the accepted native epoch.
+    // A queued reset must not independently erase the destination's new cells.
+    if (event === "reylumi:app-local-reset" && (value as CustomEvent<{ reason?: string }>).detail?.reason === "context") return;
+    resetAppLocalResources();
+  });
   window.addEventListener("reylumi:app-local-command-complete", event => {
     const { scope, source } = (event as CustomEvent<{ scope?: string; source?: string }>).detail ?? {};
     for (const [key, cell] of cells) {

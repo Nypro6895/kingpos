@@ -85,12 +85,13 @@ test('native HTTP adapter leaves web/foreign requests intact, preserves business
   const controller = new AbortController(); controller.abort(); await assert.rejects(() => wrapped('/api/auth/session', { signal: controller.signal }));
   await wrapped('/api/auth/logout', { method: 'POST' }); assert.deepEqual(events, ['reset']); assert.equal(calls.filter(x => x.name === 'shell.logout').length, 1);
 });
-test('workspace handoff calls the original named command once then requires fresh context before accepting/navigating', async () => {
+test('workspace handoff submits once and delegates destination admission to entry; obsolete account replies cannot navigate', async () => {
   let scope = 'scope-a', resolve, calls = [], events = [];
   globalThis.window = new EventTarget(); Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { onLine: true } });
   globalThis.__shellScope = () => scope; globalThis.__shellHost = { isNative: true, async command(name, args, options) { calls.push({ kind: 'command', name, args, options }); return new Promise(r => resolve = r); }, async context(path, options) { calls.push({ kind: 'context', path, options }); return { schemaVersion: 1, context: { scope: 'scope-b', authenticated: true } }; } };
   window.addEventListener('reylumi:app-local-reset', () => { events.push('reset'); scope = undefined; }); window.addEventListener('reylumi:app-local-context', event => { events.push(event.detail.context.scope); scope = event.detail.context.scope; }); window.addEventListener('reylumi:app-local-navigate', event => events.push(event.detail.path));
-  const api = await moduleFrom('lib/app-local-shell-workspace-navigation.ts', { 'app-local-host': 'export const getAppLocalHost=()=>globalThis.__shellHost', 'app-local-command-client': 'export const getAppLocalCommandScope=()=>globalThis.__shellScope()' });
-  api.navigateToWorkspace('manage:salon-b', '/pos'); api.navigateToWorkspace('manage:salon-b', '/pos'); assert.equal(calls.length, 1); resolve({ path: '/pos' }); await new Promise(resolve => setImmediate(resolve)); assert.deepEqual(calls[1], { kind: 'context', path: '/pos', options: { fresh: true } }); assert.deepEqual(events, ['reset', 'scope-b', '/pos']);
+  window.addEventListener('reylumi:app-local-workspace-handoff', event => events.push(event.detail.path));
+  const api = await moduleFrom('lib/app-local-shell-workspace-navigation.ts', { 'app-local-host': 'export const appLocalPath=x=>x;export const getAppLocalHost=()=>globalThis.__shellHost', 'app-local-command-client': 'export const getAppLocalCommandScope=()=>globalThis.__shellScope()' });
+  api.navigateToWorkspace('manage:salon-b', '/pos'); api.navigateToWorkspace('manage:salon-b', '/pos'); assert.equal(calls.length, 1); resolve({ path: '/pos' }); await new Promise(resolve => setImmediate(resolve)); assert.equal(calls.length, 1); assert.deepEqual(events, ['/pos']);
   scope = 'scope-a'; calls = []; events = []; api.navigateToWorkspace('manage:salon-b'); scope = 'new-account'; resolve({ path: '/pos' }); await new Promise(resolve => setImmediate(resolve)); assert.equal(calls.length, 1); assert.deepEqual(events, [], 'an obsolete old-account handoff cannot reset or navigate the new session');
 });

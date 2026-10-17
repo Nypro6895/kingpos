@@ -52,7 +52,7 @@ const nextPlugin = {
       const names = ast.statements.filter(node => ts.isFunctionDeclaration(node) && node.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword)).map(node => node.name?.text).filter(Boolean);
       const proxies = names.map(name => {
         const id = commandNames.get(originalModule + '#' + name);
-        if (id) return `export const ${name}=(...values)=>invokeAppLocalCommand(${JSON.stringify(id)},values,${!/^(load|get|search|referenceLoveStates)/.test(name)},${JSON.stringify(originalModule)});`;
+        if (id) return `export const ${name}=(...values)=>invokeAppLocalCommand(${JSON.stringify(id)},values,${!/^(load|get|search|referenceLoveStates)/.test(name)},${JSON.stringify(originalModule)},${originalModule === 'app/notifications/actions.ts' && name === 'runNotificationBookingAction'});`;
         unsupported.set(originalModule + '#' + name, true);
         return `export const ${name}=()=>{throw new Error(${JSON.stringify('__unsupported_action:' + originalModule + '#' + name)})};`;
       });

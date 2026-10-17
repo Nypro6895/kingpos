@@ -76,13 +76,13 @@ export function AppLocalShell({ context, presentationContext, children, path }: 
               || event.target.method.toLowerCase() === "get" || !event.target.closest("#customer-context-sheet,#customer-desktop-account-menu")) return;
             event.preventDefault(); event.stopPropagation(); router.push("/my-place");
           }}>
-            {menu?.navigation ? <NavigationShell {...menu.navigation} passive={presentationOnly}>{body}</NavigationShell> : <GuestNavigationShell authenticated={context?.context.authenticated ?? false}>{body}</GuestNavigationShell>}
+            {menu?.navigation ? <NavigationShell {...menu.navigation} passive={presentationOnly}>{body}</NavigationShell> : <GuestNavigationShell authenticated={context ? context.context.authenticated : publicInitial ? false : null}>{body}</GuestNavigationShell>}
           </div>
           {bodyHost ? createPortal(children, bodyHost) : children}
         </ExploreAdvertising>
         {!publicInitial ? <QuickBooking /> : null}
       </ExploreAccountActionsProvider>
-      <ActionDialog open={Boolean(error)} title="Workspace action needed" description={error} onClose={() => setError("")} primaryAction={{ label: "Try again", onClick: () => setError("") }} />
+      <ActionDialog open={Boolean(error)} title="Workspace action needed" description={error} onClose={() => setError("")} primaryAction={{ label: "Try again", onClick: () => { setError(""); window.dispatchEvent(new Event("reylumi:app-local-workspace-retry")); } }} />
     </CampaignPluginProvider>
   </WorkspaceLanguageProvider>;
 }

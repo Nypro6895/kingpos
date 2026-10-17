@@ -126,8 +126,13 @@ function App() {
   const [helpPresentation, setHelpPresentation] = useState<Admission | null>(null);
   const current = useRef(path), admitted = useRef(admissions), contextEpoch = useRef(0), request = useRef<AbortController | null>(null);
   const recoveryAttempts = useRef(new Set<string>());
+  const handoffPath = useRef<string | null>(null), acceptedHostEpoch = useRef(-1);
+  const [switchingWorkspace, setSwitchingWorkspace] = useState(false);
   useLayoutEffect(() => { current.current = path; }, [path]);
-  const accept = useCallback((value: AppLocalContext, requestedPath: string) => {
+  const accept = useCallback((value: AppLocalContext, requestedPath: string, requested = false) => {
+    // Native context events from a command preflight may arrive after its reply.
+    // During a role handoff only our destination request may admit a page.
+    if (handoffPath.current && (!requested || requestedPath !== handoffPath.current)) return;
     if (!value || value.schemaVersion !== 1 || !isAppLocalScopeId(value.context?.scope)) return;
     const family = authorityFamily(requestedPath);
     if (family !== authorityFamily(current.current) || isPublic(current.current)) return;
@@ -140,16 +145,20 @@ function App() {
     const authorityChanged = previous && (previous.value.context.scope !== value.context.scope || previous.value.context.permissionRevision !== value.context.permissionRevision || previous.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision);
     if (identityChanged || authorityChanged) { resetAppLocalResources(); clearExperienceState(); setVisited([]); admitted.current = {}; }
     admitted.current = { ...admitted.current, [family]: { value, generation } }; setAdmissions(admitted.current);
+    acceptedHostEpoch.current = window.__reylumiAppLocalContext?.scopeEpoch ?? -1;
+    handoffPath.current = null; setSwitchingWorkspace(false);
     setAppLocalCommandScope(usable(admitted.current[family]) ? value.context.scope : undefined); setError(false);
   }, []);
   const verify = useCallback(async (options?: { fresh?: boolean }) => {
     if (isPublic(current.current)) return;
     const requestedPath = current.current, started = ++contextEpoch.current; request.current?.abort(); const controller = new AbortController(); request.current = controller;
-    try { const value = await getAppLocalHost().context(requestedPath, { signal: controller.signal, fresh: options?.fresh }); if (!controller.signal.aborted && started === contextEpoch.current) accept(value, requestedPath); }
-    catch { if (!controller.signal.aborted && started === contextEpoch.current) setError(true); }
+    setError(false);
+    try { const value = await getAppLocalHost().context(requestedPath, { signal: controller.signal, fresh: options?.fresh || Boolean(handoffPath.current) }); if (!controller.signal.aborted && started === contextEpoch.current) accept(value, requestedPath, true); }
+    catch { if (!controller.signal.aborted && started === contextEpoch.current) { setError(true); setSwitchingWorkspace(false); } }
   }, [accept]);
   const transition = useCallback((destination: string) => {
     const previous = current.current;
+    if (handoffPath.current && handoffPath.current !== destination) { handoffPath.current = null; setSwitchingWorkspace(false); }
     if (isHelp(destination)) {
       if (!isHelp(previous)) {
         const outgoing = admitted.current[authorityFamily(previous)];
@@ -177,14 +186,18 @@ function App() {
     // A recent online admission already verified this family. Commands still
     // authorize on the server; foreground and access failures force rechecking.
     const recent = usable(saved) && !saved.value.offline && Date.now() - saved.value.onlineValidatedAt < 30_000;
-    if (!isPublic(path) && !recent) void verify();
+    if (!isPublic(path) && !recent && !handoffPath.current) void verify();
   }, [path, verify]);
   useEffect(() => {
     const nav = (event: Event) => { const value = (event as CustomEvent<{ path?: string }>).detail?.path; if (value) navigate(value); };
     const fresh = (event: Event) => { const value = (event as CustomEvent<AppLocalContext & { contextPath?: string }>).detail; if (typeof value?.contextPath === "string") accept(value, value.contextPath); };
     const reset = (event: Event) => {
-      contextEpoch.current++; request.current?.abort(); alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); setError(true);
-      const detail = (event as CustomEvent<{ reason?: string; scope?: string }>).detail;
+      const detail = (event as CustomEvent<{ reason?: string; scope?: string; scopeEpoch?: number }>).detail;
+      // A fresh authority result rotates native delivery metadata. Do not abort
+      // the very context read producing it, or clear an already accepted reply.
+      if (detail?.reason === "context" && detail.scopeEpoch !== undefined && detail.scopeEpoch <= acceptedHostEpoch.current) return;
+      if (detail?.reason !== "context") { contextEpoch.current++; request.current?.abort(); }
+      alignDeviceGeneration(); void clearExperienceSnapshots({ rotateGeneration: false }); clearExperienceState(); resetAppLocalResources(); setAppLocalCommandScope(undefined); admitted.current = {}; setAdmissions({}); setHelpPresentation(null); setVisited([]); setError(detail?.reason !== "context");
       const key = `${authorityFamily(current.current)}:${detail?.scope ?? ""}`;
       // One fresh authority recovery per user navigation. Context rejection or
       // a second failing read stops at an actionable retry, never a retry loop.
@@ -192,6 +205,18 @@ function App() {
         recoveryAttempts.current.add(key); setError(false); void verify({ fresh: true });
       }
     };
+    const handoff = (event: Event) => {
+      const value = (event as CustomEvent<{ path?: string }>).detail?.path;
+      if (!value) return;
+      let destination: string; try { destination = appLocalPath(value); } catch { return; }
+      // Clear the old authority before any destination can render. Commands
+      // have already finished; retry only the fresh read, never the write.
+      reset(new Event("reylumi:app-local-reset"));
+      handoffPath.current = destination; setSwitchingWorkspace(true); setError(false);
+      navigate(destination);
+      if (!isPublic(current.current)) void verify({ fresh: true });
+    };
+    const retryWorkspace = () => { setSwitchingWorkspace(true); void verify({ fresh: true }); };
     const resume = () => { void verify({ fresh: true }); };
     let accessCheck: ReturnType<typeof setTimeout> | undefined;
     const revalidateAccess = (event: Event) => {
@@ -203,7 +228,8 @@ function App() {
     window.addEventListener("reylumi:app-local-navigate", nav); window.addEventListener("reylumi:app-local-context", fresh); window.addEventListener("reylumi:app-local-reset", reset); window.addEventListener("reylumi:app-local-access-changed", reset); window.addEventListener("popstate", pop);window.addEventListener("reylumi:app-local-history",pop);
     window.addEventListener("online", resume); window.addEventListener("reylumi:foreground", resume);
     window.addEventListener("reylumi:app-local-revalidate-access", revalidateAccess);
-    return () => { clearTimeout(accessCheck); window.removeEventListener("reylumi:app-local-revalidate-access", revalidateAccess); window.removeEventListener("reylumi:app-local-navigate", nav); window.removeEventListener("reylumi:app-local-context", fresh); window.removeEventListener("reylumi:app-local-reset", reset); window.removeEventListener("reylumi:app-local-access-changed", reset); window.removeEventListener("popstate", pop);window.removeEventListener("reylumi:app-local-history",pop); window.removeEventListener("online", resume); window.removeEventListener("reylumi:foreground", resume); };
+    window.addEventListener("reylumi:app-local-workspace-handoff", handoff); window.addEventListener("reylumi:app-local-workspace-retry", retryWorkspace);
+    return () => { clearTimeout(accessCheck); window.removeEventListener("reylumi:app-local-workspace-handoff", handoff); window.removeEventListener("reylumi:app-local-workspace-retry", retryWorkspace); window.removeEventListener("reylumi:app-local-revalidate-access", revalidateAccess); window.removeEventListener("reylumi:app-local-navigate", nav); window.removeEventListener("reylumi:app-local-context", fresh); window.removeEventListener("reylumi:app-local-reset", reset); window.removeEventListener("reylumi:app-local-access-changed", reset); window.removeEventListener("popstate", pop);window.removeEventListener("reylumi:app-local-history",pop); window.removeEventListener("online", resume); window.removeEventListener("reylumi:foreground", resume); };
   }, [navigate, accept, verify, transition]);
   const activeAdmission = admissions[authorityFamily(path)], context = !isPublic(path) && usable(activeAdmission) ? activeAdmission.value : null;
   // Help can display the already admitted role chrome, but receives no account
@@ -232,7 +258,7 @@ function App() {
   return <AppLocalNavigationProvider value={{ path, navigate, refresh: () => void verify() }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path}>
     <div className="app-local-body" data-app-local-ready="true">
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} experienceScope={presentationContext?.context.scope} /></div> : null}
-      {!isPublic(path) && !context && getAppLocalPage(path)?.requiresContext !== false ? <section className="p-6" aria-busy={!error}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">Please check your connection and try again.</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></> : <LumiLoadingStatus />}</section> : null}
+      {!isPublic(path) && !context && getAppLocalPage(path)?.requiresContext !== false ? <section className="p-6" aria-busy={!error}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">Please check your connection and try again.</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify({ fresh: true })}>Try again</button></> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
       {context && !owner && ownerPaths.has(path.split("?")[0]) ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{path.startsWith("/pos/check-in") ? "Check In" : "POS"}</h1><p className="mt-4">{error || context.offline ? "Connect to verify access to this workspace." : "Opening your workspace…"}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></section> : null}
         {ownerContext && owner && ownerVisited && ownerContext.context.salonId ? <div className="app-local-page" hidden={!context || !ownerPaths.has(path.split("?")[0])}><ExperienceScopeProvider context={ownerContext.context} guardForms={false}><PageBoundary recover={() => void verify()}><OwnerPages context={ownerContext} path={path} navigate={navigate} active={Boolean(context && ownerPaths.has(path.split("?")[0]))} /></PageBoundary></ExperienceScopeProvider></div> : null}
         {!context && activeAdmission && getAppLocalPage(path)?.requiresContext === false ? (() => { const page = getAppLocalPage(path)!; return <div className="app-local-page"><page.Component context={null} path={path} navigate={navigate} /></div>; })() : null}
