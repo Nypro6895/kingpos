@@ -1755,7 +1755,7 @@ export function DailyPosTicketCard({
   const isTotalTipEditing = moneyTarget?.kind === "totalTip";
 
   return (
-    <article className="border-b border-zinc-200 last:border-b-0">
+    <article className="border-b border-zinc-200">
       <form action={correctionActions.correctClosedTicket}>
         {isEditing ? (
           <>
@@ -1783,6 +1783,36 @@ export function DailyPosTicketCard({
             ) : null}
           </>
         ) : null}
+        {!isEditing ? (
+          <div className="px-4 py-3 text-sm text-zinc-950 sm:px-3" data-compact-ticket>
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="shrink-0 font-semibold">#{dailyNumber}</span>
+              <span className="shrink-0 text-xs text-zinc-600"><WorkspaceText text={formatTime(ticket.opened_at, timeZone)} /></span>
+              <span className="min-w-0 flex-1 truncate"><CustomerName name={ticket.customer?.name} /></span>
+              {ticket.source_booking_id ? <span className="shrink-0 text-xs text-sky-800"><WorkspaceText text="From appointment" /></span> : null}
+              {canCorrectClosedTicket ? (
+                <button type="button" aria-label="Edit" title="Edit" onClick={startEdit}
+                  className="-my-2 -mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-zinc-600">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m16 3 5 5M4 15 16 3a2 2 0 0 1 5 5L9 20l-6 1 1-6Z" /></svg>
+                </button>
+              ) : null}
+            </div>
+            <div className="my-2 space-y-1">
+              {displayedLines.length === 0 ? <WorkspaceText text="No services recorded." /> : displayedLines.map(line => (
+                <div key={line.key} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-baseline gap-2">
+                  <span className="min-w-0 break-words font-semibold">{staffDisplayName(line)}</span>
+                  <span className="min-w-0 break-words text-zinc-600">{serviceName(line)}</span>
+                  <span className="tabular-nums">{formatMoney(lineTotal(line))}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-baseline justify-between gap-2 text-xs tabular-nums text-zinc-600">
+              <span><WorkspaceText text="Tip" /> {formatMoney(initialTotals.tip_amount)}</span>
+              <span><WorkspaceText text="Discount" /> {formatMoney(initialTotals.discount_amount)}</span>
+              <span className="font-semibold text-zinc-950"><WorkspaceText text="Total" /> {formatMoney(initialTotals.total)}</span>
+            </div>
+          </div>
+        ) : (<>
         <div className="grid items-center gap-2 bg-zinc-50 px-3 py-2 text-sm sm:grid-cols-[48px_80px_minmax(150px,1fr)_110px_150px_130px_56px]">
           <span className="font-semibold text-zinc-950">#{dailyNumber}</span>
           <span className="text-zinc-700">
@@ -1839,6 +1869,7 @@ export function DailyPosTicketCard({
             displayedLines.map((line) => renderLine(line))
           )}
         </div>
+        </>)}
         {renderCorrectionHistory()}
         {isEditing ? (
           <div className="border-t border-zinc-200 px-3 py-3">

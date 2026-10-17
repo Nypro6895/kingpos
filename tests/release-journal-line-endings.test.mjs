@@ -93,3 +93,17 @@ test('semantic deduplication still rejects changed values, array order and missi
     assert.deepEqual(await fs.readFile(f.duplicatePath), bytes, `${name} does not repair or rewrite a conflicting event`);
   }
 });
+
+test('record command diagnostic filePath is ignored without rewriting either immutable copy', async t => {
+  const f = await fixture(t);
+  const output = Buffer.from(JSON.stringify({ ...f.event, filePath: 'C:/historical-machine/transport-output.json' }, null, 2));
+  await fs.writeFile(f.duplicatePath, output);
+  for (const cwd of [f.primary, f.linked]) {
+    assert.deepEqual(readJournal({ cwd }), [f.event]);
+    assert.equal(pendingChanges({ cwd })[0].eventId, f.record.id);
+  }
+  assert.deepEqual(await fs.readFile(f.record.filePath), f.original);
+  assert.deepEqual(await fs.readFile(f.duplicatePath), output);
+  await fs.writeFile(f.duplicatePath, JSON.stringify({ ...f.event, filePath: 'local-only', summary: 'Actually changed event' }));
+  assert.throws(() => readJournal({ cwd: f.primary }), /Conflicting copies of journal event/);
+});

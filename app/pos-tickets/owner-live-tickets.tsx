@@ -1,7 +1,7 @@
 "use client";
-import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
-import Form from "next/form";
-import {useState,useEffect,useRef} from 'react';import Link from 'next/link';
+import { WorkspaceText } from "@/components/workspace-language";
+import { TicketFilters } from "./ticket-filters";
+import {useState,useEffect,useRef} from 'react';
 import {usePosResourceRefresh} from '@/lib/pos-workspace-sync';
 import {DailyPosTicketCard} from './closed-ticket-correction-form';
 import {calculateTicketTotals} from '@/lib/pos-ticket-calculations';
@@ -28,124 +28,13 @@ function formatDateKey(value: string) {
   return `${year}-${month}-${day}`;
 }
 
-function parseLocalDateParts(value: string) {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 
-  if (!match) {
-    return null;
-  }
 
-  const [, year, month, day] = match;
 
-  return {
-    day: Number(day),
-    month: Number(month),
-    year: Number(year),
-  };
-}
 
-function getLocalDateString(timeZone: string) {
-  return new Intl.DateTimeFormat('en-CA',{timeZone}).format(new Date());
-}
 
-function getTimeZoneOffsetMs(date: Date, timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    day: "2-digit",
-    hour: "2-digit",
-    hourCycle: "h23",
-    minute: "2-digit",
-    month: "2-digit",
-    second: "2-digit",
-    timeZone,
-    year: "numeric",
-  }).formatToParts(date);
-  const getPart = (type: string) =>
-    Number(parts.find((part) => part.type === type)?.value ?? 0);
-  const zonedTimeAsUtc = Date.UTC(
-    getPart("year"),
-    getPart("month") - 1,
-    getPart("day"),
-    getPart("hour"),
-    getPart("minute"),
-    getPart("second"),
-    date.getUTCMilliseconds(),
-  );
 
-  return zonedTimeAsUtc - date.getTime();
-}
 
-function getUtcInstantForLocalDateTime(
-  dateString: string,
-  timeZone: string,
-  hour: number,
-) {
-  const parts = parseLocalDateParts(dateString);
-
-  if (!parts) {
-    throw new Error("Invalid POS work log date.");
-  }
-
-  const localTimeAsUtc = Date.UTC(parts.year, parts.month - 1, parts.day, hour);
-  const offset = getTimeZoneOffsetMs(new Date(localTimeAsUtc), timeZone);
-  const firstPass = localTimeAsUtc - offset;
-  const verifiedOffset = getTimeZoneOffsetMs(new Date(firstPass), timeZone);
-
-  return new Date(localTimeAsUtc - verifiedOffset);
-}
-
-function getNextLocalDateString(dateString: string) {
-  const parts = parseLocalDateParts(dateString);
-
-  if (!parts) {
-    throw new Error("Invalid POS work log date.");
-  }
-
-  return new Date(Date.UTC(parts.year, parts.month - 1, parts.day + 1))
-    .toISOString()
-    .slice(0, 10);
-}
-
-function getUtcBoundsForLocalDate(dateString: string, timeZone: string) {
-  const start = getUtcInstantForLocalDateTime(dateString, timeZone, 0);
-  const nextDate = getNextLocalDateString(dateString);
-  const nextStart = getUtcInstantForLocalDateTime(nextDate, timeZone, 0);
-
-  return {
-    openedFrom: start.toISOString(),
-    openedTo: new Date(nextStart.getTime() - 1).toISOString(),
-  };
-}
-
-function formatLocalDateHeader(dateString: string, timeZone: string) {
-  const parts = parseLocalDateParts(dateString);
-
-  if (!parts) {
-    return dateString;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    timeZone,
-    year: "numeric",
-  }).format(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)));
-}
-
-function formatLocalDateCompact(dateString: string, timeZone: string) {
-  const parts = parseLocalDateParts(dateString);
-
-  if (!parts) {
-    return dateString;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-    timeZone,
-    year: "numeric",
-  }).format(new Date(Date.UTC(parts.year, parts.month - 1, parts.day, 12)));
-}
 
 function formatTime(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -154,9 +43,6 @@ function formatTime(value: string) {
   }).format(new Date(value));
 }
 
-function isDateInputValue(value: string | undefined) {
-  return Boolean(value?.match(/^\d{4}-\d{2}-\d{2}$/));
-}
 
 function getTicketFilterHref({
   date,
@@ -273,57 +159,6 @@ function groupTicketsByDate(tickets: PosTicketWithRelations[]) {
     }));
 }
 
-function WorkLogFilters({
-  query,
-  selectedDate,
-  todayHref,
-}: {
-  query: string;
-  selectedDate: string;
-  todayHref: string;
-}) {
-  const __vt = useWorkspaceTranslation();
-
-  return (
-    <Form
-      action="/pos-tickets"
-      className="mt-4 grid gap-3 border-b border-zinc-200 pb-4 sm:grid-cols-[180px_minmax(260px,1fr)_auto_auto]"
-    >
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text="Date" /></span>
-        <input
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={selectedDate}
-          name="date"
-          type="date"
-        />
-      </label>
-      <label className="block">
-        <span className="text-xs font-medium uppercase text-zinc-500"><WorkspaceText text="Search" /></span>
-        <input
-          className="mt-1 h-10 w-full rounded border border-zinc-300 bg-white px-3 text-sm text-zinc-950"
-          defaultValue={query}
-          name="q"
-          placeholder={__vt("Search customer, staff, service, ticket #")}
-          type="search"
-        />
-      </label>
-      <button
-        className="h-10 self-end rounded bg-zinc-950 px-4 text-sm font-medium text-white"
-        type="submit"
-      >
-        <WorkspaceText text="Search" />
-      </button>
-      <Link
-        className="inline-flex h-10 items-center self-end rounded border border-zinc-300 px-3 text-sm font-medium text-zinc-950"
-        href={todayHref}
-      >
-        <WorkspaceText text="Today" />
-      </Link>
-    </Form>
-  );
-}
-
 function DailyWorkLog({
   canApplyFinancialCorrection,
   canEdit,
@@ -332,7 +167,6 @@ function DailyWorkLog({
   isBusinessDateLocked,
   returnTo,
   selectedDateCompactLabel,
-  selectedDateLabel,
   services,
   staff,
 }: {
@@ -349,12 +183,7 @@ function DailyWorkLog({
 }) {
   if (groups.length === 0) {
     return (
-      <section className="mt-6">
-        <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
-          <h2 className="text-lg font-semibold text-zinc-950">
-            <WorkspaceText text={selectedDateLabel} />
-          </h2>
-        </div>
+      <section className="mt-1">
         <div className="rounded border border-dashed border-zinc-300 bg-zinc-50 p-6">
           <h2 className="text-lg font-semibold text-zinc-950">
             <WorkspaceText text="No POS work log for this date." />
@@ -365,15 +194,10 @@ function DailyWorkLog({
   }
 
   return (
-    <div className="mt-6 space-y-8">
+    <div className="mt-1">
       {groups.map((dateGroup) => (
         <section key={dateGroup.dateKey}>
-          <div className="mb-3 flex items-baseline justify-between border-b border-zinc-300 pb-2">
-            <h2 className="text-lg font-semibold text-zinc-950">
-              <WorkspaceText text={selectedDateLabel} />
-            </h2>
-          </div>
-          <div className="overflow-hidden rounded border border-zinc-200 bg-white">
+            <div className="bg-white">
             {dateGroup.tickets.map((ticket) => (
               <DailyPosTicketCard
                 businessDateCompactLabel={selectedDateCompactLabel}
@@ -396,8 +220,9 @@ function DailyWorkLog({
 }
 
 
-type Props=Omit<Parameters<typeof DailyWorkLog>[0],'groups'|'dailyNumbers'>&{snapshotAt?:number;managedRead?:boolean;salonId:string;initialTickets:PosTicketWithRelations[];bounds:{openedFrom:string;openedTo:string};searchQuery:string};
-export function OwnerLiveTickets({snapshotAt,salonId,initialTickets,bounds,searchQuery,managedRead=false,...props}:Props){
+type Props=Omit<Parameters<typeof DailyWorkLog>[0],'groups'|'dailyNumbers'>&{selectedDate:string;snapshotAt?:number;managedRead?:boolean;salonId:string;initialTickets:PosTicketWithRelations[];bounds:{openedFrom:string;openedTo:string};searchQuery:string};
+export function OwnerLiveTickets({selectedDate,snapshotAt,salonId,initialTickets,bounds,searchQuery,managedRead=false,...props}:Props){
+ const [query,setQuery]=useState(searchQuery);
  const [live,setLive]=useState<{base:PosTicketWithRelations[];tickets:PosTicketWithRelations[]}|null>(null);
  const tickets=live?.base===initialTickets?live.tickets:initialTickets;
  const generation=useRef(0);
@@ -412,6 +237,6 @@ export function OwnerLiveTickets({snapshotAt,salonId,initialTickets,bounds,searc
      return {base:initialTickets,tickets:(ids?.length?[...current.filter(t=>!ids.includes(t.id)),...next.tickets]:next.tickets).sort((a:PosTicketWithRelations,b:PosTicketWithRelations)=>b.opened_at.localeCompare(a.opened_at))};
    });
  },{enabled:!managedRead,initialReconcile:false,snapshotAt});
- const dailyNumbers=buildDailyTicketNumbers(tickets);const groups=groupTicketsByDate(filterTicketsBySearch(tickets,searchQuery,dailyNumbers));
- return <DailyWorkLog {...props} groups={groups} dailyNumbers={dailyNumbers}/>;
+ const dailyNumbers=buildDailyTicketNumbers(tickets);const groups=groupTicketsByDate(filterTicketsBySearch(tickets,query,dailyNumbers));
+ return <><TicketFilters date={selectedDate} query={query} onQueryChange={setQuery}/><DailyWorkLog {...props} returnTo={getTicketFilterHref({date:selectedDate,q:query})} groups={groups} dailyNumbers={dailyNumbers}/></>;
 }

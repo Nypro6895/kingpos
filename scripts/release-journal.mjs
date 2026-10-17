@@ -34,6 +34,9 @@ export function readJournal({ cwd = process.cwd() } = {}) {
     for (const file of readdirSync(folder).filter(f => f.endsWith('.json')).sort()) {
       const bytes = readFileSync(join(folder, file));
       const event = JSON.parse(bytes);
+      // recordEvent returns filePath as a local diagnostic, not event content.
+      // Ignore transport-only output in memory without rewriting source bytes.
+      delete event.filePath;
       if (!event.id || !event.recordedAt || !['change', 'release'].includes(event.kind)) throw Error(`Malformed journal record: ${file}`);
       // Git may change whitespace or line endings in another worktree. Compare
       // complete JSON values without rewriting either immutable source file.
