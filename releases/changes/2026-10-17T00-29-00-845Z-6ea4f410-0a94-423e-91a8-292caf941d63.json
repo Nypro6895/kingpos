@@ -1,0 +1,33 @@
+{
+  "kind": "change",
+  "changeId": "drako-settings-qa-fixes-20261016",
+  "status": "working",
+  "summary": "Integrate three Settings fixes and regenerate installed client bundle on exact uploaded build 25.1; preserve native foundation and original logo.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "app/market/booking-deposit-actions.ts",
+    "app/market/booking-deposit-panel.tsx",
+    "app/settings/salon-list-panel.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "tests/booking-deposit-settings-target.test.mjs",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "commit": "cd3885f09abd07ad1251bbe0d298d246de74602e"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "Target authorization and regression tests; real-component UI; release build; live Drako QA",
+      "result": "pending"
+    }
+  ],
+  "id": "6ea4f410-0a94-423e-91a8-292caf941d63",
+  "recordedAt": "2026-10-17T00:29:00.845Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-booking-native\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
