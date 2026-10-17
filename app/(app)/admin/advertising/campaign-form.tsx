@@ -1,4 +1,5 @@
 "use client";
+import { prepareImageUpload } from "@/lib/image-upload-client";
 import { CampaignPreview } from "./campaign-preview";
 /* eslint-disable @next/next/no-img-element -- Preserve uploaded GIF animations. */
 import { useState, useEffect, type FormEvent } from "react";
@@ -129,7 +130,7 @@ export function CampaignForm({
       data.set("id", id);
       change("id", id);
     }
-    if (closeButton) data.set("closeButton", "on");
+    if (closeButton || values.kind === "popup") data.set("closeButton", "on");
     if (values.kind === "ticker") data.set("imageUrl", "");
     else if (file) data.set("imageUrl", "/advertising-upload-pending");
     try {
@@ -146,13 +147,14 @@ export function CampaignForm({
           throw new CampaignValidationError({
             image: "Choose a JPG, PNG, WebP or GIF under 10 MB.",
           });
-        const upload = await campaignImageUploadAction(file.type, file.size);
+        const prepared = await prepareImageUpload(file);
+        const upload = await campaignImageUploadAction(prepared.type, prepared.size);
         const client = createSupabaseBrowserClient();
         if (!client) throw new Error("Image upload is unavailable.");
         const { error } = await client.storage
           .from("explore-advertising")
-          .uploadToSignedUrl(upload.path, upload.token, file, {
-            contentType: file.type,
+          .uploadToSignedUrl(upload.path, upload.token, prepared, {
+            contentType: prepared.type,
           });
         if (error) throw new Error("Image upload failed. Please try again.");
         data.set("imageUrl", upload.url);
@@ -169,7 +171,7 @@ export function CampaignForm({
         return;
       }
       data.set("id", result.id!);
-      onSaved(parseCampaign(data));
+      onSaved(result.campaign ?? parseCampaign(data));
     } catch (error) {
       if (error instanceof CampaignValidationError) setErrors(error.fields);
       setMessage(
@@ -395,7 +397,8 @@ export function CampaignForm({
             <label className={styles.checkbox}>
               <input
                 type="checkbox"
-                checked={closeButton}
+                checked={values.kind === "popup" || closeButton}
+                disabled={values.kind === "popup"}
                 onChange={(e) => setCloseButton(e.target.checked)}
               />
               Show close button
@@ -418,7 +421,7 @@ export function CampaignForm({
                   form.set(key, value);
                 form.set("name", values.name || "Campaign preview");
                 form.set("status", "draft");
-                if (closeButton) form.set("closeButton", "on");
+                if (closeButton || values.kind === "popup") form.set("closeButton", "on");
                 if (file) form.set("imageUrl", "");
                 const preview = parseCampaign(form);
                 if (file) preview.imageUrl = URL.createObjectURL(file);

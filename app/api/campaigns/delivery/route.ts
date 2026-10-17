@@ -9,7 +9,7 @@ const noStore = { "Cache-Control": "private, no-store" };
 
 export async function GET(request: Request) {
   try {
-    const settings = await ownerCampaignSettings();
+    const [settings, context] = await Promise.all([ownerCampaignSettings(), getCurrentBusinessContext()]);
     if (!settings.enabled) return Response.json(null,{headers:noStore});
     const params = new URL(request.url).searchParams;
     const location = (params.get("location") ?? "").trim();
@@ -44,7 +44,6 @@ export async function GET(request: Request) {
     const jar = await cookies();
     let visitor = jar.get(COOKIE)?.value;
     if (!visitor || !/^[0-9a-f-]{36}$/i.test(visitor)) { visitor = crypto.randomUUID(); jar.set(COOKIE,visitor,{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:86400*365}); }
-    const context = await getCurrentBusinessContext();
     const visitorHash = campaignVisitorHash(campaignVisitorIdentity(request.headers,visitor,context.user?.id ?? null));
     const { data, error } = await client.rpc("owner_campaign_candidates", { p_area:area,p_visitor:visitorHash,p_viewer:context.user?.id ?? null });
     if (error || !data?.length) return Response.json(null,{headers:noStore});
@@ -54,12 +53,16 @@ export async function GET(request: Request) {
       const href = candidate.source_type === "custom" ? `/explore/campaigns/${candidate.id}` : candidate.source_type === "salon_profile_look" ? `/explore/looks/${candidate.source_id}` : candidate.source_type === "beauty_post" ? `/explore/beauty/${post.profile_id}/posts/${candidate.source_id}` : `/explore/salons/${candidate.salon_id}#update-${candidate.source_id}`;
       let image = getSalonProfileMediaUrl(post.media_path);
       if (candidate.source_type === "custom") {
-        const {data:asset}=await client.storage.from("campaign-creatives").createSignedUrl(post.media_path,3600);image=asset?.signedUrl ?? null;
+        const {data:asset}=await client.storage.from("campaign-creatives").createSignedUrl(post.media_path.endsWith("/v1/main.webp") ? post.media_path.replace(/main\.webp$/, "w960.webp") : post.media_path,3600);
+        if (!asset?.signedUrl) continue;
+        image=asset.signedUrl;
       }
       if (candidate.source_type === "beauty_post") {
         const {data:media} = await client.from("beauty_post_media").select("object_path").eq("post_id",candidate.source_id).neq("role","before").order("display_order").limit(1).maybeSingle();
-        if (media?.object_path) image = client.storage.from("beauty-profile-media").getPublicUrl(media.object_path).data.publicUrl;
+        if (!media?.object_path) continue;
+        image = client.storage.from("beauty-profile-media").getPublicUrl(media.object_path).data.publicUrl;
       }
+      if (candidate.source_type === "salon_profile_look" && !image) continue;
       const ticket = signCampaignTicket({id:candidate.id,visitor:visitorHash,viewer:context.user?.id ?? null,area,expires:Date.now()+600000,nonce:crypto.randomUUID()});
       return Response.json({ title:candidate.title,caption:post.caption ?? post.summary ?? "",image,href,ticket },{headers:noStore});
     }

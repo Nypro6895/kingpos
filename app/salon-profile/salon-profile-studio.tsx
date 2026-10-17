@@ -1,4 +1,5 @@
 "use client";
+import { compressImageCanvas } from "@/lib/image-upload-client";
 import { MediaUploadProgress } from "@/components/media-upload-progress";
 import { ActionFeedback } from "@/components/action-feedback";
 
@@ -193,6 +194,7 @@ function readImage(file: File) {
 
     image.onload = () => {
       URL.revokeObjectURL(url);
+      if (image.naturalWidth * image.naturalHeight > 40_000_000) { reject(new Error("Choose an image smaller than 40 megapixels.")); return; }
       resolve(image);
     };
     image.onerror = () => {
@@ -200,27 +202,6 @@ function readImage(file: File) {
       reject(new Error("Image could not be read."));
     };
     image.src = url;
-  });
-}
-
-function canvasToBlob(
-  canvas: HTMLCanvasElement,
-  type: string,
-  quality: number,
-) {
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("Image could not be processed."));
-          return;
-        }
-
-        resolve(blob);
-      },
-      type,
-      quality,
-    );
   });
 }
 
@@ -279,13 +260,8 @@ async function processImage(
     outputHeight,
   );
 
-  let quality = 0.9;
-  let blob = await canvasToBlob(canvas, "image/webp", quality);
-
-  while (blob.size > config.targetBytes && quality > 0.72) {
-    quality -= 0.06;
-    blob = await canvasToBlob(canvas, "image/webp", quality);
-  }
+  const compressed = await compressImageCanvas(canvas);
+  const blob = compressed.blob;
 
   return new File([blob], `${kind}-${crypto.randomUUID()}.webp`, {
     type: "image/webp",

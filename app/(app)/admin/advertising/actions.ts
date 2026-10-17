@@ -1,4 +1,5 @@
 "use server";
+import { storeAdminCampaignImage } from "@/lib/campaign-image-storage";
 import { requirePlatformAdmin } from "@/lib/platform-admin/auth";
 import { PLATFORM_ADMIN_PERMISSIONS } from "@/lib/platform-admin/permissions";
 import { advertisingClient } from "@/lib/explore-advertising";
@@ -71,6 +72,7 @@ export async function saveCampaignAction(
     if (file instanceof File && file.size)
       form.set("imageUrl", "/advertising-upload-pending");
     const campaign = parseCampaign(form);
+    if (campaign.kind === "popup") campaign.closeButton = true;
     if (file instanceof File && file.size) {
       if (
         !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(
@@ -79,15 +81,19 @@ export async function saveCampaignAction(
         file.size > 10485760
       )
         throw new Error("Choose a JPG, PNG, WebP or GIF under 10 MB.");
-      const path = `${campaign.id}/${crypto.randomUUID()}.${file.type.split("/")[1]}`;
-      const { error } = await advertisingClient()
-        .storage.from("explore-advertising")
-        .upload(path, file, { contentType: file.type });
-      if (error) throw new Error("Image upload failed.");
-      campaign.imageUrl = advertisingClient()
-        .storage.from("explore-advertising")
-        .getPublicUrl(path).data.publicUrl;
+      const image = await storeAdminCampaignImage("", new Uint8Array(await file.arrayBuffer()));
+      campaign.imageUrl = image.url;
+      campaign.imageWidth = image.width;
+      campaign.imageHeight = image.height;
+      campaign.imageVariants = image.variants;
+    } else if (campaign.imageUrl && campaign.kind !== "ticker") {
+      const image = await storeAdminCampaignImage(campaign.imageUrl);
+      campaign.imageUrl = image.url;
+      campaign.imageWidth = image.width;
+      campaign.imageHeight = image.height;
+      campaign.imageVariants = image.variants;
     }
+
     const { error } = await advertisingClient()
       .from("explore_campaigns")
       .upsert({
@@ -98,7 +104,7 @@ export async function saveCampaignAction(
       });
     if (error) throw new Error("Campaign could not be saved.");
     revalidatePath("/admin/advertising");
-    return { ok: true, message: "Campaign saved.", id: campaign.id };
+    return { ok: true, message: "Campaign saved.", id: campaign.id, campaign };
   } catch (error) {
     return {
       ok: false,

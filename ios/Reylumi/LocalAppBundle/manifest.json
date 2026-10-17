@@ -1,7 +1,7 @@
 {
   "version": 1,
   "productionReady": true,
-  "buildId": "9ccf4f9a997e6bf30500ae7a10803e32264688d3a80c45108f67f72dad7696a0",
+  "buildId": "975367dbbc7eb727020432d6e1da124d2022fe9ed8a8feaca26433a35d1d72e9",
   "entry": "index.html",
   "connectOrigins": [
     "https://bowkoiprvqwjilwaxhda.supabase.co",
@@ -17,14 +17,14 @@
     },
     {
       "path": "app.css",
-      "bytes": 556733,
-      "sha256": "9c58f066b919d4ed942b8e8346c94da33c86dba2275c312a8303f305b8f5acfd",
+      "bytes": 556689,
+      "sha256": "65301a64b1e3ef837ccd319bba11d4c1fd43b24a9aa8790baa6443c588bcbcc9",
       "mime": "text/css"
     },
     {
       "path": "app.js",
-      "bytes": 4150277,
-      "sha256": "aa95b2e9caeb0d60dd6224e971e4f3c9f308a45c51cac2bcf537305acc7dee94",
+      "bytes": 4152256,
+      "sha256": "04ff8ecbe6bf67d16dd164a4533ffe1c31a3cb22b313a8f48903d826e7d2482b",
       "mime": "text/javascript"
     },
     {
@@ -4270,13 +4270,6 @@
       ]
     },
     {
-      "name": "action.104aa6ce78b263569b2f6d59",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
       "name": "action.57b3af811bc182f185af8788",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -4299,13 +4292,6 @@
     },
     {
       "name": "action.361866e4f3fe481645af55b8",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
-      "name": "action.1bbc090e1fab7a9ed086799d",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"
@@ -4606,13 +4592,6 @@
       ]
     },
     {
-      "name": "action.df7703d2d3f5bd5171e9895b",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
       "name": "action.dfbd0ef1bedbce850df01029",
       "path": "/api/app-local/command",
       "argumentKeys": [
@@ -4621,13 +4600,6 @@
     },
     {
       "name": "action.6ab54832a69c8bec098e9dd2",
-      "path": "/api/app-local/command",
-      "argumentKeys": [
-        "values"
-      ]
-    },
-    {
-      "name": "action.691278ea4f3fecddeb802668",
       "path": "/api/app-local/command",
       "argumentKeys": [
         "values"

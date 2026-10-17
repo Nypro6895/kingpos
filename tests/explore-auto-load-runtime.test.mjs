@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
-import { createServer } from 'node:http';
 import { build } from 'esbuild';
 import { chromium } from 'playwright-core';
 
@@ -56,15 +55,10 @@ test('Explore automatically advances short pages, retains the search and pauses 
           const results=new URLSearchParams(location.search).has('duplicates')?rows[input.page]:[];
           return {...input,results,error:null,hasMore:input.page<4,nextCursor:input.page<4?{after:input.page}:null};
         }`;
-      else contents = `const Empty=()=>null; export default Empty; export {Empty as NailIllustrationCredit, Empty as FeedLoadingSkeleton, Empty as PostIdentity, Empty as PostActions, Empty as useHiddenPosts, Empty as postIdentity, Empty as PostCommentThread, Empty as SavePostButton, Empty as BeforeAfterCompare, Empty as InspirationAvailability, Empty as ExploreBookButton, Empty as ExploreSalonLove, Empty as OwnerSponsoredPost, Empty as ExploreAdSlot, Empty as SalonTrustLine, Empty as SalonVerifiedBadge, Empty as ReylumiIcon, Empty as useRouter, Empty as ExploreSalonFollow, Empty as ExploreSalonMenu, Empty as ExploreSocialActions, Empty as useSalonSocial};`;
+      else contents = `const Empty=()=>null; export default Empty; export const usePostCaption=(target,caption)=>caption; export {Empty as NailIllustrationCredit, Empty as FeedLoadingSkeleton, Empty as PostIdentity, Empty as PostActions, Empty as useHiddenPosts, Empty as postIdentity, Empty as PostCommentThread, Empty as SavePostButton, Empty as BeforeAfterCompare, Empty as InspirationAvailability, Empty as ExploreBookButton, Empty as ExploreSalonLove, Empty as OwnerSponsoredPost, Empty as ExploreAdSlot, Empty as SalonTrustLine, Empty as SalonVerifiedBadge, Empty as ReylumiIcon, Empty as useRouter, Empty as ExploreSalonFollow, Empty as ExploreSalonMenu, Empty as ExploreSocialActions, Empty as useSalonSocial};`;
       return { contents, loader: 'tsx', resolveDir: process.cwd() };
     });
   } }] });
-  const server = createServer((req, res) => {
-    res.setHeader('Content-Type', req.url === '/bundle.js' ? 'text/javascript' : 'text/html');
-    res.end(req.url === '/bundle.js' ? bundle.outputFiles[0].text : '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script src="/bundle.js"></script></body></html>');
-  });
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const browser = await chromium.launch({ executablePath, headless: true, args: ['--no-proxy-server'] });
   const errors = [];
   const scrollAndSettle = page => page.evaluate(async () => {
@@ -72,13 +66,21 @@ test('Explore automatically advances short pages, retains the search and pauses 
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   });
   try {
-    const origin = `http://127.0.0.1:${server.address().port}`;
-    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const origin = 'https://explore-autoload.test';
+    const newPage = async options => {
+      const page = await browser.newPage(options);
+      await page.route(origin + '/**', route => {
+        const script = new URL(route.request().url()).pathname === '/bundle.js';
+        return route.fulfill({ contentType: script ? 'text/javascript' : 'text/html', body: script ? bundle.outputFiles[0].text : '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script src="/bundle.js"></script></body></html>' });
+      });
+      return page;
+    };
+    const page = await newPage({ viewport: { width: 390, height: 844 } });
     page.setDefaultTimeout(5000);
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => { window.holdPage = true; window.IntersectionObserver = undefined; });
     await page.goto(origin);
-    await page.waitForFunction(() => typeof window.releasePage === 'function');
+    await page.waitForFunction(() => typeof window.releasePage === 'function', null, { timeout: 5000 }).catch(error => { assert.deepEqual(errors, [], 'The merged Explore fixture must mount without runtime errors'); throw error; });
     await scrollAndSettle(page);
     assert.equal(await page.evaluate(() => window.calls.length), 1, 'only one request while a page is in flight');
     await page.evaluate(() => window.releasePage());
@@ -89,7 +91,7 @@ test('Explore automatically advances short pages, retains the search and pauses 
     await scrollAndSettle(page);
     assert.equal(await page.evaluate(() => window.calls.length), 3, 'exhausted pages do not restart');
 
-    const retry = await browser.newPage();
+    const retry = await newPage();
     retry.setDefaultTimeout(5000);
     retry.on('pageerror', error => errors.push(error.message));
     await retry.addInitScript(() => { window.failOnce = true; });
@@ -101,7 +103,7 @@ test('Explore automatically advances short pages, retains the search and pauses 
     await retry.waitForFunction(() => window.calls.length === 4 && document.querySelector('[data-testid="explore-continuous-feed"]').getAttribute('aria-busy') === 'false');
     assert.deepEqual(await retry.evaluate(() => window.calls.map(call => call.cursor)), ['page-1', 'page-1', 'page-2', 'page-3']);
 
-    const salons = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const salons = await newPage({ viewport: { width: 390, height: 844 } });
     salons.setDefaultTimeout(5000);
     salons.on('pageerror', error => errors.push(error.message));
     await salons.goto(origin + '?salons');
@@ -112,7 +114,7 @@ test('Explore automatically advances short pages, retains the search and pauses 
     assert.ok(searchCalls.every(call => call.filters.color === 'Red' && call.filters.shape === 'Almond'), 'continuations preserve committed facets');
     assert.ok(searchCalls.every(call => call.displayQuery === 'Red nail' && call.contentQuery === 'red almond' && call.queryKind === 'style' && call.locationPriority === true && call.locationOrigin === 'manual' && call.intent === 'search'), 'every page carries the frozen canonical query metadata required by the session cursor');
 
-    const duplicatePage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const duplicatePage = await newPage({ viewport: { width: 390, height: 844 } });
     duplicatePage.on('pageerror', error => errors.push(error.message));
     await duplicatePage.goto(origin + '?salons&duplicates');
     await duplicatePage.getByText("You've explored these salons.", { exact: true }).waitFor();
@@ -121,6 +123,6 @@ test('Explore automatically advances short pages, retains the search and pauses 
     assert.equal(await duplicatePage.getByText(/may not match your search|outside Milwaukee|suggested examples/).count(), 0, 'recommendations do not explain ranking rules to customers');
     await duplicatePage.getByRole('link',{name:'Browse nail salons',exact:true}).waitFor();
     assert.deepEqual(errors, []);
-  } catch (error) { throw new Error(JSON.stringify({ errors, pages: await Promise.all(browser.contexts().flatMap(context => context.pages()).map(page => page.evaluate(() => ({body: document.body.innerHTML, calls: window.calls})))) }), { cause: error }); }
-  finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
+  } catch (error) { throw new Error(JSON.stringify({ errors, pages: await Promise.allSettled(browser.contexts().flatMap(context => context.pages()).map(page => page.evaluate(() => ({body: document.body.innerHTML, calls: window.calls})))) }), { cause: error }); }
+  finally { await browser.close(); }
 });

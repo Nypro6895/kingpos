@@ -1,4 +1,5 @@
 "use client";
+import { compressImageCanvas } from "@/lib/image-upload-client";
 import { PublicationPanel } from "./publication-panel";
 import { ContentViewer } from "@/components/content-viewer";
 import { ActionFeedback } from "@/components/action-feedback";
@@ -17,6 +18,7 @@ import { isDefaultNailImage } from "@/lib/default-nail-images";
 import { NailIllustrationCredit } from "@/components/nail-illustration-credit";
 import { useCloseOnNavigation } from "@/components/overlay-dismissal";
 import { useHiddenPosts, postIdentity } from "@/components/post-safety";
+import { usePostCaption } from "@/components/post-change-state";
 import { PostActions } from "./post-actions";
 import { BlockUserButton } from "@/components/block-user-button";
 import { SalonReportDialog } from "@/components/salon-report-dialog";
@@ -37,10 +39,8 @@ import { InspirationAvailability } from "@/components/inspiration-availability";
 import {
   createSalonProfileReviewReplyAction,
   createSalonProfileSocialPostAction,
-  deleteSalonProfileLookDirectAction,
   getSalonProfileMediaUploadSessionAction,
   setSalonProfilePublicationAction,
-  setSalonProfileLookStatusDirectAction,
   toggleSalonFollowAction,
   toggleSalonLookSaveAction,
   updateSalonProfileIdentityAction,
@@ -583,6 +583,7 @@ function readImage(file: File) {
 
     image.onload = () => {
       URL.revokeObjectURL(url);
+      if (image.naturalWidth * image.naturalHeight > 40_000_000) { reject(new Error("Choose an image smaller than 40 megapixels.")); return; }
       resolve(image);
     };
     image.onerror = () => {
@@ -590,23 +591,6 @@ function readImage(file: File) {
       reject(new Error("Image could not be read."));
     };
     image.src = url;
-  });
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number) {
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("Image could not be processed."));
-          return;
-        }
-
-        resolve(blob);
-      },
-      type,
-      quality,
-    );
   });
 }
 
@@ -650,13 +634,8 @@ async function processImage(file: File, kind: SalonProfileMediaKind) {
     outputHeight,
   );
 
-  let quality = 0.9;
-  let blob = await canvasToBlob(canvas, "image/webp", quality);
-
-  while (blob.size > config.targetBytes && quality > 0.72) {
-    quality -= 0.06;
-    blob = await canvasToBlob(canvas, "image/webp", quality);
-  }
+  const compressed = await compressImageCanvas(canvas);
+  const blob = compressed.blob;
 
   return new File([blob], `${kind}-${crypto.randomUUID()}.webp`, {
     type: "image/webp",
@@ -1966,7 +1945,6 @@ function FeedCard({
   onCommentCountChange,
   onOpenPost,
   onRefresh,
-  canFeature = false,
   onSavedChange,
   onShare,
   saved,
@@ -1981,7 +1959,6 @@ function FeedCard({
   onCommentCountChange: (target: PostCommentTarget, count: number) => void;
   onOpenPost: (item: ProfileFeedItem) => void;
   onRefresh: () => void;
-  canFeature?: boolean;
   onSavedChange: (look: PublicSalonProfileLook, saved: boolean) => void;
   onShare: (item?: ProfileFeedItem) => void;
   saved: boolean;
@@ -1990,17 +1967,17 @@ function FeedCard({
   const __vt = useWorkspaceTranslation();
 
   const preferences = useContext(ProfilePreferencesContext);
-  const [managing, startManageTransition] = useTransition();
   const [commentsExpanded, setCommentsExpanded] = useState(false);
   const [commentCountState, setCommentCountState] = useState(() => ({
     count: initialCommentCount,
     itemId: item.id,
   }));
   const commentsPanelId = useId();
+  const caption = usePostCaption(profileFeedCommentTarget(item, item.title), item.caption, capabilities.currentUserId);
   const title =
     item.contentType === "look"
       ? item.title
-      : item.caption || item.title || "Salon update";
+      : caption || item.title || "Salon update";
   const commentTarget = profileFeedCommentTarget(item, title);
   const viewer = postCommentViewer(capabilities);
   const commentCount =
@@ -2023,42 +2000,6 @@ function FeedCard({
     return undefined;
   }, [item.contentType, item.id]);
 
-  function updateLookStatus(status?: "archived" | "draft" | "published", isPinned?: boolean) {
-    if (!look) {
-      return;
-    }
-
-    startManageTransition(async () => {
-      const result = await setSalonProfileLookStatusDirectAction({
-        isPinned,
-        lookId: look.id,
-        salonId: look.serviceId ? item.salonId : item.salonId,
-        status,
-      });
-
-      if (!result.error) {
-        onRefresh();
-      }
-    });
-  }
-
-  function deleteLook() {
-    if (!look || !window.confirm(__vt("Delete this look?"))) {
-      return;
-    }
-
-    startManageTransition(async () => {
-      const result = await deleteSalonProfileLookDirectAction({
-        lookId: look.id,
-        salonId: item.salonId,
-      });
-
-      if (!result.error) {
-        onRefresh();
-      }
-    });
-  }
-
   function updateCommentCount(count: number) {
     setCommentCountState({ count, itemId: item.id });
     onCommentCountChange(commentTarget, count);
@@ -2079,12 +2020,12 @@ function FeedCard({
             <p className="text-sm text-zinc-500">{timeAgo(item.publishedAt)}</p>
           </div>
         </div>
-        <PostActions target={profileFeedCommentTarget(item, item.caption || item.title)} viewerId={capabilities.currentUserId} onChanged={onRefresh} disabled={managing} onOpen={()=>onOpenPost(item)} onShare={preferences.allow_sharing?()=>onShare(item):undefined} onFeature={canFeature && item.contentType === "look" && item.imageUrl ? ()=>updateLookStatus(undefined,!item.isPinned):undefined} isFeatured={item.isPinned} onArchive={capabilities.canManageContent && look?()=>updateLookStatus("archived"):undefined} onDelete={capabilities.canManageContent && look?()=>deleteLook():undefined}/>
+        <PostActions target={profileFeedCommentTarget(item, caption || item.title)} viewerId={capabilities.currentUserId} onChanged={onRefresh} onOpen={()=>onOpenPost(item)} onShare={preferences.allow_sharing?()=>onShare(item):undefined} isFeatured={item.isPinned}/>
 
       </div>
-      {item.caption ? (
+      {caption ? (
         <p className="px-4 pb-4 text-sm leading-6 text-zinc-800">
-          <CaptionWithHashtags text={item.caption} />
+          <CaptionWithHashtags text={caption} />
         </p>
       ) : null}
       {item.hashtags.length > 0 ? (
@@ -2196,7 +2137,7 @@ function FeedCard({
               onClick={() =>
                 onBook({
                   lookId: item.contentType === "look" ? item.id : null,
-                  note: item.caption,
+                  note: caption,
                   title:
                     item.contentType === "look"
                       ? "Book this look"
@@ -2681,6 +2622,7 @@ function LookDetailDialog({
     sourceType: "salon_profile_look",
     title: look.title,
   };
+  const caption = usePostCaption(commentTarget, look.caption, capabilities.currentUserId);
   const commentCount =
     commentCountState.lookId === look.id
       ? commentCountState.count
@@ -2728,9 +2670,9 @@ function LookDetailDialog({
                 >
                   {look.title}
                 </h2>
-                {look.caption ? (
+                {caption ? (
                   <p className="mt-3 text-sm leading-6 text-zinc-700">
-                    <CaptionWithHashtags text={look.caption} />
+                    <CaptionWithHashtags text={caption} />
                   </p>
                 ) : null}
                 {look.hashtags.length > 0 ? (
@@ -2747,7 +2689,7 @@ function LookDetailDialog({
                   </div>
                 ) : null}
               </div>
-              <div className="flex shrink-0 items-center gap-2"><PostActions target={commentTarget} viewerId={capabilities.currentUserId} onHidden={onClose} onChanged={()=>window.location.reload()} /><button type="button" aria-label={__vt("Close post")} onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-full bg-zinc-100 text-2xl hover:bg-zinc-200">×</button></div>
+              <div className="flex shrink-0 items-center gap-2"><PostActions target={commentTarget} viewerId={capabilities.currentUserId} onHidden={onClose} isFeatured={look.isPinned} /><button type="button" aria-label={__vt("Close post")} onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-full bg-zinc-100 text-2xl hover:bg-zinc-200">×</button></div>
             </div>
             <div className="grid gap-3 rounded-lg bg-zinc-50 p-4">
               <p className="text-sm text-zinc-600">
@@ -2804,7 +2746,7 @@ function LookDetailDialog({
                 onClick={() =>
                   onBook({
                     lookId: look.id,
-                    note: look.caption ?? look.bookingNote,
+                    note: caption ?? look.bookingNote,
                     serviceId: look.serviceId,
                     staffId: look.recommendedStaffId,
                     title: "Book this exact look",
@@ -2869,10 +2811,11 @@ function FeedPostDetailDialog({
     count: initialCommentCount,
     itemId: item.id,
   }));
+  const caption = usePostCaption(profileFeedCommentTarget(item, item.title), item.caption, capabilities.currentUserId);
   const title =
     item.contentType === "look"
       ? item.title
-      : item.caption || item.title || "Salon update";
+      : caption || item.title || "Salon update";
   const viewer = postCommentViewer(capabilities);
   const commentTarget = profileFeedCommentTarget(item, title);
   const meta = joinMeta([
@@ -2944,9 +2887,9 @@ function FeedPostDetailDialog({
                 >
                   <WorkspaceText text={title === "New salon look" ? "new salon look" : title} />
                 </h2>
-                {item.caption && item.caption !== title ? (
+                {caption && caption !== title ? (
                   <p className="mt-3 text-sm leading-6 text-zinc-700">
-                    <CaptionWithHashtags text={item.caption} />
+                    <CaptionWithHashtags text={caption} />
                   </p>
                 ) : null}
                 {item.hashtags.length > 0 ? (
@@ -2991,7 +2934,7 @@ function FeedPostDetailDialog({
                 onClick={() =>
                   onBook({
                     lookId: item.contentType === "look" ? item.id : null,
-                    note: item.caption,
+                    note: caption,
                     title:
                       item.contentType === "look"
                         ? "Book this look"
@@ -3059,6 +3002,7 @@ function BeautyPostDetailDialog({
     post.verificationState === "verified" ? "Verified Visit" : null,
     timeAgo(post.publishedAt),
   ]);
+  const caption = usePostCaption(commentTarget, post.caption, capabilities.currentUserId);
   const commentCount =
     commentCountState.postId === post.id
       ? commentCountState.count
@@ -3141,13 +3085,13 @@ function BeautyPostDetailDialog({
                 >
                   <WorkspaceText text="Shared by customers" />
                 </h2>
-                {post.caption ? (
+                {caption ? (
                   <p className="mt-3 text-sm leading-6 text-zinc-700">
-                    <WorkspaceText text={post.caption} />
+                    <WorkspaceText text={caption} />
                   </p>
                 ) : null}
               </div>
-              <div className="flex shrink-0 items-center gap-2"><PostActions target={commentTarget} viewerId={capabilities.currentUserId} onHidden={onClose} onChanged={()=>window.location.reload()} /><button type="button" aria-label={__vt("Close post")} onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-full bg-zinc-100 text-2xl hover:bg-zinc-200">×</button></div>
+              <div className="flex shrink-0 items-center gap-2"><PostActions target={commentTarget} viewerId={capabilities.currentUserId} onHidden={onClose} /><button type="button" aria-label={__vt("Close post")} onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-full bg-zinc-100 text-2xl hover:bg-zinc-200">×</button></div>
             </div>
             <div className="post-action-toolbar">
               <ProfileSavePostButton
@@ -3168,7 +3112,7 @@ function BeautyPostDetailDialog({
               >
                 <WorkspaceText text="Comment" />
               </TimelineActionButton>
-              <ProfileSharePostButton href={post.postHref} title={post.caption || "Beauty post"} />
+              <ProfileSharePostButton href={post.postHref} title={caption || "Beauty post"} />
               <ExploreBookButton href={post.booking?.eligible ? post.booking.href : null} name="this salon" contactHref={"/explore/salons/" + salonId} />
             </div>
             <div className="flex flex-wrap gap-2">
@@ -3773,20 +3717,8 @@ export function SalonProfileView({
     });
   }
 
-  function canFeaturePost(item: ProfileFeedItem) {
-    return Boolean(capabilities.canFeatureOwnContent && item.contentType === "look" && item.imageUrl && item.publishedAt && (manageData?.ownedLookIds?.includes(item.id) || publishedLooks.some(look=>look.id === item.id)));
-  }
   function renderPostActions(item: ProfileFeedItem) {
-    const actions = <PostActions target={profileFeedCommentTarget(item, item.caption || item.title)} viewerId={capabilities.currentUserId} onChanged={refresh} onHidden={()=>{const next=feedItems.find(post=>post.id !== item.id);setDetailPost(next ?? null);}} onOpen={()=>openTimelinePost(item)} onShare={preferences.allow_sharing?()=>shareSalon(item):undefined} isFeatured={item.isPinned} onFeature={canFeaturePost(item)?async()=>{
-      const result=await setSalonProfileLookStatusDirectAction({salonId:profile.salonId,lookId:item.id,isPinned:!item.isPinned});
-      if(result.error){setStatusMessage(result.error);return;}
-      setStatusMessage("");refresh();
-    }:undefined} onArchive={capabilities.canManageContent && item.contentType === "look"?async()=>{
-      const result=await setSalonProfileLookStatusDirectAction({salonId:profile.salonId,lookId:item.id,status:"archived"});if(result.error)setStatusMessage(result.error);else{setDetailPost(null);refresh();}
-    }:undefined} onDelete={capabilities.canManageContent && item.contentType === "look"?async()=>{
-      if(!window.confirm(__vt("Delete this post? This cannot be undone.")))return;
-      const result=await deleteSalonProfileLookDirectAction({salonId:profile.salonId,lookId:item.id});if(result.error)setStatusMessage(result.error);else{setDetailPost(null);refresh();}
-    }:undefined}/>;
+    const actions = <PostActions target={profileFeedCommentTarget(item, item.caption || item.title)} viewerId={capabilities.currentUserId} onChanged={refresh} onHidden={()=>{const next=feedItems.find(post=>post.id !== item.id);setDetailPost(next ?? null);}} onOpen={()=>openTimelinePost(item)} onShare={preferences.allow_sharing?()=>shareSalon(item):undefined} isFeatured={item.isPinned}/>;
     return actions;
   }
 
@@ -4052,7 +3984,6 @@ export function SalonProfileView({
                   onCommentCountChange={updateCommentCountForTarget}
                   onOpenPost={openTimelinePost}
                   onRefresh={refresh}
-                  canFeature={canFeaturePost(item)}
                   onSavedChange={applyLookSaveState}
                   onShare={shareSalon}
                   saved={look ? savedLookIds.has(look.id) : false}

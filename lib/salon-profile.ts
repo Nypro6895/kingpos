@@ -5,6 +5,7 @@ import { resolveNailCoverImage } from "@/lib/default-nail-images";
 import { getPublicSalonDirectoryListing } from "@/lib/salon-directory";
 import { EMPTY_SALON_IDENTITY } from "@/lib/salon-identity";
 import "server-only";
+import { normalizeStoredImage } from "@/lib/normalize-stored-image";
 import { getSalonProfileReadiness } from "@/lib/salon-publication-readiness";
 export { getSalonProfileReadiness } from "@/lib/salon-publication-readiness";
 import { cache } from "react";
@@ -1786,20 +1787,26 @@ async function assertTrustedSalonProfileMediaPath(input: {
 
   const metadata = (object as StorageObjectMetadata).metadata;
   const mimeType = metadata?.mimetype ?? null;
-  const processedBytes = metadata?.size ?? null;
 
   if (mimeType && !["image/jpeg", "image/png", "image/webp"].includes(mimeType)) {
     throw new Error("Uploaded image type is not allowed.");
   }
 
-  await markSalonProfileMediaAssetActive({
-    context: input.context,
-    mimeType,
-    path: normalizedPath,
-    processedBytes,
+  const normalized = await normalizeStoredImage(supabase, SALON_PROFILE_MEDIA_BUCKET, normalizedPath, async normalized => {
+    const { data: asset, error: assetError } = await supabase.from("salon_profile_media_assets")
+      .select("purpose,upload_intent,uploaded_by_user_id").eq("bucket", SALON_PROFILE_MEDIA_BUCKET).eq("object_path", normalizedPath).single();
+    if (assetError || !asset) throw new Error("Uploaded image registration could not be verified.");
+    const { error: registerError } = await supabase.from("salon_profile_media_assets").upsert({
+      ...asset, bucket: SALON_PROFILE_MEDIA_BUCKET, object_path: normalized.path,
+      salon_id: salon.id, status: "pending", mime_type: normalized.mimeType, processed_bytes: normalized.bytes, width: normalized.width, height: normalized.height,
+    }, { onConflict: "bucket,object_path", ignoreDuplicates: true });
+    if (registerError) throw new Error("Processed image registration could not be saved.");
   });
-
-  return normalizedPath;
+  await markSalonProfileMediaAssetActive({
+    context: input.context, mimeType: normalized.mimeType,
+    path: normalized.path, processedBytes: normalized.bytes,
+  });
+  return normalized.path;
 }
 
 async function removeTrustedSalonProfileMediaPath(input: {
@@ -2596,10 +2603,30 @@ export async function setCurrentSalonProfileLookStatus(input: {
     throw new Error("This feature is temporarily unavailable. Please try again later.");
   }
 
+  if (input.status === "archived") {
+    const { data: look, error: loadError } = await supabase
+      .from("salon_profile_looks")
+      .select("id")
+      .eq("id", input.lookId)
+      .eq("salon_id", salon.id)
+      .maybeSingle<{ id: string }>();
+    if (loadError) throw new Error(loadError.message);
+    if (!look) throw new Error("Look was not found in the current salon.");
+  }
+
   if (typeof input.isPinned === "boolean") {
     const rpc = supabase.rpc.bind(supabase) as unknown as RpcRunner;
     const result = await rpc("set_owned_salon_featured_look", {target_salon_id:salon.id,target_look_id:input.lookId,pinned:input.isPinned});
     if (result.error) throw new Error(result.error.message);
+  }
+
+  if (input.status === "archived") {
+    const rpc = supabase.rpc.bind(supabase) as unknown as RpcRunner;
+    const { error } = await rpc("post_safety_action", {
+      p_type: "salon_profile_look", p_id: input.lookId, p_action: "archive", p_payload: {},
+    });
+    if (error) throw new Error(error.message);
+    return;
   }
 
   const patch: Record<string, unknown> = {};
@@ -2653,11 +2680,12 @@ export async function deleteCurrentSalonProfileLook(lookId: string) {
     throw new Error(loadError.message);
   }
 
-  const { error } = await supabase
-    .from("salon_profile_looks")
-    .delete()
-    .eq("id", lookId)
-    .eq("salon_id", salon.id);
+  if (!look) throw new Error("Look was not found in the current salon.");
+
+  const rpc = supabase.rpc.bind(supabase) as unknown as RpcRunner;
+  const { error } = await rpc("post_safety_action", {
+    p_type: "salon_profile_look", p_id: lookId, p_action: "delete", p_payload: {},
+  });
 
   if (error) {
     throw new Error(error.message);
@@ -2666,7 +2694,7 @@ export async function deleteCurrentSalonProfileLook(lookId: string) {
   await removeTrustedSalonProfileMediaPath({
     allowLegacy: true,
     context,
-    path: look?.media_path,
+    path: look.media_path,
   });
 }
 

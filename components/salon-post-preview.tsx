@@ -10,6 +10,7 @@ import { SalonOperatingStatusBadge } from "@/components/salon-operating-status-b
 import { ReylumiIcon } from "@/components/reylumi-icons";
 import { WorkspaceText, useWorkspaceTranslation } from "@/components/workspace-language";
 import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
+import { usePostCaption } from "@/components/post-change-state";
 import { isSalonId } from "@/lib/explore-social";
 import type { ExploreFeedItem, ExploreInspirationItem } from "@/types/explore";
 import type { PostCommentTarget, PostCommentViewer } from "@/types/post-comments";
@@ -39,6 +40,7 @@ export function SalonPostPreview({ item, viewer, onClose, location, service, pri
     bookingHref: item.bookingEnabled ? item.bookingHref : null, phone: item.phoneHref?.replace(/^tel:/, "") };
   const target: PostCommentTarget = { salonId: item.salonId, salonName: item.salonName, sourceId: item.contentId,
     sourceType: item.contentType === "look" ? "salon_profile_look" : "salon_profile_update", title: item.captionExcerpt };
+  const caption = usePostCaption(target, item.captionExcerpt, viewer.userId) ?? null;
   const realPost = isSalonId(item.contentId);
   const logo = item.salonLogoImageUrl;
 
@@ -67,12 +69,12 @@ export function SalonPostPreview({ item, viewer, onClose, location, service, pri
           {location ? <p className={styles.location}>{location}</p> : null}
           <SalonOperatingStatusBadge salonId={item.salonId} showDetail status={item.operatingStatus} variant="text" />
         </div>
-        {service || price || duration || item.captionExcerpt ? <div className={styles.content}>
+        {service || price || duration || caption ? <div className={styles.content}>
           {service || price || duration ? <div className={styles.serviceRow}>
             <span className={styles.service}><WorkspaceText text={service} /></span>
             <span className={styles.price}>{[price, duration].filter(Boolean).join(" · ")}</span>
           </div> : null}
-          {item.captionExcerpt ? <p className={styles.caption}>{item.captionExcerpt}</p> : null}
+          {caption ? <p className={styles.caption}>{caption}</p> : null}
         </div> : null}
         <div className={styles.actions}>
           <ExploreSocialActions salon={salon} href={href} target={item.saveTarget} commentCount={count}

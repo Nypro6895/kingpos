@@ -60,11 +60,10 @@ function visitorHash(request: NextRequest) {
 }
 export async function GET(request: NextRequest) {
   try {
-    const limits = await getAdvertisingLimits();
-    const target = await targeting(request);
+    const [limits, target, allCampaigns] = await Promise.all([getAdvertisingLimits(), targeting(request), getCampaigns(true)]);
     const campaigns = target.path.startsWith("/admin")
       ? []
-      : (await getCampaigns(true)).filter((c) =>
+      : allCampaigns.filter((c) =>
           campaignMatches(c, target.path, target.audience, target.device),
         );
     const visitor = visitorHash(request);
@@ -132,8 +131,8 @@ export async function POST(request: NextRequest) {
     if (typeof body.id !== "string" || !/^[0-9a-f-]{36}$/i.test(body.id))
       return NextResponse.json({ allowed: false }, { status: 400 });
     const visitor = visitorHash(request);
-    const target = await targeting(request, body);
-    const campaign = (await getCampaigns(body.event !== "click")).find(
+    const [target, allCampaigns, limits] = await Promise.all([targeting(request, body), getCampaigns(body.event !== "click"), getAdvertisingLimits()]);
+    const campaign = allCampaigns.find(
       (c) => c.id === body.id,
     );
     if (
@@ -148,16 +147,34 @@ export async function POST(request: NextRequest) {
       const session = request.cookies.get("reylumi-ad-session")?.value;
       if (!session || !/^[0-9a-f-]{36}$/i.test(session))
         return NextResponse.json({ allowed: false }, { status: 400 });
-      const { data, error } = await advertisingClient().rpc(
+      const client = advertisingClient();
+      if (body.event === "view" && body.phase === "reserve") {
+        const { data, error } = await client.rpc("reserve_advertising_display", {
+          p_campaign: body.id, p_session: session, p_visitor: visitor.hash,
+          p_device: target.device, p_audience: target.audience,
+          p_path: "/" + (target.path.split("/")[1] ?? ""),
+        });
+        if (error) throw error;
+        return NextResponse.json({ allowed: Boolean(data), reservation: data ?? null }, { headers: { "Cache-Control": "no-store" } });
+      }
+      const hasReservation = typeof body.reservation === "string" && /^[0-9a-f-]{36}$/i.test(body.reservation);
+      let confirmed = false;
+      if (hasReservation) {
+        const result = await client.rpc("confirm_advertising_display", { p_token: body.reservation, p_session: session, p_visitor: visitor.hash, p_campaign: body.id });
+        if (result.error) throw result.error;
+        confirmed = result.data === true;
+        if (!confirmed) return NextResponse.json({ allowed: false });
+      }
+      if (body.phase === "confirm" && !hasReservation) return NextResponse.json({ allowed: false }, { status: 400 });
+      // Legacy clients retain the atomic claim. New clients reserve, paint, then confirm.
+      const { data, error } = body.event === "view" && confirmed
+        ? { data: true, error: null }
+        : await client.rpc(
         "record_advertising_event",
         {
-          p_campaign: body.id,
-          p_session: session,
-          p_kind: body.event,
-          p_device: target.device,
-          p_audience: target.audience,
-          p_path: "/" + (target.path.split("/")[1] ?? ""),
-          p_visitor: visitor.hash,
+          p_campaign: body.id, p_session: session, p_kind: body.event,
+          p_device: target.device, p_audience: target.audience,
+          p_path: "/" + (target.path.split("/")[1] ?? ""), p_visitor: visitor.hash,
         },
       );
       if (error) throw error;
@@ -165,7 +182,6 @@ export async function POST(request: NextRequest) {
         { allowed: data === true },
         { headers: { "Cache-Control": "no-store" } },
       );
-      const limits = await getAdvertisingLimits();
       response.cookies.set("reylumi-ad-session", session, {
         httpOnly: true,
         sameSite: "lax",

@@ -67,7 +67,6 @@ import {
   compareReylumiTrustedSalons,
   type ReylumiExploreSearchOrder,
 } from "@/lib/reylumi-trust";
-import { PostActions } from "@/app/salon-profile/post-actions";
 import { useHiddenPosts, postIdentity } from "@/components/post-safety";
 import type { PostCommentTarget } from "@/types/post-comments";
 import type { PostCommentViewer } from "@/types/post-comments";
@@ -494,10 +493,6 @@ function salonAvailabilityLine(salon: ExploreSearchResult) {
 const ExplorePostContext = createContext<{viewerId: string | null; viewer: PostCommentViewer; items: ExploreInspirationItem[]}>({viewerId: null, viewer:{userId:null,isAuthenticated:false,canModerate:false,canReplyAsSalon:false},items: []});
 function inspirationTarget(item: ExploreInspirationItem): PostCommentTarget {
   return {salonId: item.salonId, sourceId: item.contentId, sourceType: item.contentType === "look" ? "salon_profile_look" : "salon_profile_update", title: item.captionExcerpt};
-}
-function InspirationActions({item, onHidden}: {item: ExploreInspirationItem; onHidden?: () => void}) {
-  const {viewerId} = useContext(ExplorePostContext);
-  return <PostActions target={inspirationTarget(item)} salon={{ id: item.salonId, name: item.salonName }} viewerId={viewerId} onHidden={onHidden} onChanged={() => window.location.reload()} />;
 }
 function useInspirationHidden(item?: ExploreInspirationItem) {
   const {viewerId} = useContext(ExplorePostContext);

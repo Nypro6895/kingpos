@@ -18,6 +18,7 @@ import { discoveryItemIdentity, matchesExploreFeedItem, type ExploreFeedDiscover
 import { savedPostKey } from "@/types/saved-post";
 import { PostActions } from "@/app/salon-profile/post-actions";
 import { useHiddenPosts, postIdentity } from "@/components/post-safety";
+import { usePostCaption } from "@/components/post-change-state";
 import { PostCommentThread } from "@/app/post-comments/post-comment-thread";
 import { SavePostButton } from "@/app/saved-post/save-post-button";
 import { BeforeAfterCompare } from "@/components/before-after-compare";
@@ -1364,6 +1365,7 @@ export function ExploreFeedCard({featured=false,item,onCommentCountChange,viewer
  const openComments=()=>{if(onOpenComments){onOpenComments();return;}setCommentsOpen(true);setFocusKey(key=>key+1);};
  const recommendation=item.contentType==="salon_recommendation";
  const commentTarget=exploreCommentTarget(item);
+ const caption=usePostCaption(commentTarget,item.caption,viewer.userId)??null;
  const href=item.destination.href??item.salon?.href??"/explore";
  const bookingHref=item.booking?.eligible?item.booking.href:null;
  const salon=item.salon?{...item.salon,bookingHref}:null;
@@ -1377,17 +1379,17 @@ export function ExploreFeedCard({featured=false,item,onCommentCountChange,viewer
   <div className="min-w-0 flex-1">
    <div className="flex min-w-0 flex-wrap items-center gap-x-1 text-sm">
     <Link prefetch={false} href={authorHref} className="min-w-0 truncate font-semibold" title={authorName}>{authorName}</Link>
-    {tagged?<><span className="text-text-muted">·</span><Link prefetch={false} href={item.salon!.href??href} className="min-w-0 truncate font-medium" title={item.salon!.name}>{item.salon!.name}</Link></>:null}
+    {tagged?<><span className="text-text-muted">Â·</span><Link prefetch={false} href={item.salon!.href??href} className="min-w-0 truncate font-medium" title={item.salon!.name}>{item.salon!.name}</Link></>:null}
     {salon?<ExploreSalonFollow salon={salon}/>:null}
    </div>
-   <p className="text-xs text-text-muted">{item.platformIntroduction ? "Introduction by Reylumi" : recommendation?[item.serviceCategory,item.salon?.city,item.salon?.state].filter(Boolean).join(' · '):timeAgo(item.publishedAt)}</p>
+   <p className="text-xs text-text-muted">{item.platformIntroduction ? "Introduction by Reylumi" : recommendation?[item.serviceCategory,item.salon?.city,item.salon?.state].filter(Boolean).join(' Â· '):timeAgo(item.publishedAt)}</p>
   </div>
-  {salon?<ExploreSalonMenu salon={salon} target={commentTarget??undefined}/>:commentTarget?<PostActions plain target={commentTarget} viewerId={viewer.userId} onChanged={()=>window.location.reload()}/>:null}
+  {salon?<ExploreSalonMenu salon={salon} target={commentTarget??undefined}/>:commentTarget?<PostActions plain target={commentTarget} viewerId={viewer.userId}/>:null}
  </div>;
  return <article className={`${showMedia ? "-mx-4 sm:mx-0" : ""} flex min-w-0 flex-col border-b border-divider-subtle bg-white pb-2`} data-feed-key={item.feedKey} data-feed-hero={featured?'true':undefined} data-source-type={item.sourceType} data-testid="explore-feed-card">
-  {showMedia?<FeedMediaFrame featured={false} href={href} item={item}/>:null}
+  {showMedia?<FeedMediaFrame featured={false} href={href} item={{...item,caption}}/>:null}
   {header}
-  {showCaption&&item.caption?<p className="line-clamp-3 px-3 pb-2 text-sm leading-5 text-text-secondary">{item.caption}</p>:null}
+  {showCaption&&caption?<p className="line-clamp-3 px-3 pb-2 text-sm leading-5 text-text-secondary">{caption}</p>:null}
   <div className="px-3">
    <ExploreSocialActions salon={salon} href={href} target={item.saveTarget} commentCount={item.commentCount} onComment={commentTarget?openComments:undefined}/>
    {!commentsOpen&&commentPresentation.preview&&commentTarget?<ExploreCommentPreview key={`${viewer.userId}:${commentTarget.sourceType}:${commentTarget.sourceId}`} target={commentTarget} onOpen={openComments}/>:null}
@@ -1890,7 +1892,7 @@ function ExploreFeedContent({
           return (
             <Fragment key={feedItemKey(item)}>
               {item.discoveryScope === "wider" ? (
-                <p className="px-2 pt-2 text-xs font-medium text-text-muted">{[item.salon?.city, item.salon?.state].filter(Boolean).join(", ")}{item.bookingMeta.distanceMiles != null ? ` · ${item.bookingMeta.distanceMiles.toFixed(1)} mi away` : ""}</p>
+                <p className="px-2 pt-2 text-xs font-medium text-text-muted">{[item.salon?.city, item.salon?.state].filter(Boolean).join(", ")}{item.bookingMeta.distanceMiles != null ? ` Â· ${item.bookingMeta.distanceMiles.toFixed(1)} mi away` : ""}</p>
               ) : null}
               <div data-explore-content-key={item.contentKey}>
               <ExploreFeedCard

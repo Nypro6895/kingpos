@@ -1,9 +1,12 @@
 "use client";
+import { compressImageCanvas } from "@/lib/image-upload-client";
 import { ContentViewer } from "@/components/content-viewer";
 import { MediaUploadProgress } from "@/components/media-upload-progress";
 import { mediaBatchProgress, type MediaUploadPhase } from "@/lib/media-upload-progress";
 
 import { SettingsIcon } from "@/components/settings-icon";
+import { POST_CHANGED_EVENT, usePostCaption } from "@/components/post-change-state";
+import type { PostChange } from "@/types/post-actions";
 import { PostActions } from "@/app/salon-profile/post-actions";
 import { useHiddenPosts, postIdentity } from "@/components/post-safety";
 
@@ -11,12 +14,10 @@ import {
   createBeautyPostAction,
   deleteBeautyAvatarMediaAction,
   deleteBeautyMediaAction,
-  deleteBeautyPostAction,
   getBeautyAvatarUploadSessionAction,
   getBeautyMediaUploadSessionAction,
   loadBeautyTimelineAction,
   searchBeautyAttributionSalonsAction,
-  updateBeautyPostCaptionAction,
   updateBeautyProfileAction,
 } from "@/app/beauty/actions";
 import Link from "next/link";
@@ -99,7 +100,6 @@ type SelectedAttribution = {
 
 const acceptedMimeTypes = new Set<string>(BEAUTY_ALLOWED_IMAGE_TYPES);
 const acceptedAvatarMimeTypes = new Set<string>(ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES);
-const composerImageTargetBytes = 1.6 * 1024 * 1024;
 const timelineFilters: Array<{ id: TimelineFilter; label: string }> = [
   { id: "all", label: "All" },
   { id: "before_after", label: "Before & After" },
@@ -426,6 +426,7 @@ function readImage(file: File) {
 
     image.onload = () => {
       URL.revokeObjectURL(url);
+      if (image.naturalWidth * image.naturalHeight > 40_000_000) { reject(new Error("Choose an image smaller than 40 megapixels.")); return; }
       resolve(image);
     };
     image.onerror = () => {
@@ -433,23 +434,6 @@ function readImage(file: File) {
       reject(new Error("Image could not be read."));
     };
     image.src = url;
-  });
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("Image could not be processed."));
-          return;
-        }
-
-        resolve(blob);
-      },
-      "image/webp",
-      quality,
-    );
   });
 }
 
@@ -475,20 +459,15 @@ async function processBeautyImage(file: File) {
   canvas.height = height;
   context.drawImage(image, 0, 0, width, height);
 
-  let quality = 0.9;
-  let blob = await canvasToBlob(canvas, quality);
-
-  while (blob.size > composerImageTargetBytes && quality > 0.7) {
-    quality -= 0.06;
-    blob = await canvasToBlob(canvas, quality);
-  }
+  const compressed = await compressImageCanvas(canvas);
+  const blob = compressed.blob;
 
   return {
     file: new File([blob], `beauty-${crypto.randomUUID()}.webp`, {
       type: "image/webp",
     }),
-    height,
-    width,
+    height: compressed.height,
+    width: compressed.width,
   };
 }
 
@@ -509,13 +488,7 @@ async function processAvatarImage(file: File) {
   canvas.height = outputSize;
   context.drawImage(image, sx, sy, side, side, 0, 0, outputSize, outputSize);
 
-  let quality = 0.9;
-  let blob = await canvasToBlob(canvas, quality);
-
-  while (blob.size > 500 * 1024 && quality > 0.72) {
-    quality -= 0.06;
-    blob = await canvasToBlob(canvas, quality);
-  }
+  const { blob } = await compressImageCanvas(canvas, { maxWidth: 1024, maxHeight: 1024 });
 
   return new File([blob], `beauty-avatar-${crypto.randomUUID()}.webp`, {
     type: "image/webp",
@@ -562,20 +535,15 @@ async function processCoverImage(file: File) {
     height,
   );
 
-  let quality = 0.9;
-  let blob = await canvasToBlob(canvas, quality);
-
-  while (blob.size > composerImageTargetBytes && quality > 0.7) {
-    quality -= 0.06;
-    blob = await canvasToBlob(canvas, quality);
-  }
+  const compressed = await compressImageCanvas(canvas);
+  const blob = compressed.blob;
 
   return {
     file: new File([blob], `beauty-cover-${crypto.randomUUID()}.webp`, {
       type: "image/webp",
     }),
-    height,
-    width,
+    height: compressed.height,
+    width: compressed.width,
   };
 }
 
@@ -800,6 +768,7 @@ function PostCard({
   canManage,
   commentViewer,
   onCaptionUpdated,
+  onArchived,
   onCommentCountChange,
   onDeleted,
   post,
@@ -809,22 +778,18 @@ function PostCard({
   canManage: boolean;
   commentViewer: PostCommentViewer;
   onCaptionUpdated: (postId: string, caption: string | null) => void;
+  onArchived: (postId: string) => void;
   onCommentCountChange: (postId: string, count: number) => void;
   onDeleted: (postId: string) => void;
   post: BeautyTimelinePost;
 }) {
-  const hiddenPosts = useHiddenPosts(commentViewer.userId);
-  const [editing, setEditing] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const hiddenPosts = useHiddenPosts(commentViewer.userId, canManage);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [commentCountState, setCommentCountState] = useState(() => ({
     count: post.commentCount,
     postId: post.id,
   }));
-  const [draftCaption, setDraftCaption] = useState(post.caption ?? "");
-  const [error, setError] = useState("");
-  const [pending, startTransition] = useTransition();
   const attribution = post.attribution;
   const showCaptionBelowMedia = post.media.length > 0;
   const commentTarget = {
@@ -834,47 +799,13 @@ function PostCard({
     sourceType: "beauty_post" as const,
     title: post.caption ?? "Beauty post",
   };
+  const caption = usePostCaption(commentTarget, post.caption, commentViewer.userId);
   const commentCount =
     commentCountState.postId === post.id ? commentCountState.count : post.commentCount;
 
   function handleCommentCountChange(count: number) {
     setCommentCountState({ count, postId: post.id });
     onCommentCountChange(post.id, count);
-  }
-
-  function saveCaption(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-
-    startTransition(async () => {
-      const result = await updateBeautyPostCaptionAction({
-        caption: draftCaption,
-        postId: post.id,
-      });
-
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-
-      onCaptionUpdated(post.id, draftCaption.trim() || null);
-      setEditing(false);
-    });
-  }
-
-  function deletePost() {
-    setError("");
-    startTransition(async () => {
-      const result = await deleteBeautyPostAction(post.id);
-
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-
-      setConfirmingDelete(false);
-      onDeleted(post.id);
-    });
   }
 
   if (hiddenPosts.includes(postIdentity(commentTarget))) return null;
@@ -901,10 +832,10 @@ function PostCard({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1"><VerificationBadge verification={post.verification} /><PostActions target={commentTarget} viewerId={commentViewer.userId} onHidden={()=>onDeleted(post.id)} onChanged={()=>window.location.reload()} /></div>
+        <div className="flex items-center gap-1"><VerificationBadge verification={post.verification} /><PostActions target={commentTarget} viewerId={commentViewer.userId} onHidden={()=>onDeleted(post.id)} onChanged={change => { if (change?.action === "edit") onCaptionUpdated(post.id, change.caption ?? null); else if (change?.action === "archive") onArchived(post.id); }} /></div>
       </div>
 
-      <PostMedia post={post} />
+      <PostMedia post={{ ...post, caption: caption ?? null }} />
 
       <div className="grid gap-3 px-1 pb-1">
         {attribution ? (
@@ -919,57 +850,15 @@ function PostCard({
           </div>
         ) : null}
 
-        {editing ? (
-          <form className="grid gap-3" onSubmit={saveCaption}>
-            <label className="grid gap-1.5">
-              <span className="text-xs font-bold uppercase text-text-secondary">
-                Caption
-              </span>
-              <textarea
-                className="min-h-24 rounded-2xl border border-border-subtle bg-surface-muted px-3 py-2 text-sm font-semibold text-text-primary outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
-                maxLength={2200}
-                onChange={(event) => setDraftCaption(event.currentTarget.value)}
-                value={draftCaption}
-              />
-            </label>
-            <div className="flex flex-wrap justify-end gap-2">
-              <button
-                className="min-h-10 rounded-full border border-border-subtle px-4 text-sm font-bold text-text-primary transition hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
-                disabled={pending}
-                onClick={() => {
-                  setDraftCaption(post.caption ?? "");
-                  setEditing(false);
-                }}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="min-h-10 rounded-full bg-brand-orange px-4 text-sm font-extrabold text-white transition hover:bg-brand-orange-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
-                disabled={pending}
-                type="submit"
-              >
-                {pending ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </form>
-        ) : showCaptionBelowMedia && post.caption ? (
-          <p className="whitespace-pre-wrap text-sm font-semibold leading-6 text-text-primary">
-            {post.caption}
-          </p>
-        ) : null}
-
-        {error ? (
-          <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
-            {error}
-          </p>
+        {showCaptionBelowMedia && caption ? (
+          <p className="whitespace-pre-wrap text-sm font-semibold leading-6 text-text-primary">{caption}</p>
         ) : null}
 
         {post.visibility === "public" ? (
           <div className="post-action-toolbar">
             {savedState ? <SavePostButton size="toolbar" initialSaved={savedState.saved} saveCount={savedState.count} onSavedChange={saved => onSavedChange(post.id, saved)} isAuthenticated={commentViewer.isAuthenticated} target={{ sourceId: post.id, sourceType: "beauty_post" }} /> : <span className="beauty-action text-text-muted" aria-label="Loading Love status"><ReylumiIcon name="heart" /></span>}
             <button type="button" className="beauty-action" aria-label={`Comments (${commentCount})`} aria-haspopup="dialog" aria-expanded={commentsOpen} onClick={() => { setCommentsLoaded(true); setCommentsOpen(true); }}><ReylumiIcon name="message" /><span>Comment</span><span data-post-action-count className="text-xs">{commentCount || ""}</span></button>
-            <SharePostAction post={post} />
+            <SharePostAction post={{ ...post, caption: caption ?? null }} />
             {post.bookingAction ? <Link aria-label="Book" className="beauty-action text-brand-teal" href={canManage ? `/book/${post.bookingAction.salonId}` : post.bookingAction.href}><ReylumiIcon name="calendar" /><span>Book</span></Link> : null}
           </div>
         ) : null}
@@ -981,51 +870,7 @@ function PostCard({
 
       </div>
 
-      {confirmingDelete ? (
-        <div
-          aria-labelledby={`delete-beauty-post-${post.id}`}
-          aria-modal="true"
-          className="fixed inset-0 z-[60] grid place-items-end bg-zinc-950/45 p-0 backdrop-blur-sm sm:place-items-center sm:p-6"
-          role="dialog"
-        >
-          <div className="grid max-h-[calc(100dvh-1rem)] w-full gap-4 overflow-y-auto rounded-t-2xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl ring-1 ring-divider-subtle sm:max-w-sm sm:rounded-2xl sm:p-5">
-            <div>
-              <h2
-                className="text-lg font-extrabold text-text-primary"
-                id={`delete-beauty-post-${post.id}`}
-              >
-                Delete this Beauty post?
-              </h2>
-              <p className="mt-1 text-sm font-semibold leading-6 text-text-secondary">
-                This removes it from your Beauty timeline.
-              </p>
-            </div>
-            {error ? (
-              <p className="rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800">
-                {error}
-              </p>
-            ) : null}
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <button
-                className="min-h-11 rounded-full bg-surface-muted px-4 text-sm font-extrabold text-text-primary ring-1 ring-divider-subtle transition hover:text-brand-orange focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-orange disabled:cursor-wait disabled:opacity-60"
-                disabled={pending}
-                onClick={() => setConfirmingDelete(false)}
-                type="button"
-              >
-                Keep post
-              </button>
-              <button
-                className="min-h-11 rounded-full bg-red-600 px-4 text-sm font-extrabold text-white transition hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-wait disabled:opacity-60"
-                disabled={pending}
-                onClick={deletePost}
-                type="button"
-              >
-                {pending ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+
     </article>
   );
 }
@@ -1056,6 +901,16 @@ export function BeautyProfileClient({
   const profileSavingRef = useRef(false);
   const objectUrlsRef = useRef(new Set<string>());
   const [profile, setProfile] = useState(initialProfile);
+  useEffect(() => {
+    const changed = (event: Event) => {
+      const detail = (event as CustomEvent<{ change: PostChange; viewerId: string | null }>).detail;
+      if (!detail?.change || detail.viewerId !== commentViewer.userId || detail.change.action !== "feature" || detail.change.target.sourceType !== "beauty_post") return;
+      const change = detail.change;
+      if (change.coverImageUrl) setProfile(current => !current.isSelf || (change.target.profileId && change.target.profileId !== current.id) ? current : ({ ...current, coverImageUrl: change.coverImageUrl!, ...(change.coverMediaPath ? { coverMediaPath: change.coverMediaPath } : {}) }));
+    };
+    window.addEventListener(POST_CHANGED_EVENT, changed);
+    return () => window.removeEventListener(POST_CHANGED_EVENT, changed);
+  }, [commentViewer.userId]);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
   const [profileDraftBio, setProfileDraftBio] = useState(initialProfile.bio ?? "");
   const [profileDraftVisibility, setProfileDraftVisibility] =
@@ -1937,6 +1792,10 @@ export function BeautyProfileClient({
     setPosts((current) => current.filter((post) => post.id !== postId));
   }
 
+  function archivePost(postId: string) {
+    setPosts(current => current.map(post => post.id === postId ? { ...post, visibility: "self" as const } : post));
+  }
+
   return (
     <main className="beauty-profile-page min-h-screen overflow-x-hidden bg-surface-muted px-3 py-4 sm:px-6 lg:px-8">
       <div className="mx-auto grid w-full max-w-3xl gap-4">
@@ -2049,6 +1908,7 @@ export function BeautyProfileClient({
                   commentViewer={commentViewer}
                   key={post.id}
                   onCaptionUpdated={updatePostCaption}
+                  onArchived={archivePost}
                   onCommentCountChange={updatePostCommentCount}
                   onDeleted={removeDeletedPost}
                   post={post}

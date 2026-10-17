@@ -95,7 +95,7 @@ export function ExploreSalonMenu({ salon, target, onHidden }: { salon: ExploreSo
   const href = salon.href ?? `/explore/salons/${salon.id}`;
   const copy = async () => { try { await navigator.clipboard.writeText(new URL(href, window.location.origin).href); setMessage("Link copied."); } catch { setMessage("Could not copy the link. Please try again."); } };
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([salon.name, salon.address, salon.city, salon.state].filter(Boolean).join(", "))}`;
-  return <><PostActions plain salon={salon} target={target} viewerId={social.viewerId} onHidden={onHidden} onChanged={() => window.location.reload()} extraActions={[
+  return <><PostActions plain salon={salon} target={target} viewerId={social.viewerId} onHidden={onHidden} extraActions={[
     ...(isSalonId(salon.id) ? [{ label: social.state.following ? "Unfollow salon" : "Follow salon", action: () => social.change?.(salon.id, "following", !social.state.following), icon: <ReylumiIcon name="user-plus" /> }] : []),
     ...(isSalonId(salon.id) ? [{ label: social.state.saved ? "Unsave salon" : "Save salon", action: () => social.change?.(salon.id, "saved", !social.state.saved), icon: <ReylumiIcon name="bookmark" /> }] : []),
     { label: "Copy profile link", action: copy, icon: <ReylumiIcon name="link" /> },

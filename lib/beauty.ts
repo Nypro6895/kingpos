@@ -1,5 +1,6 @@
 import { assertAbuseRequest } from "@/lib/abuse-server";
 import "server-only";
+import { normalizeStoredImage } from "@/lib/normalize-stored-image";
 
 import {
   ACCOUNT_AVATAR_ALLOWED_IMAGE_TYPES,
@@ -1066,13 +1067,14 @@ async function assertTrustedBeautyMedia(input: {
     throw new Error("Uploaded image is too large.");
   }
 
+  const normalized = await normalizeStoredImage(input.supabase, BEAUTY_MEDIA_BUCKET, normalizedPath);
   return {
-    bytes,
-    height: input.media.height ?? null,
-    mimeType,
-    objectPath: normalizedPath,
+    bytes: normalized.bytes,
+    height: normalized.height,
+    mimeType: normalized.mimeType,
+    objectPath: normalized.path,
     role: input.media.role,
-    width: input.media.width ?? null,
+    width: normalized.width,
   };
 }
 
@@ -1548,73 +1550,6 @@ export async function updateBeautyProfile(input: {
   };
 }
 
-export async function updateBeautyPostCaption(input: {
-  caption: string | null;
-  postId: string;
-}): Promise<BeautyServiceResult<true>> {
-  const supabase = await createAuthenticatedSupabaseServerClient();
-  const postId = cleanUuid(input.postId);
-
-  if (!supabase || !postId) {
-    return failure("sign_in_required", "Sign in before editing this post.");
-  }
-
-  const { data, error } = await supabase.rpc("update_beauty_post_caption", {
-    p_caption: input.caption ?? null,
-    p_post_id: postId,
-  });
-
-  if (error) {
-    return failure("database_error", "Post could not be updated.");
-  }
-
-  const payload = asRecord(data);
-
-  if (payload.ok !== true) {
-    return failure(
-      readString(payload.code) === "not_found" ? "not_found" : "invalid_input",
-      "Post could not be updated.",
-    );
-  }
-
-  return { data: true, ok: true };
-}
-
-export async function deleteBeautyPost(
-  postId: string,
-): Promise<BeautyServiceResult<true>> {
-  const supabase = await createAuthenticatedSupabaseServerClient();
-  const cleanPostId = cleanUuid(postId);
-
-  if (!supabase || !cleanPostId) {
-    return failure("sign_in_required", "Sign in before deleting this post.");
-  }
-
-  const { data, error } = await supabase.rpc("delete_beauty_post", {
-    p_post_id: cleanPostId,
-  });
-
-  if (error) {
-    return failure("database_error", "Post could not be deleted.");
-  }
-
-  const payload = asRecord(data);
-
-  if (payload.ok !== true) {
-    return failure(
-      readString(payload.code) === "not_found" ? "not_found" : "invalid_input",
-      "Post could not be deleted.",
-    );
-  }
-
-  await cleanupBeautyMedia(
-    asArray(payload.mediaPaths)
-      .map(readString)
-      .filter((path): path is string => Boolean(path)),
-  );
-
-  return { data: true, ok: true };
-}
 
 export async function getSelfBeautyProfileSettings(): Promise<BeautyProfileSummary> {
   const context = await getAuthenticatedBeautyContext();

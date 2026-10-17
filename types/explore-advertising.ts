@@ -14,6 +14,9 @@ export type Campaign = {
   popupTrigger?: "delay" | "scroll";
   scrollPercent?: number;
   imageUrl: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  imageVariants?: { url: string; width: number; height: number }[];
   href: string;
   text: string;
   background: string;
