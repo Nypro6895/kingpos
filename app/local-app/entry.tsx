@@ -132,29 +132,37 @@ function App() {
   const accept = useCallback((value: AppLocalContext, requestedPath: string, requested = false) => {
     // Native context events from a command preflight may arrive after its reply.
     // During a role handoff only our destination request may admit a page.
-    if (handoffPath.current && (!requested || requestedPath !== handoffPath.current)) return;
-    if (!value || value.schemaVersion !== 1 || !isAppLocalScopeId(value.context?.scope)) return;
+    if (handoffPath.current && (!requested || requestedPath !== handoffPath.current)) return false;
+    if (!value || value.schemaVersion !== 1 || !isAppLocalScopeId(value.context?.scope)) return false;
     const family = authorityFamily(requestedPath);
-    if (family !== authorityFamily(current.current) || isPublic(current.current)) return;
-    if(isAppLocalPortableScopeId(value.context.scope)&&(value.grant?.kind!=="portable"||value.grant.scope!==value.context.scope||value.grant.salonId!==value.context.salonId||value.grant.workspaceId!==value.context.workspaceId))return;
-    if (family === "portable" && !isAppLocalPortableScopeId(value.context.scope)) return;
-    if (family !== "portable" && family !== "display" && isAppLocalPortableScopeId(value.context.scope)) return;
+    if (family !== authorityFamily(current.current) || isPublic(current.current)) return false;
+    if(isAppLocalPortableScopeId(value.context.scope)&&(value.grant?.kind!=="portable"||value.grant.scope!==value.context.scope||value.grant.salonId!==value.context.salonId||value.grant.workspaceId!==value.context.workspaceId))return false;
+    if (family === "portable" && !isAppLocalPortableScopeId(value.context.scope)) return false;
+    if (family !== "portable" && family !== "display" && isAppLocalPortableScopeId(value.context.scope)) return false;
+    const generation = window.__reylumiAppLocalContext?.generation;
+    const next = { value, generation };
+    if (!usable(next)) return false;
     if (getAppLocalHost().isNative && value.grant) { alignDeviceGeneration(); void acceptExperienceOfflineGrant(value.grant); }
-    const previous = admitted.current[family], all = Object.values(admitted.current), generation = window.__reylumiAppLocalContext?.generation;
+    const previous = admitted.current[family], all = Object.values(admitted.current);
     const identityChanged = all.some(item => item && (item.value.context.viewerId !== value.context.viewerId || item.generation !== generation));
     const authorityChanged = previous && (previous.value.context.scope !== value.context.scope || previous.value.context.permissionRevision !== value.context.permissionRevision || previous.value.grant && value.grant && previous.value.grant.grantRevision !== value.grant.grantRevision);
     if (identityChanged || authorityChanged) { resetAppLocalResources(); clearExperienceState(); setVisited([]); admitted.current = {}; }
-    admitted.current = { ...admitted.current, [family]: { value, generation } }; setAdmissions(admitted.current);
+    admitted.current = { ...admitted.current, [family]: next }; setAdmissions(admitted.current);
     acceptedHostEpoch.current = window.__reylumiAppLocalContext?.scopeEpoch ?? -1;
     handoffPath.current = null; setSwitchingWorkspace(false);
     setAppLocalCommandScope(usable(admitted.current[family]) ? value.context.scope : undefined); setError(false);
+    return true;
   }, []);
   const verify = useCallback(async (options?: { fresh?: boolean }) => {
     if (isPublic(current.current)) return;
     const requestedPath = current.current, started = ++contextEpoch.current; request.current?.abort(); const controller = new AbortController(); request.current = controller;
     setError(false);
-    try { const value = await getAppLocalHost().context(requestedPath, { signal: controller.signal, fresh: options?.fresh || Boolean(handoffPath.current) }); if (!controller.signal.aborted && started === contextEpoch.current) accept(value, requestedPath, true); }
+    try {
+      const value = await getAppLocalHost().context(requestedPath, { signal: controller.signal, fresh: options?.fresh || Boolean(handoffPath.current) });
+      if (!controller.signal.aborted && started === contextEpoch.current && !accept(value, requestedPath, true)) throw new Error("The application context must be checked again");
+    }
     catch { if (!controller.signal.aborted && started === contextEpoch.current) { setError(true); setSwitchingWorkspace(false); } }
+    finally { if (request.current === controller) request.current = null; }
   }, [accept]);
   const transition = useCallback((destination: string) => {
     const previous = current.current;
@@ -176,10 +184,15 @@ function App() {
     let destination: string; try { destination = appLocalPath(value); } catch { return; }
     destination=appLocalRouteAlias(destination)??destination;
     if (!isPublic(destination) && !ownerPaths.has(destination.split("?")[0]) && !getAppLocalPage(destination)) { void getAppLocalHost().openOnline(destination); return; }
+    // Selecting a page again is an explicit recovery attempt when its initial
+    // session check failed. History/state do not change for the same route.
+    const retryCurrent = destination === current.current && !isPublic(destination)
+      && !usable(admitted.current[authorityFamily(destination)]) && !request.current && !handoffPath.current;
     // Capture the outgoing page before our history observer sees the new URL.
     transition(destination);
     (replace ? history.replaceState : history.pushState).call(history, {}, "", destination);
-  }, [transition]);
+    if (retryCurrent) { recoveryAttempts.current.clear(); void verify({ fresh: true }); }
+  }, [transition, verify]);
   useEffect(()=>installAppLocalLinkNavigation({navigate,isLocalRoute:href=>isPublic(href)||ownerPaths.has(href.split("?")[0])||Boolean(getAppLocalPage(href)),openOnline:path=>getAppLocalHost().openOnline(path),getScope:getAppLocalCommandScope,helpImagePaths:APP_LOCAL_REFERENCE_ASSETS}),[navigate]);
   useEffect(() => {
     const saved = admitted.current[authorityFamily(path)];
@@ -216,7 +229,7 @@ function App() {
       navigate(destination);
       if (!isPublic(current.current)) void verify({ fresh: true });
     };
-    const retryWorkspace = () => { setSwitchingWorkspace(true); void verify({ fresh: true }); };
+    const retryWorkspace = () => { recoveryAttempts.current.clear(); setSwitchingWorkspace(true); void verify({ fresh: true }); };
     const resume = () => { void verify({ fresh: true }); };
     let accessCheck: ReturnType<typeof setTimeout> | undefined;
     const revalidateAccess = (event: Event) => {
@@ -258,7 +271,7 @@ function App() {
   return <AppLocalNavigationProvider value={{ path, navigate, refresh: () => void verify() }}><ExperienceScopeProvider context={context?.context ?? publicExperience}><AppLocalShell context={context} presentationContext={presentationContext} path={path}>
     <div className="app-local-body" data-app-local-ready="true">
       {isPublic(path) ? <div className="app-local-page"><PublicPage path={path} navigate={navigate} experienceScope={presentationContext?.context.scope} /></div> : null}
-      {!isPublic(path) && !context && getAppLocalPage(path)?.requiresContext !== false ? <section className="p-6" aria-busy={!error}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">Please check your connection and try again.</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify({ fresh: true })}>Try again</button></> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
+      {!isPublic(path) && !context && (error || getAppLocalPage(path)?.requiresContext !== false) ? <section className="p-6" aria-busy={!error}>{error ? <><h1 className="text-xl font-semibold">{getAppLocalPage(path)?.title ?? "POS"}</h1><p className="mt-4">Please check your connection and try again.</p><button className="mt-4 rounded border px-4 py-2" onClick={() => { recoveryAttempts.current.clear(); void verify({ fresh: true }); }}>Try again</button></> : <><LumiLoadingStatus />{switchingWorkspace ? <p role="status" className="mt-4 text-center text-sm text-zinc-600">Switching workspace…</p> : null}</>}</section> : null}
       {context && !owner && ownerPaths.has(path.split("?")[0]) ? <section className="p-6" aria-busy={!error}><h1 className="text-xl font-semibold">{path.startsWith("/pos/check-in") ? "Check In" : "POS"}</h1><p className="mt-4">{error || context.offline ? "Connect to verify access to this workspace." : "Opening your workspace…"}</p><button className="mt-4 rounded border px-4 py-2" onClick={() => void verify()}>Try again</button></section> : null}
         {ownerContext && owner && ownerVisited && ownerContext.context.salonId ? <div className="app-local-page" hidden={!context || !ownerPaths.has(path.split("?")[0])}><ExperienceScopeProvider context={ownerContext.context} guardForms={false}><PageBoundary recover={() => void verify()}><OwnerPages context={ownerContext} path={path} navigate={navigate} active={Boolean(context && ownerPaths.has(path.split("?")[0]))} /></PageBoundary></ExperienceScopeProvider></div> : null}
         {!context && activeAdmission && getAppLocalPage(path)?.requiresContext === false ? (() => { const page = getAppLocalPage(path)!; return <div className="app-local-page"><page.Component context={null} path={path} navigate={navigate} /></div>; })() : null}

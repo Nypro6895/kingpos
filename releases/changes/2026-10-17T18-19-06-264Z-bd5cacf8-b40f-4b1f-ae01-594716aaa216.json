@@ -1,0 +1,34 @@
+{
+  "kind": "change",
+  "changeId": "explore-session-recovery-20261017",
+  "status": "working",
+  "summary": "Fix indefinite Explore startup after failed session verification and preserve same-page/session recovery; implementation only, hold for combined release as requested.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "app/local-app/entry.tsx",
+    "lib/app-local-host.ts",
+    "ios/Reylumi/ReylumiLocalAppTransport.swift",
+    "ios/ReylumiTests/LocalAppTransportTests.swift"
+  ],
+  "dependencies": [],
+  "source": {
+    "commit": "656543e56a444f3b107a4b0c8d9b2586fa1c045b",
+    "snapshot": "C:/Users/giuse/.codex/worktrees/explore-session-recovery/kingpos"
+  },
+  "validation": [
+    {
+      "name": "Actual shipped bundle failed-context reproduction",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/.codex/worktrees/role-handoff-release/kingpos/artifacts/explore-startup-audit-20261017/result.json"
+    }
+  ],
+  "releaseIntent": "Do not deploy independently. Integrate with other completed changes in a future authorized combined web and TestFlight release.",
+  "id": "bd5cacf8-b40f-4b1f-ae01-594716aaa216",
+  "recordedAt": "2026-10-17T18:19:06.264Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\explore-session-recovery\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

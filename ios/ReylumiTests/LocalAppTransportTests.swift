@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 import WebKit
 import CryptoKit
 @testable import Reylumi
@@ -26,6 +27,69 @@ private actor CachedFirstContextHTTP: ReylumiLocalHTTPClient {
         guard let (url, generation, continuation) = held else { return }; held = nil
         let value = AppLocalTestFixture.context(generation: generation)
         continuation.resume(returning: (try JSONSerialization.data(withJSONObject: value), HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!))
+    }
+}
+
+/// The packaged client and native bridge stay real; this is the entire network
+/// boundary, with no credentials, remote server or business command permitted.
+private actor InstalledExploreRecoveryHTTP: ReylumiLocalHTTPClient {
+    let timeout: Bool
+    private var contextAvailable = false
+    private(set) var contextRequests = 0
+    private(set) var reads: [String] = []
+    private(set) var commands = 0
+    init(timeout: Bool) { self.timeout = timeout }
+    func allowContext() { contextAvailable = true }
+    func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let url = try XCTUnwrap(request.url)
+        let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        var object: [String: Any], status = 200
+        if url.path == "/api/app-local/context" {
+            contextRequests += 1
+            if !contextAvailable {
+                if timeout { throw URLError(.timedOut) }
+                status = 503; object = ["error": "Synthetic context service unavailable"]
+            } else {
+                let generation = try XCTUnwrap(query.first { $0.name == "generation" }?.value)
+                object = AppLocalTestFixture.context(generation: generation, kind: "public")
+                var context = object["context"] as! [String: Any], grant = object["grant"] as! [String: Any]
+                context["authenticated"] = false; context["viewerId"] = NSNull(); context["salonId"] = NSNull(); context["workspaceId"] = "public"
+                grant["viewerId"] = NSNull(); grant["salonId"] = NSNull(); grant["workspaceId"] = "public"; grant["path"] = "/explore"
+                object["context"] = context; object["grant"] = grant
+                object["display"] = ["name": "", "language": "en", "role": "guest"]
+                object["access"] = ["ownerWorkspace": false, "staffWorkspace": false]
+            }
+        } else if url.path == "/api/app-local/read" {
+            let name = query.first { $0.name == "name" }?.value ?? ""
+            reads.append(name)
+            let scope = AppLocalTestFixture.scope
+            let data: [String: Any]
+            switch name {
+            case "page.explore": data = Self.exploreCore()
+            case "shell.navigation": data = ["scope": scope, "authenticated": false, "navigation": NSNull(), "ownerQueueScope": NSNull(), "audience": "guest"]
+            case "shell.configuration": data = ["scope": scope, "language": ["enabled": false, "portableEnabled": false, "expiresAt": NSNull()], "campaign": ["installed": false, "runtime": NSNull()]]
+            case "shell.notice": data = ["scope": scope, "mode": NSNull()]
+            default: status = 503; data = ["error": "Optional fixture read unavailable"]
+            }
+            object = ["schemaVersion": 1, "status": 200, "scope": scope, "etag": "fixture-explore", "updatedAt": Date().timeIntervalSince1970 * 1000, "data": data]
+        } else {
+            if url.path == "/api/app-local/command" { commands += 1 }
+            status = 503; object = ["error": "All commands and other network requests are forbidden"]
+        }
+        return (try JSONSerialization.data(withJSONObject: object), HTTPURLResponse(url: url, statusCode: status, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!)
+    }
+    private static func exploreCore() -> [String: Any] {
+        let empty = NSNull()
+        return [
+            "commentViewer": ["identity": ["name": "Guest", "role": "personal", "salonId": empty, "avatarUrl": empty], "canModerate": false, "canReplyAsSalon": false, "isAuthenticated": false, "userId": empty],
+            "discoveryContent": ["shortcuts": []], "hasUrlLocation": true,
+            "homeContent": ["error": empty, "inspiration": ["error": empty, "hasMore": false, "items": [], "nextCursor": empty], "newSalons": [], "popularServices": [], "recommendedSalons": []],
+            "initialFeed": ["items": [], "hasMore": false, "nextCursor": empty, "sessionCursor": empty],
+            "initialLocationSource": "manual",
+            "initialResponse": ["query": "fixture-recovery", "displayQuery": "fixture-recovery", "category": "", "location": "Chicago", "locationSource": "manual", "locationOrigin": "manual", "page": 1, "pageSize": 12, "results": [], "sections": ["bestMatches": [], "nearby": [], "recommended": []], "totalCount": 0, "totalPages": 1, "hasMore": false, "nextCursor": empty, "groupCounts": ["bestMatches": 0, "nearby": 0, "recommended": 0], "target": "salons", "sort": "relevance"],
+            "initialSearchMode": true, "quickActions": [], "workspaceLocation": ["label": "Chicago", "source": "manual"],
+            "deferred": ["extras": false, "feed": false, "showcase": false]
+        ]
     }
 }
 
@@ -122,6 +186,73 @@ actor AppLocalFixtureHTTP: ReylumiLocalHTTPClient {
 }
 
 final class LocalAppTransportTests: XCTestCase {
+    @MainActor
+    func testActualInstalledExploreRecoversContextTimeoutAnd503OnlyAfterUserRetry() async throws {
+        let bundle = try ReylumiLocalBundle.installed()
+        XCTAssertTrue(bundle.manifest.productionReady); XCTAssertTrue(bundle.routeExists("/explore"))
+        let blockerID = "reylumi.tests.explore-no-network." + UUID().uuidString
+        let rules = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<WKContentRuleList, Error>) in
+            WKContentRuleListStore.default().compileContentRuleList(forIdentifier: blockerID, encodedContentRuleList: """
+            [{"trigger":{"url-filter":"^https?://"},"action":{"type":"block"}}]
+            """) { list, error in
+                if let list { continuation.resume(returning: list) }
+                else { continuation.resume(throwing: error ?? URLError(.cannotLoadFromNetwork)) }
+            }
+        }
+        defer { WKContentRuleListStore.default().removeContentRuleList(forIdentifier: blockerID) { _ in } }
+        for timeout in [true, false] {
+            let directory = FileManager.default.temporaryDirectory.appendingPathComponent("reylumi-explore-retry-" + UUID().uuidString, isDirectory: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: directory) }
+            let http = InstalledExploreRecoveryHTTP(timeout: timeout), origin = URL(string: "https://reylumi.com")!
+            let defaults = UserDefaults(suiteName: "reylumi.tests.actual-explore-retry." + UUID().uuidString)!
+            let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.actual-explore-retry." + UUID().uuidString)
+            let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: defaults, cookies: { [] })
+            let path = "/explore?q=fixture-recovery&location=Chicago&locationSource=manual&type=salons"
+            let controller = ReylumiLocalAppViewController(bundle: bundle, startPath: path, transport: transport)
+            controller.configureWebViewForTesting = { configuration in
+                configuration.userContentController.add(rules)
+                // Original adapters may wrap this fetch, but every unhandled
+                // request remains blocked. Resource rules also block remote
+                // images/scripts; no live account or business is contacted.
+                configuration.userContentController.addUserScript(WKUserScript(source: """
+                window.fetch=()=>Promise.reject(new TypeError('External fixture network blocked'));
+                window.WebSocket=class extends EventTarget{static CONNECTING=0;static OPEN=1;static CLOSING=2;static CLOSED=3;readyState=3;send(){}close(){}};
+                navigator.sendBeacon=()=>false;
+                """, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+            }
+            let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene { window.windowScene = scene }
+            window.rootViewController = controller; window.isHidden = false
+            defer { controller.webView?.stopLoading(); window.isHidden = true; window.rootViewController = nil }
+            controller.initializeWebContentIfNeeded()
+            let web = try XCTUnwrap(controller.webView)
+            let retry = "[...document.querySelectorAll('.app-local-body button')].find(x=>x.textContent.trim()==='Try again'&&x.getClientRects().length)"
+            try await waitForInstalledExplore("Boolean(\(retry)) && document.body.innerText.includes('Please check your connection')", in: web)
+            try await Task.sleep(nanoseconds: 300_000_000)
+            let failedAttempts = await http.contextRequests, beforeReads = await http.reads
+            XCTAssertEqual(failedAttempts, 1, "A failed cold context must stop at user recovery, not loop")
+            XCTAssertFalse(beforeReads.contains("page.explore"), "Explore data requires an admitted scope")
+            await http.allowContext()
+            if timeout {
+                let clicked = try await web.evaluateJavaScript("(()=>{const button=\(retry);if(!button)return false;button.click();return true})()") as? Bool
+                XCTAssertEqual(clicked, true)
+            } else {
+                // Native menu selection uses this event, even when the chosen
+                // Explore URL is exactly the failed page already displayed.
+                _ = try await web.evaluateJavaScript("window.dispatchEvent(new CustomEvent('reylumi:app-local-navigate',{detail:{path:location.pathname+location.search}}));true")
+            }
+            try await waitForInstalledExplore("!document.querySelector('[data-explore-startup]') && [...document.querySelectorAll('input')].some(x=>x.value==='fixture-recovery'&&x.getClientRects().length) && !document.body.innerText.includes('Please open this page again')", in: web)
+            let reads = await http.reads, attempts = await http.contextRequests, commands = await http.commands
+            XCTAssertEqual(attempts, 2); XCTAssertEqual(reads.filter { $0 == "page.explore" }.count, 1)
+            XCTAssertEqual(commands, 0, "Recovery must never replay a business command")
+            let blank = try await web.evaluateJavaScript("!document.querySelector('.app-local-body')?.innerText.trim()") as? Bool
+            XCTAssertEqual(blank, false)
+            let external = try await web.evaluateJavaScript("performance.getEntriesByType('resource').map(x=>x.name).filter(x=>/^https?:/.test(x))") as? [String] ?? []
+            XCTAssertTrue(external.isEmpty, "All test UI/resources must stay local: \(external)")
+            await transport.reset()
+        }
+    }
     @MainActor
     func testColdCachedContextWaitsForFreshAuthorityWhenPrivateReadFinishesFirst() async throws {
         let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
@@ -297,6 +428,83 @@ final class LocalAppTransportTests: XCTestCase {
         _ = try await transport.freshContext(path: "/staff/my-work")
         XCTAssertEqual(resets, 1, "A changed existing staff binding must still invalidate deliveries and the old staff read")
         let revoked = try await transport.cached(name: "staff.my-work", args: [:], requestedScope: AppLocalTestFixture.scope); XCTAssertNil(revoked)
+        await transport.reset()
+    }
+    @MainActor
+    func testCachedAuthorityRotationAdmitsSelectedLeaseWithoutCancellingItsOwnContextRead() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP(), staffScope = "v3:" + String(repeating: "b", count: 64)
+        let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.cached-rotation." + UUID().uuidString)
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: UserDefaults(suiteName: "reylumi.tests.cached-rotation." + UUID().uuidString)!, cookies: { [] })
+        await http.configureContext(path: "/pos", scope: AppLocalTestFixture.scope, kind: "owner")
+        await http.configureContext(path: "/staff/my-work", scope: staffScope, kind: "staff", primaryScope: AppLocalTestFixture.scope)
+        _ = try await transport.freshContext(path: "/pos")
+        _ = try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope)
+        _ = try await transport.freshContext(path: "/staff/my-work")
+        _ = try await transport.freshContext(path: "/pos")
+        let oldEpoch = transport.scopeEpoch, oldNonce = transport.nonce, generation = transport.generation
+        await http.configureHold()
+        let oldRead = Task { @MainActor in try await transport.read(name: "fixture.roster", args: [:], etag: nil, requestedScope: AppLocalTestFixture.scope) }
+        for _ in 0..<100 { if await http.isHeld() { break }; try await Task.sleep(nanoseconds: 10_000_000) }
+        let held = await http.isHeld(); XCTAssertTrue(held)
+        await http.configureContextUnavailable()
+        var resets: [[String: Any]] = [], contextRead: Task<[String: Any], Error>?
+        transport.onEvent = { name, detail in
+            guard name == "reylumi:app-local-reset" else { return }
+            resets.append(detail)
+            // The entry cancels outstanding reads on revocation, but a context
+            // rotation must be allowed to finish delivering its selected lease.
+            if detail["reason"] as? String != "context" { contextRead?.cancel() }
+        }
+        let operation = Task { @MainActor in
+            let value = try await transport.context(path: "/staff/my-work")
+            try Task.checkCancellation()
+            return value
+        }
+        contextRead = operation
+        let selection = await operation.result
+        try await http.releaseHeld()
+        let previousDelivery = await oldRead.result
+        let selected = try selection.get()
+        XCTAssertEqual(selected["contextPath"] as? String, "/staff/my-work")
+        XCTAssertEqual(selected["offline"] as? Bool, true)
+        XCTAssertEqual((selected["context"] as? [String: Any])?["scope"] as? String, staffScope)
+        XCTAssertEqual((selected["grant"] as? [String: Any])?["kind"] as? String, "staff")
+        XCTAssertEqual(resets.count, 1); XCTAssertEqual(resets.first?["reason"] as? String, "context")
+        XCTAssertEqual(transport.scopeEpoch, oldEpoch + 1); XCTAssertNotEqual(transport.nonce, oldNonce)
+        XCTAssertEqual(transport.generation, generation)
+        let host = selected["host"] as? [String: Any]
+        XCTAssertEqual(host?["scopeEpoch"] as? Int, transport.scopeEpoch)
+        XCTAssertEqual(host?["nonce"] as? String, transport.nonce); XCTAssertEqual(host?["generation"] as? String, generation)
+        do { _ = try previousDelivery.get(); XCTFail("A context rotation must still reject deliveries for the previous authority") }
+        catch { XCTAssertEqual((error as NSError).code, 409) }
+        let owner = await store.session(generation: generation, scope: AppLocalTestFixture.scope, authority: "owner")
+        let staff = await store.session(generation: generation, scope: staffScope, authority: "staff")
+        XCTAssertNotNil(owner); XCTAssertNotNil(staff)
+        let roster = try await transport.cached(name: "fixture.roster", args: [:], requestedScope: AppLocalTestFixture.scope)
+        XCTAssertNotNil(roster, "An authority switch must retain the other role's unexpired display cache")
+        await transport.reset()
+    }
+    @MainActor
+    func testFullSessionResetStillRevokesCachedAuthorityAndRejectsOldGeneration() async throws {
+        let (bundle, directory) = try AppLocalTestFixture.bundle(); defer { try? FileManager.default.removeItem(at: directory) }
+        let origin = URL(string: "https://reylumi.com")!, http = AppLocalFixtureHTTP()
+        let store = ReylumiLocalReadStore(origin: origin, directory: directory, service: "reylumi.tests.cached-generation." + UUID().uuidString)
+        let transport = ReylumiLocalAppTransport(origin: origin, manifest: bundle.manifest, store: store, client: http, defaults: UserDefaults(suiteName: "reylumi.tests.cached-generation." + UUID().uuidString)!, cookies: { [] })
+        let original = try await transport.freshContext(path: "/explore")
+        let oldGeneration = transport.generation, oldLease = try XCTUnwrap(ReylumiLocalSession.verified(original, generation: oldGeneration))
+        var resetDetail: [String: Any]?
+        transport.onEvent = { name, detail in if name == "reylumi:app-local-reset" { resetDetail = detail } }
+        await transport.reset()
+        XCTAssertNotEqual(transport.generation, oldGeneration)
+        XCTAssertNotNil(resetDetail); XCTAssertEqual(resetDetail?["generation"] as? String, transport.generation)
+        XCTAssertNil(resetDetail?["reason"], "A real account/session revocation must still cancel outstanding admission")
+        let cleared = await store.session(generation: oldGeneration); XCTAssertNil(cleared)
+        // Even a leftover encrypted lease cannot admit the previous generation.
+        await store.accept(oldLease)
+        await http.configureContextUnavailable()
+        do { _ = try await transport.context(path: "/explore"); XCTFail("The new session cannot restore the previous account generation") } catch {}
+        let matches = await transport.matchesCachedScope(oldLease.scope); XCTAssertFalse(matches)
         await transport.reset()
     }
     @MainActor
@@ -477,5 +685,16 @@ final class LocalAppTransportTests: XCTestCase {
         do { _ = try await transport.read(name: "fixture.roster", args: ["date": String(repeating: "x", count: 32769)], etag: nil, requestedScope: AppLocalTestFixture.scope); XCTFail("Oversized filters must fail before sending") } catch {}
         let bounded = await http.requests; XCTAssertEqual(bounded.count, requests.count)
         await transport.reset()
+    }
+    @MainActor
+    private func waitForInstalledExplore(_ expression: String, in web: WKWebView) async throws {
+        var lastError: Error?
+        for _ in 0..<400 {
+            do { if try await web.evaluateJavaScript(expression) as? Bool == true { return } }
+            catch { lastError = error }
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+        XCTFail("Actual installed Explore did not recover: \(lastError?.localizedDescription ?? expression)")
+        throw URLError(.timedOut)
     }
 }
