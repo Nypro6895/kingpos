@@ -1,0 +1,43 @@
+name: Reylumi retire old TestFlight builds
+on:
+  push:
+    branches: [codex/testflight-retire-others-20261017]
+    paths:
+      - '.github/workflows/reylumi-testflight-retire-others.yml'
+      - '.github/testflight-retirement-20261017.json'
+      - 'ios/scripts/retire-other-testflight-builds*'
+permissions:
+  contents: read
+concurrency:
+  group: reylumi-testflight
+  cancel-in-progress: false
+jobs:
+  retire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify protected build and expiration boundaries
+        run: node --test ios/scripts/retire-other-testflight-builds.test.mjs
+      - name: Plan or apply the exact reviewed old-build list
+        env:
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_APP_ID: ${{ vars.APP_STORE_CONNECT_APP_ID }}
+        run: |
+          if [ -f .github/testflight-retirement-20261017.json ]; then
+            node ios/scripts/retire-other-testflight-builds.mjs apply
+          else
+            node ios/scripts/retire-other-testflight-builds.mjs plan
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reylumi-retirement-${{ github.run_id }}
+          path: build/testflight-retirement-*.json
+          if-no-files-found: warn
+          retention-days: 30

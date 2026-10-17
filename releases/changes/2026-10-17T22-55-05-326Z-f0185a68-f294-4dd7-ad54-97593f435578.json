@@ -1,0 +1,30 @@
+{
+  "kind": "change",
+  "changeId": "testflight-retire-others-20261017",
+  "status": "working",
+  "summary": "Owner explicitly requests removing all other TestFlight builds, retaining 1.0.0 (33). Prepare exact-list expiration with fresh keep-build availability verification and post-operation audit.",
+  "channels": [
+    "ios"
+  ],
+  "files": [
+    "ios/scripts/retire-other-testflight-builds.mjs",
+    "ios/scripts/retire-other-testflight-builds.test.mjs",
+    ".github/workflows/reylumi-testflight-retire-others.yml"
+  ],
+  "source": {
+    "baseCommit": "b0870926f58331398ee3257196b1201a7f35f5cb",
+    "nativeAssessment": "Distribution maintenance only; no installed binary or website source changes."
+  },
+  "validation": [
+    {
+      "name": "Exact keep-build protection and bounded old-build expiration",
+      "result": "pending"
+    }
+  ],
+  "dependencies": [],
+  "id": "f0185a68-f294-4dd7-ad54-97593f435578",
+  "recordedAt": "2026-10-17T22:55:05.326Z",
+  "worktree": "C:\\Users\\giuse\\kingpos\\work\\testflight-retire-others-20261017",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}
