@@ -74,6 +74,20 @@ test('workspace handoff gates old owner content, admits the destination family a
     await app.page.evaluate(()=>window.dispatchEvent(new CustomEvent('reylumi:app-local-reset',{detail:{reason:'context',scopeEpoch:window.__reylumiAppLocalContext.scopeEpoch}})));
     assert.equal(await app.page.evaluate(()=>window.commandScope),scopes.portal);
     assert.equal(await app.page.evaluate(()=>window.wrongScope),0);
+    await app.page.evaluate(()=>window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-handoff',{detail:{path:'/pos'}})));
+    await app.page.locator('.owner-amount-field input[aria-label=Amount]').waitFor();
+    assert.equal(await app.page.evaluate(()=>window.commandScope),scopes.account);
+    await app.page.evaluate(()=>{
+      window.fixture.scope.account='v3:'+'d'.repeat(64);
+      window.fixture.owner.context.scope=window.fixture.scope.account;
+      window.fixture.owner.context.workspaceId='personal';window.fixture.owner.context.salonId=null;
+      window.fixture.owner.grant=null;window.fixture.owner.access={ownerWorkspace:false,staffWorkspace:false};
+      window.fixture.owner.display.role='CUSTOMER';
+      window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-handoff',{detail:{path:'/settings'}}));
+    });
+    await app.page.locator('[data-fixture-page="page.settings"]').waitFor();
+    assert.equal(await app.page.evaluate(()=>window.commandScope),'v3:'+'d'.repeat(64));
+    assert.equal(await app.page.locator('.owner-amount-field input[aria-label=Amount]').count(),0);
     assert.deepEqual(await app.page.evaluate(()=>window.apiCalls),[]);
   } finally { await app.close(); }
 });

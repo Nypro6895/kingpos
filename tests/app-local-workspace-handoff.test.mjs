@@ -44,6 +44,23 @@ test('notification redirect uses original checked workspace switch exactly once;
   await api.invokeAppLocalCommand('notification.mark-read', [], true, 'app/notifications/actions.ts');
   assert.deepEqual(events, [], 'Marking a notification read must not reset the workspace or drafts');
 });
+test('uncertain workspace command failure recovers current admission without replay; a new account cannot be reset by its old failure', async () => {
+  globalThis.window = new EventTarget(); globalThis.location = { pathname: '/notifications', search: '' };
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { onLine: true } });
+  let scope='old-viewer', reject;
+  const events=[];window.addEventListener('reylumi:app-local-workspace-handoff', e=>events.push(e.detail.path));
+  globalThis.handoffScope=()=>scope;
+  let calls=0;
+  globalThis.handoffHost={isNative:true,command:async()=>{calls++;return new Promise((_,r)=>reject=r)}};
+  const api=await load('lib/app-local-shell-workspace-navigation.ts',{
+    'app-local-host':'export const appLocalPath=x=>x;export const getAppLocalHost=()=>globalThis.handoffHost',
+    'app-local-command-client':'export const getAppLocalCommandScope=()=>globalThis.handoffScope()',
+  });
+  api.navigateToWorkspace('staff:fixture');reject(Error('reply unavailable'));await new Promise(setImmediate);
+  assert.deepEqual(events,['/notifications']);assert.equal(calls,1);
+  events.length=0;api.navigateToWorkspace('staff:fixture');scope='new-viewer';reject(Error('old reply unavailable'));await new Promise(setImmediate);
+  assert.deepEqual(events,[]);assert.equal(calls,2);
+});
 test('web notification open defers role cookies to the guarded handoff and preserves mark-read', async () => {
   const state = globalThis.notificationHandoffFixture = { writes: 0, reads: 0, markRead: 0 };
   const api = await load('app/notifications/actions.ts', {

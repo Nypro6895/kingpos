@@ -58,6 +58,21 @@ test('actual Market input survives held shell menu, entitlement update and origi
     await page.getByRole('link', { name: 'Book fixture salon', exact: true }).click(); await page.getByRole('dialog', { name: 'Quick booking', exact: true }).waitFor(); assert.equal(await page.evaluate(() => window.requests.some(x => x.path === '/api/public-booking/context')), true); assert.equal(await page.getByRole('dialog', { name: /beauty moment/ }).count(), 0); assert(await page.evaluate(() => window.queueScopes.every(scope => scope === 'owner:' + '11111111-1111-4111-8111-111111111111' + ':viewer'))); assert.deepEqual(errors, []);
   } catch (error) { console.error(JSON.stringify({ errors, body: await page?.locator('body').innerText() })); throw error; } finally { await f.close(); }
 });
+
+test('unconfirmed context does not advertise logout; workspace dialog retry requests verification', { skip: !existsSync(browserPath), timeout: 40000 }, async () => {
+  const f = await fixture(); const page = await f.browser.newPage({ viewport: { width: 390, height: 844 } });
+  try {
+    await page.route('**/*', route => route.request().url().startsWith(f.origin) ? route.continue() : route.abort());
+    await page.goto(f.origin + '/market');
+    assert.equal(await page.getByRole('link', { name: 'Login', exact: true }).count(), 0);
+    assert.equal(await page.getByRole('link', { name: 'Create account', exact: true }).count(), 0);
+    await page.evaluate(() => { window.retries = 0; window.addEventListener('reylumi:app-local-workspace-retry', () => window.retries++); window.dispatchEvent(new CustomEvent('reylumi:app-local-workspace-error', { detail: 'Role verification interrupted' })); });
+    await page.getByRole('button', { name: 'Try again', exact: true }).click();
+    assert.equal(await page.evaluate(() => window.retries), 1);
+    await page.evaluate(() => window.setGuestContext());
+    await page.getByRole('link', { name: 'Login', exact: true }).waitFor();
+  } finally { await f.close(); }
+});
 test('initial packaged Help needs no context, shell, session, advertising or quick-booking request', { skip: !existsSync(browserPath), timeout: 90000 }, async () => {
   const f = await fixture(); try { const page = await f.browser.newPage(); await page.goto(f.origin + '/help'); await page.getByRole('heading', { name: 'Reylumi Help', exact: true }).waitFor(); await page.getByRole('searchbox', {name:'Search the guides',exact:true}).fill('POS'); assert(await page.getByText('Guides found:',{exact:false}).count()); assert.deepEqual(await page.evaluate(() => window.requests), []); assert(await page.evaluate(() => window.resourceCalls.every(x => x.enabled === false))); assert.equal(await page.evaluate(() => window.translateLoads), 0); } finally { await f.close(); }
 });

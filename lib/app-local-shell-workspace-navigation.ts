@@ -15,6 +15,7 @@ export function navigateToWorkspace(workspaceId: string, destinationHref?: strin
     window.location.assign(`/workspace/open?${params}`); return;
   }
   const scope = getAppLocalCommandScope();
+  const generation = window.__reylumiAppLocalContext?.generation;
   if (!scope || !navigator.onLine) throw new Error("Connect to open a different workspace.");
   if (pending) return;
   pending = true;
@@ -23,6 +24,8 @@ export function navigateToWorkspace(workspaceId: string, destinationHref?: strin
     if (scope !== getAppLocalCommandScope()) return;
     completeWorkspaceHandoff(result.path);
   })().catch(() => {
+    const activeScope = getAppLocalCommandScope();
+    if (window.__reylumiAppLocalContext?.generation !== generation || activeScope && activeScope !== scope) return;
     window.dispatchEvent(new CustomEvent("reylumi:app-local-workspace-error", { detail: "Workspace context could not be updated. Try again." }));
     // The write may already have committed. Recovery checks the current role;
     // it must not blindly submit the workspace-changing command a second time.
