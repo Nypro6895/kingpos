@@ -1,0 +1,55 @@
+{
+  "kind": "change",
+  "changeId": "drako-settings-qa-fixes-20261016",
+  "status": "ready",
+  "summary": "Fix three reproduced Settings errors: target selected owner salon for booking deposits, truthful load/retry UI, discard canceled create draft, persist selected Settings group. Publication policy unchanged.",
+  "channels": [
+    "web"
+  ],
+  "files": [
+    "app/market/booking-deposit-actions.ts",
+    "app/market/booking-deposit-panel.tsx",
+    "app/settings/salon-list-panel.tsx",
+    "app/settings/settings-hub-client.tsx",
+    "tests/booking-deposit-settings-target.test.mjs"
+  ],
+  "source": {
+    "commit": "0e3005a015f62a55dac17d84eb4e77ef04759a69",
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\drako-qa-fixes-20261016\\frozen-source"
+  },
+  "dependencies": [],
+  "validation": [
+    {
+      "name": "25 focused Settings and authorization regressions",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/drako-qa-fixes-20261016/web-focused-tests.log"
+    },
+    {
+      "name": "Production build, TypeScript and prerendered routes",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/drako-qa-fixes-20261016/production-build.log"
+    },
+    {
+      "name": "Actual components on desktop/mobile, slow/failing save, retry and reload",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/drako-qa-fixes-20261016/ui-verification.json"
+    },
+    {
+      "name": "Exact production baseline preserved outside approved overlay",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/drako-qa-fixes-20261016/assembled-source.json"
+    }
+  ],
+  "fileHashes": {
+    "app/market/booking-deposit-actions.ts": "02fcd1d98491a59007f0d1c2a74fa8967f6bf5d3f836ef432bb1291cd86cba93",
+    "app/market/booking-deposit-panel.tsx": "cbb1202ab70c2fc13b19a6a8f7ccf896fb1c2ef3e50923461c7bb14b872f3f94",
+    "app/settings/salon-list-panel.tsx": "3c5fb215d81a342e219d828a80a23d1d819fb2f370e8e00698346ae3f4c3733d",
+    "app/settings/settings-hub-client.tsx": "3301d04e1552298a3a03a743d4e107aaf5a8fdf10781043595bdc72d166cce49",
+    "tests/booking-deposit-settings-target.test.mjs": "12b36f259424f3c53095077148a918ab39820583c13d227a29a1f5641a6c56af"
+  },
+  "id": "ba13217c-ce5a-471d-92ed-06d48aefb301",
+  "recordedAt": "2026-10-17T00:36:35.442Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\salon-setup-release\\kingpos",
+  "deletedFiles": [],
+  "supersedesEvents": []
+}

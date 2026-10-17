@@ -1,0 +1,27 @@
+Reylumi — kết quả phát hành POS/Payroll
+
+Web: https://reylumi.com
+TestFlight: 1.0.1 (27.1) — Apple VALID, có trong nhóm TestFlight hiện tại.
+Nguồn phát hành: eedd8524d8a261bad972b0364362cd75820da722
+Web deployment: dpl_Ejji8CkeAdsjudkYHVpgR9Ycdmoj
+
+Đã sửa
+- Menu thường và POS độc lập; More, Settings, Ticket và đường quay lại giữ đúng không gian.
+- Khởi động mới về trang chính theo vai trò; quay lại phiên đang làm giữ vị trí. Luồng đăng nhập/thanh toán tường minh giữ nguyên.
+- Giữ nháp POS; Bonus và Check number chỉ tự lưu, không khôi phục nháp cũ.
+- Dùng lại dữ liệu POS, giảm tải lặp Payroll và cập nhật sau khi kết thúc nhập.
+- Giữ các sửa Settings từ TestFlight 26.1, biểu tượng gốc, Explore/location và các phần không liên quan.
+
+Kiểm tra
+- 92 kiểm tra web/logic riêng biệt đạt. Kết quả tính lương trước/sau giống nhau trên bộ dữ liệu đối chiếu.
+- Xcode: 91/91, 0 lỗi; archive, ký, xuất và upload đạt.
+- 19/19 kiểm tra HTTP trên bản build, candidate và web chính.
+- Đối chiếu 2770 tệp nguồn đã triển khai; 30 tệp Explore/location giữ nguyên.
+- Đã sửa khai báo TypeScript khi ghép Settings và cập nhật một kỳ vọng kiểm tra cũ từ Explore sang trang chính; các kiểm tra liên quan đã chạy lại.
+
+Bạn có thể thử trên iPhone
+1. Cập nhật bản 27.1 trong TestFlight, mở mới app và kiểm tra trang bắt đầu.
+2. Mở Book/Report/Ticket từ menu thường, sau đó vào POS và thử Settings/More/thoát POS.
+3. Tạo nháp POS, chuyển trang rồi quay lại; kiểm tra Payroll và tự lưu Bonus/Check number.
+
+Chưa xác minh tốc độ trên iPhone thật. Không thực hiện giao dịch thật để thử nghiệm. Các dự án đang bị chặn và thay đổi ngoài phạm vi được ghi riêng, không đưa lên live.

@@ -1,0 +1,75 @@
+{
+  "kind": "release",
+  "summary": "Published audited POS/payroll navigation, role-home startup and autosave/cache corrections to web; matching native build passed Xcode, Apple processing and existing TestFlight availability. Existing functions and original icons preserved.",
+  "changes": [
+    "ee762861-78bb-475b-9e4f-8b15b2250abb",
+    "f461a39c-e300-4189-b385-c120fb9d4fad",
+    "a055a60d-7c8e-45db-a5e6-1ed4d3a777b5",
+    "285f15c7-6c6a-454c-a173-899c3fae2785",
+    "ba13217c-ce5a-471d-92ed-06d48aefb301",
+    "5595e51a-164f-4aa3-903c-859845964f4e",
+    "ea7c20f7-3a6b-4dbc-82da-43fbce9046f4"
+  ],
+  "targets": {
+    "web": {
+      "status": "published",
+      "verified": true,
+      "url": "https://reylumi.com",
+      "deploymentId": "dpl_Ejji8CkeAdsjudkYHVpgR9Ycdmoj",
+      "baselineDeploymentId": "dpl_AZySuHVMKVf3QpANrwZ5Yv24vB4y",
+      "baselineSourceSha256": "81b95aeeb576c93993f8beefa7e6c3a022ae486b2d4044173f7ef08c80579428",
+      "sourceSha256": "617e6a665daae933a61a3c7a838e5628ca9e02e90606c6d19ed36a24d289b13d",
+      "assembledSourceSha256": "8836c5ea66b950f4e455be2d5fd4a8c37291ef0d5722e9bacc6927e9e78a8f42",
+      "overlaySha256": "a062e14cd9001f04b3428728706e568b1b52867eb1df6f953058ad5fbd551524",
+      "commit": "eedd8524d8a261bad972b0364362cd75820da722",
+      "evidence": {
+        "source": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/live-source-verification.json",
+        "http": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/live-http-smoke.json"
+      }
+    },
+    "ios": {
+      "status": "testflight-available",
+      "verified": true,
+      "version": "1.0.1",
+      "build": "27.1",
+      "commit": "eedd8524d8a261bad972b0364362cd75820da722",
+      "baselineBuild": "26.1",
+      "baselineCommit": "78b00c0e92e3af3674214616ab53784b556a03ef",
+      "workflowRunId": 38989351847,
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/native-upload-verification.json"
+    }
+  },
+  "validation": {
+    "webUniqueRegressionCases": 92,
+    "xctest": {
+      "expected": 91,
+      "count": 91,
+      "failures": 0,
+      "passed": true
+    },
+    "localHttp": 19,
+    "candidateHttp": 19,
+    "liveHttp": 19,
+    "sourceFiles": 2770,
+    "unchangedExploreLocationFiles": 30,
+    "sourceHashesVerified": true
+  },
+  "pendingDisposition": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/pending-disposition.json",
+  "source": {
+    "manifest": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/assembled-source.json",
+    "selection": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/release-selection.json"
+  },
+  "limitations": [
+    "Physical iPhone startup speed and hands-on flows await owner TestFlight trial.",
+    "No real payment, payroll close, booking or attendance mutation was performed as a test.",
+    "This release publishes TestFlight availability, not App Store publication."
+  ],
+  "rollback": {
+    "baselineDeploymentId": "dpl_AZySuHVMKVf3QpANrwZ5Yv24vB4y",
+    "performed": false,
+    "note": "Recapture the live alias before any future rollback; preserve drafts and any newer external release."
+  },
+  "id": "5ebb7d18-9901-4042-9759-de8b7f3481f1",
+  "recordedAt": "2026-10-17T01:21:13.854Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos"
+}

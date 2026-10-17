@@ -1,0 +1,66 @@
+{
+  "kind": "change",
+  "changeId": "owner-pos-menu-startup-recovery-20261016",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Validated current-production integration of owner-pos-menu-startup-recovery-20261016 with later POS/payroll repairs preserved.",
+  "files": [
+    "app/pos/owner-pos-client.tsx",
+    "app/pos/owner-pos-tabs.tsx",
+    "app/pos/owner-pos.css",
+    "app/pos/owner-local-panels.tsx",
+    "app/pos/portable/check-in/portable-check-in-client.tsx",
+    "lib/owner-cart-startup.ts",
+    "tests/owner-pos-recovery-ui.test.mjs"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pos-payroll-release-20261017\\frozen-overlay",
+    "commit": "eedd8524d8a261bad972b0364362cd75820da722"
+  },
+  "validation": [
+    {
+      "name": "Final assembled production build with TypeScript",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/web-build-final.log"
+    },
+    {
+      "name": "Integrated regression checks: 92 unique cases",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/regression-results.json"
+    },
+    {
+      "name": "Xcode 26.3 simulator and unsigned archive stage passed on exact frozen commit; full artifact hash readback follows upload",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/native-check-gate.json"
+    },
+    {
+      "name": "Exact production source preservation and latest uploaded native preservation",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/assembled-source.json"
+    },
+    {
+      "name": "19 compiled HTTP checks including auth guards and original icons",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/local-http-smoke.json"
+    }
+  ],
+  "dependencies": [],
+  "supersedesEvents": [
+    "cde30072-e238-470d-bd2f-6745721a12c0"
+  ],
+  "id": "ee762861-78bb-475b-9e4f-8b15b2250abb",
+  "recordedAt": "2026-10-17T01:14:08.804Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/pos/owner-pos-client.tsx": "3d58d49daea2a72cb809ed0d3f38180e238a54c6ff6b869135b04d26fb41df9e",
+    "app/pos/owner-pos-tabs.tsx": "9081a8ea5d340dd978551762fc9ead1b3b0b92f0e89d0834824fbe0bbd15c2b6",
+    "app/pos/owner-pos.css": "94d700b1aa651347c5680d414ecd4b660569985ec249b0fc72f215f6d8c9e290",
+    "app/pos/owner-local-panels.tsx": "f8772367e228c6298074294b0a192e2627fc364ce587460422f7dbdcdeb2c5a4",
+    "app/pos/portable/check-in/portable-check-in-client.tsx": "e147de30982538db27429f97b62eac50bd0a0807372672f6e42473ff8aa88022",
+    "lib/owner-cart-startup.ts": "11ab9192b91381c189c2d5b07d477e87381b3866f7cb9724cea9744696cd61d0",
+    "tests/owner-pos-recovery-ui.test.mjs": "5e4f1a1b5475f5dd4684c1c540c978502c283c0302a6d8ad915380cd941dc73c"
+  }
+}

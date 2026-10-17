@@ -1,0 +1,2215 @@
+[
+  {
+    "changeId": "phone-claim-conflicts-20261015",
+    "eventId": "63485a4d-e396-460a-b3e4-46c7029c84dc",
+    "status": "blocked",
+    "decision": "deferred",
+    "reason": "Not included: recorded blocker remains unresolved; no completed authorized revision to integrate.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\phone-claim-local\\frozen",
+      "commit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f",
+      "patch": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\phone-claim-local\\phone-claim.patch",
+      "hashManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\phone-claim-local\\frozen-manifest.json"
+    },
+    "comparisons": [
+      {
+        "file": "supabase/migrations/20261015210000_phone_claim_conflicts.sql",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "app/claim/claim-panel.tsx",
+        "productionSha256": "bc042ae1915611ae46f06dde348ad28ea8220ae2573b0a89db989fcd76d401b1",
+        "selectedSha256": "bc042ae1915611ae46f06dde348ad28ea8220ae2573b0a89db989fcd76d401b1",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/business-claims.ts",
+        "productionSha256": "f76907b31212a764cf741195308f9f6ca118575efd989da19e698644ebfd80a7",
+        "selectedSha256": "f76907b31212a764cf741195308f9f6ca118575efd989da19e698644ebfd80a7",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/helpers/phone-claim-fixture.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/phone-claim-conflicts.integration.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/phone-claim-postgres.integration.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/phone-claim-actions.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/helpers/isolated-supabase-fixture.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/business-claim-provider.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      }
+    ]
+  },
+  {
+    "changeId": "help-local-draft-20261015",
+    "eventId": "b6e83bc3-8120-4224-8bae-f35cb5cc79b5",
+    "status": "blocked",
+    "decision": "deferred",
+    "reason": "Not included: recorded blocker remains unresolved; no completed authorized revision to integrate.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\help-local-draft-20261015\\frozen",
+      "commit": "c4529d45a343133ceceb1ed6c4711c4f8cb4ec6f",
+      "hashManifest": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\help-local-draft-20261015\\frozen-manifest.json"
+    },
+    "comparisons": [
+      {
+        "file": "app/(app)/help/page.tsx",
+        "productionSha256": "a7a7f9d7bd80700e1dde473cf2e8965c521ea9fd4bd8ffebcd8efb4d1ec34100",
+        "selectedSha256": "a7a7f9d7bd80700e1dde473cf2e8965c521ea9fd4bd8ffebcd8efb4d1ec34100",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/(app)/help/[slug]/page.tsx",
+        "productionSha256": "4f9d2c519a31df4b14e24abf484ccd5bf8a13ca531064c975303fe0ab4a75558",
+        "selectedSha256": "4f9d2c519a31df4b14e24abf484ccd5bf8a13ca531064c975303fe0ab4a75558",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/help/help-content.tsx",
+        "productionSha256": "c8f5c854b366b2186273c1280ee07719b967ba8ebe3c96f4cf2051a6207f9767",
+        "selectedSha256": "c8f5c854b366b2186273c1280ee07719b967ba8ebe3c96f4cf2051a6207f9767",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/help/help.module.css",
+        "productionSha256": "b2a58dad7f08ab7567703356f3865b274d383e92310c5086e776613de5d2f0be",
+        "selectedSha256": "b2a58dad7f08ab7567703356f3865b274d383e92310c5086e776613de5d2f0be",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/help-guides.ts",
+        "productionSha256": "c19ac7eaf5ae43a77ae0ba80e0f029ed75a6dff12c9f5916d28dd1733e0ef321",
+        "selectedSha256": "c19ac7eaf5ae43a77ae0ba80e0f029ed75a6dff12c9f5916d28dd1733e0ef321",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/help-draft.ts",
+        "productionSha256": "e5f3292f169d7136cb85cead88fad7890ea13b1d8f7bab662cf5d4c4b955f302",
+        "selectedSha256": "e5f3292f169d7136cb85cead88fad7890ea13b1d8f7bab662cf5d4c4b955f302",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/vietnamese-help-copy.json",
+        "productionSha256": "4b2f96a243546bdbdb06d49229b791388986257f8ed71474778672fce36069bb",
+        "selectedSha256": "4b2f96a243546bdbdb06d49229b791388986257f8ed71474778672fce36069bb",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/vietnamese-dictionary.ts",
+        "productionSha256": "d7f233b637d8c2982c7c756ca857dbf4c24b2c078d4092719230151d78dba7dc",
+        "selectedSha256": "d7f233b637d8c2982c7c756ca857dbf4c24b2c078d4092719230151d78dba7dc",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/(app)/support/page.tsx",
+        "productionSha256": "72974c5df02d97ca1bd6d7c55b84c5867d5bc09dd3a3e094be410b87db792222",
+        "selectedSha256": "72974c5df02d97ca1bd6d7c55b84c5867d5bc09dd3a3e094be410b87db792222",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/help-draft.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      }
+    ]
+  },
+  {
+    "changeId": "payroll-period-ledger-20261015",
+    "eventId": "15f7569e-0548-4848-a0e3-abedf92a5224",
+    "status": "ready",
+    "decision": "deferred",
+    "reason": "Payroll publication remains blocked by independently reproduced staff identity/access issue in linked release record; not overwritten by a ready implementation snapshot.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-ledger-final-20261016\\frozen"
+    },
+    "comparisons": [
+      {
+        "file": "app/(app)/payroll/page.tsx",
+        "productionSha256": "0eabeb476351e82c87e2e66631e10f93b52d0803e776147112e24e73399adfb3",
+        "selectedSha256": "714fdd013cfa894a8b6f3892cb0f01f913e55c733ff98d5a9b0027b2bfff3f06",
+        "frozenSha256": "967cc2fe9df0b29b0474351420f7f739f73d9dd2435f489a18cb0d1ec1832a65"
+      },
+      {
+        "file": "app/api/internal/booking-messages/route.ts",
+        "productionSha256": "48e4d0db81d56aae3b5daca1daee62e19a5da003fe387c70f50b71012cc04681",
+        "selectedSha256": "48e4d0db81d56aae3b5daca1daee62e19a5da003fe387c70f50b71012cc04681",
+        "frozenSha256": "9b73de6992a0b3bbacdc20c5063719a50ca2ac6f3cceec3ecf8ac31267e34d20"
+      },
+      {
+        "file": "app/api/payroll/close-due/route.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "3d4504de6312bd693df31630c6c2730c1ecce6c4fd2d385fc1c5e71ff67baba1"
+      },
+      {
+        "file": "app/payroll/data-download-actions.ts",
+        "productionSha256": "555fb77cc60e4ba9fbc4b208131ce9fef78044ec8e080579e2b0a21db4ac7817",
+        "selectedSha256": "555fb77cc60e4ba9fbc4b208131ce9fef78044ec8e080579e2b0a21db4ac7817",
+        "frozenSha256": "1db35da4f91194125691064079a1ae4a2c97699175b2a7cb814c4195f314b614"
+      },
+      {
+        "file": "app/payroll/ledger-actions.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "9a3e1f71d456896c14af99474a449b3ca54e31238e58d42f5a501a58ca822aaf"
+      },
+      {
+        "file": "app/payroll/owner-payroll-form.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "cd8f34cafb923ed467b878807d59b5ec7efabe712f7d8a9dd66400b01081e699"
+      },
+      {
+        "file": "app/payroll/payroll-ledger-panel.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "04795e3303354e918ceddeda4d8359afb28870e99233e9e58994b6e6da7b53d6"
+      },
+      {
+        "file": "app/payroll/tax-company-table.tsx",
+        "productionSha256": "b960a722e7f84b4666840a0b9be36b066bbadc0b82cc0436b9f06edee6cf2852",
+        "selectedSha256": "b960a722e7f84b4666840a0b9be36b066bbadc0b82cc0436b9f06edee6cf2852",
+        "frozenSha256": "d519767e4a2810a01464a4623904366048cd0408986b54b4e00c2da6aca84a3f"
+      },
+      {
+        "file": "app/staff/my-work/staff-pay-analysis.tsx",
+        "productionSha256": "09d504b6d665db0cb3790f6faa3168c9c47667554c24c6e0c3bcaf0bf32bd20f",
+        "selectedSha256": "09d504b6d665db0cb3790f6faa3168c9c47667554c24c6e0c3bcaf0bf32bd20f",
+        "frozenSha256": "f8c79c96e5a71bf88be267ecfd23a172a2c1cc492d8aa9dbc1eeadbf03525427"
+      },
+      {
+        "file": "instrumentation.ts",
+        "productionSha256": "af6d71383e816ce3154a7d5175f453525af9835e6cd36cbdafeed4ea9d8bf16f",
+        "selectedSha256": "af6d71383e816ce3154a7d5175f453525af9835e6cd36cbdafeed4ea9d8bf16f",
+        "frozenSha256": "a6e9ca058dc0b3d159f4a95a7923285f79d3828c22e9d9eabb3a62de0a001a73"
+      },
+      {
+        "file": "lib/payroll-close-worker.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "d5d2a41d040ab3194611b8e9cdeffd2d54df996659a79679bc887b707b2bec64"
+      },
+      {
+        "file": "lib/payroll-export.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "328ff0b3402cc6a499799e61b6992ef0638ce2dd306555d6af20eca0085daf8c"
+      },
+      {
+        "file": "lib/payroll-intent-client.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "6e88873ef8f34616fe3b133669f5c700c4d6a91b9c4821ea7897a75952a98b83"
+      },
+      {
+        "file": "lib/payroll-ledger.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "eb981cf3004c0beb5d04ba94bbd4bfa9af8d956ffa345e59aa2dc22c18f09bf8"
+      },
+      {
+        "file": "lib/payroll-money.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "fb46b650bac3791111c801251faafb1f36bf92c66e9783c52d61679ac0505c7a"
+      },
+      {
+        "file": "lib/payroll-period-boundary.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "128ade9ee36ef5f8802ace8517f3a25ea1b066f2b3d6ae5754d463c0e0732412"
+      },
+      {
+        "file": "lib/payroll-range.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "2736fc9d5b470e4ddc02d574a2756931e61bf458a470149f45767e0ae587a6a4"
+      },
+      {
+        "file": "lib/payroll-write-result.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "967777a3e6e31c7c7d6df848d79547fdcd4357899bc95108f82d1f04bc5ca407"
+      },
+      {
+        "file": "lib/payroll.ts",
+        "productionSha256": "57168bc9b13c7423492b13cd8e6d1b8a4bb942d8e9c06600aebb2fe5dc9fd2f4",
+        "selectedSha256": "494edaa34da108f95271c6df99548f4b67f1e83db81724761122881cc26b7d71",
+        "frozenSha256": "89e66d7cecf3f1fdf80bdf43223a7aafa96bb9808ace976e9ffc651fb553e9da"
+      },
+      {
+        "file": "supabase/migrations/20261015220000_payroll_period_ledger.sql",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "b47389eed725c7245fdd098145f27c658e6f386717b0c7d3fcde574ecb56c443"
+      },
+      {
+        "file": "supabase/migrations/20261015220001_payroll_adjustment_ledger.sql",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "05c67da5df61864c956bff8f930561f77d3aa4ec1bdcfad8b85819f8a9c3cce3"
+      },
+      {
+        "file": "supabase/migrations/20261015220002_payroll_atomic_publication.sql",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "184f940386f3e16ad2ac00f13a51aa38ab05f00a88c081988ebe1a42ee0bcdbb"
+      },
+      {
+        "file": "tests/helpers/payroll-calculation-loader.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "836559620ba3f04d3aefd3e5b4dddd98da73b22167d23c273f3fac9bfd010a77"
+      },
+      {
+        "file": "tests/payroll-ledger-regression.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "8d5e8faf8ddd3026fbf8bf5ae64d941bc70c65a0c17bb45a4dc2dbc6a50bcbcc"
+      },
+      {
+        "file": "tests/payroll-period-ledger.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "9c986c6404a01c06409c156fecbef9ed2074ec395721560e843370697a88cf6a"
+      },
+      {
+        "file": "tests/payroll-records-regression.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "99e3cf0f7c236481532b55efcc4ef6e6fce1ed172c7191c8f8f0ef72cdff773a"
+      },
+      {
+        "file": "tests/payroll-worker.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "e00a2b38aa4bd56ee9b3d5f17f723de06f460047dcfd0cdc10ffbf95b08e0c87"
+      },
+      {
+        "file": "types/payroll.ts",
+        "productionSha256": "2113ca61308b09b48f1976b4d4a8e0eefecef390bd29bf5c1b99f9ed97e8a5d6",
+        "selectedSha256": "2113ca61308b09b48f1976b4d4a8e0eefecef390bd29bf5c1b99f9ed97e8a5d6",
+        "frozenSha256": "19271c05c50cf5a38df3b44282f611124b258584444b2ea6f4879970dccb9488"
+      },
+      {
+        "file": "vercel.json",
+        "productionSha256": "082ea57c152cb603c12b5b6f2f5790772584c03229b12a6f22b5d6ea21efb380",
+        "selectedSha256": "082ea57c152cb603c12b5b6f2f5790772584c03229b12a6f22b5d6ea21efb380",
+        "frozenSha256": "e47ae1df845d799f92b268bd6dbcdd7635210a21c0c848dc598b4a5303f1f670"
+      }
+    ]
+  },
+  {
+    "changeId": "staff-invite-preflight-20261016",
+    "eventId": "291a6940-b301-4e61-923a-7f1eeab9b28f",
+    "status": "blocked",
+    "decision": "deferred",
+    "reason": "Not included: recorded blocker remains unresolved; no completed authorized revision to integrate.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\staff-onboarding-qa-20261016\\frozen",
+      "baselineDeploymentId": "dpl_GSM2JMJnitw6i9LGCUiX1H5Xr9Pm",
+      "sourceSha256": "88ca5ef8072818bb6192944a062cc67aa39572e557e02106a6b89e798bdc98b9",
+      "patchSha256": "a18791b1c452a1e56235a1c28406f689385eb4d581ad09b1d5a46002d6211e2f"
+    },
+    "comparisons": [
+      {
+        "file": "lib/staff-salon-connections.ts",
+        "productionSha256": "43a2264800fe9fa7c06ba9001d5695dc034861b58f9d3faf2f939c1a13da2e24",
+        "selectedSha256": "43a2264800fe9fa7c06ba9001d5695dc034861b58f9d3faf2f939c1a13da2e24",
+        "frozenSha256": null
+      }
+    ]
+  },
+  {
+    "changeId": "payroll-release-help-alignment-20261016",
+    "eventId": "785303ae-268b-454d-9395-eb01a4afe6b8",
+    "status": "blocked",
+    "decision": "deferred",
+    "reason": "Payroll publication remains blocked by independently reproduced staff identity/access issue in linked release record; not overwritten by a ready implementation snapshot.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\Documents\\Codex\\2026-10-14\\task\\payroll-production-release-20261016\\release"
+    },
+    "comparisons": []
+  },
+  {
+    "changeId": "facebook-nails-pilot-plugin-20261016",
+    "eventId": "defaf352-2844-4a80-ae0e-35ba8d172bc5",
+    "status": "blocked",
+    "decision": "deferred",
+    "reason": "Separate Sites/plugin product, explicitly excluded from Reylumi release.",
+    "source": {
+      "snapshot": "artifacts/nails-page-pilot-source.zip",
+      "sha256": "d76220e25eae43cbbc804dc74e3ea62697788db1cb4fa72eeeeae77bee76ed43",
+      "commit": "a0fd0bc4d076aab6203e113bcd7ca07158c80d24"
+    },
+    "comparisons": [
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/.env.example",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/.gitignore",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/.npmrc",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/.openai/hosting.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/OPERATIONS.md",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/README.md",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/api/control/route.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/api/photo/route.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/chatgpt-auth.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/dashboard.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/globals.css",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/layout.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/mcp/route.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/page.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/build/connector-preview-plugin.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/build/connector-preview-worker.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/build/sites-vite-plugin.LICENSE",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/build/sites-vite-plugin.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/build/sites-worker.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/cloudflare-env.d.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/connector-error.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/accordion.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/alert-dialog.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/alert.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/aspect-ratio.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/attachment.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/avatar.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/badge.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/breadcrumb.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/bubble.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/button-group.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/button.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/calendar.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/card.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/carousel.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/chart.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/checkbox.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/collapsible.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/combobox.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/command.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/context-menu.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/dialog.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/direction.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/drawer.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/dropdown-menu.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/empty.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/field.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/form.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/hover-card.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/input-group.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/input-otp.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/input.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/item.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/kbd.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/label.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/marker.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/menubar.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/message-scroller.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/message.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/native-select.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/navigation-menu.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/pagination.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/popover.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/progress.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/radio-group.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/resizable.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/scroll-area.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/select.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/separator.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/sheet.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/sidebar.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/skeleton.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/slider.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/sonner.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/spinner.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/switch.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/table.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/tabs.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/textarea.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/toggle-group.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/toggle.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/components/ui/tooltip.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/db/index.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/db/schema.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/drizzle.config.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/drizzle/0000_clever_stardust.sql",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/drizzle/meta/0000_snapshot.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/drizzle/meta/_journal.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/eslint.config.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/examples/d1/app/api/notes/route.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/examples/d1/db/schema.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/hooks/use-mobile.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/connector-context.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/connector-contract.mts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/connector-errors.mts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/connector-preview.d.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/connectors.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/http.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/policy.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/service.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/utils.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/next.config.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/package-lock.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/package.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/postcss.config.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/public/favicon.svg",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/public/file.svg",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/public/globe.svg",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/public/window.svg",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/build-verified.sh",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/connector-preview/connector-preview-session.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/connector-preview/host-binding.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/connector-preview/protocol.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/execution-profile.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/install-ci.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/install-ci.sh",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/install-pnpm.sh",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/npm-install.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/pnpm-install.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/run-framework.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/sites-env.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/scripts/sites-env.sh",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/tests/workflow.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/tsconfig.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/vendor/shadcn-tailwind-4.13.0.LICENSE.md",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/vendor/shadcn-tailwind-4.13.0.css",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/vite.config.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      }
+    ]
+  },
+  {
+    "changeId": "nails-pilot-english-vision-bulk-20261016",
+    "eventId": "6347a2e5-a08c-4dc4-a2da-32f208b3e7a7",
+    "status": "blocked",
+    "decision": "deferred",
+    "reason": "Separate Sites/plugin product, explicitly excluded from Reylumi release.",
+    "source": {
+      "commit": "cfea80f58a26f1bfb15c3654cf863e282db05e15",
+      "snapshot": "artifacts/nails-page-pilot-v2-source.zip",
+      "sha256": "ee30e3cb0b42ca07848cabf786e325b89494f212f86e4cf834d21742765c7839"
+    },
+    "comparisons": [
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/CONTENT-WORKFLOW.md",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/dashboard.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/globals.css",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/mcp/route.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/app/photo-library.tsx",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/db/schema.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/drizzle/0001_messy_paper_doll.sql",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/drizzle/meta/0001_snapshot.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/drizzle/meta/_journal.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/content.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/policy.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/service.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/plugin-extension/.app.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/plugin-extension/.codex-plugin/plugin.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/plugin-extension/plugin.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/plugin-extension/skills/nails-english-content/SKILL.md",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/tests/workflow.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      }
+    ]
+  },
+  {
+    "changeId": "nails-pilot-graph-runtime-20261016",
+    "eventId": "13ec1c81-7fcb-486d-96ea-00529d9bffdd",
+    "status": "ready",
+    "decision": "deferred",
+    "reason": "Separate Sites/plugin product, explicitly excluded from Reylumi release.",
+    "source": {
+      "commit": "493d89003780ccc257f28cb25b2d2d18c17d6412",
+      "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\nails-pilot-graph-runtime-frozen",
+      "archive": "artifacts/nails-pilot-graph-runtime-source.zip",
+      "sha256": "a1d97bd99d71f139431f6d0f3aedadbda01e6dfdc67f43c2084075928963bc10"
+    },
+    "comparisons": [
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/lib/service.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "3225307e4cc642a7de8c0c29befbb38e59af75de30df538de0b9ec4a3385a14c"
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/tests/graph-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "2369852845cbbbc841fb8daf274d993cd9766389c2cf6d4285e8dd3432f030bc"
+      },
+      {
+        "file": "artifacts/facebook-nails-pilot-20261016/tests/workflow.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": "6d439c0ada6b2b5e306be6a5f9714d02c2ee1017646f9674be93c3a07af1d5f6"
+      }
+    ]
+  },
+  {
+    "changeId": "owner-pos-menu-startup-recovery-20261016",
+    "eventId": "cde30072-e238-470d-bd2f-6745721a12c0",
+    "status": "ready",
+    "decision": "integrated",
+    "reason": "Included in current owner-authorized web and native POS/payroll release; preserve source and validate assembled result.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-20261016\\frozen-source-r2"
+    },
+    "comparisons": [
+      {
+        "file": "app/pos/owner-pos-client.tsx",
+        "productionSha256": "2d65f9f1140adc67c1a7ccea69e7654cbb696944fd3c5c20b770edd0773e40c5",
+        "selectedSha256": "3d58d49daea2a72cb809ed0d3f38180e238a54c6ff6b869135b04d26fb41df9e",
+        "frozenSha256": "3d58d49daea2a72cb809ed0d3f38180e238a54c6ff6b869135b04d26fb41df9e"
+      },
+      {
+        "file": "app/pos/owner-pos-tabs.tsx",
+        "productionSha256": "00338ac818f78a64d7208ecd244af6f2cb821e8d3283dd21b8af2cd9586bb08f",
+        "selectedSha256": "9081a8ea5d340dd978551762fc9ead1b3b0b92f0e89d0834824fbe0bbd15c2b6",
+        "frozenSha256": "aaab2692444cc5afc0babaf09e414085870f8d195a22ddf887af467ae9cfd629"
+      },
+      {
+        "file": "app/pos/owner-pos.css",
+        "productionSha256": "024a56ab355ea25de76f663b1a39c1018ff86b7f9e8dcadcbaf06681a035a96f",
+        "selectedSha256": "94d700b1aa651347c5680d414ecd4b660569985ec249b0fc72f215f6d8c9e290",
+        "frozenSha256": "baa0876b4d67d5f3cab38b3a9c2738a50cab26d8871396355faab02a932283ee"
+      },
+      {
+        "file": "app/pos/owner-local-panels.tsx",
+        "productionSha256": "c876150740b8058e466eb0d8cd6022aec913e44c5b52d0c9ce142fec71126042",
+        "selectedSha256": "f8772367e228c6298074294b0a192e2627fc364ce587460422f7dbdcdeb2c5a4",
+        "frozenSha256": "0ed2d76fd641e621d21a69001a6614a6aa5766887969e4286f6a373ce9a0c104"
+      },
+      {
+        "file": "app/pos/portable/check-in/portable-check-in-client.tsx",
+        "productionSha256": "b9b61739bb658a38391763eca771019c9791adab0411e4775f907b73b47bcb56",
+        "selectedSha256": "e147de30982538db27429f97b62eac50bd0a0807372672f6e42473ff8aa88022",
+        "frozenSha256": "e147de30982538db27429f97b62eac50bd0a0807372672f6e42473ff8aa88022"
+      },
+      {
+        "file": "lib/owner-cart-startup.ts",
+        "productionSha256": null,
+        "selectedSha256": "11ab9192b91381c189c2d5b07d477e87381b3866f7cb9724cea9744696cd61d0",
+        "frozenSha256": "11ab9192b91381c189c2d5b07d477e87381b3866f7cb9724cea9744696cd61d0"
+      },
+      {
+        "file": "tests/owner-pos-recovery-ui.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "5e4f1a1b5475f5dd4684c1c540c978502c283c0302a6d8ad915380cd941dc73c",
+        "frozenSha256": "5e4f1a1b5475f5dd4684c1c540c978502c283c0302a6d8ad915380cd941dc73c"
+      }
+    ]
+  },
+  {
+    "changeId": "installed-owner-ticket-detail-navigation-20261016",
+    "eventId": "f461a39c-e300-4189-b385-c120fb9d4fad",
+    "status": "ready",
+    "decision": "integrated",
+    "reason": "Included in current owner-authorized web and native POS/payroll release; preserve source and validate assembled result.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-20261016\\ticket-detail-frozen-source-r1"
+    },
+    "comparisons": [
+      {
+        "file": "lib/app-local-daily-registry.tsx",
+        "productionSha256": "bee340b47ecf7896de57e7ffdfbda4d7171abe87c7d474f545883bb628ab5a0c",
+        "selectedSha256": "d630d5e5ac382b81ce92fd68bc97fb1aa575d38851bf51ab2cf304edca67b55e",
+        "frozenSha256": "d630d5e5ac382b81ce92fd68bc97fb1aa575d38851bf51ab2cf304edca67b55e"
+      },
+      {
+        "file": "tests/app-local-daily-ui.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "d596f7e7664c549bbf0b2db8dafc541ce20d929f8b7977e629035442aef4f40f",
+        "frozenSha256": "d596f7e7664c549bbf0b2db8dafc541ce20d929f8b7977e629035442aef4f40f"
+      }
+    ]
+  },
+  {
+    "changeId": "app-local-public-repair-20261016",
+    "eventId": "a055a60d-7c8e-45db-a5e6-1ed4d3a777b5",
+    "status": "ready",
+    "decision": "integrated",
+    "reason": "Included in current owner-authorized web and native POS/payroll release; preserve source and validate assembled result.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\public-repair-git89-frozen",
+      "commit": "89e16562ed1929e73dfa0ea76baf497cdff233f5",
+      "baselineDeploymentId": "dpl_EW3mj5c8bzs8kw48X4cJDvKvhUuX",
+      "sourceSha256": "c08ca531aa9fa1c8424b623dc03907da2776be6868d714e35a6a6f42e09b3799",
+      "assembledManifest": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\full-assembled-source.json"
+    },
+    "comparisons": [
+      {
+        "file": "lib/app-local-explore-http-client.ts",
+        "productionSha256": "95424e6de57960d5d081487abb66515b93e958d4cd7a70dcdb17192a28a8c711",
+        "selectedSha256": "f7ec335328336cc081aa58c56ab3ec521d5224190b712e7ab88430354bac2265",
+        "frozenSha256": "f7ec335328336cc081aa58c56ab3ec521d5224190b712e7ab88430354bac2265"
+      },
+      {
+        "file": "lib/app-local-explore-metadata.ts",
+        "productionSha256": "9292ed6d3effdc18995fcea3e76c9de8a03c8cac665e7de98644a2d5f0fbec9e",
+        "selectedSha256": "9292ed6d3effdc18995fcea3e76c9de8a03c8cac665e7de98644a2d5f0fbec9e",
+        "frozenSha256": "9292ed6d3effdc18995fcea3e76c9de8a03c8cac665e7de98644a2d5f0fbec9e"
+      },
+      {
+        "file": "lib/app-local-explore-server.ts",
+        "productionSha256": "f66a2e9e61dffd1eb89f8296e7ecaff7ce732684fc3908daf8f68e580a115518",
+        "selectedSha256": "f66a2e9e61dffd1eb89f8296e7ecaff7ce732684fc3908daf8f68e580a115518",
+        "frozenSha256": "f66a2e9e61dffd1eb89f8296e7ecaff7ce732684fc3908daf8f68e580a115518"
+      },
+      {
+        "file": "app/market/market-client.tsx",
+        "productionSha256": "9d2270f388806730b03a9dfd6b8120c2ad384387b4622cff9768b3872793aad5",
+        "selectedSha256": "cb5ce7eb5202ca850e2b1a470609a48854116783ad0a7b914dd3928e9c7f3b28",
+        "frozenSha256": "cb5ce7eb5202ca850e2b1a470609a48854116783ad0a7b914dd3928e9c7f3b28"
+      },
+      {
+        "file": "components/app-local-help.tsx",
+        "productionSha256": "8d391dfb76799e1d5fe818c8964f523c4ff5783f30026ff4e93df7985183aba9",
+        "selectedSha256": "c0bcc380b87d9f68fb1469cf7c9a63e9e730514fc4cfcd0752e987253658d212",
+        "frozenSha256": "c0bcc380b87d9f68fb1469cf7c9a63e9e730514fc4cfcd0752e987253658d212"
+      },
+      {
+        "file": "tests/app-local-public-search-retention.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "0bb640ed1c1a8f2dd252b687a6d5b27f8c57687f11011c5c638c106b92bc53ca",
+        "frozenSha256": "0bb640ed1c1a8f2dd252b687a6d5b27f8c57687f11011c5c638c106b92bc53ca"
+      },
+      {
+        "file": "tests/app-local-salon-social-bridge.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "d1e6cb7b414d78c2785c46c2582b14ad1b0047e3983be0424f8ad0228bf50b30",
+        "frozenSha256": "d1e6cb7b414d78c2785c46c2582b14ad1b0047e3983be0424f8ad0228bf50b30"
+      },
+      {
+        "file": "tests/app-local-explore.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "92eef1c1679d1266e67b8f89a0ec80ac033f3f7bf82fa7edac1843123d75b730",
+        "frozenSha256": "92eef1c1679d1266e67b8f89a0ec80ac033f3f7bf82fa7edac1843123d75b730"
+      },
+      {
+        "file": "tests/app-local-explore-progressive.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "3ddff40b22416612b5164c4d06b51f1a3923e83d57d9f6865cda604d57b5ca49",
+        "frozenSha256": "3ddff40b22416612b5164c4d06b51f1a3923e83d57d9f6865cda604d57b5ca49"
+      },
+      {
+        "file": "lib/use-remembered-experience.ts",
+        "productionSha256": "9c808277f329bfcabeaf10bac3343e4e3e9f0455c7164b9b64c2d4b6b3a72b71",
+        "selectedSha256": "a997e973c7b0e2d07accaf2ccd8897d0bd33de61c59aa14cfd542359d64f154e",
+        "frozenSha256": "a997e973c7b0e2d07accaf2ccd8897d0bd33de61c59aa14cfd542359d64f154e"
+      }
+    ]
+  },
+  {
+    "changeId": "pos-menu-recovery-core-20261016",
+    "eventId": "4e421c05-8df0-43b5-9373-918584565ff6",
+    "status": "ready",
+    "decision": "integrated",
+    "reason": "Included in current owner-authorized web and native POS/payroll release; preserve source and validate assembled result.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\root-ready-git89-source",
+      "commit": "89e16562ed1929e73dfa0ea76baf497cdff233f5",
+      "sha256": "5db19f7dcfca56f135f71cf985126b887c6db420bfd401a08f0bf6b8b415ea2b"
+    },
+    "comparisons": [
+      {
+        "file": "app/local-app/entry.tsx",
+        "productionSha256": "727c6c92bd05e2740d437d82d45af0747c1f86f597d2a2a868db2f7bb29bb975",
+        "selectedSha256": "23948c44fd53b55e450777ce5470efa4c26148e80f8e5f674cee8c0d5fd37ad8",
+        "frozenSha256": "23948c44fd53b55e450777ce5470efa4c26148e80f8e5f674cee8c0d5fd37ad8"
+      },
+      {
+        "file": "lib/app-local-resource.ts",
+        "productionSha256": "4adcdb35542de2bed011d2a79a82d7f307009fe47e8082e5c7413f487d2ad5ec",
+        "selectedSha256": "e81b9228fa322f098ee26d17a733d89c910a6959de3d9e2f80cf23faadfba250",
+        "frozenSha256": "e81b9228fa322f098ee26d17a733d89c910a6959de3d9e2f80cf23faadfba250"
+      },
+      {
+        "file": "lib/app-local-resource-invalidation.ts",
+        "productionSha256": null,
+        "selectedSha256": "65c25d7e4a564a74ea4f38ea3f96ed49e2256f9ee55f50f47832495206c2410d",
+        "frozenSha256": "65c25d7e4a564a74ea4f38ea3f96ed49e2256f9ee55f50f47832495206c2410d"
+      },
+      {
+        "file": "lib/app-local-command-client.ts",
+        "productionSha256": "837d919859692308b20bdae4dbea6c21906fd92b4669368108689c76540d9260",
+        "selectedSha256": "2859c6f89372b7a25465032d726c3445b7489ef36848d6e6853286da3f574497",
+        "frozenSha256": "2859c6f89372b7a25465032d726c3445b7489ef36848d6e6853286da3f574497"
+      },
+      {
+        "file": "scripts/build-app-local-bundle.mjs",
+        "productionSha256": "141de2d49211a17feff8df678009cf4257087eaf54622d11dd9ad7526b4a5dad",
+        "selectedSha256": "68b899ef6df3ebb84b36583437ccfbdb7425f901675f5c1c95ddd093edbca0cf",
+        "frozenSha256": "68b899ef6df3ebb84b36583437ccfbdb7425f901675f5c1c95ddd093edbca0cf"
+      },
+      {
+        "file": "tests/app-local-authority-navigation.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "ff61d4177f701df512e63a19a06b83a9f8ea0d12b9d8dcabe7c63e0e573803e6",
+        "frozenSha256": "ff61d4177f701df512e63a19a06b83a9f8ea0d12b9d8dcabe7c63e0e573803e6"
+      },
+      {
+        "file": "tests/app-local-resource-refresh.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "a3df55e0b27010f487e72e527f78199c28ed804f62ffe31bdf70b252afe4e225",
+        "frozenSha256": "a3df55e0b27010f487e72e527f78199c28ed804f62ffe31bdf70b252afe4e225"
+      },
+      {
+        "file": "ios/Reylumi/LocalAppBundle/app.js",
+        "productionSha256": "a0673f09eefd5e6a861d109aa2c3da3ed8047d6e831104a907f8b4cf68e81440",
+        "selectedSha256": "c6d12411abeabed0e2f3978ad893b158173e476a20b6b4d216071c260d0dfa09",
+        "frozenSha256": "23a230e2da60305b9a66366b273ab0f4bdb97ac6b0f933e86313771e8e56652b"
+      },
+      {
+        "file": "ios/Reylumi/LocalAppBundle/app.css",
+        "productionSha256": "5d40105478265810baf445b1696fe23c2e776b69bfe657020b9b2591ef4bd14d",
+        "selectedSha256": "b84cc60ae64c812dff78be33ae41f6a7d6e6d89d4c82c06da7e962beb0baf1e0",
+        "frozenSha256": "3ef0567d160abcdc384e4ee470053042edb9d9826c3907a4608d381ef37abd5c"
+      },
+      {
+        "file": "ios/Reylumi/LocalAppBundle/index.html",
+        "productionSha256": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
+        "selectedSha256": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
+        "frozenSha256": "ea7b9950b5cbff575cb810276b2de67f4b4871eb3be89f1ba58dc1402fe6472d"
+      },
+      {
+        "file": "ios/Reylumi/LocalAppBundle/manifest.json",
+        "productionSha256": "eee733a46df061a9e2ee22932b1d54d0876bdcabf0aa63f8f001ec843cb7891d",
+        "selectedSha256": "bd1bf4403470a70c22ca591510f2baade65287cc6fb3a1d933f428127f5f1061",
+        "frozenSha256": "79568c5508476b8ced9e8c1dccb5213cecc92780ecdbf8d6ed478ed56dbab5ba"
+      }
+    ]
+  },
+  {
+    "changeId": "explore-unified-salon-search-20261016",
+    "eventId": "65e3cb87-2481-443d-96b5-c8f1f0c39095",
+    "status": "needs-integration",
+    "decision": "deferred",
+    "reason": "Completed local candidate still records failed legacy regressions and unresolved home browser timeout; new schema/search rollout is not eligible for this narrow salon fix.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-real-data-20261016\\completed-source-v3",
+      "hashManifest": "work/explore-real-data-20261016/audit/completed-source-hashes-v3.json",
+      "priorEvent": "07f35611-2c22-404e-be62-9793330a17a0",
+      "preimplementationSnapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-unified-search-20261016\\preimplementation-source",
+      "additionalBeforeSnapshot": "C:\\Users\\giuse\\kingpos\\work\\explore-search-continuity-20261016\\completed-source",
+      "buildSource": "C:\\Users\\giuse\\kingpos\\work\\explore-unified-search-20261016\\validation-source"
+    },
+    "comparisons": [
+      {
+        "file": "app/(app)/explore/page.tsx",
+        "productionSha256": "1e92f834db4923c00aca02088b27e766d71c49122c6ec1e9e81b2bb2c3838010",
+        "selectedSha256": "1e92f834db4923c00aca02088b27e766d71c49122c6ec1e9e81b2bb2c3838010",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/api/explore/search/route.ts",
+        "productionSha256": "488721f846ee26153bd135257f57e3faae6e6b98d9bb62571db3ca7abefda9f6",
+        "selectedSha256": "488721f846ee26153bd135257f57e3faae6e6b98d9bb62571db3ca7abefda9f6",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/explore/explore-client.tsx",
+        "productionSha256": "a4c0aaed69bc0fb522ab306877610c82db6538d29c485359f71c465c38fa6b85",
+        "selectedSha256": "a4c0aaed69bc0fb522ab306877610c82db6538d29c485359f71c465c38fa6b85",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/explore/explore-salon-card.tsx",
+        "productionSha256": "079bf5294c80aa5b76e4a550da9d605c2481709ae0d846883a889a5c2b8d471a",
+        "selectedSha256": "079bf5294c80aa5b76e4a550da9d605c2481709ae0d846883a889a5c2b8d471a",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/explore/explore-search-recommendations.tsx",
+        "productionSha256": "df140074a597ed97110762388a710311edbfd0429dcac630ea6ac99c345d2c6a",
+        "selectedSha256": "df140074a597ed97110762388a710311edbfd0429dcac630ea6ac99c345d2c6a",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/explore/explore-startup-shell.tsx",
+        "productionSha256": "4283ea785aea4b68c1917e20d7c5bb73436f5ef0b538ac4735f5010ab1e94c31",
+        "selectedSha256": "4283ea785aea4b68c1917e20d7c5bb73436f5ef0b538ac4735f5010ab1e94c31",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/explore/nail-inspiration.tsx",
+        "productionSha256": "2d42707316cee83de1c2fd0855212c497cd861497e824871d506ea1eb1fcdd35",
+        "selectedSha256": "2d42707316cee83de1c2fd0855212c497cd861497e824871d506ea1eb1fcdd35",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/explore-query-intent.ts",
+        "productionSha256": "dfc98c091c8ca99a2e9a2e563b0b04f4553197f5ca232be6a520cf7498f2115e",
+        "selectedSha256": "dfc98c091c8ca99a2e9a2e563b0b04f4553197f5ca232be6a520cf7498f2115e",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/explore-query-routing.ts",
+        "productionSha256": "e2a2595f20eb1236b56d6e52eeac91373d793c4288004f53fd00e289937d9643",
+        "selectedSha256": "e2a2595f20eb1236b56d6e52eeac91373d793c4288004f53fd00e289937d9643",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/explore-search-client.ts",
+        "productionSha256": "7ca6175f6306589016c49bcd378564fb54086d69a1bd622d932eb75ab3cfdb8e",
+        "selectedSha256": "7ca6175f6306589016c49bcd378564fb54086d69a1bd622d932eb75ab3cfdb8e",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/explore-search-context.ts",
+        "productionSha256": "e6ba6db5682e641a589164fcca8fcb1dd1e771e4db57a9c60b49107e40969c99",
+        "selectedSha256": "e6ba6db5682e641a589164fcca8fcb1dd1e771e4db57a9c60b49107e40969c99",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/explore-search-media.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/explore-search-recommendations.ts",
+        "productionSha256": "9e072fe4ce4fb42da3c176ff03c724165c258c44ce5068fd371402f9585f55b1",
+        "selectedSha256": "9e072fe4ce4fb42da3c176ff03c724165c258c44ce5068fd371402f9585f55b1",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/explore-search-refresh.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/explore-search-suggestions.ts",
+        "productionSha256": "65259b22e8757f6ee707ec10bb9cc57f4c2dfee29c12d29776d98129afc578ab",
+        "selectedSha256": "65259b22e8757f6ee707ec10bb9cc57f4c2dfee29c12d29776d98129afc578ab",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/explore-search.ts",
+        "productionSha256": "c7487576f7c65e258aabba9bb50651c8fbb1bc91a7b1040b9492540fe20aaec3",
+        "selectedSha256": "c7487576f7c65e258aabba9bb50651c8fbb1bc91a7b1040b9492540fe20aaec3",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/explore-showcase-content.ts",
+        "productionSha256": "aec7c05486a783d6b263488e098a810c2b1745a8c4577aa79e22ac844201885a",
+        "selectedSha256": "aec7c05486a783d6b263488e098a810c2b1745a8c4577aa79e22ac844201885a",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/nail-inspiration.ts",
+        "productionSha256": "a4bfc67b2a44e6c4a22f256f72c0b28e1c5fa37396e6f9edf6b0f83b8eef8b2a",
+        "selectedSha256": "a4bfc67b2a44e6c4a22f256f72c0b28e1c5fa37396e6f9edf6b0f83b8eef8b2a",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/use-explore-search-media.ts",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "supabase/migrations/20261016010001_explore_unified_salon_search.sql",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-auto-load-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-gps-recovery-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-progressive-startup-ui.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-progressive-startup.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-query-intent.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-query-routing-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-query-ssr-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-query-ui-races-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-request-cancellation.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-search-context-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-search-context-ui-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-search-first-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-search-media-refresh-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-search-recommendations-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-search-refresh-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-search-service-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-search-suggestions-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-unified-card-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-unified-search-api.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-unified-search-media.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-unified-search-scale.integration.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-unified-search.integration.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/explore-unified-showcase-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/fixtures/explore-query-production-entities-20261016.json",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/fixtures/explore-unified-search-bootstrap.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/nail-book-card-ui.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/nail-discovery-runtime.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/nail-inspiration.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": null,
+        "frozenSha256": null
+      },
+      {
+        "file": "types/explore.ts",
+        "productionSha256": "9194f2c4c82d6232fc42112cf0710d61169e8b6c1116f75eeba17dc6dbded1dd",
+        "selectedSha256": "9194f2c4c82d6232fc42112cf0710d61169e8b6c1116f75eeba17dc6dbded1dd",
+        "frozenSha256": null
+      }
+    ]
+  },
+  {
+    "changeId": "drako-settings-qa-fixes-20261016",
+    "eventId": "ba13217c-ce5a-471d-92ed-06d48aefb301",
+    "status": "ready",
+    "decision": "integrated",
+    "reason": "Included in current owner-authorized web and native POS/payroll release; preserve source and validate assembled result.",
+    "source": {
+      "commit": "0e3005a015f62a55dac17d84eb4e77ef04759a69",
+      "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\drako-qa-fixes-20261016\\frozen-source"
+    },
+    "comparisons": [
+      {
+        "file": "app/market/booking-deposit-actions.ts",
+        "productionSha256": "a6df8c5df5d0083c1acb1cebf6c641a230dd38c4d9ab07ed64ab4ee73fafc286",
+        "selectedSha256": "b8f8dc20daeaee3d490c3c0f15b1c4963e2780dd8437fc8071cfbb063f7e6822",
+        "frozenSha256": "02fcd1d98491a59007f0d1c2a74fa8967f6bf5d3f836ef432bb1291cd86cba93"
+      },
+      {
+        "file": "app/market/booking-deposit-panel.tsx",
+        "productionSha256": "78c6491fbe3e193834b6f7c9ad48fa5afdac98e62abf59435fd1934ee8c9e361",
+        "selectedSha256": "cbb1202ab70c2fc13b19a6a8f7ccf896fb1c2ef3e50923461c7bb14b872f3f94",
+        "frozenSha256": "cbb1202ab70c2fc13b19a6a8f7ccf896fb1c2ef3e50923461c7bb14b872f3f94"
+      },
+      {
+        "file": "app/settings/salon-list-panel.tsx",
+        "productionSha256": "3725aa8d574423ba110797fb8e840411e1cef59ffb53b11c3669f715f9e50e4c",
+        "selectedSha256": "3c5fb215d81a342e219d828a80a23d1d819fb2f370e8e00698346ae3f4c3733d",
+        "frozenSha256": "3c5fb215d81a342e219d828a80a23d1d819fb2f370e8e00698346ae3f4c3733d"
+      },
+      {
+        "file": "app/settings/settings-hub-client.tsx",
+        "productionSha256": "74719f179641c6c441b77273c7d98a8098d1b7c2e7f9487b0e21b853b7e5cd2e",
+        "selectedSha256": "3301d04e1552298a3a03a743d4e107aaf5a8fdf10781043595bdc72d166cce49",
+        "frozenSha256": "3301d04e1552298a3a03a743d4e107aaf5a8fdf10781043595bdc72d166cce49"
+      },
+      {
+        "file": "tests/booking-deposit-settings-target.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "12b36f259424f3c53095077148a918ab39820583c13d227a29a1f5641a6c56af",
+        "frozenSha256": "12b36f259424f3c53095077148a918ab39820583c13d227a29a1f5641a6c56af"
+      }
+    ]
+  },
+  {
+    "changeId": "pos-payroll-audit-fixes-20261017",
+    "eventId": "209da088-25f1-4e7e-acb5-4f74eb9502e2",
+    "status": "needs-integration",
+    "decision": "integrated",
+    "reason": "Included in current owner-authorized web and native POS/payroll release; preserve source and validate assembled result.",
+    "source": {
+      "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos\\artifacts\\pos-payroll-fixes-20261017\\frozen-source",
+      "commit": "5e6c1c142977ea32fb420c868cff346c1c7049fa",
+      "sha256": "63941035b3bf8b85e224ffe76496ccf8c080a2cfe7bab38ea34355674776dd31"
+    },
+    "comparisons": [
+      {
+        "file": "app/(app)/payroll/page.tsx",
+        "productionSha256": "0eabeb476351e82c87e2e66631e10f93b52d0803e776147112e24e73399adfb3",
+        "selectedSha256": "714fdd013cfa894a8b6f3892cb0f01f913e55c733ff98d5a9b0027b2bfff3f06",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/(app)/pos-tickets/page.tsx",
+        "productionSha256": "4f0c1724d661f5c12728f05c4a900816e9f642807f6a07348f881c6cbe915fa1",
+        "selectedSha256": "1b4c2e547206c53973694939d1f1104c2b38fb8c13e3256fedcb2053217ad332",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/(app)/pos/more/page.tsx",
+        "productionSha256": null,
+        "selectedSha256": "a4a01c5a892da1b50e34e400999f28652bd4dcae9dd02fc0f91253dd29d55549",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/(app)/pos/settings/page.tsx",
+        "productionSha256": "8e971539ba99110a71abe0d7b296887f53eae924decfb9faf4fe925ca089b786",
+        "selectedSha256": "41aebbfb5347452b8b841bbc2352af0e1eecd73b57faa284cc3ebc45c1fdffe5",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/navigation-shell.tsx",
+        "productionSha256": "ca8a7eddc4bc87603ea1f665db763453bae55cad450f33815e7fc18c235e0495",
+        "selectedSha256": "628bb3527973e203bb88cfee81efb767bbd90030f297d9225812a6e07e5f9497",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/payroll/payroll-live-refresh.tsx",
+        "productionSha256": null,
+        "selectedSha256": "1920d6e2eb7093ecb2c2a5ea28c63907136715db9fc028828bcac870477dc6ef",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/payroll/staff-income-autosave-inputs.tsx",
+        "productionSha256": "d65ff43c0d94fee588abf8c9bdef76022f46c6bd196f03ff160ba5d896f7eedb",
+        "selectedSha256": "dc43a67271d675c8dfb13634f641910021addad6c464c7a3cb61162890c62c84",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/payroll/use-payroll-refresh-batch.ts",
+        "productionSha256": "606abbf1c1b72c46649440182d4ff20b09a7e8e2707eb197153076c90f8bf2b1",
+        "selectedSha256": "65970374bb118421832c1b15af30ac9b34142cd75c0470610355affd909af4a7",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/pos-tickets/work-log-filters.tsx",
+        "productionSha256": null,
+        "selectedSha256": "649e125647e99be5292e186b00c15fdd5b150a6015edbb50eeec9e5f58a4c063",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/pos/owner-local-panels.tsx",
+        "productionSha256": "c876150740b8058e466eb0d8cd6022aec913e44c5b52d0c9ce142fec71126042",
+        "selectedSha256": "f8772367e228c6298074294b0a192e2627fc364ce587460422f7dbdcdeb2c5a4",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/pos/owner-pos-more.tsx",
+        "productionSha256": null,
+        "selectedSha256": "ea8c693df01e6db49abe617d210103e3055b35851dfab1bcb2f7df4e8fc813c9",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/pos/owner-pos-tabs.tsx",
+        "productionSha256": "00338ac818f78a64d7208ecd244af6f2cb821e8d3283dd21b8af2cd9586bb08f",
+        "selectedSha256": "9081a8ea5d340dd978551762fc9ead1b3b0b92f0e89d0834824fbe0bbd15c2b6",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/pos/owner-pos.css",
+        "productionSha256": "024a56ab355ea25de76f663b1a39c1018ff86b7f9e8dcadcbaf06681a035a96f",
+        "selectedSha256": "94d700b1aa651347c5680d414ecd4b660569985ec249b0fc72f215f6d8c9e290",
+        "frozenSha256": null
+      },
+      {
+        "file": "components/app-local-pos-settings.tsx",
+        "productionSha256": "51e4ab78d348884b7299e29935500d5839f88aebc40ffeb8768bd984a1118200",
+        "selectedSha256": "7f89e982800e4a26c15ec09ea44eb9acfc7357d7b13408b008c094be9bc0570e",
+        "frozenSha256": null
+      },
+      {
+        "file": "components/role-more-content.tsx",
+        "productionSha256": "56c94c65e6d4016f4d75c43b019bc825a765548da072dd8400761178c4233c59",
+        "selectedSha256": "8ff067506536492445d625b506fc78db5716205d779ae89a69cebdbb48dd4ce5",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/Reylumi/LocalAppBundle/app.css",
+        "productionSha256": "5d40105478265810baf445b1696fe23c2e776b69bfe657020b9b2591ef4bd14d",
+        "selectedSha256": "b84cc60ae64c812dff78be33ae41f6a7d6e6d89d4c82c06da7e962beb0baf1e0",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/Reylumi/LocalAppBundle/app.js",
+        "productionSha256": "a0673f09eefd5e6a861d109aa2c3da3ed8047d6e831104a907f8b4cf68e81440",
+        "selectedSha256": "c6d12411abeabed0e2f3978ad893b158173e476a20b6b4d216071c260d0dfa09",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/Reylumi/LocalAppBundle/index.html",
+        "productionSha256": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
+        "selectedSha256": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/Reylumi/LocalAppBundle/manifest.json",
+        "productionSha256": "eee733a46df061a9e2ee22932b1d54d0876bdcabf0aa63f8f001ec843cb7891d",
+        "selectedSha256": "bd1bf4403470a70c22ca591510f2baade65287cc6fb3a1d933f428127f5f1061",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/Reylumi/ReylumiLocalAppViewController.swift",
+        "productionSha256": "1886ff9b3162cf663e92d9005c2cc57f3ae1138671efc53d0889ac4043c949e3",
+        "selectedSha256": "6389271029bbda2df00838acc332ab2f3f5a799ee17f4d27ec44b5f854fbe146",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/Reylumi/ReylumiLocalReadStore.swift",
+        "productionSha256": "e511ce597416763b6700b616b90c8815e578f88e202e6bbd02ac1fe579d12c2d",
+        "selectedSha256": "465258645f759b1d1044747b1668ed53eff3ea78c122a6213edc8642794ab3b7",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/Reylumi/ReylumiViewController.swift",
+        "productionSha256": "070542b93c1d3312f27833e9ac26b09b552a4fbd765017a5d01a6a2d6fc6e93c",
+        "selectedSha256": "97ac0f9fa35280cdeef8b17df1abcabb3b7612edaf29156a4ccaef97585b8523",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/ReylumiTests/LocalHostedReturnTests.swift",
+        "productionSha256": "87a924980d58ec094c8f72ca1f0f9de7c522c71e7cf8a03ff4719a29b321fdd3",
+        "selectedSha256": "54abc25c46e9c771af9b2f0862e9da406ea51f4c1130c6140ce11cd18b9b60bb",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/ReylumiTests/LocalReadStoreTests.swift",
+        "productionSha256": "140b99015e78487f59729b7533079f76d4b1f08a5d1ec0b35743b6a84fadf8d9",
+        "selectedSha256": "b6ea4b86dc6baaef55984422d998084f49c956bd87afe2c80493099044e4294b",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/ReylumiTests/OfflineRouteTests.swift",
+        "productionSha256": "6c48ae61b4c26c3f30c30210c86989cbd52ea072886d9301753fb0ab86cc80dd",
+        "selectedSha256": "fcdc7c068dacb52820bb6b1193aa922a74588f5493176169f992647def07ef5a",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/ReylumiTests/OfflineWebViewTests.swift",
+        "productionSha256": "6dadf2950515477951eabe6daa62402d2eaa550801ef4976b5bcea11684d7ed1",
+        "selectedSha256": "866c598852027bf38c5eaa7e669f618edb7c362d4f79e98c84f3311f18806744",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/app-local-command-client.ts",
+        "productionSha256": "837d919859692308b20bdae4dbea6c21906fd92b4669368108689c76540d9260",
+        "selectedSha256": "2859c6f89372b7a25465032d726c3445b7489ef36848d6e6853286da3f574497",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/app-local-owner-page-registry.tsx",
+        "productionSha256": "6a2ccfe1c83e7062119424bfd44d201c91aefd263d2c2357dd2875dd819c45fd",
+        "selectedSha256": "24f0288e8c088833ba5fdb232bb69fa50a0ad30a4e9e8dd3a3f22ac4b2577ad0",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/app-local-owner-payroll-view.tsx",
+        "productionSha256": "7626b94b018e704d89eec3b649e21583fbb62867305ce30ad9fee0fc6f777cea",
+        "selectedSha256": "831a683257f953f26350c8107f15bad455576be4754ae384dc209f3c7f3e17c6",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/app-local-resource-invalidation.ts",
+        "productionSha256": null,
+        "selectedSha256": "65c25d7e4a564a74ea4f38ea3f96ed49e2256f9ee55f50f47832495206c2410d",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/app-local-resource.ts",
+        "productionSha256": "4adcdb35542de2bed011d2a79a82d7f307009fe47e8082e5c7413f487d2ad5ec",
+        "selectedSha256": "e81b9228fa322f098ee26d17a733d89c910a6959de3d9e2f80cf23faadfba250",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/app-local-secondary-metadata.ts",
+        "productionSha256": "1255b99d7a9ef530fe9865f2f9a9ed190ac190ec9ba54d71a6bade0abdf07f10",
+        "selectedSha256": "d47a9969e15016d7fc53ceafdc256c329aa087aba5cd6b0e3992796bfe07e4e2",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/app-local-secondary-registry.tsx",
+        "productionSha256": "9bc7b8da805a3ea169892a96bf41ba2bada39df659e19b9e2514c5e9cee4013e",
+        "selectedSha256": "080302f61797210720cf312cd327c9bcb4498a81e5ff560c7e1775d07f550714",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/payroll-read-args.ts",
+        "productionSha256": null,
+        "selectedSha256": "6ef4d11d47e38ee8fcf03711162b9764338ae09619ead20338dfbfaf2210a3e8",
+        "frozenSha256": null
+      },
+      {
+        "file": "lib/payroll.ts",
+        "productionSha256": "57168bc9b13c7423492b13cd8e6d1b8a4bb942d8e9c06600aebb2fe5dc9fd2f4",
+        "selectedSha256": "494edaa34da108f95271c6df99548f4b67f1e83db81724761122881cc26b7d71",
+        "frozenSha256": null
+      },
+      {
+        "file": "scripts/build-app-local-bundle.mjs",
+        "productionSha256": "141de2d49211a17feff8df678009cf4257087eaf54622d11dd9ad7526b4a5dad",
+        "selectedSha256": "68b899ef6df3ebb84b36583437ccfbdb7425f901675f5c1c95ddd093edbca0cf",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/app-local-business-ui.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "b48dce85b76586bf39323f175fe418261b85c3e02e6d7dade8870eecde01c3ea",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/app-local-resource-races.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "f62d93851bbc70c2f689fd487afd4dd8d746d7a75e11f3f6920e6afb69ed942a",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/app-local-resource-refresh.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "a3df55e0b27010f487e72e527f78199c28ed804f62ffe31bdf70b252afe4e225",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/owner-local-workspace-ui.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "44ba16f740466c4beaf00453b782af876f984db1893e7769b8e10b7e41353129",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/payroll-live-refresh-ui.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "499c57c1ebabc073b1c39e25a63e923d1b825ffe0f7710416f8dd239e29fdc8f",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/payroll-read-parity.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "9d89708044af2b2d60b6784446e0fc9fe5c784ec466dc38860578e5755c48bcc",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/scoped-ui-drafts-ui.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "ea46845fa43e29c6a48b6968c787034a0227bb92bd4a342950ebffd2bc15fa50",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/workspace-navigation-ui.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "7b7be64c113dd43c98947dccbcac4698424b6768cb51ff743a2adafd3d2a375f",
+        "frozenSha256": null
+      }
+    ]
+  },
+  {
+    "changeId": "pos-payroll-release-integration-20261017",
+    "eventId": "66273b79-5e0f-4d11-9ec9-c710ad32d0eb",
+    "status": "working",
+    "decision": "deferred",
+    "reason": "Working integration tracked separately; not an unpublished completed feature.",
+    "source": {
+      "commit": "6832972f97b22ab4180650019beb1d1cb93fdf96",
+      "nativeBaselineCommit": "78b00c0e92e3af3674214616ab53784b556a03ef"
+    },
+    "comparisons": [
+      {
+        "file": "app/market/booking-deposit-actions.ts",
+        "productionSha256": "a6df8c5df5d0083c1acb1cebf6c641a230dd38c4d9ab07ed64ab4ee73fafc286",
+        "selectedSha256": "b8f8dc20daeaee3d490c3c0f15b1c4963e2780dd8437fc8071cfbb063f7e6822",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/market/booking-deposit-panel.tsx",
+        "productionSha256": "78c6491fbe3e193834b6f7c9ad48fa5afdac98e62abf59435fd1934ee8c9e361",
+        "selectedSha256": "cbb1202ab70c2fc13b19a6a8f7ccf896fb1c2ef3e50923461c7bb14b872f3f94",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/settings/salon-list-panel.tsx",
+        "productionSha256": "3725aa8d574423ba110797fb8e840411e1cef59ffb53b11c3669f715f9e50e4c",
+        "selectedSha256": "3c5fb215d81a342e219d828a80a23d1d819fb2f370e8e00698346ae3f4c3733d",
+        "frozenSha256": null
+      },
+      {
+        "file": "app/settings/settings-hub-client.tsx",
+        "productionSha256": "74719f179641c6c441b77273c7d98a8098d1b7c2e7f9487b0e21b853b7e5cd2e",
+        "selectedSha256": "3301d04e1552298a3a03a743d4e107aaf5a8fdf10781043595bdc72d166cce49",
+        "frozenSha256": null
+      },
+      {
+        "file": "tests/booking-deposit-settings-target.test.mjs",
+        "productionSha256": null,
+        "selectedSha256": "12b36f259424f3c53095077148a918ab39820583c13d227a29a1f5641a6c56af",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/Reylumi/LocalAppBundle/app.js",
+        "productionSha256": "a0673f09eefd5e6a861d109aa2c3da3ed8047d6e831104a907f8b4cf68e81440",
+        "selectedSha256": "c6d12411abeabed0e2f3978ad893b158173e476a20b6b4d216071c260d0dfa09",
+        "frozenSha256": null
+      },
+      {
+        "file": "ios/Reylumi/LocalAppBundle/manifest.json",
+        "productionSha256": "eee733a46df061a9e2ee22932b1d54d0876bdcabf0aa63f8f001ec843cb7891d",
+        "selectedSha256": "bd1bf4403470a70c22ca591510f2baade65287cc6fb3a1d933f428127f5f1061",
+        "frozenSha256": null
+      }
+    ]
+  }
+]

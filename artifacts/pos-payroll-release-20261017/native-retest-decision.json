@@ -1,0 +1,10 @@
+{
+  "failedRun": 38988634551,
+  "tests": 91,
+  "failed": 1,
+  "reason": "One unchanged legacy assertion expected Explore as default; updated to required role-home startup while retaining every explicit intent assertion.",
+  "finalCommit": "eedd8524d8a261bad972b0364362cd75820da722",
+  "canceledRedundantCheck": 38989313173,
+  "replacement": "Existing TestFlight workflow: Xcode simulator and unsigned archive must pass before sign/upload step can run.",
+  "applicationSourceUnchangedAfterSuccessfulWebBuild": true
+}

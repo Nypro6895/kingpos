@@ -1,0 +1,75 @@
+{
+  "kind": "change",
+  "changeId": "app-local-public-repair-20261016",
+  "status": "ready",
+  "summary": "Preserve scoped Market/Help searches through menu and Back; bridge the original salon-social GET and stop cleared native UI drafts being resurrected by outgoing cleanup. Exact raw Git89 source revision; only the shared UI-state hook line endings differ from the prior tested snapshot.",
+  "channels": [
+    "web",
+    "ios"
+  ],
+  "files": [
+    "lib/app-local-explore-http-client.ts",
+    "lib/app-local-explore-metadata.ts",
+    "lib/app-local-explore-server.ts",
+    "app/market/market-client.tsx",
+    "components/app-local-help.tsx",
+    "tests/app-local-public-search-retention.test.mjs",
+    "tests/app-local-salon-social-bridge.test.mjs",
+    "tests/app-local-explore.test.mjs",
+    "tests/app-local-explore-progressive.test.mjs",
+    "lib/use-remembered-experience.ts"
+  ],
+  "deletedFiles": [],
+  "dependencies": [],
+  "supersedesEvents": [
+    "6b9801e7-838f-4ed8-bac9-74ce5660f9ea"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\public-repair-git89-frozen",
+    "commit": "89e16562ed1929e73dfa0ea76baf497cdff233f5",
+    "baselineDeploymentId": "dpl_EW3mj5c8bzs8kw48X4cJDvKvhUuX",
+    "sourceSha256": "c08ca531aa9fa1c8424b623dc03907da2776be6868d714e35a6a6f42e09b3799",
+    "assembledManifest": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\full-assembled-source.json"
+  },
+  "fileHashes": {
+    "lib/app-local-explore-http-client.ts": "f7ec335328336cc081aa58c56ab3ec521d5224190b712e7ab88430354bac2265",
+    "lib/app-local-explore-metadata.ts": "9292ed6d3effdc18995fcea3e76c9de8a03c8cac665e7de98644a2d5f0fbec9e",
+    "lib/app-local-explore-server.ts": "f66a2e9e61dffd1eb89f8296e7ecaff7ce732684fc3908daf8f68e580a115518",
+    "app/market/market-client.tsx": "cb5ce7eb5202ca850e2b1a470609a48854116783ad0a7b914dd3928e9c7f3b28",
+    "components/app-local-help.tsx": "c0bcc380b87d9f68fb1469cf7c9a63e9e730514fc4cfcd0752e987253658d212",
+    "tests/app-local-public-search-retention.test.mjs": "0bb640ed1c1a8f2dd252b687a6d5b27f8c57687f11011c5c638c106b92bc53ca",
+    "tests/app-local-salon-social-bridge.test.mjs": "d1e6cb7b414d78c2785c46c2582b14ad1b0047e3983be0424f8ad0228bf50b30",
+    "tests/app-local-explore.test.mjs": "92eef1c1679d1266e67b8f89a0ec80ac033f3f7bf82fa7edac1843123d75b730",
+    "tests/app-local-explore-progressive.test.mjs": "3ddff40b22416612b5164c4d06b51f1a3923e83d57d9f6865cda604d57b5ca49",
+    "lib/use-remembered-experience.ts": "a997e973c7b0e2d07accaf2ccd8897d0bd33de61c59aa14cfd542359d64f154e"
+  },
+  "validation": [
+    {
+      "name": "17 focused original/new Explore/Help/UI/bridge regressions, unchanged canonical source",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\experience-regression-21-1\\public-repair-final-validation.json",
+      "detail": "Original17/17 result carried forward after proving exact CRLF-normalized byte equality for all10 files and current workspace. No test rerun or physical-device claim."
+    },
+    {
+      "name": "Raw Git89 snapshot identity and line-ending-only equivalence",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\public-ready-git89-byte-equivalence.json",
+      "detail": "9/10 original raw hashes unchanged; use-remembered-experience.ts differs only CRLF→LF. New immutable snapshot stores exact raw bytes from Git89 for all10 files."
+    },
+    {
+      "name": "Exact final assembled production build and TypeScript",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\pos-menu-recovery-release-20261016\\final\\full-build-receipt.json",
+      "detail": "Commit89e16562ed1929e73dfa0ea76baf497cdff233f5; exit0; sourceDrift[]; no business writes."
+    },
+    {
+      "name": "Original scoped ESLint10 owned files",
+      "result": "passed",
+      "evidence": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos\\artifacts\\experience-regression-21-1\\public-repair-final-lint.log"
+    }
+  ],
+  "publicationState": "Prepared manifest only, not recorded or published. Coordinator reviews and records this revision before selecting exact event IDs; old6b9801e7 must not be marked published against mismatching raw hook bytes.",
+  "id": "a055a60d-7c8e-45db-a5e6-1ed4d3a777b5",
+  "recordedAt": "2026-10-16T21:28:07.374Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\app-local-platform\\kingpos"
+}

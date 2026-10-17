@@ -1,0 +1,79 @@
+{
+  "kind": "change",
+  "changeId": "pos-menu-recovery-core-20261016",
+  "status": "ready",
+  "channels": [
+    "web"
+  ],
+  "summary": "Validated current-production integration of pos-menu-recovery-core-20261016 with later POS/payroll repairs preserved.",
+  "files": [
+    "app/local-app/entry.tsx",
+    "lib/app-local-resource.ts",
+    "lib/app-local-resource-invalidation.ts",
+    "lib/app-local-command-client.ts",
+    "scripts/build-app-local-bundle.mjs",
+    "tests/app-local-authority-navigation.test.mjs",
+    "tests/app-local-resource-refresh.test.mjs",
+    "ios/Reylumi/LocalAppBundle/app.js",
+    "ios/Reylumi/LocalAppBundle/app.css",
+    "ios/Reylumi/LocalAppBundle/index.html",
+    "ios/Reylumi/LocalAppBundle/manifest.json"
+  ],
+  "source": {
+    "snapshot": "C:\\Users\\giuse\\kingpos\\artifacts\\pos-payroll-release-20261017\\frozen-overlay",
+    "commit": "eedd8524d8a261bad972b0364362cd75820da722"
+  },
+  "validation": [
+    {
+      "name": "Final assembled production build with TypeScript",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/web-build-final.log"
+    },
+    {
+      "name": "Integrated regression checks: 92 unique cases",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/regression-results.json"
+    },
+    {
+      "name": "Xcode 26.3 simulator and unsigned archive stage passed on exact frozen commit; full artifact hash readback follows upload",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/native-check-gate.json"
+    },
+    {
+      "name": "Exact production source preservation and latest uploaded native preservation",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/assembled-source.json"
+    },
+    {
+      "name": "19 compiled HTTP checks including auth guards and original icons",
+      "result": "passed",
+      "evidence": "C:/Users/giuse/kingpos/artifacts/pos-payroll-release-20261017/local-http-smoke.json"
+    }
+  ],
+  "dependencies": [
+    "owner-pos-menu-startup-recovery-20261016",
+    "app-local-public-repair-20261016",
+    "ios-21-1-runtime-repairs-20261016",
+    "installed-owner-ticket-detail-navigation-20261016"
+  ],
+  "supersedesEvents": [
+    "4e421c05-8df0-43b5-9373-918584565ff6"
+  ],
+  "id": "285f15c7-6c6a-454c-a173-899c3fae2785",
+  "recordedAt": "2026-10-17T01:14:10.572Z",
+  "worktree": "C:\\Users\\giuse\\.codex\\worktrees\\pos-payroll-audit-fixes\\kingpos",
+  "deletedFiles": [],
+  "fileHashes": {
+    "app/local-app/entry.tsx": "23948c44fd53b55e450777ce5470efa4c26148e80f8e5f674cee8c0d5fd37ad8",
+    "lib/app-local-resource.ts": "e81b9228fa322f098ee26d17a733d89c910a6959de3d9e2f80cf23faadfba250",
+    "lib/app-local-resource-invalidation.ts": "65c25d7e4a564a74ea4f38ea3f96ed49e2256f9ee55f50f47832495206c2410d",
+    "lib/app-local-command-client.ts": "2859c6f89372b7a25465032d726c3445b7489ef36848d6e6853286da3f574497",
+    "scripts/build-app-local-bundle.mjs": "68b899ef6df3ebb84b36583437ccfbdb7425f901675f5c1c95ddd093edbca0cf",
+    "tests/app-local-authority-navigation.test.mjs": "ff61d4177f701df512e63a19a06b83a9f8ea0d12b9d8dcabe7c63e0e573803e6",
+    "tests/app-local-resource-refresh.test.mjs": "a3df55e0b27010f487e72e527f78199c28ed804f62ffe31bdf70b252afe4e225",
+    "ios/Reylumi/LocalAppBundle/app.js": "c6d12411abeabed0e2f3978ad893b158173e476a20b6b4d216071c260d0dfa09",
+    "ios/Reylumi/LocalAppBundle/app.css": "b84cc60ae64c812dff78be33ae41f6a7d6e6d89d4c82c06da7e962beb0baf1e0",
+    "ios/Reylumi/LocalAppBundle/index.html": "d7a3205eaa96dcb859d1fb2fe081105cb82a5d578a725024c3df101015d3c1a7",
+    "ios/Reylumi/LocalAppBundle/manifest.json": "bd1bf4403470a70c22ca591510f2baade65287cc6fb3a1d933f428127f5f1061"
+  }
+}
